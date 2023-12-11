@@ -151,20 +151,20 @@ int main() {
     Model model = ModelFactory::createDoublePendulum();
     model.initSystem();
 
-    ControlAllocator* distributor = new ControlAllocator;
-    distributor->setName("distributor");
-    distributor->addControl("/tau0");
-    distributor->addControl("/tau1");
-    model.addComponent(distributor);
+    ControlAllocator* allocator = new ControlAllocator;
+    allocator->setName("control_allocator");
+    allocator->addControl("/tau0");
+    allocator->addControl("/tau1");
+    model.addComponent(allocator);
 
     ActuatorInputController* controller = new ActuatorInputController;
     controller->setName("actuator_controller");
     controller->addActuator(model.getComponent<CoordinateActuator>("/tau0"));
     controller->addActuator(model.getComponent<CoordinateActuator>("/tau1"));
     controller->connectInput_controls(
-        distributor->getOutput("controls").getChannel("/tau0"), "/tau0");
+        allocator->getOutput("controls").getChannel("/tau0"), "/tau0");
     controller->connectInput_controls(
-        distributor->getOutput("controls").getChannel("/tau1"), "/tau1");
+        allocator->getOutput("controls").getChannel("/tau1"), "/tau1");
     model.addController(controller);
     model.finalizeFromProperties();
     model.finalizeConnections();
@@ -174,7 +174,7 @@ int main() {
     SimTK::Vector newControls(2, 0.0);
     newControls[0] = 1.0;
     newControls[1] = 2.0;
-    distributor->setControls(state, newControls);
+    allocator->setControls(state, newControls);
     model.realizeDynamics(state);
 
     model.printSubcomponentInfo();

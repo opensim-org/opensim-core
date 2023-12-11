@@ -96,7 +96,7 @@ void Controller::constructProperties()
     setAuthors("Ajay Seth, Frank Anderson, Chand John, Samuel Hamner");
     constructProperty_enabled(true);
     constructProperty_actuator_list();
-    _actuatorSet.setMemoryOwner(false);
+    constructProperty_actuators();
 }
 
 void Controller::updateFromXMLNode(SimTK::Xml::Element& node,
@@ -169,8 +169,7 @@ void Controller::extendConnectToModel(Model& model)
             _actuatorSet.adoptAndAppend(&actuator);
         }
         return;
-    }
-    else{
+    } else {
          for (int i = 0; i < nac; ++i) {
              bool found = false;
              for (auto& actuator : actuators) {
@@ -200,15 +199,14 @@ void Controller::extendAddToSystem(SimTK::MultibodySystem& system) const
 // makes a request for which actuators a controller will control
 void Controller::setActuators(const Set<Actuator>& actuators)
 {
-    //TODO this needs to be setting a Socket list of Actuators
-
-    // make sure controller does NOT assume ownership
-    _actuatorSet.setSize(0);
-    _actuatorSet.setMemoryOwner(false);
-    //Rebuild consistent set of actuator lists
+    // Rebuild a consistent set of actuator lists.
     updProperty_actuator_list().clear();
-    for (int i = 0; i< actuators.getSize(); i++){
-        addActuator(actuators[i]);
+    updProperty_actuators().clear();
+    for (int i = 0; i < actuators.getSize(); ++i){
+        append_actuators(ControllerActuator());
+        auto& actu = upd_actuators(getProperty_actuators().size() - 1);
+        actu.connectSocket_actuator(actuators[i]);
+        append_actuator_list(actuators[i].getName());
     }
 }
 
@@ -222,6 +220,17 @@ void Controller::addActuator(const Actuator& actuator)
         updProperty_actuator_list().appendValue(actuator.getName());
 }
 
-Set<const Actuator>& Controller::updActuators() { return _actuatorSet; }
+Set<const Actuator>& Controller::updActuators() {
+    return _actuatorSet;
+}
 
-const Set<const Actuator>& Controller::getActuatorSet() const { return _actuatorSet; }
+const Set<const Actuator>& Controller::getActuatorSet() const {
+    Set<const Actuator> actuatorSet;
+
+    for (int i = 0; i < getProperty_actuators().size(); ++i) {
+        const auto& actuator =
+                get_actuators(i).getSocket("actuator").getConnecteeAsObject();
+    }
+
+
+}

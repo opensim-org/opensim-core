@@ -37,6 +37,16 @@ namespace OpenSim {
 class Model;
 class Actuator;
 
+class OSIMSIMULATION_API ControllerActuator : public Component {
+OpenSim_DECLARE_CONCRETE_OBJECT(ControllerActuator, Component);
+
+public:
+    OpenSim_DECLARE_SOCKET(actuator, Actuator,
+        "The actuator that this controller controls.");
+
+    ControllerActuator() = default;
+};
+
 /**
  * Controller is an abstract ModelComponent that defines the interface for   
  * an OpenSim Controller. A controller computes and sets the values of the  
@@ -55,9 +65,9 @@ class OSIMSIMULATION_API Controller : public ModelComponent {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Controller, ModelComponent);
 
 public:
-//==============================================================================
+//=============================================================================
 // PROPERTIES
-//==============================================================================
+//=============================================================================
     /** Controller is enabled (active) by default.
     NOTE: Prior to OpenSim 4.0, this property was named **isDisabled**.
           If **isDisabled** is **true**, **enabled** is **false**.
@@ -69,7 +79,10 @@ public:
     OpenSim_DECLARE_LIST_PROPERTY(actuator_list, std::string,
         "The names of the model actuators that this controller will control."
         "The keyword ALL indicates the controller will control all the "
-        "actuators in the model" );
+        "actuators in the model");
+
+    OpenSim_DECLARE_LIST_PROPERTY(actuators, ControllerActuator,
+        "The actuators controlled by this controller.");
 
 //=============================================================================
 // METHODS
@@ -142,9 +155,6 @@ protected:
 private:
     // number of controls this controller computes 
     int _numControls;
-
-    // the (sub)set of Model actuators that this controller controls */ 
-    Set<const Actuator> _actuatorSet;
 
     // construct and initialize properties
     void constructProperties();

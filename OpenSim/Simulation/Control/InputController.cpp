@@ -41,8 +41,14 @@ InputController::~InputController() = default;
 InputController::InputController(const InputController& other)
         : Controller(other) {}
 
-InputController& InputController::operator=(const InputController& other)
-        : Controller(other) {
+InputController& InputController::operator=(const InputController& other) {
+    // Controller uses a custom copy constructor, so we need to explicitly
+    // call the base class assignment operator.
+    if (this != &other) {
+        Super::operator=(other);
+        m_controlNames = other.m_controlNames;
+        m_controlIndexes = other.m_controlIndexes;
+    }
     return *this;
 }
 
@@ -76,7 +82,7 @@ std::vector<std::string> InputController::getInputChannelAliases() const {
 //=============================================================================
 // MODEL COMPONENT INTERFACE
 //=============================================================================
-void InputController::extendConnectToModel(Model& model) override {
+void InputController::extendConnectToModel(Model& model) {
     Super::extendConnectToModel(model);
 
     // Get a list of the control names and indexes for all actuators in the
@@ -134,7 +140,14 @@ ActuatorInputController::ActuatorInputController(
         const ActuatorInputController& other) : InputController(other) {}
 
 ActuatorInputController& ActuatorInputController::operator=(
-        const ActuatorInputController& other) : InputController(other) {
+        const ActuatorInputController& other) {
+    // Controller uses a custom copy constructor, so we need to explicitly
+    // call the base class assignment operator.
+    if (this != &other) {
+        Super::operator=(other);
+        m_controlIndexesInConnecteeOrder =
+            other.m_controlIndexesInConnecteeOrder;
+    }
     return *this;
 }
 
@@ -148,7 +161,7 @@ ActuatorInputController& ActuatorInputController::operator=(
 // CONTROLLER INTERFACE
 //=============================================================================
 void ActuatorInputController::computeControls(const SimTK::State& s,
-        SimTK::Vector& controls) const override {
+        SimTK::Vector& controls) const {
     const auto& input = getInput<double>("inputs");
     for (int i = 0; i < input.getNumConnectees(); ++i) {
         controls[m_controlIndexesInConnecteeOrder[i]] = input.getValue(s, i);
@@ -158,7 +171,7 @@ void ActuatorInputController::computeControls(const SimTK::State& s,
 //=============================================================================
 // MODEL COMPONENT INTERFACE
 //=============================================================================
-void ActuatorInputController::extendConnectToModel(Model& model) override {
+void ActuatorInputController::extendConnectToModel(Model& model) {
     Super::extendConnectToModel(model);
 
     const auto& controlNames = getControlNames();
