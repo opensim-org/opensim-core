@@ -33,7 +33,7 @@ namespace OpenSim {
 //=============================================================================
 /**
  * Subclass of OrientationsReference that handles live data by providing a DataQueue
- * that allows clients to push data into and allows the InverseKinematicsSolver to 
+ * that allows clients to push data into and allows the InverseKinematicsSolver to
  * draw data from for solving.
  * Ideally this would be templatized, allowing for all Reference classes to leverage it.
  *
@@ -79,19 +79,19 @@ public:
             SimTK::Array_<SimTK::Rotation_<double>>& values) const override;
 
     /** add passed in values to data procesing Queue */
-    void putValues(double time, const SimTK::RowVector_<SimTK::Rotation>& dataRow);
+    void putValues(double time, const SimTK::RowVector_<SimTK::Rotation_<double>>& dataRow);
 
     double getNextValuesAndTime(
             SimTK::Array_<SimTK::Rotation_<double>>& values) override;
 
     virtual bool hasNext() const override { return !_finished; };
 
-    void setFinished(bool finished) { 
+    void setFinished(bool finished) {
         _finished = finished;
     };
 private:
     // Use a specialized data structure for holding the orientation data
-    mutable DataQueue_<SimTK::Rotation> _orientationDataQueue;
+    mutable DataQueue_<SimTK::Rotation_<double>> _orientationDataQueue;
     bool _finished{false};
     //=============================================================================
 };  // END of class BufferedOrientationsReference
