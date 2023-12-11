@@ -33,6 +33,10 @@ class TestOpenSense(unittest.TestCase):
         constraint_var = .0001
         ikSolver = osim.InverseKinematicsSolver(model, mRefs, oRefs, coordinateReferences, constraint_var)
         print("Created InverseKinematicsSolver object..")
+        oRefs = osim.BufferedOrientationsReference()
+        print("Created BufferedOrientationsReference object..")
+        ikSolver = osim.InverseKinematicsSolver(model, mRefs, oRefs, coordinateReferences, constraint_var)
+        print("Created InverseKinematicsSolver object with BufferedOrientationsReference..")
 
     def test_vector_rowvector(self):
         print()
