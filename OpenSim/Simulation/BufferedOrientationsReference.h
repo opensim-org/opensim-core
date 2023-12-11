@@ -79,7 +79,7 @@ public:
             SimTK::Array_<SimTK::Rotation_<double>>& values) const override;
 
     /** add passed in values to data procesing Queue */
-    void putValues(double time, const SimTK::RowVector_<SimTK::Rotation>& dataRow);
+    void putValues(double time, const SimTK::RowVector_<SimTK::Rotation_<double>>& dataRow);
 
     double getNextValuesAndTime(
             SimTK::Array_<SimTK::Rotation_<double>>& values) override;
@@ -91,7 +91,7 @@ public:
     };
 private:
     // Use a specialized data structure for holding the orientation data
-    mutable DataQueue_<SimTK::Rotation> _orientationDataQueue;
+    mutable DataQueue_<SimTK::Rotation_<double>> _orientationDataQueue;
     bool _finished{false};
     //=============================================================================
 };  // END of class BufferedOrientationsReference
