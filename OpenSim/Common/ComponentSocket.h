@@ -145,6 +145,12 @@ public:
         OPENSIM_THROW(Exception, "Not supported for this type of socket.");
     }
 
+    /** Generic access to a connectee of a list socket. Not all sockets support
+     * this method (e.g., the connectee for an Input is not an Object). */
+    virtual const Object& getConnecteeAsObject(unsigned index) const {
+        OPENSIM_THROW(Exception, "Not supported for this type of socket.");
+    }
+
     /** Returns `true` if the socket can connect to the object (i.e. because
         the object is a matching type for the socket) */
     virtual bool canConnectTo(const Object&) const = 0;
@@ -345,19 +351,34 @@ template<class T>
 class Socket : public AbstractSocket {
 public:
 
+    typedef std::vector<SimTK::ReferencePtr<const T>> ConnecteeList;
+
     // default copy constructor
     
     virtual ~Socket() {}
     
     Socket<T>* clone() const override { return new Socket<T>(*this); }
 
-    /** Is the Socket connected to object of type T? */
+    /** Is the Socket connected to object(s) of type T? */
     bool isConnected() const override {
-        return !connectee.empty();
+        return _connectees.size() == getNumConnectees();
     }
 
     const T& getConnecteeAsObject() const override {
-        return connectee.getRef();
+        OPENSIM_THROW_IF(isListSocket(),
+                         Exception,
+                         "Socket<T>::getConnecteeAsObject(): an index must be "
+                         "provided for a list socket.");
+        return getConnecteeAsObject(0);
+    }
+
+    const T& getConnecteeAsObject(unsigned index) const override {
+        OPENSIM_THROW_IF(!isConnected(), Exception,
+            "Socket '{}' not connected.", getName());
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK(index, getNumConnectees(),
+                         "Socket<T>::getConnecteeAsObject()");
+        return _connectees[index].getRef();
     }
 
     /** Temporary access to the connectee for testing purposes. Real usage
@@ -366,6 +387,13 @@ public:
         once it is connected.
     Return a const reference to the object connected to this Socket */
     const T& getConnectee() const;
+
+    /** Temporary access to the connectee for testing purposes. Real usage
+        will be through the Socket (and Input) interfaces.
+        For example, Input should short circuit to its Output's getValue()
+        once it is connected.
+    Return a const reference to the object connected to this Socket */
+    const T& getConnectee(unsigned index) const;
 
     bool canConnectTo(const Object& object) const override {
         return dynamic_cast<const T*>(&object) != nullptr;
@@ -399,7 +427,7 @@ public:
     void finalizeConnection(const Component& root) override;
 
     void disconnect() override {
-        connectee.reset(nullptr);
+        _connectees.clear();
     }
     
     /** Derived classes must satisfy this Interface */
@@ -429,8 +457,7 @@ protected:
            const PropertyIndex& connecteePathIndex,
            const SimTK::Stage& connectAtStage,
            Component& owner) :
-        AbstractSocket(name, connecteePathIndex, connectAtStage, owner),
-        connectee(nullptr) {}
+        AbstractSocket(name, connecteePathIndex, connectAtStage, owner) {}
         
     /** So that Component can construct a Socket. */
     friend Component;
@@ -438,10 +465,21 @@ protected:
 private:
 
     void connectInternal(const T& objT) {
-        connectee = &objT;
+        if (!isListSocket()) {
+            _connectees.clear();
+        }
+        // Check if this Socket is already connected to objT.
+        for (const auto& connectee : _connectees) {
+            OPENSIM_THROW_IF(&objT == &connectee.getRef(), Exception,
+                             "Socket '{}' already has a "
+                             "connectee of type '{}' named '{}'.",
+                             getName(), getConnecteeTypeName(),
+                             objT.getName());
+        }
+        _connectees.emplace_back(objT);
     }
 
-    mutable SimTK::ReferencePtr<const T> connectee;
+    SimTK::ResetOnCopy<ConnecteeList> _connectees;
 }; // END class Socket<T>
             
 
@@ -1009,9 +1047,70 @@ private:
     /** @}                                                               */ \
     /** @cond                                                            */ \
     OpenSim::PropertyIndex PropertyIndex_socket_##cname {                   \
-        this->template constructSocket<T>(#cname,                           \
+        this->template constructSocket<T>(#cname, false,                    \
                 "Path to a Component that satisfies the Socket '"           \
                 #cname "' of type " #T " (description: " comment ").")      \
+    };                                                                      \
+    /** @endcond                                                         */ \
+    /** @name Socket-related functions                                   */ \
+    /** @{                                                               */ \
+    /** Connect the '##cname##' Socket to an object of type T##.         */ \
+    /** Call finalizeConnections() afterwards to update the socket's     */ \
+    /** connectee path property. The reference to the connectee set here */ \
+    /** takes precedence over the connectee path property.               */ \
+    void connectSocket_##cname(const OpenSim::Object& object) {             \
+        this->updSocket(#cname).connect(object);                            \
+    }                                                                       \
+    /** @}                                                               */
+
+/** Create a list socket for this component's dependence other components of the
+ * same type. You must specify the type of the components that can be connected
+ * to this socket. The comment should describe how the connected component
+ * (connectee) is used by this component.
+ *
+ * Here's an example for using this macro:
+ * @code{.cpp}
+ * #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+ * class MyComponent : public Component {
+ * public:
+ *     OpenSim_DECLARE_LIST_SOCKET(frames, PhysicalOffsetFrame,
+ *             "To re-express quantities in different frames.");
+ *     ...
+ * };
+ * @endcode
+ *
+ * @note This macro requires that you have included the header that defines
+ * type `T`, as shown in the example above. We currently do not support
+ * declaring sockets if `T` is only forward-declared.
+ *
+ * @note If you use this macro in your class, then you should *NOT* implement
+ * a custom copy constructor---try to use the default one. The socket will
+ * not get copied properly if you create a custom copy constructor.
+ * We may add support for custom copy constructors with Sockets in the
+ * future.
+ *
+ * @see Component::constructSocket()
+ * @relates OpenSim::Socket */
+#define OpenSim_DECLARE_LIST_SOCKET(cname, T, comment)                      \
+    /** @name Sockets (list)                                             */ \
+    /** @{                                                               */ \
+    /** comment                                                          */ \
+    /** This socket can connect to multiple components of                */ \
+    /** the same type.                                                   */ \
+    /** In an XML file, you can set this Socket's connectee path         */ \
+    /** via the <b>\<socket_##cname\></b> element.                       */ \
+    /** This socket was generated with the                               */ \
+    /** #OpenSim_DECLARE_LIST_SOCKET macro;                              */ \
+    /** see AbstractSocket for more information.                         */ \
+    /** @see connectSocket_##cname##()                                   */ \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
+    /** @}                                                               */ \
+    /** @cond                                                            */ \
+    OpenSim::PropertyIndex PropertyIndex_socket_##cname {                   \
+        this->template constructSocket<T>(#cname, true,                     \
+                "Paths to Components that satisfies the list Socket '"      \
+                #cname "' of type " #T " (description: " comment ")."       \
+                "To specify multiple paths, put spaces between them.")      \
     };                                                                      \
     /** @endcond                                                         */ \
     /** @name Socket-related functions                                   */ \
@@ -1127,7 +1226,7 @@ private:
 OpenSim::PropertyIndex Class::constructSocket_##cname() {                   \
     using T = _socket_##cname##_type;                                       \
     std::string typeStr = T::getClassName();                                \
-    return this->template constructSocket<T>(#cname,                        \
+    return this->template constructSocket<T>(#cname, false,                 \
         "Path to a Component that satisfies the Socket '"                   \
         #cname "' of type " + typeStr + ".");                               \
 }

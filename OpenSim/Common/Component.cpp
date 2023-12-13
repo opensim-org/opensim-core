@@ -166,8 +166,34 @@ void Component::prependComponentPathToConnecteePath(
     const Component& root = subcomponent.getRoot();
     for (auto& comp : subcomponent.updComponentList()) {
         for (auto& it : comp._socketsTable) {
-            if (!root.hasComponent(it.second->getConnecteePath()))
+            // Check if the root has components for all connectee paths or none
+            // of them. If there is a mix, we have reached an internal error
+            // because the socket connectee names are inconsistent.
+            // TODO is this overkill?
+            // TODO is it even possible to have a mix of connectee paths?
+            std::vector<bool> hasComponentConnectees;
+            hasComponentConnectees.reserve(it.second->getNumConnectees());
+            for (int i = 0; i < it.second->getNumConnectees(); ++i) {
+                hasComponentConnectees.push_back(
+                        root.hasComponent(it.second->getConnecteePath(i)));
+            }
+            const bool allTrue = std::all_of(hasComponentConnectees.begin(),
+                                             hasComponentConnectees.end(),
+                                             [](bool b) { return b; });
+            if (!allTrue) {
+                const bool allFalse = std::all_of(hasComponentConnectees.begin(),
+                                                  hasComponentConnectees.end(),
+                                                  [](bool b) { return !b; });
+                OPENSIM_THROW_IF(!allFalse,
+                                 SocketHasInconsistentConnecteePaths,
+                                 it.second->getName(),
+                                 root.getAbsolutePathString());
+
+                // When the root of the subcomponent does not already have a
+                // component for all connectees of this socket, only then
+                // prepend the subcomponent's path to the connectee paths.
                 it.second->prependComponentPathToConnecteePath(compPath);
+            }
         }
         for (auto& it : comp._inputsTable) {
             it.second->prependComponentPathToConnecteePath(compPath);

@@ -174,6 +174,21 @@ public:
     }
 };
 
+class SocketHasInconsistentConnecteePaths : public Exception {
+public:
+    SocketHasInconsistentConnecteePaths(const std::string& file,
+                                        size_t line,
+                                        const std::string& func,
+                                        const std::string& socketName,
+                                        const std::string& thisName) :
+        Exception(file, line, func) {
+        std::string msg = "Socket '" + socketName;
+        msg += "' of Component '" + thisName;
+        msg += "' has inconsistent connectee paths.";
+        addMessage(msg);
+    }
+};
+
 class ComponentHasNoSystem : public Exception {
 public:
     ComponentHasNoSystem(const std::string& file,
@@ -914,6 +929,16 @@ public:
         return socket.getConnectee();
     }
 
+    // TODO
+    template<typename T>
+    const T& getConnectee(const std::string& name, unsigned index) const {
+        // get the Socket and check if it is connected.
+        const Socket<T>& socket = getSocket<T>(name);
+        OPENSIM_THROW_IF_FRMOBJ(!socket.isConnected(), Exception,
+                "Socket '" + name + "' not connected.");
+        return socket.getConnectee(index);
+    }
+
     /** Get the connectee as an Object. This means you will not have
     * access to the methods on the concrete connectee. This is the method you
     * must use in MATLAB to access the connectee.
@@ -943,6 +968,14 @@ public:
         OPENSIM_THROW_IF_FRMOBJ(!socket.isConnected(), Exception,
                 "Socket '" + name + "' not connected.");
         return socket.getConnecteeAsObject();
+    }
+
+    // TODO
+    const Object& getConnectee(const std::string& name, unsigned index) const {
+        const AbstractSocket& socket = getSocket(name);
+        OPENSIM_THROW_IF_FRMOBJ(!socket.isConnected(), Exception,
+                "Socket '" + name + "' not connected.");
+        return socket.getConnecteeAsObject(index);
     }
 
     /** Get an AbstractSocket for the given socket name. This
@@ -2690,6 +2723,7 @@ protected:
      * the top near property declarations):
      *
      *  - #OpenSim_DECLARE_SOCKET
+     *  - #OpenSim_DECLARE_LIST_SOCKET
      *  - #OpenSim_DECLARE_OUTPUT
      *  - #OpenSim_DECLARE_LIST_OUTPUT
      *  - #OpenSim_DECLARE_OUTPUT_FOR_STATE_VARIABLE
@@ -2709,19 +2743,26 @@ protected:
     * this component to store the connectee path for this socket; the
     * propertyComment argument is the comment to use for that Property. */
     template <typename T>
-    PropertyIndex constructSocket(const std::string& name,
-                                     const std::string& propertyComment) {
+    PropertyIndex constructSocket(const std::string& name, bool isList,
+                                  const std::string& propertyComment) {
         OPENSIM_THROW_IF(_socketsTable.count(name), Exception,
             getConcreteClassName() + " already has a socket named '"
             + name + "'.");
 
+        PropertyIndex propIndex;
         // This property is accessed / edited by the Socket class. It is
         // not easily accessible to users.
         // TODO does putting the addProperty here break the ability to
         // create a custom-copy-ctor version of all of this?
         // TODO property type should be ComponentPath or something like that.
-        PropertyIndex propIndex = this->template addProperty<std::string>(
-                "socket_" + name , propertyComment, "");
+        if (isList) {
+            propIndex = this->template addListProperty<std::string>(
+                    "socket_" + name, propertyComment,
+                    0, std::numeric_limits<int>::max());
+        } else {
+            propIndex = this->template addProperty<std::string>(
+                    "socket_" + name , propertyComment, "");
+        }
         // We must create the Property first: the Socket needs the property's
         // index in order to access the property later on.
         _socketsTable[name].reset(
@@ -3332,6 +3373,19 @@ public:
 
 template<class C>
 const C& Socket<C>::getConnectee() const {
+    if (isListSocket()) {
+        std::string msg = "Socket " + getName() + " of type " +
+                          C::getClassName() + " in " +
+                          getOwner().getAbsolutePathString() + " of type " +
+                          getOwner().getConcreteClassName() + " is a list " +
+                          "socket. An index must be provided.";
+        OPENSIM_THROW(Exception, msg);
+    }
+    return getConnectee(0);
+}
+
+template<class C>
+const C& Socket<C>::getConnectee(unsigned index) const {
     if (!isConnected()) {
         std::string msg = "Socket " + getName() + " of type " +
                           C::getClassName() + " in " +
@@ -3339,7 +3393,7 @@ const C& Socket<C>::getConnectee() const {
                           getOwner().getConcreteClassName() + " is not connected.";
         OPENSIM_THROW(Exception, msg);
     }
-    return connectee.getRef();
+    return _connectees[index].getRef();
 }
 
 template<class C>
@@ -3357,40 +3411,51 @@ void Socket<C>::finalizeConnection(const Component& root) {
 
     // If the reference to the connectee is set, use that. Otherwise, use the
     // connectee path property.
-    if (isConnected()) {
-        const auto& comp = *connectee;
-        const auto& rootOfConnectee = comp.getRoot();
-        const auto& myRoot = getOwner().getRoot();
-        OPENSIM_THROW_IF(&myRoot != &rootOfConnectee, Exception,
-            "Socket<" + getConnecteeTypeName() + "> '" + getName() +
-            "' in " + getOwner().getConcreteClassName() + " at " +
-            getOwner().getAbsolutePathString() + " cannot connect to " +
-            comp.getConcreteClassName() + " at " +
-            comp.getAbsolutePathString() + ": components do not have the same "
-            "root component. Did you intend to add '" +
-            rootOfConnectee.getName() + "' to '" + myRoot.getName() + "'?");
+    if (!_connectees.empty()) {
+        clearConnecteePath();
+        for (auto& connectee : _connectees) {
+            const auto& comp = *connectee;
+            const auto& rootOfConnectee = comp.getRoot();
+            const auto& myRoot = getOwner().getRoot();
+            OPENSIM_THROW_IF(&myRoot != &rootOfConnectee, Exception,
+                "Socket<" + getConnecteeTypeName() + "> '" + getName() +
+                "' in " + getOwner().getConcreteClassName() + " at " +
+                getOwner().getAbsolutePathString() + " cannot connect to " +
+                comp.getConcreteClassName() + " at " +
+                comp.getAbsolutePathString() + ": components do not have the same "
+                "root component. Did you intend to add '" +
+                rootOfConnectee.getName() + "' to '" + myRoot.getName() + "'?");
 
-        ComponentPath connecteePath = connectee->getRelativePath(getOwner());
-        // If the relative path starts with ".." then use an absolute path
-        // instead.
-        if (connecteePath.getNumPathLevels() > 1 &&
-                connecteePath.getSubcomponentNameAtLevel(0) == "..")
-            connecteePath = connectee->getAbsolutePath();
-        updConnecteePathProp().setValue(0, connecteePath.toString());
+            ComponentPath connecteePath = connectee->getRelativePath(getOwner());
+            // If the relative path starts with ".." then use an absolute path
+            // instead.
+            if (connecteePath.getNumPathLevels() > 1 &&
+                    connecteePath.getSubcomponentNameAtLevel(0) == "..")
+                connecteePath = connectee->getAbsolutePath();
+
+            if (isListSocket()) {
+                updConnecteePathProp().appendValue(connecteePath.toString());
+            } else {
+                updConnecteePathProp().setValue(connecteePath.toString());
+            }
+        }
 
     } else {
-        const auto connecteePath = getConnecteePath();
-        OPENSIM_THROW_IF(connecteePath.empty(), ConnecteeNotSpecified,
-                        *this, getOwner());
+        if (!isListSocket() && getConnecteePath().empty()) return;
+        for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
+            const auto connecteePath = getConnecteePath(ix);
+            OPENSIM_THROW_IF(connecteePath.empty(), ConnecteeNotSpecified,
+                             *this, getOwner());
+            ComponentPath path(connecteePath);
+            const C* comp = nullptr;
+            if (path.isAbsolute()) {
+                comp = &root.template getComponent<C>(path);
+            } else {
+                comp = &getOwner().template getComponent<C>(path);
+            }
+            connectInternal(*comp);
 
-        ComponentPath path(connecteePath);
-        const C* comp = nullptr;
-        if (path.isAbsolute()) {
-            comp = &root.template getComponent<C>(path);
-        } else {
-            comp = &getOwner().template getComponent<C>(path);
         }
-        connectInternal(*comp);
     }
 }
 
