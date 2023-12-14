@@ -408,10 +408,10 @@ public:
     //=============================================================================
     OpenSim_DECLARE_PROPERTY(Foo1, Foo, "1st Foo of CompoundFoo");
     OpenSim_DECLARE_PROPERTY(Foo2, Foo, "2nd Foo of CompoundFoo");
-    OpenSim_DECLARE_PROPERTY(Foo3, Foo, "3rd Foo of CompoundFoo")
+    OpenSim_DECLARE_PROPERTY(Foo3, Foo, "3rd Foo of CompoundFoo");
     OpenSim_DECLARE_PROPERTY(scale1, double, "Scale factor for 1st Foo");
     OpenSim_DECLARE_PROPERTY(scale2, double, "Scale factor for 2nd Foo");
-    OpenSim_DECLARE_PROPERTY(scale3, double, "Scale factor for 3rd Foo")
+    OpenSim_DECLARE_PROPERTY(scale3, double, "Scale factor for 3rd Foo");
 
     CompoundFoo() : Foo() {
         constructProperties();
@@ -1179,11 +1179,11 @@ TEST_CASE("Component Interface Component Path Names")
     top.printOutputInfo();
 
     std::string fFoo1AbsPath =
-     F->getComponent<Foo>("Foo1").getAbsolutePathString();
+        F->getComponent<Foo>("Foo1").getAbsolutePathString();
     std::string aBar2AbsPath =
-     A->getComponent<Bar>("Bar2").getAbsolutePathString();
+        A->getComponent<Bar>("Bar2").getAbsolutePathString();
     auto bar2FromBarFoo =
-     bar2->getRelativePathString(F->getComponent<Foo>("Foo1"));
+        bar2->getRelativePathString(F->getComponent<Foo>("Foo1"));
 
     // Verify deep copy of subcomponents
     const Foo& foo1inA = top.getComponent<Foo>("/A/Foo1");
