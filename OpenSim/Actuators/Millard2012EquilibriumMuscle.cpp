@@ -225,7 +225,7 @@ DampedFiberVelocityCalculationResult calcDampedNormFiberVelocity(
     @param fiso the maximum isometric force the fiber can generate
     @param a activation
     @param fv the fiber force-velocity multiplier
-    @param fpe_dlceN the fiber force-length multiplier derivative
+    @param dfpe_dlceN the fiber force-length multiplier derivative
     @param dfal_dlceN the fiber active-force-length multiplier derivative
     @param optFibLen the optimal fiber length
 */
@@ -1138,13 +1138,9 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
             mvi.userDefinedVelocityExtras[MVIIsFiberStateClamped];
 
         // Get the properties of this muscle.
-        double tendonSlackLen = getTendonSlackLength();
         double optFiberLen    = getOptimalFiberLength();
         double fiso           = getMaxIsometricForce();
         double beta           = getFiberDamping();
-
-        //double penHeight      = penMdl.getParallelogramHeight();
-        const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve();
 
         // Compute dynamic quantities.
         double a = SimTK::NaN;
