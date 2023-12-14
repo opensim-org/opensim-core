@@ -361,7 +361,7 @@ public:
 
     /** Is the Socket connected to object(s) of type T? */
     bool isConnected() const override {
-        return _connectees.size() == getNumConnectees();
+        return !_connectees.empty();
     }
 
     const T& getConnecteeAsObject() const override {

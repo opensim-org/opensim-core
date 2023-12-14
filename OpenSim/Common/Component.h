@@ -939,7 +939,7 @@ public:
     * available in scripting. If you want generic access to the connectee as an
     * Object, use the non-templated version.
     *
-    * @tparam T         the type of the Connectee (e.g., PhysicalFrame).
+    * @tparam T         the type of the Connectee (e.g., Actuator).
     * @param name       the name of the socket
     * @param index      the index of the connectee
     * @return T         const reference to object that satisfies
@@ -3455,7 +3455,7 @@ void Socket<C>::finalizeConnection(const Component& root) {
 
     // If the reference to the connectee is set, use that. Otherwise, use the
     // connectee path property.
-    if (!_connectees.empty()) {
+    if (isConnected()) {
         clearConnecteePath();
         for (auto& connectee : _connectees) {
             const auto& comp = *connectee;
