@@ -381,18 +381,12 @@ public:
         return _connectees[index].getRef();
     }
 
-    /** Temporary access to the connectee for testing purposes. Real usage
-        will be through the Socket (and Input) interfaces. 
-        For example, Input should short circuit to its Output's getValue()
-        once it is connected.
-    Return a const reference to the object connected to this Socket */
+    /** Return a const reference to the object connected to this Socket. Only
+     valid for non-list Sockets. */
     const T& getConnectee() const;
 
-    /** Temporary access to the connectee for testing purposes. Real usage
-        will be through the Socket (and Input) interfaces.
-        For example, Input should short circuit to its Output's getValue()
-        once it is connected.
-    Return a const reference to the object connected to this Socket */
+    /** Return a const reference to the object connected to this Socket at the
+     provided index. */
     const T& getConnectee(unsigned index) const;
 
     bool canConnectTo(const Object& object) const override {

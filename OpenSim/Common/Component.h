@@ -929,7 +929,28 @@ public:
         return socket.getConnectee();
     }
 
-    // TODO
+    /**
+    * Get the "connectee" object at the provided index that the Component's
+    * Socket is bound to. Guaranteed to be valid only after the Component
+    * has been connected (that is connect() has been invoked).
+    * If the Socket has not been connected, an exception is thrown.
+    *
+    * This method is for getting the concrete connectee object, and is not
+    * available in scripting. If you want generic access to the connectee as an
+    * Object, use the non-templated version.
+    *
+    * @tparam T         the type of the Connectee (e.g., PhysicalFrame).
+    * @param name       the name of the socket
+    * @param index      the index of the connectee
+    * @return T         const reference to object that satisfies
+    *                   the Socket
+    *
+    * Example:
+    * @code
+    * const Actuator& actu = controller.getConnectee<Actuator>("actuators", 1);
+    * actu.getDefaultControls();
+    * @endcode
+    */
     template<typename T>
     const T& getConnectee(const std::string& name, unsigned index) const {
         // get the Socket and check if it is connected.
@@ -970,7 +991,30 @@ public:
         return socket.getConnecteeAsObject();
     }
 
-    // TODO
+    /** Get the connectee at the provided index as an Object. This means you
+    * will not have access to the methods on the concrete connectee. This is the
+    * method you must use in MATLAB to access the connectee.
+    *
+    * Example:
+    * @code{.cpp}
+    * const Object& obj = controller.getConnectee("actuators", 1);
+    * obj.getName(); // method on Object works.
+    * obj.getDefaultControls(); // error: not available.
+    * @endcode
+    *
+    * In MATLAB, if you want the concrete type, you need to downcast the
+    * Object. Here is an example where you know the "actuators" are Actuators:
+    * @code
+    * actu = controller.getConnectee('actuators', 1);
+    * controls = Actuator.safeDownCast(f).getDefaultControls();
+    * @endcode
+    *
+    * Exception: in Python, you will get the concrete type (in most cases):
+    * @code{.py}
+    * actu = controller.getConnectee("actuators", 1);
+    * controls = actu.getDefaultControls() # works (if 'actu' is an Actuator)
+    * @endcode
+    */
     const Object& getConnectee(const std::string& name, unsigned index) const {
         const AbstractSocket& socket = getSocket(name);
         OPENSIM_THROW_IF_FRMOBJ(!socket.isConnected(), Exception,

@@ -1175,38 +1175,38 @@ TEST_CASE("Component Interface Component Path Names")
     F->setName("F");
     top.add(F);
 
-     top.printSubcomponentInfo();
-     top.printOutputInfo();
+    top.printSubcomponentInfo();
+    top.printOutputInfo();
 
-     std::string fFoo1AbsPath =
-         F->getComponent<Foo>("Foo1").getAbsolutePathString();
-     std::string aBar2AbsPath =
-         A->getComponent<Bar>("Bar2").getAbsolutePathString();
-     auto bar2FromBarFoo =
-         bar2->getRelativePathString(F->getComponent<Foo>("Foo1"));
+    std::string fFoo1AbsPath =
+     F->getComponent<Foo>("Foo1").getAbsolutePathString();
+    std::string aBar2AbsPath =
+     A->getComponent<Bar>("Bar2").getAbsolutePathString();
+    auto bar2FromBarFoo =
+     bar2->getRelativePathString(F->getComponent<Foo>("Foo1"));
 
-     // Verify deep copy of subcomponents
-     const Foo& foo1inA = top.getComponent<Foo>("/A/Foo1");
-     const Foo& foo1inF = top.getComponent<Foo>("/F/Foo1");
-     ASSERT(&foo1inA != &foo1inF);
+    // Verify deep copy of subcomponents
+    const Foo& foo1inA = top.getComponent<Foo>("/A/Foo1");
+    const Foo& foo1inF = top.getComponent<Foo>("/F/Foo1");
+    ASSERT(&foo1inA != &foo1inF);
 
-     // double check that we have the original Foo foo1 in A
-     ASSERT(&foo1inA == foo1);
+    // double check that we have the original Foo foo1 in A
+    ASSERT(&foo1inA == foo1);
 
-     // This bar2 that belongs to A and connects the two foo2s
-     bar2->connectSocket_parentFoo(*foo2);
-     bar2->connectSocket_childFoo(F->getComponent<Foo>("Foo2"));
+    // This bar2 that belongs to A and connects the two foo2s
+    bar2->connectSocket_parentFoo(*foo2);
+    bar2->connectSocket_childFoo(F->getComponent<Foo>("Foo2"));
 
-     // auto& foo2inF = bar2->getComponent<Foo>("../../F/Foo2");
+    // auto& foo2inF = bar2->getComponent<Foo>("../../F/Foo2");
 
-     // now wire up bar2 that belongs to F and connect the
-     // two foo1s one in A and other F
-     auto& fbar2 = F->updComponent<Bar>("Bar2");
-     ASSERT(&fbar2 != bar2);
+    // now wire up bar2 that belongs to F and connect the
+    // two foo1s one in A and other F
+    auto& fbar2 = F->updComponent<Bar>("Bar2");
+    ASSERT(&fbar2 != bar2);
 
-     fbar2.connectSocket_parentFoo(*foo1);
-     fbar2.updSocket<Foo>("childFoo")
-             .setConnecteePath("../Foo1");
+    fbar2.connectSocket_parentFoo(*foo1);
+    fbar2.updSocket<Foo>("childFoo")
+         .setConnecteePath("../Foo1");
 
     top.printSubcomponentInfo();
     top.printOutputInfo();
