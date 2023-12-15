@@ -214,7 +214,8 @@ void FiberForceLengthCurve::setOptionalProperties(double aStiffnessAtLowForce,
 //==============================================================================
 double FiberForceLengthCurve::calcValue(double normFiberLength) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "FiberForceLengthCurve: Curve is not up-to-date with its properties");
     return m_curve.calcValue(normFiberLength);
 }
@@ -222,8 +223,8 @@ double FiberForceLengthCurve::calcValue(double normFiberLength) const
 SmoothSegmentedFunction::ValueAndDerivative FiberForceLengthCurve::
     calcValueAndDerivative(double normFiberLength) const
 {
-    SimTK_ASSERT(
-        isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "FiberForceLengthCurve: Curve is not up-to-date with its properties");
     return m_curve.calcValueAndFirstDerivative(normFiberLength);
 }
@@ -231,7 +232,8 @@ SmoothSegmentedFunction::ValueAndDerivative FiberForceLengthCurve::
 double FiberForceLengthCurve::calcDerivative(double normFiberLength,
                                              int order) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "FiberForceLengthCurve: Curve is not up-to-date with its properties");
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2,
         "FiberForceLengthCurve::calcDerivative",
@@ -249,7 +251,8 @@ double FiberForceLengthCurve::
 
 double FiberForceLengthCurve::calcIntegral(double normFiberLength) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "FiberForceLengthCurve: Curve is not up-to-date with its properties");
 
     if(!m_curve.isIntegralAvailable()) {
@@ -263,7 +266,8 @@ double FiberForceLengthCurve::calcIntegral(double normFiberLength) const
 
 SimTK::Vec2 FiberForceLengthCurve::getCurveDomain() const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "FiberForceLengthCurve: Curve is not up-to-date with its properties");
     return m_curve.getCurveDomain();
 }

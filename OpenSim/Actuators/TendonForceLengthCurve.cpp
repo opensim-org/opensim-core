@@ -218,7 +218,8 @@ SimTK::Function* TendonForceLengthCurve::createSimTKFunction() const
 //==============================================================================
 double TendonForceLengthCurve::calcValue(double aNormLength) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "TendonForceLengthCurve: Tendon is not up-to-date with its properties");
     return m_curve.calcValue(aNormLength);
 }
@@ -226,8 +227,8 @@ double TendonForceLengthCurve::calcValue(double aNormLength) const
 SmoothSegmentedFunction::ValueAndDerivative TendonForceLengthCurve::
     calcValueAndDerivative(double aNormLength) const
 {
-    SimTK_ASSERT(
-        isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "TendonForceLengthCurve: Tendon is not up-to-date with its properties");
     return m_curve.calcValueAndFirstDerivative(aNormLength);
 }
@@ -235,7 +236,8 @@ SmoothSegmentedFunction::ValueAndDerivative TendonForceLengthCurve::
 double TendonForceLengthCurve::calcDerivative(double aNormLength,
                                               int order) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "TendonForceLengthCurve: Tendon is not up-to-date with its properties");
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2,
         "TendonForceLengthCurve::calcDerivative",
@@ -253,7 +255,8 @@ double TendonForceLengthCurve::
 
 double TendonForceLengthCurve::calcIntegral(double aNormLength) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "TendonForceLengthCurve: Tendon is not up-to-date with its properties");
 
     if (!m_curve.isIntegralAvailable()) {
@@ -267,7 +270,8 @@ double TendonForceLengthCurve::calcIntegral(double aNormLength) const
 
 SimTK::Vec2 TendonForceLengthCurve::getCurveDomain() const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "TendonForceLengthCurve: Tendon is not up-to-date with its properties");
     return m_curve.getCurveDomain();
 }

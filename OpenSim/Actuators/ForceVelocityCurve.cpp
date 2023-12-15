@@ -171,7 +171,8 @@ void ForceVelocityCurve::setEccentricCurviness(double aEccentricCurviness)
 //==============================================================================
 double ForceVelocityCurve::calcValue(double normFiberVelocity) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "ForceVelocityCurve: Curve is not up-to-date with its properties");
     return m_curve.calcValue(normFiberVelocity);
 }
@@ -179,8 +180,8 @@ double ForceVelocityCurve::calcValue(double normFiberVelocity) const
 SmoothSegmentedFunction::ValueAndDerivative ForceVelocityCurve::
     calcValueAndDerivative(double normFiberVelocity) const
 {
-    SimTK_ASSERT(
-        isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "ForceVelocityCurve: Curve is not up-to-date with its properties");
     return m_curve.calcValueAndFirstDerivative(normFiberVelocity);
 }
@@ -188,7 +189,8 @@ SmoothSegmentedFunction::ValueAndDerivative ForceVelocityCurve::
 double ForceVelocityCurve::calcDerivative(double normFiberVelocity,
                                           int order) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "ForceVelocityCurve: Curve is not up-to-date with its properties");
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2,
         "ForceVelocityCurve::calcDerivative",
@@ -206,7 +208,8 @@ double ForceVelocityCurve::
 
 SimTK::Vec2 ForceVelocityCurve::getCurveDomain() const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "ForceVelocityCurve: Curve is not up-to-date with its properties");
     return m_curve.getCurveDomain();
 }
