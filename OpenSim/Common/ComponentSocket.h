@@ -387,7 +387,7 @@ public:
 
     /** Return a const reference to the object connected to this Socket at the
      provided index. */
-    const T& getConnectee(unsigned index) const;
+    const T& getConnectee(int index) const;
 
     bool canConnectTo(const Object& object) const override {
         return dynamic_cast<const T*>(&object) != nullptr;

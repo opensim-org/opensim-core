@@ -174,21 +174,6 @@ public:
     }
 };
 
-class SocketHasInconsistentConnecteePaths : public Exception {
-public:
-    SocketHasInconsistentConnecteePaths(const std::string& file,
-                                        size_t line,
-                                        const std::string& func,
-                                        const std::string& socketName,
-                                        const std::string& thisName) :
-        Exception(file, line, func) {
-        std::string msg = "Socket '" + socketName;
-        msg += "' of Component '" + thisName;
-        msg += "' has inconsistent connectee paths.";
-        addMessage(msg);
-    }
-};
-
 class ComponentHasNoSystem : public Exception {
 public:
     ComponentHasNoSystem(const std::string& file,
@@ -924,8 +909,7 @@ public:
     const T& getConnectee(const std::string& name) const {
         // get the Socket and check if it is connected.
         const Socket<T>& socket = getSocket<T>(name);
-        OPENSIM_THROW_IF_FRMOBJ(!socket.isConnected(), Exception,
-                "Socket '" + name + "' not connected.");
+        OPENSIM_ASSERT_FRMOBJ(socket.isConnected());
         return socket.getConnectee();
     }
 
@@ -955,8 +939,7 @@ public:
     const T& getConnectee(const std::string& name, unsigned index) const {
         // get the Socket and check if it is connected.
         const Socket<T>& socket = getSocket<T>(name);
-        OPENSIM_THROW_IF_FRMOBJ(!socket.isConnected(), Exception,
-                "Socket '" + name + "' not connected.");
+        OPENSIM_ASSERT_FRMOBJ(socket.isConnected());
         return socket.getConnectee(index);
     }
 
@@ -986,8 +969,7 @@ public:
     */
     const Object& getConnectee(const std::string& name) const {
         const AbstractSocket& socket = getSocket(name);
-        OPENSIM_THROW_IF_FRMOBJ(!socket.isConnected(), Exception,
-                "Socket '" + name + "' not connected.");
+        OPENSIM_ASSERT_FRMOBJ(socket.isConnected());
         return socket.getConnecteeAsObject();
     }
 
@@ -1017,8 +999,7 @@ public:
     */
     const Object& getConnectee(const std::string& name, unsigned index) const {
         const AbstractSocket& socket = getSocket(name);
-        OPENSIM_THROW_IF_FRMOBJ(!socket.isConnected(), Exception,
-                "Socket '" + name + "' not connected.");
+        OPENSIM_ASSERT_FRMOBJ(socket.isConnected());
         return socket.getConnecteeAsObject(index);
     }
 
@@ -3429,7 +3410,7 @@ const C& Socket<C>::getConnectee() const {
 }
 
 template<class C>
-const C& Socket<C>::getConnectee(unsigned index) const {
+const C& Socket<C>::getConnectee(int index) const {
     if (!isConnected()) {
         std::string msg = "Socket " + getName() + " of type " +
                           C::getClassName() + " in " +
@@ -3437,6 +3418,9 @@ const C& Socket<C>::getConnectee(unsigned index) const {
                           getOwner().getConcreteClassName() + " is not connected.";
         OPENSIM_THROW(Exception, msg);
     }
+    using SimTK::isIndexInRange;
+    SimTK_INDEXCHECK(index, getNumConnectees(),
+                     "Socket<T>::getConnectee()");
     return _connectees[index].getRef();
 }
 
@@ -3486,8 +3470,8 @@ void Socket<C>::finalizeConnection(const Component& root) {
 
     } else {
         if (!isListSocket() && getConnecteePath().empty()) return;
-        for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
-            const auto connecteePath = getConnecteePath(ix);
+        for (int i = 0; i < getNumConnectees(); ++i) {
+            const auto connecteePath = getConnecteePath(i);
             OPENSIM_THROW_IF(connecteePath.empty(), ConnecteeNotSpecified,
                              *this, getOwner());
             ComponentPath path(connecteePath);
@@ -3594,8 +3578,8 @@ void Input<T>::finalizeConnection(const Component& root) {
     } else {
         if (!isListSocket() && getConnecteePath().empty()) return;
         std::string compPathStr, outputName, channelName, alias;
-        for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
-            parseConnecteePath(getConnecteePath(ix),
+        for (int i = 0; i < getNumConnectees(); ++i) {
+            parseConnecteePath(getConnecteePath(i),
                                compPathStr, outputName, channelName, alias);
             ComponentPath compPath(compPathStr);
             const AbstractOutput* output = nullptr;

@@ -6,8 +6,8 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
-v4.5.1
-======
+v4.6
+====
 - Added support for list `Socket`s via the macro `OpenSim_DECLARE_LIST_SOCKET`. Accordingly, `Component` and Socket have 
 new `getConnectee` overloads that take an index to a desired object in the list `Socket` (#3652).
 
