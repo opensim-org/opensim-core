@@ -3461,7 +3461,6 @@ void Socket<C>::finalizeConnection(const Component& root) {
                     connecteePath.getSubcomponentNameAtLevel(0) == "..")
                 connecteePath = connectee->getAbsolutePath();
 
-            // appendConnecteePath(connecteePath.toString());
             if (isListSocket()) {
                 updConnecteePathProp().appendValue(connecteePath.toString());
             } else {
@@ -3471,7 +3470,7 @@ void Socket<C>::finalizeConnection(const Component& root) {
 
     } else {
         if (!isListSocket() && getConnecteePath().empty()) return;
-        for (int i = 0; i < getNumConnectees(); ++i) {
+        for (int i = 0; i < static_cast<int>(getNumConnectees()); ++i) {
             const auto connecteePath = getConnecteePath(i);
             OPENSIM_THROW_IF(connecteePath.empty(), ConnecteeNotSpecified,
                              *this, getOwner());
@@ -3570,7 +3569,7 @@ void Input<T>::finalizeConnection(const Component& root) {
                                                 chan->getChannelName() :
                                                 "",
                                                 _aliases[i]);
-            // appendConnecteePath(pathStr);
+
             if (isListSocket())
                 updConnecteePathProp().appendValue(pathStr);
             else
@@ -3579,7 +3578,7 @@ void Input<T>::finalizeConnection(const Component& root) {
     } else {
         if (!isListSocket() && getConnecteePath().empty()) return;
         std::string compPathStr, outputName, channelName, alias;
-        for (int i = 0; i < getNumConnectees(); ++i) {
+        for (int i = 0; i < static_cast<int>(getNumConnectees()); ++i) {
             parseConnecteePath(getConnecteePath(i),
                                compPathStr, outputName, channelName, alias);
             ComponentPath compPath(compPathStr);

@@ -1022,8 +1022,6 @@ private:
  * @note If you use this macro in your class, then you should *NOT* implement
  * a custom copy constructor---try to use the default one. The socket will
  * not get copied properly if you create a custom copy constructor.
- * We may add support for custom copy constructors with Sockets in the
- * future.
  *
  * @see Component::constructSocket()
  * @relates OpenSim::Socket */
@@ -1080,8 +1078,6 @@ private:
  * @note If you use this macro in your class, then you should *NOT* implement
  * a custom copy constructor---try to use the default one. The socket will
  * not get copied properly if you create a custom copy constructor.
- * We may add support for custom copy constructors with Sockets in the
- * future.
  *
  * @see Component::constructSocket()
  * @relates OpenSim::Socket */
@@ -1162,8 +1158,6 @@ private:
  * @note If you use this macro in your class, then you should *NOT* implement
  * a custom copy constructor---try to use the default one. The Socket will
  * not get copied properly if you create a custom copy constructor.
- * We may add support for custom copy constructors with Sockets in the
- * future.
  *
  * @see Component::constructSocket()
  * @relates OpenSim::Socket */
@@ -1250,7 +1244,6 @@ OpenSim::PropertyIndex Class::constructSocket_##cname() {                   \
  * @note If you use this macro in your class, then you should *NOT* implement
  * a custom copy constructor---try to use the default one. The Input will
  * not get copied properly if you create a custom copy constructor.
- * We may add support for custom copy constructors with Inputs in the future.
  *
  * @see Component::constructInput()
  * @relates OpenSim::Input */
@@ -1316,7 +1309,6 @@ OpenSim::PropertyIndex Class::constructSocket_##cname() {                   \
  * @note If you use this macro in your class, then you should *NOT* implement
  * a custom copy constructor---try to use the default one. The Input will
  * not get copied properly if you create a custom copy constructor.
- * We may add support for custom copy constructors with Inputs in the future.
  *
  * @see Component::constructInput()
  * @relates OpenSim::Input */
