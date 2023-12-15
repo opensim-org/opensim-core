@@ -33,11 +33,11 @@ const string Millard2012EquilibriumMuscle::
     STATE_FIBER_LENGTH_NAME = "fiber_length";
 const double MIN_NONZERO_DAMPING_COEFFICIENT = 0.001;
 
-const static int MLIFiberForceLengthCurveDerivative  = 0;
-const static int MLIActiveForceLengthCurveDerivative = 1;
-const static int MVIIsFiberStateClamped         = 0;
-const static int MVITendonForceLengthMultiplier = 1;
-const static int MVITendonStiffness             = 2;
+static constexpr int MLIFiberForceLengthCurveDerivative  = 0;
+static constexpr int MLIActiveForceLengthCurveDerivative = 1;
+static constexpr int MVIIsFiberStateClamped         = 0;
+static constexpr int MVITendonForceLengthMultiplier = 1;
+static constexpr int MVITendonStiffness             = 2;
 
 //==============================================================================
 // HELPER FUNCTIONS
