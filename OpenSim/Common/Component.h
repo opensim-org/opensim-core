@@ -3461,6 +3461,7 @@ void Socket<C>::finalizeConnection(const Component& root) {
                     connecteePath.getSubcomponentNameAtLevel(0) == "..")
                 connecteePath = connectee->getAbsolutePath();
 
+            // appendConnecteePath(connecteePath.toString());
             if (isListSocket()) {
                 updConnecteePathProp().appendValue(connecteePath.toString());
             } else {
@@ -3569,7 +3570,7 @@ void Input<T>::finalizeConnection(const Component& root) {
                                                 chan->getChannelName() :
                                                 "",
                                                 _aliases[i]);
-
+            // appendConnecteePath(pathStr);
             if (isListSocket())
                 updConnecteePathProp().appendValue(pathStr);
             else

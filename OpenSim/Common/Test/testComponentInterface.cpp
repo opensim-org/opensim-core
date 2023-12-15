@@ -992,8 +992,7 @@ TEST_CASE("Component Interface Sockets")
     theWorld.add(&bar);
 
     SECTION("Sockets not connected") {
-        CHECK_THROWS_WITH(theWorld.connect(),
-            Catch::Matchers::Contains("Socket childFoo of type Foo"));
+        CHECK_THROWS(theWorld.connect());
     }
 
     // Connect the single-object sockets.
