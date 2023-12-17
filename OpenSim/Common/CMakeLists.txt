@@ -17,7 +17,7 @@ OpenSimAddLibrary(
     AUTHORS "Clay_Anderson-Ayman_Habib-Peter_Loan"
     # Clients of osimCommon need not link to ezc3d.
     LINKLIBS PUBLIC ${Simbody_LIBRARIES} spdlog::spdlog 
-             PRIVATE ${ezc3d_LIBRARY}
+             PRIVATE ${ezc3d_LIBRARY} catch2::Catch2WithMain
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
     TESTDIRS "Test"
