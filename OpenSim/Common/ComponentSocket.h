@@ -72,9 +72,9 @@ public:
  * (connectee) until it is disconnected.
  *
  * For example, a Joint has two Sockets for the parent and child Bodies that
- * it joins. The type for the socket is a PhysicalFrame and any attempt to 
+ * it joins. The type for the socket is a PhysicalFrame and any attempt to
  * connect to a non-Body (or frame rigidly attached to a Body) will throw an
- * exception. The connectAt Stage is Topology. That is, the Joint's connection 
+ * exception. The connectAt Stage is Topology. That is, the Joint's connection
  * to a Body must be performed at the Topology system stage, and any attempt to
  * change the connection status will invalidate that Stage and above.
  *
@@ -141,13 +141,7 @@ public:
 
     /** Generic access to the connectee. Not all sockets support this method
      * (e.g., the connectee for an Input is not an Object). */
-    virtual const Object& getConnecteeAsObject() const {
-        OPENSIM_THROW(Exception, "Not supported for this type of socket.");
-    }
-
-    /** Generic access to a connectee of a list socket. Not all sockets support
-     * this method (e.g., the connectee for an Input is not an Object). */
-    virtual const Object& getConnecteeAsObject(unsigned index) const {
+    virtual const Object& getConnecteeAsObject(int index=-1) const {
         OPENSIM_THROW(Exception, "Not supported for this type of socket.");
     }
 
@@ -192,48 +186,51 @@ public:
      * connected using the connectee path.
      *
      * It is preferable to use connect() instead of this function. */
-    void setConnecteePath(const std::string& name) {
-        OPENSIM_THROW_IF(_isList,
-                         Exception,
-                         "An index must be provided for a list Socket.");
-        setConnecteePath(name, 0);
+    void setConnecteePath(const std::string& path, int index = -1) {
+        if (index < 0) {
+            if (!isListSocket()) { index = 0; }
+            else {
+                OPENSIM_THROW(Exception,
+                        "AbstractSocket::setConnecteePath(): an index must be "
+                        "provided for a socket that takes a list "
+                        "of values.");
+            }
+        }
+        setConnecteePathInternal(path, index);
     }
 
-    /** %Set connectee path of a connectee among a list of connectees. This
-     * function is used if this socket is a list socket. If a connectee
-     * reference is set (with connect()) the connectee path is ignored; call
-     * disconnect() if you want the socket to be connected using the connectee
-     * name.
-     *
-     * It is preferable to use connect() instead of this function. */
-    void setConnecteePath(const std::string& name, unsigned ix) {
-        using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
-                                "AbstractSocket::setConnecteePath()");
-        updConnecteePathProp().setValue(ix, name);
+    /** Get the connectee path. */
+    const std::string& getConnecteePath(int index = -1) const {
+        if (index < 0) {
+            if (!isListSocket()) { index = 0; }
+            else {
+                OPENSIM_THROW(Exception,
+                        "AbstractSocket::getConnecteePath(): an index must be "
+                        "provided for a socket that takes a list "
+                        "of values.");
+            }
+        }
+        return getConnecteePathInternal(index);
     }
 
-    /** Get connectee path. This function can only be used if this socket is
-    not a list socket.                                                     */
-    const std::string& getConnecteePath() const {
-        OPENSIM_THROW_IF(_isList,
-                         Exception,
-                         "An index must be provided for a list Socket.");
-        return getConnecteePath(0);
-    }
-
-    /** Get connectee path of a connectee among a list of connectees.         */
-    const std::string& getConnecteePath(unsigned ix) const {
-        using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
-                                "AbstractSocket::getConnecteePath()");
-        return getConnecteePathProp().getValue(ix);
-    }
-
-    void appendConnecteePath(const std::string& name) {
-        OPENSIM_THROW_IF((getNumConnectees() > 0 && !_isList), Exception,
+    /** Append a connectee path to this socket. Only valid for list sockets. */
+    void appendConnecteePath(const std::string& path) {
+        OPENSIM_THROW_IF(!isListSocket(), Exception,
             "Multiple connectee paths can only be appended to a list Socket.");
-        updConnecteePathProp().appendValue(name);
+        updConnecteePathProp().appendValue(path);
+    }
+
+    /** Assign the connectee path to this socket. For single-object sockets,
+     * this overwrites the singular connectee path value. For list sockets, this
+     * appends this path to the list of connectee paths. Use this to update
+     * the connectee path property based on existing connectees generically
+     * (e.g., during serialization). */
+    void assignConnecteePath(const std::string& path) {
+        if (isListSocket()) {
+            appendConnecteePath(path);
+        } else {
+            setConnecteePath(path);
+        }
     }
 
     /** Clear all connectee paths in the connectee path property. */
@@ -242,6 +239,18 @@ public:
             updConnecteePathProp().clear();
         else
             updConnecteePathProp().setValue(0, "");
+    }
+
+    /** Check to see if the connectee path property is "empty". For
+     * single-object sockets, we check if the default connectee path string is
+     * empty. For list sockets, we check if the list of connectee paths is
+     * empty. Use this if making a connection based on connectee path to check
+     * connectee path validity (e.g., during deserialization). */
+    bool isConnecteePathEmpty() const {
+        if (isListSocket()) {
+            return getConnecteePathProp().empty();
+        }
+        return getConnecteePathProp().getValue().empty();
     }
 
     /** Get owner component of this socket */
@@ -306,22 +315,38 @@ protected:
         }
     }
 
-protected:
-    
+private:
+
+    void setConnecteePathInternal(const std::string& name, int index) {
+        OPENSIM_THROW_IF(!isConnected(), Exception,
+                         "Socket '{}' not connected.", getName());
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK(index, getNumConnectees(),
+                         "AbstractSocket::setConnecteePath()");
+        updConnecteePathProp().setValue(index, name);
+    }
+
+    const std::string& getConnecteePathInternal(int index) const {
+        OPENSIM_THROW_IF(!isConnected(), Exception,
+                         "Socket '{}' not connected.", getName());
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK(index, getNumConnectees(),
+                        "AbstractSocket::getConnecteePath()");
+        return getConnecteePathProp().getValue(index);
+    }
+
     /// Const access to the connectee path property from the Component in which
     /// this Socket resides. The name of that property is something like
     /// 'socket_<name>'. This is a special type of property
     /// that users cannot easily access (e.g., there is no macro-generated
     /// `get_socket_<name>()` function).
     const Property<std::string>& getConnecteePathProp() const;
+
     /// Writable access to the connectee path property from the Component in
     /// which this Socket resides. Calling this will mark the Component as
     /// not "up to date with properties"
     /// (Object::isObjectUpToDateWithProperties()).
     Property<std::string>& updConnecteePathProp();
-
-
-private:
 
     /// Prepend the provided name to all (if any) absolute connectee paths
     /// stored in this socket. This is to be used when adding one component
@@ -364,29 +389,21 @@ public:
         return !_connectees.empty();
     }
 
-    const T& getConnecteeAsObject() const override {
-        OPENSIM_THROW_IF(isListSocket(),
-                         Exception,
-                         "Socket<T>::getConnecteeAsObject(): an index must be "
-                         "provided for a list socket.");
-        return getConnecteeAsObject(0);
+    /** Return a const reference to the Object connected to this Socket. */
+    const T& getConnecteeAsObject(int index = -1) const override {
+        if (index < 0) {
+            if (!isListSocket()) { index = 0; }
+            else {
+                OPENSIM_THROW(Exception,
+                        "Socket<T>::getConnecteeAsObject(): an index must be "
+                        "provided for a socket that takes a list "
+                        "of values.");
+            }
+        }
+        return getConnecteeAsObjectInternal(index);
     }
 
-    const T& getConnecteeAsObject(unsigned index) const override {
-        OPENSIM_THROW_IF(!isConnected(), Exception,
-            "Socket '{}' not connected.", getName());
-        using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK(index, getNumConnectees(),
-                         "Socket<T>::getConnecteeAsObject()");
-        return _connectees[index].getRef();
-    }
-
-    /** Return a const reference to the object connected to this Socket. Only
-     valid for non-list Sockets. */
-    const T& getConnectee() const;
-
-    /** Return a const reference to the object connected to this Socket at the
-     provided index. */
+    /** Return a const reference to the object connected to this Socket. */
     const T& getConnectee(int index) const;
 
     bool canConnectTo(const Object& object) const override {
@@ -457,6 +474,24 @@ protected:
     friend Component;
 
 private:
+
+    const T& getConnecteeAsObjectInternal(int index) const {
+        OPENSIM_THROW_IF(!isConnected(), Exception,
+            "Socket '{}' not connected.", getName());
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK(index, getNumConnectees(),
+                         "Socket<T>::getConnecteeAsObject()");
+        return _connectees[index].getRef();
+    }
+
+    const T& getConnecteeInternal(int index) const {
+        OPENSIM_THROW_IF(!isConnected(), Exception,
+            "Socket '{}' not connected.", getName());
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK(index, getNumConnectees(),
+                         "Socket<T>::getConnectee()");
+        return _connectees[index].getRef();
+    }
 
     void connectInternal(const T& objT) {
         if (!isListSocket()) {
@@ -833,7 +868,7 @@ public:
         SimTK_INDEXCHECK_ALWAYS(index, getNumConnectees(),
                                 "Input<T>::setAlias()");
 
-        const auto& connecteePath = getConnecteePath(index);
+        std::string connecteePath = getConnecteePath(index);
         std::string componentPath{};
         std::string outputName{};
         std::string channelName{};
@@ -843,12 +878,11 @@ public:
                            outputName,
                            channelName,
                            currAlias);
-        updConnecteePathProp().setValue(index,
-                                        composeConnecteePath(componentPath,
-                                                             outputName,
-                                                             channelName,
-                                                             alias));
-        
+        connecteePath = composeConnecteePath(componentPath,
+                                             outputName,
+                                             channelName,
+                                             alias);
+        setConnecteePath(connecteePath, index);
         _aliases[index] = alias;
     }
 

@@ -3397,31 +3397,17 @@ public:
 };
 
 template<class C>
-const C& Socket<C>::getConnectee() const {
-    if (isListSocket()) {
-        std::string msg = "Socket " + getName() + " of type " +
-                          C::getClassName() + " in " +
-                          getOwner().getAbsolutePathString() + " of type " +
-                          getOwner().getConcreteClassName() + " is a list " +
-                          "socket. An index must be provided.";
-        OPENSIM_THROW(Exception, msg);
+const C& Socket<C>::getConnectee(int index=-1) const {
+    if (index < 0) {
+        if (!isListSocket()) { index = 0; }
+        else {
+            OPENSIM_THROW(Exception,
+                    "Socket<T>::getConnectee(): an index must be "
+                    "provided for a socket that takes a list "
+                    "of values.");
+        }
     }
-    return getConnectee(0);
-}
-
-template<class C>
-const C& Socket<C>::getConnectee(int index) const {
-    if (!isConnected()) {
-        std::string msg = "Socket " + getName() + " of type " +
-                          C::getClassName() + " in " +
-                          getOwner().getAbsolutePathString() + " of type " +
-                          getOwner().getConcreteClassName() + " is not connected.";
-        OPENSIM_THROW(Exception, msg);
-    }
-    using SimTK::isIndexInRange;
-    SimTK_INDEXCHECK(index, getNumConnectees(),
-                     "Socket<T>::getConnectee()");
-    return _connectees[index].getRef();
+    return getConnecteeInternal(index);
 }
 
 template<class C>
@@ -3461,15 +3447,12 @@ void Socket<C>::finalizeConnection(const Component& root) {
                     connecteePath.getSubcomponentNameAtLevel(0) == "..")
                 connecteePath = connectee->getAbsolutePath();
 
-            if (isListSocket()) {
-                updConnecteePathProp().appendValue(connecteePath.toString());
-            } else {
-                updConnecteePathProp().setValue(connecteePath.toString());
-            }
+            // Assign the connectee path to this Socket.
+            assignConnecteePath(connecteePath.toString());
         }
-
     } else {
-        if (!isListSocket() && getConnecteePath().empty()) return;
+        // If the connectee path is empty, then we have nothing to connect to.
+        if (isConnecteePathEmpty()) return;
         for (int i = 0; i < static_cast<int>(getNumConnectees()); ++i) {
             const auto connecteePath = getConnecteePath(i);
             OPENSIM_THROW_IF(connecteePath.empty(), ConnecteeNotSpecified,
@@ -3482,7 +3465,6 @@ void Socket<C>::finalizeConnection(const Component& root) {
                 comp = &getOwner().template getComponent<C>(path);
             }
             connectInternal(*comp);
-
         }
     }
 }
@@ -3570,13 +3552,12 @@ void Input<T>::finalizeConnection(const Component& root) {
                                                 "",
                                                 _aliases[i]);
 
-            if (isListSocket())
-                updConnecteePathProp().appendValue(pathStr);
-            else
-                updConnecteePathProp().setValue(pathStr);
+            // Assign the connectee path to this Input.
+            assignConnecteePath(pathStr);
         }
     } else {
-        if (!isListSocket() && getConnecteePath().empty()) return;
+        // If the connectee path is empty, then we have nothing to connect to.
+        if (isConnecteePathEmpty()) return;
         std::string compPathStr, outputName, channelName, alias;
         for (int i = 0; i < static_cast<int>(getNumConnectees()); ++i) {
             parseConnecteePath(getConnecteePath(i),
