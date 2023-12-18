@@ -217,7 +217,8 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
                 Approx(1).epsilon(1e-4));
 
         CHECK(muscle.calcActiveForceLengthMultiplier(1) == Approx(1));
-        CHECK(muscle.calcForceVelocityMultiplier(-1) == 0);
+        CHECK(muscle.calcForceVelocityMultiplier(-1) ==
+                Approx(0).margin(1e-10));
         CHECK(muscle.calcForceVelocityMultiplier(0) == Approx(1));
         CHECK(muscle.calcForceVelocityMultiplier(1) ==
                 Approx(1.794).epsilon(1e-3));

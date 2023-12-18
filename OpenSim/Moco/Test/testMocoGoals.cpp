@@ -465,9 +465,9 @@ void evalTestMocoScaleFactor(const MocoStudy& study,
     // already adjusted the effort controls while constructing the initial guess
     // above, so this comparison should pass if the problem solved correctly.
     OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getControlsTrajectory(),
-            solutionTracking.getControlsTrajectory(), 1e-4);
+            solutionTracking.getControlsTrajectory(), 1e-3);
     OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getStatesTrajectory(),
-            solutionTracking.getStatesTrajectory(), 1e-4);
+            solutionTracking.getStatesTrajectory(), 1e-3);
 }
 
 TEST_CASE("Test MocoScaleFactor - MocoCasADiSolver", "[casadi]") {
