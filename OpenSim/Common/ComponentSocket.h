@@ -318,8 +318,6 @@ protected:
 private:
 
     void setConnecteePathInternal(const std::string& name, int index) {
-        OPENSIM_THROW_IF(!isConnected(), Exception,
-                         "Socket '{}' not connected.", getName());
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK(index, getNumConnectees(),
                          "AbstractSocket::setConnecteePath()");
@@ -327,8 +325,6 @@ private:
     }
 
     const std::string& getConnecteePathInternal(int index) const {
-        OPENSIM_THROW_IF(!isConnected(), Exception,
-                         "Socket '{}' not connected.", getName());
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK(index, getNumConnectees(),
                         "AbstractSocket::getConnecteePath()");
@@ -404,7 +400,7 @@ public:
     }
 
     /** Return a const reference to the object connected to this Socket. */
-    const T& getConnectee(int index) const;
+    const T& getConnectee(int index = -1) const;
 
     bool canConnectTo(const Object& object) const override {
         return dynamic_cast<const T*>(&object) != nullptr;

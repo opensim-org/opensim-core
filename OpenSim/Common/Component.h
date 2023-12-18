@@ -3397,7 +3397,7 @@ public:
 };
 
 template<class C>
-const C& Socket<C>::getConnectee(int index=-1) const {
+const C& Socket<C>::getConnectee(int index) const {
     if (index < 0) {
         if (!isListSocket()) { index = 0; }
         else {
