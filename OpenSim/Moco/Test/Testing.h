@@ -18,8 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Auxiliary/catch/catch.hpp>
-
+#include <catch2/catch_all.hpp>
 #include <OpenSim/Common/osimCommon.h>
 
 // Helper functions for comparing vectors.
@@ -94,7 +93,7 @@ do {                                                                         \
         for (int ic = 0; ic < a.ncol(); ++ic) {                              \
             INFO("(" << ir << "," << ic << "): " <<                          \
                     a.getElt(ir, ic) << " vs " << b.getElt(ir, ic));         \
-            testtype((Approx(a.getElt(ir, ic)).toltype(tol)                  \
+            testtype((Catch::Approx(a.getElt(ir, ic)).toltype(tol)           \
                     == b.getElt(ir, ic)));                                   \
         }                                                                    \
     }                                                                        \

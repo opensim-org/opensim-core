@@ -18,8 +18,8 @@
 
 #include <OpenSim/Moco/osimMoco.h>
 
-#define CATCH_CONFIG_MAIN
 #include "Testing.h"
+using Catch::Approx;
 
 using namespace OpenSim;
 

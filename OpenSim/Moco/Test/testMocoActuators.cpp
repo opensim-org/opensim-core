@@ -24,7 +24,6 @@
 #include "OpenSim/Tools/CMC_TaskSet.h"
 #include "OpenSim/Tools/CMC_Joint.h"
 
-#define CATCH_CONFIG_MAIN
 #include "Testing.h"
 
 using namespace OpenSim;
@@ -361,7 +360,7 @@ TEST_CASE("ActivationCoordinateActuator") {
     problem.setModelAsCopy(model);
     auto rep = problem.createRep();
     CHECK(rep.getStateInfo("/forceset/aca/activation").getBounds().getLower() ==
-            Approx(-0.31));
+            Catch::Approx(-0.31));
     CHECK(rep.getStateInfo("/forceset/aca/activation").getBounds().getUpper() ==
-            Approx(0.78));
+            Catch::Approx(0.78));
 }

@@ -254,6 +254,7 @@ if(${OPENSIM_INSTALL_UNIX_FHS})
     set(OPENSIM_INSTALL_SIMBODYDIR ".")
     set(OPENSIM_INSTALL_SPDLOGDIR ".")
     set(OPENSIM_INSTALL_CASADIDIR ".")
+    set(OPENSIM_INSTALL_CATCH2DIR ".")
 
 else()
 
@@ -276,6 +277,7 @@ else()
     set(OPENSIM_INSTALL_SIMBODYDIR sdk/Simbody)
     set(OPENSIM_INSTALL_SPDLOGDIR sdk/spdlog)
     set(OPENSIM_INSTALL_CASADIDIR sdk)
+    set(OPENSIM_INSTALL_CATCH2DIR sdk/catch2)
 
 endif()
 
@@ -713,6 +715,8 @@ endif()
 find_package(spdlog REQUIRED
         HINTS "${OPENSIM_DEPENDENCIES_DIR}/spdlog")
 
+find_package(catch2 REQUIRED
+        HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
     set(SIMBODY_HOME "${OPENSIM_DEPENDENCIES_DIR}/simbody")
@@ -926,6 +930,11 @@ if(${OPENSIM_COPY_DEPENDENCIES})
     # ------
     install(DIRECTORY "${spdlog_DIR}/../../../"
             DESTINATION "${OPENSIM_INSTALL_SPDLOGDIR}")
+
+    # Catch2
+    # ------
+    install(DIRECTORY "${catch2_DIR}/../../../"
+            DESTINATION "${OPENSIM_INSTALL_CATCH2DIR}")
 endif()
 
 if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)

@@ -39,8 +39,7 @@
 #include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 #include <SimTKsimbody.h>
 
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <ctime>
 #include <fstream>

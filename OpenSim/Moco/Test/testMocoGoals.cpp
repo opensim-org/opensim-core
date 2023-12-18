@@ -24,8 +24,9 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
-#define CATCH_CONFIG_MAIN
 #include "Testing.h"
+using Catch::Approx;
+using Catch::Matchers::ContainsSubstring;
 
 using namespace OpenSim;
 
@@ -672,7 +673,7 @@ TEMPLATE_TEST_CASE("Endpoint constraints", "[casadi]", MocoCasADiSolver) {
 
     SECTION("Bounds has incorrect size.") {
         periodic->updConstraintInfo().setBounds({{0.0}});
-        CHECK_THROWS_WITH(study.solve(), Catch::Contains("Size of property"));
+        CHECK_THROWS_WITH(study.solve(), ContainsSubstring("Size of property"));
     }
 
     SECTION("Non-tight bounds.") {
@@ -1018,7 +1019,7 @@ TEST_CASE("MocoGoal stage dependency") {
     goal.initializeOnModel(model);
     state.invalidateAll(SimTK::Stage::Instance);
     CHECK_THROWS_WITH(goal.calcIntegrand({0, state, SimTK::Vector()}),
-            Catch::Contains("calcIntegrand()"));
+            ContainsSubstring("calcIntegrand()"));
 
     goal.setRealizeInitialState(true);
     state.invalidateAll(SimTK::Stage::Instance);
@@ -1028,10 +1029,12 @@ TEST_CASE("MocoGoal stage dependency") {
             SimTK::Vector(), 0};
     SimTK::Vector goalValue;
     CHECK_THROWS_WITH(goal.calcGoal(input, goalValue),
-            Catch::Contains("calcGoal()") && Catch::Contains("initial_state"));
+            ContainsSubstring("calcGoal()") &&
+            ContainsSubstring("initial_state"));
     goal.setRealizeInitialState(false);
     CHECK_THROWS_WITH(goal.calcGoal(input, goalValue),
-            Catch::Contains("calcGoal()") && Catch::Contains("final_state"));
+            ContainsSubstring("calcGoal()") &&
+            ContainsSubstring("final_state"));
 }
 
 /// This goal calculates the displacement of the system between the initial and
@@ -1082,9 +1085,12 @@ TEST_CASE("MocoGoal divide by displacement/duration/mass") {
     SimTK::Vector goalValues;
     goal.calcGoal(input, goalValues);
 
-    CHECK_THAT(goalValues[0], Catch::WithinAbs(displacement, SimTK::Eps));
-    CHECK_THAT(goalValues[1], Catch::WithinAbs(duration, SimTK::Eps));
-    CHECK_THAT(goalValues[2], Catch::WithinAbs(mass, SimTK::Eps));
+    CHECK_THAT(goalValues[0],
+        Catch::Matchers::WithinAbs(displacement, SimTK::Eps));
+    CHECK_THAT(goalValues[1],
+        Catch::Matchers::WithinAbs(duration, SimTK::Eps));
+    CHECK_THAT(goalValues[2],
+        Catch::Matchers::WithinAbs(mass, SimTK::Eps));
 }
 
 TEST_CASE("MocoFrameDistanceConstraint de/serialization") {

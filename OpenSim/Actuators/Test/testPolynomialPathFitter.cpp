@@ -23,14 +23,14 @@
 
 #include <OpenSim/Actuators/PolynomialPathFitter.h>
 
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Common/CommonUtilities.h>
 
 using namespace OpenSim;
+using Catch::Matchers::ContainsSubstring;
 
 // HELPER FUNCTIONS
 namespace {
@@ -83,24 +83,24 @@ TEST_CASE("Invalid configurations") {
     fitter.setNumParallelThreads(1);
 
     SECTION("No model") {
-        REQUIRE_THROWS_WITH(fitter.run(), Catch::Contains("No source model."));
+        REQUIRE_THROWS_WITH(fitter.run(), ContainsSubstring("No source model."));
     }
 
     fitter.setModel(createHangingMuscleModel());
 
     SECTION("No coordinates table") {
-        REQUIRE_THROWS_WITH(fitter.run(), Catch::Contains("No source table."));
+        REQUIRE_THROWS_WITH(fitter.run(), ContainsSubstring("No source table."));
     }
 
     SECTION("Missing metadata") {
         fitter.setCoordinateValues(createCoordinatesTable(true, false));
-        REQUIRE_THROWS_WITH(fitter.run(), Catch::Contains(
+        REQUIRE_THROWS_WITH(fitter.run(), ContainsSubstring(
                 "Table does not have 'inDegrees' metadata."));
     }
 
     SECTION("Missing coordinate data") {
         fitter.setCoordinateValues(createCoordinatesTable(false, true));
-        REQUIRE_THROWS_WITH(fitter.run(), Catch::Contains(
+        REQUIRE_THROWS_WITH(fitter.run(), ContainsSubstring(
                 "Expected the coordinate values table to contain a column"));
     }
 
@@ -108,25 +108,25 @@ TEST_CASE("Invalid configurations") {
 
     SECTION("Number of threads") {
         fitter.setNumParallelThreads(-1);
-        REQUIRE_THROWS_WITH(fitter.run(), Catch::Contains(
+        REQUIRE_THROWS_WITH(fitter.run(), ContainsSubstring(
                 "Expected 'num_parallel_threads' to be"));
     }
 
     SECTION("Number of samples per frame") {
         fitter.setNumSamplesPerFrame(-1);
-        REQUIRE_THROWS_WITH(fitter.run(), Catch::Contains(
+        REQUIRE_THROWS_WITH(fitter.run(), ContainsSubstring(
                 "Expected 'num_samples_per_frame' to be a non-zero integer"));
     }
 
     SECTION("Latin hypercube algorithm") {
         fitter.setLatinHypercubeAlgorithm("wrong");
-        REQUIRE_THROWS_WITH(fitter.run(), Catch::Contains(
+        REQUIRE_THROWS_WITH(fitter.run(), ContainsSubstring(
                 "Property 'latin_hypercube_algorithm' has invalid value"));
     }
 
     SECTION("Maximum polynomial order") {
         fitter.setMaximumPolynomialOrder(10);
-        REQUIRE_THROWS_WITH(fitter.run(), Catch::Contains(
+        REQUIRE_THROWS_WITH(fitter.run(), ContainsSubstring(
             "Expected 'maximum_polynomial_order' to be at most 9"));
     }
 }

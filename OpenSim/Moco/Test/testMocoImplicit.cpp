@@ -22,7 +22,6 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Common/LinearFunction.h>
 
-#define CATCH_CONFIG_MAIN
 #include "Testing.h"
 
 using namespace OpenSim;
@@ -163,7 +162,7 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
 
         // Solutions are approximately equal.
         CHECK(solutionImplicit.getFinalTime() ==
-                Detail::Approx(solution.getFinalTime()).margin(1e-2));
+                Approx(solution.getFinalTime()).margin(1e-2));
         CHECK(stateError < 2.0);
         CHECK(controlError < 30.0);
 
@@ -306,7 +305,7 @@ SCENARIO("Using MocoTrajectory with the implicit dynamics mode",
         }
         THEN("RMS error is computed correctly") {
             REQUIRE(iterA.compareContinuousVariablesRMS(iterB) ==
-                    Detail::Approx(valueA - valueB));
+                    Approx(valueA - valueB));
         }
     }
 }
@@ -319,7 +318,7 @@ TEST_CASE("AccelerationMotion") {
     state.updQ()[0] = -SimTK::Pi / 2;
     model.realizeAcceleration(state);
     // Default.
-    CHECK(state.getUDot()[0] == Detail::Approx(0).margin(1e-10));
+    CHECK(state.getUDot()[0] == Approx(0).margin(1e-10));
 
     // Enable.
     accel->setEnabled(state, true);
@@ -327,12 +326,12 @@ TEST_CASE("AccelerationMotion") {
     udot[0] = SimTK::Random::Uniform(-1, 1).getValue();
     accel->setUDot(state, udot);
     model.realizeAcceleration(state);
-    CHECK(state.getUDot()[0] == Detail::Approx(udot[0]).margin(1e-10));
+    CHECK(state.getUDot()[0] == Approx(udot[0]).margin(1e-10));
 
     // Disable.
     accel->setEnabled(state, false);
     model.realizeAcceleration(state);
-    CHECK(state.getUDot()[0] == Detail::Approx(0).margin(1e-10));
+    CHECK(state.getUDot()[0] == Approx(0).margin(1e-10));
 }
 
 // This class implements a custom component with simple dynamics in implicit
@@ -454,8 +453,8 @@ TEST_CASE("Implicit auxiliary dynamics") {
         problem.setTimeBounds(0, 1);
         problem.setStateInfo("/implicit_auxdyn/foo", {0, 3}, 1.0);
         study.initTropterSolver();
-        CHECK_THROWS(study.solve(),
-                Catch::Contains("MocoTropterSolver does not support problems "
-                                "with implicit auxiliary dynamics."));
+        CHECK_THROWS(study.solve(), Catch::Matchers::ContainsSubstring(
+                "MocoTropterSolver does not support problems "
+                "with implicit auxiliary dynamics."));
     }
 }

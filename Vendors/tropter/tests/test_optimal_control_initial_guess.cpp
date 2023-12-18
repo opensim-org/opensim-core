@@ -14,8 +14,6 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#define CATCH_CONFIG_MAIN
-#include <catch.hpp>
 #include "testing.h"
 #include <unsupported/Eigen/Splines>
 
@@ -105,11 +103,11 @@ TEST_CASE("Final position and parameter cost with two local optima, "
         ocp->set_parameter_guess(guess, "p", -1);
         Solution solution = dircol.solve(guess);
         solution.write("final_position_local_optima_low_solution.csv");
-        REQUIRE(Detail::Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
+        REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
                 == -1 / sqrt(2));
-        REQUIRE(Detail::Approx(solution.parameters[0]).epsilon(1e-4)
+        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4)
                 == -1 / sqrt(2));
-        REQUIRE(Detail::Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
+        REQUIRE(Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
     }
     // Guess high.
     {
@@ -129,11 +127,11 @@ TEST_CASE("Final position and parameter cost with two local optima, "
         ocp->set_parameter_guess(guess, "p", +1);
         Solution solution = dircol.solve(guess);
         solution.write("final_position_local_optima_high_solution.csv");
-        REQUIRE(Detail::Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
+        REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
                 == +1 / sqrt(2));
-        REQUIRE(Detail::Approx(solution.parameters[0]).epsilon(1e-4)
+        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4)
                 == +1 / sqrt(2));
-        REQUIRE(Detail::Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
+        REQUIRE(Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
     }
 }
 
@@ -149,34 +147,34 @@ TEST_CASE("Exceptions for setting optimal control guess, trapezoidal rule",
     // --------------------------------------------------------------
     // Must set guess.time first.
     REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(1)),
-            Contains("guess.time is empty"));
+            Matchers::ContainsSubstring("guess.time is empty"));
     REQUIRE_THROWS_WITH(
             ocp->set_control_guess(guess, "F", RowVectorXd::Zero(1)),
-            Contains("guess.time is empty"));
+            Matchers::ContainsSubstring("guess.time is empty"));
     guess.time.setLinSpaced(N, 0, 1);
 
     // Wrong number of elements.
     REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(1)),
-            Contains("Expected value to have 15"));
+            Matchers::ContainsSubstring("Expected value to have 15"));
     REQUIRE_THROWS_WITH(
             ocp->set_control_guess(guess, "F", RowVectorXd::Zero(1)),
-            Contains("Expected value to have 15"));
+            Matchers::ContainsSubstring("Expected value to have 15"));
 
     // Wrong state name.
     REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "H", RowVectorXd::Zero(N)),
-            Contains("State 'H' does not exist"));
+            Matchers::ContainsSubstring("State 'H' does not exist"));
     REQUIRE_THROWS_WITH(
             ocp->set_control_guess(guess, "H", RowVectorXd::Zero(N)),
-            Contains("Control 'H' does not exist"));
+            Matchers::ContainsSubstring("Control 'H' does not exist"));
 
     guess.states.resize(10, N - 1);
     guess.controls.resize(9, N - 2);
     // guess.states has the wrong size.
     REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(N)),
-            Contains("Expected guess.states to have "));
+            Matchers::ContainsSubstring("Expected guess.states to have "));
     REQUIRE_THROWS_WITH(
             ocp->set_control_guess(guess, "F", RowVectorXd::Zero(N)),
-            Contains("Expected guess.controls to have "));
+            Matchers::ContainsSubstring("Expected guess.controls to have "));
 
     // Test for more exceptions when calling solve().
     // ----------------------------------------------
@@ -186,50 +184,52 @@ TEST_CASE("Exceptions for setting optimal control guess, trapezoidal rule",
     guess.adjuncts.resize(1, N);   // correct.
     guess.parameters.resize(1, 1); // correct.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected time and states to have "
+            Matchers::ContainsSubstring("Expected time and states to have "
                      "the same number of columns, but they have 5 "
                      "and 15 column(s), respectively."));
 
     guess.time.resize(N);      // correct.
     guess.states.resize(6, N); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected states to have 2 row(s), but it has 6."));
+            Matchers::ContainsSubstring("Expected states to have 2 row(s), but "
+                    "it has 6."));
 
     guess.states.resize(2, N + 1); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected time and states to have "
+            Matchers::ContainsSubstring("Expected time and states to have "
                      "the same number of columns, but they have 15 "
                      "and 16 column(s), respectively."));
 
     guess.states.resize(2, N);   // correct.
     guess.controls.resize(4, N); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected controls to have 1 row(s), but it has 4."));
+            Matchers::ContainsSubstring(
+                    "Expected controls to have 1 row(s), but it has 4."));
 
     guess.controls.resize(1, N - 3); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected time and controls to have "
+            Matchers::ContainsSubstring("Expected time and controls to have "
                      "the same number of columns, but they have 15 "
                      "and 12 column(s), respectively."));
 
     guess.controls.resize(1, N);     // correct.
     guess.adjuncts.resize(1, N + 2); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected time and adjuncts to have "
+            Matchers::ContainsSubstring("Expected time and adjuncts to have "
                      "the same number of columns, but they have 15 "
                      "and 17 column(s), respectively."));
 
     guess.adjuncts.resize(1, N);   // correct.
     guess.parameters.resize(2, 1); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected parameters to have 1 element(s), "
-                     "but it has 2."));
+            Matchers::ContainsSubstring(
+                    "Expected parameters to have 1 element(s), but it has 2."));
 
     guess.parameters.resize(1, 1); // correct.
     guess.diffuses.resize(1, N);   // trapezoidal doesn't support diffuses
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Trapezoidal transcription does not support diffuse "
-                     "variables."));
+            Matchers::ContainsSubstring("Trapezoidal transcription does not "
+                "support diffuse variables."));
 }
 
 /// This problem is identical to FinalPositionLocalOptima exception for the
@@ -315,11 +315,11 @@ TEST_CASE("Final position and parameter cost with two local optima, "
         ocp->set_parameter_guess(guess, "p", -1);
         Solution solution = dircol.solve(guess);
         solution.write("final_position_local_optima_low_solution.csv");
-        REQUIRE(Detail::Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
+        REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
                 == -1 / sqrt(2));
-        REQUIRE(Detail::Approx(solution.parameters[0]).epsilon(1e-4)
+        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4)
                 == -1 / sqrt(2));
-        REQUIRE(Detail::Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
+        REQUIRE(Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
     }
     // Guess high.
     {
@@ -347,11 +347,11 @@ TEST_CASE("Final position and parameter cost with two local optima, "
         ocp->set_parameter_guess(guess, "p", +1);
         Solution solution = dircol.solve(guess);
         solution.write("final_position_local_optima_high_solution.csv");
-        REQUIRE(Detail::Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
+        REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
                 == +1 / sqrt(2));
-        REQUIRE(Detail::Approx(solution.parameters[0]).epsilon(1e-4)
+        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4)
                 == +1 / sqrt(2));
-        REQUIRE(Detail::Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
+        REQUIRE(Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
     }
 }
 
@@ -373,34 +373,34 @@ TEST_CASE("Exceptions for setting optimal control guess, Hermite-Simpson rule",
     // --------------------------------------------------------------
     // Must set guess.time first.
     REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(1)),
-            Contains("guess.time is empty"));
+            Matchers::ContainsSubstring("guess.time is empty"));
     REQUIRE_THROWS_WITH(
             ocp->set_control_guess(guess, "F", RowVectorXd::Zero(1)),
-            Contains("guess.time is empty"));
+            Matchers::ContainsSubstring("guess.time is empty"));
     guess.time.setLinSpaced(Nc, 0, 1);
 
     // Wrong number of elements.
     REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(1)),
-            Contains("Expected value to have 29"));
+            Matchers::ContainsSubstring("Expected value to have 29"));
     REQUIRE_THROWS_WITH(
             ocp->set_control_guess(guess, "F", RowVectorXd::Zero(1)),
-            Contains("Expected value to have 29"));
+            Matchers::ContainsSubstring("Expected value to have 29"));
 
     // Wrong state name.
     REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "H", RowVectorXd::Zero(Nc)),
-            Contains("State 'H' does not exist"));
+            Matchers::ContainsSubstring("State 'H' does not exist"));
     REQUIRE_THROWS_WITH(
             ocp->set_control_guess(guess, "H", RowVectorXd::Zero(Nc)),
-            Contains("Control 'H' does not exist"));
+            Matchers::ContainsSubstring("Control 'H' does not exist"));
 
     guess.states.resize(10, Nc - 1);
     guess.controls.resize(9, Nc - 2);
     // guess.states has the wrong size.
     REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(Nc)),
-            Contains("Expected guess.states to have "));
+            Matchers::ContainsSubstring("Expected guess.states to have "));
     REQUIRE_THROWS_WITH(
             ocp->set_control_guess(guess, "F", RowVectorXd::Zero(Nc)),
-            Contains("Expected guess.controls to have "));
+            Matchers::ContainsSubstring("Expected guess.controls to have "));
 
     // Test for more exceptions when calling solve().
     // ----------------------------------------------
@@ -411,49 +411,49 @@ TEST_CASE("Exceptions for setting optimal control guess, Hermite-Simpson rule",
     guess.diffuses.resize(1, Nc);  // correct.
     guess.parameters.resize(1, 1); // correct.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected time and states to have "
+            Matchers::ContainsSubstring("Expected time and states to have "
                      "the same number of columns, but they have 19 "
                      "and 29 column(s), respectively."));
 
     guess.time.resize(Nc);      // correct.
     guess.states.resize(6, Nc); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected states to have 2 row(s), but it has 6."));
+            Matchers::ContainsSubstring("Expected states to have 2 row(s), but it has 6."));
 
     guess.states.resize(2, Nc + 1); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected time and states to have "
+            Matchers::ContainsSubstring("Expected time and states to have "
                      "the same number of columns, but they have 29 "
                      "and 30 column(s), respectively."));
 
     guess.states.resize(2, Nc);   // correct.
     guess.controls.resize(4, Nc); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected controls to have 1 row(s), but it has 4."));
+            Matchers::ContainsSubstring("Expected controls to have 1 row(s), but it has 4."));
 
     guess.controls.resize(1, Nc - 3); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected time and controls to have "
+            Matchers::ContainsSubstring("Expected time and controls to have "
                      "the same number of columns, but they have 29 "
                      "and 26 column(s), respectively."));
 
     guess.controls.resize(1, Nc);     // correct.
     guess.adjuncts.resize(1, Nc + 2); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected time and adjuncts to have "
+            Matchers::ContainsSubstring("Expected time and adjuncts to have "
                      "the same number of columns, but they have 29 "
                      "and 31 column(s), respectively."));
 
     guess.adjuncts.resize(1, Nc);  // correct.
     guess.parameters.resize(2, 1); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected parameters to have 1 element(s), "
+            Matchers::ContainsSubstring("Expected parameters to have 1 element(s), "
                      "but it has 2."));
 
     guess.parameters.resize(1, 1);    // correct.
     guess.diffuses.resize(1, Nc + 4); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected time and diffuses to have "
+            Matchers::ContainsSubstring("Expected time and diffuses to have "
                      "the same number of columns, but they have 29 "
                      "and 33 column(s), respectively."));
 }
@@ -635,6 +635,6 @@ TEST_CASE("Interpolating an initial guess") {
         it.time.resize(5);
         it.time << 0, 1, 2, 1.5, 3;
         REQUIRE_THROWS_WITH(it.interpolate(VectorXd::LinSpaced(20, 0, 3)),
-                Contains("Expected time to be non-decreasing"));
+                Matchers::ContainsSubstring("Expected time to be non-decreasing"));
     }
 }
