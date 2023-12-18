@@ -438,6 +438,7 @@ jobs:
         # TODO: Update to simbody.github.io/latest
         OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
         OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
+        OSIM_CMAKE_ARGS+=(-Dcatch2_DIR=~/opensim_dependencies_install/catch2/lib/cmake/Catch2)
         printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
         cmake "${OSIM_CMAKE_ARGS[@]}"
         VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
@@ -539,6 +540,7 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_TROPTER=off)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=off)
+        OSIM_CMAKE_ARGS+=(-Dcatch2_DIR=~/opensim_dependencies_install/catch2/lib/cmake/Catch2)
         # TODO: Update to simbody.github.io/latest
         OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
         OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
