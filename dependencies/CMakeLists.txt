@@ -206,7 +206,7 @@ AddDependency(NAME       spdlog
 AddDependency(NAME       catch2
               DEFAULT    ON
               GIT_URL    https://github.com/catchorg/Catch2.git
-              GIT_TAG    v3.4.0)
+              GIT_TAG    v3.5.0)
 
 # Moco settings.
 # --------------
