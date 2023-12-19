@@ -367,14 +367,15 @@ function(OpenSimAddTests)
             add_executable(${TEST_NAME} ${test_program}
                 ${OSIMADDTESTS_SOURCES})
             target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
+            set(test_args "")
             if(APPLE)
-                list(APPEND test_args "[mac][unix]")
+                list(APPEND test_args "~[win],~[linux]")
             endif()
             if(LINUX)
-                list(APPEND test_args "[linux][unix]")
+                list(APPEND test_args "~[win],~[mac]")
             endif()
             if(WIN32)
-                list(APPEND test_args "[win]")
+                list(APPEND test_args "~[mac],~[linux]")
             endif()
             add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} ${test_args})
             set_target_properties(${TEST_NAME} PROPERTIES
@@ -397,29 +398,6 @@ function(OpenSimAddTests)
 
     endif()
 
-endfunction()
-
-function(OpenSimAddTest)
-    set(options)
-    set(oneValueArgs NAME)
-    set(multiValueArgs LIB_DEPENDS RESOURCES)
-    cmake_parse_arguments(OSIMTEST
-            "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    add_executable(${OSIMTEST_NAME} ${OSIMTEST_NAME}.cpp)
-    # To organize targets in Visual Studio's Solution Explorer.
-    set_target_properties(${OSIMTEST_NAME} PROPERTIES FOLDER "Tests")
-    target_link_libraries(${OSIMTEST_NAME} ${OSIMTEST_LIB_DEPENDS})
-    if(APPLE)
-        list(APPEND test_args "[mac][unix]")
-    endif()
-    if(LINUX)
-        list(APPEND test_args "[linux][unix]")
-    endif()
-    if(WIN32)
-        list(APPEND test_args "[win]")
-    endif()
-    add_test(NAME ${OSIMTEST_NAME} COMMAND ${OSIMTEST_NAME} ${test_args})
-    file(COPY ${OSIMTEST_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
 
