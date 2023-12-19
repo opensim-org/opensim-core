@@ -60,8 +60,6 @@ target_link_libraries(tropter PUBLIC optional-lite)
 target_link_libraries(tropter PUBLIC Eigen3::Eigen)
 # This takes care of includes.
 
-target_link_libraries(tropter PUBLIC Catch2::Catch2WithMain)
-
 target_link_libraries(tropter PRIVATE ColPack_static)
 
 target_include_directories(tropter SYSTEM PUBLIC ${ADOLC_INCLUDES})

@@ -7,7 +7,7 @@ endif(WIN32)
 OpenSimAddLibrary(VENDORLIB LOWERINCLUDEDIRNAME
     KIT Lepton
     AUTHORS "Peter_Eastman"
-    LINKLIBS Catch2::Catch2WithMain
+    LINKLIBS ""
     INCLUDES "include/Lepton.h"
     SOURCES ${SOURCE_FILES}
     TESTDIRS test

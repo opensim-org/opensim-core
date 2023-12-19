@@ -15,7 +15,7 @@ function(tropter_add_test)
     add_executable(${TROPTEST_NAME} ${TROPTEST_NAME}.cpp)
     # To organize targets in Visual Studio's Solution Explorer.
     set_target_properties(${TROPTEST_NAME} PROPERTIES FOLDER "tropter/Tests")
-    target_link_libraries(${TROPTEST_NAME} tropter ${TROPTEST_LIB_DEPENDS})
+    target_link_libraries(${TROPTEST_NAME} tropter Catch2::Catch2WithMain ${TROPTEST_LIB_DEPENDS})
     if(TROPTER_WITH_SNOPT)
         target_compile_definitions(${TROPTEST_NAME} PRIVATE TROPTER_WITH_SNOPT)
     endif()
