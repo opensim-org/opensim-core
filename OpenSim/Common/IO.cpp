@@ -282,18 +282,22 @@ void IO::
 ConstructDoubleOutputFormat()
 {
     if(_GFormatForDoubleOutput) {
-        snprintf(_DoubleFormat, 256, "%%g");
+        snprintf(_DoubleFormat, IO_DBLFMTLEN, "%%g");
     } else if(_Scientific) {
         if(_Pad<0) {
-            snprintf(_DoubleFormat, 256, "%%.%dle", _Precision);
+            snprintf(_DoubleFormat, IO_DBLFMTLEN,
+                     "%%.%dle", _Precision);
         } else {
-            snprintf(_DoubleFormat, 256, "%%%d.%dle", _Pad+_Precision, _Precision);
+            snprintf(_DoubleFormat, IO_DBLFMTLEN,
+                     "%%%d.%dle", _Pad+_Precision, _Precision);
         }
     } else {
         if(_Pad<0) {
-            snprintf(_DoubleFormat, 256, "%%.%dlf", _Precision);
+            snprintf(_DoubleFormat, IO_DBLFMTLEN,
+                     "%%.%dlf", _Precision);
         } else {
-            snprintf(_DoubleFormat, 256, "%%%d.%dlf", _Pad+_Precision, _Precision);
+            snprintf(_DoubleFormat, IO_DBLFMTLEN,
+                     "%%%d.%dlf", _Pad+_Precision, _Precision);
         }
     }
 }
