@@ -26,6 +26,7 @@
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/Object.h>
 #include <catch2/catch_all.hpp>
+
 using Catch::Matchers::ContainsSubstring;
 
 namespace TestAssertion {

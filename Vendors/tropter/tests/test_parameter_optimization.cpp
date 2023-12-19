@@ -16,6 +16,8 @@
 
 #include <tropter/tropter.h>
 
+#include <catch2/catch_all.hpp>
+#include "testing.h"
 #include "testing_optimalcontrol.h"
 
 using Catch::Approx;

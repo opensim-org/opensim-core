@@ -713,6 +713,7 @@ endif()
 find_package(spdlog REQUIRED
         HINTS "${OPENSIM_DEPENDENCIES_DIR}/spdlog")
 
+
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
     set(SIMBODY_HOME "${OPENSIM_DEPENDENCIES_DIR}/simbody")
 endif()
@@ -925,7 +926,6 @@ if(${OPENSIM_COPY_DEPENDENCIES})
     # ------
     install(DIRECTORY "${spdlog_DIR}/../../../"
             DESTINATION "${OPENSIM_INSTALL_SPDLOGDIR}")
-
 endif()
 
 if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
