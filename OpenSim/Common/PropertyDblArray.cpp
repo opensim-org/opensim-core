@@ -216,7 +216,7 @@ toString() const
     string str = "(";
     char dbl[256];
     for(int i=0; i < _array.getSize(); i++){
-        sprintf(dbl, "%g", _array[i]);
+        snprintf(dbl, 256, "%g", _array[i]);
         str += (i>0?" ":"") + string(dbl);
     }
     str += ")";

@@ -220,7 +220,7 @@ getVersionAsString(const int aVersion, std::string& aString)
     for(int i=0; i<3; i++)
     {
         int digits = ver / div;
-        sprintf(pad, "%02d",digits); 
+        snprintf(pad, 3, "%02d", digits);
         ver -= div*(ver / div);
         div /=100;
         aString += string(pad);
