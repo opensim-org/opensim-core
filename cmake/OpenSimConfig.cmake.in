@@ -93,19 +93,15 @@ if (@OPENSIM_COPY_DEPENDENCIES@) # OPENSIM_COPY_DEPENDENCIES
     # causing CMake to look for spdlog within Simbody's installation.
     set(_SIMBODY_PATH "@PACKAGE_OPENSIM_INSTALL_SIMBODYDIR@")
     set(_SPDLOG_PATH "@PACKAGE_OPENSIM_INSTALL_SPDLOGDIR@")
-    set(_CATCH2_PATH "@PACKAGE_OPENSIM_INSTALL_CATCH2DIR@")
     find_package(Simbody @SIMBODY_VERSION_TO_USE@ REQUIRED
         PATHS "${_SIMBODY_PATH}" NO_MODULE NO_DEFAULT_PATH)
     find_package(spdlog REQUIRED
         PATHS "${_SPDLOG_PATH}" NO_MODULE NO_DEFAULT_PATH)
-    find_package(catch2 REQUIRED
-        PATHS "${_CATCH2_PATH}" NO_MODULE NO_DEFAULT_PATH)
 else()
     # Find the correct version anywhere on the machine.
     include(CMakeFindDependencyMacro)
     find_dependency(Simbody @SIMBODY_VERSION_TO_USE@)
     find_dependency(spdlog)
-    find_dependency(catch2)
 endif()
 
 

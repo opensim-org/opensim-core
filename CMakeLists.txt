@@ -715,7 +715,7 @@ endif()
 find_package(spdlog REQUIRED
         HINTS "${OPENSIM_DEPENDENCIES_DIR}/spdlog")
 
-find_package(catch2 REQUIRED
+find_package(Catch2 REQUIRED
         HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
