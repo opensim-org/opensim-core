@@ -947,8 +947,8 @@ public:
     SimTK::Array_<std::string> getCoordinateNamesInMultibodyTreeOrder() {
         SimTK::Array_<std::string> namesArray;
         auto coords = getCoordinatesInMultibodyTreeOrder();
-        for (auto coord : coords)
-            namesArray.push_back(coord->getName());
+        for (int i=0; i < coords.size(); ++i)
+            namesArray.push_back(coords[i]->getName());
         return namesArray;
     }
     /** Get a warning message if any Coordinates have a MotionType that is NOT
