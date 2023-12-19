@@ -36,7 +36,7 @@ TEST_CASE("testGait10dof18musc (Windows/Linux)", "[win][linux]") {
     const TimeSeriesTable results(
         "gait10dof18musc_ResultsCMC/walk_subject_states.sto");
     const TimeSeriesTable std(
-        "gait10dof18musc_std_walk_subject_states_win.sto");
+        "gait10dof18musc_std_walk_subject_states.sto");
 
     // TODO: Replace with macro from OpenSim/Moco/Test/Testing.h
     const auto& actual = results.getMatrix();
@@ -60,7 +60,7 @@ TEST_CASE("testGait10dof18musc (Mac)", "[mac]") {
     const TimeSeriesTable results(
         "gait10dof18musc_ResultsCMC/walk_subject_states.sto");
     const TimeSeriesTable std(
-        "gait10dof18musc_std_walk_subject_states_unix.sto");
+        "gait10dof18musc_std_walk_subject_states_mac.sto");
 
     GCVSplineSet resultSplines(results);
     GCVSplineSet stdSplines(std);
