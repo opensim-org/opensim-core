@@ -55,7 +55,7 @@ TEST_CASE("OPENSIM_ASSERT_ALWAYS exception contains expected information")
 {
     // sorry: the line number in this source file that `OPENSIM_ASSERT_ALWAYS`
     // appears on is hard-coded here because automating that is difficult
-    const char* lineNumberOfAssertionInThisFile = "34";
+    const char* lineNumberOfAssertionInThisFile = "35";
 
     try {
         TestAssertion::SomeAssertingFunction();
@@ -71,7 +71,7 @@ TEST_CASE("OPENSIM_ASSERT_FRMOBJ_ALWAYS exception contains expected information"
 {
     // sorry: the line number in this source file that `OPENSIM_ASSERT_FRMOBJ`
     // appears on is hard-coded here because automating that is difficult
-    const char* lineNumberOfAssertionInThisFile = "43";
+    const char* lineNumberOfAssertionInThisFile = "44";
 
     try {
         TestAssertion::SomeAssertingObject throwsOnConstruction{};
