@@ -223,9 +223,9 @@ function(OpenSimAddLibrary)
 
     # This is for exporting classes on Windows.
     if(OSIMADDLIB_VENDORLIB)
-	    set(OSIMADDLIB_FOLDER "Vendor Libraries")
+        set(OSIMADDLIB_FOLDER "Vendor Libraries")
     else()
-		set(OSIMADDLIB_FOLDER "Libraries")
+        set(OSIMADDLIB_FOLDER "Libraries")
     endif()
     set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
        DEFINE_SYMBOL OSIM${OSIMADDLIB_UKIT}_EXPORTS
@@ -334,7 +334,7 @@ endfunction()
 #   file(GLOB TEST_PROGRAMS "test*.cpp")
 #   file(GLOB DATA_FILES *.osim *.xml *.sto *.mot)
 #   OpenSimAddTests(
-#       TESTPROGRAMS ${TEST_ROGRAMS}
+#       TESTPROGRAMS ${TEST_PROGRAMS}
 #       DATAFILES ${DATA_FILES}
 #       LINKLIBS osimCommon osimSimulation osimAnalyses
 #       )
@@ -368,18 +368,18 @@ function(OpenSimAddTests)
                 ${OSIMADDTESTS_SOURCES})
             target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
             if(APPLE)
-                list(APPEND test_args "exclude:[win]")
+                list(APPEND test_args "[mac][unix]")
             endif()
-            if(UNIX)
-                list(APPEND test_args "exclude:[win]")
+            if(LINUX)
+                list(APPEND test_args "[linux][unix]")
             endif()
             if(WIN32)
-                list(APPEND test_args "exclude:[unix]")
+                list(APPEND test_args "[win]")
             endif()
             add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} ${test_args})
             set_target_properties(${TEST_NAME} PROPERTIES
                 FOLDER "Tests"
-				)
+            )
 
         endforeach()
 
@@ -409,15 +409,15 @@ function(OpenSimAddTest)
     # To organize targets in Visual Studio's Solution Explorer.
     set_target_properties(${OSIMTEST_NAME} PROPERTIES FOLDER "Tests")
     target_link_libraries(${OSIMTEST_NAME} ${OSIMTEST_LIB_DEPENDS})
-#    if(APPLE)
-#        list(APPEND test_args "exclude:[win]")
-#    endif()
-#    if(UNIX)
-#        list(APPEND test_args "exclude:[win]")
-#    endif()
-#    if(WIN32)
-#        list(APPEND test_args "exclude:[unix]")
-#    endif()
+    if(APPLE)
+        list(APPEND test_args "[mac][unix]")
+    endif()
+    if(LINUX)
+        list(APPEND test_args "[linux][unix]")
+    endif()
+    if(WIN32)
+        list(APPEND test_args "[win]")
+    endif()
     add_test(NAME ${OSIMTEST_NAME} COMMAND ${OSIMTEST_NAME} ${test_args})
     file(COPY ${OSIMTEST_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()

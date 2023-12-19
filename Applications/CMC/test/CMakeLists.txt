@@ -1,3 +1,5 @@
+find_package(Catch2 REQUIRED
+        HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
 
 file(GLOB TEST_PROGS "test*.cpp")
 file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
@@ -5,7 +7,7 @@ file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 #OpenSimAddTests(
 #    TESTPROGRAMS ${TEST_PROGS}
 #    DATAFILES ${TEST_FILES}
-#    LINKLIBS osimTools
+#    LINKLIBS osimTools Catch2::Catch2WithMain
 #    )
 
 OpenSimAddTest(NAME testCMCGait10dof18musc RESOURCES
@@ -18,5 +20,5 @@ OpenSimAddTest(NAME testCMCGait10dof18musc RESOURCES
         gait10dof18musc_subject_adjusted_Kinematics_q.sto
         gait10dof_Kinematics_Tracking_Tasks.xml
         gait10dof_Reserve_Actuators.xml
-        LIB_DEPENDS osimTools
+        LIB_DEPENDS osimTools Catch2::Catch2WithMain
         )

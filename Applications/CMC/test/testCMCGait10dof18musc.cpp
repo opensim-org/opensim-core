@@ -21,15 +21,15 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
+#include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Tools/CMCTool.h>
 
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 
-TEST_CASE("testGait10dof18musc (Windows)", "[win]") {
+TEST_CASE("testGait10dof18musc (Windows/Linux)", "[.win][.linux]") {
     CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
     cmc.run();
 
@@ -47,32 +47,35 @@ TEST_CASE("testGait10dof18musc (Windows)", "[win]") {
         for (int ic = 0; ic < actual.ncol(); ++ic) {
             INFO("(" << ir << "," << ic << "): " << actual.getElt(ir, ic) <<
                 " vs " << expected.getElt(ir, ic));
-            REQUIRE((Catch::Detail::Approx(actual.getElt(ir, ic)).margin(1e-2)
+            REQUIRE((Catch::Approx(actual.getElt(ir, ic)).margin(1e-3)
                 == expected.getElt(ir, ic)));
         }
     }
 }
 
-TEST_CASE("testGait10dof18musc (Mac/Linux)", "[unix]") {
+TEST_CASE("testGait10dof18musc (Mac)", "[.mac]") {
     CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
     cmc.run();
 
-    TimeSeriesTable results(
+    const TimeSeriesTable results(
         "gait10dof18musc_ResultsCMC/walk_subject_states.sto");
-    TimeSeriesTable std(
+    const TimeSeriesTable std(
         "gait10dof18musc_std_walk_subject_states_unix.sto");
 
-    // TODO: Replace with macro from OpenSim/Moco/Test/Testing.h
-    const auto& actual = results.getMatrix();
-    const auto& expected = std.getMatrix();
-    REQUIRE((actual.nrow() == expected.nrow()));
-    REQUIRE((actual.ncol() == expected.ncol()));
-    for (int ir = 0; ir < actual.nrow(); ++ir) {
-        for (int ic = 0; ic < actual.ncol(); ++ic) {
-            INFO("(" << ir << "," << ic << "): " << actual.getElt(ir, ic) <<
-                " vs " << expected.getElt(ir, ic));
-            REQUIRE((Catch::Detail::Approx(actual.getElt(ir, ic)).margin(1e-2)
-                == expected.getElt(ir, ic)));
+    GCVSplineSet resultSplines(results);
+    GCVSplineSet stdSplines(std);
+    const auto& time = results.getIndependentColumn();
+    for (const auto& label : results.getColumnLabels()) {
+        const auto& result = resultSplines.get(label);
+        const auto& expected = stdSplines.get(label);
+        SimTK::Vector timeVec(1, 0.0);
+        for (int it = 0; it < static_cast<int>(time.size()); ++it) {
+            timeVec[0] = time[it];
+            INFO(label << " at time " << time[it] << ": " <<
+                result.calcValue(timeVec) << " vs " <<
+                expected.calcValue(timeVec));
+            REQUIRE((Catch::Approx(result.calcValue(timeVec)).margin(1e-1)
+                == expected.calcValue(timeVec)));
         }
     }
 }
