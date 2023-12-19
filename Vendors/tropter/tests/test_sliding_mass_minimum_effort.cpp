@@ -16,8 +16,6 @@
 
 #include <tropter/tropter.h>
 
-#define CATCH_CONFIG_MAIN
-#include <catch.hpp>
 #include "testing_optimalcontrol.h"
 
 using Eigen::Ref;
@@ -25,6 +23,8 @@ using Eigen::VectorXd;
 using Eigen::RowVectorXd;
 using Eigen::Vector2d;
 using Eigen::MatrixXd;
+
+using Catch::Approx;
 
 using namespace tropter;
 

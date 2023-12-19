@@ -1,5 +1,8 @@
 include(CMakeParseArguments)
 
+find_package(Catch2 REQUIRED
+        HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
+
 # Create an executable for the file ${TEST_NAME}.cpp, which depends on
 # libraries ${LIB_DEPENDENCIES}. Also create a CTest test for this executable.
 function(MocoAddTest)
@@ -11,7 +14,7 @@ function(MocoAddTest)
     add_executable(${MOCOTEST_NAME} ${MOCOTEST_NAME}.cpp Testing.h)
     # To organize targets in Visual Studio's Solution Explorer.
     set_target_properties(${MOCOTEST_NAME} PROPERTIES FOLDER "Moco/Tests")
-    target_link_libraries(${MOCOTEST_NAME} osimMoco ${MOCOTEST_LIB_DEPENDS})
+    target_link_libraries(${MOCOTEST_NAME} osimMoco ${MOCOTEST_LIB_DEPENDS} Catch2::Catch2WithMain)
     # Skip tests relying on MocoCasADiSolver if CasADi is not available.
     if(NOT OPENSIM_WITH_CASADI)
         list(APPEND test_args "exclude:*MocoCasADiSolver*")

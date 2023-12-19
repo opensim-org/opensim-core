@@ -29,13 +29,14 @@
 #include <OpenSim/Common/SignalGenerator.h>
 #include <OpenSim/Common/Sine.h>
 
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <OpenSim/Common/PolynomialFunction.h>
 
 using namespace OpenSim;
 using namespace SimTK;
+using Catch::Approx;
+using Catch::Matchers::ContainsSubstring;
 
 
 TEST_CASE("SignalGenerator") {
@@ -98,29 +99,29 @@ TEST_CASE("MultivariatePolynomialFunction") {
         {
             MultivariatePolynomialFunction f(createVector({1}), -1, 1);
             CHECK_THROWS_WITH(f.calcValue(SimTK::Vector()),
-                    Catch::Contains("Expected dimension"));
+                    ContainsSubstring("Expected dimension"));
         }
         {
             MultivariatePolynomialFunction f(createVector({1}), 7, 1);
             CHECK_THROWS_WITH(f.calcValue(SimTK::Vector()),
-                    Catch::Contains("Expected dimension"));
+                    ContainsSubstring("Expected dimension"));
         }
         {
             MultivariatePolynomialFunction f(createVector({1}), 1, -1);
             CHECK_THROWS_WITH(f.calcValue(SimTK::Vector()),
-                    Catch::Contains("Expected order"));
+                    ContainsSubstring("Expected order"));
         }
         {
             SimTK::Vector coefficients(19);
             MultivariatePolynomialFunction f(coefficients, 3, 3);
             CHECK_THROWS_WITH(f.calcValue(createVector({1, 2, 3})),
-                    Catch::Contains("Expected 20 coefficients but got 19"));
+                    ContainsSubstring("Expected 20 coefficients but got 19"));
         }
         {
             SimTK::Vector coefficients(21);
             MultivariatePolynomialFunction f(coefficients, 3, 3);
             CHECK_THROWS_WITH(f.calcValue(createVector({1, 2, 3})),
-                    Catch::Contains("Expected 20 coefficients but got 21"));
+                    ContainsSubstring("Expected 20 coefficients but got 21"));
         }
     }
     SECTION("Consistent with PolynomialFunction") {

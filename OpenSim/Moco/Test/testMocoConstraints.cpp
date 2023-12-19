@@ -29,9 +29,9 @@
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 
-#define CATCH_CONFIG_MAIN
 #include "Testing.h"
-using Catch::Contains;
+using Catch::Matchers::ContainsSubstring;
+using Catch::Approx;
 
 using namespace OpenSim;
 using SimTK::State;
@@ -1581,7 +1581,7 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
         constr->addControlPath("/tau0");
         constr->setLowerBound(violateLower);
         CHECK_THROWS_WITH(study.solve(),
-                Contains("must be less than or equal to the minimum"));
+                ContainsSubstring("must be less than or equal to the minimum"));
         constr->clearLowerBound();
         GCVSpline violateUpper;
         violateUpper.setDegree(5);
@@ -1594,7 +1594,8 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
         violateUpper.addPoint(49.99999, .0319);
         constr->setUpperBound(violateUpper);
         CHECK_THROWS_WITH(study.solve(),
-                Contains("must be greater than or equal to the maximum"));
+                ContainsSubstring(
+                    "must be greater than or equal to the maximum"));
     }
 
     SECTION("Can omit both bounds.") {

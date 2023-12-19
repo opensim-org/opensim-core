@@ -25,8 +25,9 @@
 
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/Object.h>
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch/catch.hpp>
+#include <catch2/catch_all.hpp>
+
+using Catch::Matchers::ContainsSubstring;
 
 namespace TestAssertion {
 
@@ -59,10 +60,10 @@ TEST_CASE("OPENSIM_ASSERT_ALWAYS exception contains expected information")
     try {
         TestAssertion::SomeAssertingFunction();
     } catch (const OpenSim::Exception& ex) {
-        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("SomeAssertingFunction"));
-        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("testAssertion.cpp"));
-        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains(lineNumberOfAssertionInThisFile));
-        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("i-am-in-the-error-msg"));
+        REQUIRE_THAT(ex.what(), ContainsSubstring("SomeAssertingFunction"));
+        REQUIRE_THAT(ex.what(), ContainsSubstring("testAssertion.cpp"));
+        REQUIRE_THAT(ex.what(), ContainsSubstring(lineNumberOfAssertionInThisFile));
+        REQUIRE_THAT(ex.what(), ContainsSubstring("i-am-in-the-error-msg"));
     }
 }
 
@@ -75,10 +76,10 @@ TEST_CASE("OPENSIM_ASSERT_FRMOBJ_ALWAYS exception contains expected information"
     try {
         TestAssertion::SomeAssertingObject throwsOnConstruction{};
     } catch (const OpenSim::Exception& ex) {
-        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("SomeAssertingObject"));
-        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("testAssertion.cpp"));
-        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains(lineNumberOfAssertionInThisFile));
-        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("name-of-the-object"));
-        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("and-i-am-also-in-the-error-msg"));
+        REQUIRE_THAT(ex.what(), ContainsSubstring("SomeAssertingObject"));
+        REQUIRE_THAT(ex.what(), ContainsSubstring("testAssertion.cpp"));
+        REQUIRE_THAT(ex.what(), ContainsSubstring(lineNumberOfAssertionInThisFile));
+        REQUIRE_THAT(ex.what(), ContainsSubstring("name-of-the-object"));
+        REQUIRE_THAT(ex.what(), ContainsSubstring("and-i-am-also-in-the-error-msg"));
     }
 }

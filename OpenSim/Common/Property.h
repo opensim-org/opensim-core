@@ -999,7 +999,6 @@ public:
         throw OpenSim::Exception(
             "Property<T>::findIndexForName " + name
             + " called on a list property of non OpenSim Objects. ");
-        return -1;
     }
 private:
     // This is the Property<T> interface implementation.
