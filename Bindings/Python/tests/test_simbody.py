@@ -206,7 +206,7 @@ class TestSimbody(unittest.TestCase):
                 model.calcMassCenterPosition(s)[2])
 
         coordNames = model.getCoordinateNamesInMultibodyTreeOrder();
-        print('firstCoord', coordNames.get(0));
+        print('firstCoord', coordNames.getElt(0));
         
         J = osim.Matrix()
         smss.calcSystemJacobian(s, J)

@@ -947,7 +947,7 @@ public:
     SimTK::Array_<std::string> getCoordinateNamesInMultibodyTreeOrder() {
         SimTK::Array_<std::string> namesArray;
         auto coords = getCoordinatesInMultibodyTreeOrder();
-        for (int i=0; i < coords.size(); ++i)
+        for (auto i=0; i < coords.size(); ++i)
             namesArray.push_back(coords[i]->getName());
         return namesArray;
     }
