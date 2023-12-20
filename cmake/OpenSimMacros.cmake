@@ -369,19 +369,18 @@ function(OpenSimAddTests)
             target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
             set(test_args "")
             if(APPLE)
-                list(APPEND test_args "~[win]~[linux]~[win/linux]")
+                list(APPEND test_args "~[win]~[linux]~[win/linux]~[linux/win]")
             endif()
             if(LINUX)
-                list(APPEND test_args "~[win]~[mac]~[win/mac]")
+                list(APPEND test_args "~[win]~[mac]~[win/mac]~[mac/win]")
             endif()
             if(WIN32)
-                list(APPEND test_args "~[mac]~[linux]~[unix]")
+                list(APPEND test_args "~[mac]~[linux]~[mac/linux]~[linux/mac]~[unix]")
             endif()
             add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} ${test_args})
             set_target_properties(${TEST_NAME} PROPERTIES
                 FOLDER "Tests"
             )
-
         endforeach()
 
         # Copy data files to build directory.::
