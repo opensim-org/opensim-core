@@ -29,14 +29,14 @@
 
 using namespace OpenSim;
 
-TEST_CASE("testGait10dof18musc (Windows/Linux)", "[win/linux]") {
+TEST_CASE("testGait10dof18musc (Windows)", "[win]") {
     CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
     cmc.run();
 
     const TimeSeriesTable results(
         "gait10dof18musc_ResultsCMC/walk_subject_states.sto");
     const TimeSeriesTable std(
-        "gait10dof18musc_std_walk_subject_states.sto");
+        "gait10dof18musc_std_walk_subject_states_win.sto");
 
     // TODO: Replace with macro from OpenSim/Moco/Test/Testing.h
     const auto& actual = results.getMatrix();
@@ -53,21 +53,21 @@ TEST_CASE("testGait10dof18musc (Windows/Linux)", "[win/linux]") {
     }
 }
 
-TEST_CASE("testGait10dof18musc (Mac)", "[mac]") {
+TEST_CASE("testGait10dof18musc (Mac/Linux)", "[unix]") {
     CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
     cmc.run();
 
     const TimeSeriesTable results(
         "gait10dof18musc_ResultsCMC/walk_subject_states.sto");
     const TimeSeriesTable std(
-        "gait10dof18musc_std_walk_subject_states_mac.sto");
+        "gait10dof18musc_std_walk_subject_states_unix.sto");
 
-    // Mac produces inconsistent results compared to Windows and Linux. Somehow,
+    // Unix systems produce inconsistent results compared to Windows. Somehow,
     // CMC produces results with differing number of time points, so we need to
     // interpolate the results to the same time points as the standard results.
     // The shapes of the muscle activity curves also differ slightly, so we
     // allow a larger margin of error for the muscle activity curves. Therefore,
-    // this is an inherently weaker test than the Windows/Linux test.
+    // this is a weaker test compared to the Windows test.
     GCVSplineSet resultSplines(results);
     GCVSplineSet stdSplines(std);
 
