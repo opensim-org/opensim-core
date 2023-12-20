@@ -375,7 +375,7 @@ function(OpenSimAddTests)
                 list(APPEND test_args "~[win]~[mac]")
             endif()
             if(WIN32)
-                list(APPEND test_args "~[ma~[linux]")
+                list(APPEND test_args "~[mac]~[linux]")
             endif()
             add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} ${test_args})
             set_target_properties(${TEST_NAME} PROPERTIES
