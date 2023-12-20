@@ -3404,7 +3404,7 @@ bool Storage::makeStorageLabelsUnique() {
             int c = 1;
             while (exist) {
                 char cString[20];
-                sprintf(cString,"%d", c);
+                snprintf(cString, 20, "%d", c);
                 newName = std::string(cString) + "_" + offending;
                 exist = (lbls.findIndex(newName) != -1);
                 c++;
