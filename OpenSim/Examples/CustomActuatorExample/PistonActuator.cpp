@@ -106,46 +106,80 @@ double PistonActuator::getStress( const SimTK::State& s) const
 //=============================================================================
 // FORCE INTERFACE
 //=============================================================================
-void PistonActuator::computeForce(const SimTK::State& s, 
-        SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-        SimTK::Vector& generalizedForces) const
+void PistonActuator::computeForce(
+    const SimTK::State& s,
+    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+    SimTK::Vector& generalizedForces) const
 {
     const PhysicalFrame& frameA = getFrameA();
     const PhysicalFrame& frameB = getFrameB();
 
-    // We need points A and B expressed both in their frame and expressed in
-    // ground.
-    SimTK::Vec3 pointA_inGround;
-    SimTK::Vec3 pointB_inGround;
-
-    SimTK::Vec3 pointA = get_pointA();
-    SimTK::Vec3 pointB = get_pointB();
+    // We need points A and B expressed in local A and B frame respectively.
+    SimTK::Vec3 pointA   = get_pointA();
+    SimTK::Vec3 pointB   = get_pointB();
     const Ground& ground = getModel().getGround();
-    if (get_points_are_global())
-    {
-        pointA_inGround = pointA;
-        pointB_inGround = pointB;
+    if (get_points_are_global()) {
         pointA = ground.findStationLocationInAnotherFrame(s, pointA, frameA);
         pointB = ground.findStationLocationInAnotherFrame(s, pointB, frameB);
     }
-    else
-    {
-        pointA_inGround = frameA.findStationLocationInGround(s, pointA);
-        pointB_inGround = frameB.findStationLocationInGround(s, pointB);
-    }
-
-    // Find the direction along which the actuator applies its force.
-    SimTK::Vec3 r = pointA_inGround - pointB_inGround;
-    SimTK::UnitVec3 direction(r);
 
     // Calculate the force magnitude and the force vector.
     double forceMagnitude = computeActuation(s);
     setActuation(s, forceMagnitude);
-    SimTK::Vec3 force = forceMagnitude * direction;
+    SimTK::Vec3 force = forceMagnitude * calcDirectionBAInGround(s);
 
     // Apply equal and opposite forces to the bodies.
     applyForceToPoint(s, frameA, pointA, force, bodyForces);
     applyForceToPoint(s, frameB, pointB, -force, bodyForces);
+}
+
+SimTK::UnitVec3 PistonActuator::calcDirectionBAInGround(
+    const SimTK::State& s) const
+{
+    // Get pointA and pointB positions in the local frame of bodyA and bodyB,
+    // respectively.
+    // Points may have been supplied either global or local frame.
+    const bool pointsAreGlobal = get_points_are_global();
+    const SimTK::Vec3& pointA  = getPointA();
+    const SimTK::Vec3& pointB  = getPointB();
+
+    SimTK::Vec3 pointA_inGround =
+        pointsAreGlobal ? pointA
+                        : getFrameA().findStationLocationInGround(s, pointA);
+    SimTK::Vec3 pointB_inGround =
+        pointsAreGlobal ? pointB
+                        : getFrameB().findStationLocationInGround(s, pointB);
+
+    // Find the direction along which the actuator applies its force.
+    const SimTK::Vec3 r = pointA_inGround - pointB_inGround;
+    const SimTK::UnitVec3 direction(r); // normalize
+
+    return direction;
+}
+
+//=============================================================================
+// SCALAR ACTUATOR INTERFACE
+//=============================================================================
+double PistonActuator::getSpeed(const SimTK::State& s) const
+{
+    // Speed is zero for constant points defined in the same frame.
+    if (get_points_are_global()) {
+        return 0.;
+    }
+
+    const SimTK::Vec3& pointA_inBodyA = getPointA();
+    const SimTK::Vec3& pointB_inBodyB = getPointB();
+
+    // Get the relative velocity of the points in ground.
+    SimTK::Vec3 velA_G =
+        getFrameA().findStationVelocityInGround(s, pointA_inBodyA);
+    SimTK::Vec3 velB_G =
+        getFrameB().findStationVelocityInGround(s, pointB_inBodyB);
+    SimTK::Vec3 velAB_G = velA_G - velB_G;
+    // Speed used to compute power is the speed along the line connecting
+    // the two bodies.
+    double speed = ~velAB_G * calcDirectionBAInGround(s);
+    return speed;
 }
 
 //=============================================================================

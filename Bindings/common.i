@@ -167,6 +167,8 @@ namespace OpenSim {
 
     void addTableMetaDataString(const std::string& key,
                                 const std::string& value) {
+         if ($self->hasTableMetaDataKey(key))
+            $self->removeTableMetaDataKey(key);
         $self->addTableMetaData<std::string>(key, value);
     }
     
@@ -202,15 +204,7 @@ namespace OpenSim {
 %ignore OpenSim::DataTable_::DataTable_(const DataTable_<double, double>&,
                                         const std::vector<std::string>&);
 %ignore OpenSim::DataTable_<double, double>::flatten;
-// A version of SWIG between 3.0.6 and 3.0.12 broke the ability to extend class
-// templates with more than 1 template parameter, so we must enumerate the
-// possible template arguments (not necesary for TimeSeriesTable's clone; that
-// template has only 1 param.).
-//%extend OpenSim::DataTable_ {
-//    OpenSim::DataTable_<ETX, ETY>* clone() const {
-//        return new OpenSim::DataTable_<ETX, ETY>{*$self};
-//    }
-//}
+
 %define DATATABLE_CLONE(ETX, ETY)
 %extend OpenSim::DataTable_<ETX, ETY> {
     OpenSim::DataTable_<ETX, ETY>* clone() const {

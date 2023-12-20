@@ -41,6 +41,9 @@ OpenSim_DECLARE_CONCRETE_OBJECT(IKMarkerTask, IKTask);
 public:
     IKMarkerTask() = default;
     IKMarkerTask(const IKMarkerTask&) = default;
+    IKMarkerTask(IKMarkerTask&&) = default;
+    IKMarkerTask& operator=(const IKMarkerTask&) = default;
+    IKMarkerTask& operator=(IKMarkerTask&&) = default;
     //=============================================================================
 };  // END of class IKMarkerTask
 //=============================================================================

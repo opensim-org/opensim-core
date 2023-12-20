@@ -34,7 +34,8 @@
 #include <vector>
 
 // DEFINES
-const int IO_STRLEN = 2048;
+constexpr int IO_STRLEN = 2048;
+constexpr int IO_DBLFMTLEN = 256;
 
 
 namespace OpenSim { 
@@ -62,7 +63,7 @@ private:
     /** Specifies the precision of number output. */
     static int _Precision;
     /** The output format string. */
-    static char _DoubleFormat[256];
+    static char _DoubleFormat[IO_DBLFMTLEN];
     /** Whether offline documents should also be printed when Object::print is called. */
     static bool _PrintOfflineDocuments;
 

@@ -34,7 +34,15 @@ and `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`,
 - Fixed a minor bug when the locally installed package (via `pip`) couldn't find the dependencies (PR #3593). Added `data_files` argument to the `setup.py` to copy all the dependencies into the opensim package folder in the Python environment.
 - Added `PolynomialPathFitter`, A utility class for fitting a set of `FunctionBasedPath`s to existing geometry-path in 
   an OpenSim model using `MultivariatePolynomialFunction`s (#3390)
+- Added `examplePolynomialPathFitter.py`, a scripting example that demonstrates how to use `PolynomialPathFitter` (#3607)
+- Fixed a bug where using `to_numpy()` to convert `RowVectorView`s to Python arrays returned incorrect data (#3613)
 - Bumped the version of `ezc3d` which can now Read Kistler files
+- Updated scripting method addTableMetaDataString to support overwriting metadata value for an existing key (#3589)
+- Exposed simbody methods to obtain GravityForces, MobilityForces and BodyForces (#3490)
+- Simbody was updated such that the headers it transitively exposes to downstream projects are compatible with C++20 (#3619)
+- Moved speed computation from `computeForce` in children of `ScalarActuator` to dedicated `getSpeed` function.
+- Fix type problem with BufferedOrientationReference (Issue #3415, PR #3644)
+
 
 v4.4.1
 ======

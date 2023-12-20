@@ -125,9 +125,9 @@ double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
 * this actuator divided by its optimal force.
 * @return Stress.
 */
-double PathActuator::getStress( const SimTK::State& s) const
+double PathActuator::getStress(const SimTK::State& s) const
 {
-    return fabs(getActuation(s)/get_optimal_force()); 
+    return fabs(getActuation(s)/get_optimal_force());
 }
 
 
@@ -138,8 +138,8 @@ double PathActuator::getStress( const SimTK::State& s) const
  *
  */
 void PathActuator::addNewPathPoint(
-         const std::string& proposedName, 
-         const PhysicalFrame& aBody, 
+         const std::string& proposedName,
+         const PhysicalFrame& aBody,
          const SimTK::Vec3& aPositionOnBody) {
     // Create new PathPoint already appended to the PathPointSet for the path
     updGeometryPath().appendNewPathPoint(proposedName, aBody, aPositionOnBody);
@@ -153,7 +153,7 @@ void PathActuator::addNewPathPoint(
  * Compute all quantities necessary for applying the actuator force to the
  * model.
  */
-double PathActuator::computeActuation( const SimTK::State& s ) const
+double PathActuator::computeActuation(const SimTK::State& s) const
 {
     // FORCE
     return( getControl(s) * get_optimal_force() );
@@ -167,20 +167,13 @@ double PathActuator::computeActuation( const SimTK::State& s ) const
 /**
  * Apply the actuator force along path wrapping over and connecting rigid bodies
  */
-void PathActuator::computeForce( const SimTK::State& s, 
-                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void PathActuator::computeForce(const SimTK::State& s,
+                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                SimTK::Vector& mobilityForces) const
 {
     if(!_model) return;
 
     const auto &path = getPath();
-
-    // compute path's lengthening speed if necessary
-    double speed = path.getLengtheningSpeed(s);
-
-    // the lengthening speed of this actuator is the "speed" of the actuator 
-    // used to compute power
-    setSpeed(s, speed);
 
     double force =0;
     if( isActuationOverridden(s) ) {

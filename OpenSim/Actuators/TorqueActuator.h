@@ -125,6 +125,12 @@ public:
     /** Get the second body (bodyB) to which this actuator applies torque. */
     const PhysicalFrame& getBodyB() const {return *_bodyB;}
 
+protected:
+    //--------------------------------------------------------------------------
+    // Implement ModelComponent Interface
+    //--------------------------------------------------------------------------
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+
 //==============================================================================
 // PRIVATE
 //==============================================================================
@@ -144,6 +150,10 @@ private:
     double computeActuation(const SimTK::State& s) const override;
     // Return the stress, defined as abs(force/optimal_force).
     double getStress(const SimTK::State& state) const override; 
+    //* Get speed along force vector. */
+    double getSpeed(const SimTK::State& s) const override;
+    //* Compute speed along force vector. */
+    double calcSpeed(const SimTK::State& s) const;
 
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface
@@ -168,6 +178,9 @@ private:
 
     // Corresponding Body to which the equal and opposite torque is applied.
     SimTK::ReferencePtr<const PhysicalFrame> _bodyB;
+
+    // CachedVariable: Speed used to compute power.
+    mutable CacheVariable<double> _speedCV;
 
 //==============================================================================
 };  // END of class TorqueActuator

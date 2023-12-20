@@ -50,7 +50,9 @@ delete_this_to_stop_optimization*.txt
 .idea/dictionaries
 .idea/vcs.xml
 .idea/opensim-core.iml
+.idea/OpenSim.iml
 .idea/misc.xml
+.idea/editor.xml
 .idea/codeStyles/codeStyleConfig.xml
 .idea/codeStyles/Project.xml
 .idea/editor.xml
