@@ -185,6 +185,6 @@ string PropertyInt::
 toString() const
 {
     char intString[32];
-    sprintf(intString, "%d", _value);
+    snprintf(intString, 32, "%d", _value);
     return intString;
 }
