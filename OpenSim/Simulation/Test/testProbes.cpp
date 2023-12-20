@@ -525,11 +525,12 @@ void simulateMuscle(
     model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
 
     double Emuscle0 = muscWorkProbe->getProbeOutputs(si)(0);
-    //cout << "Muscle initial energy = " << Emuscle0 << endl;
+    log_debug("Muscle initial energy = {}", Emuscle0);
     double Esys0 = model.getMultibodySystem().calcEnergy(si);
     Esys0 += (Emuscle0 + jointWorkProbe->getProbeOutputs(si)(0));
-    /*double PEsys0 = */model.getMultibodySystem().calcPotentialEnergy(si);
-    //cout << "Total initial system energy = " << Esys0 << endl; 
+    double PEsys0 = model.getMultibodySystem().calcPotentialEnergy(si);
+    log_debug("Total system initial energy = {}", Esys0);
+    log_debug("System potential energy = {}", PEsys0);
 
     //==========================================================================
     // 4. SIMULATION Integration

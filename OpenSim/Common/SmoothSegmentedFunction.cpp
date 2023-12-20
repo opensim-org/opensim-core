@@ -636,7 +636,7 @@ DerivativeValues calcSelectedDerivatives(
             MAXITER);
 
         const SimTK::Array_<SimTK::Vec6>& ctrlPtsY = smoothData->_ctrlPtsY;
-        for (size_t i = 0; i < y.size(); ++i) {
+        for (int i = 0; i < static_cast<int>(y.size()); ++i) {
             if (selectedOrders[i]) {
                 y.at(i) = SegmentedQuinticBezierToolkit::
                     calcQuinticBezierCurveDerivDYDX(

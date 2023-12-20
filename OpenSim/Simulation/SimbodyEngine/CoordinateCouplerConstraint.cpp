@@ -286,7 +286,7 @@ void CoordinateCouplerConstraint::extendAddToSystem(SimTK::MultibodySystem& syst
     mob_bodies.push_back(aCoordinate._bodyIndex);
     mob_qs.push_back(SimTK::MobilizerQIndex(aCoordinate._mobilizerQIndex));
 
-    if (!mob_qs.size() & (mob_qs.size() != mob_bodies.size())) {
+    if (!mob_qs.size() && (mob_qs.size() != mob_bodies.size())) {
         errorMessage = "CoordinateCouplerConstraint:: requires at least one body and coordinate." ;
         throw (Exception(errorMessage));
     }
