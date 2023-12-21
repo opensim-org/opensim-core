@@ -22,6 +22,7 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Common/LinearFunction.h>
 
+#include <catch2/catch_all.hpp>
 #include "Testing.h"
 
 using namespace OpenSim;

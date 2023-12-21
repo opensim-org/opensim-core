@@ -28,7 +28,9 @@
 
 #include <fstream>
 
+#include <catch2/catch_all.hpp>
 #include "Testing.h"
+
 using Catch::Approx;
 using Catch::Matchers::ContainsSubstring;
 

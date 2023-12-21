@@ -22,7 +22,9 @@
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Analyses/IMUDataReporter.h>
 
+#include <catch2/catch_all.hpp>
 #include "Testing.h"
+
 using Catch::Approx;
 
 using namespace OpenSim;

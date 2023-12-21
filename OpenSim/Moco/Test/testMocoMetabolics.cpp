@@ -18,7 +18,9 @@
 
 #include <OpenSim/Moco/osimMoco.h>
 
+#include <catch2/catch_all.hpp>
 #include "Testing.h"
+
 using Catch::Approx;
 
 using namespace OpenSim;

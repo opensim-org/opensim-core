@@ -14,6 +14,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
+#include <catch2/catch_all.hpp>
 #include "testing.h"
 
 #include <tropter/tropter.h>

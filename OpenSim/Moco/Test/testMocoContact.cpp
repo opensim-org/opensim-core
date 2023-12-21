@@ -20,7 +20,9 @@
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 
+#include <catch2/catch_all.hpp>
 #include "Testing.h"
+
 using Catch::Approx;
 
 const double FRICTION_COEFFICIENT = 0.7;
