@@ -960,7 +960,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 
         // Compute tendon force length multiplier, and tendon stiffness. Tendon
         // stiffness is computed here, because it is cheaper to evaluate the
-        // curve value and derivative simultaneously.
+        // curve value and derivative simultaneously (see opensim-core/3653).
         double fse = SimTK::NaN; // NaN for rigid tendon.
         double tendonStiffness = SimTK::Infinity; // Inf for rigid tednon.
         if (!get_ignore_tendon_compliance()) { // In case of compliant tendon.
