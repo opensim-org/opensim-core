@@ -497,7 +497,7 @@ double Muscle::getTendonPower(const SimTK::State& s) const
 /* get the current muscle power (W) */
 double Muscle::getMusclePower(const SimTK::State& s) const
 {
-    return getMuscleDynamicsInfo(s).musclePower;
+    return calcMusclePower(s);
 }
 
 
@@ -628,6 +628,10 @@ void Muscle::calcMusclePotentialEnergyInfo(const SimTK::State& s,
         + "::calcMusclePotentialEnergyInfo() NOT IMPLEMENTED.");
 }
 
+double Muscle::calcMusclePower(const SimTK::State& s) const
+{
+    return -getLengtheningSpeed(s) * getTendonForce(s);
+}
 
 //=============================================================================
 // Required by CMC and Static Optimization

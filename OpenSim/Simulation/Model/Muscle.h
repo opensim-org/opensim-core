@@ -458,6 +458,8 @@ private:
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
+    /** The muscle power (W) */
+    double calcMusclePower(const SimTK::State& s) const;
 
 //=============================================================================
 // DATA
@@ -713,7 +715,6 @@ protected:
             fiberActivePower            force*velocity       W (N*m/s)
             fiberPassivePower           force*velocity       W (N*m/s)
             tendonPower                 force*velocity       W (N*m/s)
-            musclePower                 force*velocity       W (N*m/s)
 
             userDefinedDynamicsData     NA                   NA     [11]
 
@@ -785,7 +786,6 @@ protected:
         double fiberActivePower;        // force*velocity       W
         double fiberPassivePower;       // force*velocity       W
         double tendonPower;             // force*velocity       W
-        double musclePower;             // force*velocity       W
 
         SimTK::Vector userDefinedDynamicsExtras; //NA          NA
 
@@ -805,7 +805,6 @@ protected:
             fiberActivePower(SimTK::NaN),
             fiberPassivePower(SimTK::NaN),
             tendonPower(SimTK::NaN),
-            musclePower(SimTK::NaN),
             userDefinedDynamicsExtras(0, SimTK::NaN){};
         friend std::ostream& operator<<(std::ostream& o, 
             const MuscleDynamicsInfo& mdi) {
