@@ -379,10 +379,10 @@ jobs:
         name: opensim-core-${{ steps.configure.outputs.version }}-mac-11
         path: opensim-core-${{ steps.configure.outputs.version }}-11.zip
 
-  macM1NoMoco:
+  mac-m1:
     name: MacM1
 
-    runs-on: macos-13-xlarge
+    runs-on: macos-latest-xlarge
 
     steps:
     - uses: actions/checkout@v3
