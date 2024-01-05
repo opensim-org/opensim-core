@@ -294,8 +294,8 @@ void GeometryPath::namePathPoints(int aStartingIndex)
 {
     for (int i = aStartingIndex; i < get_PathPointSet().getSize(); i++)
     {
-        char indx[5];
-        snprintf(indx,5,"%d",i+1);
+        char indx[32];
+        snprintf(indx,32,"%d",i+1);
         AbstractPathPoint& point = get_PathPointSet().get(i);
         if (point.getName()=="" && hasOwner()) {
             point.setName(getOwner().getName() + "-P" + indx);
