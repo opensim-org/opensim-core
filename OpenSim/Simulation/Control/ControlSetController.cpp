@@ -29,13 +29,15 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Controller.h"
 #include "ControlSetController.h"
+
 #include "ControlLinear.h"
 #include "ControlSet.h"
-#include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Common/Storage.h>
+#include "Controller.h"
 
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
 // STATICS
@@ -162,13 +164,14 @@ void ControlSetController::computeControls(const SimTK::State& s, SimTK::Vector&
 {
     SimTK_ASSERT( _controlSet , "ControlSetController::computeControls controlSet is NULL");
 
-    std::string actName = "";
+    std::string actName;
     int index = -1;
 
-    int na = getActuatorSet().getSize();
-
-    for(int i=0; i< na; ++i){
-        actName = getActuatorSet()[i].getName();
+    const auto& socket = getSocket<Actuator>("actuators");
+    const int na = static_cast<int>(socket.getNumConnectees());
+    for(int i = 0; i < na; ++i){
+        const auto& actu = socket.getConnectee(i);
+        actName = actu.getName();
         index = _controlSet->getIndex(actName);
         if(index < 0){
             actName = actName + ".excitation";
@@ -177,7 +180,7 @@ void ControlSetController::computeControls(const SimTK::State& s, SimTK::Vector&
 
         if(index >= 0){
             SimTK::Vector actControls(1, _controlSet->get(index).getControlValue(s.getTime()));
-            getActuatorSet()[i].addInControls(actControls, controls);
+            actu.addInControls(actControls, controls);
         }
     }
 }
@@ -261,6 +264,7 @@ void ControlSetController::extendFinalizeFromProperties()
         setEnabled(true);
     }
 
+    const auto& socket = updSocket<Actuator>("actuators");
     std::string ext = ".excitation";
     for (int i = 0; _controlSet != nullptr && i < _controlSet->getSize(); ++i) {
         std::string actName = _controlSet->get(i).getName();
@@ -268,7 +272,26 @@ void ControlSetController::extendFinalizeFromProperties()
             !(actName.compare(actName.length() - ext.length(), ext.length(), ext))) {
             actName.erase(actName.length() - ext.length(), ext.length());
         }
-        if (getProperty_actuator_list().findIndex(actName) < 0) // not already in the list of actuators for this controller
-            updProperty_actuator_list().appendValue(actName);
+
+        // Check if the actuator is already connected to this controller.
+        const auto& modelActuators = getModel().getComponentList<Actuator>();
+        bool foundActuator = false;
+        for (const auto& actu : modelActuators) {
+            if (actu.getName() == actName) {
+                // Do not add the actuator if it is already in the list of
+                // connectee paths. The connectee paths should be valid at this
+                // point during deserialization.
+                if (!socket.hasConnecteePath(actu.getAbsolutePathString())) {
+                    addActuator(actu);
+                }
+                foundActuator = true;
+                break;
+            }
+        }
+
+        OPENSIM_THROW_IF_FRMOBJ(!foundActuator, Exception,
+            "ControlSetController::extendFinalizeFromProperties: "
+            "Actuator '{}' in ControlSet '{}' not found in model '{}'.",
+            actName, _controlSet->getName(), getModel().getName());
     }
 }

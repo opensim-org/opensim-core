@@ -253,6 +253,18 @@ public:
         return getConnecteePathProp().getValue().empty();
     }
 
+    /** Check if this socket has a connectee path that matches the provided
+     * path. */
+    bool hasConnecteePath(const std::string& path) const {
+        return getConnecteePathProp().findIndex(path) != -1;
+    }
+
+    /** Get the index of the provided connectee path in the connectee path
+     * property. */
+    int getConnecteePathIndex(const std::string& path) const {
+        return getConnecteePathProp().findIndex(path);
+    }
+
     /** Get owner component of this socket */
     const Component& getOwner() const { return _owner.getRef(); }
 
@@ -426,7 +438,7 @@ public:
      * connect to that component.
      *
      * Throws an exception If you provide only a component name and the
-     * model has multiple components with that nume.
+     * model has multiple components with that name.
      * */
     void findAndConnect(const ComponentPath& connectee) override;
 

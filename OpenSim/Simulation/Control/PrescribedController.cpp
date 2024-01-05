@@ -1,4 +1,4 @@
-/* -------------------------------------------------------------------------- *
+ /* -------------------------------------------------------------------------- *
  *                     OpenSim:  PrescribedController.cpp                     *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
@@ -122,7 +122,8 @@ void PrescribedController::extendConnectToModel(Model& model)
         FunctionSet& controlFuncs = upd_ControlFunctions();
         const Set<Actuator>& modelActuators = getModel().getActuators();
 
-        Set<const Actuator>& controllerActuators = updActuators();
+        //Set<const Actuator>& controllerActuators = updActuators();
+        const auto& socket = getSocket<Actuator>("actuators");
 
         for(int i=0; i<ncols; ++i){
             if(i == tcol) continue;
@@ -145,14 +146,18 @@ void PrescribedController::extendConnectToModel(Model& model)
                     continue;
                 }
                 controls.getDataColumn(controls.getStateIndex(columnLabel), data);
-                Function* pfunc=createFunctionFromData(columnLabel, time, data);
-                //if not already assigned to this controller, assign it
-                int inC = controllerActuators.getIndex(actuator->getName());
+                Function* pfunc =
+                    createFunctionFromData(columnLabel, time, data);
+                // If not already assigned to this controller, assign it.
+                //int inC = controllerActuators.getIndex(actuator->getName());
+                // TODO do I need to check if the actuator is actually connected
+                // at this point?
+                int inC = socket.getConnecteePathIndex(
+                        actuator->getAbsolutePathString());
                 if(inC >= 0)
                     prescribeControlForActuator(inC, pfunc);
                 else{ // add the actuator to the controller's list
-                    updProperty_actuator_list().appendValue(actuator->getName());
-                    controllerActuators.adoptAndAppend(actuator);
+                    addActuator(*actuator);
                     prescribeControlForActuator(actuator->getName(), pfunc);
                 }
             }// if found in functions, it has already been prescribed
@@ -167,10 +172,11 @@ void PrescribedController::computeControls(const SimTK::State& s, SimTK::Vector&
     SimTK::Vector actControls(1, 0.0);
     SimTK::Vector time(1, s.getTime());
 
-    for(int i=0; i<getActuatorSet().getSize(); i++){
+    const auto& socket = getSocket<Actuator>("actuators");
+    for(int i = 0; i < socket.getNumConnectees(); ++i){
         actControls[0] = get_ControlFunctions()[i].calcValue(time);
-        getActuatorSet()[i].addInControls(actControls, controls);
-    }  
+        socket.getConnectee(i).addInControls(actControls, controls);
+    }
 }
 
 
@@ -184,18 +190,19 @@ void PrescribedController::
     OPENSIM_THROW_IF_FRMOBJ(index < 0,  
             Exception, "Index was " + std::to_string(index) +
                        " but must be nonnegative." );
-    OPENSIM_THROW_IF(index >= getActuatorSet().getSize(),
+
+    int numActuators = getSocket<Actuator>("actuators").getNumConnectees();
+    OPENSIM_THROW_IF(index >= numActuators,
             IndexOutOfRange, (size_t)index, 0,
-            (size_t)getActuatorSet().getSize() - 1);
+            (size_t)numActuators - 1);
 
     if(index >= get_ControlFunctions().getSize())
         upd_ControlFunctions().setSize(index+1);
     upd_ControlFunctions().set(index, prescribedFunction);  
 }
 
-void PrescribedController::
-    prescribeControlForActuator(const std::string actName, 
-                                Function *prescribedFunction)
+void PrescribedController::prescribeControlForActuator(
+        const std::string actName, Function *prescribedFunction)
 {
     int index = getProperty_actuator_list().findIndex(actName);
     if(index < 0 )

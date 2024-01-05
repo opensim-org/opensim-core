@@ -23,17 +23,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//============================================================================
-// INCLUDE
-//============================================================================
-// These files contain declarations and definitions of variables and methods
-// that will be used by the Controller class.
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Common/Set.h>
 
 namespace OpenSim { 
 
-// Forward declarations of classes that are used by the controller implementation
 class Model;
 class Actuator;
 
@@ -66,10 +60,8 @@ public:
         "Flag (true or false) indicating whether or not the controller is "
         "enabled." );
 
-    OpenSim_DECLARE_LIST_PROPERTY(actuator_list, std::string,
-        "The names of the model actuators that this controller will control."
-        "The keyword ALL indicates the controller will control all the "
-        "actuators in the model" );
+    OpenSim_DECLARE_LIST_SOCKET(actuators, Actuator,
+        "The list of Actuators that this controller will control.");
 
 //=============================================================================
 // METHODS
@@ -77,19 +69,17 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION AND DESTRUCTION
     //--------------------------------------------------------------------------
-public:
-
-    /** Default constructor. */
     Controller();
-    Controller(Controller const&);
-    Controller& operator=(Controller const&);
     ~Controller() noexcept override;
 
-    // Uses default (compiler-generated) destructor, copy constructor and copy 
-    // assignment operator.
+    Controller(const Controller&);
+    Controller& operator=(Controller const&);
+
+    Controller(Controller&&);
+    Controller& operator=(Controller&&);
 
     //--------------------------------------------------------------------------
-    // Controller Interface
+    // CONTROLLER INTERFACE
     //--------------------------------------------------------------------------
     /** Get whether or not this controller is enabled.
      * @return true when controller is enabled.
@@ -101,14 +91,20 @@ public:
      */
     void setEnabled(bool enableFlag);
 
-    /** replace the current set of actuators with the provided set */
-    void setActuators(const Set<Actuator>& actuators );
-    /** add to the current set of actuators */
+    /** Replace the current set of actuators with the provided set. */
+    void setActuators(const Set<Actuator>& actuators);
+    void setActuators(const SimTK::Array_<Actuator>& actuators);
+
+    /** Add to the current set of actuators. */
     void addActuator(const Actuator& actuator);
-    /** get a const reference to the current set of const actuators */
-    const Set<const Actuator>& getActuatorSet() const;
-    /** get a writable reference to the set of const actuators for this controller */
-    Set<const Actuator>& updActuators();
+
+    /** Get a const reference to the current set of const actuators. */
+    // const Set<const Actuator>& getActuatorSet() const;
+    //const SimTK::Array_<const Actuator>& getActuators() const;
+
+    /** Get a writable reference to the set of const actuators for this
+     * controller. */
+    // Set<const Actuator>& updActuators();
 
     /** Compute the control for actuator
      *  This method defines the behavior for any concrete controller 
@@ -120,41 +116,37 @@ public:
     virtual void computeControls(const SimTK::State& s,
                                  SimTK::Vector &controls) const = 0;
 
-    int getNumControls() const {return _numControls;}
+    /** Get the number of controls this controller computes. */
+    int getNumControls() const { return _numControls; }
 
 protected:
 
     /** Model component interface that permits the controller to be "wired" up
-       to its actuators. Subclasses can override to perform additional setup. */
+     * to its actuators. Subclasses can override to perform additional setup. */
     void extendConnectToModel(Model& model) override;  
 
-    /** Model component interface that creates underlying computational components
-        in the SimTK::MultibodySystem. This includes adding states, creating 
-        measures, etc... required by the controller. */
+    /** Model component interface that creates underlying computational
+     * components in the SimTK::MultibodySystem. This includes adding states,
+     * creating measures, etc., required by the controller. */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-    /** Only a Controller can set its number of controls based on its actuators */
+    /** Only a Controller can set its number of controls based on its
+     * actuators. */
     void setNumControls(int numControls) {_numControls = numControls; }
 
     void updateFromXMLNode(SimTK::Xml::Element& node,
                            int versionNumber) override;
 
 private:
-    // number of controls this controller computes 
+    // The number of controls this controller computes.
     int _numControls;
 
-    // the (sub)set of Model actuators that this controller controls */ 
-    Set<const Actuator> _actuatorSet;
-
-    // construct and initialize properties
+    // Construct and initialize properties.
     void constructProperties();
 
-//=============================================================================
-};  // END of class Controller
+};  // class Controller
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // namespace OpenSim
 
 #endif // OPENSIM_CONTROLLER_H_
 
