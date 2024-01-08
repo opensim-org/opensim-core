@@ -386,7 +386,7 @@ public:
     }
 
     /** Return a const reference to the Object connected to this Socket. */
-    const T& getConnecteeAsObject(int index = -1) const override {
+    const Object& getConnecteeAsObject(int index = -1) const override {
         if (index < 0) {
             if (!isListSocket()) { index = 0; }
             else {
@@ -471,7 +471,7 @@ protected:
 
 private:
 
-    const T& getConnecteeAsObjectInternal(int index) const {
+    const Object& getConnecteeAsObjectInternal(int index) const {
         OPENSIM_THROW_IF(!isConnected(), Exception,
             "Socket '{}' not connected.", getName());
         using SimTK::isIndexInRange;
@@ -1135,12 +1135,24 @@ private:
     /** @endcond                                                         */ \
     /** @name Socket-related functions                                   */ \
     /** @{                                                               */ \
-    /** Connect the '##cname##' Socket to an object of type T##.         */ \
+    /** Append an object of type T## to the list of connectees in the    */ \
+    /** list Socket.                                                     */ \
     /** Call finalizeConnections() afterwards to update the socket's     */ \
     /** connectee path property. The reference to the connectee set here */ \
     /** takes precedence over the connectee path property.               */ \
-    void connectSocket_##cname(const OpenSim::Object& object) {             \
+    void appendSocketConnectee_##cname(const OpenSim::Object& object) {     \
         this->updSocket(#cname).connect(object);                            \
+    }                                                                       \
+    /** Connect the '##cname##' Socket to a list of objects of type T##. */ \
+    /** Call finalizeConnections() afterwards to update the socket's     */ \
+    /** connectee path property. The reference to the connectee set here */ \
+    /** takes precedence over the connectee path property.               */ \
+    void connectSocket_##cname(                                             \
+            const std::vector<                                              \
+                SimTK::ReferencePtr<const OpenSim::Object>>& objects) {     \
+        for (const auto& object : objects) {                                \
+            this->updSocket(#cname).connect(object.getRef());               \
+        }                                                                   \
     }                                                                       \
     /** @}                                                               */
 
@@ -1315,13 +1327,15 @@ OpenSim::PropertyIndex Class::constructSocket_##cname() {                   \
         updInput(#iname).connect(output, alias);                            \
     }                                                                       \
     /** Connect this Input to an output channel of type T##.             */ \
+    /** This overrides any existing channel connections.                 */ \
     /** You can optionally provide an alias that will be used by this    */ \
     /** component to refer to the channel.                               */ \
     /** Call finalizeConnections() afterwards to update the input's      */ \
     /** connectee path property. The reference to the channel set here   */ \
     /** takes precedence over the connectee path property.               */ \
-    void connectInput_##iname(const OpenSim::AbstractChannel& channel,      \
-                              const std::string& alias = "") {              \
+    void connectInputChannel_##iname(                                       \
+            const OpenSim::AbstractChannel& channel,                        \
+            const std::string& alias = "") {                                \
         updInput(#iname).connect(channel, alias);                           \
     }                                                                       \
     /** @}                                                               */
@@ -1382,14 +1396,16 @@ OpenSim::PropertyIndex Class::constructSocket_##cname() {                   \
                               const std::string& alias = "") {              \
         updInput(#iname).connect(output, alias);                            \
     }                                                                       \
-    /** Connect this Input to an output channel of type T##.             */ \
+    /** Append an output channel to the list of connectees in the list   */ \
+    /** Input.                                                           */ \
     /** You can optionally provide an alias that will be used by this    */ \
     /** component to refer to the channel.                               */ \
     /** Call finalizeConnections() afterwards to update the input's      */ \
     /** connectee path property. The reference to the channel set here   */ \
     /** takes precedence over the connectee path property.               */ \
-    void connectInput_##iname(const OpenSim::AbstractChannel& channel,      \
-                              const std::string& alias = "") {              \
+    void appendInputChannel_##iname(                                        \
+            const OpenSim::AbstractChannel& channel,                        \
+            const std::string& alias = "") {                                \
         updInput(#iname).connect(channel, alias);                           \
     }                                                                       \
     /** @}                                                               */

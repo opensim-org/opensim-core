@@ -203,7 +203,7 @@ class TestInputsOutputs(unittest.TestCase):
         coord = j.get_coordinates(0)
         rep.updInput('inputs').connect(coord.getOutput('value'))
         rep.connectInput_inputs(coord.getOutput('speed'), 'spd')
-        rep.connectInput_inputs(
+        rep.appendInputChannel_inputs(
                 source.getOutput('column').getChannel('col1'))
         rep.addToReport(
                 source.getOutput('column').getChannel('col2'), 'second_col')
