@@ -29,7 +29,9 @@
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 
+#include <catch2/catch_all.hpp>
 #include "Testing.h"
+
 using Catch::Matchers::ContainsSubstring;
 using Catch::Approx;
 

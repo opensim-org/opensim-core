@@ -14,11 +14,13 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include <tropter/tropter.h>
-
+#include <catch2/catch_all.hpp>
+#include "testing.h"
 #include "testing_optimalcontrol.h"
 
-using Eigen::Ref;
+#include <tropter/tropter.h>
+
+using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using Eigen::RowVectorXd;
 using Eigen::Vector2d;

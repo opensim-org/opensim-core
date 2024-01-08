@@ -416,12 +416,12 @@ void ForceReporter::tidyForceNames()
             bool validNameFound=false;
             char pad[100];
             // Make up a candidate name
-            sprintf(pad, "%s%d", 
+            snprintf(pad, 100, "%s%d",
                     forces.get(i).getConcreteClassName().c_str(), j++);
             while(!validNameFound){
                 validNameFound = (forceNames.findIndex(string(pad))== -1);
                 if (!validNameFound){
-                    sprintf(pad, "Force%d", j++);
+                    snprintf(pad, 100, "Force%d", j++);
                 }
             }
             string newName(pad);

@@ -13,10 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ----------------------------------------------------------------------------
-#include <tropter/tropter.h>
 
+#include <catch2/catch_all.hpp>
+#include "testing.h"
 #include "testing_optimalcontrol.h"
 #include <cmath>
+
+#include <tropter/tropter.h>
 
 using Eigen::Ref;
 using Eigen::VectorXd;

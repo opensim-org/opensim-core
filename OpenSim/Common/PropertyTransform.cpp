@@ -229,7 +229,7 @@ toString() const
     char pad[256];
     double rawData[6];
     getRotationsAndTranslationsAsArray6(rawData);
-    sprintf(pad, "%g %g %g %g %g %g", rawData[0], rawData[1], rawData[2], rawData[3], rawData[4], rawData[5]);
+    snprintf(pad, 256, "%g %g %g %g %g %g", rawData[0], rawData[1], rawData[2], rawData[3], rawData[4], rawData[5]);
     str += string(pad);
     str += ")";
     return str;

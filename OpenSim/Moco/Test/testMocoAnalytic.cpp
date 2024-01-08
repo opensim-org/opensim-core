@@ -20,6 +20,7 @@
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
 #include <OpenSim/Moco/osimMoco.h>
 
+#include <catch2/catch_all.hpp>
 #include "Testing.h"
 
 using namespace OpenSim;
