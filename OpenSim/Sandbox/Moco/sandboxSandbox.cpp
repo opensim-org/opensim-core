@@ -19,19 +19,63 @@
 // This file provides a way to easily prototype or test temporary snippets of
 // code during development.
 
-#include <Moco/osimMoco.h>
+#include <OpenSim/Actuators/ModelFactory.h>
+#include <OpenSim/Moco/osimMoco.h>
 
 using namespace OpenSim;
 
+class TestController : public Controller {
+OpenSim_DECLARE_CONCRETE_OBJECT(TestController, Controller);
+public:
+    void computeControls(const SimTK::State& s,
+            SimTK::Vector& controls) const override {
+        log_cout("Computing controls...");
+    }
+
+    void setActuatorPath(const std::string& path) {
+        m_actuatorPath = path;
+    }
+
+    const std::string& getActuatorPath() const {
+        return m_actuatorPath;
+    }
+
+protected:
+    void extendConnectToModel(Model& model) override {
+        const auto& socket = getSocket<Actuator>("actuators");
+        const auto& actuPath = getActuatorPath();
+        int index = socket.getConnecteePathIndex(actuPath);
+        log_cout("extendConnectToModel: connectee path index = {}", index);
+
+    }
+
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+        const auto& socket = getSocket<Actuator>("actuators");
+        const auto& actuPath = getActuatorPath();
+        int index = socket.getConnecteePathIndex(actuPath);
+        log_cout("extendAddToSystem: connectee path index = {}", index);
+    }
+
+private:
+    std::string m_actuatorPath;
+
+};
+
 int main() {
-    // TODO Logger::setLevel(Logger::Level::Debug);
-    MocoTrack track;
-    ModelProcessor modelProcessor("DeMers_mod_noarms_welds_4.0.osim");
-    modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
-    modelProcessor.append(ModOpIgnoreTendonCompliance());
-    track.setModel(modelProcessor);
-    track.setStatesReference({"r_SLD_mean_coords.sto"});
-    track.set_allow_unused_references(true);
-    MocoSolution solution = track.solve();
+
+    Model model = ModelFactory::createNLinkPendulum(5);
+
+    auto* controller = new TestController();
+    controller->setActuatorPath("/tau3");
+    controller->connectSocket_actuators(model.getComponent<Actuator>("tau0"));
+    controller->connectSocket_actuators(model.getComponent<Actuator>("tau1"));
+    controller->connectSocket_actuators(model.getComponent<Actuator>("tau2"));
+    controller->connectSocket_actuators(model.getComponent<Actuator>("tau3"));
+    controller->connectSocket_actuators(model.getComponent<Actuator>("tau4"));
+
+    model.addController(controller);
+
+    model.initSystem();
+
     return EXIT_SUCCESS;
 }

@@ -119,6 +119,11 @@ public:
     /** Get the number of controls this controller computes. */
     int getNumControls() const { return _numControls; }
 
+    int getNumActuators() const {
+        return static_cast<int>(
+            getSocket<Actuator>("actuators").getNumConnectees());
+    }
+
 protected:
 
     /** Model component interface that permits the controller to be "wired" up

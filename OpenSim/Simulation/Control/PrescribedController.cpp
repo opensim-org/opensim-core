@@ -204,9 +204,13 @@ void PrescribedController::
 void PrescribedController::prescribeControlForActuator(
         const std::string actName, Function *prescribedFunction)
 {
-    int index = getProperty_actuator_list().findIndex(actName);
-    if(index < 0 )
-        throw Exception("PrescribedController does not have "+actName+" in its list of actuators to control.");
+    // TODO how to get the actuator path from the name?
+    const auto& socket = getSocket<Actuator>("actuators");
+    int index = socket.getConnecteePathIndex(actName);
+    OPENSIM_THROW_IF_FRMOBJ(index < 0, Exception,
+        "PrescribedController does not have {} in its list of actuators to "
+        "control.", actName)
+
     prescribeControlForActuator(index, prescribedFunction);
 }
 

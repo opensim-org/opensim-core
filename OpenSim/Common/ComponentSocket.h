@@ -398,7 +398,7 @@ public:
     }
 
     /** Return a const reference to the Object connected to this Socket. */
-    const T& getConnecteeAsObject(int index = -1) const override {
+    const Object& getConnecteeAsObject(int index = -1) const override {
         if (index < 0) {
             if (!isListSocket()) { index = 0; }
             else {
@@ -483,7 +483,7 @@ protected:
 
 private:
 
-    const T& getConnecteeAsObjectInternal(int index) const {
+    const Object& getConnecteeAsObjectInternal(int index) const {
         OPENSIM_THROW_IF(!isConnected(), Exception,
             "Socket '{}' not connected.", getName());
         using SimTK::isIndexInRange;

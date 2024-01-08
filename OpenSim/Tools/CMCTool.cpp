@@ -541,7 +541,7 @@ bool CMCTool::run()
 
     int nq = _model->getNumCoordinates();
     int nu = _model->getNumSpeeds();
-    int na = controller->getActuatorSet().getSize();
+    int na = controller->getNumActuators();
 
     // Form complete storage objects for the q's and u's
     // This means filling in unspecified generalized coordinates and

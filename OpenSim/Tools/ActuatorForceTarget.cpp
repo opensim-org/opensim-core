@@ -123,7 +123,7 @@ prepareToOptimize(SimTK::State& s, double *x)
     _saveState = s;
 #ifdef USE_PRECOMPUTED_PERFORMANCE_MATRICES
     // int nu = _controller->getModel().getNumSpeeds();
-    int nf = _controller->getActuatorSet().getSize();
+    int nf = _controller->getNumActuators();
     // int ny = _controller->getModel().getNumStateVariables();
     int nacc = _controller->updTaskSet().getDesiredAccelerations().getSize();
 
@@ -228,10 +228,9 @@ prepareToOptimize(SimTK::State& s, double *x)
 void ActuatorForceTarget::
 computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerformanceVector, Vector &rForcePerformanceVector)
 {
-    const Set<const Actuator> &fSet = _controller->getActuatorSet();
-
-    for(int i=0;i<fSet.getSize();i++) {
-        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
+    const auto& socket = _controller->getSocket<Actuator>("actuators");
+    for(int i = 0; i < _controller->getNumActuators(); i++) {
+        auto act = dynamic_cast<const ScalarActuator*>(&socket.getConnectee(i));
         act->setOverrideActuation(s, aF[i]);
         act->overrideActuation(s, true);
     }
@@ -246,8 +245,8 @@ computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerfo
 
     // PERFORMANCE
     double sqrtStressTermWeight = sqrt(_stressTermWeight);
-    for(int i=0;i<fSet.getSize();i++) {
-        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
+    for(int i = 0; i < _controller->getNumActuators(); i++) {
+        auto act = dynamic_cast<const ScalarActuator*>(&socket.getConnectee(i));
         rForcePerformanceVector[i] = sqrtStressTermWeight * act->getStress(s);
      }
 
@@ -255,8 +254,8 @@ computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerfo
     for(int i=0;i<nacc;i++) rAccelPerformanceVector[i] = sqrt(w[i]) * (a[i] - aDes[i]);
 
     // reset the actuator control
-    for(int i=0;i<fSet.getSize();i++) {
-        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
+    for(int i = 0; i < _controller->getNumActuators(); i++) {
+        auto act = dynamic_cast<const ScalarActuator*>(&socket.getConnectee(i));
         act->overrideActuation(s, false);
     }
 }
