@@ -5,7 +5,6 @@ find_package(Catch2 REQUIRED
 
 # Create an executable for the file ${TEST_NAME}.cpp, which depends on
 # libraries ${LIB_DEPENDENCIES}. Also create a CTest test for this executable.
-# TODO replace with OpenSimAddTests
 function(MocoAddTest)
     set(options)
     set(oneValueArgs NAME)

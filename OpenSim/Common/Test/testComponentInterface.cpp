@@ -840,7 +840,7 @@ TEST_CASE("Component Interface Misc.")
 }
 
 // un-disable test for duplicate names when we re-enable the exception
-TEST_CASE("Component Interface Throws on Duplicate Names", "[.]")
+TEST_CASE("Component Interface Throws on Duplicate Names", "[.disabled]")
 {
     TheWorld theWorld;
     theWorld.setName("World");
@@ -862,10 +862,6 @@ TEST_CASE("Component Interface Throws on Duplicate Names", "[.]")
         theWorld.finalizeFromProperties(),
         OpenSim::SubcomponentsWithDuplicateName );
 
-}
-
-TEST_CASE("Test 1", "[.]") {
-    REQUIRE_FALSE(true);
 }
 
 // In order to access subcomponents in a copy, One must invoke

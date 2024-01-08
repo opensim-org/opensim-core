@@ -383,7 +383,7 @@ function(OpenSimAddTests)
             )
         endforeach()
 
-        # Copy data files to build directory.::
+        # Copy data files to build directory.
         foreach(data_file ${OSIMADDTESTS_DATAFILES})
             # This command re-copies the data files if they are modified;
             # custom commands don't do this.
