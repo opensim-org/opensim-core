@@ -85,7 +85,9 @@ that rely on some obscure aspect of the files.
 
 Platform-specific tests
 -----------------------
-The Catch2 testing framework can be used to write platform-specific tests. For
+The Catch2 testing framework can be used to write platform-specific tests. Such
+tests should be avoided if possible, but may be necessary in certain cases (e.g.,
+slightly different numerical optimization behavior on different platforms). For
 example, if you want to write a test that only runs on Windows, you can use the
 `TEST_CASE()` or `TEMPLATE_TEST_CASE` macros with the tag `"[win]"`:
 

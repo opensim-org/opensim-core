@@ -857,8 +857,7 @@ TEST_CASE("Component Interface Throws on Duplicate Names", "[.disabled]")
 
     b->setName("A");
 
-
-    REQUIRE_THROWS_AS(
+    SimTK_TEST_MUST_THROW_EXC(
         theWorld.finalizeFromProperties(),
         OpenSim::SubcomponentsWithDuplicateName );
 
