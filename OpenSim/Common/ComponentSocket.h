@@ -1147,11 +1147,12 @@ private:
     /** @endcond                                                         */ \
     /** @name Socket-related functions                                   */ \
     /** @{                                                               */ \
-    /** Connect the '##cname##' Socket to an object of type T##.         */ \
+    /** Append an object of type T## to the list of connectees in the    */ \
+    /** list Socket.                                                     */ \
     /** Call finalizeConnections() afterwards to update the socket's     */ \
     /** connectee path property. The reference to the connectee set here */ \
     /** takes precedence over the connectee path property.               */ \
-    void connectSocket_##cname(const OpenSim::Object& object) {             \
+    void appendConnectee_##cname(const OpenSim::Object& object) {           \
         this->updSocket(#cname).connect(object);                            \
     }                                                                       \
     /** @}                                                               */
