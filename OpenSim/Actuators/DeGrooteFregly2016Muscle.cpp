@@ -343,10 +343,9 @@ void DeGrooteFregly2016Muscle::calcFiberVelocityInfoHelper(
 }
 
 void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfoHelper(
-        const SimTK::Real& activation,
-        const bool& ignoreTendonCompliance, const MuscleLengthInfo& mli,
-        const FiberVelocityInfo& fvi, MuscleDynamicsInfo& mdi,
-        const SimTK::Real& normTendonForce) const {
+        const SimTK::Real& activation, const bool& ignoreTendonCompliance,
+        const MuscleLengthInfo& mli, const FiberVelocityInfo& fvi,
+        MuscleDynamicsInfo& mdi, const SimTK::Real& normTendonForce) const {
 
     mdi.activation = activation;
 
@@ -528,8 +527,8 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfo(
     const auto& mli = getMuscleLengthInfo(s);
     const auto& fvi = getFiberVelocityInfo(s);
 
-    calcMuscleDynamicsInfoHelper(activation,
-            get_ignore_tendon_compliance(), mli, fvi, mdi, normTendonForce);
+    calcMuscleDynamicsInfoHelper(activation, get_ignore_tendon_compliance(),
+            mli, fvi, mdi, normTendonForce);
 }
 
 void DeGrooteFregly2016Muscle::calcMusclePotentialEnergyInfo(
@@ -557,8 +556,7 @@ OpenSim::DeGrooteFregly2016Muscle::calcInextensibleTendonActiveFiberForce(
     // information will be computed whether this argument is true or false.
     calcFiberVelocityInfoHelper(
             muscleTendonVelocity, activation, true, true, mli, fvi);
-    calcMuscleDynamicsInfoHelper(
-            activation, true, mli, fvi, mdi);
+    calcMuscleDynamicsInfoHelper(activation, true, mli, fvi, mdi);
 
     return mdi.activeFiberForce;
 }
