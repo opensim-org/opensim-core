@@ -1135,7 +1135,8 @@ private:
     /** @endcond                                                         */ \
     /** @name Socket-related functions                                   */ \
     /** @{                                                               */ \
-    /** Append an object of type T## to the list of connectees in Socket.*/ \
+    /** Append an object of type T## to the list of connectees in the    */ \
+    /** list Socket.                                                     */ \
     /** Call finalizeConnections() afterwards to update the socket's     */ \
     /** connectee path property. The reference to the connectee set here */ \
     /** takes precedence over the connectee path property.               */ \
