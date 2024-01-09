@@ -145,10 +145,10 @@ public:
     reporter->addToReport(src->getOutput("column").getChannel("ankle"));
     @endcode
     This method is equivalent to
-    appendInputChannel_inputs(const AbstractChannel&, const std::string&). */
+    connectInput_inputs(const AbstractChannel&, const std::string&). */
     void addToReport(const AbstractChannel& channel,
                      const std::string& alias = "") {
-        appendInputChannel_inputs(channel, alias);
+        connectInput_inputs(channel, alias);
     }
 
 protected:
