@@ -109,11 +109,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 "model.");
     } else {
 
-        int cid, mp, mv, ma;
+        int cid, mv, ma;
         int multIndexThisConstraint;
-        int total_mp = 0;
-        int total_mv = 0;
-        int total_ma = 0;
         std::vector<KinematicLevel> kinLevels;
         const bool enforceConstraintDerivs =
                 mocoCasADiSolver.get_enforce_constraint_derivatives();
@@ -121,7 +118,6 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
             const auto& kc = problemRep.getKinematicConstraint(kcName);
             const auto& multInfos = problemRep.getMultiplierInfos(kcName);
             cid = kc.getSimbodyConstraintIndex();
-            mp = kc.getNumPositionEquations();
             mv = kc.getNumVelocityEquations();
             ma = kc.getNumAccelerationEquations();
             kinLevels = kc.getKinematicLevels();
@@ -141,10 +137,6 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                     "acceleration-level scalar constraints associated with the "
                     "model Constraint at ConstraintIndex {}.",
                     ma, cid);
-
-            total_mp += mp;
-            total_mv += mv;
-            total_ma += ma;
 
             // Loop through all scalar constraints associated with the model
             // constraint and corresponding path constraints to the optimal

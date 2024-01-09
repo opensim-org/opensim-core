@@ -34,8 +34,7 @@
 #include <OpenSim/Common/Set.h>
 
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include "SimTKcommon.h"
 
 #include <iostream>

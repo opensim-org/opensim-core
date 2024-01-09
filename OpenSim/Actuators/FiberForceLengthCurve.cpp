@@ -318,7 +318,6 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
     int maxIter   = 20;
     int iter      = 0;
     int localIter = 0;
-    int evalIter  = 0;
 
     while(iter < maxIter && abs(err) > relTol) {
         flag_improvement = false;
@@ -402,8 +401,6 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
                 flag_Newton = false;
             }
         }
-
-        evalIter += localIter;
 
         step = step/2.0;
         iter++;
