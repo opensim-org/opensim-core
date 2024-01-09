@@ -26,8 +26,7 @@
 #include <fstream>
 #include <unordered_set>
 
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 

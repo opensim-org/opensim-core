@@ -26,8 +26,7 @@
 //#include <OpenSim/Common/NaturalCubicSpline.h> NOT YET, SEE BELOW
 #include <Simbody.h>
 
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <cstdio>
 #include <iostream>

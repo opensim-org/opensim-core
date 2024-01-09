@@ -189,7 +189,7 @@ constructDescription()
     strcat(descrip, "velocities and angular velocities, or");
     strcat(descrip, " accelerations and angular accelerations)\n");
     strcat(descrip, "of the centers of mass");
-    sprintf(tmp, " of the body segments in model %s.\n",
+    snprintf(tmp, MAXLEN, " of the body segments in model %s.\n",
         _model->getName().c_str());
     strcat(descrip, tmp);
     strcat(descrip, "\nBody segment orientations are described using");

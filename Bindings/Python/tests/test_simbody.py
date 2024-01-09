@@ -205,6 +205,9 @@ class TestSimbody(unittest.TestCase):
         assert (smss.calcSystemMassCenterLocationInGround(s)[2] == 
                 model.calcMassCenterPosition(s)[2])
 
+        coordNames = model.getCoordinateNamesInMultibodyTreeOrder();
+        print('firstCoord', coordNames.getElt(0));
+        
         J = osim.Matrix()
         smss.calcSystemJacobian(s, J)
         # 6 * number of mobilized bodies
@@ -248,3 +251,5 @@ class TestSimbody(unittest.TestCase):
         assert residual.size() == s.getNU()
         for i in range(residual.size()):
             assert abs(residual[i]) < 1e-10
+
+    

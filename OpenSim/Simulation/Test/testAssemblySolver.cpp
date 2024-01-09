@@ -131,7 +131,10 @@ void testAssembleModelWithConstraints(string modelFile)
     for(int i=0; i< coords.getSize(); i++) {
         cout << "Coordinate " << coords[i].getName() << " get value = " << coords[i].getValue(state) << endl;
     }
+    auto coordsInOrder = model.getCoordinateNamesInMultibodyTreeOrder();
+    cout << coordsInOrder << std::endl;
 
+    assert(coords.getSize()==coordsInOrder.size());
     // Initial coordinates after initial assembly
     Vector q0 = state.getQ();
 

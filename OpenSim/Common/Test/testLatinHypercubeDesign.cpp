@@ -23,8 +23,7 @@
 
 #include <OpenSim/Common/LatinHypercubeDesign.h>
 
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 
@@ -105,14 +104,16 @@ TEST_CASE("Invalid configurations") {
         lhs.setNumSamples(-1);
         lhs.setNumVariables(5);
         REQUIRE_THROWS_WITH(lhs.generateRandomDesign(),
-                Catch::Contains("Expected the number of samples"));
+                Catch::Matchers::ContainsSubstring(
+                        "Expected the number of samples"));
     }
 
     SECTION("Invalid number of variables") {
         lhs.setNumVariables(-1);
         lhs.setNumSamples(5);
         REQUIRE_THROWS_WITH(lhs.generateRandomDesign(),
-                Catch::Contains("Expected the number of variables"));
+                Catch::Matchers::ContainsSubstring(
+                        "Expected the number of variables"));
     }
 
     SECTION("Invalid distance criterion") {
@@ -120,7 +121,8 @@ TEST_CASE("Invalid configurations") {
         lhs.setNumVariables(5);
         lhs.setDistanceCriterion("invalid");
         REQUIRE_THROWS_WITH(lhs.generateRandomDesign(),
-            Catch::Contains("Invalid distance criterion"));
+                Catch::Matchers::ContainsSubstring(
+                        "Invalid distance criterion"));
     }
 
     SECTION("Invalid 'phi-p' exponent") {
@@ -129,6 +131,7 @@ TEST_CASE("Invalid configurations") {
         lhs.setDistanceCriterion("phi_p");
         lhs.setPhiPDistanceExponent(-1);
         REQUIRE_THROWS_WITH(lhs.generateRandomDesign(),
-                Catch::Contains("Expected the 'phi-p' distance exponent"));
+                Catch::Matchers::ContainsSubstring(
+                        "Expected the 'phi-p' distance exponent"));
     }
 }
