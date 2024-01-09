@@ -83,7 +83,8 @@ namespace {
         // force.
         PrescribedController actuController;
         actuController.setActuators(model.updActuators());
-        for (int i = 0; i < actuController.getActuatorSet().getSize(); i++) {
+        const auto& socket = actuController.getSocket<Actuator>("actuators");
+        for (int i = 0; i < socket.getNumConnectees(); i++) {
             actuController.prescribeControlForActuator(
                     i, new Constant(activation));
         }

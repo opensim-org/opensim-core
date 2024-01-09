@@ -107,34 +107,32 @@ void Controller::setEnabled(bool aTrueFalse) {
 void Controller::setActuators(const Set<Actuator>& actuators) {
     updSocket<Actuator>("actuators").disconnect();
     for (int i = 0; i < actuators.getSize(); i++){
-        const auto& actu = actuators.get(i);
-        addActuator(actuators[i]);
+        addActuator(actuators.get(i));
     }
 }
 
-void Controller::setActuators(const SimTK::Array_<Actuator>& actuators) {
+void Controller::setActuators(
+        const SimTK::Array_<SimTK::ReferencePtr<const Actuator>>& actuators) {
     updSocket<Actuator>("actuators").disconnect();
     for (const auto& actu : actuators) {
-        addActuator(actu);
+        addActuator(actu.getRef());
     }
 }
 
 void Controller::addActuator(const Actuator& actuator) {
-    connectSocket_actuators(actuator);
+    appendConnectee_actuators(actuator);
 }
 
-// const SimTK::Array_<const Actuator>& Controller::getActuators() const {
-//     const auto& socket = getSocket<Actuator>("actuators");
-//     const int nc = static_cast<int>(socket.getNumConnectees());
-//     for (int i = 0; i < nc; ++i) {
-//         const auto& actuator = socket.getConnectee(i);
-//         _actuators.push_back(&actuator);
-//     }
-//
-// }
+SimTK::Array_<SimTK::ReferencePtr<const Actuator>>
+Controller::getActuators() const {
+    const auto& socket = getSocket<Actuator>("actuators");
+    int nc = static_cast<int>(socket.getNumConnectees());
+    SimTK::Array_<SimTK::ReferencePtr<const Actuator>> actuators(nc);
+    for (int i = 0; i < socket.getNumConnectees(); ++i) {
+        const Actuator& actu = socket.getConnectee(i);
+        actuators[i] = &actu;
+    }
 
+    return actuators;
+}
 
-// const Set<const Actuator>& Controller::getActuatorSet() const {
-//
-//     // TODO
-// }

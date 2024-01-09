@@ -93,18 +93,14 @@ public:
 
     /** Replace the current set of actuators with the provided set. */
     void setActuators(const Set<Actuator>& actuators);
-    void setActuators(const SimTK::Array_<Actuator>& actuators);
+    void setActuators(
+        const SimTK::Array_<SimTK::ReferencePtr<const Actuator>>& actuators);
 
     /** Add to the current set of actuators. */
     void addActuator(const Actuator& actuator);
 
-    /** Get a const reference to the current set of const actuators. */
-    // const Set<const Actuator>& getActuatorSet() const;
-    //const SimTK::Array_<const Actuator>& getActuators() const;
-
-    /** Get a writable reference to the set of const actuators for this
-     * controller. */
-    // Set<const Actuator>& updActuators();
+    /** Get an array of reference pointers to the current set of actuators. */
+    SimTK::Array_<SimTK::ReferencePtr<const Actuator>> getActuators() const;
 
     /** Compute the control for actuator
      *  This method defines the behavior for any concrete controller 
@@ -119,6 +115,7 @@ public:
     /** Get the number of controls this controller computes. */
     int getNumControls() const { return _numControls; }
 
+    /** Get the number of actuators that this controller is connected to. */
     int getNumActuators() const {
         return static_cast<int>(
             getSocket<Actuator>("actuators").getNumConnectees());
@@ -137,7 +134,7 @@ protected:
 
     /** Only a Controller can set its number of controls based on its
      * actuators. */
-    void setNumControls(int numControls) {_numControls = numControls; }
+    void setNumControls(int numControls) { _numControls = numControls; }
 
     void updateFromXMLNode(SimTK::Xml::Element& node,
                            int versionNumber) override;
