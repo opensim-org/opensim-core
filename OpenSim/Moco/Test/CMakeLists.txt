@@ -17,12 +17,12 @@ function(MocoAddTest)
     target_link_libraries(${MOCOTEST_NAME} osimMoco ${MOCOTEST_LIB_DEPENDS} Catch2::Catch2WithMain)
     # Skip tests relying on MocoCasADiSolver if CasADi is not available.
     if(NOT OPENSIM_WITH_CASADI)
-        list(APPEND test_args "exclude:*MocoCasADiSolver*")
-        list(APPEND test_args "exclude:[casadi]")
+        list(APPEND test_args "~*MocoCasADiSolver*")
+        list(APPEND test_args "~[casadi]")
     endif()
     if(NOT OPENSIM_WITH_TROPTER)
-        list(APPEND test_args "exclude:*MocoTropterSolver*")
-        list(APPEND test_args "exclude:[tropter]")
+        list(APPEND test_args "~*MocoTropterSolver*")
+        list(APPEND test_args "~[tropter]")
     endif()
     add_test(NAME ${MOCOTEST_NAME} COMMAND ${MOCOTEST_NAME} ${test_args})
     # Tests likely run faster if we parallelize the tests rather than the
@@ -61,8 +61,6 @@ MocoAddTest(NAME testMocoTrack RESOURCES
         walk_gait1018_subject01_grf.mot
         std_testMocoTrackGait10dof18musc_solution.sto
         )
-
-# MocoAddTest(NAME testMultivariatePolynomial)
 
 MocoAddTest(NAME testMocoAnalytic)
 
