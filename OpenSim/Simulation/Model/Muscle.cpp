@@ -630,7 +630,7 @@ void Muscle::calcMusclePotentialEnergyInfo(const SimTK::State& s,
 
 double Muscle::calcMusclePower(const SimTK::State& s) const
 {
-    return -getLengtheningSpeed(s) * getTendonForce(s);
+    return -getLengtheningSpeed(s) * getMuscleDynamicsInfo(s).tendonForce;
 }
 
 //=============================================================================
