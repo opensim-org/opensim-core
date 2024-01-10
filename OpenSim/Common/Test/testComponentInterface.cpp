@@ -1025,8 +1025,8 @@ TEST_CASE("Component Interface Sockets")
 
         // Check that connecting to the same component throws an Exception.
         CHECK_THROWS_WITH(bar.appendConnectee_listFoo(foo2),
-                Catch::Matchers::Contains("Socket 'listFoo' already has a "
-                    "connectee of type 'Foo' named 'foo2'."));
+                Catch::Matchers::ContainsSubstring("Socket 'listFoo' already "
+                    "has a connectee of type 'Foo' named 'foo2'."));
 
         bar.appendConnectee_listFoo(foo3);
         theWorld.connect();
