@@ -42,6 +42,7 @@ and `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`,
 - Simbody was updated such that the headers it transitively exposes to downstream projects are compatible with C++20 (#3619)
 - Moved speed computation from `computeForce` in children of `ScalarActuator` to dedicated `getSpeed` function.
 - Fix type problem with BufferedOrientationReference (Issue #3415, PR #3644)
+- Fixed setting the color of a PathSpring's GeometryPath should now update the color of the PathSpring geometry
 
 
 v4.4.1
