@@ -24,8 +24,7 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 /* The purpose of this test is strictly to check that classes derived from
  * the Path class work outside of the objects/components they are meant to 

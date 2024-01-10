@@ -202,6 +202,12 @@ AddDependency(NAME       spdlog
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
                          -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
+
+AddDependency(NAME       catch2
+              DEFAULT    ON
+              GIT_URL    https://github.com/catchorg/Catch2.git
+              GIT_TAG    v3.5.0)
+
 # Moco settings.
 # --------------
 option(OPENSIM_WITH_CASADI

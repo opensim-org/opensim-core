@@ -14,17 +14,19 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include <tropter/tropter.h>
-
-#define CATCH_CONFIG_MAIN
-#include <catch.hpp>
+#include <catch2/catch_all.hpp>
+#include "testing.h"
 #include "testing_optimalcontrol.h"
 
-using Eigen::Ref;
+#include <tropter/tropter.h>
+
+using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using Eigen::RowVectorXd;
 using Eigen::Vector2d;
 using Eigen::MatrixXd;
+
+using Catch::Approx;
 
 using namespace tropter;
 

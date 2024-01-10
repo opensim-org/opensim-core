@@ -293,11 +293,11 @@ toString()
     const char *format = IO::GetDoubleOutputFormat();
 
     strcpy(string,"t=");
-    sprintf(tmp,format,_t);
+    snprintf(tmp,128,format,_t);
     strcat(string,tmp);
 
     strcat(string," value=");
-    sprintf(tmp,format,_value);
+    snprintf(tmp,128,format,_value);
     strcat(string,tmp);
 
     return(string);
