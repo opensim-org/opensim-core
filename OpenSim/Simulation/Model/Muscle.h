@@ -458,7 +458,7 @@ private:
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
-    /** The muscle power (W) */
+    /** Calculate muscle's power (W). */
     double calcMusclePower(const SimTK::State& s) const;
 
 //=============================================================================
