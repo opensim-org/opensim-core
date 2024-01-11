@@ -180,7 +180,7 @@ public:
      * property to satisfy the socket. */
     virtual void disconnect() = 0;
 
-    /** %Set connectee path. This function can only be used if this socket is
+    /** Set the connectee path. This function can only be used if this socket is
      * not a list socket. If a connectee reference is set (with connect()) the
      * connectee path is ignored; call disconnect() if you want the socket to be
      * connected using the connectee path.

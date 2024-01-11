@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2023 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,36 +31,29 @@ namespace OpenSim {
 
 class Function;
 
-//=============================================================================
-//=============================================================================
 /**
  * PrescribedController is a concrete Controller that specifies functions that 
  * prescribe the control values of its actuators as a function of time.
  *
  * @author  Ajay Seth
  */
-//=============================================================================
-
 class OSIMSIMULATION_API PrescribedController : public Controller {
 OpenSim_DECLARE_CONCRETE_OBJECT(PrescribedController, Controller);
 
-//=============================================================================
-// DATA
-//=============================================================================
 public:
-    /** FunctionSet of prescribed controls associated with each actuator  */
+//=============================================================================
+// PROPERTIES
+//=============================================================================
     OpenSim_DECLARE_PROPERTY(ControlFunctions, FunctionSet,
-        "Functions (one per control) describing the controls for actuators"
+        "Functions (one per control) describing the controls for actuators "
         "specified for this controller." );
 
-    /** (Optional) prescribed controls from a storage file  */
     OpenSim_DECLARE_OPTIONAL_PROPERTY(controls_file, std::string,
         "Controls storage (.sto) file containing controls for individual "
         "actuators in the model. Each column label must be either the name "
         "of an actuator in the model's ForceSet or the absolute path to an "
         "actuator anywhere in the model.");
 
-    /** (Optional) interpolation method for controls in storage.  */
     OpenSim_DECLARE_OPTIONAL_PROPERTY(interpolation_method, int,
         "Interpolate the controls file data using piecewise: '0-constant', "
         "'1-linear', '3-cubic' or '5-quintic' functions.");
@@ -68,10 +61,8 @@ public:
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
+
     // CONSTRUCTION AND DESTRUCTION
-    //--------------------------------------------------------------------------
-public:
     /** Default constructor */
     PrescribedController();
 
@@ -84,11 +75,9 @@ public:
                          int interpMethodType = 1);
 
     /** Destructor */
-    virtual ~PrescribedController();
+    ~PrescribedController() override;
 
-    //--------------------------------------------------------------------------
-    // CONTROL
-    //--------------------------------------------------------------------------
+    // CONTROLLER INTERFACE
     /**
      * Compute the control values for all actuators under the control of this
      * Controller.
@@ -99,43 +88,50 @@ public:
     void computeControls(const SimTK::State& s, 
                          SimTK::Vector& controls) const override;
 
+    // GET AND SET
     /**
      *  Assign a prescribed control function for the desired actuator identified 
      *  by its index. Controller takes ownership of the function.
      *  @param index                the actuator's index in the controller's set
      *  @param prescribedFunction   the actuator's control function
      */
-    void prescribeControlForActuator(int index, Function *prescribedFunction);
+    void prescribeControlForActuator(int index, Function* prescribedFunction);
 
     /**
      *  Assign a prescribed control function for the desired actuator identified
-     *  by its name. Controller takes ownership of the function.
-     *  @param actName                the actuator's name in the controller's set
-     *  @param prescribedFunction     the actuator's control function
+     *  by the provided label. The label can be either the name of the actuator,
+     *  or the absolute path to the actuator in the model. Controller takes
+     *  ownership of the function.
+     *  @param actuLabel            label for the actuator in the controller
+     *  @param prescribedFunction   the actuator's control function
      */
-    void prescribeControlForActuator(const std::string actName,
-                                     Function *prescribedFunction);
+    void prescribeControlForActuator(const std::string& actuLabel,
+                                     Function* prescribedFunction);
 
 protected:
-    /** Model component interface */
+    // MODEL COMPONENT INTERFACE
     void extendConnectToModel(Model& model) override;
+
 private:
-    // construct and initialize properties
+    // Construct and initialize properties.
     void constructProperties();
 
-    // utility
+    // Utility functions.
     Function* createFunctionFromData(const std::string& name,
-        const Array<double>& time, const Array<double>& data);
+        const Array<double>& time, const Array<double>& data) const;
+    int getActuatorIndexFromLabel(const std::string& actuLabel) const;
 
     // This method sets all member variables to default (e.g., NULL) values.
     void setNull();
 
-//=============================================================================
-};  // END of class PrescribedController
+    // This member variable is used to store any function prescribed
+    // based on the actuator's name or path.
+    std::vector<std::pair<std::string, Function*>>
+    m_prescribedFunctionPairs;
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+};  // class PrescribedController
+
+} // namespace OpenSim
 
 #endif // OPENSIM_PRESCRIBED_CONTROLLER_H_
 

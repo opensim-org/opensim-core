@@ -263,35 +263,32 @@ void ControlSetController::extendFinalizeFromProperties()
         _controlSet = loadedControlSet;
         setEnabled(true);
     }
+}
 
+void ControlSetController::extendConnectToModel(Model& model) {
     const auto& socket = updSocket<Actuator>("actuators");
     std::string ext = ".excitation";
     for (int i = 0; _controlSet != nullptr && i < _controlSet->getSize(); ++i) {
         std::string actName = _controlSet->get(i).getName();
-        if (actName.length() > ext.length() && 
-            !(actName.compare(actName.length() - ext.length(), ext.length(), ext))) {
+        if (actName.length() > ext.length() &&
+                !actName.compare(
+                        actName.length() - ext.length(), ext.length(), ext)) {
             actName.erase(actName.length() - ext.length(), ext.length());
         }
 
-        // Check if the actuator is already connected to this controller.
-        const auto& modelActuators = getModel().getComponentList<Actuator>();
-        bool foundActuator = false;
-        for (const auto& actu : modelActuators) {
-            if (actu.getName() == actName) {
-                // Do not add the actuator if it is already in the list of
-                // connectee paths. The connectee paths should be valid at this
-                // point during deserialization.
-                if (!socket.hasConnecteePath(actu.getAbsolutePathString())) {
-                    addActuator(actu);
-                }
-                foundActuator = true;
+        // Check that the actuator is connected to the controller.
+        bool isConnected = false;
+        for (int iactu = 0; iactu < socket.getNumConnectees(); ++iactu) {
+            if (socket.getConnectee(iactu).getName() == actName) {
+                isConnected = true;
                 break;
             }
         }
 
-        OPENSIM_THROW_IF_FRMOBJ(!foundActuator, Exception,
+        OPENSIM_THROW_IF_FRMOBJ(!isConnected, Exception,
             "ControlSetController::extendFinalizeFromProperties: "
-            "Actuator '{}' in ControlSet '{}' not found in model '{}'.",
-            actName, _controlSet->getName(), getModel().getName());
+            "Actuator '{}' in ControlSet '{}' not connected to controller "
+            " '{}'.", actName, _controlSet->getName(), getName());
     }
 }
+

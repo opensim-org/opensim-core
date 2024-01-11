@@ -38,10 +38,7 @@ class Actuator;
  * The defining method of a Controller is its computeControls() method.
  * @see computeControls()
  *
- * @note Controllers currently do not use the Socket mechanism to locate 
- * and connect to the Actuators that Controllers depend on. As a result,
- * for now, Controllers do not support controlling multiple actuators with 
- * the same name.
+ * TODO describe Socket interface, when Actuators should be connected, etc.
  *
  * @author Ajay Seth
  */
@@ -55,7 +52,7 @@ public:
     /** Controller is enabled (active) by default.
     NOTE: Prior to OpenSim 4.0, this property was named **isDisabled**.
           If **isDisabled** is **true**, **enabled** is **false**.
-          If **isDisabled** is **false**, **enabled** is **true**.            */
+          If **isDisabled** is **false**, **enabled** is **true**. */
     OpenSim_DECLARE_PROPERTY(enabled, bool, 
         "Flag (true or false) indicating whether or not the controller is "
         "enabled." );

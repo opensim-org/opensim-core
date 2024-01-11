@@ -56,6 +56,15 @@ protected:
         log_cout("extendAddToSystem: connectee path index = {}", index);
     }
 
+    void extendFinalizeFromProperties() override {
+
+        const auto& socket = getSocket<Actuator>("actuators");
+        const auto& actuPath = getActuatorPath();
+        int index = socket.getConnecteePathIndex(actuPath);
+        log_cout("extendAddToSystem: connectee path index = {}", index);
+
+    }
+
 private:
     std::string m_actuatorPath;
 
@@ -67,11 +76,11 @@ int main() {
 
     auto* controller = new TestController();
     controller->setActuatorPath("/tau3");
-    controller->connectSocket_actuators(model.getComponent<Actuator>("tau0"));
-    controller->connectSocket_actuators(model.getComponent<Actuator>("tau1"));
-    controller->connectSocket_actuators(model.getComponent<Actuator>("tau2"));
-    controller->connectSocket_actuators(model.getComponent<Actuator>("tau3"));
-    controller->connectSocket_actuators(model.getComponent<Actuator>("tau4"));
+    controller->appendConnectee_actuators(model.getComponent<Actuator>("tau0"));
+    controller->appendConnectee_actuators(model.getComponent<Actuator>("tau1"));
+    controller->appendConnectee_actuators(model.getComponent<Actuator>("tau2"));
+    controller->appendConnectee_actuators(model.getComponent<Actuator>("tau3"));
+    controller->appendConnectee_actuators(model.getComponent<Actuator>("tau4"));
 
     model.addController(controller);
 

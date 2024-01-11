@@ -90,7 +90,7 @@ void ToyReflexController::extendConnectToModel(Model &model)
 void ToyReflexController::computeControls(const State& s,
                                           Vector &controls) const {
 
-    // Get the Socket to list of actuators assigned to the reflex controller.
+    // Get the Socket to the list of actuators assigned to the reflex controller.
     const auto& socket = getSocket<Actuator>("actuators");
 
     // muscle lengthening speed

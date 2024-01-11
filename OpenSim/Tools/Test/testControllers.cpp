@@ -125,13 +125,16 @@ void testControlSetControllerOnBlock()
     actuatorControls.setControlValues(initialTime, controlForce);
     actuatorControls.setControlValues(finalTime, controlForce);
     // Create a control set controller that simply applies controls from a ControlSet
-    ControlSetController actuatorController;
+    auto* actuatorController = new ControlSetController();
+    actuatorController->addActuator(
+        osimModel.getComponent<Actuator>("/forceset/actuator"));
     // Make a copy and set it on the ControlSetController as it takes ownership of the 
     // ControlSet passed in
-    actuatorController.setControlSet((ControlSet*)Object::SafeCopy(&actuatorControls));
+    actuatorController->setControlSet(
+        (ControlSet*)Object::SafeCopy(&actuatorControls));
 
     // add the controller to the model
-    osimModel.addController(&actuatorController);
+    osimModel.addController(actuatorController);
 
     // Initialize the system and get the state representing the state system
     SimTK::State& si = osimModel.initSystem();
@@ -336,7 +339,7 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     ControlSetController csc;
     ControlSet* cs = new ControlSet(controlsFile);
     csc.setControlSet(cs);
-
+    csc.setActuators(osimModel.updActuators());
     // add the controller to the model
     osimModel.addController(&csc);
 
@@ -376,9 +379,11 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     //************* Rerun with a PrescribedController ***********************/
 
     PrescribedController prescribed(outfileName, 1);
+    prescribed.setActuators(osimModel.updActuators());
 
     // add the controller to the model
     osimModel.addController(&prescribed);
+    osimModel.finalizeConnections();
     osimModel.print("TestPrescribedController.osim");
 
     // Initialize the system and get the state representing the state system
