@@ -6,6 +6,14 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+Upcoming Release
+================
+
+- Added `tryGetSocket` and `tryUpdSocket` to the `Component` interface, which provides a non-throwing way of
+  querying a component's sockets by name (#3673)
+- Added `tryGetOutput` and `tryUpdOutput` to the `Component` interface, which provides a non-throwing way of
+  querying a component's outputs by name (#3673)
+
 v4.5
 ====
 - Added `AbstractGeometryPath` which is a base class for `GeometryPath` and other path types (#3388). All path-based
