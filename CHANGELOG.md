@@ -8,7 +8,8 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.6
 ====
-- Added support for list `Socket`s via the macro `OpenSim_DECLARE_LIST_SOCKET`. Accordingly, `Component` and Socket have 
+- Added support for list `Socket`s via the macro `OpenSim_DECLARE_LIST_SOCKET`. The macro-generated method 
+`appendSocketConnectee_*` can be used to connect `Object`s to a list `Socket`. In addiion, `Component` and Socket have 
 new `getConnectee` overloads that take an index to a desired object in the list `Socket` (#3652).
 
 v4.5
