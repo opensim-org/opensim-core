@@ -98,7 +98,8 @@ class Storage;
         // GET AND SET
         //--------------------------------------------------------------------------
         // STORAGE
-        void setStorageCapacityIncrements(int aIncrement);
+        [[deprecated("this method no longer does anything")]]
+        void setStorageCapacityIncrements(int) {}
         Storage* getForceStorage() const;
         Storage* getSpeedStorage() const;
         Storage* getPowerStorage() const;
