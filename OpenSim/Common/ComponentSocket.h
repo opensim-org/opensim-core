@@ -1140,7 +1140,7 @@ private:
     /** Call finalizeConnections() afterwards to update the socket's     */ \
     /** connectee path property. The reference to the connectee set here */ \
     /** takes precedence over the connectee path property.               */ \
-    void appendConnectee_##cname(const OpenSim::Object& object) {           \
+    void appendSocketConnectee_##cname(const OpenSim::Object& object) {     \
         this->updSocket(#cname).connect(object);                            \
     }                                                                       \
     /** @}                                                               */
