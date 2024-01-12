@@ -6,8 +6,8 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
-Unreleased
-==========
+Upcoming Release
+================
 
 - The XMLDocument that is held within OpenSim::Object is now reference-counted, to help ensure
   it is freed (e.g. when an exception is thrown)
