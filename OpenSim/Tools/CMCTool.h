@@ -140,9 +140,11 @@ public:
 private:
     void setNull();
     void setupProperties();
-    /* Get the Set of model actuators for CMC that exclude user specified Actuators */
-    Set<Actuator> getActuatorsForCMC(const Array<std::string> &actuatorsByNameOrGroup);
 
+    /** Get the array of model actuators for CMC that exclude user specified
+    Actuators */
+    SimTK::Array_<SimTK::ReferencePtr<const Actuator>>
+    getActuatorsForCMC(const Array<std::string> &actuatorsByNameOrGroup);
 
     //--------------------------------------------------------------------------
     // OPERATORS

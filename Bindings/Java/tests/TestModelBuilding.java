@@ -32,8 +32,7 @@ class TestModelBuilding {
         PrescribedController cns = new PrescribedController();
         cns.addActuator(biceps);
         StepFunction testFunction = new StepFunction(0.5, 3.0, 0.3, 1.0);
-        cns.prescribeControlForActuator(0,      //Index in controller set
-            testFunction); 
+        cns.prescribeControlForActuator(biceps.getAbsolutePathString(), testFunction);
         System.gc(); // Request gc could free testFunction and crash
         arm.addBody(hum);
         arm.addBody(rad);

@@ -95,7 +95,7 @@ public:
      *  @param index                the actuator's index in the controller's set
      *  @param prescribedFunction   the actuator's control function
      */
-    void prescribeControlForActuator(int index, Function* prescribedFunction);
+    // void prescribeControlForActuator(int index, Function* prescribedFunction);
 
     /**
      *  Assign a prescribed control function for the desired actuator identified
@@ -123,11 +123,6 @@ private:
 
     // This method sets all member variables to default (e.g., NULL) values.
     void setNull();
-
-    // This member variable is used to store any function prescribed
-    // based on the actuator's name or path.
-    std::vector<std::pair<std::string, Function*>>
-    m_prescribedFunctionPairs;
 
 };  // class PrescribedController
 

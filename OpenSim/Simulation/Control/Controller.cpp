@@ -84,15 +84,6 @@ void Controller::updateFromXMLNode(SimTK::Xml::Element& node,
     Super::updateFromXMLNode(node, versionNumber);
 }
 
-void Controller::extendConnectToModel(Model& model) {
-    Super::extendConnectToModel(model);
-    // TODO check if all actuators in connectee paths are in the model?
-}
-
-void Controller::extendAddToSystem(SimTK::MultibodySystem& system) const {
-    Super::extendAddToSystem(system);
-}
-
 //=============================================================================
 // GET AND SET
 //=============================================================================

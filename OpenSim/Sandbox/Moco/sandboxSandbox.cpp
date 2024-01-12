@@ -47,6 +47,7 @@ protected:
         int index = socket.getConnecteePathIndex(actuPath);
         log_cout("extendConnectToModel: connectee path index = {}", index);
 
+        log_cout("extendConnectToModel: num connectees = {}", socket.getNumConnectees());
     }
 
     void extendAddToSystem(SimTK::MultibodySystem& system) const override {

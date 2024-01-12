@@ -1089,44 +1089,65 @@ void CMCTool::setOriginalForceSet(const ForceSet &aForceSet) {
 
 
 /* Get the Set of model actuators for CMC that exclude user specified Actuators */
-Set<Actuator> CMCTool::
-    getActuatorsForCMC(const Array<std::string> &actuatorsByNameOrGroup)
-{   
-    Set<Actuator> actuatorsForCMC = _model->getActuators();
-    for (int i=actuatorsForCMC.getSize()-1; i>0; i--){
-        if(!actuatorsForCMC.get(i).get_appliesForce())
-            actuatorsForCMC.remove(i);
+Array_<ReferencePtr<const Actuator>> CMCTool::getActuatorsForCMC(
+        const Array<std::string>& actuatorsByNameOrGroup) {
+
+    const Set<Actuator>& actuatorsForCMC = _model->getActuators();
+    std::vector<std::string> actuatorsToSkip;
+    for (int i=actuatorsForCMC.getSize()-1; i>0; i--) {
+        if (!actuatorsForCMC.get(i).get_appliesForce()) {
+            actuatorsToSkip.push_back(
+                actuatorsForCMC.get(i).getAbsolutePathString());
+        }
     }
     Array<string> groupNames;
     actuatorsForCMC.getGroupNames(groupNames);
 
     /* The search for individual group or force names IS case-sensitive BUT keywords are not*/
-    for(int i=0; i<actuatorsByNameOrGroup.getSize(); i++){
-        // index result when a name is not a force or group name for forces in the model
-        int k = -1;  
+    for (int i = 0; i < actuatorsByNameOrGroup.getSize(); i++) {
+        // index result when a name is not a force or group name for forces in
+        // the model
+        int k = -1;
         // It is possible to list actuators by name and group
-        // So check if name is a group name first   
-        if(groupNames.getSize() > 0){
+        // So check if name is a group name first
+        if (groupNames.getSize() > 0) {
             k = groupNames.findIndex(actuatorsByNameOrGroup[i]);
-            if(k > -1){ //found
+            if (k > -1) { // found
                 const ObjectGroup* group = actuatorsForCMC.getGroup(k);
                 Array<const Object*> members = group->getMembers();
-                for(int j=0; j<members.getSize(); j++)
-                    actuatorsForCMC.remove((Actuator *)members[j]);
-                actuatorsForCMC.removeGroup(actuatorsByNameOrGroup[i]);
+                for (int j = 0; j < members.getSize(); j++) {
+                    if (auto* actu = dynamic_cast<const Actuator*>(members[j])) {
+                        actuatorsToSkip.push_back(
+                            actu->getAbsolutePathString());
+                    }
+                }
             }
-        } //otherwise, check for an individual actuator
-        else{
+        } // otherwise, check for an individual actuator
+        else {
             k = actuatorsForCMC.getIndex(actuatorsByNameOrGroup[i]);
-            if(k > -1){ //found
-                actuatorsForCMC.remove(k);
+            if (k > -1) { // found
+                actuatorsToSkip.push_back(
+                    actuatorsForCMC.get(k).getAbsolutePathString());
             }
         }
         // No actuator(s) by group or individual name was found
-        if(k < 0)
+        if (k < 0)
             log_warn("CMCTool: Could not find actuator or group named '{}' to "
-                     "be excluded from CMC.", actuatorsByNameOrGroup[i]); 
+                     "be excluded from CMC.",
+                    actuatorsByNameOrGroup[i]);
     }
 
-    return actuatorsForCMC;
+    const int numActu = actuatorsForCMC.getSize();
+    Array_<ReferencePtr<const Actuator>> actuatorsForCMCRefs(numActu);
+    for (int i = 0; i < numActu; ++i) {
+        const auto& actuPath = actuatorsForCMC.get(i).getAbsolutePathString();
+        if (std::find(actuatorsToSkip.begin(), actuatorsToSkip.end(), actuPath) !=
+            actuatorsToSkip.end()) {
+            continue;
+        }
+        const auto& actuator = _model->getComponent<Actuator>(actuPath);
+        actuatorsForCMCRefs[i] = &actuator;
+    }
+
+    return actuatorsForCMCRefs;
 }

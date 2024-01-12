@@ -786,16 +786,20 @@ void createLuxoJr(OpenSim::Model& model){
     PrescribedController* kneeController = new PrescribedController();
     kneeController->addActuator(*kneeExtensorLeft);
     kneeController->addActuator(*kneeExtensorRight);
-    kneeController->prescribeControlForActuator(0, x_of_t);
-    kneeController->prescribeControlForActuator(1, x_of_t->clone());
+    kneeController->prescribeControlForActuator(
+        kneeExtensorLeft->getAbsolutePathString(), x_of_t);
+    kneeController->prescribeControlForActuator(
+        kneeExtensorRight->getAbsolutePathString(), x_of_t->clone());
     
     model.addController(kneeController);
     
     PrescribedController* backController = new PrescribedController();
     backController->addActuator(*backExtensorLeft);
     backController->addActuator(*backExtensorRight);
-    backController->prescribeControlForActuator(0, x_of_t->clone());
-    backController->prescribeControlForActuator(1, x_of_t->clone());
+    backController->prescribeControlForActuator(
+        backExtensorLeft->getAbsolutePathString(), x_of_t->clone());
+    backController->prescribeControlForActuator(
+        backExtensorRight->getAbsolutePathString(), x_of_t->clone());
     
     model.addController(backController);
 
