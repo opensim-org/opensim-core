@@ -6,6 +6,14 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+Upcoming Release
+================
+
+- Added `ComponentPath::root()`, which returns a `ComponentPath` equivalent to "/"
+- `ComponentPath` is now less-than (`<`) comparable, making it usable in (e.g.) `std::map`
+- `ComponentPath` now has a `std::hash<T>` implementation, making it usable in (e.g.) `std::unordered_map`
+- Added `.clear()` and `.empty()` to `ComponentPath` for more parity with `std::string`'s semantics
+
 v4.5
 ====
 - Added `AbstractGeometryPath` which is a base class for `GeometryPath` and other path types (#3388). All path-based
