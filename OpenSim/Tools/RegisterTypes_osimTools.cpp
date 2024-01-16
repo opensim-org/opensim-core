@@ -55,6 +55,15 @@
 #include "CorrectionController.h"
 #include "MuscleStateTrackingTask.h"
 
+#include "TaskSpaceTorqueController.h"
+#include "TaskSpaceConstraintModel.h"
+#include "TaskSpaceTask.h"
+#include "TaskSpaceBodyTask.h"
+#include "TaskSpaceOrientationTask.h"
+#include "TaskSpaceStationTask.h"
+#include "TaskSpaceCoordinateTask.h"
+#include "TaskSpaceInertiaTask.h"
+
 #include <string>
 #include <iostream>
 #include <exception>
@@ -103,6 +112,19 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
     Object::registerType( InverseKinematicsTool() );
     Object::registerType( IMUInverseKinematicsTool());
     Object::registerType( InverseDynamicsTool() );
+
+    Object::registerType( TaskSpaceTorqueController() );
+    Object::registerType( StationTask() );
+    Object::registerType( OrientationTask() );
+    Object::registerType( CoordinateTask() );
+    Object::registerType( OrientationTask() );
+    Object::registerType( InertiaTask() );
+    Object::registerType( NoConstraintModel() );
+    Object::registerType( DeSapioModel() );
+    Object::registerType( MistryModel() );
+    Object::registerType( SupportModel() );
+    Object::registerType( AghiliModel() );
+
     // Old versions
     Object::RenameType("rdCMC_Joint",   "CMC_Joint");
     Object::RenameType("rdCMC_Point",   "CMC_Point");
