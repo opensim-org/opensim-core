@@ -70,6 +70,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Simulation/Test/SimulationComponentsForTesting.h>
 
+#include <memory>
+
 using namespace OpenSim;
 using namespace std;
 
@@ -159,6 +161,7 @@ void testGimbalJointAccessors();
 void testUniversalJointAccessors();
 void testMotionTypesForCustomJointCoordinates();
 void testNonzeroInterceptCustomJointVsPin();
+void testJointWithInvalidCoordinatesThrowsOnFinalization();
 
 // Multibody tree constructions tests
 void testAddedFreeJointForBodyWithoutJoint();
@@ -377,6 +380,14 @@ int main() {
     } catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testUniversalJointAccessors");
+    }
+
+    try {
+        ++itc;
+        testJointWithInvalidCoordinatesThrowsOnFinalization();
+    } catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testJointWithInvalidCoordinatesThrowsOnFinalization");
     }
 
     if (!failures.empty()) {
@@ -2955,4 +2966,41 @@ void testNonzeroInterceptCustomJointVsPin() {
             "CustomJoint's linear function intercept failed to behave as an "
             "offset "
             "of the coordinate value.");
+}
+
+// reproduction to exercise the bug described in issue #3532
+//
+// the bug is that user code is permitted to delete/clear `OpenSim::Coordinate`s, such
+// that the coordinate then does not have a minimum/maximum range, and that error state
+// isn't detected until downstream code (e.g. calls `getMaxRange()` or similar)
+void testJointWithInvalidCoordinatesThrowsOnFinalization()
+{
+    OpenSim::Model model;
+
+    auto body = std::unique_ptr<OpenSim::Body>(new OpenSim::Body{"body", 1.0, SimTK::Vec3{}, SimTK::Inertia{}});
+    auto joint = std::unique_ptr<OpenSim::PinJoint>(new OpenSim::PinJoint{});
+    joint->setName("joint");
+    joint->updCoordinate().setName("rotation");
+    joint->connectSocket_parent_frame(model.getGround());
+    joint->connectSocket_child_frame(*body);
+    model.addJoint(joint.release());
+    model.addBody(body.release());
+
+    // should be fine: the model is correct
+    model.finalizeConnections();
+
+    auto& coord = model.updComponent<OpenSim::Coordinate>("/jointset/joint/rotation");
+
+    // uh oh: a coordinate with no range (also applies when deleting only one element)
+    coord.updProperty_range().clear();
+
+    bool exceptionThrown = false;
+    try {
+        // should throw (the bug was that it doesn't)
+        model.finalizeConnections();
+    } catch (const OpenSim::Exception&) {
+        exceptionThrown = true;
+    }
+
+    OPENSIM_THROW_IF(!exceptionThrown, Exception, "no exception was thrown (it should throw on finalization)");
 }

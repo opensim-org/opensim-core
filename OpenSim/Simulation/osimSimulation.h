@@ -53,6 +53,7 @@
 #include "Model/ConditionalPathPoint.h"
 #include "Model/MovingPathPoint.h"
 #include "Model/GeometryPath.h"
+#include "Model/FunctionBasedPath.h"
 #include "Model/PrescribedForce.h"
 #include "Model/PointToPointSpring.h"
 #include "Model/ExpressionBasedPointToPointForce.h"
@@ -112,6 +113,7 @@
 #include "SimbodyEngine/TransformAxis.h"
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
+#include "SimbodyEngine/ConstantCurvatureJoint.h"
 
 #include "AssemblySolver.h"
 #include "CoordinateReference.h"

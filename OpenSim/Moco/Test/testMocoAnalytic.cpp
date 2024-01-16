@@ -16,12 +16,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#define CATCH_CONFIG_MAIN
-#include "Testing.h"
-
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
 #include <OpenSim/Moco/osimMoco.h>
+
+#include <catch2/catch_all.hpp>
+#include "Testing.h"
 
 using namespace OpenSim;
 
@@ -54,10 +54,10 @@ SimTK::Matrix expectedSolution(const SimTK::Vector& time) {
     return expectedStatesTrajectory;
 }
 
-TEMPLATE_TEST_CASE("Second order linear min effort", "",
-        MocoCasADiSolver, MocoTropterSolver) {
-    // Kirk 1998, Example 5.1-1, page 198.
-
+/// Kirk 1998, Example 5.1-1, page 198.
+template <typename SolverType>
+MocoStudy createSecondOrderLinearMinimumEffortStudy(
+        const std::string& transcription_scheme) {
     Model model;
     auto* body = new Body("b", 1, SimTK::Vec3(0), SimTK::Inertia(0));
     model.addBody(body);
@@ -74,8 +74,8 @@ TEMPLATE_TEST_CASE("Second order linear min effort", "",
     model.addForce(actu);
     model.finalizeConnections();
 
-    MocoStudy moco;
-    auto& problem = moco.updProblem();
+    MocoStudy study;
+    auto& problem = study.updProblem();
 
     problem.setModelAsCopy(model);
     problem.setTimeBounds(0, 2);
@@ -85,12 +85,32 @@ TEMPLATE_TEST_CASE("Second order linear min effort", "",
 
     problem.addGoal<MocoControlGoal>("effort", 0.5);
 
-    auto& solver = moco.initSolver<TestType>();
+    auto& solver = study.initSolver<SolverType>();
     solver.set_num_mesh_intervals(50);
-    MocoSolution solution = moco.solve();
+    solver.set_transcription_scheme(transcription_scheme);
 
+    return study;
+}
+
+TEST_CASE("Second order linear min effort - MocoTropterSolver") {
+    MocoStudy study =
+            createSecondOrderLinearMinimumEffortStudy<MocoTropterSolver>(
+                    "hermite-simpson");
+    MocoSolution solution = study.solve();
     const auto expected = expectedSolution(solution.getTime());
+    OpenSim_CHECK_MATRIX_ABSTOL(solution.getStatesTrajectory(), expected, 1e-5);
+}
 
+TEST_CASE("Second order linear min effort - MocoCasADiSolver") {
+    auto transcription_scheme =
+                GENERATE(as<std::string>{}, "hermite-simpson",
+                    "legendre-gauss-3", "legendre-gauss-7",
+                    "legendre-gauss-radau-3", "legendre-gauss-radau-7");
+    MocoStudy study =
+            createSecondOrderLinearMinimumEffortStudy<MocoCasADiSolver>(
+                    transcription_scheme);
+    MocoSolution solution = study.solve();
+    const auto expected = expectedSolution(solution.getTime());
     OpenSim_CHECK_MATRIX_ABSTOL(solution.getStatesTrajectory(), expected, 1e-5);
 }
 
@@ -103,6 +123,26 @@ TEMPLATE_TEST_CASE("Second order linear min effort", "",
 TEMPLATE_TEST_CASE("Linear tangent steering",
         "[casadi]", /*MocoTropterSolver, TODO*/
         MocoCasADiSolver) {
+
+    // The pseudospectral schemes have higher accuracy and therefore require
+    // fewer mesh intervals compare to the Hermite-Simpson scheme. The LG scheme
+    // seems to require more mesh intervals than the LGR scheme to achieve the
+    // same performance. This may be because the LG scheme does not have a
+    // collocation point at the final time point, whereas the LGR scheme does,
+    // and this problem has a cost function based solely on the state at the
+    // final time point.
+    using record = std::tuple<std::string, int>;
+    auto settings = GENERATE(table<std::string, int>({
+        record{"hermite-simpson", 100},
+        // record{"legendre-gauss-3", 75}, Does not pass consistently.
+        // record{"legendre-gauss-7", 75},
+        record{"legendre-gauss-radau-3", 50},
+        record{"legendre-gauss-radau-7", 50}
+    }));
+
+    auto transcription_scheme = std::get<0>(settings);
+    auto num_mesh_intervals = std::get<1>(settings);
+
     // The problem is parameterized by a, T, and h, with 0 < 4h/(aT^2) < 1.
     const double a = 5;
     const double finalTime = 1; // "T"
@@ -163,9 +203,17 @@ TEMPLATE_TEST_CASE("Linear tangent steering",
 
     MocoStudy study = MocoStudyFactory::createLinearTangentSteeringStudy(
             a, finalTime, finalHeight);
+    auto& solver = study.initCasADiSolver();
+    solver.set_transcription_scheme(transcription_scheme);
+    solver.set_optim_finite_difference_scheme("forward");
+    solver.set_num_mesh_intervals(num_mesh_intervals);
+    solver.set_scale_variables_using_bounds(true);
+    solver.set_optim_convergence_tolerance(1e-5);
 
     MocoSolution solution = study.solve().unseal();
-    solution.write("testMocoAnalytic_LinearTangentSteering_solution.sto");
+    solution.write(
+            fmt::format("testMocoAnalytic_LinearTangentSteering_{}_solution.sto",
+                    transcription_scheme));
 
     const SimTK::Vector time = solution.getTime();
     SimTK::Vector expectedAngle(time.size());

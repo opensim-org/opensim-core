@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/TableSource.h>
 #include <OpenSim/Common/STOFileAdapter.h>
@@ -31,7 +32,53 @@
 #include <simbody/internal/Force.h>
 #include <simbody/internal/MobilizedBody_Pin.h>
 #include <simbody/internal/MobilizedBody_Ground.h>
+
+#include <catch2/catch_all.hpp>
 #include <random>
+
+namespace
+{
+    // compiler test (see issue #3468)
+    //
+    // - this component must be compiled before the `using namespace` declarations below
+    // - this component must be compile-able
+    // - it exists to test whether OpenSim's component+macro system works for components
+    //   defined in their own namespace, without an implict dependency on `using namespace OpenSim`
+    // - this is effectively a compiler assertion that the OpenSim macros work as expected
+    // - more information available in issue #3468
+    class ComponentInAnonymousNamespace : public OpenSim::Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ComponentInAnonymousNamespace, OpenSim::Component);
+
+        double getDoubleOutput(const SimTK::State&) const { return 0.0; }
+    public:
+        OpenSim_DECLARE_PROPERTY(some_prop, SimTK::Vec3, "comment");
+        OpenSim_DECLARE_INPUT(some_input, float, SimTK::Stage::Acceleration, "some other comment");
+        OpenSim_DECLARE_OUTPUT(some_output, double, getDoubleOutput, SimTK::Stage::Model);
+        OpenSim_DECLARE_SOCKET(some_socket, OpenSim::Component, "some socket comment");
+    };
+
+    class ComponentWithOptionalSimpleProperty final : public OpenSim::Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ComponentWithOptionalSimpleProperty, OpenSim::Component);
+    public:
+        OpenSim_DECLARE_OPTIONAL_PROPERTY(num, int, "");
+
+        ComponentWithOptionalSimpleProperty()
+        {
+            constructProperty_num();
+        }
+    };
+
+    class ComponentWithOptionalObjectProperty final : public OpenSim::Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ComponentWithOptionalObjectProperty, OpenSim::Component);
+    public:
+        OpenSim_DECLARE_OPTIONAL_PROPERTY(func, OpenSim::Function, "");
+
+        ComponentWithOptionalObjectProperty()
+        {
+            constructProperty_func();
+        }
+    };
+}
 
 using namespace OpenSim;
 using namespace std;
@@ -399,7 +446,8 @@ private:
 SimTK_NICETYPENAME_LITERAL(Foo);
 SimTK_NICETYPENAME_LITERAL(Bar);
 
-void testMisc() {
+TEST_CASE("Component Interface Misc.")
+{
     // Define the Simbody system
     MultibodySystem system;
 
@@ -791,7 +839,9 @@ void testMisc() {
     theWorld.print("Nested_" + modelFile);
 }
 
-void testThrowOnDuplicateNames() {
+// un-disable test for duplicate names when we re-enable the exception
+TEST_CASE("Component Interface Throws on Duplicate Names", "[.disabled]")
+{
     TheWorld theWorld;
     theWorld.setName("World");
     theWorld.finalizeFromProperties();
@@ -817,7 +867,8 @@ void testThrowOnDuplicateNames() {
 // finalizeFromProperties() after copying. This test makes sure that you get an
 // exception if you did not call finalizeFromProperties() before calling a
 // method like getComponentList().
-void testExceptionsFinalizeFromPropertiesAfterCopy() {
+TEST_CASE("Component Interface Exceptions Finalize From Properties After Copy")
+{
     TheWorld theWorld;
     {
         MultibodySystem system;
@@ -830,7 +881,8 @@ void testExceptionsFinalizeFromPropertiesAfterCopy() {
     }
 }
 
-void testListInputs() {
+TEST_CASE("Component Interface List Inputs")
+{
     MultibodySystem system;
     TheWorld theWorld;
     theWorld.setName("World");
@@ -892,7 +944,8 @@ void testListInputs() {
     ASSERT(tabReporter->getTable().getNumRows() == 0);
 }
 
-void testListSockets() {
+TEST_CASE("Component Interface List Sockets")
+{
     MultibodySystem system;
     TheWorld theWorld;
     theWorld.setName("world");
@@ -926,7 +979,53 @@ void testListSockets() {
     // TODO redo with the property list / the reference connect().
 }
 
-void testComponentPathNames()
+TEST_CASE("Component Interface Socket::canConnectTo")
+{
+    TheWorld theWorld;
+    theWorld.setName("world");
+
+    Foo& foo = *new Foo(); foo.setName("foo"); foo.set_mass(2.0);
+    theWorld.add(&foo);
+
+    Foo& foo2 = *new Foo(); foo2.setName("foo2"); foo2.set_mass(3.0);
+    theWorld.add(&foo2);
+
+    Bar& bar = *new Bar(); bar.setName("bar");
+    theWorld.add(&bar);
+
+    SimTK_TEST(bar.getSocket("parentFoo").canConnectTo(foo));
+    SimTK_TEST(bar.getSocket("childFoo").canConnectTo(foo2));
+
+    // `theWorld` is an invalid type for the socket, so `canConnectTo` should
+    // return `false`
+    SimTK_TEST(!bar.getSocket("parentFoo").canConnectTo(theWorld));
+    SimTK_TEST(!bar.getSocket("childFoo").canConnectTo(theWorld));
+}
+
+TEST_CASE("Component Interface Input::canConnectTo")
+{
+    TheWorld theWorld;
+    theWorld.setName("world");
+
+    Foo& foo = *new Foo(); foo.setName("foo"); foo.set_mass(2.0);
+    theWorld.add(&foo);
+
+    Foo& foo2 = *new Foo(); foo2.setName("foo2"); foo2.set_mass(3.0);
+    theWorld.add(&foo2);
+
+    Bar& bar = *new Bar(); bar.setName("bar");
+    theWorld.add(&bar);
+
+    // an arbitrary object cannot be connected to an input (the
+    // argument must at least be an AbstractOutput), so these
+    // should return `false`, always.
+    SimTK_TEST(!foo.getInput("input1").canConnectTo(theWorld));
+    SimTK_TEST(!foo.getInput("input1").canConnectTo(foo));
+    SimTK_TEST(!foo.getInput("input1").canConnectTo(foo2));
+    SimTK_TEST(!foo.getInput("input1").canConnectTo(bar));
+}
+
+TEST_CASE("Component Interface Component Path Names")
 {
     Foo foo;
     foo.setName("LegWithConstrainedFoot/foot");
@@ -1056,7 +1155,8 @@ void testComponentPathNames()
     top.connect();
 }
 
-void testFindComponent() {
+TEST_CASE("Component Interface Component::findComponent")
+{
     class A : public Component {
         OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
     public:
@@ -1111,7 +1211,8 @@ void testFindComponent() {
     SimTK_TEST(&b3->getConnectee<A>("socket_a") == a3);
 }
 
-void testTraversePathToComponent() {
+TEST_CASE("Component Interface can Traverse Path to Component")
+{
     class A : public Component {
         OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
     public:
@@ -1205,8 +1306,8 @@ void testTraversePathToComponent() {
     SimTK_TEST(&top.getComponent<Component>("tx/tx") == btx);
 }
 
-void testGetStateVariableValue() {
-
+TEST_CASE("Component Interface Component::getStateVariableValue")
+{
     TheWorld top;
     top.setName("top");
     Sub* a = new Sub();
@@ -1240,7 +1341,8 @@ void testGetStateVariableValue() {
             OpenSim::Exception);
 }
 
-void testGetStateVariableValueComponentPath() {
+TEST_CASE("Component Interface getStateVariableValue with Component Path")
+{
     using CP = ComponentPath;
 
     TheWorld top;
@@ -1276,7 +1378,7 @@ void testGetStateVariableValueComponentPath() {
             OpenSim::Exception);
 }
 
-void testInputOutputConnections()
+TEST_CASE("Component Interface Input/Output Connections")
 {
     {
         TheWorld world;
@@ -1379,7 +1481,8 @@ void testInputOutputConnections()
     }
 }
 
-void testInputConnecteePaths() {
+TEST_CASE("Component Interface Input Connectee Paths")
+{
     {
         std::string componentPath, outputName, channelName, alias;
         AbstractInput::parseConnecteePath("/foo/bar|output",
@@ -1424,7 +1527,8 @@ void testInputConnecteePaths() {
     // TODO test invalid names as well.
 }
 
-void testExceptionsForConnecteeTypeMismatch() {
+TEST_CASE("Component Interface Exceptions when Connectee Type Mismatches")
+{
     // Create Component classes for use in the following tests.
     // --------------------------------------------------------
     // This class has Outputs.
@@ -1548,7 +1652,8 @@ void testExceptionsForConnecteeTypeMismatch() {
     }
 }
 
-void testExceptionsSocketNameExistsAlready() {
+TEST_CASE("Component Interface Throws Exceptions if Socket Name Exists Already")
+{
     // Make sure that it is not possible for a class to have more than one
     // socket with a given name, even if the connectee types are different.
 
@@ -1592,7 +1697,8 @@ void testExceptionsSocketNameExistsAlready() {
     // leads to a compiling error (duplicate member variable).
 }
 
-void testExceptionsInputNameExistsAlready() {
+TEST_CASE("Component Interface Throws Exception if Input Name Exists Already")
+{
     // Make sure that it is not possible for a class to have more than one
     // input with a given name, even if the connectee types are different.
 
@@ -1655,7 +1761,8 @@ void testExceptionsInputNameExistsAlready() {
     }
 }
 
-void testExceptionsOutputNameExistsAlready() {
+TEST_CASE("Component Interface Throws Exceptions if Output Name Exists Already")
+{
     // Make sure that it is not possible for a class to have more than one
     // output with a given name, even if the types are different.
 
@@ -1738,7 +1845,8 @@ void assertEqual(const RowVec& a, const RowVec& b) {
         ASSERT_EQUAL(a[i], b[i], 1e-10);
 }
 
-void testTableSource() {
+TEST_CASE("Component Interface Table Source")
+{
     using namespace OpenSim;
     using namespace SimTK;
 
@@ -1836,7 +1944,8 @@ void testTableSource() {
     std::cout << report << std::endl;
 }
 
-void testTableReporter() {
+TEST_CASE("Component Interface TableReporter Usage")
+{
     // TableReporter works fine even if its input has no connectees.
     {
         TheWorld model;
@@ -1898,10 +2007,13 @@ void writeTimeSeriesTableForInputConnecteeSerialization() {
                                    dataFileNameForInputConnecteeSerialization);
 }
 
-void testListInputConnecteeSerialization() {
+TEST_CASE("Component Interface List Input Connectee Serialization Behavior")
+{
     // We build a model, store the input connectee paths, then
     // recreate the same model from a serialization, and make sure the
     // connectee paths are the same.
+
+    writeTimeSeriesTableForInputConnecteeSerialization();
 
     // Helper function.
     auto getConnecteePaths = [](const AbstractInput& in) {
@@ -1996,10 +2108,12 @@ void testListInputConnecteeSerialization() {
     }
 }
 
-void testSingleValueInputConnecteeSerialization() {
-
+TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavior")
+{
     // Test normal behavior of single-value input (de)serialization.
     // -------------------------------------------------------------
+
+    writeTimeSeriesTableForInputConnecteeSerialization();
     
     // Build a model and serialize it.
     std::string modelFileName = "testComponentInterface_"
@@ -2165,7 +2279,8 @@ void testSingleValueInputConnecteeSerialization() {
     }
 }
 
-void testAliasesAndLabels() {
+TEST_CASE("Component Interface Aliases and Labels Behavior")
+{
     auto theWorld = std::unique_ptr<TheWorld>(new TheWorld());
     theWorld->setName("world");
 
@@ -2238,8 +2353,8 @@ void testAliasesAndLabels() {
     SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "thud");
 }
 
-void testGetAbsolutePathStringSpeed() {
-    
+TEST_CASE("Component Interface Get Absolute Path String Speed")
+{
     std::clock_t constructStartTime = std::clock();
 
     TheWorld* A = new TheWorld();
@@ -2296,7 +2411,8 @@ void testGetAbsolutePathStringSpeed() {
     cout << "getName avgTime = " << avgTime / numTrials << "s" << endl;
 }
 
-void testFormattedDateTime() {
+TEST_CASE("Component Interface Formatted DateTime Works as Expected")
+{
     std::string withMicroseconds = getFormattedDateTime(true, "%Y");
     std::string withoutMicroseconds = getFormattedDateTime(false, "%Y");
     SimTK_TEST(withMicroseconds.find(withoutMicroseconds) == 0);
@@ -2314,7 +2430,8 @@ public:
 template<class T>
 using CacheVariable = Component::CacheVariable<T>;
 
-void testCacheVariableInterface() {
+TEST_CASE("Component Interface CacheVariable<T> Behavior")
+{
     // can default-initialize without throwing an exception
     {
         CacheVariable<double> cv;
@@ -2537,46 +2654,48 @@ void testCacheVariableInterface() {
     }
 }
 
-int main() {
+// repro related to #3409/#3411
+//
+// if downstream code tries to read an optional SimpleProperty without
+// checking whether it's populated or not, it should throw an exception
+// rather than segfaulting
+TEST_CASE("Component Interface: Incorrectly Reading An Optional Simple Property Should Not Segfault (#3409/#3411)")
+{
+    ComponentWithOptionalSimpleProperty c;
 
-    //Register new types for testing deserialization
+    ASSERT_EQUAL(c.getProperty_num().size(), 0);
+    try {
+        // shouldn't segfault...
+        ASSERT_EQUAL(c.get_num(), 1337);
+    } catch (const std::exception&) {
+        // ... but should throw an exception
+    }
+}
+
+// repro related to #3347
+//
+// if downstream code (e.g. OpenSim::CoordinateCouplerConstraint in
+// OpenSim <=4.4) tries to read an optional ObjectProperty without checking
+// whether it's populated or not, it should throw an exception rather
+// than segfaulting
+TEST_CASE("Component Interface: Incorrectly Reading an Optional Object Property Should Not Segfault (#3347)")
+{
+    ComponentWithOptionalObjectProperty c;
+
+    ASSERT_EQUAL(c.getProperty_func().size(), 0);
+    try {
+        // shouldn't segfault...
+        c.get_func().getName();
+    } catch (const std::exception&) {
+        // ... but should throw an exception
+    }
+}
+
+const bool g_TestFixtureTypesAreRegistered = []()
+{
+    // ensure new types are globally registered for testing deserialization
     Object::registerType(Foo());
     Object::registerType(Bar());
     Object::registerType(TheWorld());
-
-    SimTK_START_TEST("testComponentInterface");
-        SimTK_SUBTEST(testMisc);
-        // Uncomment test for duplicate names when we re-enable the exception
-        //SimTK_SUBTEST(testThrowOnDuplicateNames);
-        SimTK_SUBTEST(testExceptionsFinalizeFromPropertiesAfterCopy);
-        SimTK_SUBTEST(testListInputs);
-        SimTK_SUBTEST(testListSockets);
-        SimTK_SUBTEST(testComponentPathNames);
-        SimTK_SUBTEST(testFindComponent);
-        SimTK_SUBTEST(testTraversePathToComponent);
-        SimTK_SUBTEST(testGetStateVariableValue);
-        SimTK_SUBTEST(testGetStateVariableValueComponentPath);
-        SimTK_SUBTEST(testInputOutputConnections);
-        SimTK_SUBTEST(testInputConnecteePaths);
-        SimTK_SUBTEST(testExceptionsForConnecteeTypeMismatch);
-        SimTK_SUBTEST(testExceptionsSocketNameExistsAlready);
-        SimTK_SUBTEST(testExceptionsInputNameExistsAlready);
-        SimTK_SUBTEST(testExceptionsOutputNameExistsAlready);
-        SimTK_SUBTEST(testTableSource);
-        SimTK_SUBTEST(testTableReporter);
-        SimTK_SUBTEST(testAliasesAndLabels);
-    
-        writeTimeSeriesTableForInputConnecteeSerialization();
-        SimTK_SUBTEST(testListInputConnecteeSerialization);
-        SimTK_SUBTEST(testSingleValueInputConnecteeSerialization);
-
-        // This is commented out since it adds ~20-30sec without testing
-        // any new functionality. Make sure to uncomment to use (and
-        // consider commenting other subtests for more stable benchmark).
-        //SimTK_SUBTEST(testGetAbsolutePathStringSpeed);
-
-        SimTK_SUBTEST(testFormattedDateTime);
-        SimTK_SUBTEST(testCacheVariableInterface);
-
-    SimTK_END_TEST();
-}
+    return true;
+}();

@@ -6,15 +6,78 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+v4.5
+====
+- Added `AbstractGeometryPath` which is a base class for `GeometryPath` and other path types (#3388). All path-based
+forces now own the property `path` of type `AbstractGeometryPath` instead of the `GeometryPath` unnamed property. Getters
+and setters have been added to these forces to provide access to concrete path types (e.g., `updPath<T>`). In `Ligament`
+and `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`, etc., need to be updated to
+`getGeometryPath`, `updGeometryPath`, etc., or a suitable alternative.
+- Fixed a minor memory leak when calling `OpenSim::CoordinateCouplerConstraint::setFunction` (#3541)
+- Increase the number of input dimensions supported by `MultivariatePolynomialFunction` to 6 (#3386)
+- Added `Assertion.h` and associated `OPENSIM_ASSERT*` macros (#3531)
+- Replaced uses of `assert` with `OPENSIM_ASSERT`, so that assertion may be configured via cmake in the future, and
+  so that OpenSim (esp. debug builds) throw instead of terminating the process (#3531)
+- Fixed mis-indexing into an `OpenSim::ObjectProperty` now throws an exception rather than segfaulting (#3347)
+- `PointToPointSpring` now throws an exception on finalizing connections if both sides of the spring
+  are connected to the same base frame (#3485)
+- Clarified that `OpenSim::Controller`'s `actuator_list` takes a list of actuator names, rather than paths (#3484)
+- Deleting elements from an `OpenSim::Coordinate` range now throws an exception during `finalizeFromProperties` (previously:
+  it would let you do it, and throw later when `Coordinate::getMinRange()` or `Coordinate::getMaxRange()` were called, #3532)
+- Added `FunctionBasedPath`, a class for representing paths in `Force`s based on `Function` objects (#3389)
+- Introduced the method `Model::getCoordinateNamesInMultibodyTreeOrder` for convenient access to internal coordinate ordering for scripting users (#3569)
+- Fixed a bug where constructing a `ModelProcessor` from a `Model` object led to an invalid `Model`
+- Added `LatinHypercubeDesign`, a class for generating Latin hypercube designs using random and algorithm methods (#3570)
+- Refactor c3dExport.m file as a Matlab function (#3501), also expose method to allow some operations on tableColumns
+  (multiplyAssign) to speed up data processing.
+- Fixed xml-related memory leaks that were occuring when deserializing OpenSim models. (Issue #3537, PR #3594)
+- Fixed a minor bug when the locally installed package (via `pip`) couldn't find the dependencies (PR #3593). Added `data_files` argument to the `setup.py` to copy all the dependencies into the opensim package folder in the Python environment.
+- Added `PolynomialPathFitter`, A utility class for fitting a set of `FunctionBasedPath`s to existing geometry-path in 
+  an OpenSim model using `MultivariatePolynomialFunction`s (#3390)
+- Added `examplePolynomialPathFitter.py`, a scripting example that demonstrates how to use `PolynomialPathFitter` (#3607)
+- Fixed a bug where using `to_numpy()` to convert `RowVectorView`s to Python arrays returned incorrect data (#3613)
+- Bumped the version of `ezc3d` which can now Read Kistler files
+- Updated scripting method addTableMetaDataString to support overwriting metadata value for an existing key (#3589)
+- Exposed simbody methods to obtain GravityForces, MobilityForces and BodyForces (#3490)
+- Simbody was updated such that the headers it transitively exposes to downstream projects are compatible with C++20 (#3619)
+- Moved speed computation from `computeForce` in children of `ScalarActuator` to dedicated `getSpeed` function.
+- Fix type problem with BufferedOrientationReference (Issue #3415, PR #3644)
+- Fixed setting the color of a PathSpring's GeometryPath should now update the color of the PathSpring geometry
+
+
 v4.4.1
 ======
-
+- IMU::calcGyroscopeSignal() now reports angular velocities in the IMU frame.
+- Update `report.py` to set specific colors for plotted trajectories
 - Made `Component::getSocketNames` a `const` member method (previously: non-const)
+- Added `ModOpReplaceMusclesWithPathActuators` to the list of available model operators in `ModelOperators.h`
 - Modifed the swig interface files to make OpenSim::PathPointSet adopt new PathPoints inserted into it. (Issue #3276)
 - Remove references to obsoleted dependency BTK, use ezc3d exclusively.
 - Fixed an issue with IPOPT libraries when building OpenSim with `OPENSIM_WITH_CASADI = ON` but `OPENSIM_WITH_TROPTER = OFF` (Issue #3267).
 - Removed all references to deprecated environment variable `OPENSIM_HOME`.
 - Fix issue where templatized Property classes are not available to Objects defined in plugins.
+- Minimum supported version for Java is now 1.8 in the cmake files (Issue #3215).
+- Fix CSV file adapter hanging on csv files that are missing end-header (issue #2432).
+- Improve documentation for MotionType to serve scripting users (Issue #3324).
+- Drop support for 32-bit Matlab in build system since Matlab stopped providing 32-bit distributions (issue #3373).
+- Hotfixed body inertia not being updated after changing the 'inertia' property of a body (Issue #3395).
+- Fixed segfault that can occur when working with OpenSim::Models that are initialized from invalid XML (osim) data (#3409)
+- Deduplicated `SmoothSegmentedFunction` data when constructing the muscle curves (#3442).
+- Added `OpenSim::AbstractSocket::canConnectTo(Object const&) const`, for faster socket connectivity checks (#3451)
+- Fixed the `CoordinateCouplerConstraint` bug preventing functions with multiple independent coordinates (#3435)
+- Removed memory leak tests from `testInitState` and `testComponents`, because external analyzers (e.g. libASAN) are better-suited to this (#3459)
+- Fixed `CMC_TaskSet` memory leak whenever it is copied (#3457)
+- Added `SIMBODY_EXTRA_CMAKE_ARGS` to `dependencies/CMakeLists.txt`, which lets integrators customize Simbody via the OpenSim superbuild (#3455)
+- Fixed out-of-bounds memory access in testAssemblySolver (#3460)
+- The property, input, output, and socket macros (e.g. OpenSim_DECLARE_PROPERTY) can now be used outside of the OpenSim namespace
+  and no longer require a `using namespace OpenSim;` declaration in order to work (#3468)
+- Fixed runtime segfault that can occur when trying to use a `WrapObject` that is not a child of a `PhysicalFrame` (#3465)
+- Fixed issues #3083 #2575 where analog data is not pulled out from c3d files, a a new function getAnalogDataTable() has been added to the C3DFileAdapter
+- Fixed segfault that can occur when building models with unusual joint topologies (it now throws an `OpenSim::Exception` instead, #3299)
+- Add `calcMomentum`, `calcAngularMomentum`, `calcLinearMomentum`, and associated `Output`s to `Model` (#3474)
+- Fix issue where a different __init__.py is used by conda package and dev environment, the fix allows developers to install local builds into conda. (#3502)
+- Changed control points in `SegmentedQuinticBezierToolkit` to be of `SimTK::Vec6` type instead of `SimTK::Vector` (#3481).
+- Added a cylinder wrapping test: `testWrapCylinder.cpp` (#3498)
 
 
 v4.4
@@ -32,11 +95,11 @@ v4.4
 
 v4.3
 ====
-- Introduced IMU component that models a typical Inertial Measurement Unit (IMU) with corresponding outputs for orientation, accelerometer, and gyroscope signals. 
+- Introduced IMU component that models a typical Inertial Measurement Unit (IMU) with corresponding outputs for orientation, accelerometer, and gyroscope signals.
 - Introduced IMUDataReporter (analysis) to record signals from IMU components placed on models.
 - Fixed a bug with Actuation analysis that would lead to extra columns in the output when an actuator is disabled (Issue #2977).
 - Fix issue where including path in output file name caused output to not be written without warning, now warning is given and file is written (Issue #3042).
-- Fix copy-paste bug in reporting orientation errors (Issue #2893, fixed by Henrik-Norgren). 
+- Fix copy-paste bug in reporting orientation errors (Issue #2893, fixed by Henrik-Norgren).
 - Upgrade bindings to use SWIG version 4.0 (allowing doxygen comments to carry over to Java/Python files).
 - Added createSyntheticIMUAccelerationSignals() to SimulationUtilities to generate "synthetic" IMU accelerations based on passed in state trajectory.
 - Fixed incorrect header information in BodyKinematics file output
@@ -50,7 +113,7 @@ v4.2
 - Fixed a bug in Millard2012EquilibriumMuscle::extendFinalizeFromProperties(): the end point slopes on the inverse force velocity curves are constrained to yield a valid curve. A warning is noted in the log if the slopes are small enough that numerical integration might be slow.
 - Added logging to Millard2012EquilibriumMuscle::extendFinalizeFromProperties(): whenever an internal setting is changed automatically these changes are noted in the log. To avoid seeing these messages, update the corresponding properties in the .osim file to the values noted in the log message.
 - Introduced new logging system based on spdlog https://github.com/gabime/spdlog.git. The transition should be transparent to end users with default settings except that the name of the log file is now opensim.log. Main features are:
-  - The ability to customize error level for reporting (in increasing level of verbosity): Off, Critical, Error, Warn, Info, Debug, Trace 
+  - The ability to customize error level for reporting (in increasing level of verbosity): Off, Critical, Error, Warn, Info, Debug, Trace
   - The ability to start logging to a specified file on the fly.
   - Log file messages are time stamped and the format can be changed by users
   - More details and additional functionality is described in the Developer's Guide, and Doxygen pages of OpenSim::Logger class.
@@ -80,8 +143,8 @@ v4.2
 - Improved the performance of `ComponentPath` (PR #2844)
   - This improves the performance of component-heavy models by ~5-10 %
   - The behavior and interface of `ComponentPath` should remain the same
-- The new Matlab CustomStaticOptimization.m guides the user to build their own custom static optimization code. 
-- Dropped support for separate Kinematics for application of External Loads. ([PR #2770] (https://github.com/opensim-org/opensim-core/pull/2770)). 
+- The new Matlab CustomStaticOptimization.m guides the user to build their own custom static optimization code.
+- Dropped support for separate Kinematics for application of External Loads. ([PR #2770] (https://github.com/opensim-org/opensim-core/pull/2770)).
 - Refactored InverseKinematicsSolver to allow for adding (live) Orientation data to track, introduced BufferedOrientationsReference to queue data (PR #2855)
 - `opensim.log` will only be created/opened when the first message is logged to it (PR #2880):
   - Previously, `opensim.log` would always be created, even if nothing was logged
@@ -104,16 +167,16 @@ v4.1
 - Model files from very old versions (pre 1.8.1) are not supported, an exception is thrown rather than fail quietly (issue #2395).
 - Initializing a Component from an existing Component with correct socket connectees yields invalid paths (issue #2418).
 - Reading DataTables from files has been simplified. Reading one table from a file typically uses the Table constructor except when the data-source/file contains multiple tables. (In these cases e.g. C3D files, use C3DFileAdapter.read method, then use functions in C3DFileAdapter to get the individual TimeSeriesTable(s)). Writing tables to files has not changed.
-- Exposed convertMillimeters2Meters() in osimC3D.m. This function converts COP and moment data from mm to m and now must be invoked prior to writing force data to file. Previously, this was automatically performed during writing forces to file. 
+- Exposed convertMillimeters2Meters() in osimC3D.m. This function converts COP and moment data from mm to m and now must be invoked prior to writing force data to file. Previously, this was automatically performed during writing forces to file.
 - Methods that operate on SimTK::Vec<n> are now available through Java/Matlab and python bindings to add/subtract/divide/multiply vec<n> contents with a scalar (PR #2558)
 - The new Stopwatch class allows C++ API users to easily measure the runtime of their code.
 - If finalizeConnections() method was not called on a model after making changes and before printing, an exception is thrown to avoid creating corrupt model files quietly (PR #2529)
 - Updated the docopt.cpp dependency so that OpenSim can be compiled with Visual C++ from Visual Studio 2019.
-- Added `Blankevoort1991Ligament` force component which represents ligament fibers as non-linear path springs. The force-strain curve has a quadratic toe region at low strains and a linear stiffness region at high strains. (PR #2632)  
+- Added `Blankevoort1991Ligament` force component which represents ligament fibers as non-linear path springs. The force-strain curve has a quadratic toe region at low strains and a linear stiffness region at high strains. (PR #2632)
 - Updated Simbody to 3.7 to fix an issue with the simbody-visualizer on macOS 10.15 Catalina.
 - On Mac and Linux, we include a shell script opensim-install-command-line.sh to make OpenSim's command-line tools easily accessible.
 - Added the compliant SmoothSphereHalfSpaceForce component, for use with direct collocation and Moco.
- 
+
 
 Converting from v4.0 to v4.1
 ----------------------------
@@ -125,7 +188,7 @@ Converting from v4.0 to v4.1
 Bug Fixes
 ---------
 - Fixed bug in osimTable2Struct.m for renaming unlabelled markers (PR #2491)
-- Fixed bug that resulted in an exception when reading C3D files without forces. Now, if the C3D doesn't contain markers or forces, an empty table will be returned (PR #2421) 
+- Fixed bug that resulted in an exception when reading C3D files without forces. Now, if the C3D doesn't contain markers or forces, an empty table will be returned (PR #2421)
 - Fix bug that resulted in activations and forces reported for Actuators that are disabled during StaticOptimization (issue #2438) Disabled actuators are now ignored in StaticOptimization.
 - OpenSim no longer supports model file formats predating version 1.8.1 (PR #2498)
 - FunctionBasedBushingForce now applies damping if specified (it was incorrectly ignored in 4.0) issue #2512
@@ -138,7 +201,7 @@ Documentation
 Other Changes
 -------------
 - Performance of reading large data files has been significantly improved. A 50MB .sto file would take 10-11 min to read now takes 2-3 seconds. (PR #2399)
-- Added Matlab example script of plotting the Force-length properties of muscles in a models; creating an Actuator file from a model; 
+- Added Matlab example script of plotting the Force-length properties of muscles in a models; creating an Actuator file from a model;
 building and simulating a simple arm model;  using OutputReporters to record and write marker location and coordinate values to file.
 - Added Python example that demonstrates how to run an optimization using the cma package and how to avoid an expensive call to `initSystem()` within the objective function. (PR #2604)
 - OpenSim 4.1 ships with Python3 bindings as default. It is still possible to create bindings for Python2 if desired by setting CMake variable OPENSIM_PYTHON_VERSION to 2
@@ -312,7 +375,7 @@ New Classes
 - Created Frame, PhysicalFrame, OffsetFrame, PhysicalOffsetFrame, Station and Marker ModelComponents (PR #188, PR #325, PR #339). Marker did not previously comply with the Model Component interface.
 - A Body is a PhysicalFrame
 - Connections to Bodies upgraded to PhysicalFrames and locations on these frames are now represented by PhysicalOffsetFrame (PR #370)
-- Joints were refactored so that the base Joint manages the parent and child frame connections, including the definition of local PhysicalOffsetFrames to handle offsets defined as separate location and orientation properties. (PR #589)  
+- Joints were refactored so that the base Joint manages the parent and child frame connections, including the definition of local PhysicalOffsetFrames to handle offsets defined as separate location and orientation properties. (PR #589)
 - The WeldConstraint and BushingForces (BushingForce, CoupledBushingForce, FunctionBasedBushingForce, and ExpressionBasedBushingForce) were similarly unified (like Joints) to handle the two Frames that these classes require to operate. A LinkTwoFrames intermediate class was introduced to house the common operations. Convenience constructors for WeldConstraint and BushingFrames were affected and now require the name of the Component as the first argument. (PR #649)
 - The new StatesTrajectory class allows users to load an exact representation of previously-computed states from a file. (PR #730)
 - Added Point as a new base class for all points, which include: Station, Marker, and PathPoints

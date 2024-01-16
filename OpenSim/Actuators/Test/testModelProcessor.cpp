@@ -16,7 +16,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#define CATCH_CONFIG_MAIN
 #include "OpenSim/Moco/Test/Testing.h"
 
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
@@ -51,8 +50,8 @@ TEST_CASE("ModelProcessor") {
             ModelProcessor proc(Model{});
             proc.set_filepath("file.osim");
             CHECK_THROWS_WITH(proc.process(),
-                    Catch::Contains("Expected either a Model object or a "
-                                    "filepath"));
+                    Catch::Matchers::ContainsSubstring(
+                        "Expected either a Model object or a filepath"));
         }
     }
 
@@ -80,7 +79,7 @@ TEST_CASE("ModelProcessor") {
     }
 }
 
-TEST_CASE("ModOpRemoveMuscles") {
+Model createElbowModel() {
     Model model;
     using SimTK::Vec3;
     using SimTK::Inertia;
@@ -100,11 +99,26 @@ TEST_CASE("ModOpRemoveMuscles") {
     model.addForce(biceps);
     model.finalizeConnections();
 
-    ModelProcessor proc(model);
+    return model;
+}
+
+TEST_CASE("ModOpRemoveMuscles") {
+    ModelProcessor proc(createElbowModel());
     proc.append(ModOpRemoveMuscles());
     Model processedModel = proc.process();
     processedModel.finalizeFromProperties();
 
     CHECK(processedModel.countNumComponents<Millard2012EquilibriumMuscle>() ==
             0);
+}
+
+TEST_CASE("ModOpReplaceMusclesWithPathActuators") {
+    ModelProcessor proc(createElbowModel());
+    proc.append(ModOpReplaceMusclesWithPathActuators());
+    Model processedModel = proc.process();
+    processedModel.finalizeFromProperties();
+
+    CHECK(processedModel.countNumComponents<Millard2012EquilibriumMuscle>() ==
+            0);
+    CHECK(processedModel.countNumComponents<PathActuator>() == 1);
 }

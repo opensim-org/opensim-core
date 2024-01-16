@@ -77,7 +77,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
     Object::RegisterType(MuscleFixedWidthPennationModel());
 
     Object::RegisterType(Millard2012EquilibriumMuscle());
-    Object::RegisterType(Millard2012AccelerationMuscle());        
+    Object::RegisterType(Millard2012AccelerationMuscle());
     Object::RegisterType(DeGrooteFregly2016Muscle());
 
     Object::registerType(ModelProcessor());
@@ -88,6 +88,10 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
     Object::registerType(ModOpAddReserves());
     Object::registerType(ModOpAddExternalLoads());
     Object::registerType(ModOpReplaceJointsWithWelds());
+    Object::registerType(ModOpReplaceMusclesWithPathActuators());
+    Object::registerType(ModOpReplacePathsWithFunctionBasedPaths());
+    Object::registerType(PolynomialPathFitterBounds());
+    Object::registerType(PolynomialPathFitter());
 
     //Object::RegisterType( ConstantMuscleActivation() );
     //Object::RegisterType( ZerothOrderMuscleActivationDynamics() );
@@ -105,7 +109,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
     //Object::RenameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 
   } catch (const std::exception& e) {
-    std::cerr 
+    std::cerr
         << "ERROR during osimActuators Object registration:\n"
         << e.what() << "\n";
   }

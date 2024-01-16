@@ -29,6 +29,7 @@
 // INCLUDES
 #include "Storage.h"
 
+#include "Assertion.h"
 #include "CommonUtilities.h"
 #include "GCVSpline.h"
 #include "GCVSplineSet.h"
@@ -2675,7 +2676,7 @@ void Storage::interpolateAt(const Array<double> &targetTimes)
 void Storage::
 setOutputFileName(const std::string& aFileName)
 {
-    assert(_fileName=="");
+    OPENSIM_ASSERT_FRMOBJ(_fileName == "");
     _fileName = aFileName;
 
     // OPEN THE FILE
@@ -3403,7 +3404,7 @@ bool Storage::makeStorageLabelsUnique() {
             int c = 1;
             while (exist) {
                 char cString[20];
-                sprintf(cString,"%d", c);
+                snprintf(cString, 20, "%d", c);
                 newName = std::string(cString) + "_" + offending;
                 exist = (lbls.findIndex(newName) != -1);
                 c++;

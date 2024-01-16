@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ----------------------------------------------------------------------------
-#define CATCH_CONFIG_MAIN
-#include <catch.hpp>
+
+#include <catch2/catch_all.hpp>
+#include "testing.h"
 
 #include <tropter/tropter.h>
-
-#include "testing.h"
 
 using Eigen::Ref;
 using Eigen::VectorXd;
@@ -34,6 +33,9 @@ using tropter::SparsityPattern;
 using tropter::SymmetricSparsityPattern;
 using tropter::SparsityCoordinates;
 using namespace tropter::optimization;
+
+using Catch::Approx;
+using Catch::Matchers::ContainsSubstring;
 
 template<typename T>
 class Unconstrained : public Problem<T> {
@@ -713,7 +715,8 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                     decorator->calc_sparsity(
                             decorator->make_initial_guess_from_bounds(),
                             jac_sparsity, true, hes_sparsity),
-                    Catch::Contains("requested use of user-supplied sparsity"));
+                    ContainsSubstring(
+                            "requested use of user-supplied sparsity"));
         }
     }
 
@@ -727,7 +730,7 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                 decorator->calc_sparsity(
                         decorator->make_initial_guess_from_bounds(),
                         jac_sparsity, true, hes_sparsity),
-                Catch::Contains("Cannot use supplied sparsity pattern"));
+                ContainsSubstring("Cannot use supplied sparsity pattern"));
     }
 }
 
@@ -761,7 +764,7 @@ TEST_CASE("Validate sparsity input") {
         REQUIRE_THROWS_WITH(
                 decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
                         jac_sparsity, true, hes_sparsity),
-                Catch::Contains("Expected sparsity pattern of Hessian of "
+                ContainsSubstring("Expected sparsity pattern of Hessian of "
                         "constraints to have dimensions 4"));
 
         problemd.m_hescon_sparsity = SymmetricSparsityPattern(4);
@@ -769,7 +772,7 @@ TEST_CASE("Validate sparsity input") {
         REQUIRE_THROWS_WITH(
                 decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
                         jac_sparsity, true, hes_sparsity),
-                Catch::Contains("Expected sparsity pattern of Hessian of "
+                ContainsSubstring("Expected sparsity pattern of Hessian of "
                         "objective to have dimensions 4"));
     }
 
@@ -777,14 +780,14 @@ TEST_CASE("Validate sparsity input") {
         {
             SparsityPattern s(2, 3);
             REQUIRE_THROWS_WITH(s.set_nonzero(2, 0),
-                    Catch::Contains("Expected row_index to be in [0, 2)"));
+                    ContainsSubstring("Expected row_index to be in [0, 2)"));
             REQUIRE_THROWS_WITH(s.set_nonzero(0, 3),
-                    Catch::Contains("Expected col_index to be in [0, 3)"));
+                    ContainsSubstring("Expected col_index to be in [0, 3)"));
         }
         {
             SymmetricSparsityPattern s(5);
             REQUIRE_THROWS_WITH(s.set_nonzero(0, 5),
-                    Catch::Contains("Expected col_index to be in [0, 5)"));
+                    ContainsSubstring("Expected col_index to be in [0, 5)"));
         }
     }
 
@@ -806,7 +809,7 @@ TEST_CASE("Validate sparsity input") {
     SECTION("Lower triangle") {
         SymmetricSparsityPattern sparsity(2);
         REQUIRE_THROWS_WITH(sparsity.set_nonzero(1, 0),
-                Catch::Contains("must be in the upper triangle"));
+                ContainsSubstring("must be in the upper triangle"));
     }
 
 }

@@ -24,6 +24,8 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <catch2/catch_all.hpp>
+
 /* The purpose of this test is strictly to check that classes derived from
  * the Path class work outside of the objects/components they are meant to 
  * service (i.e. check that the path logic works).
@@ -32,7 +34,8 @@
 using namespace OpenSim;
 using namespace std;
 
-void testComponentPath() {
+TEST_CASE("Component Path Behaves as Expected")
+{
     /* Test that creating ComponentPath with paths that should not be cleaned up */
 
     using CP = ComponentPath;
@@ -324,13 +327,4 @@ void testComponentPath() {
             }
         }
     }
-}
-
-int main()
-{
-    SimTK_START_TEST("testPath");
-        SimTK_SUBTEST(testComponentPath);
-    SimTK_END_TEST();
-
-    return 0;
 }

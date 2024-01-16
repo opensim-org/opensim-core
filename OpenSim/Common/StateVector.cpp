@@ -543,7 +543,7 @@ print(FILE *fp) const
 
     // TIME
     char format[IO_STRLEN];
-    sprintf(format,"%s",IO::GetDoubleOutputFormat());
+    snprintf(format, IO_STRLEN, "%s", IO::GetDoubleOutputFormat());
     int n=0,nTotal=0;
     n = fprintf(fp,format,_t);
     if(n<0) {
@@ -553,7 +553,7 @@ print(FILE *fp) const
     nTotal += n;
 
     // STATES
-    sprintf(format,"\t%s",IO::GetDoubleOutputFormat());
+    snprintf(format, IO_STRLEN, "\t%s", IO::GetDoubleOutputFormat());
     for(int i=0;i<_data.getSize();i++) {
         n = fprintf(fp,format,_data[i]);
         if(n<0) {

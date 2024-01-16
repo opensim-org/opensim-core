@@ -23,8 +23,8 @@
 #include <iostream>
 
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch.hpp>
+#include <catch2/catch_all.hpp>
+
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/TableUtilities.h>
@@ -34,6 +34,8 @@
 using namespace SimTK;
 using namespace OpenSim;
 using OpenSim::Exception;
+using Catch::Approx;
+using Catch::Matchers::ContainsSubstring;
 
 TEST_CASE("DataTable") {
 
@@ -793,13 +795,13 @@ TEST_CASE("TableUtilities::checkNonUniqueLabels") {
 TEST_CASE("TableUtilities::isInDegrees") {
     SECTION("no inDegrees metadata") {
         CHECK_THROWS_WITH(TableUtilities::isInDegrees(TimeSeriesTable()),
-                Catch::Contains("Table does not have 'inDegrees' metadata."));
+                ContainsSubstring("Table does not have 'inDegrees' metadata."));
     }
     SECTION("inDegrees=invalid") {
         TimeSeriesTable table;
         table.addTableMetaData("inDegrees", std::string("invalid"));
         CHECK_THROWS_WITH(!TableUtilities::isInDegrees(table),
-                Catch::Contains("Expected table's 'inDegrees' metadata"));
+                ContainsSubstring("Expected table's 'inDegrees' metadata"));
     }
     Storage sto;
     SECTION("inDegrees=yes") {

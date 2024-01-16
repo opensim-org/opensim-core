@@ -378,6 +378,28 @@ OSIMSIMULATION_API TimeSeriesTableVec3 createSyntheticIMUAccelerationSignals(
         const TimeSeriesTable& statesTable, const TimeSeriesTable& controlsTable,
         const std::vector<std::string>& framePaths);
 
+/// Compute the values of coordinates defined by `CoordinateCouplerConstraint`s
+/// in the model and append them to the provided `TimeSeriesTable`. The table
+/// should contain columns with values for all the independent coordinates that
+/// define the coupled coordinate. The column labels must be the full path to
+/// the coordinate values (e.g., `/jointset/ground_pelvis/pelvis_tx/value`).
+/// @ingroup simulationutil
+OSIMSIMULATION_API void appendCoupledCoordinateValues(
+        TimeSeriesTable& table, const Model& model,
+        bool overwriteExistingColumns = true);
+
+/// Compute and append the coordinate speeds in the model by taking the first
+/// derivative of the coordinate values in the provided `TimeSeriesTable`. The
+/// table should contain columns with values for valid coordinates in the model.
+/// Columns that do not match a coordinate in the model are ignored. The column
+/// labels must be the full path to the coordinate values (e.g.,
+/// `/jointset/ground_pelvis/pelvis_tx/value`).
+/// @ingroup simulationutil
+OSIMSIMULATION_API void appendCoordinateValueDerivativesAsSpeeds(
+        TimeSeriesTable& table, const Model& model,
+        bool overwriteExistingColumns = true);
+
 } // end of namespace OpenSim
+
 
 #endif // OPENSIM_SIMULATION_UTILITIES_H_

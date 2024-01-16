@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoTrajectory.cpp                                           *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2023 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -20,6 +20,7 @@
 #include "MocoProblem.h"
 #include "MocoUtilities.h"
 
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -368,17 +369,24 @@ void MocoTrajectory::insertControlsTrajectory(
 void MocoTrajectory::generateSpeedsFromValues() {
     auto valuesTable = exportToValuesTable();
     int numValues = (int)valuesTable.getNumColumns();
+    const std::vector<std::string>& valueNames = valuesTable.getColumnLabels();
     OPENSIM_THROW_IF(!numValues, Exception,
         "Tried to compute speeds from coordinate values, but no values "
         "exist in the trajectory.");
-    m_states.resize(getNumTimes(), 2*numValues);
+
+    // Save the auxiliary states to fill back in later.
+    SimTK::Matrix auxiliaryStates = getAuxiliaryStatesTrajectory();
+    std::vector<std::string> auxiliaryStateNames = getAuxiliaryStateNames();
+
+    // Resize the states trajectory to hold the values, speeds, and any
+    // auxiliary states.
+    m_states.resize(getNumTimes(), 2*numValues + getNumAuxiliaryStates());
 
     // Spline the values trajectory.
     GCVSplineSet splines(valuesTable, {}, std::min(getNumTimes() - 1, 5));
 
+    // Create the speed names.
     std::vector<std::string> stateNames;
-    const std::vector<std::string>& valueNames =
-            valuesTable.getColumnLabels();
     std::vector<std::string> speedNames;
     for (int ivalue = 0; ivalue < numValues; ++ivalue) {
         std::string name(valueNames[ivalue]);
@@ -388,6 +396,14 @@ void MocoTrajectory::generateSpeedsFromValues() {
         speedNames.push_back(name);
     }
 
+    // Append the speed names to the state names.
+    stateNames.insert(stateNames.end(), speedNames.begin(), speedNames.end());
+
+    // Append the auxiliary state names to the state names.
+    stateNames.insert(stateNames.end(), auxiliaryStateNames.begin(),
+            auxiliaryStateNames.end());
+
+    // Fill in the coordinate and speed values based on the splined values.
     SimTK::Vector currTime(1, SimTK::NaN);
     for (int ivalue = 0; ivalue < numValues; ++ivalue) {
         const auto& name = valueNames[ivalue];
@@ -398,6 +414,14 @@ void MocoTrajectory::generateSpeedsFromValues() {
             m_states(itime, ivalue) = splines.get(name).calcValue(currTime);
             m_states(itime, ivalue + numValues) =
                     splines.get(name).calcDerivative({0}, currTime);
+        }
+    }
+
+    // Fill back in any auxiliary state values.
+    for (int iaux = 0; iaux < getNumAuxiliaryStates(); ++iaux) {
+        for (int itime = 0; itime < m_time.size(); ++itime) {
+            currTime[0] = m_time[itime];
+            m_states(itime, 2*numValues + iaux) = auxiliaryStates(itime, iaux);
         }
     }
 
@@ -513,6 +537,50 @@ void MocoTrajectory::generateAccelerationsFromSpeeds() {
 
     // Assign derivative names.
     m_derivative_names = derivativeNames;
+}
+
+void MocoTrajectory::trimToIndices(int newStartIndex, int newFinalIndex) {
+    OPENSIM_THROW_IF(newFinalIndex < newStartIndex, Exception,
+            fmt::format("Expected newFinalIndex to be greater than "
+                        "newStartIndex, but received {} and {} for "
+                        "newStartIndex and newFinalIndex, respectively.",
+                        newStartIndex, newFinalIndex));
+    OPENSIM_THROW_IF(newStartIndex < 0, Exception,
+            fmt::format("Expected newStartIndex to be greater than or equal to"
+                        "0, but received {}.", newStartIndex));
+    OPENSIM_THROW_IF(newFinalIndex > getNumTimes()-1, Exception,
+            fmt::format("Expected newFinalIndex to be less than or equal to"
+                        "the current final index {}, but received {}.",
+                        getNumTimes()-1, newFinalIndex));
+
+    const int newLength = newFinalIndex - newStartIndex + 1;
+
+    const SimTK::Matrix statesBlock =
+            m_states(newStartIndex, 0, newLength, m_states.ncol());
+    m_states = statesBlock;
+
+    const SimTK::Matrix controlsBlock =
+            m_controls(newStartIndex, 0, newLength, m_controls.ncol());
+    m_controls = controlsBlock;
+
+    const SimTK::Matrix multipliersBlock =
+            m_multipliers(newStartIndex, 0, newLength, m_multipliers.ncol());
+    m_multipliers = multipliersBlock;
+
+    const SimTK::Matrix derivativesBlock =
+            m_derivatives(newStartIndex, 0, newLength, m_derivatives.ncol());
+    m_derivatives = derivativesBlock;
+
+    const SimTK::Matrix slacksBlock =
+            m_slacks(newStartIndex, 0, newLength, m_slacks.ncol());
+    m_slacks = slacksBlock;
+
+    SimTK::Vector newTime(newLength, 0.0);
+    for (int i = 0; i < newLength; ++i) {
+        newTime[i] = m_time[i + newStartIndex];
+    }
+
+    m_time = newTime;
 }
 
 double MocoTrajectory::getInitialTime() const {
@@ -1302,7 +1370,7 @@ double MocoTrajectory::compareContinuousVariablesRMSInternal(
         }
         // Trapezoidal rule for uniform grid:
         // dt / 2 (f_0 + 2f_1 + 2f_2 + 2f_3 + ... + 2f_{N-1} + f_N)
-        assert(numTimes > 2);
+        OPENSIM_ASSERT(numTimes > 2);
         return timeInterval / 2.0 *
                (sumSquaredError.sum() + sumSquaredError(1, numTimes - 2).sum());
     };

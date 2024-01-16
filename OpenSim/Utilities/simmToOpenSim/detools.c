@@ -809,7 +809,6 @@ XForm* get_deform_xform (DeformObject* dfm, int deformMode)
       case DE_DEFORM_END_MODE:
          return &dfm->deform_end;
    }
-/*   assert(0);*/
    
    return NULL;
 }
@@ -834,7 +833,6 @@ XForm* get_deform_xform2 (DeformObject* dfm, int deformMode, double factor)
          else if (deformMode == DE_DEFORM_END_MODE)
             return &dfm->deform_end;
    }
-/*   assert(0);*/
    
    return NULL;
 }
@@ -866,10 +864,6 @@ XForm* get_deform_xform3 (DeformObject* dfm, int deformMode, double factor)
             return &xform;
          }
    }
-   /*
-   assert(0);
-   return NULL;
-   */
 }
 
 /* -------------------------------------------------------------------------

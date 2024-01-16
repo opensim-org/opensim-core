@@ -27,7 +27,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include "AbstractGeometryPath.h"
 #include "Force.h"
+#include "GeometryPath.h"
 
 #ifdef SWIG
     #ifdef OSIMACTUATORS_API
@@ -39,14 +41,13 @@
 namespace OpenSim {
 
 class Function;
-class GeometryPath;
 class ScaleSet;
 
 //=============================================================================
 //=============================================================================
 /**
  * A class implementing a ligament. The path of the ligament is
- * stored in a GeometryPath object.
+ * stored in an object derived from AbstractGeometryPath.
  */
 class OSIMSIMULATION_API Ligament : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(Ligament, Force);
@@ -54,8 +55,8 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath, 
-        "the set of points defining the path of the ligament");
+    OpenSim_DECLARE_PROPERTY(path, AbstractGeometryPath,
+        "The path defines the length and lengthening speed of the PathSpring");
     OpenSim_DECLARE_PROPERTY(resting_length, double,
         "resting length of the ligament");
     OpenSim_DECLARE_PROPERTY(pcsa_force, double,
@@ -73,14 +74,41 @@ public:
     // assignment operator.
 
     //--------------------------------------------------------------------------
+    // PATH
+    //--------------------------------------------------------------------------
+    AbstractGeometryPath& updPath() { return upd_path(); }
+    const AbstractGeometryPath& getPath() const { return get_path(); }
+
+    template <typename PathType>
+    PathType& updPath() {
+        return dynamic_cast<PathType&>(upd_path());
+    }
+    template <typename PathType>
+    const PathType& getPath() const {
+        return dynamic_cast<const PathType&>(get_path());
+    }
+
+    template <typename PathType>
+    PathType* tryUpdPath() {
+        return dynamic_cast<PathType*>(&upd_path());
+    }
+    template <typename PathType>
+    const PathType* tryGetPath() const {
+        return dynamic_cast<const PathType*>(&get_path());
+    }
+
+    GeometryPath& updGeometryPath() {
+        return updPath<GeometryPath>();
+    }
+    const GeometryPath& getGeometryPath() const {
+        return getPath<GeometryPath>();
+    }
+    
+    bool hasVisualPath() const override { return getPath().isVisualPath(); };
+
+    //--------------------------------------------------------------------------
     // GET
     //--------------------------------------------------------------------------
-    // Properties
-    const GeometryPath& getGeometryPath() const 
-    {   return get_GeometryPath(); }
-    GeometryPath& updGeometryPath() 
-    {   return upd_GeometryPath(); }
-    bool hasGeometryPath() const override { return true;};
     virtual double getLength(const SimTK::State& s) const;
     virtual double getRestingLength() const 
     {   return get_resting_length(); }

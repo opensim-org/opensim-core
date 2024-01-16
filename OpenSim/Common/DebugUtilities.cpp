@@ -22,8 +22,8 @@
 #include "DebugUtilities.h"
 
 #include "Logger.h"
-#include <cassert>
 #include <cstdlib>
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -38,8 +38,7 @@ void Fatal_Error(const char* msg, const char* function, const char* file,
                                   "line = {})", msg, function, file, line);
     log_critical(str);
     throw std::runtime_error(str);
-    assert(false);
-    exit(1);
+    std::terminate();
 }
 
 /**

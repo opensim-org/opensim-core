@@ -22,10 +22,10 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Tools/CMCTool.h>
 #include "OpenSim/Tools/CMC_TaskSet.h"
-
-#define CATCH_CONFIG_MAIN
-#include "Testing.h"
 #include "OpenSim/Tools/CMC_Joint.h"
+
+#include <catch2/catch_all.hpp>
+#include "Testing.h"
 
 using namespace OpenSim;
 
@@ -84,6 +84,8 @@ TEMPLATE_TEST_CASE(
     auto ignoreActivationDynamics = GENERATE(true, false);
     auto ignoreTendonCompliance = GENERATE(true, false);
     auto isTendonDynamicsExplicit = GENERATE(true, false);
+    auto transcription_scheme = GENERATE(as<std::string>{},
+            "hermite-simpson", "legendre-gauss-3", "legendre-gauss-radau-3");
 
     // CAPTURE prints the current value of these variables to the console.
     CAPTURE(ignoreActivationDynamics);
@@ -139,6 +141,7 @@ TEMPLATE_TEST_CASE(
         solver.set_multibody_dynamics_mode("explicit");
         solver.set_optim_convergence_tolerance(1e-4);
         solver.set_optim_constraint_tolerance(1e-4);
+        solver.set_transcription_scheme(transcription_scheme);
 
         solutionTrajOpt = study.solve();
         solutionFilename = "testDeGrooteFregly2016Muscle_solution";
@@ -358,7 +361,7 @@ TEST_CASE("ActivationCoordinateActuator") {
     problem.setModelAsCopy(model);
     auto rep = problem.createRep();
     CHECK(rep.getStateInfo("/forceset/aca/activation").getBounds().getLower() ==
-            Approx(-0.31));
+            Catch::Approx(-0.31));
     CHECK(rep.getStateInfo("/forceset/aca/activation").getBounds().getUpper() ==
-            Approx(0.78));
+            Catch::Approx(0.78));
 }

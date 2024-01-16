@@ -18,6 +18,7 @@
 
 #include "MocoCasADiSolver.h"
 
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Moco/MocoUtilities.h>
 
 #ifdef OPENSIM_WITH_CASADI
@@ -129,7 +130,7 @@ const MocoTrajectory& MocoCasADiSolver::getGuess() const {
         if (get_guess_file() != "" && m_guessFromFile.empty()) {
             // The API should make it impossible for both guessFromFile and
             // guessFromAPI to be non-empty.
-            assert(m_guessFromAPI.empty());
+            OPENSIM_ASSERT_FRMOBJ(m_guessFromAPI.empty());
             // No need to load from file again if we've already loaded it.
             MocoTrajectory guessFromFile(get_guess_file());
             checkGuess(guessFromFile);
@@ -192,22 +193,28 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     Dict solverOptions;
     checkPropertyValueIsInSet(getProperty_optim_solver(), {"ipopt", "snopt"});
     checkPropertyValueIsInSet(getProperty_transcription_scheme(),
-            {"trapezoidal", "hermite-simpson"});
+            {"trapezoidal", "hermite-simpson", "legendre-gauss-1",
+             "legendre-gauss-2", "legendre-gauss-3", "legendre-gauss-4",
+             "legendre-gauss-5", "legendre-gauss-6", "legendre-gauss-7",
+             "legendre-gauss-8", "legendre-gauss-9", "legendre-gauss-radau-1",
+             "legendre-gauss-radau-2", "legendre-gauss-radau-3",
+             "legendre-gauss-radau-4", "legendre-gauss-radau-5",
+             "legendre-gauss-radau-6", "legendre-gauss-radau-7",
+             "legendre-gauss-radau-8", "legendre-gauss-radau-9"});
     OPENSIM_THROW_IF(casProblem.getNumKinematicConstraintEquations() != 0 &&
                              get_transcription_scheme() == "trapezoidal",
             OpenSim::Exception,
             "Kinematic constraints not supported with "
             "trapezoidal transcription.");
-    // Enforcing constraint derivatives is only supported when Hermite-Simpson
-    // is set as the transcription scheme.
+    // Enforcing constraint derivatives is not supported with trapezoidal
+    // transcription.
     if (casProblem.getNumKinematicConstraintEquations() != 0) {
-        OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
+        OPENSIM_THROW_IF(get_transcription_scheme() == "trapezoidal" &&
                                  get_enforce_constraint_derivatives(),
                 Exception,
-                "If enforcing derivatives of model kinematic "
-                "constraints, then the property 'transcription_scheme' "
-                "must be set to 'hermite-simpson'. "
-                "Currently, it is set to '{}'.",
+                "The current transcription scheme is '{}', but enforcing "
+                "kinematic constraint derivatives is not supported with "
+                "trapezoidal transcription.",
                 get_transcription_scheme());
     }
 

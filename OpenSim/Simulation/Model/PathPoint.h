@@ -24,6 +24,7 @@
 
 
 // INCLUDE
+#include "OpenSim/Common/Assertion.h"
 #include "OpenSim/Simulation/Model/Station.h"
 #include "OpenSim/Simulation/Model/AbstractPathPoint.h"
 
@@ -53,7 +54,7 @@ public:
     /** <b>(Deprecated)</b> Old PathPoint interface */
     DEPRECATED_14("Use setLocation() instead.")
     void setLocationCoord(const SimTK::State&s, int aXYZ, double aValue) {
-        assert(aXYZ>=0 && aXYZ<=2);
+        OPENSIM_ASSERT_FRMOBJ(aXYZ>=0 && aXYZ<=2);
         updStation().upd_location()[aXYZ]=aValue;
     }
 

@@ -110,6 +110,8 @@ public:
         if (get_filepath().empty()) {
             if (!getProperty_model().empty()) {
                 model = get_model();
+                model.finalizeFromProperties();
+                model.finalizeConnections();
             } else {
                 OPENSIM_THROW_FRMOBJ(Exception, "No source model.");
             }

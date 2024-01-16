@@ -2518,7 +2518,8 @@ public:
         std::string subname = pathToFind.getComponentName();
         std::string thisName = this->getName();
         if (thisName == subname) {
-            if ( (found = dynamic_cast<const C*>(this)) )
+            found = dynamic_cast<const C*>(this);
+            if (found)
                 foundCs.push_back(found);
         }
 

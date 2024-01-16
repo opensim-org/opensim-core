@@ -26,6 +26,7 @@
 //=============================================================================
 #include "Coordinate.h"
 #include "CoordinateCouplerConstraint.h"
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include "simbody/internal/Constraint.h"
@@ -43,7 +44,7 @@ using namespace OpenSim;
  */
 class ModifiableConstant : public SimTK::Function_<SimTK::Real>{
 public:
-    ModifiableConstant(const SimTK::Real& value, int argumentSize) : 
+    ModifiableConstant(const SimTK::Real& value, int argumentSize) :
         argumentSize(argumentSize), value(value) { }
 
     ModifiableConstant* clone() const override {
@@ -51,15 +52,15 @@ public:
     }
 
     SimTK::Real calcValue(const SimTK::Vector& x) const override {
-        assert(x.size() == argumentSize);
+        OPENSIM_ASSERT(x.size() == argumentSize);
         return value;
     }
 
-    SimTK::Real calcDerivative(const std::vector<int>& derivComponents, 
+    SimTK::Real calcDerivative(const std::vector<int>& derivComponents,
         const SimTK::Vector& x) const {
         return calcDerivative(SimTK::ArrayViewConst_<int>(derivComponents),x);
     }
-    SimTK::Real calcDerivative(const SimTK::Array_<int>& derivComponents, 
+    SimTK::Real calcDerivative(const SimTK::Array_<int>& derivComponents,
         const SimTK::Vector& x) const override {
         return 0;
     }
@@ -87,7 +88,7 @@ private:
 /**
  * Default constructor.
  */
-Coordinate::Coordinate() 
+Coordinate::Coordinate()
 {
     constructProperties();
 }
@@ -141,6 +142,14 @@ void Coordinate::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
+    // eagerly check if outside code has somehow managed to remove elements
+    // from this coordinate's `range` property (issue #3532)
+    OPENSIM_THROW_IF(
+        getProperty_range().size() != 2,
+        Exception,
+        "A coordinate range must contain exactly two elements (minimum, maximum)"
+    );
+
     string prefix = "Coordinate("+getName()+")::extendFinalizeFromProperties:";
 
     // Make sure the default value is within the range when clamped
@@ -151,12 +160,12 @@ void Coordinate::extendFinalizeFromProperties()
 
         double dv = get_default_value();
         SimTK_ERRCHK2_ALWAYS(dv > (get_range(0) - SimTK::SqrtEps), prefix.c_str(),
-            "Default coordinate value is less than range minimum.\n" 
+            "Default coordinate value is less than range minimum.\n"
             "Default value = %g  < min = %g.", dv,  get_range(0));
 
         SimTK_ERRCHK2_ALWAYS(dv < (get_range(1) + SimTK::SqrtEps), prefix.c_str(),
             "Default coordinate value is greater than range maximum.\n"
-            "Default value = %g > max = %g.", dv, get_range(1));    
+            "Default value = %g > max = %g.", dv, get_range(1));
     }
 
     _lockedWarningGiven=false;
@@ -176,31 +185,31 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
     // Define the locked value for the constraint as a function.
     // The PrescribedMotion will take ownership, but we'll keep a reference
     // pointer here to allow for later modification.
-    std::unique_ptr<ModifiableConstant> 
+    std::unique_ptr<ModifiableConstant>
         funcOwner(new ModifiableConstant(get_default_value(), 1));
     mutableThis->_lockFunction = funcOwner.get();
-    
+
     // The underlying SimTK constraint
-    SimTK::Constraint::PrescribedMotion 
-        lock(system.updMatterSubsystem(), 
-             funcOwner.release(),   // give up ownership 
-             _bodyIndex, 
+    SimTK::Constraint::PrescribedMotion
+        lock(system.updMatterSubsystem(),
+             funcOwner.release(),   // give up ownership
+             _bodyIndex,
              SimTK::MobilizerQIndex(_mobilizerQIndex));
 
     // Save the index so we can access the SimTK::Constraint later
     mutableThis->_lockedConstraintIndex = lock.getConstraintIndex();
-            
+
     if(!getProperty_prescribed_function().empty()){
         //create prescribed motion constraint automatically
-        SimTK::Constraint::PrescribedMotion prescribe( 
-                _model->updMatterSubsystem(), 
-                get_prescribed_function().createSimTKFunction(), 
-                _bodyIndex, 
+        SimTK::Constraint::PrescribedMotion prescribe(
+                _model->updMatterSubsystem(),
+                get_prescribed_function().createSimTKFunction(),
+                _bodyIndex,
                 SimTK::MobilizerQIndex(_mobilizerQIndex));
         mutableThis->_prescribedConstraintIndex = prescribe.getConstraintIndex();
     }
     else if(get_prescribed()){
-        // if prescribed is set to true, and there is no prescribed 
+        // if prescribed is set to true, and there is no prescribed
         // function defined, then it cannot be prescribed (set to false).
         mutableThis->upd_prescribed() = false;
     }
@@ -212,13 +221,13 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
         getModel().getMatterSubsystem().getMySubsystemIndex();
 
     //Expose coordinate state variable
-    CoordinateStateVariable* csv 
+    CoordinateStateVariable* csv
         = new CoordinateStateVariable("value", *this,
                                        sbsix, _mobilizerQIndex );
     addStateVariable(csv);
 
-    //Expose coordinate's speed state variable  
-    SpeedStateVariable* ssv = 
+    //Expose coordinate's speed state variable
+    SpeedStateVariable* ssv =
         new SpeedStateVariable("speed", *this, sbsix, _mobilizerQIndex);
     addStateVariable(ssv);
 }
@@ -370,6 +379,10 @@ const std::string&  Coordinate::getSpeedName() const
     return _speedName;
 }
 
+double Coordinate::getQDotValue(const SimTK::State& s) const {
+    return _model->getMatterSubsystem().getMobilizedBody(_bodyIndex).getOneQDot(s,_mobilizerQIndex);
+}
+
 double Coordinate::getAccelerationValue(const SimTK::State& s) const
 {
     return getModel().getMatterSubsystem().getMobilizedBody(_bodyIndex).getOneUDot(s, _mobilizerQIndex);
@@ -391,7 +404,7 @@ void Coordinate::setRange(double aRange[2])
     }
     else
         throw Exception("Coordinate::setRange, range is invalid, "
-            "min range value exceeds max."); 
+            "min range value exceeds max.");
 }
 
 //_____________________________________________________________________________
@@ -466,7 +479,7 @@ void Coordinate::setPrescribedFunction(const OpenSim::Function& function)
 
     for(int i=0; i<_model->getConstraintSet().getSize(); i++){
         Constraint& constraint = _model->getConstraintSet().get(i);
-        CoordinateCouplerConstraint* couplerp = 
+        CoordinateCouplerConstraint* couplerp =
             dynamic_cast<CoordinateCouplerConstraint*>(&constraint);
         if(couplerp) {
             if (couplerp->getDependentCoordinateName() == getName())
@@ -504,7 +517,7 @@ void Coordinate::setLocked(SimTK::State& s, bool aLocked) const
     if(aLocked == getLocked(s)){
         return;
     }
-    
+
     _lockedWarningGiven=false;  // reset flag in case needed later
     SimTK::Constraint *lock = NULL;
 
@@ -563,7 +576,7 @@ void Coordinate::setIsPrescribed(SimTK::State& s, bool isPrescribed) const
 {
     // Do nothing if the same
     if(isPrescribed == this->isPrescribed(s) ) return;
-    
+
     // The underlying SimTK constraint
     SimTK::Constraint *prescribe = NULL;
 
@@ -578,7 +591,7 @@ void Coordinate::setIsPrescribed(SimTK::State& s, bool isPrescribed) const
     }
 
     // Now enable if prescribed motion constraint otherwise disable
-    if(isPrescribed){   
+    if(isPrescribed){
         prescribe->enable(s);
         setLocked(s, false);
     }
@@ -595,7 +608,7 @@ bool Coordinate::isPrescribed(const SimTK::State& s) const
     else{
         return get_prescribed();
     }
-    
+
 }
 
 //-----------------------------------------------------------------------------
@@ -631,7 +644,7 @@ double Coordinate::CoordinateStateVariable::
     getDerivative(const SimTK::State& state) const
 {
     //TODO: update to get qdot value from the mobilized body
-    return ((Coordinate *)&getOwner())->getSpeedValue(state); 
+    return ((Coordinate *)&getOwner())->getSpeedValue(state);
 }
 
 
@@ -689,7 +702,7 @@ void Coordinate::updateFromXMLNode(SimTK::Xml::Element& aNode,
         if (versionNumber < 30514) {
             SimTK::Xml::element_iterator iter = aNode.element_begin("motion_type");
             if (iter != aNode.element_end()) {
-                SimTK::Xml::Element motionTypeElm = 
+                SimTK::Xml::Element motionTypeElm =
                     SimTK::Xml::Element::getAs(aNode.removeNode(iter));
                 std::string typeName = motionTypeElm.getValue();
 
@@ -701,6 +714,8 @@ void Coordinate::updateFromXMLNode(SimTK::Xml::Element& aNode,
                     _userSpecifiedMotionTypePriorTo40 = Coupled;
                 else
                     _userSpecifiedMotionTypePriorTo40 = Undefined;
+
+                iter->clearOrphan();
             }
         }
     }

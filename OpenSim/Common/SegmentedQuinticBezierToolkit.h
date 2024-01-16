@@ -166,17 +166,11 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
             double xVal = 2;
 
             //Choose the control points
-            SimTK::Vector vX(6);
-            vX(0) = -2;
-            vX(1) = 0;
-            vX(2) = 0;
-            vX(3) = 4;
-            vX(4) = 4;
-            vX(5) = 6;
+            SimTK::Vec6 vX(-2, 0, 0, 4, 4, 6);
 
             SimTK::Vector x(100);
             SimTK::Vector u(100);
-        
+
             //Create the splined approximate inverse of u(x)
             for(int i=0; i<100; i++){
                 u(i) = ( (double)i )/( (double)(100-1) );
@@ -192,8 +186,12 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
 
             @endcode
         */
-        static double calcU(double ax, const SimTK::Vector& bezierPtsX, 
-            const SimTK::Spline& splineUX, double tol, int maxIter);
+        static double calcU(
+            double ax,
+            const SimTK::Vec6& bezierPtsX,
+            const SimTK::Spline& splineUX,
+            double tol,
+            int maxIter);
 
 
 
@@ -203,7 +201,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
 
         @param x            A value that is interpolated by the set of Bezier 
                             curves
-        @param bezierPtsX   A matrix of 6xn Bezier control points 
+        @param bezierPtsX   A vector of Bezier control points
 
         @throws OpenSim::Exception
         -If the index is not located within this set of Bezier points
@@ -248,12 +246,10 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
 
         */
         static int calcIndex(double x, const SimTK::Matrix& bezierPtsX);
-        
-        static int calcIndex(double x, const SimTK::Array_<SimTK::Vector>& bezierPtsX);
+
+        static int calcIndex(double x, const SimTK::Array_<SimTK::Vec6>& bezierPtsX);
 
 
-        
-        
 
         /**
         Calculates the value of a quintic Bezier curve at value u.
@@ -263,7 +259,6 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         @param pts      The locations of the control points in 1 dimension.
         @throws OpenSim::Exception 
             -If u is outside of [0,1]
-            -if pts has a length other than 6
         @return         The value of the Bezier curve located at u.
 
         Calculates the value of a quintic Bezier curve at value u. This 
@@ -304,13 +299,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
             double u = 0.5;
 
             //Choose the control points
-            SimTK::Vector vX(6);
-            vX(0) = -2;
-            vX(1) = 0;
-            vX(2) = 0;
-            vX(3) = 4;
-            vX(4) = 4;
-            vX(5) = 6;
+            SimTK::Vec6 vX(-2, 0, 0, 4, 4, 6);
 
             yVal = SegmentedQuinticBezierToolkit::
                      calcQuinticBezierCurveVal(u,vX);
@@ -318,8 +307,9 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
 
 
         */
-        static double calcQuinticBezierCurveVal(double u, 
-                            const SimTK::Vector& pts);
+        static double calcQuinticBezierCurveVal(
+            double u,
+            const SimTK::Vec6& pts);
 
         /**
         Calculates the value of a quintic Bezier derivative curve at value u. 
@@ -375,19 +365,15 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
             double u = 0.5;
 
             //Choose the control points
-            SimTK::Vector vX(6);
-            vX(0) = -2;
-            vX(1) = 0;
-            vX(2) = 0;
-            vX(3) = 4;
-            vX(4) = 4;
-            vX(5) = 6;
+            SimTK::Vec6 vX(-2, 0, 0, 4, 4, 6);
 
-            double dxdu  =calcQuinticBezierCurveDerivU(u,vX,1);
+            double dxdu = calcQuinticBezierCurveDerivU(u,vX,1);
             @endcode
         */
-        static double calcQuinticBezierCurveDerivU(double u, 
-                           const SimTK::Vector& pts,int order);
+        static double calcQuinticBezierCurveDerivU(
+            double u,
+            const SimTK::Vec6& pts,
+            int order);
 
         /**
         Calculates the value of dydx of a quintic Bezier curve derivative at u.
@@ -399,8 +385,6 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
                         can be evaluated
         @throws OpenSim::Exception
             -If u is outside [0,1]
-            -If xpts is not 6 elements long
-            -If ypts is not 6 elements long
             -If the order is less than 1
             -If the order is greater than 6
         @retval         The value of (d^n y)/(dx^n) evaluated at u
@@ -436,34 +420,43 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
 
         <B>Example:</B>
             @code
-            SimTK::Vector vX(6), vY(6);
-
             double u = 0.5;
-        
-            vX(0) = 1;
-            vX(1) = 1.01164;
-            vX(2) = 1.01164;
-            vX(3) = 1.02364;
-            vX(4) = 1.02364;
-            vY(5) = 1.04;
 
-            vY(0) = 0;
-            vY(1) = 3e-16;
-            vY(2) = 3e-16;
-            vY(3) = 0.3;
-            vY(4) = 0.3;
-            vY(5) = 1;
+            SimTK::Vec6 vX (
+                1,
+                1.01164,
+                1.01164,
+                1.02364,
+                1.02364,
+                1.04);
 
+            SimTK::Vec6 vY (
+                0,
+                3e-16,
+                3e-16,
+                0.3,
+                0.3,
+                1);
 
             d2ydx2 = SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(
                      u,vX, vY, 2);
             @endcode
 
-        */        
-        static double  calcQuinticBezierCurveDerivDYDX(double u,
-              const SimTK::Vector& xpts, const SimTK::Vector& ypts, int order);
+        */
+        static double  calcQuinticBezierCurveDerivDYDX(
+            double u,
+            const SimTK::Vec6& xpts,
+            const SimTK::Vec6& ypts,
+            int order);
 
-        
+
+        // A pair of Vec6 that correspond to the X, and Y control points for a
+        // quintic Bezier curve.
+        struct ControlPointsXY final {
+            SimTK::Vec6 x;
+            SimTK::Vec6 y;
+        };
+
         /**
         Calculates the location of quintic Bezier curve control points to 
         create a C shaped curve.
@@ -486,9 +479,8 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
           an exception is thrown. This is an overly conservative test as it 
           prevents very deep 'V' shapes from being represented.
 
-        @return a SimTK::Matrix of 6 points Matrix(6,2) that correspond to the 
-                         X, and Y control points for a quintic Bezier curve that
-                         has the above properties
+        @return a pair of Vec6 that correspond to the X, and Y control points
+        for a quintic Bezier curve that has the above properties.
 
 
         Calculates the location of quintic Bezier curve control points to 
@@ -516,14 +508,19 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
             double dydx1 = 43;
             double c = 0.75;
 
-            SimTK::Matrix p0 = SegmentedQuinticBezierToolkit::
+            SegmentedQuinticBezierToolkit::ControlPointsXY pXY = SegmentedQuinticBezierToolkit::
                calcQuinticBezierCornerControlPoints(x0, y0, dydx0,x1,y1,dydx01,
                                                                      c);
             @endcode
 
         */
-        static SimTK::Matrix calcQuinticBezierCornerControlPoints(double x0, 
-            double y0, double dydx0, double x1, double y1, double dydx1, 
+        static ControlPointsXY calcQuinticBezierCornerControlPoints(
+            double x0,
+            double y0,
+            double dydx0,
+            double x1,
+            double y1,
+            double dydx1,
             double curviness);
 
         /**
@@ -535,8 +532,8 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         @param uTol     Tolerance on the calculation of the intermediate u term
         @param uMaxIter Maximum number of iterations allowed for u to reach its
                         desired tolerance.
-        @param mX           The 6xn matrix of Bezier control points for x(u)
-        @param mY           The 6xn matrix of Bezier control points for y(u)
+        @param ctrlPtsX     An n-vector of 6 Bezier control points for x(u)
+        @param ctrlPtsY     An n-vector of 6 Bezier control points for y(u)
         @param aSplineUX    The array of spline objects that approximate u(x) on
                             each Bezier interval
         @param flag_intLeftToRight  Setting this flag to true will evaluate the
@@ -568,8 +565,8 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         The example below is quite involved, but just so it can show you an
         example of how to create the array of Spline objects that approximate 
         the function u(x). Although the example has been created for only 1
-        Bezier curve set, simply changing the size and entries of the matrices
-        _mX and _mY will allow multiple sets to be integrated.
+        Bezier curve set, adding more control points will allow multiple sets to
+        be integrated.
 
 
         <B>Example:</B>
@@ -581,20 +578,21 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
 
         //Make up a Bezier curve - these happen to be the control points
         //for a tendon curve
-        SimTK::Matrix _mX(6,1), _mY(6,1);
-        _mX(0)= 1;
-        _mX(1)= 1.01164;
-        _mX(2)= 1.01164;
-        _mX(3)= 1.02364;
-        _mX(4)= 1.02364;
-        _mX(5)= 1.04;
+        std::array<SimTK::Vec6> _ctrlPtsX { SimTK::Vec6(
+            1,
+            1.01164,
+            1.01164,
+            1.02364,
+            1.02364,
+            1.04) };
 
-        _mY(0) = 0;
-        _mY(1) = 3.10862e-16;
-        _mY(2) = 3.10862e-16;
-        _mY(3) = 0.3;
-        _mY(4) = 0.3;
-        _mY(5) = 1;
+        std::array<SimTK::Vec6> _ctrlPtsY { SimTK::Vec6(
+            0,
+            3.10862e-16,
+            3.10862e-16,
+            0.3,
+            0.3,
+            1) };
 
         _numBezierSections = 1;
         bool _intx0x1 = true; //Says we're integrating from x0 to x1
@@ -614,7 +612,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
             for(int i=0;i<NUM_SAMPLE_PTS;i++){
                 u(i) = ( (double)i )/( (double)(NUM_SAMPLE_PTS-1) );
                 x(i) = SegmentedQuinticBezierToolkit::
-                    calcQuinticBezierCurveVal(u(i),_mX(s),_name);            
+                    calcQuinticBezierCurveVal(u(i),_ctrlPtsX[s],_name);
                 if(_numBezierSections > 1){
                    //Skip the last point of a set that has another set of points
                    //after it. Why? The last point and the starting point of the
@@ -639,7 +637,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         //////////////////////////////////////////////////
 
         SimTK::Vector yInt =  SegmentedQuinticBezierToolkit::
-            calcNumIntBezierYfcnX(xALL,0,INTTOL, UTOL, MAXITER,_mX, _mY,
+            calcNumIntBezierYfcnX(xALL,0,INTTOL, UTOL, MAXITER,_ctrlPtsX, _ctrlPtsY,
             _arraySplineUX,_name);
     
         if(_intx0x1==false){
@@ -654,11 +652,17 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
 
 
         */
-        static SimTK::Matrix calcNumIntBezierYfcnX(const SimTK::Vector& vX, 
-            double ic0, double intAcc, double uTol, int uMaxIter,
-            const SimTK::Matrix& mX, const SimTK::Matrix& mY,
-            const SimTK::Array_<SimTK::Spline>& aSplineUX, 
-            bool flag_intLeftToRight,const std::string& name);
+        static SimTK::Matrix calcNumIntBezierYfcnX(
+            const SimTK::Vector& vX,
+            double ic0,
+            double intAcc,
+            double uTol,
+            int uMaxIter,
+            const SimTK::Array_<SimTK::Vec6>& ctrlPtsX,
+            const SimTK::Array_<SimTK::Vec6>& ctrlPtsY,
+            const SimTK::Array_<SimTK::Spline>& aSplineUX,
+            bool flag_intLeftToRight,
+            const std::string& name);
 
 
    private:
@@ -674,12 +678,18 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         @param data     A matrix of data
         @param filename The name of the file to print
         */
-        static void printMatrixToFile(const SimTK::Vector& col0, 
-                          const SimTK::Matrix& data, std::string& filename);
+        static void printMatrixToFile(
+            const SimTK::Vector& col0,
+            const SimTK::Matrix& data,
+            const std::string& filename);
 
         static void printBezierSplineFitCurves(
-            const SimTK::Function_<double>& curveFit,SimTK::Matrix& ctrlPts, 
-            SimTK::Vector& xVal, SimTK::Vector& yVal, std::string& filename);        
+            const SimTK::Function_<double>& curveFit,
+            const SimTK::Array_<SimTK::Vec6>& ctrlPtsX,
+            const SimTK::Array_<SimTK::Vec6>& ctrlPtsY,
+            const SimTK::Vector& xVal,
+            const SimTK::Vector& yVal,
+            const std::string& filename);
 
         /**
         This function will return a value that is equal to u, except when u is
@@ -698,10 +708,10 @@ of a Bezier curve set.
 */
 class BezierData {
     public:
-        /**A 6xn matrix of Bezier control points for the X axis (domain)*/
-        SimTK::Matrix _mX;
-        /**A 6xn matrix of Bezier control points for the Y axis (range)*/
-        SimTK::Matrix _mY;
+        /**A n-array of 6 Bezier control points for the X axis (domain)*/
+        SimTK::Array_<SimTK::Vec6> _ctrlPtsX;
+        /**A n-array of 6 Bezier control points for the Y axis (range)*/
+        SimTK::Array_<SimTK::Vec6> _ctrlPtsY;
         /**An n element array containing the approximate spline fits of the
         inverse function of x(u), namely u(x)*/
         SimTK::Array_< SimTK::Spline_<double> > _aArraySplineUX;
@@ -791,14 +801,14 @@ class MySystemGuts : public SimTK::System::Guts {
         // HERE'S THE CALL TO YOUR FUNCTION
         //Get the index within the spline set
         
-        int idx = SegmentedQuinticBezierToolkit::calcIndex(x,bdata._mX);
+        int idx = SegmentedQuinticBezierToolkit::calcIndex(x,bdata._ctrlPtsX);
         //Get the value of u that corresponds to x
-        double u = SegmentedQuinticBezierToolkit::calcU(x,bdata._mX(idx),
+        double u = SegmentedQuinticBezierToolkit::calcU(x,bdata._ctrlPtsX[idx],
             bdata._aArraySplineUX[idx],bdata._uTol,bdata._uMaxIter);
 
         //Compute the value of the curve at u;
         double y=SegmentedQuinticBezierToolkit::
-            calcQuinticBezierCurveVal(u,bdata._mY(idx));
+            calcQuinticBezierCurveVal(u,bdata._ctrlPtsY[idx]);
         state.updZDot()[0] = y;
         return 0;
     }

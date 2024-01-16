@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDES
+#include "Assertion.h"
 #include "osimCommonDLL.h"
 #include <string>
 #include "Object.h"
@@ -88,11 +89,11 @@ public:
     bool isAcceptableObjectTag
         (const std::string& objectTypeTag) const override {return true;}
     const Object& getValueAsObject(int index=-1) const override
-    {   assert(index <= 0); return *_value; }
+    {   OPENSIM_ASSERT(index <= 0); return *_value; }
     Object& updValueAsObject(int index=-1) override
-    {   assert(index <= 0); return *_value; }
+    {   OPENSIM_ASSERT(index <= 0); return *_value; }
     void setValueAsObject(const Object& obj, int index=-1) override
-    {   assert(index <= 0); setValue(obj.clone()); }
+    {   OPENSIM_ASSERT(index <= 0); setValue(obj.clone()); }
 
     //--------------------------------------------------------------------------
     // OPERATORS

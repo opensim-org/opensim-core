@@ -3,9 +3,9 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim: MocoTrajectory.h                                                  *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2023 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -423,6 +423,9 @@ public:
     /// trajectory.
     /// @note Overrides any existing acceleration values in the trajectory.
     void generateAccelerationsFromSpeeds();
+    /// Trim the trajectory to include the rows starting at newStartIndex and
+    /// and ending at newFinalIndex.
+    void trimToIndices(int newStartIndex, int newFinalIndex);
     /// @}
 
     /// @name Accessors
@@ -469,7 +472,18 @@ public:
     }
 
     int getNumSpeeds() const {
+        ensureUnsealed();
         return (int)getSpeedIndices().size();
+    }
+
+    int getNumMultibodyStates() const {
+        ensureUnsealed();
+        return (int)getMultibodyStateIndices().size();
+    }
+
+    int getNumAuxiliaryStates() const {
+        ensureUnsealed();
+        return (int)getAuxiliaryStateIndices().size();
     }
 
     int getNumAccelerations() const {
@@ -524,6 +538,29 @@ public:
             }
         }
         return speedNames;
+    }
+    std::vector<std::string> getMultibodyStateNames() const {
+        ensureUnsealed();
+        std::vector<std::string> multibodyStateNames;
+        for (const auto& name : m_state_names) {
+            if (name.find("/value") != std::string::npos) {
+                multibodyStateNames.push_back(name);
+            } else if (name.find("/speed") != std::string::npos) {
+                multibodyStateNames.push_back(name);
+            }
+        }
+        return multibodyStateNames;
+    }
+    std::vector<std::string> getAuxiliaryStateNames() const {
+        ensureUnsealed();
+        std::vector<std::string> auxiliaryStateNames;
+        for (const auto& name : m_state_names) {
+            if (name.find("/value") == std::string::npos &&
+                    name.find("/speed") == std::string::npos) {
+                auxiliaryStateNames.push_back(name);
+            }
+        }
+        return auxiliaryStateNames;
     }
     std::vector<std::string> getAccelerationNames() const {
         ensureUnsealed();
@@ -585,6 +622,20 @@ public:
         if (indices.empty()) indices.push_back(0);
         return {m_states.block(0, indices[0],
                 m_states.nrow(), getNumSpeeds())};
+    }
+    SimTK::Matrix getMultibodyStatesTrajectory() const {
+        ensureUnsealed();
+        auto indices = getMultibodyStateIndices();
+        if (indices.empty()) indices.push_back(0);
+        return {m_states.block(0, indices[0],
+                m_states.nrow(), getNumMultibodyStates())};
+    }
+    SimTK::Matrix getAuxiliaryStatesTrajectory() const {
+        ensureUnsealed();
+        auto indices = getAuxiliaryStateIndices();
+        if (indices.empty()) indices.push_back(0);
+        return {m_states.block(0, indices[0],
+                m_states.nrow(), getNumAuxiliaryStates())};
     }
     SimTK::Matrix getAccelerationsTrajectory() const {
         ensureUnsealed();
@@ -873,6 +924,31 @@ private:
             }
         }
         return speedIndices;
+    }
+    std::vector<int> getMultibodyStateIndices() const {
+        ensureUnsealed();
+        std::vector<int> multibodyStateIndices;
+        auto valueIndices = getValueIndices();
+        auto speedIndices = getSpeedIndices();
+        multibodyStateIndices.reserve(
+                valueIndices.size() + speedIndices.size());
+        multibodyStateIndices.insert(multibodyStateIndices.end(),
+                valueIndices.begin(), valueIndices.end());
+        multibodyStateIndices.insert(multibodyStateIndices.end(),
+                speedIndices.begin(), speedIndices.end());
+        return multibodyStateIndices;
+    }
+    std::vector<int> getAuxiliaryStateIndices() const {
+        ensureUnsealed();
+        std::vector<int> auxiliaryStateIndices;
+        for (int i = 0; i < (int)m_state_names.size(); ++i) {
+            const auto& name = m_state_names[i];
+            if (name.find("/value") == std::string::npos &&
+                    name.find("/speed") == std::string::npos) {
+                auxiliaryStateIndices.push_back(i);
+            }
+        }
+        return auxiliaryStateIndices;
     }
     std::vector<int> getAccelerationIndices() const {
         ensureUnsealed();

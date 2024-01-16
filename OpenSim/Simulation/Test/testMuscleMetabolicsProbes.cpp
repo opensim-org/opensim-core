@@ -306,7 +306,6 @@ public:
         mdi.fiberActivePower      = 0;
         mdi.fiberPassivePower     = 0;
         mdi.tendonPower           = 0;
-        mdi.musclePower           = 0;
     }
 
 private:

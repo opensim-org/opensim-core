@@ -134,6 +134,16 @@ public:
      */
     double computeActuation(const SimTK::State& s) const override;
 
+    //--------------------------------------------------------------------------
+    // SCALAR ACTUATOR INTERFACE
+    //--------------------------------------------------------------------------
+    /** Compute the speed along the force direction. */
+    double getSpeed(const SimTK::State& s) const override;
+
+    private:
+    /** Compute the direction of the actuator force in ground frame. */
+    SimTK::UnitVec3 calcDirectionBAInGround(const SimTK::State& s) const;
+
 //=============================================================================
 }; // END of class PistonActuator
 

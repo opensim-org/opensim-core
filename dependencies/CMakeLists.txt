@@ -2,13 +2,20 @@
 # compile and install all OpenSim dependencies. Using super-build is optional.
 # OpenSim does not use this file directly.
 
-project(OpenSimDependencies)
 # We require a version of CMake that supports Visual Studio 2015.
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.5)
+
+project(OpenSimDependencies)
 
 include(ExternalProject)
 include(CMakeParseArguments)
 include(CMakeDependentOption)
+
+set(
+    SIMBODY_EXTRA_CMAKE_ARGS ""
+    CACHE STRING
+    "extra arguments to forward when configuring Simbody's build. The format must be: VARNAME1:TYPE1=VALUE1;VARNAME2:TYPE2=VALUE2 (e.g. '-DSIMBODY_EXTRA_CMAKE_ARGS=-DSIMBODY_BUILD_VISUALIZER:BOOL=OFF;-DBUILD_USING_OTHER_LAPACK:PATH=/some/path')"
+)
 
 # Set the default for CMAKE_INSTALL_PREFIX.
 function(SetDefaultCMakeInstallPrefix)
@@ -170,15 +177,16 @@ SetDefaultCMakeBuildType()
 AddDependency(NAME       ezc3d
               DEFAULT    OFF
               GIT_URL    https://github.com/pyomeca/ezc3d.git
-              GIT_TAG    Release_1.5.0
+              GIT_TAG    Release_1.5.6
               CMAKE_ARGS -DBUILD_EXAMPLE:BOOL=OFF)
 
 AddDependency(NAME       simbody
               DEFAULT    ON
               GIT_URL    https://github.com/simbody/simbody.git
-              GIT_TAG    e855d954a786128c3271a3406d7bda782e7c4c4f
+              GIT_TAG    589e931f4a127830a5876ee4dd8f327b47361504
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF
-                         -DBUILD_TESTING:BOOL=OFF)
+                         -DBUILD_TESTING:BOOL=OFF
+                         ${SIMBODY_EXTRA_CMAKE_ARGS})
 
 AddDependency(NAME       docopt
               DEFAULT    ON
@@ -194,6 +202,12 @@ AddDependency(NAME       spdlog
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
                          -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
+
+AddDependency(NAME       catch2
+              DEFAULT    ON
+              GIT_URL    https://github.com/catchorg/Catch2.git
+              GIT_TAG    v3.5.0)
+
 # Moco settings.
 # --------------
 option(OPENSIM_WITH_CASADI

@@ -27,6 +27,8 @@
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Analyses/OutputReporter.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
@@ -50,52 +52,13 @@ static const double Activation0 = 0.01,
 Deactivation0 = 0.4;
 
 /*
-This function performs a simulation of a muscle.
+Main simulation driver used to generate Outputs and report them
+
 @param muscle   a muscle model that satisfies the Muscle interface
 @param act0     the initial i of the muscle
 @param accuracy the desired accuracy of the integrated solution
 @param printResults print the osim model associated with this test.
 */
-void simulateMuscle(const Muscle& muscle,
-                    double integrationAccuracy,
-                    bool printResults);
-
-int main()
-{
-    SimTK::Array_<std::string> failures;
-
-    try {
-        Millard2012EquilibriumMuscle muscle("muscle",
-                        MaxIsometricForce0,
-                        OptimalFiberLength0,
-                        TendonSlackLength0,
-                        PennationAngle0);
-
-        muscle.setActivationTimeConstant(Activation0);
-        muscle.setDeactivationTimeConstant(Deactivation0);
-
-        simulateMuscle( muscle,
-                        IntegrationAccuracy,
-                        true);
-    }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testOutputReporter");
-    }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-
-    cout << "testOutputReporter Done" << endl;
-    return 0;
-}
-
-//=============================================================================
-// Main simulation driver used to generate Outputs and report them
-//=============================================================================
 void simulateMuscle(
         const Muscle &muscModel,
         double integrationAccuracy,
@@ -281,4 +244,20 @@ void simulateMuscle(
     ASSERT_EQUAL(ke, val_ke, SimTK::Eps);
     ASSERT_EQUAL(ang_acc, val_omega, SimTK::Eps);
     ASSERT_EQUAL(reaction, val_jrf, SimTK::Eps);
+}
+
+TEST_CASE("Output Reporter")
+{
+    Millard2012EquilibriumMuscle muscle("muscle",
+        MaxIsometricForce0,
+        OptimalFiberLength0,
+        TendonSlackLength0,
+        PennationAngle0);
+
+    muscle.setActivationTimeConstant(Activation0);
+    muscle.setDeactivationTimeConstant(Deactivation0);
+
+    simulateMuscle( muscle,
+        IntegrationAccuracy,
+        true);
 }

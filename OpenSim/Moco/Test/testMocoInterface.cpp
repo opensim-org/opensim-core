@@ -16,10 +16,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#define CATCH_CONFIG_MAIN
-#include "Testing.h"
-#include <fstream>
-
 #include <OpenSim/Actuators/BodyActuator.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/ModelFactory.h>
@@ -30,6 +26,14 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 
+#include <fstream>
+
+#include <catch2/catch_all.hpp>
+#include "Testing.h"
+
+using Catch::Approx;
+using Catch::Matchers::ContainsSubstring;
+
 using namespace OpenSim;
 
 // TODO
@@ -38,52 +42,58 @@ using namespace OpenSim;
 // - model_file vs model.
 // - test problems without controls (including with setting guesses).
 
-std::unique_ptr<Model> createSlidingMassModel() {
-    auto model = make_unique<Model>();
-    model->setName("sliding_mass");
-    model->set_gravity(SimTK::Vec3(0, 0, 0));
-    auto* body = new Body("body", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
-    model->addComponent(body);
+// HELPER FUNCTIONS
+namespace {
+    std::unique_ptr<Model> createSlidingMassModel(
+            double mass = 10.0, bool lock_coordinate = false) {
+        auto model = make_unique<Model>();
+        model->setName("sliding_mass");
+        model->set_gravity(SimTK::Vec3(0, 0, 0));
+        auto* body = new Body("body", mass, SimTK::Vec3(0), SimTK::Inertia(0));
+        model->addComponent(body);
 
-    // Allows translation along x.
-    auto* joint = new SliderJoint("slider", model->getGround(), *body);
-    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
-    coord.setName("position");
-    model->addComponent(joint);
+        // Allows translation along x.
+        auto* joint = new SliderJoint("slider", model->getGround(), *body);
+        auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+        coord.setName("position");
+        if (lock_coordinate) { coord.set_locked(true); }
+        model->addComponent(joint);
 
-    auto* actu = new CoordinateActuator();
-    actu->setCoordinate(&coord);
-    actu->setName("actuator");
-    actu->setOptimalForce(1);
-    actu->setMinControl(-10);
-    actu->setMaxControl(10);
-    model->addComponent(actu);
+        auto* actu = new CoordinateActuator();
+        actu->setCoordinate(&coord);
+        actu->setName("actuator");
+        actu->setOptimalForce(1);
+        actu->setMinControl(-10);
+        actu->setMaxControl(10);
+        model->addComponent(actu);
 
-    return model;
+        return model;
+    }
+
+    template <typename SolverType = MocoTropterSolver>
+    MocoStudy createSlidingMassMocoStudy(
+            const std::string& transcriptionScheme = "trapezoidal",
+            int numMeshIntervals = 19) {
+        MocoStudy study;
+        study.setName("sliding_mass");
+        study.set_write_solution("false");
+        MocoProblem& mp = study.updProblem();
+        mp.setModel(createSlidingMassModel());
+        mp.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(0, 10));
+        mp.setStateInfo("/slider/position/value", MocoBounds(0, 1),
+                MocoInitialBounds(0), MocoFinalBounds(1));
+        mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
+        mp.addGoal<MocoFinalTimeGoal>();
+
+        auto& ms = study.initSolver<SolverType>();
+        ms.set_num_mesh_intervals(numMeshIntervals);
+        ms.set_transcription_scheme(transcriptionScheme);
+        ms.set_enforce_constraint_derivatives(false);
+        return study;
+    }
 }
 
-template <typename SolverType = MocoTropterSolver>
-MocoStudy createSlidingMassMocoStudy() {
-    MocoStudy study;
-    study.setName("sliding_mass");
-    study.set_write_solution("false");
-    MocoProblem& mp = study.updProblem();
-    mp.setModel(createSlidingMassModel());
-    mp.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(0, 10));
-    mp.setStateInfo("/slider/position/value", MocoBounds(0, 1),
-            MocoInitialBounds(0), MocoFinalBounds(1));
-    mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
-    mp.addGoal<MocoFinalTimeGoal>();
-
-    auto& ms = study.initSolver<SolverType>();
-    ms.set_num_mesh_intervals(19);
-    ms.set_transcription_scheme("trapezoidal");
-    ms.set_enforce_constraint_derivatives(false);
-    return study;
-}
-
-TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver, MocoTropterSolver) {
     auto transcriptionScheme =
             GENERATE(as<std::string>{}, "trapezoidal", "hermite-simpson");
     MocoStudy study;
@@ -150,7 +160,7 @@ TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver,
         std::vector<double> mesh = {.5, 1};
         ms.setMesh(mesh);
         REQUIRE_THROWS_WITH(study.solve(),
-                Catch::Contains("Invalid custom mesh; first mesh "
+                ContainsSubstring("Invalid custom mesh; first mesh "
                                               "point must be zero."));
     }
     SECTION("Mesh points must be strictly increasing") {
@@ -159,7 +169,7 @@ TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver,
         std::vector<double> mesh = {0, .5, .5, 1};
         ms.setMesh(mesh);
         REQUIRE_THROWS_WITH(study.solve(),
-                Catch::Contains("Invalid custom mesh; mesh "
+                ContainsSubstring("Invalid custom mesh; mesh "
                                 "points must be strictly increasing."));
     }
     SECTION("Last mesh point must be 1.") {
@@ -168,7 +178,7 @@ TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver,
         std::vector<double> mesh = {0, .4, .8};
         ms.setMesh(mesh);
         REQUIRE_THROWS_WITH(
-                study.solve(), Catch::Contains("Invalid custom mesh; last mesh "
+                study.solve(), ContainsSubstring("Invalid custom mesh; last mesh "
                                               "point must be one."));
     }
 }
@@ -207,8 +217,7 @@ std::unique_ptr<Model> createPendulumModel() {
     return model;
 }
 
-TEMPLATE_TEST_CASE("Solver options", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Solver options", "", MocoCasADiSolver, MocoTropterSolver) {
     MocoStudy study = createSlidingMassMocoStudy<TestType>();
     auto& ms = study.initSolver<TestType>();
     MocoSolution solDefault = study.solve();
@@ -258,7 +267,7 @@ TEMPLATE_TEST_CASE("Solver options", "", MocoCasADiSolver,
     }
 }
 
-TEMPLATE_TEST_CASE("Ordering of calls", "", MocoCasADiSolver, 
+TEMPLATE_TEST_CASE("Ordering of calls", "", MocoCasADiSolver,
         MocoTropterSolver) {
 
     // Solve a problem, edit the problem, re-solve.
@@ -303,16 +312,17 @@ TEMPLATE_TEST_CASE("Ordering of calls", "", MocoCasADiSolver,
 
 /// Test that we can read in a Moco setup file, solve, edit the setup,
 /// re-solve.
-TEST_CASE("Serializing a MocoStudy", "") {
+// TODO tropter solutions are very slightly different between successive solves.
+TEMPLATE_TEST_CASE("Serializing a MocoStudy", "", MocoCasADiSolver) {
     std::string fname = "testMocoInterface_testOMOCOSerialization.omoco";
     
-    MocoStudy study = createSlidingMassMocoStudy<MocoCasADiSolver>();
+    MocoStudy study = createSlidingMassMocoStudy<TestType>();
     MocoSolution sol0 = study.solve();
     study.print(fname);
     
     MocoStudy mocoDeserialized(fname);
     MocoSolution sol1 = mocoDeserialized.solve();
-    
+
     SimTK_TEST(sol0.isNumericallyEqual(sol1));
 }
 
@@ -417,8 +427,7 @@ TEST_CASE("Building a problem", "") {
     }
 }
 
-TEMPLATE_TEST_CASE(
-        "Workflow", "", MocoCasADiSolver, MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Workflow", "", MocoCasADiSolver, MocoTropterSolver) {
 
     // Default bounds.
     SECTION("Default bounds") {
@@ -919,8 +928,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoCasADiSolver,
     // TODO error if data does not cover time window.
 }
 
-TEMPLATE_TEST_CASE(
-        "Guess", "", MocoCasADiSolver, MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Guess", "", MocoCasADiSolver, MocoTropterSolver) {
 
     MocoStudy study = createSlidingMassMocoStudy<TestType>();
     auto& ms = study.initSolver<TestType>();
@@ -1226,7 +1234,7 @@ TEMPLATE_TEST_CASE(
         MocoTrajectory explicitGuess = ms.createGuess();
         ms.set_multibody_dynamics_mode("implicit");
         CHECK_THROWS_WITH(ms.setGuess(explicitGuess),
-            Catch::Contains(
+            ContainsSubstring(
                 "'multibody_dynamics_mode' set to 'implicit' and coordinate states "
                 "exist in the guess, but no coordinate accelerations were "
                 "found in the guess. Consider using "
@@ -1315,8 +1323,7 @@ TEMPLATE_TEST_CASE("Guess time-stepping", "[tropter]",
     }
 }
 
-TEMPLATE_TEST_CASE("MocoTrajectory", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("MocoTrajectory", "", MocoCasADiSolver, MocoTropterSolver) {
     // Reading and writing.
     {
         const std::string fname = "testMocoInterface_testMocoTrajectory.sto";
@@ -1426,6 +1433,32 @@ TEMPLATE_TEST_CASE("MocoTrajectory", "", MocoCasADiSolver,
             SimTK_TEST_EQ(it.getInitialTime(), 7.2);
             SimTK_TEST_EQ(it.getFinalTime(), 7.2);
         }
+    }
+
+    // trimToIndices()
+    {
+        SimTK::Vector time = createVectorLinspace(5, -3.1, 8.9);
+        std::vector<std::string> snames{"s0"};
+        std::vector<std::string> cnames{"c0"};
+        SimTK::Matrix states = SimTK::Test::randMatrix(5, 1);
+        states.set(1, 0, 1.23);
+        states.set(3, 0, 4.56);
+        SimTK::Matrix controls = SimTK::Test::randMatrix(5, 1);
+        controls.set(1, 0, 7.89);
+        controls.set(3, 0, 1.01);
+        MocoTrajectory it(time, snames, cnames, {}, {}, states, controls,
+                SimTK::Matrix(), SimTK::RowVector());
+
+        it.trimToIndices(1, 3);
+        SimTK_TEST_EQ(it.getInitialTime(), time[1]);
+        SimTK_TEST_EQ(it.getFinalTime(), time[3]);
+
+        SimTK::VectorView_<double> s0 = it.getState("s0");
+        SimTK::VectorView_<double> c0 = it.getControl("c0");
+        SimTK_TEST_EQ(s0[0], 1.23);
+        SimTK_TEST_EQ(s0[it.getNumTimes()-1], 4.56);
+        SimTK_TEST_EQ(c0[0], 7.89);
+        SimTK_TEST_EQ(c0[it.getNumTimes()-1], 1.01);
     }
 
     // compareContinuousVariablesRMS
@@ -1583,21 +1616,21 @@ TEST_CASE("MocoTrajectory isCompatible") {
                              "/slider/position/speed"},
                               {"/actuator"}, {}, {})
                                .isCompatible(rep, true, true),
-            Catch::Contains("accel"));
+            ContainsSubstring("accel"));
     CHECK_THROWS_WITH(
             MocoTrajectory({}, {}, {}, {}).isCompatible(rep, false, true),
-            Catch::Contains("position"));
+            ContainsSubstring("position"));
     CHECK_THROWS_WITH(
             MocoTrajectory({"/slider/position/value", "/slider/position/speed",
                              "nonexistent"},
                     {"/actuator"}, {}, {})
                      .isCompatible(rep, false, true),
-            Catch::Contains("nonexistent"));
+            ContainsSubstring("nonexistent"));
     CHECK_THROWS_WITH(
             MocoTrajectory({"/slider/position/value", "/slider/position/speed"}, {"/actuator"},
             {"nonexistent"}, {})
                                .isCompatible(rep, false, true),
-            Catch::Contains("nonexistent"));
+            ContainsSubstring("nonexistent"));
 }
 
 TEST_CASE("MocoTrajectory randomize") {
@@ -1713,11 +1746,28 @@ TEST_CASE("Interpolate", "") {
     SimTK_TEST(SimTK::isNaN(newY[3]));
 }
 
-TEMPLATE_TEST_CASE("Sliding mass", "", MocoCasADiSolver,
-        MocoTropterSolver) {
-    MocoStudy study = createSlidingMassMocoStudy<TestType>();
+template <typename SolverType>
+void testSlidingMass(const std::string& transcriptionScheme) {
+    int N = 50;
+    MocoStudy study = createSlidingMassMocoStudy<SolverType>(
+            transcriptionScheme, N);
     MocoSolution solution = study.solve();
-    int numTimes = 20;
+    solution.write(
+            fmt::format("testMocoInterface_testSlidingMass_{}_solution.sto",
+                    transcriptionScheme));
+    int numTimes;
+    if (transcriptionScheme == "trapezoidal") {
+        numTimes = N + 1;
+    } else if (transcriptionScheme == "hermite-simpson") {
+        numTimes = 2*N + 1;
+    } else if (transcriptionScheme == "legendre-gauss-radau-3") {
+        numTimes = 3*N + 1;
+    } else if (transcriptionScheme == "legendre-gauss-3") {
+        numTimes = 4*N + 1;
+    } else {
+        OPENSIM_THROW(Exception, "Unrecognized transcription scheme.");
+    }
+
     int numStates = 2;
     int numValues = 1;
     int numSpeeds = 1;
@@ -1755,14 +1805,33 @@ TEMPLATE_TEST_CASE("Sliding mass", "", MocoCasADiSolver,
         double expectedPos =
                 t < half ? 0.5 * pow(t, 2)
                          : -0.5 * pow(t - half, 2) + 1.0 * (t - half) + 0.5;
-        SimTK_TEST_EQ_TOL(states(itime, 0), expectedPos, 1e-2);
+        SimTK_TEST_EQ_TOL(expectedPos, states(itime, 0), 1e-2)
 
+        // Speed is a piecewise linear function and force is a piecewise
+        // constant (bang-bang) function. The speed and force are not
+        // continuous at t = 1. Trapezoidal collocation happens to avoid the
+        // discrepancies between the direct collocation solutions and the actual
+        // solution at the discontinuity, but other schemes do not.
         double expectedSpeed = t < half ? t : 2.0 - t;
-        SimTK_TEST_EQ_TOL(states(itime, 1), expectedSpeed, 1e-2);
-
         double expectedForce = t < half ? 10 : -10;
-        SimTK_TEST_EQ_TOL(controls(itime, 0), expectedForce, 1e-2);
+        if (t < half-0.05 || t > half+0.05) {
+            SimTK_TEST_EQ_TOL(expectedSpeed, states(itime, 1), 1e-2)
+            SimTK_TEST_EQ_TOL(expectedForce, controls(itime, 0), 1e-2)
+        }
     }
+}
+
+TEST_CASE("Sliding mass - MocoTropterSolver") {
+    auto transcription_scheme =
+                GENERATE(as<std::string>{}, "trapezoidal", "hermite-simpson");
+    testSlidingMass<MocoTropterSolver>(transcription_scheme);
+}
+
+TEST_CASE("Sliding mass - MocoCasADiSolver") {
+    auto transcription_scheme =
+                GENERATE(as<std::string>{}, "trapezoidal", "hermite-simpson",
+                    "legendre-gauss-3", "legendre-gauss-radau-3");
+    testSlidingMass<MocoCasADiSolver>(transcription_scheme);
 }
 
 TEMPLATE_TEST_CASE("Solving an empty MocoProblem", "",
@@ -1953,7 +2022,7 @@ TEST_CASE("MocoPhase::bound_activation_from_excitation") {
         ph0.setBoundActivationFromExcitation(false);
         auto rep = problem.createRep();
         CHECK_THROWS_WITH(rep.getStateInfo("/muscle/activation"),
-                Catch::Contains(
+                ContainsSubstring(
                         "No info available for state '/muscle/activation'."));
     }
     SECTION("bound_activation_from_excitation is true") {
@@ -1985,7 +2054,7 @@ TEST_CASE("MocoPhase::bound_activation_from_excitation") {
         musclePtr->set_ignore_activation_dynamics(true);
         auto rep = problem.createRep();
         CHECK_THROWS_WITH(rep.getStateInfo("/muscle/activation"),
-                Catch::Contains(
+                ContainsSubstring(
                         "No info available for state '/muscle/activation'."));
     }
 }
@@ -2060,8 +2129,41 @@ TEST_CASE("Objective breakdown", "[casadi]") {
     CHECK(solution.getObjectiveTerm("goal_b") == Approx(0.01 * 7.3));
 }
 
+TEST_CASE("generateSpeedsFromValues() does not overwrite auxiliary states.") {
+    int N = 20;
+    SimTK::Vector time = createVectorLinspace(20, 0.0, 1.0);
+    std::vector<std::string> snames{"/jointset/joint/coord/value",
+                                    "/jointset/joint/coord/speed",
+                                    "/forceset/muscle/normalized_tendon_force"};
+    std::vector<std::string> cnames{"/forceset/muscle"};
+    std::vector<std::string> dnames{
+        "/forceset/muscle/implicitderiv_normalized_tendon_force"};
+    SimTK::Matrix states = SimTK::Test::randMatrix(N, 3);
+    SimTK::Matrix controls = SimTK::Test::randMatrix(N, 1);
+    SimTK::Matrix derivatives = SimTK::Test::randMatrix(N, 1);
+    MocoTrajectory traj(time, snames, cnames, {}, dnames, {}, states, controls,
+            SimTK::Matrix(), derivatives, SimTK::RowVector());
+
+    traj.generateSpeedsFromValues();
+    CHECK(traj.getNumStates() == 3);
+    CHECK(traj.getStateNames() == snames);
+    CHECK(traj.getNumDerivatives() == 1);
+    CHECK(traj.getDerivativeNames() == dnames);
+    CHECK(traj.getNumAuxiliaryStates() == 1);
+    std::vector<std::string>
+            auxnames{"/forceset/muscle/normalized_tendon_force"};
+    CHECK(traj.getAuxiliaryStateNames() == auxnames);
+
+    SimTK::Matrix auxiliaryStates = traj.getAuxiliaryStatesTrajectory();
+    double error = 0.0;
+    for (int irow = 0; irow < states.nrow(); ++irow) {
+        error += pow(states(irow, 2) - auxiliaryStates(irow, 0), 2);
+    }
+    SimTK_TEST_EQ(error, 0.0);
+}
+
 TEST_CASE("generateAccelerationsFromXXX() does not overwrite existing "
-          "non-accleration derivatives.") {
+          "non-acceleration derivatives.") {
     int N = 20;
     SimTK::Vector time = createVectorLinspace(20, 0.0, 1.0);
     std::vector<std::string> snames{"/jointset/joint/coord/value",
@@ -2121,6 +2223,15 @@ TEST_CASE("Solver isAvailable()") {
 #endif
 }
 
+TEMPLATE_TEST_CASE("Locked coordinates ", "",
+        MocoCasADiSolver, MocoTropterSolver) {
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    auto model = createSlidingMassModel(10.0, true);
+    problem.setModel(std::move(model));
+    CHECK_THROWS_WITH(problem.createRep(),
+            ContainsSubstring("Coordinate '/slider/position' is locked"));
+}
 
 /*
 TEMPLATE_TEST_CASE("Controllers in the model", "",

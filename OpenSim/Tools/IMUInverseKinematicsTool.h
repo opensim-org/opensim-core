@@ -58,6 +58,9 @@ public:
     // default copy, assignment operator, and destructor
     OrientationWeightSet() = default;
     OrientationWeightSet(const OrientationWeightSet&) = default;
+    OrientationWeightSet(OrientationWeightSet&&) = default;
+    OrientationWeightSet& operator=(const OrientationWeightSet&) = default;
+    OrientationWeightSet& operator=(OrientationWeightSet&&) = default;
     //=============================================================================
 }; 
         //=============================================================================

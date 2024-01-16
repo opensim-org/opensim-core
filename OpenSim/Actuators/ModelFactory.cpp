@@ -22,6 +22,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
+#include <OpenSim/Simulation/Model/GeometryPath.h>
+#include <OpenSim/Common/CommonUtilities.h>
 
 using namespace OpenSim;
 
@@ -157,34 +159,21 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
 
     // Create path actuators from muscle properties and add to the model. Save
     // a list of pointers of the muscles to delete.
+    model.finalizeConnections();
     std::vector<Muscle*> musclesToDelete;
     auto& muscleSet = model.updMuscles();
     for (int im = 0; im < muscleSet.getSize(); ++im) {
         auto& musc = muscleSet.get(im);
-        auto* actu = new PathActuator();
+        auto actu = OpenSim::make_unique<PathActuator>();
         actu->setName(musc.getName());
         musc.setName(musc.getName() + "_delete");
+        actu->set_appliesForce(musc.get_appliesForce());
         actu->setOptimalForce(musc.getMaxIsometricForce());
         actu->setMinControl(musc.getMinControl());
         actu->setMaxControl(musc.getMaxControl());
-
-        model.addForce(actu);
-
-        // For the connectee names in the PathPoints to be correct, we must add
-        // the path points after adding the PathActuator to the model.
-        const auto& pathPointSet = musc.getGeometryPath().getPathPointSet();
-        auto& geomPath = actu->updGeometryPath();
-        for (int ip = 0; ip < pathPointSet.getSize(); ++ip) {
-            auto* pathPoint = pathPointSet.get(ip).clone();
-            const auto& socketNames = pathPoint->getSocketNames();
-            for (const auto& socketName : socketNames) {
-                pathPoint->updSocket(socketName)
-                        .connect(pathPointSet.get(ip)
-                                .getSocket(socketName)
-                                .getConnecteeAsObject());
-            }
-            geomPath.updPathPointSet().adoptAndAppend(pathPoint);
-        }
+        actu->updProperty_path().assign(musc.getProperty_path());
+        actu->upd_path().setDefaultColor({0.5, 0.5, 0.5});
+        model.addForce(actu.release());
 
         musclesToDelete.push_back(&musc);
     }
@@ -199,6 +188,9 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
                 "Attempt to remove muscle with name {} was unsuccessful.",
                 musc->getName());
     }
+
+    model.finalizeFromProperties();
+    model.finalizeConnections();
 }
 
 
@@ -317,3 +309,23 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
     }
 }
 
+void ModelFactory::replacePathsWithFunctionBasedPaths(Model& model,
+            const Set<FunctionBasedPath>& functionBasedPaths) {
+    for (int i = 0; i < functionBasedPaths.getSize(); ++i) {
+        auto path = functionBasedPaths.get(i);
+            
+        // Get the force component associated with this path.
+        auto& force = model.updComponent<Force>(path.getName());
+
+        // Replace the path.
+        try {
+            force.updPropertyByName<AbstractGeometryPath>("path").setValue(path);
+        } catch (const Exception& e) {
+            OPENSIM_THROW(Exception,
+                    "Failed to replace path for force '{}': {}",
+                    force.getAbsolutePathString(), e.getMessage());
+        }
+    }
+    model.finalizeFromProperties();
+    model.finalizeConnections();
+}

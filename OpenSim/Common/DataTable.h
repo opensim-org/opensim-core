@@ -29,6 +29,7 @@ This file defines the  DataTable_ class, which is used by OpenSim to provide an
 in-memory container for data access and manipulation.                         */
 
 #include "AbstractDataTable.h"
+#include "Assertion.h"
 #include "FileAdapter.h"
 #include "SimTKcommon/internal/BigMatrix.h"
 #include "SimTKcommon/internal/Quaternion.h"
@@ -959,7 +960,7 @@ public:
         // get copy of labels
         auto labels = getColumnLabels();
 
-        assert(labels.size() == _depData.ncol());
+        OPENSIM_ASSERT(labels.size() == _depData.ncol());
 
         // shift columns unless we're already at the last column
         for (size_t c = index; c < getNumColumns()-1; ++c) {

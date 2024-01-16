@@ -25,6 +25,9 @@
 #include <OpenSim/Common/Exception.h>
 //#include <OpenSim/Common/NaturalCubicSpline.h> NOT YET, SEE BELOW
 #include <Simbody.h>
+
+#include <catch2/catch_all.hpp>
+
 #include <cstdio>
 #include <iostream>
 #include <fstream>
@@ -320,181 +323,170 @@ SimTK::Vector testNCSpline(SimTK::Function* sp, SimTK::Vector xK, SimTK::Vector 
 * 2. Create each of the spline objects. 
 * 3. Evaluate the numerical accuracy of the splines by calling testNCSpline
 */
-int main() {
-    try {
+
+TEST_CASE("NC Spline")
+{
     /////////////////////////////
     //Configuration Variables
     ////////////////////////////
-        // bool printData = false;     //Set to true to print the knot, mid knot, and 
-                                    //dense vector values, first derivatives, and 
-                                    //second derivatives (for the splines) for analysis
-                                    //outside of this script.
-        int fcnType = 5;    //Chooses what kind of analytical test function to use
-                            //to initialize and test the various spline classes
-        const int size =6;          //Number of knot points
-        const int sizeDK = 10000;       //Number of points per knot in the densely sampled vector
-        int sizeD=sizeDK*(size-1);  //Number of points in a densely sampled interpolation
+    // bool printData = false;     //Set to true to print the knot, mid knot, and
+    //dense vector values, first derivatives, and
+    //second derivatives (for the splines) for analysis
+    //outside of this script.
+    int fcnType = 5;    //Chooses what kind of analytical test function to use
+    //to initialize and test the various spline classes
+    const int size =6;          //Number of knot points
+    const int sizeDK = 10000;       //Number of points per knot in the densely sampled vector
+    int sizeD=sizeDK*(size-1);  //Number of points in a densely sampled interpolation
 
-        //Domain vector variables
-        double xmin,xmax,deltaX,deltaD;
-        xmin = Pi/4;            //Value of first knot
-        xmax = Pi/2;            //Value of the final knot
+    //Domain vector variables
+    double xmin,xmax,deltaX,deltaD;
+    xmin = Pi/4;            //Value of first knot
+    xmax = Pi/2;            //Value of the final knot
 
-        deltaX = (xmax-xmin)/(size-1);  
-        deltaD = (xmax-xmin)/(sizeD-1);
+    deltaX = (xmax-xmin)/(size-1);
+    deltaD = (xmax-xmin)/(sizeD-1);
 
     /////////////////////////////
     //Test Code body
     ////////////////////////////
 
-        SimTK::Matrix testResults(4,2); //This matrix stores the results of the 5 tests
-                                        //in each row entry, for each of the 2 spline classes
-                                        //tested.
-                                        // SimTK SplineFitter results are stored in column 0
-                                        // OpenSim::NaturalCubicSpline results are stored in column 1
-        //testResults.elementwiseAssign(0.0);
-        testResults = -1;
-        SimTK::Vector tmpV1(1);
+    SimTK::Matrix testResults(4,2); //This matrix stores the results of the 5 tests
+    //in each row entry, for each of the 2 spline classes
+    //tested.
+    // SimTK SplineFitter results are stored in column 0
+    // OpenSim::NaturalCubicSpline results are stored in column 1
+    //testResults.elementwiseAssign(0.0);
+    testResults = -1;
+    SimTK::Vector tmpV1(1);
 
-        //Generate initialization knot points (denoted by a 'K') 
-        //      and the mid points (denoted by a 'M')       
-        //      and for the densely sampled interpolation vector (denoted by a 'D')
-        SimTK::Vector xK(size), xM(size-1), xD(sizeD);
-        SimTK::Matrix yK(size,3), yM(size-1,3), yD(sizeD,3);
+    //Generate initialization knot points (denoted by a 'K')
+    //      and the mid points (denoted by a 'M')
+    //      and for the densely sampled interpolation vector (denoted by a 'D')
+    SimTK::Vector xK(size), xM(size-1), xD(sizeD);
+    SimTK::Matrix yK(size,3), yM(size-1,3), yD(sizeD,3);
 
 
 
     ///////////////////////////////////////////
     //0. Initialize the input vectors xK, xM and xD
     ///////////////////////////////////////////
-        for (int i = 0; i < size; i++) {
-            xK(i) = xmin + ((double)i)*deltaX;
-            if(i<size-1){
-                xM(i) = xmin + deltaX/(double)2 + ((double)i)*deltaX;
-            }
+    for (int i = 0; i < size; i++) {
+        xK(i) = xmin + ((double)i)*deltaX;
+        if(i<size-1){
+            xM(i) = xmin + deltaX/(double)2 + ((double)i)*deltaX;
         }
-        for(int i = 0; i < sizeD; i++)
-            xD(i) = xmin + deltaD*(double)i;
+    }
+    for(int i = 0; i < sizeD; i++)
+        xD(i) = xmin + deltaD*(double)i;
 
     ///////////////////////////////////////////     
     //1.    Initialize the analytic function vector data to interpolate
     //      Let the user know which function is being used
     ///////////////////////////////////////////
 
-        switch(fcnType){
-            case 0:
-                cout << "f(x) = 0" <<endl;
-                break;
-            case 1:
-                cout << "f(x) = 2*x" <<endl;
-                break;
-            case 2:
-                cout << "f(x) = x^2" <<endl;
-                break;
-            case 3:
-                cout << "f(x) = 2*x + x^2 " <<endl;
-                break;
-            case 4:
-                cout << "f(x) = 2*x + x^2 + 5x^3 " <<endl;
-                break;
-        }
+    switch(fcnType){
+    case 0:
+        cout << "f(x) = 0" <<endl;
+        break;
+    case 1:
+        cout << "f(x) = 2*x" <<endl;
+        break;
+    case 2:
+        cout << "f(x) = x^2" <<endl;
+        break;
+    case 3:
+        cout << "f(x) = 2*x + x^2 " <<endl;
+        break;
+    case 4:
+        cout << "f(x) = 2*x + x^2 + 5x^3 " <<endl;
+        break;
+    }
 
 
-        //Get the function values at the knot points
-        SimTK::Vector tmp(3);
-        tmp = 0;
-        for(int i=0; i<size;i++){
-            tmp = getAnalyticFunction(xK(i),fcnType);
-            for(int k=0;k<3;k++)
-                yK(i,k) = tmp(k);
+    //Get the function values at the knot points
+    SimTK::Vector tmp(3);
+    tmp = 0;
+    for(int i=0; i<size;i++){
+        tmp = getAnalyticFunction(xK(i),fcnType);
+        for(int k=0;k<3;k++)
+            yK(i,k) = tmp(k);
 
-        }
-        SimTK:: Vector yKVal = yK(0);
+    }
+    SimTK:: Vector yKVal = yK(0);
 
-        //Get the function y, dy, ddy at the mid points
-        for(int i=0; i<size-1;i++){
-            tmp = getAnalyticFunction(xM(i),fcnType);
-            for(int k=0;k<3;k++)
-                yM(i,k) = tmp(k);
-        }
-        //Get the function y, dy, ddy at the dense points
-        for(int i=0; i<sizeD;i++){
-            tmp = getAnalyticFunction(xD(i),fcnType);
-            for(int k=0;k<3;k++)
-                yD(i,k) = tmp(k);
-        }
+    //Get the function y, dy, ddy at the mid points
+    for(int i=0; i<size-1;i++){
+        tmp = getAnalyticFunction(xM(i),fcnType);
+        for(int k=0;k<3;k++)
+            yM(i,k) = tmp(k);
+    }
+    //Get the function y, dy, ddy at the dense points
+    for(int i=0; i<sizeD;i++){
+        tmp = getAnalyticFunction(xD(i),fcnType);
+        for(int k=0;k<3;k++)
+            yD(i,k) = tmp(k);
+    }
 
     ///////////////////////////////////////////
     //2. Create each of the splines
     ///////////////////////////////////////////
 
-        //OpenSim:NaturalCubicSplines
-        SimTK::Vector ncsDerivs1(xK.size());
-        vector<int> derOrder(1);
-        derOrder[0] = 0;        
-        //NaturalCubicSpline ncs(xK.size(), &xK[0], &yKVal[0],"test");                  
-        //SimTK::Function* ncs_simtkfcn = ncs.createSimTKFunction();
+    //OpenSim:NaturalCubicSplines
+    SimTK::Vector ncsDerivs1(xK.size());
+    vector<int> derOrder(1);
+    derOrder[0] = 0;
+    //NaturalCubicSpline ncs(xK.size(), &xK[0], &yKVal[0],"test");
+    //SimTK::Function* ncs_simtkfcn = ncs.createSimTKFunction();
 
-        //SimTK::SplineFitter
-        SimTK::Vector sfDerivs1(xK.size());
-        SimTK::Spline_<Real> sTK = SimTK::SplineFitter<Real>::fitForSmoothingParameter(3,xK,yKVal,0.0).getSpline();
-            
+    //SimTK::SplineFitter
+    SimTK::Vector sfDerivs1(xK.size());
+    SimTK::Spline_<Real> sTK = SimTK::SplineFitter<Real>::fitForSmoothingParameter(3,xK,yKVal,0.0).getSpline();
+
     ///////////////////////////////////////////
     //3. Test the splines
     ///////////////////////////////////////////
 
-        testResults(0) = testNCSpline(&sTK, xK, yK(0), xM, xD, "simtk_splinefitter",true);
-        //testResults(1) = testNCSpline(ncs_simtkfcn, xK, yK(0), xM, xD,"opensim_natcubspline",true);
+    testResults(0) = testNCSpline(&sTK, xK, yK(0), xM, xD, "simtk_splinefitter",true);
+    //testResults(1) = testNCSpline(ncs_simtkfcn, xK, yK(0), xM, xD,"opensim_natcubspline",true);
 
-        cout << "Test Result Matrix: 0 or small numbers pass" <<endl;
-        cout << "  column 0: SimTK::SplineFitter, column 1: OpenSim::NaturalCubicSpline" <<endl;
-        cout << "  row 0: Passes through knots (tol 1e-14)" << endl;
-        cout << "  row 1: First derivative is continuous and smooth (tol " << deltaD << ")" << endl;
-        cout << "  row 2: Second derivative is continuous (tol " << 10*deltaD << ")" << endl;
-        cout << "  row 3: Second derivative is zero at endpoints (tol "<< deltaD/10 <<")" << endl;
-        cout << testResults << endl;
+    cout << "Test Result Matrix: 0 or small numbers pass" <<endl;
+    cout << "  column 0: SimTK::SplineFitter, column 1: OpenSim::NaturalCubicSpline" <<endl;
+    cout << "  row 0: Passes through knots (tol 1e-14)" << endl;
+    cout << "  row 1: First derivative is continuous and smooth (tol " << deltaD << ")" << endl;
+    cout << "  row 2: Second derivative is continuous (tol " << 10*deltaD << ")" << endl;
+    cout << "  row 3: Second derivative is zero at endpoints (tol "<< deltaD/10 <<")" << endl;
+    cout << testResults << endl;
 
-        //////////////////////////////////////
-        //6. Run numerical assertions on each test
-        //////////////////////////////////////
+    //////////////////////////////////////
+    //6. Run numerical assertions on each test
+    //////////////////////////////////////
 
-            double tol = 0;
-            SimTK_START_TEST("Testing natural cubic splines");
-            
-            for(int k=0;k</*testResults.ncol()*/1;k++){
-                for(int i=0;i<testResults.nrow();i++){                  
-                    switch(i){
-                        case 0: //Equal at knots
-                            tol = 1e-14;
-                            break;
-                        case 1: //Continuous 1st derivative
-                            tol = deltaD;
-                            break;
-                        case 2: //Continuous 2nd derivative
-                            tol = 10*deltaD;
-                            break;  
-                        case 3: //2nd derivative zero at end points
-                            tol = deltaD/10;
-                            break;
-                        default:
-                            cout << "testNCSpline: Invalid error type selected" << endl;
-                    }
-                    cout << "Testing (i,k) " << i << " " << k << " tol " << tol << " \tval " << testResults(i,k) << endl;
-                    SimTK_TEST_EQ_TOL(testResults(i,k),0,tol);
-                }
+    double tol = 0;
+
+    for(int k=0;k</*testResults.ncol()*/1;k++){
+        for(int i=0;i<testResults.nrow();i++){
+            switch(i){
+            case 0: //Equal at knots
+                tol = 1e-14;
+                break;
+            case 1: //Continuous 1st derivative
+                tol = deltaD;
+                break;
+            case 2: //Continuous 2nd derivative
+                tol = 10*deltaD;
+                break;
+            case 3: //2nd derivative zero at end points
+                tol = deltaD/10;
+                break;
+            default:
+                cout << "testNCSpline: Invalid error type selected" << endl;
             }
-
-            cout << "\n\nNOTE: NO OPENSIM SPLINE TESTED (NC SPLINE NOT AVAILABLE YET)" << endl;
-            cout << "  Only the Simbody SplineFitter is being tested." << endl;
-
-            SimTK_END_TEST();
-
-    }catch(const OpenSim::Exception& e) {
-        e.print(cerr);
-        return 1;
+            cout << "Testing (i,k) " << i << " " << k << " tol " << tol << " \tval " << testResults(i,k) << endl;
+            SimTK_TEST_EQ_TOL(testResults(i,k),0,tol);
+        }
     }
-    
 
-    return 0;
+    cout << "\n\nNOTE: NO OPENSIM SPLINE TESTED (NC SPLINE NOT AVAILABLE YET)" << endl;
+    cout << "  Only the Simbody SplineFitter is being tested." << endl;
 }
-

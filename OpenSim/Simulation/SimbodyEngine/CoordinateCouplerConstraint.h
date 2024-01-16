@@ -109,7 +109,7 @@ public:
         return function.getValue(); 
     }
     void setFunction(const Function &aFunction)
-        { set_coupled_coordinates_function(*aFunction.clone());}
+        { set_coupled_coordinates_function(aFunction); }
     void setFunction(Function *aFunction)
         { set_coupled_coordinates_function(*aFunction); }
 

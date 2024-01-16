@@ -45,6 +45,8 @@
 
 #include "ModelFactory.h"
 #include "ModelProcessor.h"
+#include "ModelOperators.h"
+#include "PolynomialPathFitter.h"
 
 #include "RegisterTypes_osimActuators.h"    // to expose RegisterTypes_osimActuators
 

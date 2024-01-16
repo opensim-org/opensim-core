@@ -139,6 +139,21 @@ public:
     }
     MocoConstraintInfo& updConstraintInfo() { return upd_MocoConstraintInfo(); }
 
+    /// Set the vector of endpoint constraint bounds for this MocoGoal. This
+    /// vector must have length equal to the number of outputs for this goal,
+    /// otherwise an exception is thrown.
+    /// This info is ignored if getSupportsEndpointConstraint() is false.
+    void setEndpointConstraintBounds(const std::vector<MocoBounds>& bounds) {
+        updConstraintInfo().setBounds(bounds);
+    }
+    /// Get the vector of the endpoint constraint bounds for this MocoGoal.
+    /// @details Note: the return value is constructed fresh on every call from
+    /// the internal property. Avoid repeated calls to this function.
+    std::vector<MocoBounds> getEndpointConstraintBounds() const {
+        std::vector<MocoBounds> bounds(getConstraintInfo().getBounds());
+        return bounds;
+    }
+
     /// Get the length of the return value of calcGoal().
     int getNumOutputs() const {
         OPENSIM_THROW_IF_FRMOBJ(!m_model, Exception,
@@ -235,6 +250,17 @@ public:
                 input.final_state.getSystemStage();
 
         calcGoalImpl(input, goal);
+        
+        // Apply normalizations.
+        if (get_divide_by_displacement()) {
+            goal /= calcSystemDisplacement(input);
+        }
+        if (get_divide_by_duration()) {
+            goal /= calcDuration(input);
+        }
+        if (get_divide_by_mass()) {
+            goal /= calcSystemMass(input);
+        }
 
         if (input.initial_state.getSystemStage() > initialStageBefore) {
             SimTK_ERRCHK2_ALWAYS(
@@ -288,6 +314,24 @@ public:
         }
 
         initializeOnModelImpl(model);
+        
+        if (getDivideByDisplacement()) {
+            if (m_stageDependency < SimTK::Stage::Position) {
+                m_stageDependency = SimTK::Stage::Position;
+            }
+        }
+        
+        if (getDivideByDuration()) {
+            if (m_stageDependency < SimTK::Stage::Topology) {
+                m_stageDependency = SimTK::Stage::Topology;
+            }
+        }
+        
+        if (getDivideByMass()) {
+            if (m_stageDependency < SimTK::Stage::Instance) {
+                m_stageDependency = SimTK::Stage::Instance;
+            }
+        }
 
         OPENSIM_THROW_IF_FRMOBJ(m_numIntegrals == -1, Exception,
                 "Expected setRequirements() to be invoked, "
@@ -308,6 +352,31 @@ public:
     /// Print the name type and mode of this goal. In cost mode, this prints the
     /// weight.
     void printDescription() const;
+    
+    /// Set if the goal should be divided by the displacement of the system's
+    /// center of mass over the phase.
+    /// @note Increases the stage dependency of this goal to 
+    /// SimTK::Stage::Position, if it is not already equal or higher.
+    void setDivideByDisplacement(bool tf) { set_divide_by_displacement(tf); }
+    bool getDivideByDisplacement() const {
+        return get_divide_by_displacement();
+    }
+    
+    /// Set if the goal should be divided by the phase duration.
+    /// @note Increases the stage dependency of this goal to 
+    /// SimTK::Stage::Topology, if it is not already equal or higher
+    void setDivideByDuration(bool tf) { set_divide_by_duration(tf); }
+    bool getDivideByDuration() const {
+        return get_divide_by_duration();
+    }
+    
+    /// Set if the goal should be divided by the model's mass.
+    /// @note Increases the stage dependency of this goal to 
+    /// SimTK::Stage::Instance, if it is not already equal or higher.
+    void setDivideByMass(bool tf) { set_divide_by_mass(tf); }
+    bool getDivideByMass() const {
+        return get_divide_by_mass();
+    }
 
 protected:
     /// Perform any caching before the problem is solved.
@@ -373,8 +442,13 @@ protected:
         return m_model.getRef();
     }
 
-    double calcSystemDisplacement(
-            const SimTK::State& initial, const SimTK::State& final) const;
+    /// Calculate the displacement of the system's center of mass over the
+    /// phase.
+    double calcSystemDisplacement(const GoalInput& input) const;
+    /// Calculate the duration of the phase.
+    double calcDuration(const GoalInput& input) const;
+    /// Calculate the mass of the system.
+    double calcSystemMass(const GoalInput& input) const;
 
     /// Append a MocoScaleFactor to this MocoGoal.
     void appendScaleFactor(const MocoScaleFactor& scaleFactor) {
@@ -398,7 +472,14 @@ private:
             "via a MocoParameter. A copy of each MocoScaleFactor component is "
             "added to the model internal to MocoProblem, which makes the scale "
             "factors values available when computing the cost function for each "
-            "MocoGoal.")
+            "MocoGoal.");
+    OpenSim_DECLARE_PROPERTY(divide_by_displacement, bool,
+            "Divide by the model's displacement over the phase (default: "
+            "false)");
+    OpenSim_DECLARE_PROPERTY(divide_by_duration, bool,
+            "Divide by the phase duration (default: false)");
+    OpenSim_DECLARE_PROPERTY(divide_by_mass, bool,
+            "Divide by the model's mass (default: false)");
 
     void constructProperties();
 
@@ -478,17 +559,9 @@ protected:
     }
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& values) const override {
-        SimTK::Real timeInitial = input.initial_state.getTime();
-        SimTK::Real timeFinal = input.final_state.getTime();
-        SimTK::Real duration = timeFinal - timeInitial;
-
-        SimTK::Vec3 comInitial =
-                getModel().calcMassCenterPosition(input.initial_state);
-        SimTK::Vec3 comFinal =
-                getModel().calcMassCenterPosition(input.final_state);
-        // TODO: Use distance squared for convexity.
-        SimTK::Real displacement = (comFinal - comInitial).norm();
         // Calculate average gait speed.
+        const double displacement = calcSystemDisplacement(input);
+        const double duration = calcDuration(input);
         values[0] = get_desired_average_speed() - (displacement / duration);
         if (getModeIsCost()) { values[0] = SimTK::square(values[0]); }
     }

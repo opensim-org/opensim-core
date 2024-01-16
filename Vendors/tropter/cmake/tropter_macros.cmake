@@ -16,14 +16,11 @@ function(tropter_add_test)
     # To organize targets in Visual Studio's Solution Explorer.
     set_target_properties(${TROPTEST_NAME} PROPERTIES FOLDER "tropter/Tests")
     target_link_libraries(${TROPTEST_NAME} tropter ${TROPTEST_LIB_DEPENDS})
-    # TODO Tropter shouldn't know that it's in a larger project.
-    target_include_directories(${TROPTEST_NAME}
-        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../external/catch")
     if(TROPTER_WITH_SNOPT)
         target_compile_definitions(${TROPTEST_NAME} PRIVATE TROPTER_WITH_SNOPT)
     endif()
     add_test(NAME ${TROPTEST_NAME}
-             COMMAND ${TROPTEST_NAME} --use-colour yes --durations yes)
+             COMMAND ${TROPTEST_NAME} --durations yes)
     #if(WIN32) # Instead, we are copying dependencies' DLLs into Tropter.
     #    set_property(TEST ${TEST_NAME} APPEND PROPERTY
     #        ENVIRONMENT "PATH=${IPOPT_DIR}/bin\;${ADOLC_DIR}/bin")

@@ -107,12 +107,12 @@ public:
         the displacement about or along an axis is the coordinate value.
         If the Coordinate cannot be interpreted as being either of these
         it is flagged as Coupled. */
-    enum MotionType
+    enum MotionType: unsigned
     {
-        Undefined,
-        Rotational,
-        Translational,
-        Coupled
+        Undefined = 0u,     ///< 0
+        Rotational = 1u,    ///< 1
+        Translational = 2u, ///< 2
+        Coupled = 3u        ///< 3
     };
 
 
@@ -153,6 +153,10 @@ public:
     /** return the name (label) used to identify the Coordinate's speed
         state variable. Returns the string "<coordinate_name>/speed" */
     const std::string& getSpeedName() const;
+    
+    /** get the derivative of Coordinate's value from the state. This value is
+        *not* necessarily equal to the value returned by getSpeedValue(). */
+    double getQDotValue(const SimTK::State& s) const;
 
     /** get the default value for this coordinate. This is the value 
         used if no value has been set prior to a simulation. */
@@ -172,7 +176,7 @@ public:
     /** determine or set whether or not the Coordinate is 
         "clamped" between a range of values. */
     bool getClamped(const SimTK::State& s) const;
-    void setClamped(SimTK::State& s, bool aLocked) const;
+    void setClamped(SimTK::State& s, bool aClamped) const;
     /** get/set whether or not the Coordinate is clamped by default */
     bool getDefaultClamped() const { return get_clamped(); }
     void setDefaultClamped(bool aClamped ) { upd_clamped() = aClamped; }

@@ -14,13 +14,10 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-
-#define CATCH_CONFIG_MAIN
-#include <catch.hpp>
+#include <catch2/catch_all.hpp>
+#include "testing.h"
 
 #include <tropter/tropter.h>
-
-#include "testing.h"
 
 using Eigen::Vector4d;
 using Eigen::Vector2d;
@@ -28,6 +25,8 @@ using Eigen::VectorXd;
 
 using tropter::VectorX;
 using namespace tropter::optimization;
+
+using Catch::Approx;
 
 // TODO elegantly handle the case where the objective is not defined (do not
 // need ADOL-C to do a bunch of stuff.
@@ -248,7 +247,8 @@ TEST_CASE("Test exceptions and error messages") {
         Prob problem;
         IPOPTSolver solver(problem);
         REQUIRE_THROWS_WITH(solver.set_max_iterations(0),
-                Catch::Contains("Invalid value for max_iterations"));
+                Catch::Matchers::ContainsSubstring(
+                        "Invalid value for max_iterations"));
     }
 }
 

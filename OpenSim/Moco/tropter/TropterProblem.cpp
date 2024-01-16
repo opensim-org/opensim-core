@@ -17,6 +17,8 @@
  * -------------------------------------------------------------------------- */
 #include "TropterProblem.h"
 
+#include <OpenSim/Common/Assertion.h>
+
 using namespace OpenSim;
 
 template <typename T>
@@ -36,7 +38,7 @@ convertIterateTropterToMoco(const tropIterateType& tropSol) const {
 
     const int numDerivatives =
             (int)tropSol.adjunct_names.size() - numMultipliers;
-    assert(numDerivatives >= 0);
+    OPENSIM_ASSERT(numDerivatives >= 0);
     std::vector<std::string> derivative_names(numDerivatives);
     std::copy_n(tropSol.adjunct_names.begin() + numMultipliers, numDerivatives,
             derivative_names.begin());

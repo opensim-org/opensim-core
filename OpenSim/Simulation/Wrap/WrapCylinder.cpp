@@ -625,21 +625,16 @@ restart_spiral_wrap:
     WrapMath::GetClosestPointOnLineToPoint(aWrapResult.r1, p0, dn, r1a, t);
     WrapMath::GetClosestPointOnLineToPoint(aWrapResult.r2, p0, dn, r2a, t);
 
-    axial_vec = r2a - r1a;
-
-    axial_dist = axial_vec.norm();
+    axial_dist = SimTK::dot(r2a - r1a, dn);
 
     // determine the radial angle
     uu = aWrapResult.r1 - r1a;
     vv = aWrapResult.r2 - r2a;
 
-    for (i = 0; i < 3; i++)
-    {
-        uu[i] /= _radius;
-        vv[i] /= _radius;
-    }
-
-    theta = acos((~uu * vv) / (uu.norm() * vv.norm()));
+    theta = std::atan2(
+        SimTK::dot(SimTK::cross(uu, vv), dn), // = sin(theta) * radius^2
+        SimTK::dot(uu, vv) // = cos(theta) * radius^2
+    );
 
     if (far_side_wrap)
         theta = 2.0 * SimTK_PI - theta;
@@ -651,25 +646,20 @@ restart_spiral_wrap:
 
     aWrapResult.wrap_path_length = sqrt(x * x + y * y);
 
-    // build path segments
-    ax = uu % vv;
-    WrapMath::NormalizeOrZero(ax, ax);
+    // Determine wrap point by rotating- and translating r1 along axis.
+    auto CalcSpiralWrapPoint = [&](double t) -> SimTK::Vec3 // with t = 0 to 1
+    {
+        SimTK::Mat33 R = SimTK::Rotation(sense * t * theta, dn);
+        return R * aWrapResult.r1 + dn * (t * axial_dist);
+    };
 
-    vv = ax % uu;
-
-    SimTK::Rotation m;
-    m.set(0, 0, ax[0]); m.set(0, 1, ax[1]); m.set(0, 2, ax[2]);
-    m.set(1, 0, uu[0]); m.set(1, 1, uu[1]); m.set(1, 2, uu[2]);
-    m.set(2, 0, vv[0]); m.set(2, 1, vv[1]); m.set(2, 2, vv[2]);
     // WrapTorus creates a WrapCyl with no connected model, avoid this hack
     if (!_model.empty() && !getModel().getDisplayHints().isVisualizationEnabled() &&
             aWrapResult.singleWrap) {
         // Use one WrapSegment/cord instead of finely sampled list of wrap_pt(s)
-        _calc_spiral_wrap_point(
-                r1a, axial_vec, m, ax, sense, 0, theta, wrap_pt);
+        wrap_pt = CalcSpiralWrapPoint(0.);
         aWrapResult.wrap_pts.append(wrap_pt);
-        _calc_spiral_wrap_point(
-                r1a, axial_vec, m, ax, sense, 1.0, theta, wrap_pt);
+        wrap_pt = CalcSpiralWrapPoint(1.);
         aWrapResult.wrap_pts.append(wrap_pt);
     } 
     else {
@@ -681,8 +671,7 @@ restart_spiral_wrap:
         for (i = 0; i < numWrapSegments; i++) {
             double t = (double)i / numWrapSegments;
 
-            _calc_spiral_wrap_point(
-                    r1a, axial_vec, m, ax, sense, t, theta, wrap_pt);
+            wrap_pt = CalcSpiralWrapPoint(t);
 
             // adjust r1/r2 tangent points if necessary to achieve tangency with
             // the spiral path:
@@ -694,8 +683,7 @@ restart_spiral_wrap:
 
                 SimTK::Vec3 temp_wrap_pt;
 
-                _calc_spiral_wrap_point(r1a, axial_vec, m, ax, sense, 1.0 - t,
-                        theta, temp_wrap_pt);
+                temp_wrap_pt = CalcSpiralWrapPoint(1.0 - t);
 
                 did_adjust_r2 = _adjust_tangent_point(
                         aPoint2, dn, aWrapResult.r2, temp_wrap_pt);
@@ -708,43 +696,6 @@ restart_spiral_wrap:
 
             aWrapResult.wrap_pts.append(wrap_pt);
         }
-    }
-}
-
-//_____________________________________________________________________________
-/**
- * Calculate a new point along a spiral wrapping path.
- *
- * @param r1a An existing point on the spiral path
- * @param axial_vec Vector from r1a parallel to cylinder axis
- * @param m A transform matrix used for the radial component
- * @param axis Axis of the cylinder
- * @param sense The direction of the spiral
- * @param t Parameterized amount of angle for this point
- * @param theta The total angle of the spiral on the cylinder
- * @param wrap_pt The new point on the spiral path
- */
-void WrapCylinder::_calc_spiral_wrap_point(const SimTK::Vec3& r1a,
-                                             const SimTK::Vec3& axial_vec,
-                                             const SimTK::Rotation& m,
-                                             const SimTK::Vec3& axis,
-                                             double sense,
-                                             double t,
-                                             double theta,
-                                             SimTK::Vec3& wrap_pt) const
-{
-    SimTK::Rotation R;
-    double angle = sense * t * theta;
-    R.setRotationFromAngleAboutNonUnitVector(angle, axis);
-
-    SimTK::Mat33 n = m * ~R;
-
-    for (int i = 0; i < 3; i++)
-    {
-        double radial_component = get_radius() * n[1][i];
-        double axial_component = t * axial_vec[i];
-
-        wrap_pt[i] = r1a[i] + radial_component + axial_component;
     }
 }
 
