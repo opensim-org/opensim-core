@@ -916,7 +916,7 @@ public:
     /**
     * Get the "connectee" object at the provided index that the Component's
     * Socket is bound to. Guaranteed to be valid only after the Component
-    * has been connected (that is connect() has been invoked).
+    * has been connected (that is, connect() has been invoked).
     * If the Socket has not been connected, an exception is thrown.
     *
     * This method is for getting the concrete connectee object, and is not
@@ -936,7 +936,7 @@ public:
     * @endcode
     */
     template<typename T>
-    const T& getConnectee(const std::string& name, unsigned index) const {
+    const T& getConnectee(const std::string& name, int index) const {
         // get the Socket and check if it is connected.
         const Socket<T>& socket = getSocket<T>(name);
         OPENSIM_ASSERT_FRMOBJ(socket.isConnected());
@@ -975,7 +975,7 @@ public:
 
     /** Get the connectee at the provided index as an Object. This means you
     * will not have access to the methods on the concrete connectee. This is the
-    * method you must use in MATLAB to access the connectee.
+    * method you must use in scripts to access the connectee.
     *
     * Example:
     * @code{.cpp}
@@ -997,7 +997,7 @@ public:
     * controls = actu.getDefaultControls() # works (if 'actu' is an Actuator)
     * @endcode
     */
-    const Object& getConnectee(const std::string& name, unsigned index) const {
+    const Object& getConnectee(const std::string& name, int index) const {
         const AbstractSocket& socket = getSocket(name);
         OPENSIM_ASSERT_FRMOBJ(socket.isConnected());
         return socket.getConnecteeAsObject(index);
@@ -3401,10 +3401,11 @@ const C& Socket<C>::getConnectee(int index) const {
     if (index < 0) {
         if (!isListSocket()) { index = 0; }
         else {
-            OPENSIM_THROW(Exception,
-                    "Socket<T>::getConnectee(): an index must be "
-                    "provided for a socket that takes a list "
-                    "of values.");
+            std::stringstream msg;
+            msg << "Socket<T>::getConnectee(): an index must be "
+                << "provided for a socket that takes a list "
+                << "of values.";
+            OPENSIM_THROW(Exception, msg.str());
         }
     }
     return getConnecteeInternal(index);
@@ -3431,14 +3432,18 @@ void Socket<C>::finalizeConnection(const Component& root) {
             const auto& comp = *connectee;
             const auto& rootOfConnectee = comp.getRoot();
             const auto& myRoot = getOwner().getRoot();
-            OPENSIM_THROW_IF(&myRoot != &rootOfConnectee, Exception,
-                "Socket<" + getConnecteeTypeName() + "> '" + getName() +
-                "' in " + getOwner().getConcreteClassName() + " at " +
-                getOwner().getAbsolutePathString() + " cannot connect to " +
-                comp.getConcreteClassName() + " at " +
-                comp.getAbsolutePathString() + ": components do not have the same "
-                "root component. Did you intend to add '" +
-                rootOfConnectee.getName() + "' to '" + myRoot.getName() + "'?");
+            if (&myRoot != &rootOfConnectee) {
+                std::stringstream msg;
+                msg << "Socket<" << getConnecteeTypeName() << "> '" << getName()
+                    << "' in " << getOwner().getConcreteClassName() << " at "
+                    << getOwner().getAbsolutePathString()
+                    << " cannot connect to " << comp.getConcreteClassName()
+                    << " at " << comp.getAbsolutePathString()
+                    << ": components do not have the same root component. "
+                    << "Did you intend to add '" << rootOfConnectee.getName()
+                    << "' to '" << myRoot.getName() << "'?";
+                OPENSIM_THROW(Exception, msg.str());
+            }
 
             ComponentPath connecteePath = connectee->getRelativePath(getOwner());
             // If the relative path starts with ".." then use an absolute path
@@ -3451,8 +3456,6 @@ void Socket<C>::finalizeConnection(const Component& root) {
             assignConnecteePath(connecteePath.toString());
         }
     } else {
-        // If the connectee path is empty, then we have nothing to connect to.
-        if (isConnecteePathEmpty()) return;
         for (int i = 0; i < static_cast<int>(getNumConnectees()); ++i) {
             const auto connecteePath = getConnecteePath(i);
             OPENSIM_THROW_IF(connecteePath.empty(), ConnecteeNotSpecified,

@@ -171,7 +171,7 @@ void Component::prependComponentPathToConnecteePath(
             // available in the root component. For list sockets, we assume that
             // checking the first connectee path is sufficient, since all
             // connectees in the list must be from the same component.
-            if (it.second->getNumConnectees() &&
+            if (it.second->getNumConnectees() > 0 &&
                     !root.hasComponent(it.second->getConnecteePath(0))) {
                 it.second->prependComponentPathToConnecteePath(compPath);
             }
