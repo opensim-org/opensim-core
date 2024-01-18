@@ -19,6 +19,8 @@ new `getConnectee` overloads that take an index to a desired object in the list 
   querying a component's sockets by name (#3673)
 - Added `tryGetOutput` and `tryUpdOutput` to the `Component` interface, which provides a non-throwing way of
   querying a component's outputs by name (#3673)
+- The XMLDocument that is held within OpenSim::Object is now reference-counted, to help ensure
+  it is freed (e.g. when an exception is thrown)
 
 v4.5
 ====

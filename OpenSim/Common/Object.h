@@ -42,6 +42,7 @@
 #include "Property.h"
 
 #include <cstring>
+#include <memory>
 
 // DISABLES MULTIPLE INSTANTIATION WARNINGS
 
@@ -578,14 +579,14 @@ protected:
     /** Unconditionally set the XMLDocument associated with this object.
     Use carefully -- if there was already a document its heap space is
     lost here. **/
-    void setDocument(XMLDocument* doc) {_document=doc;}
+    void setDocument(XMLDocument*);
 
     /** Get a const pointer to the document (if any) associated with this
     object. **/
-    const XMLDocument* getDocument() const {return _document;}
+    const XMLDocument* getDocument() const {return _document.get();}
     /** Get a writable pointer to the document (if any) associated with this
     object. **/
-    XMLDocument* updDocument() {return _document;}
+    XMLDocument* updDocument() {return _document.get();}
 public:
     /** If there is a document associated with this object then return the
     file name maintained by the document. Otherwise return an empty string. **/
@@ -908,7 +909,7 @@ private:
     // This is mutable since it's cached on deserialization and is 
     // kept up to date to maintain "defaults" and document file path
     //TODO: why does an Object need to know where it was last written? Seems flaky and should be revisited
-    mutable XMLDocument     *_document;
+    mutable std::shared_ptr<XMLDocument>     _document;
     // Flag indicating whether the object is serialized to this _document or 
     // to another fresh document, also cached for subsequent printing/writing.
     mutable bool            _inlined;
