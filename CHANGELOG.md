@@ -15,6 +15,10 @@ new `getConnectee` overloads that take an index to a desired object in the list 
 - `ComponentPath` is now less-than (`<`) comparable, making it usable in (e.g.) `std::map`
 - `ComponentPath` now has a `std::hash<T>` implementation, making it usable in (e.g.) `std::unordered_map`
 - Added `.clear()` and `.empty()` to `ComponentPath` for more parity with `std::string`'s semantics
+- Added `tryGetSocket` and `tryUpdSocket` to the `Component` interface, which provides a non-throwing way of
+  querying a component's sockets by name (#3673)
+- Added `tryGetOutput` and `tryUpdOutput` to the `Component` interface, which provides a non-throwing way of
+  querying a component's outputs by name (#3673)
 - The XMLDocument that is held within OpenSim::Object is now reference-counted, to help ensure
   it is freed (e.g. when an exception is thrown)
 
