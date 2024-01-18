@@ -1035,6 +1035,52 @@ TEST_CASE("Component Interface Sockets")
     }
 }
 
+TEST_CASE("Component Interface tryGetSocket")
+{
+    Bar bar;
+    REQUIRE(bar.tryGetSocket("parentFoo") != nullptr);
+    REQUIRE(bar.tryGetSocket("childFoo") != nullptr);
+    REQUIRE(bar.tryGetSocket("NonExistentFoo") == nullptr);
+}
+
+TEST_CASE("Component Interface getSocket")
+{
+    Bar bar;
+    REQUIRE_NOTHROW(bar.getSocket("parentFoo"));
+    REQUIRE_NOTHROW(bar.getSocket("childFoo"));
+    REQUIRE_THROWS_AS(bar.getSocket("NonExistentFoo"), SocketNotFound);
+}
+
+TEST_CASE("Component Interface tryUpdSocket")
+{
+    Bar bar;
+    REQUIRE(bar.tryUpdSocket("parentFoo") != nullptr);
+    REQUIRE(bar.tryUpdSocket("childFoo") != nullptr);
+    REQUIRE(bar.tryUpdSocket("NonExistentFoo") == nullptr);
+}
+
+TEST_CASE("Component Interface updSocket")
+{
+    Bar bar;
+    REQUIRE_NOTHROW(bar.updSocket("parentFoo"));
+    REQUIRE_NOTHROW(bar.updSocket("childFoo"));
+    REQUIRE_THROWS_AS(bar.updSocket("NonExistentFoo"), SocketNotFound);
+}
+
+TEST_CASE("Component Interface tryGetOutput")
+{
+    Foo foo;
+    REQUIRE(foo.tryGetOutput("Output1") != nullptr);
+    REQUIRE(foo.tryGetOutput("NonExistentOutput") == nullptr);
+}
+
+TEST_CASE("Component Interface tryUpdOutput")
+{
+    Foo foo;
+    REQUIRE(foo.tryUpdOutput("Output1") != nullptr);
+    REQUIRE(foo.tryUpdOutput("NonExistentOutput") == nullptr);
+}
+
 TEST_CASE("Component Interface Socket::canConnectTo")
 {
     TheWorld theWorld;
