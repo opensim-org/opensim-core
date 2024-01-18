@@ -281,7 +281,7 @@ public:
         if (aIndex < 0) {
             OPENSIM_THROW(Exception, "Array.insert: aIndex was less than 0.");
         }
-        else if (aIndex >= _storage.size()) {
+        else if (aIndex >= static_cast<int>(_storage.size())) {
             setSize(aIndex+1);
             _storage[aIndex] = aValue;
         }
@@ -325,7 +325,7 @@ public:
             return;
         }
 
-        if (aIndex+2 >= _storage.capacity()) {
+        if (aIndex+2 >= static_cast<int>(_storage.capacity())) {
             setSize(aIndex+2);
         }
 
@@ -488,19 +488,21 @@ public:
      * is approximately ln(n), where n is the size of the array.
      *
      * @param aValue Value to which the array elements are compared.
-     * @param aFindFirst If true, find the first element that satisfies
-     * the search.  If false, the index of any element that satisfies the
-     * search can be returned- which index will be returned depends on the
-     * length of the array and is therefore somewhat arbitrary. By default,
-     * this flag is false.
+     * @param aFindFirst DEPRECATED: this is now ALWAYS `true` - regardless of
+     * what you are calling it with. This makes the behavior predictable on all
+     * platforms.
+     *
+     * OLD BEHAVIOR: If true, find the first element that satisfies the search.
+     * OLD BEHAVIOR: If false, the index of any element that satisfies the
+     * search can be returned. Which index will be returned depends on the
+     * length of the array and is therefore somewhat arbitrary.
+     * OLD BEHAVIOR: By default, this flag is false (now: it is always true)
      * @param aLo Lowest array index to consider in the search.
      * @param aHi Highest array index to consider in the search.
      * @return Index of the array element that has the largest value that is less
-     * than or equal to aValue.  If there is more than one such elements with the
-     * same value and aFindFirst is set to true, the index of the first of
-     * these elements is returned.  If an error is encountered (e.g., the array
-     * is empty), or the array contains no element that is less than or equal
-     * to aValue, -1 is returned.
+     * than or equal to aValue. If an error is encountered (e.g., the array
+     * is empty), or if the array contains no element that is less than or
+     * equal to aValue, -1 is returned.
      */
     int searchBinary(
         const T &aValue,
@@ -508,14 +510,41 @@ public:
         int aLo = -1,
         int aHi = -1) const
     {
-        if (size() <= 0) {
+        // compute search range
+        auto begin = _storage.begin() + (aLo < 0 ? 0 : aLo);
+        auto end   = _storage.begin() + ((aHi < 0 || aHi >= size()) ? size() : aHi);
+
+        if (begin == end) {
+            // empty range: the array contains no element
             return -1;
         }
+        if (begin > end) {
+            // edge-case: the caller provided out-of-order indices, silently fix it
+            std::swap(begin, end);
+        }
 
-        auto const begin = _storage.begin() + (aLo < 0 ? 0 : aLo);
-        auto const end   = _storage.begin() + ((aHi < 0 || aHi >= size()) ? size() : aHi);
+        // search for the first element that is greater than or equal to the value
         auto const it = std::lower_bound(begin, end, aValue);
-        return it != end ? static_cast<int>(std::distance(_storage.begin(), it)) : -1;
+
+        if (it == end) {
+            // all elements are less-than `aValue`, return the largest (last) one
+            return static_cast<int>(std::distance(_storage.begin(), end)) - 1;
+        }
+        else if (*it == aValue) {
+            // `it` directly points to the first occurrence of `aValue`
+            return static_cast<int>(std::distance(_storage.begin(), it));
+        }
+        else if (it != begin) {
+            // `it` points to the first value that is larger than `aValue`, the
+            // value immediately preceding `it` is the largest value smaller than
+            // `aValue`
+            return static_cast<int>(std::distance(_storage.begin(), end)) - 1;
+        }
+        else {
+            // `it` points to the first value that is larger than `aValue`, but
+            // there are no preceding values that are smaller than `aValue`
+            return -1;
+        }
     }
 
 private:
@@ -532,7 +561,7 @@ private:
         bool value;
     };
     using storage = std::conditional_t<
-        std::is_same_v<T, bool>,
+        std::is_same<T, bool>::value,
         std::vector<BoolLike>,
         std::vector<T>
     >;
