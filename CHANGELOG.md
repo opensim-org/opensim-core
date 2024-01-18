@@ -8,8 +8,19 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.6
 ====
-- Added support for list `Socket`s via the macro `OpenSim_DECLARE_LIST_SOCKET`. Accordingly, `Component` and Socket have 
+- Added support for list `Socket`s via the macro `OpenSim_DECLARE_LIST_SOCKET`. The macro-generated method 
+`appendSocketConnectee_*` can be used to connect `Object`s to a list `Socket`. In addiion, `Component` and Socket have 
 new `getConnectee` overloads that take an index to a desired object in the list `Socket` (#3652).
+- Added `ComponentPath::root()`, which returns a `ComponentPath` equivalent to "/"
+- `ComponentPath` is now less-than (`<`) comparable, making it usable in (e.g.) `std::map`
+- `ComponentPath` now has a `std::hash<T>` implementation, making it usable in (e.g.) `std::unordered_map`
+- Added `.clear()` and `.empty()` to `ComponentPath` for more parity with `std::string`'s semantics
+- Added `tryGetSocket` and `tryUpdSocket` to the `Component` interface, which provides a non-throwing way of
+  querying a component's sockets by name (#3673)
+- Added `tryGetOutput` and `tryUpdOutput` to the `Component` interface, which provides a non-throwing way of
+  querying a component's outputs by name (#3673)
+- The XMLDocument that is held within OpenSim::Object is now reference-counted, to help ensure
+  it is freed (e.g. when an exception is thrown)
 
 v4.5
 ====
@@ -47,6 +58,7 @@ and `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`,
 - Simbody was updated such that the headers it transitively exposes to downstream projects are compatible with C++20 (#3619)
 - Moved speed computation from `computeForce` in children of `ScalarActuator` to dedicated `getSpeed` function.
 - Fix type problem with BufferedOrientationReference (Issue #3415, PR #3644)
+- Fixed setting the color of a PathSpring's GeometryPath should now update the color of the PathSpring geometry
 
 
 v4.4.1

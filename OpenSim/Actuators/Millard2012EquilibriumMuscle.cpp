@@ -1252,8 +1252,6 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
                                                       //of passive fiber force
         double dTdnPEdt     = fse*fiso*mvi.tendonVelocity;
         double dFibWdt      = -(mdi.activeFiberForce+p2Fm)*mvi.fiberVelocity;
-        double dmcldt       = getLengtheningSpeed(s);
-        double dBoundaryWdt = mdi.tendonForce*dmcldt;
 
         //double dSysEdt = (dFibPEdt + dTdnPEdt) - dFibWdt - dBoundaryWdt;
         //double tol = sqrt(SimTK::Eps);
@@ -1262,7 +1260,6 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         mdi.fiberActivePower  = dFibWdt;
         mdi.fiberPassivePower = -(dFibPEdt);
         mdi.tendonPower       = -dTdnPEdt;
-        mdi.musclePower       = -dBoundaryWdt;
 
         // Store quantities unique to this Muscle: the passive conservative
         // (elastic) fiber force and the passive non-conservative (damping)

@@ -663,7 +663,6 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
         mdi.fiberActivePower             = dFibWdt;
         mdi.fiberPassivePower            = -dFibPEdt;
         mdi.tendonPower                  = -dTdnPEdt;       
-        mdi.musclePower                  = -dBoundaryWdt;
 
     }
     catch(const std::exception &x) {

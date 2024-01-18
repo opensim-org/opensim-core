@@ -582,13 +582,13 @@ TEST_CASE("Component Interface Misc.")
     foo3.setName("Foo3");
     theWorld.add(&foo3);
     foo3.set_mass(4.0);
-    bar.appendConnectee_listFoo(foo3);
+    bar.appendSocketConnectee_listFoo(foo3);
 
     Foo& foo4 = *new Foo();
     foo4.setName("Foo4");
     theWorld.add(&foo4);
     foo4.set_mass(5.0);
-    bar.appendConnectee_listFoo(foo4);
+    bar.appendSocketConnectee_listFoo(foo4);
 
     std::cout << "Iterate over Foo's after adding Foo2, Foo3, and Foo4." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
@@ -753,7 +753,7 @@ TEST_CASE("Component Interface Misc.")
             compFoo.getRelativePathString(bar2));
 
     bar2.connectSocket_childFoo(compFoo.get_Foo1());
-    bar2.appendConnectee_listFoo(compFoo.get_Foo3());
+    bar2.appendSocketConnectee_listFoo(compFoo.get_Foo3());
     compFoo.upd_Foo1().updInput("input1")
         .connect(bar2.getOutput("PotentialEnergy"));
 
@@ -1017,22 +1017,68 @@ TEST_CASE("Component Interface Sockets")
         CHECK(bar.getSocket<Foo>("listFoo").getNumConnectees() == 0);
 
         // Connect to list socket.
-        bar.appendConnectee_listFoo(foo1);
-        bar.appendConnectee_listFoo(foo2);
+        bar.appendSocketConnectee_listFoo(foo1);
+        bar.appendSocketConnectee_listFoo(foo2);
         theWorld.connect();
         theWorld.buildUpSystem(system);
         CHECK(bar.getSocket<Foo>("listFoo").getNumConnectees() == 2);
 
         // Check that connecting to the same component throws an Exception.
-        CHECK_THROWS_WITH(bar.appendConnectee_listFoo(foo2),
+        CHECK_THROWS_WITH(bar.appendSocketConnectee_listFoo(foo2),
                 Catch::Matchers::ContainsSubstring("Socket 'listFoo' already "
                     "has a connectee of type 'Foo' named 'foo2'."));
 
-        bar.appendConnectee_listFoo(foo3);
+        bar.appendSocketConnectee_listFoo(foo3);
         theWorld.connect();
         theWorld.buildUpSystem(system);
         CHECK(bar.getSocket<Foo>("listFoo").getNumConnectees() == 3);
     }
+}
+
+TEST_CASE("Component Interface tryGetSocket")
+{
+    Bar bar;
+    REQUIRE(bar.tryGetSocket("parentFoo") != nullptr);
+    REQUIRE(bar.tryGetSocket("childFoo") != nullptr);
+    REQUIRE(bar.tryGetSocket("NonExistentFoo") == nullptr);
+}
+
+TEST_CASE("Component Interface getSocket")
+{
+    Bar bar;
+    REQUIRE_NOTHROW(bar.getSocket("parentFoo"));
+    REQUIRE_NOTHROW(bar.getSocket("childFoo"));
+    REQUIRE_THROWS_AS(bar.getSocket("NonExistentFoo"), SocketNotFound);
+}
+
+TEST_CASE("Component Interface tryUpdSocket")
+{
+    Bar bar;
+    REQUIRE(bar.tryUpdSocket("parentFoo") != nullptr);
+    REQUIRE(bar.tryUpdSocket("childFoo") != nullptr);
+    REQUIRE(bar.tryUpdSocket("NonExistentFoo") == nullptr);
+}
+
+TEST_CASE("Component Interface updSocket")
+{
+    Bar bar;
+    REQUIRE_NOTHROW(bar.updSocket("parentFoo"));
+    REQUIRE_NOTHROW(bar.updSocket("childFoo"));
+    REQUIRE_THROWS_AS(bar.updSocket("NonExistentFoo"), SocketNotFound);
+}
+
+TEST_CASE("Component Interface tryGetOutput")
+{
+    Foo foo;
+    REQUIRE(foo.tryGetOutput("Output1") != nullptr);
+    REQUIRE(foo.tryGetOutput("NonExistentOutput") == nullptr);
+}
+
+TEST_CASE("Component Interface tryUpdOutput")
+{
+    Foo foo;
+    REQUIRE(foo.tryUpdOutput("Output1") != nullptr);
+    REQUIRE(foo.tryUpdOutput("NonExistentOutput") == nullptr);
 }
 
 TEST_CASE("Component Interface Socket::canConnectTo")

@@ -171,7 +171,7 @@ void Component::prependComponentPathToConnecteePath(
             // available in the root component. For list sockets, we assume that
             // checking the first connectee path is sufficient, since all
             // connectees in the list must be from the same component.
-            if (it.second->getNumConnectees() &&
+            if (it.second->getNumConnectees() > 0 &&
                     !root.hasComponent(it.second->getConnecteePath(0))) {
                 it.second->prependComponentPathToConnecteePath(compPath);
             }
@@ -1181,20 +1181,23 @@ void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
 
         }
         if (versionNumber <= 30516) {
+            static const std::regex s_ConnecteeNamePattern("(socket_|input_)(.*)(_connectee_name)");
+            static const std::regex s_ConnecteeNamesPattern("(input_)(.*)(_connectee_names)");
+
             // Rename xml tags for socket_*_connectee_name to socket_*
             std::string connecteeNameString = "_connectee_name";
             for (auto iter = node.element_begin();
                 iter != node.element_end();
                 ++iter) {
                 auto tagname = iter->getElementTag();
-                if (std::regex_match(tagname, std::regex("(socket_|input_)(.*)(_connectee_name)"))) {
+                if (std::regex_match(tagname, s_ConnecteeNamePattern)) {
                     auto pos = tagname.find(connecteeNameString);
                     if (pos != std::string::npos) {
                         tagname.replace(pos, connecteeNameString.length(), "");
                         iter->setElementTag(tagname);
                     }
                 }
-                else if (std::regex_match(tagname, std::regex("(input_)(.*)(_connectee_names)"))) {
+                else if (std::regex_match(tagname, s_ConnecteeNamesPattern)) {
                     auto pos = tagname.find(connecteeNameString);
                     if (pos != std::string::npos) {
                         tagname.replace(pos, connecteeNameString.length()+1, "");
