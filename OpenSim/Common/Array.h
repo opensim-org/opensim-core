@@ -56,7 +56,7 @@ namespace OpenSim {
 template<class T>
 class Array {
 public:
-    explicit Array(T defaultValue = T{}, int size = 0, int capacity = 1) :
+    explicit Array(T defaultValue = T(), int size = 0, int capacity = 1) :
         _defaultValue{std::move(defaultValue)}
     {
         _storage.reserve(capacity);
