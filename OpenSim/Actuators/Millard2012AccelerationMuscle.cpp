@@ -980,7 +980,6 @@ void Millard2012AccelerationMuscle::
 
     //Get the properties of this muscle
         // double mcl            = getLength(s);
-        double dmcl_dt        = getLengtheningSpeed(s);
         // double tsl            = getTendonSlackLength();
         // double ofl            = getOptimalFiberLength();
         double fiso           = getMaxIsometricForce();
@@ -1117,7 +1116,6 @@ void Millard2012AccelerationMuscle::
         double dKEdt = m*ami.dlceAT_dt*ddlceAT_dtt; 
 
         double dFibWdt      = -mdi.activeFiberForce*mvi.fiberVelocity;
-        double dBoundaryWdt = mdi.tendonForce * dmcl_dt;
         /*double dSysEdt      = (dfpePEdt + dfkPEdt + dfcphiPEdt + dfsePEdt)
                              - dFibWdt 
                              - dBoundaryWdt 
@@ -1149,7 +1147,6 @@ void Millard2012AccelerationMuscle::
                                         - (dfpeVdt  + dfkVdt  + dfcphiVdt)
                                         - dfibVdt);
         mdi.tendonPower         = -(dfsePEdt-dfseVdt);       
-        mdi.musclePower         = -dBoundaryWdt;
 
 
         //if(abs(tmp) > tol)
