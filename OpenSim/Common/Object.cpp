@@ -1082,7 +1082,7 @@ void Object::updateXMLNode(SimTK::Xml::Element& aParent,
     bool wroteAnyProperties = false;
     for(int i=0; i < _propertyTable.getNumProperties(); ++i) {
         const AbstractProperty& prop = _propertyTable.getAbstractPropertyByIndex(i);
-        
+
         // Don't write out if this is just a default value.
         if (!prop.getValueIsDefault() || Object::getSerializeAllDefaults()) {
             prop.writeToXMLParentElement(myObjectElement);

@@ -717,8 +717,8 @@ public:
                 muscleTendonLength, false, mli, normTendonForce);
         calcFiberVelocityInfoHelper(muscleTendonVelocity, activation, false,
                 false, mli, fvi, normTendonForce, normTendonForceDerivative);
-        calcMuscleDynamicsInfoHelper(activation, muscleTendonVelocity, false,
-                mli, fvi, mdi, normTendonForce);
+        calcMuscleDynamicsInfoHelper(activation, false, mli, fvi, mdi,
+                normTendonForce);
 
         return mdi.normTendonForce -
                mdi.fiberForceAlongTendon / get_max_isometric_force();
@@ -746,8 +746,8 @@ public:
         calcFiberVelocityInfoHelper(muscleTendonVelocity, activation, false,
                 m_isTendonDynamicsExplicit, mli, fvi, normTendonForce,
                 normTendonForceDerivative);
-        calcMuscleDynamicsInfoHelper(activation, muscleTendonVelocity, false,
-                mli, fvi, mdi, normTendonForce);
+        calcMuscleDynamicsInfoHelper(activation, false, mli, fvi, mdi,
+                normTendonForce);
 
         return mdi.fiberStiffnessAlongTendon * fvi.fiberVelocityAlongTendon -
                mdi.tendonStiffness *
@@ -817,12 +817,11 @@ private:
     /// `isTendonDynamicsExplicit` is false.
     void calcFiberVelocityInfoHelper(const SimTK::Real& muscleTendonVelocity,
             const SimTK::Real& activation, const bool& ignoreTendonCompliance,
-            const bool& isTendonDynamicsExplicit,
-            const MuscleLengthInfo& mli, FiberVelocityInfo& fvi,
+            const bool& isTendonDynamicsExplicit, const MuscleLengthInfo& mli,
+            FiberVelocityInfo& fvi,
             const SimTK::Real& normTendonForce = SimTK::NaN,
             const SimTK::Real& normTendonForceDerivative = SimTK::NaN) const;
     void calcMuscleDynamicsInfoHelper(const SimTK::Real& activation,
-            const SimTK::Real& muscleTendonVelocity,
             const bool& ignoreTendonCompliance, const MuscleLengthInfo& mli,
             const FiberVelocityInfo& fvi, MuscleDynamicsInfo& mdi,
             const SimTK::Real& normTendonForce = SimTK::NaN) const;
