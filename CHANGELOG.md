@@ -11,6 +11,10 @@ v4.6
 - Added support for list `Socket`s via the macro `OpenSim_DECLARE_LIST_SOCKET`. The macro-generated method 
 `appendSocketConnectee_*` can be used to connect `Object`s to a list `Socket`. In addiion, `Component` and Socket have 
 new `getConnectee` overloads that take an index to a desired object in the list `Socket` (#3652).
+- Added `ComponentPath::root()`, which returns a `ComponentPath` equivalent to "/"
+- `ComponentPath` is now less-than (`<`) comparable, making it usable in (e.g.) `std::map`
+- `ComponentPath` now has a `std::hash<T>` implementation, making it usable in (e.g.) `std::unordered_map`
+- Added `.clear()` and `.empty()` to `ComponentPath` for more parity with `std::string`'s semantics
 
 v4.5
 ====

@@ -264,7 +264,10 @@ namespace {
     }
 }
 
-ComponentPath::ComponentPath() = default;
+ComponentPath ComponentPath::root()
+{
+    return ComponentPath{"/"};
+}
 
 ComponentPath::ComponentPath(std::string path) :
     _path{normalize(std::move(path))} {
@@ -273,14 +276,6 @@ ComponentPath::ComponentPath(std::string path) :
 ComponentPath::ComponentPath(const std::vector<std::string>& pathVec,
                              bool isAbsolute) :
     _path{normalize(stringifyPath(pathVec, isAbsolute))} {
-}
-
-bool ComponentPath::operator==(const ComponentPath& other) const {
-    return _path == other._path;
-}
-
-bool ComponentPath::operator!=(const ComponentPath& other) const {
-    return _path != other._path;
 }
 
 char ComponentPath::getSeparator() const {
@@ -423,10 +418,6 @@ std::string ComponentPath::getComponentName() const {
     }
 
     return _path.substr(start);
-}
-
-const std::string& ComponentPath::toString() const {
-    return _path;
 }
 
 bool ComponentPath::isAbsolute() const {
