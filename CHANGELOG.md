@@ -6,9 +6,15 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
-Upcoming Release
-================
-
+v4.6
+====
+- Added support for list `Socket`s via the macro `OpenSim_DECLARE_LIST_SOCKET`. The macro-generated method 
+`appendSocketConnectee_*` can be used to connect `Object`s to a list `Socket`. In addiion, `Component` and Socket have 
+new `getConnectee` overloads that take an index to a desired object in the list `Socket` (#3652).
+- Added `ComponentPath::root()`, which returns a `ComponentPath` equivalent to "/"
+- `ComponentPath` is now less-than (`<`) comparable, making it usable in (e.g.) `std::map`
+- `ComponentPath` now has a `std::hash<T>` implementation, making it usable in (e.g.) `std::unordered_map`
+- Added `.clear()` and `.empty()` to `ComponentPath` for more parity with `std::string`'s semantics
 - Added `tryGetSocket` and `tryUpdSocket` to the `Component` interface, which provides a non-throwing way of
   querying a component's sockets by name (#3673)
 - Added `tryGetOutput` and `tryUpdOutput` to the `Component` interface, which provides a non-throwing way of

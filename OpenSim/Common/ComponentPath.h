@@ -48,19 +48,21 @@ namespace OpenSim {
  * @author Carmichael Ong
  */
 class OSIMCOMMON_API ComponentPath {
-private:
-    std::string _path;
-
 public:
+    /**
+     * Returns the root component path (i.e. "/")
+     */
+    static ComponentPath root();
+
     /**
      * Default constructor that constructs an empty path ("").
      */
-    ComponentPath();
+    ComponentPath() = default;
 
     /**
      * Construct a ComponentPath from a path string (e.g. "/a/b/component").
      */
-    ComponentPath(std::string path);
+    ComponentPath(std::string);
 
     /**
      * Construct a ComponentPath from a vector of its elements.
@@ -69,8 +71,24 @@ public:
      */
     ComponentPath(const std::vector<std::string>& pathVec, bool isAbsolute);
 
-    bool operator==(const ComponentPath&) const;
-    bool operator!=(const ComponentPath&) const;
+    friend bool operator==(const ComponentPath& lhs, const ComponentPath& rhs) {
+        return lhs._path == rhs._path;
+    }
+
+    friend bool operator!=(const ComponentPath& lhs, const ComponentPath& rhs) {
+        return lhs._path != rhs._path;
+    }
+
+    friend bool operator<(const ComponentPath& lhs, const ComponentPath& rhs) {
+        return lhs._path < rhs._path;
+    }
+
+    /**
+     * Clears the content of the ComponentPath
+     */
+    void clear() {
+        _path.clear();
+    }
 
     char getSeparator() const;
 
@@ -128,7 +146,16 @@ public:
      * Returns a string representation of the ComponentPath
      * (e.g. "/a/b/component").
      */
-    const std::string& toString() const;
+    const std::string& toString() const {
+        return _path;
+    }
+
+    /**
+     * Returns true if the path is empty
+     */
+    bool empty() const {
+        return _path.empty();
+    }
 
     /**
      * Returns true if the path is absolute (effectively, if it begins
@@ -164,6 +191,17 @@ public:
         // noop: here for legacy purposes: the path is always
         // internally normalized
     }
+
+private:
+    std::string _path;
 };
 } // end of namespace OpenSim
+
+template<>
+struct std::hash<OpenSim::ComponentPath> {
+    size_t operator()(OpenSim::ComponentPath const& p) {
+        return std::hash<std::string>{}(p.toString());
+    }
+};
+
 #endif // OPENSIM_COMPONENT_PATH_H_

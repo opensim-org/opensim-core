@@ -1447,7 +1447,7 @@ ObjectProperty<T>::readFromXMLElement
 // property element.
 template <class T> inline void 
 ObjectProperty<T>::writeToXMLElement
-    (SimTK::Xml::Element& propertyElement) const 
+    (SimTK::Xml::Element& propertyElement) const
 {
     for (int i=0; i < objects.size(); ++i)
         (objects[i])->updateXMLNode(propertyElement);
