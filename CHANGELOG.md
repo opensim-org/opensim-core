@@ -21,6 +21,7 @@ new `getConnectee` overloads that take an index to a desired object in the list 
   querying a component's outputs by name (#3673)
 - The XMLDocument that is held within OpenSim::Object is now reference-counted, to help ensure
   it is freed (e.g. when an exception is thrown)
+- `Controller` now manages the list of controlled actuators using a list `Socket` instead of a `Set<Actuators>` (#3683)
 
 v4.5
 ====
