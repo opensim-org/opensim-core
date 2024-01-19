@@ -19,83 +19,19 @@
 // This file provides a way to easily prototype or test temporary snippets of
 // code during development.
 
-#include <OpenSim/Actuators/ModelFactory.h>
-#include <OpenSim/Moco/osimMoco.h>
+#include <Moco/osimMoco.h>
 
 using namespace OpenSim;
 
-class TestController : public Controller {
-OpenSim_DECLARE_CONCRETE_OBJECT(TestController, Controller);
-public:
-    void computeControls(const SimTK::State& s,
-            SimTK::Vector& controls) const override {
-        log_cout("Computing controls...");
-    }
-
-    void setActuatorPath(const std::string& path) {
-        m_actuatorPath = path;
-    }
-
-    const std::string& getActuatorPath() const {
-        return m_actuatorPath;
-    }
-
-protected:
-    void extendConnectToModel(Model& model) override {
-        const auto& socket = getSocket<Actuator>("actuators");
-        const auto& actuPath = getActuatorPath();
-        int index = socket.getConnecteePathIndex(actuPath);
-        log_cout("extendConnectToModel: connectee path index = {}", index);
-
-        log_cout("extendConnectToModel: num connectees = {}", socket.getNumConnectees());
-    }
-
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override {
-        const auto& socket = getSocket<Actuator>("actuators");
-        const auto& actuPath = getActuatorPath();
-        int index = socket.getConnecteePathIndex(actuPath);
-        log_cout("extendAddToSystem: connectee path index = {}", index);
-    }
-
-    void extendFinalizeFromProperties() override {
-
-        const auto& socket = getSocket<Actuator>("actuators");
-        const auto& actuPath = getActuatorPath();
-        int index = socket.getConnecteePathIndex(actuPath);
-        log_cout("extendAddToSystem: connectee path index = {}", index);
-
-    }
-
-private:
-    std::string m_actuatorPath;
-
-};
-
 int main() {
-
-    Model model = ModelFactory::createNLinkPendulum(5);
-
-    auto* controller = new TestController();
-    controller->setActuatorPath("/tau3");
-    //controller->setActuators(model.getComponentList<Actuator>());
-
-    const auto& actu1 = model.getComponent<Actuator>("/tau1");
-    const auto& actu2 = model.getComponent<Actuator>("/tau2");
-    const auto& actu3 = model.getComponent<Actuator>("/tau3");
-    const auto& actu4 = model.getComponent<Actuator>("/tau4");
-    const auto& actu5 = model.getComponent<Actuator>("/tau5");
-
-    SimTK::Array_<SimTK::ReferencePtr<const Actuator>> actuators(5);
-    actuators[0] = &actu1;
-    actuators[1] = &actu2;
-    actuators[2] = &actu3;
-    actuators[3] = &actu4;
-    actuators[4] = &actu5;
-    controller->setActuators(actuators);
-
-    model.addController(controller);
-
-    model.initSystem();
-
-    return EXIT_SUCCESS;
+   // TODO Logger::setLevel(Logger::Level::Debug);
+   MocoTrack track;
+   ModelProcessor modelProcessor("DeMers_mod_noarms_welds_4.0.osim");
+   modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
+   modelProcessor.append(ModOpIgnoreTendonCompliance());
+   track.setModel(modelProcessor);
+   track.setStatesReference({"r_SLD_mean_coords.sto"});
+   track.set_allow_unused_references(true);
+   MocoSolution solution = track.solve();
+   return EXIT_SUCCESS;
 }

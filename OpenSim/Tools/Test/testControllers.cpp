@@ -35,44 +35,94 @@
 //=============================================================================
 
 #include <OpenSim/OpenSim.h>
+
+#include <catch2/catch_all.hpp>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
-void testControlSetControllerOnBlock();
-void testPrescribedControllerOnBlock(bool enabled);
-void testCorrectionControllerOnBlock();
-void testPrescribedControllerFromFile(const std::string& modelFile,
-                                      const std::string& actuatorsFile,
-                                      const std::string& controlsFile);
+namespace {
 
-int main()
-{
-    try {
-        log_info("Testing ControlSetController"); 
-        testControlSetControllerOnBlock();
-        log_info("Testing PrescribedController"); 
-        testPrescribedControllerOnBlock(true);
-        testPrescribedControllerOnBlock(false);
-        log_info("Testing CorrectionController"); 
-        testCorrectionControllerOnBlock();
-        log_info("Testing PrescribedController from File");
-        testPrescribedControllerFromFile("arm26.osim", "arm26_Reserve_Actuators.xml",
-                                         "arm26_controls.xml");
-    }   
-    catch (const std::exception& e) {
-        log_error("TestControllers failed due to the following error(s): {}",
-            e.what());
-        return 1;
-    }
-    log_info("TestControllers passed.");
-    return 0;
+    class TestController : public Controller {
+        OpenSim_DECLARE_CONCRETE_OBJECT(TestController, Controller);
+    public:
+        void computeControls(const SimTK::State& s,
+                SimTK::Vector& controls) const override {}
+
+        void setActuatorPath(const std::string& path) {
+            m_actuatorPath = path;
+        }
+
+        const std::string& getActuatorPath() const {
+            return m_actuatorPath;
+        }
+
+    protected:
+        void extendConnectToModel(Model& model) override {
+            const auto& socket = getSocket<Actuator>("actuators");
+            const auto& actuPath = getActuatorPath();
+            int index = socket.getConnecteePathIndex(actuPath);
+            log_cout("extendConnectToModel: connectee path index = {}", index);
+
+            log_cout("extendConnectToModel: num connectees = {}", socket.getNumConnectees());
+        }
+
+        void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+            const auto& socket = getSocket<Actuator>("actuators");
+            const auto& actuPath = getActuatorPath();
+            int index = socket.getConnecteePathIndex(actuPath);
+            log_cout("extendAddToSystem: connectee path index = {}", index);
+        }
+
+        void extendFinalizeFromProperties() override {
+
+            const auto& socket = getSocket<Actuator>("actuators");
+            const auto& actuPath = getActuatorPath();
+            int index = socket.getConnecteePathIndex(actuPath);
+            log_cout("extendAddToSystem: connectee path index = {}", index);
+
+        }
+
+    private:
+        std::string m_actuatorPath;
+
+    };
+
 }
 
-//==========================================================================================================
-void testControlSetControllerOnBlock()
-{
+
+
+
+TEST_CASE("Test Controller interface") {
+    Model model = ModelFactory::createNLinkPendulum(5);
+
+    auto* controller = new TestController();
+    controller->setActuatorPath("/tau3");
+    //controller->setActuators(model.getComponentList<Actuator>());
+
+    const auto& actu0 = model.getComponent<Actuator>("/tau0");
+    const auto& actu1 = model.getComponent<Actuator>("/tau1");
+    const auto& actu2 = model.getComponent<Actuator>("/tau2");
+    const auto& actu3 = model.getComponent<Actuator>("/tau3");
+    const auto& actu4 = model.getComponent<Actuator>("/tau4");
+
+    SimTK::Array_<SimTK::ReferencePtr<const Actuator>> actuators(5);
+    actuators[0] = &actu0;
+    actuators[1] = &actu1;
+    actuators[2] = &actu2;
+    actuators[3] = &actu3;
+    actuators[4] = &actu4;
+    controller->setActuators(actuators);
+
+    model.addController(controller);
+
+    model.initSystem();
+
+}
+
+
+TEST_CASE("testControlSetControllerOnBlock") {
     using namespace SimTK;
 
     // Create a new OpenSim model
@@ -165,13 +215,13 @@ void testControlSetControllerOnBlock()
     states.print("block_push.sto");
 
     osimModel.disownAllComponents();
-}// end of testControlSetControllerOnBlock()
+}
 
 
-//==========================================================================================================
-void testPrescribedControllerOnBlock(bool enabled)
-{
+TEST_CASE("testPrescribedControllerOnBlock") {
     using namespace SimTK;
+
+    auto enabled = GENERATE(true, false);
 
     // Create a new OpenSim model
     Model osimModel;
@@ -263,12 +313,10 @@ void testPrescribedControllerOnBlock(bool enabled)
     Storage states(manager.getStateStorage());
     states.print("block_push.sto");
 
-}// end of testPrescribedControllerOnBlock()
+}
 
 
-//==========================================================================================================
-void testCorrectionControllerOnBlock()
-{
+TEST_CASE("testCorrectionControllerOnBlock") {
     using namespace SimTK;
 
     // Create a new OpenSim model
@@ -315,14 +363,15 @@ void testCorrectionControllerOnBlock()
     manager.setIntegratorAccuracy(1.0e-4);
 
     osimModel.disownAllComponents();
-}// end of testCorrectionControllerOnBlock()
+}
 
 
-void testPrescribedControllerFromFile(const std::string& modelFile,
-                                      const std::string& actuatorsFile,
-                                      const std::string& controlsFile)
-{
+TEST_CASE("testPrescribedControllerFromFile") {
     using namespace SimTK;
+
+    std::string modelFile = "arm26.osim";
+    std::string actuatorsFile = "arm26_Reserve_Actuators.xml";
+    std::string controlsFile = "arm26_controls.xml";
 
     double initialTime = 0.03;
     double finalTime = 1.0;

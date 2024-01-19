@@ -160,8 +160,10 @@ protected:
      * actuators. */
     void setNumControls(int numControls) { _numControls = numControls; }
 
+    // MODEL COMPONENT INTERFACE
     void updateFromXMLNode(SimTK::Xml::Element& node,
                            int versionNumber) override;
+    void extendConnectToModel(Model& model) override;
 
 private:
     // The number of controls this controller computes.
@@ -169,6 +171,13 @@ private:
 
     // Construct and initialize properties.
     void constructProperties();
+
+    // Used to temporarily store actuator names when reading from XML prior to
+    // XMLDocument version 40600. This is used to support backwards
+    // compatibility with models that use the old actuator_list property. The
+    // actuator names are used to find actuators in the model and connect them
+    // to the list Socket.
+    std::vector<std::string> _actuatorNamesFromXML;
 
 };  // class Controller
 

@@ -58,12 +58,12 @@ void Controller::constructProperties() {
 }
 
 //=============================================================================
-// COMPONENT INTERFACE
+// MODEL COMPONENT INTERFACE
 //=============================================================================
 void Controller::updateFromXMLNode(SimTK::Xml::Element& node,
                                    int versionNumber) {
-    if(versionNumber < XMLDocument::getLatestVersion()) {
-        if(versionNumber < 30509) {
+    if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30509) {
             // Rename property 'isDisabled' to 'enabled' and
             // negate the contained value.
             std::string oldName{"isDisabled"};
@@ -79,9 +79,52 @@ void Controller::updateFromXMLNode(SimTK::Xml::Element& node,
                 elem.setValue(SimTK::String(!isDisabled));
             }
         }
+        if (versionNumber < 40600) {
+            if (node.hasElement("actuator_list")) {
+                // Rename element from 'actuator_list' to 'socket_actuators'.
+                auto actuators = node.getRequiredElement("actuator_list");
+                actuators.setElementTag("socket_actuators");
+
+                // Store the space-delimited actuator names in a temporary
+                // variable. We'll use these names to connect the actuators
+                // to the socket in extendConnectToModel().
+                std::string values = actuators.getValueAs<std::string>();
+                std::istringstream iss(values);
+                _actuatorNamesFromXML = std::vector<std::string>{
+                        std::istream_iterator<std::string>{iss},
+                        std::istream_iterator<std::string>{}};
+
+                // Clear the value of the element so finalizeConnections() does
+                // not try to connect to invalid connectee paths.
+                actuators.setValueAs<std::string>("");
+            }
+        }
     }
 
     Super::updateFromXMLNode(node, versionNumber);
+}
+
+void Controller::extendConnectToModel(Model& model) {
+    Super::extendConnectToModel(model);
+
+    // If XML deserialization saved a list of actuator names, use them to
+    // create valid connections to the 'actuators' list Socket.
+    if (!_actuatorNamesFromXML.empty()) {
+        auto& socket = updSocket<Actuator>("actuators");
+        for (const auto& actuatorName : _actuatorNamesFromXML) {
+            for (const auto& actuator : model.getComponentList<Actuator>()) {
+                if (actuator.getName() == actuatorName) {
+                    // Connect the actuator to the socket.
+                    addActuator(actuator);
+                    break;
+                }
+            }
+        }
+        // Call finalizeConnection() to sync the connectee path names with the
+        // connected Actuators.
+        socket.finalizeConnection(model);
+        _actuatorNamesFromXML.clear();
+    }
 }
 
 //=============================================================================
