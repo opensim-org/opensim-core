@@ -40,67 +40,17 @@
 #include <OpenSim/Analyses/osimAnalyses.h>
 #include <OpenSim/Simulation/Model/ControllerSet.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
-//==============================================================================
 // Common Parameters for the simulations are just global.
 const static double integ_accuracy = 1.0e-4;
 const static double duration = 1.0;
 const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
-//==============================================================================
 
-
-void testTorqueActuator();
-void testBodyActuator();
-void testClutchedPathSpring();
-void testMcKibbenActuator();
-void testActuatorsCombination();
-void testActivationCoordinateActuator();
-
-
-int main()
-{
-    SimTK::Array_<std::string> failures;
-
-    try { testTorqueActuator(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl; failures.push_back("testTorqueActuator");
-    }
-    try { testClutchedPathSpring(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl; failures.push_back("testClutchedPathSpring");
-    }
-    try { testMcKibbenActuator(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl; failures.push_back("testMcKibbenActuator");
-    }
-    try { testBodyActuator(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl; failures.push_back("testBodyActuator");
-    }
-    try { testActuatorsCombination(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl; failures.push_back("testActuatorsCombination");
-    }
-    try { testActivationCoordinateActuator(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl; failures.push_back("testActivationCoordinateActuator");
-    }
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done, testActuators passed." << endl;
-}
-
-
-//==============================================================================
-// Test Cases
-//==============================================================================
-void testTorqueActuator()
-{
+TEST_CASE("testTorqueActuator") {
     using namespace SimTK;
     // start timing
     std::clock_t startTime = std::clock();
@@ -270,8 +220,7 @@ void testTorqueActuator()
 }
 
 
-void testClutchedPathSpring()
-{
+TEST_CASE("testClutchedPathSpring") {
     using namespace SimTK;
 
     // start timing
@@ -457,9 +406,7 @@ void testClutchedPathSpring()
 }
 
 
-void testMcKibbenActuator()
-{
-
+TEST_CASE("testMcKibbenActuator") {
     double pressure = 5 * 10e5; // 5 bars
     double num_turns = 1.5;     // 1.5 turns
     double B = 277.1 * 10e-4;  // 277.1 mm
@@ -533,9 +480,6 @@ void testMcKibbenActuator()
         1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
 }
 
-//====================================================================================
-//                              TEST BODY ACTUATOR
-//====================================================================================
 /**
 * This test verifies the use of BodyActuator for applying spatial forces to a selected
 * body. It checks if using a BodyActuator generates equivalent acceleration compared 
@@ -543,8 +487,7 @@ void testMcKibbenActuator()
 *
 * @author Soha Pouya
 */
-void testBodyActuator()
-{
+TEST_CASE("testBodyActuator") {
     using namespace SimTK;
     // start timing
     std::clock_t startTime = std::clock();
@@ -710,9 +653,7 @@ void testBodyActuator()
         1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
 }
 
-//==================================================================================
-//                         TEST ACTUATORS COMBINATION
-//==================================================================================
+
 /**
 * This test verifies if using a BodyActuator generates equivalent result in the body
 * acceleration compared to when using a combination of PointActuaor, TorqueActuator
@@ -722,8 +663,7 @@ void testBodyActuator()
 * 
 * @author Soha Pouya
 */
-void testActuatorsCombination()
-{
+TEST_CASE("testActuatorsCombination") {
     using namespace SimTK;
     // start timing
     std::clock_t startTime = std::clock();
@@ -927,7 +867,7 @@ void testActuatorsCombination()
 
 // Test de/serialization and numerical integration of
 // ActivationCoordinateActautor.
-void testActivationCoordinateActuator() {
+TEST_CASE("testActivationCoordinateActuator") {
     Model model;
     auto* body = new Body("body", 1, SimTK::Vec3(0), SimTK::Inertia(1.0));
     auto* joint = new PinJoint("joint", *body, model.getGround());
