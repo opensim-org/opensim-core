@@ -23,5 +23,5 @@ OpenSimAddTests(
     TESTPROGRAMS ${TEST_PROGS}
     DATAFILES ${TEST_FILES} ${C3D_TEST_FILES} ${TRC_TEST_FILES} ${XSENS_TEST_FILES} ${APDM_TEST_FILES}
               ${MOT_TEST_FILES}
-    LINKLIBS osimCommon ${SIMTK_ALL_LIBS} Catch2::Catch2WithMain
+    LINKLIBS osimCommon Catch2::Catch2WithMain ${SIMTK_ALL_LIBS}
     )

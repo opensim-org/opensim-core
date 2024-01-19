@@ -80,8 +80,26 @@ echo
 
 # Install dependencies from package manager.
 echo "LOG: INSTALLING DEPENDENCIES..."
-sudo apt-get update && sudo apt-get install --yes build-essential cmake autotools-dev autoconf pkg-config automake libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen python3 python3-dev python3-numpy python3-setuptools git byacc libssl-dev libpcre3 libpcre3-dev libpcre2-dev libtool gfortran ninja-build patchelf || ( echo "Installation of dependencies using apt-get failed." && exit )
+sudo apt-get update && sudo apt-get install --yes build-essential cmake autotools-dev autoconf pkg-config automake libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen python3 python3-dev python3-numpy python3-setuptools git libssl-dev libpcre3 libpcre3-dev libpcre2-dev libtool gfortran ninja-build patchelf || ( echo "Installation of dependencies using apt-get failed." && exit )
 echo 
+
+# If byacc available, install it (issue #3578)
+if apt-cache show byacc &> /dev/null; then
+    echo "byacc is available. Installing..."
+    sudo apt-get update
+    sudo apt-get install -y byacc
+else
+    echo "byacc is not available for installation."
+fi
+
+# Check if 'bison' is available for install (issue #3578)
+if apt-cache show bison &> /dev/null; then
+    echo "bison is available. Installing..."
+    sudo apt-get update
+    sudo apt-get install -y bison
+else
+    echo "bison is not available for installation."
+fi
 
 # Debian does not have openjdk-8-jdk available, so install from temurin repo.
 echo "LOG: INSTALLING JDK 8..."

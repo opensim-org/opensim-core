@@ -37,6 +37,8 @@
 #include "simmath/internal/Spline.h"
 #include "simmath/internal/SplineFitter.h"
 
+#include <vector>
+
 using namespace OpenSim;
 using namespace std;
 
@@ -343,7 +345,7 @@ size_t size;
 int i,j;
 int n,k;
 double w1,w2,x1,x2;
-double *s;
+std::vector<double> s;
 
 
     // CHECK THAT M IS NOT TOO LARGE RELATIVE TO N
@@ -356,12 +358,7 @@ double *s;
 
     // ALLOCATE MEMORY FOR s
     size = N + M + M;
-    s = (double *) calloc(size,sizeof(double));
-    if (s == NULL) {
-        log_error(
-                "lowpass() -> Not enough memory to process your sampled data.");
-        return(-1);
-    }
+    s.resize(size);
 
     // CALCULATE THE ANGULAR CUTOFF FREQUENCY
     w1 = 2*SimTK_PI*f1;
@@ -387,9 +384,6 @@ double *s;
         }
         sigf[n] = sigf[n] / sum_coef; // normalize for unity gain at DC
     }
-
-    // CLEANUP
-    if(s!=NULL) delete s;
 
   return(0);
 }

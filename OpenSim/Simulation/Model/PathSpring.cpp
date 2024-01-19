@@ -33,8 +33,6 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static const Vec3 DefaultPathSpringColor(0, 1, 0); // Green for backward compatibility
-
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -66,6 +64,10 @@ void PathSpring::constructProperties()
     constructProperty_resting_length(SimTK::NaN);
     constructProperty_stiffness(SimTK::NaN);
     constructProperty_dissipation(SimTK::NaN);
+
+    // override default GeometryPath color (at time of writing, grey) with
+    // green for backwards-compatibility
+    upd_path().upd_Appearance().set_color({0, 1, 0});
 }
 
 //_____________________________________________________________________________
@@ -103,8 +105,6 @@ void PathSpring::setDissipation(double dissipation)
 void PathSpring::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
-
-    updPath().setDefaultColor(DefaultPathSpringColor);
 
     OPENSIM_THROW_IF_FRMOBJ(
         (SimTK::isNaN(get_resting_length()) || get_resting_length() < 0),
