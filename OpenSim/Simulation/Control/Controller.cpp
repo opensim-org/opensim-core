@@ -110,6 +110,13 @@ void Controller::setActuators(
     }
 }
 
+void Controller::setActuators(const ComponentList<const Actuator>& actuators) {
+    updSocket<Actuator>("actuators").disconnect();
+    for (const auto& actu : actuators) {
+        addActuator(actu);
+    }
+}
+
 void Controller::addActuator(const Actuator& actuator) {
     appendSocketConnectee_actuators(actuator);
 }
@@ -126,4 +133,3 @@ Controller::getActuators() const {
 
     return actuators;
 }
-

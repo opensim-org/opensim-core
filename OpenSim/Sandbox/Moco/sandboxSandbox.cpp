@@ -77,11 +77,21 @@ int main() {
 
     auto* controller = new TestController();
     controller->setActuatorPath("/tau3");
-    controller->appendConnectee_actuators(model.getComponent<Actuator>("tau0"));
-    controller->appendConnectee_actuators(model.getComponent<Actuator>("tau1"));
-    controller->appendConnectee_actuators(model.getComponent<Actuator>("tau2"));
-    controller->appendConnectee_actuators(model.getComponent<Actuator>("tau3"));
-    controller->appendConnectee_actuators(model.getComponent<Actuator>("tau4"));
+    //controller->setActuators(model.getComponentList<Actuator>());
+
+    const auto& actu1 = model.getComponent<Actuator>("/tau1");
+    const auto& actu2 = model.getComponent<Actuator>("/tau2");
+    const auto& actu3 = model.getComponent<Actuator>("/tau3");
+    const auto& actu4 = model.getComponent<Actuator>("/tau4");
+    const auto& actu5 = model.getComponent<Actuator>("/tau5");
+
+    SimTK::Array_<SimTK::ReferencePtr<const Actuator>> actuators(5);
+    actuators[0] = &actu1;
+    actuators[1] = &actu2;
+    actuators[2] = &actu3;
+    actuators[3] = &actu4;
+    actuators[4] = &actu5;
+    controller->setActuators(actuators);
 
     model.addController(controller);
 

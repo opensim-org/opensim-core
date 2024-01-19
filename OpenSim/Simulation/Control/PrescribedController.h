@@ -35,6 +35,11 @@ class Function;
  * PrescribedController is a concrete Controller that specifies functions that 
  * prescribe the control values of its actuators as a function of time.
  *
+ * @note Prior to OpenSim 4.6, PrescribedController support setting a prescribed
+ *       control based on the actuator's index in the `ControlFunctions`
+ *       property. This interface is deprecated and will be removed in a future
+ *       release.
+ *
  * @author  Ajay Seth
  */
 class OSIMSIMULATION_API PrescribedController : public Controller {

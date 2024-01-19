@@ -293,7 +293,6 @@ void CorrectionController::extendConnectToModel(Model& model)
 
     // We're only using CoordinateActuators here, so the number of actuators
     // should always match the number of controls.
-    // TODO is the number of connectees correct at this point?
     setNumControls(getNumActuators());
 
     log_info("CorrectionController::extendConnectToModel(): "

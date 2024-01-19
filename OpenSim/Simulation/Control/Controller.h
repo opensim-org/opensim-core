@@ -35,10 +35,46 @@ class Actuator;
  * Controller is an abstract ModelComponent that defines the interface for   
  * an OpenSim Controller. A controller computes and sets the values of the  
  * controls for the actuators under its control.
- * The defining method of a Controller is its computeControls() method.
+ *
+ * The defining method of a Controller is its computeControls() method. All
+ * concrete controllers must implement this method.
  * @see computeControls()
  *
- * TODO describe Socket interface, when Actuators should be connected, etc.
+ * Actuators can be connected to a Controller via the list Socket `actuators`.
+ * Connection can be made via the `addActuator()` convenience method or through
+ * the Socket directly:
+ *
+ * @code{.cpp}
+ * // Add an actuator to the controller.
+ * const auto& actuator = model.getComponent<Actuator>("/path/to/actuator");
+ * controller.addActuator(actuator);
+ *
+ * // Connect an actuator to the controller via the actuators Socket.
+ * controller.appendSocketConnectee_actuators(actuator);
+ * @endcode
+ *
+ * Multiple actuators can be connected to a Controller via the `setActuators()`
+ * convenience methods:
+ *
+ * @code{.cpp}
+ * // Add a Model's Set of Actuators to the controller.
+ * controller.setActuators(model.getActuators());
+ *
+ * // Add a ComponentList of Actuators to the controller.
+ * controller.setActuators(model.getComponentList<Actuator>());
+ *
+ * // Add an array of specific Actuator reference pointers to the controller.
+ * const auto& actuator1 = model.getComponent<Actuator>("/path/to/actuator1");
+ * const auto& actuator2 = model.getComponent<Actuator>("/path/to/actuator2");
+ * SimTK::Array_<SimTK::ReferencePtr<const Actuator>> actuators(2);
+ * actuators[0] = &actuator1;
+ * actuators[1] = &actuator2;
+ * controller.setActuators(actuators);
+ * @endcode
+ *
+ * @note Prior to OpenSim 4.6, controlled actuators were managed via the list
+ *       Property `actuator_list`. This interface is no longer supported, all
+ *       actuators must be connected via the `actuators` list Socket.
  *
  * @author Ajay Seth
  */
@@ -92,6 +128,7 @@ public:
     void setActuators(const Set<Actuator>& actuators);
     void setActuators(
         const SimTK::Array_<SimTK::ReferencePtr<const Actuator>>& actuators);
+    void setActuators(const ComponentList<const Actuator>& actuators);
 
     /** Add to the current set of actuators. */
     void addActuator(const Actuator& actuator);

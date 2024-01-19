@@ -266,10 +266,8 @@ evaluate(const SimTK::State& s, const double *aX, double *rF)
     ts.initialize(actSysState);
     ts.stepTo(_tf);
 
-    // TODO check that the socket actuators are in the correct order for the
-    // target forces
-    const auto& socket = controller.getSocket<Actuator>("actuators");
     // Vector function values
+    const auto& socket = controller.getSocket<Actuator>("actuators");
     int j = 0;
     for(i=0;i<N;i++) {
         auto act = dynamic_cast<const ScalarActuator*>(&socket.getConnectee(i));
