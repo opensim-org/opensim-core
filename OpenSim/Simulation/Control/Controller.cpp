@@ -111,7 +111,7 @@ void Controller::setActuators(
 }
 
 void Controller::addActuator(const Actuator& actuator) {
-    appendConnectee_actuators(actuator);
+    appendSocketConnectee_actuators(actuator);
 }
 
 SimTK::Array_<SimTK::ReferencePtr<const Actuator>>

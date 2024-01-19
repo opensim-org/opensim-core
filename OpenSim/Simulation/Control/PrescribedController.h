@@ -90,14 +90,6 @@ public:
 
     // GET AND SET
     /**
-     *  Assign a prescribed control function for the desired actuator identified 
-     *  by its index. Controller takes ownership of the function.
-     *  @param index                the actuator's index in the controller's set
-     *  @param prescribedFunction   the actuator's control function
-     */
-    // void prescribeControlForActuator(int index, Function* prescribedFunction);
-
-    /**
      *  Assign a prescribed control function for the desired actuator identified
      *  by the provided label. The label can be either the name of the actuator,
      *  or the absolute path to the actuator in the model. Controller takes
@@ -107,6 +99,9 @@ public:
      */
     void prescribeControlForActuator(const std::string& actuLabel,
                                      Function* prescribedFunction);
+
+    [[deprecated("this method no longer does anything")]]
+    void prescribeControlForActuator(int index, Function* prescribedFunction) {}
 
 protected:
     // MODEL COMPONENT INTERFACE
@@ -123,6 +118,10 @@ private:
 
     // This method sets all member variables to default (e.g., NULL) values.
     void setNull();
+
+    // Member variables.
+    std::unordered_map<std::string, int> _actuLabelsToControlFunctionIndexMap;
+    std::unordered_map<int, int> _actuIndexToControlFunctionIndexMap;
 
 };  // class PrescribedController
 

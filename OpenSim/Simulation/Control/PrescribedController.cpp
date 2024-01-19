@@ -69,20 +69,7 @@ void PrescribedController::constructProperties()
 void PrescribedController::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
-
-    // Add prescribed functions for any actuators that were specified by name.
     const auto& socket = getSocket<Actuator>("actuators");
-    for (auto& pair : m_prescribedFunctionPairs) {
-        // Check if the name in the pair is the name or path of an actuator in
-        // the list Socket.
-        int actuIndex = getActuatorIndexFromLabel(pair.first);
-        OPENSIM_THROW_IF_FRMOBJ(actuIndex < 0, Exception,
-            "Actuator {} is not connected the controller.", pair.first);
-
-        prescribeControlForActuator(actuIndex, &pair.second);
-    }
-
-    auto& controlFuncs = upd_ControlFunctions();
 
     // If a controls file was specified, load it and create control functions
     // for any actuators that do not already have one.
@@ -110,7 +97,7 @@ void PrescribedController::extendConnectToModel(Model& model)
             // If this column does not have an associated control function, we
             // need to create one.
             const string& columnLabel = columnLabels[i];
-            if (!controlFuncs.contains(columnLabel)) {
+            if (!_actuLabelsToControlFunctionIndexMap.count(columnLabel)) {
 
                 // Search for the column label in the model's actuators.
                 int actuIndex = getActuatorIndexFromLabel(columnLabel);
@@ -124,8 +111,35 @@ void PrescribedController::extendConnectToModel(Model& model)
                     controls.getStateIndex(columnLabel), data);
                 Function* controlFunction = createFunctionFromData(columnLabel,
                     time, data);
-                prescribeControlForActuator(actuIndex, controlFunction);
+                prescribeControlForActuator(columnLabel, controlFunction);
             }
+        }
+    }
+
+    // Populate the _actuIndexToControlFunctionIndexMap.
+    for (const auto& pair : _actuLabelsToControlFunctionIndexMap) {
+        int actuIndex = getActuatorIndexFromLabel(pair.first);
+        if (actuIndex < 0) {
+            OPENSIM_THROW_FRMOBJ(Exception,
+                "Actuator {} was not found in the model.", pair.first)
+        }
+        _actuIndexToControlFunctionIndexMap[actuIndex] = pair.second;
+    }
+
+    // Check for actuators with multiple control functions.
+    std::vector<int> uniqueValues;
+    for (const auto& pair : _actuIndexToControlFunctionIndexMap) {
+        int value = pair.second;
+        if (std::find(uniqueValues.begin(), uniqueValues.end(), value) !=
+                uniqueValues.end()) {
+            OPENSIM_THROW_FRMOBJ(Exception,
+                    "Expected actuator {} to have one control function "
+                    "assigned, but multiple control functions were detected. "
+                    "This may have occurred because a control function was "
+                    "specified by actuator name and by actuator path.",
+                    socket.getConnectee(pair.first).getAbsolutePathString())
+        } else {
+            uniqueValues.push_back(value);
         }
     }
 
@@ -155,29 +169,18 @@ void PrescribedController::computeControls(const SimTK::State& s,
 //=============================================================================
 // GET AND SET
 //=============================================================================
-// void PrescribedController::prescribeControlForActuator(int index,
-//         Function* prescribedFunction) {
-//     OPENSIM_THROW_IF_FRMOBJ(index < 0,
-//             Exception, "Index was " + std::to_string(index) +
-//                        " but must be nonnegative." );
-//
-//     if (index >= get_ControlFunctions().getSize()) {
-//         upd_ControlFunctions().setSize(index + 1);
-//     }
-//     upd_ControlFunctions().set(index, prescribedFunction);
-// }
-
 void PrescribedController::prescribeControlForActuator(
         const std::string& actuLabel, Function* prescribedFunction) {
     prescribedFunction->setName(actuLabel);
     FunctionSet& controlFuncs = upd_ControlFunctions();
-    if (controlFuncs.contains(actuLabel)) {
-        const int index = controlFuncs.getIndex(actuLabel);
+    if (_actuLabelsToControlFunctionIndexMap.count(actuLabel)) {
+        const int index = _actuLabelsToControlFunctionIndexMap.at(actuLabel);
         controlFuncs.set(index, prescribedFunction);
     } else {
         const int size = controlFuncs.getSize();
         controlFuncs.setSize(size + 1);
         controlFuncs.set(size, prescribedFunction);
+        _actuLabelsToControlFunctionIndexMap[actuLabel] = size;
     }
 }
 
