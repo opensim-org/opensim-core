@@ -169,7 +169,7 @@ Controller::getActuators() const {
     const auto& socket = getSocket<Actuator>("actuators");
     int nc = static_cast<int>(socket.getNumConnectees());
     SimTK::Array_<SimTK::ReferencePtr<const Actuator>> actuators(nc);
-    for (int i = 0; i < socket.getNumConnectees(); ++i) {
+    for (int i = 0; i < (int)socket.getNumConnectees(); ++i) {
         const Actuator& actu = socket.getConnectee(i);
         actuators[i] = &actu;
     }

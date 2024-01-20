@@ -145,7 +145,8 @@ void PrescribedController::extendConnectToModel(Model& model)
 
     // Verify that all actuators have a control function.
     const FunctionSet& controlFuncs = get_ControlFunctions();
-    OPENSIM_THROW_IF_FRMOBJ(controlFuncs.getSize() != socket.getNumConnectees(),
+    OPENSIM_THROW_IF_FRMOBJ(
+        controlFuncs.getSize() != (int)socket.getNumConnectees(),
         Exception, "The number of control functions ({}) does not match the "
         "number of actuators ({}) connected to the controller.",
         controlFuncs.getSize(), socket.getNumConnectees());
@@ -209,7 +210,7 @@ Function* PrescribedController::createFunctionFromData(const std::string& name,
 int PrescribedController::getActuatorIndexFromLabel(
         const std::string& actuLabel) const {
     const auto& socket = getSocket<Actuator>("actuators");
-    for (int i = 0; i < socket.getNumConnectees(); ++i) {
+    for (int i = 0; i < (int)socket.getNumConnectees(); ++i) {
         const Actuator& actu = socket.getConnectee(i);
 
         // Check the actuator name.

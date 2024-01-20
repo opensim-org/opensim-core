@@ -277,7 +277,7 @@ void ControlSetController::extendConnectToModel(Model& model) {
 
         // Check that the actuator is connected to the controller.
         bool isConnected = false;
-        for (int iactu = 0; iactu < socket.getNumConnectees(); ++iactu) {
+        for (int iactu = 0; iactu < (int)socket.getNumConnectees(); ++iactu) {
             if (socket.getConnectee(iactu).getName() == actName) {
                 isConnected = true;
                 break;
