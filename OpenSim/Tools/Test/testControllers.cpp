@@ -42,85 +42,40 @@
 using namespace OpenSim;
 using namespace std;
 
-namespace {
-
-    class TestController : public Controller {
-        OpenSim_DECLARE_CONCRETE_OBJECT(TestController, Controller);
-    public:
-        void computeControls(const SimTK::State& s,
-                SimTK::Vector& controls) const override {}
-
-        void setActuatorPath(const std::string& path) {
-            m_actuatorPath = path;
-        }
-
-        const std::string& getActuatorPath() const {
-            return m_actuatorPath;
-        }
-
-    protected:
-        void extendConnectToModel(Model& model) override {
-            const auto& socket = getSocket<Actuator>("actuators");
-            const auto& actuPath = getActuatorPath();
-            int index = socket.getConnecteePathIndex(actuPath);
-            log_cout("extendConnectToModel: connectee path index = {}", index);
-
-            log_cout("extendConnectToModel: num connectees = {}", socket.getNumConnectees());
-        }
-
-        void extendAddToSystem(SimTK::MultibodySystem& system) const override {
-            const auto& socket = getSocket<Actuator>("actuators");
-            const auto& actuPath = getActuatorPath();
-            int index = socket.getConnecteePathIndex(actuPath);
-            log_cout("extendAddToSystem: connectee path index = {}", index);
-        }
-
-        void extendFinalizeFromProperties() override {
-
-            const auto& socket = getSocket<Actuator>("actuators");
-            const auto& actuPath = getActuatorPath();
-            int index = socket.getConnecteePathIndex(actuPath);
-            log_cout("extendAddToSystem: connectee path index = {}", index);
-
-        }
-
-    private:
-        std::string m_actuatorPath;
-
-    };
-
-}
-
-
-
-
 TEST_CASE("Test Controller interface") {
-    Model model = ModelFactory::createNLinkPendulum(5);
 
-    auto* controller = new TestController();
-    controller->setActuatorPath("/tau3");
-    //controller->setActuators(model.getComponentList<Actuator>());
+    Model model = ModelFactory::createNLinkPendulum(2);
+    auto* controller = new PrescribedController();
+    controller->prescribeControlForActuator("/tau0", new Constant(1.0));
+    controller->prescribeControlForActuator("/tau1", new Constant(2.0));
 
-    const auto& actu0 = model.getComponent<Actuator>("/tau0");
-    const auto& actu1 = model.getComponent<Actuator>("/tau1");
-    const auto& actu2 = model.getComponent<Actuator>("/tau2");
-    const auto& actu3 = model.getComponent<Actuator>("/tau3");
-    const auto& actu4 = model.getComponent<Actuator>("/tau4");
+    SECTION("No actuators connecteed") {
+        model.addController(controller);
+        REQUIRE_THROWS(model.finalizeConnections());
+    }
 
-    SimTK::Array_<SimTK::ReferencePtr<const Actuator>> actuators(5);
-    actuators[0] = &actu0;
-    actuators[1] = &actu1;
-    actuators[2] = &actu2;
-    actuators[3] = &actu3;
-    actuators[4] = &actu4;
-    controller->setActuators(actuators);
+    SECTION("Adding actuators individually") {
+        controller->addActuator(model.getComponent<Actuator>("/tau0"));
+        controller->addActuator(model.getComponent<Actuator>("/tau1"));
+        model.addController(controller);
+        REQUIRE_NOTHROW(model.finalizeConnections());
+    }
 
-    model.addController(controller);
+    SECTION("Adding multiple actuators from a ComponentList") {
+        controller->setActuators(model.getComponentList<Actuator>());
+        model.addController(controller);
+        REQUIRE_NOTHROW(model.finalizeConnections());
+    }
 
-    model.initSystem();
-
+    SECTION("Adding multiple actuators from ReferencePtrs") {
+        SimTK::Array_<SimTK::ReferencePtr<const Actuator>> actuators(2);
+        actuators[0] = &model.getComponent<Actuator>("/tau0");
+        actuators[1] = &model.getComponent<Actuator>("/tau1");
+        controller->setActuators(actuators);
+        model.addController(controller);
+        REQUIRE_NOTHROW(model.finalizeConnections());
+    }
 }
-
 
 TEST_CASE("testControlSetControllerOnBlock") {
     using namespace SimTK;
