@@ -1153,7 +1153,7 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
 
     std::string actName = "";
     const auto& socket = getSocket<Actuator>("actuators");
-    for(int i=0; i < getNumActuators(); ++i ) {
+    for (int i = 0; i < getNumActuators(); ++i) {
 
         auto* act = dynamic_cast<const ScalarActuator*>(&socket.getConnectee(i));
         //Actuator& act = getActuatorSet().get(i);

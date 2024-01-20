@@ -132,7 +132,7 @@ prepareToOptimize(SimTK::State& s, double *x)
 
     computeConstraintVector(s, f, _constraintVector);
 
-    for(int j=0; j<na; j++) {
+    for (int j = 0; j < na; j++) {
         f[j] = 1;
         computeConstraintVector(s, f, c);
         _constraintMatrix(j) = (c - _constraintVector);
