@@ -69,7 +69,7 @@ void PrescribedController::constructProperties()
 void PrescribedController::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
-    const auto& socket = getSocket<Actuator>("actuators");
+    auto& socket = updSocket<Actuator>("actuators");
 
     // If a controls file was specified, load it and create control functions
     // for any actuators that do not already have one.
@@ -99,12 +99,33 @@ void PrescribedController::extendConnectToModel(Model& model)
             const string& columnLabel = columnLabels[i];
             if (!_actuLabelsToControlFunctionIndexMap.count(columnLabel)) {
 
-                // Search for the column label in the model's actuators.
+                // See if the column label matches a connected actuator. If not,
+                // find and add the actuator to the controller.
                 int actuIndex = getActuatorIndexFromLabel(columnLabel);
-                OPENSIM_THROW_IF_FRMOBJ(actuIndex < 0, Exception,
-                    "The controls file contains column {}, but no Actuator "
-                    "with this label is connected to the controller.",
-                    columnLabel);
+                if (actuIndex < 0) {
+                    bool foundActuator = false;
+                    for (const auto& actu : model.getComponentList<Actuator>()) {
+                        if (actu.getName() == columnLabel) {
+                            addActuator(actu);
+                            foundActuator = true;
+                            break;
+                        }
+                        if (actu.getAbsolutePathString() == columnLabel) {
+                            addActuator(actu);
+                            foundActuator = true;
+                            break;
+                        }
+                    }
+                    OPENSIM_THROW_IF_FRMOBJ(!foundActuator, Exception,
+                        "Control provided from file with label {}, but no "
+                        "matching Actuator was found in the model.",
+                            columnLabel)
+
+                    // If we found a matching actuator, call
+                    // finalizeConnection() to sync the connectee path names
+                    // with the Actuator connectee.
+                    socket.finalizeConnection(model);
+                }
 
                 // Create the control function and assign it to the actuator.
                 controls.getDataColumn(
@@ -161,7 +182,7 @@ void PrescribedController::computeControls(const SimTK::State& s,
     SimTK::Vector time(1, s.getTime());
 
     const auto& socket = getSocket<Actuator>("actuators");
-    for(int i = 0; i < socket.getNumConnectees(); ++i){
+    for(int i = 0; i < (int)socket.getNumConnectees(); ++i){
         actControls[0] = get_ControlFunctions()[i].calcValue(time);
         socket.getConnectee(i).addInControls(actControls, controls);
     }

@@ -112,6 +112,13 @@ void Controller::extendConnectToModel(Model& model) {
     if (!_actuatorNamesFromXML.empty()) {
         auto& socket = updSocket<Actuator>("actuators");
         for (const auto& actuatorName : _actuatorNamesFromXML) {
+            // If the actuator name is "ALL", connect all actuators and break.
+            if (IO::Uppercase(actuatorName) == "ALL") {
+                setActuators(model.getComponentList<Actuator>());
+                break;
+            }
+
+            // Otherwise, find the actuator by name and connect it.
             for (const auto& actuator : model.getComponentList<Actuator>()) {
                 if (actuator.getName() == actuatorName) {
                     // Connect the actuator to the socket.
