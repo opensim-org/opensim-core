@@ -244,7 +244,13 @@ bool ForwardTool::run()
     // so that the parsing code behaves properly if called from a different directory.
     auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
-    /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
+    ///*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
+    if (_externalLoadsFileName.empty()) {
+        log_warn("External loads file '{}' is ignored.", _externalLoadsFileName);
+    } else {
+        auto* externalLoads = new ExternalLoads(_externalLoadsFileName, true);
+        _model->addModelComponent(externalLoads);
+    }
 
     // Re create the system with forces above and Realize the topology
     SimTK::State& s = _model->initSystem();

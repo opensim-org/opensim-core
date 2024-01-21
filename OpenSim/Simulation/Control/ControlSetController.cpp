@@ -269,6 +269,7 @@ void ControlSetController::extendConnectToModel(Model& model) {
     std::string ext = ".excitation";
     for (int i = 0; _controlSet != nullptr && i < _controlSet->getSize(); ++i) {
         std::string actName = _controlSet->get(i).getName();
+        std::cout << "actName = " << actName << std::endl;
         if (actName.length() > ext.length() &&
                 !actName.compare(
                         actName.length() - ext.length(), ext.length(), ext)) {
@@ -279,15 +280,33 @@ void ControlSetController::extendConnectToModel(Model& model) {
         bool isConnected = false;
         for (int iactu = 0; iactu < (int)socket.getNumConnectees(); ++iactu) {
             if (socket.getConnectee(iactu).getName() == actName) {
+                log_cout("ControlSetController::extendConnectToModel "
+                         "Actuator '{}' already connected to ControlSetController '{}'.",
+                         actName, getName());
                 isConnected = true;
                 break;
             }
         }
 
+        // If not already connected, try to connect to an actuator in the model.
+        if (!isConnected) {
+            for (const auto& actu : model.getComponentList<Actuator>()) {
+                if (actu.getName() == actName) {
+                    log_cout("ControlSetController::extendConnectToModel "
+                             "Connecting ControlSetController '{}' to Actuator"
+                             "'{}'.", getName(), actu.getName());
+                    addActuator(actu);
+                    updSocket<Actuator>("actuators").finalizeConnection(model);
+                    isConnected = true;
+                    break;
+                }
+            }
+        }
+
         OPENSIM_THROW_IF_FRMOBJ(!isConnected, Exception,
-            "ControlSetController::extendFinalizeFromProperties: "
-            "Actuator '{}' in ControlSet '{}' not connected to controller "
-            " '{}'.", actName, _controlSet->getName(), getName());
+            "Control with name '{}' provided in the ControlSet '{}', but no "
+            "matching Actuator was found in the model.",
+            actName, _controlSet->getName());
     }
 }
 
