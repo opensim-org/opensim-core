@@ -1100,7 +1100,7 @@ void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
     
     SimTK::Vector actControls(1, 0.0);
     const auto& socket = getSocket<Actuator>("actuators");
-    for(int i = 0; i < socket.getNumConnectees(); i++){
+    for(int i = 0; i < (int)socket.getNumConnectees(); i++){
         actControls[0] = _controlSet[_controlSetIndices[i]].getControlValue(s.getTime());
         socket.getConnectee(i).addInControls(actControls, controls);
     }

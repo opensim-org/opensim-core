@@ -244,7 +244,6 @@ bool ForwardTool::run()
     // so that the parsing code behaves properly if called from a different directory.
     auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
-    std::cout << "DEBUG: ForwardTool::run() _externalLoadsFileName = " << _externalLoadsFileName << std::endl;
     /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
     // Re create the system with forces above and Realize the topology

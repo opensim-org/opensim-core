@@ -85,7 +85,7 @@ namespace {
         const auto& actuatorsSet = model.getActuators();
         actuController.setActuators(actuatorsSet);
         const auto& socket = actuController.getSocket<Actuator>("actuators");
-        for (int i = 0; i < socket.getNumConnectees(); i++) {
+        for (int i = 0; i < (int)socket.getNumConnectees(); i++) {
             actuController.prescribeControlForActuator(
                     actuatorsSet.get(i).getAbsolutePathString(),
                     new Constant(activation));

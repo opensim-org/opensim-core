@@ -67,7 +67,7 @@ void ToyReflexController::extendConnectToModel(Model &model)
     Super::extendConnectToModel(model);
 
     const auto& socket = getSocket<Actuator>("actuators");
-    for (int i = 0; i < socket.getNumConnectees(); ++i) {
+    for (int i = 0; i < (int)socket.getNumConnectees(); ++i) {
         const auto& actu = socket.getConnectee(i);
         const auto* musc = dynamic_cast<const Muscle*>(&actu);
         OPENSIM_THROW_IF_FRMOBJ(!musc, Exception,
@@ -100,7 +100,7 @@ void ToyReflexController::computeControls(const State& s,
     //reflex control
     double control = 0;
 
-    for (int i = 0; i < socket.getNumConnectees(); ++i) {
+    for (int i = 0; i < (int)socket.getNumConnectees(); ++i) {
         const auto& actu = socket.getConnectee(i);
         const Muscle *musc = dynamic_cast<const Muscle*>(&actu);
         speed = musc->getLengtheningSpeed(s);
