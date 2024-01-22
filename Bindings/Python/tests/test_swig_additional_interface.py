@@ -300,7 +300,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         contr2.addActuator(actu)
         contr2.prescribeControlForActuator('notAnActu', osim.Constant(5))
         model.addController(contr2)
-        self.assertRaises(RuntimeError, model.initSystem())
+        self.assertRaises(RuntimeError, model.initSystem)
 
     def test_set_iterator(self):
         fs = osim.FunctionSet()

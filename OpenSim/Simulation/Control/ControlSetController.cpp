@@ -277,36 +277,38 @@ void ControlSetController::extendConnectToModel(Model& model) {
         }
 
         // Check that the actuator is connected to the controller.
-        bool isConnected = false;
-        for (int iactu = 0; iactu < (int)socket.getNumConnectees(); ++iactu) {
-            if (socket.getConnectee(iactu).getName() == actName) {
+//        bool isConnected = false;
+//        for (int iactu = 0; iactu < (int)socket.getNumConnectees(); ++iactu) {
+//            if (socket.getConnectee(iactu).getName() == actName) {
+//                log_cout("ControlSetController::extendConnectToModel "
+//                         "Actuator '{}' already connected to ControlSetController '{}'.",
+//                         actName, getName());
+//                isConnected = true;
+//                break;
+//            }
+//        }
+
+        // If not already connected, try to connect to an actuator in the model.
+//        if (!isConnected) {
+        updSocket<Actuator>("actuators").disconnect();
+
+        for (const auto& actu : model.getComponentList<Actuator>()) {
+            if (actu.getName() == actName) {
                 log_cout("ControlSetController::extendConnectToModel "
-                         "Actuator '{}' already connected to ControlSetController '{}'.",
-                         actName, getName());
-                isConnected = true;
+                         "Connecting ControlSetController '{}' to Actuator"
+                         "'{}'.", getName(), actu.getName());
+                addActuator(actu);
+//                isConnected = true;
                 break;
             }
         }
+//        }
+        updSocket<Actuator>("actuators").finalizeConnection(model);
 
-        // If not already connected, try to connect to an actuator in the model.
-        if (!isConnected) {
-            for (const auto& actu : model.getComponentList<Actuator>()) {
-                if (actu.getName() == actName) {
-                    log_cout("ControlSetController::extendConnectToModel "
-                             "Connecting ControlSetController '{}' to Actuator"
-                             "'{}'.", getName(), actu.getName());
-                    addActuator(actu);
-                    updSocket<Actuator>("actuators").finalizeConnection(model);
-                    isConnected = true;
-                    break;
-                }
-            }
-        }
-
-        OPENSIM_THROW_IF_FRMOBJ(!isConnected, Exception,
-            "Control with name '{}' provided in the ControlSet '{}', but no "
-            "matching Actuator was found in the model.",
-            actName, _controlSet->getName());
+//        OPENSIM_THROW_IF_FRMOBJ(!isConnected, Exception,
+//            "Control with name '{}' provided in the ControlSet '{}', but no "
+//            "matching Actuator was found in the model.",
+//            actName, _controlSet->getName());
     }
 }
 

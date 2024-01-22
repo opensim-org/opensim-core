@@ -3506,8 +3506,8 @@ void Socket<C>::finalizeConnection(const Component& root) {
             const auto& comp = *connectee;
             const auto& rootOfConnectee = comp.getRoot();
             const auto& myRoot = getOwner().getRoot();
-            std::cout << "rootOfConnectee: " << rootOfConnectee.getName() << std::endl;
-            std::cout << "myRoot: " << myRoot.getName() << std::endl;
+//            std::cout << "rootOfConnectee: " << rootOfConnectee.getName() << std::endl;
+//            std::cout << "myRoot: " << myRoot.getName() << std::endl;
             if (&myRoot != &rootOfConnectee) {
                 std::stringstream msg;
                 msg << "Socket<" << getConnecteeTypeName() << "> '" << getName()
