@@ -462,22 +462,8 @@ addControllerSetToModel()
 
     int size = _controllerSet.getSize();
     _controllerCopies.setMemoryOwner(false);
-    std::cout << "DEBUG controller set size: " << size << std::endl;
     for(int i=0;i<size;i++) {
-        _controllerSet.get(i).updSocket<Actuator>("actuators").disconnect();
         Controller *controller = _controllerSet.get(i).clone();
-        const auto& socket = _controllerSet.get(i).getSocket<Actuator>("actuators");
-        std::cout << "DEBUG num connectees: " << socket.getNumConnectees() << std::endl;
-        const auto& socketCopy = controller->updSocket<Actuator>("actuators");
-        for (int j = 0; i < socket.getNumConnectees(); ++i) {
-            const auto& actuator = socket.getConnectee(j);
-            const auto& actuatorCopy = socketCopy.getConnectee(j);
-
-            std::cout << "DEBUG connectee path: " << socket.getConnecteePath(j) << std::endl;
-            std::cout << "DEBUG connectee path copy: " << socketCopy.getConnecteePath(j) << std::endl;
-
-        }
-
         _model->addController(controller);
         _controllerCopies.adoptAndAppend(controller);
     }
