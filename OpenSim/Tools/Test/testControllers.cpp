@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2023 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,10 +26,11 @@
 //  that controllers behave as described.
 //
 //  Tests Include:
-//  1. Test a ControlSetController on a block with an ideal actuator
-//  2. Test a PrescribedController on a block with an ideal actuator
-//  3. Test a CorrectionController tracking a block with an ideal actuator
-//  4. Test a PrescribedController on the arm26 model with reserves.
+//  1. Test the Controller interface
+//  2. Test a ControlSetController on a block with an ideal actuator
+//  3. Test a PrescribedController on a block with an ideal actuator
+//  4. Test a CorrectionController tracking a block with an ideal actuator
+//  5. Test a PrescribedController on the arm26 model with reserves.
 //     Add tests here as new controller types are added to OpenSim
 //
 //=============================================================================
@@ -131,8 +132,7 @@ TEST_CASE("testControlSetControllerOnBlock") {
     actuatorControls.setControlValues(finalTime, controlForce);
     // Create a control set controller that simply applies controls from a ControlSet
     auto* actuatorController = new ControlSetController();
-    actuatorController->addActuator(
-        osimModel.getComponent<Actuator>("/forceset/actuator"));
+
     // Make a copy and set it on the ControlSetController as it takes ownership of the 
     // ControlSet passed in
     actuatorController->setControlSet(
@@ -345,7 +345,6 @@ TEST_CASE("testPrescribedControllerFromFile") {
     ControlSetController csc;
     ControlSet* cs = new ControlSet(controlsFile);
     csc.setControlSet(cs);
-    csc.setActuators(osimModel.updActuators());
     // add the controller to the model
     osimModel.addController(&csc);
 
@@ -385,11 +384,9 @@ TEST_CASE("testPrescribedControllerFromFile") {
     //************* Rerun with a PrescribedController ***********************/
 
     PrescribedController prescribed(outfileName, 1);
-    prescribed.setActuators(osimModel.updActuators());
 
     // add the controller to the model
     osimModel.addController(&prescribed);
-    osimModel.finalizeConnections();
     osimModel.print("TestPrescribedController.osim");
 
     // Initialize the system and get the state representing the state system

@@ -71,8 +71,7 @@ void testStates(const string& modelFile)
     Model model(modelFile);
     ControlSetController* controller = new ControlSetController();
     controller->setControlSetFileName("arm26_StaticOptimization_controls.xml");
-    controller->setActuators(model.getComponentList<const Actuator>());
-  
+
     model.addController( controller );
     // original default state
     State& state = model.initSystem();
