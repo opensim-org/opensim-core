@@ -241,10 +241,12 @@ void testGait2354WithControllerGUI() {
 
     forward.setResultsDir(resultsDir);
     forward.updateModelForces(*model, "");
+
+    // This initSystem() call needs to happen after updateModelForces() and
+    // before setModel(). Calling initSystem() after setModel() will cause
+    // Controller connectee paths to be incorrect.
     model->initSystem();
     forward.setModel(*model);
-
-    model->initSystem();
     forward.run();
 
     // For good measure we'll make sure we still get the identical results
