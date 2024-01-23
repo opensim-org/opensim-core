@@ -376,11 +376,13 @@ jobs:
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
-    - name: Create workspace
-      uses: actions/workspace@v2
+    - name: Upload opensim-core
+      uses: actions/upload-artifact@v3
       with:
-        name: target-branch
-        path: workspaces/mac_target
+        # The upload-artifact zipping does not preserve symlinks or executable
+        # bits. So we zip ourselves, even though this causes a double-zip.
+        name: opensim-core-target-mac-11
+        path: opensim-core-target-11.zip
 
   mac_source:
     name: Mac-source
@@ -501,12 +503,6 @@ jobs:
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
-    - name: Create workspace
-      uses: actions/workspace@v2
-      with:
-        name: source-branch
-        path: workspaces/mac_source
-
     - name: Upload opensim-core
       uses: actions/upload-artifact@v3
       with:
@@ -525,17 +521,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Attach source branch workspace
-      uses: actions/workspace@v2
+    - name: Download source branch artifacts
+      uses: actions/download-artifact@v2
       with:
-        name: source-branch
-        path: workspaces/mac_source
+        name: source-branch-artifacts
+        path: opensim-core-${{ steps.configure.outputs.version }}-11.zip
 
-    - name: Attach target branch workspace
-      uses: actions/workspace@v2
+    - name: Download target branch artifacts
+      uses: actions/download-artifact@v2
       with:
-        name: target-branch
-        path: workspaces/mac_target
+        name: target-branch-artifacts
+        path: opensim-core-target-11.zip
 
     - name: Run Examples and Compare Performance
       run: |
