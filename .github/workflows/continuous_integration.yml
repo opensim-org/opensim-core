@@ -260,16 +260,15 @@ jobs:
 
     runs-on: macos-12
 
-    strategy:
-      matrix:
-          branch: [${{ github.event.before }}, ${{ github.event.pull_request.base.sha }}]
-
     steps:
     - uses: actions/checkout@v3
     
     - uses: actions/setup-python@v4
       with:
         python-version: '3.8'
+
+    - name: Set up Git
+      run: git fetch origin ${{ github.event.pull_request.base.ref }}:${{ github.event.pull_request.base.ref }}
         
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
@@ -380,10 +379,6 @@ jobs:
     name: Mac
 
     runs-on: macos-12
-
-    strategy:
-      matrix:
-        branch: [${{ github.event.before }}, ${{ github.sha }}]
 
     steps:
     - uses: actions/checkout@v3
@@ -607,6 +602,7 @@ jobs:
         # bits. So we zip ourselves, even though this causes a double-zip.
         name: opensim-core-${{ steps.configure.outputs.version }}-ub20-linux
         path: opensim-core-${{ steps.configure.outputs.version }}-ub20.zip
+
   ubuntu20-nomoco:
     name: Ubuntu2004-nomoco
 
