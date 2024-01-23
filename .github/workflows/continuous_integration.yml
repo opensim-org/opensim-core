@@ -376,8 +376,14 @@ jobs:
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
-  mac:
-    name: Mac
+    - name: Create workspace
+      uses: actions/workspace@v2
+      with:
+        name: target-branch
+        path: workspaces/mac_target
+
+  mac_source:
+    name: Mac-source
 
     runs-on: macos-12
 
@@ -495,6 +501,12 @@ jobs:
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
+    - name: Create workspace
+      uses: actions/workspace@v2
+      with:
+        name: source-branch
+        path: workspaces/mac_source
+
     - name: Upload opensim-core
       uses: actions/upload-artifact@v3
       with:
@@ -502,6 +514,34 @@ jobs:
         # bits. So we zip ourselves, even though this causes a double-zip.
         name: opensim-core-${{ steps.configure.outputs.version }}-mac-11
         path: opensim-core-${{ steps.configure.outputs.version }}-11.zip
+
+  compare-macs:
+    needs:
+      - mac_target
+      - mac_source
+    runs-on: macos-12
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Attach source branch workspace
+      uses: actions/workspace@v2
+      with:
+        name: source-branch
+        path: workspaces/mac_source
+
+    - name: Attach target branch workspace
+      uses: actions/workspace@v2
+      with:
+        name: target-branch
+        path: workspaces/mac_target
+
+    - name: Run Examples and Compare Performance
+      run: |
+        # Replace the following commands with your example run and performance comparison commands
+        echo "Running examples and comparing performance"
+        # Run your example commands and performance comparison
 
   ubuntu20:
     name: Ubuntu2004
