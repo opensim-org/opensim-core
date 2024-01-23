@@ -472,12 +472,18 @@ public:
     }
 
     int getNumSpeeds() const {
+        ensureUnsealed();
         return (int)getSpeedIndices().size();
     }
 
     int getNumMultibodyStates() const {
         ensureUnsealed();
         return (int)getMultibodyStateIndices().size();
+    }
+
+    int getNumAuxiliaryStates() const {
+        ensureUnsealed();
+        return (int)getAuxiliaryStateIndices().size();
     }
 
     int getNumAccelerations() const {
@@ -544,6 +550,17 @@ public:
             }
         }
         return multibodyStateNames;
+    }
+    std::vector<std::string> getAuxiliaryStateNames() const {
+        ensureUnsealed();
+        std::vector<std::string> auxiliaryStateNames;
+        for (const auto& name : m_state_names) {
+            if (name.find("/value") == std::string::npos &&
+                    name.find("/speed") == std::string::npos) {
+                auxiliaryStateNames.push_back(name);
+            }
+        }
+        return auxiliaryStateNames;
     }
     std::vector<std::string> getAccelerationNames() const {
         ensureUnsealed();
@@ -612,6 +629,13 @@ public:
         if (indices.empty()) indices.push_back(0);
         return {m_states.block(0, indices[0],
                 m_states.nrow(), getNumMultibodyStates())};
+    }
+    SimTK::Matrix getAuxiliaryStatesTrajectory() const {
+        ensureUnsealed();
+        auto indices = getAuxiliaryStateIndices();
+        if (indices.empty()) indices.push_back(0);
+        return {m_states.block(0, indices[0],
+                m_states.nrow(), getNumAuxiliaryStates())};
     }
     SimTK::Matrix getAccelerationsTrajectory() const {
         ensureUnsealed();
@@ -913,6 +937,18 @@ private:
         multibodyStateIndices.insert(multibodyStateIndices.end(),
                 speedIndices.begin(), speedIndices.end());
         return multibodyStateIndices;
+    }
+    std::vector<int> getAuxiliaryStateIndices() const {
+        ensureUnsealed();
+        std::vector<int> auxiliaryStateIndices;
+        for (int i = 0; i < (int)m_state_names.size(); ++i) {
+            const auto& name = m_state_names[i];
+            if (name.find("/value") == std::string::npos &&
+                    name.find("/speed") == std::string::npos) {
+                auxiliaryStateIndices.push_back(i);
+            }
+        }
+        return auxiliaryStateIndices;
     }
     std::vector<int> getAccelerationIndices() const {
         ensureUnsealed();

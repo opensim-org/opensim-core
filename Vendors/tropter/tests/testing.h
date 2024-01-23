@@ -16,7 +16,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include <catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <Eigen/Dense>
 
 /// Compare any two Eigen matrices (their dimensions and each element)
@@ -33,7 +33,7 @@ do {                                                                         \
         for (int ic = 0; ic < actual.cols(); ++ic) {                         \
             INFO("(" << ir << "," << ic << "): " <<                          \
                     actual(ir, ic) << " vs " << expected(ir, ic));           \
-            REQUIRE((Catch::Detail::Approx(actual(ir, ic))                   \
+            REQUIRE((Catch::Approx(actual(ir, ic))                           \
                     .epsilon(rel_error_tolerance).scale(1.0)                 \
                     == expected(ir, ic)));                                   \
         }                                                                    \
@@ -49,7 +49,7 @@ do {                                                                         \
         for (int ic = 0; ic < actual.cols(); ++ic) {                         \
             INFO("(" << ir << "," << ic << "): " <<                          \
                     actual(ir, ic) << " vs " << expected(ir, ic));           \
-            REQUIRE((Catch::Detail::Approx(actual(ir, ic)).margin(           \
+            REQUIRE((Catch::Approx(actual(ir, ic)).margin(                   \
                                  abs_error_tolerance) == expected(ir, ic))); \
         }                                                                    \
     }                                                                        \

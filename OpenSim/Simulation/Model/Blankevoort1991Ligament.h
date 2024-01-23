@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
 #include <OpenSim/Simulation/Model/Force.h>
-#include <OpenSim/Simulation/Model/AbstractPath.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 
 namespace OpenSim {
@@ -178,7 +178,7 @@ public:
 // PROPERTIES
 //=============================================================================
     
-    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+    OpenSim_DECLARE_PROPERTY(path, AbstractGeometryPath,
         "The path defines the length and lengthening speed of the ligament.")
     OpenSim_DECLARE_PROPERTY(linear_stiffness, double,
         "The slope of the linear region of the force-strain curve. " 
@@ -238,8 +238,8 @@ public:
         double linear_stiffness, double slack_length);
 
     // Path
-    AbstractPath& updPath() { return upd_path(); }
-    const AbstractPath& getPath() const { return get_path(); }
+    AbstractGeometryPath& updPath() { return upd_path(); }
+    const AbstractGeometryPath& getPath() const { return get_path(); }
 
     template <typename PathType>
     PathType& updPath() {

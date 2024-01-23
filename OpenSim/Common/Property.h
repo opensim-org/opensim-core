@@ -658,6 +658,16 @@ template<> struct Property<double>::TypeHelper {
     static std::string getTypeName() {return "double";}
     OSIMCOMMON_API static bool isEqual(double a, double b);
 };
+/** TypeHelper specialization for SimTK::Vec2; see double specialization
+for information on floating point comparison. **/
+template<> struct Property<SimTK::Vec2>::TypeHelper  {
+    static const bool IsObjectType = false;
+    static SimpleProperty<SimTK::Vec2>*
+    create(const std::string& name, bool isOne);
+    static std::string getTypeName() {return "Vec2";}
+    OSIMCOMMON_API static bool isEqual(const SimTK::Vec2& a,
+            const SimTK::Vec2& b);
+};
 /** TypeHelper specialization for SimTK::Vec3; see double specialization
 for information on floating point comparison. **/
 template<> struct Property<SimTK::Vec3>::TypeHelper  {
@@ -989,7 +999,6 @@ public:
         throw OpenSim::Exception(
             "Property<T>::findIndexForName " + name
             + " called on a list property of non OpenSim Objects. ");
-        return -1;
     }
 private:
     // This is the Property<T> interface implementation.
@@ -1243,6 +1252,10 @@ TypeHelper::create(const std::string& name, bool isOne)
 inline SimpleProperty<double>* Property<double>::
 TypeHelper::create(const std::string& name, bool isOne) 
 {   return new SimpleProperty<double>(name, isOne); }
+
+inline SimpleProperty<SimTK::Vec2>* Property<SimTK::Vec2>::
+        TypeHelper::create(const std::string& name, bool isOne)
+{   return new SimpleProperty<SimTK::Vec2>(name, isOne); }
 
 inline SimpleProperty<SimTK::Vec3>* Property<SimTK::Vec3>::
 TypeHelper::create(const std::string& name, bool isOne) 

@@ -337,7 +337,7 @@ public:
      \param time Value to search for.
      */
     size_t getRowIndexBeforeTime(const double& time) const {
-        size_t candidate = getNearestRowIndexForTime(time, false);
+        ptrdiff_t candidate = getNearestRowIndexForTime(time, false);
         using DT = DataTable_<double, ETY>;
         const auto& timeCol = DT::getIndependentColumn();
         const SimTK::Real eps = SimTK::SignificantReal;

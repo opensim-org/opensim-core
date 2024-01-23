@@ -1,13 +1,30 @@
 Moco Change Log
 ===============
 
-1.2.2
+1.4.0
 -----
-- 2023-10-27: Added support for the 'projection' method for enforcing kinematic
+- 2024-01-23: Added support for the 'projection' method for enforcing kinematic
               constraints from Bordalba et al. (2023) to `MocoCasADiSolver`. 
               This method allows enforcing kinematic constraints with any
               transcription scheme and can be enabled using by setting the
               property `kinematic_constraint_method` to `'projection'`.
+
+1.3.0
+-----
+- 2023-11-22: `exampleMocoTrack` and `exampleMocoInverse` (C++ and scripting examples) 
+              have been updated to use the new `FunctionBasedPath` functionality. 
+              In addition, problem and solver settings have been modified for to produce 
+              better muscle activity solutions.
+
+- 2023-11-08: Fixed a bug where `MocoTrajectory::generateSpeedsFromValues()` was
+              accidentally deleting auxiliary state values.
+
+- 2023-10-25: Fixed a bug preventing deserialization of `MocoFrameDistanceConstraint`.
+
+- 2023-10-25: Locked coordinates are now explicitly disallowed in `MocoProblem`s, 
+              since they lead to NaNs values during optimization. A warning is
+              now printed for bodies with zero mass since this also leads to 
+              NaNs for ill-defined models.
 
 - 2023-09-20: Moved `setDivideByDisplacement` and `setDivideByMass` to base 
               `MocoGoal` class and added `MocoGoal::setDivideByDuration`. All 

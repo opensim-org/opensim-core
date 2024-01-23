@@ -586,7 +586,7 @@ SimTK::Matrix LatinHypercubeDesign::computeRandomDesign(
         design = computeRandomHypercube(numSamples, numVariables);
         design -= computeRandomMatrix(numSamples, numVariables);
         design /= numSamples;
-
+        
         // Compute the distance criterion and save the best design.
         double distance = evaluateDesign(design);
         if (distance < distanceBest) {

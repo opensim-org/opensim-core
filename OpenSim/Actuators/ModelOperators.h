@@ -182,6 +182,32 @@ public:
     }
 };
 
+/// Invoke ModelFactory::replacePathsWithFunctionBasedPaths() on the model.
+class OSIMACTUATORS_API ModOpReplacePathsWithFunctionBasedPaths 
+        : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            ModOpReplacePathsWithFunctionBasedPaths, ModelOperator);
+    OpenSim_DECLARE_PROPERTY(paths_file, std::string,
+            "Path to a file containing FunctionBasedPath definitions.");
+
+public:
+    ModOpReplacePathsWithFunctionBasedPaths() {
+        constructProperty_paths_file("");
+    }
+    ModOpReplacePathsWithFunctionBasedPaths(std::string pathsFile) :
+            ModOpReplacePathsWithFunctionBasedPaths() {
+        set_paths_file(std::move(pathsFile));
+    }
+    void operate(Model& model, const std::string&) const override {
+        // Without finalizeFromProperties(), an exception is raised
+        // about the model not having any subcomponents.
+        model.finalizeFromProperties();
+        model.finalizeConnections();
+        ModelFactory::replacePathsWithFunctionBasedPaths(model,
+                Set<FunctionBasedPath>(get_paths_file()));
+    }
+};
+
 } // namespace OpenSim
 
 #endif // OPENSIM_MODELOPERATORS_H

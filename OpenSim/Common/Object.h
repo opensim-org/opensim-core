@@ -42,6 +42,7 @@
 #include "Property.h"
 
 #include <cstring>
+#include <memory>
 
 // DISABLES MULTIPLE INSTANTIATION WARNINGS
 
@@ -341,12 +342,18 @@ public:
     used by the Property declaration macros for fast access to properties. **/
     template <class T> const Property<T>& 
     getProperty(const PropertyIndex& index) const;
+    /** @copydoc getProperty(const PropertyIndex&) **/
+    template <class T> const Property<T>&
+    getPropertyByName(const std::string& name) const;
 
     /** Get property of known type Property\<T> as a writable reference;
     the property must be present and have the right type. This is primarily
     used by the Property declaration macros for fast access to properties. **/
     template <class T> Property<T>& 
     updProperty(const PropertyIndex& index);
+    /** @copydoc updProperty(const PropertyIndex&) **/
+    template <class T> Property<T>&
+    updPropertyByName(const std::string& name);
 
     /** Returns \c true if no property's value has changed since the last time
     setObjectIsUpToDateWithProperties() was called. **/
@@ -572,14 +579,14 @@ protected:
     /** Unconditionally set the XMLDocument associated with this object.
     Use carefully -- if there was already a document its heap space is
     lost here. **/
-    void setDocument(XMLDocument* doc) {_document=doc;}
+    void setDocument(XMLDocument*);
 
     /** Get a const pointer to the document (if any) associated with this
     object. **/
-    const XMLDocument* getDocument() const {return _document;}
+    const XMLDocument* getDocument() const {return _document.get();}
     /** Get a writable pointer to the document (if any) associated with this
     object. **/
-    XMLDocument* updDocument() {return _document;}
+    XMLDocument* updDocument() {return _document.get();}
 public:
     /** If there is a document associated with this object then return the
     file name maintained by the document. Otherwise return an empty string. **/
@@ -902,7 +909,7 @@ private:
     // This is mutable since it's cached on deserialization and is 
     // kept up to date to maintain "defaults" and document file path
     //TODO: why does an Object need to know where it was last written? Seems flaky and should be revisited
-    mutable XMLDocument     *_document;
+    mutable std::shared_ptr<XMLDocument>     _document;
     // Flag indicating whether the object is serialized to this _document or 
     // to another fresh document, also cached for subsequent printing/writing.
     mutable bool            _inlined;
@@ -937,10 +944,21 @@ getProperty(const PropertyIndex& index) const {
     return _propertyTable.getProperty<T>(index);
 }
 
+template <class T> const Property<T>& Object::
+getPropertyByName(const std::string& name) const {
+    return _propertyTable.getProperty<T>(name);
+}
+
 template <class T> Property<T>& Object::
 updProperty(const PropertyIndex& index) {
     _objectIsUpToDate = false; // property may be changed
     return _propertyTable.updProperty<T>(index);
+}
+
+template <class T> Property<T>& Object::
+updPropertyByName(const std::string& name) {
+    _objectIsUpToDate = false; // property may be changed
+    return _propertyTable.updProperty<T>(name);
 }
 
 template <class T> PropertyIndex Object::
@@ -1430,7 +1448,7 @@ ObjectProperty<T>::readFromXMLElement
 // property element.
 template <class T> inline void 
 ObjectProperty<T>::writeToXMLElement
-    (SimTK::Xml::Element& propertyElement) const 
+    (SimTK::Xml::Element& propertyElement) const
 {
     for (int i=0; i < objects.size(); ++i)
         (objects[i])->updateXMLNode(propertyElement);

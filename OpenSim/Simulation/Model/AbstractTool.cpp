@@ -822,7 +822,8 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
             ExternalForce* xf = new ExternalForce();
             xf->setAppliedToBodyName((f==0)?body1:body2);
             char pad[3];
-            sprintf(pad,"%d", f+1);
+            snprintf(pad, 3, "%d", f+1);
+
             std::string suffix = "ExternalForce_"+string(pad);
             xf->setName(suffix);
             _externalLoads.adoptAndAppend(xf);

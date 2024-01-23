@@ -177,9 +177,6 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
 %copyctor OpenSim::Model;
-%include <SimTKcommon/internal/ReferencePtr.h>
-%template(ReferencePtrCoordinate) SimTK::ReferencePtr<const OpenSim::Coordinate>;
-%template(StdVectorReferencePtrCoordinate) std::vector<SimTK::ReferencePtr<const OpenSim::Coordinate>>;
 %include <OpenSim/Simulation/Model/Model.h>
 
 %include <OpenSim/Simulation/Model/AbstractPathPoint.h>
@@ -193,7 +190,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 
 %include <OpenSim/Simulation/Model/PointForceDirection.h>
 %template(ArrayPointForceDirection) OpenSim::Array<OpenSim::PointForceDirection*>;
-%include <OpenSim/Simulation/Model/AbstractPath.h>
+%include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
 %include <OpenSim/Simulation/Model/GeometryPath.h>
 %include <OpenSim/Simulation/Model/FunctionBasedPath.h>
 %include <OpenSim/Simulation/Model/Ligament.h>

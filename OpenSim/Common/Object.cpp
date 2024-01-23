@@ -63,10 +63,7 @@ const string                Object::DEFAULT_NAME(ObjectDEFAULT_NAME);
 /**
  * Destructor.
  */
-Object::~Object()
-{
-    delete _document;
-}
+Object::~Object() = default;
 
 //_____________________________________________________________________________
 /**
@@ -105,7 +102,7 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
         getClassName() + ": Cannot open file " + aFileName +
         ". It may not exist or you do not have permission to read it.");
 
-    _document = new XMLDocument(aFileName);
+    _document = std::make_shared<XMLDocument>(aFileName);
 
     // GET DOCUMENT ELEMENT
     SimTK::Xml::Element myNode =  _document->getRootDataElement(); //either actual root or node after OpenSimDocument
@@ -191,8 +188,7 @@ Object& Object::operator=(const Object& source)
         _authors        = source._authors;
         _references     = source._references;
         _propertyTable  = source._propertyTable;
-
-        delete _document; _document = NULL;
+        _document.reset();
         _inlined = true; // meaning: not associated to an XML document
     }
     return *this;
@@ -217,7 +213,7 @@ void Object::setNull()
     _authors = "";
     _references = "";
 
-    _document = NULL;
+    _document.reset();
     _inlined = true;
 }
 
@@ -704,20 +700,18 @@ void Object::readObjectFromXMLNodeOrFile
     // When including contents from another file it's assumed file path is 
     // relative to the current working directory, which is usually set to be
     // the directory that contained the top-level XML file.
-    XMLDocument* newDoc=0;
     try {
         log_info("Reading object from file [{}] cwd ={}.",
-                file, IO::getCwd());
-         newDoc = new XMLDocument(file);
-        _document = newDoc;
+            file, IO::getCwd());
+        _document = std::make_shared<XMLDocument>(file);
     } catch(const std::exception& ex){
         log_error("Failure reading object from file [{}] cwd ={} Error:{}",
                 file, IO::getCwd(), ex.what());
         return;
     }
     _inlined=false;
-    SimTK::Xml::Element e = newDoc->getRootDataElement();
-    updateFromXMLNode(e, newDoc->getDocumentVersion());
+    SimTK::Xml::Element e = _document->getRootDataElement();
+    updateFromXMLNode(e, _document->getDocumentVersion());
 }
 
 template<class T> static void 
@@ -989,7 +983,7 @@ updateDefaultObjectsFromXMLNode()
 {
     
     // MUST BE ROOT ELEMENT
-    if(_document==NULL) return;
+    if(!_document) return;
 
     // GET DEFAULTS ELEMENT
     SimTK::Xml::element_iterator iterDefault =
@@ -1088,7 +1082,7 @@ void Object::updateXMLNode(SimTK::Xml::Element& aParent,
     bool wroteAnyProperties = false;
     for(int i=0; i < _propertyTable.getNumProperties(); ++i) {
         const AbstractProperty& prop = _propertyTable.getAbstractPropertyByIndex(i);
-        
+
         // Don't write out if this is just a default value.
         if (!prop.getValueIsDefault() || Object::getSerializeAllDefaults()) {
             prop.writeToXMLParentElement(myObjectElement);
@@ -1237,7 +1231,7 @@ void Object::updateXMLNode(SimTK::Xml::Element& aParent,
 void Object::
 updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent)
 {
-    if (_document==NULL || !_document->hasDefaultObjects())
+    if (!_document || !_document->hasDefaultObjects())
         return;
     string defaultsTag = "defaults";
     SimTK::Xml::element_iterator elmt = aParent.element_begin(defaultsTag);
@@ -1286,8 +1280,8 @@ void Object::
 generateXMLDocument()
 {
     // CREATE NEW DOCUMENT
-    if (_document==NULL)
-        _document = new XMLDocument();
+    if (!_document)
+        _document = std::make_shared<XMLDocument>();
 }
 
 //=============================================================================
@@ -1307,14 +1301,13 @@ setInlined(bool aInlined, const std::string &aFileName)
 {
     // Wipe out the previously associated document if we weren't inline.
     if (!_inlined && _document) {
-        delete _document;
-        _document = NULL;
+        _document.reset();
     }
 
     _inlined = aInlined; // set new inline status
 
     if(!_inlined) {
-        _document = new XMLDocument();
+        _document = std::make_shared<XMLDocument>();
         _document->setFileName(aFileName);
     }
 }
@@ -1363,12 +1356,11 @@ print(const string &aFileName) const
         // Temporarily change current directory so that inlined files
         // are written to correct relative directory
         IO::CwdChanger cwd = IO::CwdChanger::changeToParentOf(aFileName);
-        std::unique_ptr<XMLDocument> newDoc{new XMLDocument()};
-        if (_document != nullptr) {
+        auto newDoc = std::make_shared<XMLDocument>();
+        if (_document) {
             newDoc->copyDefaultObjects(*_document);
-            delete _document;
         }
-        _document = newDoc.release();
+        _document = std::move(newDoc);
         SimTK::Xml::Element e = _document->getRootElement();
         updateXMLNode(e);
     }
@@ -1583,7 +1575,7 @@ makeObjectFromFile(const std::string &aFileName)
      * Open the file and get the type of the root element
      */
     try {
-        XMLDocument* doc = new XMLDocument(aFileName);
+        auto doc = std::make_shared<XMLDocument>(aFileName);
         // Here we know the fie exists and is good, chdir to where the file lives
         string rootName = doc->getRootTag();
 
@@ -1602,9 +1594,9 @@ makeObjectFromFile(const std::string &aFileName)
         // here and restore at the end so offline objects are handled
         // properly
         IO::CwdChanger cwd = IO::CwdChanger::changeToParentOf(aFileName);
-        newObject->_document = doc;
+        newObject->_document = std::move(doc);
         if (newFormat) {
-            newObject->updateFromXMLNode(*doc->getRootElement().element_begin(), doc->getDocumentVersion());
+            newObject->updateFromXMLNode(*newObject->_document->getRootElement().element_begin(), newObject->_document->getDocumentVersion());
         } else {
             SimTK::Xml::Element e = doc->getRootElement();
             newObject->updateFromXMLNode(e, 10500);
@@ -1669,6 +1661,11 @@ void Object::updateFromXMLDocument()
     SimTK::Xml::Element e = _document->getRootDataElement();
     IO::CwdChanger cwd = IO::CwdChanger::changeToParentOf(_document->getFileName());
     updateFromXMLNode(e, _document->getDocumentVersion());
+}
+
+void Object::setDocument(XMLDocument* doc)
+{
+    _document.reset(doc);
 }
 
 std::string Object::dump() const {

@@ -27,8 +27,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include "AbstractGeometryPath.h"
 #include "Force.h"
-#include "AbstractPath.h"
 #include "GeometryPath.h"
 
 #ifdef SWIG
@@ -47,7 +47,7 @@ class ScaleSet;
 //=============================================================================
 /**
  * A class implementing a ligament. The path of the ligament is
- * stored in an object derived from AbstractPath.
+ * stored in an object derived from AbstractGeometryPath.
  */
 class OSIMSIMULATION_API Ligament : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(Ligament, Force);
@@ -55,7 +55,7 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+    OpenSim_DECLARE_PROPERTY(path, AbstractGeometryPath,
         "The path defines the length and lengthening speed of the PathSpring");
     OpenSim_DECLARE_PROPERTY(resting_length, double,
         "resting length of the ligament");
@@ -76,8 +76,8 @@ public:
     //--------------------------------------------------------------------------
     // PATH
     //--------------------------------------------------------------------------
-    AbstractPath& updPath() { return upd_path(); }
-    const AbstractPath& getPath() const { return get_path(); }
+    AbstractGeometryPath& updPath() { return upd_path(); }
+    const AbstractGeometryPath& getPath() const { return get_path(); }
 
     template <typename PathType>
     PathType& updPath() {

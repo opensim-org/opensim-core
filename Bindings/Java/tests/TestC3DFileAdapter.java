@@ -16,6 +16,15 @@ class TestC3DFileAdapter {
                getTableMetaDataString("DataRate").equals("250.000000");
         assert markerTable.getTableMetaDataString("Units").equals("mm");
 
+        // convert data to meters and write a copy
+        TimeSeriesTableVec3 markerTableInMeters = new TimeSeriesTableVec3(markerTable);
+        markerTableInMeters.addTableMetaDataString("Units", "M");
+        for (int col=0; col < markerTableInMeters.getNumColumns(); col++)
+            markerTableInMeters.updDependentColumnAtIndex(col).multiplyAssign(.001);
+        String markersInMetersFileName = new String("markersMeters.mot");
+        STOFileAdapterVec3 stoAdapterM = new STOFileAdapterVec3();
+        stoAdapterM.write(markerTableInMeters, markersInMetersFileName); 
+        
         // Flatten marker data.
         TimeSeriesTable markerTableFlat = markerTable.flatten();
         assert markerTableFlat.getNumRows()    == 1103;
@@ -25,9 +34,11 @@ class TestC3DFileAdapter {
         String markerFileName = new String("markers.mot");
         STOFileAdapter stoAdapter = new STOFileAdapter();
         stoAdapter.write(markerTableFlat, markerFileName);
+
         TimeSeriesTable markerTableDouble = new TimeSeriesTable(markerFileName);
         assert markerTableDouble.getNumRows()    == 1103;
         assert markerTableDouble.getNumColumns() == 40 * 3;
+
 
         // Forces data read from C3D.
         TimeSeriesTableVec3 forceTable = c3dAdapter.getForcesTable(tables);

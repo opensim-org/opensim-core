@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  AbstractPath.cpp                        *
+ *                    OpenSim:  AbstractGeometryPath.cpp                      *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -21,15 +21,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "AbstractPath.h"
-#include "Appearance.h"
+#include "AbstractGeometryPath.h"
 
 using namespace OpenSim;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
-AbstractPath::AbstractPath() : ModelComponent() {
+AbstractGeometryPath::AbstractGeometryPath() : ModelComponent() {
     setAuthors("Nicholas Bianco, Joris Verhagen, Adam Kewley");
 
     Appearance appearance;
@@ -37,41 +36,45 @@ AbstractPath::AbstractPath() : ModelComponent() {
     constructProperty_Appearance(appearance);
 }
 
-AbstractPath::AbstractPath(AbstractPath const&) = default;
+AbstractGeometryPath::AbstractGeometryPath(
+        AbstractGeometryPath const&) = default;
 
-AbstractPath::~AbstractPath() noexcept = default;
+AbstractGeometryPath::~AbstractGeometryPath() noexcept = default;
 
-AbstractPath& AbstractPath::operator=(const AbstractPath&) = default;
+AbstractGeometryPath& AbstractGeometryPath::operator=(
+        const AbstractGeometryPath&) = default;
 
-AbstractPath::AbstractPath(AbstractPath&& other) = default;
+AbstractGeometryPath::AbstractGeometryPath(
+        AbstractGeometryPath&& other) = default;
 
-AbstractPath& AbstractPath::operator=(AbstractPath&& other) = default;
+AbstractGeometryPath& AbstractGeometryPath::operator=(
+        AbstractGeometryPath&& other) = default;
 
 //=============================================================================
 // DEFAULTED METHODS
 //=============================================================================
-const SimTK::Vec3& AbstractPath::getDefaultColor() const
+const SimTK::Vec3& AbstractGeometryPath::getDefaultColor() const
 {
     return get_Appearance().get_color();
 }
 
-void AbstractPath::setDefaultColor(const SimTK::Vec3& color)
+void AbstractGeometryPath::setDefaultColor(const SimTK::Vec3& color)
 {
     updProperty_Appearance().setValueIsDefault(false);
     upd_Appearance().set_color(color);
 }
 
-SimTK::Vec3 AbstractPath::getColor(const SimTK::State& s) const
+SimTK::Vec3 AbstractGeometryPath::getColor(const SimTK::State& s) const
 {
     return getDefaultColor();
 }
 
-double AbstractPath::getPreScaleLength(const SimTK::State&) const
+double AbstractGeometryPath::getPreScaleLength(const SimTK::State&) const
 {
     return _preScaleLength;
 }
 
-void AbstractPath::setPreScaleLength(const SimTK::State&,
+void AbstractGeometryPath::setPreScaleLength(const SimTK::State&,
         double preScaleLength)
 {
     _preScaleLength = preScaleLength;

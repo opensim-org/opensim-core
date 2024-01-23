@@ -20,9 +20,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <iostream>
-#include <string>
-#include <math.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/Signal.h>
 #include <OpenSim/Common/Storage.h>
@@ -38,42 +35,40 @@
 #include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Common/PropertySet.h>
 #include <OpenSim/Common/RootSolver.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "ExampleVectorFunctionUncoupledNxN.h"
+
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <catch2/catch_all.hpp>
+
+#include <cmath>
+#include <iostream>
+#include <string>
 
 using namespace OpenSim;
 using namespace std;
 
-int main()
+TEST_CASE("APDM Data Reader")
 {
-    try {
-        // CONSTRUCT THE UNCOUPLED VECTOR FUNCTION
-        int N = 101;
-        ExampleVectorFunctionUncoupledNxN function(N);
+    // CONSTRUCT THE UNCOUPLED VECTOR FUNCTION
+    int N = 101;
+    ExampleVectorFunctionUncoupledNxN function(N);
 
-        // EVALUATE THE FUNCTION
-        cout<<"\n\nEvaluate the function:\n";
-        Array<double> x(0.0, N), y(0.0, N);
-        function.calcValue(&x[0], &y[0], N);
-        cout << "x:\n" << x << endl;
-        cout << "y:\n" << y << endl;
+    // EVALUATE THE FUNCTION
+    cout<<"\n\nEvaluate the function:\n";
+    Array<double> x(0.0, N), y(0.0, N);
+    function.calcValue(&x[0], &y[0], N);
+    cout << "x:\n" << x << endl;
+    cout << "y:\n" << y << endl;
 
-        // ROOT SOLVE
-        Array<double> a(-1.0,N), b(1.0,N), tol(1.0e-6,N);
-        Array<double> roots(0.0,N);
-        RootSolver solver(&function);
-        //roots = solver.solve(a,b,tol);  NOTE: JACKM need to pass in state or change CMC 
-        cout<<endl<<endl<<"-------------"<<endl;
-        cout<<"roots:\n";
-        cout<<roots<<endl<<endl;
-        for (int i=0; i <= 100; i++){
-            //ASSERT_EQUAL(i*0.01, roots[i], 1e-6);
-        }
+    // ROOT SOLVE
+    Array<double> a(-1.0,N), b(1.0,N), tol(1.0e-6,N);
+    Array<double> roots(0.0,N);
+    RootSolver solver(&function);
+    //roots = solver.solve(a,b,tol);  NOTE: JACKM need to pass in state or change CMC
+    cout<<endl<<endl<<"-------------"<<endl;
+    cout<<"roots:\n";
+    cout<<roots<<endl<<endl;
+    for (int i=0; i <= 100; i++){
+        //ASSERT_EQUAL(i*0.01, roots[i], 1e-6);
     }
-    catch (const Exception& e) {
-        e.print(cerr);
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
 }

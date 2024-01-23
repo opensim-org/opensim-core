@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimCommonDLL.h"
+#include "Assertion.h"
 #include <functional>
 #include <iostream>
 #include <memory>

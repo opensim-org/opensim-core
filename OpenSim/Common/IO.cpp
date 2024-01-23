@@ -90,7 +90,7 @@ ConstructDateAndTimeStamp()
 
     // CONSTRUCT STAMP
     char *stamp = new char[64];
-    sprintf(stamp,"%d%02d%02d_%02d%02d%02d",
+    snprintf(stamp, 64, "%d%02d%02d_%02d%02d%02d",
         timeStruct->tm_year+1900,timeStruct->tm_mon+1,timeStruct->tm_mday,
         timeStruct->tm_hour,timeStruct->tm_min,timeStruct->tm_sec);
 
@@ -282,18 +282,22 @@ void IO::
 ConstructDoubleOutputFormat()
 {
     if(_GFormatForDoubleOutput) {
-        sprintf(_DoubleFormat,"%%g");
+        snprintf(_DoubleFormat, IO_DBLFMTLEN, "%%g");
     } else if(_Scientific) {
         if(_Pad<0) {
-            sprintf(_DoubleFormat,"%%.%dle",_Precision);
+            snprintf(_DoubleFormat, IO_DBLFMTLEN,
+                     "%%.%dle", _Precision);
         } else {
-            sprintf(_DoubleFormat,"%%%d.%dle",_Pad+_Precision,_Precision);
+            snprintf(_DoubleFormat, IO_DBLFMTLEN,
+                     "%%%d.%dle", _Pad+_Precision, _Precision);
         }
     } else {
         if(_Pad<0) {
-            sprintf(_DoubleFormat,"%%.%dlf",_Precision);
+            snprintf(_DoubleFormat, IO_DBLFMTLEN,
+                     "%%.%dlf", _Precision);
         } else {
-            sprintf(_DoubleFormat,"%%%d.%dlf",_Pad+_Precision,_Precision);
+            snprintf(_DoubleFormat, IO_DBLFMTLEN,
+                     "%%%d.%dlf", _Pad+_Precision, _Precision);
         }
     }
 }

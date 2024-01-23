@@ -24,8 +24,7 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 /* The purpose of this test is strictly to check that classes derived from
  * the Path class work outside of the objects/components they are meant to 
@@ -328,4 +327,53 @@ TEST_CASE("Component Path Behaves as Expected")
             }
         }
     }
+}
+
+TEST_CASE("ComponentPath::operator== works as expected")
+{
+    REQUIRE(ComponentPath{"some/path"} == ComponentPath{"some/path"});
+    REQUIRE(!(ComponentPath{"some/path"} == ComponentPath{"some/other/path"}));
+}
+
+TEST_CASE("ComponentPath::operator!= works as expected")
+{
+    REQUIRE(ComponentPath{"some/path"} != ComponentPath{"some/other/path"});
+    REQUIRE(!(ComponentPath{"some/path"} != ComponentPath{"some/path"}));
+}
+
+TEST_CASE("ComponentPath::operator< works as expected")
+{
+    REQUIRE(ComponentPath{"a"} < ComponentPath{"b"});
+    REQUIRE(!(ComponentPath{"a"} < ComponentPath{"a"}));
+}
+
+TEST_CASE("ComponentPath::root returns root component path")
+{
+    REQUIRE(ComponentPath::root() == ComponentPath{std::string{'/'}});
+}
+
+TEST_CASE("ComponentPath::empty returns true for default-constructed path")
+{
+    REQUIRE(ComponentPath{}.empty());
+}
+
+TEST_CASE("ComponentPath::empty returns false for populated path")
+{
+    REQUIRE(ComponentPath{"some/path"}.empty() == false);
+}
+
+TEST_CASE("ComponentPath::clear clears the content of the path")
+{
+    ComponentPath cp{"some/path"};
+    REQUIRE(cp != ComponentPath{});
+    cp.clear();
+    REQUIRE(cp == ComponentPath{});
+}
+
+TEST_CASE("std::hash<ComponentPath> returns equivalent results to hashing the underlying string")
+{
+    REQUIRE(std::hash<ComponentPath>{}(OpenSim::ComponentPath{"some/path"}) == std::hash<std::string>{}("some/path"));
+
+    // ... but beware of normalization...
+    REQUIRE(std::hash<ComponentPath>{}(OpenSim::ComponentPath{"normalizable/././path"}) != std::hash<std::string>{}("normalizable/././path"));
 }

@@ -280,7 +280,6 @@ TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
         const std::vector<std::string>& forcePathsLeftFoot) {
     model.initSystem();
     TimeSeriesTableVec3 externalForcesTable;
-    int count = 0;
     for (const auto& state : trajectory) {
         model.realizeDynamics(state);
         SimTK::Vec3 sphereForcesRight(0);
@@ -339,7 +338,6 @@ TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
         row(4) = sphereTorquesRight;
         row(5) = sphereTorquesLeft;
         externalForcesTable.appendRow(state.getTime(), row);
-        ++count;
     }
     // Create table.
     std::vector<std::string> labels{"ground_force_r_v", "ground_force_r_p",
