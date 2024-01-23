@@ -269,7 +269,7 @@ jobs:
 
     - name: Set up Git
       run: |
-        git fetch origin ${{ github.event.pull_request.base.ref }}:${{ github.event.pull_request.base.ref }}
+        git fetch origin ${{ github.event.pull_request.base.sha }}:${{ github.event.pull_request.base.sha }}
         git log
         
     - name: Install Homebrew packages
@@ -389,9 +389,7 @@ jobs:
         python-version: '3.8'
 
     - name: Set up Git
-      run: |
-        git fetch origin ${{ github.event.pull_request.base.ref }}:${{ github.event.pull_request.base.ref }}
-        git log
+      run: git log
         
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
