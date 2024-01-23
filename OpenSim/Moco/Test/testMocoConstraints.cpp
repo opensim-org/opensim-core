@@ -983,8 +983,8 @@ TEST_CASE("Bad configurations with kinematic constraints") {
         ms.set_enforce_constraint_derivatives(false);
         ms.set_kinematic_constraint_method("projection");
         CHECK_THROWS_WITH(study.solve(),
-                Catch::Contains("The projection method for enforcing "
-                                "kinematic"));
+                ContainsSubstring(
+                        "The projection method for enforcing kinematic"));
     }
 
     SECTION("PKT method with Hermite-Simpson only") {
@@ -992,8 +992,8 @@ TEST_CASE("Bad configurations with kinematic constraints") {
         ms.set_kinematic_constraint_method("PKT");
         ms.set_transcription_scheme("trapezoidal");
         CHECK_THROWS_WITH(study.solve(),
-                Catch::Contains("Expected the 'hermite-simpson' transcription "
-                                "scheme"));
+                ContainsSubstring(
+                        "Expected the 'hermite-simpson' transcription scheme"));
     }
 }
 
