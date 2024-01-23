@@ -262,15 +262,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    
+      with:
+      ref: github.event.pull_request.base.ref
+      
     - uses: actions/setup-python@v4
       with:
         python-version: '3.8'
-
-    - name: Set up Git
-      run: |
-        git fetch origin ${{ github.event.pull_request.base.sha }}:${{ github.event.pull_request.base.sha }}
-        git log
         
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
@@ -381,8 +378,8 @@ jobs:
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
-        name: opensim-core-target-mac-11
-        path: opensim-core-target-11.zip
+        name: opensim-core-${{ github.event.pull_request.base.ref }}-mac-11
+        path: opensim-core-${{ github.event.pull_request.base.ref }}-11.zip
 
   mac_source:
     name: Mac-source
@@ -395,9 +392,6 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.8'
-
-    - name: Set up Git
-      run: git log
         
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
@@ -524,14 +518,14 @@ jobs:
     - name: Download source branch artifacts
       uses: actions/download-artifact@v2
       with:
-        name: source-branch-artifacts
+        name: opensim-core-${{ steps.configure.outputs.version }}-mac-11
         path: opensim-core-${{ steps.configure.outputs.version }}-11.zip
 
     - name: Download target branch artifacts
       uses: actions/download-artifact@v2
       with:
-        name: target-branch-artifacts
-        path: opensim-core-target-11.zip
+        name: opensim-core-${{ github.event.pull_request.base.ref }}-mac-11
+        path: opensim-core-${{ github.event.pull_request.base.ref }}-11.zip
 
     - name: Run Examples and Compare Performance
       run: |
