@@ -268,12 +268,14 @@ jobs:
         python-version: '3.8'
 
     - name: Set up Git
-      run: git fetch origin ${{ github.event.pull_request.base.ref }}:${{ github.event.pull_request.base.ref }}
+      run: |
+        git fetch origin ${{ github.event.pull_request.base.ref }}:${{ github.event.pull_request.base.ref }}
+        git log
         
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
       run: |
-        echo "Building current branch: ${{ matrix.branch }}"
+        echo "Building current branch: ${{ github.event.pull_request.base.ref }}"
         brew install cmake pkgconfig autoconf libtool automake wget pcre doxygen llvm
         brew reinstall gcc
         pip3 install numpy==1.20.2
@@ -386,11 +388,15 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.8'
+
+    - name: Set up Git
+      run: |
+        git log
         
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
       run: |
-        echo "Building current branch: ${{ matrix.branch }}"
+        echo "Building current branch: ${{ github.event.pull_request.head.ref }}"
         brew install cmake pkgconfig autoconf libtool automake wget pcre doxygen llvm
         brew reinstall gcc
         pip3 install numpy==1.20.2
