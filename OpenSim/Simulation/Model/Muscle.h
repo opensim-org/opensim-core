@@ -461,6 +461,7 @@ private:
     /** Calculate muscle's power (W). */
     double calcMusclePower(const SimTK::State& s) const;
 
+protected:
     /** Calculate muscle's stiffness.
 
         Muscle stiffness is defined as the partial derivative of muscle force
@@ -470,12 +471,11 @@ private:
 
          Kmuscle =   (Kfiber_along_tendon * Ktendon)
                     /(Kfiber_along_tendon + Ktendon) */
-    double calcMuscleStiffness(const SimTK::State& s) const;
+    virtual double calcMuscleStiffness(const SimTK::State& s) const;
 
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
 
     /** The assumed fixed muscle-width from which the fiber pennation angle can
         be calculated. */
