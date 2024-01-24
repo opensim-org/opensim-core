@@ -62,14 +62,6 @@ class Actuator;
  *
  * // Add a ComponentList of Actuators to the controller.
  * controller.setActuators(model.getComponentList<Actuator>());
- *
- * // Add an array of specific Actuator reference pointers to the controller.
- * const auto& actuator1 = model.getComponent<Actuator>("/path/to/actuator1");
- * const auto& actuator2 = model.getComponent<Actuator>("/path/to/actuator2");
- * SimTK::Array_<SimTK::ReferencePtr<const Actuator>> actuators(2);
- * actuators[0] = &actuator1;
- * actuators[1] = &actuator2;
- * controller.setActuators(actuators);
  * @endcode
  *
  * @note Prior to OpenSim 4.6, controlled actuators were managed via the list
@@ -126,15 +118,10 @@ public:
 
     /** Replace the current set of actuators with the provided set. */
     void setActuators(const Set<Actuator>& actuators);
-    void setActuators(
-        const SimTK::Array_<SimTK::ReferencePtr<const Actuator>>& actuators);
     void setActuators(const ComponentList<const Actuator>& actuators);
 
     /** Add to the current set of actuators. */
     void addActuator(const Actuator& actuator);
-
-    /** Get an array of reference pointers to the current set of actuators. */
-    SimTK::Array_<SimTK::ReferencePtr<const Actuator>> getActuators() const;
 
     /** Compute the control for actuator
      *  This method defines the behavior for any concrete controller 

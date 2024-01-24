@@ -152,13 +152,6 @@ void Controller::setActuators(const Set<Actuator>& actuators) {
     }
 }
 
-void Controller::setActuators(
-        const SimTK::Array_<SimTK::ReferencePtr<const Actuator>>& actuators) {
-    updSocket<Actuator>("actuators").disconnect();
-    for (const auto& actu : actuators) {
-        addActuator(actu.getRef());
-    }
-}
 
 void Controller::setActuators(const ComponentList<const Actuator>& actuators) {
     updSocket<Actuator>("actuators").disconnect();
@@ -169,17 +162,4 @@ void Controller::setActuators(const ComponentList<const Actuator>& actuators) {
 
 void Controller::addActuator(const Actuator& actuator) {
     appendSocketConnectee_actuators(actuator);
-}
-
-SimTK::Array_<SimTK::ReferencePtr<const Actuator>>
-Controller::getActuators() const {
-    const auto& socket = getSocket<Actuator>("actuators");
-    int nc = static_cast<int>(socket.getNumConnectees());
-    SimTK::Array_<SimTK::ReferencePtr<const Actuator>> actuators(nc);
-    for (int i = 0; i < (int)socket.getNumConnectees(); ++i) {
-        const Actuator& actu = socket.getConnectee(i);
-        actuators[i] = &actu;
-    }
-
-    return actuators;
 }

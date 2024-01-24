@@ -59,22 +59,13 @@ TEST_CASE("Test Controller interface") {
         controller->addActuator(model.getComponent<Actuator>("/tau0"));
         controller->addActuator(model.getComponent<Actuator>("/tau1"));
         model.addController(controller);
-        REQUIRE_NOTHROW(model.finalizeConnections());
+        model.finalizeConnections();
     }
 
     SECTION("Adding multiple actuators from a ComponentList") {
         controller->setActuators(model.getComponentList<Actuator>());
         model.addController(controller);
-        REQUIRE_NOTHROW(model.finalizeConnections());
-    }
-
-    SECTION("Adding multiple actuators from ReferencePtrs") {
-        SimTK::Array_<SimTK::ReferencePtr<const Actuator>> actuators(2);
-        actuators[0] = &model.getComponent<Actuator>("/tau0");
-        actuators[1] = &model.getComponent<Actuator>("/tau1");
-        controller->setActuators(actuators);
-        model.addController(controller);
-        REQUIRE_NOTHROW(model.finalizeConnections());
+        model.finalizeConnections();
     }
 }
 
