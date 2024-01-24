@@ -96,9 +96,9 @@ void InputController::extendConnectToModel(Model& model) {
     // names and their indexes in the model control cache.
     m_controlNames.clear();
     m_controlIndexes.clear();
-    const auto& actuSet = getActuatorSet();
-    for (int i = 0; i < actuSet.getSize(); ++i) {
-        const auto& actu = actuSet.get(i);
+    const auto& socket = getSocket<Actuator>("actuators");
+    for (int i = 0; i < socket.getNumConnectees(); ++i) {
+        const auto& actu = socket.getConnectee(i);
         if (actu.numControls() > 1) {
             // Non-scalar actuator.
             for (int j = 0; j < actu.numControls(); ++j) {

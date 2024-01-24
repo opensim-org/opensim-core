@@ -314,9 +314,9 @@ std::vector<std::string> OpenSim::createControlledActuatorPathsFromModel(
                 ignoreDiscreteController) {
             continue;
         }
-        const auto& actuators = controller.getActuatorSet();
-        for (int i = 0; i < actuators.getSize(); ++i) {
-            const auto& actu = actuators.get(i);
+        const auto& socket = controller.getSocket<Actuator>("actuators");
+        for (int i = 0; i < socket.getNumConnectees(); ++i) {
+            const auto& actu = socket.getConnectee(i);
             const auto& actuPath = actu.getAbsolutePathString();
             if (std::find(actuPaths.begin(), actuPaths.end(),
                         actuPath) == actuPaths.end()) {
@@ -330,9 +330,9 @@ std::vector<std::string> OpenSim::createControlledActuatorPathsFromModel(
     if (ignoreDiscreteController) {
         for (const auto& controller :
                 model.getComponentList<DiscreteController>()) {
-            const auto& actuators = controller.getActuatorSet();
-            for (int i = 0; i < actuators.getSize(); ++i) {
-                const auto& actu = actuators.get(i);
+            const auto& socket = controller.getSocket<Actuator>("actuators");
+            for (int i = 0; i < socket.getNumConnectees(); ++i) {
+                const auto& actu = socket.getConnectee(i);
                 const auto& actuPath = actu.getAbsolutePathString();
                 auto it = std::find(actuPaths.begin(), actuPaths.end(),
                         actuPath);

@@ -67,8 +67,12 @@ void DiscreteController::extendRealizeTopology(SimTK::State& state) const {
     for (const auto& actu : getModel().getComponentList<Actuator>()) {
         const int nc = actu.numControls();
         for (int ic = 0; ic < nc; ++ic) {
-            if (getActuatorSet().contains(actu.getName())) {
-                m_controlIndices.push_back(count);
+            const auto& socket = getSocket<Actuator>("actuators");
+            for (int i = 0; i < socket.getNumConnectees(); ++i) {
+                if (socket.getConnecteePath(i) == actu.getAbsolutePath()) {
+                    m_controlIndices.push_back(count);;
+                    break;
+                }
             }
             count++;
         }

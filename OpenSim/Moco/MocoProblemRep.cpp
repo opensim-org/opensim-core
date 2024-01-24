@@ -511,9 +511,10 @@ void MocoProblemRep::initialize() {
     // Loop through the actuators in the DiscreteController since these are the
     // only actuators that will have associated optimal control variables.
     // Create control infos for actuators that do not have a any control info.
-    const auto& dcActuators = m_discrete_controller_base->getActuatorSet();
-    for (int i = 0; i < dcActuators.getSize(); ++i) {
-        const auto& actu = dcActuators.get(i);
+    const auto& dcSocket =
+            m_discrete_controller_base->getSocket<Actuator>("actuators");
+    for (int i = 0; i < dcSocket.getNumConnectees(); ++i) {
+        const auto& actu = dcSocket.getConnectee(i);
         const std::string actuName = actu.getAbsolutePathString();
         if (actu.numControls() == 1) {
             // No control info exists; add one.
