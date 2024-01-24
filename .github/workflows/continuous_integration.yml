@@ -515,6 +515,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Set version
+      run: |
+        VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
+          echo $VERSION
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
     - name: Download source branch artifacts
       uses: actions/download-artifact@v2
       with:
