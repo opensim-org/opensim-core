@@ -72,9 +72,9 @@ public:
  * (connectee) until it is disconnected.
  *
  * For example, a Joint has two Sockets for the parent and child Bodies that
- * it joins. The type for the socket is a PhysicalFrame and any attempt to 
+ * it joins. The type for the socket is a PhysicalFrame and any attempt to
  * connect to a non-Body (or frame rigidly attached to a Body) will throw an
- * exception. The connectAt Stage is Topology. That is, the Joint's connection 
+ * exception. The connectAt Stage is Topology. That is, the Joint's connection
  * to a Body must be performed at the Topology system stage, and any attempt to
  * change the connection status will invalidate that Stage and above.
  *
@@ -141,7 +141,7 @@ public:
 
     /** Generic access to the connectee. Not all sockets support this method
      * (e.g., the connectee for an Input is not an Object). */
-    virtual const Object& getConnecteeAsObject() const {
+    virtual const Object& getConnecteeAsObject(int index=-1) const {
         OPENSIM_THROW(Exception, "Not supported for this type of socket.");
     }
 
@@ -180,54 +180,57 @@ public:
      * property to satisfy the socket. */
     virtual void disconnect() = 0;
 
-    /** %Set connectee path. This function can only be used if this socket is
+    /** Set the connectee path. This function can only be used if this socket is
      * not a list socket. If a connectee reference is set (with connect()) the
      * connectee path is ignored; call disconnect() if you want the socket to be
      * connected using the connectee path.
      *
      * It is preferable to use connect() instead of this function. */
-    void setConnecteePath(const std::string& name) {
-        OPENSIM_THROW_IF(_isList,
-                         Exception,
-                         "An index must be provided for a list Socket.");
-        setConnecteePath(name, 0);
+    void setConnecteePath(const std::string& path, int index = -1) {
+        if (index < 0) {
+            if (!isListSocket()) { index = 0; }
+            else {
+                OPENSIM_THROW(Exception,
+                        "AbstractSocket::setConnecteePath(): an index must be "
+                        "provided for a socket that takes a list "
+                        "of values.");
+            }
+        }
+        setConnecteePathInternal(path, index);
     }
 
-    /** %Set connectee path of a connectee among a list of connectees. This
-     * function is used if this socket is a list socket. If a connectee
-     * reference is set (with connect()) the connectee path is ignored; call
-     * disconnect() if you want the socket to be connected using the connectee
-     * name.
-     *
-     * It is preferable to use connect() instead of this function. */
-    void setConnecteePath(const std::string& name, unsigned ix) {
-        using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
-                                "AbstractSocket::setConnecteePath()");
-        updConnecteePathProp().setValue(ix, name);
+    /** Get the connectee path. */
+    const std::string& getConnecteePath(int index = -1) const {
+        if (index < 0) {
+            if (!isListSocket()) { index = 0; }
+            else {
+                OPENSIM_THROW(Exception,
+                        "AbstractSocket::getConnecteePath(): an index must be "
+                        "provided for a socket that takes a list "
+                        "of values.");
+            }
+        }
+        return getConnecteePathInternal(index);
     }
 
-    /** Get connectee path. This function can only be used if this socket is
-    not a list socket.                                                     */
-    const std::string& getConnecteePath() const {
-        OPENSIM_THROW_IF(_isList,
-                         Exception,
-                         "An index must be provided for a list Socket.");
-        return getConnecteePath(0);
-    }
-
-    /** Get connectee path of a connectee among a list of connectees.         */
-    const std::string& getConnecteePath(unsigned ix) const {
-        using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
-                                "AbstractSocket::getConnecteePath()");
-        return getConnecteePathProp().getValue(ix);
-    }
-
-    void appendConnecteePath(const std::string& name) {
-        OPENSIM_THROW_IF((getNumConnectees() > 0 && !_isList), Exception,
+    /** Append a connectee path to this socket. Only valid for list sockets. */
+    void appendConnecteePath(const std::string& path) {
+        OPENSIM_THROW_IF(!isListSocket(), Exception,
             "Multiple connectee paths can only be appended to a list Socket.");
-        updConnecteePathProp().appendValue(name);
+        updConnecteePathProp().appendValue(path);
+    }
+
+    /** Assign the connectee path to this socket. For single-object sockets,
+     * this overwrites the singular connectee path value. For list sockets, this
+     * appends this path to the list of connectee paths. Use this to update
+     * the connectee path property based on existing connectees generically
+     * (e.g., during serialization). */
+    void assignConnecteePath(const std::string& path) {
+        if (isListSocket()) {
+            appendConnecteePath(path);
+        } else {
+            setConnecteePath(path);
+        }
     }
 
     /** Clear all connectee paths in the connectee path property. */
@@ -236,6 +239,18 @@ public:
             updConnecteePathProp().clear();
         else
             updConnecteePathProp().setValue(0, "");
+    }
+
+    /** Check to see if the connectee path property is "empty". For
+     * single-object sockets, we check if the default connectee path string is
+     * empty. For list sockets, we check if the list of connectee paths is
+     * empty. Use this if making a connection based on connectee path to check
+     * connectee path validity (e.g., during deserialization). */
+    bool isConnecteePathEmpty() const {
+        if (isListSocket()) {
+            return getConnecteePathProp().empty();
+        }
+        return getConnecteePathProp().getValue().empty();
     }
 
     /** Get owner component of this socket */
@@ -300,22 +315,34 @@ protected:
         }
     }
 
-protected:
-    
+private:
+
+    void setConnecteePathInternal(const std::string& name, int index) {
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK(index, getNumConnectees(),
+                         "AbstractSocket::setConnecteePath()");
+        updConnecteePathProp().setValue(index, name);
+    }
+
+    const std::string& getConnecteePathInternal(int index) const {
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK(index, getNumConnectees(),
+                        "AbstractSocket::getConnecteePath()");
+        return getConnecteePathProp().getValue(index);
+    }
+
     /// Const access to the connectee path property from the Component in which
     /// this Socket resides. The name of that property is something like
     /// 'socket_<name>'. This is a special type of property
     /// that users cannot easily access (e.g., there is no macro-generated
     /// `get_socket_<name>()` function).
     const Property<std::string>& getConnecteePathProp() const;
+
     /// Writable access to the connectee path property from the Component in
     /// which this Socket resides. Calling this will mark the Component as
     /// not "up to date with properties"
     /// (Object::isObjectUpToDateWithProperties()).
     Property<std::string>& updConnecteePathProp();
-
-
-private:
 
     /// Prepend the provided name to all (if any) absolute connectee paths
     /// stored in this socket. This is to be used when adding one component
@@ -345,27 +372,35 @@ template<class T>
 class Socket : public AbstractSocket {
 public:
 
+    typedef std::vector<SimTK::ReferencePtr<const T>> ConnecteeList;
+
     // default copy constructor
     
     virtual ~Socket() {}
     
     Socket<T>* clone() const override { return new Socket<T>(*this); }
 
-    /** Is the Socket connected to object of type T? */
+    /** Is the Socket connected to object(s) of type T? */
     bool isConnected() const override {
-        return !connectee.empty();
+        return !_connectees.empty();
     }
 
-    const T& getConnecteeAsObject() const override {
-        return connectee.getRef();
+    /** Return a const reference to the Object connected to this Socket. */
+    const Object& getConnecteeAsObject(int index = -1) const override {
+        if (index < 0) {
+            if (!isListSocket()) { index = 0; }
+            else {
+                OPENSIM_THROW(Exception,
+                        "Socket<T>::getConnecteeAsObject(): an index must be "
+                        "provided for a socket that takes a list "
+                        "of values.");
+            }
+        }
+        return getConnecteeAsObjectInternal(index);
     }
 
-    /** Temporary access to the connectee for testing purposes. Real usage
-        will be through the Socket (and Input) interfaces. 
-        For example, Input should short circuit to its Output's getValue()
-        once it is connected.
-    Return a const reference to the object connected to this Socket */
-    const T& getConnectee() const;
+    /** Return a const reference to the object connected to this Socket. */
+    const T& getConnectee(int index = -1) const;
 
     bool canConnectTo(const Object& object) const override {
         return dynamic_cast<const T*>(&object) != nullptr;
@@ -391,7 +426,7 @@ public:
      * connect to that component.
      *
      * Throws an exception If you provide only a component name and the
-     * model has multiple components with that nume.
+     * model has multiple components with that name.
      * */
     void findAndConnect(const ComponentPath& connectee) override;
 
@@ -399,7 +434,7 @@ public:
     void finalizeConnection(const Component& root) override;
 
     void disconnect() override {
-        connectee.reset(nullptr);
+        _connectees.clear();
     }
     
     /** Derived classes must satisfy this Interface */
@@ -429,19 +464,47 @@ protected:
            const PropertyIndex& connecteePathIndex,
            const SimTK::Stage& connectAtStage,
            Component& owner) :
-        AbstractSocket(name, connecteePathIndex, connectAtStage, owner),
-        connectee(nullptr) {}
+        AbstractSocket(name, connecteePathIndex, connectAtStage, owner) {}
         
     /** So that Component can construct a Socket. */
     friend Component;
 
 private:
 
-    void connectInternal(const T& objT) {
-        connectee = &objT;
+    const Object& getConnecteeAsObjectInternal(int index) const {
+        OPENSIM_THROW_IF(!isConnected(), Exception,
+            "Socket '{}' not connected.", getName());
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK(index, getNumConnectees(),
+                         "Socket<T>::getConnecteeAsObject()");
+        return _connectees[index].getRef();
     }
 
-    mutable SimTK::ReferencePtr<const T> connectee;
+    const T& getConnecteeInternal(int index) const {
+        OPENSIM_THROW_IF(!isConnected(), Exception,
+            "Socket '{}' not connected.", getName());
+        using SimTK::isIndexInRange;
+        SimTK_INDEXCHECK(index, getNumConnectees(),
+                         "Socket<T>::getConnectee()");
+        return _connectees[index].getRef();
+    }
+
+    void connectInternal(const T& objT) {
+        if (!isListSocket()) {
+            _connectees.clear();
+        }
+        // Check if this Socket is already connected to objT.
+        for (const auto& connectee : _connectees) {
+            OPENSIM_THROW_IF(&objT == &connectee.getRef(), Exception,
+                             "Socket '{}' already has a "
+                             "connectee of type '{}' named '{}'.",
+                             getName(), getConnecteeTypeName(),
+                             objT.getName());
+        }
+        _connectees.emplace_back(objT);
+    }
+
+    SimTK::ResetOnCopy<ConnecteeList> _connectees;
 }; // END class Socket<T>
             
 
@@ -801,7 +864,7 @@ public:
         SimTK_INDEXCHECK_ALWAYS(index, getNumConnectees(),
                                 "Input<T>::setAlias()");
 
-        const auto& connecteePath = getConnecteePath(index);
+        std::string connecteePath = getConnecteePath(index);
         std::string componentPath{};
         std::string outputName{};
         std::string channelName{};
@@ -811,12 +874,11 @@ public:
                            outputName,
                            channelName,
                            currAlias);
-        updConnecteePathProp().setValue(index,
-                                        composeConnecteePath(componentPath,
-                                                             outputName,
-                                                             channelName,
-                                                             alias));
-        
+        connecteePath = composeConnecteePath(componentPath,
+                                             outputName,
+                                             channelName,
+                                             alias);
+        setConnecteePath(connecteePath, index);
         _aliases[index] = alias;
     }
 
@@ -990,8 +1052,6 @@ private:
  * @note If you use this macro in your class, then you should *NOT* implement
  * a custom copy constructor---try to use the default one. The socket will
  * not get copied properly if you create a custom copy constructor.
- * We may add support for custom copy constructors with Sockets in the
- * future.
  *
  * @see Component::constructSocket()
  * @relates OpenSim::Socket */
@@ -1009,7 +1069,7 @@ private:
     /** @}                                                               */ \
     /** @cond                                                            */ \
     OpenSim::PropertyIndex PropertyIndex_socket_##cname {                   \
-        this->template constructSocket<T>(#cname,                           \
+        this->template constructSocket<T>(#cname, false,                    \
                 "Path to a Component that satisfies the Socket '"           \
                 #cname "' of type " #T " (description: " comment ").")      \
     };                                                                      \
@@ -1021,6 +1081,66 @@ private:
     /** connectee path property. The reference to the connectee set here */ \
     /** takes precedence over the connectee path property.               */ \
     void connectSocket_##cname(const OpenSim::Object& object) {             \
+        this->updSocket(#cname).connect(object);                            \
+    }                                                                       \
+    /** @}                                                               */
+
+/** Create a list socket for this component's dependence other components of the
+ * same type. You must specify the type of the components that can be connected
+ * to this socket. The comment should describe how the connected component
+ * (connectee) is used by this component.
+ *
+ * Here's an example for using this macro:
+ * @code{.cpp}
+ * #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+ * class MyComponent : public Component {
+ * public:
+ *     OpenSim_DECLARE_LIST_SOCKET(frames, PhysicalOffsetFrame,
+ *             "To re-express quantities in different frames.");
+ *     ...
+ * };
+ * @endcode
+ *
+ * @note This macro requires that you have included the header that defines
+ * type `T`, as shown in the example above. We currently do not support
+ * declaring sockets if `T` is only forward-declared.
+ *
+ * @note If you use this macro in your class, then you should *NOT* implement
+ * a custom copy constructor---try to use the default one. The socket will
+ * not get copied properly if you create a custom copy constructor.
+ *
+ * @see Component::constructSocket()
+ * @relates OpenSim::Socket */
+#define OpenSim_DECLARE_LIST_SOCKET(cname, T, comment)                      \
+    /** @name Sockets (list)                                             */ \
+    /** @{                                                               */ \
+    /** comment                                                          */ \
+    /** This socket can connect to multiple components of                */ \
+    /** the same type.                                                   */ \
+    /** In an XML file, you can set this Socket's connectee path         */ \
+    /** via the <b>\<socket_##cname\></b> element.                       */ \
+    /** This socket was generated with the                               */ \
+    /** #OpenSim_DECLARE_LIST_SOCKET macro;                              */ \
+    /** see AbstractSocket for more information.                         */ \
+    /** @see connectSocket_##cname##()                                   */ \
+    OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
+    /** @}                                                               */ \
+    /** @cond                                                            */ \
+    OpenSim::PropertyIndex PropertyIndex_socket_##cname {                   \
+        this->template constructSocket<T>(#cname, true,                     \
+                "Paths to Components that satisfies the list Socket '"      \
+                #cname "' of type " #T " (description: " comment ")."       \
+                "To specify multiple paths, put spaces between them.")      \
+    };                                                                      \
+    /** @endcond                                                         */ \
+    /** @name Socket-related functions                                   */ \
+    /** @{                                                               */ \
+    /** Append an object of type T## to the list of connectees in the    */ \
+    /** list Socket.                                                     */ \
+    /** Call finalizeConnections() afterwards to update the socket's     */ \
+    /** connectee path property. The reference to the connectee set here */ \
+    /** takes precedence over the connectee path property.               */ \
+    void appendSocketConnectee_##cname(const OpenSim::Object& object) {     \
         this->updSocket(#cname).connect(object);                            \
     }                                                                       \
     /** @}                                                               */
@@ -1069,8 +1189,6 @@ private:
  * @note If you use this macro in your class, then you should *NOT* implement
  * a custom copy constructor---try to use the default one. The Socket will
  * not get copied properly if you create a custom copy constructor.
- * We may add support for custom copy constructors with Sockets in the
- * future.
  *
  * @see Component::constructSocket()
  * @relates OpenSim::Socket */
@@ -1127,7 +1245,7 @@ private:
 OpenSim::PropertyIndex Class::constructSocket_##cname() {                   \
     using T = _socket_##cname##_type;                                       \
     std::string typeStr = T::getClassName();                                \
-    return this->template constructSocket<T>(#cname,                        \
+    return this->template constructSocket<T>(#cname, false,                 \
         "Path to a Component that satisfies the Socket '"                   \
         #cname "' of type " + typeStr + ".");                               \
 }
@@ -1157,7 +1275,6 @@ OpenSim::PropertyIndex Class::constructSocket_##cname() {                   \
  * @note If you use this macro in your class, then you should *NOT* implement
  * a custom copy constructor---try to use the default one. The Input will
  * not get copied properly if you create a custom copy constructor.
- * We may add support for custom copy constructors with Inputs in the future.
  *
  * @see Component::constructInput()
  * @relates OpenSim::Input */
@@ -1223,7 +1340,6 @@ OpenSim::PropertyIndex Class::constructSocket_##cname() {                   \
  * @note If you use this macro in your class, then you should *NOT* implement
  * a custom copy constructor---try to use the default one. The Input will
  * not get copied properly if you create a custom copy constructor.
- * We may add support for custom copy constructors with Inputs in the future.
  *
  * @see Component::constructInput()
  * @relates OpenSim::Input */

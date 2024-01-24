@@ -84,7 +84,6 @@ void GCVSplineSet::construct(int aDegree,
 
     // GET COLUMN NAMES
     const Array<std::string> &labels = aStore->getColumnLabels();
-    char tmp[32];
     std::string name;
 
     // LOOP THROUGH THE STATES
@@ -111,7 +110,8 @@ void GCVSplineSet::construct(int aDegree,
         if(i+1 < labels.getSize()) {
             name = labels[i+1];
         } else {
-            sprintf(tmp,"data_%d",i);
+            char tmp[32];
+            snprintf(tmp, 32, "data_%d", i);
             name = tmp;
         }
 
@@ -178,7 +178,7 @@ Storage* GCVSplineSet::constructStorage(int aDerivOrder,double aDX) {
         spline = getGCVSpline(i);
         if(spline==NULL) {
             char cName[32];
-            sprintf(cName,"data_%d",i);
+            snprintf(cName, 32, "data_%d", i);
             labels.append(std::string(cName));
         } else {
             labels.append(spline->getName());

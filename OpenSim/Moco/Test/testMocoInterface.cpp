@@ -28,8 +28,11 @@
 
 #include <fstream>
 
-#define CATCH_CONFIG_MAIN
+#include <catch2/catch_all.hpp>
 #include "Testing.h"
+
+using Catch::Approx;
+using Catch::Matchers::ContainsSubstring;
 
 using namespace OpenSim;
 
@@ -157,7 +160,7 @@ TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver, MocoTropterSolver) 
         std::vector<double> mesh = {.5, 1};
         ms.setMesh(mesh);
         REQUIRE_THROWS_WITH(study.solve(),
-                Catch::Contains("Invalid custom mesh; first mesh "
+                ContainsSubstring("Invalid custom mesh; first mesh "
                                               "point must be zero."));
     }
     SECTION("Mesh points must be strictly increasing") {
@@ -166,7 +169,7 @@ TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver, MocoTropterSolver) 
         std::vector<double> mesh = {0, .5, .5, 1};
         ms.setMesh(mesh);
         REQUIRE_THROWS_WITH(study.solve(),
-                Catch::Contains("Invalid custom mesh; mesh "
+                ContainsSubstring("Invalid custom mesh; mesh "
                                 "points must be strictly increasing."));
     }
     SECTION("Last mesh point must be 1.") {
@@ -175,7 +178,7 @@ TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver, MocoTropterSolver) 
         std::vector<double> mesh = {0, .4, .8};
         ms.setMesh(mesh);
         REQUIRE_THROWS_WITH(
-                study.solve(), Catch::Contains("Invalid custom mesh; last mesh "
+                study.solve(), ContainsSubstring("Invalid custom mesh; last mesh "
                                               "point must be one."));
     }
 }
@@ -1231,7 +1234,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoCasADiSolver, MocoTropterSolver) {
         MocoTrajectory explicitGuess = ms.createGuess();
         ms.set_multibody_dynamics_mode("implicit");
         CHECK_THROWS_WITH(ms.setGuess(explicitGuess),
-            Catch::Contains(
+            ContainsSubstring(
                 "'multibody_dynamics_mode' set to 'implicit' and coordinate states "
                 "exist in the guess, but no coordinate accelerations were "
                 "found in the guess. Consider using "
@@ -1613,21 +1616,21 @@ TEST_CASE("MocoTrajectory isCompatible") {
                              "/slider/position/speed"},
                               {"/actuator"}, {}, {})
                                .isCompatible(rep, true, true),
-            Catch::Contains("accel"));
+            ContainsSubstring("accel"));
     CHECK_THROWS_WITH(
             MocoTrajectory({}, {}, {}, {}).isCompatible(rep, false, true),
-            Catch::Contains("position"));
+            ContainsSubstring("position"));
     CHECK_THROWS_WITH(
             MocoTrajectory({"/slider/position/value", "/slider/position/speed",
                              "nonexistent"},
                     {"/actuator"}, {}, {})
                      .isCompatible(rep, false, true),
-            Catch::Contains("nonexistent"));
+            ContainsSubstring("nonexistent"));
     CHECK_THROWS_WITH(
             MocoTrajectory({"/slider/position/value", "/slider/position/speed"}, {"/actuator"},
             {"nonexistent"}, {})
                                .isCompatible(rep, false, true),
-            Catch::Contains("nonexistent"));
+            ContainsSubstring("nonexistent"));
 }
 
 TEST_CASE("MocoTrajectory randomize") {
@@ -2019,7 +2022,7 @@ TEST_CASE("MocoPhase::bound_activation_from_excitation") {
         ph0.setBoundActivationFromExcitation(false);
         auto rep = problem.createRep();
         CHECK_THROWS_WITH(rep.getStateInfo("/muscle/activation"),
-                Catch::Contains(
+                ContainsSubstring(
                         "No info available for state '/muscle/activation'."));
     }
     SECTION("bound_activation_from_excitation is true") {
@@ -2051,7 +2054,7 @@ TEST_CASE("MocoPhase::bound_activation_from_excitation") {
         musclePtr->set_ignore_activation_dynamics(true);
         auto rep = problem.createRep();
         CHECK_THROWS_WITH(rep.getStateInfo("/muscle/activation"),
-                Catch::Contains(
+                ContainsSubstring(
                         "No info available for state '/muscle/activation'."));
     }
 }
@@ -2227,7 +2230,7 @@ TEMPLATE_TEST_CASE("Locked coordinates ", "",
     auto model = createSlidingMassModel(10.0, true);
     problem.setModel(std::move(model));
     CHECK_THROWS_WITH(problem.createRep(),
-            Catch::Contains("Coordinate '/slider/position' is locked"));
+            ContainsSubstring("Coordinate '/slider/position' is locked"));
 }
 
 TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",

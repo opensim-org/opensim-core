@@ -29,13 +29,14 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Controller.h"
 #include "ControlSetController.h"
 #include "ControlLinear.h"
 #include "ControlSet.h"
-#include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Common/Storage.h>
+#include "Controller.h"
 
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
 // STATICS
@@ -162,13 +163,14 @@ void ControlSetController::computeControls(const SimTK::State& s, SimTK::Vector&
 {
     SimTK_ASSERT( _controlSet , "ControlSetController::computeControls controlSet is NULL");
 
-    std::string actName = "";
+    std::string actName;
     int index = -1;
 
-    int na = getActuatorSet().getSize();
-
-    for(int i=0; i< na; ++i){
-        actName = getActuatorSet()[i].getName();
+    const auto& socket = getSocket<Actuator>("actuators");
+    const int na = static_cast<int>(socket.getNumConnectees());
+    for(int i = 0; i < na; ++i){
+        const auto& actu = socket.getConnectee(i);
+        actName = actu.getName();
         index = _controlSet->getIndex(actName);
         if(index < 0){
             actName = actName + ".excitation";
@@ -177,7 +179,7 @@ void ControlSetController::computeControls(const SimTK::State& s, SimTK::Vector&
 
         if(index >= 0){
             SimTK::Vector actControls(1, _controlSet->get(index).getControlValue(s.getTime()));
-            getActuatorSet()[i].addInControls(actControls, controls);
+            actu.addInControls(actControls, controls);
         }
     }
 }
@@ -260,15 +262,51 @@ void ControlSetController::extendFinalizeFromProperties()
         _controlSet = loadedControlSet;
         setEnabled(true);
     }
+}
 
+void ControlSetController::extendConnectToModel(Model& model) {
+    const auto& socket = updSocket<Actuator>("actuators");
     std::string ext = ".excitation";
     for (int i = 0; _controlSet != nullptr && i < _controlSet->getSize(); ++i) {
         std::string actName = _controlSet->get(i).getName();
-        if (actName.length() > ext.length() && 
-            !(actName.compare(actName.length() - ext.length(), ext.length(), ext))) {
+        std::cout << "actName = " << actName << std::endl;
+        if (actName.length() > ext.length() &&
+                !actName.compare(
+                        actName.length() - ext.length(), ext.length(), ext)) {
             actName.erase(actName.length() - ext.length(), ext.length());
         }
-        if (getProperty_actuator_list().findIndex(actName) < 0) // not already in the list of actuators for this controller
-            updProperty_actuator_list().appendValue(actName);
+
+        // Check that the actuator is connected to the controller.
+        bool isConnected = false;
+        for (int iactu = 0; iactu < (int)socket.getNumConnectees(); ++iactu) {
+            if (socket.getConnectee(iactu).getName() == actName) {
+                log_cout("ControlSetController::extendConnectToModel "
+                         "Actuator '{}' already connected to ControlSetController '{}'.",
+                         actName, getName());
+                isConnected = true;
+                break;
+            }
+        }
+
+        // If not already connected, try to connect to an actuator in the model.
+        if (!isConnected) {
+            for (const auto& actu : model.getComponentList<Actuator>()) {
+                if (actu.getName() == actName) {
+                    log_cout("ControlSetController::extendConnectToModel "
+                             "Connecting ControlSetController '{}' to Actuator"
+                             "'{}'.", getName(), actu.getName());
+                    addActuator(actu);
+                    isConnected = true;
+                    break;
+                }
+            }
+        }
+        updSocket<Actuator>("actuators").finalizeConnection(model);
+
+        OPENSIM_THROW_IF_FRMOBJ(!isConnected, Exception,
+            "Control with name '{}' provided in the ControlSet '{}', but no "
+            "matching Actuator was found in the model.",
+            actName, _controlSet->getName());
     }
 }
+

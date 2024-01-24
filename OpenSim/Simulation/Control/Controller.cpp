@@ -27,82 +27,43 @@
 #include "Controller.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Common/IO.h>
 
 //=============================================================================
 // STATICS
 //=============================================================================
-
 using namespace OpenSim;
 using namespace std;
-
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
 Controller::Controller() :
-    ModelComponent{},
-    _numControls{0},
-    _actuatorSet{}
-{
+        ModelComponent{}, _numControls{0} {
     constructProperties();
-}
-
-Controller::Controller(Controller const& src) :
-    ModelComponent{src},
-    PropertyIndex_enabled{src.PropertyIndex_enabled},
-    PropertyIndex_actuator_list{src.PropertyIndex_actuator_list},
-    _numControls{src._numControls},
-    _actuatorSet{}
-{
-    // care: the reason this custom copy constructor exists is to prevent
-    // a memory leak (#3247)
-    _actuatorSet.setMemoryOwner(false);
-}
-
-Controller& Controller::operator=(Controller const& src)
-{
-    // care: the reason this custom copy assignment exists is to prevent
-    // a memory leak (#3247)
-
-    if (&src != this)
-    {
-        static_cast<ModelComponent&>(*this) = static_cast<ModelComponent const&>(src);
-        PropertyIndex_enabled = src.PropertyIndex_enabled;
-        PropertyIndex_actuator_list = src.PropertyIndex_actuator_list;
-        _numControls = src._numControls;
-        _actuatorSet.setSize(0);
-    }
-    return *this;
 }
 
 Controller::~Controller() noexcept = default;
 
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-//_____________________________________________________________________________
-//_____________________________________________________________________________
+Controller::Controller(const Controller&) = default;
 
-/**
- * Connect properties to local pointers.
- */
-void Controller::constructProperties()
-{
+Controller::Controller(Controller&&) = default;
+
+Controller& Controller::operator=(const Controller&) = default;
+
+Controller& Controller::operator=(Controller&&) = default;
+
+void Controller::constructProperties() {
     setAuthors("Ajay Seth, Frank Anderson, Chand John, Samuel Hamner");
     constructProperty_enabled(true);
-    constructProperty_actuator_list();
-    constructProperty_actuators();
 }
 
+//=============================================================================
+// MODEL COMPONENT INTERFACE
+//=============================================================================
 void Controller::updateFromXMLNode(SimTK::Xml::Element& node,
                                    int versionNumber) {
-    if(versionNumber < XMLDocument::getLatestVersion()) {
-        if(versionNumber < 30509) {
+    if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30509) {
             // Rename property 'isDisabled' to 'enabled' and
             // negate the contained value.
             std::string oldName{"isDisabled"};
@@ -118,119 +79,87 @@ void Controller::updateFromXMLNode(SimTK::Xml::Element& node,
                 elem.setValue(SimTK::String(!isDisabled));
             }
         }
+        if (versionNumber < 40600) {
+            if (node.hasElement("actuator_list")) {
+                // Rename element from 'actuator_list' to 'socket_actuators'.
+                auto actuators = node.getRequiredElement("actuator_list");
+                actuators.setElementTag("socket_actuators");
+
+                // Store the space-delimited actuator names in a temporary
+                // variable. We'll use these names to connect the actuators
+                // to the socket in extendConnectToModel().
+                std::string values = actuators.getValueAs<std::string>();
+                std::istringstream iss(values);
+                _actuatorNamesFromXML = std::vector<std::string>{
+                        std::istream_iterator<std::string>{iss},
+                        std::istream_iterator<std::string>{}};
+
+                // Clear the value of the element so finalizeConnections() does
+                // not try to connect to invalid connectee paths.
+                actuators.setValueAs<std::string>("");
+            }
+        }
     }
 
     Super::updateFromXMLNode(node, versionNumber);
 }
 
+void Controller::extendConnectToModel(Model& model) {
+    Super::extendConnectToModel(model);
+
+    // If XML deserialization saved a list of actuator names, use them to
+    // create valid connections to the 'actuators' list Socket.
+    if (!_actuatorNamesFromXML.empty()) {
+        auto& socket = updSocket<Actuator>("actuators");
+        for (const auto& actuatorName : _actuatorNamesFromXML) {
+            // If the actuator name is "ALL", connect all actuators and break.
+            if (IO::Uppercase(actuatorName) == "ALL") {
+                setActuators(model.getComponentList<Actuator>());
+                break;
+            }
+
+            // Otherwise, find the actuator by name and connect it.
+            for (const auto& actuator : model.getComponentList<Actuator>()) {
+                if (actuator.getName() == actuatorName) {
+                    // Connect the actuator to the socket.
+                    addActuator(actuator);
+                    break;
+                }
+            }
+        }
+        // Call finalizeConnection() to sync the connectee path names with the
+        // connected Actuators.
+        socket.finalizeConnection(model);
+        _actuatorNamesFromXML.clear();
+    }
+}
+
 //=============================================================================
 // GET AND SET
 //=============================================================================
-
-//-----------------------------------------------------------------------------
-// ON/OFF
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get whether or not this controller is enabled.
- */
-bool Controller::isEnabled() const
-{
+bool Controller::isEnabled() const {
     return get_enabled();
 }
-//_____________________________________________________________________________
-/**
- * Turn this controller on or off.
- */
-void Controller::setEnabled(bool aTrueFalse)
-{
+
+void Controller::setEnabled(bool aTrueFalse) {
     upd_enabled() = aTrueFalse;
 }
 
-// for any post XML deserialization initialization
-void Controller::extendConnectToModel(Model& model)
-{
-    Super::extendConnectToModel(model);
-
-    // TODO this custom connection code can all disappear
-    // if we use a list Socket<Actuator> 
-
-    // make sure controller does not take ownership
-    _actuatorSet.setSize(0);
-    _actuatorSet.setMemoryOwner(false);
-
-    int nac = getProperty_actuator_list().size();
-    if (nac == 0)
-        return;
-    
-    auto actuators = model.getComponentList<Actuator>();
-    if (IO::Uppercase(get_actuator_list(0)) == "ALL"){
-        for (auto& actuator : actuators) {
-            _actuatorSet.adoptAndAppend(&actuator);
-        }
-        return;
-    } else {
-         for (int i = 0; i < nac; ++i) {
-             bool found = false;
-             for (auto& actuator : actuators) {
-                if (get_actuator_list(i) == actuator.getName()) {
-                    _actuatorSet.adoptAndAppend(&actuator);
-                    found = true;
-                    break;
-                }
-             }
-            if (!found) {
-                cerr << "WARN: Controller::connectToModel : Actuator "
-                    << get_actuator_list(i) <<
-                    " was not found and will be ignored." << endl;
-            }
-        }
-    }
-}
-
-/**
- * Create a Controller in the SimTK::System
- */
-void Controller::extendAddToSystem(SimTK::MultibodySystem& system) const
-{
-    Super::extendAddToSystem(system);
-}
-
-// makes a request for which actuators a controller will control
-void Controller::setActuators(const Set<Actuator>& actuators)
-{
-    // Rebuild a consistent set of actuator lists.
-    updProperty_actuator_list().clear();
-    updProperty_actuators().clear();
-    for (int i = 0; i < actuators.getSize(); ++i){
-        append_actuators(ControllerActuator());
-        auto& actu = upd_actuators(getProperty_actuators().size() - 1);
-        actu.connectSocket_actuator(actuators[i]);
-        append_actuator_list(actuators[i].getName());
+void Controller::setActuators(const Set<Actuator>& actuators) {
+    updSocket<Actuator>("actuators").disconnect();
+    for (int i = 0; i < actuators.getSize(); i++){
+        addActuator(actuators.get(i));
     }
 }
 
 
-void Controller::addActuator(const Actuator& actuator)
-{
-    _actuatorSet.adoptAndAppend(&actuator);
-
-    int found = updProperty_actuator_list().findIndex(actuator.getName());
-    if (found < 0) //add if the actuator isn't already in the list
-        updProperty_actuator_list().appendValue(actuator.getName());
-}
-
-Set<const Actuator>& Controller::updActuators() {
-    return _actuatorSet;
-}
-
-const Set<const Actuator>& Controller::getActuatorSet() const {
-    Set<const Actuator> actuatorSet;
-
-    for (int i = 0; i < getProperty_actuators().size(); ++i) {
-        const auto& actuator =
-                get_actuators(i).getSocket("actuator").getConnecteeAsObject();
+void Controller::setActuators(const ComponentList<const Actuator>& actuators) {
+    updSocket<Actuator>("actuators").disconnect();
+    for (const auto& actu : actuators) {
+        addActuator(actu);
     }
+}
 
-
+void Controller::addActuator(const Actuator& actuator) {
+    appendSocketConnectee_actuators(actuator);
 }

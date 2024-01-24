@@ -943,6 +943,14 @@ public:
     std::vector<SimTK::ReferencePtr<const OpenSim::Coordinate>>
         getCoordinatesInMultibodyTreeOrder() const;
 
+    /** A variant of getCoordinatesInMultibodyTreeOrder that returns names for Scripting users */
+    SimTK::Array_<std::string> getCoordinateNamesInMultibodyTreeOrder() {
+        SimTK::Array_<std::string> namesArray;
+        auto coords = getCoordinatesInMultibodyTreeOrder();
+        for (int i=0; i < (int)coords.size(); ++i)
+            namesArray.push_back(coords[i]->getName());
+        return namesArray;
+    }
     /** Get a warning message if any Coordinates have a MotionType that is NOT
         consistent with its previous user-specified value that existed in 
         Model files prior to OpenSim 4.0 */

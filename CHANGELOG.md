@@ -6,6 +6,23 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+v4.6
+====
+- Added support for list `Socket`s via the macro `OpenSim_DECLARE_LIST_SOCKET`. The macro-generated method 
+  `appendSocketConnectee_*` can be used to connect `Object`s to a list `Socket`. In addition, `Component` and Socket have 
+  new `getConnectee` overloads that take an index to a desired object in the list `Socket` (#3652).
+- Added `ComponentPath::root()`, which returns a `ComponentPath` equivalent to "/"
+- `ComponentPath` is now less-than (`<`) comparable, making it usable in (e.g.) `std::map`
+- `ComponentPath` now has a `std::hash<T>` implementation, making it usable in (e.g.) `std::unordered_map`
+- Added `.clear()` and `.empty()` to `ComponentPath` for more parity with `std::string`'s semantics
+- Added `tryGetSocket` and `tryUpdSocket` to the `Component` interface, which provides a non-throwing way of
+  querying a component's sockets by name (#3673)
+- Added `tryGetOutput` and `tryUpdOutput` to the `Component` interface, which provides a non-throwing way of
+  querying a component's outputs by name (#3673)
+- The XMLDocument that is held within OpenSim::Object is now reference-counted, to help ensure
+  it is freed (e.g. when an exception is thrown)
+- `Controller` now manages the list of controlled actuators using a list `Socket` instead of a `Set<Actuators>` (#3683)
+
 v4.5
 ====
 - Added `AbstractGeometryPath` which is a base class for `GeometryPath` and other path types (#3388). All path-based
@@ -25,7 +42,7 @@ and `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`,
 - Deleting elements from an `OpenSim::Coordinate` range now throws an exception during `finalizeFromProperties` (previously:
   it would let you do it, and throw later when `Coordinate::getMinRange()` or `Coordinate::getMaxRange()` were called, #3532)
 - Added `FunctionBasedPath`, a class for representing paths in `Force`s based on `Function` objects (#3389)
-- Fixed bindings to expose the method Model::getCoordinatesInMultibodyTreeOrder to scripting users (#3569)
+- Introduced the method `Model::getCoordinateNamesInMultibodyTreeOrder` for convenient access to internal coordinate ordering for scripting users (#3569)
 - Fixed a bug where constructing a `ModelProcessor` from a `Model` object led to an invalid `Model`
 - Added `LatinHypercubeDesign`, a class for generating Latin hypercube designs using random and algorithm methods (#3570)
 - Refactor c3dExport.m file as a Matlab function (#3501), also expose method to allow some operations on tableColumns
@@ -42,6 +59,7 @@ and `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`,
 - Simbody was updated such that the headers it transitively exposes to downstream projects are compatible with C++20 (#3619)
 - Moved speed computation from `computeForce` in children of `ScalarActuator` to dedicated `getSpeed` function.
 - Fix type problem with BufferedOrientationReference (Issue #3415, PR #3644)
+- Fixed setting the color of a PathSpring's GeometryPath should now update the color of the PathSpring geometry
 
 
 v4.4.1

@@ -27,13 +27,13 @@
 #include <OpenSim/Common/CommonUtilities.h>
 #include <SimTKcommon.h>
 
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
 using OpenSim::TimeSeriesTable;
+using Catch::Matchers::WithinAbs;
 
 // HELPER FUNCTIONS
 namespace {
@@ -82,10 +82,13 @@ namespace {
         // Create a PrescribedController that simply applies a function of the
         // force.
         PrescribedController actuController;
-        actuController.setActuators(model.updActuators());
-        for (int i = 0; i < actuController.getActuatorSet().getSize(); i++) {
+        const auto& actuatorsSet = model.getActuators();
+        actuController.setActuators(actuatorsSet);
+        const auto& socket = actuController.getSocket<Actuator>("actuators");
+        for (int i = 0; i < (int)socket.getNumConnectees(); i++) {
             actuController.prescribeControlForActuator(
-                    i, new Constant(activation));
+                    actuatorsSet.get(i).getAbsolutePathString(),
+                    new Constant(activation));
         }
     
         // Add the controller to the model. We need to call disownAllComponents
@@ -208,13 +211,13 @@ TEST_CASE("testWrapCylinder") {
         double ma1 = spring1->computeMomentArm(s, coord);
         double ma2 = spring2->computeMomentArm(s, coord);
 
-        CHECK_THAT(r - ma1, Catch::WithinAbs(0.0, SimTK::Eps));
-        CHECK_THAT(r - ma2, Catch::WithinAbs(0.0, SimTK::Eps));
+        CHECK_THAT(r - ma1, WithinAbs(0.0, SimTK::Eps));
+        CHECK_THAT(r - ma2, WithinAbs(0.0, SimTK::Eps));
 
         double len1 = spring1->getLength(s);
         double len2 = spring2->getLength(s);
 
-        CHECK_THAT(len1 - len2, Catch::WithinAbs(0.0, SimTK::Eps));
+        CHECK_THAT(len1 - len2, WithinAbs(0.0, SimTK::Eps));
     }
 }
 
@@ -403,13 +406,13 @@ TEST_CASE("testFunctionBasedPath") {
         // the number of mobilities (based on Simbody's testing).
         const auto& path = actu->getPath();
         const double tol = 10 * state.getNU() * SimTK::Test::defTol<double>();
-        CHECK_THAT(length, Catch::WithinAbs(path.getLength(state), tol));
+        CHECK_THAT(length, WithinAbs(path.getLength(state), tol));
         auto& coord = model.getCoordinateSet()[0];
         CHECK_THAT(momentArm, 
-            Catch::WithinAbs(path.computeMomentArm(state, coord), tol));
+            WithinAbs(path.computeMomentArm(state, coord), tol));
         CHECK_THAT(speed, 
-            Catch::WithinAbs(path.getLengtheningSpeed(state), tol));
-        CHECK_THAT(genForce, Catch::WithinAbs(residuals[0], tol));
+            WithinAbs(path.getLengtheningSpeed(state), tol));
+        CHECK_THAT(genForce, WithinAbs(residuals[0], tol));
     }
     
     SECTION("Planar point mass, length function") {
@@ -474,17 +477,17 @@ TEST_CASE("testFunctionBasedPath") {
         // the number of mobilities (based on Simbody's testing).
         const auto& path = actu->getPath();
         const double tol = 10 * state.getNU() * SimTK::Test::defTol<double>();
-        CHECK_THAT(length, Catch::WithinAbs(path.getLength(state), tol));
+        CHECK_THAT(length, WithinAbs(path.getLength(state), tol));
         auto& tx = model.getCoordinateSet()[0];
         auto& ty = model.getCoordinateSet()[1];
         CHECK_THAT(momentArm_x, 
-                Catch::WithinAbs(path.computeMomentArm(state, tx), tol));
+                WithinAbs(path.computeMomentArm(state, tx), tol));
         CHECK_THAT(momentArm_y, 
-                Catch::WithinAbs(path.computeMomentArm(state, ty), tol));
+                WithinAbs(path.computeMomentArm(state, ty), tol));
         CHECK_THAT(speed, 
-                Catch::WithinAbs(path.getLengtheningSpeed(state), tol));
-        CHECK_THAT(genForce_x, Catch::WithinAbs(residuals[0], tol));
-        CHECK_THAT(genForce_y, Catch::WithinAbs(residuals[1], tol));
+                WithinAbs(path.getLengtheningSpeed(state), tol));
+        CHECK_THAT(genForce_x, WithinAbs(residuals[0], tol));
+        CHECK_THAT(genForce_y, WithinAbs(residuals[1], tol));
     }
     
     SECTION("Planar point mass, all functions") {
@@ -574,16 +577,16 @@ TEST_CASE("testFunctionBasedPath") {
         // the number of mobilities (based on Simbody's testing).
         const auto& path = actu->getPath();
         const double tol = 10 * state.getNU() * SimTK::Test::defTol<double>();
-        CHECK_THAT(length, Catch::WithinAbs(path.getLength(state), tol));
+        CHECK_THAT(length, WithinAbs(path.getLength(state), tol));
         auto& tx = model.getCoordinateSet()[0];
         auto& ty = model.getCoordinateSet()[1];
-        CHECK_THAT(momentArm_x, 
-                Catch::WithinAbs(path.computeMomentArm(state, tx), tol));
+        CHECK_THAT(momentArm_x,
+                WithinAbs(path.computeMomentArm(state, tx), tol));
         CHECK_THAT(momentArm_y, 
-                Catch::WithinAbs(path.computeMomentArm(state, ty), tol));
+                WithinAbs(path.computeMomentArm(state, ty), tol));
         CHECK_THAT(speed, 
-                Catch::WithinAbs(path.getLengtheningSpeed(state), tol));
-        CHECK_THAT(genForce_x, Catch::WithinAbs(residuals[0], tol));
-        CHECK_THAT(genForce_y, Catch::WithinAbs(residuals[1], tol));
+                WithinAbs(path.getLengtheningSpeed(state), tol));
+        CHECK_THAT(genForce_x, WithinAbs(residuals[0], tol));
+        CHECK_THAT(genForce_y, WithinAbs(residuals[1], tol));
     }
 }

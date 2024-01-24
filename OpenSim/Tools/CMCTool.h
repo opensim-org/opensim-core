@@ -140,9 +140,11 @@ public:
 private:
     void setNull();
     void setupProperties();
-    /* Get the Set of model actuators for CMC that exclude user specified Actuators */
-    Set<Actuator> getActuatorsForCMC(const Array<std::string> &actuatorsByNameOrGroup);
 
+    /** Get the vector of model actuator paths for CMC that exclude user
+    specified Actuators */
+    std::vector<std::string> getActuatorsForCMC(
+            const Array<std::string> &actuatorsByNameOrGroup);
 
     //--------------------------------------------------------------------------
     // OPERATORS

@@ -408,15 +408,29 @@ bool CMCTool::run()
     //taskSet.print("cmcTasksRT.xml");
     log_info("TaskSet size = {}.", taskSet.getSize());
 
-    CMC* controller = new CMC(_model,&taskSet); // Need to make it a pointer since Model takes ownership 
+    CMC* controller = new CMC(_model,&taskSet); // Need to make it a pointer since Model takes ownership
     controller->setName( "CMC" );
 
     // Don't automatically give CMC all the model actuators
     // Check to see if user has explicitly listed Actuators to be
     // excluded from CMC's control.
-
-    controller->setActuators(getActuatorsForCMC(_excludedActuators));
-    _model->addController(controller );
+    std::vector<std::string> actuatorPaths =
+            getActuatorsForCMC(_excludedActuators);
+    for (const auto& actuatorPath : actuatorPaths) {
+        if (_model->hasComponent(actuatorPath) && !actuatorPath.empty()
+                && actuatorPath != ComponentPath::root()) {
+            const auto& actuator = _model->getComponent<Actuator>(actuatorPath);
+            controller->addActuator(actuator);
+        } else {
+            for (const auto& actu : _model->getComponentList<Actuator>()) {
+                if (actu.getName() == actuatorPath) {
+                    controller->addActuator(actu);
+                    break;
+                }
+            }
+        }
+    }
+    _model->addController(controller);
     controller->setEnabled(true);
     controller->setUseCurvatureFilter(false);
     controller->setTargetDT(_targetDT);
@@ -541,7 +555,7 @@ bool CMCTool::run()
 
     int nq = _model->getNumCoordinates();
     int nu = _model->getNumSpeeds();
-    int na = controller->getActuatorSet().getSize();
+    int na = controller->getNumActuators();
 
     // Form complete storage objects for the q's and u's
     // This means filling in unspecified generalized coordinates and
@@ -1089,44 +1103,86 @@ void CMCTool::setOriginalForceSet(const ForceSet &aForceSet) {
 
 
 /* Get the Set of model actuators for CMC that exclude user specified Actuators */
-Set<Actuator> CMCTool::
-    getActuatorsForCMC(const Array<std::string> &actuatorsByNameOrGroup)
-{   
-    Set<Actuator> actuatorsForCMC = _model->getActuators();
-    for (int i=actuatorsForCMC.getSize()-1; i>0; i--){
-        if(!actuatorsForCMC.get(i).get_appliesForce())
-            actuatorsForCMC.remove(i);
+std::vector<std::string> CMCTool::getActuatorsForCMC(
+        const Array<std::string>& actuatorsByNameOrGroup) {
+
+    const Set<Actuator>& actuatorsForCMC = _model->getActuators();
+    std::vector<std::string> actuatorsToSkip;
+    for (int i=actuatorsForCMC.getSize()-1; i>0; i--) {
+        if (!actuatorsForCMC.get(i).get_appliesForce()) {
+            actuatorsToSkip.push_back(
+                actuatorsForCMC.get(i).getAbsolutePathString());
+        }
     }
     Array<string> groupNames;
     actuatorsForCMC.getGroupNames(groupNames);
 
-    /* The search for individual group or force names IS case-sensitive BUT keywords are not*/
-    for(int i=0; i<actuatorsByNameOrGroup.getSize(); i++){
-        // index result when a name is not a force or group name for forces in the model
-        int k = -1;  
+    // The search for individual group or force names IS case-sensitive, but
+    // keywords are not.
+    for (int i = 0; i < actuatorsByNameOrGroup.getSize(); i++) {
+        // index result when a name is not a force or group name for forces in
+        // the model
+        int k = -1;
         // It is possible to list actuators by name and group
-        // So check if name is a group name first   
-        if(groupNames.getSize() > 0){
+        // So check if name is a group name first
+        if (groupNames.getSize() > 0) {
             k = groupNames.findIndex(actuatorsByNameOrGroup[i]);
-            if(k > -1){ //found
+            if (k > -1) { // found
                 const ObjectGroup* group = actuatorsForCMC.getGroup(k);
                 Array<const Object*> members = group->getMembers();
-                for(int j=0; j<members.getSize(); j++)
-                    actuatorsForCMC.remove((Actuator *)members[j]);
-                actuatorsForCMC.removeGroup(actuatorsByNameOrGroup[i]);
+                for (int j = 0; j < members.getSize(); j++) {
+                    if (auto* actu = dynamic_cast<const Actuator*>(members[j])) {
+                        actuatorsToSkip.push_back(
+                            actu->getAbsolutePathString());
+                    }
+                }
             }
-        } //otherwise, check for an individual actuator
-        else{
+        } // otherwise, check for an individual actuator
+        else {
             k = actuatorsForCMC.getIndex(actuatorsByNameOrGroup[i]);
-            if(k > -1){ //found
-                actuatorsForCMC.remove(k);
+            if (k > -1) { // found
+                actuatorsToSkip.push_back(
+                    actuatorsForCMC.get(k).getAbsolutePathString());
             }
         }
         // No actuator(s) by group or individual name was found
-        if(k < 0)
+        if (k < 0)
             log_warn("CMCTool: Could not find actuator or group named '{}' to "
-                     "be excluded from CMC.", actuatorsByNameOrGroup[i]); 
+                     "be excluded from CMC.",
+                    actuatorsByNameOrGroup[i]);
     }
 
-    return actuatorsForCMC;
+    const int numActu = actuatorsForCMC.getSize();
+    std::vector<std::string> actuatorsForCMCPaths(numActu);
+    for (int i = 0; i < numActu; ++i) {
+        // Skip actuators that are not force-generating. Check both the path
+        // and name of the actuator.
+        const auto& actuPath = actuatorsForCMC.get(i).getAbsolutePathString();
+        const auto& actuName = actuatorsForCMC.get(i).getName();
+        if (std::find(actuatorsToSkip.begin(), actuatorsToSkip.end(), actuPath) !=
+                actuatorsToSkip.end()) {
+            continue;
+        }
+        if (std::find(actuatorsToSkip.begin(), actuatorsToSkip.end(), actuName) !=
+                actuatorsToSkip.end()) {
+            continue;
+        }
+
+        // If the actuator has a valid path, use it to retrieve the actuator.
+        // Otherwise, use the name to search for the actuator.
+        if (_model->hasComponent(actuPath) && !actuPath.empty()
+                && actuPath != ComponentPath::root()) {
+            const auto& actuator = _model->getComponent<Actuator>(actuPath);
+            actuatorsForCMCPaths.push_back(actuator.getAbsolutePathString());
+        } else {
+            for (const auto& actu : _model->getComponentList<Actuator>()) {
+                if (actu.getName() == actuName) {
+                    actuatorsForCMCPaths.push_back(actuName);
+                    break;
+                }
+            }
+        }
+    }
+
+    return actuatorsForCMCPaths;
 }

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2023 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,53 +26,50 @@
 //  that controllers behave as described.
 //
 //  Tests Include:
-//  1. Test a ControlSetController on a block with an ideal actuator
-//  2. Test a PrescribedController on a block with an ideal actuator
-//  3. Test a CorrectionController tracking a block with an ideal actuator
-//  4. Test a PrescribedController on the arm26 model with reserves.
+//  1. Test the Controller interface
+//  2. Test a ControlSetController on a block with an ideal actuator
+//  3. Test a PrescribedController on a block with an ideal actuator
+//  4. Test a CorrectionController tracking a block with an ideal actuator
+//  5. Test a PrescribedController on the arm26 model with reserves.
 //     Add tests here as new controller types are added to OpenSim
 //
 //=============================================================================
 
 #include <OpenSim/OpenSim.h>
+
+#include <catch2/catch_all.hpp>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
-void testControlSetControllerOnBlock();
-void testPrescribedControllerOnBlock(bool enabled);
-void testCorrectionControllerOnBlock();
-void testPrescribedControllerFromFile(const std::string& modelFile,
-                                      const std::string& actuatorsFile,
-                                      const std::string& controlsFile);
+TEST_CASE("Test Controller interface") {
 
-int main()
-{
-    try {
-        log_info("Testing ControlSetController"); 
-        testControlSetControllerOnBlock();
-        log_info("Testing PrescribedController"); 
-        testPrescribedControllerOnBlock(true);
-        testPrescribedControllerOnBlock(false);
-        log_info("Testing CorrectionController"); 
-        testCorrectionControllerOnBlock();
-        log_info("Testing PrescribedController from File");
-        testPrescribedControllerFromFile("arm26.osim", "arm26_Reserve_Actuators.xml",
-                                         "arm26_controls.xml");
-    }   
-    catch (const std::exception& e) {
-        log_error("TestControllers failed due to the following error(s): {}",
-            e.what());
-        return 1;
+    Model model = ModelFactory::createNLinkPendulum(2);
+    auto* controller = new PrescribedController();
+    controller->prescribeControlForActuator("/tau0", new Constant(1.0));
+    controller->prescribeControlForActuator("/tau1", new Constant(2.0));
+
+    SECTION("No actuators connecteed") {
+        model.addController(controller);
+        REQUIRE_THROWS(model.finalizeConnections());
     }
-    log_info("TestControllers passed.");
-    return 0;
+
+    SECTION("Adding actuators individually") {
+        controller->addActuator(model.getComponent<Actuator>("/tau0"));
+        controller->addActuator(model.getComponent<Actuator>("/tau1"));
+        model.addController(controller);
+        model.finalizeConnections();
+    }
+
+    SECTION("Adding multiple actuators from a ComponentList") {
+        controller->setActuators(model.getComponentList<Actuator>());
+        model.addController(controller);
+        model.finalizeConnections();
+    }
 }
 
-//==========================================================================================================
-void testControlSetControllerOnBlock()
-{
+TEST_CASE("testControlSetControllerOnBlock") {
     using namespace SimTK;
 
     // Create a new OpenSim model
@@ -125,13 +122,15 @@ void testControlSetControllerOnBlock()
     actuatorControls.setControlValues(initialTime, controlForce);
     actuatorControls.setControlValues(finalTime, controlForce);
     // Create a control set controller that simply applies controls from a ControlSet
-    ControlSetController actuatorController;
+    auto* actuatorController = new ControlSetController();
+
     // Make a copy and set it on the ControlSetController as it takes ownership of the 
     // ControlSet passed in
-    actuatorController.setControlSet((ControlSet*)Object::SafeCopy(&actuatorControls));
+    actuatorController->setControlSet(
+        (ControlSet*)Object::SafeCopy(&actuatorControls));
 
     // add the controller to the model
-    osimModel.addController(&actuatorController);
+    osimModel.addController(actuatorController);
 
     // Initialize the system and get the state representing the state system
     SimTK::State& si = osimModel.initSystem();
@@ -162,13 +161,13 @@ void testControlSetControllerOnBlock()
     states.print("block_push.sto");
 
     osimModel.disownAllComponents();
-}// end of testControlSetControllerOnBlock()
+}
 
 
-//==========================================================================================================
-void testPrescribedControllerOnBlock(bool enabled)
-{
+TEST_CASE("testPrescribedControllerOnBlock") {
     using namespace SimTK;
+
+    auto enabled = GENERATE(true, false);
 
     // Create a new OpenSim model
     Model osimModel;
@@ -214,7 +213,9 @@ void testPrescribedControllerOnBlock(bool enabled)
     PrescribedController actuatorController;
     actuatorController.setName("testPrescribedController");
     actuatorController.setActuators(osimModel.updActuators());
-    actuatorController.prescribeControlForActuator(0, new Constant(controlForce));
+    actuatorController.prescribeControlForActuator(
+        osimModel.getActuators().get(0).getAbsolutePathString(),
+        new Constant(controlForce));
     actuatorController.setEnabled(enabled);
 
     // add the controller to the model
@@ -258,12 +259,10 @@ void testPrescribedControllerOnBlock(bool enabled)
     Storage states(manager.getStateStorage());
     states.print("block_push.sto");
 
-}// end of testPrescribedControllerOnBlock()
+}
 
 
-//==========================================================================================================
-void testCorrectionControllerOnBlock()
-{
+TEST_CASE("testCorrectionControllerOnBlock") {
     using namespace SimTK;
 
     // Create a new OpenSim model
@@ -310,14 +309,15 @@ void testCorrectionControllerOnBlock()
     manager.setIntegratorAccuracy(1.0e-4);
 
     osimModel.disownAllComponents();
-}// end of testCorrectionControllerOnBlock()
+}
 
 
-void testPrescribedControllerFromFile(const std::string& modelFile,
-                                      const std::string& actuatorsFile,
-                                      const std::string& controlsFile)
-{
+TEST_CASE("testPrescribedControllerFromFile") {
     using namespace SimTK;
+
+    std::string modelFile = "arm26.osim";
+    std::string actuatorsFile = "arm26_Reserve_Actuators.xml";
+    std::string controlsFile = "arm26_controls.xml";
 
     double initialTime = 0.03;
     double finalTime = 1.0;
@@ -336,7 +336,6 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     ControlSetController csc;
     ControlSet* cs = new ControlSet(controlsFile);
     csc.setControlSet(cs);
-
     // add the controller to the model
     osimModel.addController(&csc);
 
