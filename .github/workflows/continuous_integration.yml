@@ -386,6 +386,9 @@ jobs:
 
     runs-on: macos-12
 
+    outputs:
+      version: ${{ steps.configure.outputs.version }}
+
     steps:
     - uses: actions/checkout@v3
     
@@ -512,21 +515,11 @@ jobs:
     runs-on: macos-12
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set version
-      run: |
-        VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
-          echo $VERSION
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
     - name: Download source branch artifacts
       uses: actions/download-artifact@v2
       with:
-        name: opensim-core-${{ steps.configure.outputs.version }}-mac-11
-        path: opensim-core-${{ steps.configure.outputs.version }}-11.zip
+        name: opensim-core-${{ needs.mac_source.outputs.version }}-mac-11
+        path: opensim-core-${{ needs.mac_source.outputs.version }}-11.zip
 
     - name: Download target branch artifacts
       uses: actions/download-artifact@v2
