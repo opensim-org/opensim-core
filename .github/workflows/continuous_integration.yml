@@ -515,23 +515,44 @@ jobs:
     runs-on: macos-12
 
     steps:
-    - name: Download source branch artifacts
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.8'
+
+    - name: Checkout osimperf
+      uses: actions/checkout@v3
+      with:
+        repository: adamkewley/osimperf
+        ref: master
+
+    - name: Download source branch artifact
       uses: actions/download-artifact@v2
       with:
         name: opensim-core-${{ needs.mac_source.outputs.version }}-mac-11
         path: opensim-core-${{ needs.mac_source.outputs.version }}-11.zip
 
-    - name: Download target branch artifacts
+    - name: Unzip source branch artifact
+      run: |
+        unzip $GITHUB_WORKSPACE/opensim-core-${{ needs.mac_source.outputs.version }}-11.zip -d $GITHUB_WORKSPACE/opensim-core-${{ needs.mac_source.outputs.version }}-11
+        cd $GITHUB_WORKSPACE/opensim-core-${{ needs.mac_source.outputs.version }}-11
+        ls
+
+    - name: Download target branch artifact
       uses: actions/download-artifact@v2
       with:
         name: opensim-core-${{ github.event.pull_request.base.ref }}-mac-11
         path: opensim-core-${{ github.event.pull_request.base.ref }}-11.zip
 
+    - name: Unzip target branch artifact
+      run: |
+        unzip $GITHUB_WORKSPACE/opensim-core-${{ github.event.pull_request.base.ref }}-11.zip -d $GITHUB_WORKSPACE/opensim-core-${{ github.event.pull_request.base.ref }}-11
+        cd $GITHUB_WORKSPACE/opensim-core-${{ github.event.pull_request.base.ref }}-11
+        ls
+
     - name: Run Examples and Compare Performance
       run: |
-        # Replace the following commands with your example run and performance comparison commands
-        echo "Running examples and comparing performance"
-        # Run your example commands and performance comparison
+        cd $GITHUB_WORKSPACE/osimperf
+        osimperf --help
 
   ubuntu20:
     name: Ubuntu2004
