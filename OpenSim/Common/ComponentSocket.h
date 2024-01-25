@@ -319,14 +319,14 @@ private:
 
     void setConnecteePathInternal(const std::string& name, int index) {
         using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK(index, getNumConnectees(),
+        SimTK_INDEXCHECK(index, static_cast<int>(getNumConnectees()),
                          "AbstractSocket::setConnecteePath()");
         updConnecteePathProp().setValue(index, name);
     }
 
     const std::string& getConnecteePathInternal(int index) const {
         using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK(index, getNumConnectees(),
+        SimTK_INDEXCHECK(index, static_cast<int>(getNumConnectees()),
                         "AbstractSocket::getConnecteePath()");
         return getConnecteePathProp().getValue(index);
     }
@@ -375,7 +375,7 @@ public:
     typedef std::vector<SimTK::ReferencePtr<const T>> ConnecteeList;
 
     // default copy constructor
-    
+
     virtual ~Socket() {}
     
     Socket<T>* clone() const override { return new Socket<T>(*this); }
@@ -475,18 +475,26 @@ private:
         OPENSIM_THROW_IF(!isConnected(), Exception,
             "Socket '{}' not connected.", getName());
         using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK(index, getNumConnectees(),
+        SimTK_INDEXCHECK(index, static_cast<int>(getNumConnectees()),
                          "Socket<T>::getConnecteeAsObject()");
         return _connectees[index].getRef();
     }
 
     const T& getConnecteeInternal(int index) const {
-        OPENSIM_THROW_IF(!isConnected(), Exception,
-            "Socket '{}' not connected.", getName());
-        using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK(index, getNumConnectees(),
-                         "Socket<T>::getConnectee()");
-        return _connectees[index].getRef();
+        if (0 <= index && index < _connectees.size() && _connectees[index]) {
+            // fast case: use the cached connectee pointer
+            //
+            // it's usually cached via a direct call to `connect`, or through
+            // a call to `finalizeConnection`
+            return *_connectees[index];
+        }
+
+        // else: slow case: use the connectee path property to perform the lookup
+        //
+        // this is slower, but runtime-validated. It's necessary when (e.g.) a
+        // component wants to use sockets during an `extendFinalizeConnections`
+        // override (i.e. midway through recursively calling `finalizeConnection`)
+        return getOwner().getComponent<T>(getConnecteePath(index));
     }
 
     void connectInternal(const T& objT) {
