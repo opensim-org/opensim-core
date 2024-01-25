@@ -31,9 +31,6 @@ This is an endpoint constraint goal by default.
 Credit for using this goal to address excessive initial activation goes to
 Jessica Allen.
 
-@note Muscles that are already controlled by a user-defined controller are
-ignored by this goal.
-
 @ingroup mocogoal */
 class OSIMMOCO_API MocoInitialActivationGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoInitialActivationGoal, MocoGoal);

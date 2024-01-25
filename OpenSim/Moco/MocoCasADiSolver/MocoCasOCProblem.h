@@ -21,9 +21,9 @@
 #include "CasOCProblem.h"
 #include "MocoCasADiSolver.h"
 
-#include <OpenSim/Simulation/Control/DiscreteController.h>
 #include <OpenSim/Moco/Components/AccelerationMotion.h>
 #include <OpenSim/Moco/Components/DiscreteForces.h>
+#include <OpenSim/Moco/Components/ControlAllocator.h>
 #include <OpenSim/Moco/MocoBounds.h>
 #include <OpenSim/Moco/MocoProblemRep.h>
 
@@ -345,9 +345,9 @@ private:
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
 
-        const auto& discreteController =
-                mocoProblemRep->getDiscreteControllerDisabledConstraints();
-        const auto& rawControls = discreteController.getDiscreteControls(
+        const auto& modelDisabledConstraints =
+                mocoProblemRep->getModelDisabledConstraints();
+        const auto& rawControls = modelDisabledConstraints.getControls(
                 simtkStateDisabledConstraints);
 
         integrand = mocoCost.calcIntegrand(
@@ -376,11 +376,11 @@ private:
         auto& simtkStateDisabledConstraintsFinal =
                 mocoProblemRep->updStateDisabledConstraints(1);
 
-        const auto& discreteController =
-                mocoProblemRep->getDiscreteControllerDisabledConstraints();
-        const auto& rawControlsInitial = discreteController.getDiscreteControls(
+        const auto& modelDisabledConstraints =
+                mocoProblemRep->getModelDisabledConstraints();
+        const auto& rawControlsInitial = modelDisabledConstraints.getControls(
                 simtkStateDisabledConstraintsInitial);
-        const auto& rawControlsFinal = discreteController.getDiscreteControls(
+        const auto& rawControlsFinal = modelDisabledConstraints.getControls(
                 simtkStateDisabledConstraintsFinal);
 
         // Compute the cost for this cost term.
@@ -410,9 +410,9 @@ private:
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
 
-        const auto& discreteController =
-                mocoProblemRep->getDiscreteControllerDisabledConstraints();
-        const auto& rawControls = discreteController.getDiscreteControls(
+        const auto& modelDisabledConstraints =
+                mocoProblemRep->getModelDisabledConstraints();
+        const auto& rawControls = modelDisabledConstraints.getControls(
                 simtkStateDisabledConstraints);
 
         integrand = mocoEC.calcIntegrand(
@@ -442,11 +442,11 @@ private:
         auto& simtkStateDisabledConstraintsFinal =
                 mocoProblemRep->updStateDisabledConstraints(1);
 
-        const auto& discreteController =
-                mocoProblemRep->getDiscreteControllerDisabledConstraints();
-        const auto& rawControlsInitial = discreteController.getDiscreteControls(
+        const auto& modelDisabledConstraints =
+                mocoProblemRep->getModelDisabledConstraints();
+        const auto& rawControlsInitial = modelDisabledConstraints.getControls(
                 simtkStateDisabledConstraintsInitial);
-        const auto& rawControlsFinal = discreteController.getDiscreteControls(
+        const auto& rawControlsFinal = modelDisabledConstraints.getControls(
                 simtkStateDisabledConstraintsFinal);
 
         // Compute the cost for this cost term.
@@ -553,17 +553,16 @@ private:
             const double& time,
             const casadi::DM& states, const casadi::DM& controls,
             const Model& model, SimTK::State& simtkState,
-            const DiscreteController& discreteController) const {
+            const ControlAllocator& controlAllocator) const {
         if (stageDep >= SimTK::Stage::Model) {
             convertStatesToSimTKState(
                     stageDep, time, states, model, simtkState, true);
 
-            // TODO replace with ControlAllocator
             // TODO set controls to ControlAllocator in problem order? the
             //      controls will need to match the order of the controls
             //      add to ControlAllocator
             SimTK::Vector& simtkControls =
-                    discreteController.updDiscreteControls(simtkState);
+                    controlAllocator.updControls(simtkState);
             for (int ic = 0; ic < getNumControls(); ++ic) {
                 // simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
                 simtkControls[ic] = *(controls.ptr() + ic);
@@ -627,7 +626,7 @@ private:
 
         convertStatesControlsToSimTKState(stageDep, time, states, controls,
                 modelDisabledConstraints, simtkStateDisabledConstraints,
-                mocoProblemRep->getDiscreteControllerDisabledConstraints());
+                mocoProblemRep->getControlAllocatorDisabledConstraints());
 
         // If enabled constraints exist in the model, compute constraint forces
         // based on Lagrange multipliers. This also updates the associated

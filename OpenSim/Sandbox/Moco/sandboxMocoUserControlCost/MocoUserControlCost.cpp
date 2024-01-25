@@ -45,12 +45,12 @@ void MocoUserControlCost::setWeight(
 void MocoUserControlCost::initializeOnModelImpl(const Model& model) const {
 
     // Get all expected control names.
-    auto controlNames = createControlNamesFromModel(model, true, true);
+    auto controlNames = createControlNamesFromModel(model);
 
     // Check that the model controls are in the correct order.
     checkOrderSystemControls(model);
 
-    auto systemControlIndexMap = createSystemControlIndexMap(model, true, true);
+    auto systemControlIndexMap = createSystemControlIndexMap(model);
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& thisName = get_control_weights()[i].getName();

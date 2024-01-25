@@ -22,6 +22,7 @@
 
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
+#include <OpenSim/Simulation/Control/InputController.h>
 
 using namespace OpenSim;
 
@@ -34,6 +35,7 @@ void MocoControlBoundConstraint::constructProperties() {
     constructProperty_lower_bound();
     constructProperty_upper_bound();
     constructProperty_equality_with_lower(false);
+    constructProperty_ignore_controlled_actuators(false);
 }
 
 void MocoControlBoundConstraint::initializeOnModelImpl(
@@ -41,6 +43,10 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
 
     // Check that the model controls are in the correct order.
     checkOrderSystemControls(model);
+
+    // Get controls associated with the model's ActuatorInputController.
+    auto actuatorInputControls =
+            createControlNamesForControllerType<ActuatorInputController>(model);
 
     m_hasLower = !getProperty_lower_bound().empty();
     m_hasUpper = !getProperty_upper_bound().empty();
@@ -50,8 +56,7 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
     }
     // Make sure there are no nonexistent controls.
     if (m_hasLower || m_hasUpper) {
-        auto systemControlIndexMap =
-                createSystemControlIndexMap(model, true, true);
+        auto systemControlIndexMap = createSystemControlIndexMap(model);
         for (int i = 0; i < getProperty_control_paths().size(); ++i) {
             const auto& thisName = get_control_paths(i);
             OPENSIM_THROW_IF_FRMOBJ(systemControlIndexMap.count(thisName) == 0,
@@ -59,7 +64,19 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
                     "Control path '{}' was provided but no such "
                     "control exists in the model or it is already controlled "
                     "by a user-defined controller.",
-                    thisName);
+                    thisName)
+
+            bool isActuatorInputControl = std::find(
+                    actuatorInputControls.begin(), actuatorInputControls.end(),
+                    thisName) != actuatorInputControls.end();
+            if (getIgnoreControlledActuators() && !isActuatorInputControl) {
+                log_info("MocoControlBoundConstraint: Control path '{}' is "
+                         "already controlled by a user-defined controller "
+                         "and will be ignored.",
+                        thisName);
+                continue;
+            }
+
             m_controlIndices.push_back(systemControlIndexMap[thisName]);
         }
     }

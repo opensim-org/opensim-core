@@ -19,6 +19,7 @@
 #include "MocoPeriodicityGoal.h"
 
 #include <OpenSim/Simulation/SimulationUtilities.h>
+#include <OpenSim/Simulation/Control/InputController.h>
 
 using namespace OpenSim;
 
@@ -78,16 +79,40 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
                 get_state_pairs(i).get_negate() ? -1 : 1);
     }
 
-    auto systemControlIndexMap = createSystemControlIndexMap(model, true, true);
-    int nControlPairs = getProperty_control_pairs().size();
+    auto systemControlIndexMap = createSystemControlIndexMap(model);
 
+    // Get controls associated with the model's ActuatorInputController.
+    auto actuatorInputControls =
+            createControlNamesForControllerType<ActuatorInputController>(model);
+
+    int nControlPairs = getProperty_control_pairs().size();
+    bool pairHasActuatorInputControl;
     for (int i = 0; i < nControlPairs; ++i) {
         const auto path1 = get_control_pairs(i).get_initial_variable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path1) == 0, Exception,
                 "Could not find control variable '{}'.", path1);
+        pairHasActuatorInputControl = std::find(
+                actuatorInputControls.begin(), actuatorInputControls.end(),
+                path1) != actuatorInputControls.end();
+
         const auto path2 = get_control_pairs(i).get_final_variable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path2) == 0, Exception,
                 "Could not find control variable '{}'.", path2);
+        if (!pairHasActuatorInputControl) {
+            pairHasActuatorInputControl = std::find(
+                actuatorInputControls.begin(), actuatorInputControls.end(),
+                path2) != actuatorInputControls.end();
+        }
+
+        if (getIgnoreControlledActuators() && !pairHasActuatorInputControl) {
+            log_info("MocoPeriodicityGoal: Control pair '{}'/'{}' has at least "
+                     "control that is already controlled by a user-defined "
+                     "controller; therefore it will be ignored.",
+                    get_control_pairs(i).get_initial_variable(),
+                    get_control_pairs(i).get_final_variable());
+            continue;
+        }
+
         int controlIndex1 = systemControlIndexMap[path1];
         int controlIndex2 = systemControlIndexMap[path2];
         m_control_names.emplace_back(path1, path2);

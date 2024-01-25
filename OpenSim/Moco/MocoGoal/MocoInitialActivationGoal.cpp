@@ -19,6 +19,7 @@
 #include "MocoInitialActivationGoal.h"
 
 #include <OpenSim/Simulation/SimulationUtilities.h>
+#include <OpenSim/Simulation/Control/InputController.h>
 
 using namespace OpenSim;
 
@@ -28,19 +29,14 @@ void MocoInitialActivationGoal::initializeOnModelImpl(
     // Get a map of all the state indices in the system.
     auto allSysYIndices = createSystemYIndexMap(model);
 
-    // Get a map of all the control indices in the system. Skip muscles that
-    // are already controlled by a user-defined controller.
-    auto systemControlIndexMap = createSystemControlIndexMap(model, true, true);
+    // Get a map of all the control indices in the system.
+    auto systemControlIndexMap = createSystemControlIndexMap(model);
 
     for (const auto& muscle : model.getComponentList<Muscle>()) {
         const std::string path = muscle.getAbsolutePathString();
-        const bool muscleIsNotControlled = systemControlIndexMap.find(path) !=
-                                           systemControlIndexMap.end();
-        if (!muscle.get_ignore_activation_dynamics() && muscleIsNotControlled) {
-            int excitationIndex = systemControlIndexMap[path];
-            int activationIndex = allSysYIndices[path + "/activation"];
-            m_indices.emplace_back(excitationIndex, activationIndex);
-        }
+        int excitationIndex = systemControlIndexMap[path];
+        int activationIndex = allSysYIndices[path + "/activation"];
+        m_indices.emplace_back(excitationIndex, activationIndex);
     }
 
     setRequirements(0, (int)m_indices.size(), SimTK::Stage::Time);

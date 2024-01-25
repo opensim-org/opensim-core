@@ -152,11 +152,6 @@ OSIMSIMULATION_API
 std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 #endif
 
-/// Create a vector of actuator paths in the model associated with a Controller.
-OSIMSIMULATION_API
-std::vector<std::string> createControlledActuatorPathsFromModel(
-        const Model& model);
-
 /// Create a vector of control names based on the actuators in the model for
 /// which appliesForce == True. For actuators with one control (e.g.
 /// ScalarActuator) the control name is simply the actuator name. For actuators
@@ -169,10 +164,56 @@ std::vector<std::string> createControlledActuatorPathsFromModel(
 OSIMSIMULATION_API
 std::vector<std::string> createControlNamesFromModel(
         const Model& model, std::vector<int>& modelControlIndices);
+
 /// Same as above, but when there is no mapping to the modelControlIndices.
 /// @ingroup simulationutil
 OSIMSIMULATION_API
 std::vector<std::string> createControlNamesFromModel(const Model& model);
+
+/// Given a controller of type `T`, create a vector of control names based on
+/// the actuators in the model for which appliesForce == True. For actuators
+/// with one control (e.g. ScalarActuator) the control name is simply the
+/// actuator name. For actuators with multiple controls, each control name is
+/// the actuator name appended by the control index (e.g. "/actuator_0").
+/// @ingroup simulationutil
+template <typename T>
+std::vector<std::string> createControlNamesForControllerType(
+        const Model& model) {
+    std::vector<std::string> controlNames;
+
+    // Check that T is a Controller.
+    if (!std::is_base_of<Controller, T>::value) {
+        std::stringstream msg;
+        msg << "Expected the template argument to derived from Controller, "
+            << "but the provided type is " << typeid(T).name() << ".";
+        OPENSIM_THROW(Exception, msg.str());
+    }
+
+    for (const auto& controller : model.getComponentList<T>()) {
+        const auto& socket = controller.getSocket<Actuator>("actuators");
+        // Loop through all actuators and create control names. For scalar
+        // actuators, use the actuator name for the control name. For non-scalar
+        // actuators, use the actuator name with a control index appended for
+        // the control name.
+        for (int i = 0; i < socket.getNumConnectees(); ++i) {
+            const auto& actu = socket.getConnectee(i);
+            if (!actu.get_appliesForce()) {
+                continue;
+            }
+            std::string actuPath = actu.getAbsolutePathString();
+            if (actu.numControls() == 1) {
+                controlNames.push_back(actuPath);
+            } else {
+                for (int i = 0; i < actu.numControls(); ++i) {
+                    controlNames.push_back(actuPath + "_" + std::to_string(i));
+                }
+            }
+        }
+    }
+
+    return controlNames;
+}
+
 /// The map provides the index of each control variable in the SimTK::Vector
 /// returned by Model::getControls(), using the control name as the
 /// key.

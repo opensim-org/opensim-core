@@ -50,8 +50,8 @@ We use the following notation:
 If `p > 2`, we first take the absolute value of the control; this is to properly
 handle odd exponents.
 
-@note Controls belonging to actuators controlled by user-defined controllers
-are not included in the cost.
+If you wish to minimize all control signals except those belonging to a
+user-defined controller, pass 'true' to setIgnoreControlledActuators().
 
 @ingroup mocogoal */
 class OSIMMOCO_API MocoControlGoal : public MocoGoal {
@@ -90,6 +90,16 @@ public:
     void setExponent(int exponent) { set_exponent(exponent); }
     double getExponent() const { return get_exponent(); }
 
+    /// If true, do not minimize controls belonging to actuators controlled by
+    /// user-defined controllers.
+    void setIgnoreControlledActuators(bool v) {
+        set_ignore_controlled_actuators(v);
+    }
+    /// @copydoc setIgnoreControlledActuators()
+    bool getIgnoreControlledActuators() const {
+        return get_ignore_controlled_actuators();
+    }
+
 protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
@@ -106,9 +116,12 @@ private:
     OpenSim_DECLARE_PROPERTY(control_weights_pattern, MocoWeightSet,
             "Set control weights for all controls matching a regular "
             "expression.");
-    OpenSim_DECLARE_PROPERTY(
-            exponent, int, "The exponent on controls; greater than or equal to "
-                           "2 (default: 2).");
+    OpenSim_DECLARE_PROPERTY(exponent, int,
+            "The exponent on controls; greater than or equal to 2 "
+            "(default: 2).");
+    OpenSim_DECLARE_PROPERTY(ignore_controlled_actuators, bool,
+            "If true, do not minimize controls belonging to actuators "
+            "controlled by user-defined controllers (default: false).");
     mutable std::vector<double> m_weights;
     mutable std::vector<int> m_controlIndices;
     mutable std::vector<std::string> m_controlNames;

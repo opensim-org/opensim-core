@@ -22,6 +22,7 @@
 #include <OpenSim/Moco/MocoUtilities.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Control/InputController.h>
 
 using namespace OpenSim;
 
@@ -66,10 +67,12 @@ void MocoControlTrackingGoal::addScaleFactor(const std::string &name,
 void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // Get a map between control names and their indices in the model. This also
-    // checks that the model controls are in the correct order. Controls
-    // associated with actuators controlled by user-defined controllers are not
-    // included in this map.
-    auto allControlIndices = createSystemControlIndexMap(model, true, true);
+    // checks that the model controls are in the correct order.
+    auto allControlIndices = createSystemControlIndexMap(model);
+
+    // Get controls associated with the model's ActuatorInputController.
+    auto actuatorInputControls =
+            createControlNamesForControllerType<ActuatorInputController>(model);
 
     // Throw exception if a weight is specified for a nonexistent control.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
@@ -152,6 +155,18 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
             weight = get_control_weights().get(controlToTrack).getWeight();
         }
         if (weight == 0) {
+            log_info("MocoControlTrackingGoal: Skipping control '{}' because "
+                     "its weight is 0.", controlToTrack);
+            continue;
+        }
+
+        bool isActuatorInputControl = std::find(
+                actuatorInputControls.begin(), actuatorInputControls.end(),
+                controlToTrack) != actuatorInputControls.end();
+        if (getIgnoreControlledActuators() && !isActuatorInputControl) {
+            log_info("MocoControlTrackingGoal: Control '{}' is already "
+                     "controlled by a user-defined controller and will be "
+                     "ignored.", controlToTrack);
             continue;
         }
 

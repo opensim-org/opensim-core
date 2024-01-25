@@ -131,8 +131,8 @@ Tracking problems in direct collocation perform best when tracking smooth
 data, so it is recommended to filter the data in the reference you provide
 to the cost.
 
-@note Controls belonging to actuators controlled by user-defined controllers
-cannot be tracked by this goal.
+If you wish to track all control signals except those belonging to a
+user-defined controller, pass 'true' to `setIgnoreControlledActuators()`.
 
 @ingroup mocogoal */
 class OSIMMOCO_API MocoControlTrackingGoal : public MocoGoal {
@@ -235,6 +235,16 @@ public:
         return get_allow_unused_references();
     }
 
+    /// If true, do not track controls belonging to actuators controlled by
+    /// user-defined controllers.
+    void setIgnoreControlledActuators(bool v) {
+        set_ignore_controlled_actuators(v);
+    }
+    /// @copydoc setIgnoreControlledActuators()
+    bool getIgnoreControlledActuators() const {
+        return get_ignore_controlled_actuators();
+    }
+
     /// Add a MocoParameter to the problem that will scale the tracking reference
     /// data associated with the specified control. Scale factors are applied
     /// to the tracking error calculations based on the following equation:
@@ -277,11 +287,16 @@ private:
             MocoControlTrackingGoalReference,
             "Association between controls and columns in the reference data.");
 
+    OpenSim_DECLARE_PROPERTY(ignore_controlled_actuators, bool,
+            "If true, do not track controls belonging to actuators "
+            "controlled by user-defined controllers (default: false).");
+
     void constructProperties() {
         constructProperty_reference(TableProcessor());
         constructProperty_allow_unused_references(false);
         constructProperty_control_weights(MocoWeightSet());
         constructProperty_reference_labels();
+        constructProperty_ignore_controlled_actuators(false);
     }
 
     mutable std::vector<int> m_control_indices;

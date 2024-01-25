@@ -34,14 +34,14 @@ If a function is a GCVSpline, we ensure that the spline covers the entire
 possible time range in the problem (using the problem's time bounds). We do
 not perform such a check for other types of functions.
 
+If you wish to constrain all control signals except those belonging to a
+user-defined controller, pass 'true' to setIgnoreControlledActuators().
+
 @note If you omit the lower and upper bounds, then this class will not
 constrain any control signals, even if you have provided control paths.
 
 @note This class can only constrain control signals for ScalarActuator%s.
 
-@note Controls belonging to actuators controlled by user-defined controllers
-will not appear in the MocoProblem, and therefore cannot be constrained by
-this class.
 @ingroup mocopathcon */
 class OSIMMOCO_API MocoControlBoundConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(
@@ -88,6 +88,16 @@ public:
     //// @copydoc setEqualityWithLower()
     bool getEqualityWithLower() const { return get_equality_with_lower(); }
 
+    /// If true, do not constrain controls belonging to actuators controlled by
+    /// user-defined controllers.
+    void setIgnoreControlledActuators(bool v) {
+        set_ignore_controlled_actuators(v);
+    }
+    /// @copydoc setIgnoreControlledActuators()
+    bool getIgnoreControlledActuators() const {
+        return get_ignore_controlled_actuators();
+    }
+
 protected:
     void initializeOnModelImpl(
             const Model& model, const MocoProblemInfo&) const override;
@@ -106,6 +116,9 @@ private:
     OpenSim_DECLARE_PROPERTY(equality_with_lower, bool,
             "The control must be equal to the lower bound; "
             "upper must be unspecified (default: false).");
+    OpenSim_DECLARE_PROPERTY(ignore_controlled_actuators, bool,
+            "If true, do not constrain controls belonging to actuators "
+            "controlled by user-defined controllers (default: false).");
 
     void constructProperties();
 

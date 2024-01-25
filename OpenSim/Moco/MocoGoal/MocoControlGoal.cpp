@@ -20,6 +20,7 @@
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
+#include <OpenSim/Simulation/Control/InputController.h>
 
 using namespace OpenSim;
 
@@ -29,6 +30,7 @@ void MocoControlGoal::constructProperties() {
     constructProperty_control_weights(MocoWeightSet());
     constructProperty_control_weights_pattern(MocoWeightSet());
     constructProperty_exponent(2);
+    constructProperty_ignore_controlled_actuators(false);
 }
 
 void MocoControlGoal::setWeightForControl(
@@ -52,12 +54,16 @@ void MocoControlGoal::setWeightForControlPattern(
 void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 
     // Get all expected control names.
-    auto controlNames = createControlNamesFromModel(model, true, true);
+    auto controlNames = createControlNamesFromModel(model);
 
     // Check that the model controls are in the correct order.
     checkOrderSystemControls(model);
 
-    auto systemControlIndexMap = createSystemControlIndexMap(model, true, true);
+    // Get controls associated with the model's ActuatorInputController.
+    auto actuatorInputControls =
+            createControlNamesForControllerType<ActuatorInputController>(model);
+
+    auto systemControlIndexMap = createSystemControlIndexMap(model);
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& thisName = get_control_weights()[i].getName();
@@ -90,10 +96,23 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
             weight = weightsFromPatterns[controlName];
         }
 
+        bool isActuatorInputControl = std::find(
+                actuatorInputControls.begin(), actuatorInputControls.end(),
+                controlName) != actuatorInputControls.end();
+        if (getIgnoreControlledActuators() && !isActuatorInputControl) {
+            log_info("MocoControlGoal: Control '{}' is already controlled by a "
+                     "user-defined controller and will be ignored.",
+                    controlName);
+            continue;
+        }
+
         if (weight != 0.0) {
             m_controlIndices.push_back(systemControlIndexMap[controlName]);
             m_weights.push_back(weight);
             m_controlNames.push_back(controlName);
+        } else {
+            log_info("MocoControlGoal: Control '{}' has weight 0 and will be "
+                     "ignored.", controlName);
         }
     }
 

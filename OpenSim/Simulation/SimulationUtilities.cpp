@@ -32,7 +32,6 @@
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
-#include <OpenSim/Simulation/Control/DiscreteController.h>
 
 using namespace OpenSim;
 
@@ -304,10 +303,6 @@ std::unordered_map<std::string, int> OpenSim::createSystemYIndexMap(
             "Expected to find %i state indices but found %i.", svNames.size(),
             sysYIndices.size());
     return sysYIndices;
-}
-
-std::vector<std::string> OpenSim::createControlledActuatorPathsFromModel(
-        const Model& model) {
 }
 
 std::vector<std::string> OpenSim::createControlNamesFromModel(
