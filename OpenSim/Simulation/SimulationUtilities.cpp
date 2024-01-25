@@ -307,52 +307,12 @@ std::unordered_map<std::string, int> OpenSim::createSystemYIndexMap(
 }
 
 std::vector<std::string> OpenSim::createControlledActuatorPathsFromModel(
-        const Model& model, const bool ignoreDiscreteController) {
-    std::vector<std::string> actuPaths;
-    for (const auto& controller : model.getComponentList<Controller>()) {
-        if (dynamic_cast<const DiscreteController*>(&controller) &&
-                ignoreDiscreteController) {
-            continue;
-        }
-        const auto& socket = controller.getSocket<Actuator>("actuators");
-        for (int i = 0; i < socket.getNumConnectees(); ++i) {
-            const auto& actu = socket.getConnectee(i);
-            const auto& actuPath = actu.getAbsolutePathString();
-            if (std::find(actuPaths.begin(), actuPaths.end(),
-                        actuPath) == actuPaths.end()) {
-                actuPaths.push_back(actuPath);
-            }
-
-        }
-    }
-
-    // Remove any actuators that are also controlled by a DiscreteController.
-    if (ignoreDiscreteController) {
-        for (const auto& controller :
-                model.getComponentList<DiscreteController>()) {
-            const auto& socket = controller.getSocket<Actuator>("actuators");
-            for (int i = 0; i < socket.getNumConnectees(); ++i) {
-                const auto& actu = socket.getConnectee(i);
-                const auto& actuPath = actu.getAbsolutePathString();
-                auto it = std::find(actuPaths.begin(), actuPaths.end(),
-                        actuPath);
-                if (it != actuPaths.end()) {
-                    actuPaths.erase(it);
-                }
-            }
-        }
-    }
-
-    return actuPaths;
+        const Model& model) {
 }
 
 std::vector<std::string> OpenSim::createControlNamesFromModel(
-        const Model& model, std::vector<int>& modelControlIndices,
-        const bool skipControlledActuators,
-        const bool ignoreDiscreteController) {
+        const Model& model, std::vector<int>& modelControlIndices) {
     std::vector<std::string> controlNames;
-    std::vector<std::string> controlledActuPaths =
-        createControlledActuatorPathsFromModel(model, ignoreDiscreteController);
 
     // Loop through all actuators and create control names. For scalar
     // actuators, use the actuator name for the control name. For non-scalar
@@ -361,15 +321,10 @@ std::vector<std::string> OpenSim::createControlNamesFromModel(
     int count = 0;
     modelControlIndices.clear();
     for (const auto& actu : model.getComponentList<Actuator>()) {
-        const bool isControlledActuator =
-            std::find(controlledActuPaths.begin(), controlledActuPaths.end(),
-                actu.getAbsolutePathString()) != controlledActuPaths.end();
-        if (!actu.get_appliesForce() ||
-                (skipControlledActuators && isControlledActuator)) {
+        if (!actu.get_appliesForce()) {
             count += actu.numControls();
             continue;
         }
-
         std::string actuPath = actu.getAbsolutePathString();
         if (actu.numControls() == 1) {
             controlNames.push_back(actuPath);
@@ -388,17 +343,13 @@ std::vector<std::string> OpenSim::createControlNamesFromModel(
 }
 
 std::vector<std::string> OpenSim::createControlNamesFromModel(
-        const Model& model,
-        const bool skipControlledActuators,
-        const bool ignoreDiscreteController) {
+        const Model& model) {
     std::vector<int> modelControlIndices;
-    return createControlNamesFromModel(model, modelControlIndices,
-            skipControlledActuators, ignoreDiscreteController);
+    return createControlNamesFromModel(model, modelControlIndices);
 }
 
 std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
-        const Model& model, const bool skipControlledActuators,
-        const bool ignoreDiscreteController) {
+        const Model& model) {
     // We often assume that control indices in the state are in the same order
     // as the actuators in the model. However, the control indices are
     // allocated in the order in which addToSystem() is invoked (not
@@ -407,8 +358,6 @@ std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
     // we can run the following check: in order, set an actuator's control
     // signal(s) to NaN and ensure the i-th control is NaN.
     std::unordered_map<std::string, int> controlIndices;
-    std::vector<std::string> controlledActuPaths =
-        createControlledActuatorPathsFromModel(model, ignoreDiscreteController);
     const SimTK::State state = model.getWorkingState();
     auto modelControls = model.updControls(state);
     int i = 0;
@@ -419,17 +368,10 @@ std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
         actu.getControls(modelControls, origControls);
         actu.setControls(nan, modelControls);
         std::string actuPath = actu.getAbsolutePathString();
-        const bool isControlledActuator =
-            std::find(controlledActuPaths.begin(), controlledActuPaths.end(),
-                actu.getAbsolutePathString()) != controlledActuPaths.end();
         for (int j = 0; j < nc; ++j) {
             OPENSIM_THROW_IF(!SimTK::isNaN(modelControls[i]), Exception,
                     "Internal error: actuators are not in the "
                     "expected order. Submit a bug report.");
-            if (skipControlledActuators && isControlledActuator) {
-                ++i;
-                continue;
-            }
             if (nc == 1) {
                 controlIndices[actuPath] = i;
             } else {
@@ -443,7 +385,7 @@ std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
 }
 
 void OpenSim::checkOrderSystemControls(const Model& model) {
-    createSystemControlIndexMap(model, false, false);
+    createSystemControlIndexMap(model);
 }
 
 void OpenSim::checkLabelsMatchModelStates(const Model& model,

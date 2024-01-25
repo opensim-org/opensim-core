@@ -20,6 +20,7 @@
 #include "Components/AccelerationMotion.h"
 #include "Components/DiscreteForces.h"
 #include "Components/StationPlaneContactForce.h"
+#include "Components/ControlAllocator.h"
 #include "MocoBounds.h"
 #include "MocoScaleFactor.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
@@ -124,6 +125,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
 
         Object::registerType(DiscreteForces());
         Object::registerType(AccelerationMotion());
+        Object::registerType(ControlAllocator());
 
     } catch (const std::exception& e) {
         std::cerr << "ERROR during osimMoco Object registration:\n"

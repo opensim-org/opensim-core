@@ -20,6 +20,7 @@
 
 #include "Components/AccelerationMotion.h"
 #include "Components/DiscreteForces.h"
+#include "Components/ControlAllocator.h"
 #include "MocoProblem.h"
 #include "MocoProblemInfo.h"
 #include "MocoScaleFactor.h"
@@ -28,8 +29,8 @@
 
 #include <OpenSim/Simulation/PositionMotion.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
-#include <OpenSim/Simulation/Control/DiscreteController.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
+#include <OpenSim/Simulation/Control/InputController.h>
 
 using namespace OpenSim;
 
@@ -102,17 +103,15 @@ void MocoProblemRep::initialize() {
     checkOrderSystemControls(m_model_base);
 
     // Steps:
-    //  1) Check that existing controllers are valid (PrescribedController and ActuatorController, for now)
+    //  1) Check that existing controllers are valid (PrescribedController, for now)
     //  2) Skip over actuators that have controllers (when the user does not want to add controls for these actuators)
-    //  3) Add a ControlAllocator (replace DiscreteController)
+    //  3) Add a ControlAllocator
 
     // TODO need a MocoProblem option to allow adding OCP controls for
     // that already have a controller.
 
     // Check that the any controllers added by the user are valid.
-    bool addControlsForControlledActuators = false;
-    std::vector<std::string> actuatorsToSkip;
-    std::vector<std::string> controlNamesToAddToControlDistributor; // TODO better name
+    std::vector<std::string> controlNamesToAddToControlAllocator; // TODO better name
     for (const auto& controller : m_model_base.getComponentList<Controller>()) {
         if (!dynamic_cast<const PrescribedController*>(&controller)) {
             OPENSIM_THROW(Exception, "Moco only supports PrescribedController "
@@ -120,12 +119,6 @@ void MocoProblemRep::initialize() {
                                      "'{}'.",
                     controller.getAbsolutePathString(),
                     controller.getConcreteClassName());
-
-            // if (!addControlsForControlledActuators) {
-            //     for (const auto& actu : controller.getActuatorSet()) {
-            //         actuatorsToSkip.push_back(actu.getAbsolutePathString());
-            //     }
-            // }
         }
     }
 
@@ -135,21 +128,24 @@ void MocoProblemRep::initialize() {
     std::vector<std::string> controlledActuatorPaths =
         createControlledActuatorPathsFromModel(m_model_base, false);
 
-    // Add the non-controlled, enabled actuators to the DiscreteController.
-    auto discreteControllerBaseUPtr = make_unique<DiscreteController>();
-    discreteControllerBaseUPtr->setName("discrete_controller");
+    // Add the non-controlled, enabled actuators to an ActuatorInputController.
+    auto actuatorController = make_unique<ActuatorInputController>();
+    actuatorController->setName("actuator_controller");
     for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
         bool isControlled = std::find(controlledActuatorPaths.begin(),
                                       controlledActuatorPaths.end(),
                                       actu.getAbsolutePathString()) !=
                                           controlledActuatorPaths.end();
         if (!isControlled && actu.get_appliesForce()) {
-            discreteControllerBaseUPtr->addActuator(actu);
+            actuatorController->addActuator(actu);
         }
     }
+    m_model_base.addController(actuatorController.release());
 
-    m_discrete_controller_base.reset(discreteControllerBaseUPtr.get());
-    m_model_base.addController(discreteControllerBaseUPtr.release());
+    // Add a ControlAllocator to the model.
+    auto controlAllocatorUPtr = make_unique<ControlAllocator>();
+    m_control_allocator_base.reset(controlAllocatorUPtr.get());
+    m_model_base.addComponent(controlAllocatorUPtr.release());
 
     // Scale factors
     // -------------
@@ -240,8 +236,8 @@ void MocoProblemRep::initialize() {
     m_model_disabled_constraints.addComponent(constraintForcesUPtr.release());
 
     m_model_disabled_constraints.finalizeFromProperties();
-    m_discrete_controller_disabled_constraints.reset(
-            &*m_model_disabled_constraints.getComponentList<DiscreteController>().begin());
+    m_control_allocator_disabled_constraints.reset(
+            &*m_model_disabled_constraints.getComponentList<ControlAllocator>().begin());
 
 
     if (!m_prescribedKinematics) {
@@ -508,13 +504,17 @@ void MocoProblemRep::initialize() {
         m_control_infos[name] = ph0.get_control_infos(i);
     }
 
-    // Loop through the actuators in the DiscreteController since these are the
-    // only actuators that will have associated optimal control variables.
-    // Create control infos for actuators that do not have a any control info.
-    const auto& dcSocket =
-            m_discrete_controller_base->getSocket<Actuator>("actuators");
-    for (int i = 0; i < dcSocket.getNumConnectees(); ++i) {
-        const auto& actu = dcSocket.getConnectee(i);
+    // Loop through the actuators in the ActuatorInputController since these are
+    // the only actuators that will have associated optimal control variables.
+    // Create control infos for actuators that do not have a control info.
+    // TODO this will change if we allow OCP controls on top of controls from
+    // controllers.
+    const auto& actuController =
+            m_model_base.getComponent<ActuatorInputController>(
+                    "actuator_controller");
+    const auto& socket = actuController.getSocket<Actuator>("actuators");
+    for (int i = 0; i < socket.getNumConnectees(); ++i) {
+        const auto& actu = socket.getConnectee(i);
         const std::string actuName = actu.getAbsolutePathString();
         if (actu.numControls() == 1) {
             // No control info exists; add one.

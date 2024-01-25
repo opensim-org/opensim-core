@@ -31,16 +31,6 @@ namespace OpenSim {
 class Model;
 class Actuator;
 
-class OSIMSIMULATION_API ControllerActuator : public Component {
-OpenSim_DECLARE_CONCRETE_OBJECT(ControllerActuator, Component);
-
-public:
-    OpenSim_DECLARE_SOCKET(actuator, Actuator,
-        "The actuator that this controller controls.");
-
-    ControllerActuator() = default;
-};
-
 /**
  * Controller is an abstract ModelComponent that defines the interface for   
  * an OpenSim Controller. A controller computes and sets the values of the  

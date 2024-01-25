@@ -62,7 +62,7 @@ public:
 // INPUTS
 //=============================================================================
     OpenSim_DECLARE_LIST_INPUT(
-        controls, double, SimTK::Stage::Dynamics, "inputs");
+        controls, double, SimTK::Stage::Dynamics, "TODO");
 
 //=============================================================================
 // METHODS

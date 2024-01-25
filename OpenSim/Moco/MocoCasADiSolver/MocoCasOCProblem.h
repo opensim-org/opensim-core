@@ -557,6 +557,11 @@ private:
         if (stageDep >= SimTK::Stage::Model) {
             convertStatesToSimTKState(
                     stageDep, time, states, model, simtkState, true);
+
+            // TODO replace with ControlAllocator
+            // TODO set controls to ControlAllocator in problem order? the
+            //      controls will need to match the order of the controls
+            //      add to ControlAllocator
             SimTK::Vector& simtkControls =
                     discreteController.updDiscreteControls(simtkState);
             for (int ic = 0; ic < getNumControls(); ++ic) {

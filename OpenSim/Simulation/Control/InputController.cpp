@@ -38,19 +38,10 @@ InputController::InputController() : Controller() {}
 
 InputController::~InputController() = default;
 
-InputController::InputController(const InputController& other)
-        : Controller(other) {}
+InputController::InputController(const InputController& other) = default;
 
-InputController& InputController::operator=(const InputController& other) {
-    // Controller uses a custom copy constructor, so we need to explicitly
-    // call the base class assignment operator.
-    if (this != &other) {
-        Super::operator=(other);
-        m_controlNames = other.m_controlNames;
-        m_controlIndexes = other.m_controlIndexes;
-    }
-    return *this;
-}
+InputController&
+InputController::operator=(const InputController& other) = default;
 
 InputController::InputController(InputController&& other) noexcept = default;
 
@@ -70,7 +61,7 @@ const std::vector<int>& InputController::getControlIndexes() const {
 
 std::vector<std::string> InputController::getInputChannelAliases() const {
     std::vector<std::string> aliases;
-    const auto& input = getInput<double>("inputs");
+    const auto& input = getInput<double>("controls");
     aliases.reserve(input.getNumConnectees());
     for (int i = 0; i < input.getNumConnectees(); ++i) {
         aliases.push_back(input.getAlias(i));
@@ -137,19 +128,10 @@ ActuatorInputController::ActuatorInputController() : InputController() {}
 ActuatorInputController::~ActuatorInputController() = default;
 
 ActuatorInputController::ActuatorInputController(
-        const ActuatorInputController& other) : InputController(other) {}
+        const ActuatorInputController& other) = default;
 
 ActuatorInputController& ActuatorInputController::operator=(
-        const ActuatorInputController& other) {
-    // Controller uses a custom copy constructor, so we need to explicitly
-    // call the base class assignment operator.
-    if (this != &other) {
-        Super::operator=(other);
-        m_controlIndexesInConnecteeOrder =
-            other.m_controlIndexesInConnecteeOrder;
-    }
-    return *this;
-}
+        const ActuatorInputController& other) = default;
 
 ActuatorInputController::ActuatorInputController(
         ActuatorInputController&& other) noexcept = default;
@@ -162,7 +144,7 @@ ActuatorInputController& ActuatorInputController::operator=(
 //=============================================================================
 void ActuatorInputController::computeControls(const SimTK::State& s,
         SimTK::Vector& controls) const {
-    const auto& input = getInput<double>("inputs");
+    const auto& input = getInput<double>("controls");
     for (int i = 0; i < input.getNumConnectees(); ++i) {
         controls[m_controlIndexesInConnecteeOrder[i]] = input.getValue(s, i);
     }
@@ -179,7 +161,7 @@ void ActuatorInputController::extendConnectToModel(Model& model) {
     OPENSIM_ASSERT(getNumControls() ==
         static_cast<int>(controlNames.size()))
 
-    const auto& input = getInput<double>("inputs");
+    const auto& input = getInput<double>("controls");
     OPENSIM_THROW_IF(input.getNumConnectees() != getNumControls(), Exception,
         "Expected the number of Input connectees ({}) to match the number "
         "of actuators controls ({}), but they do not.",

@@ -31,7 +31,8 @@
 namespace OpenSim {
 
 class MocoProblem;
-class DiscreteController;
+//class DiscreteController;
+class ControlAllocator;
 class DiscreteForces;
 class PositionMotion;
 class AccelerationMotion;
@@ -89,8 +90,11 @@ public:
     SimTK::State& updStateBase() const { return m_state_base; }
     /// This is a component inside ModelBase that you can use to
     /// set the value of control signals.
-    const DiscreteController& getDiscreteControllerBase() const {
-        return m_discrete_controller_base.getRef();
+//    const DiscreteController& getDiscreteControllerBase() const {
+//        return m_discrete_controller_base.getRef();
+//    }
+    const ControlAllocator& getControlAllocatorBase() const {
+        return m_control_allocator_base.getRef();
     }
     /// Get a reference to a copy of the model being used by this
     /// MocoProblemRep, but with all constraints disabled and an additional
@@ -117,8 +121,11 @@ public:
     }
     /// This is a component inside ModelDisabledConstraints that you can use to
     /// set the value of control signals.
-    const DiscreteController& getDiscreteControllerDisabledConstraints() const {
-        return m_discrete_controller_disabled_constraints.getRef();
+//    const DiscreteController& getDiscreteControllerDisabledConstraints() const {
+//        return m_discrete_controller_disabled_constraints.getRef();
+//    }
+    const ControlAllocator& getControlAllocatorDisabledConstraints() const {
+        return m_control_allocator_disabled_constraints.getRef();
     }
     /// This is a component inside ModelDisabledConstraints that you can use
     /// to set the value of discrete forces, intended to hold the constraint
@@ -379,13 +386,16 @@ private:
 
     Model m_model_base;
     mutable SimTK::State m_state_base;
-    SimTK::ReferencePtr<const DiscreteController> m_discrete_controller_base;
+    //SimTK::ReferencePtr<const DiscreteController> m_discrete_controller_base;
+    SimTK::ReferencePtr<const ControlAllocator> m_control_allocator_base;
     SimTK::ReferencePtr<const PositionMotion> m_position_motion_base;
 
     Model m_model_disabled_constraints;
     mutable std::array<SimTK::State, 2> m_state_disabled_constraints;
-    SimTK::ReferencePtr<const DiscreteController>
-            m_discrete_controller_disabled_constraints;
+//    SimTK::ReferencePtr<const DiscreteController>
+//            m_discrete_controller_disabled_constraints;
+    SimTK::ReferencePtr<const ControlAllocator>
+            m_control_allocator_disabled_constraints;
     SimTK::ReferencePtr<const PositionMotion>
             m_position_motion_disabled_constraints;
     SimTK::ReferencePtr<DiscreteForces> m_constraint_forces;
