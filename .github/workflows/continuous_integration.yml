@@ -363,9 +363,9 @@ jobs:
         make doxygen
         make install
         cd $GITHUB_WORKSPACE
-        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure.outputs.version }}
-        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}-11.zip opensim-core-${{ steps.configure.outputs.version }}
-        mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
+        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ github.event.pull_request.base.ref }}
+        zip --symlinks --recurse-paths --quiet opensim-core-${{ github.event.pull_request.base.ref }}-11.zip opensim-core-${{ github.event.pull_request.base.ref }}
+        mv opensim-core-${{ github.event.pull_request.base.ref }} $GITHUB_WORKSPACE/../opensim-core-install
 
     - name: Test Python bindings
       run: |
