@@ -256,7 +256,6 @@ jobs:
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
   mac_target:
-    if: github.event_name == 'pull_request'
     name: Mac-target
 
     runs-on: macos-12
@@ -510,18 +509,10 @@ jobs:
         path: opensim-core-${{ steps.configure.outputs.version }}-11.zip
 
   compare-macs:
-    if: github.event_name == 'pull_request'
     needs:
       - mac_target
       - mac_source
     runs-on: macos-12
-    on:
-      pull_request:
-        branches:
-          - '*'
-      issue_comment:
-        types:
-          - created
 
     steps:
     - uses: actions/setup-python@v4
