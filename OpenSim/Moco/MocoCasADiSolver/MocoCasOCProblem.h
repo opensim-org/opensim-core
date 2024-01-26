@@ -558,13 +558,9 @@ private:
             convertStatesToSimTKState(
                     stageDep, time, states, model, simtkState, true);
 
-            // TODO set controls to ControlAllocator in problem order? the
-            //      controls will need to match the order of the controls
-            //      add to ControlAllocator
             SimTK::Vector& simtkControls =
                     controlAllocator.updControls(simtkState);
             for (int ic = 0; ic < getNumControls(); ++ic) {
-                // simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
                 simtkControls[ic] = *(controls.ptr() + ic);
             }
         }
@@ -754,7 +750,7 @@ private:
     bool m_paramsRequireInitSystem = true;
     std::string m_formattedTimeString;
     std::unordered_map<int, int> m_yIndexMap;
-    std::vector<int> m_modelControlIndices;
+    //std::vector<int> m_modelControlIndices;
     std::unique_ptr<FileDeletionThrower> m_fileDeletionThrower;
     // Local memory to hold constraint forces.
     static thread_local SimTK::Vector_<SimTK::SpatialVec>

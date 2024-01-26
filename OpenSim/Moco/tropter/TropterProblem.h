@@ -22,12 +22,12 @@
 
 #include <OpenSim/Moco/Components/AccelerationMotion.h>
 #include <OpenSim/Moco/Components/DiscreteForces.h>
+#include <OpenSim/Moco/Components/ControlAllocator.h>
 #include <OpenSim/Moco/MocoBounds.h>
 #include <OpenSim/Moco/MocoTropterSolver.h>
 #include <OpenSim/Moco/MocoUtilities.h>
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
-#include <OpenSim/Simulation/Control/DiscreteController.h>
 
 #include <tropter/tropter.h>
 
@@ -95,16 +95,11 @@ protected:
     }
 
     void addControlVariables() {
-        // Add control variables to the problem (i.e., any controls for
-        // actuators in the model's DiscreteController). First, double check
-        // that the system controls are in the same order as the model.
-        checkOrderSystemControls(m_modelBase);
-        // Get the list of control names (based on actuator paths) in the order
-        // of the system controls, which is the order the DiscreteController
-        // expects. Add the controls to the problem in the same order.
         auto controlNames =
-                createControlNamesFromModel(m_modelBase, true, true);
+                m_mocoProbRep.getControlAllocatorBase().getControlNamesInOrder();
         for (const auto& controlName : controlNames) {
+            // TODO will need to check for "input" infos once we support user
+            // InputControllers.
             const auto& info = m_mocoProbRep.getControlInfo(controlName);
             this->add_control(controlName, convertBounds(info.getBounds()),
                     convertBounds(info.getInitialBounds()),
@@ -333,8 +328,8 @@ protected:
             // constraints. The base model never gets realized past
             // Stage::Velocity, so we don't ever need to set its controls.
             auto& osimControls =
-                    m_mocoProbRep.getDiscreteControllerDisabledConstraints()
-                            .updDiscreteControls(simTKStateDisabledConstraints);
+                    m_mocoProbRep.getControlAllocatorDisabledConstraints()
+                            .updControls(simTKStateDisabledConstraints);
             for (int ic = 0; ic < controls.size(); ++ic) {
                 osimControls[ic] = controls[ic];
             }
@@ -369,9 +364,9 @@ protected:
         // point, so that each can preserve their cache?
         this->setSimTKState(in);
 
-        const auto& discreteController =
-                m_mocoProbRep.getDiscreteControllerDisabledConstraints();
-        const auto& rawControls = discreteController.getDiscreteControls(
+        const auto& modelDisabledConstraints =
+                m_mocoProbRep.getModelDisabledConstraints();
+        const auto& rawControls = modelDisabledConstraints.getControls(
                 this->m_stateDisabledConstraints);
 
         // Compute the integrand for this cost term.
@@ -394,11 +389,11 @@ protected:
         const auto& initialState = m_mocoProbRep.updStateDisabledConstraints(0);
         const auto& finalState = m_mocoProbRep.updStateDisabledConstraints(1);
 
-        const auto& discreteController =
-                m_mocoProbRep.getDiscreteControllerDisabledConstraints();
-        const auto& initialRawControls = discreteController.getDiscreteControls(
+        const auto& modelDisabledConstraints =
+                m_mocoProbRep.getModelDisabledConstraints();
+        const auto& initialRawControls = modelDisabledConstraints.getControls(
                 initialState);
-        const auto& finalRawControls = discreteController.getDiscreteControls(
+        const auto& finalRawControls = modelDisabledConstraints.getControls(
                 finalState);
 
         // Compute the cost for this cost term.

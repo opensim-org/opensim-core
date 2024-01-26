@@ -69,6 +69,20 @@ double ControlAllocator::getControlForOutputChannel(const SimTK::State& s,
     return getControls(s)[m_controlIndexMap.at(channel)];
 }
 
+std::vector<std::string> ControlAllocator::getControlNamesInOrder() const {
+    // Return the control names in ascending order of their indices.
+    std::vector<std::string> names;
+    names.reserve(m_controlIndexMap.size());
+    for (const auto& kv : m_controlIndexMap) {
+        names.push_back(kv.first);
+    }
+    std::sort(names.begin(), names.end(),
+            [&](const std::string& a, const std::string& b) {
+                return m_controlIndexMap.at(a) < m_controlIndexMap.at(b);
+            });
+    return names;
+}
+
 //=============================================================================
 // MODEL COMPONENT INTERFACE
 //=============================================================================

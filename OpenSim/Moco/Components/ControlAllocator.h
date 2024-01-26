@@ -79,6 +79,12 @@ public:
     double getControlForOutputChannel(
             const SimTK::State& s, const std::string& channel) const;
 
+    /**
+     * Get the names of the controls in the order they were added to the
+     * allocator.
+     */
+    std::vector<std::string> getControlNamesInOrder() const;
+
 protected:
     // MODEL COMPONENT INTERFACE
     void extendRealizeTopology(SimTK::State& state) const override;

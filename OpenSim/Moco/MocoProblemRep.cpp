@@ -102,16 +102,8 @@ void MocoProblemRep::initialize() {
     // the actuators in the model.
     checkOrderSystemControls(m_model_base);
 
-    // Steps:
-    //  1) Check that existing controllers are valid (PrescribedController, for now)
-    //  2) Skip over actuators that have controllers (when the user does not want to add controls for these actuators)
-    //  3) Add a ControlAllocator
-
-    // TODO need a MocoProblem option to allow adding OCP controls for
-    // that already have a controller.
-
-    // Check that the any controllers added by the user are valid.
-    std::vector<std::string> controlNamesToAddToControlAllocator; // TODO better name
+    // Check that any controllers added by the user are valid.
+    std::vector<std::string> controlledActuatorPaths;
     for (const auto& controller : m_model_base.getComponentList<Controller>()) {
         if (!dynamic_cast<const PrescribedController*>(&controller)) {
             OPENSIM_THROW(Exception, "Moco only supports PrescribedController "
@@ -120,13 +112,11 @@ void MocoProblemRep::initialize() {
                     controller.getAbsolutePathString(),
                     controller.getConcreteClassName());
         }
+        const auto& socket = controller.getSocket<Actuator>("actuators");
+        for (int i = 0; i < socket.getNumConnectees(); ++i) {
+            controlledActuatorPaths.push_back(socket.getConnecteePath(i));
+        }
     }
-
-    // Get the list of actuators that are controlled by the user. There should
-    // be no DiscreteController in the model at this point, so we set the second
-    // argument to false.
-    std::vector<std::string> controlledActuatorPaths =
-        createControlledActuatorPathsFromModel(m_model_base, false);
 
     // Add the non-controlled, enabled actuators to an ActuatorInputController.
     auto actuatorController = make_unique<ActuatorInputController>();
@@ -142,10 +132,43 @@ void MocoProblemRep::initialize() {
     }
     m_model_base.addController(actuatorController.release());
 
-    // Add a ControlAllocator to the model.
+    // Add a ControlAllocator to the model. This component will distribute the
+    // OCP controls to all InputControllers in the model, including the
+    // ActuatorInputController we just added to control actuators that are not
+    // already controlled by a user-defined controller.
+    auto inputControllerNames =
+            createControlNamesForControllerType<InputController>(m_model_base);
     auto controlAllocatorUPtr = make_unique<ControlAllocator>();
+    for (const auto& controlName : inputControllerNames) {
+        controlAllocatorUPtr->addControl(controlName);
+    }
     m_control_allocator_base.reset(controlAllocatorUPtr.get());
     m_model_base.addComponent(controlAllocatorUPtr.release());
+    m_model_base.finalizeFromProperties();
+
+    // Wire the ControlAllocators to the InputControllers in the model.
+    for (auto& controller : m_model_base.updComponentList<InputController>()) {
+        const auto& socket = controller.getSocket<Actuator>("actuators");
+        for (int i = 0; i < socket.getNumConnectees(); ++i) {
+            const auto& actu = socket.getConnectee(i);
+            const auto& actuPath = actu.getAbsolutePathString();
+            if (actu.numControls() > 1) {
+                const auto& channel =
+                        m_control_allocator_base->getOutput("controls")
+                                .getChannel(actuPath);
+                controller.connectInput_controls(channel, actuPath);
+            } else {
+                for (int ic = 0; ic < actu.numControls(); ++ic) {
+                    std::string controlName =
+                            actuPath + "_" + std::to_string(ic);
+                    const auto& channel =
+                            m_control_allocator_base->getOutput("controls")
+                                    .getChannel(controlName);
+                    controller.connectInput_controls(channel, controlName);
+                }
+            }
+        }
+    }
 
     // Scale factors
     // -------------
@@ -477,8 +500,18 @@ void MocoProblemRep::initialize() {
 
     // Control infos.
     // --------------
-    std::vector<std::string> controlNames = createControlNamesFromModel(
-            m_model_base, true, true);
+    // TODO wait, this looks wrong...
+    auto controlNames = createControlNamesFromModel(m_model_base);
+    auto actuatorInputControlNames =
+            createControlNamesForControllerType<ActuatorInputController>(
+                    m_model_base);
+    // Remove the actuators controlled by an ActuatorInputController from
+    // controlNames. TODO wait, shouldn't these be the only ones to check...?
+    for (const auto& name : actuatorInputControlNames) {
+        controlNames.erase(std::remove(controlNames.begin(),
+                controlNames.end(), name), controlNames.end());
+    }
+
     for (int i = 0; i < ph0.getProperty_control_infos_pattern().size(); ++i) {
         const auto& pattern = ph0.get_control_infos_pattern(i).getName();
         auto regexPattern = std::regex(pattern);
@@ -513,6 +546,9 @@ void MocoProblemRep::initialize() {
             m_model_base.getComponent<ActuatorInputController>(
                     "actuator_controller");
     const auto& socket = actuController.getSocket<Actuator>("actuators");
+
+    // TODO use createControlNamesForControllerType<ActuatorInputController>() here? Then
+    //      do we disallow user added ActuatorInputControllers?
     for (int i = 0; i < socket.getNumConnectees(); ++i) {
         const auto& actu = socket.getConnectee(i);
         const std::string actuName = actu.getAbsolutePathString();
@@ -553,9 +589,8 @@ void MocoProblemRep::initialize() {
         }
     }
 
-    // Bound activations based on muscle excitation control bounds bounds. Set
-    // this for all muscles, including those controlled by a user-defined
-    // controller.
+    // Bound activations based on muscle excitation control bounds. Set this for
+    // all muscles, including those controlled by a user-defined controller.
     if (ph0.get_bound_activation_from_excitation()) {
         for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
             const std::string actuName = actu.getAbsolutePathString();
