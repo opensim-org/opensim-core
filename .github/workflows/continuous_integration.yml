@@ -256,6 +256,7 @@ jobs:
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
   mac_target:
+    if: github.event_name == 'pull_request'
     name: Mac-target
 
     runs-on: macos-12
@@ -509,10 +510,18 @@ jobs:
         path: opensim-core-${{ steps.configure.outputs.version }}-11.zip
 
   compare-macs:
+    if: github.event_name == 'pull_request'
     needs:
       - mac_target
       - mac_source
     runs-on: macos-12
+    on:
+      pull_request:
+        branches:
+          - '*'
+      issue_comment:
+        types:
+          - created
 
     steps:
     - uses: actions/setup-python@v4
@@ -553,6 +562,29 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/osimperf
         osimperf --help
+
+    - name: Extract Performance Results
+      run: |
+        # Replace this with your command to generate the markdown table
+        echo "Generating markdown table..."
+        # Your command to generate the markdown table here
+        # Store the markdown table in a file, e.g., performance_results.md
+        echo "Sample | Performance | Table" > performance_results.md
+        echo "--- | --- | ---" >> performance_results.md
+        echo "1 | 100 | A" >> performance_results.md
+        echo "2 | 90 | B" >> performance_results.md
+
+    - name: Post Results to PR Comment
+      run: |
+        COMMENT_BODY=$(cat performance_results.md)
+        PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+
+        curl -X POST \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          "https://api.github.com/repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments" \
+          -d "{\"body\": \"${COMMENT_BODY}\"}"
+
 
   ubuntu20:
     name: Ubuntu2004
