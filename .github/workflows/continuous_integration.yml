@@ -545,7 +545,12 @@ jobs:
 
     - name: Unzip target branch artifact
       run: |
-        unzip $GITHUB_WORKSPACE/opensim-core-${{ github.event.pull_request.base.ref }}-11.zip -d $GITHUB_WORKSPACE/opensim-core-${{ github.event.pull_request.base.ref }}-11
+        ls
+        echo "GITHUB_WORKSPACE: "
+        echo $GITHUB_WORKSPACE
+        cd $GITHUB_WORKSPACE
+        ls
+        unzip $GITHUB_WORKSPACE/opensim-core-${{ github.event.pull_request.base.ref }}-11 -d $GITHUB_WORKSPACE/opensim-core-${{ github.event.pull_request.base.ref }}-11
         cd $GITHUB_WORKSPACE/opensim-core-${{ github.event.pull_request.base.ref }}-11
         ls
 
