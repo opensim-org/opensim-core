@@ -529,34 +529,26 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: opensim-core-${{ needs.mac_source.outputs.version }}-mac-11
-        path: opensim-core-${{ needs.mac_source.outputs.version }}-11.zip
+        path: artifacts
 
     - name: Unzip source branch artifact
       run: |
         ls
-        echo "GITHUB_WORKSPACE: "
-        echo $GITHUB_WORKSPACE
-        cd $GITHUB_WORKSPACE
-        ls
-        unzip opensim-core-${{ needs.mac_source.outputs.version }}-11.zip -d opensim-core-${{ needs.mac_source.outputs.version }}-11
-        cd opensim-core-${{ needs.mac_source.outputs.version }}-11
+        unzip artifacts/opensim-core-${{ needs.mac_source.outputs.version }}-11.zip -d unzipped/opensim-core-${{ needs.mac_source.outputs.version }}-11
+        cd unzipped/opensim-core-${{ needs.mac_source.outputs.version }}-11
         ls
 
     - name: Download target branch artifact
       uses: actions/download-artifact@v2
       with:
         name: opensim-core-${{ github.event.pull_request.base.ref }}-mac-11
-        path: opensim-core-${{ github.event.pull_request.base.ref }}-11.zip
+        path: artifacts
 
     - name: Unzip target branch artifact
       run: |
         ls
-        echo "GITHUB_WORKSPACE: "
-        echo $GITHUB_WORKSPACE
-        cd $GITHUB_WORKSPACE
-        ls
-        unzip opensim-core-${{ github.event.pull_request.base.ref }}-11.zip -d opensim-core-${{ github.event.pull_request.base.ref }}-11
-        cd opensim-core-${{ github.event.pull_request.base.ref }}-11
+        unzip artifacts/opensim-core-${{ github.event.pull_request.base.ref }}-11.zip -d unzipped/opensim-core-${{ github.event.pull_request.base.ref }}-11
+        cd unzipped/opensim-core-${{ github.event.pull_request.base.ref }}-11
         ls
 
     - name: Run Examples and Compare Performance
