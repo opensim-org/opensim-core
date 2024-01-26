@@ -538,8 +538,8 @@ jobs:
         echo $GITHUB_WORKSPACE
         cd $GITHUB_WORKSPACE
         ls
-        unzip $GITHUB_WORKSPACE/opensim-core-${{ needs.mac_source.outputs.version }}-11 -d $GITHUB_WORKSPACE/opensim-core-${{ needs.mac_source.outputs.version }}-11
-        cd $GITHUB_WORKSPACE/opensim-core-${{ needs.mac_source.outputs.version }}-11
+        unzip opensim-core-${{ needs.mac_source.outputs.version }}-11.zip -d opensim-core-${{ needs.mac_source.outputs.version }}-11
+        cd opensim-core-${{ needs.mac_source.outputs.version }}-11
         ls
 
     - name: Download target branch artifact
@@ -555,8 +555,8 @@ jobs:
         echo $GITHUB_WORKSPACE
         cd $GITHUB_WORKSPACE
         ls
-        unzip $GITHUB_WORKSPACE/opensim-core-${{ github.event.pull_request.base.ref }}-11 -d $GITHUB_WORKSPACE/opensim-core-${{ github.event.pull_request.base.ref }}-11
-        cd $GITHUB_WORKSPACE/opensim-core-${{ github.event.pull_request.base.ref }}-11
+        unzip opensim-core-${{ github.event.pull_request.base.ref }}-11.zip -d opensim-core-${{ github.event.pull_request.base.ref }}-11
+        cd opensim-core-${{ github.event.pull_request.base.ref }}-11
         ls
 
     - name: Run Examples and Compare Performance
