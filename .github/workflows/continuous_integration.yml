@@ -524,6 +524,7 @@ jobs:
       with:
         repository: adamkewley/osimperf
         ref: master
+        path: osimperf
 
     - name: Download source branch artifact
       uses: actions/download-artifact@v2
