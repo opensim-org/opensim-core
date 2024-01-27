@@ -534,8 +534,8 @@ jobs:
     - name: Unzip source branch artifact
       run: |
         mkdir unzipped
-        unzip artifacts/opensim-core-${{ needs.mac_source.outputs.version }}-11.zip -d unzipped/opensim-core-${{ needs.mac_source.outputs.version }}-11
-        cd unzipped/opensim-core-${{ needs.mac_source.outputs.version }}-11
+        unzip artifacts/opensim-core-${{ needs.mac_source.outputs.version }}-11.zip -d unzipped/
+        cd unzipped/opensim-core-${{ needs.mac_source.outputs.version }}
         ls
 
     - name: Download target branch artifact
@@ -546,9 +546,8 @@ jobs:
 
     - name: Unzip target branch artifact
       run: |
-        mkdir unzipped
-        unzip artifacts/opensim-core-${{ github.event.pull_request.base.ref }}-11.zip -d unzipped/opensim-core-${{ github.event.pull_request.base.ref }}-11
-        cd unzipped/opensim-core-${{ github.event.pull_request.base.ref }}-11
+        unzip artifacts/opensim-core-${{ github.event.pull_request.base.ref }}-11.zip -d unzipped/
+        cd unzipped/opensim-core-${{ github.event.pull_request.base.ref }}
         ls
 
     - name: Run Examples and Compare Performance
