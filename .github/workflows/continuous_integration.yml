@@ -513,6 +513,8 @@ jobs:
       - mac_target
       - mac_source
     runs-on: macos-12
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
     - uses: actions/setup-python@v4
@@ -579,7 +581,7 @@ jobs:
           EXISTING_TABLE_CONTENT=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$CUSTOM_HEADER/{flag=1; next} flag")
 
           # Replace the existing table content with new content
-          NEW_TABLE_CONTENT=$(cat new_performance_results.md)
+          NEW_TABLE_CONTENT=$(cat performance_results.md)
           NEW_COMMENT_BODY="${EXISTING_COMMENT_CONTENT/"${EXISTING_TABLE_CONTENT}"/${NEW_TABLE_CONTENT}}"
         else
           # If the custom header doesn't exist, just append the new content with the header
@@ -587,7 +589,7 @@ jobs:
 
           ${CUSTOM_HEADER}
 
-          $(cat new_performance_results.md)"
+          $(cat performance_results.md)"
         fi
         PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 
