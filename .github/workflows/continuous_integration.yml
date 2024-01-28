@@ -572,6 +572,7 @@ jobs:
 
     - name: Post Results to PR Comment
       run: |
+        PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
         EXISTING_COMMENT_CONTENT=$(gh api repos/:owner/:repo/issues/${PR_NUMBER} | jq -r '.body')
         CUSTOM_HEADER="### Performance Check Results"
 
@@ -591,14 +592,16 @@ jobs:
 
           $(cat performance_results.md)"
         fi
-        PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 
-        curl -X POST \
-          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-          -H "Accept: application/vnd.github.v3+json" \
-          "https://api.github.com/repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments" \
-          -d "{\"body\": \"${NEW_COMMENT_BODY}\"}"
+        echo "DEBUG"
 
+        gh api \
+          --method POST \
+          -H "Content-Type: application/json" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          /repos/OWNER/REPO/issues/PR_NUMBER/comments \
+          -f "body=${NEW_COMMENT_BODY}"
+ 
 
   ubuntu20:
     name: Ubuntu2004
