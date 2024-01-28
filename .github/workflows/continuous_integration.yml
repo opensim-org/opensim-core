@@ -555,8 +555,7 @@ jobs:
       run: |
         ls
         echo $GITHUB_WORKSPACE
-        cd $GITHUB_WORKSPACE/osimperf
-        osimperf --help
+        python osimperf/osimperf --help
 
     - name: Extract Performance Results
       run: |
@@ -571,14 +570,32 @@ jobs:
 
     - name: Post Results to PR Comment
       run: |
-        COMMENT_BODY=$(cat performance_results.md)
+        EXISTING_COMMENT_CONTENT=$(gh api repos/:owner/:repo/issues/${PR_NUMBER} | jq -r '.body')
+        CUSTOM_HEADER="### Performance Check Results"
+
+        # Check if the custom header exists in the existing comment body
+        if [[ $EXISTING_COMMENT_CONTENT == *"$CUSTOM_HEADER"* ]]; then
+          # Extract the content after the custom header
+          EXISTING_TABLE_CONTENT=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$CUSTOM_HEADER/{flag=1; next} flag")
+
+          # Replace the existing table content with new content
+          NEW_TABLE_CONTENT=$(cat new_performance_results.md)
+          NEW_COMMENT_BODY="${EXISTING_COMMENT_CONTENT/"${EXISTING_TABLE_CONTENT}"/${NEW_TABLE_CONTENT}}"
+        else
+          # If the custom header doesn't exist, just append the new content with the header
+          NEW_COMMENT_BODY="${EXISTING_COMMENT_CONTENT}
+
+          ${CUSTOM_HEADER}
+
+          $(cat new_performance_results.md)"
+        fi
         PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 
         curl -X POST \
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
           -H "Accept: application/vnd.github.v3+json" \
           "https://api.github.com/repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments" \
-          -d "{\"body\": \"${COMMENT_BODY}\"}"
+          -d "{\"body\": \"${NEW_COMMENT_BODY}\"}"
 
 
   ubuntu20:
