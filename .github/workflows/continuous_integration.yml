@@ -573,7 +573,7 @@ jobs:
     - name: Post Results to PR Comment
       run: |
         PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-        EXISTING_COMMENT_CONTENT=$(gh api repos/:owner/:repo/issues/${PR_NUMBER} | jq -r '.body')
+        EXISTING_COMMENT_CONTENT=$(gh api /repos/opensim-org/opensim-core/issues/${PR_NUMBER} | jq -r '.body')
         CUSTOM_HEADER="### Performance Check Results"
         echo "DEBUG1"
 
