@@ -120,7 +120,6 @@ void MocoProblemRep::initialize() {
 
     // Add the non-controlled, enabled actuators to an ActuatorInputController.
     auto actuatorController = make_unique<ActuatorInputController>();
-    actuatorController->setName("actuator_controller");
     for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
         bool isControlled = std::find(controlledActuatorPaths.begin(),
                                       controlledActuatorPaths.end(),
@@ -131,6 +130,14 @@ void MocoProblemRep::initialize() {
         }
     }
     m_model_base.addController(actuatorController.release());
+
+    // Finalize Actuator socket connections for all InputControllers. This is
+    // so we can get the names of the control names from the controlled
+    // actuator while skipping the Input connections.
+    for (auto& controller : m_model_base.updComponentList<InputController>()) {
+        controller.updSocket<Actuator>("actuators").finalizeConnection(
+                m_model_base);
+    }
 
     // Add a ControlAllocator to the model. This component will distribute the
     // OCP controls to all InputControllers in the model, including the
@@ -148,16 +155,11 @@ void MocoProblemRep::initialize() {
 
     // Wire the ControlAllocators to the InputControllers in the model.
     for (auto& controller : m_model_base.updComponentList<InputController>()) {
-        const auto& socket = controller.getSocket<Actuator>("actuators");
+        auto& socket = controller.updSocket<Actuator>("actuators");
         for (int i = 0; i < socket.getNumConnectees(); ++i) {
             const auto& actu = socket.getConnectee(i);
             const auto& actuPath = actu.getAbsolutePathString();
             if (actu.numControls() > 1) {
-                const auto& channel =
-                        m_control_allocator_base->getOutput("controls")
-                                .getChannel(actuPath);
-                controller.connectInput_controls(channel, actuPath);
-            } else {
                 for (int ic = 0; ic < actu.numControls(); ++ic) {
                     std::string controlName =
                             actuPath + "_" + std::to_string(ic);
@@ -166,9 +168,16 @@ void MocoProblemRep::initialize() {
                                     .getChannel(controlName);
                     controller.connectInput_controls(channel, controlName);
                 }
+            } else {
+                const auto& channel =
+                        m_control_allocator_base->getOutput("controls")
+                                .getChannel(actuPath);
+                controller.connectInput_controls(channel, actuPath);
             }
         }
     }
+    m_model_base.finalizeConnections();
+    m_model_base.initSystem();
 
     // Scale factors
     // -------------
@@ -249,6 +258,7 @@ void MocoProblemRep::initialize() {
     // If there's a PrescribedMotion in the model, it's disabled by default
     // in this copied model.
     m_model_disabled_constraints = Model(m_model_base);
+    m_model_disabled_constraints.finalizeConnections();
 
     // The constraint forces will be applied to the copied model via an
     // OpenSim::DiscreteForces component, a thin wrapper to Simbody's
@@ -500,18 +510,12 @@ void MocoProblemRep::initialize() {
 
     // Control infos.
     // --------------
-    // TODO wait, this looks wrong...
-    auto controlNames = createControlNamesFromModel(m_model_base);
-    auto actuatorInputControlNames =
+    // Check for control infos for the actuators in the ActuatorInputController
+    // since these are the only actuators that will have associated optimal
+    // control variables.
+    auto controlNames =
             createControlNamesForControllerType<ActuatorInputController>(
                     m_model_base);
-    // Remove the actuators controlled by an ActuatorInputController from
-    // controlNames. TODO wait, shouldn't these be the only ones to check...?
-    for (const auto& name : actuatorInputControlNames) {
-        controlNames.erase(std::remove(controlNames.begin(),
-                controlNames.end(), name), controlNames.end());
-    }
-
     for (int i = 0; i < ph0.getProperty_control_infos_pattern().size(); ++i) {
         const auto& pattern = ph0.get_control_infos_pattern(i).getName();
         auto regexPattern = std::regex(pattern);
@@ -537,18 +541,11 @@ void MocoProblemRep::initialize() {
         m_control_infos[name] = ph0.get_control_infos(i);
     }
 
-    // Loop through the actuators in the ActuatorInputController since these are
-    // the only actuators that will have associated optimal control variables.
-    // Create control infos for actuators that do not have a control info.
-    // TODO this will change if we allow OCP controls on top of controls from
-    // controllers.
+    // Loop through the actuators in the ActuatorInputController again and
+    // create control infos for actuators that do not have a control info.
     const auto& actuController =
-            m_model_base.getComponent<ActuatorInputController>(
-                    "actuator_controller");
-    const auto& socket = actuController.getSocket<Actuator>("actuators");
-
-    // TODO use createControlNamesForControllerType<ActuatorInputController>() here? Then
-    //      do we disallow user added ActuatorInputControllers?
+            m_model_base.getComponentList<ActuatorInputController>().begin();
+    const auto& socket = actuController->getSocket<Actuator>("actuators");
     for (int i = 0; i < socket.getNumConnectees(); ++i) {
         const auto& actu = socket.getConnectee(i);
         const std::string actuName = actu.getAbsolutePathString();

@@ -345,9 +345,9 @@ private:
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
 
-        const auto& modelDisabledConstraints =
-                mocoProblemRep->getModelDisabledConstraints();
-        const auto& rawControls = modelDisabledConstraints.getControls(
+        const auto& controlAllocatorDisabledConstraints =
+                mocoProblemRep->getControlAllocatorDisabledConstraints();
+        const auto& rawControls = controlAllocatorDisabledConstraints.getControls(
                 simtkStateDisabledConstraints);
 
         integrand = mocoCost.calcIntegrand(
@@ -376,11 +376,13 @@ private:
         auto& simtkStateDisabledConstraintsFinal =
                 mocoProblemRep->updStateDisabledConstraints(1);
 
-        const auto& modelDisabledConstraints =
-                mocoProblemRep->getModelDisabledConstraints();
-        const auto& rawControlsInitial = modelDisabledConstraints.getControls(
+        const auto& controlAllocatorDisabledConstraints =
+                mocoProblemRep->getControlAllocatorDisabledConstraints();
+        const auto& rawControlsInitial =
+                controlAllocatorDisabledConstraints.getControls(
                 simtkStateDisabledConstraintsInitial);
-        const auto& rawControlsFinal = modelDisabledConstraints.getControls(
+        const auto& rawControlsFinal =
+                controlAllocatorDisabledConstraints.getControls(
                 simtkStateDisabledConstraintsFinal);
 
         // Compute the cost for this cost term.
@@ -410,9 +412,10 @@ private:
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
 
-        const auto& modelDisabledConstraints =
-                mocoProblemRep->getModelDisabledConstraints();
-        const auto& rawControls = modelDisabledConstraints.getControls(
+        const auto& controlAllocatorDisabledConstraints =
+                mocoProblemRep->getControlAllocatorDisabledConstraints();
+        const auto& rawControls =
+                controlAllocatorDisabledConstraints.getControls(
                 simtkStateDisabledConstraints);
 
         integrand = mocoEC.calcIntegrand(
@@ -442,11 +445,13 @@ private:
         auto& simtkStateDisabledConstraintsFinal =
                 mocoProblemRep->updStateDisabledConstraints(1);
 
-        const auto& modelDisabledConstraints =
-                mocoProblemRep->getModelDisabledConstraints();
-        const auto& rawControlsInitial = modelDisabledConstraints.getControls(
+        const auto& controlAllocatorDisabledConstraints =
+                mocoProblemRep->getControlAllocatorDisabledConstraints();
+        const auto& rawControlsInitial =
+                controlAllocatorDisabledConstraints.getControls(
                 simtkStateDisabledConstraintsInitial);
-        const auto& rawControlsFinal = modelDisabledConstraints.getControls(
+        const auto& rawControlsFinal =
+                controlAllocatorDisabledConstraints.getControls(
                 simtkStateDisabledConstraintsFinal);
 
         // Compute the cost for this cost term.

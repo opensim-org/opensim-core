@@ -19,51 +19,30 @@
 // This file provides a way to easily prototype or test temporary snippets of
 // code during development.
 
+#include "OpenSim/Actuators/ActivationCoordinateActuator.h"
 #include "OpenSim/Actuators/CoordinateActuator.h"
 #include "OpenSim/Actuators/ModelFactory.h"
-#include <OpenSim/Simulation/Control/InputController.h>
-#include <OpenSim/Moco/Components/ControlAllocator.h>
 
+#include <OpenSim/Moco/Components/ControlAllocator.h>
 #include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Simulation/Control/InputController.h>
 
 using namespace OpenSim;
 
 
 int main() {
+    auto model = ModelFactory::createSlidingPointMass();
+    auto* actu = new ActivationCoordinateActuator();
+    actu->setName("aca");
+    actu->setCoordinate(&model.updCoordinateSet().get("position"));
+    actu->setMinControl(-0.31);
+    actu->setMaxControl(0.78);
+    model.addForce(actu);
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.setModelAsCopy(model);
+    auto rep = problem.createRep();
 
-    Model model = ModelFactory::createDoublePendulum();
-    model.initSystem();
-
-    ControlAllocator* allocator = new ControlAllocator;
-    allocator->setName("control_allocator");
-    allocator->addControl("/tau0");
-    allocator->addControl("/tau1");
-    model.addComponent(allocator);
-
-    ActuatorInputController* controller = new ActuatorInputController;
-    controller->setName("actuator_controller");
-    controller->addActuator(model.getComponent<CoordinateActuator>("/tau0"));
-    controller->addActuator(model.getComponent<CoordinateActuator>("/tau1"));
-    controller->connectInput_controls(
-        allocator->getOutput("controls").getChannel("/tau0"), "/tau0");
-    controller->connectInput_controls(
-        allocator->getOutput("controls").getChannel("/tau1"), "/tau1");
-    model.addController(controller);
-    model.finalizeFromProperties();
-    model.finalizeConnections();
-
-    SimTK::State state = model.initSystem();
-
-    SimTK::Vector newControls(2, 0.0);
-    newControls[0] = 1.23;
-    newControls[1] = 4.56;
-    allocator->setControls(state, newControls);
-    model.realizeDynamics(state);
-
-    model.printSubcomponentInfo();
-
-    std::cout << "actuation tau0: " << model.getComponent<CoordinateActuator>("/tau0").getActuation(state) << std::endl;
-    std::cout << "actuation tau1: " << model.getComponent<CoordinateActuator>("/tau1").getActuation(state) << std::endl;
 
     return EXIT_SUCCESS;
 }
