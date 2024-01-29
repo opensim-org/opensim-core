@@ -473,7 +473,7 @@ double Muscle::getTendonStiffness(const SimTK::State& s) const
     of muscle force w.r.t. muscle length */
 double Muscle::getMuscleStiffness(const SimTK::State& s) const
 {
-    return getMuscleDynamicsInfo(s).muscleStiffness;
+    return calcMuscleStiffness(s);
 }
 
 /* get the current fiber power (W) */
@@ -631,6 +631,26 @@ void Muscle::calcMusclePotentialEnergyInfo(const SimTK::State& s,
 double Muscle::calcMusclePower(const SimTK::State& s) const
 {
     return -getLengtheningSpeed(s) * getMuscleDynamicsInfo(s).tendonForce;
+}
+
+double Muscle::calcMuscleStiffness(const SimTK::State& s) const
+{
+    const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
+
+    const double dFmAT_dlceAT = mdi.fiberStiffnessAlongTendon;
+    const double dFt_dtl      = mdi.tendonStiffness;
+
+    double Ke = 0.;
+    if (!get_ignore_tendon_compliance()) {
+        // Compute the stiffness of the whole musculotendon actuator.
+        if (abs(dFmAT_dlceAT * dFt_dtl) > 0.0 &&
+            abs(dFmAT_dlceAT + dFt_dtl) > SimTK::SignificantReal) {
+            Ke = (dFmAT_dlceAT * dFt_dtl) / (dFmAT_dlceAT + dFt_dtl);
+        }
+    } else {
+        Ke = dFmAT_dlceAT;
+    }
+    return Ke;
 }
 
 //=============================================================================
