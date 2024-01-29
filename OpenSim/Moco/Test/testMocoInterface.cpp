@@ -2163,7 +2163,7 @@ TEST_CASE("generateSpeedsFromValues() does not overwrite auxiliary states.") {
 }
 
 TEST_CASE("generateAccelerationsFromXXX() does not overwrite existing "
-          "non-acceleration derivatives.") {
+          "derivatives.") {
     int N = 20;
     SimTK::Vector time = createVectorLinspace(20, 0.0, 1.0);
     std::vector<std::string> snames{"/jointset/joint/coord/value",

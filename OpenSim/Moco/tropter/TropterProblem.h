@@ -364,9 +364,10 @@ protected:
         // point, so that each can preserve their cache?
         this->setSimTKState(in);
 
-        const auto& modelDisabledConstraints =
-                m_mocoProbRep.getModelDisabledConstraints();
-        const auto& rawControls = modelDisabledConstraints.getControls(
+        const auto& controlAllocatorDisabledConstraints =
+                m_mocoProbRep.getControlAllocatorDisabledConstraints();
+        const auto& rawControls =
+                controlAllocatorDisabledConstraints.getControls(
                 this->m_stateDisabledConstraints);
 
         // Compute the integrand for this cost term.
@@ -389,12 +390,12 @@ protected:
         const auto& initialState = m_mocoProbRep.updStateDisabledConstraints(0);
         const auto& finalState = m_mocoProbRep.updStateDisabledConstraints(1);
 
-        const auto& modelDisabledConstraints =
-                m_mocoProbRep.getModelDisabledConstraints();
-        const auto& initialRawControls = modelDisabledConstraints.getControls(
-                initialState);
-        const auto& finalRawControls = modelDisabledConstraints.getControls(
-                finalState);
+        const auto& controlAllocatorDisabledConstraints =
+                m_mocoProbRep.getControlAllocatorDisabledConstraints();
+        const auto& initialRawControls =
+                controlAllocatorDisabledConstraints.getControls(initialState);
+        const auto& finalRawControls =
+                controlAllocatorDisabledConstraints.getControls(finalState);
 
         // Compute the cost for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);

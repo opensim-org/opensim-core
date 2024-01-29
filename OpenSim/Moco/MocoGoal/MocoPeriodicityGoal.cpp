@@ -58,6 +58,7 @@ MocoPeriodicityGoal::MocoPeriodicityGoal() { constructProperties(); }
 void MocoPeriodicityGoal::constructProperties() {
     constructProperty_state_pairs();
     constructProperty_control_pairs();
+    constructProperty_ignore_controlled_actuators(false);
 }
 
 void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
@@ -139,7 +140,9 @@ void MocoPeriodicityGoal::calcGoalImpl(
         ++i;
     }
 
+    getModel().realizeVelocity(input.initial_state);
     const auto& initialControls = getModel().getControls(input.initial_state);
+    getModel().realizeVelocity(input.final_state);
     const auto& finalControls = getModel().getControls(input.final_state);
     int j = 0;
     for (const auto& index_control : m_indices_controls) {

@@ -66,8 +66,6 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     auto controlNames =
             problemRep.getControlAllocatorBase().getControlNamesInOrder();
     for (const auto& controlName : controlNames) {
-        // TODO will need to check for "input" infos once we support user
-        // InputControllers.
         const auto& info = problemRep.getControlInfo(controlName);
         addControl(controlName, convertBounds(info.getBounds()),
                 convertBounds(info.getInitialBounds()),

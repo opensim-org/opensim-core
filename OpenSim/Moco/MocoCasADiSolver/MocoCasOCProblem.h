@@ -347,7 +347,8 @@ private:
 
         const auto& controlAllocatorDisabledConstraints =
                 mocoProblemRep->getControlAllocatorDisabledConstraints();
-        const auto& rawControls = controlAllocatorDisabledConstraints.getControls(
+        const auto& rawControls =
+                controlAllocatorDisabledConstraints.getControls(
                 simtkStateDisabledConstraints);
 
         integrand = mocoCost.calcIntegrand(
@@ -755,7 +756,6 @@ private:
     bool m_paramsRequireInitSystem = true;
     std::string m_formattedTimeString;
     std::unordered_map<int, int> m_yIndexMap;
-    //std::vector<int> m_modelControlIndices;
     std::unique_ptr<FileDeletionThrower> m_fileDeletionThrower;
     // Local memory to hold constraint forces.
     static thread_local SimTK::Vector_<SimTK::SpatialVec>
