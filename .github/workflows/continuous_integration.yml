@@ -575,7 +575,7 @@ jobs:
         PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
         EXISTING_COMMENT_CONTENT=$(gh api /repos/opensim-org/opensim-core/issues/${PR_NUMBER} | jq -r '.body')
         CUSTOM_HEADER="### Performance Analysis Results"
-        
+
         REVIEWABLE_TAG="<!-- Reviewable:start -->"
         REVIEWABLE_BLOCK=""
         if [[ $EXISTING_COMMENT_CONTENT == *"$REVIEWABLE_TAG"* ]]; then
@@ -599,10 +599,11 @@ jobs:
         COMMENT_ID=$(gh api repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments | jq -r '.[0].id')
 
         # Update the existing top-level comment
-        gh api repos/opensim-org/opensim-core/issues/comments/${COMMENT_ID} \
+        gh api \
           --method PATCH \
           -H "Content-Type: application/json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
+          /repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments/${COMMENT_ID} \
           -f "body=${NEW_COMMENT_BODY}"
  
 
