@@ -480,22 +480,7 @@ private:
         return _connectees[index].getRef();
     }
 
-    const T& getConnecteeInternal(int index) const {
-        if (0 <= index && index < _connectees.size() && _connectees[index]) {
-            // fast case: use the cached connectee pointer
-            //
-            // it's usually cached via a direct call to `connect`, or through
-            // a call to `finalizeConnection`
-            return *_connectees[index];
-        }
-
-        // else: slow case: use the connectee path property to perform the lookup
-        //
-        // this is slower, but runtime-validated. It's necessary when (e.g.) a
-        // component wants to use sockets during an `extendFinalizeConnections`
-        // override (i.e. midway through recursively calling `finalizeConnection`)
-        return getOwner().getComponent<T>(getConnecteePath(index));
-    }
+    const T& getConnecteeInternal(int index) const;
 
     void connectInternal(const T& objT) {
         if (!isListSocket()) {
