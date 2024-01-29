@@ -267,6 +267,10 @@ if (WIN32)
     if(SUPERBUILD_ipopt)
     
         # Ipopt: Download pre-built binaries built by coin-or
+        # Compilers and Runtime Libraries:
+        # Microsoft (R) C/C++ Optimizing Compiler Version 19.29.30153 for x64
+        # (R) C++ Intel(R) 64 Compiler Classic for applications running on Intel(R) 64, Version 2021.2.0 Build 20210228_000000
+        # Intel(R) Fortran Intel(R) 64 Compiler Classic for applications running on Intel(R) 64, Version 2021.2.0 Build 20210228_000000
         set(IPOPT_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
             "${CMAKE_BINARY_DIR}/ipopt-prefix/src/ipopt"
             "${CMAKE_INSTALL_PREFIX}/ipopt")
