@@ -19,30 +19,11 @@
 // This file provides a way to easily prototype or test temporary snippets of
 // code during development.
 
-#include "OpenSim/Actuators/ActivationCoordinateActuator.h"
-#include "OpenSim/Actuators/CoordinateActuator.h"
-#include "OpenSim/Actuators/ModelFactory.h"
-
-#include <OpenSim/Moco/Components/ControlAllocator.h>
 #include <OpenSim/Moco/osimMoco.h>
-#include <OpenSim/Simulation/Control/InputController.h>
 
 using namespace OpenSim;
 
-
 int main() {
-    auto model = ModelFactory::createSlidingPointMass();
-    auto* actu = new ActivationCoordinateActuator();
-    actu->setName("aca");
-    actu->setCoordinate(&model.updCoordinateSet().get("position"));
-    actu->setMinControl(-0.31);
-    actu->setMaxControl(0.78);
-    model.addForce(actu);
-    MocoStudy study;
-    auto& problem = study.updProblem();
-    problem.setModelAsCopy(model);
-    auto rep = problem.createRep();
-
 
     return EXIT_SUCCESS;
 }
