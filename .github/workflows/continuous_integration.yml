@@ -575,6 +575,7 @@ jobs:
         PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
         EXISTING_COMMENT_CONTENT=$(gh api repos/:owner/:repo/issues/${PR_NUMBER} | jq -r '.body')
         CUSTOM_HEADER="### Performance Check Results"
+        echo "DEBUG1"
 
         # Check if the custom header exists in the existing comment body
         if [[ $EXISTING_COMMENT_CONTENT == *"$CUSTOM_HEADER"* ]]; then
@@ -593,13 +594,14 @@ jobs:
           $(cat performance_results.md)"
         fi
 
-        echo "DEBUG"
+        echo "DEBUG2"
+        echo ${PR_NUMBER}
 
         gh api \
           --method POST \
           -H "Content-Type: application/json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          /repos/OWNER/REPO/issues/PR_NUMBER/comments \
+          /repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments \
           -f "body=${NEW_COMMENT_BODY}"
  
 
