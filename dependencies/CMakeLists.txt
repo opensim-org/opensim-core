@@ -266,15 +266,12 @@ if (WIN32)
 
     if(SUPERBUILD_ipopt)
     
-        # Ipopt: Download pre-built binaries built by chrisdembia.
-        # This binary distribution comes with MUMPS and OpenBLAS.
-        # Compiled with clang-cl 5.0 and flang, using conda.
-        # Unfortunately, we do not have scripts to recreate this binary :(.
+        # Ipopt: Download pre-built binaries built by coin-or
         set(IPOPT_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
             "${CMAKE_BINARY_DIR}/ipopt-prefix/src/ipopt"
             "${CMAKE_INSTALL_PREFIX}/ipopt")
         ExternalProject_Add(ipopt
-            URL https://sourceforge.net/projects/myosin/files/ipopt/ipopt-mumps-flang-openblas-win64.zip
+            URL https://github.com/coin-or/Ipopt/releases/download/releases%2F3.14.14/Ipopt-3.14.14-win64-msvs2019-md.zip
             CONFIGURE_COMMAND ""
             BUILD_COMMAND ""
             INSTALL_COMMAND ${IPOPT_INSTALL_CMD})
