@@ -574,34 +574,35 @@ jobs:
       run: |
         PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
         EXISTING_COMMENT_CONTENT=$(gh api /repos/opensim-org/opensim-core/issues/${PR_NUMBER} | jq -r '.body')
-        CUSTOM_HEADER="### Performance Check Results"
-        echo "DEBUG1"
-
-        # Check if the custom header exists in the existing comment body
-        if [[ $EXISTING_COMMENT_CONTENT == *"$CUSTOM_HEADER"* ]]; then
-          # Extract the content after the custom header
-          EXISTING_TABLE_CONTENT=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$CUSTOM_HEADER/{flag=1; next} flag")
-
-          # Replace the existing table content with new content
-          NEW_TABLE_CONTENT=$(cat performance_results.md)
-          NEW_COMMENT_BODY="${EXISTING_COMMENT_CONTENT/"${EXISTING_TABLE_CONTENT}"/${NEW_TABLE_CONTENT}}"
-        else
-          # If the custom header doesn't exist, just append the new content with the header
-          NEW_COMMENT_BODY="${EXISTING_COMMENT_CONTENT}
-
-          ${CUSTOM_HEADER}
-
-          $(cat performance_results.md)"
+        CUSTOM_HEADER="### Performance Analysis Results"
+        
+        REVIEWABLE_TAG="<!-- Reviewable:start -->"
+        REVIEWABLE_BLOCK=""
+        if [[ $EXISTING_COMMENT_CONTENT == *"$REVIEWABLE_TAG"* ]]; then
+          REVIEWABLE_BLOCK=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$REVIEWABLE_TAG/,0")
         fi
 
-        echo "DEBUG2"
-        echo ${PR_NUMBER}
+        if [[ $EXISTING_COMMENT_CONTENT == *"$CUSTOM_HEADER"* ]]; then
+          CONTENT_TO_REPLACE=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$CUSTOM_HEADER/,0")
+        else
+          CONTENT_TO_REPLACE=${REVIEWABLE_BLOCK}
+        fi
 
-        gh api \
-          --method POST \
+        NEW_CONTENT="${CUSTOM_HEADER}
+
+        $(cat performance_results.md)
+
+        ${REVIEWABLE_BLOCK}
+        "
+        NEW_COMMENT_BODY="${EXISTING_COMMENT_CONTENT/"${CONTENT_TO_REPLACE}"/${NEW_CONTENT}}"
+
+        COMMENT_ID=$(gh api repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments | jq -r '.[0].id')
+
+        # Update the existing top-level comment
+        gh api repos/opensim-org/opensim-core/issues/comments/${COMMENT_ID} \
+          --method PATCH \
           -H "Content-Type: application/json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          /repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments \
           -f "body=${NEW_COMMENT_BODY}"
  
 
