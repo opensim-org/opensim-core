@@ -555,9 +555,9 @@ jobs:
 
     - name: Run Examples and Compare Performance
       run: |
-        ls
-        echo $GITHUB_WORKSPACE
-        python osimperf/osimperf --help
+        lhs=unzipped/opensim-core-${{ github.event.pull_request.base.ref }}/bin/opensim-cmd
+        rhs=unzipped/opensim-core-${{ needs.mac_source.outputs.version }}/bin/opensim-cmd
+        python osimperf/osimperf compare-all --repeats 16 ${lhs} ${rhs}
 
     - name: Extract Performance Results
       run: |
@@ -576,7 +576,7 @@ jobs:
       run: |
         PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
         EXISTING_COMMENT_CONTENT=$(gh api /repos/opensim-org/opensim-core/pulls/${PR_NUMBER} | jq -r '.body')
-        CUSTOM_HEADER="### Performance Analysis Results"
+        CUSTOM_HEADER="### Performance analysis"
 
         REVIEWABLE_TAG="<!-- Reviewable:start -->"
         REVIEWABLE_BLOCK=""
