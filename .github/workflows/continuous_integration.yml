@@ -605,7 +605,7 @@ jobs:
           -H "Content-Type: application/json" \
           -H "Accept: application/vnd.github.v3+json" \
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-          "/repos/opensim-org/opensim-core/pulls/${PR_NUMBER}" \
+          repos/opensim-org/opensim-core/pulls/${PR_NUMBER} \
           -f "body=${NEW_COMMENT_BODY}"
  
 
