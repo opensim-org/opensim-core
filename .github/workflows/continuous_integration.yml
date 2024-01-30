@@ -573,7 +573,7 @@ jobs:
     - name: Post Results to PR Comment
       run: |
         PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-        EXISTING_COMMENT_CONTENT=$(gh api /repos/opensim-org/opensim-core/issues/${PR_NUMBER} | jq -r '.body')
+        EXISTING_COMMENT_CONTENT=$(gh api /repos/opensim-org/opensim-core/pulls/${PR_NUMBER} | jq -r '.body')
         CUSTOM_HEADER="### Performance Analysis Results"
 
         REVIEWABLE_TAG="<!-- Reviewable:start -->"
@@ -596,15 +596,16 @@ jobs:
         "
         NEW_COMMENT_BODY="${EXISTING_COMMENT_CONTENT/"${CONTENT_TO_REPLACE}"/${NEW_CONTENT}}"
 
-        COMMENT_ID=$(gh api repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments | jq -r '.[0].id')
-        echo ${COMMENT_ID}
+        # COMMENT_ID=$(gh api repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments | jq -r '.[0].id')
+        # echo ${COMMENT_ID}
 
-        # Update the existing top-level comment
+        # Update the existing description
         gh api \
           --method PATCH \
           -H "Content-Type: application/json" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments/${COMMENT_ID} \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          "/repos/opensim-org/opensim-core/pulls/${PR_NUMBER}" \
           -f "body=${NEW_COMMENT_BODY}"
  
 
