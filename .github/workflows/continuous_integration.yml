@@ -597,13 +597,14 @@ jobs:
         NEW_COMMENT_BODY="${EXISTING_COMMENT_CONTENT/"${CONTENT_TO_REPLACE}"/${NEW_CONTENT}}"
 
         COMMENT_ID=$(gh api repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments | jq -r '.[0].id')
+        echo ${COMMENT_ID}
 
         # Update the existing top-level comment
         gh api \
           --method PATCH \
           -H "Content-Type: application/json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          /repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments/${COMMENT_ID} \
+          repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments/${COMMENT_ID} \
           -f "body=${NEW_COMMENT_BODY}"
  
 
