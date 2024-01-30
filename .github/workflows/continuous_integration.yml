@@ -569,6 +569,8 @@ jobs:
         echo "--- | --- | ---" >> performance_results.md
         echo "1 | 100 | A" >> performance_results.md
         echo "2 | 90 | B" >> performance_results.md
+        echo "3 | 76 | C" >> performance_results.md
+        echo "4 | 44 | D" >> performance_results.md
 
     - name: Post Results to PR Comment
       run: |
