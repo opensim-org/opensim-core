@@ -50,6 +50,7 @@ namespace {
         model->setName("sliding_mass");
         model->set_gravity(SimTK::Vec3(0, 0, 0));
         auto* body = new Body("body", mass, SimTK::Vec3(0), SimTK::Inertia(0));
+        body->attachGeometry(new Sphere(0.05));
         model->addComponent(body);
 
         // Allows translation along x.
@@ -2242,9 +2243,9 @@ TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
     {
         MocoStudy study;
         auto& problem = study.updProblem();
-        auto model = createSlidingMassModel();
-        problem.setModel(std::move(model));
-        problem.setTimeBounds(0, 5);
+        Model model = ModelFactory::createSlidingPointMass();
+        problem.setModelAsCopy(model);
+        problem.setTimeBounds(0, 2);
         problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
         problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
         problem.setControlInfo("/actuator", {-50, 50});
@@ -2252,6 +2253,7 @@ TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
         auto& solver = study.initSolver<TestType>();
         solver.set_num_mesh_intervals(50);
         MocoSolution solution = study.solve();
+        solution.write("testMocoInterface_testSlidingMass_solution.sto");
         statesTrajectory = solution.getStatesTrajectory();
         controlsTable = solution.exportToControlsTable();
     }
@@ -2261,25 +2263,29 @@ TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
     // back.
     {
         const auto& time = controlsTable.getIndependentColumn();
-        const auto& control = controlsTable.getDependentColumn("/actuator");
-        auto model = createSlidingMassModel();
+        const auto& control =
+                controlsTable.getDependentColumn("/actuator");
+        Model model = ModelFactory::createSlidingPointMass();
         auto* controller = new PrescribedController();
-        controller->addActuator(model->getComponent<Actuator>("/actuator"));
-        controller->prescribeControlForActuator("actuator",
+        controller->addActuator(model.getComponent<Actuator>("/actuator"));
+        controller->prescribeControlForActuator("/actuator",
             new GCVSpline(5, control.size(), time.data(), &control[0],
                     "/actuator", 0.0));
-        model->addController(controller);
-        model->finalizeConnections();
+        model.addController(controller);
+        model.finalizeConnections();
 
         MocoStudy study;
         auto& problem = study.updProblem();
-        problem.setModel(std::move(model));
-        problem.setTimeBounds(0, 5);
+        problem.setModelAsCopy(model);
+        problem.setTimeBounds(0, 2);
         problem.setStateInfo("/slider/position/value", {0, 1}, 0);
         problem.setStateInfo("/slider/position/speed", {-100, 100}, 0);
         auto& solver = study.initSolver<TestType>();
         solver.set_num_mesh_intervals(50);
         MocoSolution solution = study.solve();
+        study.visualize(solution);
+        solution.write(
+                "testMocoInterface_testSlidingMass_prescribed_solution.sto");
 
         OpenSim_REQUIRE_MATRIX_ABSTOL(solution.getStatesTrajectory(),
             statesTrajectory, 1e-9);
