@@ -319,14 +319,14 @@ private:
 
     void setConnecteePathInternal(const std::string& name, int index) {
         using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK(index, getNumConnectees(),
+        SimTK_INDEXCHECK(index, static_cast<int>(getNumConnectees()),
                          "AbstractSocket::setConnecteePath()");
         updConnecteePathProp().setValue(index, name);
     }
 
     const std::string& getConnecteePathInternal(int index) const {
         using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK(index, getNumConnectees(),
+        SimTK_INDEXCHECK(index, static_cast<int>(getNumConnectees()),
                         "AbstractSocket::getConnecteePath()");
         return getConnecteePathProp().getValue(index);
     }
@@ -375,7 +375,7 @@ public:
     typedef std::vector<SimTK::ReferencePtr<const T>> ConnecteeList;
 
     // default copy constructor
-    
+
     virtual ~Socket() {}
     
     Socket<T>* clone() const override { return new Socket<T>(*this); }
@@ -475,19 +475,12 @@ private:
         OPENSIM_THROW_IF(!isConnected(), Exception,
             "Socket '{}' not connected.", getName());
         using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK(index, getNumConnectees(),
+        SimTK_INDEXCHECK(index, static_cast<int>(getNumConnectees()),
                          "Socket<T>::getConnecteeAsObject()");
         return _connectees[index].getRef();
     }
 
-    const T& getConnecteeInternal(int index) const {
-        OPENSIM_THROW_IF(!isConnected(), Exception,
-            "Socket '{}' not connected.", getName());
-        using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK(index, getNumConnectees(),
-                         "Socket<T>::getConnectee()");
-        return _connectees[index].getRef();
-    }
+    const T& getConnecteeInternal(int index) const;
 
     void connectInternal(const T& objT) {
         if (!isListSocket()) {
