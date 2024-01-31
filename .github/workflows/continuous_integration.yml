@@ -522,6 +522,7 @@ jobs:
         token: ${{ secrets.PERF_DISPATCH_PAT }}
         repo: opensim-perf
         owner: opensim-org
+        ref: main
         workflow: performance_analysis.yml
         workflow_inputs: '{"run_id": "${{ github.run_id }}",
               "target_artifact_name": "opensim-core-${{ github.event.pull_request.base.ref }}-mac",
