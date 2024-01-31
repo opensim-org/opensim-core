@@ -40,8 +40,6 @@
 #include "MarkerSet.h"
 #include "ProbeSet.h"
 #include "SimTKcommon/internal/SystemGuts.h"
-#include <iostream>
-#include <string>
 
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/IO.h>
@@ -51,43 +49,132 @@
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
 #include <OpenSim/Simulation/CoordinateReference.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/Model/StationDefinedFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 
+#include <functional>
+#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
-
-//=============================================================================
-// STATICS
-//=============================================================================
-
-template<typename TConcreteComponent>
-static TConcreteComponent* MultibodyGraphMakerPtrCast(void* p)
-{
-    // this helper function exists to try and add a little bit of
-    // runtime safety checking to a `void*` downcast, to try and
-    // downgrade what would otherwise be runtime segfaults (#3299)
-    // into runtime exceptions (which can be caught, logged, etc.)
-
-    if (!p)
+namespace {
+    template<typename TConcreteComponent>
+    TConcreteComponent* MultibodyGraphMakerPtrCast(void* p)
     {
-        return nullptr;
+        // this helper function exists to try and add a little bit of
+        // runtime safety checking to a `void*` downcast, to try and
+        // downgrade what would otherwise be runtime segfaults (#3299)
+        // into runtime exceptions (which can be caught, logged, etc.)
+
+        if (!p)
+        {
+            return nullptr;
+        }
+
+        TConcreteComponent* casted = dynamic_cast<TConcreteComponent*>(static_cast<Component*>(p));
+
+        if (!casted)
+        {
+            OPENSIM_THROW(OpenSim::Exception, "Failed to convert a pointer from a SimTK::MultibodyGraphMaker to the desired type. This is a known bug that can happen when trying to assemble models that have incorrect topologies (see opensim-core issue #3299). You might need to change/fix your model's topology, or post a comment on that issue.");
+        }
+
+        return casted;
     }
 
-    TConcreteComponent* casted = dynamic_cast<TConcreteComponent*>(static_cast<Component*>(p));
+    // helper: internal class used by the depth-first topology sorter
+    struct MarkedFrameRef final {
 
-    if (!casted)
+        explicit MarkedFrameRef(std::reference_wrapper<Frame> ref_) :
+            ref{ref_}
+        {}
+
+        friend bool operator==(const MarkedFrameRef& lhs, const Frame& rhs)
+        {
+            return &lhs.ref.get() == &rhs;
+        }
+
+        std::reference_wrapper<Frame> ref;
+        bool permanentlyMarked = false;
+        bool temporarilyMarked = false;
+    };
+
+    // helper: the recusive `visit` step in a depth-first topology sort
+    //
+    // it recursively visits a `node` (marked frame) by attempting to traverse
+    // to its parent (PhysicalOffsetFrame/StationDefinedFrame).
+    void RecursivelyVisitNode(
+        OpenSim::Component const& root,
+        std::vector<std::reference_wrapper<Frame>>& sorted,
+        std::vector<MarkedFrameRef>& nodes,
+        MarkedFrameRef& node)
     {
-        OPENSIM_THROW(OpenSim::Exception, "Failed to convert a pointer from a SimTK::MultibodyGraphMaker to the desired type. This is a known bug that can happen when trying to assemble models that have incorrect topologies (see opensim-core issue #3299). You might need to change/fix your model's topology, or post a comment on that issue.");
+        if (node.permanentlyMarked) {
+            return;
+        }
+        if (node.temporarilyMarked) {
+            OPENSIM_THROW(PhysicalOffsetFramesFormLoop, root, node.ref.get().getName());
+        }
+
+        // recurse
+        node.temporarilyMarked = true;
+        if (auto* pof = dynamic_cast<PhysicalOffsetFrame*>(&node.ref.get())) {
+            auto const it = std::find(nodes.begin(), nodes.end(), pof->getParentFrame());
+            OPENSIM_ASSERT_ALWAYS(it != nodes.end() && "a parent frame of a pof was not captured by updComponentList: this should never happen");
+            RecursivelyVisitNode(root, sorted, nodes, *it);
+        }
+        else if (auto* sdf = dynamic_cast<StationDefinedFrame*>(&node.ref.get())) {
+            auto const it = std::find(nodes.begin(), nodes.end(), sdf->findBaseFrame());
+            OPENSIM_ASSERT_ALWAYS(it != nodes.end() && "a parent frame of a pof was not captured by updComponentList: this should never happen");
+            RecursivelyVisitNode(root, sorted, nodes, *it);
+        }
+        node.temporarilyMarked = false;
+
+        // finish with this node
+        node.permanentlyMarked = true;
+        sorted.push_back(node.ref);
     }
 
-    return casted;
+
+    // helper: extract `Frame`s under the given `root` in topological order from
+    // "least dependent" to "most dependent"
+    //
+    // throws if a graph cycle is detected between the frames (this method should
+    // be called after all graph cycles have been broken)
+    std::vector<std::reference_wrapper<Frame>> TopologicallySortedFrames(Component& root)
+    {
+        // perform a depth-first search to perform the topological sort
+        //
+        // see:
+        //
+        // - https://en.wikipedia.org/wiki/Topological_sorting
+        // - https://en.wikipedia.org/wiki/Depth-first_search
+
+        // collect all frames into `MarkedFrame` references
+        std::vector<MarkedFrameRef> markedFrameRefs;
+        for (auto& frame : root.updComponentList<Frame>()) {
+            markedFrameRefs.emplace_back(frame);
+        }
+
+        std::vector<std::reference_wrapper<Frame>> sortedFrames;
+        sortedFrames.reserve(markedFrameRefs.size());
+
+        for (auto& node : markedFrameRefs) {
+            RecursivelyVisitNode(root, sortedFrames, markedFrameRefs, node);
+        }
+
+        return sortedFrames;
+    }
 }
-
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -948,38 +1035,20 @@ void Model::extendConnectToModel(Model &model)
             "Unrecognized loop constraint type '" + joint.getConcreteClassName() + "'.");
     }
 
-    // Now include all remaining Components beginning with PhysicalOffsetFrames
-    // since Constraints, Forces and other components can only be applied to
-    // PhyicalFrames, which include PhysicalOffsetFrames.
-    // PhysicalOffsetFrames require that their parent frame (a PhysicalFrame)
-    // be added to the System first. So for each PhysicalOffsetFrame locate its
-    // parent and verify its presence in the _orderedList otherwise add it first.
-    auto poFrames = updComponentList<PhysicalOffsetFrame>();
-    for (auto& pof : poFrames) {
-        // Ground and Body type PhysicalFrames are included in the Multibody graph
-        // PhysicalOffsetFrame can be listed in any order and may be attached
-        // to any other PhysicalOffsetFrame, so we need to find their parent(s)
-        // in the tree and add them first.
-        pof.finalizeConnections(*this);
-        const PhysicalOffsetFrame* parentPof =
-            dynamic_cast<const PhysicalOffsetFrame*>(&pof.getParentFrame());
-        std::vector<const PhysicalOffsetFrame*> parentPofs;
-        while (parentPof) {
-            const auto found =
-                std::find(parentPofs.begin(), parentPofs.end(), parentPof);
-            OPENSIM_THROW_IF_FRMOBJ(found != parentPofs.end(),
-                PhysicalOffsetFramesFormLoop, (*found)->getName());
-            parentPofs.push_back(parentPof);
-            // Given a chain of offsets, the most proximal must have Ground or 
-            // Body as its parent. When that happens we can stop.
-            parentPof =
-                dynamic_cast<const PhysicalOffsetFrame*>(&parentPof->getParentFrame());
+    // special case: topologically sort dependent frames
+    //
+    // `PhysicalOffsetFrame`/`StationDefinedFrame` are dependent on their
+    // parent/base `Frame` being added to the Simbody system before them, and
+    // those `Frame`s might, themselves, be `PhysicalOffsetFrames`, and so on
+    //
+    // so collect all the frames in the model up and topologically sort them
+    // from "least-dependent"/"closer to ground" to "depends on other frames"
+    for (Frame& frame : TopologicallySortedFrames(*this)) {
+        if (dynamic_cast<PhysicalOffsetFrame*>(&frame) ||
+            dynamic_cast<StationDefinedFrame*>(&frame)) {
+
+            setNextSubcomponentInSystem(frame);
         }
-        while (parentPofs.size()) {
-            setNextSubcomponentInSystem(*parentPofs.back());
-            parentPofs.pop_back();
-        }
-        setNextSubcomponentInSystem(pof);
     }
 
     // and everything else including Forces, Controllers, etc...
