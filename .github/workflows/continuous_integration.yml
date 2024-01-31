@@ -524,12 +524,7 @@ jobs:
         owner: opensim-org
         ref: main
         workflow: performance_analysis.yml
-        workflow_inputs: '{"run_id": "${{ github.run_id }}",
-              "target_artifact_name": "opensim-core-${{ github.event.pull_request.base.ref }}-mac",
-              "source_artifact_name": "opensim-core-${{ steps.configure.outputs.version }}-mac",
-              "target_artifact_zip": "opensim-core-${{ github.event.pull_request.base.ref }}.zip",
-              "source_artifact_zip": "opensim-core-${{ steps.configure.outputs.version }}.zip",
-            }'
+        workflow_inputs: '{"run_id": "${{ github.run_id }}", "target_artifact_name": "opensim-core-${{ github.event.pull_request.base.ref }}-mac", "source_artifact_name": "opensim-core-${{ steps.configure.outputs.version }}-mac", "target_artifact_zip": "opensim-core-${{ github.event.pull_request.base.ref }}.zip", "source_artifact_zip": "opensim-core-${{ steps.configure.outputs.version }}.zip"}'
 
     - name: Await opensim-perf workflow
       uses: Codex-/await-remote-run@v1.11.0
