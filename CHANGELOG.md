@@ -21,6 +21,9 @@ new `getConnectee` overloads that take an index to a desired object in the list 
   querying a component's outputs by name (#3673)
 - The XMLDocument that is held within OpenSim::Object is now reference-counted, to help ensure
   it is freed (e.g. when an exception is thrown)
+- Calling `getConnectee` no longer strongly requires that `finalizeConnection` has been called on the socket. The
+  implementation will now fall back to the (slower) method of following the socket's connectee path property. This
+  is useful if (e.g.) following sockets *during* a call to `Component::finalizeConnections`
 
 v4.5
 ====
