@@ -21,6 +21,8 @@ new `getConnectee` overloads that take an index to a desired object in the list 
   querying a component's outputs by name (#3673)
 - The XMLDocument that is held within OpenSim::Object is now reference-counted, to help ensure
   it is freed (e.g. when an exception is thrown)
+- Added `StationDefinedFrame` component, which is a `Frame` component that automatically computes its position and
+  orientation from `Station`s in the model
 
 v4.5
 ====
