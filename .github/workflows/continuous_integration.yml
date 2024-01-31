@@ -570,6 +570,45 @@ jobs:
           path: results
           repo: opensim-org/opensim-perf
 
+      - name: Post Results to PR Comment
+        run: |
+          PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          EXISTING_COMMENT_CONTENT=$(gh api /repos/opensim-org/opensim-core/pulls/${PR_NUMBER} | jq -r '.body')
+          CUSTOM_HEADER="### Performance analysis"
+
+          REVIEWABLE_TAG="<!-- Reviewable:start -->"
+          REVIEWABLE_BLOCK=""
+          if [[ $EXISTING_COMMENT_CONTENT == *"$REVIEWABLE_TAG"* ]]; then
+            REVIEWABLE_BLOCK=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$REVIEWABLE_TAG/,0")
+          fi
+
+          if [[ $EXISTING_COMMENT_CONTENT == *"$CUSTOM_HEADER"* ]]; then
+            CONTENT_TO_REPLACE=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$CUSTOM_HEADER/,0")
+          else
+            CONTENT_TO_REPLACE=${REVIEWABLE_BLOCK}
+          fi
+
+          NEW_CONTENT="${CUSTOM_HEADER}
+
+          $(cat results/performance_results.md)
+
+          ${REVIEWABLE_BLOCK}
+          "
+          NEW_COMMENT_BODY="${EXISTING_COMMENT_CONTENT/"${CONTENT_TO_REPLACE}"/${NEW_CONTENT}}"
+
+          # COMMENT_ID=$(gh api repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments | jq -r '.[0].id')
+          # echo ${COMMENT_ID}
+
+          # Update the existing description
+          gh api \
+            --method PATCH \
+            -H "Content-Type: application/json" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            repos/opensim-org/opensim-core/pulls/${PR_NUMBER} \
+            -f "body=${NEW_COMMENT_BODY}"
+
+
     # - uses: actions/setup-python@v4
     #   with:
     #     python-version: '3.8'
@@ -624,44 +663,6 @@ jobs:
     #     echo "2 | 90 | B" >> performance_results.md
     #     echo "3 | 76 | C" >> performance_results.md
     #     echo "4 | 44 | D" >> performance_results.md
-
-    - name: Post Results to PR Comment
-      run: |
-        PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-        EXISTING_COMMENT_CONTENT=$(gh api /repos/opensim-org/opensim-core/pulls/${PR_NUMBER} | jq -r '.body')
-        CUSTOM_HEADER="### Performance analysis"
-
-        REVIEWABLE_TAG="<!-- Reviewable:start -->"
-        REVIEWABLE_BLOCK=""
-        if [[ $EXISTING_COMMENT_CONTENT == *"$REVIEWABLE_TAG"* ]]; then
-          REVIEWABLE_BLOCK=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$REVIEWABLE_TAG/,0")
-        fi
-
-        if [[ $EXISTING_COMMENT_CONTENT == *"$CUSTOM_HEADER"* ]]; then
-          CONTENT_TO_REPLACE=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$CUSTOM_HEADER/,0")
-        else
-          CONTENT_TO_REPLACE=${REVIEWABLE_BLOCK}
-        fi
-
-        NEW_CONTENT="${CUSTOM_HEADER}
-
-        $(cat results/performance_results.md)
-
-        ${REVIEWABLE_BLOCK}
-        "
-        NEW_COMMENT_BODY="${EXISTING_COMMENT_CONTENT/"${CONTENT_TO_REPLACE}"/${NEW_CONTENT}}"
-
-        # COMMENT_ID=$(gh api repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments | jq -r '.[0].id')
-        # echo ${COMMENT_ID}
-
-        # Update the existing description
-        gh api \
-          --method PATCH \
-          -H "Content-Type: application/json" \
-          -H "Accept: application/vnd.github.v3+json" \
-          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-          repos/opensim-org/opensim-core/pulls/${PR_NUMBER} \
-          -f "body=${NEW_COMMENT_BODY}"
  
 
   ubuntu20:
