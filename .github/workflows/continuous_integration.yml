@@ -391,7 +391,7 @@ jobs:
     env:
       JOB_NAME_SUFFIX: ${{ contains(github.event.head_commit.message, '[perf]') && ' (source)' || '' }}
     
-    name: Mac${{ env.JOB_NAME_SUFFIX }}
+    name: Mac$JOB_NAME_SUFFIX
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
