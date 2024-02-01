@@ -260,7 +260,7 @@ jobs:
 
     runs-on: macos-12
 
-    if: ${{ contains(github.event.pull_request.title, '[perf]') }}
+    if: ${{ contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]') }}
 
     steps:
     - uses: actions/checkout@v3
@@ -387,7 +387,7 @@ jobs:
 
     runs-on: macos-12
     
-    name: ${{ contains(github.event.pull_request.title, '[perf]') && 'Mac [source]' || 'Mac' }}
+    name: ${{ (contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]')) && 'Mac [source]' || 'Mac' }}
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
@@ -523,7 +523,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
 
-    if: ${{ contains(github.event.pull_request.title, '[perf]') }}
+    if: ${{ contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]') }}
 
     steps:
     - name: Trigger opensim-perf workflow
@@ -594,83 +594,7 @@ jobs:
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
           repos/opensim-org/opensim-core/pulls/${PR_NUMBER} \
           -f "body=${NEW_COMMENT_BODY}"
-
-
-    # - name: Trigger opensim-perf workflow
-    #   uses: actions/github-script@v6
-    #   with:
-    #     github-token: ${{ secrets.PERF_DISPATCH_PAT }}
-    #     script: |
-    #       const result = await github.rest.actions.createWorkflowDispatch({
-    #         owner: 'opensim-org',
-    #         repo: 'opensim-perf',
-    #         workflow_id: 'performance_analysis.yml',
-    #         ref: 'main',
-    #         inputs: {
-    #           run_id: '${{ github.run_id }}',
-    #           target_artifact_name: 'opensim-core-${{ github.event.pull_request.base.ref }}-mac',
-    #           source_artifact_name: 'opensim-core-${{ steps.configure.outputs.version }}-mac',
-    #           target_artifact_zip: 'opensim-core-${{ github.event.pull_request.base.ref }}.zip',
-    #           source_artifact_zip: 'opensim-core-${{ steps.configure.outputs.version }}.zip',
-    #         }
-    #       })
-    #       console.log(result)
-    # - uses: actions/setup-python@v4
-    #   with:
-    #     python-version: '3.8'
-
-    # - name: Checkout osimperf
-    #   uses: actions/checkout@v3
-    #   with:
-    #     repository: adamkewley/osimperf
-    #     ref: master
-    #     path: osimperf
-
-    # - name: Download source branch artifact
-    #   uses: actions/download-artifact@v2
-    #   with:
-    #     name: opensim-core-${{ needs.mac_source.outputs.version }}-mac
-    #     path: artifacts
-
-    # - name: Unzip source branch artifact
-    #   run: |
-    #     mkdir unzipped
-    #     unzip artifacts/opensim-core-${{ needs.mac_source.outputs.version }}.zip -d unzipped/
-    #     # cd unzipped/opensim-core-${{ needs.mac_source.outputs.version }}
-    #     ls
-
-    # - name: Download target branch artifact
-    #   uses: actions/download-artifact@v2
-    #   with:
-    #     name: opensim-core-${{ github.event.pull_request.base.ref }}-mac
-    #     path: artifacts
-
-    # - name: Unzip target branch artifact
-    #   run: |
-    #     unzip artifacts/opensim-core-${{ github.event.pull_request.base.ref }}.zip -d unzipped/
-    #     # cd unzipped/opensim-core-${{ github.event.pull_request.base.ref }}
-    #     ls
-
-    # - name: Run Examples and Compare Performance
-    #   run: |
-    #     lhs=unzipped/opensim-core-${{ github.event.pull_request.base.ref }}/bin/opensim-cmd
-    #     rhs=unzipped/opensim-core-${{ needs.mac_source.outputs.version }}/bin/opensim-cmd
-    #     python osimperf/osimperf compare-all --repeats 16 ${lhs} ${rhs}
-
-    # - name: Extract Performance Results
-    #   run: |
-    #     # Replace this with your command to generate the markdown table
-    #     echo "Generating markdown table..."
-    #     # Your command to generate the markdown table here
-    #     # Store the markdown table in a file, e.g., performance_results.md
-    #     echo "Sample | Performance | Table" > performance_results.md
-    #     echo "--- | --- | ---" >> performance_results.md
-    #     echo "1 | 100 | A" >> performance_results.md
-    #     echo "2 | 90 | B" >> performance_results.md
-    #     echo "3 | 76 | C" >> performance_results.md
-    #     echo "4 | 44 | D" >> performance_results.md
  
-
   ubuntu20:
     name: Ubuntu2004
 
