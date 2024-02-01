@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                    OpenSim:  StationDefinedFrame.cpp                       *
+ *                   OpenSim:  StationDefinedFrame.cpp                        *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -25,7 +25,7 @@
 
 #include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/Component.h>
-#include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -37,9 +37,10 @@
 #include <string>
 #include <utility>
 
+using OpenSim::AbstractProperty;
 using OpenSim::Component;
-using OpenSim::Exception;
 using OpenSim::Frame;
+using OpenSim::log_warn;
 using OpenSim::Property;
 using OpenSim::Station;
 
@@ -55,6 +56,15 @@ namespace {
     SimTK::Vec3 GetLocationInBaseFrame(Station const& station)
     {
         return station.getParentFrame().findTransformInBaseFrame() * station.get_location();
+    }
+
+    // helper: returns the (parseable) string equivalent of the given direction
+    std::string to_string(SimTK::CoordinateDirection const& dir)
+    {
+        std::string rv;
+        rv += dir.getDirection() > 0 ? '+' : '-';
+        rv += std::array<char, 3>{'x', 'y', 'z'}.at(dir.getAxis());
+        return rv;
     }
 
     // helper: tries to parse a given character as a designator for an axis of a 3D coordinate
@@ -86,27 +96,23 @@ namespace {
     // returns `true` if `out` was updated by the parser, or `false` if the string couldn't be parsed
     bool TryParseAsCoordinateDirection(std::string s, SimTK::CoordinateDirection& out)
     {
-        if (s.empty())
-        {
+        if (s.empty()) {
             return false;  // cannot parse: input is empty
         }
 
         // handle and consume sign (direction) prefix (e.g. '+' / '-')
         const bool isNegated = s.front() == '-';
-        if (isNegated || s.front() == '+')
-        {
+        if (isNegated || s.front() == '+') {
             s = s.substr(1);
         }
 
-        if (s.empty())
-        {
+        if (s.empty()) {
             return false;  // cannot parse: the input was just a prefix with no axis (e.g. "+")
         }
 
         // handle axis suffix
         SimTK::CoordinateAxis axis = SimTK::CoordinateAxis::XCoordinateAxis();
-        if (!TryParseAsCoordinateAxis(s.front(), axis))
-        {
+        if (!TryParseAsCoordinateAxis(s.front(), axis)) {
             return false;
         }
 
@@ -114,32 +120,78 @@ namespace {
         return true;
     }
 
+    // helper: returns an absolute path to a property of `owner`
+    std::string AbsolutePropertyPathString(Component const& owner, AbstractProperty const& prop)
+    {
+        std::stringstream ss;
+        ss << owner.getAbsolutePathString() << '/' << prop.getName();
+        return std::move(ss).str();
+    }
+
     // helper: tries to parse the string value held within `prop` as a coordinate direction, throwing
     // if the parse isn't possible
-    SimTK::CoordinateDirection ParseAsCoordinateDirectionOrThrow(
+    SimTK::CoordinateDirection ParseAsCoordinateDirectionOrCoerceTo(
         Component const& owner,
-        Property<std::string> const& prop)
+        Property<std::string>& prop,
+        SimTK::CoordinateDirection fallback)
     {
         SimTK::CoordinateDirection dir = SimTK::CoordinateAxis::XCoordinateAxis{};
-        if (TryParseAsCoordinateDirection(prop.getValue(), dir))
-        {
+        if (TryParseAsCoordinateDirection(prop.getValue(), dir)) {
             return dir;
         }
-        else
-        {
-            std::stringstream ss;
-            ss << prop.getName() << ": has an invalid value ('" << prop.getValue() << "'): permitted values are -x, +x, -y, +y, -z, or +z";
-            OPENSIM_THROW(Exception, owner, std::move(ss).str());
+        else {
+            auto const fallbackString = to_string(fallback);
+            log_warn("{}: the value '{}' could not be parsed as a coordinate direction: falling back to {}",
+                AbsolutePropertyPathString(owner, prop),
+                prop.getValue(),
+                fallbackString
+            );
+            prop.setValue(fallbackString);
+            return fallback;
         }
     }
 
-    // helper: returns the (parseable) string equivalent of the given direction
-    std::string to_string(SimTK::CoordinateDirection const& dir)
+    // helper: tries to parse the provided `ab_axis` and `ab_x_ac_axis` properties into a lookup
+    // table that maps basis vectors (ab, ab_x_ac, ab_x_ab_x_ac) onto frame axes (x, y, z)
+    std::array<SimTK::CoordinateDirection, 3> ParseBasisVectorToAxisMappingsOrFallback(
+        Component const& owner,
+        Property<std::string>& abAxisProp,
+        Property<std::string>& abXacAxisProp)
     {
-        std::string rv;
-        rv += dir.getDirection() > 0 ? '+' : '-';
-        rv += std::array<char, 3>{'x', 'y', 'z'}.at(dir.getAxis());
-        return rv;
+        // parse `ab_axis`, or fallback if there's a parsing error
+        const SimTK::CoordinateDirection abDirection = ParseAsCoordinateDirectionOrCoerceTo(
+            owner,
+            abAxisProp,
+            SimTK::CoordinateAxis::XCoordinateAxis()
+        );
+
+        // parse `ab_x_ac_axis`, or fallback if there's a parsing error
+        SimTK::CoordinateDirection abXacDirection = ParseAsCoordinateDirectionOrCoerceTo(
+            owner,
+            abXacAxisProp,
+            abDirection.getAxis().getNextAxis()
+        );
+
+        // ensure `ab_axis` is orthogonal to `ab_x_ac_axis`, or fallback if they aren't
+        if (abDirection.hasSameAxis(abXacDirection)) {
+            log_warn("{}: {} ({}) is not orthogonal to {} ({}): falling back to an orthogonal pair",
+                owner.getAbsolutePathString(),
+                abAxisProp.getName(),
+                to_string(abDirection),
+                abXacAxisProp.getName(),
+                to_string(abXacDirection)
+            );
+            abXacDirection = abDirection.getAxis().getNextAxis();
+            abXacAxisProp.setValue(to_string(abXacDirection));
+        }
+
+        // update vector-to-axis mappings so that `extendConnectToModel` knows how
+        // computed vectors (e.g. `ab_x_ac_axis`) relate to the frame transform (e.g. +Y)
+        return {
+            abDirection,
+            abXacDirection,
+            SimTK::CoordinateDirection{abDirection.crossProductAxis(abXacDirection), abDirection.crossProductSign(abXacDirection)},
+        };
     }
 }
 
@@ -200,26 +252,13 @@ void OpenSim::StationDefinedFrame::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    // parse `ab_axis`
-    const SimTK::CoordinateDirection abDirection = ParseAsCoordinateDirectionOrThrow(*this, getProperty_ab_axis());
-
-    // parse `ab_x_ac_axis`
-    const SimTK::CoordinateDirection abXacDirection = ParseAsCoordinateDirectionOrThrow(*this, getProperty_ab_x_ac_axis());
-
-    // ensure `ab_axis` is orthogonal to `ab_x_ac_axis`
-    if (abDirection.hasSameAxis(abXacDirection)) {
-        std::stringstream ss;
-        ss << getProperty_ab_axis().getName() << " (" << getProperty_ab_axis().getValue() << ") and " << getProperty_ab_x_ac_axis().getName() << " (" << getProperty_ab_x_ac_axis().getValue() << ") are not orthogonal";
-        OPENSIM_THROW_FRMOBJ(Exception, std::move(ss).str());
-    }
-
-    // update vector-to-axis mappings so that `extendConnectToModel` knows how
-    // computed vectors (e.g. `ab_x_ac_axis`) relate to the frame transform (e.g. +Y)
-    _basisVectorToFrameMappings = {
-        abDirection,
-        abXacDirection,
-        SimTK::CoordinateDirection{abDirection.crossProductAxis(abXacDirection), abDirection.crossProductSign(abXacDirection)},
-    };
+    // parse the user-provided axis properties to figure out how basis vectors
+    // from the maths map onto the frame axes
+    _basisVectorToFrameMappings = ParseBasisVectorToAxisMappingsOrFallback(
+        *this,
+        updProperty_ab_axis(),
+        updProperty_ab_x_ac_axis()
+    );
 }
 
 void OpenSim::StationDefinedFrame::extendConnectToModel(Model& model)
@@ -338,8 +377,6 @@ SimTK::SpatialVec OpenSim::StationDefinedFrame::calcAccelerationInGround(const S
         // - plus the rejection of this frame's offset from from the base frame's angular velocity (to
         //   account for the fact that rotational acceleration in the base frame becomes linear acceleration
         //   for any frames attached at an offset that isn't along the rotation axis)
-        //
-        // - plus the rejection of TODO
         abf(1) + (abf(0) % offset) + (vbf(0) % (vbf(0) % offset)),
     };
 }

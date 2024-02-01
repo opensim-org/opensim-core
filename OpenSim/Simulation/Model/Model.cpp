@@ -129,13 +129,15 @@ namespace {
         node.temporarilyMarked = true;
         if (auto* pof = dynamic_cast<PhysicalOffsetFrame*>(&node.ref.get())) {
             auto const it = std::find(nodes.begin(), nodes.end(), pof->getParentFrame());
-            OPENSIM_ASSERT_ALWAYS(it != nodes.end() && "a parent frame of a pof was not captured by updComponentList: this should never happen");
-            RecursivelyVisitNode(root, sorted, nodes, *it);
+            if (it != nodes.end()) {
+                RecursivelyVisitNode(root, sorted, nodes, *it);
+            }
         }
         else if (auto* sdf = dynamic_cast<StationDefinedFrame*>(&node.ref.get())) {
             auto const it = std::find(nodes.begin(), nodes.end(), sdf->findBaseFrame());
-            OPENSIM_ASSERT_ALWAYS(it != nodes.end() && "a parent frame of a pof was not captured by updComponentList: this should never happen");
-            RecursivelyVisitNode(root, sorted, nodes, *it);
+            if (it != nodes.end()) {
+                RecursivelyVisitNode(root, sorted, nodes, *it);
+            }
         }
         node.temporarilyMarked = false;
 
@@ -144,7 +146,6 @@ namespace {
         sorted.push_back(node.ref);
     }
 
-
     // helper: extract `Frame`s under the given `root` in topological order from
     // "least dependent" to "most dependent"
     //
@@ -152,9 +153,7 @@ namespace {
     // be called after all graph cycles have been broken)
     std::vector<std::reference_wrapper<Frame>> TopologicallySortedFrames(Component& root)
     {
-        // perform a depth-first search to perform the topological sort
-        //
-        // see:
+        // perform a depth-first search to perform the topological sort, see:
         //
         // - https://en.wikipedia.org/wiki/Topological_sorting
         // - https://en.wikipedia.org/wiki/Depth-first_search
@@ -1046,6 +1045,10 @@ void Model::extendConnectToModel(Model &model)
     for (Frame& frame : TopologicallySortedFrames(*this)) {
         if (dynamic_cast<PhysicalOffsetFrame*>(&frame) ||
             dynamic_cast<StationDefinedFrame*>(&frame)) {
+
+            // finalizing connections here ensures that the sockets bake
+            // correct paths (e.g. `/ground` vs. `../../../ground`)
+            frame.finalizeConnections(*this);
 
             setNextSubcomponentInSystem(frame);
         }
