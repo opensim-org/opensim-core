@@ -51,7 +51,7 @@ namespace {
     template<typename T, typename MemberFunc, typename... Args>
     T& EmplaceGeneric(Model& model, MemberFunc adder, Args&&... args)
     {
-        static_assert(std::is_constructible<T, Args&&...>::value);
+        static_assert(std::is_constructible<T, Args&&...>::value, "Args must be able to construct the T");
 
         auto p = std::make_unique<T>(std::forward<Args>(args)...);
         T* ptr = p.get();
@@ -62,21 +62,21 @@ namespace {
     template<typename T, typename... Args>
     T& EmplaceModelComponent(Model& model, Args&&... args)
     {
-        static_assert(std::is_base_of<ModelComponent, T>::value);
+        static_assert(std::is_base_of<ModelComponent, T>::value, "T must inherit from ModelComponent");
         return EmplaceGeneric<T>(model, std::mem_fn(&Model::addModelComponent), std::forward<Args>(args)...);
     }
 
     template<typename T = Body, typename... Args>
     T& EmplaceBody(Model& model, Args&&... args)
     {
-        static_assert(std::is_base_of<Body, T>::value);
+        static_assert(std::is_base_of<Body, T>::value, "T must inherit from Body");
         return EmplaceGeneric<T>(model, std::mem_fn(&Model::addBody), std::forward<Args>(args)...);
     }
 
     template<typename T = Joint, typename... Args>
     T& EmplaceJoint(Model& model, Args&&... args)
     {
-        static_assert(std::is_base_of<Joint, T>::value);
+        static_assert(std::is_base_of<Joint, T>::value, "T must inherit from Joint");
         return EmplaceGeneric<T>(model, std::mem_fn(&Model::addJoint), std::forward<Args>(args)...);
     }
 }
