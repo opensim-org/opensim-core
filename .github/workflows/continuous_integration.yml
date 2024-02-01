@@ -402,6 +402,14 @@ jobs:
         fi
 
     - uses: actions/checkout@v3
+
+    - name: Debug Commit Message after checkout
+      run: |
+        if [[ "${{ github.event_name }}" == "push" ]]; then
+          echo "Commit Message: ${{ github.event.commits[0].message }}"
+        else
+          echo "Commit Message: ${{ github.event.pull_request.head_commit.message }}"
+        fi
     
     - uses: actions/setup-python@v4
       with:
