@@ -260,7 +260,7 @@ jobs:
 
     runs-on: macos-12
 
-    if: ${{ contains(github.event.pull_request.head_commit.message, '[perf]') }}
+    if: ${{ contains(github.event.pull_request.title, '[perf]') }}
 
     steps:
     - uses: actions/checkout@v3
@@ -387,30 +387,13 @@ jobs:
 
     runs-on: macos-12
     
-    name: ${{ contains(github.event.pull_request.head_commit.message, '[perf]') && 'Mac [source]' || 'Mac' }}
+    name: ${{ contains(github.event.pull_request.title, '[perf]') && 'Mac [source]' || 'Mac' }}
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
 
     steps:
-    - name: Debug Commit Message
-      run: |
-        if [[ "${{ github.event_name }}" == "push" ]]; then
-          echo "Commit Message: ${{ github.event.commits[0].message }}"
-        else
-          echo "Commit Message: ${{ github.event.pull_request.head_commit.message }}"
-        fi
-
     - uses: actions/checkout@v3
-
-    - name: Debug Commit Message after checkout
-      run: |
-        if [[ "${{ github.event_name }}" == "push" ]]; then
-          echo "Commit Message: ${{ github.event.commits[0].message }}"
-        else
-          echo "Title: ${{ github.event.pull_request.title }}"
-          echo "Commit Message: ${{ github.event.pull_request.commits[0].message }}"
-        fi
     
     - uses: actions/setup-python@v4
       with:
@@ -540,7 +523,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
 
-    if: ${{ contains(github.event.pull_request.head_commit.message, '[perf]') }}
+    if: ${{ contains(github.event.pull_request.title, '[perf]') }}
 
     steps:
     - name: Trigger opensim-perf workflow
