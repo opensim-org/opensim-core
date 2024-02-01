@@ -260,10 +260,13 @@ jobs:
 
     runs-on: macos-12
 
-    # TODO
     if: contains(github.event.head_commit.message, '[perf]')
 
     steps:
+    - name: Testing commit message
+      run: |
+        echo github.event.head_commit.message
+
     - uses: actions/checkout@v3
       with:
         ref: ${{ github.event.pull_request.base.ref }} 
