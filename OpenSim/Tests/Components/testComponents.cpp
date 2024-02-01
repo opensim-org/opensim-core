@@ -25,6 +25,7 @@
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Auxiliary/getRSS.h>
+#include <OpenSim/Simulation/Model/StationDefinedFrame.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -66,6 +67,11 @@ int main()
     ArrayPtrs<Frame> availableFrames;
     Object::getRegisteredObjectsOfGivenType(availableFrames);
     for (int i = 0; i < availableFrames.size(); ++i) {
+        if (dynamic_cast<StationDefinedFrame*>(availableFrames[i])) {
+            // edge-case: `StationDefinedFrame` has transitive sockets that
+            // this test suite cannot build
+            continue;
+        }
         availableComponents.push_back(availableFrames[i]);
     }
 
