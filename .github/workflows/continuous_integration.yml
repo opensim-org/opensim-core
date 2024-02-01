@@ -256,7 +256,7 @@ jobs:
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
   mac_target:
-    name: Mac (target)
+    name: Mac [target]
 
     runs-on: macos-12
 
@@ -388,7 +388,7 @@ jobs:
 
     runs-on: macos-12
     
-    name: ${{ contains(github.event.head_commit.message, '[perf]') && 'Mac (source)' || 'Mac' }}
+    name: ${{ contains(github.event.head_commit.message, '[perf]') && 'Mac [source]' || 'Mac' }}
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
