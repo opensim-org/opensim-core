@@ -41,7 +41,7 @@ namespace {
 
     // helper: adds `instance` to the model in the appropriate collection (`Body` goes
     // into `BodySet`, etc.)
-    void addObjectAsComponentToModel(
+    Component& addObjectAsComponentToModel(
         std::unique_ptr<Object> instance,
         Model& model)
     {
@@ -50,7 +50,11 @@ namespace {
 
         if (Object::isObjectTypeDerivedFrom<Analysis>(className)) {
             OPENSIM_THROW(Exception, "Analysis is not a Component.");
-        } else if (Object::isObjectTypeDerivedFrom<Body>(className)) {
+        }
+
+        // else: it must be a component: figure out where to add it
+        Component& rv = dynamic_cast<Component&>(*instance);
+        if (Object::isObjectTypeDerivedFrom<Body>(className)) {
             model.addBody(dynamic_cast<Body*>(instance.release()));
         } else if (Object::isObjectTypeDerivedFrom<Constraint>(className)) {
             model.addConstraint(dynamic_cast<Constraint*>(instance.release()));
@@ -64,11 +68,10 @@ namespace {
             model.addProbe(dynamic_cast<Probe*>(instance.release()));
         } else if (Object::isObjectTypeDerivedFrom<Joint>(className)) {
             model.addJoint(dynamic_cast<Joint*>(instance.release()));
-        } else if (Object::isObjectTypeDerivedFrom<Component>(className)) {
-            model.addComponent(dynamic_cast<Component*>(instance.release()));
         } else {
-            OPENSIM_THROW(Exception, className + " is not a Component.");
+            model.addComponent(dynamic_cast<Component*>(instance.release()));
         }
+        return rv;
     }
 
     // helper class: used to satisfy the Inputs of the tested components
@@ -243,12 +246,11 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
     model.setName("TheModel");
 
     // add it to the model
-    Component* instance = p.get();
-    addObjectAsComponentToModel(std::move(p), model);
+    Component& instance = addObjectAsComponentToModel(std::move(p), model);
 
     // ensure Sockets are satisfied
-    Component* sub = instance;
-    auto comps = instance->updComponentList<Component>();
+    Component* sub = &instance;
+    auto comps = instance.updComponentList<Component>();
     auto itc = comps.begin();
     while (sub) {
         for (const auto& socketName : sub->getSocketNames()) {
@@ -280,8 +282,8 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
             }
 
             std::unique_ptr<Object> dependency;
-            if (dynamic_cast< Socket<Frame>*>(&socket) ||
-                dynamic_cast< Socket<PhysicalFrame>*>(&socket)) {
+            if (dynamic_cast<Socket<Frame>*>(&socket) ||
+                dynamic_cast<Socket<PhysicalFrame>*>(&socket)) {
                 dependency.reset(Object::newInstanceOfType("Body"));
             } else {
                 dependency.reset(Object::newInstanceOfType(dependencyTypeName));
@@ -292,13 +294,12 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
                 randomize(dependency.get());
 
                 // add the dependency 
-                const Object* depRawPtr = dependency.get();
-                addObjectAsComponentToModel(std::move(dependency), model);
+                Component& c = addObjectAsComponentToModel(std::move(dependency), model);
 
                 // Connect the socket. This should come after adding the
                 // dependency to the model, otherwise the connectee path may
                 // be incorrect.
-                socket.connect(*depRawPtr);
+                socket.connect(c);
             }
         }
 
@@ -348,9 +349,9 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
         model.setup();
     }
     catch (const std::exception& x) {
-        log_info("testComponents::{} unable to connect to model:", instance->getConcreteClassName());
+        log_info("testComponents::{} unable to connect to model:", instance.getConcreteClassName());
         log_info(" '{}'", x.what());
-        log_info("Error is likely due to {} having structural dependencies that are not specified as Sockets.", instance->getConcreteClassName());
+        log_info("Error is likely due to {} having structural dependencies that are not specified as Sockets.", instance.getConcreteClassName());
     }
 
     // 7. Build the system.
@@ -360,7 +361,7 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
         initState = model.initSystem();
     }
     catch (const std::exception &x) {
-        log_info("testComponents::{} unable to initialize the system:", instance->getConcreteClassName());
+        log_info("testComponents::{} unable to initialize the system:", instance.getConcreteClassName());
         log_info(" '{}'", x.what());
         log_info("Skipping ... ");
     }
@@ -373,7 +374,7 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
     // Outputs.
     // --------
     log_info("Invoking Output's.");
-    for (const auto& entry : instance->getOutputs()) {
+    for (const auto& entry : instance.getOutputs()) {
         const std::string thisName = entry.first;
         const AbstractOutput* thisOutput = entry.second.get();
 
@@ -398,7 +399,7 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
         // Doesn't matter what the value is; just want to make sure the output
         // is wired.
         model.getSystem().realize(state, thisOutput->getDependsOnStage());
-        log_info("Component {}, output {}: {}", instance->getConcreteClassName(), thisName, thisOutput->getValueAsString(state));
+        log_info("Component {}, output {}: {}", instance.getConcreteClassName(), thisName, thisOutput->getValueAsString(state));
     }
 }
 
