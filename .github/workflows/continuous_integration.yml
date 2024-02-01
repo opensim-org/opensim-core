@@ -408,7 +408,8 @@ jobs:
         if [[ "${{ github.event_name }}" == "push" ]]; then
           echo "Commit Message: ${{ github.event.commits[0].message }}"
         else
-          echo "Commit Message: ${{ github.event.pull_request.head_commit.message }}"
+          echo "Title: ${{ github.event.pull_request.title }}"
+          echo "Commit Message: ${{ github.event.pull_request.commits[0].message }}"
         fi
     
     - uses: actions/setup-python@v4
