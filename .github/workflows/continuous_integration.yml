@@ -404,10 +404,10 @@ jobs:
 
     - name: Testing commit message
       run: |
-        echo github.event.head_commit.message
-        echo contains($commitmsg, '[perf]')
+        # echo github.event.head_commit.message
+        # echo contains($commitmsg, '[perf]')
         echo $commitmsg
-        echo ${{ contains($commitmsg, '[perf]') }}
+        # echo ${{ contains($commitmsg, '[perf]') }}
         
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
