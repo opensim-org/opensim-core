@@ -389,7 +389,7 @@ jobs:
     runs-on: macos-12
 
     env:
-      JOB_NAME_SUFFIX: ${{ contains(github.event.head_commit.message, 'your_specific_string') ? ' (source)' : '' }}
+      JOB_NAME_SUFFIX: ${{ contains(github.event.head_commit.message, '[perf]') && ' (source)' || '' }}
     
     name: Mac${{ env.JOB_NAME_SUFFIX }}
 
