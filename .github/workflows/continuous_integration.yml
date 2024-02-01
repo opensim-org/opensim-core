@@ -389,9 +389,9 @@ jobs:
     runs-on: macos-12
 
     env:
-      JOB_NAME_SUFFIX: ${{ contains(github.event.head_commit.message, '[perf]') && ' (source)' || '' }}
+      JOB_NAME: ${{ contains(github.event.head_commit.message, '[perf]') && 'Mac (source)' || 'Mac' }}
     
-    name: Mac$JOB_NAME_SUFFIX
+    name: ${{ env.JOB_NAME }}
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
