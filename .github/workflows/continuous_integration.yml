@@ -260,7 +260,7 @@ jobs:
 
     runs-on: macos-12
 
-    if: ${{ contains(github.event.head_commit.message, '[perf]') }}
+    if: ${{ contains(github.event.pull_request.head_commit.message, '[perf]') }}
 
     steps:
     - uses: actions/checkout@v3
@@ -387,7 +387,7 @@ jobs:
 
     runs-on: macos-12
     
-    name: ${{ contains(github.event.head_commit.message, '[perf]') && 'Mac [source]' || 'Mac' }}
+    name: ${{ contains(github.event.pull_request.head_commit.message, '[perf]') && 'Mac [source]' || 'Mac' }}
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
@@ -398,7 +398,7 @@ jobs:
         if [[ "${{ github.event_name }}" == "push" ]]; then
           echo "Commit Message: ${{ github.event.commits[0].message }}"
         else
-          echo "Not a push event; commit information not available."
+          echo "Commit Message: ${{ github.event.pull_request.head_commit.message }}"
         fi
 
     - uses: actions/checkout@v3
@@ -406,10 +406,6 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.8'
-
-    - name: Testing commit message
-      run: |
-        echo ${{ github.event.commits[0].message }}
 
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
@@ -535,7 +531,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
 
-    if: ${{ contains(github.event.head_commit.message, '[perf]') }}
+    if: ${{ contains(github.event.pull_request.head_commit.message, '[perf]') }}
 
     steps:
     - name: Trigger opensim-perf workflow
