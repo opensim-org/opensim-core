@@ -260,6 +260,9 @@ jobs:
 
     runs-on: macos-12
 
+    # TODO
+    # if: contains(github.event.head_commit.message, '[perf]')
+
     steps:
     - uses: actions/checkout@v3
       with:
@@ -382,9 +385,15 @@ jobs:
         path: opensim-core-${{ github.event.pull_request.base.ref }}.zip
 
   mac_source:
-    name: Mac (source)
 
     runs-on: macos-12
+
+    # TODO
+    # env:
+    #   JOB_NAME_SUFFIX: ${{ contains(github.event.head_commit.message, 'your_specific_string') ? ' (source)' : '' }}
+    # name: Mac${{ env.JOB_NAME_SUFFIX }}
+
+    name: Mac (source)
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
@@ -509,10 +518,16 @@ jobs:
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
   perf_test:
+    name: Performance Analysis
+
     needs:
       - mac_target
       - mac_source
+
     runs-on: macos-12
+
+    # TODO
+    # if: contains(github.event.head_commit.message, '[perf]')
 
     steps:
     - name: Trigger opensim-perf workflow
@@ -524,7 +539,7 @@ jobs:
         owner: opensim-org
         ref: main
         workflow: performance_analysis.yml
-        workflow_inputs: '{"run_id": "${{ github.run_id }}", "target_artifact_name": "opensim-core-${{ github.event.pull_request.base.ref }}-mac", "source_artifact_name": "opensim-core-${{ needs.mac_source.outputs.version }}-mac", "target_artifact_zip": "opensim-core-${{ github.event.pull_request.base.ref }}.zip", "source_artifact_zip": "opensim-core-${{ needs.mac_source.outputs.version }}.zip"}'
+        workflow_inputs: '{"commit_sha": "${{ github.sha }}", "target_artifact_name": "opensim-core-${{ github.event.pull_request.base.ref }}-mac", "source_artifact_name": "opensim-core-${{ needs.mac_source.outputs.version }}-mac", "target_artifact_zip": "opensim-core-${{ github.event.pull_request.base.ref }}.zip", "source_artifact_zip": "opensim-core-${{ needs.mac_source.outputs.version }}.zip"}'
 
     - name: Await opensim-perf workflow
       uses: Codex-/await-remote-run@v1.11.0
