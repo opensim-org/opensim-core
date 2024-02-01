@@ -395,7 +395,7 @@ jobs:
     steps:
     - name: Debug Commit Message
       run: |
-       echo "Commit Message: ${{ github.event.head_commit.message }}"
+       echo "Commit Message: ${{ github.event.commits[0].message }}"
       
     - uses: actions/checkout@v3
     
