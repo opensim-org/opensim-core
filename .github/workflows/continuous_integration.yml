@@ -392,10 +392,11 @@ jobs:
     outputs:
       version: ${{ steps.configure.outputs.version }}
 
-    env:
-      commitmsg: ${{ github.event.head_commit.message }}
-
     steps:
+    - name: Debug Commit Message
+      run: |
+       echo "Commit Message: ${{ github.event.head_commit.message }}"
+      
     - uses: actions/checkout@v3
     
     - uses: actions/setup-python@v4
