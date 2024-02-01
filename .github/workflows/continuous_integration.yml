@@ -395,8 +395,12 @@ jobs:
     steps:
     - name: Debug Commit Message
       run: |
-       echo "Commit Message: ${{ github.event.commits[0].message }}"
-      
+        if [[ "${{ github.event_name }}" == "push" ]]; then
+          echo "Commit Message: ${{ github.event.commits[0].message }}"
+        else
+          echo "Not a push event; commit information not available."
+        fi
+
     - uses: actions/checkout@v3
     
     - uses: actions/setup-python@v4
