@@ -517,7 +517,7 @@ jobs:
         name: opensim-core-${{ steps.configure.outputs.version }}-mac
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
-  perf_test:
+  performance_analysis:
     name: Performance Analysis
 
     needs:
@@ -525,6 +525,9 @@ jobs:
       - mac_source
 
     runs-on: macos-12
+
+    env:
+      GH_TOKEN: ${{ github.token }}
 
     # TODO
     # if: contains(github.event.head_commit.message, '[perf]')
@@ -556,6 +559,7 @@ jobs:
       with:
         github_token: ${{ secrets.PERF_DISPATCH_PAT }}
         run_id: ${{ steps.return_dispatch.outputs.run_id }}
+        workflow: performance_analysis.yml
         name: performance-results
         path: results
         repo: opensim-org/opensim-perf
