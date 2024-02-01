@@ -386,14 +386,14 @@ jobs:
   mac_source:
 
     runs-on: macos-12
-
-    env:
-      commitmsg: ${{ github.event.head_commit.message }}
     
     name: ${{ contains(github.event.head_commit.message, '[perf]') && 'Mac [source]' || 'Mac' }}
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
+
+    env:
+      commitmsg: ${{ github.event.head_commit.message }}
 
     steps:
     - uses: actions/checkout@v3
@@ -404,11 +404,8 @@ jobs:
 
     - name: Testing commit message
       run: |
-        # echo github.event.head_commit.message
-        # echo contains($commitmsg, '[perf]')
         echo $commitmsg
-        # echo ${{ contains($commitmsg, '[perf]') }}
-        
+
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
       run: |
