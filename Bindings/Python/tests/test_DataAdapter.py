@@ -107,6 +107,3 @@ class TestDataAdapter(unittest.TestCase):
         # Clean up.
         os.remove(markersFilename)
         os.remove(forcesFilename)
-
-    def test_ThisTestExists(self):
-        print("I test, therefore I am.")
