@@ -613,3 +613,39 @@ TEST_CASE("StationDefinedFrame_CanDefineStationDefinedFrameUsingStationsDefinedI
     // ... and the frame of the `StationDefinedFrame` is the base frame (the body)...
     REQUIRE(&sdf.findBaseFrame() == &body);
 }
+
+TEST_CASE("StationDefinedFrame_FinalizeConnectionsThrowsIfPofOffsetCausesPointsToCoincide")
+{
+    // edge-edge-case: if the `Station`s of a `StationDefinedFrame` are attached via different
+    // `PhysicalOffsetFrame`s that, after applying the offset transformation, cause points of
+    // the frame to coincide (big no no), that should cause the same connection-time exception
+    // that co-inciding them on the same frame would've caused
+
+    Model model;
+
+    SimTK::Vec3 pos = {3.0, 0.0, 0.0};  // this'll be negated by the PoF's transform
+    auto& identityPof = EmplaceModelComponent<PhysicalOffsetFrame>(model, model.getGround(), SimTK::Transform{});
+    auto& repositioningPof = EmplaceModelComponent<PhysicalOffsetFrame>(model, model.getGround(), SimTK::Transform{-pos});
+
+    // at origin
+    auto& p1 = EmplaceModelComponent<Station>(model, identityPof, SimTK::Vec3{0.0, 0.0, 0.0});
+    // somewhere else
+    auto& p2 = EmplaceModelComponent<Station>(model, identityPof, SimTK::Vec3{2.0, 2.0, 0.0});
+    // somewhere else else, _but_ will be repositioned to origin by the PoF
+    auto& p3 = EmplaceModelComponent<Station>(model, repositioningPof, pos);
+    auto& origin = p2;
+
+    auto& sdf = EmplaceModelComponent<StationDefinedFrame>(
+        model,
+        "sdf",
+        SimTK::CoordinateAxis::XCoordinateAxis(),
+        SimTK::CoordinateAxis::YCoordinateAxis(),
+        p1,
+        p2,
+        p3,
+        origin
+    );
+
+    // throws, because the *base frame location* of `p3` == `p1`
+    REQUIRE_THROWS(model.buildSystem());
+}
