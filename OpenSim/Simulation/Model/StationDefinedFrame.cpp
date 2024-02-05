@@ -47,19 +47,19 @@ using OpenSim::Station;
 namespace {
 
     // helper: returns the base frame that `station` is defined in
-    Frame const& FindBaseFrame(Station const& station)
+    const Frame& FindBaseFrame(const Station& station)
     {
         return station.getParentFrame().findBaseFrame();
     }
 
     // helper: returns the location of the `Station` w.r.t. its base frame
-    SimTK::Vec3 GetLocationInBaseFrame(Station const& station)
+    SimTK::Vec3 GetLocationInBaseFrame(const Station& station)
     {
         return station.getParentFrame().findTransformInBaseFrame() * station.get_location();
     }
 
     // helper: returns the (parseable) string equivalent of the given direction
-    std::string to_string(SimTK::CoordinateDirection const& dir)
+    std::string to_string(const SimTK::CoordinateDirection& dir)
     {
         std::string rv;
         rv += dir.getDirection() > 0 ? '+' : '-';
@@ -121,7 +121,7 @@ namespace {
     }
 
     // helper: returns an absolute path to a property of `owner`
-    std::string AbsolutePropertyPathString(Component const& owner, AbstractProperty const& prop)
+    std::string AbsolutePropertyPathString(const Component& owner, const AbstractProperty& prop)
     {
         std::stringstream ss;
         ss << owner.getAbsolutePathString() << '/' << prop.getName();
@@ -131,7 +131,7 @@ namespace {
     // helper: tries to parse the string value held within `prop` as a coordinate direction, throwing
     // if the parse isn't possible
     SimTK::CoordinateDirection ParseAsCoordinateDirectionOrCoerceTo(
-        Component const& owner,
+        const Component& owner,
         Property<std::string>& prop,
         SimTK::CoordinateDirection fallback)
     {
@@ -140,7 +140,7 @@ namespace {
             return dir;
         }
         else {
-            auto const fallbackString = to_string(fallback);
+            const auto fallbackString = to_string(fallback);
             log_warn("{}: the value '{}' could not be parsed as a coordinate direction: falling back to {}",
                 AbsolutePropertyPathString(owner, prop),
                 prop.getValue(),
@@ -154,7 +154,7 @@ namespace {
     // helper: tries to parse the provided `ab_axis` and `ab_x_ac_axis` properties into a lookup
     // table that maps basis vectors (ab, ab_x_ac, ab_x_ab_x_ac) onto frame axes (x, y, z)
     std::array<SimTK::CoordinateDirection, 3> ParseBasisVectorToAxisMappingsOrFallback(
-        Component const& owner,
+        const Component& owner,
         Property<std::string>& abAxisProp,
         Property<std::string>& abXacAxisProp)
     {
@@ -203,13 +203,15 @@ OpenSim::StationDefinedFrame::StationDefinedFrame()
 }
 
 OpenSim::StationDefinedFrame::StationDefinedFrame(
+    const std::string& name,
     SimTK::CoordinateDirection abAxis,
     SimTK::CoordinateDirection abXacAxis,
-    Station const& pointA,
-    Station const& pointB,
-    Station const& pointC,
-    Station const& originPoint)
+    const Station& pointA,
+    const Station& pointB,
+    const Station& pointC,
+    const Station& originPoint)
 {
+    setName(name);
     constructProperty_ab_axis(to_string(abAxis));
     constructProperty_ab_x_ac_axis(to_string(abXacAxis));
     connectSocket_point_a(pointA);
@@ -274,14 +276,14 @@ void OpenSim::StationDefinedFrame::extendConnectToModel(Model& model)
     // (e.g. it would cause mayhem if a Joint was defined using a
     // `StationDefinedFrame` that, itself, changes in response to a change in that
     // Joint's coordinates)
-    Frame const& pointABaseFrame = FindBaseFrame(getPointA());
-    Frame const& pointBBaseFrame = FindBaseFrame(getPointB());
-    Frame const& pointCBaseFrame = FindBaseFrame(getPointC());
-    Frame const& originPointFrame = FindBaseFrame(getOriginPoint());
+    const Frame& pointABaseFrame = FindBaseFrame(getPointA());
+    const Frame& pointBBaseFrame = FindBaseFrame(getPointB());
+    const Frame& pointCBaseFrame = FindBaseFrame(getPointC());
+    const Frame& originPointFrame = FindBaseFrame(getOriginPoint());
     OPENSIM_ASSERT_FRMOBJ_ALWAYS(&pointABaseFrame == &pointBBaseFrame && "`point_b` is defined in a different base frame from `point_a`. All `Station`s (`point_a`, `point_b`, `point_c`, and `origin_point` of a `StationDefinedFrame` must be defined in the same base frame.");
     OPENSIM_ASSERT_FRMOBJ_ALWAYS(&pointABaseFrame == &pointCBaseFrame && "`point_c` is defined in a different base frame from `point_a`. All `Station`s (`point_a`, `point_b`, `point_c`, and `origin_point` of a `StationDefinedFrame` must be defined in the same base frame.");
     OPENSIM_ASSERT_FRMOBJ_ALWAYS(&pointABaseFrame == &originPointFrame && "`origin_point` is defined in a different base frame from `point_a`. All `Station`s (`point_a`, `point_b`, `point_c`, and `origin_point` of a `StationDefinedFrame` must be defined in the same base frame.");
-    OPENSIM_ASSERT_FRMOBJ_ALWAYS(dynamic_cast<PhysicalFrame const*>(&pointABaseFrame) && "the base frame of the stations must be a physical frame (e.g. an `OpenSim::Body`, an `OpenSim::PhysicalOffsetFrame`, etc.)");
+    OPENSIM_ASSERT_FRMOBJ_ALWAYS(dynamic_cast<const PhysicalFrame*>(&pointABaseFrame) && "the base frame of the stations must be a physical frame (e.g. an `OpenSim::Body`, an `OpenSim::PhysicalOffsetFrame`, etc.)");
 
     // once we know _for certain_ that all of the points can be calculated w.r.t.
     // the same base frame, we can precompute the transform
@@ -291,7 +293,7 @@ void OpenSim::StationDefinedFrame::extendConnectToModel(Model& model)
 void OpenSim::StationDefinedFrame::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
-    setMobilizedBodyIndex(dynamic_cast<PhysicalFrame const&>(findBaseFrame()).getMobilizedBodyIndex());
+    setMobilizedBodyIndex(dynamic_cast<const PhysicalFrame&>(findBaseFrame()).getMobilizedBodyIndex());
 }
 
 SimTK::Transform OpenSim::StationDefinedFrame::calcTransformInBaseFrame() const

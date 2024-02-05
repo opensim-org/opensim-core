@@ -48,6 +48,7 @@ using OpenSim::WeldJoint;
 
 // helper functions
 namespace {
+    // helper: generic function that uses `adder` to add a `T` created from `args...` to `model`
     template<typename T, typename MemberFunc, typename... Args>
     T& EmplaceGeneric(Model& model, MemberFunc adder, Args&&... args)
     {
@@ -59,6 +60,7 @@ namespace {
         return *ptr;
     }
 
+    // helper: emplaces a `T` within `model`'s model component collection
     template<typename T, typename... Args>
     T& EmplaceModelComponent(Model& model, Args&&... args)
     {
@@ -66,6 +68,7 @@ namespace {
         return EmplaceGeneric<T>(model, std::mem_fn(&Model::addModelComponent), std::forward<Args>(args)...);
     }
 
+    // helper: emplaces a `T` within `model`'s bodyset
     template<typename T = Body, typename... Args>
     T& EmplaceBody(Model& model, Args&&... args)
     {
@@ -73,11 +76,44 @@ namespace {
         return EmplaceGeneric<T>(model, std::mem_fn(&Model::addBody), std::forward<Args>(args)...);
     }
 
+    // helper: emplaces a `T` within `model`'s jointset
     template<typename T = Joint, typename... Args>
     T& EmplaceJoint(Model& model, Args&&... args)
     {
         static_assert(std::is_base_of<Joint, T>::value, "T must inherit from Joint");
         return EmplaceGeneric<T>(model, std::mem_fn(&Model::addJoint), std::forward<Args>(args)...);
+    }
+
+    // helper: adds a `StationDefinedFrame` to the model that uses 4 stations, defined in
+    // ground at the given `*Location`s, and returns that model
+    Model CreateModelWithSDFPointsAt(
+        std::string const& sdfName,
+        SimTK::Vec3 const& pointALocation,
+        SimTK::Vec3 const& pointBLocation,
+        SimTK::Vec3 const& pointCLocation,
+        SimTK::Vec3 const& originLocation)
+    {
+        Model model;
+
+        auto& p1 = EmplaceModelComponent<Station>(model, model.getGround(), pointALocation);
+        auto& p2 = EmplaceModelComponent<Station>(model, model.getGround(), pointBLocation);
+        auto& p3 = EmplaceModelComponent<Station>(model, model.getGround(), pointCLocation);
+        auto& origin = EmplaceModelComponent<Station>(model, model.getGround(), originLocation);
+
+        // add a `StationDefinedFrame` that uses the stations to the model
+        EmplaceModelComponent<StationDefinedFrame>(
+            model,
+            sdfName,
+            SimTK::CoordinateAxis::XCoordinateAxis(),
+            SimTK::CoordinateAxis::YCoordinateAxis(),
+            p1,
+            p2,
+            p3,
+            origin
+        );
+
+        // leave finalization etc. to the caller
+        return model;
     }
 }
 
@@ -108,6 +144,7 @@ TEST_CASE("StationDefinedFrame_CanCreateAModelContainingAStandaloneStationDefine
     // add a `StationDefinedFrame` that uses the stations to the model
     EmplaceModelComponent<StationDefinedFrame>(
         model,
+        "sdf",
         SimTK::CoordinateAxis::XCoordinateAxis(),
         SimTK::CoordinateAxis::YCoordinateAxis(),
         p1,
@@ -117,12 +154,12 @@ TEST_CASE("StationDefinedFrame_CanCreateAModelContainingAStandaloneStationDefine
     );
 
     // the resulting model should finalize etc. fine
-    model.buildSystem();
-    auto& state = model.initializeState();
+    REQUIRE_NOTHROW(model.buildSystem());
+    SimTK::State state = model.initializeState();
     model.realizeReport(state);
 }
 
-TEST_CASE("StationDefinedFrame_CanCreateAModelContainingAStationDefinedFrameAsAChild")
+TEST_CASE("StationDefinedFrame_CanCreateModelContainingStationDefinedFrameAsParentOfOffsetFrame")
 {
     Model model;
 
@@ -135,6 +172,37 @@ TEST_CASE("StationDefinedFrame_CanCreateAModelContainingAStationDefinedFrameAsAC
     // add a `StationDefinedFrame` that uses the stations to the model
     auto& sdf = EmplaceModelComponent<StationDefinedFrame>(
         model,
+        "sdf",
+        SimTK::CoordinateAxis::XCoordinateAxis(),
+        SimTK::CoordinateAxis::YCoordinateAxis(),
+        p1,
+        p2,
+        p3,
+        origin
+    );
+
+    EmplaceModelComponent<PhysicalOffsetFrame>(model, sdf, SimTK::Transform{});
+
+    // the model should initialize etc. fine
+    REQUIRE_NOTHROW(model.buildSystem());
+    SimTK::State state = model.initializeState();
+    model.realizeReport(state);
+}
+
+TEST_CASE("StationDefinedFrame_CanCreateAModelContainingAStationDefinedFrameAsJointParentFrame")
+{
+    Model model;
+
+    // add stations to the model
+    auto& p1 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{-1.0, -1.0, 0.0});
+    auto& p2 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{-1.0,  1.0, 0.0});
+    auto& p3 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{ 1.0,  0.0, 0.0});
+    auto& origin = p1;
+
+    // add a `StationDefinedFrame` that uses the stations to the model
+    auto& sdf = EmplaceModelComponent<StationDefinedFrame>(
+        model,
+        "sdf",
         SimTK::CoordinateAxis::XCoordinateAxis(),
         SimTK::CoordinateAxis::YCoordinateAxis(),
         p1,
@@ -156,13 +224,68 @@ TEST_CASE("StationDefinedFrame_CanCreateAModelContainingAStationDefinedFrameAsAC
     EmplaceJoint<WeldJoint>(model, "weld", sdf, body);
 
     // the model should initialize etc. fine
-    model.buildSystem();
-    auto& state = model.initializeState();
+    REQUIRE_NOTHROW(model.buildSystem());
+    SimTK::State state = model.initializeState();
     model.realizeReport(state);
 }
 
-TEST_CASE("StationDefinedFrame_CanCreateModelContainingStationDefinedFrameAsParentOfOffsetFrame")
+TEST_CASE("StationDefinedFrame_SanityCheckCanUsePOFAsParentOfJointViaOtherOffsetFrames")
 {
+    // sanity check, kept for regression checks:
+    //
+    // `StationDefinedFrame`s required changing the system addition and topology-sorting
+    // part of `Model` finalization, and it wasn't entirely clear when/where `StationDefinedFrame`
+    // would behave differently from a `PhysicalOffsetFrame`
+    //
+    // this test is almost identical to the `StationDefinedFrame`-based one below, and they both
+    // fail because both `PhysicalOffsetFrame`s and `StationDefinedFrame`s aren't added to the
+    // system in the correct order by the `Model` implementation
+
+    Model model;
+
+    // add a `PhysicalOffsetFrame`
+    auto& pof = EmplaceModelComponent<PhysicalOffsetFrame>(
+        model,
+        model.getGround(),
+        SimTK::Transform{}
+    );
+
+    // add the to-be-joined-to body
+    auto& body = EmplaceBody(
+        model,
+        "name",
+        1.0,
+        SimTK::Vec3{0.0, 0.0, 0.0},
+        SimTK::Inertia{1.0, 1.0, 1.0}
+    );
+
+    EmplaceJoint<WeldJoint>(model,
+        std::string{"weld"},
+        pof,
+        SimTK::Vec3{1.0, 0.0, 0.0},  // location in parent
+        SimTK::Vec3{},               // orientation in parent
+        body,
+        SimTK::Vec3{0.0, 1.0, 0.0},  // location in child
+        SimTK::Vec3{}                // orientation in child
+    );
+
+    // fails because `Ground` <-- `PhysicalOffsetFrame` <-- `PhysicalOffsetFrame` <-- `Joint` --> `PhysicalOffsetFrame` --> `Body`
+    // isn't handled correctly by OpenSim's graph traversal
+    //
+    // remove the `REQUIRE` part and uncomment the other lines if you think you've fixed this
+    REQUIRE_THROWS(model.buildSystem());
+    // SimTK::State state = model.initializeState();
+    // model.realizeReport(state);
+}
+
+TEST_CASE("StationDefinedFrame_CanCreateModelContainingStationDefinedFrameViaOffsetFrameForJoint")
+{
+    // i.e. check that the topology:
+    //
+    // `Ground` <-- `StationDefinedFrame` <-- `PhysicalOffsetFrame` <-- `Joint` --> `PhysicalOffsetFrame` --> `Body`
+    //
+    // finalizes etc. fine
+
     Model model;
 
     // add stations to the model
@@ -174,6 +297,7 @@ TEST_CASE("StationDefinedFrame_CanCreateModelContainingStationDefinedFrameAsPare
     // add a `StationDefinedFrame` that uses the stations to the model
     auto& sdf = EmplaceModelComponent<StationDefinedFrame>(
         model,
+        "sdf",
         SimTK::CoordinateAxis::XCoordinateAxis(),
         SimTK::CoordinateAxis::YCoordinateAxis(),
         p1,
@@ -182,10 +306,100 @@ TEST_CASE("StationDefinedFrame_CanCreateModelContainingStationDefinedFrameAsPare
         origin
     );
 
-    EmplaceModelComponent<PhysicalOffsetFrame>(model, sdf, SimTK::Transform{});
+    // add the to-be-joined-to body
+    auto& body = EmplaceBody(
+        model,
+        "name",
+        1.0,
+        SimTK::Vec3{0.0, 0.0, 0.0},
+        SimTK::Inertia{1.0, 1.0, 1.0}
+    );
 
-    // the model should initialize etc. fine
-    model.buildSystem();  // TODO: broken by OpenSim/Simulation/Model/Model.cpp:958: only considers PoFs for finalization order
-    auto& state = model.initializeState();
-    model.realizeReport(state);
+    EmplaceJoint<WeldJoint>(model,
+        std::string{"weld"},
+        sdf,
+        SimTK::Vec3{1.0, 0.0, 0.0},  // location in parent
+        SimTK::Vec3{},  // orientation in parent
+        body,
+        SimTK::Vec3{0.0, 1.0, 0.0},  // location in child
+        SimTK::Vec3{}  // orientation in child
+    );
+
+    // fails in the same way that `PhysicalOffsetFrame` would (see sanity test above)
+    //
+    // remove the `REQUIRE` part and uncomment the other lines if you think you've fixed this
+    REQUIRE_THROWS(model.buildSystem());
+    // SimTK::State state = model.initializeState();
+    // model.realizeReport(state);
+}
+
+TEST_CASE("StationDefinedFrame_ThrowsAtConnectionFinalizationIfPointAIsAtSameLocationAsPointB")
+{
+    Model model = CreateModelWithSDFPointsAt(
+        "sdf",
+        SimTK::Vec3{-1.0, -1.0, 0.0},
+        SimTK::Vec3{-1.0, -1.0, 0.0},  // uh oh
+        SimTK::Vec3{ 1.0,  0.0, 0.0},
+        SimTK::Vec3{ 0.0,  0.0, 0.0}
+    );
+
+    // the property values `seem` ok (the implementation can't necessarily be sure where the stations are)
+    model.finalizeFromProperties();
+
+    // but, upon connecting everything, it fails because two points are at the same location in a base frame
+    REQUIRE_THROWS(model.finalizeConnections());
+}
+
+TEST_CASE("StationDefinedFrame_ThrowsAtConnectionFinalizationIfPointAIsAtSameLocationAsPointC")
+{
+    Model model = CreateModelWithSDFPointsAt(
+        "sdf",
+        SimTK::Vec3{-1.0,  0.0, 0.0},
+        SimTK::Vec3{ 0.0, -1.0, 0.0},
+        SimTK::Vec3{-1.0,  0.0, 0.0},  // uh oh
+        SimTK::Vec3{ 0.0,  0.0, 0.0}
+    );
+
+    // the property values `seem` ok (the implementation can't necessarily be sure where the stations are)
+    model.finalizeFromProperties();
+
+    // but, upon connecting everything, it fails because two points are at the same location in a base frame
+    REQUIRE_THROWS(model.finalizeConnections());
+}
+
+TEST_CASE("StationDefinedFrame_ThrowsAtConnectionFinalizationIfPointBIsAtSameLocationAsPointC")
+{
+    Model model = CreateModelWithSDFPointsAt(
+        "sdf",
+        SimTK::Vec3{-1.0,  0.0, 0.0},
+        SimTK::Vec3{ 0.0, -1.0, 0.0},
+        SimTK::Vec3{ 0.0, -1.0, 0.0},  // uh oh
+        SimTK::Vec3{ 0.0,  0.0, 0.0}
+    );
+
+    // the property values `seem` ok (the implementation can't necessarily be sure where the stations are)
+    model.finalizeFromProperties();
+
+    // but, upon connecting everything, it fails because two points are at the same location in a base frame
+    REQUIRE_THROWS(model.finalizeConnections());
+}
+
+TEST_CASE("StationDefinedFrame_HasExpectedOriginLocation")
+{
+    SimTK::Vec3 originLoc = {-2.0, 1.0, 3.0};
+
+    Model model = CreateModelWithSDFPointsAt(
+        "sdf",
+        SimTK::Vec3{-1.0,  0.0,  0.0},
+        SimTK::Vec3{ 0.0, -1.0,  0.0},
+        SimTK::Vec3{ 0.0,  0.0, -1.0},
+        originLoc
+    );
+
+    // the property values `seem` ok (the implementation can't necessarily be sure where the stations are)
+    model.buildSystem();
+    SimTK::State state = model.initializeState();
+    auto* c = model.findComponent<StationDefinedFrame>("sdf");
+    REQUIRE(c != nullptr);
+    REQUIRE(c->getTransformInGround(state).p() == originLoc);
 }

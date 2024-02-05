@@ -114,12 +114,13 @@ public:
     StationDefinedFrame();
 
     StationDefinedFrame(
+        const std::string& name,
         SimTK::CoordinateDirection abAxis,
         SimTK::CoordinateDirection abXacAxis,
-        Station const& pointA,
-        Station const& pointB,
-        Station const& pointC,
-        Station const& originPoint
+        const Station& pointA,
+        const Station& pointB,
+        const Station& pointC,
+        const Station& originPoint
     );
 
 private:
