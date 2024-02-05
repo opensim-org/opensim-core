@@ -102,6 +102,9 @@
 #include "Wrap/WrapSphereObst.h"
 #include "Wrap/WrapDoubleCylinderObst.h"
 
+#include "GeodesicWrapping/Surface/Surface.h"
+#include "GeodesicWrapping/Geodesic.h"
+
 #include "SimbodyEngine/SimbodyEngine.h"
 #include "SimbodyEngine/Body.h"
 #include "SimbodyEngine/Constraint.h"
@@ -210,6 +213,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( WrapCylinderObst() );
     Object::registerType( WrapSphereObst() );
     Object::registerType( WrapDoubleCylinderObst() );
+
+    Object::registerType( Geodesic() );
 
     // CURRENT RELEASE
     Object::registerType( SimbodyEngine() );
