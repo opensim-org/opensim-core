@@ -649,3 +649,26 @@ TEST_CASE("StationDefinedFrame_FinalizeConnectionsThrowsIfPofOffsetCausesPointsT
     // throws, because the *base frame location* of `p3` == `p1`
     REQUIRE_THROWS(model.buildSystem());
 }
+
+TEST_CASE("StationDefinedFrame_BasicModelWithStationDefinedFrameOsimLoadsFine")
+{
+    // ensures the implementation can load a very basic `osim` file containing one
+    // `StationDefinedFrame` defined in ground
+
+    Model model{"BasicModelWithStationDefinedFrame.osim"};
+    REQUIRE_NOTHROW(model.buildSystem());
+    SimTK::State state = model.initializeState();
+    model.realizeReport(state);
+}
+
+TEST_CASE("StationDefinedFrame_ModelWithStationDefinedFramesAndPOFsEtcLoadsFine")
+{
+    // ensures the implementation can load a more advanced `osim` file that contains
+    // two `StationDefinedFrames`s used as the parent and child of a `Joint`, via
+    // `PhysicalOffsetFrames` etc. (i.e. a more pathalogical use-case) works fine
+
+    Model model{"ModelWithStationDefinedFramesAndPOFsEtc.osim"};
+    REQUIRE_NOTHROW(model.buildSystem());
+    SimTK::State state = model.initializeState();
+    model.realizeReport(state);
+}
