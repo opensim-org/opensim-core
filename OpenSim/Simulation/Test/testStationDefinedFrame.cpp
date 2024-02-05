@@ -136,9 +136,9 @@ TEST_CASE("StationDefinedFrame_CanCreateAModelContainingAStandaloneStationDefine
     Model model;
 
     // add stations to the model
-    auto& p1 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{-1.0, -1.0, 0.0});
-    auto& p2 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{-1.0,  1.0, 0.0});
-    auto& p3 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{ 1.0,  0.0, 0.0});
+    auto& p1 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    auto& p2 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
+    auto& p3 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 0.0, 1.0});
     auto& origin = p1;
 
     // add a `StationDefinedFrame` that uses the stations to the model
@@ -164,9 +164,9 @@ TEST_CASE("StationDefinedFrame_CanCreateModelContainingStationDefinedFrameAsPare
     Model model;
 
     // add stations to the model
-    auto& p1 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{-1.0, -1.0, 0.0});
-    auto& p2 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{-1.0,  1.0, 0.0});
-    auto& p3 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{ 1.0,  0.0, 0.0});
+    auto& p1 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    auto& p2 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
+    auto& p3 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 0.0, 1.0});
     auto& origin = p1;
 
     // add a `StationDefinedFrame` that uses the stations to the model
@@ -194,9 +194,9 @@ TEST_CASE("StationDefinedFrame_CanCreateAModelContainingAStationDefinedFrameAsJo
     Model model;
 
     // add stations to the model
-    auto& p1 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{-1.0, -1.0, 0.0});
-    auto& p2 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{-1.0,  1.0, 0.0});
-    auto& p3 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{ 1.0,  0.0, 0.0});
+    auto& p1 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    auto& p2 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
+    auto& p3 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 0.0, 1.0});
     auto& origin = p1;
 
     // add a `StationDefinedFrame` that uses the stations to the model
@@ -289,9 +289,9 @@ TEST_CASE("StationDefinedFrame_CanCreateModelContainingStationDefinedFrameViaOff
     Model model;
 
     // add stations to the model
-    auto& p1 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{-1.0, -1.0, 0.0});
-    auto& p2 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{-1.0,  1.0, 0.0});
-    auto& p3 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{ 1.0,  0.0, 0.0});
+    auto& p1 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    auto& p2 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
+    auto& p3 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 0.0, 1.0});
     auto& origin = p1;
 
     // add a `StationDefinedFrame` that uses the stations to the model
@@ -337,10 +337,10 @@ TEST_CASE("StationDefinedFrame_ThrowsAtConnectionFinalizationIfPointAIsAtSameLoc
 {
     Model model = CreateModelWithSDFPointsAt(
         "sdf",
-        SimTK::Vec3{-1.0, -1.0, 0.0},
-        SimTK::Vec3{-1.0, -1.0, 0.0},  // uh oh
-        SimTK::Vec3{ 1.0,  0.0, 0.0},
-        SimTK::Vec3{ 0.0,  0.0, 0.0}
+        SimTK::Vec3{1.0, 0.0, 0.0},
+        SimTK::Vec3{1.0, 0.0, 0.0},  // uh oh
+        SimTK::Vec3{0.0, 0.0, 1.0},
+        SimTK::Vec3{0.0, 0.0, 0.0}
     );
 
     // the property values `seem` ok (the implementation can't necessarily be sure where the stations are)
@@ -354,10 +354,10 @@ TEST_CASE("StationDefinedFrame_ThrowsAtConnectionFinalizationIfPointAIsAtSameLoc
 {
     Model model = CreateModelWithSDFPointsAt(
         "sdf",
-        SimTK::Vec3{-1.0,  0.0, 0.0},
-        SimTK::Vec3{ 0.0, -1.0, 0.0},
-        SimTK::Vec3{-1.0,  0.0, 0.0},  // uh oh
-        SimTK::Vec3{ 0.0,  0.0, 0.0}
+        SimTK::Vec3{1.0, 0.0, 0.0},
+        SimTK::Vec3{0.0, 1.0, 0.0},
+        SimTK::Vec3{1.0, 0.0, 0.0},  // uh oh
+        SimTK::Vec3{0.0, 0.0, 0.0}
     );
 
     // the property values `seem` ok (the implementation can't necessarily be sure where the stations are)
@@ -371,10 +371,10 @@ TEST_CASE("StationDefinedFrame_ThrowsAtConnectionFinalizationIfPointBIsAtSameLoc
 {
     Model model = CreateModelWithSDFPointsAt(
         "sdf",
-        SimTK::Vec3{-1.0,  0.0, 0.0},
-        SimTK::Vec3{ 0.0, -1.0, 0.0},
-        SimTK::Vec3{ 0.0, -1.0, 0.0},  // uh oh
-        SimTK::Vec3{ 0.0,  0.0, 0.0}
+        SimTK::Vec3{1.0, 0.0, 0.0},
+        SimTK::Vec3{0.0, 1.0, 0.0},
+        SimTK::Vec3{0.0, 1.0, 0.0},  // uh oh
+        SimTK::Vec3{0.0, 0.0, 0.0}
     );
 
     // the property values `seem` ok (the implementation can't necessarily be sure where the stations are)
@@ -390,9 +390,9 @@ TEST_CASE("StationDefinedFrame_HasExpectedOriginLocation")
 
     Model model = CreateModelWithSDFPointsAt(
         "sdf",
-        SimTK::Vec3{-1.0,  0.0,  0.0},
-        SimTK::Vec3{ 0.0, -1.0,  0.0},
-        SimTK::Vec3{ 0.0,  0.0, -1.0},
+        SimTK::Vec3{1.0, 0.0, 0.0},
+        SimTK::Vec3{0.0, 1.0, 0.0},
+        SimTK::Vec3{0.0, 0.0, 1.0},
         originLoc
     );
 
@@ -402,4 +402,214 @@ TEST_CASE("StationDefinedFrame_HasExpectedOriginLocation")
     auto* c = model.findComponent<StationDefinedFrame>("sdf");
     REQUIRE(c != nullptr);
     REQUIRE(c->getTransformInGround(state).p() == originLoc);
+}
+
+TEST_CASE("StationDefinedFrame_OriginLocationCanBePointA")
+{
+    Model model;
+
+    // add stations to the model
+    auto& p1 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{1.0, 2.0, 0.0});
+    auto& p2 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
+    auto& p3 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 0.0, 1.0});
+    auto& origin = p1;
+
+    // add a `StationDefinedFrame` that uses the stations to the model
+    auto& sdf = EmplaceModelComponent<StationDefinedFrame>(
+        model,
+        "sdf",
+        SimTK::CoordinateAxis::XCoordinateAxis(),
+        SimTK::CoordinateAxis::YCoordinateAxis(),
+        p1,
+        p2,
+        p3,
+        origin
+    );
+
+    model.buildSystem();
+    SimTK::State state = model.initializeState();
+    auto* c = model.findComponent<StationDefinedFrame>("sdf");
+    REQUIRE(c != nullptr);
+    REQUIRE(c->getTransformInGround(state).p() == p1.get_location());
+}
+
+TEST_CASE("StationDefinedFrame_OriginLocationCanBePointB")
+{
+    Model model;
+
+    // add stations to the model
+    auto& p1 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{1.0, 2.0, 0.0});
+    auto& p2 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 3.0, 0.0});
+    auto& p3 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 0.0, 1.0});
+    auto& origin = p2;
+
+    // add a `StationDefinedFrame` that uses the stations to the model
+    auto& sdf = EmplaceModelComponent<StationDefinedFrame>(
+        model,
+        "sdf",
+        SimTK::CoordinateAxis::XCoordinateAxis(),
+        SimTK::CoordinateAxis::YCoordinateAxis(),
+        p1,
+        p2,
+        p3,
+        origin
+    );
+
+    model.buildSystem();
+    SimTK::State state = model.initializeState();
+    auto* c = model.findComponent<StationDefinedFrame>("sdf");
+    REQUIRE(c != nullptr);
+    REQUIRE(c->getTransformInGround(state).p() == p2.get_location());
+}
+
+TEST_CASE("StationDefinedFrame_OriginLocationCanBePointC")
+{
+    Model model;
+
+    // add stations to the model
+    auto& p1 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{1.0, 2.0,  0.0});
+    auto& p2 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 3.0,  0.0});
+    auto& p3 = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 0.0, -7.0});
+    auto& origin = p3;
+
+    // add a `StationDefinedFrame` that uses the stations to the model
+    auto& sdf = EmplaceModelComponent<StationDefinedFrame>(
+        model,
+        "sdf",
+        SimTK::CoordinateAxis::XCoordinateAxis(),
+        SimTK::CoordinateAxis::YCoordinateAxis(),
+        p1,
+        p2,
+        p3,
+        origin
+    );
+
+    model.buildSystem();
+    SimTK::State state = model.initializeState();
+    auto* c = model.findComponent<StationDefinedFrame>("sdf");
+    REQUIRE(c != nullptr);
+    REQUIRE(c->getTransformInGround(state).p() == p3.get_location());
+}
+
+TEST_CASE("StationDefinedFrame_FinalizeConnectionsThrowsIfAPointIsAttachedToADifferentBaseFrame")
+{
+    Model model;
+
+    auto& body = EmplaceBody(
+        model,
+        "name",
+        1.0,
+        SimTK::Vec3{0.0, 0.0, 0.0},
+        SimTK::Inertia{1.0, 1.0, 1.0}
+    );
+
+    auto& p1InGround = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{1.0, 2.0,  0.0});
+    auto& p2InGround = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 3.0,  0.0});
+    auto& p3InBody = EmplaceModelComponent<Station>(model, body, SimTK::Vec3{0.0, 0.0, -7.0});  // uh oh
+    auto& originInGround = p1InGround;
+
+    // create an _invalid_ `StationDefinedFrame`
+    //
+    // it's invalid because one of the points has a different base frame
+    auto& sdf = EmplaceModelComponent<StationDefinedFrame>(
+        model,
+        "sdf",
+        SimTK::CoordinateAxis::XCoordinateAxis(),
+        SimTK::CoordinateAxis::YCoordinateAxis(),
+        p1InGround,
+        p2InGround,
+        p3InBody,
+        originInGround
+    );
+
+    REQUIRE_THROWS(model.buildSystem());
+}
+
+TEST_CASE("StationDefinedFrame_FinalizeConnectionsThrowsIfOriginIsAttachedToADifferentBaseFrame")
+{
+    Model model;
+
+    auto& body = EmplaceBody(
+        model,
+        "name",
+        1.0,
+        SimTK::Vec3{0.0, 0.0, 0.0},
+        SimTK::Inertia{1.0, 1.0, 1.0}
+    );
+
+    auto& p1InGround = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{1.0, 2.0,  0.0});
+    auto& p2InGround = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 3.0,  0.0});
+    auto& p3InGround = EmplaceModelComponent<Station>(model, model.getGround(), SimTK::Vec3{0.0, 0.0, -7.0});
+    auto& originInBody = EmplaceModelComponent<Station>(model, body, SimTK::Vec3{0.0, 0.0, 0.0});  // uh oh
+
+    // create an _invalid_ `StationDefinedFrame`
+    //
+    // it's invalid because the origin is defined in a different base frame from the points
+    auto& sdf = EmplaceModelComponent<StationDefinedFrame>(
+        model,
+        "sdf",
+        SimTK::CoordinateAxis::XCoordinateAxis(),
+        SimTK::CoordinateAxis::YCoordinateAxis(),
+        p1InGround,
+        p2InGround,
+        p3InGround,
+        originInBody
+    );
+
+    REQUIRE_THROWS(model.buildSystem());
+}
+
+TEST_CASE("StationDefinedFrame_CanDefineStationDefinedFrameUsingStationsDefinedInPofsAttachedToSameBaseFrame")
+{
+    // edge-case, but useful: it should be possible to define a `StationDefinedFrame` that uses `Station`s
+    // that are defined in different `OffsetFrame<T>`s that are, in turn, all attached to the same base frame
+    //
+    // Example: using mesh landmark data. To simplify model-making, a user might want to:
+    //
+    // - load several meshes from an external source (e.g. a scanner)
+    // - use `PhysicalOffsetFrame`s to attach + place all of those meshes in one body
+    // - load landmark positions (stations) for each mesh into the model as stations. Those landmarks would
+    //   be defined in the mesh's frame (i.e. the `PhysicalOffsetFrame`)
+    // - define a `StationDefinedFrame` from those landmarks
+
+    Model model;
+
+    auto& body = EmplaceBody(
+        model,
+        "name",
+        1.0,
+        SimTK::Vec3{0.0, 0.0, 0.0},
+        SimTK::Inertia{1.0, 1.0, 1.0}
+    );
+
+    // create pofs (for now, we're going to ignore the "what if the three points don't, after
+    // applying these PoF transforms, form a triangle" logic that's surely going through your
+    // head right now)
+    auto& pof1 = EmplaceModelComponent<PhysicalOffsetFrame>(model, body, SimTK::Transform{});
+    auto& pof2 = EmplaceModelComponent<PhysicalOffsetFrame>(model, body, SimTK::Transform{});
+    auto& pof3 = EmplaceModelComponent<PhysicalOffsetFrame>(model, body, SimTK::Transform{});
+
+    // create stations in those pofs/body
+    auto& p1InPof1 = EmplaceModelComponent<Station>(model, pof1, SimTK::Vec3{1.0, 2.0,  0.0});
+    auto& p2InPof2 = EmplaceModelComponent<Station>(model, pof2, SimTK::Vec3{0.0, 3.0,  0.0});
+    auto& p3InPof3 = EmplaceModelComponent<Station>(model, pof3, SimTK::Vec3{0.0, 0.0, -7.0});
+    auto& originInBody = EmplaceModelComponent<Station>(model, body, SimTK::Vec3{0.0, 0.0, 0.0});
+
+    // create a `StationDefinedFrame` from the stations
+    auto& sdf = EmplaceModelComponent<StationDefinedFrame>(
+        model,
+        "sdf",
+        SimTK::CoordinateAxis::XCoordinateAxis(),
+        SimTK::CoordinateAxis::YCoordinateAxis(),
+        p1InPof1,
+        p2InPof2,
+        p3InPof3,
+        originInBody
+    );
+
+    // should be completely fine
+    REQUIRE_NOTHROW(model.buildSystem());
+
+    // ... and the frame of the `StationDefinedFrame` is the base frame (the body)...
+    REQUIRE(&sdf.findBaseFrame() == &body);
 }
