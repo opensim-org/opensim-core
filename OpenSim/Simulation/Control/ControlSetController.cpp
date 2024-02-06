@@ -269,7 +269,6 @@ void ControlSetController::extendConnectToModel(Model& model) {
     std::string ext = ".excitation";
     for (int i = 0; _controlSet != nullptr && i < _controlSet->getSize(); ++i) {
         std::string actName = _controlSet->get(i).getName();
-        std::cout << "actName = " << actName << std::endl;
         if (actName.length() > ext.length() &&
                 !actName.compare(
                         actName.length() - ext.length(), ext.length(), ext)) {
@@ -281,7 +280,8 @@ void ControlSetController::extendConnectToModel(Model& model) {
         for (int iactu = 0; iactu < (int)socket.getNumConnectees(); ++iactu) {
             if (socket.getConnectee(iactu).getName() == actName) {
                 log_cout("ControlSetController::extendConnectToModel "
-                         "Actuator '{}' already connected to ControlSetController '{}'.",
+                         "Actuator '{}' already connected to "
+                         "ControlSetController '{}'.",
                          actName, getName());
                 isConnected = true;
                 break;
@@ -293,7 +293,7 @@ void ControlSetController::extendConnectToModel(Model& model) {
             for (const auto& actu : model.getComponentList<Actuator>()) {
                 if (actu.getName() == actName) {
                     log_cout("ControlSetController::extendConnectToModel "
-                             "Connecting ControlSetController '{}' to Actuator"
+                             "Connecting ControlSetController '{}' to Actuator "
                              "'{}'.", getName(), actu.getName());
                     addActuator(actu);
                     isConnected = true;

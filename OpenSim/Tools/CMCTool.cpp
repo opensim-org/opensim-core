@@ -415,7 +415,7 @@ bool CMCTool::run()
     // Check to see if user has explicitly listed Actuators to be
     // excluded from CMC's control.
     std::vector<std::string> actuatorPaths =
-            getActuatorsForCMC(_excludedActuators);
+            getActuatorsPathsForCMC(_excludedActuators);
     for (const auto& actuatorPath : actuatorPaths) {
         if (_model->hasComponent(actuatorPath) && !actuatorPath.empty()
                 && actuatorPath != ComponentPath::root()) {
@@ -1103,7 +1103,7 @@ void CMCTool::setOriginalForceSet(const ForceSet &aForceSet) {
 
 
 /* Get the Set of model actuators for CMC that exclude user specified Actuators */
-std::vector<std::string> CMCTool::getActuatorsForCMC(
+std::vector<std::string> CMCTool::getActuatorsPathsForCMC(
         const Array<std::string>& actuatorsByNameOrGroup) {
 
     const Set<Actuator>& actuatorsForCMC = _model->getActuators();

@@ -143,7 +143,7 @@ private:
 
     /** Get the vector of model actuator paths for CMC that exclude user
     specified Actuators */
-    std::vector<std::string> getActuatorsForCMC(
+    std::vector<std::string> getActuatorsPathsForCMC(
             const Array<std::string> &actuatorsByNameOrGroup);
 
     //--------------------------------------------------------------------------
