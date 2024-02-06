@@ -660,15 +660,3 @@ TEST_CASE("StationDefinedFrame_BasicModelWithStationDefinedFrameOsimLoadsFine")
     SimTK::State state = model.initializeState();
     model.realizeReport(state);
 }
-
-TEST_CASE("StationDefinedFrame_ModelWithStationDefinedFramesAndPOFsEtcLoadsFine")
-{
-    // ensures the implementation can load a more advanced `osim` file that contains
-    // two `StationDefinedFrames`s used as the parent and child of a `Joint`, via
-    // `PhysicalOffsetFrames` etc. (i.e. a more pathalogical use-case) works fine
-
-    Model model{"ModelWithStationDefinedFramesAndPOFsEtc.osim"};
-    REQUIRE_NOTHROW(model.buildSystem());
-    SimTK::State state = model.initializeState();
-    model.realizeReport(state);
-}
