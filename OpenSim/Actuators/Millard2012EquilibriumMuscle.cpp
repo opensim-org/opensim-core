@@ -1217,15 +1217,6 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
 
             // Compute the stiffness of the muscle.
             dFt_dtl = mvi.userDefinedVelocityExtras[MVITendonStiffness];
-            if(!get_ignore_tendon_compliance()) {
-                // Compute the stiffness of the whole musculotendon actuator.
-                if (abs(dFmAT_dlceAT*dFt_dtl) > 0.0
-                    && abs(dFmAT_dlceAT+dFt_dtl) > SimTK::SignificantReal) {
-                    Ke = (dFmAT_dlceAT*dFt_dtl)/(dFmAT_dlceAT+dFt_dtl);
-                }
-            } else {
-                Ke = dFmAT_dlceAT;
-            }
         }
 
         const double fse = get_ignore_tendon_compliance()
@@ -1243,7 +1234,6 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         mdi.fiberStiffness            = dFm_dlce;
         mdi.fiberStiffnessAlongTendon = dFmAT_dlceAT;
         mdi.tendonStiffness           = dFt_dtl;
-        mdi.muscleStiffness           = Ke;
 
         // Verify that the derivative of system energy minus work is zero within
         // a reasonable numerical tolerance.

@@ -21,6 +21,9 @@ v4.6
   querying a component's outputs by name (#3673)
 - The XMLDocument that is held within OpenSim::Object is now reference-counted, to help ensure
   it is freed (e.g. when an exception is thrown)
+- Calling `getConnectee` no longer strongly requires that `finalizeConnection` has been called on the socket. The
+  implementation will now fall back to the (slower) method of following the socket's connectee path property. This
+  is useful if (e.g.) following sockets *during* a call to `Component::finalizeConnections`
 - `Controller` now manages the list of controlled actuators using a list `Socket` instead of a `Set<Actuators>` (#3683)
 
 v4.5
