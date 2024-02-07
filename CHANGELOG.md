@@ -28,7 +28,8 @@ v4.6
   The `actuator_list` property has been removed from `Controller` in lieu of the list `Socket`, which appears as 
   `socket_actuators` in the XML. This change also necessitated the addition of an added `initSystem()` call in
   `AbstractTool::updateModelForces()` so that connected actuators have the same root component as the `Model`
-  at the time of `Socket` connection.
+  at the time of `Socket` connection. Finally, `PrescribedController::prescribeControlForActuator(int, Function*)` is
+  now deprecated in favor of `PrescribedController::prescribeControlForActuator(const std::string&, Function*)`.
 
 v4.5
 ====
