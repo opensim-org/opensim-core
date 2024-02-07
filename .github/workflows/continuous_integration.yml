@@ -176,7 +176,7 @@ jobs:
       run: python3 -m pip install numpy==1.20.2
 
     - name: Install SWIG
-      run: |
+      run: | 
         choco install swig --version 4.1.1 --yes --limit-output --allow-downgrade
         swig -swiglib
 
@@ -258,7 +258,7 @@ jobs:
   mac_target:
     name: Mac [target]
 
-    runs-on: macos-14
+    runs-on: macos-12
 
     if: ${{ contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]') }}
 
@@ -385,7 +385,7 @@ jobs:
 
   mac_source:
 
-    runs-on: macos-14
+    runs-on: macos-12
     
     name: ${{ (contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]')) && 'Mac [source]' || 'Mac' }}
 
