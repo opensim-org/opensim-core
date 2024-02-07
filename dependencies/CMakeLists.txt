@@ -339,7 +339,8 @@ else()
         # Patch the scripts that download Metis and MUMPS to use our
         # Sourceforge mirror. The original links are not reliable.
         ExternalProject_Add(ipopt
-            URL https://www.coin-or.org/download/source/Ipopt/Ipopt-3.12.8.zip
+            GIT_REPOSITORY https://github.com/jgillis/Ipopt-1.git
+			GIT_TAG        3.14.11.mod
             INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
             PATCH_COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && patch < ${CMAKE_SOURCE_DIR}/get.Metis.patch
                   COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && ./get.Metis
@@ -358,16 +359,11 @@ endif()
 if(SUPERBUILD_casadi)
     AddDependency(NAME       casadi
                   DEFAULT    ON
+                  DEPENDS    ipopt
                   GIT_URL    https://github.com/casadi/casadi.git
                   # This commit is from casadi's release page https://github.com/casadi/casadi/releases/tag/3.6.4
                   GIT_TAG    3.6.4
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON 
-                             -DWITH_BUILD_IPOPT:BOOL=ON
-                             -DBUILD_IPOPT_VERSION:STRING=3.14.14
-                             -DBUILD_IPOPT_GIT_REPO:STRING=https://github.com/jgillis/Ipopt-1.git
-                             -DWITH_BUILD_MUMPS:BOOL=ON
-                             -DWITH_BUILD_METIS:BOOL=ON
-                             -DWITH_BUILD_LAPACK:BOOL=ON
                              -DWITH_EXAMPLES:BOOL=OFF
                              -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
                              -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt
