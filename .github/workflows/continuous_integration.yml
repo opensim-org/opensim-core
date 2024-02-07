@@ -176,7 +176,7 @@ jobs:
       run: python3 -m pip install numpy==1.20.2
 
     - name: Install SWIG
-      run: | 
+      run: |
         choco install swig --version 4.1.1 --yes --limit-output --allow-downgrade
         swig -swiglib
 
@@ -258,7 +258,7 @@ jobs:
   mac_target:
     name: Mac [target]
 
-    runs-on: macos-12
+    runs-on: macos-14
 
     if: ${{ contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]') }}
 
@@ -385,7 +385,7 @@ jobs:
 
   mac_source:
 
-    runs-on: macos-12
+    runs-on: macos-14
     
     name: ${{ (contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]')) && 'Mac [source]' || 'Mac' }}
 
@@ -557,7 +557,7 @@ jobs:
         path: results
         repo: opensim-org/opensim-perf
 
-    - name: Post Results to PR Comment
+    - name: Post results to pull request description
       run: |
         PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
         EXISTING_COMMENT_CONTENT=$(gh api /repos/opensim-org/opensim-core/pulls/${PR_NUMBER} | jq -r '.body')
@@ -582,9 +582,6 @@ jobs:
         ${REVIEWABLE_BLOCK}
         "
         NEW_COMMENT_BODY="${EXISTING_COMMENT_CONTENT/"${CONTENT_TO_REPLACE}"/${NEW_CONTENT}}"
-
-        # COMMENT_ID=$(gh api repos/opensim-org/opensim-core/issues/${PR_NUMBER}/comments | jq -r '.[0].id')
-        # echo ${COMMENT_ID}
 
         # Update the existing description
         gh api \
