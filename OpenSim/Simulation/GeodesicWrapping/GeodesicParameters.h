@@ -23,29 +23,25 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <SimTKcommon.h>
+
 namespace OpenSim {
 
 struct GeodesicParameters {
-    enum class GeodesicParametersType {
-        Parametric,
-        Implicit,
-    };
-
-    virtual void setParameterType() = 0;
-
-    GeodesicParametersType type;
+    virtual ~GeodesicParameters() = default;
+    SimTK::Real length;
 };
 
 struct ImplicitGeodesicParameters : public GeodesicParameters {
-    void setParameterType() override {
-        type = GeodesicParametersType::Implicit;
-    }
+    SimTK::Real u;
+    SimTK::Real du;
+    SimTK::Real v;
+    SimTK::Real dv;
 };
 
 struct ParametricGeodesicParameters : public GeodesicParameters {
-    void setParameterType() override {
-        type = GeodesicParametersType::Parametric;
-    }
+    SimTK::Real p;
+    SimTK::Real dp;
 };
 
 } // namespace OpenSim

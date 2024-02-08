@@ -104,6 +104,7 @@
 
 #include "GeodesicWrapping/Surface/Surface.h"
 #include "GeodesicWrapping/Geodesic.h"
+#include "GeodesicWrapping/GeodesicParameters.h"
 
 #include "SimbodyEngine/SimbodyEngine.h"
 #include "SimbodyEngine/Body.h"

@@ -52,8 +52,7 @@ struct JacobiScalar {
     JacobiScalar() : q(0), dq(0), ddq(0) {}
 };
 
-// TODO include in the API?
-class OSIMSIMULATION_API Geodesic : public Object {
+class Geodesic : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(Geodesic, Object);
 public:
 //==============================================================================

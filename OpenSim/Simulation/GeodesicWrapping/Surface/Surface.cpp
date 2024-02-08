@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "Surface.h"
+#include <OpenSim/Common/Assertion.h>
 
 using namespace OpenSim;
 
@@ -142,7 +143,8 @@ void Surface::evaluateGaussianCurvatureParametrically() {
 }
 
 SimTK::Real Surface::computeGeodesicTorsion(const SimTK::Real& du,
-        const SimTK::Real& dv) {
+        const SimTK::Real& dv) const {
+    OPENSIM_ASSERT(getParametricFormAvailable())
     const auto& data = getParametricSurfaceData();
     const auto& E = data.E;
     const auto& F = data.F;
@@ -157,7 +159,8 @@ SimTK::Real Surface::computeGeodesicTorsion(const SimTK::Real& du,
 }
 
 SimTK::Real Surface::computeNormalCurvature(const SimTK::Real& du,
-        const SimTK::Real& dv) {
+        const SimTK::Real& dv) const {
+    OPENSIM_ASSERT(getParametricFormAvailable())
     const auto& data = getParametricSurfaceData();
     const auto& E = data.E;
     const auto& F = data.F;
@@ -227,13 +230,15 @@ void Surface::evaluateGaussianCurvatureImplicitly() {
     data.K = (~data.G * (A * data.G)) / (normG * normG * normG * normG);
 }
 
-SimTK::Real Surface::computeGeodesicTorsion(const SimTK::Vec3& dp) {
+SimTK::Real Surface::computeGeodesicTorsion(const SimTK::Vec3& dp) const {
+    OPENSIM_ASSERT(getImplicitFormAvailable())
     const auto& data = getImplicitSurfaceData();
-    const SimTK::Vec3 Nd = (data.H*dp - data.N*(~data.N*(data.H*dp))) /
-                           data.G.norm();
+    return ~dp * (((data.H*dp - data.N*(~data.N*(data.H*dp))) / data.G.norm())
+                  % data.N);
 }
 
-SimTK::Real Surface::computeNormalCurvature(const SimTK::Vec3& dp) {
+SimTK::Real Surface::computeNormalCurvature(const SimTK::Vec3& dp) const {
+    OPENSIM_ASSERT(getImplicitFormAvailable())
     const auto& data = getImplicitSurfaceData();
     return -~dp * (data.H * dp) / data.G.norm();
 }
@@ -243,12 +248,35 @@ SimTK::Real Surface::computeNormalCurvature(const SimTK::Vec3& dp) {
 //=============================================================================
 Geodesic Surface::computeGeodesicAnalytically(
         const ParametricGeodesicParameters& geodesicParameters,
-        int numSteps = 10);
+        int numSteps) const {
     OPENSIM_THROW_IF_FRMOBJ(getAnalyticFormAvailable(), Exception,
             "The analytic form was marked as available for Surface '{}', "
             "but the virtual method 'computeGeodesicAnalytically()' has not "
-            "been implemented.", getName());
+            "been implemented.", getName())
 
     log_warn("computeGeodesicAnalytically() is not available for Surface '{}'.",
-             getName());
+            getName());
+
+    return {};
+}
+
+void Surface::evaluateGaussianCurvatureAnalytically() {
+    OPENSIM_THROW_IF_FRMOBJ(getAnalyticFormAvailable(), Exception,
+            "The analytic form was marked as available for Surface '{}', "
+            "but the virtual method 'evaluateGaussianCurvatureAnalytically()' "
+            "has not been implemented.", getName())
+
+    log_warn("evaluateGaussianCurvatureAnalytically() is not available for "
+            "Surface '{}'.", getName());
+}
+
+void Surface::solveScalarJacobiEquationAnalytically(const JacobiScalar& yStart,
+        const SimTK::Real& arcLength, JacobiScalar& yEnd) const {
+    OPENSIM_THROW_IF_FRMOBJ(getAnalyticFormAvailable(), Exception,
+            "The analytic form was marked as available for Surface '{}', "
+            "but the virtual method 'solveScalarJacobiEquationAnalytically()' "
+            "has not been implemented.", getName())
+
+    log_warn("solveScalarJacobiEquationAnalytically() is not available for "
+            "Surface '{}'.", getName());
 }
