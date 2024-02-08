@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2023 Stanford University and the Authors                *
+ * Copyright (c) 2005-2024 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -105,8 +105,13 @@ public:
     void prescribeControlForActuator(const std::string& actuLabel,
                                      Function* prescribedFunction);
 
-    [[deprecated("this method no longer does anything")]]
-    void prescribeControlForActuator(int index, Function* prescribedFunction) {}
+    [[deprecated("Use prescribeControlForActuator(const std::string&, Function*) instead")]]
+    void prescribeControlForActuator(int index, Function* prescribedFunction) {
+        OPENSIM_THROW_FRMOBJ(Exception,
+            "PrescribedController::prescribeControlForActuator(int, Function*) "
+            "is deprecated. Use prescribeControlForActuator(const std::string&, "
+            "Function*) instead.");
+    }
 
 protected:
     // MODEL COMPONENT INTERFACE

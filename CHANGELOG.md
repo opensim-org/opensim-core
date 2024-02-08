@@ -21,7 +21,15 @@ v4.6
   querying a component's outputs by name (#3673)
 - The XMLDocument that is held within OpenSim::Object is now reference-counted, to help ensure
   it is freed (e.g. when an exception is thrown)
-- `Controller` now manages the list of controlled actuators using a list `Socket` instead of a `Set<Actuators>` (#3683)
+- Calling `getConnectee` no longer strongly requires that `finalizeConnection` has been called on the socket. The
+  implementation will now fall back to the (slower) method of following the socket's connectee path property. This
+  is useful if (e.g.) following sockets *during* a call to `Component::finalizeConnections`
+- `Controller` now manages the list of controlled actuators using a list `Socket` instead of a `Set<Actuators>` (#3683).
+  The `actuator_list` property has been removed from `Controller` in lieu of the list `Socket`, which appears as 
+  `socket_actuators` in the XML. This change also necessitated the addition of an added `initSystem()` call in
+  `AbstractTool::updateModelForces()` so that connected actuators have the same root component as the `Model`
+  at the time of `Socket` connection. Finally, `PrescribedController::prescribeControlForActuator(int, Function*)` is
+  now deprecated in favor of `PrescribedController::prescribeControlForActuator(const std::string&, Function*)`.
 
 v4.5
 ====

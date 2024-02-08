@@ -608,8 +608,18 @@ public:
         if (get_ignore_tendon_compliance()) return fiberStiffnessAlongTendon;
         // TODO Millard2012EquilibriumMuscle includes additional checks that
         // the stiffness is non-negative and that the denominator is non-zero.
+        // Checks are omitted here to preserve continuity and smoothness for
+        // optimization (see #3685).
         return (fiberStiffnessAlongTendon * tendonStiffness) /
                (fiberStiffnessAlongTendon + tendonStiffness);
+    }
+
+    virtual double calcMuscleStiffness(const SimTK::State& s) const override
+    {
+        const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
+        return calcMuscleStiffness(
+                mdi.tendonStiffness,
+                mdi.fiberStiffnessAlongTendon);
     }
 
     /// The derivative of pennation angle with respect to fiber length.
