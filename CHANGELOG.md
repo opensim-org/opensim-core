@@ -9,8 +9,8 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 v4.6
 ====
 - Added support for list `Socket`s via the macro `OpenSim_DECLARE_LIST_SOCKET`. The macro-generated method 
-`appendSocketConnectee_*` can be used to connect `Object`s to a list `Socket`. In addiion, `Component` and Socket have 
-new `getConnectee` overloads that take an index to a desired object in the list `Socket` (#3652).
+  `appendSocketConnectee_*` can be used to connect `Object`s to a list `Socket`. In addition, `Component` and Socket have 
+  new `getConnectee` overloads that take an index to a desired object in the list `Socket` (#3652).
 - Added `ComponentPath::root()`, which returns a `ComponentPath` equivalent to "/"
 - `ComponentPath` is now less-than (`<`) comparable, making it usable in (e.g.) `std::map`
 - `ComponentPath` now has a `std::hash<T>` implementation, making it usable in (e.g.) `std::unordered_map`
@@ -24,6 +24,12 @@ new `getConnectee` overloads that take an index to a desired object in the list 
 - Calling `getConnectee` no longer strongly requires that `finalizeConnection` has been called on the socket. The
   implementation will now fall back to the (slower) method of following the socket's connectee path property. This
   is useful if (e.g.) following sockets *during* a call to `Component::finalizeConnections`
+- `Controller` now manages the list of controlled actuators using a list `Socket` instead of a `Set<Actuators>` (#3683).
+  The `actuator_list` property has been removed from `Controller` in lieu of the list `Socket`, which appears as 
+  `socket_actuators` in the XML. This change also necessitated the addition of an added `initSystem()` call in
+  `AbstractTool::updateModelForces()` so that connected actuators have the same root component as the `Model`
+  at the time of `Socket` connection. Finally, `PrescribedController::prescribeControlForActuator(int, Function*)` is
+  now deprecated in favor of `PrescribedController::prescribeControlForActuator(const std::string&, Function*)`.
 
 v4.5
 ====
