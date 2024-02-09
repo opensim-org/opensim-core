@@ -538,7 +538,7 @@ public:
             // `it` points to the first value that is larger than `aValue`, the
             // value immediately preceding `it` is the largest value smaller than
             // `aValue`
-            return static_cast<int>(std::distance(_storage.begin(), end)) - 1;
+            return static_cast<int>(std::distance(_storage.begin(), it)) - 1;
         }
         else {
             // `it` points to the first value that is larger than `aValue`, but
