@@ -154,11 +154,11 @@ void testComponentEquivalence(
 
     int nin_a = a.getNumInputs();
     int nin_b = b.getNumInputs();
-    log_info("{} getNumInputs: {}: a == {}, b == {}", className, nin_a, nin_b);
+    log_info("{} getNumInputs: a == {}, b == {}", className, nin_a, nin_b);
 
     int nout_a = a.getNumOutputs();
     int nout_b = b.getNumOutputs();
-    log_info("{} getNumOutputs: {}: a == {}, b == {}", className, nout_a, nout_b);
+    log_info("{} getNumOutputs: a == {}, b == {}", className, nout_a, nout_b);
 
     CHECK((a == b && "components must have same properties"));
     CHECK((ns_a == ns_b && "components must have same number of sockets"));
@@ -250,9 +250,11 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
 
     // ensure Sockets are satisfied
     Component* sub = &instance;
-    auto comps = instance.updComponentList<Component>();
-    auto itc = comps.begin();
+    auto components = instance.updComponentList<Component>();
+    auto componentsCur = components.begin();
+    auto componentsEnd = components.end();
     while (sub) {
+        log_info("Traversing to {}", sub->getConcreteClassName());
         for (const auto& socketName : sub->getSocketNames()) {
             AbstractSocket& socket = sub->updSocket(socketName);
             std::string dependencyTypeName = socket.getConnecteeTypeName();
@@ -303,10 +305,16 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
             }
         }
 
-        Component& next = *itc;
-        //Now keep checking the subcomponents
-        sub = &next;
-        itc++;
+        log_info("Traversed {}", sub->getConcreteClassName());
+
+        // keep checking the remaining subcomponents
+        if (componentsCur != componentsEnd) {
+            Component& next = *componentsCur;
+            sub = &next;
+            ++componentsCur;
+        } else {
+            sub = nullptr;
+        }
     }
 
     // Now make sure Inputs are satisfied.
