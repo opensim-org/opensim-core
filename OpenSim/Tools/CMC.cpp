@@ -869,8 +869,9 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     for(i=0;i<N;i++) {
         range = fmax[i] - fmin[i];
         if(range<1.0) {
+            const auto& actu = getSocket<Actuator>("actuators").getConnectee(i);
             log_warn("CMC::computeControls: small force range for {} ({} to {})",
-                getActuatorSet()[i].getName(), fmin[i], fmax[i]);
+                actu.getName(), fmin[i], fmax[i]);
             log_info("");
 
             // if the force range is so small it means the control value, x, 
@@ -1098,9 +1099,10 @@ void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
         "CMC::computeControls number of controls does not match number of actuators.");
     
     SimTK::Vector actControls(1, 0.0);
-    for(int i=0; i<getActuatorSet().getSize(); i++){
+    const auto& socket = getSocket<Actuator>("actuators");
+    for(int i = 0; i < (int)socket.getNumConnectees(); i++){
         actControls[0] = _controlSet[_controlSetIndices[i]].getControlValue(s.getTime());
-        getActuatorSet()[i].addInControls(actControls, controls);
+        socket.getConnectee(i).addInControls(actControls, controls);
     }
 
     // double *val = &controls[0];
@@ -1138,10 +1140,8 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
 
     system.updDefaultSubsystem().addEventHandler(computeControlsHandler );
 
-    const Set<const Actuator>& fSet = getActuatorSet();
-    int nActs = fSet.getSize();
 
-    mutableThis->_controlSetIndices.setSize(nActs);
+    mutableThis->_controlSetIndices.setSize(getNumActuators());
 
     // Create the control set that will hold the controls computed by CMC
     mutableThis->_controlSet.setName(_model->getName());
@@ -1152,10 +1152,10 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
     double xmin =0, xmax=0;
 
     std::string actName = "";
-    
-    for(int i=0; i < nActs; ++i ) {
+    const auto& socket = getSocket<Actuator>("actuators");
+    for (int i = 0; i < getNumActuators(); ++i) {
 
-        auto* act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
+        auto* act = dynamic_cast<const ScalarActuator*>(&socket.getConnectee(i));
         //Actuator& act = getActuatorSet().get(i);
 
         ControlLinear *control = new ControlLinear();

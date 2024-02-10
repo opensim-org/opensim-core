@@ -4081,6 +4081,24 @@ const C& Socket<C>::getConnectee(int index) const {
 }
 
 template<class C>
+const C& Socket<C>::getConnecteeInternal(int index) const {
+    if (0 <= index && index < static_cast<int>(_connectees.size()) && _connectees[index]) {
+        // fast case: use the cached connectee pointer
+        //
+        // it's usually cached via a direct call to `connect`, or through
+        // a call to `finalizeConnection`
+        return *_connectees[index];
+    }
+
+    // else: slow case: use the connectee path property to perform the lookup
+    //
+    // this is slower, but runtime-validated. It's necessary when (e.g.) a
+    // component wants to use sockets during an `extendFinalizeConnections`
+    // override (i.e. midway through recursively caching `_connectees`)
+    return getOwner().template getComponent<C>(getConnecteePath(index));
+}
+
+template<class C>
 void Socket<C>::findAndConnect(const ComponentPath& connectee) {
     const auto* comp =
             getOwner().getRoot().template findComponent<C>(connectee);

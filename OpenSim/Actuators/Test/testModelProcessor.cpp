@@ -16,13 +16,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Moco/Test/Testing.h"
 
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 

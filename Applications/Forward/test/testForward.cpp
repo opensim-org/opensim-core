@@ -35,7 +35,7 @@ using namespace std;
 
 void testPendulum();
 void testPendulumExternalLoad();
-void testPendulumExternalLoadWithPointInGround(); 
+void testPendulumExternalLoadWithPointInGround();
 void testArm26();
 void testGait2354();
 void testGait2354WithController();
@@ -95,7 +95,7 @@ void testPendulumExternalLoad() {
     ASSERT(results.getLastTime() == 1.0);
 
     Storage standard("Results/pendulum_states.sto");
- 
+
 
     Array<double> data;
     int i = results.getSize() - 1;
@@ -104,10 +104,10 @@ void testPendulumExternalLoad() {
     data.setSize(state->getSize());
     standard.getDataAtTime(time, state->getSize(), data);
     int nc = forward.getModel().getNumCoordinates();
-    for (int j = 0; j < nc; ++j) {      
+    for (int j = 0; j < nc; ++j) {
         stringstream message;
-        message << "t=" << time <<" state# "<< j << " " 
-            << standard.getColumnLabels()[j+1] << " std=" << data[j] 
+        message << "t=" << time <<" state# "<< j << " "
+            << standard.getColumnLabels()[j+1] << " std=" << data[j]
             <<"  computed=" << state->getData()[j];
         ASSERT_EQUAL(data[j], state->getData()[j], 1e-2,
             __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
@@ -132,7 +132,7 @@ void testPendulumExternalLoadWithPointInGround() {
     data.setSize(state->getSize());
     standard.getDataAtTime(time, state->getSize(), data);
     int nc = forward.getModel().getNumCoordinates();
-    for (int j = 0; j < nc; ++j) {      
+    for (int j = 0; j < nc; ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard.getColumnLabels()[j+1]
             << " std=" << data[j] <<"  computed=" << state->getData()[j];
@@ -160,7 +160,7 @@ void testArm26() {
     for (int j = 0; j < state->getSize(); ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
-        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3, 
+        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3,
             __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
         cout << "ASSERT_EQUAL PASSED " << message.str();
     }
@@ -173,7 +173,7 @@ void testArm26() {
     for (int j = 0; j < state->getSize(); ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
-        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3, 
+        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3,
             __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
         cout << "ASSERT_EQUAL PASSED " << message.str();
     }
@@ -189,7 +189,7 @@ void testGait2354()
     Storage* standard = new Storage();
     string statesFileName("std_subject01_walk1_states.sto");
     forward.loadStatesStorage( statesFileName, standard );
-    
+
     int nstates = forward.getModel().getNumStateVariables();
     int nq = forward.getModel().getNumCoordinates();
     std::vector<double> rms_tols(2*nstates, 0.001); //activations and fiber-lengths
@@ -198,10 +198,11 @@ void testGait2354()
         rms_tols[2*i] = 0.035; // coordinates at less than 2degrees
         rms_tols[2*i+1] = 2.5; // speeds can deviate by a lot due to open-loop test
     }
-    
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, 
+
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
         __FILE__, __LINE__, "testGait2354 failed");
 }
+
 
 void testGait2354WithController() {
     ForwardTool forward("subject01_Setup_Forward_Controller.xml");
@@ -220,7 +221,7 @@ void testGait2354WithController() {
         rms_tols[2*i] = 0.01; // coordinates at less than 0.6 degree
         rms_tols[2*i+1] = 0.1; // speeds should deviate less with feedback controller
     }
-    
+
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
         __FILE__, __LINE__, "testGait2354WithController failed");
 }
@@ -241,8 +242,6 @@ void testGait2354WithControllerGUI() {
     forward.setResultsDir(resultsDir);
     forward.updateModelForces(*model, "");
     forward.setModel(*model);
-
-    model->initSystem();
 
     forward.run();
 
