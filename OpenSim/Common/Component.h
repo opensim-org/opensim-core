@@ -1548,7 +1548,7 @@ public:
     void setDiscreteVariableValue(SimTK::State& state, const std::string& name,
                                   double value) const;
 
-    // F. C. Anderson --------------------------------------------------------
+    // F. C. Anderson =========================================================
     // January 2023, May 2023
     // Added the ability to get the value of a discrete variable as a
     // SimTK::AbstractValue, thereby allowing types like Vec3.
