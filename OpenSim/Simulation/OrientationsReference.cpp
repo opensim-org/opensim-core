@@ -159,6 +159,7 @@ void OrientationsReference::getValuesAtTime(
         double time, SimTK::Array_<Rotation> &values) const
 {
 
+    log_info("Why am I using the wrong class?");
     // get values for time
     SimTK::RowVector_<Rotation> row = _orientationData.getRow(time);
 

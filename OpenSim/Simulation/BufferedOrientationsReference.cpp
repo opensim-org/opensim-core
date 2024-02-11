@@ -40,12 +40,15 @@ BufferedOrientationsReference::BufferedOrientationsReference()
 void BufferedOrientationsReference::getValuesAtTime(
         double time, SimTK::Array_<Rotation> &values) const
 {
+    log_info("We are actually using the right class");
     auto& times = _orientationData.getIndependentColumn();
     SimTK::RowVector_<SimTK::Rotation> nextRow;
 
     if (time >= times.front() && time <= times.back()) {
         nextRow = _orientationData.getRow(time);
+        log_info("Initial Data");
     } else {
+        log_info("Data Queue Empty?: {}", _orientationDataQueue.isEmpty());
         _orientationDataQueue.pop_front(time, nextRow);
     }
     int n = nextRow.size();
@@ -70,7 +73,8 @@ double BufferedOrientationsReference::getNextValuesAndTime(
 }
 
 void BufferedOrientationsReference::putValues(
-        double time, const SimTK::RowVector_<SimTK::Rotation_<double>>& dataRow) {
+        double time, const SimTK::RowVectorView_<SimTK::Rotation_<double>>& dataRow) {
+    log_info("Data Pushed");
     _orientationDataQueue.push_back(time, dataRow);
-}
+    log_info("Data Queue Empty?: {}", _orientationDataQueue.isEmpty());}
 } // end of namespace OpenSim
