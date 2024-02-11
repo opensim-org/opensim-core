@@ -2284,7 +2284,6 @@ TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
         auto& solver = study.initSolver<TestType>();
         solver.set_num_mesh_intervals(50);
         MocoSolution solution = study.solve();
-        //study.visualize(solution);
         solution.write(
                 "testMocoInterface_testSlidingMass_prescribed_solution.sto");
 

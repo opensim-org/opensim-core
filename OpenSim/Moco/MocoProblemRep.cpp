@@ -166,18 +166,17 @@ void MocoProblemRep::initialize() {
                     const auto& channel =
                             m_control_allocator_base->getOutput("controls")
                                     .getChannel(controlName);
-                    controller.connectInput_controls(channel, controlName);
+                    controller.connectInput_inputs(channel, controlName);
                 }
             } else {
                 const auto& channel =
                         m_control_allocator_base->getOutput("controls")
                                 .getChannel(actuPath);
-                controller.connectInput_controls(channel, actuPath);
+                controller.connectInput_inputs(channel, actuPath);
             }
         }
     }
     m_model_base.finalizeConnections();
-    m_model_base.initSystem();
 
     // Scale factors
     // -------------

@@ -376,7 +376,7 @@ TEST_CASE("testFunctionBasedPath") {
         
         auto* actu = new PathActuator();
         actu->set_path(fbPath);
-        actu->setName("path_actuator");
+        actu->setName("actuator");
         actu->setOptimalForce(1);
         model.addComponent(actu);
         model.finalizeConnections();
@@ -445,7 +445,7 @@ TEST_CASE("testFunctionBasedPath") {
         
         auto* actu = new PathActuator();
         actu->set_path(fbPath);
-        actu->setName("path_actuator");
+        actu->setName("actuator");
         actu->setOptimalForce(1);
         model.addComponent(actu);
         model.finalizeConnections();
@@ -545,7 +545,7 @@ TEST_CASE("testFunctionBasedPath") {
 
         auto* actu = new PathActuator();
         actu->set_path(fbPath);
-        actu->setName("path_actuator");
+        actu->setName("actuator");
         actu->setOptimalForce(1);
         model.addComponent(actu);
         model.finalizeConnections();

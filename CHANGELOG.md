@@ -30,6 +30,7 @@ v4.6
   `AbstractTool::updateModelForces()` so that connected actuators have the same root component as the `Model`
   at the time of `Socket` connection. Finally, `PrescribedController::prescribeControlForActuator(int, Function*)` is
   now deprecated in favor of `PrescribedController::prescribeControlForActuator(const std::string&, Function*)`.
+- Models with `PrescribedController`s are now supported by `MocoProblem` and both Moco solvers (#3701).
 
 v4.5
 ====

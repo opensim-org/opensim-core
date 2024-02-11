@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2023 Stanford University and the Authors                *
+ * Copyright (c) 2005-2024 Stanford University and the Authors                *
  * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -34,7 +34,7 @@ namespace OpenSim {
  * InputController is a simple intermediate abstract class for a Controller that
  * computes controls based on scalar values defined via a list Input.
  *
- * Since InputController is an abstract class, derived clases must still
+ * Since InputController is an abstract class, derived classes must still
  * implement Controller's virtual computeControls() method. Additionally, it is
  * up to the derived class to define how the scalar values from the Input are
  * mapped to the controls for the actuators in the controller's ActuatorSet.
@@ -61,8 +61,8 @@ public:
 //=============================================================================
 // INPUTS
 //=============================================================================
-    OpenSim_DECLARE_LIST_INPUT(
-        controls, double, SimTK::Stage::Dynamics, "TODO");
+    OpenSim_DECLARE_LIST_INPUT(inputs, double, SimTK::Stage::Velocity,
+        "The scalar values used to compute the controls for the actuators.");
 
 //=============================================================================
 // METHODS

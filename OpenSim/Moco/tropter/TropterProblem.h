@@ -98,8 +98,6 @@ protected:
         auto controlNames =
                 m_mocoProbRep.getControlAllocatorBase().getControlNamesInOrder();
         for (const auto& controlName : controlNames) {
-            // TODO will need to check for "input" infos once we support user
-            // InputControllers.
             const auto& info = m_mocoProbRep.getControlInfo(controlName);
             this->add_control(controlName, convertBounds(info.getBounds()),
                     convertBounds(info.getInitialBounds()),
