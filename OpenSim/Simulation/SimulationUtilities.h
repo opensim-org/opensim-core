@@ -190,12 +190,13 @@ std::vector<std::string> createControlNamesForControllerType(
     }
 
     for (const auto& controller : model.getComponentList<T>()) {
-        const auto& socket = controller.getSocket<Actuator>("actuators");
+        const auto& socket =
+                controller.template getSocket<Actuator>("actuators");
         // Loop through all actuators and create control names. For scalar
         // actuators, use the actuator name for the control name. For non-scalar
         // actuators, use the actuator name with a control index appended for
         // the control name.
-        for (int i = 0; i < socket.getNumConnectees(); ++i) {
+        for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
             const auto& actu = socket.getConnectee(i);
             if (!actu.get_appliesForce()) {
                 continue;

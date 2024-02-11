@@ -150,7 +150,7 @@ Model ModelFactory::createSlidingPointMass() {
     actu->setOptimalForce(1);
     actu->setMinControl(-10);
     actu->setMaxControl(10);
-    model.addComponent(actu);
+    model.addForce(actu);
 
     model.finalizeConnections();
     return model;

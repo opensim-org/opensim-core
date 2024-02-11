@@ -113,7 +113,7 @@ void MocoProblemRep::initialize() {
                     controller.getConcreteClassName());
         }
         const auto& socket = controller.getSocket<Actuator>("actuators");
-        for (int i = 0; i < socket.getNumConnectees(); ++i) {
+        for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
             controlledActuatorPaths.push_back(socket.getConnecteePath(i));
         }
     }
@@ -156,7 +156,7 @@ void MocoProblemRep::initialize() {
     // Wire the ControlAllocators to the InputControllers in the model.
     for (auto& controller : m_model_base.updComponentList<InputController>()) {
         auto& socket = controller.updSocket<Actuator>("actuators");
-        for (int i = 0; i < socket.getNumConnectees(); ++i) {
+        for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
             const auto& actu = socket.getConnectee(i);
             const auto& actuPath = actu.getAbsolutePathString();
             if (actu.numControls() > 1) {
@@ -546,7 +546,7 @@ void MocoProblemRep::initialize() {
     const auto& actuController =
             m_model_base.getComponentList<ActuatorInputController>().begin();
     const auto& socket = actuController->getSocket<Actuator>("actuators");
-    for (int i = 0; i < socket.getNumConnectees(); ++i) {
+    for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
         const auto& actu = socket.getConnectee(i);
         const std::string actuName = actu.getAbsolutePathString();
         if (actu.numControls() == 1) {

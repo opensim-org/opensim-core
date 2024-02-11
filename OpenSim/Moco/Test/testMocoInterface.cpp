@@ -2248,7 +2248,7 @@ TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
         problem.setTimeBounds(0, 2);
         problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
         problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
-        problem.setControlInfo("/actuator", {-50, 50});
+        problem.setControlInfo("/forceset/actuator", {-50, 50});
         problem.addGoal<MocoControlGoal>();
         auto& solver = study.initSolver<TestType>();
         solver.set_num_mesh_intervals(50);
@@ -2264,13 +2264,14 @@ TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
     {
         const auto& time = controlsTable.getIndependentColumn();
         const auto& control =
-                controlsTable.getDependentColumn("/actuator");
+                controlsTable.getDependentColumn("/forceset/actuator");
         Model model = ModelFactory::createSlidingPointMass();
         auto* controller = new PrescribedController();
-        controller->addActuator(model.getComponent<Actuator>("/actuator"));
-        controller->prescribeControlForActuator("/actuator",
+        controller->addActuator(
+                model.getComponent<Actuator>("/forceset/actuator"));
+        controller->prescribeControlForActuator("/forceset/actuator",
             new GCVSpline(5, control.size(), time.data(), &control[0],
-                    "/actuator", 0.0));
+                    "/forceset/actuator", 0.0));
         model.addController(controller);
         model.finalizeConnections();
 
@@ -2283,7 +2284,7 @@ TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
         auto& solver = study.initSolver<TestType>();
         solver.set_num_mesh_intervals(50);
         MocoSolution solution = study.solve();
-        study.visualize(solution);
+        //study.visualize(solution);
         solution.write(
                 "testMocoInterface_testSlidingMass_prescribed_solution.sto");
 

@@ -63,7 +63,7 @@ std::vector<std::string> InputController::getInputChannelAliases() const {
     std::vector<std::string> aliases;
     const auto& input = getInput<double>("controls");
     aliases.reserve(input.getNumConnectees());
-    for (int i = 0; i < input.getNumConnectees(); ++i) {
+    for (int i = 0; i < static_cast<int>(input.getNumConnectees()); ++i) {
         aliases.push_back(input.getAlias(i));
     }
 
@@ -88,7 +88,7 @@ void InputController::extendConnectToModel(Model& model) {
     m_controlNames.clear();
     m_controlIndexes.clear();
     const auto& socket = getSocket<Actuator>("actuators");
-    for (int i = 0; i < socket.getNumConnectees(); ++i) {
+    for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
         const auto& actu = socket.getConnectee(i);
         if (actu.numControls() > 1) {
             // Non-scalar actuator.
@@ -145,7 +145,7 @@ ActuatorInputController& ActuatorInputController::operator=(
 void ActuatorInputController::computeControls(const SimTK::State& s,
         SimTK::Vector& controls) const {
     const auto& input = getInput<double>("controls");
-    for (int i = 0; i < input.getNumConnectees(); ++i) {
+    for (int i = 0; i < static_cast<int>(input.getNumConnectees()); ++i) {
         controls[m_controlIndexesInConnecteeOrder[i]] = input.getValue(s, i);
     }
 }
@@ -162,7 +162,8 @@ void ActuatorInputController::extendConnectToModel(Model& model) {
         static_cast<int>(controlNames.size()))
 
     const auto& input = getInput<double>("controls");
-    OPENSIM_THROW_IF(input.getNumConnectees() != getNumControls(), Exception,
+    OPENSIM_THROW_IF(
+        static_cast<int>(input.getNumConnectees()) != getNumControls(), Exception,
         "Expected the number of Input connectees ({}) to match the number "
         "of actuators controls ({}), but they do not.",
         input.getNumConnectees(), getNumControls());
