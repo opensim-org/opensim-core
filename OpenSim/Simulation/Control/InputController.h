@@ -68,15 +68,15 @@ public:
 // METHODS
 //=============================================================================
 
-    // CONSTRUCTION/DESCTRUCTION
+    // CONSTRUCTION AND DESTRUCTION
     InputController();
     ~InputController() override;
 
     InputController(const InputController& other);
     InputController& operator=(const InputController& other);
 
-    InputController(InputController&& other) noexcept;
-    InputController& operator=(InputController&& other) noexcept;
+    InputController(InputController&& other);
+    InputController& operator=(InputController&& other);
 
     // METHODS
     /**
@@ -153,8 +153,8 @@ public:
     ActuatorInputController(const ActuatorInputController& other);
     ActuatorInputController& operator=(const ActuatorInputController& other);
 
-    ActuatorInputController(ActuatorInputController&& other) noexcept;
-    ActuatorInputController& operator=(ActuatorInputController&& other) noexcept;
+    ActuatorInputController(ActuatorInputController&& other);
+    ActuatorInputController& operator=(ActuatorInputController&& other);
 
     // CONTROLLER INTERFACE
     void computeControls(

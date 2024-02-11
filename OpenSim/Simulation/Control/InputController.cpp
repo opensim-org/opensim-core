@@ -43,10 +43,9 @@ InputController::InputController(const InputController& other) = default;
 InputController&
 InputController::operator=(const InputController& other) = default;
 
-InputController::InputController(InputController&& other) noexcept = default;
+InputController::InputController(InputController&& other) = default;
 
-InputController&
-InputController::operator=(InputController&& other) noexcept = default;
+InputController& InputController::operator=(InputController&& other) = default;
 
 //=============================================================================
 // METHODS
@@ -134,10 +133,10 @@ ActuatorInputController& ActuatorInputController::operator=(
         const ActuatorInputController& other) = default;
 
 ActuatorInputController::ActuatorInputController(
-        ActuatorInputController&& other) noexcept = default;
+        ActuatorInputController&& other) = default;
 
 ActuatorInputController& ActuatorInputController::operator=(
-        ActuatorInputController&& other) noexcept = default;
+        ActuatorInputController&& other) = default;
 
 //=============================================================================
 // CONTROLLER INTERFACE
