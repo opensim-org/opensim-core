@@ -265,7 +265,6 @@ if (WIN32)
 
 
     if(SUPERBUILD_ipopt)
-    
         # Ipopt: Download pre-built binaries built by coin-or
         # Compilers and Runtime Libraries:
         # Microsoft (R) C/C++ Optimizing Compiler Version 19.29.30153 for x64
@@ -338,18 +337,27 @@ else()
         # operators like && is not defined."
         # Patch the scripts that download Metis and MUMPS to use our
         # Sourceforge mirror. The original links are not reliable.
+        ExternalProject_Add(metis
+            GIT_REPOSITORY    https://github.com/coin-or-tools/ThirdParty-Metis.git
+            GIT_TAG           releases/1.3.10
+            PATCH_COMMAND cd <SOURCE_DIR> && ./get.Metis
+            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
+            INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/metis"
+            INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
+
         ExternalProject_Add(ipopt
             GIT_REPOSITORY https://github.com/jgillis/Ipopt-1.git
 			GIT_TAG        3.14.11.mod
             INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
-            PATCH_COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && patch < ${CMAKE_SOURCE_DIR}/get.Metis.patch
-                  COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && ./get.Metis
-                  COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && patch < ${CMAKE_SOURCE_DIR}/get.Mumps.patch
-                  COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && ./get.Mumps
+            # PATCH_COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && patch < ${CMAKE_SOURCE_DIR}/get.Metis.patch
+            #      COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && ./get.Metis
+            #      COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && patch < ${CMAKE_SOURCE_DIR}/get.Mumps.patch
+            #      COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && ./get.Mumps
             # GCC 10 generates a warning when compling MUMPS that we must suppress using
             # -fallow-argument-mismatch.
             # Suppress warnings treated as errors in Clang/LLVM with -Wno-error=implicit-function-declaration
-            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch ADD_CFLAGS=-Wno-error=implicit-function-declaration
+            CONFIGURE_COMMAND <SOURCE_DIR>/configure --with-mumps --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch ADD_CFLAGS=-Wno-error=implicit-function-declaration
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()
@@ -363,7 +371,9 @@ if(SUPERBUILD_casadi)
                   GIT_URL    https://github.com/casadi/casadi.git
                   # This commit is from casadi's release page https://github.com/casadi/casadi/releases/tag/3.6.4
                   GIT_TAG    3.6.4
-                  CMAKE_ARGS -DWITH_IPOPT:BOOL=ON 
+                  CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
+                             -DWITH_BUILD_MUMPS:BOOL=ON
+                             -DWITH_METIS:BOOL=ON 
                              -DWITH_EXAMPLES:BOOL=OFF
                              -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
                              -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt
