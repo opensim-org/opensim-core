@@ -12,7 +12,7 @@
  * designated by other documentation.                                         *
  *                                                                            *
  * Please refer to the following publication for mathematical details, and    *
- * cite this paper if you use this code in your own research:                 *
+ * cite this paper if you use this code in your own work:                 *
  *                                                                            *
  * Pickle and Sundararajan. "Predictive simulation of human movement in       *
  * OpenSim using floating-base task space control".                           *
