@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoProblemRep.cpp                                           *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
@@ -107,11 +107,21 @@ void MocoProblemRep::initialize() {
     for (const auto& controller : m_model_base.getComponentList<Controller>()) {
         if (!dynamic_cast<const PrescribedController*>(&controller)) {
             OPENSIM_THROW(Exception, "Moco only supports PrescribedController "
-                                     "components. Controller '{}' is of type "
-                                     "'{}'.",
+                    "components. Controller '{}' is of type '{}'.",
                     controller.getAbsolutePathString(),
-                    controller.getConcreteClassName());
+                    controller.getConcreteClassName())
         }
+
+        // TODO: When we support other types of controllers, we need to check
+        // that there are no user-defined ActuatorInputControllers in the modle
+        // already.
+        // if (dynamic_cast<const ActuatorInputController*>(&controller)) {
+        //    OPENSIM_THROW(Exception, "Detected controller '{}' of type "
+        //            "ActuatorInputController, but user-defined controllers "
+        //            "of this type is not supported.",
+        //            controller.getAbsolutePathString())
+        // }
+
         const auto& socket = controller.getSocket<Actuator>("actuators");
         for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
             controlledActuatorPaths.push_back(socket.getConnecteePath(i));
