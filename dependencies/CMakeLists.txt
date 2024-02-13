@@ -210,8 +210,8 @@ AddDependency(NAME       catch2
 
 # Moco settings.
 # --------------
-option(OPENSIM_WITH_CASADI
-        "Build CasADi support for Moco (MocoCasADiSolver)." OFF)
+# option(OPENSIM_WITH_CASADI
+#        "Build CasADi support for Moco (MocoCasADiSolver)." OFF)
 option(OPENSIM_WITH_TROPTER
         "Build the tropter optimal control library, for use in MocoTropterSolver." OFF)
 
@@ -367,7 +367,7 @@ endif()
 if(SUPERBUILD_casadi)
     AddDependency(NAME       casadi
                   DEFAULT    ON
-                  DEPENDS    ipopt
+                  # DEPENDS    ipopt
                   GIT_URL    https://github.com/casadi/casadi.git
                   # This commit is from casadi's release page https://github.com/casadi/casadi/releases/tag/3.6.4
                   GIT_TAG    3.6.4
