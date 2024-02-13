@@ -1,89 +1,84 @@
-#ifndef OPENSIM_GEODESIC_PATH_H_
-#define OPENSIM_GEODESIC_PATH_H_
+#ifndef GEODESIC_WRAP_OBJECT_H_
+#define GEODESIC_WRAP_OBJECT_H_
 
-// INCLUDE
+#include "GeodesicCurveState.h"
+#include "ImplicitSurfaceParams.h"
+#include <memory>
+#include <vector>
 
-namespace OpenSim {
-
-class Model;
-class WrapObject;
-class GeometryPath;
-
-struct GeodesicCurveResult
+namespace OpenSim
 {
 
+    // TODO rename WrapObject to Surface?
+
+//==============================================================================
+// GEODESIC WRAP OBJECT INTERFACE
+//==============================================================================
+/// This is where implicit and parametric surfaces come together.
+// Also provides the separation between local and global coordinates.
+class GeodesicWrapObjectImpl
+{
+public:
+    virtual void calcInitState(
+        const SimTK::Vec3& pStart,
+        const SimTK::Vec3& pEnd) = 0;
+
+    // Shoots the geodesic over the surface.
+    virtual void calcLocalGeodesic(
+        GeodesicCurveState& start,
+        GeodesicCurveState& end,
+        double& length,
+        std::vector<SimTK::Vec3>& pointsLog) = 0;
+
+    virtual void applyVariation(
+        const GeodesicVariation& var) = 0;
 };
 
+//==============================================================================
+// CONCRETE GEODESIC WRAP OBJECT
+//==============================================================================
+// Handles both implicit, parametric and analytic.
+// Applies local-surface-coords to global-coords
+// Does the shooting: calcGeodesic.
+class GeodesicWrapObject
+{
+    public:
+    // Construct Implicit GeodesicWrapObject
+    GeodesicWrapObject(
+            ImplicitSurfaceParams&& surface,
+            std::shared_ptr<SimTK::Transform> transformHandle
+            );
 
-// Similar role as the WrapObject ?
-class OSIMSIMULATION_API GeodesicWrapObstacle {
-public:
+    // Construct Parametric GeodesicWrapObject
+    /* GeodesicWrapObject( */
+    /*         ParametricSurfaceParams&& surface, */ 
+    /*         std::shared_ptr<SimTK::Transform> transformHandle */
+    /*         ); */
 
-//=============================================================================
-// METHODS
-//=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
-public:
 
-#ifndef SWIG
-    void setStartPoint( const SimTK::State& s, int aIndex);
-    void setEndPoint( const SimTK::State& s, int aIndex);
+    private:
+    GeodesicWrapObject(
+            std::unique_ptr<GeodesicWrapObjectImpl>&& impl,
+            std::shared_ptr<SimTK::Transform> transform
+            );
+
+    public:
+
+    // Shoots the geodesic.
+    // Applies conversion from local to global coordinates.
+    void calcGeodesic(GeodesicCurve& shooterResult);
+
+    void applyVariation(
+        const GeodesicVariation& var);
+
+    // Triggers fetching the global coordinates from the underlying surface body.
+    const SimTK::Transform& updTransformToGround();
+
+private:
+    std::unique_ptr<GeodesicWrapObjectImpl> _impl;
+    std::shared_ptr<SimTK::Transform> _transform; // TODO a socket or something?
+};
+
+}
+
 #endif
-    int getStartPoint() const { return get_range(0); }
-    int getEndPoint() const { return get_range(1); }
-    const std::string& getWrapObjectName() const { return get_wrap_object(); }
-    const WrapObject* getWrapObject() const { return _wrapObject; }
-    void setWrapObject(WrapObject& aWrapObject);
-
-    const PathWrapPoint& getWrapPoint1() const {
-        return getMemberSubcomponent<PathWrapPoint>(_wrapPoint1Ix);
-    }
-    const PathWrapPoint& getWrapPoint2() const {
-        return getMemberSubcomponent<PathWrapPoint>(_wrapPoint2Ix);
-    }
-    PathWrapPoint& updWrapPoint1() { 
-        return updMemberSubcomponent<PathWrapPoint>(_wrapPoint1Ix);
-    }
-    PathWrapPoint& updWrapPoint2() {
-        return updMemberSubcomponent<PathWrapPoint>(_wrapPoint2Ix);
-    }
-
-    WrapMethod getMethod() const { return _method; }
-    void setMethod(WrapMethod aMethod);
-    const std::string& getMethodName() const { return get_method(); }
-
-    const WrapResult& getPreviousWrap() const { return _previousWrap; }
-    void setPreviousWrap(const WrapResult& aWrapResult);
-    void resetPreviousWrap();
-
-private:
-    void constructProperties();
-    void extendConnectToModel(Model& model) override;
-    void setNull();
-
-private:
-    WrapMethod _method;
-
-    const WrapObject* _wrapObject;
-    const GeometryPath* _path;
-
-    WrapResult _previousWrap;  // results from previous wrapping
-
-    MemberSubcomponentIndex _wrapPoint1Ix{
-        constructSubcomponent<PathWrapPoint>("pwpt1") };
-    MemberSubcomponentIndex _wrapPoint2Ix{
-        constructSubcomponent<PathWrapPoint>("pwpt2") };
-//=============================================================================
-};  // END of class PathWrap
-//=============================================================================
-//=============================================================================
-
-/** @endcond **/
-
-} // end of namespace OpenSim
-
-#endif // OPENSIM_PATH_WRAP_H_
-
-

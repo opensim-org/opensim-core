@@ -1,6 +1,7 @@
 #ifndef GEODESIC_CURVE_STATE_H_
 #define GEODESIC_CURVE_STATE_H_
 
+#include <functional>
 #include <OpenSim/OpenSim.h>
 
 namespace OpenSim
@@ -50,6 +51,7 @@ struct JacobiFieldScalar
     double derivative = NAN;
 };
 
+/// State of the geodesic at a point along the curve.
 struct GeodesicCurveState
 {
     DarbouxFrameVariation calcFrameToDBeta() const;
@@ -60,6 +62,14 @@ struct GeodesicCurveState
     double geodesicTorsion = NAN;
     JacobiFieldScalar a;
     JacobiFieldScalar r;
+};
+
+class GeodesicCurve
+{
+    GeodesicCurveState start;
+    GeodesicCurveState end;
+    double length = NAN;
+    std::vector<SimTK::Vec3>& pointsLog;
 };
 
 }
