@@ -86,6 +86,14 @@ void PointActuator::constructProperties()
     constructProperty_optimal_force(1.0);
 }
 
+void PointActuator::extendAddToSystem(SimTK::MultibodySystem& system) const
+{
+    Super::extendAddToSystem(system);
+
+    // Cache the computed speed of the actuator
+    this->_speedCV = addCacheVariable("speed", 0.0, SimTK::Stage::Velocity);
+}
+
 //=============================================================================
 // GET AND SET
 //=============================================================================
@@ -127,7 +135,7 @@ double PointActuator::getOptimalForce() const
 //_____________________________________________________________________________
 // Get the stress of the force. This would be the force or torque provided by 
 // this actuator divided by its optimal force.
-double PointActuator::getStress( const SimTK::State& s) const
+double PointActuator::getStress(const SimTK::State& s) const
 {
     return std::abs(getActuation(s) / getOptimalForce()); 
 }
@@ -137,19 +145,40 @@ double PointActuator::getStress( const SimTK::State& s) const
 // COMPUTATIONS
 //=============================================================================
 //_____________________________________________________________________________
+
+double PointActuator::getSpeed(const SimTK::State& s) const
+{
+    if (isCacheVariableValid(s, _speedCV)) {
+        return getCacheVariableValue(s, _speedCV);
+    }
+
+    double speed = calcSpeed(s);
+
+    updCacheVariableValue(s, _speedCV) = speed;
+    markCacheVariableValid(s, _speedCV);
+    return speed;
+}
+
+double PointActuator::calcSpeed(const SimTK::State& s) const
+{
+    // get the velocity of the actuator in ground
+    Vec3 velocity = _body->findStationVelocityInGround(s, get_point());
+    return velocity.norm();
+}
+
 /**
  * Compute all quantities necessary for applying the actuator force to the
  * model.
  */
-double PointActuator::computeActuation( const SimTK::State& s ) const
+double PointActuator::computeActuation(const SimTK::State& s) const
 {
-    if(!_model) return 0;
+    if (!_model) {
+        return SimTK::NaN;
+    }
 
     // FORCE
     return getControl(s) * getOptimalForce();
 }
-
-
 
 //=============================================================================
 // APPLICATION
@@ -158,37 +187,31 @@ double PointActuator::computeActuation( const SimTK::State& s ) const
 /**
  * Apply the actuator force to BodyA and BodyB.
  */
-void PointActuator::computeForce(const SimTK::State& s, 
-                                 SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                                 SimTK::Vector& generalizedForces) const
+void PointActuator::computeForce(
+    const SimTK::State& s,
+    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+    SimTK::Vector& generalizedForces) const
 {
-    if( !_model || !_body ) return;
-
-    double force;
-
-    if (isActuationOverridden(s)) {
-        force = computeOverrideActuation(s);
-    } else {
-       force = computeActuation(s);
+    if (!_model || !_body) {
+        return;
     }
+
+    double force = isActuationOverridden(s) ? computeOverrideActuation(s)
+                                            : computeActuation(s);
     setActuation(s, force);
 
-    
-    Vec3 forceVec = force*SimTK::UnitVec3(get_direction());
-    Vec3 lpoint = get_point();
-    if (!get_force_is_global())
+    Vec3 forceVec = force * SimTK::UnitVec3(get_direction());
+    Vec3 lpoint   = get_point();
+    if (!get_force_is_global()) {
         forceVec = _body->expressVectorInGround(s, forceVec);
-    if (get_point_is_global())
-        lpoint = getModel().getGround().
-            findStationLocationInAnotherFrame(s, lpoint, *_body);
+    }
+    if (get_point_is_global()) {
+        lpoint = getModel().getGround().findStationLocationInAnotherFrame(
+            s,
+            lpoint,
+            *_body);
+    }
     applyForceToPoint(s, *_body, lpoint, forceVec, bodyForces);
-
-    // get the velocity of the actuator in ground
-    Vec3 velocity = _body->findStationVelocityInGround(s, lpoint);
-
-    // the speed of the point is the "speed" of the actuator used to compute 
-    // power
-    setSpeed(s, velocity.norm());
 }
 //_____________________________________________________________________________
 /**

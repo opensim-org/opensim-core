@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "AbstractGeometryPath.h"
 #include "Actuator.h"
-#include "AbstractPath.h"
 #include "GeometryPath.h"
 
 //=============================================================================
@@ -49,7 +49,7 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+    OpenSim_DECLARE_PROPERTY(path, AbstractGeometryPath,
         "The path of the actuator which defines length and lengthening speed.");
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum force this actuator can produce.");
@@ -68,8 +68,8 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
     // Path
-    AbstractPath& updPath() { return upd_path(); }
-    const AbstractPath& getPath() const { return get_path(); }
+    AbstractGeometryPath& updPath() { return upd_path(); }
+    const AbstractGeometryPath& getPath() const { return get_path(); }
 
     template <typename PathType>
     PathType& updPath() {
@@ -106,14 +106,22 @@ public:
     virtual double getLength(const SimTK::State& s) const;
     virtual double getLengtheningSpeed(const SimTK::State& s) const;
 
+    //--------------------------------------------------------------------------
+    // Implement ScalarActuator Interface
+    //--------------------------------------------------------------------------
+    double getSpeed(const SimTK::State& s) const final
+    {
+        return getLengtheningSpeed(s);
+    }
+
     // Power: Since lengthening is positive and tension always shortens, positive power
     // is when muscle is shortening under tension.
-    double getPower(const SimTK::State& s) const override 
+    double getPower(const SimTK::State& s) const override
     {   return -getActuation(s)*getSpeed(s); }
 
 
     // STRESS
-    double getStress( const SimTK::State& s ) const override;
+    double getStress(const SimTK::State& s) const override;
 
     // Convenience method to add PathPoints
     /** @note This function does not maintain the State and so should be used
@@ -127,15 +135,15 @@ public:
     //--------------------------------------------------------------------------
     // APPLICATION
     //--------------------------------------------------------------------------
-    virtual void computeForce( const SimTK::State& state, 
-                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+    virtual void computeForce(const SimTK::State& state,
+                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                SimTK::Vector& mobilityForces) const override;
 
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    double computeActuation( const SimTK::State& s) const override;
-    virtual double computeMomentArm( const SimTK::State& s, Coordinate& aCoord) const;
+    double computeActuation(const SimTK::State& s) const override;
+    virtual double computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const;
 
 protected:
     /** Override this method if you would like to calculate a color for use when

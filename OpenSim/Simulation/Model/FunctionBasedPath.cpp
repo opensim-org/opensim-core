@@ -23,14 +23,15 @@
 
 #include "FunctionBasedPath.h"
 #include "Model.h"
+
 #include <OpenSim/Common/Assertion.h>
 
 using namespace OpenSim;
 
 //=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
+// CONSTRUCTOR
 //=============================================================================
-FunctionBasedPath::FunctionBasedPath() : AbstractPath()
+FunctionBasedPath::FunctionBasedPath() : AbstractGeometryPath()
 {
     setAuthors("Nicholas Bianco");
     constructProperties();
@@ -47,6 +48,7 @@ void FunctionBasedPath::appendCoordinatePath(const std::string& coordinatePath)
 void FunctionBasedPath::setCoordinatePaths(
         const std::vector<std::string>& coordinatePaths)
 {
+    updProperty_coordinate_paths().clear();
     for (const auto& coordinatePath : coordinatePaths) {
         appendCoordinatePath(coordinatePath);
     }

@@ -24,40 +24,47 @@
 namespace OpenSim {
 
 /** A multivariate polynomial function.
-This implementation assumes a maximum of six input dimensions and allows
-computation of first-order derivatives only.
-@param coefficients the polynomial coefficients in order of ascending
-powers starting from the last independent component.
-For a third-order polynomial that is a function of three components (X, Y, Z), 
-the order is a follows:
-<pre>
-Index | X  Y  Z
-0     | 0  0  0
-1     | 0  0  1
-2     | 0  0  2
-3     | 0  0  3
-4     | 0  1  0
-5     | 0  1  1
-6     | 0  1  2
-7     | 0  2  0
-8     | 0  2  1
-9     | 0  3  0
-10    | 1  0  0
-11    | 1  0  1
-12    | 1  0  2
-13    | 1  1  0
-14    | 1  1  1
-15    | 1  2  0
-16    | 2  0  0
-17    | 2  0  1
-18    | 2  1  0
-19    | 3  0  0
-</pre>
-Assuming c6 the index 6 coefficient, the corresponding term is Y Z^2.
-@note The order of coefficients for this class is the *opposite** from the order
-used in the univariate PolynomialFunction.
-@param dimension the number of independent components
-@param order the polynomial order (the largest sum of exponents in a single term) */
+ *
+ * This implementation assumes a maximum of six input dimensions and allows
+ * computation of first-order derivatives only.
+ *
+ * For a third-order polynomial that is a function of three components (X, Y, Z),
+ * the order is a follows:
+ *
+ * <pre>
+ * Index | X  Y  Z
+ * 0     | 0  0  0
+ * 1     | 0  0  1
+ * 2     | 0  0  2
+ * 3     | 0  0  3
+ * 4     | 0  1  0
+ * 5     | 0  1  1
+ * 6     | 0  1  2
+ * 7     | 0  2  0
+ * 8     | 0  2  1
+ * 9     | 0  3  0
+ * 10    | 1  0  0
+ * 11    | 1  0  1
+ * 12    | 1  0  2
+ * 13    | 1  1  0
+ * 14    | 1  1  1
+ * 15    | 1  2  0
+ * 16    | 2  0  0
+ * 17    | 2  0  1
+ * 18    | 2  1  0
+ * 19    | 3  0  0
+ * </pre>
+ * Assuming c6 the index 6 coefficient, the corresponding term is Y Z^2.
+ *
+ * @param dimension the number of independent components
+ * @param order the polynomial order (the largest sum of exponents in a single
+ *        term)
+ * @param coefficients the polynomial coefficients in order of ascending
+ *        powers starting from the last independent component.
+ *
+ * @note The order of coefficients for this class is the *opposite** from the
+ *       order used in the univariate PolynomialFunction.
+ */
 class OSIMCOMMON_API MultivariatePolynomialFunction : public Function {
     OpenSim_DECLARE_CONCRETE_OBJECT(MultivariatePolynomialFunction, Function);
 
@@ -75,28 +82,51 @@ public:
     MultivariatePolynomialFunction(
             SimTK::Vector coefficients, int dimension, int order) {
         constructProperties();
-        set_coefficients(coefficients);
+        set_coefficients(std::move(coefficients));
         set_dimension(dimension);
         set_order(order);
     }
 
-    /// Set coefficients
+    /**
+     * The vector of coefficients for the multivariate polynomial.
+     */
     void setCoefficients(SimTK::Vector coefficients) {
-        set_coefficients(coefficients);
+        set_coefficients(std::move(coefficients));
     }
-    /// Get coefficients
+    /// @copydoc setCoefficients()
     const SimTK::Vector& getCoefficients() const { return get_coefficients(); }
-    /// Set dimension
+
+    /**
+     * The number of independent variables in the multivariate polynomial.
+     */
     void setDimension(int dimension) { set_dimension(dimension); }
-    /// Get dimension
+    /// @copydoc setDimension()
     int getDimension() const { return get_dimension(); }
-    /// Set order (largest sum of exponents in a single term).
+
+    /**
+     * The order (i.e., the largest sum of exponents in a single term) of the
+     * multivariate polynomial.
+     */
     void setOrder(int order) { set_order(order); }
-    /// Get order
+    /// @copydoc setOrder()
     int getOrder() const { return get_order(); }
 
-    /// Return function
+    /**
+     * Return a pointer to a SimTK::Function object that implements this
+     * function.
+     */
     SimTK::Function* createSimTKFunction() const override;
+    
+    /**
+     * Get a vector of the terms in the polynomial function.
+     */
+    SimTK::Vector getTermValues(const SimTK::Vector& x) const;
+
+    /**
+     * Get a vector of the derivatives of the terms in the polynomial function.
+     */
+    SimTK::Vector getTermDerivatives(const std::vector<int>& derivComponent,
+            const SimTK::Vector& x) const;
 
 private:
     void constructProperties() {

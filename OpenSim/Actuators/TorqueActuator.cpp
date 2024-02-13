@@ -73,6 +73,13 @@ void TorqueActuator::constructProperties()
     constructProperty_optimal_force(1.0);
 }
 
+void TorqueActuator::extendAddToSystem(SimTK::MultibodySystem& system) const
+{
+    Super::extendAddToSystem(system);
+
+    // Cache the computed speed of the actuator
+    this->_speedCV = addCacheVariable("speed", 0.0, SimTK::Stage::Velocity);
+}
 
 //==============================================================================
 // GET AND SET
@@ -122,7 +129,9 @@ double TorqueActuator::getStress(const State& s) const
  */
 double TorqueActuator::computeActuation(const State& s) const
 {
-    if(!_model) return 0;
+    if (!_model) {
+        return SimTK::NaN;
+    }
 
     // FORCE
     return getControl(s) * getOptimalForce();
@@ -137,47 +146,70 @@ double TorqueActuator::computeActuation(const State& s) const
 /**
  * Apply the actuator force to BodyA and BodyB.
  */
-void TorqueActuator::computeForce(const State& s, 
-                                  Vector_<SpatialVec>& bodyForces, 
-                                  Vector& generalizedForces) const
+void TorqueActuator::computeForce(
+    const State& s,
+    Vector_<SpatialVec>& bodyForces,
+    Vector& generalizedForces) const
 {
-    if(!_model) return;
+    if (!_model || !_bodyA) {
+        return;
+    }
 
     const bool torqueIsGlobal = getTorqueIsGlobal();
-    const Vec3& axis = getAxis();
-    
-    double actuation = 0;
+    const Vec3& axis          = getAxis();
 
-    if (isActuationOverridden(s)) {
-        actuation = computeOverrideActuation(s);
-    } else {
-        actuation = computeActuation(s);
-    }
+    double actuation = isActuationOverridden(s) ? computeOverrideActuation(s)
+                                                : computeActuation(s);
     setActuation(s, actuation);
 
-    if(!_bodyA)
-        return;
-    
-    setActuation(s, actuation);
     Vec3 torque = actuation * UnitVec3(axis);
-    
-    if (!torqueIsGlobal)
+
+    if (!torqueIsGlobal) {
         torque = _bodyA->expressVectorInGround(s, torque);
-    
+    }
+
     applyTorque(s, *_bodyA, torque, bodyForces);
 
     // if bodyB is not specified, use the ground body by default
-    if(_bodyB)
+    if (_bodyB) {
         applyTorque(s, *_bodyB, -torque, bodyForces);
+    }
+}
+
+double TorqueActuator::getSpeed(const SimTK::State& s) const
+{
+    if (isCacheVariableValid(s, _speedCV)) {
+        return getCacheVariableValue(s, _speedCV);
+    }
+
+    double speed = calcSpeed(s);
+
+    updCacheVariableValue(s, _speedCV) = speed;
+    markCacheVariableValid(s, _speedCV);
+    return speed;
+}
+
+double TorqueActuator::calcSpeed(const SimTK::State& s) const
+{
+    if (!_model || !_bodyA) {
+        return SimTK::NaN;
+    }
+
+    const bool torqueIsGlobal = getTorqueIsGlobal();
+    const Vec3& axis          = SimTK::UnitVec3(getAxis());
 
     // get the angular velocity of the body in ground
     Vec3 omegaA = _bodyA->getVelocityInGround(s)[0];
-    Vec3 omegaB = _bodyB->getVelocityInGround(s)[0];
+    // if bodyB is not specified, use the ground body by default
+    Vec3 omegaB =
+        _bodyB ? _bodyB->getVelocityInGround(s)[0] : SimTK::Vec3{0., 0., 0.};
 
     // the "speed" is the relative angular velocity of the bodies
     // projected onto the torque axis.
-    setSpeed(s, ~(omegaA-omegaB)*axis);
+    double speed = ~(omegaA - omegaB) * axis;
+    return speed;
 }
+
 //_____________________________________________________________________________
 /**
  * Sets the actual Body references _bodyA and _bodyB

@@ -343,10 +343,9 @@ void DeGrooteFregly2016Muscle::calcFiberVelocityInfoHelper(
 }
 
 void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfoHelper(
-        const SimTK::Real& activation, const SimTK::Real& muscleTendonVelocity,
-        const bool& ignoreTendonCompliance, const MuscleLengthInfo& mli,
-        const FiberVelocityInfo& fvi, MuscleDynamicsInfo& mdi,
-        const SimTK::Real& normTendonForce) const {
+        const SimTK::Real& activation, const bool& ignoreTendonCompliance,
+        const MuscleLengthInfo& mli, const FiberVelocityInfo& fvi,
+        MuscleDynamicsInfo& mdi, const SimTK::Real& normTendonForce) const {
 
     mdi.activation = activation;
 
@@ -409,8 +408,6 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfoHelper(
             mli.sinPennationAngle, mli.cosPennationAngle,
             partialPennationAnglePartialFiberLength);
     mdi.tendonStiffness = calcTendonStiffness(mli.normTendonLength);
-    mdi.muscleStiffness = calcMuscleStiffness(
-            mdi.tendonStiffness, mdi.fiberStiffnessAlongTendon);
 
     const auto& partialTendonForcePartialFiberLength =
             calcPartialTendonForcePartialFiberLength(mdi.tendonStiffness,
@@ -427,7 +424,6 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfoHelper(
                            fvi.fiberVelocity;
     mdi.fiberPassivePower = -conPassiveFiberForce * fvi.fiberVelocity;
     mdi.tendonPower = -mdi.tendonForce * fvi.tendonVelocity;
-    mdi.musclePower = -mdi.tendonForce * muscleTendonVelocity;
 
     mdi.userDefinedDynamicsExtras.resize(5);
     mdi.userDefinedDynamicsExtras[m_mdi_passiveFiberElasticForce] =
@@ -526,12 +522,11 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfo(
     if (!get_ignore_tendon_compliance()) {
         normTendonForce = getNormalizedTendonForce(s);
     }
-    const auto& muscleTendonVelocity = getLengtheningSpeed(s);
     const auto& mli = getMuscleLengthInfo(s);
     const auto& fvi = getFiberVelocityInfo(s);
 
-    calcMuscleDynamicsInfoHelper(activation, muscleTendonVelocity,
-            get_ignore_tendon_compliance(), mli, fvi, mdi, normTendonForce);
+    calcMuscleDynamicsInfoHelper(activation, get_ignore_tendon_compliance(),
+            mli, fvi, mdi, normTendonForce);
 }
 
 void DeGrooteFregly2016Muscle::calcMusclePotentialEnergyInfo(
@@ -559,8 +554,7 @@ OpenSim::DeGrooteFregly2016Muscle::calcInextensibleTendonActiveFiberForce(
     // information will be computed whether this argument is true or false.
     calcFiberVelocityInfoHelper(
             muscleTendonVelocity, activation, true, true, mli, fvi);
-    calcMuscleDynamicsInfoHelper(
-            activation, muscleTendonVelocity, true, mli, fvi, mdi);
+    calcMuscleDynamicsInfoHelper(activation, true, mli, fvi, mdi);
 
     return mdi.activeFiberForce;
 }
@@ -1046,7 +1040,7 @@ void DeGrooteFregly2016Muscle::extendPostScale(
         const SimTK::State& s, const ScaleSet& scaleSet) {
     Super::extendPostScale(s, scaleSet);
 
-    AbstractPath& path = updPath();
+    AbstractGeometryPath& path = updPath();
     if (path.getPreScaleLength(s) > 0.0)
     {
         double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);

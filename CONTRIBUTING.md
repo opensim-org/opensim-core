@@ -83,21 +83,92 @@ that are already in `OpenSim/Tests/shared`; you could inadvertently weaken tests
 that rely on some obscure aspect of the files.
 
 
+Platform-specific tests
+-----------------------
+The Catch2 testing framework can be used to write platform-specific tests. Such
+tests should be avoided if possible, but may be necessary in certain cases (e.g.,
+slightly different numerical optimization behavior on different platforms). For
+example, if you want to write a test that only runs on Windows, you can use the
+`TEST_CASE()` or `TEMPLATE_TEST_CASE` macros with the tag `"[win]"`:
+
+```cpp
+TEST_CASE("MyTest", "[win]") {
+    // ...
+}
+```
+
+```cpp
+TEMPLATE_TEST_CASE("MyTest", "[win]", TestType) {
+    // ...
+}
+```
+
+Specifying the tag `"[win]"` means that this test will be _excluded_ on Mac and
+Linux. The tags `"[mac]"` and `"[linux]"` can be used similarly for tests specific 
+to Mac or Linux. If you want to run a test on two platforms but not the third,
+use combined tags (e.g., `"[win/linux]"`, `"[mac/win]"`, or `"[unix]"`). Do not
+concatenate tags; for example, `"[win][linux]"`) will not run on Linux or Windows
+since Windows excludes Linux-only tests and vice-versa. Specifying no tag means 
+that the test will run on all platforms. The table below summarizes the tags that 
+can be used to specify platform-specific tests.
+
+| Platform(s)       | Tag(s)                                       |
+|-------------------|----------------------------------------------|
+| Windows           | `"[win]"`                                    |
+| Mac               | `"[mac]"`                                    |
+| Linux             | `"[linux]"`                                  |
+| Mac and Linux     | `"[unix]"`, `"[mac/linux]"`, `"[linux/mac]"` |
+| Windows and Mac   | `"[win/mac]"`, `"[mac/win]"`                 |
+| Windows and Linux | `"[win/linux]"`, `"[linux/win]"`             |
+| All platforms     | (no tag)                                     |
+
+
 Running Moco tests
 ------------------
 In general, Moco's tests depend on the CasADi and Tropter libraries, whose use
 is determined by the `OPENSIM_WITH_CASADI` and `OPENSIM_WITH_TROPTER` CMake
 variables. The CTests are designed to succeed regardless of the value of these
 CMake variables: if `OPENSIM_WITH_CASADI` is off, Moco's C++ tests are run with
-arguments `"exclude:*MocoCasADiSolver*" "exclude:[casadi]"`,
-which excludes Catch2 templatized tests using MocoCasADiSolver and other tests
-that are tagged as relying on CasADi (likewise for Tropter).
-If the test executables are run without CTest (e.g., debugging a project in
-Visual Studio), the tests will fail if either `OPENSIM_WITH_CASADI` or
-`OPENSIM_WITH_TROPTER` is false; for the tests to pass, provide the argument(s)
-`"exclude:*MocoCasADiSolver*" "exclude:[casadi]"` and/or
-`"exclude:*MocoTropterSolver*" "exclude:[tropter]"` (depending on which
-libraries are available).
+arguments `"~*MocoCasADiSolver*" "~[casadi]"`, which excludes Catch2 templatized 
+tests using MocoCasADiSolver and other tests that are tagged as relying on CasADi 
+(likewise for Tropter). If the test executables are run without CTest (e.g., 
+debugging a project in Visual Studio), the tests will fail if either 
+`OPENSIM_WITH_CASADI` orv`OPENSIM_WITH_TROPTER` is false; for the tests to pass, 
+provide the argument(s) `"~*MocoCasADiSolver*" "~[casadi]"` and/or
+`"~*MocoTropterSolver*" "~[tropter]"` (depending on which libraries are available).
+
+
+Checking for Memory Leaks with LibASAN
+--------------------------------------
+
+The easiest way to check for memory leaks is to use LibASAN on Linux or Mac. If you are
+using Windows 11 then you can use WSL2 to create a Linux virtual machine. Alternatively, you
+can use Windows' native support for libASAN, which is documented [here](https://devblogs.microsoft.com/cppblog/addresssanitizer-asan-for-windows-with-msvc/).
+
+Make sure you have the `clang` and `clang++` C/C++ compilers installed (best
+to google this), and then compile OpenSim in a terminal with the relevant flags:
+
+```bash
+# enable libASAN when compiling C++ sources
+export CXXFLAGS="-fsanitize=address"
+
+# link the libASAN runtime when linking binaries
+export LDFLAGS="-fsanitize=address"
+
+# configure dependencies, for example:
+cmake -S dependencies/ -B ../osim-deps-build -DCMAKE_INSTALL_PREFIX=${PWD}/../osim-deps-install
+
+# build dependencies, for example:
+cmake --build ../osim-deps-build/
+
+# configure OpenSim, for example:
+cmake -S . -B ../osim-build -DOPENSIM_DEPENDENCIES_PATH=${PWD}/../osim-deps-install
+
+# build OpenSim, for example:
+cmake --build ../osim-build/
+
+# (then run/test something: the runtime should now perform memory checks)
+```
 
 
 Checking for Memory Leaks through GitHub

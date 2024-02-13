@@ -223,9 +223,9 @@ function(OpenSimAddLibrary)
 
     # This is for exporting classes on Windows.
     if(OSIMADDLIB_VENDORLIB)
-	    set(OSIMADDLIB_FOLDER "Vendor Libraries")
+        set(OSIMADDLIB_FOLDER "Vendor Libraries")
     else()
-		set(OSIMADDLIB_FOLDER "Libraries")
+        set(OSIMADDLIB_FOLDER "Libraries")
     endif()
     set_target_properties(${OSIMADDLIB_LIBRARY_NAME} PROPERTIES
        DEFINE_SYMBOL OSIM${OSIMADDLIB_UKIT}_EXPORTS
@@ -334,7 +334,7 @@ endfunction()
 #   file(GLOB TEST_PROGRAMS "test*.cpp")
 #   file(GLOB DATA_FILES *.osim *.xml *.sto *.mot)
 #   OpenSimAddTests(
-#       TESTPROGRAMS ${TEST_ROGRAMS}
+#       TESTPROGRAMS ${TEST_PROGRAMS}
 #       DATAFILES ${DATA_FILES}
 #       LINKLIBS osimCommon osimSimulation osimAnalyses
 #       )
@@ -367,11 +367,20 @@ function(OpenSimAddTests)
             add_executable(${TEST_NAME} ${test_program}
                 ${OSIMADDTESTS_SOURCES})
             target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
-            add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+            set(test_args "")
+            if(APPLE)
+                list(APPEND test_args "~[win]~[linux]~[win/linux]~[linux/win]")
+            endif()
+            if(LINUX)
+                list(APPEND test_args "~[win]~[mac]~[win/mac]~[mac/win]")
+            endif()
+            if(WIN32)
+                list(APPEND test_args "~[mac]~[linux]~[mac/linux]~[linux/mac]~[unix]")
+            endif()
+            add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} ${test_args})
             set_target_properties(${TEST_NAME} PROPERTIES
                 FOLDER "Tests"
-				)
-
+            )
         endforeach()
 
         # Copy data files to build directory.
@@ -647,6 +656,7 @@ macro(OpenSimFindSwigFileDependencies OSIMSWIGDEP_RETURNVAL
             ${OSIMSWIGDEP_INVOCATION}
         OUTPUT_VARIABLE _dependencies_makefile
         RESULT_VARIABLE _successfully_got_dependencies
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             )
     # On Windows, _dependencies_makefile now contains something like this:
     # C:\opensim-core\Bindings\Python\swig\python_simbody_wrap.cxx: \

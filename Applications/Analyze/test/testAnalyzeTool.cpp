@@ -489,19 +489,12 @@ void testIMUDataReporter() {
                 pendulum.getComponent<CoordinateActuator>("/tau0"));
         controller->addActuator(
                 pendulum.getComponent<CoordinateActuator>("/tau1"));
-        pendulum.addController(controller);
-        pendulum.initSystem();
-
-        // Specify constant torque functions to the torque acutators via the
-        // PrescribedController we added previously.
+        // Specify constant torque functions to the torque actuators
         Constant* constantTorque0 = new Constant(10.0);
         Constant* constantTorque1 = new Constant(10.0);
-        pendulum.updComponent<PrescribedController>(
-                    "/controllerset/torque_controller")
-                .prescribeControlForActuator("tau0", constantTorque0);
-        pendulum.updComponent<PrescribedController>(
-                    "/controllerset/torque_controller")
-                .prescribeControlForActuator("tau1", constantTorque1);
+        controller->prescribeControlForActuator("tau0", constantTorque0);
+        controller->prescribeControlForActuator("tau1", constantTorque1);
+        pendulum.addController(controller);
         state = pendulum.initSystem();
 
         // Set a horizontal default pendulum position.

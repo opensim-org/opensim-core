@@ -522,7 +522,21 @@ public:
     GeneralForceSubsystem allocated by this %Model. **/
     SimTK::GeneralForceSubsystem& updForceSubsystem() 
     {   return *_forceSubsystem; }
-
+    /** (Advanced) Get read only access to internal Simbody RigidBodyForces at Dynamics stage **/
+    const SimTK::Vector_<SimTK::SpatialVec>& getRigidBodyForces(const SimTK::State& state)
+    {
+        return getMultibodySystem().getRigidBodyForces(state, SimTK::Stage::Dynamics);
+    }
+    /** (Advanced) Get read only access to internal Simbody Mobility Forces at Dynamics stage **/
+    const SimTK::Vector& getMobilityForces(const SimTK::State& state)
+    {
+        return getMultibodySystem().getMobilityForces(state, SimTK::Stage::Dynamics);
+    }
+    /** (Advanced) Get read only access to internal Simbody Body Forces due to Gravity **/
+    const SimTK::Vector_<SimTK::SpatialVec>& getGravityBodyForces(const SimTK::State& state) const
+    {
+        return getGravityForce().getBodyForces(state);
+    }
     /**@}**/
 
     /**@name  Realize the Simbody System and State to Computational Stage
@@ -929,6 +943,14 @@ public:
     std::vector<SimTK::ReferencePtr<const OpenSim::Coordinate>>
         getCoordinatesInMultibodyTreeOrder() const;
 
+    /** A variant of getCoordinatesInMultibodyTreeOrder that returns names for Scripting users */
+    SimTK::Array_<std::string> getCoordinateNamesInMultibodyTreeOrder() {
+        SimTK::Array_<std::string> namesArray;
+        auto coords = getCoordinatesInMultibodyTreeOrder();
+        for (int i=0; i < (int)coords.size(); ++i)
+            namesArray.push_back(coords[i]->getName());
+        return namesArray;
+    }
     /** Get a warning message if any Coordinates have a MotionType that is NOT
         consistent with its previous user-specified value that existed in 
         Model files prior to OpenSim 4.0 */

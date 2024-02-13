@@ -33,6 +33,10 @@ class TestOpenSense(unittest.TestCase):
         constraint_var = .0001
         ikSolver = osim.InverseKinematicsSolver(model, mRefs, oRefs, coordinateReferences, constraint_var)
         print("Created InverseKinematicsSolver object..")
+        oRefs = osim.BufferedOrientationsReference()
+        print("Created BufferedOrientationsReference object..")
+        ikSolver = osim.InverseKinematicsSolver(model, mRefs, oRefs, coordinateReferences, constraint_var)
+        print("Created InverseKinematicsSolver object with BufferedOrientationsReference..")
 
     def test_vector_rowvector(self):
         print()
@@ -43,3 +47,19 @@ class TestOpenSense(unittest.TestCase):
                 col[1] == row[1] and
                 col[2] == row[2] and
                 col[3] == row[3])
+
+    def test_BufferedOrientationReferencePut(self):
+        # Make sure that we can append new data to the BufferedOrientationReference object
+        quatTable = osim.TimeSeriesTableQuaternion(os.path.join(test_dir,'orientation_quats.sto'))
+        print("Created TimeSeriesTableQuaternion object..")
+        orientationsData = osim.OpenSenseUtilities.convertQuaternionsToRotations(quatTable)
+        print("Convert Quaternions to orientationsData")
+        time = 0
+        rowVecView = orientationsData.getNearestRow(time)
+        print("Sliced orientationData")
+        rowVec = osim.RowVectorRotation(rowVecView)
+        print("Converted slice to row vector")
+        oRefs = osim.BufferedOrientationsReference()
+        print("Created BufferedOrienationReference object")
+        oRefs.putValues(time, rowVec)
+        print("Added row vector to BufferedOrientationReference object")

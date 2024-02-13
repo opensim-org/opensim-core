@@ -176,7 +176,7 @@ public:
     /** determine or set whether or not the Coordinate is 
         "clamped" between a range of values. */
     bool getClamped(const SimTK::State& s) const;
-    void setClamped(SimTK::State& s, bool aLocked) const;
+    void setClamped(SimTK::State& s, bool aClamped) const;
     /** get/set whether or not the Coordinate is clamped by default */
     bool getDefaultClamped() const { return get_clamped(); }
     void setDefaultClamped(bool aClamped ) { upd_clamped() = aClamped; }

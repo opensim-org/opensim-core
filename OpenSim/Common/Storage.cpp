@@ -161,7 +161,6 @@ Storage::Storage(int aCapacity,const string &aName) :
 
     // CAPACITY
     _storage.ensureCapacity(aCapacity);
-    _storage.setCapacityIncrement(-1);
 
     _fileVersion = Storage::LatestVersion;
     // SET THE STATES
@@ -262,7 +261,6 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
     }
     // CAPACITY
     _storage.ensureCapacity(nr);
-    _storage.setCapacityIncrement(-1);
 
     // There are situations where we don't want to read the whole file in advance just header
     if (readHeadersOnly) return;
@@ -321,7 +319,6 @@ Storage::Storage(const Storage &aStorage,bool aCopyData) :
 
     // CAPACITY
     _storage.ensureCapacity(aStorage._storage.getCapacity());
-    _storage.setCapacityIncrement(aStorage._storage.getCapacityIncrement());
 
     // SET STATES
     setName(aStorage.getName());
@@ -355,7 +352,6 @@ Storage(const Storage &aStorage,int aStateIndex,int aN,
 
     // CAPACITY
     _storage.ensureCapacity(aStorage._storage.getCapacity());
-    _storage.setCapacityIncrement(aStorage._storage.getCapacityIncrement());
 
     // SET STATES
     setName(aStorage.getName());
@@ -633,35 +629,6 @@ int Storage::
 getStepInterval() const
 {
     return(_stepInterval);
-}
-
-//-----------------------------------------------------------------------------
-// CAPACITY INCREMENT
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the capacity increment of this storage object.  For details on what
- * the capacity increment does see Array::setCapacityIncrement().
- *
- * @param aIncrement Capacity increment.
- * @see Array
- */
-void Storage::
-setCapacityIncrement(int aIncrement)
-{
-    _storage.setCapacityIncrement(aIncrement);
-}
-//_____________________________________________________________________________
-/**
- * Get the capacity increment of this storage object.
- *
- * @return Capacity increment of this storage.  For details on what
- * the capacity increment does see Array::setCapacityIncrement().
- */
-int Storage::
-getCapacityIncrement() const
-{
-    return(_storage.getCapacityIncrement());
 }
 
 //-----------------------------------------------------------------------------
@@ -3404,7 +3371,7 @@ bool Storage::makeStorageLabelsUnique() {
             int c = 1;
             while (exist) {
                 char cString[20];
-                sprintf(cString,"%d", c);
+                snprintf(cString, 20, "%d", c);
                 newName = std::string(cString) + "_" + offending;
                 exist = (lbls.findIndex(newName) != -1);
                 c++;

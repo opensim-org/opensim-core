@@ -309,3 +309,23 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
     }
 }
 
+void ModelFactory::replacePathsWithFunctionBasedPaths(Model& model,
+            const Set<FunctionBasedPath>& functionBasedPaths) {
+    for (int i = 0; i < functionBasedPaths.getSize(); ++i) {
+        auto path = functionBasedPaths.get(i);
+            
+        // Get the force component associated with this path.
+        auto& force = model.updComponent<Force>(path.getName());
+
+        // Replace the path.
+        try {
+            force.updPropertyByName<AbstractGeometryPath>("path").setValue(path);
+        } catch (const Exception& e) {
+            OPENSIM_THROW(Exception,
+                    "Failed to replace path for force '{}': {}",
+                    force.getAbsolutePathString(), e.getMessage());
+        }
+    }
+    model.finalizeFromProperties();
+    model.finalizeConnections();
+}

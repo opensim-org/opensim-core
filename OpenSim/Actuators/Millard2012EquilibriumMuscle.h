@@ -569,58 +569,6 @@ private:
     // Rebuilds muscle model if any of its properties have changed.
     void extendFinalizeFromProperties() override;
 
-    /* Calculates the fiber velocity that satisfies the equilibrium equation
-    given a fixed fiber length.
-        @param fiso maximum isometric force
-        @param a activation
-        @param fal active-force-length multiplier
-        @param fpe passive-force-length multiplier
-        @param fse tendon-force-length multiplier
-        @param beta damping coefficient
-        @param cosPhi cosine of pennation angle
-        @returns [0] dlceN_dt
-                 [1] err
-                 [2] converged */
-    SimTK::Vec3 calcDampedNormFiberVelocity(double fiso,
-                                            double a,
-                                            double fal,
-                                            double fpe,
-                                            double fse,
-                                            double beta,
-                                            double cosPhi) const;
-
-    /* Calculates the force-velocity multiplier
-        @param a activation
-        @param fal the fiber active-force-length multiplier
-        @param fp the total normalized parallel fiber force multiplier
-        @param fse the tendon-force-length multiplier
-        @param cosphi the cosine of the pennation angle
-        @return the force-velocity multiplier */
-    double calcFv(double a,
-                  double fal,
-                  double fp,
-                  double fse,
-                  double cosphi) const;
-
-    /*  @param fiso the maximum isometric force the fiber can generate
-        @param a activation
-        @param fal the fiber active-force-length multiplier
-        @param fv the fiber force-velocity multiplier
-        @param fpe the fiber force-length multiplier
-        @param dlceN the normalized fiber velocity
-        @param cosphi the cosine of the pennation angle
-        @returns Vec4
-            [0] total fiber force
-            [1] active fiber force
-            [2] conservative passive fiber force
-            [3] non-conservative passive fiber force */
-    SimTK::Vec4 calcFiberForce(double fiso,
-                               double a,
-                               double fal,
-                               double fv,
-                               double fpe,
-                               double dlceN) const;
-
     /*  @param fiso the maximum isometric force the fiber can generate
         @param ftendon the current tendon load
         @param cosPhi the cosine of the pennation angle
@@ -637,39 +585,6 @@ private:
                           double fv,
                           double fpe,
                           double dlceN) const;
-
-    /*  @param fiso the maximum isometric force the fiber can generate
-        @param a activation
-        @param fal the fiber active-force-length multiplier
-        @param fv the fiber force-velocity multiplier
-        @param fpe the fiber force-length multiplier
-        @param sinphi the sine of the pennation angle
-        @param cosphi the cosine of the pennation angle
-        @param lce the fiber length
-        @param lceN the normalized fiber length
-        @param optFibLen the optimal fiber length
-        @returns the stiffness of the fiber in the direction of the fiber */
-    double calcFiberStiffness(double fiso,
-                              double a,
-                              double fv,
-                              double lceN,
-                              double optFibLen) const;
-
-    /*  @param fiso the maximum isometric force the fiber can generate
-        @param a activation
-        @param fal the fiber active-force-length multiplier
-        @param beta damping coefficient
-        @param s damping force scaling
-        @param ds_d_dlce derivative of the damping scaling w.r.t. fiber length
-        @param dlceN_dt normalized fiber velocity (1 is the max. fiber velocity)
-        @param the maximum contraction velocity in m/s
-        @return the partial derivative of fiber force w.r.t normalized fiber
-    velocity */
-    double calc_DFiberForce_DNormFiberVelocity(double fiso,
-                                               double a,
-                                               double fal,
-                                               double beta,
-                                               double dlceN_dt) const;
 
     /*  @param fiberForce the force, in Newtons, developed by the fiber
         @param fiberStiffness the stiffness, in N/m, of the fiber

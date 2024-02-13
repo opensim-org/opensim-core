@@ -247,22 +247,6 @@ getStorage()
     return(_storage);
 }
 
-//-----------------------------------------------------------------------------
-// STORAGE CAPACITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the capacity increments of all storage instances.
- *
- * @param aIncrement Increment by which storage capacities will be increased
- * when storage capacities run out.
- */
-void InverseDynamics::
-setStorageCapacityIncrements(int aIncrement)
-{
-    _storage->setCapacityIncrement(aIncrement);
-}
-
 //=============================================================================
 // ANALYSIS
 //=============================================================================

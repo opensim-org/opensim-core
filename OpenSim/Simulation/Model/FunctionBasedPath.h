@@ -1,5 +1,5 @@
-#ifndef OPENSIM_FUNCTIONBASEDPATH_H
-#define OPENSIM_FUNCTIONBASEDPATH_H
+#ifndef OPENSIM_FUNCTION_BASED_PATH_H
+#define OPENSIM_FUNCTION_BASED_PATH_H
 /* -------------------------------------------------------------------------- *
  *                      OpenSim:  FunctionBasedPath.h                         *
  * -------------------------------------------------------------------------- *
@@ -23,7 +23,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Simulation/Model/AbstractPath.h"
+#include "OpenSim/Simulation/Model/AbstractGeometryPath.h"
 #include "OpenSim/Common/Function.h"
 
 namespace OpenSim {
@@ -90,9 +90,9 @@ namespace OpenSim {
  * order of the value and speed arguments must match the order in the
  * `coordinates` property.
  *
- * The forces applied to the model by the path are computed by multiplying the
- * tension in the path by the moment arms. Therefore, this class only applies
- * mobility (i.e., generalized) forces to the model.
+ * @note The forces applied to the model by the path are computed by multiplying
+ * the tension in the path by the moment arms. Therefore, this class only
+ * applies mobility (i.e., generalized) forces to the model.
  *
  * References
  * ----------
@@ -111,8 +111,8 @@ namespace OpenSim {
  *       Volume 7B: 9th International Conference on Multibody Systems,
  *       Nonlinear Dynamics, and Control.
  */
-class OSIMSIMULATION_API FunctionBasedPath : public AbstractPath {
-OpenSim_DECLARE_CONCRETE_OBJECT(FunctionBasedPath, AbstractPath);
+class OSIMSIMULATION_API FunctionBasedPath : public AbstractGeometryPath {
+OpenSim_DECLARE_CONCRETE_OBJECT(FunctionBasedPath, AbstractGeometryPath);
 
 public:
 //=============================================================================
@@ -221,4 +221,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // OPENSIM_FUNCTIONBASEDPATH_H
+#endif // OPENSIM_FUNCTION_BASED_PATH_H

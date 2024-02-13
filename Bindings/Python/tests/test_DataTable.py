@@ -49,7 +49,7 @@ class TestDataTable(unittest.TestCase):
         assert (str(col[0]) == str(row[0]) and
                 str(col[1]) == str(row[1]) and
                 str(col[2]) == str(row[2]))
-        print('Test transpose VectorOVec3 to RowVectorVec3.')
+        print('Test transpose VectorVec3 to RowVectorVec3.')
         row_copy = col.transpose()
         assert (str(row_copy[0]) == str(row[0]) and
                 str(row_copy[1]) == str(row[1]) and

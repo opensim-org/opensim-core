@@ -279,22 +279,6 @@ getForceStorage()
         return nullptr;
 }
 
-//-----------------------------------------------------------------------------
-// STORAGE CAPACITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the capacity increments of all storage instances.
- *
- * @param aIncrement Increment by which storage capacities will be increased
- * when storage capacities run out.
- */
-void StaticOptimization::
-setStorageCapacityIncrements(int aIncrement)
-{
-    _activationStorage->setCapacityIncrement(aIncrement);
-}
-
 //=============================================================================
 // ANALYSIS
 //=============================================================================

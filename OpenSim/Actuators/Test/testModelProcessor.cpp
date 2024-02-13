@@ -16,14 +16,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#define CATCH_CONFIG_MAIN
-#include "OpenSim/Moco/Test/Testing.h"
 
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 
@@ -51,8 +51,8 @@ TEST_CASE("ModelProcessor") {
             ModelProcessor proc(Model{});
             proc.set_filepath("file.osim");
             CHECK_THROWS_WITH(proc.process(),
-                    Catch::Contains("Expected either a Model object or a "
-                                    "filepath"));
+                    Catch::Matchers::ContainsSubstring(
+                        "Expected either a Model object or a filepath"));
         }
     }
 

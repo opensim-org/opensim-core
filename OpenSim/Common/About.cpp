@@ -128,7 +128,7 @@ static const char* OpenSimVersion = GET_OSIM_VERSION;
 
 std::string GetVersionAndDate() { 
     char buffer[256];
-    sprintf(buffer,"version %s, build date %s %s",
+    snprintf(buffer, 256, "version %s, build date %s %s",
             OpenSimVersion, __TIME__, __DATE__);
     return std::string(buffer);
 }

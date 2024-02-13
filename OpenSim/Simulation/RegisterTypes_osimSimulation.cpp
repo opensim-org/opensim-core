@@ -292,6 +292,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::registerType( TabOpLowPassFilter() );
     Object::registerType( TabOpUseAbsoluteStateNames() );
+    Object::registerType( TabOpAppendCoupledCoordinateValues() );
     Object::registerType( PositionMotion() );
 
     // OLD Versions

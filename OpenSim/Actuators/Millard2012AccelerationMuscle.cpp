@@ -557,7 +557,7 @@ extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 
     Super::extendPostScale(s, scaleSet);
 
-    AbstractPath& path = updPath();
+    AbstractGeometryPath& path = updPath();
     if (path.getPreScaleLength(s) > 0.0)
     {
         double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
@@ -980,7 +980,6 @@ void Millard2012AccelerationMuscle::
 
     //Get the properties of this muscle
         // double mcl            = getLength(s);
-        double dmcl_dt        = getLengtheningSpeed(s);
         // double tsl            = getTendonSlackLength();
         // double ofl            = getOptimalFiberLength();
         double fiso           = getMaxIsometricForce();
@@ -1055,11 +1054,6 @@ void Millard2012AccelerationMuscle::
     //Compute the stiffness of the tendon
         double dFt_dtl    = calcTendonStiffness(ami);
 
-    //Compute the stiffness of the whole muscle/tendon complex
-        double Ke = 0;
-        if (abs(dFceAT_dlceAT*dFt_dtl)>0)
-            Ke = (dFceAT_dlceAT*dFt_dtl)/(dFceAT_dlceAT+dFt_dtl);
-
     //Populate the output vector
    
         mdi.activation                   = a;
@@ -1078,7 +1072,6 @@ void Millard2012AccelerationMuscle::
         mdi.fiberStiffness               = dFce_dlce;
         mdi.fiberStiffnessAlongTendon    = dFceAT_dlceAT;
         mdi.tendonStiffness              = dFt_dtl;
-        mdi.muscleStiffness              = Ke;
                                          
     //Check that the derivative of system energy less work is zero within
     //a reasonable numerical tolerance. 
@@ -1117,7 +1110,6 @@ void Millard2012AccelerationMuscle::
         double dKEdt = m*ami.dlceAT_dt*ddlceAT_dtt; 
 
         double dFibWdt      = -mdi.activeFiberForce*mvi.fiberVelocity;
-        double dBoundaryWdt = mdi.tendonForce * dmcl_dt;
         /*double dSysEdt      = (dfpePEdt + dfkPEdt + dfcphiPEdt + dfsePEdt)
                              - dFibWdt 
                              - dBoundaryWdt 
@@ -1149,7 +1141,6 @@ void Millard2012AccelerationMuscle::
                                         - (dfpeVdt  + dfkVdt  + dfcphiVdt)
                                         - dfibVdt);
         mdi.tendonPower         = -(dfsePEdt-dfseVdt);       
-        mdi.musclePower         = -dBoundaryWdt;
 
 
         //if(abs(tmp) > tol)

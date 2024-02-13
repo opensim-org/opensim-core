@@ -321,25 +321,6 @@ void Kinematics::setModel(Model& aModel)
     allocateStorage();
 }
 
-//-----------------------------------------------------------------------------
-// STORAGE CAPACITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the capacity increments of all storage instances.
- *
- * @param aIncrement Increment by which storage capacities will be increased
- * when storage capacities run out.
- */
-void Kinematics::
-setStorageCapacityIncrements(int aIncrement)
-{
-    if (_aStore) _aStore->setCapacityIncrement(aIncrement);
-    _vStore->setCapacityIncrement(aIncrement);
-    _pStore->setCapacityIncrement(aIncrement);
-}
-
-
 //=============================================================================
 // ANALYSIS
 //=============================================================================

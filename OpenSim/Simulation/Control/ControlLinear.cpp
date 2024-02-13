@@ -698,11 +698,11 @@ simplify(const PropertySet &aProperties)
 
     // ADD NEW NODES
     int newSize = t.getSize();
-    char name[32];
     ControlLinearNode *node;
     for(i=0;i<newSize;i++) {
+        char name[32];
         node = new ControlLinearNode(t[i],xFilt[i]);
-        sprintf(name,"%d",i);
+        snprintf(name, 32, "%d", i);
         node->setName(name);
         _xNodes.append(node);
     }
