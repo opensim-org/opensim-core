@@ -459,28 +459,6 @@ setCoordinates(OpenSim::Array<std::string>& aCoordinates)
         _coordinateListProp.getValueStrArray().updElt(i) = aCoordinates[i];
     }
 }
-//-----------------------------------------------------------------------------
-// STORAGE CAPACITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the capacity increments of all storage instances.
- *
- * @param aIncrement Increment by which storage capacities will be increased
- * when storage capacities run out.
- */
-void MuscleAnalysis::
-setStorageCapacityIncrements(int aIncrement)
-{
-    if(!_model) return;
-    Storage *store;
-    int size = _storageList.getSize();
-    for(int i=0;i<size;i++) {
-        store = _storageList[i];
-        if(store==NULL) continue;
-        store->setCapacityIncrement(aIncrement);
-    }
-}
 
 
 //=============================================================================
