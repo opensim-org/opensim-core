@@ -60,7 +60,7 @@ const std::vector<int>& InputController::getControlIndexes() const {
 
 std::vector<std::string> InputController::getInputChannelAliases() const {
     std::vector<std::string> aliases;
-    const auto& input = getInput<double>("controls");
+    const auto& input = getInput<double>("inputs");
     aliases.reserve(input.getNumConnectees());
     for (int i = 0; i < static_cast<int>(input.getNumConnectees()); ++i) {
         aliases.push_back(input.getAlias(i));
@@ -143,7 +143,7 @@ ActuatorInputController& ActuatorInputController::operator=(
 //=============================================================================
 void ActuatorInputController::computeControls(const SimTK::State& s,
         SimTK::Vector& controls) const {
-    const auto& input = getInput<double>("controls");
+    const auto& input = getInput<double>("inputs");
     for (int i = 0; i < static_cast<int>(input.getNumConnectees()); ++i) {
         controls[m_controlIndexesInConnecteeOrder[i]] = input.getValue(s, i);
     }
@@ -160,7 +160,7 @@ void ActuatorInputController::extendConnectToModel(Model& model) {
     OPENSIM_ASSERT(getNumControls() ==
         static_cast<int>(controlNames.size()))
 
-    const auto& input = getInput<double>("controls");
+    const auto& input = getInput<double>("inputs");
     OPENSIM_THROW_IF(
         static_cast<int>(input.getNumConnectees()) != getNumControls(), Exception,
         "Expected the number of Input connectees ({}) to match the number "
