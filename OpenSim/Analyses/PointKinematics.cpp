@@ -488,24 +488,6 @@ getPositionStorage()
     return(_pStore);
 }
 
-//-----------------------------------------------------------------------------
-// STORAGE CAPACITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the capacity increments of all storage instances.
- *
- * @param aIncrement Increment by which storage capacities will be increased
- * when storage capacities run out.
- */
-void PointKinematics::
-setStorageCapacityIncrements(int aIncrement)
-{
-    _aStore->setCapacityIncrement(aIncrement);
-    _vStore->setCapacityIncrement(aIncrement);
-    _pStore->setCapacityIncrement(aIncrement);
-}
-
 
 
 //=============================================================================
