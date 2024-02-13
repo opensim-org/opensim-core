@@ -73,7 +73,7 @@ double BufferedOrientationsReference::getNextValuesAndTime(
 }
 
 void BufferedOrientationsReference::putValues(
-        double time, const SimTK::RowVectorView_<SimTK::Rotation_<double>>& dataRow) {
+        double time, const SimTK::RowVector_<SimTK::Rotation_<double>>& dataRow) {
     log_info("Data Pushed");
     _orientationDataQueue.push_back(time, dataRow);
     log_info("Data Queue Empty?: {}", _orientationDataQueue.isEmpty());}
