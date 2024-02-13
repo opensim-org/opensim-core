@@ -210,10 +210,10 @@ AddDependency(NAME       catch2
 
 # Moco settings.
 # --------------
-# option(OPENSIM_WITH_CASADI
-#        "Build CasADi support for Moco (MocoCasADiSolver)." OFF)
-option(OPENSIM_WITH_TROPTER
-        "Build the tropter optimal control library, for use in MocoTropterSolver." OFF)
+option(OPENSIM_WITH_CASADI
+        "Build CasADi support for Moco (MocoCasADiSolver)." OFF)
+#option(OPENSIM_WITH_TROPTER
+#        "Build the tropter optimal control library, for use in MocoTropterSolver." OFF)
 
 
 if(OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI)
@@ -235,8 +235,8 @@ mark_as_advanced(SUPERBUILD_colpack)
 
 CMAKE_DEPENDENT_OPTION(SUPERBUILD_adolc "Automatically download, configure, build and install adolc" ON
                        "OPENSIM_WITH_TROPTER" OFF)
-CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
-                       "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
+#CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
+#                       "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
 endif()
 
 if (OPENSIM_WITH_CASADI)
