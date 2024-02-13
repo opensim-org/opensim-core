@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Frank C. Anderson                                               *
+ * Copyright (c) 2005-2024 Stanford University and the Authors                *
+ * Author(s): Adam Kewley, Frank C. Anderson                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -49,26 +49,23 @@ namespace OpenSim {
  * implement the following methods:  default constructor, copy constructor,
  * assignment operator (=), equality operator (==), and less than
  * operator (<).
- *
- * @version 1.0
- * @author Frank C. Anderson
  */
 template<class T>
 class Array {
 public:
-    explicit Array(T defaultValue = T(), int size = 0, int capacity = 1) :
-        _defaultValue{std::move(defaultValue)}
+    explicit Array(T aDefaultValue = T(), int aSize = 0, int aCapacity = 1) :
+        _defaultValue{std::move(aDefaultValue)}
     {
-        _storage.reserve(capacity);
-        _storage.resize(size, _defaultValue);
+        _storage.reserve(aCapacity);
+        _storage.resize(aSize, _defaultValue);
     }
 
     // A non-operator version of operator== which we can use in Java
     // NOTE: I tried to name it "equals" since that's the standard way to compare objects in
     // Java, but didn't seem to work...  - Eran
-    bool arrayEquals(const Array& other) const
+    bool arrayEquals(const Array& aArray) const
     {
-        return *this == other;
+        return *this == aArray;
     }
 
 #ifndef SWIG
@@ -114,8 +111,8 @@ public:
      *
      * T[0] T[1] T[2] ... T[size-1].
      *
-     * @param aOut Output stream.
-     * @param aArray Array to be output.
+     * @param out Output stream.
+     * @param rhs Array to be output.
      * @return Reference to the output stream.
      */
     friend std::ostream& operator<<(std::ostream& out, const Array& rhs)
@@ -163,6 +160,14 @@ public:
         return static_cast<int>(_storage.capacity());
     }
 
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: set the amount by which the capacity is increased when the
+     * capacity of the array is exceeded. If the specified increment is
+     * negative, the capacity is set to double whenever the capacity is
+     * exceeded.
+     */
     [[deprecated("this no longer does anything")]]
     void setCapacityIncrement(int)
     {
@@ -171,6 +176,8 @@ public:
 
     /**
      * deprecated (legacy): has no effect
+     *
+     * OLD BEHAVIOR: get the amount by which the capacity is increased.
      */
     [[deprecated("this no longer does anything")]]
     int getCapacityIncrement() const
@@ -181,7 +188,7 @@ public:
 #endif
 
     /**
-     * %Set the size of the array.  This method can be used to either increase
+     * Set the size of the array.  This method can be used to either increase
      * or decrease the size of the array.  If this size of the array is
      * increased, the new elements are initialized to the default value
      * that was specified at the time of construction.
@@ -226,7 +233,7 @@ public:
      * @return New size of the array, or, equivalently, the index to the new
      * first empty element of the array.
      */
-    int append(const T &aValue)
+    int append(const T& aValue)
     {
         _storage.push_back(aValue);
         return size();
@@ -253,7 +260,7 @@ public:
      * @return New size of the array, or, equivalently, the index to the new
      * first empty element of the array.
      */
-    int append(int aSize,const T *aArray)
+    int append(int aSize, const T* aArray)
     {
         if (aSize > 0 && aArray) {
             _storage.insert(_storage.end(), aArray, aArray + aSize);
@@ -276,7 +283,7 @@ public:
      * was specified at the time of construction.
      * @return Size of the array after the insertion.
      */
-    int insert(int aIndex,const T &aValue)
+    int insert(int aIndex, const T& aValue)
     {
         if (aIndex < 0) {
             OPENSIM_THROW(Exception, "Array.insert: aIndex was less than 0.");
@@ -311,7 +318,7 @@ public:
     }
 
     /**
-     * %Set the value at a specified index.
+     * Set the value at a specified index.
      *
      * @param aIndex Index of the array element to be set.  It is permissible
      * for aIndex to be past the current end of the array- the capacity will
@@ -319,7 +326,7 @@ public:
      * and aIndex are not initialized.
      * @param aValue Value.
      */
-    void set(int aIndex,const T &aValue)
+    void set(int aIndex, const T& aValue)
     {
         if (aIndex < 0) {
             return;
@@ -452,7 +459,7 @@ public:
      * one such elements with the same value the index of the first of these elements
      * is returned.  If no match is found, -1 is returned.
      */
-    int findIndex(const T &aValue) const
+    int findIndex(const T& aValue) const
     {
         const auto it = std::find(_storage.begin(), _storage.end(), aValue);
         return it != _storage.end() ? static_cast<int>(std::distance(_storage.begin(), it)) : -1;
@@ -466,7 +473,7 @@ public:
      * one such elements with the same value the index of the last of these elements
      * is returned.  If no match is found, -1 is returned.
      */
-    int rfindIndex(const T &aValue) const
+    int rfindIndex(const T& aValue) const
     {
         const auto it = std::find(_storage.rbegin(), _storage.rend(), aValue);
         return it != _storage.rend() ? static_cast<int>(std::distance(_storage.begin(), it.base())) : -1;
@@ -505,7 +512,7 @@ public:
      * equal to aValue, -1 is returned.
      */
     int searchBinary(
-        const T &aValue,
+        const T& aValue,
         bool aFindFirst = false,
         int aLo = -1,
         int aHi = -1) const
