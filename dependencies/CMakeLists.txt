@@ -371,12 +371,12 @@ if(SUPERBUILD_casadi)
                   GIT_URL    https://github.com/casadi/casadi.git
                   # This commit is from casadi's release page https://github.com/casadi/casadi/releases/tag/3.6.4
                   GIT_TAG    3.6.4
-                  CMAKE_ARGS -DWITH_BUILD_IPOPT:BOOL=ON
-                             #-DIPOPT_LIBRARIES:PATH=${CMAKE_INSTALL_PREFIX}/ipopt/lib
-                             #-DIPOPT_INCLUDE_DIRS:PATH=${CMAKE_INSTALL_PREFIX}/ipopt/include
+                  CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
+                             -DWITH_BUILD_IPOPT:BOOL=ON
                              -DWITH_BUILD_MUMPS:BOOL=ON
-                             -DWITH_BUILD_METIS:BOOL=ON 
-                             #-DIPOPT_DIR:PATH=${CMAKE_INSTALL_PREFIX}/ipopt
+                             -DWITH_BUILD_METIS:BOOL=ON
+                             -DBUILD_IPOPT_GIT_REPO:STRING=https://github.com/jgillis/Ipopt-1.git
+                             -DBUILD_IPOPT_VERSION:STRING=3.14.11.mod
                              -DWITH_EXAMPLES:BOOL=OFF
                              -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
                              -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt
