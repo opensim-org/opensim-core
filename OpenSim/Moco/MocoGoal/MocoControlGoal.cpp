@@ -21,6 +21,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Simulation/Control/InputController.h>
+#include <OpenSim/Moco/Components/ControlAllocator.h>
 
 using namespace OpenSim;
 
@@ -53,11 +54,12 @@ void MocoControlGoal::setWeightForControlPattern(
 
 void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 
-    // Get all expected control names.
+    // Get all the control names in the model.
     auto controlNames = createControlNamesFromModel(model);
 
-    // Check that the model controls are in the correct order.
-    checkOrderSystemControls(model);
+    // Get control names associated with the model's ActuatorInputController.
+    auto actuatorInputControlNames =
+            createControlNamesForControllerType<ActuatorInputController>(model);
 
     // If there are no user-defined controllers, we can use the raw controls.
     // Otherwise, we must compute the controls from the model.
@@ -68,11 +70,18 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
         m_computeControlsFromModel = true;
     }
 
-    // Get controls associated with the model's ActuatorInputController.
-    auto actuatorInputControls =
-            createControlNamesForControllerType<ActuatorInputController>(model);
+    // Create a map from control names to their indices in the controls vector.
+    // If we are using the raw controls, we use the control indices from the
+    // model's ControlAllocator. Otherwise, we use the control indices from the
+    // model.
+    std::unordered_map<std::string, int> controlIndexMap;
+    if (m_computeControlsFromModel) {
+        controlIndexMap = createSystemControlIndexMap(model);
+    } else {
+        controlIndexMap = model.getComponentList<ControlAllocator>().begin()
+                                ->getControlIndexMap();
+    }
 
-    auto systemControlIndexMap = createSystemControlIndexMap(model);
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& thisName = get_control_weights()[i].getName();
@@ -85,7 +94,6 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 
     // Set the regex pattern controls first.
     std::map<std::string, double> weightsFromPatterns;
-
     for (int i = 0; i < get_control_weights_pattern().getSize(); ++i) {
         const auto& mocoWeight = get_control_weights_pattern().get(i);
         const auto& pattern = mocoWeight.getName();
@@ -105,7 +113,8 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
             weight = weightsFromPatterns[controlName];
         }
 
-        if (getIgnoreControlledActuators() && !actuatorInputControls.count(controlName)) {
+        if (getIgnoreControlledActuators() &&
+                !actuatorInputControlNames.count(controlName)) {
             log_info("MocoControlGoal: Control '{}' is associated with a "
                      "user-defined controller and will be ignored, "
                      "as requested.",
@@ -114,7 +123,7 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
         }
 
         if (weight != 0.0) {
-            m_controlIndices.push_back(systemControlIndexMap[controlName]);
+            m_controlIndices.push_back(controlIndexMap[controlName]);
             m_weights.push_back(weight);
             m_controlNames.push_back(controlName);
         } else {
@@ -143,10 +152,13 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 
 void MocoControlGoal::calcIntegrandImpl(
         const IntegrandInput& input, SimTK::Real& integrand) const {
+
+    // TODO: compute controls in MocoGoal::calcIntegrand() and pass them to
+    // calcIntegrandImpl() by overwriting the IntegrandInput?
     if (m_computeControlsFromModel) {
         getModel().realizeVelocity(input.state);
     }
-    const auto& controls = (m_computeControlsFromModel) ?
+    const auto& controls = m_computeControlsFromModel ?
             getModel().getControls(input.state) : input.controls;
 
     integrand = 0;

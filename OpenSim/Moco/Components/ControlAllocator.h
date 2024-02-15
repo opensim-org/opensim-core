@@ -121,6 +121,13 @@ public:
      */
     std::vector<std::string> getControlNamesInOrder() const;
 
+    /**
+     * Get a map of control names to their indices in the control vector.
+     */
+    std::unordered_map<std::string, int> getControlIndexMap() const {
+        return m_controlIndexMap;
+    }
+
 protected:
     // MODEL COMPONENT INTERFACE
     void extendRealizeTopology(SimTK::State& state) const override;
