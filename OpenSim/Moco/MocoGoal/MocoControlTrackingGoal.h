@@ -131,8 +131,9 @@ Tracking problems in direct collocation perform best when tracking smooth
 data, so it is recommended to filter the data in the reference you provide
 to the cost.
 
-If you wish to track all control signals except those belonging to a
-user-defined controller, pass 'true' to `setIgnoreControlledActuators()`.
+If you wish to track all control signals except those associated with a
+user-defined controller (e.g., PrescribedController), pass 'true' to
+`setIgnoreControlledActuators()`.
 
 @ingroup mocogoal */
 class OSIMMOCO_API MocoControlTrackingGoal : public MocoGoal {
@@ -235,8 +236,7 @@ public:
         return get_allow_unused_references();
     }
 
-    /// If true, do not track controls belonging to actuators controlled by
-    /// user-defined controllers.
+    /// If true, do not track controls associated with user-defined controllers.
     void setIgnoreControlledActuators(bool v) {
         set_ignore_controlled_actuators(v);
     }

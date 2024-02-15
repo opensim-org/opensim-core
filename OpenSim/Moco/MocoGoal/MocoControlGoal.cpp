@@ -59,6 +59,15 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
     // Check that the model controls are in the correct order.
     checkOrderSystemControls(model);
 
+    // If there are no user-defined controllers, we can use the raw controls.
+    // Otherwise, we must compute the controls from the model.
+    const auto& controllers = model.getComponentList<Controller>();
+    int numControllers =
+            (int)std::distance(controllers.begin(), controllers.end());
+    if (numControllers > 1) {
+        m_computeControlsFromModel = true;
+    }
+
     // Get controls associated with the model's ActuatorInputController.
     auto actuatorInputControls =
             createControlNamesForControllerType<ActuatorInputController>(model);
@@ -96,12 +105,10 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
             weight = weightsFromPatterns[controlName];
         }
 
-        bool isActuatorInputControl = std::find(
-                actuatorInputControls.begin(), actuatorInputControls.end(),
-                controlName) != actuatorInputControls.end();
-        if (getIgnoreControlledActuators() && !isActuatorInputControl) {
-            log_info("MocoControlGoal: Control '{}' is already controlled by a "
-                     "user-defined controller and will be ignored.",
+        if (getIgnoreControlledActuators() && !actuatorInputControls.count(controlName)) {
+            log_info("MocoControlGoal: Control '{}' is associated with a "
+                     "user-defined controller and will be ignored, "
+                     "as requested.",
                     controlName);
             continue;
         }
@@ -130,12 +137,18 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
         };
     }
 
-    setRequirements(1, 1, SimTK::Stage::Model);
+    setRequirements(1, 1, m_computeControlsFromModel ? SimTK::Stage::Velocity :
+                                                       SimTK::Stage::Model);
 }
 
 void MocoControlGoal::calcIntegrandImpl(
         const IntegrandInput& input, SimTK::Real& integrand) const {
-    const auto& controls = input.controls;
+    if (m_computeControlsFromModel) {
+        getModel().realizeVelocity(input.state);
+    }
+    const auto& controls = (m_computeControlsFromModel) ?
+            getModel().getControls(input.state) : input.controls;
+
     integrand = 0;
     int iweight = 0;
     for (const auto& icontrol : m_controlIndices) {

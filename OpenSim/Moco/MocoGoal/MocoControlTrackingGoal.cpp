@@ -160,13 +160,10 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
             continue;
         }
 
-        bool isActuatorInputControl = std::find(
-                actuatorInputControls.begin(), actuatorInputControls.end(),
-                controlToTrack) != actuatorInputControls.end();
-        if (getIgnoreControlledActuators() && !isActuatorInputControl) {
-            log_info("MocoControlTrackingGoal: Control '{}' is already "
-                     "controlled by a user-defined controller and will be "
-                     "ignored.", controlToTrack);
+        if (getIgnoreControlledActuators() && !actuatorInputControls.count(controlToTrack)) {
+            log_info("MocoControlTrackingGoal: Control '{}' is associated "
+                     "with a user-defined controller and will be ignored, as "
+                     "requested.", controlToTrack);
             continue;
         }
 

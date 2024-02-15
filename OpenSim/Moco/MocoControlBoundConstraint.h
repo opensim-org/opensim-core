@@ -25,7 +25,7 @@ namespace OpenSim {
 
 class MocoProblemInfo;
 
-/** This class constrains any number of control signals from ScalarActautor%s to
+/** This class constrains any number of control signals from ScalarActuator%s to
 be between two time-based functions. It is possible to constrain the control
 signal to be exactly to a provided function; see the equality_with_lower
 property.
@@ -34,8 +34,9 @@ If a function is a GCVSpline, we ensure that the spline covers the entire
 possible time range in the problem (using the problem's time bounds). We do
 not perform such a check for other types of functions.
 
-If you wish to constrain all control signals except those belonging to a
-user-defined controller, pass 'true' to setIgnoreControlledActuators().
+If you wish to constrain all control signals except those associated with a
+user-defined controller (e.g., PrescribedController), pass 'true' to
+`setIgnoreControlledActuators()`.
 
 @note If you omit the lower and upper bounds, then this class will not
 constrain any control signals, even if you have provided control paths.
@@ -88,8 +89,8 @@ public:
     //// @copydoc setEqualityWithLower()
     bool getEqualityWithLower() const { return get_equality_with_lower(); }
 
-    /// If true, do not constrain controls belonging to actuators controlled by
-    /// user-defined controllers.
+    /// If true, do not constrain controls associated with user-defined
+    /// controllers.
     void setIgnoreControlledActuators(bool v) {
         set_ignore_controlled_actuators(v);
     }

@@ -321,6 +321,7 @@ public:
     getImplicitComponentReferencePtrs() const {
         return m_implicit_component_refs;
     }
+    /// @}
 
 private:
     explicit MocoProblemRep(const MocoProblem& problem);

@@ -33,10 +33,12 @@ void MocoInitialActivationGoal::initializeOnModelImpl(
     auto systemControlIndexMap = createSystemControlIndexMap(model);
 
     for (const auto& muscle : model.getComponentList<Muscle>()) {
-        const std::string path = muscle.getAbsolutePathString();
-        int excitationIndex = systemControlIndexMap[path];
-        int activationIndex = allSysYIndices[path + "/activation"];
-        m_indices.emplace_back(excitationIndex, activationIndex);
+        if (!muscle.get_ignore_activation_dynamics()) {
+            const std::string path = muscle.getAbsolutePathString();
+            int excitationIndex = systemControlIndexMap[path];
+            int activationIndex = allSysYIndices[path + "/activation"];
+            m_indices.emplace_back(excitationIndex, activationIndex);
+        }
     }
 
     setRequirements(0, (int)m_indices.size(), SimTK::Stage::Time);

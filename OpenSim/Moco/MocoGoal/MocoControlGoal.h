@@ -50,8 +50,9 @@ We use the following notation:
 If `p > 2`, we first take the absolute value of the control; this is to properly
 handle odd exponents.
 
-If you wish to minimize all control signals except those belonging to a
-user-defined controller, pass 'true' to setIgnoreControlledActuators().
+If you wish to minimize all control signals except those associated with a
+user-defined controller (e.g., PrescribedController), pass 'true' to
+`setIgnoreControlledActuators()`.
 
 @ingroup mocogoal */
 class OSIMMOCO_API MocoControlGoal : public MocoGoal {
@@ -90,8 +91,8 @@ public:
     void setExponent(int exponent) { set_exponent(exponent); }
     double getExponent() const { return get_exponent(); }
 
-    /// If true, do not minimize controls belonging to actuators controlled by
-    /// user-defined controllers.
+    /// If true, do not minimize controls associated with user-defined
+    /// controllers.
     void setIgnoreControlledActuators(bool v) {
         set_ignore_controlled_actuators(v);
     }
@@ -126,6 +127,7 @@ private:
     mutable std::vector<int> m_controlIndices;
     mutable std::vector<std::string> m_controlNames;
     mutable std::function<double(const double&)> m_power_function;
+    mutable bool m_computeControlsFromModel = false;
 };
 
 } // namespace OpenSim

@@ -61,8 +61,8 @@ but differ in sign (e.g. a pelvis rotation in walking), use
 addNegatedStatePair or addNegatedControlPair.
 
 If you wish to constrain all control signal pairs except those containing a
-control that belongs to a user-defined controller, pass 'true' to
-setIgnoreControlledActuators().
+control associated with a user-defined controller (e.g., PrescribedController),
+pass 'true' to `setIgnoreControlledActuators()`.
 
 To impose bilateral symmetry in a walking simulation,
 we can simulate over half a gait cycle and impose periodic constraints. For
@@ -100,9 +100,6 @@ periodicGoal->append_control_pairs(pair_hamstrings2);
 @endcode
 This is an endpoint constraint goal by default.
 
-@note Controls belonging to actuators controlled by user-defined controllers are
-ignored by this goal.
-
 @ingroup mocogoal */
 class OSIMMOCO_API MocoPeriodicityGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicityGoal, MocoGoal);
@@ -128,8 +125,8 @@ public:
         append_control_pairs(std::move(pair));
     }
 
-    /// If true, do not constrain controls belonging to actuators controlled by
-    /// user-defined controllers.
+    /// If true, do not constrain controls associated with user-defined
+    /// controllers.
     void setIgnoreControlledActuators(bool v) {
         set_ignore_controlled_actuators(v);
     }

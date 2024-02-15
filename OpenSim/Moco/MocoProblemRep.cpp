@@ -103,7 +103,7 @@ void MocoProblemRep::initialize() {
     checkOrderSystemControls(m_model_base);
 
     // Check that any controllers added by the user are valid.
-    std::vector<std::string> controlledActuatorPaths;
+    std::unordered_set<std::string> controlledActuatorPaths;
     for (const auto& controller : m_model_base.getComponentList<Controller>()) {
         if (!dynamic_cast<const PrescribedController*>(&controller)) {
             OPENSIM_THROW(Exception, "Moco only supports PrescribedController "
@@ -113,7 +113,7 @@ void MocoProblemRep::initialize() {
         }
 
         // TODO: When we support other types of controllers, we need to check
-        // that there are no user-defined ActuatorInputControllers in the modle
+        // that there are no user-defined ActuatorInputControllers in the model
         // already.
         // if (dynamic_cast<const ActuatorInputController*>(&controller)) {
         //    OPENSIM_THROW(Exception, "Detected controller '{}' of type "
@@ -124,18 +124,15 @@ void MocoProblemRep::initialize() {
 
         const auto& socket = controller.getSocket<Actuator>("actuators");
         for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
-            controlledActuatorPaths.push_back(socket.getConnecteePath(i));
+            controlledActuatorPaths.insert(socket.getConnecteePath(i));
         }
     }
 
     // Add the non-controlled, enabled actuators to an ActuatorInputController.
     auto actuatorController = make_unique<ActuatorInputController>();
     for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
-        bool isControlled = std::find(controlledActuatorPaths.begin(),
-                                      controlledActuatorPaths.end(),
-                                      actu.getAbsolutePathString()) !=
-                                          controlledActuatorPaths.end();
-        if (!isControlled && actu.get_appliesForce()) {
+        if (!controlledActuatorPaths.count(actu.getAbsolutePathString()) &&
+                actu.get_appliesForce()) {
             actuatorController->addActuator(actu);
         }
     }

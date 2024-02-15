@@ -25,13 +25,14 @@
 
 #include "StatesTrajectory.h"
 #include "osimSimulationDLL.h"
-#include <regex>
 
 #include <SimTKcommon/internal/State.h>
-
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Model.h>
+
+#include <regex>
+#include <unordered_set>
 
 namespace OpenSim {
 
@@ -170,24 +171,21 @@ std::vector<std::string> createControlNamesFromModel(
 OSIMSIMULATION_API
 std::vector<std::string> createControlNamesFromModel(const Model& model);
 
-/// Given a controller of type `T`, create a vector of control names based on
-/// the actuators in the model for which appliesForce == True. For actuators
-/// with one control (e.g. ScalarActuator) the control name is simply the
-/// actuator name. For actuators with multiple controls, each control name is
-/// the actuator name appended by the control index (e.g. "/actuator_0").
+/// Create a vector of control names based on the actuators in the model
+/// associated with any controller of type `T` for which appliesForce == True.
+/// `T` must either be `Controller` or any type derived from `Controller`.
+/// For actuators with one control (e.g. ScalarActuator) the control name is
+/// simply the actuator name. For actuators with multiple controls, each control
+/// name is the actuator name appended by the control index (e.g. "/actuator_0").
 /// @ingroup simulationutil
 template <typename T>
-std::vector<std::string> createControlNamesForControllerType(
+std::unordered_set<std::string> createControlNamesForControllerType(
         const Model& model) {
-    std::vector<std::string> controlNames;
+    std::unordered_set<std::string> controlNames;
 
     // Check that T is a Controller.
-    if (!std::is_base_of<Controller, T>::value) {
-        std::stringstream msg;
-        msg << "Expected the template argument to derived from Controller, "
-            << "but the provided type is " << typeid(T).name() << ".";
-        OPENSIM_THROW(Exception, msg.str());
-    }
+    static_assert(std::is_base_of<Controller, T>::value,
+            "Expected the template argument to derived from Controller.");
 
     for (const auto& controller : model.getComponentList<T>()) {
         const auto& socket =
@@ -203,10 +201,10 @@ std::vector<std::string> createControlNamesForControllerType(
             }
             std::string actuPath = actu.getAbsolutePathString();
             if (actu.numControls() == 1) {
-                controlNames.push_back(actuPath);
+                controlNames.insert(actuPath);
             } else {
                 for (int i = 0; i < actu.numControls(); ++i) {
-                    controlNames.push_back(actuPath + "_" + std::to_string(i));
+                    controlNames.insert(actuPath + "_" + std::to_string(i));
                 }
             }
         }

@@ -92,23 +92,18 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
         const auto path1 = get_control_pairs(i).get_initial_variable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path1) == 0, Exception,
                 "Could not find control variable '{}'.", path1);
-        pairHasActuatorInputControl = std::find(
-                actuatorInputControls.begin(), actuatorInputControls.end(),
-                path1) != actuatorInputControls.end();
+        pairHasActuatorInputControl = actuatorInputControls.count(path1);
 
         const auto path2 = get_control_pairs(i).get_final_variable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path2) == 0, Exception,
                 "Could not find control variable '{}'.", path2);
-        if (!pairHasActuatorInputControl) {
-            pairHasActuatorInputControl = std::find(
-                actuatorInputControls.begin(), actuatorInputControls.end(),
-                path2) != actuatorInputControls.end();
-        }
+        pairHasActuatorInputControl = !pairHasActuatorInputControl &&
+                                      actuatorInputControls.count(path2);
 
         if (getIgnoreControlledActuators() && !pairHasActuatorInputControl) {
             log_info("MocoPeriodicityGoal: Control pair '{}'/'{}' has at least "
-                     "control that is already controlled by a user-defined "
-                     "controller; therefore it will be ignored.",
+                     "control associated with a user-defined controller and "
+                     "will be ignored, as requested.",
                     get_control_pairs(i).get_initial_variable(),
                     get_control_pairs(i).get_final_variable());
             continue;

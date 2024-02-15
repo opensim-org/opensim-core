@@ -50,7 +50,7 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
 
     m_hasLower = !getProperty_lower_bound().empty();
     m_hasUpper = !getProperty_upper_bound().empty();
-    if (getProperty_control_paths().size() && !m_hasLower && !m_hasUpper) {
+    if (!getProperty_control_paths().empty() && !m_hasLower && !m_hasUpper) {
         log_warn("In MocoControlBoundConstraint '{}', control paths are "
                  "specified but no bounds are provided.", getName());
     }
@@ -66,13 +66,10 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
                     "by a user-defined controller.",
                     thisName)
 
-            bool isActuatorInputControl = std::find(
-                    actuatorInputControls.begin(), actuatorInputControls.end(),
-                    thisName) != actuatorInputControls.end();
-            if (getIgnoreControlledActuators() && !isActuatorInputControl) {
-                log_info("MocoControlBoundConstraint: Control path '{}' is "
-                         "already controlled by a user-defined controller "
-                         "and will be ignored.",
+            if (getIgnoreControlledActuators() && !actuatorInputControls.count(thisName)) {
+                log_info("MocoControlBoundConstraint: Control '{}' is "
+                         "associated with a user-defined controller and will "
+                         "be ignored, as requested.",
                         thisName);
                 continue;
             }
