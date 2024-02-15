@@ -20,6 +20,7 @@
 
 #include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Simulation/Control/InputController.h>
+#include <OpenSim/Moco/Components/ControlAllocator.h>
 
 using namespace OpenSim;
 
@@ -29,13 +30,32 @@ void MocoInitialActivationGoal::initializeOnModelImpl(
     // Get a map of all the state indices in the system.
     auto allSysYIndices = createSystemYIndexMap(model);
 
-    // Get a map of all the control indices in the system.
-    auto systemControlIndexMap = createSystemControlIndexMap(model);
+    // If there are no user-defined controllers, we can use the raw controls.
+    // Otherwise, we must compute the controls from the model.
+    // TODO move to MocoGoal?
+    const auto& controllers = model.getComponentList<Controller>();
+    int numControllers =
+            (int)std::distance(controllers.begin(), controllers.end());
+    if (numControllers > 1) {
+        m_computeControlsFromModel = true;
+    }
+
+    // Create a map from control names to their indices in the controls vector.
+    // If we are using the raw controls, we use the control indices from the
+    // model's ControlAllocator. Otherwise, we use the control indices from the
+    // model.
+    std::unordered_map<std::string, int> controlIndexMap;
+    if (m_computeControlsFromModel) {
+        controlIndexMap = createSystemControlIndexMap(model);
+    } else {
+        controlIndexMap = model.getComponentList<ControlAllocator>().begin()
+                                  ->getControlIndexMap();
+    }
 
     for (const auto& muscle : model.getComponentList<Muscle>()) {
         if (!muscle.get_ignore_activation_dynamics()) {
             const std::string path = muscle.getAbsolutePathString();
-            int excitationIndex = systemControlIndexMap[path];
+            int excitationIndex = controlIndexMap[path];
             int activationIndex = allSysYIndices[path + "/activation"];
             m_indices.emplace_back(excitationIndex, activationIndex);
         }
@@ -46,7 +66,14 @@ void MocoInitialActivationGoal::initializeOnModelImpl(
 
 void MocoInitialActivationGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& goal) const {
-    const auto& controls = input.initial_controls;
+    // TODO: compute controls in MocoGoal::calcIntegrand() and pass them to
+    // calcIntegrandImpl() by overwriting the IntegrandInput?
+    if (m_computeControlsFromModel) {
+        getModel().realizeVelocity(input.initial_state);
+    }
+    const auto& controls = m_computeControlsFromModel ?
+            getModel().getControls(input.initial_state) : input.initial_controls;
+
     const auto& states = input.initial_state.getY();
     int i = 0;
     if (!getModeIsCost()) {

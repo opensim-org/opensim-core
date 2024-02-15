@@ -63,6 +63,7 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 
     // If there are no user-defined controllers, we can use the raw controls.
     // Otherwise, we must compute the controls from the model.
+    // TODO move to MocoGoal?
     const auto& controllers = model.getComponentList<Controller>();
     int numControllers =
             (int)std::distance(controllers.begin(), controllers.end());

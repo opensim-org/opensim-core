@@ -50,6 +50,7 @@ protected:
 
 private:
     mutable std::vector<std::pair<int, int>> m_indices;
+    mutable bool m_computeControlsFromModel = false;
 };
 
 } // namespace OpenSim
