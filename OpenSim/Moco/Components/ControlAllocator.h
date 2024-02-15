@@ -23,6 +23,42 @@
 
 namespace OpenSim {
 
+/**
+ * This component stores a vector of control values that can be used to
+ * allocate controls to other components in a model.
+ *
+ * The control values are stored in a discrete variable in the state. The
+ * control values are stored in the same order they were added to the
+ * allocator. The control values can be set and retrieved using the
+ * `setControls()`, `updControls()`, and `getControls()` methods.
+ *
+ * The control values can be allocated using the Output `controls`.
+ *
+ * Constructing a ControlAllocator and adding controls:
+ * @code
+ * auto controlAllocator = make_unique<ControlAllocator>();
+ * controlAllocator->addControl("/residual_pelvis_tilt");
+ * controlAllocator->addControl("/forceset/soleus_r");
+ * model.addComponent(controlAllocator.release());
+ * @endcode
+ *
+ * Connecting all `Output` controls to another component:
+ * @code
+ * const auto& output = controlAllocator->getOutput("controls");
+ * auto& controller =
+ *     model.updComponent<ActuatorInputController>("/my_actu_controller");
+ * controller.connectInput_inputs(output);
+ *@endcode
+ *
+ * Connecting an individual control channel using an alias:
+ * @code
+ * const auto& output = controlAllocator->getOutput("controls");
+ * const auto& channel = output.getChannel("/forceset/soleus_r");
+ * auto& controller =
+ *     model.updComponent<ActuatorInputController>("/my_actu_controller");
+ * controller.connectInput_inputs(channel, "soleus_r");
+ * @endcode
+ */
 class OSIMMOCO_API ControlAllocator : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(ControlAllocator, ModelComponent);
 
