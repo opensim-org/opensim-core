@@ -176,14 +176,6 @@ using namespace SimTK;
   }
 };
 
-%copyctor OpenSim::Array<ArrayXYPoint>;
-%copyctor OpenSim::Array<bool>;
-%copyctor OpenSim::Array<double>;
-%copyctor OpenSim::Array<int>;
-%copyctor OpenSim::Array<std::string>;
-%copyctor OpenSim::Array<Vec3>;
-%copyctor OpenSim::Array<OpenSim::Object*>;
-%copyctor OpenSim::Array<const OpenSim::Object*>;
 
 %extend OpenSim::Object {
 	static OpenSim::Array<std::string> getFunctionClassNames() {
