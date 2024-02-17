@@ -1,7 +1,5 @@
-#ifndef OPENSIM_GEODESICPARAMETERS_H
-#define OPENSIM_GEODESICPARAMETERS_H
 /* -------------------------------------------------------------------------- *
- *                      OpenSim: GeodesicParameters.h                         *
+ *                     OpenSim: Scholz2015GeodesicPath.cpp                    *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -10,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2024 Stanford University and the Authors                *
- * Author(s): Nicholas Bianco, Andreas Scholz                                 *
+ * Author(s): Nicholas Bianco, Pepijn van den Bos, Andreas Scholz             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,27 +21,27 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <SimTKcommon.h>
+#include "Scholz2015GeodesicPath.h"
 
-namespace OpenSim {
+using namespace OpenSim;
 
-struct GeodesicParameters {
-    virtual ~GeodesicParameters() = default;
-    SimTK::Real length;
-};
+//=============================================================================
+// GEODESIC PATH SEGMENT
+//=============================================================================
+void GeodesicPathSegment::extendRealizeTopology(SimTK::State& state) const {
+    Super::extendRealizeTopology(state);
+    const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
+    m_discreteVarIndex =
+            subSys.allocateDiscreteVariable(state, SimTK::Stage::Dynamics,
+                    new Geodesics());
+}
 
-struct ImplicitGeodesicParameters : public GeodesicParameters {
-    SimTK::Real u;
-    SimTK::Real du;
-    SimTK::Real v;
-    SimTK::Real dv;
-};
 
-struct ParametricGeodesicParameters : public GeodesicParameters {
-    SimTK::Real p;
-    SimTK::Real dp;
-};
-
-} // namespace OpenSim
-
-#endif // OPENSIM_GEODESICPARAMETERS_H
+//=============================================================================
+// SCHOLZ2015 GEODESIC PATH
+//=============================================================================
+Scholz2015GeodesicPath::Scholz2015GeodesicPath() : AbstractGeometryPath()
+{
+    setAuthors("Nicholas Bianco, Pepijn van den Bos, Andreas Scholz");
+    constructProperties();
+}

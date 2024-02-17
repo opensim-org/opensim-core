@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                           OpenSim: Geodesic.h                              *
+ *                           OpenSim: GeodesicWrapSurface.cpp                             *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -21,49 +21,59 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Geodesic.h"
+#include "GeodesicWrapSurface.h"
 
 using namespace OpenSim;
 
 //=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
+// GEODESIC WRAP SURFACE
 //=============================================================================
-Geodesic::Geodesic() : Object(),
-                       m_surfaceFrame(nullptr),
-                       m_boundaryPointFrameAtStart(GeodesicBoundaryPointFrame()),
-                       m_boundaryPointFrameAtEnd(GeodesicBoundaryPointFrame()),
-                       m_tangentialNormalCurvatureAtStart(0.0),
-                       m_binormalNormalCurvatureAtStart(0.0),
-                       m_tangentialNormalCurvatureAtEnd(0.0),
-                       m_binormalNormalCurvatureAtEnd(0.0),
-                       m_tangentialGeodesicTorsionAtStart(0.0),
-                       m_tangentialGeodesicTorsionAtEnd(0.0),
-                       m_length(0.0),
-                       m_speed(0.0),
-                       m_acceleration(0.0),
-                       m_displacementJacobiScalarAtStart(JacobiScalar()),
-                       m_displacementJacobiScalarAtEnd(JacobiScalar()),
-                       m_rotationJacobiScalarAtStart(JacobiScalar()),
-                       m_rotationJacobiScalarAtEnd(JacobiScalar()) {
+GeodesicWrapSurface::GeodesicWrapSurface() : m_analyticFormAvailable(false),
+                                             m_parametricFormAvailable(false),
+                                             m_implicitFormAvailable(false) {}
+
+bool GeodesicWrapSurface::getAnalyticFormAvailable() const {
+    return m_analyticFormAvailable;
+}
+void GeodesicWrapSurface::setAnalyticFormAvailable(bool tf) {
+    m_analyticFormAvailable = tf;
 }
 
-Geodesic::~Geodesic() noexcept = default;
-
-Geodesic::Geodesic(const Geodesic&) = default;
-
-Geodesic& Geodesic::operator=(const Geodesic&) = default;
-
-Geodesic::Geodesic(Geodesic&&) = default;
-
-Geodesic& Geodesic::operator=(Geodesic&&) = default;
-
-//=============================================================================
-// GET AND SET
-//=============================================================================
-const PhysicalFrame& Geodesic::getSurfaceFrame() const {
-    return m_surfaceFrame.getRef();
+bool GeodesicWrapSurface::getImplicitFormAvailable() const {
+    return m_implicitFormAvailable;
+}
+void GeodesicWrapSurface::setImplicitFormAvailable(bool tf) {
+    m_implicitFormAvailable = tf;
 }
 
-void Geodesic::setSurfaceFrame(const PhysicalFrame& surfaceFrame) {
-    m_surfaceFrame.reset(&surfaceFrame);
+bool GeodesicWrapSurface::getParametricFormAvailable() const {
+    return m_parametricFormAvailable;
+}
+void GeodesicWrapSurface::setParametricFormAvailable(bool tf) {
+    m_parametricFormAvailable = tf;
+}
+
+//=============================================================================
+// GEODESIC WRAP CYLINDER
+//=============================================================================
+GeodesicWrapCylinder::GeodesicWrapCylinder() {
+    constructProperty_radius(1.0);
+}
+
+GeodesicWrapCylinder::GeodesicWrapCylinder(SimTK::Real radius) {
+    constructProperty_radius(radius);
+}
+
+void GeodesicWrapCylinder::setRadius(SimTK::Real radius) {
+    set_radius(radius);
+}
+
+SimTK::Real GeodesicWrapCylinder::getRadius() const {
+    return get_radius();
+}
+
+void GeodesicWrapCylinder::setAvailableForms() {
+    setParametricFormAvailable(true);
+    setImplicitFormAvailable(true);
+    setAnalyticFormAvailable(true);
 }

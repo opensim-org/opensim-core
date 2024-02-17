@@ -91,6 +91,8 @@
 #include "Control/ControlLinear.h"
 #include "Control/PrescribedController.h"
 
+#include "GeodesicWrapping/GeodesicWrapSurface.h"
+
 #include "Wrap/PathWrap.h"
 #include "Wrap/PathWrapSet.h"
 #include "Wrap/WrapCylinder.h"
@@ -101,10 +103,6 @@
 #include "Wrap/WrapCylinderObst.h"
 #include "Wrap/WrapSphereObst.h"
 #include "Wrap/WrapDoubleCylinderObst.h"
-
-#include "GeodesicWrapping/Surface/Surface.h"
-#include "GeodesicWrapping/Geodesic.h"
-#include "GeodesicWrapping/GeodesicParameters.h"
 
 #include "SimbodyEngine/SimbodyEngine.h"
 #include "SimbodyEngine/Body.h"
@@ -204,6 +202,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ControlLinear() );
     Object::registerType( ControlLinearNode() );
 
+    Object::registerType( GeodesicWrapCylinder() );
+
     Object::registerType( PathWrap() );
     Object::registerType( PathWrapSet() );
     Object::registerType( WrapCylinder() );
@@ -214,8 +214,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( WrapCylinderObst() );
     Object::registerType( WrapSphereObst() );
     Object::registerType( WrapDoubleCylinderObst() );
-
-    Object::registerType( Geodesic() );
 
     // CURRENT RELEASE
     Object::registerType( SimbodyEngine() );
