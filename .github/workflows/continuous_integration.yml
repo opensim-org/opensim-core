@@ -585,6 +585,29 @@ jobs:
         # bits. So we zip ourselves, even though this causes a double-zip.
         name: opensim-core-${{ steps.configure.outputs.version }}-ub20-nomoco-linux
         path: opensim-core-${{ steps.configure.outputs.version }}-ub20.zip
+  
+  windows2022-gui:
+      name: Windows2022-gui
+  
+      runs-on: windows-2022
+
+      env:
+        GH_TOKEN: ${{ github.token }}
+  
+      if: ${{ contains(github.event.pull_request.title, '[build-gui]') || contains(github.event.pull_request.body, '[build-gui]') }}
+  
+      steps:
+      - name: Trigger opensim-gui workflow
+        uses: Codex-/return-dispatch@v1.12.0
+        id: return_dispatch
+        with:
+          token: whatever
+          repo: opensim-gui
+          owner: opensim-org
+          ref: main
+          workflow: build-on-core-pr.yml
+          workflow_inputs: '{"commit_sha": "${{ github.event.pull_request.head.sha }}"}'
+  
 
   style:
     name: Style
