@@ -411,6 +411,10 @@ updateModelForces(Model& model, const string &aToolSetupFileName, ForceSet *rOri
         ForceSet *forceSet=new ForceSet(_forceSetFiles[i], true);
         model.updForceSet().append(*forceSet);
     }
+
+    // Build up the new system with the new forces added from the force set
+    // files.
+    model.initSystem();
 }
 //_____________________________________________________________________________
 /**

@@ -82,10 +82,13 @@ namespace {
         // Create a PrescribedController that simply applies a function of the
         // force.
         PrescribedController actuController;
-        actuController.setActuators(model.updActuators());
-        for (int i = 0; i < actuController.getActuatorSet().getSize(); i++) {
+        const auto& actuatorsSet = model.getActuators();
+        actuController.setActuators(actuatorsSet);
+        const auto& socket = actuController.getSocket<Actuator>("actuators");
+        for (int i = 0; i < (int)socket.getNumConnectees(); ++i) {
             actuController.prescribeControlForActuator(
-                    i, new Constant(activation));
+                    actuatorsSet.get(i).getAbsolutePathString(),
+                    new Constant(activation));
         }
     
         // Add the controller to the model. We need to call disownAllComponents

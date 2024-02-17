@@ -180,7 +180,7 @@ public:
      * property to satisfy the socket. */
     virtual void disconnect() = 0;
 
-    /** %Set connectee path. This function can only be used if this socket is
+    /** Set the connectee path. This function can only be used if this socket is
      * not a list socket. If a connectee reference is set (with connect()) the
      * connectee path is ignored; call disconnect() if you want the socket to be
      * connected using the connectee path.
@@ -319,14 +319,14 @@ private:
 
     void setConnecteePathInternal(const std::string& name, int index) {
         using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK(index, getNumConnectees(),
+        SimTK_INDEXCHECK(index, static_cast<int>(getNumConnectees()),
                          "AbstractSocket::setConnecteePath()");
         updConnecteePathProp().setValue(index, name);
     }
 
     const std::string& getConnecteePathInternal(int index) const {
         using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK(index, getNumConnectees(),
+        SimTK_INDEXCHECK(index, static_cast<int>(getNumConnectees()),
                         "AbstractSocket::getConnecteePath()");
         return getConnecteePathProp().getValue(index);
     }
@@ -375,7 +375,7 @@ public:
     typedef std::vector<SimTK::ReferencePtr<const T>> ConnecteeList;
 
     // default copy constructor
-    
+
     virtual ~Socket() {}
     
     Socket<T>* clone() const override { return new Socket<T>(*this); }
@@ -426,7 +426,7 @@ public:
      * connect to that component.
      *
      * Throws an exception If you provide only a component name and the
-     * model has multiple components with that nume.
+     * model has multiple components with that name.
      * */
     void findAndConnect(const ComponentPath& connectee) override;
 
@@ -475,19 +475,12 @@ private:
         OPENSIM_THROW_IF(!isConnected(), Exception,
             "Socket '{}' not connected.", getName());
         using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK(index, getNumConnectees(),
+        SimTK_INDEXCHECK(index, static_cast<int>(getNumConnectees()),
                          "Socket<T>::getConnecteeAsObject()");
         return _connectees[index].getRef();
     }
 
-    const T& getConnecteeInternal(int index) const {
-        OPENSIM_THROW_IF(!isConnected(), Exception,
-            "Socket '{}' not connected.", getName());
-        using SimTK::isIndexInRange;
-        SimTK_INDEXCHECK(index, getNumConnectees(),
-                         "Socket<T>::getConnectee()");
-        return _connectees[index].getRef();
-    }
+    const T& getConnecteeInternal(int index) const;
 
     void connectInternal(const T& objT) {
         if (!isListSocket()) {

@@ -262,8 +262,8 @@ void addComponentsToModel(Model& osimModel)
     // Create a prescribed controller that simply applies controls as function of time
     // For muscles, controls are normalized motor-neuron excitations
     PrescribedController *muscleController = new PrescribedController();
-    muscleController->set_actuator_list(0, "muscle1");
-    muscleController->set_actuator_list(1, "muscle2");
+    muscleController->addActuator(*muscle1);
+    muscleController->addActuator(*muscle2);
     // Define linear functions for the control values for the two muscles
     Array<double> slopeAndIntercept1(0.0, 2);  // array of 2 doubles
     Array<double> slopeAndIntercept2(0.0, 2);

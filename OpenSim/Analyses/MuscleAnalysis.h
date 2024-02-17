@@ -166,7 +166,8 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
     void setModel(Model& aModel) override;
-    void setStorageCapacityIncrements(int aIncrement);
+    [[deprecated("this method no longer does anything")]]
+    void setStorageCapacityIncrements(int) {}
 
     Storage* getPennationAngleStorage() const { 
         return _pennationAngleStore; }

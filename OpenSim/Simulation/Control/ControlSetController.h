@@ -108,8 +108,11 @@ protected:
      */
     void copyData(const ControlSetController &aController);
 
-    /// read in ControlSet and update Controller's actuator list
+    /// Read in the ControlSet.
     void extendFinalizeFromProperties() override;
+
+    /// Update the Controller's actuator list.
+    void extendConnectToModel(Model& model) override;
 
     //--------------------------------------------------------------------------
     // OPERATORS
