@@ -601,7 +601,7 @@ jobs:
         uses: Codex-/return-dispatch@v1.12.0
         id: return_dispatch
         with:
-          token: whatever
+          token: ${{ secrets.GITHUB_TOKEN }}
           repo: opensim-gui
           owner: opensim-org
           ref: main
