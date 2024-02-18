@@ -61,6 +61,7 @@
 #include "Model/MovingPathPoint.h"
 #include "Model/GeometryPath.h"
 #include "Model/FunctionBasedPath.h"
+#include "Model/Scholz2015GeodesicPath.h"
 #include "Model/PrescribedForce.h"
 #include "Model/ExternalForce.h"
 #include "Model/PointToPointSpring.h"
@@ -196,6 +197,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Arrow());
     Object::registerType( GeometryPath());
     Object::registerType( FunctionBasedPath());
+    Object::registerType( Scholz2015GeodesicPath());
 
     Object::registerType( ControlSet() );
     Object::registerType( ControlConstant() );

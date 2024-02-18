@@ -28,6 +28,11 @@
 
 namespace OpenSim {
 
+class ImplicitSurfaceParamsImpl;
+class GeodesicPathSegment;
+// TODO remove
+class ImplicitCylinder;
+
 //=============================================================================
 //                          GEODESIC WRAP SURFACE
 //=============================================================================
@@ -46,12 +51,23 @@ namespace OpenSim {
 class OSIMSIMULATION_API GeodesicWrapSurface : public ModelComponent {
     OpenSim_DECLARE_ABSTRACT_OBJECT(GeodesicWrapSurface, ModelComponent);
 public:
+    enum class Form {
+        Parametric,
+        Implicit,
+        Analytic
+    };
 //==============================================================================
 // SOCKETS
 //==============================================================================
     OpenSim_DECLARE_SOCKET(frame, PhysicalFrame,
             "The physical frame defining the position and orientation of "
             "this GeodesicWrapSurface in ground.");
+
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    OpenSim_DECLARE_PROPERTY(current_form, std::string,
+            "The current form of the surface used to compute geodesics.");
 
 //==============================================================================
 // METHODS
@@ -61,26 +77,29 @@ public:
     GeodesicWrapSurface();
 
     // GET AND SET
-    /**
-     * Return whether the parametric form of the surface is available.
-     */
+    void setCurrentForm(Form form);
+    Form getCurrentForm() const;
+
     bool getParametricFormAvailable() const;
-    /**
-     * Return whether the implicit form of the surface is available.
-     */
     bool getImplicitFormAvailable() const;
-    /**
-     * Return whether the analytic form of the surface is available.
-     */
     bool getAnalyticFormAvailable() const;
 
 protected:
     // Concrete classes must define the available forms for a
     // GeodesicWrapSurface.
     virtual void setAvailableForms() = 0;
+    virtual void setDefaultForm() = 0;
     void setAnalyticFormAvailable(bool tf);
     void setParametricFormAvailable(bool tf);
     void setImplicitFormAvailable(bool tf);
+
+    // INTERFACE METHODS
+    virtual std::unique_ptr<ImplicitSurfaceParamsImpl>
+    generateImplicitSurface() const;
+//    virtual std::unique_ptr<ParametricSurfaceParamsImpl>
+//    generateParametricSurface() const;
+
+    friend GeodesicPathSegment;
 
 private:
     bool m_analyticFormAvailable;
@@ -116,6 +135,15 @@ protected:
             "The radius of the cylindrical surface (default: 1.0).");
 
     void setAvailableForms() override;
+
+    // GEODESIC WRAP SURFACE INTERFACE
+    // TODO move implementation to .cpp
+    virtual std::unique_ptr<ImplicitSurfaceParamsImpl>
+    generateImplicitSurface() const override {
+        return std::make_unique<ImplicitCylinder>(getRadius());
+    }
+//    virtual std::unique_ptr<ParametricSurfaceParamsImpl>
+//    generateParametricSurface() const overide;
 };
 
 } // namespace OpenSim
