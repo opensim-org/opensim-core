@@ -22,35 +22,64 @@
  * -------------------------------------------------------------------------- */
 
 #include "GeodesicWrapSurface.h"
+#include "ImplicitSurfaceParameters.h"
+#include "ImplicitCylinder.h"
 
 using namespace OpenSim;
 
 //=============================================================================
 // GEODESIC WRAP SURFACE
 //=============================================================================
-GeodesicWrapSurface::GeodesicWrapSurface() : m_analyticFormAvailable(false),
-                                             m_parametricFormAvailable(false),
-                                             m_implicitFormAvailable(false) {}
-
-bool GeodesicWrapSurface::getAnalyticFormAvailable() const {
-    return m_analyticFormAvailable;
-}
-void GeodesicWrapSurface::setAnalyticFormAvailable(bool tf) {
-    m_analyticFormAvailable = tf;
+GeodesicWrapSurface::GeodesicWrapSurface() {
+    constructProperty_current_form("");
 }
 
-bool GeodesicWrapSurface::getImplicitFormAvailable() const {
-    return m_implicitFormAvailable;
-}
-void GeodesicWrapSurface::setImplicitFormAvailable(bool tf) {
-    m_implicitFormAvailable = tf;
+void GeodesicWrapSurface::setCurrentForm(Form form) {
+    // TODO check available forms
+    if (form == Form::Parametric) {
+        set_current_form("parametric");
+    } else if (form == Form::Implicit) {
+        set_current_form("implicit");
+    } else if (form == Form::Analytic) {
+        set_current_form("analytic");
+    } else {
+        throw Exception("Invalid form specified.");
+    }
 }
 
-bool GeodesicWrapSurface::getParametricFormAvailable() const {
-    return m_parametricFormAvailable;
+GeodesicWrapSurface::Form GeodesicWrapSurface::getCurrentForm() const {
+    // TODO check available forms
+    if (get_current_form() == "parametric") {
+        return Form::Parametric;
+    } else if (get_current_form() == "implicit") {
+        return Form::Implicit;
+    } else if (get_current_form() == "analytic") {
+        return Form::Analytic;
+    } else {
+        throw Exception("Invalid form specified.");
+    }
 }
-void GeodesicWrapSurface::setParametricFormAvailable(bool tf) {
-    m_parametricFormAvailable = tf;
+
+void GeodesicWrapSurface::extendFinalizeFromProperties() {
+    Super::extendFinalizeFromProperties();
+
+    // TODO check available forms
+    if (get_current_form().empty()) {
+        Form form = getDefaultForm();
+        setCurrentForm(form);
+        if (form == Form::Implicit) {
+            set_current_form("implicit");
+        } else if (form == Form::Parametric) {
+            set_current_form("parametric");
+        } else if (form == Form::Analytic) {
+            set_current_form("analytic");
+        }
+    }
+}
+
+std::unique_ptr<ImplicitSurfaceParametersImpl>
+GeodesicWrapSurface::generateImplicitSurface() const {
+    OPENSIM_THROW_FRMOBJ(Exception, "generateImplicitSurface() not implemented.");
 }
 
 //=============================================================================
@@ -72,8 +101,8 @@ SimTK::Real GeodesicWrapCylinder::getRadius() const {
     return get_radius();
 }
 
-void GeodesicWrapCylinder::setAvailableForms() {
-    setParametricFormAvailable(true);
-    setImplicitFormAvailable(true);
-    setAnalyticFormAvailable(true);
+std::unique_ptr<ImplicitSurfaceParametersImpl>
+GeodesicWrapCylinder::generateImplicitSurface() const {
+    return std::make_unique<ImplicitCylinder>(getRadius());
 }
+

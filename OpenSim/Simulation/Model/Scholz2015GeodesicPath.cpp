@@ -23,6 +23,8 @@
 
 #include "Scholz2015GeodesicPath.h"
 
+#include <OpenSim/Simulation/GeodesicWrapping/ImplicitSurfaceParameters.h>
+
 using namespace OpenSim;
 
 //=============================================================================
@@ -46,7 +48,8 @@ void GeodesicPathSegment::extendRealizeTopology(SimTK::State& state) const {
 void GeodesicPathSegment::extendConnectToModel(Model& model) {
     Super::extendConnectToModel(model);
 
-    // Loop through the surfaces to create GeodesicWrapObjects
+    // Loop through all surfaces to create GeodesicWrapObjects to add to this
+    // path segment. Each surface
     _wrapObjects.clear();
     const auto& surfaces = getSocket<GeodesicWrapSurface>("surfaces");
     for (int i = 0; i < surfaces.getNumConnectees(); ++i) {
@@ -58,7 +61,7 @@ void GeodesicPathSegment::extendConnectToModel(Model& model) {
 
         if (form == GeodesicWrapSurface::Form::Implicit) {
             auto wrapSurface = surface.generateImplicitSurface();
-            ImplicitSurfaceParams surfaceParams(wrapSurface.release());
+            ImplicitSurfaceParameters surfaceParams(wrapSurface.release());
             GeodesicWrapObject wrapObject(surfaceParams, frameRefPtr);
             _wrapObjects.push_back(wrapObject);
 
@@ -166,6 +169,7 @@ void Scholz2015GeodesicPath::extendFinalizeFromProperties() {
 
     // If more than one segment, check that the insertion of a preceding segment
     // is equal to the origin of the following segment.
+    // TODO provide an interface so that it's not necessary to check this
     for (int i = 0; i < getProperty_path_segments().size() - 1; ++i) {
         const GeodesicPathSegment &segment1 = get_path_segments(i);
         const GeodesicPathSegment &segment2 = get_path_segments(i + 1);
