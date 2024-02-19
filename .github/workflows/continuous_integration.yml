@@ -603,7 +603,7 @@ jobs:
         with:
           token: ${{ secrets.ACTION_SECRET }}
           ref: target_branch
-          repo: opensim-org/opensim-gui
+          repo: opensim-gui
           owner: opensim-org
           workflow: build-on-core-pr.yml
           workflow_inputs: '{"commit_sha": "${{ github.event.pull_request.head.sha }}"}'
