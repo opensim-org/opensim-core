@@ -151,9 +151,8 @@ public:
     * the WrapObject.
     */
     void addWrapObject(WrapObject* wrapObject);
-    ///@} 
+    ///@}
 
-protected:
     /** @name Advanced: PhysicalFrame Developer Interface
     These methods are intended for PhysicalFrame builders. */
     ///@{
@@ -161,8 +160,22 @@ protected:
     Specify the MobilizedBody that implements this PhysicalFrame in the
     underlying MultibodySystem. The PhysicalFrame's MobilizedBodyIndex must be
     set by the end of PhysicalFrame::addToSystem()
-        */
+    */
     void setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const;
+
+protected:
+
+    /**
+     * @name Advanced: PhysicalFrame Developer Interface
+     *
+     * Extend how the derived `PhysicalFrame` sets the given `SimTK::MobilizedBodyIndex`
+     * on components it is attached to
+     *
+     * (e.g. this can be used to ensure that setting the mobilized body index of a
+     *  `PhysicalOffsetFrame` also sets the `MobiliziedBodyIndex` of the `PhysicalFrame`
+     *  that it's attached to)
+     */
+    virtual void extendSetMobilizedBodyIndex(const SimTK::MobilizedBodyIndex&) const {}
 
     /** Extend how PhysicalFrame determines its base Frame. */
     const Frame& extendFindBaseFrame() const override {
