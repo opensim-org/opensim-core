@@ -597,16 +597,16 @@ jobs:
       #if: ${{ contains(github.event.pull_request.title, '[build-gui]') || contains(github.event.pull_request.body, '[build-gui]') }}
   
       steps:
-      - name: Dispatch opensim-gui workflow branch ${{ github.base_ref }}
+      - name: Dispatch opensim-gui workflow branch ${{ github.sha }}
         uses: codex-/return-dispatch@v1
         id: return_dispatch
         with:
           token: ${{ secrets.ACTION_SECRET }}
-          ref: ${{github.ref_name}}
+          ref: ${{github.sha}}
           repo: opensim-gui
           owner: opensim-org
           workflow: build-on-core-pr.yml
-          workflow_inputs: '{"core-branch": "${{ github.ref_name }}"}'
+          workflow_inputs: '{"commit": "${{ github.sha }}"}'
           workflow_timeout_seconds: 12000
 
   style:
