@@ -606,7 +606,7 @@ jobs:
           repo: opensim-gui
           owner: opensim-org
           workflow: build-on-core-pr.yml
-          workflow_inputs: '{"commit_sha": "${{ github.event.pull_request.head.sha }}", "branch": "main"}'
+          workflow_inputs: '{"commit_sha": "${{ github.event.pull_request.head.sha }}"}'
           workflow_timeout_seconds: 12000
 
   style:
