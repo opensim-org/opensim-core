@@ -650,12 +650,24 @@ TEST_CASE("StationDefinedFrame_FinalizeConnectionsThrowsIfPofOffsetCausesPointsT
     REQUIRE_THROWS(model.buildSystem());
 }
 
-TEST_CASE("StationDefinedFrame_BasicModelWithStationDefinedFrameOsimLoadsFine")
+TEST_CASE("StationDefinedFrame_StationDefinedFrameBasicOsimLoadsFine")
 {
     // ensures the implementation can load a very basic `osim` file containing one
     // `StationDefinedFrame` defined in ground
 
-    Model model{"BasicModelWithStationDefinedFrame.osim"};
+    Model model{"StationDefinedFrames_Basic.osim"};
+    REQUIRE_NOTHROW(model.buildSystem());
+    SimTK::State state = model.initializeState();
+    model.realizeReport(state);
+}
+
+TEST_CASE("StationDefinedFrame_StationDefinedFrameAdvancedLoadsFine")
+{
+    // ensures that the implementation can load a more advanced `osim` file that
+    // contains `StationDefinedFrame`s with joints, attached to meshes via PoFs,
+    // etc.
+
+    Model model{"StationDefinedFrames_Advanced.osim"};
     REQUIRE_NOTHROW(model.buildSystem());
     SimTK::State state = model.initializeState();
     model.realizeReport(state);
