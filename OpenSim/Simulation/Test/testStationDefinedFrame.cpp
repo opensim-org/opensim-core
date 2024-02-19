@@ -273,9 +273,9 @@ TEST_CASE("StationDefinedFrame_SanityCheckCanUsePOFAsParentOfJointViaOtherOffset
     // isn't handled correctly by OpenSim's graph traversal
     //
     // remove the `REQUIRE` part and uncomment the other lines if you think you've fixed this
-    REQUIRE_THROWS(model.buildSystem());
-    // SimTK::State state = model.initializeState();
-    // model.realizeReport(state);
+    model.buildSystem();
+    SimTK::State state = model.initializeState();
+    model.realizeReport(state);
 }
 
 TEST_CASE("StationDefinedFrame_CanCreateModelContainingStationDefinedFrameViaOffsetFrameForJoint")
@@ -328,9 +328,9 @@ TEST_CASE("StationDefinedFrame_CanCreateModelContainingStationDefinedFrameViaOff
     // fails in the same way that `PhysicalOffsetFrame` would (see sanity test above)
     //
     // remove the `REQUIRE` part and uncomment the other lines if you think you've fixed this
-    REQUIRE_THROWS(model.buildSystem());
-    // SimTK::State state = model.initializeState();
-    // model.realizeReport(state);
+    model.buildSystem();
+    SimTK::State state = model.initializeState();
+    model.realizeReport(state);
 }
 
 TEST_CASE("StationDefinedFrame_ThrowsAtConnectionFinalizationIfPointAIsAtSameLocationAsPointB")
