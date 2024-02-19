@@ -101,11 +101,12 @@ void ControllerSet::printInfo() const
               i+1, (unsigned long long)&c, c.getName().c_str(), 
               (unsigned long long)&c.getModel() );
 
-          const Set<const Actuator>& actSet = c.getActuatorSet();
-          if( actSet.getSize() > 0 ) {
+          const auto& socket = c.getSocket<Actuator>("actuators");
+          int nc = socket.getNumConnectees();
+          if(nc > 0) {
                log_cout("Actuators");
-               for(int j=0;j<get(i).getActuatorSet().getSize(); j++ ) {
-                   log_cout("{}", get(i).getActuatorSet().get(j).getName());
+               for(int j = 0; j < nc; j++) {
+                   log_cout("{}", socket.getConnectee(j).getName());
                }
            }
       } else { 

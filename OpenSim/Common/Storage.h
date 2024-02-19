@@ -230,9 +230,13 @@ public:
     // STEP INTERVAL
     void setStepInterval(int aStepInterval);
     int getStepInterval() const;
+
     // CAPACITY INCREMENT
-    void setCapacityIncrement(int aIncrement);
-    int getCapacityIncrement() const;
+    [[deprecated("this no longer does anything")]]
+    void setCapacityIncrement(int) {}
+    [[deprecated("this no longer does anything")]]
+    int getCapacityIncrement() const { return -1; }
+
     // IO
     void setWriteSIMMHeader(bool aTrueFalse);
     bool getWriteSIMMHeader() const;

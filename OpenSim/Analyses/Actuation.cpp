@@ -327,27 +327,6 @@ getPowerStorage() const
     return(_powerStore);
 }
 
-
-//-----------------------------------------------------------------------------
-// STORAGE CAPACITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
-* Set the capacity increments of all storage instances.
-*
-* @param aIncrement Increment by which storage capacities will be increased
-* when storage capacities run out.
-*/
-void Actuation::
-setStorageCapacityIncrements(int aIncrement)
-{
-    _forceStore->setCapacityIncrement(aIncrement);
-    _speedStore->setCapacityIncrement(aIncrement);
-    _powerStore->setCapacityIncrement(aIncrement);
-}
-
-
-
 //=============================================================================
 // ANALYSIS
 //=============================================================================

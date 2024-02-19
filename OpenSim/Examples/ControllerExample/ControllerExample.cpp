@@ -111,8 +111,9 @@ public:
         double blockMass = getModel().getBodySet().get( "block" ).getMass();
 
         // Get pointers to each of the muscles in the model.
-        auto leftMuscle = dynamic_cast<const Muscle*>  ( &getActuatorSet().get(0) );
-        auto rightMuscle = dynamic_cast<const Muscle*> ( &getActuatorSet().get(1) );
+        const auto& socket = getSocket<Actuator>("actuators");
+        auto leftMuscle = dynamic_cast<const Muscle*>(&socket.getConnectee(0));
+        auto rightMuscle = dynamic_cast<const Muscle*>(&socket.getConnectee(1));
 
         // Compute the desired position of the block in the tug-of-war
         // model.
