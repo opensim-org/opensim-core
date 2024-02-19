@@ -602,11 +602,11 @@ jobs:
         id: return_dispatch
         with:
           token: ${{ secrets.ACTION_SECRET }}
-          ref: target_branch
+          ref: ${{ github.ref }}
           repo: opensim-gui
           owner: opensim-org
           workflow: build-on-core-pr.yml
-          workflow_inputs: '{"commit_sha": "${{ github.event.pull_request.head.sha }}"}'
+          workflow_inputs: '{"commit_sha": "${{ github.event.pull_request.head.sha }}", "branch": "${{ github.ref }}"}'
           workflow_timeout_seconds: 12000
 
   style:
