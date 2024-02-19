@@ -128,8 +128,9 @@ namespace {
         return std::move(ss).str();
     }
 
-    // helper: tries to parse the string value held within `prop` as a coordinate direction, throwing
-    // if the parse isn't possible
+    // helper: tries to parse the string value held within `prop` as a coordinate
+    // emitting a warning message and returning `fallback` if the parse isn't
+    // possible
     SimTK::CoordinateDirection ParseAsCoordinateDirectionOrCoerceTo(
         const Component& owner,
         Property<std::string>& prop,

@@ -44,13 +44,17 @@ class Model;
  *
  * Specifically, it is a `Frame` that is defined by:
  *
- * - Taking the three points of a triangle: `point_a`, `point_b`, and `point_c`
+ * - Taking three not-co-located (i.e. triangular) points: `point_a`, `point_b`, and `point_c`
+ * - Taking two "registrations": `ab_axis` and `ab_x_ac_axis`, which tell the implementation how
+ *   the maths (explained next) maps onto the resulting frame's axes
  * - Calculating `ab_axis = normalize(point_b - point_a)`
  * - Calculating `ab_x_ac_axis = normalize((point_b - point_a) x (point_c - point_a))`
  * - Calculating `third_axis = normalize((point_b - point_a) x ((point_b - point_a) x (point_c - point_a)))`
- * - Calculating a 3x3 `orientation` matrix from the resulting three orthogonal unit vectors
+ * - Using the "registrations" to map each vector onto the resulting frame's axes. The implementation will
+ *   ensure that this results in a right-handed coordinate system
+ * - Calculating a 3x3 `orientation` matrix from those vectors
  * - Using `position` from the `frame_origin` property as the `position` of the resulting frame
- * - These steps yield an `orientation` + `position`: the basis for an OpenSim frame
+ * - Overall, the above yields an `orientation` (from the axes) and a `position`, to compute an OpenSim `PhysicalFrame`
  *
  * `StationDefinedFrame` is intended to be used as an alternative to `OffsetFrame`
  * that explicitly establishes coordinate systems (`Frame`s) from relationships

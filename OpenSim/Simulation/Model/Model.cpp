@@ -108,7 +108,7 @@ namespace {
         bool temporarilyMarked = false;
     };
 
-    // helper: the recusive `visit` step in a depth-first topology sort
+    // helper: the recursive `visit` step in a depth-first topology sort
     //
     // it recursively visits a `node` (marked frame) by attempting to traverse
     // to its parent (PhysicalOffsetFrame/StationDefinedFrame).
