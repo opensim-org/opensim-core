@@ -598,7 +598,7 @@ jobs:
   
       steps:
       - name: Trigger opensim-gui workflow
-        uses: Codex-/return-dispatch@v1.12.0
+        uses: Codex-/return-dispatch@v1
         id: return_dispatch
         with:
           token: ${{ secrets.ACTION_SECRET }}
