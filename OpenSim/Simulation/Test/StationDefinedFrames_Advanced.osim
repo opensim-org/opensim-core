@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<OpenSimDocument Version="40500">
+<OpenSimDocument Version="40600">
 	<Model name="model">
 		<!--List of components that this component owns and serializes.-->
 		<components>
@@ -79,6 +79,21 @@
 				<!--Path to a Component that satisfies the Socket 'origin_point' of type Station (description: Point that defines the frame's origin point. Also permitted to be `point_a`, `point_b`, or `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
 				<socket_origin_point>/porigin_in_child_body</socket_origin_point>
 			</StationDefinedFrame>
+			<PhysicalOffsetFrame name="ground_offset2">
+				<!--The geometry used to display the axes of this Frame.-->
+				<FrameGeometry name="frame_geometry">
+					<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+					<socket_frame>..</socket_frame>
+					<!--Scale factors in X, Y, Z directions respectively.-->
+					<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+				</FrameGeometry>
+				<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+				<socket_parent>/jointset/freejoint/ground_offset</socket_parent>
+				<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+				<translation>0 0.13184848427772522 0.18320448696613312</translation>
+				<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+				<orientation>0 0 0</orientation>
+			</PhysicalOffsetFrame>
 		</components>
 		<!--The model's ground reference frame.-->
 		<Ground name="ground">
@@ -318,7 +333,7 @@
 			<objects>
 				<FreeJoint name="freejoint">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
-					<socket_parent_frame>ground_offset</socket_parent_frame>
+					<socket_parent_frame>/ground_offset2</socket_parent_frame>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
 					<socket_child_frame>root_body_offset</socket_child_frame>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
@@ -329,11 +344,11 @@
 							<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
 							<locked>true</locked>
 						</Coordinate>
-						<Coordinate name="ry">
+						<Coordinate name="ry1">
 							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<default_value>6.521754264831543</default_value>
 							<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
-							<locked>true</locked>
+							<locked>false</locked>
 						</Coordinate>
 						<Coordinate name="rz">
 							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
@@ -399,7 +414,7 @@
 							<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
 							<locked>true</locked>
 						</Coordinate>
-						<Coordinate name="ry">
+						<Coordinate name="ry2">
 							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
 							<default_value>0</default_value>
 							<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
@@ -407,7 +422,7 @@
 						</Coordinate>
 						<Coordinate name="rz">
 							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>-1.7391332387924194</default_value>
+							<default_value>-0.3519631028175354</default_value>
 						</Coordinate>
 						<Coordinate name="tx">
 							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
