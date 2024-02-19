@@ -597,7 +597,7 @@ jobs:
       #if: ${{ contains(github.event.pull_request.title, '[build-gui]') || contains(github.event.pull_request.body, '[build-gui]') }}
   
       steps:
-      - name: Dispatch opensim-gui workflow
+      - name: Dispatch opensim-gui workflow 
         uses: codex-/return-dispatch@v1
         id: return_dispatch
         with:
