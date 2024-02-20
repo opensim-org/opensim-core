@@ -597,8 +597,8 @@ jobs:
       #if: ${{ contains(github.event.pull_request.title, '[build-gui]') || contains(github.event.pull_request.body, '[build-gui]') }}
   
       steps:
-      - name: Dispatch opensim-gui workflow ${{ github.sha }}
-        uses: codex-/return-dispatch@v1.12.0
+      - name: Dispatch opensim-gui workflow and get the run ID
+        uses: codex-/return-dispatch@v1
         id: return_dispatch
         with:
           token: ${{ secrets.ACTION_SECRET }}
@@ -607,6 +607,9 @@ jobs:
           owner: opensim-org
           workflow: build-on-core-pr.yml
           workflow_inputs: '{"branch": "main"}'
+
+      - name: Use the output run ID
+        run: echo ${{steps.return_dispatch.outputs.run_id}}
 
   style:
     name: Style
