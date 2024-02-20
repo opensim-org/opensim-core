@@ -31,9 +31,10 @@ v4.6
   at the time of `Socket` connection. Finally, `PrescribedController::prescribeControlForActuator(int, Function*)` is
   now deprecated in favor of `PrescribedController::prescribeControlForActuator(const std::string&, Function*)`.
 - Bumped the version of `ezc3d` to 1.5.8, which can now deal properly with Type-3 force platforms and c3d from Shadow
+- Added `StationDefinedFrame` component, which is a `Frame` component that automatically computes its position and
+  orientation from `Station`s in the model
 - Models with `PrescribedController`s are now supported by Moco (#3701). Controls for actuators controlled by 
   `PrescribedController`s are now excluded from the optimization problem.
-
 
 v4.5
 ====

@@ -26,6 +26,7 @@
 #include <OpenSim/Common/Logger.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Auxiliary/getRSS.h>
+#include <OpenSim/Simulation/Model/StationDefinedFrame.h>
 
 #include <catch2/catch_all.hpp>
 
@@ -97,6 +98,11 @@ namespace {
         ArrayPtrs<T> ptrs;
         Object::getRegisteredObjectsOfGivenType(ptrs);
         for (int i = 0; i < ptrs.size(); ++i) {
+            if (dynamic_cast<StationDefinedFrame*>(ptrs[i])) {
+                // edge-case: `StationDefinedFrame` has transitive sockets that
+                // this test suite cannot build
+                continue;
+            }
             appendOut.push_back(ptrs[i]);
         }
     }
