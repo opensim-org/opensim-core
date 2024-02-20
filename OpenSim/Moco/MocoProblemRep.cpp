@@ -167,12 +167,15 @@ void MocoProblemRep::initialize() {
     // If we don't need to compute controls from the model then we need to add
     // the controls to the ControlDistributor in system order, which is the
     // order expected by MocoGoals. Otherwise, just get the control names from
-    // the InputControllers in the model.
-    auto inputControllerControlNames =
-            createControlNamesForControllerType<InputController>(m_model_base);
+    // the InputControllers in the model based on the input aliases they expect.
     if (m_computeControlsFromModel) {
-        for (const auto& controlName : inputControllerControlNames) {
-            controlDistributorUPtr->addControl(controlName);
+        for (const auto& controller :
+                m_model_base.getComponentList<InputController>()) {
+            const auto expectedAliases =
+                    controller.getExpectedInputChannelAliases();
+            for (const auto& alias : expectedAliases) {
+                controlDistributorUPtr->addControl(alias);
+            }
         }
     } else {
         // This is valid since we already checked above that the order of the
@@ -188,30 +191,14 @@ void MocoProblemRep::initialize() {
     m_model_base.addComponent(controlDistributorUPtr.release());
 
     // Wire the ControlDistributor to the InputControllers in the model.
-    // TODO: update this logic when inputs to InputControllers are no longer
-    //       required to be model control names.
-    // TODO: should InputController know what the expected input names are?
-    //       should we provide an interface for that?
     for (auto& controller : m_model_base.updComponentList<InputController>()) {
-        auto& socket = controller.updSocket<Actuator>("actuators");
-        for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
-            const auto& actu = socket.getConnectee(i);
-            const auto& actuPath = actu.getAbsolutePathString();
-            if (actu.numControls() > 1) {
-                for (int ic = 0; ic < actu.numControls(); ++ic) {
-                    std::string controlName =
-                            actuPath + "_" + std::to_string(ic);
-                    const auto& channel =
-                            m_control_distributor_base->getOutput("controls")
-                                    .getChannel(controlName);
-                    controller.connectInput_inputs(channel, controlName);
-                }
-            } else {
-                const auto& channel =
-                        m_control_distributor_base->getOutput("controls")
-                                .getChannel(actuPath);
-                controller.connectInput_inputs(channel, actuPath);
-            }
+        const auto expectedAliases =
+                controller.getExpectedInputChannelAliases();
+        for (const auto& alias : expectedAliases) {
+            const auto& channel =
+                    m_control_distributor_base->getOutput("controls")
+                            .getChannel(alias);
+            controller.connectInput_inputs(channel, alias);
         }
     }
     m_model_base.finalizeConnections();

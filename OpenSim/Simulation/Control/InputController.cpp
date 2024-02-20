@@ -51,22 +51,17 @@ InputController& InputController::operator=(InputController&& other) = default;
 // METHODS
 //=============================================================================
 const std::vector<std::string>& InputController::getControlNames() const {
+    OPENSIM_THROW_IF_FRMOBJ(m_controlNames.empty(), Exception,
+            "The list of control names is empty. Have you connected all "
+            "actuators and called Model::finalizeConnections()?");
     return m_controlNames;
 }
 
 const std::vector<int>& InputController::getControlIndexes() const {
+    OPENSIM_THROW_IF_FRMOBJ(m_controlNames.empty(), Exception,
+            "The list of control indexes is empty. Have you connected all "
+            "actuators and called Model::finalizeConnections()?");
     return m_controlIndexes;
-}
-
-std::vector<std::string> InputController::getInputChannelAliases() const {
-    std::vector<std::string> aliases;
-    const auto& input = getInput<double>("inputs");
-    aliases.reserve(input.getNumConnectees());
-    for (int i = 0; i < static_cast<int>(input.getNumConnectees()); ++i) {
-        aliases.push_back(input.getAlias(i));
-    }
-
-    return aliases;
 }
 
 //=============================================================================
@@ -150,6 +145,14 @@ void ActuatorInputController::computeControls(const SimTK::State& s,
 }
 
 //=============================================================================
+// CONTROLLER INTERFACE
+//=============================================================================
+std::vector<std::string>
+ActuatorInputController::getExpectedInputChannelAliases() const {
+    return getControlNames();
+}
+
+//=============================================================================
 // MODEL COMPONENT INTERFACE
 //=============================================================================
 void ActuatorInputController::extendConnectToModel(Model& model) {
@@ -157,15 +160,28 @@ void ActuatorInputController::extendConnectToModel(Model& model) {
 
     const auto& controlNames = getControlNames();
     const auto& controlIndexes = getControlIndexes();
-    OPENSIM_ASSERT(getNumControls() ==
-        static_cast<int>(controlNames.size()))
+    OPENSIM_ASSERT(getNumControls() == static_cast<int>(controlNames.size()))
 
     const auto& input = getInput<double>("inputs");
     OPENSIM_THROW_IF(
-        static_cast<int>(input.getNumConnectees()) != getNumControls(), Exception,
-        "Expected the number of Input connectees ({}) to match the number "
-        "of actuators controls ({}), but they do not.",
-        input.getNumConnectees(), getNumControls());
+            static_cast<int>(input.getNumConnectees()) != getNumControls(),
+            Exception,
+            "Expected the number of Input connectees ({}) to match the number "
+            "of actuators controls ({}), but they do not.",
+            input.getNumConnectees(), getNumControls());
+
+    const auto expectedAliases = getExpectedInputChannelAliases();
+    std::vector<std::string> aliasesInConnecteeOrder;
+    for (int i = 0; i < static_cast<int>(input.getNumConnectees()); ++i) {
+        const auto& alias = input.getAlias(i);
+        auto it = std::find(expectedAliases.begin(), expectedAliases.end(),
+                alias);
+        OPENSIM_THROW_IF(it == expectedAliases.end(), Exception,
+                "Expected the Input alias '{}' to match a control name for an "
+                "actuator in the controller's ActuatorSet, but it does not.",
+                alias);
+        aliasesInConnecteeOrder.push_back(alias);
+    }
 
     // Use the Input channel aliases to map the Input connectee indexes to
     // the corresponding control indexes in the model control cache. We
@@ -173,12 +189,8 @@ void ActuatorInputController::extendConnectToModel(Model& model) {
     // controls in the controller's ActuatorSet.
     m_controlIndexesInConnecteeOrder.clear();
     m_controlIndexesInConnecteeOrder.reserve(getNumControls());
-    for (const auto& alias : getInputChannelAliases()) {
+    for (const auto& alias : aliasesInConnecteeOrder) {
         auto it = std::find(controlNames.begin(), controlNames.end(), alias);
-        OPENSIM_THROW_IF(it == controlNames.end(), Exception,
-            "Expected the Input alias '{}' to match a control name for an "
-            "actuator in the controller's ActuatorSet, but it does not.",
-            alias);
         m_controlIndexesInConnecteeOrder.push_back(
             controlIndexes[it - controlNames.begin()]);
     }
