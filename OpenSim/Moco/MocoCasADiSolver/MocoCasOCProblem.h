@@ -477,21 +477,23 @@ private:
                 mocoProblemRep->updStateDisabledConstraints(1);
 
         if (m_computeControlsFromModel) {
-            m_costControlsInitial =
+            m_endpointControlsInitial =
                     modelDisabledConstraints.getDefaultControls();
             modelDisabledConstraints.computeControls(
-                    simtkStateDisabledConstraintsInitial, m_costControlsInitial);
-            m_costControlsFinal =
+                    simtkStateDisabledConstraintsInitial,
+                    m_endpointControlsInitial);
+            m_endpointControlsFinal =
                     modelDisabledConstraints.getDefaultControls();
             modelDisabledConstraints.computeControls(
-                    simtkStateDisabledConstraintsFinal, m_costControlsFinal);
+                    simtkStateDisabledConstraintsFinal,
+                    m_endpointControlsFinal);
         } else {
             const auto& controlDistributorDisabledConstraints =
                     mocoProblemRep->getControlDistributorDisabledConstraints();
-            m_costControlsInitial =
+            m_endpointControlsInitial =
                     controlDistributorDisabledConstraints.getControls(
                             simtkStateDisabledConstraintsInitial);
-            m_costControlsFinal =
+            m_endpointControlsFinal =
                     controlDistributorDisabledConstraints.getControls(
                             simtkStateDisabledConstraintsFinal);
         }

@@ -153,7 +153,7 @@ class OSIMSIMULATION_API ActuatorInputController : public InputController {
     OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorInputController, InputController);
 public:
 
-    // CONSTRUCTION/DESCTRUCTION
+    // CONSTRUCTION AND DESTRUCTION
     ActuatorInputController();
     ~ActuatorInputController() override;
 
