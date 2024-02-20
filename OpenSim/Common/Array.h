@@ -52,7 +52,14 @@ namespace OpenSim {
  */
 template<class T>
 class Array {
+
 public:
+    Array(Array const&) = default;;
+    Array(Array&&) noexcept = default;
+    Array& operator=(Array const&) = default;
+    Array& operator=(Array&&) noexcept = default;
+    ~Array() noexcept = default;
+
     explicit Array(T aDefaultValue = T(), int aSize = 0, int aCapacity = 1) :
         _defaultValue{std::move(aDefaultValue)}
     {
