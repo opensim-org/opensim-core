@@ -606,7 +606,6 @@ jobs:
           repo: opensim-gui
           owner: opensim-org
           workflow: build-on-core-pr.yml
-          workflow_inputs: '{"branch": "main"}'
 
       - name: Use the output run ID
         run: echo ${{steps.return_dispatch.outputs.run_id}}
