@@ -175,6 +175,9 @@ public:
     /// muscle activation (if activation dynamics are enabled) from the bounds
     /// for muscle control (excitation), using min/max control if explicit
     /// control bounds are not provided. Default: true.
+    ///
+    /// @note This setting applies to all controls, including those defined by
+    ///       user-added Controllers to the model.
     void setBoundActivationFromExcitation(bool tf) {
         set_bound_activation_from_excitation(tf);
     }

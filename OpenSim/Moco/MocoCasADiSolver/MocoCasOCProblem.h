@@ -339,8 +339,7 @@ private:
         const auto stageDep = mocoCost.getStageDependency();
         const auto& modelDisabledConstraints =
                 mocoProblemRep->getModelDisabledConstraints();
-        const auto& controlDistributorDisabledConstraints =
-                mocoProblemRep->getControlDistributorDisabledConstraints();
+
 
         applyInput(stageDep, input.time, input.states, input.controls,
                 input.multipliers, input.derivatives, input.parameters,
@@ -354,6 +353,8 @@ private:
             modelDisabledConstraints.computeControls(
                     simtkStateDisabledConstraints, m_costIntegrandControls);
         } else {
+            const auto& controlDistributorDisabledConstraints =
+                    mocoProblemRep->getControlDistributorDisabledConstraints();
             m_costIntegrandControls =
                     controlDistributorDisabledConstraints.getControls(
                             simtkStateDisabledConstraints);
@@ -373,38 +374,34 @@ private:
         const auto stageDep = mocoCost.getStageDependency();
         const auto& modelDisabledConstraints =
                 mocoProblemRep->getModelDisabledConstraints();
-        const auto& controlDistributorDisabledConstraints =
-                mocoProblemRep->getControlDistributorDisabledConstraints();
 
         applyInput(stageDep, input.initial_time, input.initial_states,
                 input.initial_controls, input.initial_multipliers,
                 input.initial_derivatives, input.parameters, mocoProblemRep, 0);
-
         auto& simtkStateDisabledConstraintsInitial =
                 mocoProblemRep->updStateDisabledConstraints(0);
+
+        applyInput(stageDep, input.final_time, input.final_states,
+                input.final_controls, input.final_multipliers,
+                input.final_derivatives, input.parameters, mocoProblemRep, 1);
+        auto& simtkStateDisabledConstraintsFinal =
+                mocoProblemRep->updStateDisabledConstraints(1);
+
         if (m_computeControlsFromModel) {
             m_costControlsInitial =
                     modelDisabledConstraints.getDefaultControls();
             modelDisabledConstraints.computeControls(
                     simtkStateDisabledConstraintsInitial, m_costControlsInitial);
-        } else {
-            m_costControlsInitial =
-                    controlDistributorDisabledConstraints.getControls(
-                            simtkStateDisabledConstraintsInitial);
-        }
-
-        applyInput(stageDep, input.final_time, input.final_states,
-                input.final_controls, input.final_multipliers,
-                input.final_derivatives, input.parameters, mocoProblemRep, 1);
-
-        auto& simtkStateDisabledConstraintsFinal =
-                mocoProblemRep->updStateDisabledConstraints(1);
-        if (m_computeControlsFromModel) {
             m_costControlsFinal =
                     modelDisabledConstraints.getDefaultControls();
             modelDisabledConstraints.computeControls(
                     simtkStateDisabledConstraintsFinal, m_costControlsFinal);
         } else {
+            const auto& controlDistributorDisabledConstraints =
+                    mocoProblemRep->getControlDistributorDisabledConstraints();
+            m_costControlsInitial =
+                    controlDistributorDisabledConstraints.getControls(
+                            simtkStateDisabledConstraintsInitial);
             m_costControlsFinal =
                     controlDistributorDisabledConstraints.getControls(
                             simtkStateDisabledConstraintsFinal);
@@ -431,8 +428,6 @@ private:
         const auto stageDep = mocoEC.getStageDependency();
         const auto& modelDisabledConstraints =
                 mocoProblemRep->getModelDisabledConstraints();
-        const auto& controlDistributorDisabledConstraints =
-                mocoProblemRep->getControlDistributorDisabledConstraints();
 
         applyInput(stageDep, input.time, input.states, input.controls,
                 input.multipliers, input.derivatives, input.parameters,
@@ -446,6 +441,8 @@ private:
             modelDisabledConstraints.computeControls(
                     simtkStateDisabledConstraints, m_endpointIntegrandControls);
         } else {
+            const auto& controlDistributorDisabledConstraints =
+                    mocoProblemRep->getControlDistributorDisabledConstraints();
             m_endpointIntegrandControls =
                     controlDistributorDisabledConstraints.getControls(
                         simtkStateDisabledConstraints);
@@ -466,41 +463,35 @@ private:
         const auto stageDep = mocoEC.getStageDependency();
         const auto& modelDisabledConstraints =
                 mocoProblemRep->getModelDisabledConstraints();
-        const auto& controlDistributorDisabledConstraints =
-                mocoProblemRep->getControlDistributorDisabledConstraints();
 
         applyInput(stageDep, input.initial_time, input.initial_states,
                 input.initial_controls, input.initial_multipliers,
                 input.initial_derivatives, input.parameters, mocoProblemRep, 0);
-
         auto& simtkStateDisabledConstraintsInitial =
                 mocoProblemRep->updStateDisabledConstraints(0);
-        if (m_computeControlsFromModel) {
-            m_endpointControlsInitial =
-                    modelDisabledConstraints.getDefaultControls();
-            modelDisabledConstraints.computeControls(
-                    simtkStateDisabledConstraintsInitial,
-                    m_endpointControlsInitial);
-        } else {
-            m_endpointControlsInitial =
-                    controlDistributorDisabledConstraints.getControls(
-                            simtkStateDisabledConstraintsInitial);
-        }
 
         applyInput(stageDep, input.final_time, input.final_states,
                 input.final_controls, input.final_multipliers,
                 input.final_derivatives, input.parameters, mocoProblemRep, 1);
-
         auto& simtkStateDisabledConstraintsFinal =
                 mocoProblemRep->updStateDisabledConstraints(1);
+
         if (m_computeControlsFromModel) {
-            m_endpointControlsFinal =
+            m_costControlsInitial =
                     modelDisabledConstraints.getDefaultControls();
             modelDisabledConstraints.computeControls(
-                    simtkStateDisabledConstraintsFinal,
-                    m_endpointControlsFinal);
+                    simtkStateDisabledConstraintsInitial, m_costControlsInitial);
+            m_costControlsFinal =
+                    modelDisabledConstraints.getDefaultControls();
+            modelDisabledConstraints.computeControls(
+                    simtkStateDisabledConstraintsFinal, m_costControlsFinal);
         } else {
-            m_endpointControlsFinal =
+            const auto& controlDistributorDisabledConstraints =
+                    mocoProblemRep->getControlDistributorDisabledConstraints();
+            m_costControlsInitial =
+                    controlDistributorDisabledConstraints.getControls(
+                            simtkStateDisabledConstraintsInitial);
+            m_costControlsFinal =
                     controlDistributorDisabledConstraints.getControls(
                             simtkStateDisabledConstraintsFinal);
         }

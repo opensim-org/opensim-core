@@ -78,6 +78,10 @@ public:
     InputController(InputController&& other);
     InputController& operator=(InputController&& other);
 
+    // TODO
+    // TODO if we add this, remove getInputChannelAliases()?
+    //virtual std::vector<std::string> getExpectedInputAliases() const = 0;
+
     // METHODS
     /**
      * Get the names of the controls for the actuators in the controller's
@@ -88,7 +92,8 @@ public:
      * actuator path plus an additional suffix representing the index of the
      * control in the actuator's control vector (e.g., "/actuator_0").
      *
-     * @note Only valid after calling Model::finalizeConnections().
+     * TODO: specify that this is valid after actuators are connected, not inputs
+     * @note Only valid after calling connectToModel().
      *
      * @note This does *not* check if the order of the actuators stored in the
      *       model matches the order of the controls in the underlying system.
@@ -106,7 +111,8 @@ public:
      * have multiple control indexes. The order of the returned indexes matches
      * the order of the control names returned by getControlNames().
      *
-     * @note Only valid after calling Model::finalizeConnections().
+     * TODO: specify that this is valid after actuators are connected, not inputs
+     * @note Only valid after calling connectToModel().
      *
      * @note This does *not* check if the order of the actuators stored in the
      *       model matches the order of the controls in the underlying system.
@@ -120,6 +126,7 @@ public:
      * controller's Input. The aliases are returned in the same order as the
      * channels stored in the Input.
      *
+     * TODO: specify that this is valid after inputs are connected
      * @note Only valid after calling Model::finalizeConnections().
      */
     std::vector<std::string> getInputChannelAliases() const;

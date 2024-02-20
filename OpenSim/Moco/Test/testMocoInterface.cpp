@@ -2289,5 +2289,11 @@ TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
 
         OpenSim_REQUIRE_MATRIX_ABSTOL(solution.getStatesTrajectory(),
             statesTrajectory, 1e-9);
+
+        // We should get back exactly the same controls trajectory that we
+        // provided via the PrescribedController.
+        OpenSim_REQUIRE_MATRIX_ABSTOL(solution.getControlsTrajectory(),
+                controlsTable.getMatrix(), 1e-12);
+        REQUIRE(solution.getControlNames() == controlsTable.getColumnLabels());
     }
 }

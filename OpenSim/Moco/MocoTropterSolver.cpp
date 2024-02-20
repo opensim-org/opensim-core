@@ -356,6 +356,59 @@ MocoSolution MocoTropterSolver::solveImpl() const {
 
     MocoSolution mocoSolution = ocp->convertToMocoSolution(tropSolution);
 
+    // If user-defined controllers are present in the model, then check for
+    // missing model controls in the CasADi solution and append them to the
+    // CasADi solution.
+    // TODO: this would need to be updated if we allowed stacking OCP controls
+    //       on top of user-defined controls.
+    if (getProblemRep().getComputeControlsFromModel()) {
+        const auto& model = getProblemRep().getModelBase();
+        auto modelControlNames = createControlNamesFromModel(model);
+        auto controlIndexMap = createSystemControlIndexMap(model);
+
+        // Find model control names that are not in the CasADi solution.
+        auto tropControlNames = tropSolution.control_names;
+        std::vector<std::string> missingControlNames;
+        for (const auto& modelControlName : modelControlNames) {
+            if (std::find(tropControlNames.begin(), tropControlNames.end(),
+                        modelControlName) == tropControlNames.end()) {
+                missingControlNames.push_back(modelControlName);
+            }
+        }
+
+        // Allocate space for the missing controls in the CasADi solution.
+        Eigen::MatrixXd tropControls = tropSolution.controls;
+        Eigen::MatrixXd finalControls(
+                tropControls.rows() + missingControlNames.size(),
+                tropControls.cols());
+        finalControls.block(0, 0, tropControls.rows(), tropControls.cols()) =
+                tropControls;
+        Eigen::MatrixXd missingControls(missingControlNames.size(),
+                tropControls.cols());
+
+        // Compute the missing controls from the model.
+        auto statesTraj = mocoSolution.exportToStatesTrajectory(model);
+        for (int i = 0; i < statesTraj.getSize(); ++i) {
+            const auto& state = statesTraj.get(i);
+            model.realizeDynamics(state);
+            const auto& controls = model.getControls(state);
+            for (int j = 0; j < missingControlNames.size(); ++j) {
+                missingControls(j, i) = controls.get(
+                        controlIndexMap.at(missingControlNames[j]));
+            }
+        }
+
+        // Append the missing controls to the CasADi solution and
+        // regenerate the MocoSolution.
+        finalControls.block(tropControls.rows(), 0, missingControls.rows(),
+                tropControls.cols()) = missingControls;
+        tropSolution.controls = finalControls;
+        tropSolution.control_names.insert(tropSolution.control_names.end(),
+                missingControlNames.begin(), missingControlNames.end());
+
+        mocoSolution = ocp->convertToMocoSolution(tropSolution);
+    }
+
     // If enforcing model constraints and not minimizing Lagrange
     // multipliers, check the rank of the constraint Jacobian and if
     // rank-deficient, print recommendation to the user to enable Lagrange

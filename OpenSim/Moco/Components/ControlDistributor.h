@@ -27,18 +27,31 @@ namespace OpenSim {
  * This component stores a vector of control values that can be used to
  * allocate controls to other components in a model.
  *
+ * A control value can be added to the ControlDistributor using `addControl()`
+ * which adds a channel to the Output `controls` and is then available to
+ * distribute to other components via `Input` connections.
+ *
  * The control values are stored in a discrete variable in the state. The
  * control values are stored in the same order they were added to the
  * distributor. The control values can be set and retrieved using the
  * `setControls()`, `updControls()`, and `getControls()` methods.
  *
- * The control values can be allocated using the Output `controls`.
+ * This class is primarily intended for use in Moco where it is used to
+ * distribute control values from an optimal control problem to InputControllers
+ * in a model. Therefore, "controls" in the context of this class do not
+ * necessarily correspond to controls in a model (i.e., from
+ * Model::getControls()). However, this class is generally useful for
+ * distributing scalar values stored in a discrete variable to other components
+ * in a model that accept an `Input`.
+ *
+ * ## Usage
  *
  * Constructing a ControlDistributor and adding controls:
  * @code
  * auto controlDistributor = make_unique<ControlDistributor>();
- * controlDistributor->addControl("/residual_pelvis_tilt");
  * controlDistributor->addControl("/forceset/soleus_r");
+ * controlDistributor->addControl("/my_input_controller_value");
+ * controlDistributor->addControl("/path/to/my_custom_component_input");
  * model.addComponent(controlDistributor.release());
  * @endcode
  *
@@ -56,7 +69,7 @@ namespace OpenSim {
  * const auto& channel = output.getChannel("/forceset/soleus_r");
  * auto& controller =
  *     model.updComponent<ActuatorInputController>("/my_actu_controller");
- * controller.connectInput_inputs(channel, "soleus_r");
+ * controller.connectInput_inputs(channel, "/forceset/soleus_r");
  * @endcode
  */
 class OSIMMOCO_API ControlDistributor : public ModelComponent {
