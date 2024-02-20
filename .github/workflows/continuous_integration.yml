@@ -602,7 +602,7 @@ jobs:
         id: return_dispatch
         with:
           token: ${{ secrets.ACTION_SECRET }}
-          ref: main 
+          ref: refs/heads/main 
           repo: opensim-gui
           owner: opensim-org
           workflow: build-on-core-pr.yml
