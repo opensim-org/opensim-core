@@ -587,7 +587,7 @@ jobs:
         path: opensim-core-${{ steps.configure.outputs.version }}-ub20.zip
   
   windows2022-gui:
-      name: Windows2022-gui
+      name: Windows2022-gui [target]
   
       runs-on: windows-2022
 
@@ -597,16 +597,16 @@ jobs:
       #if: ${{ contains(github.event.pull_request.title, '[build-gui]') || contains(github.event.pull_request.body, '[build-gui]') }}
   
       steps:
-      - name: Dispatch opensim-gui workflow branch ${{ github.sha }}
-        uses: codex-/return-dispatch@v1
+      - name: Dispatch opensim-gui workflow branch ${{ github.event.pull_request.base.ref }} 
+        uses: codex-/return-dispatch@v1.12.0
         id: return_dispatch
         with:
           token: ${{ secrets.ACTION_SECRET }}
-          ref: ${{github.sha}}
+          ref: ${{ github.event.pull_request.base.ref }} 
           repo: opensim-gui
           owner: opensim-org
           workflow: build-on-core-pr.yml
-          workflow_inputs: '{"commit": "${{ github.sha }}"}'
+          workflow_inputs: '{"branch": "${{ github.event.pull_request.base.ref }}"}'
           workflow_timeout_seconds: 12000
 
   style:
