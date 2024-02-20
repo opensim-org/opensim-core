@@ -1,7 +1,7 @@
-#ifndef OPENSIM_CONTROLALLOCATOR_H
-#define OPENSIM_CONTROLALLOCATOR_H
+#ifndef OPENSIM_CONTROL_DISTRIBUTOR_H
+#define OPENSIM_CONTROL_DISTRIBUTOR_H
 /* -------------------------------------------------------------------------- *
- * OpenSim: ControlAllocator.h                                                *
+ * OpenSim: ControlDistributor.h                                              *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
@@ -29,22 +29,22 @@ namespace OpenSim {
  *
  * The control values are stored in a discrete variable in the state. The
  * control values are stored in the same order they were added to the
- * allocator. The control values can be set and retrieved using the
+ * distributor. The control values can be set and retrieved using the
  * `setControls()`, `updControls()`, and `getControls()` methods.
  *
  * The control values can be allocated using the Output `controls`.
  *
- * Constructing a ControlAllocator and adding controls:
+ * Constructing a ControlDistributor and adding controls:
  * @code
- * auto controlAllocator = make_unique<ControlAllocator>();
- * controlAllocator->addControl("/residual_pelvis_tilt");
- * controlAllocator->addControl("/forceset/soleus_r");
- * model.addComponent(controlAllocator.release());
+ * auto controlDistributor = make_unique<ControlDistributor>();
+ * controlDistributor->addControl("/residual_pelvis_tilt");
+ * controlDistributor->addControl("/forceset/soleus_r");
+ * model.addComponent(controlDistributor.release());
  * @endcode
  *
  * Connecting all `Output` controls to another component:
  * @code
- * const auto& output = controlAllocator->getOutput("controls");
+ * const auto& output = controlDistributor->getOutput("controls");
  * auto& controller =
  *     model.updComponent<ActuatorInputController>("/my_actu_controller");
  * controller.connectInput_inputs(output);
@@ -52,15 +52,15 @@ namespace OpenSim {
  *
  * Connecting an individual control channel using an alias:
  * @code
- * const auto& output = controlAllocator->getOutput("controls");
+ * const auto& output = controlDistributor->getOutput("controls");
  * const auto& channel = output.getChannel("/forceset/soleus_r");
  * auto& controller =
  *     model.updComponent<ActuatorInputController>("/my_actu_controller");
  * controller.connectInput_inputs(channel, "soleus_r");
  * @endcode
  */
-class OSIMMOCO_API ControlAllocator : public ModelComponent {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ControlAllocator, ModelComponent);
+class OSIMMOCO_API ControlDistributor : public ModelComponent {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ControlDistributor, ModelComponent);
 
 public:
 //=============================================================================
@@ -74,37 +74,37 @@ public:
 //=============================================================================
 
     // CONSTRUCTION AND DESTRUCTION
-    ControlAllocator();
-    ~ControlAllocator() noexcept override;
+    ControlDistributor();
+    ~ControlDistributor() noexcept override;
 
-    ControlAllocator(const ControlAllocator&);
-    ControlAllocator(ControlAllocator&&);
+    ControlDistributor(const ControlDistributor&);
+    ControlDistributor(ControlDistributor&&);
 
-    ControlAllocator& operator=(const ControlAllocator&);
-    ControlAllocator& operator=(ControlAllocator&&);
+    ControlDistributor& operator=(const ControlDistributor&);
+    ControlDistributor& operator=(ControlDistributor&&);
 
     // GET AND SET
     /**
-     * Add a control to the control allocator.
+     * Add a control to the control distributor.
      */
     void addControl(const std::string& controlName);
 
     /**
-     * Set the allocator controls stored in the discrete variable.
+     * Set the distributor controls stored in the discrete variable.
      *
      * The `controls` vector must be the same size as the number of controls
-     * added to the allocator by `addControl()`.
+     * added to the distributor by `addControl()`.
      */
     void setControls(SimTK::State& s, const SimTK::Vector& controls) const;
 
     /**
-     * Get a writable reference to the allocator controls stored in the discrete
-     * variable.
+     * Get a writable reference to the distributor controls stored in the
+     * discrete variable.
      */
     SimTK::Vector& updControls(SimTK::State& s) const;
 
     /**
-     * Get a const reference to the allocator controls stored in the discrete
+     * Get a const reference to the distributor controls stored in the discrete
      * variable.
      */
     const SimTK::Vector& getControls(const SimTK::State& s) const;
@@ -117,7 +117,7 @@ public:
 
     /**
      * Get the names of the controls in the order they were added to the
-     * allocator.
+     * distributor.
      */
     std::vector<std::string> getControlNamesInOrder() const;
 
@@ -140,4 +140,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // OPENSIM_CONTROLALLOCATOR_H
+#endif // OPENSIM_CONTROL_DISTRIBUTOR_H

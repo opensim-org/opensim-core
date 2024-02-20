@@ -88,8 +88,8 @@ set(MOCO_SOURCES
         Components/DiscreteForces.cpp
         Components/AccelerationMotion.h
         Components/AccelerationMotion.cpp
-        Components/ControlAllocator.h
-        Components/ControlAllocator.cpp
+        Components/ControlDistributor.h
+        Components/ControlDistributor.cpp
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
         MocoInverse.cpp

@@ -28,6 +28,12 @@ thread_local SimTK::Vector_<SimTK::SpatialVec>
         MocoCasOCProblem::m_constraintBodyForces;
 thread_local SimTK::Vector MocoCasOCProblem::m_constraintMobilityForces;
 thread_local SimTK::Vector MocoCasOCProblem::m_pvaerr;
+thread_local SimTK::Vector MocoCasOCProblem::m_costIntegrandControls;
+thread_local SimTK::Vector MocoCasOCProblem::m_costControlsInitial;
+thread_local SimTK::Vector MocoCasOCProblem::m_costControlsFinal;
+thread_local SimTK::Vector MocoCasOCProblem::m_endpointIntegrandControls;
+thread_local SimTK::Vector MocoCasOCProblem::m_endpointControlsInitial;
+thread_local SimTK::Vector MocoCasOCProblem::m_endpointControlsFinal;
 
 MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         const MocoProblemRep& problemRep,
@@ -36,6 +42,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         : m_jar(std::move(jar)),
           m_paramsRequireInitSystem(
                   mocoCasADiSolver.get_parameters_require_initsystem()),
+          m_computeControlsFromModel(
+                  problemRep.getComputeControlsFromModel()),
           m_formattedTimeString(getFormattedDateTime(true)) {
 
     setDynamicsMode(dynamicsMode);
@@ -64,7 +72,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     }
 
     auto controlNames =
-            problemRep.getControlAllocatorBase().getControlNamesInOrder();
+            problemRep.getControlDistributorBase().getControlNamesInOrder();
     for (const auto& controlName : controlNames) {
         const auto& info = problemRep.getControlInfo(controlName);
         addControl(controlName, convertBounds(info.getBounds()),

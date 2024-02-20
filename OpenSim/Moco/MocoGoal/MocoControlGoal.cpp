@@ -18,10 +18,10 @@
 
 #include "MocoControlGoal.h"
 
+#include <OpenSim/Moco/Components/ControlDistributor.h>
+#include <OpenSim/Simulation/Control/InputController.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
-#include <OpenSim/Simulation/Control/InputController.h>
-#include <OpenSim/Moco/Components/ControlAllocator.h>
 
 using namespace OpenSim;
 
@@ -54,34 +54,13 @@ void MocoControlGoal::setWeightForControlPattern(
 
 void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 
-    // Get all the control names in the model.
+    // Get all the control names and indices in the model.
     auto controlNames = createControlNamesFromModel(model);
+    auto controlIndexMap = createSystemControlIndexMap(model);
 
     // Get control names associated with the model's ActuatorInputController.
     auto actuatorInputControlNames =
             createControlNamesForControllerType<ActuatorInputController>(model);
-
-    // If there are no user-defined controllers, we can use the raw controls.
-    // Otherwise, we must compute the controls from the model.
-    // TODO move to MocoGoal?
-    const auto& controllers = model.getComponentList<Controller>();
-    int numControllers =
-            (int)std::distance(controllers.begin(), controllers.end());
-    if (numControllers > 1) {
-        m_computeControlsFromModel = true;
-    }
-
-    // Create a map from control names to their indices in the controls vector.
-    // If we are using the raw controls, we use the control indices from the
-    // model's ControlAllocator. Otherwise, we use the control indices from the
-    // model.
-    std::unordered_map<std::string, int> controlIndexMap;
-    if (m_computeControlsFromModel) {
-        controlIndexMap = createSystemControlIndexMap(model);
-    } else {
-        controlIndexMap = model.getComponentList<ControlAllocator>().begin()
-                                ->getControlIndexMap();
-    }
 
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
@@ -147,20 +126,12 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
         };
     }
 
-    setRequirements(1, 1, m_computeControlsFromModel ? SimTK::Stage::Velocity :
-                                                       SimTK::Stage::Model);
+    setRequirements(1, 1, SimTK::Stage::Model);
 }
 
 void MocoControlGoal::calcIntegrandImpl(
         const IntegrandInput& input, SimTK::Real& integrand) const {
-
-    // TODO: compute controls in MocoGoal::calcIntegrand() and pass them to
-    // calcIntegrandImpl() by overwriting the IntegrandInput?
-    if (m_computeControlsFromModel) {
-        getModel().realizeVelocity(input.state);
-    }
-    const auto& controls = m_computeControlsFromModel ?
-            getModel().getControls(input.state) : input.controls;
+    const auto& controls = input.controls;
 
     integrand = 0;
     int iweight = 0;

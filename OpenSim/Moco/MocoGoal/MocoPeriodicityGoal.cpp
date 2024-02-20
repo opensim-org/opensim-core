@@ -135,10 +135,8 @@ void MocoPeriodicityGoal::calcGoalImpl(
         ++i;
     }
 
-    getModel().realizeVelocity(input.initial_state);
-    const auto& initialControls = getModel().getControls(input.initial_state);
-    getModel().realizeVelocity(input.final_state);
-    const auto& finalControls = getModel().getControls(input.final_state);
+    const auto& initialControls = input.initial_controls;
+    const auto& finalControls = input.final_controls;
     int j = 0;
     for (const auto& index_control : m_indices_controls) {
         goal[i + j] = (initialControls[std::get<0>(index_control)] *

@@ -21,8 +21,8 @@
 #include <simbody/internal/Constraint.h>
 
 #include <OpenSim/Moco/Components/AccelerationMotion.h>
+#include <OpenSim/Moco/Components/ControlDistributor.h>
 #include <OpenSim/Moco/Components/DiscreteForces.h>
-#include <OpenSim/Moco/Components/ControlAllocator.h>
 #include <OpenSim/Moco/MocoBounds.h>
 #include <OpenSim/Moco/MocoTropterSolver.h>
 #include <OpenSim/Moco/MocoUtilities.h>
@@ -96,7 +96,7 @@ protected:
 
     void addControlVariables() {
         auto controlNames =
-                m_mocoProbRep.getControlAllocatorBase().getControlNamesInOrder();
+                m_mocoProbRep.getControlDistributorBase().getControlNamesInOrder();
         for (const auto& controlName : controlNames) {
             const auto& info = m_mocoProbRep.getControlInfo(controlName);
             this->add_control(controlName, convertBounds(info.getBounds()),
@@ -326,7 +326,7 @@ protected:
             // constraints. The base model never gets realized past
             // Stage::Velocity, so we don't ever need to set its controls.
             auto& osimControls =
-                    m_mocoProbRep.getControlAllocatorDisabledConstraints()
+                    m_mocoProbRep.getControlDistributorDisabledConstraints()
                             .updControls(simTKStateDisabledConstraints);
             for (int ic = 0; ic < controls.size(); ++ic) {
                 osimControls[ic] = controls[ic];
@@ -362,10 +362,10 @@ protected:
         // point, so that each can preserve their cache?
         this->setSimTKState(in);
 
-        const auto& controlAllocatorDisabledConstraints =
-                m_mocoProbRep.getControlAllocatorDisabledConstraints();
+        const auto& controlDistributorDisabledConstraints =
+                m_mocoProbRep.getControlDistributorDisabledConstraints();
         const auto& rawControls =
-                controlAllocatorDisabledConstraints.getControls(
+                controlDistributorDisabledConstraints.getControls(
                 this->m_stateDisabledConstraints);
 
         // Compute the integrand for this cost term.
@@ -388,12 +388,12 @@ protected:
         const auto& initialState = m_mocoProbRep.updStateDisabledConstraints(0);
         const auto& finalState = m_mocoProbRep.updStateDisabledConstraints(1);
 
-        const auto& controlAllocatorDisabledConstraints =
-                m_mocoProbRep.getControlAllocatorDisabledConstraints();
+        const auto& controlDistributorDisabledConstraints =
+                m_mocoProbRep.getControlDistributorDisabledConstraints();
         const auto& initialRawControls =
-                controlAllocatorDisabledConstraints.getControls(initialState);
+                controlDistributorDisabledConstraints.getControls(initialState);
         const auto& finalRawControls =
-                controlAllocatorDisabledConstraints.getControls(finalState);
+                controlDistributorDisabledConstraints.getControls(finalState);
 
         // Compute the cost for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);

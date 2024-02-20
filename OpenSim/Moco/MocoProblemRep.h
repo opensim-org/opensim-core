@@ -31,7 +31,7 @@
 namespace OpenSim {
 
 class MocoProblem;
-class ControlAllocator;
+class ControlDistributor;
 class DiscreteForces;
 class PositionMotion;
 class AccelerationMotion;
@@ -55,7 +55,7 @@ class AccelerationMotion;
 /// If kinematics are not prescribed (with PositionMotion),
 /// ModelDisabledConstraints also contains an AccelerationMotion component,
 /// which is used by solvers that rely on implicit multibody dynamics.
-/// The initialize() function adds a ControlAllocator component
+/// The initialize() function adds a ControlDistributor component
 /// to both models; this component is used by a solver to set the control
 /// signals for actuators to use.
 /// To learn the need for and use of these two models, see @ref impldiverse.
@@ -89,8 +89,8 @@ public:
     SimTK::State& updStateBase() const { return m_state_base; }
     /// This is a component inside ModelBase that you can use to
     /// set the value of control signals.
-    const ControlAllocator& getControlAllocatorBase() const {
-        return m_control_allocator_base.getRef();
+    const ControlDistributor& getControlDistributorBase() const {
+        return m_control_distributor_base.getRef();
     }
     /// Get a reference to a copy of the model being used by this
     /// MocoProblemRep, but with all constraints disabled and an additional
@@ -117,8 +117,8 @@ public:
     }
     /// This is a component inside ModelDisabledConstraints that you can use to
     /// set the value of control signals.
-    const ControlAllocator& getControlAllocatorDisabledConstraints() const {
-        return m_control_allocator_disabled_constraints.getRef();
+    const ControlDistributor& getControlDistributorDisabledConstraints() const {
+        return m_control_distributor_disabled_constraints.getRef();
     }
     /// This is a component inside ModelDisabledConstraints that you can use
     /// to set the value of discrete forces, intended to hold the constraint
@@ -147,6 +147,11 @@ public:
     /// Does the model contain a PositionMotion to prescribe all generalized
     /// coordinates, speeds, and accelerations?
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
+    /// Do we need to compute controls from the model (e.g., because the model
+    /// contains user-defined controllers)?
+    bool getComputeControlsFromModel() const {
+        return m_computeControlsFromModel;
+    }
     int getNumImplicitAuxiliaryResiduals() const {
         return (int)m_implicit_residual_refs.size();
     }
@@ -380,19 +385,20 @@ private:
 
     Model m_model_base;
     mutable SimTK::State m_state_base;
-    SimTK::ReferencePtr<const ControlAllocator> m_control_allocator_base;
+    SimTK::ReferencePtr<const ControlDistributor> m_control_distributor_base;
     SimTK::ReferencePtr<const PositionMotion> m_position_motion_base;
 
     Model m_model_disabled_constraints;
     mutable std::array<SimTK::State, 2> m_state_disabled_constraints;
-    SimTK::ReferencePtr<const ControlAllocator>
-            m_control_allocator_disabled_constraints;
+    SimTK::ReferencePtr<const ControlDistributor>
+            m_control_distributor_disabled_constraints;
     SimTK::ReferencePtr<const PositionMotion>
             m_position_motion_disabled_constraints;
     SimTK::ReferencePtr<DiscreteForces> m_constraint_forces;
     SimTK::ReferencePtr<AccelerationMotion> m_acceleration_motion;
 
     bool m_prescribedKinematics = false;
+    bool m_computeControlsFromModel = false;
 
     std::unordered_map<std::string, MocoVariableInfo> m_state_infos;
     std::unordered_map<std::string, MocoVariableInfo> m_control_infos;

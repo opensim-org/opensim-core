@@ -18,18 +18,17 @@
 #include "RegisterTypes_osimMoco.h"
 
 #include "Components/AccelerationMotion.h"
+#include "Components/ControlDistributor.h"
 #include "Components/DiscreteForces.h"
 #include "Components/StationPlaneContactForce.h"
-#include "Components/ControlAllocator.h"
 #include "MocoBounds.h"
-#include "MocoScaleFactor.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoControlBoundConstraint.h"
 #include "MocoFrameDistanceConstraint.h"
 #include "MocoGoal/MocoAccelerationTrackingGoal.h"
 #include "MocoGoal/MocoAngularVelocityTrackingGoal.h"
-#include "MocoGoal/MocoContactTrackingGoal.h"
 #include "MocoGoal/MocoContactImpulseTrackingGoal.h"
+#include "MocoGoal/MocoContactTrackingGoal.h"
 #include "MocoGoal/MocoControlGoal.h"
 #include "MocoGoal/MocoControlTrackingGoal.h"
 #include "MocoGoal/MocoGoal.h"
@@ -43,13 +42,14 @@
 #include "MocoGoal/MocoOutputGoal.h"
 #include "MocoGoal/MocoPeriodicityGoal.h"
 #include "MocoGoal/MocoStateTrackingGoal.h"
+#include "MocoGoal/MocoStepLengthAsymmetryGoal.h"
+#include "MocoGoal/MocoStepTimeAsymmetryGoal.h"
 #include "MocoGoal/MocoSumSquaredStateGoal.h"
 #include "MocoGoal/MocoTranslationTrackingGoal.h"
-#include "MocoGoal/MocoStepTimeAsymmetryGoal.h"
-#include "MocoGoal/MocoStepLengthAsymmetryGoal.h"
 #include "MocoInverse.h"
 #include "MocoParameter.h"
 #include "MocoProblem.h"
+#include "MocoScaleFactor.h"
 #include "MocoStudy.h"
 #include "MocoTrack.h"
 #include "MocoTropterSolver.h"
@@ -125,7 +125,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
 
         Object::registerType(DiscreteForces());
         Object::registerType(AccelerationMotion());
-        Object::registerType(ControlAllocator());
+        Object::registerType(ControlDistributor());
 
     } catch (const std::exception& e) {
         std::cerr << "ERROR during osimMoco Object registration:\n"

@@ -19,18 +19,18 @@
 #include "MocoProblemRep.h"
 
 #include "Components/AccelerationMotion.h"
+#include "Components/ControlDistributor.h"
 #include "Components/DiscreteForces.h"
-#include "Components/ControlAllocator.h"
 #include "MocoProblem.h"
 #include "MocoProblemInfo.h"
 #include "MocoScaleFactor.h"
 #include <regex>
 #include <unordered_set>
 
+#include <OpenSim/Simulation/Control/InputController.h>
+#include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Simulation/PositionMotion.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
-#include <OpenSim/Simulation/Control/PrescribedController.h>
-#include <OpenSim/Simulation/Control/InputController.h>
 
 using namespace OpenSim;
 
@@ -118,7 +118,7 @@ void MocoProblemRep::initialize() {
         // if (dynamic_cast<const ActuatorInputController*>(&controller)) {
         //    OPENSIM_THROW(Exception, "Detected controller '{}' of type "
         //            "ActuatorInputController, but user-defined controllers "
-        //            "of this type is not supported.",
+        //            "of this type are not supported.",
         //            controller.getAbsolutePathString())
         // }
 
@@ -127,6 +127,10 @@ void MocoProblemRep::initialize() {
             controlledActuatorPaths.insert(socket.getConnecteePath(i));
         }
     }
+
+    // If user-defined controllers are present, then mark that the solvers will
+    // need to compute control values from the model.
+    m_computeControlsFromModel = !controlledActuatorPaths.empty();
 
     // Add the non-controlled, enabled actuators to an ActuatorInputController.
     auto actuatorController = make_unique<ActuatorInputController>();
@@ -146,21 +150,38 @@ void MocoProblemRep::initialize() {
                 m_model_base);
     }
 
-    // Add a ControlAllocator to the model. This component will distribute the
+    // Add a ControlDistributor to the model. This component will distribute the
     // OCP controls to all InputControllers in the model, including the
-    // ActuatorInputController we just added to control actuators that are not
-    // already controlled by a user-defined controller.
-    auto inputControllerNames =
-            createControlNamesForControllerType<InputController>(m_model_base);
-    auto controlAllocatorUPtr = make_unique<ControlAllocator>();
-    for (const auto& controlName : inputControllerNames) {
-        controlAllocatorUPtr->addControl(controlName);
-    }
-    m_control_allocator_base.reset(controlAllocatorUPtr.get());
-    m_model_base.addComponent(controlAllocatorUPtr.release());
-    m_model_base.finalizeFromProperties();
+    // ActuatorInputController we just added for actuators that are not already
+    // controlled by a user-defined controller.
+    auto controlDistributorUPtr = make_unique<ControlDistributor>();
 
-    // Wire the ControlAllocators to the InputControllers in the model.
+    // If we don't need to compute controls from the model, then we need to add
+    // the controls to the ControlDistributor in system order, which is the
+    // order expected by MocoGoals. Otherwise, just get the control names from
+    // the InputControllers in the model.
+    if (m_computeControlsFromModel) {
+        auto inputControllerControlNames =
+                createControlNamesForControllerType<InputController>(
+                        m_model_base);
+        for (const auto& controlName : inputControllerControlNames) {
+            controlDistributorUPtr->addControl(controlName);
+        }
+    } else {
+        // This is valid since we already checked above that the order of the
+        // controls in the model matches the system controls.
+        for (const auto& controlName :
+                createControlNamesFromModel(m_model_base)) {
+            controlDistributorUPtr->addControl(controlName);
+        }
+    }
+
+    // Add the ControlDistributor to the model.
+    m_control_distributor_base.reset(controlDistributorUPtr.get());
+    m_model_base.addComponent(controlDistributorUPtr.release());
+//    m_model_base.finalizeFromProperties();
+
+    // Wire the ControlDistributor to the InputControllers in the model.
     for (auto& controller : m_model_base.updComponentList<InputController>()) {
         auto& socket = controller.updSocket<Actuator>("actuators");
         for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
@@ -171,13 +192,13 @@ void MocoProblemRep::initialize() {
                     std::string controlName =
                             actuPath + "_" + std::to_string(ic);
                     const auto& channel =
-                            m_control_allocator_base->getOutput("controls")
+                            m_control_distributor_base->getOutput("controls")
                                     .getChannel(controlName);
                     controller.connectInput_inputs(channel, controlName);
                 }
             } else {
                 const auto& channel =
-                        m_control_allocator_base->getOutput("controls")
+                        m_control_distributor_base->getOutput("controls")
                                 .getChannel(actuPath);
                 controller.connectInput_inputs(channel, actuPath);
             }
@@ -275,8 +296,8 @@ void MocoProblemRep::initialize() {
     m_model_disabled_constraints.addComponent(constraintForcesUPtr.release());
 
     m_model_disabled_constraints.finalizeFromProperties();
-    m_control_allocator_disabled_constraints.reset(
-            &*m_model_disabled_constraints.getComponentList<ControlAllocator>().begin());
+    m_control_distributor_disabled_constraints.reset(
+            &*m_model_disabled_constraints.getComponentList<ControlDistributor>().begin());
 
 
     if (!m_prescribedKinematics) {

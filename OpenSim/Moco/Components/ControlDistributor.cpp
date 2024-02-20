@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim: ControlAllocator.cpp                                              *
+ * OpenSim: ControlDistributor.cpp                                            *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,39 +16,40 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "ControlAllocator.h"
+#include "ControlDistributor.h"
 
 using namespace OpenSim;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
-ControlAllocator::ControlAllocator() = default;
+ControlDistributor::ControlDistributor() = default;
 
-ControlAllocator::~ControlAllocator() noexcept = default;
+ControlDistributor::~ControlDistributor() noexcept = default;
 
-ControlAllocator::ControlAllocator(const ControlAllocator&) = default;
+ControlDistributor::ControlDistributor(const ControlDistributor&) = default;
 
-ControlAllocator::ControlAllocator(ControlAllocator&&) = default;
+ControlDistributor::ControlDistributor(ControlDistributor&&) = default;
 
-ControlAllocator& ControlAllocator::operator=(const ControlAllocator&) = default;
+ControlDistributor& ControlDistributor::operator=(const ControlDistributor&) = default;
 
-ControlAllocator& ControlAllocator::operator=(ControlAllocator&&) = default;
+ControlDistributor& ControlDistributor::operator=(
+        ControlDistributor&&) = default;
 
 //=============================================================================
 // GET AND SET
 //=============================================================================
-void ControlAllocator::addControl(const std::string& controlName) {
+void ControlDistributor::addControl(const std::string& controlName) {
     const int index = (int)m_controlIndexMap.size();
     m_controlIndexMap[controlName] = index;
 }
 
-void ControlAllocator::setControls(SimTK::State& s,
+void ControlDistributor::setControls(SimTK::State& s,
         const SimTK::Vector& controls) const {
     updControls(s) = controls;
 }
 
-SimTK::Vector& ControlAllocator::updControls(SimTK::State& s) const {
+SimTK::Vector& ControlDistributor::updControls(SimTK::State& s) const {
     const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
     auto& dv = subSys.updDiscreteVariable(s, m_discreteVarIndex);
     auto& discreteControls =
@@ -56,7 +57,7 @@ SimTK::Vector& ControlAllocator::updControls(SimTK::State& s) const {
     return discreteControls;
 }
 
-const SimTK::Vector& ControlAllocator::getControls(
+const SimTK::Vector& ControlDistributor::getControls(
         const SimTK::State& s) const {
     const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
     auto& dv = subSys.getDiscreteVariable(s, m_discreteVarIndex);
@@ -64,12 +65,12 @@ const SimTK::Vector& ControlAllocator::getControls(
     return discreteControls;
 }
 
-double ControlAllocator::getControlForOutputChannel(const SimTK::State& s,
+double ControlDistributor::getControlForOutputChannel(const SimTK::State& s,
         const std::string& channel) const {
     return getControls(s)[m_controlIndexMap.at(channel)];
 }
 
-std::vector<std::string> ControlAllocator::getControlNamesInOrder() const {
+std::vector<std::string> ControlDistributor::getControlNamesInOrder() const {
     // Return the control names in ascending order of their indices.
     std::vector<std::string> names;
     names.reserve(m_controlIndexMap.size());
@@ -86,7 +87,7 @@ std::vector<std::string> ControlAllocator::getControlNamesInOrder() const {
 //=============================================================================
 // MODEL COMPONENT INTERFACE
 //=============================================================================
-void ControlAllocator::extendRealizeTopology(SimTK::State& state) const {
+void ControlDistributor::extendRealizeTopology(SimTK::State& state) const {
     Super::extendRealizeTopology(state);
     const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
     const SimTK::Vector initControls(
@@ -96,7 +97,7 @@ void ControlAllocator::extendRealizeTopology(SimTK::State& state) const {
                     new SimTK::Value<SimTK::Vector>(initControls));
 }
 
-void ControlAllocator::extendFinalizeFromProperties() {
+void ControlDistributor::extendFinalizeFromProperties() {
     Super::extendFinalizeFromProperties();
     for (const auto& kv : m_controlIndexMap) {
         updOutput("controls").addChannel(kv.first);

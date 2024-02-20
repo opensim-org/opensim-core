@@ -127,7 +127,6 @@ private:
     mutable std::vector<int> m_controlIndices;
     mutable std::vector<std::string> m_controlNames;
     mutable std::function<double(const double&)> m_power_function;
-    mutable bool m_computeControlsFromModel = false;
 };
 
 } // namespace OpenSim
