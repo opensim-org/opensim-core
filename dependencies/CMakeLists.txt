@@ -347,10 +347,9 @@ else()
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
 
         ExternalProject_Add(ipopt
-            GIT_REPOSITORY https://github.com/jgillis/Ipopt-1.git
-			GIT_TAG        3.14.11.mod
+            URL https://github.com/coin-or/Ipopt/archive/refs/tags/releases/3.14.14.zip
             INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
-            # PATCH_COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && patch < ${CMAKE_SOURCE_DIR}/get.Metis.patch
+            #PATCH_COMMAND cd <SOURCE_DIR>/ && patch < ${CMAKE_SOURCE_DIR}/joris_fixipopt.patch
             #      COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && ./get.Metis
             #      COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && patch < ${CMAKE_SOURCE_DIR}/get.Mumps.patch
             #      COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && ./get.Mumps
@@ -369,7 +368,11 @@ if(SUPERBUILD_casadi)
                   DEFAULT    ON
                   # DEPENDS    ipopt
                   GIT_URL    https://github.com/casadi/casadi.git
+<<<<<<< HEAD
                   # This commit is from casadi's release page https://github.com/casadi/casadi/releases/tag/3.6.4
+=======
+                  # This commit is from casadi's develop branch, 2020-06-20
+>>>>>>> c2ef30929 (Add patch on top of a tagged ipopt)
                   GIT_TAG    3.6.4
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
                              -DWITH_BUILD_IPOPT:BOOL=ON
