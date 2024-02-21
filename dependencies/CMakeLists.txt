@@ -235,8 +235,8 @@ mark_as_advanced(SUPERBUILD_colpack)
 
 CMAKE_DEPENDENT_OPTION(SUPERBUILD_adolc "Automatically download, configure, build and install adolc" ON
                        "OPENSIM_WITH_TROPTER" OFF)
-#CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
-#                       "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
+CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
+                       "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
 endif()
 
 if (OPENSIM_WITH_CASADI)
@@ -341,7 +341,7 @@ else()
             GIT_REPOSITORY    https://github.com/coin-or-tools/ThirdParty-Metis.git
             GIT_TAG           releases/1.3.10
             PATCH_COMMAND cd <SOURCE_DIR> && ./get.Metis
-            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch ADD_CFLAGS=-Wno-error=implicit-function-declaration
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/metis"
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
@@ -366,20 +366,11 @@ endif()
 if(SUPERBUILD_casadi)
     AddDependency(NAME       casadi
                   DEFAULT    ON
-                  # DEPENDS    ipopt
+                  DEPENDS    ipopt
                   GIT_URL    https://github.com/casadi/casadi.git
-<<<<<<< HEAD
-                  # This commit is from casadi's release page https://github.com/casadi/casadi/releases/tag/3.6.4
-=======
-                  # This commit is from casadi's develop branch, 2020-06-20
->>>>>>> c2ef30929 (Add patch on top of a tagged ipopt)
                   GIT_TAG    3.6.4
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
-                             -DWITH_BUILD_IPOPT:BOOL=ON
                              -DWITH_BUILD_MUMPS:BOOL=ON
-                             -DWITH_BUILD_METIS:BOOL=ON
-                             -DBUILD_IPOPT_GIT_REPO:STRING=https://github.com/jgillis/Ipopt-1.git
-                             -DBUILD_IPOPT_VERSION:STRING=3.14.11.mod
                              -DWITH_EXAMPLES:BOOL=OFF
                              -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
                              -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt
