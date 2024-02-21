@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim: ControlDistributor.cpp                                            *
+*                      OpenSim: ControlDistributor.cpp                        *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *

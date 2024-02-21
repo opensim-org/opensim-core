@@ -1,7 +1,7 @@
 #ifndef OPENSIM_CONTROL_DISTRIBUTOR_H
 #define OPENSIM_CONTROL_DISTRIBUTOR_H
 /* -------------------------------------------------------------------------- *
- * OpenSim: ControlDistributor.h                                              *
+ *                      OpenSim: ControlDistributor.h                         *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
@@ -51,7 +51,7 @@ namespace OpenSim {
  * auto controlDistributor = make_unique<ControlDistributor>();
  * controlDistributor->addControl("/forceset/soleus_r");
  * controlDistributor->addControl("/my_input_controller_value");
- * controlDistributor->addControl("/path/to/my_custom_component_input");
+ * controlDistributor->addControl("/my_custom_component_input");
  * model.addComponent(controlDistributor.release());
  * @endcode
  *

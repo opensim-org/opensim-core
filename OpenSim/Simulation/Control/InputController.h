@@ -88,9 +88,25 @@ public:
      * to provide a list of expected Input channel connections to Output channels
      * from other components.
      *
-     * @note Since the alias names may depend on the list of connected actuators,
-     *       this is only valid after actuators are connected and
-     *       Model::finalizeConnections() has been called.
+     * Since the alias names may depend on the actuator names, this is only
+     * valid after actuators have been connected and Socket::finalizeConnection()
+     * has been called:
+     *
+     * @code
+     * // Create an ActuatorInputController and add it to the model.
+     * ActuatorInputController* controller = new ActuatorInputController();
+     * controller->setName("my_actuator_controller");
+     * controller->addActuator(actu1);
+     * controller->addActuator(actu2);
+     * ...
+     * model.addComponent(controller);
+     *
+     * // Connect the actuators to the controller.
+     * controller->updSocket<Actuator>("actuators").finalizeConnection(model);
+     *
+     * // Get the expected Input channel aliases.
+     * auto expectedAliases = controller->getExpectedInputChannelAliases();
+     * @endcode
      */
     virtual std::vector<std::string> getExpectedInputChannelAliases() const = 0;
 

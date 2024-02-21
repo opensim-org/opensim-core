@@ -51,16 +51,10 @@ InputController& InputController::operator=(InputController&& other) = default;
 // METHODS
 //=============================================================================
 const std::vector<std::string>& InputController::getControlNames() const {
-    OPENSIM_THROW_IF_FRMOBJ(m_controlNames.empty(), Exception,
-            "The list of control names is empty. Have you connected all "
-            "actuators and called Model::finalizeConnections()?");
     return m_controlNames;
 }
 
 const std::vector<int>& InputController::getControlIndexes() const {
-    OPENSIM_THROW_IF_FRMOBJ(m_controlNames.empty(), Exception,
-            "The list of control indexes is empty. Have you connected all "
-            "actuators and called Model::finalizeConnections()?");
     return m_controlIndexes;
 }
 
@@ -75,7 +69,7 @@ void InputController::extendConnectToModel(Model& model) {
     // model control cache indexes.
     std::vector<int> modelControlIndexes;
     const std::vector<std::string> modelControlNames =
-        createControlNamesFromModel(model, modelControlIndexes);
+            createControlNamesFromModel(model, modelControlIndexes);
 
     // Based on the controller's ActuatorSet, store lists of the control
     // names and their indexes in the model control cache.
@@ -88,21 +82,21 @@ void InputController::extendConnectToModel(Model& model) {
             // Non-scalar actuator.
             for (int j = 0; j < actu.numControls(); ++j) {
                 // Use the control name format based on
-                // SimulationUtiltiies::createControlNamesFromModel().
+                // SimulationUtilities::createControlNamesFromModel().
                 m_controlNames.push_back(
-                    fmt::format("{}_{}", actu.getAbsolutePathString(), j));
+                        fmt::format("{}_{}", actu.getAbsolutePathString(), j));
                 auto it = std::find(modelControlNames.begin(),
-                    modelControlNames.end(), m_controlNames.back());
+                        modelControlNames.end(), m_controlNames.back());
                 m_controlIndexes.push_back(
-                    modelControlIndexes[it - modelControlNames.begin()]);
+                        modelControlIndexes[it - modelControlNames.begin()]);
             }
         } else {
             // Scalar actuator.
             m_controlNames.push_back(actu.getAbsolutePathString());
             auto it = std::find(modelControlNames.begin(),
-                modelControlNames.end(), m_controlNames.back());
+                    modelControlNames.end(), m_controlNames.back());
             m_controlIndexes.push_back(
-                modelControlIndexes[it - modelControlNames.begin()]);
+                    modelControlIndexes[it - modelControlNames.begin()]);
         }
     }
 
@@ -149,13 +143,34 @@ void ActuatorInputController::computeControls(const SimTK::State& s,
 //=============================================================================
 std::vector<std::string>
 ActuatorInputController::getExpectedInputChannelAliases() const {
-    return getControlNames();
+    std::vector<std::string> aliases;
+
+    // Based on the controller's ActuatorSet, store lists of the control
+    // names and their indexes in the model control cache.
+    const auto& socket = getSocket<Actuator>("actuators");
+    for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
+        const auto& actu = socket.getConnectee(i);
+        if (actu.numControls() > 1) {
+            // Non-scalar actuator.
+            for (int j = 0; j < actu.numControls(); ++j) {
+                // Use the control name format based on
+                // SimulationUtilities::createControlNamesFromModel().
+                aliases.push_back(
+                        fmt::format("{}_{}", actu.getAbsolutePathString(), j));
+            }
+        } else {
+            // Scalar actuator.
+            aliases.push_back(actu.getAbsolutePathString());
+        }
+    }
+
+    return aliases;
 }
 
 //=============================================================================
 // MODEL COMPONENT INTERFACE
 //=============================================================================
-void ActuatorInputController::extendConnectToModel(Model& model) {
+void ActuatorInputController::extendConnectToModel(OpenSim::Model& model) {
     Super::extendConnectToModel(model);
 
     const auto& controlNames = getControlNames();
