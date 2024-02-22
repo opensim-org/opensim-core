@@ -222,9 +222,9 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
     fclose(file2Remove);
 
     Model guiModel("gait2354_simbody.osim");
-    
+
     // Keep track of the folder containing setup file, will be used to locate results to compare against
-    std::unique_ptr<MarkerSet> markerSet{ 
+    std::unique_ptr<MarkerSet> markerSet{
         new MarkerSet(setupFilePath + subject->getGenericModelMaker().getMarkerSetFileName()) };
     guiModel.updateMarkerSet(*markerSet);
 
@@ -234,7 +234,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
     guiModel.getMultibodySystem().realizeTopology();
     SimTK::State* configState=&guiModel.updWorkingState();
     subject->getModelScaler().processModel(&guiModel, setupFilePath, subject->getSubjectMass());
-    // Model has changed need to recreate a valid state 
+    // Model has changed need to recreate a valid state
     guiModel.getMultibodySystem().realizeTopology();
     configState=&guiModel.updWorkingState();
     guiModel.getMultibodySystem().realize(*configState, SimTK::Stage::Position);
@@ -242,7 +242,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
 
     if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
         const MarkerPlacer& placer = subject->getMarkerPlacer();
-        if( false == placer.processModel(&guiModel, subject->getPathToSubject())) 
+        if( false == placer.processModel(&guiModel, subject->getPathToSubject()))
             throw Exception("testScale failed to place markers");
     }
 
@@ -309,7 +309,7 @@ void scaleModelWithLigament()
     }
 
     //Finally make sure we didn't incorrectly scale anything else in the model
-    ASSERT(std == comp, __FILE__, __LINE__, 
+    ASSERT(std == comp, __FILE__, __LINE__,
             "Standard model failed to match scaled.");
 
     compareModelToStandard("comp_toyLigamentModelScaled_latest.osim",
