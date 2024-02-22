@@ -116,14 +116,14 @@ public:
     int getNumRefs() const override;
     /** get the time range for which the OrientationsReference values are valid,
         based on the loaded orientation data.*/
-    virtual SimTK::Vec2 getValidTimeRange() const override;
+    SimTK::Vec2 getValidTimeRange() const override;
     /** get the times at which the OrientationsReference values are specified,
         based on the loaded orientation data.*/
     const std::vector<double>& getTimes() const;
     /** get the names of the Orientations serving as references */
     const SimTK::Array_<std::string>& getNames() const override;
     /** get the value of the OrientationsReference */
-    virtual void getValuesAtTime(double time,
+    void getValuesAtTime(double time,
         SimTK::Array_<SimTK::Rotation_<double>>& values) const override;
     /** Default implementation does not support streaming */
     virtual double getNextValuesAndTime(
