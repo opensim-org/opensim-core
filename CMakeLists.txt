@@ -438,9 +438,6 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
             NOT (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "5.0.0"))
         add_compile_options(-Wno-unused-local-typedefs)
     endif()
-    # There are so many warnings about using GCC > 7.1. It should be mostly
-    # harmless, so we can disable it. 
-    add_compile_options(-Wno-psabi)
 endif()
 
 ## When building in any of the Release modes, tell VC++ cl compiler to use intrinsics
