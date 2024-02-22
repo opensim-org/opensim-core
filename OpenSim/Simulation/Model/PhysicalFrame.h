@@ -153,6 +153,7 @@ public:
     void addWrapObject(WrapObject* wrapObject);
     ///@}
 
+protected:
     /** @name Advanced: PhysicalFrame Developer Interface
     These methods are intended for PhysicalFrame builders. */
     ///@{
@@ -163,7 +164,18 @@ public:
     */
     void setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const;
 
-protected:
+    /**
+     * @name Advanced: PhysicalFrame Developer Interface
+     *
+     * Call `setMobilizedBodyIndex` on `other` with the given `SimTK::MobilizedBodyIndex`
+     *
+     * This is useful when implementing custom frames that need to set the index on other
+     * frames they are attached to (e.g. `PhysicalOffsetFrame` needs to set it on its `parent`)
+     */
+    void setMobilizedBodyIndexOf(PhysicalFrame const& other, const SimTK::MobilizedBodyIndex& mbix) const
+    {
+        other.setMobilizedBodyIndex(mbix);
+    }
 
     /**
      * @name Advanced: PhysicalFrame Developer Interface
