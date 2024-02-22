@@ -346,6 +346,8 @@ else()
             INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/metis"
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
 
+        # GCC 10 generates a warning when compling MUMPS that we must suppress using
+        # -fallow-argument-mismatch.
         ExternalProject_Add(mumps
             GIT_REPOSITORY    https://github.com/coin-or-tools/ThirdParty-Mumps.git
             GIT_TAG           releases/3.0.5
@@ -360,13 +362,8 @@ else()
             URL https://github.com/coin-or/Ipopt/archive/refs/tags/releases/3.14.14.zip
             INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
             #PATCH_COMMAND cd <SOURCE_DIR>/ && patch < ${CMAKE_SOURCE_DIR}/joris_fixipopt.patch
-            #      COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && ./get.Metis
-            #      COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && patch < ${CMAKE_SOURCE_DIR}/get.Mumps.patch
-            #      COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && ./get.Mumps
-            # GCC 10 generates a warning when compling MUMPS that we must suppress using
-            # -fallow-argument-mismatch.
             # Suppress warnings treated as errors in Clang/LLVM with -Wno-error=implicit-function-declaration
-            CONFIGURE_COMMAND <SOURCE_DIR>/configure --with-mumps --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch ADD_CFLAGS=-Wno-error=implicit-function-declaration
+            CONFIGURE_COMMAND <SOURCE_DIR>/configure --with-mumps --prefix=<INSTALL_DIR> --with-mumps-cflags="-I${CMAKE_INSTALL_PREFIX}/mumps/include/coin-or/mumps" --with-mumps-lflags="-L${CMAKE_INSTALL_PREFIX}/mumps/lib -lcoinmumps"
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()
