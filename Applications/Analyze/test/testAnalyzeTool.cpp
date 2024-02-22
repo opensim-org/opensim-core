@@ -70,7 +70,7 @@ int main()
     // produce passive force-length curve
     try { testTugOfWar("Tug_of_War_ConstantVelocity.sto", 0.01); }
     catch (const std::exception& e) {
-        cout << e.what() << endl; 
+        cout << e.what() << endl;
         failures.push_back("testTugOfWar CoordinatesOnly: default_act = 0.01");
     }
 
@@ -88,28 +88,28 @@ int main()
         failures.push_back("testTugOfWar with activation state provided");
     }
 
-    try { testActuationAnalysisWithDisabledForce(); } 
+    try { testActuationAnalysisWithDisabledForce(); }
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testActuationAnalysisWithDisabledForce");
     }
     try { testBodyKinematics(); }
-    catch (const std::exception& e) { 
+    catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testBodyKinematics");
-    }   
+    }
     try {
         testIMUDataReporter();
     } catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testIMUDataReporter");
-    }   
+    }
     try {
         testMuscleAnalysisSerialization();
     } catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testMuscleAnalysisSerialization");
-    }   
+    }
 
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
@@ -155,7 +155,7 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
     Millard2012EquilibriumMuscle& muscle =
         static_cast<Millard2012EquilibriumMuscle&>(model.updMuscles()[0]);
     bool isCoordinatesOnly = true;
-    // Load in the States used to recompute the results of the Analysis 
+    // Load in the States used to recompute the results of the Analysis
     Storage dataStore(dataFileName);
     if (dataStore.getColumnLabels().findIndex(muscle.getName() + ".activation") > 0) {
         isCoordinatesOnly = false;
@@ -190,7 +190,7 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
     double af, pf, mf, tf, fl;
     af= pf = mf = tf = fl = SimTK::NaN;
 
-    // Tolerance for muscle equilibrium solution 
+    // Tolerance for muscle equilibrium solution
     const double equilTol = muscle.getMaxIsometricForce()*SimTK::SqrtEps;
 
     // The maximum acceptable change in force between two contiguous states
@@ -238,7 +238,7 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
             SimTK_ASSERT_ALWAYS(muscle.getActivation(s) == s.getTime(),
                 "Test failed to correctly use the supplied activation values.");
         }
- 
+
         // get active and passive forces given the default activation
         af = muscle.getActiveFiberForceAlongTendon(s);
         pf = muscle.getPassiveFiberForceAlongTendon(s);
@@ -283,14 +283,14 @@ void testActuationAnalysisWithDisabledForce() {
     // data columns will throw.
     TimeSeriesTable_<double> act_force_table(
             resultsDir + "/BothLegs_Actuation_force.sto");
-    
+
     // Let's also check that the number of columns is correct (i.e.,
     // (number of muscles in the model) - 1).
-    ASSERT_EQUAL(model.getMuscles().getSize() - 1, 
+    ASSERT_EQUAL(model.getMuscles().getSize() - 1,
             (int)act_force_table.getNumColumns());
 }
 
-void testBodyKinematics() { 
+void testBodyKinematics() {
     Model model;
     model.setGravity(SimTK::Vec3(0));
     Body* body = new Body("body", 1, SimTK::Vec3(0), SimTK::Inertia(1));
@@ -591,7 +591,7 @@ void testIMUDataReporter() {
     }
 }
 void testMuscleAnalysisSerialization()
-{ 
+{
     MuscleAnalysis m;
     m.setComputeMoments(true);
     m.print("manalysis.xml");

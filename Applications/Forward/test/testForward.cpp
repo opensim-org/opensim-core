@@ -236,7 +236,7 @@ void testGait2354WithControllerGUI() {
 
     Model* model = new Model(origModel);
     model->initSystem();
-    
+
     const std::string resultsDir{ "ResultsCorrectionControllerGUI" };
 
     forward.setResultsDir(resultsDir);
@@ -256,6 +256,6 @@ void testGait2354WithControllerGUI() {
 
     CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols,
         __FILE__, __LINE__, "testGait2354WithControllerGUI failed");
-    
+
     delete model;
 }
