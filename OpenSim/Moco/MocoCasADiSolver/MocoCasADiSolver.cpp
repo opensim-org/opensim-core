@@ -423,7 +423,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
             const auto& state = statesTraj.get(i);
             model.realizeDynamics(state);
             const auto& controls = model.getControls(state);
-            for (int j = 0; j < missingControlNames.size(); ++j) {
+            for (int j = 0; j < numMissingControls; ++j) {
                 missingControls(j, i) = controls.get(
                         controlIndexMap.at(missingControlNames[j]));
             }
