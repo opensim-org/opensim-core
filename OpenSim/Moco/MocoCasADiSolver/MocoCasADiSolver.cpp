@@ -418,7 +418,8 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
 
         // Compute the missing controls from the model.
         auto statesTraj = mocoSolution.exportToStatesTrajectory(model);
-        for (int i = 0; i < statesTraj.getSize(); ++i) {
+        int numMissingControls = static_cast<int>(missingControlNames.size());
+        for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
             const auto& state = statesTraj.get(i);
             model.realizeDynamics(state);
             const auto& controls = model.getControls(state);
