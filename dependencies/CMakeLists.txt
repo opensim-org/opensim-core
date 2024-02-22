@@ -212,8 +212,8 @@ AddDependency(NAME       catch2
 # --------------
 option(OPENSIM_WITH_CASADI
         "Build CasADi support for Moco (MocoCasADiSolver)." OFF)
-#option(OPENSIM_WITH_TROPTER
-#        "Build the tropter optimal control library, for use in MocoTropterSolver." OFF)
+option(OPENSIM_WITH_TROPTER
+        "Build the tropter optimal control library, for use in MocoTropterSolver." OFF)
 
 
 if(OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI)
@@ -346,7 +346,17 @@ else()
             INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/metis"
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
 
+        ExternalProject_Add(mumps
+            GIT_REPOSITORY    https://github.com/coin-or-tools/ThirdParty-Mumps.git
+            GIT_TAG           releases/3.0.5
+            PATCH_COMMAND cd <SOURCE_DIR> && ./get.Mumps
+            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch ADD_CFLAGS=-Wno-error=implicit-function-declaration
+            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
+            INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/mumps"
+            INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
+            
         ExternalProject_Add(ipopt
+            DEPENDS           mumps metis
             URL https://github.com/coin-or/Ipopt/archive/refs/tags/releases/3.14.14.zip
             INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
             #PATCH_COMMAND cd <SOURCE_DIR>/ && patch < ${CMAKE_SOURCE_DIR}/joris_fixipopt.patch

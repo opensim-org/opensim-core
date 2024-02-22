@@ -8,10 +8,11 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
     # Get the actual name of the library libgcc_s.1.dylib (can be libgcc_s.1.1.dylib),
     # or another if it changes in the future.
     execute_process(COMMAND bash "-c"
-        "basename `otool -L ${IPOPT_LIBDIR}/libcoinmumps.dylib  | grep 'libgcc' | awk '{print $1}'`"
+        "basename `otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libgcc' | awk '{print $1}'`"
         OUTPUT_VARIABLE libgcc_name
         OUTPUT_STRIP_TRAILING_WHITESPACE)
-
+        
+    message("DIRS ADOLC, COLPACK, IPOPT, gf, qm, gcc", ${ADOLC_DIR}, ${ColPack_ROOT_DIR}, ${IPOPT_LIBDIR}, ${gfortran}, ${quadmath}, ${gcc_libdir})
     install(FILES
             ${ADOLC_DIR}/lib64/libadolc.2.dylib
             ${ADOLC_DIR}/lib64/libadolc.dylib
@@ -20,16 +21,16 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             ${IPOPT_LIBDIR}/libipopt.1.10.8.dylib
             ${IPOPT_LIBDIR}/libipopt.1.dylib
             ${IPOPT_LIBDIR}/libipopt.dylib
-            ${IPOPT_LIBDIR}/libcoinmumps.1.6.0.dylib
-            ${IPOPT_LIBDIR}/libcoinmumps.1.dylib
-            ${IPOPT_LIBDIR}/libcoinmumps.dylib
-            ${IPOPT_LIBDIR}/libcoinmetis.1.3.5.dylib
-            ${IPOPT_LIBDIR}/libcoinmetis.1.dylib
-            ${IPOPT_LIBDIR}/libcoinmetis.dylib
+            # #${IPOPT_LIBDIR}/libcoinmumps.1.6.0.dylib
+            # #${IPOPT_LIBDIR}/libcoinmumps.1.dylib
+            # #${IPOPT_LIBDIR}/libcoinmumps.dylib
+            # ${IPOPT_LIBDIR}/libcoinmetis.1.3.5.dylib
+            # ${IPOPT_LIBDIR}/libcoinmetis.1.dylib
+            # ${IPOPT_LIBDIR}/libcoinmetis.dylib
 
-            ${gfortran}
-            ${quadmath}
-            ${gcc_libdir}/${libgcc_name}
+            # ${gfortran}
+            # ${quadmath}
+            # ${gcc_libdir}/${libgcc_name}
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
