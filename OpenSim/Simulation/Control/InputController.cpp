@@ -144,9 +144,6 @@ void ActuatorInputController::computeControls(const SimTK::State& s,
 std::vector<std::string>
 ActuatorInputController::getExpectedInputChannelAliases() const {
     std::vector<std::string> aliases;
-
-    // Based on the controller's ActuatorSet, store lists of the control
-    // names and their indexes in the model control cache.
     const auto& socket = getSocket<Actuator>("actuators");
     for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
         const auto& actu = socket.getConnectee(i);
