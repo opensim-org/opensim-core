@@ -357,8 +357,8 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     MocoSolution mocoSolution = ocp->convertToMocoSolution(tropSolution);
 
     // If user-defined controllers are present in the model, then check for
-    // missing model controls in the CasADi solution and append them to the
-    // CasADi solution.
+    // missing model controls in the tropter solution and append them to the
+    // tropter solution.
     // TODO: this would need to be updated if we allowed stacking OCP controls
     //       on top of user-defined controls.
     if (getProblemRep().getComputeControlsFromModel()) {
@@ -366,7 +366,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
         auto modelControlNames = createControlNamesFromModel(model);
         auto controlIndexMap = createSystemControlIndexMap(model);
 
-        // Find model control names that are not in the CasADi solution.
+        // Find model control names that are not in the tropter solution.
         auto tropControlNames = tropSolution.control_names;
         std::vector<std::string> missingControlNames;
         for (const auto& modelControlName : modelControlNames) {
@@ -376,7 +376,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
             }
         }
 
-        // Allocate space for the missing controls in the CasADi solution.
+        // Allocate space for the missing controls in the tropter solution.
         Eigen::MatrixXd tropControls = tropSolution.controls;
         Eigen::MatrixXd finalControls(
                 tropControls.rows() + missingControlNames.size(),
@@ -399,7 +399,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
             }
         }
 
-        // Append the missing controls to the CasADi solution and
+        // Append the missing controls to the tropter solution and
         // regenerate the MocoSolution.
         finalControls.block(tropControls.rows(), 0, missingControls.rows(),
                 tropControls.cols()) = missingControls;
