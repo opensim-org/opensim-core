@@ -25,10 +25,10 @@
 
 #include "OpenSim/Simulation/Model/ModelComponent.h"
 #include "OpenSim/Simulation/Model/PhysicalFrame.h"
+#include "OpenSim/Simulation/GeodesicWrapping/ImplicitSurfaceParameters.h"
 
 namespace OpenSim {
 
-class ImplicitSurfaceParametersImpl;
 class GeodesicPathSegment;
 
 //=============================================================================
@@ -66,6 +66,9 @@ public:
 //==============================================================================
     OpenSim_DECLARE_PROPERTY(current_form, std::string,
             "The current form of the surface used to compute geodesics.");
+    OpenSim_DECLARE_PROPERTY(appearance, Appearance,
+            "Default display properties for this surface including, color, "
+            "texture, and representation.");
 
 //==============================================================================
 // METHODS
@@ -84,15 +87,12 @@ public:
     virtual bool isAnalyticFormAvailable() const = 0;
     virtual Form getDefaultForm() const = 0;
 
+    virtual std::unique_ptr<ImplicitSurfaceParametersImpl>
+    generateImplicitSurfaceParametersImpl() const;
+
 protected:
     // MODEL COMPONENT INTERFACE
     void extendFinalizeFromProperties() override;
-
-    // INTERFACE METHODS
-    virtual std::unique_ptr<ImplicitSurfaceParamsImpl>
-    generateImplicitSurface() const;
-
-    friend GeodesicPathSegment;
 };
 
 //=============================================================================
@@ -112,7 +112,7 @@ public:
 
     // CONSTRUCTION AND DESTRUCTION
     GeodesicWrapCylinder();
-    GeodesicWrapCylinder(SimTK::Real radius);
+    explicit GeodesicWrapCylinder(SimTK::Real radius);
 
     // GET AND SET
     SimTK::Real getRadius() const;
@@ -124,13 +124,18 @@ public:
     bool isAnalyticFormAvailable() const override { return true; }
     Form getDefaultForm() const override { return Form::Implicit; }
 
+    virtual std::unique_ptr<ImplicitSurfaceParametersImpl>
+    generateImplicitSurfaceParametersImpl() const override;
+
 protected:
     OpenSim_DECLARE_PROPERTY(radius, SimTK::Real,
             "The radius of the cylindrical surface (default: 1.0).");
 
-    // GEODESIC WRAP SURFACE INTERFACE
-    virtual std::unique_ptr<ImplicitSurfaceParametersImpl>
-    generateImplicitSurface() const override;
+    // Display geometry.
+    void generateDecorations(bool fixed,
+            const ModelDisplayHints& hints,
+            const SimTK::State& state,
+            SimTK::Array_<SimTK::DecorativeGeometry>& geometries) const override;
 };
 
 } // namespace OpenSim

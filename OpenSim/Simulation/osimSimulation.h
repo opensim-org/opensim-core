@@ -84,6 +84,7 @@
 #include "Control/PrescribedController.h"
 
 #include "GeodesicWrapping/GeodesicWrapSurface.h"
+#include "GeodesicWrapping/GeodesicState.h"
 
 #include "Wrap/PathWrap.h"
 #include "Wrap/PathWrapSet.h"

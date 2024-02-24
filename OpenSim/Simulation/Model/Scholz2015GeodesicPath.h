@@ -25,95 +25,18 @@
 
 #include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
 #include <OpenSim/Simulation/Model/Station.h>
-#include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/GeodesicWrapping/GeodesicWrapSurface.h>
-//#include <OpenSim/Simulation/GeodesicWrapping/GeodesicWrapSolver.h>
+#include <OpenSim/Simulation/GeodesicWrapping/GeodesicState.h>
+#include <OpenSim/Common/Exception.h>
 
 namespace OpenSim {
 
-// TODO: temporary, only used to check compilation.
-class Geodesic : public Component {
-    OpenSim_DECLARE_CONCRETE_OBJECT(Geodesic, Component);
-public:
-    std::string getValueAsString() const {
-        return "TODO";
-    }
-};
-struct GeodesicWrappingPath {
-};
-struct GeodesicWrapSolver {
-};
-struct GeodesicWrapObject {
+// TODO
+class GeodesicWrapSolver {
 };
 
-/**
- * A helper class to allow storing a collection of geodesics belonging to a
- * GeodesicPathSegment in a discrete variable.
- */
- // TODO: probably move to wherever we define Geodesic.
-class Geodesics : public SimTK::AbstractValue {
-
-public:
-    Geodesics() = default;
-
-    void set(const std::vector<Geodesic>& geodesics) {
-        _geodesics = geodesics;
-    }
-
-    const std::vector<Geodesic>& get() const {
-        return _geodesics;
-    }
-
-    std::vector<Geodesic>& upd() {
-        return _geodesics;
-    }
-
-    Geodesics* clone() const override {
-        return new Geodesics(*this);
-    }
-
-    SimTK::String getTypeName() const override {
-        return "Geodesics";
-    }
-
-    SimTK::String getValueAsString() const override {
-         std::stringstream ss;
-         for (const auto& geodesic : _geodesics) {
-             ss << geodesic.getValueAsString() << std::endl;
-         }
-         return ss.str();
-    }
-
-    static bool isA(const AbstractValue& value) {
-        return dynamic_cast<const Geodesics*>(&value) != nullptr;
-    }
-
-    bool isCompatible(const AbstractValue& value) const override {
-        return isA(value);
-    }
-
-    void compatibleAssign(const AbstractValue& value) override {
-        if (!isA(value)) {
-            OPENSIM_THROW(Exception,
-                    "Geodesics::compatibleAssign(): incompatible value.");
-        }
-
-        *this = dynamic_cast<const Geodesics&>(value);
-    }
-
-private:
-    std::vector<Geodesic> _geodesics;
-
-    // Disable public usage of the getValue() and setValue() methods, which are
-    // not relevant to this class (they depend on Value<T>).
-    using SimTK::AbstractValue::getValue;
-    using SimTK::AbstractValue::updValue;
-};
-
-
- // TODO this class might deserve its own file.
 class OSIMSIMULATION_API GeodesicPathSegment : public ModelComponent {
-    OpenSim_DECLARE_CONCRETE_OBJECT(GeodesicPathSegment, ModelComponent);
+OpenSim_DECLARE_CONCRETE_OBJECT(GeodesicPathSegment, ModelComponent);
 
 public:
 //=============================================================================
@@ -129,34 +52,42 @@ public:
 //=============================================================================
 // SOCKETS
 //=============================================================================
-    OpenSim_DECLARE_LIST_PROPERTY(default_geodesics, Geodesic,
-            "TODO must match number of 'surfaces' and be in the same order.");
+    OpenSim_DECLARE_LIST_PROPERTY(initial_conditions, GeodesicInitialConditions,
+            "TODO must match number and order of surfaces");
 
 //=============================================================================
 // METHODS
 //=============================================================================
-    // CONSTRUCTION
+    // CONSTRUCTION AND DESTRUCTION
     GeodesicPathSegment();
+    ~GeodesicPathSegment() override;
 
-    void addWrapObstacle(const GeodesicWrapSurface& surface,
-                         Geodesic defaultGeodesic);
+    GeodesicPathSegment(const GeodesicPathSegment& other);
+    GeodesicPathSegment& operator=(const GeodesicPathSegment& other);
+
+    GeodesicPathSegment(GeodesicPathSegment&&);
+    GeodesicPathSegment& operator=(GeodesicPathSegment&&);
+
+    // GET AND SET
+    void addWrapObject(const GeodesicWrapSurface& surface,
+                       const GeodesicInitialConditions& initialConditions);
 
     double getLength(const SimTK::State& s) const;
     double getLengtheningSpeed(const SimTK::State& s) const;
-
     void addInEquivalentForces(const SimTK::State& state,
             const double& tension,
             SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
             SimTK::Vector& mobilityForces) const;
 
 protected:
+    // MODEL COMPONENT INTERFACE
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendRealizeTopology(SimTK::State&) const override;
     void extendConnectToModel(Model& model) override;
 
 private:
-
     // CONVENIENCE METHODS
+    void constructProperties();
     void calcWrappingPath(const SimTK::State& s) const;
 
     // MEMBER VARIABLES
@@ -164,14 +95,11 @@ private:
     GeodesicWrapSolver _solver;
 
     // CACHE VARIABLES
-    // TODO store path results and geodesics in the same struct?
-    mutable CacheVariable<GeodesicWrappingPath> _pathCV;
+    mutable CacheVariable<GeodesicWrapResult> _resultCV;
     mutable SimTK::DiscreteVariableIndex m_discreteVarIndex;
 };
 
-/**
- * TODO
- */
+
 class OSIMSIMULATION_API Scholz2015GeodesicPath : public AbstractGeometryPath {
 OpenSim_DECLARE_CONCRETE_OBJECT(Scholz2015GeodesicPath, AbstractGeometryPath);
 
@@ -187,6 +115,14 @@ public:
 //=============================================================================
     // CONSTRUCTION
     Scholz2015GeodesicPath();
+
+    // GET AND SET
+    void addPathSegment(const std::vector<GeodesicWrapSurface>& surfaces,
+            const std::vector<GeodesicInitialConditions>& initialConditions,
+            const Station& origin, const Station& insertion);
+    void addPathSegment(const std::vector<GeodesicWrapSurface>& surfaces,
+            const std::vector<GeodesicInitialConditions>& initialConditions,
+            const Station& insertion);
 
     // ABSTRACT GEOMETRY PATH INTERFACE
     bool isVisualPath() const override;
@@ -209,8 +145,6 @@ private:
     void constructProperties();
     void computeLength(const SimTK::State& s) const;
     void computeLengtheningSpeed(const SimTK::State& s) const;
-
-    // MEMBER VARIABLES
 
     // CACHE VARIABLES
     mutable CacheVariable<double> _lengthCV;

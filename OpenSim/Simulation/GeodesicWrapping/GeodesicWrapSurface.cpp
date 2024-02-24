@@ -25,6 +25,8 @@
 #include "ImplicitSurfaceParameters.h"
 #include "ImplicitCylinder.h"
 
+#include <OpenSim/Common/ModelDisplayHints.h>
+
 using namespace OpenSim;
 
 //=============================================================================
@@ -78,8 +80,9 @@ void GeodesicWrapSurface::extendFinalizeFromProperties() {
 }
 
 std::unique_ptr<ImplicitSurfaceParametersImpl>
-GeodesicWrapSurface::generateImplicitSurface() const {
-    OPENSIM_THROW_FRMOBJ(Exception, "generateImplicitSurface() not implemented.");
+GeodesicWrapSurface::generateImplicitSurfaceParametersImpl() const {
+    OPENSIM_THROW_FRMOBJ(Exception,
+            "generateImplicitSurfaceParametersImpl() not implemented.");
 }
 
 //=============================================================================
@@ -102,7 +105,40 @@ SimTK::Real GeodesicWrapCylinder::getRadius() const {
 }
 
 std::unique_ptr<ImplicitSurfaceParametersImpl>
-GeodesicWrapCylinder::generateImplicitSurface() const {
+GeodesicWrapCylinder::generateImplicitSurfaceParametersImpl() const {
     return std::make_unique<ImplicitCylinder>(getRadius());
+}
+
+void GeodesicWrapCylinder::generateDecorations(bool fixed,
+        const ModelDisplayHints& hints,
+        const SimTK::State& state,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometries) const {
+
+    Super::generateDecorations(fixed, hints, state, geometries);
+    if (!fixed) return;
+
+    if (hints.get_show_wrap_geometry()) {
+        const Appearance& defaultAppearance = get_appearance();
+        if (!defaultAppearance.get_visible()) return;
+        const SimTK::Vec3 color = defaultAppearance.get_color();
+
+        SimTK::Transform transform;
+        // TODO what transform to use?
+        // TODO what length to use?
+        transform.updR().setRotationFromAngleAboutX(SimTK_PI / 2);
+
+        SimTK::DecorativeCylinder cylinder(getRadius(), 0.5);
+        cylinder.setTransform(transform);
+        cylinder.setResolution(2.0);
+        cylinder.setColor(color);
+        cylinder.setOpacity(defaultAppearance.get_opacity());
+        cylinder.setScale(1);
+        cylinder.setRepresentation(defaultAppearance.get_representation());
+
+        const auto& frame = getSocket<PhysicalFrame>("frame").getConnectee();
+        cylinder.setBodyId(frame.getMobilizedBodyIndex());
+
+        geometries.push_back(cylinder);
+    }
 }
 
