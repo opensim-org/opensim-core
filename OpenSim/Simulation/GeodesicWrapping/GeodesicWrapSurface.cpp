@@ -34,6 +34,7 @@ using namespace OpenSim;
 //=============================================================================
 GeodesicWrapSurface::GeodesicWrapSurface() {
     constructProperty_current_form("");
+    constructProperty_appearance(Appearance());
 }
 
 void GeodesicWrapSurface::setCurrentForm(Form form) {

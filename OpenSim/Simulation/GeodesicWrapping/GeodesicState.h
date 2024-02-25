@@ -4,6 +4,7 @@
 #include "ImplicitSurfaceParameters.h"
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
 
@@ -35,6 +36,7 @@ struct GeodesicBoundaryFrame {
 
 struct JacobiFieldScalar
 {
+    JacobiFieldScalar() = default;
     using Dot = SimTK::Vec2;
     JacobiFieldScalar(double a, double aDot)
             : value(a), derivative(aDot) {}
@@ -50,6 +52,7 @@ struct JacobiFieldScalar
 /// State of the geodesic at a point along the curve.
 struct GeodesicState
 {
+    GeodesicState() = default;
     GeodesicBoundaryFrameVariation calcFrameToDBeta() const;
 
     GeodesicBoundaryFrame frame;
@@ -63,6 +66,7 @@ struct GeodesicState
 class Geodesic : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(Geodesic, Component);
 public:
+    Geodesic() = default;
     std::string getValueAsString() const {
         return "TODO";
     }
@@ -82,30 +86,7 @@ struct GeodesicWrapResult {
     GeodesicBoundaryFrame endFrame;
 };
 
-class GeodesicWrapObject {
-public:
-    GeodesicWrapObject(ImplicitSurfaceParameters&& parameters,
-                       SimTK::MobilizedBodyIndex mobodIndex) :
-        _implicitSurfaceParameters(std::move(parameters)),
-        _mobodIndex(mobodIndex) {}
-    ~GeodesicWrapObject() = default;
 
-    GeodesicWrapObject(const GeodesicWrapObject& other) = default;
-    GeodesicWrapObject& operator=(const GeodesicWrapObject& other) {
-        if (this != &other) {
-            _implicitSurfaceParameters = other._implicitSurfaceParameters;
-            _mobodIndex = other._mobodIndex;
-        }
-        return *this;
-    }
-
-    GeodesicWrapObject(GeodesicWrapObject&&) = default;
-    GeodesicWrapObject& operator=(GeodesicWrapObject&&) = default;
-
-private:
-    ImplicitSurfaceParameters _implicitSurfaceParameters;
-    SimTK::MobilizedBodyIndex _mobodIndex;
-};
 
 
 class GeodesicInitialConditions : public Component {
@@ -115,6 +96,7 @@ public:
     GeodesicInitialConditions(const SimTK::Vec3& position,
                               const SimTK::Vec3& velocity,
                               SimTK::Real length) {
+        constructProperties();
         set_position(position);
         set_velocity(velocity);
         set_length(length);
@@ -137,6 +119,55 @@ private:
             "The initial velocity of the geodesic on the surface.");
     OpenSim_DECLARE_PROPERTY(length, SimTK::Real,
             "The initial length of the geodesic on the surface.");
+
+    void constructProperties() {
+        constructProperty_position(SimTK::Vec3(0));
+        constructProperty_velocity(SimTK::Vec3(0));
+        constructProperty_length(0);
+    }
+};
+
+
+
+class GeodesicWrapObject {
+public:
+    GeodesicWrapObject(ImplicitSurfaceParameters&& parameters,
+            SimTK::MobilizedBodyIndex mobodIndex) :
+                                                    _implicitSurfaceParameters(std::move(parameters)),
+                                                    _mobodIndex(mobodIndex) {}
+    ~GeodesicWrapObject() = default;
+
+    GeodesicWrapObject(const GeodesicWrapObject& other) = default;
+    GeodesicWrapObject& operator=(const GeodesicWrapObject& other) {
+        if (this != &other) {
+            _implicitSurfaceParameters = other._implicitSurfaceParameters;
+            _mobodIndex = other._mobodIndex;
+        }
+        return *this;
+    }
+
+    GeodesicWrapObject(GeodesicWrapObject&&) = default;
+    GeodesicWrapObject& operator=(GeodesicWrapObject&&) = default;
+
+    SimTK::Transform calcFrameTransform(const SimTK::State& s,
+            const Model& model) const {
+        return model.getMatterSubsystem().getMobilizedBody(_mobodIndex)
+                .getBodyTransform(s);
+    }
+
+    void calcInitState(const GeodesicInitialConditions& initialConditions) const
+    {
+        // TODO
+    }
+
+    Geodesic calcGeodesic() const {
+        // TODO
+        return {};
+    }
+
+private:
+    ImplicitSurfaceParameters _implicitSurfaceParameters;
+    SimTK::MobilizedBodyIndex _mobodIndex;
 };
 
 /**
@@ -191,6 +222,10 @@ public:
         }
 
         *this = dynamic_cast<const Geodesics&>(value);
+    }
+
+    bool empty() const {
+        return _geodesics.empty();
     }
 
 private:

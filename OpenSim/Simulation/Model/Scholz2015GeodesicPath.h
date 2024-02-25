@@ -38,6 +38,8 @@ class GeodesicWrapSolver {
 class OSIMSIMULATION_API GeodesicPathSegment : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(GeodesicPathSegment, ModelComponent);
 
+using VectorVec3 = SimTK::Vector_<SimTK::Vec3>;
+
 public:
 //=============================================================================
 // SOCKETS
@@ -82,8 +84,8 @@ public:
 protected:
     // MODEL COMPONENT INTERFACE
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    void extendRealizeTopology(SimTK::State&) const override;
     void extendConnectToModel(Model& model) override;
+    void extendInitStateFromProperties(SimTK::State& s) const override;
 
 private:
     // CONVENIENCE METHODS
@@ -96,20 +98,17 @@ private:
 
     // CACHE VARIABLES
     mutable CacheVariable<GeodesicWrapResult> _resultCV;
-    mutable SimTK::DiscreteVariableIndex m_discreteVarIndex;
+    // TODO: avoid this
+    mutable std::vector<GeodesicInitialConditions> _initialConditions;
 };
 
 
 class OSIMSIMULATION_API Scholz2015GeodesicPath : public AbstractGeometryPath {
 OpenSim_DECLARE_CONCRETE_OBJECT(Scholz2015GeodesicPath, AbstractGeometryPath);
 
-public:
-//=============================================================================
-// PROPERTIES
-//=============================================================================
-    OpenSim_DECLARE_LIST_PROPERTY(path_segments, GeodesicPathSegment,
-            "TODO");
+using GeodesicWrapSurfaces = std::vector<std::reference_wrapper<GeodesicWrapSurface>>;
 
+public:
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -117,10 +116,12 @@ public:
     Scholz2015GeodesicPath();
 
     // GET AND SET
-    void addPathSegment(const std::vector<GeodesicWrapSurface>& surfaces,
+    // TODO: use this to create the first path segment.
+    void addPathSegment(const GeodesicWrapSurfaces& surfaces,
             const std::vector<GeodesicInitialConditions>& initialConditions,
             const Station& origin, const Station& insertion);
-    void addPathSegment(const std::vector<GeodesicWrapSurface>& surfaces,
+    // TODO: use this to create subsequent path segments.
+    void addPathSegment(const GeodesicWrapSurfaces& surfaces,
             const std::vector<GeodesicInitialConditions>& initialConditions,
             const Station& insertion);
 
@@ -142,7 +143,6 @@ private:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     // CONVENIENCE METHODS
-    void constructProperties();
     void computeLength(const SimTK::State& s) const;
     void computeLengtheningSpeed(const SimTK::State& s) const;
 

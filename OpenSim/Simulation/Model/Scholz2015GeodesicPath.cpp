@@ -57,12 +57,9 @@ GeodesicPathSegment& GeodesicPathSegment::operator=(
 //=============================================================================
 void GeodesicPathSegment::addWrapObject(
         const OpenSim::GeodesicWrapSurface& surface,
-        const SimTK::Vec3& initialPosition,
-        const SimTK::Vec3& initialVelocity,
-        SimTK::Real initialLength) {
+        const GeodesicInitialConditions& initialConditions) {
     appendSocketConnectee_surfaces(surface);
-    append_initial_conditions(GeodesicInitialConditions(
-            initialPosition, initialVelocity, initialLength));
+    append_initial_conditions(initialConditions);
 }
 
 double GeodesicPathSegment::getLength(const SimTK::State& s) const {
@@ -92,7 +89,7 @@ void GeodesicPathSegment::addInEquivalentForces(const SimTK::State& s,
     const GeodesicBoundaryFrame& startFrame = result.startFrame;
     const GeodesicBoundaryFrame& endFrame = result.endFrame;
 
-    // TODO compute body and mobility forces
+    // TODO add in body and mobility forces
 }
 
 //=============================================================================
@@ -105,18 +102,12 @@ void GeodesicPathSegment::extendAddToSystem(
             "result", GeodesicWrapResult(), SimTK::Stage::Position);
 }
 
-void GeodesicPathSegment::extendRealizeTopology(SimTK::State& state) const {
-    Super::extendRealizeTopology(state);
-    const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
-    m_discreteVarIndex = subSys.allocateDiscreteVariable(
-            state, SimTK::Stage::Position, new Geodesics());
-}
-
 void GeodesicPathSegment::extendConnectToModel(Model& model) {
     Super::extendConnectToModel(model);
 
     // Loop through all surfaces to create GeodesicWrapObjects to add to this
     // path segment
+    std::vector<Geodesic> initialGeodesicsVec;
     _wrapObjects.clear();
     const auto& surfaces = getSocket<GeodesicWrapSurface>("surfaces");
     for (int i = 0; i < surfaces.getNumConnectees(); ++i) {
@@ -124,11 +115,7 @@ void GeodesicPathSegment::extendConnectToModel(Model& model) {
         GeodesicWrapSurface::Form form = surface.getCurrentForm();
         const PhysicalFrame& frame =
                 surface.getSocket<PhysicalFrame>("frame").getConnectee();
-        SimTK::MobilizedBodyIndex mobodIndex = frame.getMobilizedBodyIndex();
-
-        // TODO: use initial conditions to shoot an initial geodesic and then
-        //       "connect" the dots to create an initial path for this segment
-        GeodesicInitialConditions initialConditions = get_initial_conditions(i);
+        SimTK::MobilizedBodyIndex mobodIndex = frame.getMobilizedBodyIndex();;
 
         if (form == GeodesicWrapSurface::Form::Implicit) {
             ImplicitSurfaceParameters surfaceParams(
@@ -143,6 +130,16 @@ void GeodesicPathSegment::extendConnectToModel(Model& model) {
     }
 }
 
+void GeodesicPathSegment::extendInitStateFromProperties(
+        SimTK::State& state) const {
+    Super::extendInitStateFromProperties(state);
+    _initialConditions.clear();
+    _initialConditions.reserve(getProperty_initial_conditions().size());
+    for (int i = 0; i < getProperty_initial_conditions().size(); ++i) {
+        _initialConditions.push_back(get_initial_conditions(i));
+    }
+}
+
 //=============================================================================
 // CONVENIENCE METHODS
 //=============================================================================
@@ -150,6 +147,7 @@ void GeodesicPathSegment::calcWrappingPath(const SimTK::State& state) const {
     if (isCacheVariableValid(state, _resultCV)) {
         return;
     }
+
     const Station& origin = getSocket<Station>("origin").getConnectee();
     const Station& insertion = getSocket<Station>("insertion").getConnectee();
     const SimTK::Vec3& originPoint = origin.getLocationInGround(state);
@@ -158,10 +156,11 @@ void GeodesicPathSegment::calcWrappingPath(const SimTK::State& state) const {
     size_t maxIter = 20;
     double eps = 1e-13;
 
-    GeodesicWrapResult result;
     // TODO
+    GeodesicWrapResult result;
+    // TODO let the solver update the initial conditions?
     // _solver.calcWrappingPath(state, originPoint, insertionPoint, _wrapObjects,
-    //         result, maxIter, eps);
+    //         _initialConditions, maxIter, eps, initialGeodesicsVec);
     setCacheVariableValue<GeodesicWrapResult>(state, _resultCV, result);
 }
 
@@ -175,46 +174,38 @@ void GeodesicPathSegment::constructProperties() {
 //=============================================================================
 Scholz2015GeodesicPath::Scholz2015GeodesicPath() : AbstractGeometryPath() {
     setAuthors("Nicholas Bianco, Pepijn van den Bos, Andreas Scholz");
-    constructProperties();
 }
 
 //=============================================================================
 // GET AND SET
 //=============================================================================
 void Scholz2015GeodesicPath::addPathSegment(
-        const std::vector<GeodesicWrapSurface>& surfaces,
+        const GeodesicWrapSurfaces& surfaces,
         const std::vector<GeodesicInitialConditions>& initialConditions,
-        const OpenSim::Station& origin, const OpenSim::Station& insertion) {
-    OPENSIM_THROW_IF_FRMOBJ(!getProperty_path_segments().empty(), Exception,
+        const Station& origin, const Station& insertion) {
+
+    OPENSIM_THROW_IF_FRMOBJ(!getProperty_components().empty(), Exception,
             "The first path segment has already been set.");
 
-    GeodesicPathSegment segment;
+    auto* segment = new GeodesicPathSegment();
+    addComponent(segment);
     for (int i = 0; i < surfaces.size(); ++i) {
-        segment.addWrapObject(surfaces[i], initialConditions[i]);
+        segment->addWrapObject(surfaces[i], initialConditions[i]);
     }
-    segment.connectSocket_origin(origin);
-    segment.connectSocket_insertion(insertion);
-    append_path_segments(segment);
+    segment->connectSocket_origin(origin);
+    segment->connectSocket_insertion(insertion);
 }
 
 void Scholz2015GeodesicPath::addPathSegment(
-        const std::vector<GeodesicWrapSurface>& surfaces,
+        const GeodesicWrapSurfaces& surfaces,
         const std::vector<GeodesicInitialConditions>& initialConditions,
-        const OpenSim::Station& insertion) {
-    OPENSIM_THROW_IF_FRMOBJ(getProperty_path_segments().empty(), Exception,
+        const Station& insertion) {
+    OPENSIM_THROW_IF_FRMOBJ(getProperty_components().empty(), Exception,
             "The first path segment has not been set.");
-
-    GeodesicPathSegment segment;
-    for (int i = 0; i < surfaces.size(); ++i) {
-        segment.addWrapObject(surfaces[i], initialConditions[i]);
-    }
-    const GeodesicPathSegment& previousSegment =
-            get_path_segments(getProperty_path_segments().size() - 1);
+    const auto previousSegment = getComponentList<GeodesicPathSegment>().end();
     const Station& origin =
-            previousSegment.getSocket<Station>("insertion").getConnectee();
-    segment.connectSocket_origin(origin);
-    segment.connectSocket_insertion(insertion);
-    append_path_segments(segment);
+            previousSegment->getSocket<Station>("insertion").getConnectee();
+    addPathSegment(surfaces, initialConditions, origin, insertion);
 }
 
 //=============================================================================
@@ -239,10 +230,8 @@ void Scholz2015GeodesicPath::addInEquivalentForces(const SimTK::State &state,
         SimTK::Vector_<SimTK::SpatialVec> &bodyForces,
         SimTK::Vector &mobilityForces) const {
 
-    for (int i = 0; i < getProperty_path_segments().size(); ++i) {
-        const GeodesicPathSegment& segment = get_path_segments(i);
-        segment.addInEquivalentForces(
-                state, tension, bodyForces, mobilityForces);
+    for (const auto& segment : getComponentList<GeodesicPathSegment>()) {
+        segment.addInEquivalentForces(state, tension, bodyForces, mobilityForces);
     }
 }
 
@@ -259,8 +248,8 @@ void Scholz2015GeodesicPath::extendFinalizeFromProperties() {
     Super::extendFinalizeFromProperties();
 
     // Check the properties.
-    OPENSIM_THROW_IF_FRMOBJ(getProperty_path_segments().empty(), Exception,
-            "Expected at least one path segment, but none were provided.");
+//    OPENSIM_THROW_IF_FRMOBJ(getProperty_components().empty(), Exception,
+//            "Expected at least one path segment, but none were provided.");
 }
 
 void Scholz2015GeodesicPath::extendConnectToModel(Model& model) {
@@ -279,14 +268,9 @@ void Scholz2015GeodesicPath::extendAddToSystem(
 //=============================================================================
 // CONVENIENCE METHODS
 //=============================================================================
-void Scholz2015GeodesicPath::constructProperties() {
-    constructProperty_path_segments();
-}
-
 void Scholz2015GeodesicPath::computeLength(const SimTK::State &s) const {
     double length = 0.0;
-    for (int i = 0; i < getProperty_path_segments().size(); ++i) {
-        const GeodesicPathSegment& segment = get_path_segments(i);
+    for (const auto& segment : getComponentList<GeodesicPathSegment>()) {
         length += segment.getLength(s);
     }
     setCacheVariableValue(s, _lengthCV, length);
@@ -295,8 +279,7 @@ void Scholz2015GeodesicPath::computeLength(const SimTK::State &s) const {
 void Scholz2015GeodesicPath::computeLengtheningSpeed(
         const SimTK::State &s) const {
     double lengtheningSpeed = 0.0;
-    for (int i = 0; i < getProperty_path_segments().size(); ++i) {
-        const GeodesicPathSegment& segment = get_path_segments(i);
+    for (const auto& segment : getComponentList<GeodesicPathSegment>()) {
         lengtheningSpeed += segment.getLengtheningSpeed(s);
     }
     setCacheVariableValue(s, _lengtheningSpeedCV, lengtheningSpeed);

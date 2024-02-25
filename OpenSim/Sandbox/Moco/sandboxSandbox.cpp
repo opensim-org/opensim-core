@@ -19,19 +19,67 @@
 // This file provides a way to easily prototype or test temporary snippets of
 // code during development.
 
-#include <Moco/osimMoco.h>
+#include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Actuators/ModelFactory.h>
 
 using namespace OpenSim;
 
 int main() {
-    // TODO Logger::setLevel(Logger::Level::Debug);
-    MocoTrack track;
-    ModelProcessor modelProcessor("DeMers_mod_noarms_welds_4.0.osim");
-    modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
-    modelProcessor.append(ModOpIgnoreTendonCompliance());
-    track.setModel(modelProcessor);
-    track.setStatesReference({"r_SLD_mean_coords.sto"});
-    track.set_allow_unused_references(true);
-    MocoSolution solution = track.solve();
+    Model model = ModelFactory::createSlidingPointMass();
+    model.initSystem();
+
+    auto* origin = new Station();
+    origin->setName("origin");
+    origin->set_location(SimTK::Vec3(0));
+    origin->setParentFrame(model.getGround());
+    model.addComponent(origin);
+
+    auto* insertion = new Station();
+    insertion->setName("insertion");
+    insertion->set_location(SimTK::Vec3(0));
+    insertion->setParentFrame(model.getComponent<Body>("/body"));
+    model.addComponent(insertion);
+
+    auto* wrapCylinder = new GeodesicWrapCylinder();
+    wrapCylinder->setName("wrap_cylinder");
+    wrapCylinder->setRadius(1.0);
+    wrapCylinder->connectSocket_frame(model.getGround());
+    model.addComponent(wrapCylinder);
+    model.finalizeConnections();
+
+    Scholz2015GeodesicPath geodesicPath;
+    geodesicPath.setName("geodesic_path");
+
+
+    auto* actu = new PathActuator();
+    actu->set_path(geodesicPath);
+    actu->setName("actuator");
+    actu->setOptimalForce(1);
+    model.addComponent(actu);
+
+
+    std::vector<std::reference_wrapper<GeodesicWrapSurface>> surfaces;
+    surfaces.emplace_back(*wrapCylinder);
+
+    std::vector<GeodesicInitialConditions> initialConditions;
+    GeodesicInitialConditions ic({1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, 1.0);
+    initialConditions.push_back(ic);
+
+    auto& path = model.updComponent<PathActuator>("/actuator").updPath<Scholz2015GeodesicPath>();
+    path.addPathSegment(surfaces,
+            initialConditions,
+            model.getComponent<Station>("/origin"),
+            model.getComponent<Station>("/insertion"));
+    model.finalizeConnections();
+
+
+    model.setUseVisualizer(true);
+    SimTK::State state = model.initSystem();
+
+    const auto& viz = model.getVisualizer();
+    viz.show(state);
+
+    model.print("sandboxScholz2015GeodesicPath_model.osim");
+
     return EXIT_SUCCESS;
 }
