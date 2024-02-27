@@ -138,6 +138,7 @@ private:
     void extendFinalizeFromProperties() override;
     void extendConnectToModel(Model&) override;
     void extendAddToSystem(SimTK::MultibodySystem&) const override;
+    void extendSetMobilizedBodyIndex(const SimTK::MobilizedBodyIndex&) const final;
 
     SimTK::Transform calcTransformInBaseFrame() const;
     SimTK::Transform calcTransformInGround(const SimTK::State&) const override;

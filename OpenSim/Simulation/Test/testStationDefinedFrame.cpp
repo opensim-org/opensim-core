@@ -273,9 +273,9 @@ TEST_CASE("StationDefinedFrame_SanityCheckCanUsePOFAsParentOfJointViaOtherOffset
     // isn't handled correctly by OpenSim's graph traversal
     //
     // remove the `REQUIRE` part and uncomment the other lines if you think you've fixed this
-    REQUIRE_THROWS(model.buildSystem());
-    // SimTK::State state = model.initializeState();
-    // model.realizeReport(state);
+    model.buildSystem();
+    SimTK::State state = model.initializeState();
+    model.realizeReport(state);
 }
 
 TEST_CASE("StationDefinedFrame_CanCreateModelContainingStationDefinedFrameViaOffsetFrameForJoint")
@@ -328,9 +328,9 @@ TEST_CASE("StationDefinedFrame_CanCreateModelContainingStationDefinedFrameViaOff
     // fails in the same way that `PhysicalOffsetFrame` would (see sanity test above)
     //
     // remove the `REQUIRE` part and uncomment the other lines if you think you've fixed this
-    REQUIRE_THROWS(model.buildSystem());
-    // SimTK::State state = model.initializeState();
-    // model.realizeReport(state);
+    model.buildSystem();
+    SimTK::State state = model.initializeState();
+    model.realizeReport(state);
 }
 
 TEST_CASE("StationDefinedFrame_ThrowsAtConnectionFinalizationIfPointAIsAtSameLocationAsPointB")
@@ -650,12 +650,24 @@ TEST_CASE("StationDefinedFrame_FinalizeConnectionsThrowsIfPofOffsetCausesPointsT
     REQUIRE_THROWS(model.buildSystem());
 }
 
-TEST_CASE("StationDefinedFrame_BasicModelWithStationDefinedFrameOsimLoadsFine")
+TEST_CASE("StationDefinedFrame_StationDefinedFrameBasicOsimLoadsFine")
 {
     // ensures the implementation can load a very basic `osim` file containing one
     // `StationDefinedFrame` defined in ground
 
-    Model model{"BasicModelWithStationDefinedFrame.osim"};
+    Model model{"StationDefinedFrames_Basic.osim"};
+    REQUIRE_NOTHROW(model.buildSystem());
+    SimTK::State state = model.initializeState();
+    model.realizeReport(state);
+}
+
+TEST_CASE("StationDefinedFrame_StationDefinedFrameAdvancedLoadsFine")
+{
+    // ensures that the implementation can load a more advanced `osim` file that
+    // contains `StationDefinedFrame`s with joints, attached to meshes via PoFs,
+    // etc.
+
+    Model model{"StationDefinedFrames_Advanced.osim"};
     REQUIRE_NOTHROW(model.buildSystem());
     SimTK::State state = model.initializeState();
     model.realizeReport(state);

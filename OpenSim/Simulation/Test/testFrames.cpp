@@ -35,9 +35,10 @@ Tests Include:
      Add tests here as Frames are added to OpenSim
 
 //=============================================================================*/
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -46,6 +47,8 @@ using SimTK::Transform;
 void testBody();
 void testPhysicalOffsetFrameOnBody();
 void testPhysicalOffsetFrameOnBodySerialize();
+void testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointParent();
+void testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointChild();
 void testPhysicalOffsetFrameOnPhysicalOffsetFrame();
 void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder();
 void testFilterByFrameType();
@@ -81,6 +84,18 @@ int main()
     catch (const std::exception& e){
         cout << e.what() << endl; 
         failures.push_back("testPhysicalOffsetFrameOnBodySerialize");
+    }
+
+    try { testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointParent(); }
+    catch (const std::exception& e){
+        cout << e.what() << endl;
+        failures.push_back("testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointParent");
+    }
+
+    try { testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointChild(); }
+    catch (const std::exception& e){
+        cout << e.what() << endl;
+        failures.push_back("testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointChild");
     }
     
     try { testPhysicalOffsetFrameOnPhysicalOffsetFrame(); }
@@ -239,6 +254,52 @@ void testPhysicalOffsetFrameOnBody()
     ASSERT_EQUAL(p_G_2, p_G, tolerance,
         __FILE__, __LINE__,
         "testPhysicalOffsetFrameOnBody(): incorrect point location in ground.");
+}
+
+void testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointParent()
+{
+    // tests whether this topology can be built without any body index issues etc:
+    //
+    //     ground <-- pof1 <-- pof2 <-- joint --> body
+    //
+    // the reason to check this is because the engine has to assign system indices etc.
+    // in the correct order, and earlier versions of OpenSim didn't handle this
+
+    Model model;
+
+    auto* pof1  = new OpenSim::PhysicalOffsetFrame("pof1", model.getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    model.addComponent(pof1);
+    auto* pof2  = new OpenSim::PhysicalOffsetFrame("pof2", *pof1, SimTK::Vec3{0.0, 1.0, 0.0});
+    model.addComponent(pof2);
+    auto* body  = new OpenSim::Body{"body", 1.0, {}, SimTK::Inertia(1.0)};
+    model.addBody(body);
+    auto* joint = new OpenSim::FreeJoint("joint", *pof2, *body);
+    model.addJoint(joint);
+
+    model.buildSystem();  // shouldn't throw
+}
+
+void testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointChild()
+{
+    // tests whether this topology can be built without any body index issues etc:
+    //
+    //     ground <-- joint --> pof2 --> pof1 --> body
+    //
+    // the reason to check this is because the engine has to assign system indices etc.
+    // in the correct order, and earlier versions of OpenSim didn't handle this
+
+    Model model;
+
+    auto* body  = new OpenSim::Body{"body", 1.0, {}, SimTK::Inertia(1.0)};
+    model.addBody(body);
+    auto* pof1  = new OpenSim::PhysicalOffsetFrame("pof1", *body, SimTK::Vec3{1.0, 0.0, 0.0});
+    model.addComponent(pof1);
+    auto* pof2  = new OpenSim::PhysicalOffsetFrame("pof2", *pof1, SimTK::Vec3{0.0, 1.0, 0.0});
+    model.addComponent(pof2);
+    auto* joint = new OpenSim::FreeJoint("joint", model.getGround(), *pof2);
+    model.addJoint(joint);
+
+    model.buildSystem();  // shouldn't throw
 }
 
 void testPhysicalOffsetFrameOnPhysicalOffsetFrame()

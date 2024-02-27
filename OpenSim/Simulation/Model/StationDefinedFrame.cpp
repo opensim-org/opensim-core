@@ -297,6 +297,18 @@ void OpenSim::StationDefinedFrame::extendAddToSystem(SimTK::MultibodySystem& sys
     setMobilizedBodyIndex(dynamic_cast<const PhysicalFrame&>(findBaseFrame()).getMobilizedBodyIndex());
 }
 
+void OpenSim::StationDefinedFrame::extendSetMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const
+{
+    // the `MobilizedBodyIndex` has been set on this frame (by `setMobilizedBodyIndex`), but
+    // this extension point also ensures that the `MobilizedBodyIndex` is also transitively
+    // assigned to every frame that this frame may be attached to
+
+    PhysicalFrame::setMobilizedBodyIndexOf(getPointA().getParentFrame(), mbix);
+    PhysicalFrame::setMobilizedBodyIndexOf(getPointB().getParentFrame(), mbix);
+    PhysicalFrame::setMobilizedBodyIndexOf(getPointC().getParentFrame(), mbix);
+    PhysicalFrame::setMobilizedBodyIndexOf(getOriginPoint().getParentFrame(), mbix);
+}
+
 SimTK::Transform OpenSim::StationDefinedFrame::calcTransformInBaseFrame() const
 {
     // get raw input data
