@@ -28,28 +28,23 @@ int main() {
     Model model = ModelFactory::createSlidingPointMass();
     model.initSystem();
 
-    auto* origin = new Station();
-    origin->setName("origin");
-    origin->set_location(SimTK::Vec3(0));
-    origin->setParentFrame(model.getGround());
-    model.addComponent(origin);
-
-    auto* insertion = new Station();
-    insertion->setName("insertion");
-    insertion->set_location(SimTK::Vec3(0));
-    insertion->setParentFrame(model.getComponent<Body>("/body"));
-    model.addComponent(insertion);
-
-    auto* wrapCylinder = new GeodesicWrapCylinder();
+    auto* wrapCylinder =
+            new GeodesicWrapCylinder(0.2, GeodesicWrapSurface::Form::Implicit);
     wrapCylinder->setName("wrap_cylinder");
-    wrapCylinder->setRadius(1.0);
     wrapCylinder->connectSocket_frame(model.getGround());
     model.addComponent(wrapCylinder);
-    model.finalizeConnections();
 
     Scholz2015GeodesicPath geodesicPath;
     geodesicPath.setName("geodesic_path");
 
+//    GeodesicPathSegment* segment = geodesicPath.addPathSegment(
+//            "segment", model.getGround(), Vec3(0),
+//            model.getComponent<Body>("/body"), Vec3(0));
+//
+//    GeodesicInitialConditions initialConditions(Vec3(0), Vec3(0), 1.0);
+//    segment->addWrapObject(
+//            model.getComponent<GeodesicWrapCylinder>("wrap_cylinder"),
+//            initialConditions);
 
     auto* actu = new PathActuator();
     actu->set_path(geodesicPath);
@@ -57,21 +52,16 @@ int main() {
     actu->setOptimalForce(1);
     model.addComponent(actu);
 
-
-    std::vector<std::reference_wrapper<GeodesicWrapSurface>> surfaces;
-    surfaces.emplace_back(*wrapCylinder);
-
-    std::vector<GeodesicInitialConditions> initialConditions;
-    GeodesicInitialConditions ic({1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, 1.0);
-    initialConditions.push_back(ic);
-
     auto& path = model.updComponent<PathActuator>("/actuator").updPath<Scholz2015GeodesicPath>();
-    path.addPathSegment(surfaces,
-            initialConditions,
-            model.getComponent<Station>("/origin"),
-            model.getComponent<Station>("/insertion"));
-    model.finalizeConnections();
+    GeodesicPathSegment* segment = path.addPathSegment(
+            "segment", model.getGround(), Vec3(0),
+            model.getComponent<Body>("/body"), Vec3(0));
 
+    GeodesicInitialConditions initialConditions(Vec3(0), Vec3(0), 1.0);
+    segment->addWrapObject(
+            model.getComponent<GeodesicWrapCylinder>("wrap_cylinder"),
+            initialConditions);
+    model.finalizeConnections();
 
     model.setUseVisualizer(true);
     SimTK::State state = model.initSystem();

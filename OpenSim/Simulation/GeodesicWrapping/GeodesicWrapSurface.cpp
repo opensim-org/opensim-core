@@ -22,8 +22,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "GeodesicWrapSurface.h"
-#include "ImplicitSurfaceParameters.h"
-#include "ImplicitCylinder.h"
 
 #include <OpenSim/Common/ModelDisplayHints.h>
 
@@ -33,68 +31,90 @@ using namespace OpenSim;
 // GEODESIC WRAP SURFACE
 //=============================================================================
 GeodesicWrapSurface::GeodesicWrapSurface() {
-    constructProperty_current_form("");
     constructProperty_appearance(Appearance());
+    constructProperty_form("");
 }
 
-void GeodesicWrapSurface::setCurrentForm(Form form) {
-    // TODO check available forms
+GeodesicWrapSurface::GeodesicWrapSurface(Form form) : GeodesicWrapSurface() {
+    setForm(form);
+}
+
+GeodesicWrapSurface::~GeodesicWrapSurface() = default;
+
+GeodesicWrapSurface::GeodesicWrapSurface(const GeodesicWrapSurface&) = default;
+
+GeodesicWrapSurface& GeodesicWrapSurface::operator=(
+        const GeodesicWrapSurface&) = default;
+
+GeodesicWrapSurface::GeodesicWrapSurface(
+        GeodesicWrapSurface&&) noexcept = default;
+
+GeodesicWrapSurface& GeodesicWrapSurface::operator=(
+        GeodesicWrapSurface&&) noexcept = default;
+
+void GeodesicWrapSurface::setForm(Form form) {
+    set_form(getFormAsString(form));
+}
+
+GeodesicWrapSurface::Form GeodesicWrapSurface::getForm() const {
+    return getFormFromString(get_form());
+}
+
+std::string GeodesicWrapSurface::getFormAsString(Form form) {
     if (form == Form::Parametric) {
-        set_current_form("parametric");
+        return "parametric";
     } else if (form == Form::Implicit) {
-        set_current_form("implicit");
+        return "implicit";
     } else if (form == Form::Analytic) {
-        set_current_form("analytic");
+        return "analytic";
     } else {
-        throw Exception("Invalid form specified.");
+        OPENSIM_THROW(Exception, "Invalid form specified.");
     }
 }
 
-GeodesicWrapSurface::Form GeodesicWrapSurface::getCurrentForm() const {
-    // TODO check available forms
-    if (get_current_form() == "parametric") {
+GeodesicWrapSurface::Form GeodesicWrapSurface::getFormFromString(
+        const std::string& form) {
+    if (form == "parametric") {
         return Form::Parametric;
-    } else if (get_current_form() == "implicit") {
+    } else if (form == "implicit") {
         return Form::Implicit;
-    } else if (get_current_form() == "analytic") {
+    } else if (form == "analytic") {
         return Form::Analytic;
     } else {
+        OPENSIM_THROW_IF(form.empty(), Exception,
+                "Expected a valid wrap surface form ('implicit', 'parametric', "
+                "or 'analytic'), but none were specified.");
+        OPENSIM_THROW(Exception,
+                "Expected a valid wrap surface form ('implicit', 'parametric', "
+                "or 'analytic'), but received '{}'.", form);
+    }
+}
+
+bool GeodesicWrapSurface::isFormAvailable(Form form) const {
+    if (form == Form::Parametric) {
+        return isParametricFormAvailable();
+    } else if (form == Form::Implicit) {
+        return isImplicitFormAvailable();
+    } else if (form == Form::Analytic) {
+        return isAnalyticFormAvailable();
+    } else {
         throw Exception("Invalid form specified.");
     }
-}
-
-void GeodesicWrapSurface::extendFinalizeFromProperties() {
-    Super::extendFinalizeFromProperties();
-
-    // TODO check available forms
-    if (get_current_form().empty()) {
-        Form form = getDefaultForm();
-        setCurrentForm(form);
-        if (form == Form::Implicit) {
-            set_current_form("implicit");
-        } else if (form == Form::Parametric) {
-            set_current_form("parametric");
-        } else if (form == Form::Analytic) {
-            set_current_form("analytic");
-        }
-    }
-}
-
-std::unique_ptr<ImplicitSurfaceParametersImpl>
-GeodesicWrapSurface::generateImplicitSurfaceParametersImpl() const {
-    OPENSIM_THROW_FRMOBJ(Exception,
-            "generateImplicitSurfaceParametersImpl() not implemented.");
 }
 
 //=============================================================================
 // GEODESIC WRAP CYLINDER
 //=============================================================================
-GeodesicWrapCylinder::GeodesicWrapCylinder() {
-    constructProperty_radius(1.0);
+GeodesicWrapCylinder::GeodesicWrapCylinder() : GeodesicWrapSurface() {
+    constructProperty_radius(0);
 }
 
-GeodesicWrapCylinder::GeodesicWrapCylinder(SimTK::Real radius) {
+GeodesicWrapCylinder::GeodesicWrapCylinder(SimTK::Real radius, Form form) :
+        GeodesicWrapSurface(form) {
     constructProperty_radius(radius);
+    OPENSIM_THROW_IF_FRMOBJ(!isFormAvailable(form), Exception,
+            "Form '{}' is not available for a GeodesicWrapCylinder.",
+            getFormAsString(form));
 }
 
 void GeodesicWrapCylinder::setRadius(SimTK::Real radius) {
@@ -105,9 +125,13 @@ SimTK::Real GeodesicWrapCylinder::getRadius() const {
     return get_radius();
 }
 
-std::unique_ptr<ImplicitSurfaceParametersImpl>
-GeodesicWrapCylinder::generateImplicitSurfaceParametersImpl() const {
-    return std::make_unique<ImplicitCylinder>(getRadius());
+std::unique_ptr<GeodesicWrapObject>
+GeodesicWrapCylinder::generateGeodesicWrapObject() const {
+    if (getForm() == Form::Implicit) {
+        return std::make_unique<ImplicitCylinderWrapObject>(getRadius());
+    } else {
+        throw Exception("Invalid form specified.");
+    }
 }
 
 void GeodesicWrapCylinder::generateDecorations(bool fixed,

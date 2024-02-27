@@ -93,7 +93,6 @@
 #include "Control/PrescribedController.h"
 
 #include "GeodesicWrapping/GeodesicWrapSurface.h"
-#include "GeodesicWrapping/ImplicitSurfaceParameters.h"
 
 #include "Wrap/PathWrap.h"
 #include "Wrap/PathWrapSet.h"

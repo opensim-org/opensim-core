@@ -25,7 +25,7 @@
 
 #include "OpenSim/Simulation/Model/ModelComponent.h"
 #include "OpenSim/Simulation/Model/PhysicalFrame.h"
-#include "OpenSim/Simulation/GeodesicWrapping/ImplicitSurfaceParameters.h"
+#include "OpenSim/Simulation/GeodesicWrapping/GeodesicState.h"
 
 namespace OpenSim {
 
@@ -64,8 +64,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(current_form, std::string,
-            "The current form of the surface used to compute geodesics.");
     OpenSim_DECLARE_PROPERTY(appearance, Appearance,
             "Default display properties for this surface including, color, "
             "texture, and representation.");
@@ -73,26 +71,34 @@ public:
 //==============================================================================
 // METHODS
 //==============================================================================
-
     // CONSTRUCTION AND DESTRUCTION
     GeodesicWrapSurface();
+    explicit GeodesicWrapSurface(Form form);
+    ~GeodesicWrapSurface() override;
+
+    GeodesicWrapSurface(const GeodesicWrapSurface&);
+    GeodesicWrapSurface& operator=(const GeodesicWrapSurface&);
+
+    GeodesicWrapSurface(GeodesicWrapSurface&&) noexcept;
+    GeodesicWrapSurface& operator=(GeodesicWrapSurface&&) noexcept;
 
     // GET AND SET
-    void setCurrentForm(Form form);
-    Form getCurrentForm() const;
+    void setForm(Form form);
+    Form getForm() const;
 
     // INTERFACE METHODS
     virtual bool isParametricFormAvailable() const = 0;
     virtual bool isImplicitFormAvailable() const = 0;
     virtual bool isAnalyticFormAvailable() const = 0;
-    virtual Form getDefaultForm() const = 0;
-
-    virtual std::unique_ptr<ImplicitSurfaceParametersImpl>
-    generateImplicitSurfaceParametersImpl() const;
+    virtual std::unique_ptr<GeodesicWrapObject>
+    generateGeodesicWrapObject() const = 0;
 
 protected:
-    // MODEL COMPONENT INTERFACE
-    void extendFinalizeFromProperties() override;
+    OpenSim_DECLARE_PROPERTY(form, std::string,
+            "The form of the surface used to compute geodesics.");
+    static std::string getFormAsString(Form form);
+    static Form getFormFromString(const std::string& form);
+    bool isFormAvailable(Form form) const;
 };
 
 //=============================================================================
@@ -112,7 +118,7 @@ public:
 
     // CONSTRUCTION AND DESTRUCTION
     GeodesicWrapCylinder();
-    explicit GeodesicWrapCylinder(SimTK::Real radius);
+    GeodesicWrapCylinder(SimTK::Real radius, Form form);
 
     // GET AND SET
     SimTK::Real getRadius() const;
@@ -122,14 +128,13 @@ public:
     bool isParametricFormAvailable() const override { return true; }
     bool isImplicitFormAvailable() const override { return true; }
     bool isAnalyticFormAvailable() const override { return true; }
-    Form getDefaultForm() const override { return Form::Implicit; }
 
-    virtual std::unique_ptr<ImplicitSurfaceParametersImpl>
-    generateImplicitSurfaceParametersImpl() const override;
+    std::unique_ptr<GeodesicWrapObject>
+    generateGeodesicWrapObject() const override;
 
-protected:
+private:
     OpenSim_DECLARE_PROPERTY(radius, SimTK::Real,
-            "The radius of the cylindrical surface (default: 1.0).");
+            "The radius of the wrap cylinder (default: 1.0).");
 
     // Display geometry.
     void generateDecorations(bool fixed,

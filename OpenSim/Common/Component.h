@@ -3522,6 +3522,7 @@ void Socket<C>::finalizeConnection(const Component& root) {
         clearConnecteePath();
         for (auto& connectee : _connectees) {
             const auto& comp = *connectee;
+            std::cout << "DEBUG comp name: " << comp.getName() << std::endl;
             const auto& rootOfConnectee = comp.getRoot();
             const auto& myRoot = getOwner().getRoot();
             if (&myRoot != &rootOfConnectee) {

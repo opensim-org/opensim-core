@@ -22,7 +22,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "Scholz2015GeodesicPath.h"
-#include <OpenSim/Simulation/GeodesicWrapping/ImplicitSurfaceParameters.h>
 
 using namespace OpenSim;
 
@@ -33,24 +32,50 @@ GeodesicPathSegment::GeodesicPathSegment() {
     constructProperties();
 }
 
+//GeodesicPathSegment::GeodesicPathSegment(const std::string& name,
+//        const PhysicalFrame& originFrame,
+//        const SimTK::Vec3& locationInOriginFrame,
+//        const PhysicalFrame& insertionFrame,
+//        const SimTK::Vec3& locationInInsertionFrame) : GeodesicPathSegment() {
+//    OPENSIM_THROW_IF(name.empty(), ComponentHasNoName, getClassName());
+//    setName(name);
+//
+//    Station origin(originFrame, locationInOriginFrame);
+//    origin.setName("origin");
+//    set_origin(origin);
+//
+//    Station insertion(insertionFrame, locationInInsertionFrame);
+//    insertion.setName("insertion");
+//    set_insertion(insertion);
+//
+//    // 'finalizeFromProperties' recognizes the origin and insertion Stations
+//    // as the GeodesicPathSegment's subcomponents.
+//    finalizeFromProperties();
+//
+//    // When the Stations are constructed they are unaware that this
+//    // GeodesicPathSegment contains them as subcomponents and the path name
+//    // associated with them will not be valid. This a temporary fix to set the
+//    // name once the added frames have been included as subcomponents which
+//    // occurs during finalizeFromProperties() above.
+//    static_cast<Station&>(upd_origin()).setParentFrame(originFrame);
+//    static_cast<Station&>(upd_insertion()).setParentFrame(insertionFrame);
+//
+//    connectSocket_origin(origin);
+//    connectSocket_insertion(insertion);
+//}
+
 GeodesicPathSegment::~GeodesicPathSegment() = default;
 
+GeodesicPathSegment::GeodesicPathSegment(const GeodesicPathSegment&) = default;
+
+GeodesicPathSegment& GeodesicPathSegment::operator=(
+        const GeodesicPathSegment&) = default;
+
 GeodesicPathSegment::GeodesicPathSegment(
-        const GeodesicPathSegment& other) = default;
+        GeodesicPathSegment&&) noexcept = default;
 
 GeodesicPathSegment& GeodesicPathSegment::operator=(
-        const GeodesicPathSegment& other) {
-    if (this != &other) {
-        _wrapObjects = other._wrapObjects;
-        _solver = other._solver;
-    }
-    return *this;
-}
-
-GeodesicPathSegment::GeodesicPathSegment(GeodesicPathSegment&&) = default;
-
-GeodesicPathSegment& GeodesicPathSegment::operator=(
-        GeodesicPathSegment&&) = default;
+        GeodesicPathSegment&&) noexcept = default;
 
 //=============================================================================
 // GET AND SET
@@ -112,31 +137,9 @@ void GeodesicPathSegment::extendConnectToModel(Model& model) {
     const auto& surfaces = getSocket<GeodesicWrapSurface>("surfaces");
     for (int i = 0; i < surfaces.getNumConnectees(); ++i) {
         const GeodesicWrapSurface& surface = surfaces.getConnectee(i);
-        GeodesicWrapSurface::Form form = surface.getCurrentForm();
-        const PhysicalFrame& frame =
-                surface.getSocket<PhysicalFrame>("frame").getConnectee();
-        SimTK::MobilizedBodyIndex mobodIndex = frame.getMobilizedBodyIndex();;
-
-        if (form == GeodesicWrapSurface::Form::Implicit) {
-            ImplicitSurfaceParameters surfaceParams(
-                    surface.generateImplicitSurfaceParametersImpl());
-            GeodesicWrapObject wrapObject(std::move(surfaceParams), mobodIndex);
-            _wrapObjects.emplace_back(std::move(wrapObject));
-        } else if (form == GeodesicWrapSurface::Form::Parametric) {
-            // TODO
-        } else if (form == GeodesicWrapSurface::Form::Analytic) {
-            // TODO
-        }
-    }
-}
-
-void GeodesicPathSegment::extendInitStateFromProperties(
-        SimTK::State& state) const {
-    Super::extendInitStateFromProperties(state);
-    _initialConditions.clear();
-    _initialConditions.reserve(getProperty_initial_conditions().size());
-    for (int i = 0; i < getProperty_initial_conditions().size(); ++i) {
-        _initialConditions.push_back(get_initial_conditions(i));
+        std::unique_ptr<GeodesicWrapObject> wrapObject =
+                surface.generateGeodesicWrapObject();
+        _wrapObjects.push_back(std::move(wrapObject));
     }
 }
 
@@ -156,56 +159,133 @@ void GeodesicPathSegment::calcWrappingPath(const SimTK::State& state) const {
     size_t maxIter = 20;
     double eps = 1e-13;
 
-    // TODO
+    // Set the transform for each wrap object.
+    const auto& surfaces = getSocket<GeodesicWrapSurface>("surfaces");
+    for (int i = 0; i < surfaces.getNumConnectees(); ++i) {
+        const GeodesicWrapSurface& surface = surfaces.getConnectee(i);
+        const PhysicalFrame& frame =
+                surface.getSocket<PhysicalFrame>("frame").getConnectee();
+        const SimTK::Transform& transform = frame.getTransformInGround(state);
+        _wrapObjects[i]->setTransform(transform);
+        _wrapObjects[i]->setInitialConditions(get_initial_conditions(i));
+    }
+
+    // Call the wrap solver.
     GeodesicWrapResult result;
-    // TODO let the solver update the initial conditions?
     // _solver.calcWrappingPath(state, originPoint, insertionPoint, _wrapObjects,
-    //         _initialConditions, maxIter, eps, initialGeodesicsVec);
+    //         maxIter, eps, initialGeodesicsVec);
+
+    // Update the cache.
     setCacheVariableValue<GeodesicWrapResult>(state, _resultCV, result);
 }
 
 void GeodesicPathSegment::constructProperties() {
     constructProperty_initial_conditions();
+    constructProperty_origin();
+    constructProperty_insertion(Station());
 }
-
 
 //=============================================================================
 // SCHOLZ2015 GEODESIC PATH
 //=============================================================================
 Scholz2015GeodesicPath::Scholz2015GeodesicPath() : AbstractGeometryPath() {
     setAuthors("Nicholas Bianco, Pepijn van den Bos, Andreas Scholz");
+    constructProperty_path_segments();
 }
+
+Scholz2015GeodesicPath::~Scholz2015GeodesicPath() = default;
+
+Scholz2015GeodesicPath::Scholz2015GeodesicPath(
+        const Scholz2015GeodesicPath&) = default;
+
+Scholz2015GeodesicPath& Scholz2015GeodesicPath::operator=(
+        const Scholz2015GeodesicPath&) = default;
+
+Scholz2015GeodesicPath::Scholz2015GeodesicPath(
+        Scholz2015GeodesicPath&&) noexcept = default;
+
+Scholz2015GeodesicPath& Scholz2015GeodesicPath::operator=(
+        Scholz2015GeodesicPath&&) noexcept = default;
 
 //=============================================================================
 // GET AND SET
 //=============================================================================
-void Scholz2015GeodesicPath::addPathSegment(
-        const GeodesicWrapSurfaces& surfaces,
-        const std::vector<GeodesicInitialConditions>& initialConditions,
-        const Station& origin, const Station& insertion) {
-
-    OPENSIM_THROW_IF_FRMOBJ(!getProperty_components().empty(), Exception,
-            "The first path segment has already been set.");
+GeodesicPathSegment* Scholz2015GeodesicPath::addPathSegment(
+        const std::string& name,
+        const PhysicalFrame& originFrame,
+        const SimTK::Vec3& locationInOriginFrame,
+        const PhysicalFrame& insertionFrame,
+        const SimTK::Vec3& locationInInsertionFrame) {
 
     auto* segment = new GeodesicPathSegment();
-    addComponent(segment);
-    for (int i = 0; i < surfaces.size(); ++i) {
-        segment->addWrapObject(surfaces[i], initialConditions[i]);
-    }
-    segment->connectSocket_origin(origin);
-    segment->connectSocket_insertion(insertion);
+    segment->setName(name);
+
+    Station origin(originFrame, locationInOriginFrame);
+    origin.setName("origin");
+    segment->set_origin(origin);
+
+    Station insertion(insertionFrame, locationInInsertionFrame);
+    insertion.setName("insertion");
+    segment->set_insertion(insertion);
+
+    // 'finalizeFromProperties' recognizes the origin and insertion Stations
+    // as the GeodesicPathSegment's subcomponents.
+    segment->finalizeFromProperties();
+
+    // When the Stations are constructed they are unaware that this
+    // GeodesicPathSegment contains them as subcomponents and the path name
+    // associated with them will not be valid. This a temporary fix to set the
+    // name once the added frames have been included as subcomponents which
+    // occurs during finalizeFromProperties() above.
+    static_cast<Station&>(segment->upd_origin()).setParentFrame(originFrame);
+    static_cast<Station&>(segment->upd_insertion()).setParentFrame(insertionFrame);
+
+    segment->connectSocket_origin(segment->upd_origin());
+    segment->connectSocket_insertion(segment->upd_insertion());
+
+    addPathSegment(segment);
+
+    return segment;
 }
 
-void Scholz2015GeodesicPath::addPathSegment(
-        const GeodesicWrapSurfaces& surfaces,
-        const std::vector<GeodesicInitialConditions>& initialConditions,
-        const Station& insertion) {
-    OPENSIM_THROW_IF_FRMOBJ(getProperty_components().empty(), Exception,
-            "The first path segment has not been set.");
-    const auto previousSegment = getComponentList<GeodesicPathSegment>().end();
-    const Station& origin =
-            previousSegment->getSocket<Station>("insertion").getConnectee();
-    addPathSegment(surfaces, initialConditions, origin, insertion);
+
+//void Scholz2015GeodesicPath::addPathSegment(
+//        const GeodesicWrapSurfaces& surfaces,
+//        const std::vector<GeodesicInitialConditions>& initialConditions,
+//        const Station& origin, const Station& insertion) {
+//
+//    OPENSIM_THROW_IF_FRMOBJ(!getProperty_components().empty(), Exception,
+//            "The first path segment has already been set.");
+//
+//    auto* segment = new GeodesicPathSegment();
+//    addComponent(segment);
+//    for (int i = 0; i < surfaces.size(); ++i) {
+//        segment->addWrapObject(surfaces[i], initialConditions[i]);
+//    }
+//    segment->connectSocket_origin(origin);
+//    segment->connectSocket_insertion(insertion);
+//}
+//
+//void Scholz2015GeodesicPath::addPathSegment(
+//        const GeodesicWrapSurfaces& surfaces,
+//        const std::vector<GeodesicInitialConditions>& initialConditions,
+//        const Station& insertion) {
+//    OPENSIM_THROW_IF_FRMOBJ(getProperty_components().empty(), Exception,
+//            "The first path segment has not been set.");
+//    const auto previousSegment = getComponentList<GeodesicPathSegment>().end();
+//    const Station& origin =
+//            previousSegment->getSocket<Station>("insertion").getConnectee();
+//    addPathSegment(surfaces, initialConditions, origin, insertion);
+//}
+
+void Scholz2015GeodesicPath::addPathSegment(GeodesicPathSegment* segment) {
+    OPENSIM_THROW_IF(isComponentInOwnershipTree(segment),
+            ComponentAlreadyPartOfOwnershipTree,
+            segment->getName(), getName());
+    updProperty_path_segments().adoptAndAppendValue(segment);
+    finalizeFromProperties();
+    std::cout << "DEBUG" << std::endl;
+    prependComponentPathToConnecteePath(*segment);
 }
 
 //=============================================================================
@@ -230,8 +310,11 @@ void Scholz2015GeodesicPath::addInEquivalentForces(const SimTK::State &state,
         SimTK::Vector_<SimTK::SpatialVec> &bodyForces,
         SimTK::Vector &mobilityForces) const {
 
-    for (const auto& segment : getComponentList<GeodesicPathSegment>()) {
-        segment.addInEquivalentForces(state, tension, bodyForces, mobilityForces);
+    for (int i = 0; i < getProperty_path_segments().size(); ++i) {
+        const auto& segment = get_path_segments(i);
+
+        segment.addInEquivalentForces(state, tension, bodyForces,
+                mobilityForces);
     }
 }
 
@@ -247,13 +330,15 @@ double Scholz2015GeodesicPath::computeMomentArm(const SimTK::State &s,
 void Scholz2015GeodesicPath::extendFinalizeFromProperties() {
     Super::extendFinalizeFromProperties();
 
-    // Check the properties.
-//    OPENSIM_THROW_IF_FRMOBJ(getProperty_components().empty(), Exception,
-//            "Expected at least one path segment, but none were provided.");
+
 }
 
 void Scholz2015GeodesicPath::extendConnectToModel(Model& model) {
     Super::extendConnectToModel(model);
+    // Check the properties.
+    OPENSIM_THROW_IF_FRMOBJ(getProperty_path_segments().empty(), Exception,
+            "Expected at least one path segment, but none were provided.");
+
 
 }
 

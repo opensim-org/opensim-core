@@ -1,12 +1,12 @@
 #ifndef OPENSIM_GEODESIC_STATE_H
 #define OPENSIM_GEODESIC_STATE_H
 
-#include "ImplicitSurfaceParameters.h"
-
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
+
+using SimTK::Vec3;
 
 struct GeodesicVariation {
     // ds in thesis.
@@ -129,113 +129,107 @@ private:
 
 
 
-class GeodesicWrapObject {
+// An abstract component class that you can calculate geodesics over.
+class GeodesicWrapObject
+{
 public:
-    GeodesicWrapObject(ImplicitSurfaceParameters&& parameters,
-            SimTK::MobilizedBodyIndex mobodIndex) :
-                                                    _implicitSurfaceParameters(std::move(parameters)),
-                                                    _mobodIndex(mobodIndex) {}
-    ~GeodesicWrapObject() = default;
+    virtual ~GeodesicWrapObject() = default;
 
-    GeodesicWrapObject(const GeodesicWrapObject& other) = default;
-    GeodesicWrapObject& operator=(const GeodesicWrapObject& other) {
-        if (this != &other) {
-            _implicitSurfaceParameters = other._implicitSurfaceParameters;
-            _mobodIndex = other._mobodIndex;
-        }
-        return *this;
+protected:
+    GeodesicWrapObject()                                         = default;
+    GeodesicWrapObject(GeodesicWrapObject&&) noexcept            = default;
+    GeodesicWrapObject& operator=(GeodesicWrapObject&&) noexcept = default;
+    GeodesicWrapObject(const GeodesicWrapObject&)                = default;
+    GeodesicWrapObject& operator=(const GeodesicWrapObject&)     = default;
+
+public:
+
+    void setInitialConditions(
+            const Vec3& initPosition, const Vec3& initVelocity, double length) {
+        _geodesicInitialConditions = {initPosition, initVelocity, length};
     }
 
-    GeodesicWrapObject(GeodesicWrapObject&&) = default;
-    GeodesicWrapObject& operator=(GeodesicWrapObject&&) = default;
-
-    SimTK::Transform calcFrameTransform(const SimTK::State& s,
-            const Model& model) const {
-        return model.getMatterSubsystem().getMobilizedBody(_mobodIndex)
-                .getBodyTransform(s);
+    void setInitialConditions(
+            const GeodesicInitialConditions& initialConditions) {
+        _geodesicInitialConditions = initialConditions;
     }
 
-    void calcInitState(const GeodesicInitialConditions& initialConditions) const
-    {
-        // TODO
+//    Geodesic calcGeodesic() const;
+//    Geodesic calcWrappingPath(Vec3 pointBefore, Vec3 pointAfter) const;
+
+    void setTransform(const SimTK::Transform& transform) {
+        _transform = transform;
     }
 
-    Geodesic calcGeodesic() const {
-        // TODO
+private:
+    virtual Geodesic calcLocalGeodesicImpl(
+            Vec3 initPosition,
+            Vec3 initVelocity,
+            double length) const = 0;
+
+    GeodesicInitialConditions _geodesicInitialConditions;
+    SimTK::Transform _transform;
+};
+
+class ImplicitWrapObject : public virtual GeodesicWrapObject
+{
+public:
+    // TODO Use symmetric matrix class.
+    using Hessian = SimTK::SymMat33;
+
+    virtual ~ImplicitWrapObject() = default;
+
+protected:
+    ImplicitWrapObject()                                         = default;
+    ImplicitWrapObject(const ImplicitWrapObject&)                = default;
+    ImplicitWrapObject(ImplicitWrapObject&&) noexcept            = default;
+    ImplicitWrapObject& operator=(const ImplicitWrapObject&)     = default;
+    ImplicitWrapObject& operator=(ImplicitWrapObject&&) noexcept = default;
+
+public:
+    // TODO put local in front of everything?
+
+//    double calcSurfaceConstraint(Vec3 position) const;
+//    Vec3 calcSurfaceConstraintGradient(Vec3 position) const;
+//    Hessian calcSurfaceConstraintHessian(Vec3 position) const;
+
+private:
+    // Implicit surface constraint.
+//    virtual double calcSurfaceConstraintImpl(Vec3 position) const         = 0;
+//    virtual Vec3 calcSurfaceConstraintGradientImpl(Vec3 position) const   = 0;
+//    virtual Hessian calcSurfaceConstraintHessianImpl(Vec3 position) const = 0;
+
+    Geodesic calcLocalGeodesicImpl(
+            Vec3 initPosition,
+            Vec3 initVelocity,
+            double length) const override {
+        // TODO implement.
         return {};
     }
 
-private:
-    ImplicitSurfaceParameters _implicitSurfaceParameters;
-    SimTK::MobilizedBodyIndex _mobodIndex;
+    // TODO would become obsolete with variable step integration.
+    size_t _integratorSteps = 100;
 };
 
-/**
- * A helper class to allow storing a collection of geodesics belonging to a
- * GeodesicPathSegment in a discrete variable.
- */
-class Geodesics : public SimTK::AbstractValue {
 
+// Concrete component.
+class ImplicitCylinderWrapObject : public ImplicitWrapObject
+{
 public:
-    Geodesics() = default;
-
-    void set(const std::vector<Geodesic>& geodesics) {
-        _geodesics = geodesics;
-    }
-
-    const std::vector<Geodesic>& get() const {
-        return _geodesics;
-    }
-
-    std::vector<Geodesic>& upd() {
-        return _geodesics;
-    }
-
-    Geodesics* clone() const override {
-        return new Geodesics(*this);
-    }
-
-    SimTK::String getTypeName() const override {
-        return "Geodesics";
-    }
-
-    SimTK::String getValueAsString() const override {
-        std::stringstream ss;
-        for (const auto& geodesic : _geodesics) {
-            ss << geodesic.getValueAsString() << std::endl;
-        }
-        return ss.str();
-    }
-
-    static bool isA(const AbstractValue& value) {
-        return dynamic_cast<const Geodesics*>(&value) != nullptr;
-    }
-
-    bool isCompatible(const AbstractValue& value) const override {
-        return isA(value);
-    }
-
-    void compatibleAssign(const AbstractValue& value) override {
-        if (!isA(value)) {
-            OPENSIM_THROW(Exception,
-                    "Geodesics::compatibleAssign(): incompatible value.");
-        }
-
-        *this = dynamic_cast<const Geodesics&>(value);
-    }
-
-    bool empty() const {
-        return _geodesics.empty();
-    }
+    explicit ImplicitCylinderWrapObject(double radius) : _radius(radius) {}
 
 private:
-    std::vector<Geodesic> _geodesics;
+    // Implicit surface constraint.
+//    double calcSurfaceConstraintImpl(Vec3 position) const override;
+//    Vec3 calcSurfaceConstraintGradientImpl(Vec3 position) const override;
+//    Hessian calcSurfaceConstraintHessianImpl(Vec3 position) const override;
 
-    // Disable public usage of the getValue() and setValue() methods, which are
-    // not relevant to this class (they depend on Value<T>).
-    using SimTK::AbstractValue::getValue;
-    using SimTK::AbstractValue::updValue;
+    double _radius;
 };
+
+
+
+
 
 }
 
