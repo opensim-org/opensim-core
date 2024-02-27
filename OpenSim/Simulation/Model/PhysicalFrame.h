@@ -172,7 +172,7 @@ protected:
      * This is useful when implementing custom frames that need to set the index on other
      * frames they are attached to (e.g. `PhysicalOffsetFrame` needs to set it on its `parent`)
      */
-    void setMobilizedBodyIndexOf(PhysicalFrame const& other, const SimTK::MobilizedBodyIndex& mbix) const
+    static void setMobilizedBodyIndexOf(PhysicalFrame const& other, const SimTK::MobilizedBodyIndex& mbix)
     {
         other.setMobilizedBodyIndex(mbix);
     }

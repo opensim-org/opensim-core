@@ -44,5 +44,5 @@ void PhysicalOffsetFrame::extendSetMobilizedBodyIndex(const SimTK::MobilizedBody
     // this extension point also ensures that the `MobilizedBodyIndex` is also transitively
     // assigned to the parent frame (which may, itself, be a `PhysicalOffsetFrame`, or a
     // `Body`, etc.)
-    setMobilizedBodyIndexOf(getParentFrame(), mbix);
+    PhysicalFrame::setMobilizedBodyIndexOf(getParentFrame(), mbix);
 }
