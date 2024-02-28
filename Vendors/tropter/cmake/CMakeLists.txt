@@ -20,12 +20,12 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             ${IPOPT_LIBDIR}/libipopt.1.10.8.dylib
             ${IPOPT_LIBDIR}/libipopt.1.dylib
             ${IPOPT_LIBDIR}/libipopt.dylib
-            # #${IPOPT_LIBDIR}/libcoinmumps.1.6.0.dylib
-            # #${IPOPT_LIBDIR}/libcoinmumps.1.dylib
-            # #${IPOPT_LIBDIR}/libcoinmumps.dylib
-            # ${IPOPT_LIBDIR}/libcoinmetis.1.3.5.dylib
-            # ${IPOPT_LIBDIR}/libcoinmetis.1.dylib
-            # ${IPOPT_LIBDIR}/libcoinmetis.dylib
+            ${IPOPT_LIBDIR}/libcoinmumps.1.6.0.dylib
+            ${IPOPT_LIBDIR}/libcoinmumps.1.dylib
+            ${IPOPT_LIBDIR}/libcoinmumps.dylib
+            ${IPOPT_LIBDIR}/libcoinmetis.1.3.5.dylib
+            ${IPOPT_LIBDIR}/libcoinmetis.1.dylib
+            ${IPOPT_LIBDIR}/libcoinmetis.dylib
 
             # ${gfortran}
             # ${quadmath}
