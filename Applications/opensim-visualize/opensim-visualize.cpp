@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* 
+/*
  *  Below is an example of an OpenSim application that loads an OpenSim model
  *  and visualize it in the API visualizer.
  */
@@ -50,7 +50,7 @@ SimTK::Vec3 parseRotationsString(const std::string& rotationString) {
 static void PrintUsage(const char* aProgName, ostream& aOStream);
 //______________________________________________________________________________
 /**
- * First exercise: create a model that does nothing. 
+ * First exercise: create a model that does nothing.
  */
 int main(int argc, char** argv) {
     LoadOpenSimLibrary("osimActuators");
@@ -91,21 +91,21 @@ int main(int argc, char** argv) {
                     }
                     geomertySearchPath = string(argv[i + 1]);
                 }
-                else if (option == "-S") { 
+                else if (option == "-S") {
                      if (argc < i + 2) {
                         cout << "No sto file specified after option -S";
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }
-                    statesFileName = string(argv[i + 1]); 
+                    statesFileName = string(argv[i + 1]);
                 }
-                else if (option == "-D") { 
+                else if (option == "-D") {
                       if (argc < i + 2) {
                         cout << "No data file specified after option -D";
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }
-                    dataFileName = string(argv[i + 1]); 
+                    dataFileName = string(argv[i + 1]);
                 } else if (option == "-A") {
                     if (argc < i + 2) {
                         cout << "No layout specified after option -A";
@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
                 Model m(modelFileName);
                 Storage storage(statesFileName);
                 VisualizerUtilities::showMotion(m, storage);
-                
+
             } else if ((option == "-VD") || (option == "-ViewData")) {
 
                 std::string::size_type extSep = dataFileName.rfind(".");
@@ -159,7 +159,7 @@ int main(int argc, char** argv) {
                 if (extension == ".sto") {
 
                     TimeSeriesTableQuaternion quatTable(dataFileName);
-                    if (rotationString != "") { 
+                    if (rotationString != "") {
                         const SimTK::Vec3& sensor_to_opensim_rotations =
                                 parseRotationsString(rotationString);
                         SimTK::Rotation sensorToOpenSim = SimTK::Rotation(

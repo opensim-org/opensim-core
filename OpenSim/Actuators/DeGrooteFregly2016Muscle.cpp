@@ -408,8 +408,6 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfoHelper(
             mli.sinPennationAngle, mli.cosPennationAngle,
             partialPennationAnglePartialFiberLength);
     mdi.tendonStiffness = calcTendonStiffness(mli.normTendonLength);
-    mdi.muscleStiffness = calcMuscleStiffness(
-            mdi.tendonStiffness, mdi.fiberStiffnessAlongTendon);
 
     const auto& partialTendonForcePartialFiberLength =
             calcPartialTendonForcePartialFiberLength(mdi.tendonStiffness,

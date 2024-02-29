@@ -119,7 +119,8 @@ public:
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-    void setStorageCapacityIncrements(int aIncrement);
+    [[deprecated("this method no longer does anything")]]
+    void setStorageCapacityIncrements(int) {}
     Storage* getActivationStorage();
     Storage* getForceStorage();
 

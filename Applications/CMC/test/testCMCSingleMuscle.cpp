@@ -40,14 +40,14 @@ int main() {
     catch (const std::exception& e)
         {  cout << e.what() <<endl; failures.push_back("testSingleMuscle"); }
 
-    // redo with the Millard2012EquilibriumMuscle 
+    // redo with the Millard2012EquilibriumMuscle
     Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
 
     try { testSingleMuscle();}
     catch (const std::exception& e)
-        {   cout << e.what() <<endl; 
+        {   cout << e.what() <<endl;
             failures.push_back("testSingleMuscle_Millard"); }
-    
+
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
@@ -65,7 +65,7 @@ void testSingleMuscle() {
     ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
     CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
 
-    const string& muscleType = 
+    const string& muscleType =
         cmc.getModel().getMuscles()[0].getConcreteClassName();
     string base = "testSingleMuscle_" + muscleType;
 
@@ -84,7 +84,7 @@ void testSingleMuscle() {
     Storage cmc_states("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
 
     std::vector<double> control_tols(1, 4.0e-3); // peak control is 0.2 so this is 2% of peak
-    std::vector<double> force_tols(1, 1.0e-1);   // 0.1 N 
+    std::vector<double> force_tols(1, 1.0e-1);   // 0.1 N
     std::vector<double> state_tols(4, 1.0e-3);   // errors: q<1mm, u<1mm/s, a<0.001, fl<1mm
 
     CHECK_STORAGE_AGAINST_STANDARD(cmc_controls, fwd_controls, control_tols,
@@ -95,6 +95,6 @@ void testSingleMuscle() {
 
     CHECK_STORAGE_AGAINST_STANDARD(fwd_states, cmc_states, state_tols,
         __FILE__, __LINE__, base+" states failed");
-    
+
     cout << "\n" << base << " passed\n" << endl;
 }

@@ -41,25 +41,25 @@ Options:
 
 Description:
   The argument <tool-or-class> can be the name of a Tool
-  
+
          scale  ik  id  rra  cmc  forward  analyze  moco   (case-insensitive)
 
   or the name of any registered (concrete) OpenSim class (even from a plugin).
   Here are descriptions of the Tools listed above:
-  
+
          scale    Create a subject-specific model.
          ik       Inverse Kinematics
          id       Inverse Dynamics
          rra      Residual Reduction Algorithm
          cmc      Computed Muscle Control
          forward  Perform a forward simulation, using any controllers.
-         analyze  Obtain muscle-related quantites, joint loads; 
+         analyze  Obtain muscle-related quantites, joint loads;
                   perform Static Optimization; etc.
          moco     Solve a trajectory optimization problem with Moco.
 
   The template file is written to <output-file> if provided. Otherwise, the
   file is written to the current directory with the name
-  `default_Setup_<tool-class-name>.xml` when given a Tool name, or 
+  `default_Setup_<tool-class-name>.xml` when given a Tool name, or
   `default_<class-name>.xml` otherwise.
 
   You can run a Tool setup file with `opensim-cmd run-tool`.
@@ -67,7 +67,7 @@ Description:
 Examples:
   opensim-cmd print-xml cmc
   opensim-cmd print-xml Analyze
-  opensim-cmd print-xml Millard2012EquilibriumMuscle 
+  opensim-cmd print-xml Millard2012EquilibriumMuscle
 )";
 
 int print_xml(int argc, const char** argv) {
