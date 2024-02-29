@@ -217,6 +217,9 @@ GeodesicPathSegment* Scholz2015GeodesicPath::addPathSegment(
         const PhysicalFrame& insertionFrame,
         const SimTK::Vec3& locationInInsertionFrame) {
 
+    OPENSIM_THROW_IF_FRMOBJ(!getProperty_path_segments().empty(), Exception,
+            "First path segment already added.");
+
     auto* segment = new GeodesicPathSegment();
     segment->setName(name);
 
@@ -248,35 +251,41 @@ GeodesicPathSegment* Scholz2015GeodesicPath::addPathSegment(
     return segment;
 }
 
+GeodesicPathSegment* Scholz2015GeodesicPath::addPathSegment(
+        const std::string& name,
+        const PhysicalFrame& insertionFrame,
+        const SimTK::Vec3& locationInInsertionFrame) {
 
-//void Scholz2015GeodesicPath::addPathSegment(
-//        const GeodesicWrapSurfaces& surfaces,
-//        const std::vector<GeodesicInitialConditions>& initialConditions,
-//        const Station& origin, const Station& insertion) {
-//
-//    OPENSIM_THROW_IF_FRMOBJ(!getProperty_components().empty(), Exception,
-//            "The first path segment has already been set.");
-//
-//    auto* segment = new GeodesicPathSegment();
-//    addComponent(segment);
-//    for (int i = 0; i < surfaces.size(); ++i) {
-//        segment->addWrapObject(surfaces[i], initialConditions[i]);
-//    }
-//    segment->connectSocket_origin(origin);
-//    segment->connectSocket_insertion(insertion);
-//}
-//
-//void Scholz2015GeodesicPath::addPathSegment(
-//        const GeodesicWrapSurfaces& surfaces,
-//        const std::vector<GeodesicInitialConditions>& initialConditions,
-//        const Station& insertion) {
-//    OPENSIM_THROW_IF_FRMOBJ(getProperty_components().empty(), Exception,
-//            "The first path segment has not been set.");
-//    const auto previousSegment = getComponentList<GeodesicPathSegment>().end();
-//    const Station& origin =
-//            previousSegment->getSocket<Station>("insertion").getConnectee();
-//    addPathSegment(surfaces, initialConditions, origin, insertion);
-//}
+    OPENSIM_THROW_IF_FRMOBJ(getProperty_path_segments().empty(), Exception,
+            "First path segment not yet added.");
+
+    auto* segment = new GeodesicPathSegment();
+    segment->setName(name);
+
+    Station insertion(insertionFrame, locationInInsertionFrame);
+    insertion.setName("insertion");
+    segment->set_insertion(insertion);
+
+    // 'finalizeFromProperties' recognizes the insertion Station
+    // as the GeodesicPathSegment's subcomponent.
+    segment->finalizeFromProperties();
+
+    // When the Station is constructed it is unaware that this
+    // GeodesicPathSegment contains it as a subcomponent and the path name
+    // associated with it will not be valid. This a temporary fix to set the
+    // the name once the added frame has been included as a subcomponent which
+    // occurs during finalizeFromProperties() above.
+    static_cast<Station&>(segment->upd_insertion()).setParentFrame(insertionFrame);
+
+    // Use previous segment's insertion as this segment's origin
+    const auto& prevSegment = get_path_segments(getProperty_path_segments().size() - 1);
+    segment->connectSocket_origin(prevSegment.get_insertion());
+    segment->connectSocket_insertion(segment->upd_insertion());
+
+    addPathSegment(segment);
+
+    return segment;
+}
 
 void Scholz2015GeodesicPath::addPathSegment(GeodesicPathSegment* segment) {
     OPENSIM_THROW_IF(isComponentInOwnershipTree(segment),

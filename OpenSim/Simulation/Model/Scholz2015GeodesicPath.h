@@ -142,9 +142,9 @@ public:
             const PhysicalFrame& insertionFrame,
             const SimTK::Vec3& locationInInsertionFrame);
     // TODO: use this to create subsequent path segments.
-//    GeodesicPathSegment* addPathSegment(const GeodesicWrapSurfaces& surfaces,
-//            const std::vector<GeodesicInitialConditions>& initialConditions,
-//            const Station& insertion);
+    GeodesicPathSegment* addPathSegment(const std::string& name,
+            const PhysicalFrame& insertionFrame,
+            const SimTK::Vec3& locationInInsertionFrame);
 
     // ABSTRACT GEOMETRY PATH INTERFACE
     bool isVisualPath() const override;

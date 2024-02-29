@@ -70,6 +70,12 @@ public:
     // Path
     AbstractGeometryPath& updPath() { return upd_path(); }
     const AbstractGeometryPath& getPath() const { return get_path(); }
+    void setPath(AbstractGeometryPath* path) {
+        updProperty_path().clear();
+        updProperty_path().adoptAndAppendValue(path);
+        finalizeFromProperties();
+        prependComponentPathToConnecteePath(*path);
+    }
 
     template <typename PathType>
     PathType& updPath() {
