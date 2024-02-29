@@ -160,7 +160,8 @@ void Component::addComponent(Component* subcomponent)
     extendAddComponent(subcomponent);
 }
 
-void Component::prependComponentPathToConnecteePath(Component& subcomponent) {
+void Component::prependComponentPathToConnecteePath(
+        Component& subcomponent) {
     const std::string compPath = subcomponent.getAbsolutePathString();
     const Component& root = subcomponent.getRoot();
     for (auto& comp : subcomponent.updComponentList()) {
@@ -170,14 +171,9 @@ void Component::prependComponentPathToConnecteePath(Component& subcomponent) {
             // available in the root component. For list sockets, we assume that
             // checking the first connectee path is sufficient, since all
             // connectees in the list must be from the same component.
-            std::cout << "numConnectees: " << it.second->getNumConnectees() << std::endl;
-            if (it.second->getNumConnectees() > 0) {
-                const auto& connecteePath = it.second->getConnecteePath(0);
-                std::cout << "connecteePath: " << connecteePath << std::endl;
-                std::cout << "root.hasComponent(connecteePath): " << root.hasComponent(connecteePath) << std::endl;
-                if (!root.hasComponent(connecteePath) && !connecteePath.empty()) {
-                    it.second->prependComponentPathToConnecteePath(compPath);
-                }
+            if (it.second->getNumConnectees() > 0 &&
+                    !root.hasComponent(it.second->getConnecteePath(0))) {
+                it.second->prependComponentPathToConnecteePath(compPath);
             }
         }
         for (auto& it : comp._inputsTable) {
@@ -314,15 +310,15 @@ void Component::finalizeConnections(Component& root)
 
     for (auto& it : _socketsTable) {
         auto& socket = it.second;
-//        try {
-        socket->finalizeConnection(root);
-//        }
-//        catch (const std::exception& x) {
-//            OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Socket '" +
-//                socket->getName() + "' of type " +
-//                socket->getConnecteeTypeName() +
-//                " (details: " + x.what() + ").");
-//        }
+        try {
+           socket->finalizeConnection(root);
+        }
+        catch (const std::exception& x) {
+            OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Socket '" +
+                socket->getName() + "' of type " +
+                socket->getConnecteeTypeName() +
+                " (details: " + x.what() + ").");
+        }
     }
 
     for (auto& it : _inputsTable) {

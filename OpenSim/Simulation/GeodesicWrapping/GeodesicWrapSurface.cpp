@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                           OpenSim: GeodesicWrapSurface.cpp                             *
+ *                       OpenSim: GeodesicWrapSurface.cpp                     *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -35,8 +35,10 @@ GeodesicWrapSurface::GeodesicWrapSurface() {
     constructProperty_form("");
 }
 
-GeodesicWrapSurface::GeodesicWrapSurface(Form form) : GeodesicWrapSurface() {
-    setForm(form);
+GeodesicWrapSurface::GeodesicWrapSurface(std::string form)
+        : GeodesicWrapSurface() {
+    getFormFromString(form);
+    setForm(std::move(form));
 }
 
 GeodesicWrapSurface::~GeodesicWrapSurface() = default;
@@ -52,12 +54,13 @@ GeodesicWrapSurface::GeodesicWrapSurface(
 GeodesicWrapSurface& GeodesicWrapSurface::operator=(
         GeodesicWrapSurface&&) noexcept = default;
 
-void GeodesicWrapSurface::setForm(Form form) {
-    set_form(getFormAsString(form));
+void GeodesicWrapSurface::setForm(std::string form) {
+    getFormFromString(form);
+    set_form(std::move(form));
 }
 
-GeodesicWrapSurface::Form GeodesicWrapSurface::getForm() const {
-    return getFormFromString(get_form());
+const std::string& GeodesicWrapSurface::getForm() const {
+    return get_form();
 }
 
 std::string GeodesicWrapSurface::getFormAsString(Form form) {
@@ -109,12 +112,13 @@ GeodesicWrapCylinder::GeodesicWrapCylinder() : GeodesicWrapSurface() {
     constructProperty_radius(0);
 }
 
-GeodesicWrapCylinder::GeodesicWrapCylinder(SimTK::Real radius, Form form) :
-        GeodesicWrapSurface(form) {
+GeodesicWrapCylinder::GeodesicWrapCylinder(SimTK::Real radius,
+        std::string form) : GeodesicWrapSurface(std::move(form)) {
     constructProperty_radius(radius);
-    OPENSIM_THROW_IF_FRMOBJ(!isFormAvailable(form), Exception,
+    OPENSIM_THROW_IF_FRMOBJ(!isFormAvailable(getFormFromString(getForm())),
+            Exception,
             "Form '{}' is not available for a GeodesicWrapCylinder.",
-            getFormAsString(form));
+            getForm());
 }
 
 void GeodesicWrapCylinder::setRadius(SimTK::Real radius) {
@@ -127,7 +131,7 @@ SimTK::Real GeodesicWrapCylinder::getRadius() const {
 
 std::unique_ptr<GeodesicWrapObject>
 GeodesicWrapCylinder::generateGeodesicWrapObject() const {
-    if (getForm() == Form::Implicit) {
+    if (getFormFromString(getForm()) == Form::Implicit) {
         return std::make_unique<ImplicitCylinderWrapObject>(getRadius());
     } else {
         throw Exception("Invalid form specified.");

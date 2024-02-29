@@ -1,7 +1,7 @@
 #ifndef OPENSIM_GEODESIC_WRAP_SURFACE_H
 #define OPENSIM_GEODESIC_WRAP_SURFACE_H
 /* -------------------------------------------------------------------------- *
- *                        OpenSim: GeodesicWrapSurface.h                      *
+ *                       OpenSim: GeodesicWrapSurface.h                       *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -73,7 +73,7 @@ public:
 //==============================================================================
     // CONSTRUCTION AND DESTRUCTION
     GeodesicWrapSurface();
-    explicit GeodesicWrapSurface(Form form);
+    explicit GeodesicWrapSurface(std::string form);
     ~GeodesicWrapSurface() override;
 
     GeodesicWrapSurface(const GeodesicWrapSurface&);
@@ -83,8 +83,8 @@ public:
     GeodesicWrapSurface& operator=(GeodesicWrapSurface&&) noexcept;
 
     // GET AND SET
-    void setForm(Form form);
-    Form getForm() const;
+    void setForm(std::string form);
+    const std::string& getForm() const;
 
     // INTERFACE METHODS
     virtual bool isParametricFormAvailable() const = 0;
@@ -118,7 +118,7 @@ public:
 
     // CONSTRUCTION AND DESTRUCTION
     GeodesicWrapCylinder();
-    GeodesicWrapCylinder(SimTK::Real radius, Form form);
+    GeodesicWrapCylinder(SimTK::Real radius, std::string form);
 
     // GET AND SET
     SimTK::Real getRadius() const;

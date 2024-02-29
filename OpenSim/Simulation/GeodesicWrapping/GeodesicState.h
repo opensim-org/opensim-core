@@ -26,7 +26,7 @@ struct GeodesicBoundaryFrameVariation {
 
 struct GeodesicBoundaryFrame {
     GeodesicBoundaryFrame() = default;
-    GeodesicBoundaryFrame(SimTK::Vec3 velocity, SimTK::Vec3 surfaceNormal);
+    //GeodesicBoundaryFrame(SimTK::Vec3 velocity, SimTK::Vec3 surfaceNormal);
 
     // TODO use rotation vector?
     SimTK::Vec3 tangent;
@@ -41,9 +41,9 @@ struct JacobiFieldScalar
     JacobiFieldScalar(double a, double aDot)
             : value(a), derivative(aDot) {}
 
-    Dot calcDerivative(double gaussianCurvature) const;
+    //Dot calcDerivative(double gaussianCurvature) const;
 
-    JacobiFieldScalar &operator+=(const Dot &derivative);
+    //JacobiFieldScalar &operator+=(const Dot &derivative);
 
     double value;
     double derivative;
@@ -53,7 +53,7 @@ struct JacobiFieldScalar
 struct GeodesicState
 {
     GeodesicState() = default;
-    GeodesicBoundaryFrameVariation calcFrameToDBeta() const;
+    //GeodesicBoundaryFrameVariation calcFrameToDBeta() const;
 
     GeodesicBoundaryFrame frame;
     SimTK::Vec3 position;

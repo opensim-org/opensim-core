@@ -162,6 +162,10 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Wrap/WrapSphereObst.h>
 %include <OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.h>
 
+%unique_ptr(GeodesicWrapObject)
+%include <OpenSim/Simulation/GeodesicWrapping/GeodesicWrapSurface.h>
+%include <OpenSim/Simulation/GeodesicWrapping/GeodesicState.h>
+
 %include <OpenSim/Simulation/Model/Probe.h>
 %template(SetProbes) OpenSim::Set<OpenSim::Probe, OpenSim::ModelComponent>;
 %template(ModelComponentSetProbes) OpenSim::ModelComponentSet<OpenSim::Probe>;
@@ -193,6 +197,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
 %include <OpenSim/Simulation/Model/GeometryPath.h>
 %include <OpenSim/Simulation/Model/FunctionBasedPath.h>
+%include <OpenSim/Simulation/Model/Scholz2015GeodesicPath.h>
 %include <OpenSim/Simulation/Model/Ligament.h>
 %include <OpenSim/Simulation/Model/Blankevoort1991Ligament.h>
 %include <OpenSim/Simulation/Model/PathActuator.h>

@@ -3522,7 +3522,6 @@ void Socket<C>::finalizeConnection(const Component& root) {
         clearConnecteePath();
         for (auto& connectee : _connectees) {
             const auto& comp = *connectee;
-            std::cout << "DEBUG comp name: " << comp.getName() << std::endl;
             const auto& rootOfConnectee = comp.getRoot();
             const auto& myRoot = getOwner().getRoot();
             if (&myRoot != &rootOfConnectee) {
@@ -3551,6 +3550,7 @@ void Socket<C>::finalizeConnection(const Component& root) {
     } else {
         for (int i = 0; i < static_cast<int>(getNumConnectees()); ++i) {
             const auto connecteePath = getConnecteePath(i);
+
             OPENSIM_THROW_IF(connecteePath.empty(), ConnecteeNotSpecified,
                              *this, getOwner());
             ComponentPath path(connecteePath);

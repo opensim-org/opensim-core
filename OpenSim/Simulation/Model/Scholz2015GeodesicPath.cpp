@@ -132,7 +132,6 @@ void GeodesicPathSegment::extendConnectToModel(Model& model) {
 
     // Loop through all surfaces to create GeodesicWrapObjects to add to this
     // path segment
-    std::vector<Geodesic> initialGeodesicsVec;
     _wrapObjects.clear();
     const auto& surfaces = getSocket<GeodesicWrapSurface>("surfaces");
     for (int i = 0; i < surfaces.getNumConnectees(); ++i) {
@@ -167,13 +166,15 @@ void GeodesicPathSegment::calcWrappingPath(const SimTK::State& state) const {
                 surface.getSocket<PhysicalFrame>("frame").getConnectee();
         const SimTK::Transform& transform = frame.getTransformInGround(state);
         _wrapObjects[i]->setTransform(transform);
+
+
         _wrapObjects[i]->setInitialConditions(get_initial_conditions(i));
     }
 
     // Call the wrap solver.
     GeodesicWrapResult result;
-    // _solver.calcWrappingPath(state, originPoint, insertionPoint, _wrapObjects,
-    //         maxIter, eps, initialGeodesicsVec);
+    // _solver.calcWrappingPath(originPoint, insertionPoint, _wrapObjects,
+    //         maxIter, eps, result);
 
     // Update the cache.
     setCacheVariableValue<GeodesicWrapResult>(state, _resultCV, result);
