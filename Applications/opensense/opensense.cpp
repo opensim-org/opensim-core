@@ -132,7 +132,7 @@ int main(int argc, char **argv)
                                   "Please fix and retry.");
                         PrintUsage(argv[0], cout);
                         exit(-1);
-                    }                   
+                    }
                     std::string markerFile{ argv[i + 1] };
                     TimeSeriesTable_<SimTK::Quaternion> quaternions =
                         OpenSenseUtilities::createOrientationsFileFromMarkers(markerFile);
@@ -190,7 +190,7 @@ int main(int argc, char **argv)
                     IMUInverseKinematicsTool *imuIKTool = new IMUInverseKinematicsTool();
                     imuIKTool->setName("new");
                     Object::setSerializeAllDefaults(true);
-                    std::string setupFile = 
+                    std::string setupFile =
                         "new_Setup_IMUInverseKinematicsTool.xml";
                     imuIKTool->print(setupFile);
                     Object::setSerializeAllDefaults(false);
@@ -274,7 +274,7 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "-PropertyInfo, -PI                        Print help information for properties in setup files.\n";
     aOStream << "-ReadXsens, -RX directory settings.xml    Parse Xsens exported files from directory using settings.xml.\n";
     aOStream << "                                          Creates a storage file with the orientation data for each sensor, \n";
-    aOStream << "                                          where each column in the storage file is named\n"; 
+    aOStream << "                                          where each column in the storage file is named\n";
     aOStream << "                                          according to the Frame in the corresponding OpenSim model.\n";
     aOStream << "-ReadAPDM, -RA datafile.csv settings.xml  Parse single csv file provided by APDM using specified settings.xml.\n";
     aOStream << "                                          Creates a storage file with the orientation data for each sensor, \n";
@@ -316,7 +316,7 @@ TimeSeriesTable_<SimTK::Quaternion> readRotationsFromXSensFiles(const std::strin
     const TimeSeriesTableQuaternion& quatTableTyped =  reader.getOrientationsTable(tables);
 
     STOFileAdapter_<SimTK::Quaternion>::write(quatTableTyped, readerSettings.get_trial_prefix()+"_orientations.sto");
- 
+
     return quatTableTyped;
 }
 
@@ -329,7 +329,7 @@ TimeSeriesTable_<SimTK::Quaternion> readRotationsFromAPDMFile(const std::string&
     DataAdapter::OutputTables tables = reader.read(apdmCsvFile);
     const TimeSeriesTableQuaternion& quatTableTyped = reader.getOrientationsTable(tables);
 
-    STOFileAdapter_<SimTK::Quaternion>::write(quatTableTyped, 
+    STOFileAdapter_<SimTK::Quaternion>::write(quatTableTyped,
         apdmCsvFile.substr(0, apdmCsvFile.rfind('.'))+"_orientations.sto");
 
     return quatTableTyped;
@@ -358,13 +358,13 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
     SimTK::Array_<CoordinateReference> coordinateReferences;
 
     InverseKinematicsSolver ikSolver(model, markersRef, coordinateReferences);
- 
+
     s.updTime() = times[0];
 
     ikSolver.assemble(s);
     model.getVisualizer().show(s);
 
-    // labels of markers including those <bodyName>O,X,Y that identify the 
+    // labels of markers including those <bodyName>O,X,Y that identify the
     // IMU sensor placement/alignment on the body expressed in Ground
     auto labels = table.getColumnLabels();
 
@@ -446,7 +446,7 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
         }
     }
 
-    // store joint initial pose from marker IK as default pose for the model. 
+    // store joint initial pose from marker IK as default pose for the model.
     model.setPropertiesFromState(s);
 
     for (int i = 0; i < (int)offsets.size(); ++i) {

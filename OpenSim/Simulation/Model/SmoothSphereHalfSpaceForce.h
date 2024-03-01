@@ -32,8 +32,8 @@ HuntCrossleyForce, the normal force is differentiable as a function of
 penetration depth. This component is designed for use in gradient-based
 optimizations, in which the model is required to be differentiable. This
 component models contact between a single sphere and a single half space.
-This force does NOT use ContactGeometry objects; the description of the
-contact geometries is done through properties of this component.
+This force uses a ContactSphere (via the Socket 'sphere') and a ContactHalfSpace
+(via the Socket 'half_space') to define the contact geometry.
 
 \section const_smoothsphere_force Constant contact force
 

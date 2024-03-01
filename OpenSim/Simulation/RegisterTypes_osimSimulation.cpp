@@ -32,6 +32,7 @@
 #include "Model/Ground.h"
 #include "Model/OffsetFrame.h"
 #include "Model/PhysicalOffsetFrame.h"
+#include "Model/StationDefinedFrame.h"
 
 #include "Model/AnalysisSet.h"
 #include "Model/ForceSet.h"
@@ -222,6 +223,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( OpenSim::Body() );
     Object::registerType( OpenSim::Ground());
     Object::registerType( PhysicalOffsetFrame());
+    Object::registerType( StationDefinedFrame());
 
     Object::registerType( WeldJoint());
     Object::registerType( CustomJoint());
