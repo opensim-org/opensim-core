@@ -1,5 +1,4 @@
 
-
 /* Load the required libraries when this module is loaded.                    */
 %pragma(java) jniclassclassmodifiers="public class"
 SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
@@ -43,7 +42,6 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %}
 
 
-
 /* General exception handling for Java wrapping.                              */
 
 %typemap(throws) SWIGTYPE, SWIGTYPE &, SWIGTYPE *, SWIGTYPE [ANY] %{
@@ -71,20 +69,3 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
               }
 	  }
 }
-
-// https://github.com/swig/swig/blob/master/Lib/java/std_auto_ptr.i
-%define opensim_unique_ptr(TYPE)
-%template() std::unique_ptr<TYPE>;
-%typemap(jni) std::unique_ptr<TYPE> "jlong"
-%typemap(jtype) std::unique_ptr<TYPE> "long"
-%typemap(jstype) std::unique_ptr<TYPE> "$typemap(jstype, TYPE)"
-%typemap(out) std::unique_ptr<TYPE> %{
-jlong lpp = 0;
-*(TYPE**) &lpp = $1.release();
-$result = lpp;
-%}
-%typemap(javaout) std::unique_ptr<TYPE> {
-long cPtr = $jnicall;
-return (cPtr == 0) ? null : new $typemap(jstype, TYPE)(cPtr, true);
-}
-%enddef
