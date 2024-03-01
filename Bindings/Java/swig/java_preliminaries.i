@@ -42,7 +42,6 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %}
 
 
-
 /* General exception handling for Java wrapping.                              */
 
 %typemap(throws) SWIGTYPE, SWIGTYPE &, SWIGTYPE *, SWIGTYPE [ANY] %{
