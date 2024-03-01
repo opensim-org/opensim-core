@@ -544,7 +544,7 @@ jobs:
         repo: opensim-perf
         owner: opensim-org
         run_id: ${{ steps.return_dispatch.outputs.run_id }}
-        run_timeout_seconds: 1500 
+        run_timeout_seconds: 600
 
     - name: Download performance analysis results
       id: download-artifact
