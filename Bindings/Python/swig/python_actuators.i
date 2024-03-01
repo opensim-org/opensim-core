@@ -1,5 +1,4 @@
 %module(package="opensim", directors="1") actuators
-
 #pragma SWIG nowarn=822,451,503,516,325
 // 401 is "Nothing known about base class *some-class*.
 //         Maybe you forgot to instantiate *some-template* using %template."
@@ -20,7 +19,6 @@ using namespace OpenSim;
 using namespace SimTK;
 %}
 
-%include <Bindings/preliminaries.i>
 %include "python_preliminaries.i"
 
 // Tell SWIG about the modules we depend on.
