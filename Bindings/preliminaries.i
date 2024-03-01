@@ -12,4 +12,3 @@
 %include "std_map.i"
 %include <std_shared_ptr.i>
 %include <std_unique_ptr.i>
-%unique_ptr(Model)

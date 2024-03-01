@@ -1,11 +1,5 @@
 %newobject *::clone;
 
-/* To recognize SimTK::RowVector in header files (TODO: move to simbody.i) */
-
-%unique_ptr(MocoParameter)
-%unique_ptr(MocoGoal)
-%unique_ptr(MocoPathConstraint)
-
 %include <OpenSim/Moco/osimMocoDLL.h>
 
 %include <OpenSim/Moco/About.h>
@@ -62,42 +56,42 @@ namespace OpenSim {
 // when wrapping createRep().
 %rename(createRep) OpenSim::MocoProblem::createRepHeap;
 
-//namespace OpenSim {
-//    %ignore MocoPhase::setModel(Model);
-//    %ignore MocoPhase::setModel(std::unique_ptr<Model>);
-//    %ignore MocoProblem::setModel(Model);
-//    %ignore MocoProblem::setModel(std::unique_ptr<Model>);
-//}
-//
-//%extend OpenSim::MocoPhase {
-//    void setModel(Model* model) {
-//        $self->setModel(std::unique_ptr<Model>(model));
-//    }
-//    void addParameter(MocoParameter* ptr) {
-//        $self->addParameter(std::unique_ptr<MocoParameter>(ptr));
-//    }
-//    void addGoal(MocoGoal* ptr) {
-//        $self->addGoal(std::unique_ptr<MocoGoal>(ptr));
-//    }
-//    void addPathConstraint(MocoPathConstraint* ptr) {
-//        $self->addPathConstraint(std::unique_ptr<MocoPathConstraint>(ptr));
-//    }
-//}
-//
-//%extend OpenSim::MocoProblem {
-//    void setModel(Model* model) {
-//        $self->setModel(std::unique_ptr<Model>(model));
-//    }
-//    void addParameter(MocoParameter* ptr) {
-//        $self->addParameter(std::unique_ptr<MocoParameter>(ptr));
-//    }
-//    void addGoal(MocoGoal* ptr) {
-//        $self->addGoal(std::unique_ptr<MocoGoal>(ptr));
-//    }
-//    void addPathConstraint(MocoPathConstraint* ptr) {
-//        $self->addPathConstraint(std::unique_ptr<MocoPathConstraint>(ptr));
-//    }
-//}
+namespace OpenSim {
+    %ignore MocoPhase::setModel(Model);
+    %ignore MocoPhase::setModel(std::unique_ptr<Model>);
+    %ignore MocoProblem::setModel(Model);
+    %ignore MocoProblem::setModel(std::unique_ptr<Model>);
+}
+
+%extend OpenSim::MocoPhase {
+    void setModel(Model* model) {
+        $self->setModel(std::unique_ptr<Model>(model));
+    }
+    void addParameter(MocoParameter* ptr) {
+        $self->addParameter(std::unique_ptr<MocoParameter>(ptr));
+    }
+    void addGoal(MocoGoal* ptr) {
+        $self->addGoal(std::unique_ptr<MocoGoal>(ptr));
+    }
+    void addPathConstraint(MocoPathConstraint* ptr) {
+        $self->addPathConstraint(std::unique_ptr<MocoPathConstraint>(ptr));
+    }
+}
+
+%extend OpenSim::MocoProblem {
+    void setModel(Model* model) {
+        $self->setModel(std::unique_ptr<Model>(model));
+    }
+    void addParameter(MocoParameter* ptr) {
+        $self->addParameter(std::unique_ptr<MocoParameter>(ptr));
+    }
+    void addGoal(MocoGoal* ptr) {
+        $self->addGoal(std::unique_ptr<MocoGoal>(ptr));
+    }
+    void addPathConstraint(MocoPathConstraint* ptr) {
+        $self->addPathConstraint(std::unique_ptr<MocoPathConstraint>(ptr));
+    }
+}
 
 %include <OpenSim/Moco/MocoProblem.h>
 %include <OpenSim/Moco/MocoParameter.h>

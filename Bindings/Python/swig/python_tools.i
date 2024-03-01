@@ -58,7 +58,7 @@ using namespace SimTK;
 %}
 // Include all the OpenSim code.
 // =============================
-%include <Bindings/preliminaries.i>
+//%include <Bindings/preliminaries.i>
 %include <Bindings/tools.i>
 
 // Memory management

@@ -19,6 +19,7 @@ using namespace SimTK;
 %feature("director") OpenSim::AnalysisWrapper;
 %feature("director") OpenSim::SimtkLogCallback;
 
+%include <Bindings/preliminaries.i>
 %include "java_preliminaries.i";
 
 %include "arrays_java.i";

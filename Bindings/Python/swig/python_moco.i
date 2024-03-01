@@ -1,5 +1,9 @@
 %module(package="opensim", directors="1") moco
 // %module(package="opensim", directors="1", threads="1") moco
+
+%include <std_unique_ptr.i>
+%unique_ptr(OpenSim::Model)
+
 #pragma SWIG nowarn=822,451,503,516,325
 #pragma SWIG nowarn=401
 
@@ -518,6 +522,6 @@ using namespace SimTK;
 // Include all the OpenSim code.
 // =============================
 
-opensim_unique_ptr(OpenSim::MocoProblemRep);
+%unique_ptr(OpenSim::MocoProblemRep);
 
 %include <Bindings/moco.i>
