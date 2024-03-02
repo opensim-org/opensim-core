@@ -1,7 +1,5 @@
 %newobject *::clone;
 
-/* To recognize SimTK::RowVector in header files (TODO: move to simbody.i) */
-
 %include <OpenSim/Moco/osimMocoDLL.h>
 
 %include <OpenSim/Moco/About.h>

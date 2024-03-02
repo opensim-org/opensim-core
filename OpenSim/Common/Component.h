@@ -3550,6 +3550,7 @@ void Socket<C>::finalizeConnection(const Component& root) {
     } else {
         for (int i = 0; i < static_cast<int>(getNumConnectees()); ++i) {
             const auto connecteePath = getConnecteePath(i);
+
             OPENSIM_THROW_IF(connecteePath.empty(), ConnecteeNotSpecified,
                              *this, getOwner());
             ComponentPath path(connecteePath);

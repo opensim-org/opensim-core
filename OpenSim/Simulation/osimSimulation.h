@@ -54,6 +54,7 @@
 #include "Model/MovingPathPoint.h"
 #include "Model/GeometryPath.h"
 #include "Model/FunctionBasedPath.h"
+#include "Model/Scholz2015GeodesicPath.h"
 #include "Model/PrescribedForce.h"
 #include "Model/PointToPointSpring.h"
 #include "Model/ExpressionBasedPointToPointForce.h"
@@ -81,6 +82,10 @@
 #include "Control/ControlConstant.h"
 #include "Control/ControlLinear.h"
 #include "Control/PrescribedController.h"
+
+#include "GeodesicWrapping/GeodesicWrapSurface.h"
+#include "GeodesicWrapping/GeodesicState.h"
+
 #include "Wrap/PathWrap.h"
 #include "Wrap/PathWrapSet.h"
 #include "Wrap/WrapCylinder.h"

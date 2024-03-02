@@ -311,7 +311,7 @@ void Component::finalizeConnections(Component& root)
     for (auto& it : _socketsTable) {
         auto& socket = it.second;
         try {
-            socket->finalizeConnection(root);
+           socket->finalizeConnection(root);
         }
         catch (const std::exception& x) {
             OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Socket '" +

@@ -222,6 +222,6 @@ using namespace SimTK;
 %}
 
 %import "java_common.i"
-opensim_unique_ptr(OpenSim::PositionMotion);
+%unique_ptr(OpenSim::PositionMotion);
 %include <Bindings/simulation.i>
 

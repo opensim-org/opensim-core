@@ -145,7 +145,7 @@ public:
 // METHODS
 //=============================================================================
 
-    // CONSTRUCTION AND DESTRUCTION
+    // CONSTRUCTION
     FunctionBasedPath();
 
     // GET AND SET
@@ -178,7 +178,7 @@ public:
     void setLengtheningSpeedFunction(const Function& speedFunction);
     const Function& getLengtheningSpeedFunction() const;
 
-    // ABSTRACT PATH INTERFACE
+    // ABSTRACT GEOMETRY PATH INTERFACE
     double getLength(const SimTK::State& s) const override;
     double getLengtheningSpeed(const SimTK::State& s) const override;
     /// @note This must check if the path is dependent on the provided

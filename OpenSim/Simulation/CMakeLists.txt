@@ -5,6 +5,7 @@ set(SIMULATION_SUBDIRS
         Manager
         Model
         Wrap
+        GeodesicWrapping
         SimbodyEngine
         OpenSense)
 
