@@ -243,7 +243,6 @@ private:
     // Helper function for post-processing the solution.
     void updateSolutionControls(const MocoSolution& mocoSolution,
             CasOC::Solution& casSolution) const;
-    void checkConstraintJacobianRank(const MocoSolution& mocoSolution) const;
 
     // When a copy of the solver is made, we want to keep any guess specified
     // by the API, but want to discard anything we've cached by loading a file.
