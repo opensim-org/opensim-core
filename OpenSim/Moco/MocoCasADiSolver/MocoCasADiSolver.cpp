@@ -390,52 +390,8 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     // If user-defined controllers are present in the model, then check for
     // missing model controls in the CasADi solution and append them to the
     // CasADi solution.
-    // TODO: this would need to be updated if we allowed stacking OCP controls
-    //       on top of user-defined controls.
     if (getProblemRep().getComputeControlsFromModel()) {
-        const auto& model = getProblemRep().getModelBase();
-        auto modelControlNames = createControlNamesFromModel(model);
-        auto controlIndexMap = createSystemControlIndexMap(model);
-
-        // Find model control names that are not in the CasADi solution.
-        auto casControlNames = casSolution.control_names;
-        std::vector<std::string> missingControlNames;
-        for (const auto& modelControlName : modelControlNames) {
-            if (std::find(casControlNames.begin(), casControlNames.end(),
-                        modelControlName) == casControlNames.end()) {
-                missingControlNames.push_back(modelControlName);
-            }
-        }
-
-        // Allocate space for the missing controls in the CasADi solution.
-        casadi::DM casControls = casSolution.variables.at(CasOC::Var::controls);
-        casadi::DM finalControls(
-                casControls.size1() + missingControlNames.size(),
-                casControls.size2());
-        finalControls(Slice(0, casControls.size1()), Slice()) = casControls;
-        casadi::DM missingControls(missingControlNames.size(),
-                casControls.size2());
-
-        // Compute the missing controls from the model.
-        auto statesTraj = mocoSolution.exportToStatesTrajectory(model);
-        int numMissingControls = static_cast<int>(missingControlNames.size());
-        for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
-            const auto& state = statesTraj.get(i);
-            model.realizeDynamics(state);
-            const auto& controls = model.getControls(state);
-            for (int j = 0; j < numMissingControls; ++j) {
-                missingControls(j, i) = controls.get(
-                        controlIndexMap.at(missingControlNames[j]));
-            }
-        }
-
-        // Append the missing controls to the CasADi solution and
-        // regenerate the MocoSolution.
-        finalControls(Slice(casControls.size1(), casControls.size1() +
-                missingControls.size1()), Slice()) = missingControls;
-        casSolution.variables[CasOC::Var::controls] = finalControls;
-        casSolution.control_names.insert(casSolution.control_names.end(),
-                missingControlNames.begin(), missingControlNames.end());
+        updateSolutionControls(mocoSolution, casSolution);
         mocoSolution = convertToMocoTrajectory<MocoSolution>(casSolution);
     }
 
@@ -445,43 +401,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     if (getProblemRep().getNumKinematicConstraintEquations() &&
             !get_enforce_constraint_derivatives() &&
             !get_minimize_lagrange_multipliers()) {
-        const auto& model = getProblemRep().getModelBase();
-        const auto& matter = model.getMatterSubsystem();
-        TimeSeriesTable states = mocoSolution.exportToStatesTable();
-        // TODO update when we support multiple phases.
-        auto statesTraj =
-                StatesTrajectory::createFromStatesTable(model, states);
-        SimTK::Matrix G;
-        SimTK::FactorQTZ G_qtz;
-        bool isJacobianFullRank = true;
-        int rank;
-        for (const auto& s : statesTraj) {
-            // Jacobian is at most velocity-dependent.
-            model.realizeVelocity(s);
-            matter.calcG(s, G);
-            G_qtz.factor<double>(G);
-            if (G_qtz.getRank() < G.nrow()) {
-                isJacobianFullRank = false;
-                rank = G_qtz.getRank();
-                break;
-            }
-        }
-
-        if (!isJacobianFullRank) {
-            const std::string dashes(52, '-');
-            log_warn(dashes);
-            log_warn("Rank-deficient constraint Jacobian detected.");
-            log_warn(dashes);
-            log_warn("The model constraint Jacobian has {} row(s) but is only "
-                     "rank {}. ", G.nrow(), rank);
-            log_warn("Try removing redundant constraints from the model or "
-                     "enable");
-            log_warn("minimization of Lagrange multipliers by utilizing the "
-                     "solver ");
-            log_warn("properties 'minimize_lagrange_multipliers' and");
-            log_warn("'lagrange_multiplier_weight'.");
-            log_warn(dashes);
-        }
+        checkConstraintJacobianRank(mocoSolution);
     }
 
     const long long elapsed = stopwatch.getElapsedTimeInNs();
@@ -506,4 +426,96 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
 #else
     OPENSIM_THROW(MocoCasADiSolverNotAvailable);
 #endif
+}
+
+void MocoCasADiSolver::updateSolutionControls(const MocoSolution& mocoSolution,
+        CasOC::Solution& casSolution) const {
+
+    // TODO: this would need to be updated if we allowed stacking OCP controls
+    //       on top of user-defined controls.
+    const auto& model = getProblemRep().getModelBase();
+    auto modelControlNames = createControlNamesFromModel(model);
+    auto controlIndexMap = createSystemControlIndexMap(model);
+
+    // Find model control names that are not in the CasADi solution.
+    auto casControlNames = casSolution.control_names;
+    std::vector<std::string> missingControlNames;
+    for (const auto& modelControlName : modelControlNames) {
+        if (std::find(casControlNames.begin(), casControlNames.end(),
+                    modelControlName) == casControlNames.end()) {
+            missingControlNames.push_back(modelControlName);
+        }
+    }
+
+    // Allocate space for the missing controls in the CasADi solution.
+    casadi::DM casControls = casSolution.variables.at(CasOC::Var::controls);
+    casadi::DM finalControls(
+            casControls.size1() + missingControlNames.size(),
+            casControls.size2());
+    finalControls(Slice(0, casControls.size1()), Slice()) = casControls;
+    casadi::DM missingControls(missingControlNames.size(),
+            casControls.size2());
+
+    // Compute the missing controls from the model.
+    auto statesTraj = mocoSolution.exportToStatesTrajectory(model);
+    int numMissingControls = static_cast<int>(missingControlNames.size());
+    for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
+        const auto& state = statesTraj.get(i);
+        model.realizeDynamics(state);
+        const auto& controls = model.getControls(state);
+        for (int j = 0; j < numMissingControls; ++j) {
+            missingControls(j, i) = controls.get(
+                    controlIndexMap.at(missingControlNames[j]));
+        }
+    }
+
+    // Append the missing controls to the CasADi solution and
+    // regenerate the MocoSolution.
+    finalControls(Slice(casControls.size1(), casControls.size1() +
+     missingControls.size1()), Slice()) = missingControls;
+    casSolution.variables[CasOC::Var::controls] = finalControls;
+    casSolution.control_names.insert(casSolution.control_names.end(),
+            missingControlNames.begin(), missingControlNames.end());
+}
+
+void MocoCasADiSolver::checkConstraintJacobianRank(
+        const MocoSolution& mocoSolution) const {
+
+    const auto& model = getProblemRep().getModelBase();
+    const auto& matter = model.getMatterSubsystem();
+    TimeSeriesTable states = mocoSolution.exportToStatesTable();
+    // TODO update when we support multiple phases.
+    auto statesTraj =
+            StatesTrajectory::createFromStatesTable(model, states);
+    SimTK::Matrix G;
+    SimTK::FactorQTZ G_qtz;
+    bool isJacobianFullRank = true;
+    int rank;
+    for (const auto& s : statesTraj) {
+        // Jacobian is at most velocity-dependent.
+        model.realizeVelocity(s);
+        matter.calcG(s, G);
+        G_qtz.factor<double>(G);
+        if (G_qtz.getRank() < G.nrow()) {
+            isJacobianFullRank = false;
+            rank = G_qtz.getRank();
+            break;
+        }
+    }
+
+    if (!isJacobianFullRank) {
+        const std::string dashes(52, '-');
+        log_warn(dashes);
+        log_warn("Rank-deficient constraint Jacobian detected.");
+        log_warn(dashes);
+        log_warn("The model constraint Jacobian has {} row(s) but is only "
+                 "rank {}. ", G.nrow(), rank);
+        log_warn("Try removing redundant constraints from the model or "
+                 "enable");
+        log_warn("minimization of Lagrange multipliers by utilizing the "
+                 "solver ");
+        log_warn("properties 'minimize_lagrange_multipliers' and");
+        log_warn("'lagrange_multiplier_weight'.");
+        log_warn(dashes);
+    }
 }

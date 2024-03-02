@@ -31,7 +31,8 @@ ControlDistributor::ControlDistributor(const ControlDistributor&) = default;
 
 ControlDistributor::ControlDistributor(ControlDistributor&&) = default;
 
-ControlDistributor& ControlDistributor::operator=(const ControlDistributor&) = default;
+ControlDistributor& ControlDistributor::operator=(
+        const ControlDistributor&) = default;
 
 ControlDistributor& ControlDistributor::operator=(
         ControlDistributor&&) = default;

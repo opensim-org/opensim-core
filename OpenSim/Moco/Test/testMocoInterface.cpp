@@ -2297,3 +2297,37 @@ TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
         REQUIRE(solution.getControlNames() == controlsTable.getColumnLabels());
     }
 }
+
+TEST_CASE("MocoControlGoal: ignoring controlled actuators") {
+
+    Model model = ModelFactory::createSlidingPointMass();
+    auto* controller = new PrescribedController();
+    controller->addActuator(
+            model.getComponent<Actuator>("/forceset/actuator"));
+    controller->prescribeControlForActuator("/forceset/actuator",
+            new Constant(1.0));
+    model.addController(controller);
+    model.finalizeConnections();
+
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.setModelAsCopy(model);
+    problem.setTimeBounds(0, 1);
+    problem.setStateInfo("/slider/position/value", {0, 1}, 0);
+    problem.setStateInfo("/slider/position/speed", {-100, 100}, 0);
+    auto& solver = study.initCasADiSolver();
+    solver.set_optim_max_iterations(1);
+    auto* controlGoal = problem.addGoal<MocoControlGoal>();
+
+    SECTION("Default behavior (do not ignore)") {
+        MocoSolution solution = study.solve().unseal();
+        CHECK(solution.getObjective() == Approx(1.0));
+    }
+
+    SECTION("Ignore controlled actuators") {
+        controlGoal->setIgnoreControlledActuators(true);
+        solver.resetProblem(problem);
+        MocoSolution solution = study.solve().unseal();
+        CHECK(solution.getObjective() == 0);
+    }
+}

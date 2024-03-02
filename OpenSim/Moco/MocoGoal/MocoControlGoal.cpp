@@ -103,6 +103,8 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
         }
 
         if (weight != 0.0) {
+            std::string msg = "MocoControlGoal: Control '" + controlName +
+                    "' has weight " + std::to_string(weight) + ".";
             m_controlIndices.push_back(controlIndexMap[controlName]);
             m_weights.push_back(weight);
             m_controlNames.push_back(controlName);

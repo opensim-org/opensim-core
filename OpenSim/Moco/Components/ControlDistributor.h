@@ -27,8 +27,8 @@ namespace OpenSim {
  * This component stores a vector of control values that can be used to
  * allocate controls to other components in a model.
  *
- * A control value can be added to the ControlDistributor using `addControl()`
- * which adds a channel to the Output `controls` and is then available to
+ * A control value can be added to the ControlDistributor using `addControl()`.
+ * This adds a channel to the Output `controls` which is then available to
  * distribute to other components via `Input` connections.
  *
  * The control values are stored in a discrete variable in the state. The
