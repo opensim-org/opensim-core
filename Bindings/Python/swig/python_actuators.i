@@ -19,6 +19,7 @@ using namespace OpenSim;
 using namespace SimTK;
 %}
 
+
 %include "python_preliminaries.i"
 
 // Tell SWIG about the modules we depend on.

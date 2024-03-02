@@ -186,4 +186,3 @@ function testChangingGoals(testCase)
         assert(study.solve().getFinalTime() < 0.8 * finalTime0);
     end
 end
-
