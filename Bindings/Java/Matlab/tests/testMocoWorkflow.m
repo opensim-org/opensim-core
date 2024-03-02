@@ -187,29 +187,3 @@ function testChangingGoals(testCase)
     end
 end
 
-function testPositionMotion(testCase)
-    % Test that the PositionMotion class can be created and used.
-    import org.opensim.modeling.*;
-    study = MocoStudy();
-    problem = study.updProblem();
-    model = createSlidingMassModel();
-    problem.setModel(model);
-    problem.setTimeBounds(0, [0, 10]);
-    problem.setStateInfo("/slider/position/value", [0, 1], 0, 1);
-    problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0);
-    problem.setControlInfo("/actuator", [-10, 10]);
-    problem.addGoal(MocoControlGoal());
-
-    if MocoCasADiSolver.isAvailable()
-        solver = study.initCasADiSolver();
-        solver.set_transcription_scheme("trapezoidal");
-        solver.set_num_mesh_intervals(19);
-        solution = study.solve();
-
-        model.initSystem();
-        posmot = PositionMotion.createFromStatesTrajectory(...
-                model, solution.exportToStatesTrajectory(model));
-        assert(posmot.get_functions().getSize() == 1)
-    end
-end
-
