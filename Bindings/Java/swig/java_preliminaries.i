@@ -1,4 +1,5 @@
 
+
 /* Load the required libraries when this module is loaded.                    */
 %pragma(java) jniclassclassmodifiers="public class"
 SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
@@ -40,6 +41,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
       }
   }
 %}
+
 
 
 /* General exception handling for Java wrapping.                              */
