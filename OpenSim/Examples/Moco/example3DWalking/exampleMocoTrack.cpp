@@ -28,6 +28,7 @@
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Common/STOFileAdapter.h>
 
 using namespace OpenSim;
 
@@ -169,27 +170,57 @@ void muscleDrivenStateTracking() {
         }
     }
 
-    // Constrain the muscle activations at the initial time point to equal
-    // the initial muscle excitation value.
-    problem.addGoal<MocoInitialActivationGoal>("initial_activation");
+    // Constraint the states and controls to be periodic.
+    auto* periodicityGoal = problem.addGoal<MocoPeriodicityGoal>("periodicity");
+    model.initSystem();
+    for (const auto& coord : model.getComponentList<Coordinate>()) {
+        if (!IO::EndsWith(coord.getName(), "_tx")) {
+            periodicityGoal->addStatePair(coord.getStateVariableNames()[0]);
+        }
+        periodicityGoal->addStatePair(coord.getStateVariableNames()[1]);
+    }
+
+    for (const auto& muscle : model.getComponentList<Muscle>()) {
+        periodicityGoal->addStatePair(muscle.getStateVariableNames()[0]);
+        periodicityGoal->addControlPair(muscle.getAbsolutePathString());
+    }
+
+    for (const auto& actu : model.getComponentList<Actuator>()) {
+        periodicityGoal->addControlPair(actu.getAbsolutePathString());
+    }
 
     // Update the solver tolerances.
     auto& solver = study.updSolver<MocoCasADiSolver>();
     solver.set_optim_convergence_tolerance(1e-3);
     solver.set_optim_constraint_tolerance(1e-4);
-    
-    // Solve and visualize.
-    MocoSolution solution = study.solve();
+
+    // Solve!
+    MocoSolution solution = study.solve().unseal();
+    solution.write("exampleMocoTrack_solution.sto");
+
+    // Compute the joint moments and write them to a file.
+    TimeSeriesTable jointMoments = study.computeJointMoments(solution);
+    STOFileAdapter::write(jointMoments, "exampleMocoTrack_joint_moments.sto");
+
+    // Save the model.
+    model.print("exampleMocoTrack_model.osim");
+
+    // Visualize the solution.
     study.visualize(solution);
 }
 
 int main() {
 
     // Solve the torque-driven marker tracking problem.
-    torqueDrivenMarkerTracking();
+//    torqueDrivenMarkerTracking();
 
     // Solve the muscle-driven state tracking problem.
-    muscleDrivenStateTracking();
+//    muscleDrivenStateTracking();
+
+    Model model("exampleMocoTrack_model.osim");
+    MocoTrajectory trajectory("exampleMocoTrack_solution.sto");
+    TimeSeriesTable jointMoments = OpenSim::computeJointMoments(model, trajectory);
+    STOFileAdapter::write(jointMoments, "exampleMocoTrack_joint_moments.sto");
 
     return EXIT_SUCCESS;
 }

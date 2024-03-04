@@ -101,15 +101,20 @@ MocoSolution MocoStudy::solve() const {
     return solution;
 }
 
-void MocoStudy::visualize(const MocoTrajectory& it) const {
+void MocoStudy::visualize(const MocoTrajectory& trajectory) const {
     // TODO this does not need the Solver at all, so this could be moved to
     // MocoProblem.
     const auto& model = get_problem().getPhase(0).getModelProcessor().process();
-    VisualizerUtilities::showMotion(model, it.exportToStatesTable());
+    VisualizerUtilities::showMotion(model, trajectory.exportToStatesTable());
 }
 
 TimeSeriesTable MocoStudy::analyze(const MocoTrajectory& trajectory,
         std::vector<std::string> outputPaths) const {
     return OpenSim::analyzeMocoTrajectory<double>(
             get_problem().createRep().getModelBase(), trajectory, outputPaths);
+}
+
+TimeSeriesTable MocoStudy::computeJointMoments(const MocoTrajectory& trajectory) const {
+    const auto& model = get_problem().getPhase(0).getModelProcessor().process();
+    return OpenSim::computeJointMoments(model, trajectory);
 }

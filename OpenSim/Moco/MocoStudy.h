@@ -154,7 +154,7 @@ public:
     /// @precondition
     ///     The MocoProblem must contain the model corresponding to
     ///     the provided trajectory.
-    void visualize(const MocoTrajectory& it) const;
+    void visualize(const MocoTrajectory& traj) const;
 
     /// Calculate the requested outputs using the model in the problem and the
     /// states and controls in the MocoTrajectory.
@@ -164,8 +164,15 @@ public:
     /// PositionMotion) is.
     /// @see OpenSim::analyze()
     /// @note Parameters in the MocoTrajectory are **not** applied to the model.
-    TimeSeriesTable analyze(const MocoTrajectory& it,
+    TimeSeriesTable analyze(const MocoTrajectory& traj,
             std::vector<std::string> outputPaths) const;
+
+
+    /// Compute the joint moments and powers for the provided trajectory.
+    /// @precondition
+    ///     The MocoProblem must contain the model corresponding to
+    ///     the provided trajectory.
+    TimeSeriesTable computeJointMoments(const MocoTrajectory& traj) const;
 
     /// @name Using other solvers
     /// @{

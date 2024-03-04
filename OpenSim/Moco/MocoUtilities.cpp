@@ -20,6 +20,8 @@
 
 #include "MocoProblem.h"
 #include "MocoTrajectory.h"
+#include "OpenSim/Simulation/InverseDynamicsSolver.h"
+#include "OpenSim/Simulation/Model/ExternalLoads.h"
 #include <regex>
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
@@ -357,4 +359,78 @@ TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
     StatesTrajectory statesTraj = trajectory.exportToStatesTrajectory(model);
     return createExternalLoadsTableForGait(std::move(model), statesTraj,
             forcePathsRightFoot, forcePathsLeftFoot);
+}
+
+TimeSeriesTable OpenSim::computeJointMoments(Model model,
+        OpenSim::MocoTrajectory trajectory) {
+
+    // Compute the "known" udots from the trajectory.
+    model.initSystem();
+    const auto& coordinates = model.getCoordinatesInMultibodyTreeOrder();
+    StatesTrajectory statesTraj = trajectory.exportToStatesTrajectory(model);
+    SimTK::Matrix udots(statesTraj.getSize(), model.getNumCoordinates());
+
+    // TODO why does this not work?
+//    for (int i = 0; i < statesTraj.getSize(); ++i) {
+//        const auto& state = statesTraj[i];
+//        model.realizeAcceleration(state);
+//        udots.updRow(i) = ~model.getMatterSubsystem().getUDot(state);
+//    }
+
+    trajectory.generateAccelerationsFromSpeeds();
+    TimeSeriesTable accelerations = trajectory.exportToAccelerationsTable();
+    for (int j = 0; j < model.getNumCoordinates(); ++j) {
+        const auto& coord = coordinates[j];
+        const auto& coordPath = coord->getAbsolutePathString();
+        const auto& udot = accelerations.getDependentColumn(coordPath + "/accel");
+        udots.updCol(j) = udot;
+    }
+
+    // Get the multipliers from the trajectory.
+    TimeSeriesTable multipliersTable = trajectory.exportToMultipliersTable();
+
+    // Disable all actuators in the model.
+    SimTK::State& s = model.initSystem();
+    for (auto& actu : model.updComponentList<Actuator>()) {
+        actu.setAppliesForce(s, false);
+    }
+
+    TimeSeriesTable jointMomentsTable;
+    const auto& matter = model.getMatterSubsystem();
+    for (int i = 0; i < statesTraj.getSize(); ++i) {
+        SimTK::Vector jointMoments(model.getNumCoordinates());
+
+        const auto& udot = ~udots.row(i);
+        const auto& multipliers = multipliersTable.getRowAtIndex(i);
+
+        const auto& state = statesTraj[i];
+        s.updTime() = state.getTime();
+        s.updQ() = state.getQ();
+        s.updU() = state.getU();
+
+        model.realizeDynamics(s);
+        const SimTK::Vector& appliedMobilityForces = model.getMobilityForces(s);
+        const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces =
+                model.getRigidBodyForces(s);
+
+        matter.calcResidualForce(s, appliedMobilityForces, appliedBodyForces,
+                udot, ~multipliers, jointMoments);
+        jointMomentsTable.appendRow(s.getTime(), ~jointMoments);
+    }
+
+    // Set column labels.
+    std::vector<std::string> labels;
+    labels.reserve(coordinates.size());
+    for (const auto& coordinate : coordinates) {
+        std::string suffix;
+        if (coordinate->getMotionType() == Coordinate::MotionType::Rotational) {
+            suffix = "_moment";
+        } else {
+            suffix = "_force";
+        }
+        labels.push_back(coordinate->getName() + suffix);
+    }
+    jointMomentsTable.setColumnLabels(labels);
+
+    return jointMomentsTable;
 }

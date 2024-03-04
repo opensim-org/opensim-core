@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim: MocoUtilities.h                                                   *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
@@ -274,6 +274,19 @@ TimeSeriesTable createExternalLoadsTableForGait(Model model,
         const MocoTrajectory& trajectory,
         const std::vector<std::string>& forcePathsRightFoot,
         const std::vector<std::string>& forcePathsLeftFoot);
+
+/// Compute the set of joint moments from the provided Model and MocoTrajectory.
+/// The MocoTrajectory should be compatible with the provided Model (e.g.,
+/// generated from a MocoStudy with the same Model).
+///
+/// The method `SimbodyMatterSubsystem::calcResidualForce()` is used to compute
+/// the joint moments. This method takes the known set of Lagrange multipliers
+/// corresponding to kinematic constraints in the model; the values are taken
+/// from the provided MocoTrajectory.
+///
+/// @ingroup mocoutil
+OSIMMOCO_API TimeSeriesTable computeJointMoments(Model model,
+        MocoTrajectory trajectory);
 
 } // namespace OpenSim
 
