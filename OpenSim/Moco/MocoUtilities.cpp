@@ -22,6 +22,7 @@
 #include "MocoTrajectory.h"
 #include "OpenSim/Simulation/InverseDynamicsSolver.h"
 #include "OpenSim/Simulation/Model/ExternalLoads.h"
+#include "OpenSim/Common/STOFileAdapter.h"
 #include <regex>
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
@@ -362,46 +363,42 @@ TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
 }
 
 TimeSeriesTable OpenSim::computeJointMoments(Model model,
-        OpenSim::MocoTrajectory trajectory) {
+        const MocoTrajectory& trajectory) {
 
-    // Compute the "known" udots from the trajectory.
+    // Get the coordinates in multibody tree order, which is the order that the
+    // inverse dynamics operator expects.
     model.initSystem();
     const auto& coordinates = model.getCoordinatesInMultibodyTreeOrder();
+
+    // Compute the "known" udots from the trajectory.
     StatesTrajectory statesTraj = trajectory.exportToStatesTrajectory(model);
+    TimeSeriesTable accelerationsTable =
+            analyzeMocoTrajectory<double>(model, trajectory, {".*acceleration"});
     SimTK::Matrix udots(statesTraj.getSize(), model.getNumCoordinates());
-
-    // TODO why does this not work?
-//    for (int i = 0; i < statesTraj.getSize(); ++i) {
-//        const auto& state = statesTraj[i];
-//        model.realizeAcceleration(state);
-//        udots.updRow(i) = ~model.getMatterSubsystem().getUDot(state);
-//    }
-
-    trajectory.generateAccelerationsFromSpeeds();
-    TimeSeriesTable accelerations = trajectory.exportToAccelerationsTable();
-    for (int j = 0; j < model.getNumCoordinates(); ++j) {
-        const auto& coord = coordinates[j];
-        const auto& coordPath = coord->getAbsolutePathString();
-        const auto& udot = accelerations.getDependentColumn(coordPath + "/accel");
-        udots.updCol(j) = udot;
+    for (int j = 0; j < coordinates.size(); ++j) {
+        const auto& coordinate = coordinates[j];
+        udots.updCol(j) = accelerationsTable.getDependentColumn(
+                fmt::format("{}|acceleration",
+                            coordinate->getAbsolutePathString()));
     }
 
-    // Get the multipliers from the trajectory.
+    // Get the multipliers from the trajectory. The inverse dynamics operator
+    // will use these to apply the correct constraint forces to the model.
     TimeSeriesTable multipliersTable = trajectory.exportToMultipliersTable();
 
-    // Disable all actuators in the model.
+    // Create a fresh SimTK::State to use for computing the joint moments.
     SimTK::State& s = model.initSystem();
+
+    // Disable all actuators in the model.
     for (auto& actu : model.updComponentList<Actuator>()) {
         actu.setAppliesForce(s, false);
     }
 
+    // Compute the joint moments.
     TimeSeriesTable jointMomentsTable;
     const auto& matter = model.getMatterSubsystem();
     for (int i = 0; i < statesTraj.getSize(); ++i) {
-        SimTK::Vector jointMoments(model.getNumCoordinates());
-
-        const auto& udot = ~udots.row(i);
-        const auto& multipliers = multipliersTable.getRowAtIndex(i);
+        SimTK::Vector jointMoments(model.getNumCoordinates(), SimTK::NaN);
 
         const auto& state = statesTraj[i];
         s.updTime() = state.getTime();
@@ -413,12 +410,16 @@ TimeSeriesTable OpenSim::computeJointMoments(Model model,
         const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces =
                 model.getRigidBodyForces(s);
 
+        const auto& udot = ~udots.row(i);
+        const auto& multipliers = multipliersTable.getRowAtIndex(i);
         matter.calcResidualForce(s, appliedMobilityForces, appliedBodyForces,
                 udot, ~multipliers, jointMoments);
+
         jointMomentsTable.appendRow(s.getTime(), ~jointMoments);
     }
 
-    // Set column labels.
+    // Set column labels. This is the same naming convention used by
+    // InverseDynamicsTool.
     std::vector<std::string> labels;
     labels.reserve(coordinates.size());
     for (const auto& coordinate : coordinates) {
