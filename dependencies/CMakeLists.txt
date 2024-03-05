@@ -377,6 +377,7 @@ if(SUPERBUILD_casadi)
                   GIT_URL    https://github.com/casadi/casadi.git
                   GIT_TAG    3.6.4
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
+                             -DWITH_THREAD:BOOL=ON
                              -DWITH_BUILD_MUMPS:BOOL=ON
                              -DWITH_EXAMPLES:BOOL=OFF
                              -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
