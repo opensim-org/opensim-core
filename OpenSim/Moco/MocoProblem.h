@@ -176,8 +176,8 @@ public:
     /// for muscle control (excitation), using min/max control if explicit
     /// control bounds are not provided. Default: true.
     ///
-    /// @note This setting applies to all controls, including those defined by
-    ///       user-added Controllers in the model.
+    /// @note This includes muscles controlled by user-added Controllers in the
+    ///       model.
     void setBoundActivationFromExcitation(bool tf) {
         set_bound_activation_from_excitation(tf);
     }
@@ -364,8 +364,8 @@ protected: // Protected so that doxygen shows the properties.
             "for muscle activation (if activation dynamics are enabled) from "
             "the bounds for muscle control (excitation), using "
             "min/max control if explicit control bounds are not "
-            "provided. This applies to all controls, including those defined "
-            "by user-added Controllers in the model (default: true).");
+            "provided. This includes muscles controlled by user-added "
+            "Controllers in the model (default: true).");
     OpenSim_DECLARE_LIST_PROPERTY(
             state_infos, MocoVariableInfo, "The state variables' bounds.");
     OpenSim_DECLARE_LIST_PROPERTY(state_infos_pattern, MocoVariableInfo,

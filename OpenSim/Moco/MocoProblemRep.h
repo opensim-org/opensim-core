@@ -148,7 +148,9 @@ public:
     /// coordinates, speeds, and accelerations?
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
     /// Do we need to compute controls from the model (e.g., because the model
-    /// contains user-defined controllers)?
+    /// contains user-defined controllers)? If the model does not contain
+    /// user-defined controls, then we prefer to use the controls directly from
+    /// the optimal control problem, for efficiency.
     bool getComputeControlsFromModel() const {
         return m_computeControlsFromModel;
     }
