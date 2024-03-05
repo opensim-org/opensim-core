@@ -124,39 +124,28 @@ public:
     ///       at the midpoint of the mesh interval. For Legendre-Gauss and
     ///       Legendre-Gauss-Radau collocation, this applies to all time points
     ///       in the interior of the mesh interval.
-    void setInterpolateControlMidpoints(bool tf) {
-        m_interpolateControlMidpoints = tf;
+    void setInterpolateControlMeshInteriorPoints(bool tf) {
+        m_interpolateControlMeshInteriorPoints = tf;
     }
     /// @copydoc setInterpolateControlMidpoints()
-    bool getInterpolateControlMidpoints() const {
-        return m_interpolateControlMidpoints;
+    bool getInterpolateControlMeshInteriorPoints() const {
+        return m_interpolateControlMeshInteriorPoints;
     }
 
-    /// Whether or not to constrain multiplier values interior to the mesh
-    /// interval by linearly interpolating multiplier values from mesh interval
-    /// endpoints.
+    /// Whether or not to enforce path constraints at points interior to the
+    /// mesh interval.
     ///
     /// @note For Hermite-Simpson collocation, this applies to the time point
     ///       at the midpoint of the mesh interval. For Legendre-Gauss and
     ///       Legendre-Gauss-Radau collocation, this applies to all time points
     ///       in the interior of the mesh interval.
-    void setInterpolateMultiplierMidpoints(bool tf) {
-        m_interpolateMultiplierMidpoints = tf;
-    }
-    /// @copydoc setInterpolateMultiplierMidpoints()
-    bool getInterpolateMultiplierMidpoints() const {
-        return m_interpolateMultiplierMidpoints;
-    }
-
-    /// Whether or not to enforce path constraints at mesh interval midpoints.
-    /// @note Only applies to Hermite-Simpson collocation.
     /// @note Does not apply to implicit dynamics residuals, as these are
     ///       always enforced at mesh interval midpoints.
-    void setEnforcePathConstraintMidpoints(bool tf) {
-        m_enforcePathConstraintMidpoints = tf;
+    void setEnforcePathConstraintMeshInteriorPoints(bool tf) {
+        m_enforcePathConstraintMeshInteriorPoints = tf;
     }
-    bool getEnforcePathConstraintMidpoints() const {
-        return m_enforcePathConstraintMidpoints;
+    bool getEnforcePathConstraintMeshInteriorPoints() const {
+        return m_enforcePathConstraintMeshInteriorPoints;
     }
 
     void setOptimSolver(std::string optimSolver) {
@@ -236,9 +225,8 @@ private:
     double m_implicitAuxiliaryDerivativesWeight = 1.0;
     bool m_minimizeStateProjection = true;
     double m_stateProjectionWeight = 1e-6;
-    bool m_interpolateControlMidpoints = true;
-    bool m_interpolateMultiplierMidpoints = false;
-    bool m_enforcePathConstraintMidpoints = false;
+    bool m_interpolateControlMeshInteriorPoints = true;
+    bool m_enforcePathConstraintMeshInteriorPoints = false;
     Bounds m_implicitMultibodyAccelerationBounds;
     Bounds m_implicitAuxiliaryDerivativeBounds;
     std::string m_finite_difference_scheme = "central";

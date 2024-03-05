@@ -25,7 +25,7 @@ void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_mesh();
     constructProperty_verbosity(2);
     constructProperty_transcription_scheme("hermite-simpson");
-    constructProperty_interpolate_control_midpoints(true);
+    constructProperty_interpolate_control_mesh_interior_points(true);
     constructProperty_enforce_constraint_derivatives(true);
     constructProperty_multibody_dynamics_mode("explicit");
     constructProperty_optim_solver("ipopt");
@@ -40,7 +40,7 @@ void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_implicit_auxiliary_derivative_bounds({-1000, 1000});
     constructProperty_minimize_lagrange_multipliers(false);
     constructProperty_lagrange_multiplier_weight(1.0);
-    constructProperty_kinematic_constraint_method("PKT");
+    constructProperty_kinematic_constraint_method("Posa2016");
 }
 
 void MocoDirectCollocationSolver::setMesh(const std::vector<double>& mesh) {

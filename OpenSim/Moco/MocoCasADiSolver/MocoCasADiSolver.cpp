@@ -54,7 +54,7 @@ void MocoCasADiSolver::constructProperties() {
     constructProperty_minimize_implicit_auxiliary_derivatives(false);
     constructProperty_implicit_auxiliary_derivatives_weight(1.0);
 
-    constructProperty_enforce_path_constraint_midpoints(false);
+    constructProperty_enforce_path_constraint_mesh_interior_points(false);
     constructProperty_minimize_state_projection_distance(true);
     constructProperty_state_projection_distance_weight(1e-6);
     constructProperty_projection_variable_bounds({-10, 10});
@@ -182,12 +182,12 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
 
     if (getProblemRep().getNumKinematicConstraintEquations()) {
         checkPropertyValueIsInSet(getProperty_kinematic_constraint_method(),
-                                  {"PKT", "projection"});
+                                  {"Posa2016", "Bordalba2023"});
         OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
-                     get_kinematic_constraint_method() == "PKT", Exception,
+                     get_kinematic_constraint_method() == "Posa2016", Exception,
             "Expected the 'hermite-simpson' transcription scheme when using "
-            "PKT method for enforcing kinematic constraint, but received '{}'.",
-            get_transcription_scheme());
+            "the Posa et al. 2016 method for enforcing kinematic constraints, "
+            "but received '{}'.", get_transcription_scheme());
     }
 
     return OpenSim::make_unique<MocoCasOCProblem>(*this, problemRep,
@@ -335,13 +335,10 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     casSolver->setStateProjectionWeight(get_state_projection_distance_weight());
 
     casSolver->setOptimSolver(get_optim_solver());
-    casSolver->setInterpolateControlMidpoints(
-            get_interpolate_control_midpoints());
-    casSolver->setInterpolateMultiplierMidpoints(
-            get_kinematic_constraint_method() == "projection" &&
-            get_transcription_scheme() != "trapezoidal");
-    casSolver->setEnforcePathConstraintMidpoints(
-            get_enforce_path_constraint_midpoints());
+    casSolver->setInterpolateControlMeshInteriorPoints(
+            get_interpolate_control_mesh_interior_points());
+    casSolver->setEnforcePathConstraintMeshInteriorPoints(
+            get_enforce_path_constraint_mesh_interior_points());
     if (casProblem.getJarSize() > 1) {
         casSolver->setParallelism("thread", casProblem.getJarSize());
     }
@@ -381,7 +378,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         }
         bool appendProjectionStates =
                 getProblemRep().getNumKinematicConstraintEquations() &&
-                get_kinematic_constraint_method() == "projection";
+                get_kinematic_constraint_method() == "Bordalba2023";
         casGuess = convertToCasOCIterate(guess, expectedSlackNames,
                 appendProjectionStates);
     }
@@ -391,11 +388,11 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     Logger::Level origLoggerLevel = Logger::getLevel();
     Logger::setLevel(Logger::Level::Warn);
     CasOC::Solution casSolution;
-    try {
+//    try {
     casSolution = casSolver->solve(casGuess);
-    } catch (...) {
-        OpenSim::Logger::setLevel(origLoggerLevel);
-    }
+//    } catch (...) {
+//        OpenSim::Logger::setLevel(origLoggerLevel);
+//    }
     OpenSim::Logger::setLevel(origLoggerLevel);
 
     MocoSolution mocoSolution =

@@ -205,8 +205,9 @@ VectorDM EndpointConstraint::eval(const VectorDM& args) const {
     return out;
 }
 
-template <bool CalcKCErrors>
-casadi::Sparsity MultibodySystemExplicit<CalcKCErrors>::get_sparsity_out(
+template <bool CalcKCErrors, bool CalcAccelKCErrors>
+casadi::Sparsity
+MultibodySystemExplicit<CalcKCErrors, CalcAccelKCErrors>::get_sparsity_out(
         casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(
@@ -219,8 +220,19 @@ casadi::Sparsity MultibodySystemExplicit<CalcKCErrors>::get_sparsity_out(
                 m_casProblem->getNumAuxiliaryResidualEquations(), 1);
     } else if (i == 3) {
         if (CalcKCErrors) {
-            int numRows = m_casProblem->getNumKinematicConstraintEquations();
-            return casadi::Sparsity::dense(numRows, 1);
+            return casadi::Sparsity::dense(m_casProblem->getNumQErr(), 1);
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    } else if (i == 4) {
+        if (CalcKCErrors) {
+            return casadi::Sparsity::dense(m_casProblem->getNumUErr(), 1);
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    } else if (i == 5) {
+        if (CalcAccelKCErrors) {
+            return casadi::Sparsity::dense(m_casProblem->getNumUDotErr(), 1);
         } else {
             return casadi::Sparsity(0, 0);
         }
@@ -229,8 +241,8 @@ casadi::Sparsity MultibodySystemExplicit<CalcKCErrors>::get_sparsity_out(
     }
 }
 
-template <bool CalcKCErrors>
-VectorDM MultibodySystemExplicit<CalcKCErrors>::eval(
+template <bool CalcKCErrors, bool CalcAccelKCErrors>
+VectorDM MultibodySystemExplicit<CalcKCErrors, CalcAccelKCErrors>::eval(
         const VectorDM& args) const {
     Problem::ContinuousInput input{args.at(0).scalar(), args.at(1), args.at(2),
             args.at(3), args.at(4), args.at(5)};
@@ -239,13 +251,15 @@ VectorDM MultibodySystemExplicit<CalcKCErrors>::eval(
         out[i] = casadi::DM(sparsity_out(i));
     }
     Problem::MultibodySystemExplicitOutput output{out[0], out[1], out[2],
-            out[3]};
-    m_casProblem->calcMultibodySystemExplicit(input, CalcKCErrors, output);
+            out[3], out[4], out[5]};
+    m_casProblem->calcMultibodySystemExplicit(
+            input, CalcKCErrors, CalcAccelKCErrors, output);
     return out;
 }
 
-template class CasOC::MultibodySystemExplicit<false>;
-template class CasOC::MultibodySystemExplicit<true>;
+template class CasOC::MultibodySystemExplicit<false, false>;
+template class CasOC::MultibodySystemExplicit<false, true>;
+template class CasOC::MultibodySystemExplicit<true, true>;
 
 casadi::Sparsity VelocityCorrection::get_sparsity_in(casadi_int i) {
     if (i == 0) {
@@ -331,8 +345,9 @@ VectorDM StateProjection::eval(const VectorDM& args) const {
     return out;
 }
 
-template <bool CalcKCErrors>
-casadi::Sparsity MultibodySystemImplicit<CalcKCErrors>::get_sparsity_out(
+template <bool CalcKCErrors, bool CalcAccelKCErrors>
+casadi::Sparsity
+MultibodySystemImplicit<CalcKCErrors, CalcAccelKCErrors>::get_sparsity_out(
         casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(
@@ -345,8 +360,19 @@ casadi::Sparsity MultibodySystemImplicit<CalcKCErrors>::get_sparsity_out(
                 m_casProblem->getNumAuxiliaryResidualEquations(), 1);
     } else if (i == 3) {
         if (CalcKCErrors) {
-            int numRows = m_casProblem->getNumKinematicConstraintEquations();
-            return casadi::Sparsity::dense(numRows, 1);
+            return casadi::Sparsity::dense(m_casProblem->getNumQErr(), 1);
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    } else if (i == 4) {
+        if (CalcKCErrors) {
+            return casadi::Sparsity::dense(m_casProblem->getNumUErr(), 1);
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    } else if (i == 5) {
+        if (CalcAccelKCErrors) {
+            return casadi::Sparsity::dense(m_casProblem->getNumUDotErr(), 1);
         } else {
             return casadi::Sparsity(0, 0);
         }
@@ -355,8 +381,8 @@ casadi::Sparsity MultibodySystemImplicit<CalcKCErrors>::get_sparsity_out(
     }
 }
 
-template <bool CalcKCErrors>
-VectorDM MultibodySystemImplicit<CalcKCErrors>::eval(
+template <bool CalcKCErrors, bool CalcAccelKCErrors>
+VectorDM MultibodySystemImplicit<CalcKCErrors, CalcAccelKCErrors>::eval(
         const VectorDM& args) const {
     Problem::ContinuousInput input{args.at(0).scalar(), args.at(1), args.at(2),
             args.at(3), args.at(4), args.at(5)};
@@ -366,10 +392,12 @@ VectorDM MultibodySystemImplicit<CalcKCErrors>::eval(
     }
 
     Problem::MultibodySystemImplicitOutput output{out[0], out[1], out[2], 
-            out[3]};
-    m_casProblem->calcMultibodySystemImplicit(input, CalcKCErrors, output);
+            out[3], out[4], out[5]};
+    m_casProblem->calcMultibodySystemImplicit(
+            input, CalcKCErrors, CalcAccelKCErrors, output);
     return out;
 }
 
-template class CasOC::MultibodySystemImplicit<false>;
-template class CasOC::MultibodySystemImplicit<true>;
+template class CasOC::MultibodySystemImplicit<false, false>;
+template class CasOC::MultibodySystemImplicit<false, true>;
+template class CasOC::MultibodySystemImplicit<true, true>;

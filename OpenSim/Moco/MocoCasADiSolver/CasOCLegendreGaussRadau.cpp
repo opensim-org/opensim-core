@@ -72,33 +72,20 @@ void LegendreGaussRadau::calcDefectsImpl(const casadi::MXVector& x,
     }
 }
 
-void LegendreGaussRadau::calcInterpolatingVariables(
-        const casadi::MX& variables, casadi::MX& interpVariables) const {
-    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-        const int igrid = imesh * m_degree;
-        const auto x_i = variables(Slice(), igrid);
-        const auto x_ip1 = variables(Slice(), igrid + m_degree);
-        for (int d = 0; d < m_degree-1; ++d) {
-            const auto x_t = variables(Slice(), igrid + d + 1);
-            interpVariables(Slice(), imesh * (m_degree - 1) + d) =
-                    x_t - (m_legendreRoots[d] * (x_ip1 - x_i) + x_i);
-        }
-    }
-}
-
 void LegendreGaussRadau::calcInterpolatingControlsImpl(
         const casadi::MX& controls, casadi::MX& interpControls) const {
     if (m_problem.getNumControls() &&
-            m_solver.getInterpolateControlMidpoints()) {
-        calcInterpolatingVariables(controls, interpControls);
-    }
-}
-
-void LegendreGaussRadau::calcInterpolatingMultipliersImpl(
-        const casadi::MX& multipliers, casadi::MX& interpMultipliers) const {
-    if (m_problem.getNumMultipliers() &&
-            m_solver.getInterpolateMultiplierMidpoints()) {
-        calcInterpolatingVariables(multipliers, interpMultipliers);
+            m_solver.getInterpolateControlMeshInteriorPoints()) {
+        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+            const int igrid = imesh * m_degree;
+            const auto c_i = controls(Slice(), igrid);
+            const auto c_ip1 = controls(Slice(), igrid + m_degree);
+            for (int d = 0; d < m_degree-1; ++d) {
+                const auto c_t = controls(Slice(), igrid + d + 1);
+                interpControls(Slice(), imesh * (m_degree - 1) + d) =
+                        c_t - (m_legendreRoots[d] * (c_ip1 - c_i) + c_i);
+            }
+        }
     }
 }
 

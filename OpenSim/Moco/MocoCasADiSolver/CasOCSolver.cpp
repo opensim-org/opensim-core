@@ -127,7 +127,7 @@ Solution Solver::solve(const Iterate& guess) const {
                         guessCopy.variables.at(final_time));
         bool appendProjectionStates =
                 m_problem.getNumKinematicConstraintEquations() &&
-                m_problem.isKinematicConstraintMethodProjection();
+                m_problem.isKinematicConstraintMethodBordalba2023();
         guessCopy = guessCopy.resample(guessTimes, appendProjectionStates);
         pointsForSparsityDetection->push_back(guessCopy.variables);
     } else if (m_sparsity_detection == "random") {

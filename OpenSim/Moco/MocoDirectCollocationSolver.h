@@ -99,13 +99,18 @@ public:
             "0 for silent. 1 for only Moco's own output. "
             "2 for output from CasADi and the underlying solver (default: 2).");
     OpenSim_DECLARE_PROPERTY(transcription_scheme, std::string,
-            "'trapezoidal' for trapezoidal transcription, or 'hermite-simpson' "
-            "(default) for separated Hermite-Simpson transcription.");
-    OpenSim_DECLARE_PROPERTY(interpolate_control_midpoints, bool,
-            "If the transcription scheme is set to 'hermite-simpson', then "
-            "enable this property to constrain the control values at mesh "
-            "interval midpoints to be linearly interpolated from the control "
-            "values at the mesh interval endpoints. Default: true.");
+            "'trapezoidal' for trapezoidal transcription, 'hermite-simpson' "
+            "(default) for separated Hermite-Simpson transcription, "
+            "'legendre-gauss-#' for Legendre-Gauss transcription (where # is "
+            "the number of collocation points per mesh between 1 and 9), and"
+            "'legendre-gauss-radau-#' for Legendre-Gauss-Radau transcription.");
+    OpenSim_DECLARE_PROPERTY(interpolate_control_mesh_interior_points, bool,
+            "If the transcription scheme is set to 'hermite-simpson' or one of "
+            "the pseudospectral schemes (e.g., 'legendre-gauss-3', "
+            "'legendre-gauss-radau-3') then enable this property to constrain "
+            "the control values at mesh interior points to be linearly "
+            "interpolated from the control values at the mesh interval "
+            "endpoints. Default: true.");
     OpenSim_DECLARE_PROPERTY(multibody_dynamics_mode, std::string,
             "Multibody dynamics are expressed as 'explicit' (default) or "
             "'implicit' differential equations.");
@@ -157,8 +162,9 @@ public:
 
     OpenSim_DECLARE_PROPERTY(kinematic_constraint_method, std::string,
             "The method used to enforce kinematic constraints in the direct "
-            "collocation problem. 'PKT' (default) or 'projection' (only valid "
-            "with CasADi).");
+            "collocation problem. 'Posa2016' for the method by Posa et al. "
+            "2016 (default) or 'Bordalba2023' for the method by Bordalba et "
+            "al. 2023 (only valid with CasADi).");
 
     MocoDirectCollocationSolver() { constructProperties(); }
 

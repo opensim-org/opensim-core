@@ -3,9 +3,9 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim: MocoCasOCProblem.h                                                *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2018 Stanford University and the Authors                     *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -258,7 +258,7 @@ public:
 
 private:
     void calcMultibodySystemExplicit(const ContinuousInput& input,
-            bool calcKCErrors,
+            bool calcKCErrors, bool calcAccelKCErrors,
             MultibodySystemExplicitOutput& output) const override {
         auto mocoProblemRep = m_jar->take();
 
@@ -279,10 +279,13 @@ private:
                 simtkStateDisabledConstraints);
 
         // Compute kinematic constraint errors if they exist.
-        if (getNumMultipliers() && calcKCErrors) {
-            calcKinematicConstraintErrors(modelBase, simtkStateBase,
+        if (getNumMultipliers() && (calcKCErrors || calcAccelKCErrors)) {
+            calcKinematicConstraintErrors(calcKCErrors,
+                    modelBase, simtkStateBase,
                     simtkStateDisabledConstraints,
-                    output.kinematic_constraint_errors);
+                    output.kinematic_constraint_q_errors,
+                    output.kinematic_constraint_u_errors,
+                    output.kinematic_constraint_udot_errors);
         }
 
         // Copy state derivative values to output.
@@ -300,7 +303,7 @@ private:
         m_jar->leave(std::move(mocoProblemRep));
     }
     void calcMultibodySystemImplicit(const ContinuousInput& input,
-            bool calcKCErrors,
+            bool calcKCErrors, bool calcAccelKCErrors,
             MultibodySystemImplicitOutput& output) const override {
         auto mocoProblemRep = m_jar->take();
 
@@ -328,10 +331,13 @@ private:
         // but must make sure the prescribedKinematics already obey the
         // constraints. This is simple at the q and u level (using assemble()),
         // but what do we do for the acceleration level?
-        if (getNumMultipliers() && calcKCErrors) {
-            calcKinematicConstraintErrors(modelBase, simtkStateBase,
+        if (getNumMultipliers() && (calcKCErrors || calcAccelKCErrors)) {
+            calcKinematicConstraintErrors(calcKCErrors,
+                    modelBase, simtkStateBase,
                     simtkStateDisabledConstraints,
-                    output.kinematic_constraint_errors);
+                    output.kinematic_constraint_q_errors,
+                    output.kinematic_constraint_u_errors,
+                    output.kinematic_constraint_udot_errors);
         }
 
         const SimTK::SimbodyMatterSubsystem& matterDisabledConstraints =
@@ -779,33 +785,27 @@ private:
                 m_constraintMobilityForces, m_constraintBodyForces);
     }
 
-    void calcKinematicConstraintErrors(const Model& modelBase,
+    void calcKinematicConstraintErrors(bool calcKCErrors,
+            const Model& modelBase,
             const SimTK::State& stateBase,
             const SimTK::State& simtkStateDisabledConstraints,
-            casadi::DM& kinematic_constraint_errors) const {
+            casadi::DM& kinematic_constraint_q_errors,
+            casadi::DM& kinematic_constraint_u_errors,
+            casadi::DM& kinematic_constraint_udot_errors) const {
 
         // If all kinematics are prescribed, we assume that the prescribed
         // kinematics obey any kinematic constraints. Therefore, the kinematic
         // constraints would be redundant, and we need not enforce them.
         if (isPrescribedKinematics()) return;
 
-        // The total number of scalar holonomic, non-holonomic, and acceleration
-        // constraint equations enabled in the model. This does not count
-        // equations for derivatives of holonomic and non-holonomic constraints.
-        const int total_mp = getNumHolonomicConstraintEquations();
-        const int total_mv = getNumNonHolonomicConstraintEquations();
-        const int total_ma = getNumAccelerationConstraintEquations();
-
-        // Position-level errors.
-        const auto& qerr = stateBase.getQErr();
-
-        if (getEnforceConstraintDerivatives() || total_ma) {
-            // Calculate udoterr. We cannot use State::getUDotErr()
-            // because that uses Simbody's multipliers and UDot,
-            // whereas we have our own multipliers and UDot. Here, we use
-            // the udot computed from the model with disabled constraints
-            // since we cannot use (nor do we have available) udot computed
-            // from the original model.
+        // Calculate udoterr. We cannot use State::getUDotErr()
+        // because that uses Simbody's multipliers and UDot,
+        // whereas we have our own multipliers and UDot. Here, we use
+        // the udot computed from the model with disabled constraints
+        // since we cannot use (nor do we have available) udot computed
+        // from the original model.
+        if (getEnforceConstraintDerivatives() ||
+                getNumAccelerationConstraintEquations()) {
             const auto& matter = modelBase.getMatterSubsystem();
             matter.calcConstraintAccelerationErrors(stateBase,
                     simtkStateDisabledConstraints.getUDot(), m_pvaerr);
@@ -813,40 +813,23 @@ private:
             m_pvaerr = SimTK::NaN;
         }
 
+        // Position-level errors.
+        const auto& qerr = stateBase.getQErr();
+        // Velocity-level errors.
         const auto& uerr = stateBase.getUErr();
-        int uerrOffset;
-        int uerrSize;
+        // Acceleration-level errors.
         const auto& udoterr = m_pvaerr;
-        int udoterrOffset;
-        int udoterrSize;
-        // TODO These offsets and sizes could be computed once.
-        if (getEnforceConstraintDerivatives()) {
-            // Velocity-level errors.
-            uerrOffset = 0;
-            uerrSize = uerr.size();
-            // Acceleration-level errors.
-            udoterrOffset = 0;
-            udoterrSize = udoterr.size();
-        } else {
-            // Velocity-level errors. Skip derivatives of position-level
-            // constraint equations.
-            uerrOffset = total_mp;
-            uerrSize = total_mv;
-            // Acceleration-level errors. Skip derivatives of velocity-
-            // and position-level constraint equations.
-            udoterrOffset = total_mp + total_mv;
-            udoterrSize = total_ma;
-        }
 
         // This way of copying the data avoids a threadsafety issue in
         // CasADi related to cached Sparsity objects.
-        std::copy_n(qerr.getContiguousScalarData(), qerr.size(),
-                kinematic_constraint_errors.ptr());
-        std::copy_n(uerr.getContiguousScalarData() + uerrOffset, uerrSize,
-                kinematic_constraint_errors.ptr() + qerr.size());
-        std::copy_n(udoterr.getContiguousScalarData() + udoterrOffset,
-                udoterrSize,
-                kinematic_constraint_errors.ptr() + qerr.size() + uerrSize);
+        if (calcKCErrors) {
+            std::copy_n(qerr.getContiguousScalarData(),
+                    getNumQErr(), kinematic_constraint_q_errors.ptr());
+            std::copy_n(uerr.getContiguousScalarData() + m_uerrOffset,
+                    getNumUErr(), kinematic_constraint_u_errors.ptr());
+        }
+        std::copy_n(udoterr.getContiguousScalarData() + m_udoterrOffset,
+                getNumUDotErr(), kinematic_constraint_udot_errors.ptr());
     }
 
     void copyImplicitResidualsToOutput(const MocoProblemRep& mocoProblemRep,
@@ -878,6 +861,11 @@ private:
     // the acceleration-level holonomic, non-holonomic constraint errors and the
     // acceleration-only constraint errors.
     static thread_local SimTK::Vector m_pvaerr;
+    // These are the offsets into the velocity- and acceleration-level kinematic
+    // constraint errors. These are needed when not enforcing the derivative of
+    // the kinematic constraints.
+    static thread_local int m_uerrOffset;
+    static thread_local int m_udoterrOffset;
 };
 
 } // namespace OpenSim

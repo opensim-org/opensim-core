@@ -47,8 +47,8 @@ namespace CasOC {
 /// Kinematic constraints and path constraints.
 /// -------------------------------------------
 /// Kinematic constraint and path constraint errors are enforced only at the
-/// mesh points. Errors at collocation points within the mesh interval midpoint
-/// are ignored.
+/// mesh points. Errors at collocation points within the mesh interval are
+//  ignored.
 ///
 /// References
 /// ----------
@@ -71,17 +71,11 @@ public:
         const int numGridPoints =
                 (int)mesh.size() + numMeshIntervals * (m_degree - 1);
         casadi::DM grid = casadi::DM::zeros(1, numGridPoints);
-        const bool interpControls = m_solver.getInterpolateControlMidpoints();
+        const bool interpControls =
+                m_solver.getInterpolateControlMeshInteriorPoints();
         casadi::DM pointsForInterpControls;
         if (interpControls) {
             pointsForInterpControls = casadi::DM::zeros(1,
-                    numMeshIntervals * (m_degree - 1));
-        }
-        const bool interpMultipliers =
-                m_solver.getInterpolateMultiplierMidpoints();
-        casadi::DM pointsForInterpMultipliers;
-        if (interpMultipliers) {
-            pointsForInterpMultipliers = casadi::DM::zeros(1,
                     numMeshIntervals * (m_degree - 1));
         }
 
@@ -115,8 +109,7 @@ public:
         createVariablesAndSetBounds(grid,
                 m_degree * m_problem.getNumStates(),
                 m_degree + 1,
-                pointsForInterpControls,
-                pointsForInterpMultipliers);
+                pointsForInterpControls);
     }
 
 private:
@@ -124,12 +117,8 @@ private:
     casadi::DM createMeshIndicesImpl() const override;
     void calcDefectsImpl(const casadi::MXVector& x, const casadi::MX& xdot,
             casadi::MX& defects) const override;
-    void calcInterpolatingVariables(const casadi::MX& variables,
-            casadi::MX& interpVariables) const;
     void calcInterpolatingControlsImpl(const casadi::MX& controls,
             casadi::MX& interpControls) const override;
-    void calcInterpolatingMultipliersImpl(const casadi::MX& multipliers,
-            casadi::MX& interpMultipliers) const override;
 
     int m_degree;
     std::vector<double> m_legendreRoots;

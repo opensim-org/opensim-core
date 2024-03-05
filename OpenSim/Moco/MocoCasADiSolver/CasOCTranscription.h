@@ -74,8 +74,7 @@ protected:
     void createVariablesAndSetBounds(const casadi::DM& grid,
             int numDefectsPerMeshInterval,
             int numPointsPerMeshInterval,
-            const casadi::DM& pointsForInterpControls = casadi::DM(),
-            const casadi::DM& pointsForInterpMultipliers = casadi::DM());
+            const casadi::DM& pointsForInterpControls = casadi::DM());
 
     /// We assume all functions depend on time and parameters.
     /// "inputs" is prepended by time and postpended (?) by parameters.
@@ -128,11 +127,12 @@ protected:
         T defects;
         T multibody_residuals;
         T auxiliary_residuals;
-        T kinematic;
+        T kinematic_qerr;
+        T kinematic_uerr;
+        T kinematic_udoterr;
         std::vector<T> endpoint;
         std::vector<T> path;
         T interp_controls;
-        T interp_multipliers;
         T projection;
     };
     void printConstraintValues(const Iterate& it,
@@ -150,6 +150,7 @@ protected:
     int m_numMeshInteriorPoints = -1;
     int m_numDefectsPerMeshInterval = -1;
     int m_numPointsPerMeshInterval = -1;
+    int m_numUDotErrorPoints = -1;
     int m_numMultibodyResiduals = -1;
     int m_numAuxiliaryResiduals = -1;
     int m_numConstraints = -1;
@@ -157,7 +158,6 @@ protected:
     int m_numProjectionStates = -1;
     casadi::DM m_grid;
     casadi::DM m_pointsForInterpControls;
-    casadi::DM m_pointsForInterpMultipliers;
     casadi::MX m_times;
     casadi::MX m_duration;
 
@@ -212,13 +212,6 @@ private:
         OPENSIM_THROW_IF(m_pointsForInterpControls.numel(), OpenSim::Exception,
                 "Must provide constraints for interpolating controls.")
     }
-    virtual void calcInterpolatingMultipliersImpl(
-            const casadi::MX& /*multipliers*/,
-            casadi::MX& /*interpMultipliers*/) const {
-        OPENSIM_THROW_IF(m_pointsForInterpMultipliers.numel(),
-                OpenSim::Exception,
-                "Must provide constraints for interpolating multipliers.")
-    }
 
     void transcribe();
     void setObjectiveAndEndpointConstraints();
@@ -228,11 +221,6 @@ private:
     void calcInterpolatingControls() {
         calcInterpolatingControlsImpl(
                 m_unscaledVars.at(controls), m_constraints.interp_controls);
-    }
-    void calcInterpolatingMultipliers() {
-        calcInterpolatingMultipliersImpl(
-                m_unscaledVars.at(multipliers),
-                m_constraints.interp_multipliers);
     }
 
     /// Use this function to ensure you iterate through variables in the same
@@ -361,7 +349,6 @@ private:
         //    residual_0.5         x
         //    defect_0       x     x     x
         //    interp_con_0   x     x     x
-        //    interp_mult_0  x     x     x
         //    kinematic_1                x
         //    projection_1               x
         //    path_1                     x     *
@@ -369,7 +356,6 @@ private:
         //    residual_1.5                     x
         //    defect_1                   x     x     x
         //    interp_con_1               x     x     x
-        //    interp_mult_1              x     x     x
         //    kinematic_2                            x
         //    projection_2                           x
         //    path_2                                 x     *
@@ -377,7 +363,6 @@ private:
         //    residual_2.5                                 x
         //    defect_2                               x     x     x
         //    interp_con_2                           x     x     x
-        //    interp_mult_2                          x     x     x
         //    kinematic_3                                        x
         //    projection_3                                       x
         //    path_3                                             x
@@ -397,15 +382,20 @@ private:
         int igrid = 0;
         // Index for pointsForInterpControls.
         int icon = 0;
-        // Index for pointsForInterpMultipliers.
-        int imult = 0;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
-            copyColumn(constraints.kinematic, imesh);
+            copyColumn(constraints.kinematic_qerr, imesh);
+            copyColumn(constraints.kinematic_uerr, imesh);
+            if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
+                copyColumn(constraints.kinematic_udoterr, imesh);
+            }
             if (imesh > 0) copyColumn(constraints.projection, imesh - 1);
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
                     copyColumn(constraints.multibody_residuals, igrid);
                     copyColumn(constraints.auxiliary_residuals, igrid);
+                    if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                        copyColumn(constraints.kinematic_udoterr, igrid);
+                    }
                     ++igrid;
                 }
                 copyColumn(constraints.defects, imesh);
@@ -415,17 +405,14 @@ private:
                     copyColumn(constraints.interp_controls, icon);
                     ++icon;
                 }
-                while (imult < m_pointsForInterpMultipliers.numel() &&
-                        m_pointsForInterpMultipliers(imult).scalar() <
-                                m_solver.getMesh()[imesh + 1]) {
-                    copyColumn(constraints.interp_multipliers, imult);
-                    ++imult;
-                }
             }
         }
         // The loop above does not handle the residual at the final grid point.
         copyColumn(constraints.multibody_residuals, m_numGridPoints - 1);
         copyColumn(constraints.auxiliary_residuals, m_numGridPoints - 1);
+        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+            copyColumn(constraints.kinematic_udoterr, m_numGridPoints - 1);
+        }
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
                 "Internal error: final value of the index into the flattened "
@@ -448,8 +435,10 @@ private:
                 m_numGridPoints);
         out.auxiliary_residuals = init(m_numAuxiliaryResiduals,
                 m_numGridPoints);
-        out.kinematic = init(m_problem.getNumKinematicConstraintEquations(),
-                m_numMeshPoints);
+        out.kinematic_qerr = init(m_problem.getNumQErr(),m_numMeshPoints);
+        out.kinematic_uerr = init(m_problem.getNumUErr(), m_numMeshPoints);
+        out.kinematic_udoterr = init(m_problem.getNumUDotErr(),
+                m_numUDotErrorPoints);
         out.projection = init(m_problem.getNumProjectionConstraintEquations(),
                 m_numMeshIntervals);
         out.endpoint.resize(m_problem.getEndpointConstraintInfos().size());
@@ -464,8 +453,6 @@ private:
         }
         out.interp_controls = init(m_problem.getNumControls(),
                 (int)m_pointsForInterpControls.numel());
-        out.interp_multipliers = init(m_problem.getNumMultipliers(),
-                (int)m_pointsForInterpMultipliers.numel());
 
         int iflat = 0;
         auto copyColumn = [&flat, &iflat](T& matrix, int columnIndex) {
@@ -490,15 +477,21 @@ private:
         int igrid = 0;
         // Index for pointsForInterpControls.
         int icon = 0;
-        // Index for pointsForInterpMultipliers.
-        int imult = 0;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
-            copyColumn(out.kinematic, imesh);
+            copyColumn(out.kinematic_qerr, imesh);
+            copyColumn(out.kinematic_uerr, imesh);
+            if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
+                copyColumn(out.kinematic_udoterr, imesh);
+            }
             if (imesh > 0) copyColumn(out.projection, imesh-1);
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
                     copyColumn(out.multibody_residuals, igrid);
                     copyColumn(out.auxiliary_residuals, igrid);
+                    if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                        copyColumn(out.kinematic_udoterr, igrid);
+                    }
+
                     ++igrid;
                 }
                 copyColumn(out.defects, imesh);
@@ -508,17 +501,14 @@ private:
                     copyColumn(out.interp_controls, icon);
                     ++icon;
                 }
-                while (imult < m_pointsForInterpMultipliers.numel() &&
-                        m_pointsForInterpMultipliers(imult).scalar() <
-                                m_solver.getMesh()[imesh + 1]) {
-                    copyColumn(out.interp_multipliers, imult);
-                    ++imult;
-                }
             }
         }
         // The loop above does not handle residuals at the final grid point.
         copyColumn(out.multibody_residuals, m_numGridPoints - 1);
         copyColumn(out.auxiliary_residuals, m_numGridPoints - 1);
+        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+            copyColumn(out.kinematic_udoterr, m_numGridPoints - 1);
+        }
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
                 "Internal error: final value of the index into the flattened "

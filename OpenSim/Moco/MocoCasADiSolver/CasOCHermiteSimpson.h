@@ -47,17 +47,11 @@ public:
         casadi::DM grid =
                 casadi::DM::zeros(1, (2 * m_solver.getMesh().size()) - 1);
         const auto& mesh = m_solver.getMesh();
-        const bool interpControls = m_solver.getInterpolateControlMidpoints();
+        const bool interpControls =
+                m_solver.getInterpolateControlMeshInteriorPoints();
         casadi::DM pointsForInterpControls;
         if (interpControls) {
             pointsForInterpControls =
-                    casadi::DM::zeros(1, m_solver.getMesh().size() - 1);
-        }
-        const bool interpMultipliers =
-                m_solver.getInterpolateMultiplierMidpoints();
-        casadi::DM pointsForInterpMultipliers;
-        if (interpMultipliers) {
-            pointsForInterpMultipliers =
                     casadi::DM::zeros(1, m_solver.getMesh().size() - 1);
         }
         for (int i = 0; i < grid.numel(); ++i) {
@@ -68,13 +62,10 @@ public:
                 if (interpControls) {
                     pointsForInterpControls(i / 2) = grid(i);
                 }
-                if (interpMultipliers) {
-                    pointsForInterpMultipliers(i / 2) = grid(i);
-                }
             }
         }
         createVariablesAndSetBounds(grid, 2 * m_problem.getNumStates(), 3,
-                pointsForInterpControls, pointsForInterpMultipliers);
+                pointsForInterpControls);
     }
 
 private:
@@ -82,12 +73,8 @@ private:
     casadi::DM createMeshIndicesImpl() const override;
     void calcDefectsImpl(const casadi::MXVector& x, const casadi::MX& xdot,
                          casadi::MX& defects) const override;
-    void calcInterpolatingVariables(const casadi::MX& variables,
-            casadi::MX& interpVariables) const;
     void calcInterpolatingControlsImpl(const casadi::MX& controls,
             casadi::MX& interpControls) const override;
-    void calcInterpolatingMultipliersImpl(const casadi::MX& multipliers,
-            casadi::MX& interpMultipliers) const override;
 };
 
 } // namespace CasOC

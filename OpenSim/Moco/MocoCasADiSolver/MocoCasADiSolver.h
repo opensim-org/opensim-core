@@ -171,10 +171,12 @@ public:
             "'minimize_implicit_auxiliary_derivatives' is enabled."
             "Default: 1.0.");
 
-    OpenSim_DECLARE_PROPERTY(enforce_path_constraint_midpoints, bool,
-            "If the transcription scheme is set to 'hermite-simpson', then "
-            "enable this property to enforce MocoPathConstraints at mesh "
-            "interval midpoints. Default: false.");
+    OpenSim_DECLARE_PROPERTY(enforce_path_constraint_mesh_interior_points, bool,
+            "If the transcription scheme is set to 'hermite-simpson' or one of "
+            "the pseudospectral schemes (e.g., 'legendre-gauss-3', "
+            "'legendre-gauss-radau-3'), then enable this property to enforce "
+            "MocoPathConstraints at points interior to the mesh interval. "
+            "Default: false.");
 
     OpenSim_DECLARE_PROPERTY(minimize_state_projection_distance, bool,
             "Minimize the distance between the projection states and the "

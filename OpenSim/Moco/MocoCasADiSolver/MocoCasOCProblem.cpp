@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoCasOCProblem.cpp                                         *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2018 Stanford University and the Authors                     *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -22,12 +22,16 @@
 
 #include <OpenSim/Simulation/SimulationUtilities.h>
 
+#include <utility>
+
 using namespace OpenSim;
 
 thread_local SimTK::Vector_<SimTK::SpatialVec>
         MocoCasOCProblem::m_constraintBodyForces;
 thread_local SimTK::Vector MocoCasOCProblem::m_constraintMobilityForces;
 thread_local SimTK::Vector MocoCasOCProblem::m_pvaerr;
+thread_local int MocoCasOCProblem::m_uerrOffset;
+thread_local int MocoCasOCProblem::m_udoterrOffset;
 
 MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         const MocoProblemRep& problemRep,
@@ -38,8 +42,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                   mocoCasADiSolver.get_parameters_require_initsystem()),
           m_formattedTimeString(getFormattedDateTime(true)) {
 
-    setDynamicsMode(dynamicsMode);
-    setKinematicConstraintMethod(kinematicConstraintMethod);
+    setDynamicsMode(std::move(dynamicsMode));
+    setKinematicConstraintMethod(std::move(kinematicConstraintMethod));
     const auto& model = problemRep.getModelBase();
 
     // Ensure the model does not have user-provided controllers.
@@ -52,7 +56,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     // The model has a DiscreteController added by MocoProblemRep; any other
     // controllers were added by the user.
     OPENSIM_THROW_IF(numControllers > 1, Exception,
-            "MocoCasADiSolver does not support models with Controllers.");
+            "MocoCasADiSolver does not support models with Controllers.")
 
     if (problemRep.isPrescribedKinematics()) {
         setPrescribedKinematics(true, model.getWorkingState().getNU());
@@ -89,6 +93,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     // dynamics in implicit form.
     const auto& implicitRefs = problemRep.getImplicitComponentReferencePtrs();
     std::vector<std::string> derivativeNames;
+    derivativeNames.reserve(implicitRefs.size());
     for (const auto& implicitRef : implicitRefs) {
         derivativeNames.push_back(implicitRef.second->getAbsolutePathString() +
                                   "/" + implicitRef.first);
@@ -98,9 +103,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
 
     // Add any scalar constraints associated with kinematic constraints in
     // the model as path constraints in the problem.
-    // Whether or not enabled kinematic constraints exist in the model,
-    // check that optional solver properties related to constraints are
-    // set properly.
+    // Whether enabled kinematic constraints exist in the model, check that
+    // optional solver properties related to constraints are set properly.
     const auto kcNames = problemRep.createKinematicConstraintNames();
     if (kcNames.empty()) {
         OPENSIM_THROW_IF(mocoCasADiSolver.get_minimize_lagrange_multipliers(),
@@ -123,24 +127,25 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
             ma = kc.getNumAccelerationEquations();
             kinLevels = kc.getKinematicLevels();
 
-            if (isKinematicConstraintMethodProjection()) {
+            if (isKinematicConstraintMethodBordalba2023()) {
                 OPENSIM_THROW_IF(!enforceConstraintDerivs, Exception,
-                         "The projection method for enforcing kinematic "
-                         "constraints requires that the solver property "
-                         "'enforce_constraint_derivatives' be set to true.");
+                        "The Bordalba et al. 2023 method for enforcing "
+                        "kinematic constraints requires that the solver "
+                        "property 'enforce_constraint_derivatives' be set to "
+                        "true.");
             } else {
                 OPENSIM_THROW_IF(mv != 0, Exception,
-                         "The PKT method is not compatible with velocity-level "
-                         "kinematic constraints. There are {} velocity-level "
-                         "scalar constraints associated with the model "
-                         "Constraint at ConstraintIndex {}.",
-                         mv, cid);
+                        "The Posa et al. 2016 method is not compatible with "
+                        "velocity-level kinematic constraints. There are {} "
+                        "velocity-level scalar constraints associated with "
+                        "the model Constraint at ConstraintIndex {}.",
+                        mv, cid);
                 OPENSIM_THROW_IF(ma != 0, Exception,
-                         "The PKT method is not compatible with acceleration-"
-                         "level kinematic constraints. There are {} "
-                         "acceleration-level scalar constraints associated with "
-                         "the model Constraint at ConstraintIndex {}.",
-                         ma, cid);
+                        "The Posa et al. 2016 method is not compatible with "
+                        "acceleration-level kinematic constraints. There are "
+                        "{} acceleration-level scalar constraints associated "
+                        "with the model Constraint at ConstraintIndex {}.",
+                        ma, cid);
             }
 
             // Loop through all scalar constraints associated with the model
@@ -194,7 +199,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                                 "constraint to begin with 'lambda' but it "
                                 "begins with '{}'.",
                                 multInfo.getName().substr(0, 6));
-                        if (isKinematicConstraintMethodProjection()) {
+                        if (isKinematicConstraintMethodBordalba2023()) {
                             // Add "mu" variables for the projection method by
                             // Bordalba et al. (2023).
                             const auto muBounds = convertBounds(
@@ -232,6 +237,14 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 }
             }
         }
+
+        // Pre-compute offsets needed if we do not enforce constraint
+        // derivatives.
+        m_uerrOffset = getEnforceConstraintDerivatives() ? 0 :
+                       getNumHolonomicConstraintEquations();
+        m_udoterrOffset = getEnforceConstraintDerivatives() ? 0 :
+                          getNumHolonomicConstraintEquations() +
+                          getNumNonHolonomicConstraintEquations();
 
         // Set kinematic constraint information on the CasOC::Problem.
         setEnforceConstraintDerivatives(enforceConstraintDerivs);
