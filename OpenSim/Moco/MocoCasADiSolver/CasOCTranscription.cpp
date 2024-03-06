@@ -763,7 +763,6 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         constraintFunc.call(finalVarsDMV, constraintsOut);
         printConstraintValues(solution, expandConstraints(constraintsOut[0]));
     }
-
     return solution;
 }
 

@@ -387,7 +387,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     MocoSolution mocoSolution =
             convertToMocoTrajectory<MocoSolution>(casSolution);
 
-    // If the model contained a user-added Controller, append to the solution
+    // If the model contains a user-added Controllers, append to the solution
     // the missing controls that were not present in the optimization problem.
     getProblemRep().appendMissingModelControls(mocoSolution);
 
