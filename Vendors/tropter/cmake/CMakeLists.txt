@@ -17,15 +17,13 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             ${ADOLC_DIR}/lib64/libadolc.dylib
             # /usr/local/opt/boost/lib/libboost_system.dylib
             ${ColPack_ROOT_DIR}/lib/libColPack.0.dylib
-            ${IPOPT_LIBDIR}/libipopt.1.10.8.dylib
-            ${IPOPT_LIBDIR}/libipopt.1.dylib
+            ${IPOPT_LIBDIR}/libipopt.3.dylib
             ${IPOPT_LIBDIR}/libipopt.dylib
-            ${IPOPT_LIBDIR}/libcoinmumps.1.6.0.dylib
-            ${IPOPT_LIBDIR}/libcoinmumps.1.dylib
-            ${IPOPT_LIBDIR}/libcoinmumps.dylib
-            ${IPOPT_LIBDIR}/libcoinmetis.1.3.5.dylib
-            ${IPOPT_LIBDIR}/libcoinmetis.1.dylib
-            ${IPOPT_LIBDIR}/libcoinmetis.dylib
+            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.3.dylib
+            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.dylib
+            ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.1.3.10.dylib
+            ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.1.dylib
+            ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.dylib
 
             # ${gfortran}
             # ${quadmath}
