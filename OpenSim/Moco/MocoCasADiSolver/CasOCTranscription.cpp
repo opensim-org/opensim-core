@@ -197,9 +197,9 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     }
 
     auto makeTimeIndices = [](const std::vector<int>& in) {
-      casadi::Matrix<casadi_int> out(1, in.size());
-      for (int i = 0; i < (int)in.size(); ++i) { out(i) = in[i]; }
-      return out;
+        casadi::Matrix<casadi_int> out(1, in.size());
+        for (int i = 0; i < (int)in.size(); ++i) { out(i) = in[i]; }
+        return out;
     };
 
     std::vector<int> gridIndicesVector(m_numGridPoints);
@@ -220,18 +220,18 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     // Set variable bounds.
     // --------------------
     auto initializeBoundsDM = [&](VariablesDM& bounds) {
-      for (auto& kv : m_scaledVars) {
-          bounds[kv.first] = DM(kv.second.rows(), kv.second.columns());
-      }
+        for (auto& kv : m_scaledVars) {
+            bounds[kv.first] = DM(kv.second.rows(), kv.second.columns());
+        }
     };
     initializeBoundsDM(m_lowerBounds);
     initializeBoundsDM(m_upperBounds);
 
     // The VariablesDM for scaling have length 1 in the time dimension.
     auto initializeScalingDM = [&](VariablesDM& bounds) {
-      for (auto& kv : m_scaledVars) {
-          bounds[kv.first] = DM(casadi::Sparsity::dense(kv.second.rows(), 1));
-      }
+        for (auto& kv : m_scaledVars) {
+            bounds[kv.first] = DM(casadi::Sparsity::dense(kv.second.rows(), 1));
+        }
     };
 
     initializeScalingDM(m_shift);
@@ -546,23 +546,24 @@ void Transcription::transcribe() {
                     out.at(2);
             m_constraints.kinematic_qerr = out.at(3);
             m_constraints.kinematic_uerr = out.at(4);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                m_constraints.kinematic_udoterr(Slice(), m_meshIndices) =
-                        out.at(5);
-            } else {
-                m_constraints.kinematic_udoterr = out.at(5);
-            }
+            m_constraints.kinematic_udoterr = out.at(5);
+//            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+//                m_constraints.kinematic_udoterr(Slice(), m_meshIndices) =
+//                        out.at(5);
+//            } else {
+//                m_constraints.kinematic_udoterr = out.at(5);
+//            }
         }
 
         // Points where we ignore algebraic constraints.
         if (m_numMeshInteriorPoints) {
-            const casadi::Function& implicitMultibodyFunction =
-                m_problem.isKinematicConstraintMethodBordalba2023()
-                    ? m_problem.getImplicitMultibodySystemAccelerationConstraints()
-                    : m_problem.getImplicitMultibodySystemIgnoringConstraints();
-
-            const auto out = evalOnTrajectory(implicitMultibodyFunction, inputs,
-                                              m_meshInteriorIndices);
+//            const casadi::Function& implicitMultibodyFunction =
+//                m_problem.isKinematicConstraintMethodBordalba2023()
+//                    ? m_problem.getImplicitMultibodySystemAccelerationConstraints()
+//                    : m_problem.getImplicitMultibodySystemIgnoringConstraints();
+            const auto out = evalOnTrajectory(
+                    m_problem.getImplicitMultibodySystemIgnoringConstraints(),
+                    inputs, m_meshInteriorIndices);
             m_constraints.multibody_residuals(Slice(), m_meshInteriorIndices) =
                     out.at(0);
             // zdot.
@@ -570,10 +571,10 @@ void Transcription::transcribe() {
                     out.at(1);
             m_constraints.auxiliary_residuals(Slice(), m_meshInteriorIndices) =
                     out.at(2);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                m_constraints.kinematic_udoterr(Slice(), m_meshInteriorIndices) =
-                        out.at(5);
-            }
+//            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+//                m_constraints.kinematic_udoterr(Slice(), m_meshInteriorIndices) =
+//                        out.at(5);
+//            }
         }
 
     } else { // Explicit dynamics mode.
@@ -592,33 +593,35 @@ void Transcription::transcribe() {
                     out.at(2);
             m_constraints.kinematic_qerr = out.at(3);
             m_constraints.kinematic_uerr = out.at(4);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                m_constraints.kinematic_udoterr(Slice(), m_meshIndices) =
-                        out.at(5);
-            } else {
-                m_constraints.kinematic_udoterr = out.at(5);
-            }
+            m_constraints.kinematic_udoterr = out.at(5);
+//            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+//                m_constraints.kinematic_udoterr(Slice(), m_meshIndices) =
+//                        out.at(5);
+//            } else {
+//                m_constraints.kinematic_udoterr = out.at(5);
+//            }
         }
 
         // Points where we ignore algebraic constraints.
         if (m_numMeshInteriorPoints) {
-            const casadi::Function& multibodyFunction =
-                m_problem.isKinematicConstraintMethodBordalba2023()
-                    ? m_problem.getMultibodySystemAccelerationConstraints()
-                    : m_problem.getMultibodySystemIgnoringConstraints();
+//            const casadi::Function& multibodyFunction =
+//                m_problem.isKinematicConstraintMethodBordalba2023()
+//                    ? m_problem.getMultibodySystemAccelerationConstraints()
+//                    : m_problem.getMultibodySystemIgnoringConstraints();
 
-            const auto out = evalOnTrajectory(multibodyFunction, inputs,
-                                              m_meshInteriorIndices);
+            const auto out = evalOnTrajectory(
+                    m_problem.getMultibodySystemIgnoringConstraints(), inputs,
+                    m_meshInteriorIndices);
             m_xdot(Slice(NQ, NQ + NU), m_meshInteriorIndices) =
                     out.at(0);
             m_xdot(Slice(NQ + NU, NS), m_meshInteriorIndices) =
                     out.at(1);
             m_constraints.auxiliary_residuals(Slice(), m_meshInteriorIndices) =
                     out.at(2);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                m_constraints.kinematic_udoterr(Slice(), m_meshInteriorIndices) =
-                        out.at(5);
-            }
+//            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+//                m_constraints.kinematic_udoterr(Slice(), m_meshInteriorIndices) =
+//                        out.at(5);
+//            }
         }
     }
 

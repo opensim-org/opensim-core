@@ -324,11 +324,9 @@ public:
     /// - first derivative of velocity-level constraints
     /// - acceleration-level constraints
     virtual void calcMultibodySystemExplicit(const ContinuousInput& input,
-            bool calcKCErrors, bool calcAccelKCErrors,
-            MultibodySystemExplicitOutput& output) const = 0;
+            bool calcKCErrors, MultibodySystemExplicitOutput& output) const = 0;
     virtual void calcMultibodySystemImplicit(const ContinuousInput& input,
-            bool calcKCErrors, bool calcAccelKCErrors,
-            MultibodySystemImplicitOutput& output) const = 0;
+            bool calcKCErrors, MultibodySystemImplicitOutput& output) const = 0;
     virtual void calcVelocityCorrection(const double& time,
             const casadi::DM& multibody_states, const casadi::DM& slacks,
             const casadi::DM& parameters,
@@ -471,43 +469,43 @@ public:
             // Construct a full implicit multibody system (i.e. including
             // kinematic constraints).
             mutThis->m_implicitMultibodyFunc =
-                    OpenSim::make_unique<MultibodySystemImplicit<true, true>>();
+                    OpenSim::make_unique<MultibodySystemImplicit<true>>();
             mutThis->m_implicitMultibodyFunc->constructFunction(this,
                     "implicit_multibody_system", finiteDiffScheme,
                     pointsForSparsityDetection);
 
             // Construct an implicit multibody system only enforcing
             // acceleration-level kinematic constraints.
-            mutThis->m_implicitMultibodyFuncAccelConstraints =
-                    OpenSim::make_unique<MultibodySystemImplicit<false, true>>();
-            mutThis->m_implicitMultibodyFuncAccelConstraints
-                    ->constructFunction(this,
-                            "implicit_multibody_system_acceleration_constraints",
-                            finiteDiffScheme, pointsForSparsityDetection);
+//            mutThis->m_implicitMultibodyFuncAccelConstraints =
+//                    OpenSim::make_unique<MultibodySystemImplicit<false, true>>();
+//            mutThis->m_implicitMultibodyFuncAccelConstraints
+//                    ->constructFunction(this,
+//                            "implicit_multibody_system_acceleration_constraints",
+//                            finiteDiffScheme, pointsForSparsityDetection);
 
             // Construct an implicit multibody system ignoring kinematic
             // constraints.
             mutThis->m_implicitMultibodyFuncIgnoringConstraints =
-                    OpenSim::make_unique<MultibodySystemImplicit<false, false>>();
+                    OpenSim::make_unique<MultibodySystemImplicit<false>>();
             mutThis->m_implicitMultibodyFuncIgnoringConstraints
                     ->constructFunction(this,
                             "implicit_multibody_system_ignoring_constraints",
                             finiteDiffScheme, pointsForSparsityDetection);
         } else {
             mutThis->m_multibodyFunc =
-                    OpenSim::make_unique<MultibodySystemExplicit<true, true>>();
+                    OpenSim::make_unique<MultibodySystemExplicit<true>>();
             mutThis->m_multibodyFunc->constructFunction(this,
                     "explicit_multibody_system", finiteDiffScheme,
                     pointsForSparsityDetection);
 
-            mutThis->m_multibodyFuncAccelConstraints =
-                    OpenSim::make_unique<MultibodySystemExplicit<false, true>>();
-            mutThis->m_multibodyFuncAccelConstraints->constructFunction(this,
-                        "multibody_system_acceleration_constraints",
-                        finiteDiffScheme, pointsForSparsityDetection);
+//            mutThis->m_multibodyFuncAccelConstraints =
+//                    OpenSim::make_unique<MultibodySystemExplicit<false, true>>();
+//            mutThis->m_multibodyFuncAccelConstraints->constructFunction(this,
+//                        "multibody_system_acceleration_constraints",
+//                        finiteDiffScheme, pointsForSparsityDetection);
 
             mutThis->m_multibodyFuncIgnoringConstraints =
-                    OpenSim::make_unique<MultibodySystemExplicit<false, false>>();
+                    OpenSim::make_unique<MultibodySystemExplicit<false>>();
             mutThis->m_multibodyFuncIgnoringConstraints->constructFunction(this,
                     "multibody_system_ignoring_constraints", finiteDiffScheme,
                     pointsForSparsityDetection);
@@ -678,15 +676,15 @@ public:
     const casadi::Function& getMultibodySystem() const {
         return *m_multibodyFunc;
     }
-    /// Get a function to the multibody system that only enforces
-    /// acceleration-level kinematic constraint errors (if they exist).
-    /// This may be necessary for computing state derivatives at grid points
-    /// where we do not want to enforce position- and velocity-level kinematic
-    /// constraint errors.
-    const casadi::Function&
-    getMultibodySystemAccelerationConstraints() const {
-        return *m_multibodyFuncAccelConstraints;
-    }
+//    /// Get a function to the multibody system that only enforces
+//    /// acceleration-level kinematic constraint errors (if they exist).
+//    /// This may be necessary for computing state derivatives at grid points
+//    /// where we do not want to enforce position- and velocity-level kinematic
+//    /// constraint errors.
+//    const casadi::Function&
+//    getMultibodySystemAccelerationConstraints() const {
+//        return *m_multibodyFuncAccelConstraints;
+//    }
     /// Get a function to the multibody system that does *not* compute kinematic
     /// constraint errors (if they exist). This may be necessary for computing
     /// state derivatives at grid points where we do not want to enforce
@@ -710,10 +708,10 @@ public:
     const casadi::Function& getImplicitMultibodySystem() const {
         return *m_implicitMultibodyFunc;
     }
-    const casadi::Function&
-    getImplicitMultibodySystemAccelerationConstraints() const {
-        return *m_implicitMultibodyFuncAccelConstraints;
-    }
+//    const casadi::Function&
+//    getImplicitMultibodySystemAccelerationConstraints() const {
+//        return *m_implicitMultibodyFuncAccelConstraints;
+//    }
     const casadi::Function&
     getImplicitMultibodySystemIgnoringConstraints() const {
         return *m_implicitMultibodyFuncIgnoringConstraints;
@@ -753,15 +751,15 @@ private:
     std::vector<CostInfo> m_costInfos;
     std::vector<EndpointConstraintInfo> m_endpointConstraintInfos;
     std::vector<PathConstraintInfo> m_pathInfos;
-    std::unique_ptr<MultibodySystemExplicit<true, true>> m_multibodyFunc;
-    std::unique_ptr<MultibodySystemExplicit<false, true>>
-            m_multibodyFuncAccelConstraints;
-    std::unique_ptr<MultibodySystemExplicit<false, false>>
+    std::unique_ptr<MultibodySystemExplicit<true>> m_multibodyFunc;
+//    std::unique_ptr<MultibodySystemExplicit<false, true>>
+//            m_multibodyFuncAccelConstraints;
+    std::unique_ptr<MultibodySystemExplicit<false>>
             m_multibodyFuncIgnoringConstraints;
-    std::unique_ptr<MultibodySystemImplicit<true, true>> m_implicitMultibodyFunc;
-    std::unique_ptr<MultibodySystemImplicit<false, true>>
-            m_implicitMultibodyFuncAccelConstraints;
-    std::unique_ptr<MultibodySystemImplicit<false, false>>
+    std::unique_ptr<MultibodySystemImplicit<true>> m_implicitMultibodyFunc;
+//    std::unique_ptr<MultibodySystemImplicit<false, true>>
+//            m_implicitMultibodyFuncAccelConstraints;
+    std::unique_ptr<MultibodySystemImplicit<false>>
             m_implicitMultibodyFuncIgnoringConstraints;
     std::unique_ptr<VelocityCorrection> m_velocityCorrectionFunc;
     std::unique_ptr<StateProjection> m_stateProjectionFunc;

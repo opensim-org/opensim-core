@@ -391,17 +391,18 @@ private:
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
             copyColumn(constraints.kinematic_qerr, imesh);
             copyColumn(constraints.kinematic_uerr, imesh);
-            if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
-                copyColumn(constraints.kinematic_udoterr, imesh);
-            }
+            copyColumn(constraints.kinematic_udoterr, imesh);
+//            if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
+//                copyColumn(constraints.kinematic_udoterr, imesh);
+//            }
             if (imesh > 0) copyColumn(constraints.projection, imesh - 1);
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
                     copyColumn(constraints.multibody_residuals, igrid);
                     copyColumn(constraints.auxiliary_residuals, igrid);
-                    if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                        copyColumn(constraints.kinematic_udoterr, igrid);
-                    }
+//                    if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+//                        copyColumn(constraints.kinematic_udoterr, igrid);
+//                    }
                     ++igrid;
                 }
                 copyColumn(constraints.defects, imesh);
@@ -416,9 +417,26 @@ private:
         // The loop above does not handle the residual at the final grid point.
         copyColumn(constraints.multibody_residuals, m_numGridPoints - 1);
         copyColumn(constraints.auxiliary_residuals, m_numGridPoints - 1);
-        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-            copyColumn(constraints.kinematic_udoterr, m_numGridPoints - 1);
-        }
+//        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+//            copyColumn(constraints.kinematic_udoterr, m_numGridPoints - 1);
+//        }
+
+        std::cout << "m_problem.getNumControls(): " << m_problem.getNumControls() << std::endl;
+        std::cout << "m_numDefectsPerMeshInterval: " << m_numDefectsPerMeshInterval << std::endl;
+        std::cout << "m_numMultibodyResiduals: " << m_numMultibodyResiduals << std::endl;
+        std::cout << "m_numAuxiliaryResiduals: " << m_numAuxiliaryResiduals << std::endl;
+        std::cout << "m_problem.getNumProjectionConstraintEquations(): " << m_problem.getNumProjectionConstraintEquations() << std::endl;
+        std::cout << "m_numGridPoints: " << m_numGridPoints << std::endl;
+        std::cout << "m_numMeshPoints: " << m_numMeshPoints << std::endl;
+        std::cout << "m_numUDotErrorPoints: " << m_numUDotErrorPoints << std::endl;
+        std::cout << "m_problem.getNumKinematicConstraintEquations() = " << m_problem.getNumKinematicConstraintEquations() << std::endl;
+        std::cout << "m_problem.getNumQErr(): " << m_problem.getNumQErr() << std::endl;
+        std::cout << "m_problem.getNumUErr(): " << m_problem.getNumUErr() << std::endl;
+        std::cout << "m_problem.getNumUDotErr(): " << m_problem.getNumUDotErr() << std::endl;
+        std::cout << "m_solver.getTranscriptionScheme(): " << m_solver.getTranscriptionScheme() << std::endl;
+        std::cout << "m_problem.isKinematicConstraintMethodBordalba2023(): " << m_problem.isKinematicConstraintMethodBordalba2023() << std::endl;
+        std::cout << "DEBUG iflat: " << iflat <<  std::endl;
+        std::cout << " m_numConstraints: " << m_numConstraints << std::endl;
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
                 "Internal error: final value of the index into the flattened "
@@ -486,17 +504,18 @@ private:
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
             copyColumn(out.kinematic_qerr, imesh);
             copyColumn(out.kinematic_uerr, imesh);
-            if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
-                copyColumn(out.kinematic_udoterr, imesh);
-            }
+            copyColumn(out.kinematic_udoterr, imesh);
+//            if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
+//                copyColumn(out.kinematic_udoterr, imesh);
+//            }
             if (imesh > 0) copyColumn(out.projection, imesh-1);
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
                     copyColumn(out.multibody_residuals, igrid);
                     copyColumn(out.auxiliary_residuals, igrid);
-                    if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                        copyColumn(out.kinematic_udoterr, igrid);
-                    }
+//                    if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+//                        copyColumn(out.kinematic_udoterr, igrid);
+//                    }
 
                     ++igrid;
                 }
@@ -512,9 +531,9 @@ private:
         // The loop above does not handle residuals at the final grid point.
         copyColumn(out.multibody_residuals, m_numGridPoints - 1);
         copyColumn(out.auxiliary_residuals, m_numGridPoints - 1);
-        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-            copyColumn(out.kinematic_udoterr, m_numGridPoints - 1);
-        }
+//        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+//            copyColumn(out.kinematic_udoterr, m_numGridPoints - 1);
+//        }
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
                 "Internal error: final value of the index into the flattened "

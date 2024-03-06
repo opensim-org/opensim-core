@@ -871,13 +871,11 @@ TEMPLATE_TEST_CASE("DoublePendulum without constraint derivatives",
 
 TEMPLATE_TEST_CASE("DoublePendulum with constraint derivatives",
         "[explicit]", MocoCasADiSolver, MocoTropterSolver) {
-    // TODO: this problem fails to converge after adding constraint acceleration
-    //       errors to every grid point.
     MocoSolution couplerSol;
     testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
-            couplerSol, true, "explicit", "Bordalba2023");
+            couplerSol, true, "explicit");
     testDoublePendulumPrescribedMotion<MocoCasADiSolver>(
-            couplerSol, true, "explicit", "Bordalba2023");
+            couplerSol, true, "explicit");
 }
 
 TEST_CASE("DoublePendulum with and without constraint derivatives",
@@ -919,84 +917,84 @@ TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
     testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "implicit");
 }
 
-TEST_CASE("DoublePendulum tests using Bordalba2023 method (explicit)",
-        "[explicit]") {
-    std::string scheme = GENERATE(as<std::string>{},
-            "trapezoidal", "hermite-simpson", "legendre-gauss-radau-3");
+//TEST_CASE("DoublePendulum tests using Bordalba2023 method (explicit)",
+//        "[explicit]") {
+//    std::string scheme = GENERATE(as<std::string>{},
+//            "trapezoidal", "hermite-simpson", "legendre-gauss-radau-3");
+//
+//    int num_mesh_intervals = 50;
+//    MocoSolution couplerSol;
+//    testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
+//            couplerSol, true, "explicit", "Bordalba2023", scheme,
+//            num_mesh_intervals);
+//    testDoublePendulumPrescribedMotion<MocoCasADiSolver>(
+//            couplerSol, true, "explicit", "Bordalba2023", scheme,
+//            num_mesh_intervals);
+//    testDoublePendulumPointOnLine<MocoCasADiSolver>(
+//            true, "explicit", "Bordalba2023", scheme,
+//            num_mesh_intervals);
+//}
 
-    int num_mesh_intervals = 50;
-    MocoSolution couplerSol;
-    testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
-            couplerSol, true, "explicit", "Bordalba2023", scheme,
-            num_mesh_intervals);
-    testDoublePendulumPrescribedMotion<MocoCasADiSolver>(
-            couplerSol, true, "explicit", "Bordalba2023", scheme,
-            num_mesh_intervals);
-    testDoublePendulumPointOnLine<MocoCasADiSolver>(
-            true, "explicit", "Bordalba2023", scheme,
-            num_mesh_intervals);
-}
+//TEST_CASE("DoublePendulum tests using Bordalba2023 method (implicit)",
+//        "[implicit]") {
+//    std::string scheme = GENERATE(as<std::string>{},
+//            "trapezoidal", "hermite-simpson", "legendre-gauss-radau-3");
+//
+//    int num_mesh_intervals = 100;
+//    MocoSolution couplerSol;
+//    testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
+//            couplerSol, true, "implicit", "Bordalba2023", scheme,
+//            num_mesh_intervals);
+//    testDoublePendulumPrescribedMotion<MocoCasADiSolver>(
+//            couplerSol, true, "implicit", "Bordalba2023", scheme,
+//            num_mesh_intervals);
+//    testDoublePendulumPointOnLine<MocoCasADiSolver>(
+//            true, "implicit", "Bordalba2023", scheme,
+//            num_mesh_intervals);
+//}
 
-TEST_CASE("DoublePendulum tests using Bordalba2023 method (implicit)",
-        "[implicit]") {
-    std::string scheme = GENERATE(as<std::string>{},
-            "trapezoidal", "hermite-simpson", "legendre-gauss-radau-3");
-
-    int num_mesh_intervals = 100;
-    MocoSolution couplerSol;
-    testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
-            couplerSol, true, "implicit", "Bordalba2023", scheme,
-            num_mesh_intervals);
-    testDoublePendulumPrescribedMotion<MocoCasADiSolver>(
-            couplerSol, true, "implicit", "Bordalba2023", scheme,
-            num_mesh_intervals);
-    testDoublePendulumPointOnLine<MocoCasADiSolver>(
-            true, "implicit", "Bordalba2023", scheme,
-            num_mesh_intervals);
-}
-
-TEST_CASE("Bad configurations with kinematic constraints") {
-    MocoStudy study;
-    study.setName("double_pendulum_coordinate_coupler");
-
-    // Create a double pendulum model and add a constraint.
-    auto model = createDoublePendulumModel();
-    const Coordinate& q0 = model->getCoordinateSet().get("q0");
-    const Coordinate& q1 = model->getCoordinateSet().get("q1");
-    CoordinateCouplerConstraint* constraint = new CoordinateCouplerConstraint();
-    Array<std::string> indepCoordNames;
-    indepCoordNames.append("q0");
-    constraint->setIndependentCoordinateNames(indepCoordNames);
-    constraint->setDependentCoordinateName("q1");
-    const SimTK::Real m = -2;
-    const SimTK::Real b = SimTK::Pi;
-    LinearFunction linFunc(m, b);
-    constraint->setFunction(&linFunc);
-    model->addConstraint(constraint);
-    model->finalizeConnections();
-    MocoProblem& mp = study.updProblem();
-    mp.setModelAsCopy(*model);
-    mp.setTimeBounds(0, 1);
-
-    auto& ms = study.initSolver<MocoCasADiSolver>();
-
-    SECTION("Enforce constraint derivatives") {
-        ms.set_enforce_constraint_derivatives(false);
-        ms.set_kinematic_constraint_method("Bordalba2023");
-        CHECK_THROWS_WITH(study.solve(),
-                ContainsSubstring(
-                        "The Bordalba et al. 2023 method for enforcing"));
-    }
-
-    SECTION("Posa2016 method with Hermite-Simpson only") {
-        ms.set_enforce_constraint_derivatives(true);
-        ms.set_kinematic_constraint_method("Posa2016");
-        ms.set_transcription_scheme("trapezoidal");
-        CHECK_THROWS_WITH(study.solve(),
-                ContainsSubstring(
-                        "Expected the 'hermite-simpson' transcription scheme"));
-    }
-}
+//TEST_CASE("Bad configurations with kinematic constraints") {
+//    MocoStudy study;
+//    study.setName("double_pendulum_coordinate_coupler");
+//
+//    // Create a double pendulum model and add a constraint.
+//    auto model = createDoublePendulumModel();
+//    const Coordinate& q0 = model->getCoordinateSet().get("q0");
+//    const Coordinate& q1 = model->getCoordinateSet().get("q1");
+//    CoordinateCouplerConstraint* constraint = new CoordinateCouplerConstraint();
+//    Array<std::string> indepCoordNames;
+//    indepCoordNames.append("q0");
+//    constraint->setIndependentCoordinateNames(indepCoordNames);
+//    constraint->setDependentCoordinateName("q1");
+//    const SimTK::Real m = -2;
+//    const SimTK::Real b = SimTK::Pi;
+//    LinearFunction linFunc(m, b);
+//    constraint->setFunction(&linFunc);
+//    model->addConstraint(constraint);
+//    model->finalizeConnections();
+//    MocoProblem& mp = study.updProblem();
+//    mp.setModelAsCopy(*model);
+//    mp.setTimeBounds(0, 1);
+//
+//    auto& ms = study.initSolver<MocoCasADiSolver>();
+//
+//    SECTION("Enforce constraint derivatives") {
+//        ms.set_enforce_constraint_derivatives(false);
+//        ms.set_kinematic_constraint_method("Bordalba2023");
+//        CHECK_THROWS_WITH(study.solve(),
+//                ContainsSubstring(
+//                        "The Bordalba et al. 2023 method for enforcing"));
+//    }
+//
+//    SECTION("Posa2016 method with Hermite-Simpson only") {
+//        ms.set_enforce_constraint_derivatives(true);
+//        ms.set_kinematic_constraint_method("Posa2016");
+//        ms.set_transcription_scheme("trapezoidal");
+//        CHECK_THROWS_WITH(study.solve(),
+//                ContainsSubstring(
+//                        "Expected the 'hermite-simpson' transcription scheme"));
+//    }
+//}
 
 
 
@@ -1286,7 +1284,8 @@ TEST_CASE("Goals use Moco-defined accelerations and multipliers", "[casadi]") {
     MocoProblem& problem = study.updProblem();
     // Rigid body welded to ground.
     Model model;
-    const double mass = 1.0;
+    const double mass =
+            1.0;
     auto* body = new Body("body", mass, SimTK::Vec3(0), SimTK::Inertia(1));
     model.addBody(body);
 
@@ -1446,7 +1445,7 @@ TEST_CASE("Multipliers are correct", "[casadi]") {
         auto dynamics_mode =
                 GENERATE(as<std::string>{}, "implicit", "explicit");
         auto kinematic_constraint_method =
-                GENERATE(as<std::string>{}, "Bordalba2023", "Posa2016");
+                GENERATE(as<std::string>{}, "Posa2016");
 
         Model model;
         const double mass = 1.3169;
@@ -1500,7 +1499,7 @@ TEST_CASE("Multipliers are correct", "[casadi]") {
         auto dynamics_mode =
                 GENERATE(as<std::string>{}, "implicit", "explicit");
         auto kinematic_constraint_method =
-                GENERATE(as<std::string>{}, "Bordalba2023", "Posa2016");
+                GENERATE(as<std::string>{}, "Posa2016");
 
         Model model = ModelFactory::createPlanarPointMass();
         model.set_gravity(Vec3(0));

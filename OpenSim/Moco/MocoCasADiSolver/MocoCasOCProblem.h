@@ -258,7 +258,7 @@ public:
 
 private:
     void calcMultibodySystemExplicit(const ContinuousInput& input,
-            bool calcKCErrors, bool calcAccelKCErrors,
+            bool calcKCErrors,
             MultibodySystemExplicitOutput& output) const override {
         auto mocoProblemRep = m_jar->take();
 
@@ -279,8 +279,8 @@ private:
                 simtkStateDisabledConstraints);
 
         // Compute kinematic constraint errors if they exist.
-        if (getNumMultipliers() && (calcKCErrors || calcAccelKCErrors)) {
-            calcKinematicConstraintErrors(calcKCErrors,
+        if (getNumMultipliers() && calcKCErrors) {
+            calcKinematicConstraintErrors(
                     modelBase, simtkStateBase,
                     simtkStateDisabledConstraints,
                     output.kinematic_constraint_q_errors,
@@ -303,7 +303,7 @@ private:
         m_jar->leave(std::move(mocoProblemRep));
     }
     void calcMultibodySystemImplicit(const ContinuousInput& input,
-            bool calcKCErrors, bool calcAccelKCErrors,
+            bool calcKCErrors,
             MultibodySystemImplicitOutput& output) const override {
         auto mocoProblemRep = m_jar->take();
 
@@ -331,8 +331,8 @@ private:
         // but must make sure the prescribedKinematics already obey the
         // constraints. This is simple at the q and u level (using assemble()),
         // but what do we do for the acceleration level?
-        if (getNumMultipliers() && (calcKCErrors || calcAccelKCErrors)) {
-            calcKinematicConstraintErrors(calcKCErrors,
+        if (getNumMultipliers() && calcKCErrors) {
+            calcKinematicConstraintErrors(
                     modelBase, simtkStateBase,
                     simtkStateDisabledConstraints,
                     output.kinematic_constraint_q_errors,
@@ -785,7 +785,7 @@ private:
                 m_constraintMobilityForces, m_constraintBodyForces);
     }
 
-    void calcKinematicConstraintErrors(bool calcKCErrors,
+    void calcKinematicConstraintErrors(
             const Model& modelBase,
             const SimTK::State& stateBase,
             const SimTK::State& simtkStateDisabledConstraints,
@@ -822,12 +822,10 @@ private:
 
         // This way of copying the data avoids a threadsafety issue in
         // CasADi related to cached Sparsity objects.
-        if (calcKCErrors) {
-            std::copy_n(qerr.getContiguousScalarData(),
-                    getNumQErr(), kinematic_constraint_q_errors.ptr());
-            std::copy_n(uerr.getContiguousScalarData() + m_uerrOffset,
-                    getNumUErr(), kinematic_constraint_u_errors.ptr());
-        }
+        std::copy_n(qerr.getContiguousScalarData(),
+                getNumQErr(), kinematic_constraint_q_errors.ptr());
+        std::copy_n(uerr.getContiguousScalarData() + m_uerrOffset,
+                getNumUErr(), kinematic_constraint_u_errors.ptr());
         std::copy_n(udoterr.getContiguousScalarData() + m_udoterrOffset,
                 getNumUDotErr(), kinematic_constraint_udot_errors.ptr());
     }
