@@ -166,10 +166,6 @@ protected:
 private:
     void constructProperties();
 
-    // Helper function for post-processing the solution.
-    void updateSolutionControls(const MocoSolution& mocoSolution,
-            tropter::Solution& tropSolution) const;
-
     // When a copy of the solver is made, we want to keep any guess specified
     // by the API, but want to discard anything we've cached by loading a file.
     MocoTrajectory m_guessFromAPI;

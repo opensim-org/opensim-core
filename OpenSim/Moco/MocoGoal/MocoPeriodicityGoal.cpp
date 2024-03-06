@@ -118,7 +118,7 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
 
     setRequirements(
             0, (int)m_indices_states.size() + (int)m_indices_controls.size(),
-            SimTK::Stage::Velocity);
+            SimTK::Stage::Model);
 }
 
 void MocoPeriodicityGoal::calcGoalImpl(

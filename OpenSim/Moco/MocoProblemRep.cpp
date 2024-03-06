@@ -19,7 +19,6 @@
 #include "MocoProblemRep.h"
 
 #include "Components/AccelerationMotion.h"
-#include "Components/ControlDistributor.h"
 #include "Components/DiscreteForces.h"
 #include "MocoProblem.h"
 #include "MocoProblemInfo.h"

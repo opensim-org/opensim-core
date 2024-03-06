@@ -56,9 +56,7 @@ protected:
                       m_mocoProbRep.getModelDisabledConstraints()),
               m_stateDisabledConstraints(
                       m_mocoProbRep.updStateDisabledConstraints()),
-              m_implicit(implicit),
-              m_computeControlsFromModel(
-                      m_mocoProbRep.getComputeControlsFromModel())
+              m_implicit(implicit)
         {
 
         // It is sufficient to perform this check only on the original model.
@@ -98,8 +96,8 @@ protected:
     }
 
     void addControlVariables() {
-        auto controlNames =
-                m_mocoProbRep.getControlDistributorBase().getControlNamesInOrder();
+        auto controlNames = m_mocoProbRep.getControlDistributorBase()
+                                         .getControlNamesInOrder();
         for (const auto& controlName : controlNames) {
             const auto& info = m_mocoProbRep.getControlInfo(controlName);
             this->add_control(controlName, convertBounds(info.getBounds()),
@@ -365,25 +363,13 @@ protected:
         // point, so that each can preserve their cache?
         this->setSimTKState(in);
 
-        if (m_computeControlsFromModel) {
-            m_costIntegrandControls =
-                    m_modelDisabledConstraints.getDefaultControls();
-            m_modelDisabledConstraints.computeControls(
-                    this->m_stateDisabledConstraints, m_costIntegrandControls);
-        } else {
-            const auto& controlDistributorDisabledConstraints =
-                    m_mocoProbRep.getControlDistributorDisabledConstraints();
-            m_costIntegrandControls =
-                    controlDistributorDisabledConstraints.getControls(
-                            this->m_stateDisabledConstraints);
-
-        }
+        const SimTK::Vector& controls = m_mocoProbRep.getControls(
+                this->m_stateDisabledConstraints);
 
         // Compute the integrand for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
         integrand = cost.calcIntegrand(
-                {in.time, this->m_stateDisabledConstraints,
-                 m_costIntegrandControls});
+                {in.time, this->m_stateDisabledConstraints, controls});
     }
 
     void calc_cost(int cost_index, const tropter::CostInput<T>& in,
@@ -399,32 +385,16 @@ protected:
 
         const auto& initialState = m_mocoProbRep.updStateDisabledConstraints(0);
         const auto& finalState = m_mocoProbRep.updStateDisabledConstraints(1);
-
-        if (m_computeControlsFromModel) {
-            m_costControlsInitial =
-                    m_modelDisabledConstraints.getDefaultControls();
-            m_modelDisabledConstraints.computeControls(
-                    initialState, m_costControlsInitial);
-            m_costControlsFinal =
-                    m_modelDisabledConstraints.getDefaultControls();
-            m_modelDisabledConstraints.computeControls(
-                    finalState, m_costControlsFinal);
-        } else {
-            const auto& controlDistributorDisabledConstraints =
-                    m_mocoProbRep.getControlDistributorDisabledConstraints();
-            m_costControlsInitial =
-                    controlDistributorDisabledConstraints.getControls(
-                            initialState);
-            m_costControlsFinal =
-                    controlDistributorDisabledConstraints.getControls(
-                            finalState);
-        }
+        const SimTK::Vector& controlsInitial = m_mocoProbRep.getControls(
+                initialState);
+        const SimTK::Vector& controlsFinal = m_mocoProbRep.getControls(
+                finalState);
 
         // Compute the cost for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
         SimTK::Vector costVector(cost.getNumOutputs());
-        cost.calcGoal({in.initial_time, initialState, m_costControlsInitial,
-                              in.final_time, finalState, m_costControlsFinal,
+        cost.calcGoal({in.initial_time, initialState, controlsInitial,
+                              in.final_time, finalState, controlsFinal,
                               in.integral},
                 costVector);
         cost_value = costVector.sum();
@@ -437,7 +407,6 @@ protected:
     const Model& m_modelDisabledConstraints;
     SimTK::State& m_stateDisabledConstraints;
     const bool m_implicit;
-    const bool m_computeControlsFromModel;
     int m_multiplierCostIndex = -1;
 
     std::unique_ptr<FileDeletionThrower> m_fileDeletionThrower;
@@ -469,10 +438,6 @@ protected:
     // The total number of scalar constraint equations associated with
     // MocoPathConstraints added to the MocoProblem.
     mutable int m_numPathConstraintEquations = 0;
-    // Memory to hold the cost controls.
-    mutable SimTK::Vector m_costIntegrandControls;
-    mutable SimTK::Vector m_costControlsInitial;
-    mutable SimTK::Vector m_costControlsFinal;
 
     /// Apply parameters to properties in `m_modelBase` and
     /// `m_modelDisabledConstraints`.

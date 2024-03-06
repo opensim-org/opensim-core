@@ -387,13 +387,9 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     MocoSolution mocoSolution =
             convertToMocoTrajectory<MocoSolution>(casSolution);
 
-    // If user-defined controllers are present in the model, then check for
-    // missing model controls in the CasADi solution and append them to the
-    // CasADi solution.
-    if (getProblemRep().getComputeControlsFromModel()) {
-        updateSolutionControls(mocoSolution, casSolution);
-        mocoSolution = convertToMocoTrajectory<MocoSolution>(casSolution);
-    }
+    // If the model contained a user-added Controller, append to the solution
+    // the missing controls that were not present in the optimization problem.
+    getProblemRep().appendMissingModelControls(mocoSolution);
 
     // If enforcing model constraints and not minimizing Lagrange multipliers,
     // check the rank of the constraint Jacobian and if rank-deficient, print
@@ -427,58 +423,3 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     OPENSIM_THROW(MocoCasADiSolverNotAvailable);
 #endif
 }
-
-void MocoCasADiSolver::updateSolutionControls(const MocoSolution& mocoSolution,
-        CasOC::Solution& casSolution) const {
-#ifdef OPENSIM_WITH_CASADI
-    // TODO: this would need to be updated if we allowed stacking OCP controls
-    //       on top of user-defined controls.
-    const auto& model = getProblemRep().getModelBase();
-    auto modelControlNames = createControlNamesFromModel(model);
-    auto controlIndexMap = createSystemControlIndexMap(model);
-
-    // Find model control names that are not in the CasADi solution.
-    auto casControlNames = casSolution.control_names;
-    std::vector<std::string> missingControlNames;
-    for (const auto& modelControlName : modelControlNames) {
-        if (std::find(casControlNames.begin(), casControlNames.end(),
-                    modelControlName) == casControlNames.end()) {
-            missingControlNames.push_back(modelControlName);
-        }
-    }
-
-    // Allocate space for the missing controls in the CasADi solution.
-    casadi::DM casControls = casSolution.variables.at(CasOC::Var::controls);
-    casadi::DM finalControls(
-            casControls.size1() + missingControlNames.size(),
-            casControls.size2());
-    finalControls(Slice(0, casControls.size1()), Slice()) = casControls;
-    casadi::DM missingControls(missingControlNames.size(),
-            casControls.size2());
-
-    // Compute the missing controls from the model.
-    auto statesTraj = mocoSolution.exportToStatesTrajectory(model);
-    int numMissingControls = static_cast<int>(missingControlNames.size());
-    for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
-        const auto& state = statesTraj.get(i);
-        model.realizeDynamics(state);
-        const auto& controls = model.getControls(state);
-        for (int j = 0; j < numMissingControls; ++j) {
-            missingControls(j, i) = controls.get(
-                    controlIndexMap.at(missingControlNames[j]));
-        }
-    }
-
-    // Append the missing controls to the CasADi solution and
-    // regenerate the MocoSolution.
-    finalControls(Slice(casControls.size1(),
-                        casControls.size1() + missingControls.size1()),
-                        Slice()) = missingControls;
-    casSolution.variables[CasOC::Var::controls] = finalControls;
-    casSolution.control_names.insert(casSolution.control_names.end(),
-            missingControlNames.begin(), missingControlNames.end());
-#else
-    OPENSIM_THROW(MocoCasADiSolverNotAvailable);
-#endif
-}
-

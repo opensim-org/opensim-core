@@ -1,3 +1,4 @@
+
 #ifndef OPENSIM_CASOCSOLVER_H
 #define OPENSIM_CASOCSOLVER_H
 /* -------------------------------------------------------------------------- *

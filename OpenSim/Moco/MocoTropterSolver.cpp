@@ -356,13 +356,9 @@ MocoSolution MocoTropterSolver::solveImpl() const {
 
     MocoSolution mocoSolution = ocp->convertToMocoSolution(tropSolution);
 
-    // If user-defined controllers are present in the model, then check for
-    // missing model controls in the tropter solution and append them to the
-    // tropter solution.
-    if (getProblemRep().getComputeControlsFromModel()) {
-        updateSolutionControls(mocoSolution, tropSolution);
-        mocoSolution = ocp->convertToMocoSolution(tropSolution);
-    }
+    // If the model contained a user-added Controller, append to the solution
+    // the missing controls that were not present in the optimization problem.
+    getProblemRep().appendMissingModelControls(mocoSolution);
 
     // If enforcing model constraints and not minimizing Lagrange
     // multipliers, check the rank of the constraint Jacobian and if
@@ -394,59 +390,6 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     }
 
     return mocoSolution;
-#else
-    OPENSIM_THROW(MocoTropterSolverNotAvailable);
-#endif
-}
-void MocoTropterSolver::updateSolutionControls(const MocoSolution& mocoSolution,
-        tropter::Solution& tropSolution) const {
-#ifdef OPENSIM_WITH_TROPTER
-    // TODO: this would need to be updated if we allowed stacking OCP controls
-    //       on top of user-defined controls.
-    const auto& model = getProblemRep().getModelBase();
-    auto modelControlNames = createControlNamesFromModel(model);
-    auto controlIndexMap = createSystemControlIndexMap(model);
-
-    // Find model control names that are not in the tropter solution.
-    auto tropControlNames = tropSolution.control_names;
-    std::vector<std::string> missingControlNames;
-    for (const auto& modelControlName : modelControlNames) {
-        if (std::find(tropControlNames.begin(), tropControlNames.end(),
-                    modelControlName) == tropControlNames.end()) {
-            missingControlNames.push_back(modelControlName);
-        }
-    }
-
-    // Allocate space for the missing controls in the tropter solution.
-    Eigen::MatrixXd tropControls = tropSolution.controls;
-    Eigen::MatrixXd finalControls(
-            tropControls.rows() + missingControlNames.size(),
-            tropControls.cols());
-    finalControls.block(0, 0, tropControls.rows(), tropControls.cols()) =
-            tropControls;
-    Eigen::MatrixXd missingControls(missingControlNames.size(),
-            tropControls.cols());
-
-    // Compute the missing controls from the model.
-    auto statesTraj = mocoSolution.exportToStatesTrajectory(model);
-    int numMissingControls = static_cast<int>(missingControlNames.size());
-    for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
-        const auto& state = statesTraj.get(i);
-        model.realizeDynamics(state);
-        const auto& controls = model.getControls(state);
-        for (int j = 0; j < numMissingControls; ++j) {
-            missingControls(j, i) = controls.get(
-                    controlIndexMap.at(missingControlNames[j]));
-        }
-    }
-
-    // Append the missing controls to the tropter solution and
-    // regenerate the MocoSolution.
-    finalControls.block(tropControls.rows(), 0, missingControls.rows(),
-            tropControls.cols()) = missingControls;
-    tropSolution.controls = finalControls;
-    tropSolution.control_names.insert(tropSolution.control_names.end(),
-            missingControlNames.begin(), missingControlNames.end());
 #else
     OPENSIM_THROW(MocoTropterSolverNotAvailable);
 #endif

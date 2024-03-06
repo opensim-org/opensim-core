@@ -340,29 +340,17 @@ private:
         const auto& modelDisabledConstraints =
                 mocoProblemRep->getModelDisabledConstraints();
 
-
         applyInput(stageDep, input.time, input.states, input.controls,
                 input.multipliers, input.derivatives, input.parameters,
                 mocoProblemRep);
 
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
-        if (m_computeControlsFromModel) {
-            m_costIntegrandControls =
-                    modelDisabledConstraints.getDefaultControls();
-            modelDisabledConstraints.computeControls(
-                    simtkStateDisabledConstraints, m_costIntegrandControls);
-        } else {
-            const auto& controlDistributorDisabledConstraints =
-                    mocoProblemRep->getControlDistributorDisabledConstraints();
-            m_costIntegrandControls =
-                    controlDistributorDisabledConstraints.getControls(
-                            simtkStateDisabledConstraints);
-        }
+        const SimTK::Vector& controls = mocoProblemRep->getControls(
+                simtkStateDisabledConstraints);
 
         integrand = mocoCost.calcIntegrand(
-                {input.time, simtkStateDisabledConstraints,
-                 m_costIntegrandControls});
+                {input.time, simtkStateDisabledConstraints, controls});
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -380,39 +368,23 @@ private:
                 input.initial_derivatives, input.parameters, mocoProblemRep, 0);
         auto& simtkStateDisabledConstraintsInitial =
                 mocoProblemRep->updStateDisabledConstraints(0);
+        const SimTK::Vector& controlsInitial = mocoProblemRep->getControls(
+                simtkStateDisabledConstraintsInitial);
 
         applyInput(stageDep, input.final_time, input.final_states,
                 input.final_controls, input.final_multipliers,
                 input.final_derivatives, input.parameters, mocoProblemRep, 1);
         auto& simtkStateDisabledConstraintsFinal =
                 mocoProblemRep->updStateDisabledConstraints(1);
-
-        if (m_computeControlsFromModel) {
-            m_costControlsInitial =
-                    modelDisabledConstraints.getDefaultControls();
-            modelDisabledConstraints.computeControls(
-                    simtkStateDisabledConstraintsInitial, m_costControlsInitial);
-            m_costControlsFinal =
-                    modelDisabledConstraints.getDefaultControls();
-            modelDisabledConstraints.computeControls(
-                    simtkStateDisabledConstraintsFinal, m_costControlsFinal);
-        } else {
-            const auto& controlDistributorDisabledConstraints =
-                    mocoProblemRep->getControlDistributorDisabledConstraints();
-            m_costControlsInitial =
-                    controlDistributorDisabledConstraints.getControls(
-                            simtkStateDisabledConstraintsInitial);
-            m_costControlsFinal =
-                    controlDistributorDisabledConstraints.getControls(
-                            simtkStateDisabledConstraintsFinal);
-        }
+        const SimTK::Vector& controlsFinal = mocoProblemRep->getControls(
+                simtkStateDisabledConstraintsFinal);
 
         // Compute the cost for this cost term.
         SimTK::Vector simtkCost((int)cost.rows(), cost.ptr(), true);
         mocoCost.calcGoal(
                 {input.initial_time, simtkStateDisabledConstraintsInitial,
-                        m_costControlsInitial, input.final_time,
-                        simtkStateDisabledConstraintsFinal, m_costControlsFinal,
+                        controlsInitial, input.final_time,
+                        simtkStateDisabledConstraintsFinal, controlsFinal,
                         input.integral},
                 simtkCost);
 
@@ -435,22 +407,11 @@ private:
 
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
-        if (m_computeControlsFromModel) {
-            m_endpointIntegrandControls =
-                    modelDisabledConstraints.getDefaultControls();
-            modelDisabledConstraints.computeControls(
-                    simtkStateDisabledConstraints, m_endpointIntegrandControls);
-        } else {
-            const auto& controlDistributorDisabledConstraints =
-                    mocoProblemRep->getControlDistributorDisabledConstraints();
-            m_endpointIntegrandControls =
-                    controlDistributorDisabledConstraints.getControls(
-                        simtkStateDisabledConstraints);
-        }
+        const SimTK::Vector& controls = mocoProblemRep->getControls(
+                simtkStateDisabledConstraints);
 
         integrand = mocoEC.calcIntegrand(
-                {input.time, simtkStateDisabledConstraints,
-                        m_endpointIntegrandControls});
+                {input.time, simtkStateDisabledConstraints, controls});
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -469,43 +430,24 @@ private:
                 input.initial_derivatives, input.parameters, mocoProblemRep, 0);
         auto& simtkStateDisabledConstraintsInitial =
                 mocoProblemRep->updStateDisabledConstraints(0);
+        const SimTK::Vector& controlsInitial = mocoProblemRep->getControls(
+                simtkStateDisabledConstraintsInitial);
 
         applyInput(stageDep, input.final_time, input.final_states,
                 input.final_controls, input.final_multipliers,
                 input.final_derivatives, input.parameters, mocoProblemRep, 1);
         auto& simtkStateDisabledConstraintsFinal =
                 mocoProblemRep->updStateDisabledConstraints(1);
-
-        if (m_computeControlsFromModel) {
-            m_endpointControlsInitial =
-                    modelDisabledConstraints.getDefaultControls();
-            modelDisabledConstraints.computeControls(
-                    simtkStateDisabledConstraintsInitial,
-                    m_endpointControlsInitial);
-            m_endpointControlsFinal =
-                    modelDisabledConstraints.getDefaultControls();
-            modelDisabledConstraints.computeControls(
-                    simtkStateDisabledConstraintsFinal,
-                    m_endpointControlsFinal);
-        } else {
-            const auto& controlDistributorDisabledConstraints =
-                    mocoProblemRep->getControlDistributorDisabledConstraints();
-            m_endpointControlsInitial =
-                    controlDistributorDisabledConstraints.getControls(
-                            simtkStateDisabledConstraintsInitial);
-            m_endpointControlsFinal =
-                    controlDistributorDisabledConstraints.getControls(
-                            simtkStateDisabledConstraintsFinal);
-        }
+        const SimTK::Vector& controlsFinal = mocoProblemRep->getControls(
+                simtkStateDisabledConstraintsFinal);
 
         // Compute the cost for this cost term.
         SimTK::Vector simtkValues((int)values.rows(), values.ptr(), true);
         mocoEC.calcGoal(
                 {input.initial_time, simtkStateDisabledConstraintsInitial,
-                        m_endpointControlsInitial, input.final_time,
+                        controlsInitial, input.final_time,
                         simtkStateDisabledConstraintsFinal,
-                        m_endpointControlsFinal,
-                        input.integral},
+                        controlsFinal, input.integral},
                 simtkValues);
 
         m_jar->leave(std::move(mocoProblemRep));
@@ -691,10 +633,10 @@ private:
         }
     }
 
-    void calcKinematicConstraintForces(const casadi::DM& multipliers,
+    static void calcKinematicConstraintForces(const casadi::DM& multipliers,
             const SimTK::State& stateBase, const Model& modelBase,
             const DiscreteForces& constraintForces,
-            SimTK::State& stateDisabledConstraints) const {
+            SimTK::State& stateDisabledConstraints) {
         // Calculate the constraint forces using the original model and the
         // solver-provided Lagrange multipliers.
         modelBase.realizeVelocity(stateBase);
@@ -798,7 +740,6 @@ private:
 
     std::unique_ptr<ThreadsafeJar<const MocoProblemRep>> m_jar;
     bool m_paramsRequireInitSystem = true;
-    bool m_computeControlsFromModel = false;
     std::string m_formattedTimeString;
     std::unordered_map<int, int> m_yIndexMap;
     std::unique_ptr<FileDeletionThrower> m_fileDeletionThrower;
@@ -811,13 +752,6 @@ private:
     // the acceleration-level holonomic, non-holonomic constraint errors and the
     // acceleration-only constraint errors.
     static thread_local SimTK::Vector m_pvaerr;
-    // Local memory to hold the cost and endpoint controls.
-    static thread_local SimTK::Vector m_costIntegrandControls;
-    static thread_local SimTK::Vector m_costControlsInitial;
-    static thread_local SimTK::Vector m_costControlsFinal;
-    static thread_local SimTK::Vector m_endpointIntegrandControls;
-    static thread_local SimTK::Vector m_endpointControlsInitial;
-    static thread_local SimTK::Vector m_endpointControlsFinal;
 };
 
 } // namespace OpenSim

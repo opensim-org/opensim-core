@@ -22,6 +22,7 @@
 #include "MocoGoal/MocoGoal.h"
 #include "MocoParameter.h"
 #include "MocoVariableInfo.h"
+#include "Components/ControlDistributor.h"
 #include "osimMocoDLL.h"
 
 #include <OpenSim/Common/Assertion.h>
@@ -328,6 +329,71 @@ public:
     getImplicitComponentReferencePtrs() const {
         return m_implicit_component_refs;
     }
+
+    /// Get the vector of model controls. If the model contains user-defined
+    /// controllers, this function will compute the controls from the model.
+    /// Otherwise, it will return the controls directly from the
+    /// ControlDistributor. This function is intended for use by solvers to
+    /// compute controls needed by MocoGoal%s and MocoPathConstraint%s.
+    const SimTK::Vector& getControls(const SimTK::State& state) const {
+        return getComputeControlsFromModel() ?
+               getModelDisabledConstraintsControls(state) :
+               getControlDistributorDisabledConstraints().getControls(state);
+    }
+
+    /// Append the missing controls from the model to the MocoSolution. This
+    /// function is intended for use by solvers to ensure that the controls
+    /// trajectory in the MocoTrajectory contains all the controls from the
+    /// model. This function is useful when the model contains user-defined
+    /// controllers, which require the controls that are not present in the
+    /// optimal control problem to be computed from the model.
+    void appendMissingModelControls(MocoTrajectory& traj) const {
+        // TODO: this would need to be updated if we allowed stacking OCP
+        //       control on top of user-defined controls.
+        const auto& model = getModelBase();
+        auto modelControlNames = createControlNamesFromModel(model);
+        auto controlIndexMap = createSystemControlIndexMap(model);
+
+        // Find model control names that are not in the trajectory.
+        auto controlNames = traj.getControlNames();
+        std::vector<std::string> missingControlNames;
+        for (const auto& modelControlName : modelControlNames) {
+            if (std::find(controlNames.begin(), controlNames.end(),
+                        modelControlName) == controlNames.end()) {
+                missingControlNames.push_back(modelControlName);
+            }
+        }
+        if (missingControlNames.empty()) { return; }
+
+        // Compute the missing controls from the model.
+        const SimTK::Vector& times = traj.getTime();
+        std::vector<double> indVec;
+        indVec.reserve(times.size());
+        for (int i = 0; i < static_cast<int>(times.size()); ++i) {
+            indVec.push_back(times[i]);
+        }
+        TimeSeriesTable missingControls(indVec);
+        auto statesTraj = traj.exportToStatesTrajectory(model);
+        int numMissingControls = static_cast<int>(missingControlNames.size());
+        SimTK::Matrix missingControlsMatrix(
+                static_cast<int>(statesTraj.getSize()), numMissingControls);
+        for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
+            const auto& state = statesTraj.get(i);
+            model.realizeDynamics(state);
+            const auto& controls = model.getControls(state);
+            for (int j = 0; j < numMissingControls; ++j) {
+                missingControlsMatrix(i, j) = controls.get(
+                        controlIndexMap.at(missingControlNames[j]));
+            }
+        }
+        for (int j = 0; j < numMissingControls; ++j) {
+            missingControls.appendColumn(missingControlNames[j],
+                    missingControlsMatrix.col(j));
+        }
+
+        // Insert the missing controls into the trajectory.
+        traj.insertControlsTrajectory(missingControls);
+    }
     /// @}
 
 private:
@@ -381,6 +447,16 @@ private:
 
         helper(component, regex, includeDescendents, outputs);
         return outputs;
+    }
+
+    /// A helper function to get the controls from the model with disabled
+    /// constraints. This function is used when the model contains user-defined
+    /// controllers, which require the controls to be computed from the model.
+    const SimTK::Vector& getModelDisabledConstraintsControls(
+            const SimTK::State& state) const {
+        const auto& model = getModelDisabledConstraints();
+        model.realizeVelocity(state);
+        return model.getControls(state);
     }
 
     const MocoProblem* m_problem;
