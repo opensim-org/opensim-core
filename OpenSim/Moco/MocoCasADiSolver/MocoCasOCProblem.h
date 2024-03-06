@@ -258,7 +258,7 @@ public:
 
 private:
     void calcMultibodySystemExplicit(const ContinuousInput& input,
-            bool calcKCErrors,
+            bool calcQErrors, bool calcUErrors, bool calcUDotErrors,
             MultibodySystemExplicitOutput& output) const override {
         auto mocoProblemRep = m_jar->take();
 
@@ -278,9 +278,10 @@ private:
         modelDisabledConstraints.realizeAcceleration(
                 simtkStateDisabledConstraints);
 
-        // Compute kinematic constraint errors if they exist.
-        if (getNumMultipliers() && calcKCErrors) {
+        // Compute kinematic constraint errors.
+        if (getNumMultipliers()) {
             calcKinematicConstraintErrors(
+                    calcQErrors, calcUErrors, calcUDotErrors,
                     modelBase, simtkStateBase,
                     simtkStateDisabledConstraints,
                     output.kinematic_constraint_q_errors,
@@ -303,7 +304,7 @@ private:
         m_jar->leave(std::move(mocoProblemRep));
     }
     void calcMultibodySystemImplicit(const ContinuousInput& input,
-            bool calcKCErrors,
+            bool calcQErrors, bool calcUErrors, bool calcUDotErrors,
             MultibodySystemImplicitOutput& output) const override {
         auto mocoProblemRep = m_jar->take();
 
@@ -312,7 +313,7 @@ private:
         const auto& modelBase = mocoProblemRep->getModelBase();
         auto& simtkStateBase = mocoProblemRep->updStateBase();
 
-        // Model with disabled constriants and its associated state. These are
+        // Model with disabled constraints and its associated state. These are
         // used to compute the accelerations.
         const auto& modelDisabledConstraints =
                 mocoProblemRep->getModelDisabledConstraints();
@@ -326,13 +327,10 @@ private:
         modelDisabledConstraints.realizeAcceleration(
                 simtkStateDisabledConstraints);
 
-        // Compute kinematic constraint errors if they exist.
-        // TODO: Do not enforce kinematic constraints if prescribedKinematics,
-        // but must make sure the prescribedKinematics already obey the
-        // constraints. This is simple at the q and u level (using assemble()),
-        // but what do we do for the acceleration level?
-        if (getNumMultipliers() && calcKCErrors) {
+        // Compute kinematic constraint errors.
+        if (getNumMultipliers()) {
             calcKinematicConstraintErrors(
+                    calcQErrors, calcUErrors, calcUDotErrors,
                     modelBase, simtkStateBase,
                     simtkStateDisabledConstraints,
                     output.kinematic_constraint_q_errors,
@@ -764,10 +762,10 @@ private:
         }
     }
 
-    void calcKinematicConstraintForces(const casadi::DM& multipliers,
+    static void calcKinematicConstraintForces(const casadi::DM& multipliers,
             const SimTK::State& stateBase, const Model& modelBase,
             const DiscreteForces& constraintForces,
-            SimTK::State& stateDisabledConstraints) const {
+            SimTK::State& stateDisabledConstraints) {
         // Calculate the constraint forces using the original model and the
         // solver-provided Lagrange multipliers.
         modelBase.realizeVelocity(stateBase);
@@ -786,6 +784,7 @@ private:
     }
 
     void calcKinematicConstraintErrors(
+            bool calcQErr, bool calcUErr, bool calcUDotErr,
             const Model& modelBase,
             const SimTK::State& stateBase,
             const SimTK::State& simtkStateDisabledConstraints,
@@ -822,15 +821,18 @@ private:
 
         // This way of copying the data avoids a threadsafety issue in
         // CasADi related to cached Sparsity objects.
-        std::copy_n(qerr.getContiguousScalarData(),
-                getNumQErr(),
-                kinematic_constraint_q_errors.ptr());
-        std::copy_n(uerr.getContiguousScalarData(),
-                getNumUErr(),
-                kinematic_constraint_u_errors.ptr());
-        std::copy_n(udoterr.getContiguousScalarData(),
-                getNumUDotErr(),
-                kinematic_constraint_udot_errors.ptr());
+        if (calcQErr) {
+            std::copy_n(qerr.getContiguousScalarData(), getNumQErr(),
+                    kinematic_constraint_q_errors.ptr());
+        }
+        if (calcUErr) {
+            std::copy_n(uerr.getContiguousScalarData(), getNumUErr(),
+                    kinematic_constraint_u_errors.ptr());
+        }
+        if (calcUDotErr) {
+            std::copy_n(udoterr.getContiguousScalarData(), getNumUDotErr(),
+                    kinematic_constraint_udot_errors.ptr());
+        }
     }
 
     void copyImplicitResidualsToOutput(const MocoProblemRep& mocoProblemRep,

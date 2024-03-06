@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: CasOCTranscription.cpp                                       *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2018 Stanford University and the Authors                     *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -546,24 +546,22 @@ void Transcription::transcribe() {
                     out.at(2);
             m_constraints.kinematic_qerr = out.at(3);
             m_constraints.kinematic_uerr = out.at(4);
-            m_constraints.kinematic_udoterr = out.at(5);
-//            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-//                m_constraints.kinematic_udoterr(Slice(), m_meshIndices) =
-//                        out.at(5);
-//            } else {
-//                m_constraints.kinematic_udoterr = out.at(5);
-//            }
+            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                m_constraints.kinematic_udoterr(Slice(), m_meshIndices) =
+                        out.at(5);
+            } else {
+                m_constraints.kinematic_udoterr = out.at(5);
+            }
         }
 
         // Points where we ignore algebraic constraints.
         if (m_numMeshInteriorPoints) {
-//            const casadi::Function& implicitMultibodyFunction =
-//                m_problem.isKinematicConstraintMethodBordalba2023()
-//                    ? m_problem.getImplicitMultibodySystemAccelerationConstraints()
-//                    : m_problem.getImplicitMultibodySystemIgnoringConstraints();
-            const auto out = evalOnTrajectory(
-                    m_problem.getImplicitMultibodySystemIgnoringConstraints(),
-                    inputs, m_meshInteriorIndices);
+            const casadi::Function& implicitMultibodyFunction =
+                m_problem.isKinematicConstraintMethodBordalba2023()
+                    ? m_problem.getImplicitMultibodySystemAccelerationConstraints()
+                    : m_problem.getImplicitMultibodySystemIgnoringConstraints();
+            const auto out = evalOnTrajectory(implicitMultibodyFunction, inputs,
+                    m_meshInteriorIndices);
             m_constraints.multibody_residuals(Slice(), m_meshInteriorIndices) =
                     out.at(0);
             // zdot.
@@ -571,10 +569,10 @@ void Transcription::transcribe() {
                     out.at(1);
             m_constraints.auxiliary_residuals(Slice(), m_meshInteriorIndices) =
                     out.at(2);
-//            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-//                m_constraints.kinematic_udoterr(Slice(), m_meshInteriorIndices) =
-//                        out.at(5);
-//            }
+            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                m_constraints.kinematic_udoterr(Slice(), m_meshInteriorIndices) =
+                        out.at(5);
+            }
         }
 
     } else { // Explicit dynamics mode.
@@ -593,24 +591,22 @@ void Transcription::transcribe() {
                     out.at(2);
             m_constraints.kinematic_qerr = out.at(3);
             m_constraints.kinematic_uerr = out.at(4);
-            m_constraints.kinematic_udoterr = out.at(5);
-//            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-//                m_constraints.kinematic_udoterr(Slice(), m_meshIndices) =
-//                        out.at(5);
-//            } else {
-//                m_constraints.kinematic_udoterr = out.at(5);
-//            }
+            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                m_constraints.kinematic_udoterr(Slice(), m_meshIndices) =
+                        out.at(5);
+            } else {
+                m_constraints.kinematic_udoterr = out.at(5);
+            }
         }
 
         // Points where we ignore algebraic constraints.
         if (m_numMeshInteriorPoints) {
-//            const casadi::Function& multibodyFunction =
-//                m_problem.isKinematicConstraintMethodBordalba2023()
-//                    ? m_problem.getMultibodySystemAccelerationConstraints()
-//                    : m_problem.getMultibodySystemIgnoringConstraints();
+            const casadi::Function& multibodyFunction =
+                m_problem.isKinematicConstraintMethodBordalba2023()
+                    ? m_problem.getMultibodySystemAccelerationConstraints()
+                    : m_problem.getMultibodySystemIgnoringConstraints();
 
-            const auto out = evalOnTrajectory(
-                    m_problem.getMultibodySystemIgnoringConstraints(), inputs,
+            const auto out = evalOnTrajectory(multibodyFunction, inputs,
                     m_meshInteriorIndices);
             m_xdot(Slice(NQ, NQ + NU), m_meshInteriorIndices) =
                     out.at(0);
@@ -618,10 +614,10 @@ void Transcription::transcribe() {
                     out.at(1);
             m_constraints.auxiliary_residuals(Slice(), m_meshInteriorIndices) =
                     out.at(2);
-//            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-//                m_constraints.kinematic_udoterr(Slice(), m_meshInteriorIndices) =
-//                        out.at(5);
-//            }
+            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                m_constraints.kinematic_udoterr(Slice(), m_meshInteriorIndices) =
+                        out.at(5);
+            }
         }
     }
 
