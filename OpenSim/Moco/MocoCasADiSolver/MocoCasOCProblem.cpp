@@ -30,8 +30,6 @@ thread_local SimTK::Vector_<SimTK::SpatialVec>
         MocoCasOCProblem::m_constraintBodyForces;
 thread_local SimTK::Vector MocoCasOCProblem::m_constraintMobilityForces;
 thread_local SimTK::Vector MocoCasOCProblem::m_pvaerr;
-thread_local int MocoCasOCProblem::m_uerrOffset;
-thread_local int MocoCasOCProblem::m_udoterrOffset;
 
 MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         const MocoProblemRep& problemRep,
@@ -94,7 +92,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     const auto& implicitRefs = problemRep.getImplicitComponentReferencePtrs();
     std::vector<std::string> derivativeNames;
     derivativeNames.reserve(implicitRefs.size());
-    for (const auto& implicitRef : implicitRefs) {
+for (const auto& implicitRef : implicitRefs) {
         derivativeNames.push_back(implicitRef.second->getAbsolutePathString() +
                                   "/" + implicitRef.first);
     }
@@ -237,14 +235,6 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 }
             }
         }
-
-        // Pre-compute offsets needed if we do not enforce constraint
-        // derivatives.
-        m_uerrOffset = getEnforceConstraintDerivatives() ? 0 :
-                       getNumHolonomicConstraintEquations();
-        m_udoterrOffset = getEnforceConstraintDerivatives() ? 0 :
-                          getNumHolonomicConstraintEquations() +
-                          getNumNonHolonomicConstraintEquations();
 
         // Set kinematic constraint information on the CasOC::Problem.
         setEnforceConstraintDerivatives(enforceConstraintDerivs);

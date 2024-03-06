@@ -573,19 +573,32 @@ public:
     int getNumAuxiliaryResidualEquations() const {
         return m_numAuxiliaryResiduals;
     }
-    int getNumKinematicConstraintEquations() const {
+    int getNumQErr() const {
         // If all kinematics are prescribed, we assume that the prescribed
         // kinematics obey any kinematic constraints. Therefore, the kinematic
         // constraints would be redundant, and we need not enforce them.
         if (m_prescribedKinematics) return 0;
+        return m_numHolonomicConstraintEquations;
+    }
+    int getNumUErr() const {
+        if (m_prescribedKinematics) return 0;
         if (m_enforceConstraintDerivatives) {
-            return 3 * m_numHolonomicConstraintEquations +
-                   2 * m_numNonHolonomicConstraintEquations +
+            return m_numHolonomicConstraintEquations +
+                   m_numNonHolonomicConstraintEquations;
+        }
+        return m_numNonHolonomicConstraintEquations;
+    }
+    int getNumUDotErr() const {
+        if (m_prescribedKinematics) return 0;
+        if (m_enforceConstraintDerivatives) {
+            return m_numHolonomicConstraintEquations +
+                   m_numNonHolonomicConstraintEquations +
                    m_numAccelerationConstraintEquations;
         }
-        return m_numHolonomicConstraintEquations +
-               m_numNonHolonomicConstraintEquations +
-               m_numAccelerationConstraintEquations;
+        return m_numAccelerationConstraintEquations;
+    }
+    int getNumKinematicConstraintEquations() const {
+        return getNumQErr() + getNumUErr() + getNumUDotErr();
     }
     /// Create a vector of names for scalar kinematic constraint equations.
     /// The length of the vector is getNumKinematicConstraintEquations().
@@ -606,27 +619,6 @@ public:
         return m_numNonHolonomicConstraintEquations;
     }
     int getNumAccelerationConstraintEquations() const {
-        return m_numAccelerationConstraintEquations;
-    }
-    int getNumQErr() const {
-        if (m_prescribedKinematics) return 0;
-        return m_numHolonomicConstraintEquations;
-    }
-    int getNumUErr() const {
-        if (m_prescribedKinematics) return 0;
-        if (m_enforceConstraintDerivatives) {
-            return m_numHolonomicConstraintEquations +
-                   m_numNonHolonomicConstraintEquations;
-        }
-        return m_numNonHolonomicConstraintEquations;
-    }
-    int getNumUDotErr() const {
-        if (m_prescribedKinematics) return 0;
-        if (m_enforceConstraintDerivatives) {
-            return m_numHolonomicConstraintEquations +
-                   m_numNonHolonomicConstraintEquations +
-                   m_numAccelerationConstraintEquations;
-        }
         return m_numAccelerationConstraintEquations;
     }
     bool getEnforceConstraintDerivatives() const {

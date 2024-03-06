@@ -823,11 +823,14 @@ private:
         // This way of copying the data avoids a threadsafety issue in
         // CasADi related to cached Sparsity objects.
         std::copy_n(qerr.getContiguousScalarData(),
-                getNumQErr(), kinematic_constraint_q_errors.ptr());
-        std::copy_n(uerr.getContiguousScalarData() + m_uerrOffset,
-                getNumUErr(), kinematic_constraint_u_errors.ptr());
-        std::copy_n(udoterr.getContiguousScalarData() + m_udoterrOffset,
-                getNumUDotErr(), kinematic_constraint_udot_errors.ptr());
+                getNumQErr(),
+                kinematic_constraint_q_errors.ptr());
+        std::copy_n(uerr.getContiguousScalarData(),
+                getNumUErr(),
+                kinematic_constraint_u_errors.ptr());
+        std::copy_n(udoterr.getContiguousScalarData(),
+                getNumUDotErr(),
+                kinematic_constraint_udot_errors.ptr());
     }
 
     void copyImplicitResidualsToOutput(const MocoProblemRep& mocoProblemRep,
@@ -859,11 +862,6 @@ private:
     // the acceleration-level holonomic, non-holonomic constraint errors and the
     // acceleration-only constraint errors.
     static thread_local SimTK::Vector m_pvaerr;
-    // These are the offsets into the velocity- and acceleration-level kinematic
-    // constraint errors. These are needed when not enforcing the derivative of
-    // the kinematic constraints.
-    static thread_local int m_uerrOffset;
-    static thread_local int m_udoterrOffset;
 };
 
 } // namespace OpenSim
