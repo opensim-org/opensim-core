@@ -173,7 +173,13 @@ private:
     VariablesDM m_upperBounds;
     VariablesDM m_shift;
     VariablesDM m_scale;
-    casadi::MXVector m_defectStates;
+    // This holds a vector of MX types, where each element of the vector
+    // contains the states needed to calculate the defect constraints for a
+    // single mesh interval. The Bordalba et al. (2023) kinematic constraint
+    // method requires that point the end of one mesh interval and the start of
+    // the next mesh interval have different decision variables representing
+    // the state, even though it is the same point in time.
+    casadi::MXVector m_statesByMeshInterval;
     casadi::MX m_projectionStateDistances;
 
     casadi::DM m_meshIndicesMap;
@@ -216,7 +222,7 @@ private:
     void transcribe();
     void setObjectiveAndEndpointConstraints();
     void calcDefects() {
-        calcDefectsImpl(m_defectStates, m_xdot, m_constraints.defects);
+        calcDefectsImpl(m_statesByMeshInterval, m_xdot, m_constraints.defects);
     }
     void calcInterpolatingControls() {
         calcInterpolatingControlsImpl(

@@ -170,12 +170,12 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     // Each element in the "defect states" vector is a matrix (i.e., MX)
     // containing the states needed to construct the defect constraints for an
     // individual mesh interval.
-    m_defectStates = MXVector(m_numMeshIntervals);
-    m_projectionStateDistances = MX(m_numProjectionStates, m_numMeshIntervals);
+    m_statesByMeshInterval = MXVector(m_numMeshIntervals);
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-        m_defectStates[imesh] = MX(m_problem.getNumStates(),
+        m_statesByMeshInterval[imesh] = MX(m_problem.getNumStates(),
                                    m_numPointsPerMeshInterval);
     }
+    m_projectionStateDistances = MX(m_numProjectionStates, m_numMeshIntervals);
 
     m_meshIndicesMap = createMeshIndices();
     std::vector<int> meshIndicesVector;
@@ -357,18 +357,18 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         if (m_numProjectionStates) {
             // The states at all points in the mesh interval except the last
             // point are the regular state variables.
-            m_defectStates[imesh](Slice(), Slice(0, numPts-1)) =
+            m_statesByMeshInterval[imesh](Slice(), Slice(0, numPts-1)) =
                     m_unscaledVars[states](Slice(), Slice(istart, iend));
 
             // The multibody states at the last point in the mesh interval are
             // the projection states.
-            m_defectStates[imesh](Slice(0, m_numProjectionStates), numPts-1) =
+            m_statesByMeshInterval[imesh](Slice(0, m_numProjectionStates), numPts-1) =
                     m_unscaledVars[projection_states](Slice(), imesh);
 
             // The non-multibody states at the last point (i.e., auxiliary state
             // variables for muscles) are also the same as the regular state
             // variables (there are no projection states for these variables).
-            m_defectStates[imesh](
+            m_statesByMeshInterval[imesh](
                     Slice(m_numProjectionStates, numStates), numPts-1) =
                     m_unscaledVars[states](
                             Slice(m_numProjectionStates, numStates), iend);
@@ -379,7 +379,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                     m_unscaledVars[projection_states](Slice(), imesh) -
                     m_unscaledVars[states](Slice(0, m_numProjectionStates), iend);
         } else {
-            m_defectStates[imesh](Slice(), Slice()) =
+            m_statesByMeshInterval[imesh](Slice(), Slice()) =
                     m_unscaledVars[states](Slice(), Slice(istart, iend+1));
         }
         istart = iend;
