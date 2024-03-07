@@ -180,16 +180,16 @@ public:
 
     OpenSim_DECLARE_PROPERTY(minimize_state_projection_distance, bool,
             "Minimize the distance between the projection states and the "
-            "constraint manifold when using the 'projection' method for "
+            "constraint manifold when using the 'Bordalba2023' method for "
             "enforcing kinematic constraints. Default: true.");
     OpenSim_DECLARE_PROPERTY(state_projection_distance_weight, double,
             "The weight on the cost term if "
             "'minimize_state_projection_distance' is enabled. "
             "Default: 1e-6.");
-    OpenSim_DECLARE_PROPERTY(projection_variable_bounds, MocoBounds,
+    OpenSim_DECLARE_PROPERTY(projection_slack_variable_bounds, MocoBounds,
             "The bounds on the slack variables added to the problem which "
             "determine the magnitude of the constraint projection at each "
-            "mesh interval when using the 'projection' method for "
+            "mesh interval when using the 'Bordalba2023' method for "
             "enforcing kinematic constraints. Default: [-10, 10].");
 
     MocoCasADiSolver();

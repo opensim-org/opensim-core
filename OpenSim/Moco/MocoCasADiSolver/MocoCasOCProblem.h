@@ -68,67 +68,74 @@ inline casadi::DM convertToCasADiDM(const SimTK::Vector& simtkVec) {
 }
 
 /// This converts a MocoTrajectory to a CasOC::Iterate.
-inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt,
+inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoTraj,
         const std::vector<std::string>& expectedSlackNames,
         bool appendProjectionStates = false) {
     CasOC::Iterate casIt;
     CasOC::VariablesDM& casVars = casIt.variables;
     using CasOC::Var;
-    casVars[Var::initial_time] = mocoIt.getInitialTime();
-    casVars[Var::final_time] = mocoIt.getFinalTime();
+    casVars[Var::initial_time] = mocoTraj.getInitialTime();
+    casVars[Var::final_time] = mocoTraj.getFinalTime();
     casVars[Var::states] =
-            convertToCasADiDMTranspose(mocoIt.getStatesTrajectory());
+            convertToCasADiDMTranspose(mocoTraj.getStatesTrajectory());
     casVars[Var::controls] =
-            convertToCasADiDMTranspose(mocoIt.getControlsTrajectory());
+            convertToCasADiDMTranspose(mocoTraj.getControlsTrajectory());
     casVars[Var::multipliers] =
-            convertToCasADiDMTranspose(mocoIt.getMultipliersTrajectory());
+            convertToCasADiDMTranspose(mocoTraj.getMultipliersTrajectory());
 
-    if (!mocoIt.getDerivativeNames().empty()) {
+    if (!mocoTraj.getDerivativeNames().empty()) {
         casVars[Var::derivatives] =
-                convertToCasADiDMTranspose(mocoIt.getDerivativesTrajectory());
+                convertToCasADiDMTranspose(mocoTraj.getDerivativesTrajectory());
     }
     casVars[Var::parameters] =
-            convertToCasADiDMTranspose(mocoIt.getParameters());
+            convertToCasADiDMTranspose(mocoTraj.getParameters());
     if (appendProjectionStates) {
             casVars[Var::projection_states] = convertToCasADiDMTranspose(
-                    mocoIt.getMultibodyStatesTrajectory());
+                mocoTraj.getMultibodyStatesTrajectory());
     }
-    casIt.times = convertToCasADiDMTranspose(mocoIt.getTime());
-    casIt.state_names = mocoIt.getStateNames();
-    casIt.control_names = mocoIt.getControlNames();
-    casIt.multiplier_names = mocoIt.getMultiplierNames();
-    casIt.derivative_names = mocoIt.getDerivativeNames();
-    casIt.parameter_names = mocoIt.getParameterNames();
+    casIt.times = convertToCasADiDMTranspose(mocoTraj.getTime());
+    casIt.state_names = mocoTraj.getStateNames();
+    casIt.control_names = mocoTraj.getControlNames();
+    casIt.multiplier_names = mocoTraj.getMultiplierNames();
+    casIt.derivative_names = mocoTraj.getDerivativeNames();
+    casIt.parameter_names = mocoTraj.getParameterNames();
 
     // Projection state variables.
     // ---------------------------
-    // Extra variables needed when using the 'projection' method for enforcing
+    // Extra variables needed when using the projection method for enforcing
     // kinematic constraints from Bordalba et al. (2023).
     if (appendProjectionStates) {
-        auto mbStateNames = mocoIt.getMultibodyStateNames();
+        auto mbStateNames = mocoTraj.getMultibodyStateNames();
         for (auto name : mbStateNames) {
             auto valuepos = name.find("/value");
             if (valuepos != std::string::npos) {
-                name.replace(valuepos, 6, "_projection/value");
+                name.replace(valuepos, 6, "/value/projection");
                 casIt.projection_state_names.push_back(name);
             }
             auto speedpos = name.find("/speed");
             if (speedpos != std::string::npos) {
-                name.replace(speedpos, 6, "_projection/speed");
+                name.replace(speedpos, 6, "/speed/projection");
                 casIt.projection_state_names.push_back(name);
             }
         }
     }
     // Slack variables.
     // ----------------
-    // Check that the guess has the expected slack names from the CasOCProblem.
+    // Check that the trajectory has the expected slack names from the
+    // CasOCProblem.
     bool matchedExpectedSlackNames =
-            mocoIt.getSlackNames().size() == expectedSlackNames.size();
+            mocoTraj.getSlackNames().size() == expectedSlackNames.size();
+    OPENSIM_THROW_IF(!mocoTraj.getSlackNames().empty() &&
+                     !matchedExpectedSlackNames, Exception,
+            "The MocoTrajectory has {} slack variables, but their names do "
+            "not match the slack names expected by MocoCasADiSolver. Try "
+            "removing the slack variables from the MocoTrajectory.",
+            mocoTraj.getSlackNames().size())
     if (matchedExpectedSlackNames) {
         for (const auto& expectedName : expectedSlackNames) {
-            if (std::find(mocoIt.getSlackNames().begin(),
-                        mocoIt.getSlackNames().end(), expectedName) ==
-                    mocoIt.getSlackNames().end()) {
+            if (std::find(mocoTraj.getSlackNames().begin(),
+                        mocoTraj.getSlackNames().end(), expectedName) ==
+                    mocoTraj.getSlackNames().end()) {
                 matchedExpectedSlackNames = false;
                 break;
             }
@@ -139,16 +146,16 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt,
     // the guess. If not, create a vector of zeros to use as the initial guess
     // for the slack variables.
     if (matchedExpectedSlackNames) {
-        casIt.slack_names = mocoIt.getSlackNames();
-        if (!mocoIt.getSlackNames().empty()) {
+        casIt.slack_names = mocoTraj.getSlackNames();
+        if (!mocoTraj.getSlackNames().empty()) {
             casVars[Var::slacks] =
-                    convertToCasADiDMTranspose(mocoIt.getSlacksTrajectory());
+                    convertToCasADiDMTranspose(mocoTraj.getSlacksTrajectory());
         }
     } else {
         casIt.slack_names = expectedSlackNames;
         if (!expectedSlackNames.empty()) {
             casVars[Var::slacks] = casadi::DM::zeros(
-                    (int)expectedSlackNames.size(), mocoIt.getNumTimes());
+                    (int)expectedSlackNames.size(), mocoTraj.getNumTimes());
         }
     }
 
@@ -448,6 +455,7 @@ private:
 
         SimTK::Vector proj_v(getNumSpeeds(), projection.ptr() +
                 getNumCoordinates(), true);
+        // TODO replace with matterBase.multiplyByPVATranspose() when available.
         matterBase.multiplyByGTranspose(simtkStateBase, mu_v, proj_v);
 
         m_jar->leave(std::move(mocoProblemRep));

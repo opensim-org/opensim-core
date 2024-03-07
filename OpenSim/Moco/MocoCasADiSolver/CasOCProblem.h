@@ -399,7 +399,7 @@ public:
                     auto leafpos = name.find("/value");
                     OPENSIM_THROW_IF(leafpos == std::string::npos,
                             OpenSim::Exception, "Internal error.");
-                    name.replace(leafpos, 6, "_projection/value");
+                    name.replace(leafpos, 6, "/value/projection");
                     it.projection_state_names.push_back(name);
                 }
                 if (info.type == StateType::Speed) {
@@ -407,7 +407,7 @@ public:
                     auto leafpos = name.find("/speed");
                     OPENSIM_THROW_IF(leafpos == std::string::npos,
                             OpenSim::Exception, "Internal error.");
-                    name.replace(leafpos, 6, "_projection/speed");
+                    name.replace(leafpos, 6, "/speed/projection");
                     it.projection_state_names.push_back(name);
                 }
             }

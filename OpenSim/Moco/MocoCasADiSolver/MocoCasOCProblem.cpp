@@ -201,8 +201,8 @@ for (const auto& implicitRef : implicitRefs) {
                             // Add "mu" variables for the projection method by
                             // Bordalba et al. (2023).
                             const auto muBounds = convertBounds(
-                                    mocoCasADiSolver
-                                            .get_projection_variable_bounds());
+                                mocoCasADiSolver
+                                    .get_projection_slack_variable_bounds());
                             if (kinLevel == CasOC::KinematicLevel::Position) {
                                 // For holonomic constraints, we need to add
                                 // two slack variables: one for the position
