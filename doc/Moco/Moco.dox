@@ -38,6 +38,10 @@ Other resources:
  - [PLoS Comput Biol paper](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008493)
  - [Webinar recording](https://opensim.stanford.edu/support/event_details.php?id=236&title=Webinar-OpenSim-Moco-Software-to-optimize-the-motion-and-control-of-OpenSim-models)
 
+@section latestrelease Latest release
+
+The latest Moco features are included with the %OpenSim 4.5 release. [Learn about the new features here.](https://simtk-confluence.stanford.edu:8443/pages/viewpage.action?pageId=130187315)
+
 @defgroup mocogoal Moco: Available goals
 
 These are the goals available in Moco for use in your cost functional or as

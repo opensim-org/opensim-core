@@ -42,7 +42,11 @@
 #include "Property.h"
 
 #include <cstring>
+#include <map>
 #include <memory>
+#include <ostream>
+#include <set>
+#include <string>
 
 // DISABLES MULTIPLE INSTANTIATION WARNINGS
 
