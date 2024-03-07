@@ -669,7 +669,7 @@ if(NOT CMAKE_PREFIX_PATH
         list(APPEND deps_to_find casadi)
     endif()
     if(OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI)
-        list(APPEND deps_to_find ipopt metis mumps)
+        list(APPEND deps_to_find ipopt)
     endif()
     set(dep_install_dirs)
     foreach(dep ${deps_to_find})
