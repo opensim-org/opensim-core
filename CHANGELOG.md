@@ -30,6 +30,9 @@ v4.6
   `AbstractTool::updateModelForces()` so that connected actuators have the same root component as the `Model`
   at the time of `Socket` connection. Finally, `PrescribedController::prescribeControlForActuator(int, Function*)` is
   now deprecated in favor of `PrescribedController::prescribeControlForActuator(const std::string&, Function*)`.
+- Bumped the version of `ezc3d` to 1.5.8, which can now deal properly with Type-3 force platforms and c3d from Shadow
+- Added `StationDefinedFrame` component, which is a `Frame` component that automatically computes its position and
+  orientation from `Station`s in the model
 
 v4.5
 ====

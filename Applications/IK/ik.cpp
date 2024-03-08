@@ -122,7 +122,7 @@ int main(int argc,char **argv)
 
             // UNRECOGNIZED
             } else {
-                log_warn("Unrecognized option {} on command line... Ignored", 
+                log_warn("Unrecognized option {} on command line... Ignored",
                          option);
                 PrintUsage(argv[0], cout);
                 return(0);
@@ -177,4 +177,4 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream<<"-Setup, -S         SetupFileName    Specify an xml setup file for solving an inverse kinematics problem.\n";
     aOStream<<"-PropertyInfo, -PI                  Print help information for properties in setup files.\n";
 }
-    
+
