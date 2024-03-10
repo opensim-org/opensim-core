@@ -33,15 +33,11 @@ custom optimal control problem using the MocoStudy class.
 Moco supports most OpenSim models, including those with kinematic constraints,
 auxiliary (muscle) dynamics, and passive force components.
 
-Currently, Moco does not support models with Controller%s. Moco must serve
-as the sole controller of the model. This prevents, for example,
-using reflex controllers to model spasticity.
-We hope to add support for Model Controllers in the future.
-
 Moco does not support models with SimTK::Measure%s, such as Probe%s. Some
 Measures rely on time-stepping forward integration, which does not
 occur with Moco. This prevents using, for example, the metabolics probes with
-Moco.
+Moco. See Bhargava2004SmoothedMuscleMetabolics for a metabolics model that
+is compatible with Moco.
 
 Some model components are supported through Moco but may hinder the solvers
 from converging quickly. Any components with discontinuous functions can cause
@@ -50,6 +46,46 @@ We suggest replacing your model's muscles with DeGrooteFregly2016Muscle%s
 and replacing your contact forces with SmoothSphereHalfSpaceForce%s. These
 components are designed for use with direct collocation.
 
+@section mococontrollers Using Controllers with Moco
+
+Moco supports a subset of OpenSim's Controller%s. Without a controller, a
+MocoProblem will contain one control for each ScalarActuator in the model.
+When a Controller is added to the model, there is no longer necessarily a
+one-to-one correspondence between model actuators and controls in the
+optimal control problem.
+
+The following Controller%s are currently supported by Moco:
+- PrescribedController
+
+@subsection mococontrols "Model-controlled" versus "OCP-controlled" actuators
+
+By default, if you add a Controller to your model, Moco will not add optimal
+control variables for the ScalarActuator%s (i.e., "Model-controlled" actuators)
+that the Controller controls.
+
+Currently, you cannot add controls from the optimal control problem on top
+of the control values from the Controller. However, control values from
+multiple Controller%s are additive, since this is the behavior in OpenSim.
+
+All Model controls will still be reported in the MocoSolution, even if they are
+not part of the optimal control problem (i.e., from "OCP-controlled" actuators).
+
+@subsection mocogoalscontrollers Configuring a MocoProblem with Controllers
+
+Unless explicitly defined otherwise, MocoGoal%s will use the control values
+computed from the underlying Model. These controls will be the combination of
+the controls from the optimal control problem and the controls computed by any
+Controller%s in the model.
+
+Relevant MocoGoal%s and MocoPathConstraint%s have the option to ignore the
+controls computed by model Controller%s if you wish to only use the controls
+from the optimal control problem in a cost function term or constraint (e.g.,
+MocoControlGoal::setIgnoreControlledActuators and
+MocoControlBoundConstraint::setIgnoreControlledActuators).
+
+The setting MocoPhase::setBoundActivationFromExcitation() applies to all
+muscles in the MocoProblem, whether they are controlled by a Controller or
+not.
 
 @section mococustomgoal Defining a custom goal or cost
 

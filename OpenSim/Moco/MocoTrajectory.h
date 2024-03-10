@@ -992,6 +992,9 @@ private:
 /// In the file written by write(), the header contains solver success, the
 /// objective, the individual terms in the objective (including the weight),
 /// the breakdown of the objective, and other quantities.
+/// The controls in the solution correspond to the set of model controls, even
+/// if the optimal control problem contained a different set of controls due to
+/// the presence of user-added Controller%s in the model.
 class OSIMMOCO_API MocoSolution : public MocoTrajectory {
 public:
     /// Returns a dynamically-allocated copy of this solution. You must manage

@@ -82,14 +82,14 @@ set(MOCO_SOURCES
         MocoFrameDistanceConstraint.cpp
         MocoOutputConstraint.h
         MocoOutputConstraint.cpp
-        Components/DiscreteController.cpp
-        Components/DiscreteController.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
         Components/DiscreteForces.h
         Components/DiscreteForces.cpp
         Components/AccelerationMotion.h
         Components/AccelerationMotion.cpp
+        Components/ControlDistributor.h
+        Components/ControlDistributor.cpp
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
         MocoInverse.cpp
