@@ -334,11 +334,15 @@ public:
     /// controllers, this function will compute the controls from the model.
     /// Otherwise, it will return the controls directly from the
     /// ControlDistributor. This function is intended for use by solvers to
-    /// compute controls needed by MocoGoal%s and MocoPathConstraint%s.
-    const SimTK::Vector& getControls(const SimTK::State& state) const {
+    /// compute controls needed by MocoGoal%s and MocoPathConstraint%s. The
+    /// SimTK::State argument should be obtain from
+    /// `updStateDisabledConstraints()`.
+    const SimTK::Vector& getControls(
+            const SimTK::State& stateDisabledConstraints) const {
         return getComputeControlsFromModel() ?
-               getModelDisabledConstraintsControls(state) :
-               getControlDistributorDisabledConstraints().getControls(state);
+               getModelDisabledConstraintsControls(stateDisabledConstraints) :
+               getControlDistributorDisabledConstraints()
+                        .getControls(stateDisabledConstraints);
     }
 
     /// Append the missing controls from the model to the MocoSolution. This
