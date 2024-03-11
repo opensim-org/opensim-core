@@ -135,6 +135,7 @@ Model ModelFactory::createSlidingPointMass() {
     Model model;
     model.setName("sliding_mass");
     auto* body = new Body("body", 1.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    body->attachGeometry(new Sphere(0.05));
     model.addComponent(body);
 
     // Allows translation along x.

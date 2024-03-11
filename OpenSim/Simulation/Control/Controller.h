@@ -74,9 +74,9 @@ class OSIMSIMULATION_API Controller : public ModelComponent {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Controller, ModelComponent);
 
 public:
-//==============================================================================
+//=============================================================================
 // PROPERTIES
-//==============================================================================
+//=============================================================================
     /** Controller is enabled (active) by default.
     NOTE: Prior to OpenSim 4.0, this property was named **isDisabled**.
           If **isDisabled** is **true**, **enabled** is **false**.

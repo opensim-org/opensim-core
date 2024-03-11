@@ -45,3 +45,44 @@ void MocoDirectCollocationSolver::constructProperties() {
 void MocoDirectCollocationSolver::setMesh(const std::vector<double>& mesh) {
     for (int i = 0; i < (int)mesh.size(); ++i) { set_mesh(i, mesh[i]); }
 }
+
+void MocoDirectCollocationSolver::checkConstraintJacobianRank(
+        const MocoSolution& mocoSolution) const {
+    const auto& model = getProblemRep().getModelBase();
+    const auto& matter = model.getMatterSubsystem();
+    TimeSeriesTable states = mocoSolution.exportToStatesTable();
+    // TODO update when we support multiple phases.
+    auto statesTraj =
+            StatesTrajectory::createFromStatesTable(model, states);
+    SimTK::Matrix G;
+    SimTK::FactorQTZ G_qtz;
+    bool isJacobianFullRank = true;
+    int rank;
+    for (const auto& s : statesTraj) {
+        // Jacobian is at most velocity-dependent.
+        model.realizeVelocity(s);
+        matter.calcG(s, G);
+        G_qtz.factor<double>(G);
+        if (G_qtz.getRank() < G.nrow()) {
+            isJacobianFullRank = false;
+            rank = G_qtz.getRank();
+            break;
+        }
+    }
+
+    if (!isJacobianFullRank) {
+        const std::string dashes(52, '-');
+        log_warn(dashes);
+        log_warn("Rank-deficient constraint Jacobian detected.");
+        log_warn(dashes);
+        log_warn("The model constraint Jacobian has {} row(s) but is only "
+                 "rank {}. ", G.nrow(), rank);
+        log_warn("Try removing redundant constraints from the model or "
+                 "enable");
+        log_warn("minimization of Lagrange multipliers by utilizing the "
+                 "solver ");
+        log_warn("properties 'minimize_lagrange_multipliers' and");
+        log_warn("'lagrange_multiplier_weight'.");
+        log_warn(dashes);
+    }
+}

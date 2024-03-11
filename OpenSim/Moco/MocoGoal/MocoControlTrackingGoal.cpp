@@ -22,6 +22,7 @@
 #include <OpenSim/Moco/MocoUtilities.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Control/InputController.h>
 
 using namespace OpenSim;
 
@@ -69,13 +70,18 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
     // checks that the model controls are in the correct order.
     auto allControlIndices = createSystemControlIndexMap(model);
 
+    // Get controls associated with the model's ActuatorInputController.
+    auto actuatorInputControls =
+            createControlNamesForControllerType<ActuatorInputController>(model);
+
     // Throw exception if a weight is specified for a nonexistent control.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& weightName = get_control_weights().get(i).getName();
         if (allControlIndices.count(weightName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
                     "Weight provided with name '{}' but this is "
-                    "not a recognized control.",
+                    "not a recognized control or it is already controlled by a"
+                    "user-defined controller.",
                     weightName);
         }
     }
@@ -92,7 +98,8 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         const auto& controlName = get_reference_labels(i).getName();
         if (allControlIndices.count(controlName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                    "Control '{}' does not exist in the model.", controlName);
+                    "Control '{}' does not exist in the model or it is already "
+                    "controlled by a user-defined controller.", controlName);
         }
         OPENSIM_THROW_IF_FRMOBJ(controlsToTrack.count(controlName), Exception,
                 "Expected control '{}' to be provided no more "
@@ -148,6 +155,15 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
             weight = get_control_weights().get(controlToTrack).getWeight();
         }
         if (weight == 0) {
+            log_info("MocoControlTrackingGoal: Skipping control '{}' because "
+                     "its weight is 0.", controlToTrack);
+            continue;
+        }
+
+        if (getIgnoreControlledActuators() && !actuatorInputControls.count(controlToTrack)) {
+            log_info("MocoControlTrackingGoal: Control '{}' is associated "
+                     "with a user-defined controller and will be ignored, as "
+                     "requested.", controlToTrack);
             continue;
         }
 
