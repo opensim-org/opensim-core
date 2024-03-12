@@ -77,3 +77,9 @@ cmake-build-*
 
 ## File-based project format:
 *.iws
+
+# clangd
+.cache/clangd/*
+
+# VS Code
+.vscode/*
