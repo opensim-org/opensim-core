@@ -67,6 +67,12 @@ protected:
         underlying multibody system */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override final;
 
+    /**
+     * Extends setting the mobilized body index such that `PhysicalOffsetFrame` also
+     * sets the `MobilizedBodyIndex` of the parent frame.
+     */
+    void extendSetMobilizedBodyIndex(const SimTK::MobilizedBodyIndex&) const final;
+
 private:
 
 

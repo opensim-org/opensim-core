@@ -686,11 +686,17 @@ TEST_CASE("Component Interface Misc.")
     TheWorld *world2 = new TheWorld(modelFile, true);
 
     world2->updComponent("Bar").getSocket<Foo>("childFoo");
-    // We haven't called connect yet, so this connection isn't made yet.
-    SimTK_TEST_MUST_THROW_EXC(
-            world2->updComponent("Bar").getConnectee<Foo>("childFoo"),
-            OpenSim::Exception
-             );
+
+    // in older versions of OpenSim, calling `getConnectee` on a socket
+    // that hasn't been `connect`ed or `finalizeConnection`ed yet was
+    // an exception.
+    //
+    // newer versions fall back to a (slower) runtime lookup of the connectee
+    // using the connectee's component path
+    // SimTK_TEST_MUST_THROW_EXC(
+    //     world2->updComponent("Bar").getConnectee<Foo>("childFoo"),
+    //     OpenSim::Exception
+    // );
 
     ASSERT(theWorld == *world2, __FILE__, __LINE__,
         "Model serialization->deserialization FAILED");

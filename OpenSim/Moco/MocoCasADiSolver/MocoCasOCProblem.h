@@ -22,7 +22,7 @@
 #include "MocoCasADiSolver.h"
 
 #include <OpenSim/Moco/Components/AccelerationMotion.h>
-#include <OpenSim/Moco/Components/DiscreteController.h>
+#include <OpenSim/Moco/Components/ControlDistributor.h>
 #include <OpenSim/Moco/Components/DiscreteForces.h>
 #include <OpenSim/Moco/MocoBounds.h>
 #include <OpenSim/Moco/MocoProblemRep.h>
@@ -448,6 +448,8 @@ private:
 
         const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
         const auto stageDep = mocoCost.getStageDependency();
+        const auto& modelDisabledConstraints =
+                mocoProblemRep->getModelDisabledConstraints();
 
         applyInput(stageDep, input.time, input.states, input.controls,
                 input.multipliers, input.derivatives, input.parameters,
@@ -455,14 +457,11 @@ private:
 
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
-
-        const auto& discreteController =
-                mocoProblemRep->getDiscreteControllerDisabledConstraints();
-        const auto& rawControls = discreteController.getDiscreteControls(
+        const SimTK::Vector& controls = mocoProblemRep->getControls(
                 simtkStateDisabledConstraints);
 
         integrand = mocoCost.calcIntegrand(
-                {input.time, simtkStateDisabledConstraints, rawControls});
+                {input.time, simtkStateDisabledConstraints, controls});
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -472,34 +471,31 @@ private:
 
         const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
         const auto stageDep = mocoCost.getStageDependency();
+        const auto& modelDisabledConstraints =
+                mocoProblemRep->getModelDisabledConstraints();
 
         applyInput(stageDep, input.initial_time, input.initial_states,
                 input.initial_controls, input.initial_multipliers,
                 input.initial_derivatives, input.parameters, mocoProblemRep, 0);
-
         auto& simtkStateDisabledConstraintsInitial =
                 mocoProblemRep->updStateDisabledConstraints(0);
+        const SimTK::Vector& controlsInitial = mocoProblemRep->getControls(
+                simtkStateDisabledConstraintsInitial);
 
         applyInput(stageDep, input.final_time, input.final_states,
                 input.final_controls, input.final_multipliers,
                 input.final_derivatives, input.parameters, mocoProblemRep, 1);
-
         auto& simtkStateDisabledConstraintsFinal =
                 mocoProblemRep->updStateDisabledConstraints(1);
-
-        const auto& discreteController =
-                mocoProblemRep->getDiscreteControllerDisabledConstraints();
-        const auto& rawControlsInitial = discreteController.getDiscreteControls(
-                simtkStateDisabledConstraintsInitial);
-        const auto& rawControlsFinal = discreteController.getDiscreteControls(
+        const SimTK::Vector& controlsFinal = mocoProblemRep->getControls(
                 simtkStateDisabledConstraintsFinal);
 
         // Compute the cost for this cost term.
         SimTK::Vector simtkCost((int)cost.rows(), cost.ptr(), true);
         mocoCost.calcGoal(
                 {input.initial_time, simtkStateDisabledConstraintsInitial,
-                        rawControlsInitial, input.final_time,
-                        simtkStateDisabledConstraintsFinal, rawControlsFinal,
+                        controlsInitial, input.final_time,
+                        simtkStateDisabledConstraintsFinal, controlsFinal,
                         input.integral},
                 simtkCost);
 
@@ -513,6 +509,8 @@ private:
         const auto& mocoEC =
                 mocoProblemRep->getEndpointConstraintByIndex(index);
         const auto stageDep = mocoEC.getStageDependency();
+        const auto& modelDisabledConstraints =
+                mocoProblemRep->getModelDisabledConstraints();
 
         applyInput(stageDep, input.time, input.states, input.controls,
                 input.multipliers, input.derivatives, input.parameters,
@@ -520,14 +518,11 @@ private:
 
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
-
-        const auto& discreteController =
-                mocoProblemRep->getDiscreteControllerDisabledConstraints();
-        const auto& rawControls = discreteController.getDiscreteControls(
+        const SimTK::Vector& controls = mocoProblemRep->getControls(
                 simtkStateDisabledConstraints);
 
         integrand = mocoEC.calcIntegrand(
-                {input.time, simtkStateDisabledConstraints, rawControls});
+                {input.time, simtkStateDisabledConstraints, controls});
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -538,35 +533,32 @@ private:
         const auto& mocoEC =
                 mocoProblemRep->getEndpointConstraintByIndex(index);
         const auto stageDep = mocoEC.getStageDependency();
+        const auto& modelDisabledConstraints =
+                mocoProblemRep->getModelDisabledConstraints();
 
         applyInput(stageDep, input.initial_time, input.initial_states,
                 input.initial_controls, input.initial_multipliers,
                 input.initial_derivatives, input.parameters, mocoProblemRep, 0);
-
         auto& simtkStateDisabledConstraintsInitial =
                 mocoProblemRep->updStateDisabledConstraints(0);
+        const SimTK::Vector& controlsInitial = mocoProblemRep->getControls(
+                simtkStateDisabledConstraintsInitial);
 
         applyInput(stageDep, input.final_time, input.final_states,
                 input.final_controls, input.final_multipliers,
                 input.final_derivatives, input.parameters, mocoProblemRep, 1);
-
         auto& simtkStateDisabledConstraintsFinal =
                 mocoProblemRep->updStateDisabledConstraints(1);
-
-        const auto& discreteController =
-                mocoProblemRep->getDiscreteControllerDisabledConstraints();
-        const auto& rawControlsInitial = discreteController.getDiscreteControls(
-                simtkStateDisabledConstraintsInitial);
-        const auto& rawControlsFinal = discreteController.getDiscreteControls(
+        const SimTK::Vector& controlsFinal = mocoProblemRep->getControls(
                 simtkStateDisabledConstraintsFinal);
 
         // Compute the cost for this cost term.
         SimTK::Vector simtkValues((int)values.rows(), values.ptr(), true);
         mocoEC.calcGoal(
                 {input.initial_time, simtkStateDisabledConstraintsInitial,
-                        rawControlsInitial, input.final_time,
-                        simtkStateDisabledConstraintsFinal, rawControlsFinal,
-                        input.integral},
+                        controlsInitial, input.final_time,
+                        simtkStateDisabledConstraintsFinal,
+                        controlsFinal, input.integral},
                 simtkValues);
 
         m_jar->leave(std::move(mocoProblemRep));
@@ -664,15 +656,15 @@ private:
             const double& time,
             const casadi::DM& states, const casadi::DM& controls,
             const Model& model, SimTK::State& simtkState,
-            const DiscreteController& discreteController) const {
+            const ControlDistributor& controlDistributor) const {
         if (stageDep >= SimTK::Stage::Model) {
             convertStatesToSimTKState(
                     stageDep, time, states, model, simtkState, true);
+
             SimTK::Vector& simtkControls =
-                    discreteController.updDiscreteControls(simtkState);
+                    controlDistributor.updControls(simtkState);
             for (int ic = 0; ic < getNumControls(); ++ic) {
-                simtkControls[m_modelControlIndices[ic]] =
-                        *(controls.ptr() + ic);
+                simtkControls[ic] = *(controls.ptr() + ic);
             }
         }
     }
@@ -733,7 +725,7 @@ private:
 
         convertStatesControlsToSimTKState(stageDep, time, states, controls,
                 modelDisabledConstraints, simtkStateDisabledConstraints,
-                mocoProblemRep->getDiscreteControllerDisabledConstraints());
+                mocoProblemRep->getControlDistributorDisabledConstraints());
 
         // If enabled constraints exist in the model, compute constraint forces
         // based on Lagrange multipliers. This also updates the associated
@@ -846,7 +838,6 @@ private:
     bool m_paramsRequireInitSystem = true;
     std::string m_formattedTimeString;
     std::unordered_map<int, int> m_yIndexMap;
-    std::vector<int> m_modelControlIndices;
     std::unique_ptr<FileDeletionThrower> m_fileDeletionThrower;
     // Local memory to hold constraint forces.
     static thread_local SimTK::Vector_<SimTK::SpatialVec>

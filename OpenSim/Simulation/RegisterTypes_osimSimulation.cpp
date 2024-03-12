@@ -32,6 +32,7 @@
 #include "Model/Ground.h"
 #include "Model/OffsetFrame.h"
 #include "Model/PhysicalOffsetFrame.h"
+#include "Model/StationDefinedFrame.h"
 
 #include "Model/AnalysisSet.h"
 #include "Model/ForceSet.h"
@@ -90,6 +91,7 @@
 #include "Control/ControlConstant.h"
 #include "Control/ControlLinear.h"
 #include "Control/PrescribedController.h"
+#include "Control/InputController.h"
 
 #include "Wrap/PathWrap.h"
 #include "Wrap/PathWrapSet.h"
@@ -134,6 +136,7 @@
 #include "TableProcessor.h"
 #include "MarkersReference.h"
 #include "PositionMotion.h"
+#include "Control/InputController.h"
 
 #include <string>
 #include <iostream>
@@ -216,6 +219,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( OpenSim::Body() );
     Object::registerType( OpenSim::Ground());
     Object::registerType( PhysicalOffsetFrame());
+    Object::registerType( StationDefinedFrame());
 
     Object::registerType( WeldJoint());
     Object::registerType( CustomJoint());
@@ -267,6 +271,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::registerType( ControlSetController() );
     Object::registerType( PrescribedController() );
+    Object::registerType( ActuatorInputController() );
 
     Object::registerType( PathActuator() );
     Object::registerType( ProbeSet() );

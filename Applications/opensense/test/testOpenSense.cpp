@@ -75,7 +75,7 @@ int main()
     ik_hjc.set_results_directory("ik_hjc_" + facingNegX.getName());
     ik_hjc.run(false);
 
-    Storage ik_X("ik_hjc_" + facingX.getName() + 
+    Storage ik_X("ik_hjc_" + facingX.getName() +
         "/ik_MT_012005D6_009-quaternions_RHJCSwinger.mot");
 
     Storage ik_negX("ik_hjc_" + facingNegX.getName() +
@@ -83,7 +83,7 @@ int main()
 
     int nc = ik_X.getColumnLabels().size();
 
-    // calibration should only result in errors due to smallish (<10degs) 
+    // calibration should only result in errors due to smallish (<10degs)
     // differences in static pose an should be unaffected by the large
     // (90+ degs) change in heading
     CHECK_STORAGE_AGAINST_STANDARD(ik_X, ik_negX,
@@ -112,7 +112,7 @@ int main()
     pelvisIMUZInGround.set(1, 0);
     pelvisIMUZInGround.normalize();
     SimTK::Real angularDifference = acos(~pelvisXInGround * pelvisIMUZInGround);
-    // Angle less than 30 would be reasonable goal to maintain  
+    // Angle less than 30 would be reasonable goal to maintain
     assert(angularDifference < SimTK::Pi/6);
     std::cout << "Done. All testOpensense cases passed." << endl;
     return 0;

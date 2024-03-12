@@ -291,7 +291,9 @@ void CorrectionController::extendConnectToModel(Model& model)
         addActuator(*actuator);
    }
 
-    setNumControls(getActuatorSet().getSize());
+    // We're only using CoordinateActuators here, so the number of actuators
+    // should always match the number of controls.
+    setNumControls(getNumActuators());
 
     log_info("CorrectionController::extendConnectToModel(): "
              "numActuators = {:d}, kv = {:0.3f}, kp = {:0.3f}",
