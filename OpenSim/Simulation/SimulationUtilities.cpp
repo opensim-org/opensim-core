@@ -308,11 +308,11 @@ std::unordered_map<std::string, int> OpenSim::createSystemYIndexMap(
 std::vector<std::string> OpenSim::createControlNamesFromModel(
         const Model& model, std::vector<int>& modelControlIndices) {
     std::vector<std::string> controlNames;
+
     // Loop through all actuators and create control names. For scalar
     // actuators, use the actuator name for the control name. For non-scalar
     // actuators, use the actuator name with a control index appended for the
     // control name.
-    // TODO update when OpenSim supports named controls.
     int count = 0;
     modelControlIndices.clear();
     for (const auto& actu : model.getComponentList<Actuator>()) {
@@ -336,6 +336,7 @@ std::vector<std::string> OpenSim::createControlNamesFromModel(
 
     return controlNames;
 }
+
 std::vector<std::string> OpenSim::createControlNamesFromModel(
         const Model& model) {
     std::vector<int> modelControlIndices;
@@ -351,7 +352,6 @@ std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
     // absolutely sure that the controls are in the same order as actuators,
     // we can run the following check: in order, set an actuator's control
     // signal(s) to NaN and ensure the i-th control is NaN.
-    // TODO update when OpenSim supports named controls.
     std::unordered_map<std::string, int> controlIndices;
     const SimTK::State state = model.getWorkingState();
     auto modelControls = model.updControls(state);

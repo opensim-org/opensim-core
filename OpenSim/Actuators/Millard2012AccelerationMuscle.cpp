@@ -1054,11 +1054,6 @@ void Millard2012AccelerationMuscle::
     //Compute the stiffness of the tendon
         double dFt_dtl    = calcTendonStiffness(ami);
 
-    //Compute the stiffness of the whole muscle/tendon complex
-        double Ke = 0;
-        if (abs(dFceAT_dlceAT*dFt_dtl)>0)
-            Ke = (dFceAT_dlceAT*dFt_dtl)/(dFceAT_dlceAT+dFt_dtl);
-
     //Populate the output vector
    
         mdi.activation                   = a;
@@ -1077,7 +1072,6 @@ void Millard2012AccelerationMuscle::
         mdi.fiberStiffness               = dFce_dlce;
         mdi.fiberStiffnessAlongTendon    = dFceAT_dlceAT;
         mdi.tendonStiffness              = dFt_dtl;
-        mdi.muscleStiffness              = Ke;
                                          
     //Check that the derivative of system energy less work is zero within
     //a reasonable numerical tolerance. 

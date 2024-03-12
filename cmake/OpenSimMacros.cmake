@@ -656,6 +656,7 @@ macro(OpenSimFindSwigFileDependencies OSIMSWIGDEP_RETURNVAL
             ${OSIMSWIGDEP_INVOCATION}
         OUTPUT_VARIABLE _dependencies_makefile
         RESULT_VARIABLE _successfully_got_dependencies
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             )
     # On Windows, _dependencies_makefile now contains something like this:
     # C:\opensim-core\Bindings\Python\swig\python_simbody_wrap.cxx: \

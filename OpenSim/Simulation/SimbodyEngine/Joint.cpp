@@ -737,15 +737,6 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
 
         // ONLY the base Joint can do this assignment
         mobilized->setMobilizedBodyIndex(mobod.getMobilizedBodyIndex());
-
-        // Note that setting the mobilized body index of a PhysicalOffsetFrame
-        // does not set it on the parent PhysicalFrame. 
-        // Do the check and set it here as well since only the Joint can set the index.
-        const PhysicalOffsetFrame* physOff =
-            dynamic_cast<const PhysicalOffsetFrame*>(mobilized);
-        if (physOff) {
-            physOff->getParentFrame().setMobilizedBodyIndex(mobod.getMobilizedBodyIndex());
-        }
     }
     const int nc = numCoordinates();
     SimTK_ASSERT3(numMobilities <= (nc - startingCoordinateIndex),

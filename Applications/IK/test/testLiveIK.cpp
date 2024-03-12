@@ -34,7 +34,7 @@
 #include <OpenSim/Tools/InverseKinematicsTool.h>
 #include <OpenSim/Tools/IKTaskSet.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <thread> 
+#include <thread>
 
 using namespace OpenSim;
 using namespace std;
@@ -60,7 +60,7 @@ void compareMotionTables(
         int index = -1;
         auto found = std::find(stdLabels.begin(), stdLabels.end(), label);
         if (found != stdLabels.end()) {
-            // skip all pelvis translations pelvis_{tx,ty,tz} 
+            // skip all pelvis translations pelvis_{tx,ty,tz}
             if (found->find("pelvis_tx") == std::string::npos &&
                     found->find("pelvis_ty") == std::string::npos &&
                     found->find("pelvis_tz") == std::string::npos) {
@@ -89,7 +89,7 @@ void compareMotionTables(
 }
 
 void producer(std::shared_ptr<BufferedOrientationsReference> oRef,
-        TimeSeriesTable_<SimTK::Rotation>& dataSource); 
+        TimeSeriesTable_<SimTK::Rotation>& dataSource);
 
 int main() {
 
@@ -140,12 +140,12 @@ int main() {
         model.realizeReport(s0);
         thread thread1(producer, oRefs, std::ref(orientationsData));
         // we can call join to make sure that all data is produced first
-        // then processed in order. 
+        // then processed in order.
         //thread1.join();
         auto lastTime = orientationsData.getIndependentColumn().back();
         ikSolver.setAdvanceTimeFromReference(true);
         while (oRefs->hasNext() && s0.getTime() < lastTime) {
-            ikSolver.track(s0); // This call advances time in s0 
+            ikSolver.track(s0); // This call advances time in s0
             model.realizeReport(s0);
         }
 
@@ -153,9 +153,9 @@ int main() {
         const TimeSeriesTable standard("std_subject01_walk1_ik.mot");
         compareMotionTables(report, standard);
         thread1.detach();
-    } 
-    catch (const std::exception& e) { 
-        cout << e.what() << endl; 
+    }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
     }
 }
 TimeSeriesTable_<SimTK::Rotation> convertMotionFileToRotations(
@@ -206,7 +206,7 @@ TimeSeriesTable_<SimTK::Rotation> convertMotionFileToRotations(
     SimTK::Matrix_<SimTK::Rotation> rotations{ int(nt), nc };
 
     // Apply the read in coordinate values to the model.
-    // Then get the rotation of the Bodies in the model and 
+    // Then get the rotation of the Bodies in the model and
     // store them as Rotations and Euler angles in separate tables.
     for (int i = 0; i < nt; ++i) {
         const auto& values = anglesTable.getRowAtIndex(i);
@@ -274,7 +274,7 @@ void testInverseKinematicsSolverWithOrientations()
     auto timeRange = oRefs.getValidTimeRange();
     cout << "Time range from: " << timeRange[0] << " to " << timeRange[1]
         << "s."<< endl;
-    
+
     s0.updTime() = timeRange[0];
     ikSolver.assemble(s0);
 
@@ -346,7 +346,7 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
 void producer(std::shared_ptr<BufferedOrientationsReference> oRef,
         TimeSeriesTable_<SimTK::Rotation>& dataSource) {
     auto times = dataSource.getIndependentColumn();
-    for (auto t : times) { 
+    for (auto t : times) {
         oRef->putValues(t, dataSource.getNearestRow(t));
     }
 }

@@ -623,9 +623,6 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
             dFmAT_dlceAT= dFmAT_dlce*cosphi;
 
             dFt_dtl = calcDFseDtl(tl, fiso, tendonSlackLen);
-
-            //Compute the stiffness of the whole muscle/tendon complex
-            Ke = (dFmAT_dlceAT*dFt_dtl)/(dFmAT_dlceAT+dFt_dtl);
         }
     
         mdi.activation                   = a;
@@ -641,7 +638,6 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
         mdi.fiberStiffness               = dFm_dlce;
         mdi.fiberStiffnessAlongTendon    = dFmAT_dlceAT;
         mdi.tendonStiffness              = dFt_dtl;
-        mdi.muscleStiffness              = Ke;
                                      
     
 

@@ -63,8 +63,8 @@ int main() {
 
     try{
         testCMCEMGDrivenArm();
-    } catch (const std::exception& e) {  
-        cout << e.what() <<endl; failures.push_back("testCMCEMGDrivenArm_Millard"); 
+    } catch (const std::exception& e) {
+        cout << e.what() <<endl; failures.push_back("testCMCEMGDrivenArm_Millard");
     }
 
     if (!failures.empty()) {

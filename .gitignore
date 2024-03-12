@@ -55,6 +55,7 @@ delete_this_to_stop_optimization*.txt
 .idea/editor.xml
 .idea/codeStyles/codeStyleConfig.xml
 .idea/codeStyles/Project.xml
+.idea/editor.xml
 .idea/copilot/**
 
 # Sensitive or high-churn files:
@@ -77,3 +78,9 @@ cmake-build-*
 
 ## File-based project format:
 *.iws
+
+# clangd
+.cache/clangd/*
+
+# VS Code
+.vscode/*

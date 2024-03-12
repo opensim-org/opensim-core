@@ -358,6 +358,10 @@ MocoSolution MocoTropterSolver::solveImpl() const {
 
     MocoSolution mocoSolution = ocp->convertToMocoSolution(tropSolution);
 
+    // If the model contains any user-added Controllers, append to the solution
+    // the missing controls that were not present in the optimization problem.
+    getProblemRep().appendMissingModelControls(mocoSolution);
+
     // If enforcing model constraints and not minimizing Lagrange
     // multipliers, check the rank of the constraint Jacobian and if
     // rank-deficient, print recommendation to the user to enable Lagrange
@@ -365,43 +369,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     if (getProblemRep().getNumKinematicConstraintEquations() &&
             !get_enforce_constraint_derivatives() &&
             !get_minimize_lagrange_multipliers()) {
-        const auto& model = getProblemRep().getModelBase();
-        const auto& matter = model.getMatterSubsystem();
-        TimeSeriesTable states = mocoSolution.exportToStatesTable();
-        // TODO update when we support multiple phases.
-        auto statesTraj =
-                StatesTrajectory::createFromStatesTable(model, states);
-        SimTK::Matrix G;
-        SimTK::FactorQTZ G_qtz;
-        bool isJacobianFullRank = true;
-        int rank;
-        for (const auto& s : statesTraj) {
-            // Jacobian is at most velocity-dependent.
-            model.realizeVelocity(s);
-            matter.calcG(s, G);
-            G_qtz.factor<double>(G);
-            if (G_qtz.getRank() < G.nrow()) {
-                isJacobianFullRank = false;
-                rank = G_qtz.getRank();
-                break;
-            }
-        }
-
-        if (!isJacobianFullRank) {
-            const std::string dashes(53, '-');
-            log_warn(dashes);
-            log_warn("Rank-deficient constraint Jacobian detected.");
-            log_warn(dashes);
-            log_warn("The model constraint Jacobian has {} row(s) but is only "
-                     "rank {}. ", G.nrow(), rank);
-            log_warn("Try removing redundant constraints from the model or "
-                     "enable");
-            log_warn("minimization of Lagrange multipliers by utilizing the "
-                     "solver ");
-            log_warn("properties 'minimize_lagrange_multipliers' and");
-            log_warn("'lagrange_multiplier_weight'.");
-            log_warn(dashes);
-        }
+        checkConstraintJacobianRank(mocoSolution);
     }
 
     // TODO move this to convert():

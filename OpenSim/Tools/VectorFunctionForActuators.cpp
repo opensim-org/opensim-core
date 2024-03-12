@@ -50,7 +50,7 @@ VectorFunctionForActuators::~VectorFunctionForActuators()
  */
 VectorFunctionForActuators::
 VectorFunctionForActuators(SimTK::System *aActuatorSystem, Model* model, CMCActuatorSubsystem* actSubsystem) :
-    VectorFunctionUncoupledNxN(model->getControllerSet().get("CMC" ).getActuatorSet().getSize() ),
+    VectorFunctionUncoupledNxN(model->getControllerSet().get("CMC" ).getNumActuators() ),
     _f(0.0)
 {
     setNull();
@@ -266,11 +266,11 @@ evaluate(const SimTK::State& s, const double *aX, double *rF)
     ts.initialize(actSysState);
     ts.stepTo(_tf);
 
-    const Set<const Actuator>& forceSet = controller.getActuatorSet();
     // Vector function values
+    const auto& socket = controller.getSocket<Actuator>("actuators");
     int j = 0;
     for(i=0;i<N;i++) {
-        auto act = dynamic_cast<const ScalarActuator*>(&forceSet[i]);
+        auto act = dynamic_cast<const ScalarActuator*>(&socket.getConnectee(i));
         rF[j] = act->getActuation(getCMCActSubsys()->getCompleteState()) - _f[j];
         j++;
     }

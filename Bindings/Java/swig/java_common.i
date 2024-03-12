@@ -176,6 +176,7 @@ using namespace SimTK;
   }
 };
 
+
 %extend OpenSim::Object {
 	static OpenSim::Array<std::string> getFunctionClassNames() {
 		  OpenSim::Array<std::string> availableClassNames;
