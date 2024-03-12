@@ -432,31 +432,13 @@ private:
 
         // Derivative of holonomic constraint errors and non-holonomic
         // constraint errors.
-        //
-        // We add the number of acceleration constraints to the vector 'mu_v' to
-        // match the number of rows in G. There are no slack variables
-        // associated with these extra elements in mu_v, so this is just extra
-        // memory so to get the correct dimensions for the matrix multiplication.
         SimTK::Vector mu_v(
                 getNumHolonomicConstraintEquations() +
-                getNumNonHolonomicConstraintEquations() +
-                getNumAccelerationConstraintEquations(),
+                getNumNonHolonomicConstraintEquations(),
                 slacks.ptr() + getNumHolonomicConstraintEquations(), true);
-        if (getNumAccelerationConstraintEquations()) {
-            // Set the extra elements in mu_v related to the acceleration
-            // constraints to zero, so they do not affect the projections for
-            // the coordinate speeds. This is necessary because 'slacks' will
-            // have fewer elements than 'mu_v' when there are acceleration
-            // constraints.
-            mu_v.updBlock(getNumHolonomicConstraintEquations() +
-                    getNumNonHolonomicConstraintEquations(), 0,
-                    getNumAccelerationConstraintEquations(), 1).setToZero();
-        }
-
         SimTK::Vector proj_v(getNumSpeeds(), projection.ptr() +
                 getNumCoordinates(), true);
-        // TODO replace with matterBase.multiplyByPVATranspose() when available.
-        matterBase.multiplyByGTranspose(simtkStateBase, mu_v, proj_v);
+        matterBase.multiplyByPVTranspose(simtkStateBase, mu_v, proj_v);
 
         m_jar->leave(std::move(mocoProblemRep));
     }
