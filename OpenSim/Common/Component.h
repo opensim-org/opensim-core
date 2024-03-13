@@ -62,6 +62,20 @@ class ModelDisplayHints;
 //==============================================================================
 /// Component Exceptions
 //==============================================================================
+class EmptyComponentPath : public Exception {
+public:
+    EmptyComponentPath(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = componentConcreteClassName;
+        msg += "::" + func + "() called with empty component path.\n";
+        msg += "Please assign a valid path and try again.";
+        addMessage(msg);
+    }
+};
+
 class ComponentHasNoName : public Exception {
 public:
     ComponentHasNoName(const std::string& file,
@@ -106,6 +120,22 @@ public:
         msg += "' of type " + toFindClassName + ". ";
         msg += "Make sure a component exists at this path and that it is of ";
         msg += "the correct type.";
+        addMessage(msg);
+    }
+};
+
+class VariableOwnerNotFoundOnSpecifiedPath : public ComponentNotFound {
+public:
+    VariableOwnerNotFoundOnSpecifiedPath(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& componentConcreteClassName,
+        const std::string& varName,
+        const std::string& ownerPath) :
+        ComponentNotFound(file, line, func) {
+        std::string msg = componentConcreteClassName + "::" + func;
+        msg += "(): No component found at " + ownerPath;
+        msg += " while looking for owner of variable '" + varName + "'.";
         addMessage(msg);
     }
 };
@@ -223,6 +253,20 @@ public:
                    const std::string& func,
                    const Object& obj,
                    const std::string& outputName) :
+        Exception(file, line, func, obj) {
+        std::string msg = "no Output '" + outputName;
+        msg += "' found for this Component.";
+        addMessage(msg);
+    }
+};
+
+class VariableNotFound : public Exception {
+public:
+    VariableNotFound(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const Object& obj,
+        const std::string& outputName) :
         Exception(file, line, func, obj) {
         std::string msg = "no Output '" + outputName;
         msg += "' found for this Component.";
@@ -1523,30 +1567,90 @@ public:
     double getStateVariableDerivativeValue(const SimTK::State& state,
         const std::string& name) const;
 
+
     /**
     * Get the value (assumed to be type double) of a discrete variable
     * allocated by this Component by name.
     *
-    * @param state   the State from which to get the value
-    * @param name    the name of the state variable
-    * @return value  the discrete variable value as a double
+    * @param state   The State from which to get the value.
+    * @param name    The name of the state variable, not its model path.
+    * @return value  The discrete variable value as a double.
     * @throws ComponentHasNoSystem if this Component has not been added to a
-    *         System (i.e., if initSystem has not been called)
+    *         System (i.e., if initSystem has not been called).
     */
     double getDiscreteVariableValue(const SimTK::State& state,
         const std::string& name) const;
 
     /**
+    * Get the value (assumed to be type double) of the discrete variable
+    * by specifying its path in the model hierarchy.
+    *
+    * @param state   The State from which to get the value.
+    * @param path    The path of the discrete variable in the model hierarchy.
+    * @return value  The discrete variable value as a double.
+    * @throws ComponentHasNoSystem if this Component has not been added to a
+    *         System (i.e., if initSystem has not been called).
+    */
+    double getDiscreteVariableValueAtPath(const SimTK::State& state,
+        const ComponentPath& path) const;
+
+    /**
      * %Set the value of a discrete variable allocated by this Component by name.
      *
-     * @param state  the State for which to set the value
-     * @param name   the name of the discrete variable
-     * @param value  the value to set
+     * @param state  The State for which to set the value.
+     * @param name   The name of the discrete variable (not its path).
+     * @param value  The value to set.
      * @throws ComponentHasNoSystem if this Component has not been added to a
-     *         System (i.e., if initSystem has not been called)
+     *         System (i.e., if initSystem has not been called).
      */
     void setDiscreteVariableValue(SimTK::State& state, const std::string& name,
-                                  double value) const;
+        double value) const;
+
+    /**
+    * %Set the value of a discrete variable by specifying its path in the
+    * model hierarchy.
+    *
+    * @param state  The State on which to set the value.
+    * @param path   The path of the discrete variable. If the path only
+    * contains the name of the variable, the calling component is assued to be
+    * the variable's owner.
+    * @param value  The value to set.
+    * @throws ComponentHasNoSystem if this Component has not been added to a
+    *         System (i.e., if initSystem has not been called).
+    */
+    void setDiscreteVariableValueAtPath(SimTK::State& state,
+        const ComponentPath& path, double value) const;
+
+    /**
+    * Based on a specified path, resolve the name of a discrete variable or
+    * modeling option and the component that owns it (i.e., its parent).
+    * 
+    * The name of the variable or option is the last string in the path.
+    * The balance of the path gives the path of the variable's owner.
+    * The following illustrates a possible path structure:
+    * ```
+    *   /grandparent_name/owner_name/variable_name
+    * ```
+    * This method does not verify that the variable can actually be found
+    * at the spcified path. It simply parses the path, splitting off the
+    * variable name and verifying that the potential owner component exists.
+    * 
+    * A need for this method arises because discrete variables and modeling
+    * options are not OpenSim Components. Although the usual traversal
+    * methods can be used to locate an owner, they cannot be used to locate
+    * a variable or option directly.
+    *
+    * @param path Specified path of the variable in the Model heirarchy.
+    * @param varName The name of the discrete variable or modeling option is
+    * returned in this parameter.
+    * @return Pointer to the Component that, according to the path, owns the
+    * discrete variable or modeling option.
+    * @throws EmptyComponentPath if the path is empty.
+    * @throws VariableOwnerNotFoundOnSpecifiedPath if the potential owner
+    * cannot be found on the specified path in the model hierarchy.
+    */
+    const Component* resolveVariableNameAndOwner(
+        const ComponentPath& path, std::string& varName) const;
 
     // F. C. Anderson =========================================================
     // January 2023, May 2023
@@ -1556,17 +1660,6 @@ public:
     // updDiscreteVariableAbstractValue() accept the path of a discrete
     // variable, not just its name.
 
-    /**
-    * Based on a specified path, resolve the name of a variable and the
-    * component that owns it (i.e., its parent).
-    *
-    * @param pathName Specified path of the variable in the Model heirarchy.
-    * @param variableName Returned name of the discrete variable. This string
-    * is simply the last string in the specified pathName.
-    * @return Pointer to the Component that owns the discrete variable.
-    */
-    const Component* resolveVariableNameAndOwner(
-        const std::string& pathName, std::string& dvName) const;
 
     /**
     * Retrieve a read-only reference to the abstract value of the discrete
@@ -1645,7 +1738,7 @@ public:
 
     /**
     * %Set the value of a discrete variable allocated by this Component by
-    * name. This method is a template to account for Discrete Variables that
+    * name. This method is templated to accommodate Discrete Variables that
     * are not type double.
     *
     * @param s      the State for which to set the value
