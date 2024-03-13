@@ -1164,16 +1164,11 @@ getDiscreteVariableValue(const SimTK::State& s, const std::string& name) const
 double
 Component::
 getDiscreteVariableValueByPath(const SimTK::State& s,
-    const ComponentPath& path) const
+    const std::string& path) const
 {
-    // Resolve variable name and owner
-    std::string varName;
-    const Component* owner = resolveVariableNameAndOwner(path, varName);
-
-    // Get the value
     double value = SimTK::NaN;
     value = SimTK::Value<double>::downcast(
-        owner->getDiscreteVariableAbstractValue(s, varName));
+        getDiscreteVariableAbstractValue(s, path));
     return value;
 }
 
@@ -1222,7 +1217,7 @@ setDiscreteVariableValue(SimTK::State& s, const std::string& name,
 void
 Component::
 setDiscreteVariableValueByPath(SimTK::State& state,
-    const ComponentPath& path, double value) const
+    const std::string& path, double value) const
 {
     std::string varName;
     const Component* owner = resolveVariableNameAndOwner(path, varName);

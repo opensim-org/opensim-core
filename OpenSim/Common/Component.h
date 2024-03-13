@@ -1577,6 +1577,7 @@ public:
     * @return value  The discrete variable value as a double.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
+    * @throws 
     */
     double getDiscreteVariableValue(const SimTK::State& state,
         const std::string& name) const;
@@ -1595,7 +1596,7 @@ public:
     * of the variable cannot be found at the specified path.
     */
     double getDiscreteVariableValueByPath(const SimTK::State& state,
-        const ComponentPath& path) const;
+        const std::string& path) const;
 
     /**
      * %Set the value of a discrete variable allocated by this Component by name.
@@ -1625,7 +1626,7 @@ public:
     * of the variable cannot be found at the specified path.
     */
     void setDiscreteVariableValueByPath(SimTK::State& state,
-        const ComponentPath& path, double value) const;
+        const std::string& path, double value) const;
 
     /**
     * Based on a specified path, resolve the name of a discrete variable or
