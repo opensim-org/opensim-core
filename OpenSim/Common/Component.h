@@ -1577,7 +1577,8 @@ public:
     * @return value  The discrete variable value as a double.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
-    * @throws 
+    * @throws VariableNotFound if the specified variable cannot be found in
+    * this Component. 
     */
     double getDiscreteVariableValue(const SimTK::State& state,
         const std::string& name) const;
@@ -1594,18 +1595,23 @@ public:
     * @throws EmptyComponentPath if the path is empty.
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     * of the variable cannot be found at the specified path.
+    * @throws VariableNotFound if the specified variable cannot be found at
+    * the path. 
     */
     double getDiscreteVariableValueByPath(const SimTK::State& state,
         const std::string& path) const;
 
     /**
-     * %Set the value of a discrete variable allocated by this Component by name.
+     * %Set the value of a discrete variable allocated by this Component by
+     * name.
      *
      * @param state  The State for which to set the value.
      * @param name   The name of the discrete variable (not its path).
      * @param value  The value to set.
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called).
+     * @throws VariableNotFound if the specified variable cannot be found in
+     * this Component.
      */
     void setDiscreteVariableValue(SimTK::State& state, const std::string& name,
         double value) const;
@@ -1616,14 +1622,16 @@ public:
     *
     * @param state  The State on which to set the value.
     * @param path   The path of the discrete variable. If the path only
-    * contains the name of the variable, the calling component is assued to be
+    * contains the name of the variable, the calling component is assumed to be
     * the variable's owner.
     * @param value  The value to set.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
-    * @throws EmptyComponentPath if the path is empty.
+    * @throws EmptyComponentPath if the specified path is empty.
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     * of the variable cannot be found at the specified path.
+    * @throws VariableNotFound if the specified variable cannot be found at the
+    * specified path.
     */
     void setDiscreteVariableValueByPath(SimTK::State& state,
         const std::string& path, double value) const;
@@ -1695,15 +1703,18 @@ public:
     * ```
     *
     * @param state State from which to get the value.
-    * @param pathName Specified path of the variable in the Model heirarchy.
+    * @param path Specified path of the variable in the Model heirarchy.
     * @return Value of the discrete variable as a reference to an
     * AbstractValue.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
-    * @throws Exception if the discrete variable is not found.
+    * @throws EmptyComponentPath if the path is empty.
+    * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    * @throws VariableNotFound if the specified variable cannot be found at
+    * the specified path. 
     */
     const SimTK::AbstractValue& getDiscreteVariableAbstractValue(
-        const SimTK::State& state, const std::string& pathName) const;
+        const SimTK::State& state, const std::string& path) const;
 
     /**
     * Retrieve a writable reference to the abstract value of the discrete
