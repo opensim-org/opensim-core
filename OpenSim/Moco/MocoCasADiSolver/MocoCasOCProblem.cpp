@@ -82,7 +82,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     const auto& implicitRefs = problemRep.getImplicitComponentReferencePtrs();
     std::vector<std::string> derivativeNames;
     derivativeNames.reserve(implicitRefs.size());
-for (const auto& implicitRef : implicitRefs) {
+    for (const auto& implicitRef : implicitRefs) {
         derivativeNames.push_back(implicitRef.second->getAbsolutePathString() +
                                   "/" + implicitRef.first);
     }

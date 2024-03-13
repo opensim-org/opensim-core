@@ -1260,56 +1260,108 @@ void Transcription::printConstraintValues(const Iterate& it,
 
     // Kinematic constraints.
     // ----------------------
-//    ss << "\nKinematic constraints:";
-//    std::vector<std::string> kinconNames =
-//            m_problem.createKinematicConstraintEquationNames();
-//    if (kinconNames.empty()) {
-//        ss << " none" << std::endl;
-//    } else {
-//        maxNameLength = 0;
-//        updateMaxNameLength(kinconNames);
-//        ss << "\n  L2 norm across mesh, max abs value (L1 norm), time of "
-//                  "max "
-//                  "abs"
-//               << std::endl;
-//        row.resize(1, m_numMeshPoints);
-//        {
-//            for (int ikc = 0; ikc < (int)constraints.kinematic.rows(); ++ikc) {
-//                row = constraints.kinematic(ikc, Slice());
-//                const double L2 = casadi::DM::norm_2(row).scalar();
-//                int argmax;
-//                double max = calcL1Norm(row, argmax);
-//                const double L1 = max;
-//                const double time_of_max = it.times(argmax).scalar();
-//
-//                std::string label = kinconNames.at(ikc);
-//                ss << std::setfill('0') << std::setw(2) << ikc << ":"
-//                       << std::setfill(' ') << std::setw(maxNameLength) << label
-//                       << spacer << std::setprecision(2) << std::scientific
-//                       << std::setw(9) << L2 << spacer << L1 << spacer
-//                       << std::setprecision(6) << std::fixed << time_of_max
-//                       << std::endl;
-//            }
-//        }
-//        ss << "Kinematic constraint values at each mesh point:"
-//               << std::endl;
-//        ss << "      time  ";
-//        for (int ipc = 0; ipc < (int)kinconNames.size(); ++ipc) {
-//            ss << std::setw(9) << ipc << "  ";
-//        }
-//        ss << std::endl;
-//        for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
-//            ss << std::setfill('0') << std::setw(3) << imesh << "  ";
-//            ss.fill(' ');
-//            ss << std::setw(9) << it.times(imesh).scalar() << "  ";
-//            for (int ikc = 0; ikc < (int)kinconNames.size(); ++ikc) {
-//                const auto& value = constraints.kinematic(ikc, imesh).scalar();
-//                ss << std::setprecision(2) << std::scientific
-//                       << std::setw(9) << value << "  ";
-//            }
-//            ss << std::endl;
-//        }
-//    }
+    ss << "\nKinematic constraints:";
+    std::vector<std::string> kinconNames =
+            m_problem.createKinematicConstraintEquationNames();
+    int numQErr = m_problem.getNumQErr();
+    int numUErr = m_problem.getNumUErr();
+    int numUDotErr = m_problem.getNumUDotErr();
+    if (kinconNames.empty()) {
+        ss << " none" << std::endl;
+    } else {
+        maxNameLength = 0;
+        updateMaxNameLength(kinconNames);
+        ss << "\n  L2 norm across mesh, max abs value (L1 norm), time of "
+                    "max "
+                    "abs"
+                << std::endl;
+        row.resize(1, m_numMeshPoints);
+        {
+            int ikc = 0;
+            for (int iq = 0; iq < numQErr; ++iq) {
+                row = constraints.kinematic_qerr(iq, Slice());
+                const double L2 = casadi::DM::norm_2(row).scalar();
+                int argmax;
+                double max = calcL1Norm(row, argmax);
+                const double L1 = max;
+                const double time_of_max = it.times(argmax).scalar();
+
+                std::string label = kinconNames.at(ikc);
+                ss << std::setfill('0') << std::setw(2) << ikc << ":"
+                   << std::setfill(' ') << std::setw(maxNameLength) << label
+                   << spacer << std::setprecision(2) << std::scientific
+                   << std::setw(9) << L2 << spacer << L1 << spacer
+                   << std::setprecision(6) << std::fixed << time_of_max
+                   << std::endl;
+                ++ikc;
+            }
+            for (int iu = 0; iu < numUErr; ++iu) {
+                row = constraints.kinematic_uerr(iu, Slice());
+                const double L2 = casadi::DM::norm_2(row).scalar();
+                int argmax;
+                double max = calcL1Norm(row, argmax);
+                const double L1 = max;
+                const double time_of_max = it.times(argmax).scalar();
+
+                std::string label = kinconNames.at(ikc);
+                ss << std::setfill('0') << std::setw(2) << ikc << ":"
+                   << std::setfill(' ') << std::setw(maxNameLength) << label
+                   << spacer << std::setprecision(2) << std::scientific
+                   << std::setw(9) << L2 << spacer << L1 << spacer
+                   << std::setprecision(6) << std::fixed << time_of_max
+                   << std::endl;
+                ++ikc;
+            }
+            for (int iudot = 0; iudot < numUDotErr; ++iudot) {
+                row = constraints.kinematic_udoterr(iudot, Slice());
+                const double L2 = casadi::DM::norm_2(row).scalar();
+                int argmax;
+                double max = calcL1Norm(row, argmax);
+                const double L1 = max;
+                const double time_of_max = it.times(argmax).scalar();
+
+                std::string label = kinconNames.at(ikc);
+                ss << std::setfill('0') << std::setw(2) << ikc << ":"
+                   << std::setfill(' ') << std::setw(maxNameLength) << label
+                   << spacer << std::setprecision(2) << std::scientific
+                   << std::setw(9) << L2 << spacer << L1 << spacer
+                   << std::setprecision(6) << std::fixed << time_of_max
+                   << std::endl;
+                ++ikc;
+            }
+        }
+        ss << "Kinematic constraint values at each mesh point:"
+                << std::endl;
+        ss << "      time  ";
+        for (int ipc = 0; ipc < (int)kinconNames.size(); ++ipc) {
+            ss << std::setw(9) << ipc << "  ";
+        }
+        ss << std::endl;
+        for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
+            ss << std::setfill('0') << std::setw(3) << imesh << "  ";
+            ss.fill(' ');
+            ss << std::setw(9) << it.times(imesh).scalar() << "  ";
+            for (int iq = 0; iq < numQErr; ++iq) {
+                const auto& value = 
+                        constraints.kinematic_qerr(iq, imesh).scalar();
+                ss << std::setprecision(2) << std::scientific
+                   << std::setw(9) << value << "  ";
+            }
+            for (int iu = 0; iu < numUErr; ++iu) {
+                const auto& value = 
+                        constraints.kinematic_uerr(iu, imesh).scalar();
+                ss << std::setprecision(2) << std::scientific
+                   << std::setw(9) << value << "  ";
+            }
+            for (int iudot = 0; iudot < numUDotErr; ++iudot) {
+                const auto& value = 
+                        constraints.kinematic_udoterr(iudot, imesh).scalar();
+                ss << std::setprecision(2) << std::scientific
+                   << std::setw(9) << value << "  ";
+            }
+            ss << std::endl;
+        }
+    }
 
     // Path constraints.
     // -----------------

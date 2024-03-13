@@ -22,7 +22,6 @@
 #include "CasOCFunction.h"
 #include <casadi/casadi.hpp>
 #include <string>
-#include <unordered_map>
 
 namespace OpenSim {
 class MocoCasADiSolver;
