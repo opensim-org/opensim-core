@@ -67,10 +67,10 @@ public:
     EmptyComponentPath(const std::string& file,
         size_t line,
         const std::string& func,
-        const std::string& componentConcreteClassName) :
+        const std::string& componentName) :
         Exception(file, line, func) {
-        std::string msg = componentConcreteClassName;
-        msg += "::" + func + "() called with empty component path.\n";
+        std::string msg = componentName;
+        msg += "." + func + "() called with empty component path.\n";
         msg += "Please assign a valid path and try again.";
         addMessage(msg);
     }
@@ -129,13 +129,13 @@ public:
     VariableOwnerNotFoundOnSpecifiedPath(const std::string& file,
         size_t line,
         const std::string& func,
-        const std::string& componentConcreteClassName,
+        const std::string& componentName,
         const std::string& varName,
         const std::string& ownerPath) :
         ComponentNotFound(file, line, func) {
-        std::string msg = componentConcreteClassName + "::" + func;
-        msg += "(): No component found at " + ownerPath;
-        msg += " while looking for owner of variable '" + varName + "'.";
+        std::string msg = componentName + "." + func;
+        msg += "(): No component found at path = '" + ownerPath;
+        msg += "' while searching for owner of variable = '" + varName + "'.";
         addMessage(msg);
     }
 };
@@ -1590,8 +1590,11 @@ public:
     * @return value  The discrete variable value as a double.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
+    * @throws EmptyComponentPath if the path is empty.
+    * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    * of the variable cannot be found at the specified path.
     */
-    double getDiscreteVariableValueAtPath(const SimTK::State& state,
+    double getDiscreteVariableValueByPath(const SimTK::State& state,
         const ComponentPath& path) const;
 
     /**
@@ -1617,8 +1620,11 @@ public:
     * @param value  The value to set.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
+    * @throws EmptyComponentPath if the path is empty.
+    * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    * of the variable cannot be found at the specified path.
     */
-    void setDiscreteVariableValueAtPath(SimTK::State& state,
+    void setDiscreteVariableValueByPath(SimTK::State& state,
         const ComponentPath& path, double value) const;
 
     /**
@@ -1627,13 +1633,13 @@ public:
     * 
     * The name of the variable or option is the last string in the path.
     * The balance of the path gives the path of the variable's owner.
-    * The following illustrates a possible path structure:
+    * The following illustrates a typical path structure:
     * ```
     *   /grandparent_name/owner_name/variable_name
     * ```
     * This method does not verify that the variable can actually be found
     * at the spcified path. It simply parses the path, splitting off the
-    * variable name and verifying that the potential owner component exists.
+    * variable name and verifying that the candidate owner exists.
     * 
     * A need for this method arises because discrete variables and modeling
     * options are not OpenSim Components. Although the usual traversal
@@ -1646,8 +1652,8 @@ public:
     * @return Pointer to the Component that, according to the path, owns the
     * discrete variable or modeling option.
     * @throws EmptyComponentPath if the path is empty.
-    * @throws VariableOwnerNotFoundOnSpecifiedPath if the potential owner
-    * cannot be found on the specified path in the model hierarchy.
+    * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    * of the variable cannot be found at the specified path.
     */
     const Component* resolveVariableNameAndOwner(
         const ComponentPath& path, std::string& varName) const;

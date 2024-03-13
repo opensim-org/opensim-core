@@ -1497,6 +1497,17 @@ TEST_CASE("Component Interface getStateVariableValue with Component Path")
 
 TEST_CASE("Component Interface Component::getDiscreteVariableValue")
 {
+    // ------------------------------------------------------------------------
+    // This test case exercises the following Component methods:
+    //     getDiscreteVariableNames()
+    //     setDiscreteVariableValueByPath(), which calls
+    //         resolveVariableNameAndOwner()
+    //         setDiscreteVariableValue()
+    //     getDiscreteVariableValueByPath(), which calls
+    //         resolveVariableNameAndOwner()
+    //         getDiscreteVariableValue()
+    // ------------------------------------------------------------------------
+
     TheWorld top;
     top.setName("top");
     Sub* a = new Sub();
@@ -1522,46 +1533,48 @@ TEST_CASE("Component Interface Component::getDiscreteVariableValue")
     // Discrete variables are not Components, so specialized
     // traversal methods need to be used.
     // See Component::resolveVariableNameAndOwner().
-    try {
-        // Set
-        top.setDiscreteVariableValueAtPath(s, dvPaths[0], 0.0);
-        top.setDiscreteVariableValueAtPath(s, dvPaths[1], 10.0);
-        top.setDiscreteVariableValueAtPath(s, dvPaths[2], 20.0);
+    // Set
+    top.setDiscreteVariableValueByPath(s, dvPaths[0], 0.0);
+    top.setDiscreteVariableValueByPath(s, dvPaths[1], 10.0);
+    top.setDiscreteVariableValueByPath(s, dvPaths[2], 20.0);
 
-        // Get
-        // Use absolute path
-        // top
-        SimTK_TEST(top.getDiscreteVariableValueAtPath(s,
-            ComponentPath("/internalSub/discVarX")) == 0.0);
-        SimTK_TEST(top.getDiscreteVariableValueAtPath(s,
-            ComponentPath("/a/discVarX")) == 10.0);
-        SimTK_TEST(top.getDiscreteVariableValueAtPath(s,
-            ComponentPath("/a/b/discVarX")) == 20.0);
-        // a
-        SimTK_TEST(a->getDiscreteVariableValueAtPath(s,
-            ComponentPath("/internalSub/discVarX")) == 0.0);
-        SimTK_TEST(a->getDiscreteVariableValueAtPath(s,
-            ComponentPath("/a/discVarX")) == 10.0);
-        SimTK_TEST(a->getDiscreteVariableValueAtPath(s,
-            ComponentPath("/a/b/discVarX")) == 20.0);
-        // Use relative paths
-        // down from a
-        SimTK_TEST(a->getDiscreteVariableValueAtPath(s,
-            ComponentPath("discVarX")) == 10.0);
-        SimTK_TEST(a->getDiscreteVariableValueAtPath(s,
-            ComponentPath("b/discVarX")) == 20.0);
-        // down from b
-        SimTK_TEST(b->getDiscreteVariableValueAtPath(s,
-            ComponentPath("discVarX")) == 20.0);
-        // up from b
-        SimTK_TEST(b->getDiscreteVariableValueAtPath(s,
-            ComponentPath("../discVarX")) == 10.0);
-        SimTK_TEST(b->getDiscreteVariableValueAtPath(s,
-            ComponentPath("../../internalSub/discVarX")) == 0.0);
-    }
-    catch (const OpenSim::Exception& x) {
-        x.print(cout);
-    }
+    // Get
+    // ----- With an absolute path, the caller doesn't matter.
+    // caller is top
+    SimTK_TEST(top.getDiscreteVariableValueByPath(s,
+        ComponentPath("/internalSub/discVarX")) == 0.0);
+    SimTK_TEST(top.getDiscreteVariableValueByPath(s,
+        ComponentPath("/a/discVarX")) == 10.0);
+    SimTK_TEST(top.getDiscreteVariableValueByPath(s,
+        ComponentPath("/a/b/discVarX")) == 20.0);
+    // caller is a
+    SimTK_TEST(a->getDiscreteVariableValueByPath(s,
+        ComponentPath("/internalSub/discVarX")) == 0.0);
+    SimTK_TEST(a->getDiscreteVariableValueByPath(s,
+        ComponentPath("/a/discVarX")) == 10.0);
+    SimTK_TEST(a->getDiscreteVariableValueByPath(s,
+        ComponentPath("/a/b/discVarX")) == 20.0);
+    // caller is b
+    SimTK_TEST(b->getDiscreteVariableValueByPath(s,
+        ComponentPath("/internalSub/discVarX")) == 0.0);
+    SimTK_TEST(b->getDiscreteVariableValueByPath(s,
+        ComponentPath("/a/discVarX")) == 10.0);
+    SimTK_TEST(b->getDiscreteVariableValueByPath(s,
+        ComponentPath("/a/b/discVarX")) == 20.0);
+    // ----- With relative paths, the caller matters.
+    // down from a
+    SimTK_TEST(a->getDiscreteVariableValueByPath(s,
+        ComponentPath("discVarX")) == 10.0);
+    SimTK_TEST(a->getDiscreteVariableValueByPath(s,
+        ComponentPath("b/discVarX")) == 20.0);
+    // down from b
+    SimTK_TEST(b->getDiscreteVariableValueByPath(s,
+        ComponentPath("discVarX")) == 20.0);
+    // up from b
+    SimTK_TEST(b->getDiscreteVariableValueByPath(s,
+        ComponentPath("../discVarX")) == 10.0);
+    SimTK_TEST(b->getDiscreteVariableValueByPath(s,
+        ComponentPath("../../internalSub/discVarX")) == 0.0);
 }
 
 

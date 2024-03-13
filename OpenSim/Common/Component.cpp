@@ -1163,7 +1163,7 @@ getDiscreteVariableValue(const SimTK::State& s, const std::string& name) const
 // resolveVariableNameAndOwner() internally.
 double
 Component::
-getDiscreteVariableValueAtPath(const SimTK::State& s,
+getDiscreteVariableValueByPath(const SimTK::State& s,
     const ComponentPath& path) const
 {
     // Resolve variable name and owner
@@ -1226,7 +1226,7 @@ setDiscreteVariableValue(SimTK::State& s, const std::string& name,
 // resolveVariableNameAndOwner() internally.
 void
 Component::
-setDiscreteVariableValueAtPath(SimTK::State& state,
+setDiscreteVariableValueByPath(SimTK::State& state,
     const ComponentPath& path, double value) const
 {
     std::string varName;
@@ -1242,7 +1242,7 @@ Component::
 resolveVariableNameAndOwner(const ComponentPath& path,
     std::string& variableName) const
 {
-    if(path.empty()) OPENSIM_THROW(EmptyComponentPath, getConcreteClassName());
+    if(path.empty()) OPENSIM_THROW(EmptyComponentPath, getName());
     size_t nLevels = path.getNumPathLevels();
     variableName = path.getSubcomponentNameAtLevel(nLevels - 1);
     const Component* owner = this;
@@ -1251,7 +1251,7 @@ resolveVariableNameAndOwner(const ComponentPath& path,
         const ComponentPath& ownerPath = path.getParentPath();
         owner = traversePathToComponent<Component>(ownerPath);
         if (owner == nullptr) {
-            OPENSIM_THROW(VariableOwnerNotFoundOnSpecifiedPath, getConcreteClassName(),
+            OPENSIM_THROW(VariableOwnerNotFoundOnSpecifiedPath, getName(),
                 variableName, ownerPath.toString());
         }
     }
