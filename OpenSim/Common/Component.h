@@ -140,6 +140,20 @@ public:
     }
 };
 
+class VariableNotFound : public Exception {
+public:
+    VariableNotFound(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& componentName,
+        const std::string& varName) :
+        Exception(file, line, func) {
+        std::string msg = componentName + "." + func;
+        msg += "(): Variable '" + varName + "' not found.";
+        addMessage(msg);
+    }
+};
+
 class ComponentIsAnOrphan : public Exception {
 public:
     ComponentIsAnOrphan(const std::string& file,
@@ -253,20 +267,6 @@ public:
                    const std::string& func,
                    const Object& obj,
                    const std::string& outputName) :
-        Exception(file, line, func, obj) {
-        std::string msg = "no Output '" + outputName;
-        msg += "' found for this Component.";
-        addMessage(msg);
-    }
-};
-
-class VariableNotFound : public Exception {
-public:
-    VariableNotFound(const std::string& file,
-        size_t line,
-        const std::string& func,
-        const Object& obj,
-        const std::string& outputName) :
         Exception(file, line, func, obj) {
         std::string msg = "no Output '" + outputName;
         msg += "' found for this Component.";

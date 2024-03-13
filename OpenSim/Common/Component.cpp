@@ -1211,12 +1211,7 @@ setDiscreteVariableValue(SimTK::State& s, const std::string& name,
             subsystem->updDiscreteVariable(s, dvIndex)).upd() = value;
 
     } else {
-        std::stringstream msg;
-        msg << "Component::setDiscreteVariable: ERR- name '" << name
-            << "' not found.\n "
-            << "for component '"<< getName() << "' of type "
-            << getConcreteClassName();
-        throw Exception(msg.str(),__FILE__,__LINE__);
+        OPENSIM_THROW(VariableNotFound, getName(), name);
     }
 }
 
@@ -1299,12 +1294,7 @@ getDiscreteVariableAbstractValue(const SimTK::State& s,
         return subsystem->getDiscreteVariable(s, dvIndex);
 
     } else {
-        std::stringstream msg;
-        msg << "Component::getDiscreteVariable: ERR- name '" << pathName
-            << "' not found.\n "
-            << "for component '" << getName() << "' of type "
-            << getConcreteClassName();
-        throw Exception(msg.str(), __FILE__, __LINE__);
+        OPENSIM_THROW(VariableNotFound, getName(), dvName);
     }
 }
 
@@ -1348,12 +1338,7 @@ updDiscreteVariableAbstractValue(SimTK::State& s,
         return subsystem->updDiscreteVariable(s, dvIndex);
 
     } else {
-        std::stringstream msg;
-        msg << "Component::updDiscreteVariable: ERR- name '" << pathName
-            << "' not found.\n "
-            << "for component '" << getName() << "' of type "
-            << getConcreteClassName();
-        throw Exception(msg.str(), __FILE__, __LINE__);
+        OPENSIM_THROW(VariableNotFound, getName(), dvName);
     }
 }
 
