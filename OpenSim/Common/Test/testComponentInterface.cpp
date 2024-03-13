@@ -98,6 +98,7 @@ private:
     void extendAddToSystem(MultibodySystem &system) const override {
         Super::extendAddToSystem(system);
         addStateVariable("subState", Stage::Dynamics);
+        addDiscreteVariable("discVarX", Stage::Dynamics);
     }
     void computeStateVariableDerivatives(const SimTK::State& s) const override {
         double deriv = exp(-2.0*s.getTime());
@@ -380,6 +381,13 @@ protected:
         // variables do not have a corresponding Output.
         bool hidden = true;
         addStateVariable("hiddenStateVar", SimTK::Stage::Dynamics, hidden);
+
+        // For testing the Component interface related to discrete variables
+        // that are not type double. Add a discrete variable (DV) of type Vec3.
+        // This will require calling Simbody methods directly, as there are no
+        // convenience methods in OpenSim for creating a DV of type Vec3.
+        addDiscreteVariable("stiffness", SimTK::Stage::Dynamics);
+
     }
 
     void computeStateVariableDerivatives(const SimTK::State& state) const override {
@@ -1485,6 +1493,77 @@ TEST_CASE("Component Interface getStateVariableValue with Component Path")
             top.getStateVariableValue(s, CP{"typo/b/subState"}),
             OpenSim::Exception);
 }
+
+
+TEST_CASE("Component Interface Component::getDiscreteVariableValue")
+{
+    TheWorld top;
+    top.setName("top");
+    Sub* a = new Sub();
+    a->setName("a");
+    Sub* b = new Sub();
+    b->setName("b");
+
+    top.add(a);
+    a->addComponent(b);
+
+    MultibodySystem system;
+    top.buildUpSystem(system);
+    State s = system.realizeTopology();
+
+    // Get the paths of all discrete variables under "top"
+    Array<std::string>& dvPaths = top.getDiscreteVariableNames();
+    SimTK_TEST(dvPaths.size() == 3);
+    SimTK_TEST(dvPaths[0] == "/internalSub/discVarX");
+    SimTK_TEST(dvPaths[1] == "/a/discVarX");
+    SimTK_TEST(dvPaths[2] == "/a/b/discVarX");
+
+    // Set a value for each discrete variable by path.
+    // Discrete variables are not Components, so specialized
+    // traversal methods need to be used.
+    // See Component::resolveVariableNameAndOwner().
+    try {
+        // Set
+        top.setDiscreteVariableValueAtPath(s, dvPaths[0], 0.0);
+        top.setDiscreteVariableValueAtPath(s, dvPaths[1], 10.0);
+        top.setDiscreteVariableValueAtPath(s, dvPaths[2], 20.0);
+
+        // Get
+        // Use absolute path
+        // top
+        SimTK_TEST(top.getDiscreteVariableValueAtPath(s,
+            ComponentPath("/internalSub/discVarX")) == 0.0);
+        SimTK_TEST(top.getDiscreteVariableValueAtPath(s,
+            ComponentPath("/a/discVarX")) == 10.0);
+        SimTK_TEST(top.getDiscreteVariableValueAtPath(s,
+            ComponentPath("/a/b/discVarX")) == 20.0);
+        // a
+        SimTK_TEST(a->getDiscreteVariableValueAtPath(s,
+            ComponentPath("/internalSub/discVarX")) == 0.0);
+        SimTK_TEST(a->getDiscreteVariableValueAtPath(s,
+            ComponentPath("/a/discVarX")) == 10.0);
+        SimTK_TEST(a->getDiscreteVariableValueAtPath(s,
+            ComponentPath("/a/b/discVarX")) == 20.0);
+        // Use relative paths
+        // down from a
+        SimTK_TEST(a->getDiscreteVariableValueAtPath(s,
+            ComponentPath("discVarX")) == 10.0);
+        SimTK_TEST(a->getDiscreteVariableValueAtPath(s,
+            ComponentPath("b/discVarX")) == 20.0);
+        // down from b
+        SimTK_TEST(b->getDiscreteVariableValueAtPath(s,
+            ComponentPath("discVarX")) == 20.0);
+        // up from b
+        SimTK_TEST(b->getDiscreteVariableValueAtPath(s,
+            ComponentPath("../discVarX")) == 10.0);
+        SimTK_TEST(b->getDiscreteVariableValueAtPath(s,
+            ComponentPath("../../internalSub/discVarX")) == 0.0);
+    }
+    catch (const OpenSim::Exception& x) {
+        x.print(cout);
+    }
+}
+
 
 TEST_CASE("Component Interface Input/Output Connections")
 {
