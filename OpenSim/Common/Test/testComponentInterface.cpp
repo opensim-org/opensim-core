@@ -1495,10 +1495,131 @@ TEST_CASE("Component Interface getStateVariableValue with Component Path")
 }
 
 
+TEST_CASE("Component Interface Component::resolveVariableNameAndOwner")
+{
+    // ------------------------------------------------------------------------
+    // This test case exercises resolveVariableNameAndOwner() to show that
+    // it functions properly and to verify that it throws exceptions
+    // appropriately.
+    // ------------------------------------------------------------------------
+
+    TheWorld top;
+    top.setName("top");
+    Sub* a = new Sub();
+    a->setName("a");
+    Sub* b = new Sub();
+    b->setName("b");
+
+    top.add(a);
+    a->addComponent(b);
+
+    MultibodySystem system;
+    top.buildUpSystem(system);
+    State s = system.realizeTopology();
+
+    const Component& internSub = top.getComponent("/internalSub");
+
+    // Get the paths of all discrete variables under "top"
+    Array<std::string>& dvPaths = top.getDiscreteVariableNames();
+    REQUIRE(dvPaths.size() == 3);
+    REQUIRE(dvPaths[0] == "/internalSub/discVarX");
+    REQUIRE(dvPaths[1] == "/a/discVarX");
+    REQUIRE(dvPaths[2] == "/a/b/discVarX");
+
+    // Verify correct execution
+    std::string varNameCorrect("discVarX");
+    std::string varName;
+    const Component* owner;
+    // ----- With an absolute path, the caller doesn't matter.
+    // caller is top
+    owner = top.resolveVariableNameAndOwner(
+        ComponentPath("/internalSub/discVarX"), varName);
+    CHECK(varName == varNameCorrect);
+    CHECK(owner == &internSub);
+    owner = top.resolveVariableNameAndOwner(
+        ComponentPath("/a/discVarX"), varName);
+    CHECK(varName == varNameCorrect);
+    CHECK(owner == a);
+    owner = top.resolveVariableNameAndOwner(
+        ComponentPath("/a/b/discVarX"), varName);
+    CHECK(varName == varNameCorrect);
+    CHECK(owner == b);
+    // caller is a
+    owner = a->resolveVariableNameAndOwner(
+        ComponentPath("/internalSub/discVarX"), varName);
+    CHECK(varName == varNameCorrect);
+    CHECK(owner == &internSub);
+    owner = a->resolveVariableNameAndOwner(
+        ComponentPath("/a/discVarX"), varName);
+    CHECK(varName == varNameCorrect);
+    CHECK(owner == a);
+    owner = a->resolveVariableNameAndOwner(
+        ComponentPath("/a/b/discVarX"), varName);
+    CHECK(varName == varNameCorrect);
+    CHECK(owner == b);
+    // caller is b
+    owner = b->resolveVariableNameAndOwner(
+        ComponentPath("/internalSub/discVarX"), varName);
+    CHECK(varName == varNameCorrect);
+    CHECK(owner == &internSub);
+    owner = b->resolveVariableNameAndOwner(
+        ComponentPath("/a/discVarX"), varName);
+    CHECK(varName == varNameCorrect);
+    CHECK(owner == a);
+    owner = b->resolveVariableNameAndOwner(
+        ComponentPath("/a/b/discVarX"), varName);
+    CHECK(varName == varNameCorrect);
+    CHECK(owner == b);
+    // ----- With relative paths, the caller matters.
+    // down from a
+    owner = a->resolveVariableNameAndOwner(
+        ComponentPath("discVarX"), varName);
+    CHECK(varName == varNameCorrect);
+    CHECK(owner == a);
+    owner = a->resolveVariableNameAndOwner(
+        ComponentPath("b/discVarX"), varName);
+    CHECK(varName == varNameCorrect);
+    CHECK(owner == b);
+    // down from b
+    owner = b->resolveVariableNameAndOwner(
+        ComponentPath("discVarX"), varName);
+    CHECK(varName == varNameCorrect);
+    CHECK(owner == b);
+    // up from b
+    owner = b->resolveVariableNameAndOwner(
+        ComponentPath("../discVarX"), varName);
+    CHECK(varName == varNameCorrect);
+    CHECK(owner == a);
+    owner = b->resolveVariableNameAndOwner(
+        ComponentPath("../../internalSub/discVarX"), varName);
+    CHECK(varName == varNameCorrect);
+    CHECK(owner == &internSub);
+
+    // Verify that exceptions are thrown appropriately
+    CHECK_THROWS_AS(
+        owner = top.resolveVariableNameAndOwner(ComponentPath(""), varName),
+        EmptyComponentPath);
+    CHECK_THROWS_AS(
+        owner = top.resolveVariableNameAndOwner(
+            ComponentPath("/typoSub/discVarX"), varName),
+        VariableOwnerNotFoundOnSpecifiedPath);
+    owner = a->resolveVariableNameAndOwner(
+        ComponentPath("discVarTypo"), varName);
+    CHECK_THROWS_AS(
+        owner->setDiscreteVariableValue(s, varName, 3.1415),
+        VariableNotFound);
+    double value;
+    CHECK_THROWS_AS(
+        value = owner->getDiscreteVariableValue(s, varName),
+        VariableNotFound);
+}
+
+
 TEST_CASE("Component Interface Component::getDiscreteVariableValue")
 {
     // ------------------------------------------------------------------------
-    // This test case exercises the following Component methods:
+    // This test case exercises the following Component methods in the manner
+    // they are intended to be used (i.e., no exceptions should be thrown):
     //     getDiscreteVariableNames()
     //     setDiscreteVariableValueByPath(), which calls
     //         resolveVariableNameAndOwner()
