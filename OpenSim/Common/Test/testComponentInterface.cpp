@@ -392,16 +392,33 @@ protected:
         // is allocated in class Bar's override of extendRealizeTopology().
         // See below.
         addDiscreteVariable("refPoint", Stage::Position, false);
-
     }
 
-    // Register manually allocated discrete variables.
+    // Manually allocate and update the index and subsystem for any
+    // non-double discrete variables
     void extendRealizeTopology(SimTK::State& state) const override {
         Super::extendRealizeTopology(state);
-        const SimTK::SimbodyMatterSubsystem& matter =
-            getSystem().getMatterSubsystem();
-        matter.
 
+        // Starting value of the reference point.
+        Vec3 point(0.01);
+
+        // Manually allocate from the GeneralForceSybsystem, the same
+        // subsystem in which the LinearSpring resides.
+        // If the discrete variables were of a native Simbody object,
+        // the manual allocation done here would have already been done
+        // in Simbody and would not be needed.
+        GeneralForceSubsystem& fsub = world->updForceSubsystem();
+        SimTK::DiscreteVariableIndex index =
+            fsub.allocateDiscreteVariable(state, Stage::Dynamics,
+                new Value<Vec3>(point));
+
+        // Update the discrete variable index and subsystem.
+        // This is needed because the allocation was not done in
+        // addDiscreteVariable() and was not from the default subsystem.
+        // ?? Using a pointer to a generic Subsystem -may- be necessary.
+        // If this works I'll try to simplify and see if it still works.
+        SimTK::Subsystem *sub = &fsub;
+        updDiscreteVariableIndex("refPoint", index, sub);
     }
 
     void computeStateVariableDerivatives(const SimTK::State& state) const override {
