@@ -587,7 +587,7 @@ void Component::addStateVariable(Component::StateVariable*  stateVariable) const
 // addDiscreteVariable(). This was done to prevent double allocation of a
 // discrete variable that is allocated outside of class Component. Such an
 // allocation can occur when a native Simbody class, wrapped as an OpenSim
-// Component, allocates its own discrete variables.
+// Component, allocates its own discrete variables externally.
 //
 // When 'allocate' is true (default), the discrete state is allocated normally
 // in Component::extendRealizeTopology().

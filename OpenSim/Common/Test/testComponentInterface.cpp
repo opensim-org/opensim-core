@@ -382,11 +382,25 @@ protected:
         bool hidden = true;
         addStateVariable("hiddenStateVar", SimTK::Stage::Dynamics, hidden);
 
-        // For testing the Component interface related to discrete variables
-        // that are not type double. Add a discrete variable (DV) of type Vec3.
-        // This will require calling Simbody methods directly, as there are no
-        // convenience methods in OpenSim for creating a DV of type Vec3.
-        addDiscreteVariable("stiffness", SimTK::Stage::Dynamics);
+        // Add a discrete variable (dv) of type Vec3 as though it were
+        // allocated natively in Simbody. This will allow testing the ability
+        // to accomodate a dv that was allocated from a different subsystem
+        // than the default subsystem and to access a dv that is not type
+        // double in OpenSim.
+        // The following call puts the dv into the map used to contain all
+        // dv's exposed in OpenSim. When Stage::Topology is realized, the dv
+        // is allocated in class Bar's override of extendRealizeTopology().
+        // See below.
+        addDiscreteVariable("refPoint", Stage::Position, false);
+
+    }
+
+    // Register manually allocated discrete variables.
+    void extendRealizeTopology(SimTK::State& state) const override {
+        Super::extendRealizeTopology(state);
+        const SimTK::SimbodyMatterSubsystem& matter =
+            getSystem().getMatterSubsystem();
+        matter.
 
     }
 
