@@ -101,3 +101,19 @@ TEST_CASE("Array searchBinary Behaves Similarly to Legacy Implementation")
         REQUIRE(legacyOutput == newOutput);
     }
 }
+
+TEST_CASE("Array findIndexand rfindIndex Behaves Similarly to Legacy Implementation")
+{
+    constexpr int arraySize = 3;
+    Array<int> vals;
+    for (int i=0; i< arraySize; ++i)
+        vals.append(i);
+
+    REQUIRE(vals.findIndex(-1) == -1);
+    REQUIRE(vals.rfindIndex(-1) == -1);
+
+    for (int i = 0; i < arraySize; ++i) {
+        REQUIRE(vals.findIndex(i) == i);
+        REQUIRE(vals.rfindIndex(i) == i);
+    }
+}
