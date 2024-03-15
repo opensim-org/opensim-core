@@ -303,7 +303,7 @@ The resulting finite-dimensional NLP is as follows:
          & \bar{x}_i = (x_{i-1} + x_i)/2 && i = 1, \ldots, n \\
          & 0 = \phi(q_i, p) && i = 0, \ldots, n\\
          & 0 = \dot{\phi}(q_i, u_i, p) && i = 0, \ldots, n\\
-         & 0 = \ddot{\phi}(t_i, y_i, x_i, \lambda_i, p)  && i = 0, \ldots, n\\
+         & 0 = \ddot{\phi}(q_i, u_i, x_i, \lambda_i, p)  && i = 0, \ldots, n\\
          & V_{L,k} \leq V_k(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{b,k}) \leq V_{U,k} \\
         & \quad\quad S_{b,k} = \sum_{i=1}^{n} \textrm{simpson}_i(s_{b,k}(t, y, x, \lambda, p)) && k = 1, \ldots, K \\
         & g_{L} \leq g(t_i, y_i, x_{i}, \lambda_i, p) \leq g_{U} && i = 0, \ldots, n\\
@@ -344,7 +344,7 @@ by the equations:
 \f[
     \begin{alignat*}{2}
          & 0 = \dot{\phi}(q, u, p) = G(q, p) u\\
-         & 0 = \ddot{\phi}(t, y, x, \lambda, p) = G(q, p) f_{\textrm{mb}}(t, y, x, \lambda, p) + \dot{G}(q, p) u \\
+         & 0 = \ddot{\phi}(q, u, x, \lambda, p) = G(q, p) f_{\textrm{mb}}(t, y, x, \lambda, p) + \dot{G}(q, p) u \\
     \end{alignat*}
 \f]
 
@@ -455,7 +455,7 @@ The residual function...
 
 \f[
     \begin{alignat*}{1}
-        \textrm{legendre_gauss}_i(\eta, F(\eta, p)) = \begin{bmatrix} h_i * F(\eta_i, p) - D_i \cdot \eta_i \\ \eta_{i+1} - C_i \cdot \eta_i \end{bmatrix}
+        \textrm{legendre_gauss}_i(\eta, F(\eta, p)) = \begin{bmatrix} h_i * F(\eta_i, p) - D_i \cdot \eta_i \\ \eta^{\prime}_{i+1} - C_i \cdot \eta_i \end{bmatrix}
     \end{alignat*}
 \f]
 
@@ -496,8 +496,13 @@ The resulting finite-dimensional NLP is as follows:
          & 0 = \textrm{legendre_gauss}_i(z_\textrm{im}, \zeta) && i = 1, \ldots, n \\
          & 0 = f_{\dot{z},\textrm{im}}(t_i, y_i, \zeta_i, x_i, \lambda_i, p) && i = 0, \ldots, n \\
          & 0 = \phi(q_i, p)  && i = 0, \ldots, n \\
-         & 0 = \dot{\phi}(q_i, u_i, p) = \nu(q_i, u_i, p)  && i = 0, \ldots, n \\
-         & 0 = \ddot{\phi}(t_{i,k}, y_{i,k}, x_{i,k}, \lambda_{i,k}, p) = \dot{\nu}(t_{i,k}, y_{i,k}, x_{i,k}, \lambda_{i,k}, p) = \alpha(q_{i,k}, u_{i,k}, p)  && i = 0, \ldots, n && k = 0, \ldots, d \\
+         & 0 = \dot{\phi}(q_i, u_i, p) && i = 0, \ldots, n \\
+         & 0 = \nu(q_i, u_i, p) && i = 0, \ldots, n \\
+         & 0 = \ddot{\phi}(q_{i,k}, u_{i,k}, x_{i,k}, \lambda_{i,k}, p)  && i = 0, \ldots, n && k = 0, \ldots, d \\
+         & 0 = \dot{\nu}(q_{i,k}, u_{i,k}, x_{i,k}, \lambda_{i,k}, p) && i = 0, \ldots, n && k = 0, \ldots, d \\
+         & 0 = \alpha(q_{i,k}, u_{i,k}, x_{i,k}, \lambda_{i,k}, p)  && i = 0, \ldots, n && k = 0, \ldots, d \\
+         & q_{i+1} = q^{\prime}_{i+1} + P_q(q_{i+1},p)^T \mu^{q}_i && i = 0, \ldots, n-1 \\
+         & u_{i+1} = u^{\prime}_{i+1} + PV(q_{i+1},p)^T \mu^{u}_i && i = 0, \ldots, n-1 \\
          & V_{L,k} \leq V_k(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{b,k}) \leq V_{U,k} \\
          & \quad\quad S_{b,k} = \sum_{i=1}^{n} \textrm{quadrature}_i(s_{b,k}(t, y, x, \lambda, p)) && k = 1, \ldots, K \\
          & g_{L} \leq g(t_i, y_i, x_{i}, \lambda_i, p) \leq g_{U}  && i = 0, \ldots, n\\
