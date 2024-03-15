@@ -69,6 +69,8 @@ delete_this_to_stop_optimization*.txt
 
 .idea/deployment.xml
 .idea/other.xml
+.idea/encodings.xml
+.idea/inspectionProfiles/Project_Default.xml
 
 # Clang-Tidy
 .clang-tidy

@@ -483,8 +483,8 @@ void Transcription::transcribe() {
             OpenSim::Exception,
             "Expected the 'hermite-simpson' transcription scheme when using "
             "the Posa et al. 2016 method for enforcing kinematic constraints, "
-            "but the '{}' "
-            "scheme was selected.", m_solver.getTranscriptionScheme());
+            "but the '{}' scheme was selected.", 
+            m_solver.getTranscriptionScheme());
 
         if (m_solver.getTranscriptionScheme() == "hermite-simpson" &&
                 !m_problem.isKinematicConstraintMethodBordalba2023()) {

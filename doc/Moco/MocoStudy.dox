@@ -189,22 +189,49 @@ solver.set_enforce_constraint_derivatives(true);
 solver.set_lagrange_multiplier_weight(10);
 @endcode
 
-If constraint derivatives are enforced, velocity correction variables are added
-to the problem according to the method described in Posa, Kuindersma, and
-Tedrake, 2016, "Optimization and stabilization of trajectories for constrained
-dynamical systems."
+Moco supports two methods for enforcing kinematic constraints: the method
+described in Posa, Kuindersma, and Tedrake, 2016, "Optimization and
+stabilization of trajectories for constrained dynamical systems," and the
+method described in Bordalba, Schoels, Ros, Porta, and Diehl, 2023, "Direct
+Collocation Methods for Trajectory Optimization in Constraint Robotic Systems."
 
-@note Enforcing kinematic constraints is only supported with Hermite-Simpson
-transcription, since this scheme is necessary for implementing the method
-described in Posa et al. 2016. See @ref mocohermitesimpsontheory for a
-mathematical description.
+Hermite-Simpson is the only transcription scheme supported when enforcing 
+kinematic constraints with the method by Posa et al. 2016. See @ref 
+mocohermitesimpsontheory for a mathematical description. The method by Bordalba 
+et al. 2023 is only supported when using MocoCasADiSolver and requires that 
+constraint derivatives are enforced. See @ref mocolegendregausstheory for a 
+mathematical description. Note that the transcription scheme is valid for all
+transcription schemes, not just Legendre-Gauss collocation.
 
-It is possible to modify the default bounds on these velocity correction
-variables:
+When constraint derivatives are enforced, slack variables are added to the 
+problem for projecting the model coordinates back onto the constraint manifold. 
+These variables also prevent the problem from being overconstrained. The Posa et 
+al. 2016 method uses adds a set of "velocity correction" variables that are 
+applied to coordinate state derivatives at the midpoint collocation point in the 
+Hermite-Simpson method. The Bordalba et al. 2023 method uses slack variables 
+in a set of constraints that enforce the coordinate states to be an orthogonal
+projection of the states trajectory obtained from enforcing the defect constraints.
+
+The default method is the method by Posa et al. 2016 since this was originally 
+the only kinematic constraint method supported in Moco. However, we recommend 
+using the method by Bordalba et al. 2023 since it is agnostic to the transcription 
+scheme and does not require modifying the state derivative values as in the
+Posa et al. 2016 method.
+
+It is possible to modify the default bounds on the slack variables used by both
+methods. For the velocity correction variables in the Posa et al. 2016 method:
 
 @code{.cpp}
 // Default bounds: [-0.1, 0.1]
 solver.set_velocity_correction_bounds({-0.25, 0.25});
+@endcode
+
+For the slack variables in the Bordalba et al. 2023 method:
+
+@code{.cpp}
+const MocoCasADiSolver& solver = moco.initCasADiSolver();
+// Default bounds: [-10, 10]
+solver.set_projection_slack_variable_bounds({-15, 15});
 @endcode
 
 If constraint derivatives are not enforced or if the multibody constraint
@@ -212,17 +239,19 @@ Jacobian is rank-deficient, it is recommended that the Lagrange multiplier
 minimization term is added to the problem to impose uniqueness for
 these variables.
 
-Even though OpenSim Models can contain non-holonomic constraints (that is,
-\f$ \nu(q, u, p) = 0 \f$), Moco solvers support only holonomic constraints; that
-is, \f$ \phi(q) = 0 \f$.
+When using the method by Posa et al. 2016, we only support enforcing holonomic
+constraints; that is \f$ \phi(q, p) = 0 \f$. The method by Bordalba et al. 2023
+also supports both non-holonomic constraints (that is, \f$ \nu(q, u, p) = 0 \f$) 
+and acceleration-only constraints (that is, \f$ \alpha(q, u, \dot u, p) = 0 \f$),
+but these constraints are less common and not currently well-tested in Moco.
 
-By default, the controls at mesh interval midpoints are constrained by linear
-interpolation of control mesh endpoint values and is the recommended setting.
+By default, the controls at within the mesh interval interior are constrained by 
+linear interpolation of control mesh endpoint values and is the recommended setting.
 However, you may disable this behavior in the solver:
 
 \code{.cpp}
 MocoCasADiSolver& solver = moco.initCasADiSolver();
-solver.set_interpolate_control_midpoints(false);
+solver.set_interpolate_control_mesh_interior_points(false);
 \endcode
 
 @section casadivstropter MocoCasADiSolver versus MocoTropterSolver

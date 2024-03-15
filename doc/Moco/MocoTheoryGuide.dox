@@ -152,6 +152,10 @@ see the following excellent material:
     https://doi.org/10.1137/16M1062569
   - Textbook: Betts, J. T. (2010). Practical methods for optimal control and
     estimation using nonlinear programming (Vol. 19). Siam.
+  - Journal article: Bordalba, R., Schoels, T., Ros, L., Porta J. M., and 
+    Diehl, M. (2023). Direct collocation methods for trajectory optimization
+    in constrained robotic systems. IEEE Transations on Robotics, 39(1), 183-202.
+    https://doi.org/10.1109/TRO.2022.3193776
 
 @subsection mocotraptheory Trapezoidal transcription
 
@@ -197,12 +201,15 @@ finite-dimensional nonlinear optimization problem (or nonlinear program, abbrevi
          & \quad\quad S_{b,k} = \sum_{i=1}^{n} \textrm{trap}_i(s_{b,k}(t, y, x, \lambda, p)) && k = 1, \ldots, K \\
          & g_{L} \leq g(t_i, y_i, x_{i}, \lambda_i, p) \leq g_{U}  && i = 0, \ldots, n\\
          \mbox{with respect to} \quad
-         & t_0 \in [t_{0,L}, t_{0,U}] && t_n \in [t_{f,L}, t_{f,U}] \\
-         & y_0 \in [y_{0,L}, y_{0,U}] && y_n \in [y_{f,L}, y_{f,U}] \\
-         & y_i \in [y_{L}, y_{U}] && i = 1, \ldots, n - 1\\
+         & t_0 \in [t_{0,L}, t_{0,U}] \\
+         & t_n \in [t_{f,L}, t_{f,U}] \\
+         & y_0 \in [y_{0,L}, y_{0,U}] \\
+         & y_n \in [y_{f,L}, y_{f,U}] \\
+         & y_i \in [y_{L}, y_{U}] && i = 1, \ldots, n - 1 \\
          & \zeta_i \in [\zeta_{L}, \zeta_{U}] && i = 0, \ldots, n \\
-         & x_0 \in [x_{0,L}, x_{0,U}] && x_n \in [x_{f,L}, x_{f,U}] \\
-         & x_i \in [x_{L}, x_{U}] && i = 1, \ldots, n - 1\\
+         & x_0 \in [x_{0,L}, x_{0,U}] \\ 
+         & x_n \in [x_{f,L}, x_{f,U}] \\
+         & x_i \in [x_{L}, x_{U}] && i = 1, \ldots, n - 1 \\
          & \lambda_i \in [\lambda_L, \lambda_U] && i = 0, \ldots, n \\
          & p \in [p_{L}, p_{U}].
     \end{aligned}
@@ -301,13 +308,16 @@ The resulting finite-dimensional NLP is as follows:
         & \quad\quad S_{b,k} = \sum_{i=1}^{n} \textrm{simpson}_i(s_{b,k}(t, y, x, \lambda, p)) && k = 1, \ldots, K \\
         & g_{L} \leq g(t_i, y_i, x_{i}, \lambda_i, p) \leq g_{U} && i = 0, \ldots, n\\
          \mbox{with respect to} \quad
-         & t_0 \in [t_{0,L}, t_{0,U}] && t_n \in [t_{f,L}, t_{f,U}] \\
-         & y_0 \in [y_{0,L}, y_{0,U}] && y_n \in [y_{f,L}, y_{f,U}] \\
+         & t_0 \in [t_{0,L}, t_{0,U}] \\ 
+         & t_n \in [t_{f,L}, t_{f,U}] \\
+         & y_0 \in [y_{0,L}, y_{0,U}] \\ 
+         & y_n \in [y_{f,L}, y_{f,U}] \\
          & y_i \in [y_{L}, y_{U}] && i = 1, \ldots, n - 1 \\
          & \bar{y}_i \in [y_{L}, y_{U}] && i = 1, \ldots, n \\
          & \zeta_i \in [\zeta_{L}, \zeta_{U}] && i = 0, \ldots, n \\
          & \bar{\zeta}_i \in [\zeta_{L}, \zeta_{U}] && i = 1, \ldots, n \\
-         & x_0 \in [x_{0,L}, x_{0,U}] && x_n \in [x_{f,L}, x_{f,U}] \\
+         & x_0 \in [x_{0,L}, x_{0,U}] \\ 
+         & x_n \in [x_{f,L}, x_{f,U}] \\
          & x_i \in [x_{L}, x_{U}] && i = 1, \ldots, n - 1 \\
          & \bar{x}_i \in [x_{L}, x_{U}] && i = 1, \ldots, n \\
          & \lambda_i \in [\lambda_L, \lambda_U] && i = 0, \ldots, n \\
@@ -363,6 +373,148 @@ The implicit dynamics formulation is as follows:
          & \upsilon_i \in [-\upsilon_{B}, \upsilon_{B}] & i = 0, \ldots, n \\
          & \bar{\upsilon}_i \in [-\upsilon_{B}, \upsilon_{B}] & i = 1, \ldots, n
     \end{alignat*}
+\f]
+
+@subsection mocolegendregausstheory Legendre-Gauss transcription
+
+Legendre-Gauss transcription works by approximating the states, \f$ y(t) \f$, within a 
+mesh interval range \f$ t \in [t_i, t_{i+1}] \f$ using a set of Lagrange interpolating 
+polynomials of degree \f$ d \f$:
+
+\f[
+    \begin{alignat*}{1}
+        L(t, y_i) = y_{i,0} \cdot l_0(t - t_i) + \cdots + y_{i,d} \cdot l_d(t - t_i)
+    \end{alignat*}
+\f]
+
+where \f$ y_{i,k} \f$ are the \f$ k = 0, \ldots, d \f$ interpolated state values, and 
+\f$ l_k \f$ are the Lagrange polynomial basis functions. These polynomials only depend 
+on \f$ t_{i,0}, \ldots, t_{i,d} \f$ and take on the following values:  
+
+\f[
+    \begin{alignat*}{1}
+        l_j(t_{i,k} - t_i) = \left\{
+        \begin{array}{ll}
+            1, & \quad \textrm{if } j = k \\
+            0, & \quad \textrm{otherwise}
+        \end{array}
+        \right.
+    \end{alignat*}
+\f]
+
+This means that the following is true for the interpolating polynomials:
+
+\f[
+    \begin{alignat*}{1}
+        L(t_{i,k}, c_i) = y_{i,k} \quad \textrm{for } k = 0, \ldots, d
+    \end{alignat*}
+\f]
+
+We wish \f$ L(t_i, c_i) = y_i \f$, and therefore \f$ y_{i,0} = y_i \f$. The 
+remaining polynomial coefficients can be determined by enforcing the \f$ d \f$
+collocation constraints:
+
+\f[
+    \begin{alignat*}{1}
+        \dot L_i(t_{i,k}, c_i) = f(t_{i,k}, y_{i,k}, x_{i,k}, \lambda_{i,k}, p) \quad \textrm{for } k = 1, \ldots, d
+    \end{alignat*}
+\f]
+
+The left-hand side can be formulated using the constant differentiation matrix, \f$ D \f$:
+
+\f[
+    \begin{alignat*}{1}
+        \dot L_i(t_{i,k}, c_i) = D(t_{i,0},\ldots,t_{i,d}) \cdot y_i
+    \end{alignat*}
+\f]
+
+Finally, the end state of the mesh interval, \f$ y_{i+1} \f$, is given by:
+
+\f[
+    \begin{alignat*}{1}
+        y_{i+1} = L(t_{i+1}, y_i)
+    \end{alignat*}
+\f]
+
+As in the previous transcription methods, we have \f$ n + 1 \f$ mesh points and
+\f$ n \f$ mesh intervals. Legendre-Gauss transcription introduces \f$ d \f$ 
+collocation points in the mesh interval interior located at points based on the 
+roots of the \f$ d \f$-th order Legendre polynomial, \f$ \textrm{roots}(k) \f$. 
+
+\f[
+    \begin{alignat*}{1}
+        0 &= \tau_0 < \tau_1 < \tau_2 < \ldots < \tau_i < \ldots < \tau_{n - 1} < \tau_n = 1 \\
+        \tau_{i,k} &= \tau_i + (\tau_{i+1} - \tau_i) * \textrm{roots}(k) \quad \textrm{for } k = 1, \ldots, d \\
+        t_i &= (t_f - t_0) \tau_i + t_0 \\
+        t_{i,k} &= (t_f - t_0) \tau_{i,k} + t_0 \quad \textrm{for } k = 1, \ldots, d \\
+        h_i &= (t_f - t_0)(\tau_i - \tau_{i-1}) \\
+    \end{alignat*}
+\f]
+
+The residual function...
+
+\f[
+    \begin{alignat*}{1}
+        \textrm{legendre_gauss}_i(\eta, F(\eta, p)) = \begin{bmatrix} h_i * F(\eta_i, p) - D_i \cdot \eta_i \\ \eta_{i+1} - C_i \cdot \eta_i \end{bmatrix}
+    \end{alignat*}
+\f]
+
+where \f$ \eta \f$ is any continuous variable in the optimal control problem
+(e.g., \f$ y \f$), \f$ F \f$ is any function, and \f$ C_i \f$ is a matrix containing
+coefficients to perform the interpolation of the Lagrange polynomials to determine 
+\f$ \eta_{i+1} \f$. Note that these quantities are vector quantities with size based on 
+the polynomial degree \f$ d \f$:
+
+\f[
+    \begin{alignat*}{1}
+        \eta_i &= \begin{bmatrix} \eta_{i,0} \\ \vdots \\ \eta_{i,d} \end{bmatrix} \quad
+        F(\eta_i, p) &= \begin{bmatrix} F(t_{i,1}, \eta_{i,1}, p) \\ \vdots \\ F(t_{i,d}, \eta_{i,d}, p) \end{bmatrix} \quad
+    \end{alignat*}
+\f]
+
+Integrals are replaced using Gauss quadrature with coefficients \f$ \omega_k \f$:
+
+\f[
+    \begin{alignat*}{1}
+        \textrm{quadrature}_i(G(\eta, p)) = \sum \omega_k * G(\eta_{i,k}, p) \quad \textrm{for } k = 1, \ldots, d
+    \end{alignat*}
+\f]
+
+The resulting finite-dimensional NLP is as follows:
+
+\f[
+\begin{align}
+    \begin{aligned}
+        \mbox{minimize} \quad
+         & \sum_j w_j J_{j}(t_0, t_f, y_0, y_n, x_{0}, x_{n}, \lambda_0, \lambda_n, p, S_{c,j})
+          + w_{\lambda} \sum_{i=1}^{n} \textrm{quadrature}_i(\|\lambda\|_2^2)  \\
+         & \quad\quad S_{c,j} = \sum_{i=1}^{n} \textrm{quadrature}_i(s_{c,j}(t, y, x, \lambda, p)) \\
+        \mbox{subject to} \quad
+         & 0 = \textrm{legendre_gauss}_i(q, u) && i = 1, \ldots, n \\
+         & 0 = \textrm{legendre_gauss}_i(u, f_{\dot{u}}(t, y, x, \lambda, p))  && i = 1, \ldots, n \\
+         & 0 = \textrm{legendre_gauss}_i(z_\textrm{ex}, f_{\dot{z},\textrm{ex}}(t, y, x, \lambda, p)) && i = 1, \ldots, n \\
+         & 0 = \textrm{legendre_gauss}_i(z_\textrm{im}, \zeta) && i = 1, \ldots, n \\
+         & 0 = f_{\dot{z},\textrm{im}}(t_i, y_i, \zeta_i, x_i, \lambda_i, p) && i = 0, \ldots, n \\
+         & 0 = \phi(q_i, p)  && i = 0, \ldots, n \\
+         & 0 = \dot{\phi}(q_i, u_i, p) = \nu(q_i, u_i, p)  && i = 0, \ldots, n \\
+         & 0 = \ddot{\phi}(t_{i,k}, y_{i,k}, x_{i,k}, \lambda_{i,k}, p) = \dot{\nu}(t_{i,k}, y_{i,k}, x_{i,k}, \lambda_{i,k}, p) = \alpha(q_{i,k}, u_{i,k}, p)  && i = 0, \ldots, n && k = 0, \ldots, d \\
+         & V_{L,k} \leq V_k(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{b,k}) \leq V_{U,k} \\
+         & \quad\quad S_{b,k} = \sum_{i=1}^{n} \textrm{quadrature}_i(s_{b,k}(t, y, x, \lambda, p)) && k = 1, \ldots, K \\
+         & g_{L} \leq g(t_i, y_i, x_{i}, \lambda_i, p) \leq g_{U}  && i = 0, \ldots, n\\
+         \mbox{with respect to} \quad
+         & t_0 \in [t_{0,L}, t_{0,U}] && \\ 
+         & t_n \in [t_{f,L}, t_{f,U}] && \\
+         & y_0 \in [y_{0,L}, y_{0,U}] && \\ 
+         & y_n \in [y_{f,L}, y_{f,U}] && \\
+         & y_{i,k} \in [y_{L}, y_{U}] && i = 1, \ldots, n - 1 && k = 0, \ldots, d \\
+         & \zeta_{i,k} \in [\zeta_{L}, \zeta_{U}] && i = 1, \ldots, n - 1 && k = 0, \ldots, d \\
+         & x_0 \in [x_{0,L}, x_{0,U}] && \\ 
+         & x_n \in [x_{f,L}, x_{f,U}] && \\
+         & x_{i,k} \in [x_{L}, x_{U}] && i = 1, \ldots, n - 1 && k = 0, \ldots, d \\
+         & \lambda_{i,k} \in [\lambda_L, \lambda_U] && i = 0, \ldots, n && k = 0, \ldots, d \\
+         & p \in [p_{L}, p_{U}].
+    \end{aligned}
+\end{align}
 \f]
 
 */
