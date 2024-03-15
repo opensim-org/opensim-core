@@ -400,7 +400,7 @@ protected:
         Super::extendRealizeTopology(state);
 
         // Starting value of the reference point.
-        Vec3 point(0.01);
+        Vec3 point(0.0, 0.1, 0.2);
 
         // Manually allocate from the GeneralForceSybsystem, the same
         // subsystem in which the LinearSpring resides.
@@ -1645,7 +1645,6 @@ TEST_CASE("Component Interface Component::resolveVariableNameAndOwner")
         VariableNotFound);
 }
 
-
 TEST_CASE("Component Interface Component::getDiscreteVariableValue")
 {
     // ------------------------------------------------------------------------
@@ -1719,6 +1718,174 @@ TEST_CASE("Component Interface Component::getDiscreteVariableValue")
         "../../internalSub/discVarX") == 0.0);
 }
 
+
+TEST_CASE("Component Interface getDiscreteVariableAbstractValue")
+{
+    // ------------------------------------------------------------------------
+    // Component Bar possesses a discrete variable called "refPoint", which is
+    // a Vec3. Additionally, refPoint was allocated as though it were a member
+    // of a pre-existing Simbody object (e.g., it was allocated from the
+    // GeneralForceSubsystem and not from the DefaultSybsystem like most, if
+    // not all, discrete variables allocated in OpenSim).
+    // This test case 
+    // 1) checks the interface for handling discrete variables that are not
+    //    type double, and
+    // 2) verifies that OpenSim can properly wrap discrete state variables
+    //    when those variables are allocated externally (i.e., are not
+    //    allocated by calling Component::addDiscreteVariable()).
+    // ------------------------------------------------------------------------
+
+    MultibodySystem system;
+    TheWorld theWorld;
+    theWorld.setName("World");
+
+    Foo& foo = *new Foo();
+    foo.setName("Foo");
+    theWorld.add(&foo);
+    foo.set_mass(2.0);
+
+    Foo& foo2 = *new Foo();
+    foo2.setName("Foo2");
+    foo2.set_mass(3.0);
+    theWorld.add(&foo2);
+
+    Bar& bar = *new Bar();
+    bar.setName("Bar");
+    theWorld.add(&bar);
+
+    bar.connectSocket_parentFoo(foo);
+    bar.connectSocket_childFoo(foo2);
+
+    theWorld.connect();
+    theWorld.buildUpSystem(system);
+
+    State s = system.realizeTopology();
+
+    // Get the paths of all discrete variables under "theWorld"
+    Array<std::string>& dvPaths = theWorld.getDiscreteVariableNames();
+    SimTK_TEST(dvPaths.size() == 2);
+    SimTK_TEST(dvPaths[0] == "/internalSub/discVarX");
+    SimTK_TEST(dvPaths[1] == "/Bar/refPoint");
+
+    // Get the starting value of refPoint
+    // The starting value should be (0.0, 0.1, 0.2). See ~line 403.
+    Vec3 refPointStart(0.0, 0.1, 0.2);
+    Vec3 refPoint = SimTK::Value<Vec3>::downcast(
+        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
+    REQUIRE(refPoint == refPointStart);
+
+    // Verify that changes to the local variable refPoint does not change
+    // the value of the discrete variable. That is, verify that the local
+    // variable refPoint holds a copy of the data.
+    refPoint *= 10.0;
+    Vec3 refPoint2 = SimTK::Value<Vec3>::downcast(
+        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
+    REQUIRE(refPoint2 == refPointStart);
+
+    // Set a new value for refPoint and check it.
+    // Note that refPointNew is a reference and so points directly to the
+    // data held by the discrete variable. Thus, changes to refPointNew
+    // change the value of the discrete variable.
+    Vec3& refPointNew = SimTK::Value<Vec3>::updDowncast(
+        theWorld.updDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
+    refPointNew += refPointStart;
+    Vec3 refPoint3 = SimTK::Value<Vec3>::downcast(
+        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
+    REQUIRE(refPoint3 == refPointNew);
+
+    /*
+    const Vector q = Vector(s.getNQ(), SimTK::Pi/2);
+    for (int i = 0; i < 10; ++i){
+        s.updTime() = i*0.01234;
+        s.updQ() = (i+1)*q/10.0;
+        system.realize(s, Stage::Report);
+    }
+    */
+}
+
+TEST_CASE("Component Interface getDiscreteVariableTrajectory")
+{
+    // ------------------------------------------------------------------------
+    // Component Bar possesses a discrete variable called "refPoint", which is
+    // a Vec3. Additionally, refPoint was allocated as though it were a member
+    // of a pre-existing Simbody object (e.g., it was allocated from the
+    // GeneralForceSubsystem and not from the DefaultSybsystem like most, if
+    // not all, discrete variables allocated in OpenSim).
+    // This test case 
+    // 1) checks the interface for handling discrete variables that are not
+    //    type double, and
+    // 2) verifies that OpenSim can properly wrap discrete state variables
+    //    when those variables are allocated externally (i.e., are not
+    //    allocated by calling Component::addDiscreteVariable()).
+    // ------------------------------------------------------------------------
+
+    MultibodySystem system;
+    TheWorld theWorld;
+    theWorld.setName("World");
+
+    Foo& foo = *new Foo();
+    foo.setName("Foo");
+    theWorld.add(&foo);
+    foo.set_mass(2.0);
+
+    Foo& foo2 = *new Foo();
+    foo2.setName("Foo2");
+    foo2.set_mass(3.0);
+    theWorld.add(&foo2);
+
+    Bar& bar = *new Bar();
+    bar.setName("Bar");
+    theWorld.add(&bar);
+
+    bar.connectSocket_parentFoo(foo);
+    bar.connectSocket_childFoo(foo2);
+
+    theWorld.connect();
+    theWorld.buildUpSystem(system);
+
+    State s = system.realizeTopology();
+
+    // Get the paths of all discrete variables under "theWorld"
+    Array<std::string>& dvPaths = theWorld.getDiscreteVariableNames();
+    SimTK_TEST(dvPaths.size() == 2);
+    SimTK_TEST(dvPaths[0] == "/internalSub/discVarX");
+    SimTK_TEST(dvPaths[1] == "/Bar/refPoint");
+
+    // Get the starting value of refPoint
+    // The starting value should be (0.0, 0.1, 0.2). See ~line 403.
+    Vec3 refPointStart(0.0, 0.1, 0.2);
+    Vec3 refPoint = SimTK::Value<Vec3>::downcast(
+        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
+    REQUIRE(refPoint == refPointStart);
+
+    // Verify that changes to the local variable refPoint does not change
+    // the value of the discrete variable. That is, verify that the local
+    // variable refPoint holds a copy of the data.
+    refPoint *= 10.0;
+    Vec3 refPoint2 = SimTK::Value<Vec3>::downcast(
+        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
+    REQUIRE(refPoint2 == refPointStart);
+
+    // Set a new value for refPoint and check it.
+    // Note that refPointNew is a reference and so points directly to the
+    // data held by the discrete variable. Thus, changes to refPointNew
+    // change the value of the discrete variable.
+    Vec3& refPointNew = SimTK::Value<Vec3>::updDowncast(
+        theWorld.updDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
+    refPointNew += refPointStart;
+    Vec3 refPoint3 = SimTK::Value<Vec3>::downcast(
+        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
+    REQUIRE(refPoint3 == refPointNew);
+
+    /*
+    const Vector q = Vector(s.getNQ(), SimTK::Pi/2);
+    for (int i = 0; i < 10; ++i){
+    s.updTime() = i*0.01234;
+    s.updQ() = (i+1)*q/10.0;
+    system.realize(s, Stage::Report);
+    }
+    */
+}
 
 TEST_CASE("Component Interface Input/Output Connections")
 {
