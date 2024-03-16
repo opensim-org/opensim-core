@@ -98,7 +98,7 @@ private:
     void extendAddToSystem(MultibodySystem &system) const override {
         Super::extendAddToSystem(system);
         addStateVariable("subState", Stage::Dynamics);
-        addDiscreteVariable("discVarX", Stage::Dynamics);
+        addDiscreteVariable("dvX", Stage::Dynamics);
     }
     void computeStateVariableDerivatives(const SimTK::State& s) const override {
         double deriv = exp(-2.0*s.getTime());
@@ -391,7 +391,7 @@ protected:
         // dv's exposed in OpenSim. When Stage::Topology is realized, the dv
         // is allocated in class Bar's override of extendRealizeTopology().
         // See below.
-        addDiscreteVariable("refPoint", Stage::Position, false);
+        addDiscreteVariable("point", Stage::Position, false);
     }
 
     // Manually allocate and update the index and subsystem for any
@@ -418,7 +418,7 @@ protected:
         // ?? Using a pointer to a generic Subsystem -may- be necessary.
         // If this works I'll try to simplify and see if it still works.
         SimTK::Subsystem *sub = &fsub;
-        updDiscreteVariableIndex("refPoint", index, sub);
+        initializeDiscreteVariableIndex("point", index, sub);
     }
 
     void computeStateVariableDerivatives(const SimTK::State& state) const override {
@@ -1553,87 +1553,88 @@ TEST_CASE("Component Interface Component::resolveVariableNameAndOwner")
     // Get the paths of all discrete variables under "top"
     Array<std::string>& dvPaths = top.getDiscreteVariableNames();
     REQUIRE(dvPaths.size() == 3);
-    REQUIRE(dvPaths[0] == "/internalSub/discVarX");
-    REQUIRE(dvPaths[1] == "/a/discVarX");
-    REQUIRE(dvPaths[2] == "/a/b/discVarX");
+    REQUIRE(dvPaths[0] == "/internalSub/dvX");
+    REQUIRE(dvPaths[1] == "/a/dvX");
+    REQUIRE(dvPaths[2] == "/a/b/dvX");
 
     // Verify correct execution
-    std::string varNameCorrect("discVarX");
+    std::string varNameCorrect("dvX");
     std::string varName;
     const Component* owner;
     // ----- With an absolute path, the caller doesn't matter.
     // caller is top
-    owner = top.resolveVariableNameAndOwner(
-        ComponentPath("/internalSub/discVarX"), varName);
+    owner = top.resolveVariableNameAndOwner(ComponentPath("/internalSub/dvX"),
+        varName);
     CHECK(varName == varNameCorrect);
     CHECK(owner == &internSub);
-    owner = top.resolveVariableNameAndOwner(
-        ComponentPath("/a/discVarX"), varName);
+    owner = top.resolveVariableNameAndOwner(ComponentPath("/a/dvX"),
+        varName);
     CHECK(varName == varNameCorrect);
     CHECK(owner == a);
-    owner = top.resolveVariableNameAndOwner(
-        ComponentPath("/a/b/discVarX"), varName);
+    owner = top.resolveVariableNameAndOwner(ComponentPath("/a/b/dvX"),
+        varName);
     CHECK(varName == varNameCorrect);
     CHECK(owner == b);
     // caller is a
-    owner = a->resolveVariableNameAndOwner(
-        ComponentPath("/internalSub/discVarX"), varName);
+    owner = a->resolveVariableNameAndOwner(ComponentPath("/internalSub/dvX"),
+        varName);
     CHECK(varName == varNameCorrect);
     CHECK(owner == &internSub);
-    owner = a->resolveVariableNameAndOwner(
-        ComponentPath("/a/discVarX"), varName);
+    owner = a->resolveVariableNameAndOwner(ComponentPath("/a/dvX"),
+        varName);
     CHECK(varName == varNameCorrect);
     CHECK(owner == a);
-    owner = a->resolveVariableNameAndOwner(
-        ComponentPath("/a/b/discVarX"), varName);
+    owner = a->resolveVariableNameAndOwner(ComponentPath("/a/b/dvX"),
+        varName);
     CHECK(varName == varNameCorrect);
     CHECK(owner == b);
     // caller is b
-    owner = b->resolveVariableNameAndOwner(
-        ComponentPath("/internalSub/discVarX"), varName);
+    owner = b->resolveVariableNameAndOwner(ComponentPath("/internalSub/dvX"),
+        varName);
     CHECK(varName == varNameCorrect);
     CHECK(owner == &internSub);
-    owner = b->resolveVariableNameAndOwner(
-        ComponentPath("/a/discVarX"), varName);
+    owner = b->resolveVariableNameAndOwner(ComponentPath("/a/dvX"),
+        varName);
     CHECK(varName == varNameCorrect);
     CHECK(owner == a);
-    owner = b->resolveVariableNameAndOwner(
-        ComponentPath("/a/b/discVarX"), varName);
+    owner = b->resolveVariableNameAndOwner(ComponentPath("/a/b/dvX"),
+        varName);
     CHECK(varName == varNameCorrect);
     CHECK(owner == b);
     // ----- With relative paths, the caller matters.
     // down from a
-    owner = a->resolveVariableNameAndOwner(
-        ComponentPath("discVarX"), varName);
+    owner = a->resolveVariableNameAndOwner(ComponentPath("dvX"),
+        varName);
     CHECK(varName == varNameCorrect);
     CHECK(owner == a);
-    owner = a->resolveVariableNameAndOwner(
-        ComponentPath("b/discVarX"), varName);
+    owner = a->resolveVariableNameAndOwner(ComponentPath("b/dvX"),
+        varName);
     CHECK(varName == varNameCorrect);
     CHECK(owner == b);
     // down from b
-    owner = b->resolveVariableNameAndOwner(
-        ComponentPath("discVarX"), varName);
+    owner = b->resolveVariableNameAndOwner(ComponentPath("dvX"),
+        varName);
     CHECK(varName == varNameCorrect);
     CHECK(owner == b);
     // up from b
-    owner = b->resolveVariableNameAndOwner(
-        ComponentPath("../discVarX"), varName);
+    owner = b->resolveVariableNameAndOwner(ComponentPath("../dvX"),
+        varName);
     CHECK(varName == varNameCorrect);
     CHECK(owner == a);
     owner = b->resolveVariableNameAndOwner(
-        ComponentPath("../../internalSub/discVarX"), varName);
+        ComponentPath("../../internalSub/dvX"), varName);
     CHECK(varName == varNameCorrect);
     CHECK(owner == &internSub);
 
     // Verify that exceptions are thrown appropriately
     CHECK_THROWS_AS(
-        owner = top.resolveVariableNameAndOwner(ComponentPath(""), varName),
-        EmptyComponentPath);
+        owner = top.resolveVariableNameAndOwner(
+            ComponentPath(""), varName),
+            EmptyComponentPath);
     CHECK_THROWS_AS(
         owner = top.resolveVariableNameAndOwner(
-            ComponentPath("/typoSub/discVarX"), varName),
-        VariableOwnerNotFoundOnSpecifiedPath);
+            ComponentPath("/typoSub/dvX"), varName),
+            VariableOwnerNotFoundOnSpecifiedPath);
     owner = a->resolveVariableNameAndOwner(
         ComponentPath("discVarTypo"), varName);
     CHECK_THROWS_AS(
@@ -1676,54 +1677,50 @@ TEST_CASE("Component Interface Component::getDiscreteVariableValue")
     // Get the paths of all discrete variables under "top"
     Array<std::string>& dvPaths = top.getDiscreteVariableNames();
     SimTK_TEST(dvPaths.size() == 3);
-    SimTK_TEST(dvPaths[0] == "/internalSub/discVarX");
-    SimTK_TEST(dvPaths[1] == "/a/discVarX");
-    SimTK_TEST(dvPaths[2] == "/a/b/discVarX");
+    SimTK_TEST(dvPaths[0] == "/internalSub/dvX");
+    SimTK_TEST(dvPaths[1] == "/a/dvX");
+    SimTK_TEST(dvPaths[2] == "/a/b/dvX");
 
     // Set a value for each discrete variable by path.
     // Discrete variables are not Components, so specialized
     // traversal methods need to be used.
     // See Component::resolveVariableNameAndOwner().
     // Set
-    top.setDiscreteVariableValueByPath(s, dvPaths[0], 0.0);
-    top.setDiscreteVariableValueByPath(s, dvPaths[1], 10.0);
-    top.setDiscreteVariableValueByPath(s, dvPaths[2], 20.0);
+    top.setDiscreteVariableValue(s, dvPaths[0], 0.0);
+    top.setDiscreteVariableValue(s, dvPaths[1], 10.0);
+    top.setDiscreteVariableValue(s, dvPaths[2], 20.0);
 
     // Get
     // ----- With an absolute path, the caller doesn't matter.
     // caller is top
-    SimTK_TEST(top.getDiscreteVariableValueByPath(s,"/internalSub/discVarX")
-        == 0.0);
-    SimTK_TEST(top.getDiscreteVariableValueByPath(s,"/a/discVarX") == 10.0);
-    SimTK_TEST(top.getDiscreteVariableValueByPath(s,"/a/b/discVarX") == 20.0);
+    SimTK_TEST(top.getDiscreteVariableValue(s,"/internalSub/dvX") == 0.0);
+    SimTK_TEST(top.getDiscreteVariableValue(s,"/a/dvX") == 10.0);
+    SimTK_TEST(top.getDiscreteVariableValue(s,"/a/b/dvX") == 20.0);
     // caller is a
-    SimTK_TEST(a->getDiscreteVariableValueByPath(s,"/internalSub/discVarX")
-        == 0.0);
-    SimTK_TEST(a->getDiscreteVariableValueByPath(s,"/a/discVarX") == 10.0);
-    SimTK_TEST(a->getDiscreteVariableValueByPath(s,"/a/b/discVarX") == 20.0);
+    SimTK_TEST(a->getDiscreteVariableValue(s,"/internalSub/dvX") == 0.0);
+    SimTK_TEST(a->getDiscreteVariableValue(s,"/a/dvX") == 10.0);
+    SimTK_TEST(a->getDiscreteVariableValue(s,"/a/b/dvX") == 20.0);
     // caller is b
-    SimTK_TEST(b->getDiscreteVariableValueByPath(s,"/internalSub/discVarX")
+    SimTK_TEST(b->getDiscreteVariableValue(s,"/internalSub/dvX")
         == 0.0);
-    SimTK_TEST(b->getDiscreteVariableValueByPath(s,"/a/discVarX") == 10.0);
-    SimTK_TEST(b->getDiscreteVariableValueByPath(s,"/a/b/discVarX") == 20.0);
+    SimTK_TEST(b->getDiscreteVariableValue(s,"/a/dvX") == 10.0);
+    SimTK_TEST(b->getDiscreteVariableValue(s,"/a/b/dvX") == 20.0);
     // ----- With relative paths, the caller matters.
     // down from a
-    SimTK_TEST(a->getDiscreteVariableValueByPath(s,"discVarX") == 10.0);
-    SimTK_TEST(a->getDiscreteVariableValueByPath(s,"b/discVarX") == 20.0);
+    SimTK_TEST(a->getDiscreteVariableValue(s,"dvX") == 10.0);
+    SimTK_TEST(a->getDiscreteVariableValue(s,"b/dvX") == 20.0);
     // down from b
-    SimTK_TEST(b->getDiscreteVariableValueByPath(s,"discVarX") == 20.0);
+    SimTK_TEST(b->getDiscreteVariableValue(s,"dvX") == 20.0);
     // up from b
-    SimTK_TEST(b->getDiscreteVariableValueByPath(s,"../discVarX") == 10.0);
-    SimTK_TEST(b->getDiscreteVariableValueByPath(s,
-        "../../internalSub/discVarX") == 0.0);
+    SimTK_TEST(b->getDiscreteVariableValue(s,"../dvX") == 10.0);
+    SimTK_TEST(b->getDiscreteVariableValue(s,"../../internalSub/dvX") == 0.0);
 }
 
-
-TEST_CASE("Component Interface getDiscreteVariableAbstractValue")
+TEST_CASE("Component Interface getDiscreteVariableValue<Vec3>")
 {
     // ------------------------------------------------------------------------
-    // Component Bar possesses a discrete variable called "refPoint", which is
-    // a Vec3. Additionally, refPoint was allocated as though it were a member
+    // Component Bar possesses a discrete variable called "point", which is
+    // a Vec3. Additionally, point was allocated as though it were a member
     // of a pre-existing Simbody object (e.g., it was allocated from the
     // GeneralForceSubsystem and not from the DefaultSybsystem like most, if
     // not all, discrete variables allocated in OpenSim).
@@ -1764,50 +1761,34 @@ TEST_CASE("Component Interface getDiscreteVariableAbstractValue")
     // Get the paths of all discrete variables under "theWorld"
     Array<std::string>& dvPaths = theWorld.getDiscreteVariableNames();
     SimTK_TEST(dvPaths.size() == 2);
-    SimTK_TEST(dvPaths[0] == "/internalSub/discVarX");
-    SimTK_TEST(dvPaths[1] == "/Bar/refPoint");
+    SimTK_TEST(dvPaths[0] == "/internalSub/dvX");
+    SimTK_TEST(dvPaths[1] == "/Bar/point");
 
-    // Get the starting value of refPoint
+    // Get the starting value of point
     // The starting value should be (0.0, 0.1, 0.2). See ~line 403.
-    Vec3 refPointStart(0.0, 0.1, 0.2);
-    Vec3 refPoint = SimTK::Value<Vec3>::downcast(
-        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
-    REQUIRE(refPoint == refPointStart);
+    Vec3 pointStart(0.0, 0.1, 0.2);
+    Vec3 point = theWorld.getDiscreteVariableValue<Vec3>(s, "/Bar/point");
+    REQUIRE(point == pointStart);
 
-    // Verify that changes to the local variable refPoint does not change
+    // Verify that changes to the local variable point do not change
     // the value of the discrete variable. That is, verify that the local
-    // variable refPoint holds a copy of the data.
-    refPoint *= 10.0;
-    Vec3 refPoint2 = SimTK::Value<Vec3>::downcast(
-        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
-    REQUIRE(refPoint2 == refPointStart);
+    // variable point holds a copy of the data.
+    point *= 10.0;
+    Vec3 point2 = theWorld.getDiscreteVariableValue<Vec3>(s, "/Bar/point");
+    REQUIRE(point2 != point);
+    REQUIRE(point2 == pointStart);
 
-    // Set a new value for refPoint and check it.
-    // Note that refPointNew is a reference and so points directly to the
-    // data held by the discrete variable. Thus, changes to refPointNew
-    // change the value of the discrete variable.
-    Vec3& refPointNew = SimTK::Value<Vec3>::updDowncast(
-        theWorld.updDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
-    refPointNew += refPointStart;
-    Vec3 refPoint3 = SimTK::Value<Vec3>::downcast(
-        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
-    REQUIRE(refPoint3 == refPointNew);
-
-    /*
-    const Vector q = Vector(s.getNQ(), SimTK::Pi/2);
-    for (int i = 0; i < 10; ++i){
-        s.updTime() = i*0.01234;
-        s.updQ() = (i+1)*q/10.0;
-        system.realize(s, Stage::Report);
-    }
-    */
+    // Set a new value and check it.
+    theWorld.setDiscreteVariableValue<Vec3>(s, "/Bar/point", point);
+    Vec3 point3 = theWorld.getDiscreteVariableValue<Vec3>(s, "/Bar/point");
+    REQUIRE(point3 == point);
 }
 
 TEST_CASE("Component Interface getDiscreteVariableTrajectory")
 {
     // ------------------------------------------------------------------------
     // Component Bar possesses a discrete variable called "refPoint", which is
-    // a Vec3. Additionally, refPoint was allocated as though it were a member
+    // a Vec3. Additionally, point was allocated as though it were a member
     // of a pre-existing Simbody object (e.g., it was allocated from the
     // GeneralForceSubsystem and not from the DefaultSybsystem like most, if
     // not all, discrete variables allocated in OpenSim).
@@ -1848,34 +1829,34 @@ TEST_CASE("Component Interface getDiscreteVariableTrajectory")
     // Get the paths of all discrete variables under "theWorld"
     Array<std::string>& dvPaths = theWorld.getDiscreteVariableNames();
     SimTK_TEST(dvPaths.size() == 2);
-    SimTK_TEST(dvPaths[0] == "/internalSub/discVarX");
-    SimTK_TEST(dvPaths[1] == "/Bar/refPoint");
+    SimTK_TEST(dvPaths[0] == "/internalSub/dvX");
+    SimTK_TEST(dvPaths[1] == "/Bar/point");
 
-    // Get the starting value of refPoint
+    // Get the starting value of point
     // The starting value should be (0.0, 0.1, 0.2). See ~line 403.
-    Vec3 refPointStart(0.0, 0.1, 0.2);
-    Vec3 refPoint = SimTK::Value<Vec3>::downcast(
-        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
-    REQUIRE(refPoint == refPointStart);
+    Vec3 pointStart(0.0, 0.1, 0.2);
+    Vec3 point = SimTK::Value<Vec3>::downcast(
+        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/point"));
+    REQUIRE(point == pointStart);
 
-    // Verify that changes to the local variable refPoint does not change
+    // Verify that changes to the local variable point does not change
     // the value of the discrete variable. That is, verify that the local
-    // variable refPoint holds a copy of the data.
-    refPoint *= 10.0;
-    Vec3 refPoint2 = SimTK::Value<Vec3>::downcast(
-        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
-    REQUIRE(refPoint2 == refPointStart);
+    // variable point holds a copy of the data.
+    point *= 10.0;
+    Vec3 point2 = SimTK::Value<Vec3>::downcast(
+        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/point"));
+    REQUIRE(point2 == pointStart);
 
-    // Set a new value for refPoint and check it.
-    // Note that refPointNew is a reference and so points directly to the
-    // data held by the discrete variable. Thus, changes to refPointNew
+    // Set a new value for point and check it.
+    // Note that pointNew is a reference and so points directly to the
+    // data held by the discrete variable. Thus, changes to pointNew
     // change the value of the discrete variable.
-    Vec3& refPointNew = SimTK::Value<Vec3>::updDowncast(
-        theWorld.updDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
-    refPointNew += refPointStart;
-    Vec3 refPoint3 = SimTK::Value<Vec3>::downcast(
-        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/refPoint"));
-    REQUIRE(refPoint3 == refPointNew);
+    Vec3& pointNew = SimTK::Value<Vec3>::updDowncast(
+        theWorld.updDiscreteVariableAbstractValue(s, "/Bar/point"));
+    pointNew += pointStart;
+    Vec3 point3 = SimTK::Value<Vec3>::downcast(
+        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/point"));
+    REQUIRE(point3 == pointNew);
 
     /*
     const Vector q = Vector(s.getNQ(), SimTK::Pi/2);

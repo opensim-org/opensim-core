@@ -897,8 +897,9 @@ public:
     int getNumStateVariables() const;
 
     /**
-     * Get the names of "continuous" state variables maintained by the Component
-     * and its subcomponents.
+     * Get the names of "continuous" state variables maintained by the
+     * Component and its subcomponents. Each variable's name is prepended
+     * by its path in the component hierarchy.
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
@@ -911,7 +912,8 @@ public:
 
     /**
     * Get the names of discrete state variables maintained by the Component
-    * and its subcomponents.
+    * and its subcomponents. Each variable's name is prepended by its path in
+    * the component hierarchy.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called)
     */
@@ -919,7 +921,8 @@ public:
 
     /**
     * Get the names of the modeling optinons maintained by the Component
-    * and its subcomponents.
+    * and its subcomponents. Each variable's name is prepended by its path in
+    * the component hierarchy.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called)
     */
@@ -1569,74 +1572,6 @@ public:
 
 
     /**
-    * Get the value (assumed to be type double) of a discrete variable
-    * allocated by this Component by name.
-    *
-    * @param state   The State from which to get the value.
-    * @param name    The name of the state variable, not its model path.
-    * @return value  The discrete variable value as a double.
-    * @throws ComponentHasNoSystem if this Component has not been added to a
-    *         System (i.e., if initSystem has not been called).
-    * @throws VariableNotFound if the specified variable cannot be found in
-    * this Component. 
-    */
-    double getDiscreteVariableValue(const SimTK::State& state,
-        const std::string& name) const;
-
-    /**
-    * Get the value (assumed to be type double) of the discrete variable
-    * by specifying its path in the model hierarchy.
-    *
-    * @param state   The State from which to get the value.
-    * @param path    The path of the discrete variable in the model hierarchy.
-    * @return value  The discrete variable value as a double.
-    * @throws ComponentHasNoSystem if this Component has not been added to a
-    *         System (i.e., if initSystem has not been called).
-    * @throws EmptyComponentPath if the path is empty.
-    * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
-    * of the variable cannot be found at the specified path.
-    * @throws VariableNotFound if the specified variable cannot be found at
-    * the path. 
-    */
-    double getDiscreteVariableValueByPath(const SimTK::State& state,
-        const std::string& path) const;
-
-    /**
-     * %Set the value of a discrete variable allocated by this Component by
-     * name.
-     *
-     * @param state  The State for which to set the value.
-     * @param name   The name of the discrete variable (not its path).
-     * @param value  The value to set.
-     * @throws ComponentHasNoSystem if this Component has not been added to a
-     *         System (i.e., if initSystem has not been called).
-     * @throws VariableNotFound if the specified variable cannot be found in
-     * this Component.
-     */
-    void setDiscreteVariableValue(SimTK::State& state, const std::string& name,
-        double value) const;
-
-    /**
-    * %Set the value of a discrete variable by specifying its path in the
-    * model hierarchy.
-    *
-    * @param state  The State on which to set the value.
-    * @param path   The path of the discrete variable. If the path only
-    * contains the name of the variable, the calling component is assumed to be
-    * the variable's owner.
-    * @param value  The value to set.
-    * @throws ComponentHasNoSystem if this Component has not been added to a
-    *         System (i.e., if initSystem has not been called).
-    * @throws EmptyComponentPath if the specified path is empty.
-    * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
-    * of the variable cannot be found at the specified path.
-    * @throws VariableNotFound if the specified variable cannot be found at the
-    * specified path.
-    */
-    void setDiscreteVariableValueByPath(SimTK::State& state,
-        const std::string& path, double value) const;
-
-    /**
     * Based on a specified path, resolve the name of a discrete variable or
     * modeling option and the component that owns it (i.e., its parent).
     * 
@@ -1667,14 +1602,53 @@ public:
     const Component* resolveVariableNameAndOwner(
         const ComponentPath& path, std::string& varName) const;
 
-    // F. C. Anderson =========================================================
-    // January 2023, May 2023
-    // Added the ability to get the value of a discrete variable as a
-    // SimTK::AbstractValue, thereby allowing types like Vec3.
-    // In addition, getDiscreteVariableAbstractValue() and
-    // updDiscreteVariableAbstractValue() accept the path of a discrete
-    // variable, not just its name.
+    /**
+    * Get the value (assumed to be type double) of a discrete variable
+    * allocated by this Component by name.
+    *
+    * @param state State from which to get the value.
+    * @param path Path of the discrete variable in the component hierarchy.
+    * @return value Value of the discrete State.
+    * @throws ComponentHasNoSystem if this Component has not been added to a
+    *         System (i.e., if initSystem has not been called).
+    * @throws EmptyComponentPath if the path is empty.
+    * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    * of the variable cannot be found at the specified path.
+    * @throws VariableNotFound if the specified variable cannot be found in
+    * the candidate owner.
+    */
+    double getDiscreteVariableValue(const SimTK::State& state,
+        const std::string& name) const
+    {
+        double value{SimTK::NaN};
+        value = getDiscreteVariableValue<double>(state, name);
+        return value;
+    }
 
+    /**
+    * Get the value (assumed to be type double) of the discrete variable
+    * by specifying its path in the component hierarchy.
+    *
+    * @param state   The State from which to get the value.
+    * @param path    The path of the discrete variable in the component
+    * hierarchy.
+    * @return value  The discrete variable value as a double.
+    * @throws ComponentHasNoSystem if this Component has not been added to a
+    *         System (i.e., if initSystem has not been called).
+    * @throws EmptyComponentPath if the path is empty.
+    * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    * of the variable cannot be found at the specified path.
+    * @throws VariableNotFound if the specified variable cannot be found at
+    * the path. 
+    */
+    template<class T>
+    T getDiscreteVariableValue(const SimTK::State& state,
+        const std::string& path) const
+    {
+        T value = SimTK::Value<T>::downcast(
+            getDiscreteVariableAbstractValue(state, path));
+        return value;
+    }
 
     /**
     * Retrieve a read-only reference to the abstract value of the discrete
@@ -1701,6 +1675,8 @@ public:
     *          Vec3 x = valDbl + Vec3(0.4);
     *      }
     * ```
+    * For convenience, a templated method that takes care of basic downcasting
+    * is available. See getDiscreteVariableValue<T>().
     *
     * @param state State from which to get the value.
     * @param path Specified path of the variable in the Model heirarchy.
@@ -1715,6 +1691,53 @@ public:
     */
     const SimTK::AbstractValue& getDiscreteVariableAbstractValue(
         const SimTK::State& state, const std::string& path) const;
+
+    /**
+    * %Set the value of a discrete variable by specifying its path in the
+    * component hierarchy.
+    *
+    * @param state  The State on which to set the value.
+    * @param path   The path of the discrete variable. If the path only
+    * contains the name of the variable, the calling component is assumed to be
+    * the variable's owner.
+    * @param value  The value to set.
+    * @throws ComponentHasNoSystem if this Component has not been added to a
+    *         System (i.e., if initSystem has not been called).
+    * @throws EmptyComponentPath if the specified path is empty.
+    * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    * of the variable cannot be found at the specified path.
+    * @throws VariableNotFound if the specified variable cannot be found at the
+    * specified path.
+    */
+    void setDiscreteVariableValue(SimTK::State& state,
+        const std::string& path, double value) const
+    {
+        setDiscreteVariableValue<double>(state, path, value);
+    }
+
+    /**
+    * %Set the value of a discrete variable allocated by this Component by
+    * name. This method is templated to accommodate Discrete Variables that
+    * are not type double.
+    *
+    * @param state State for which to set the value.
+    * @param path Path of the discrete variable in the component hierarchy.
+    * @param value Value to which to set the discrete variable.
+    * @throws ComponentHasNoSystem if this Component has not been added to a
+    * System (i.e., if initSystem has not been called).
+    * @throws EmptyComponentPath if the path is empty.
+    * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    * of the variable cannot be found at the specified path.
+    * @throws VariableNotFound if the specified variable cannot be found in
+    * this Component.
+    */
+    template <class T>
+    void setDiscreteVariableValue(SimTK::State& state, const std::string& path,
+        const T& value) const
+    {
+        SimTK::Value<T>::downcast(
+            updDiscreteVariableAbstractValue(state, path)) = value;
+    }
 
     /**
     * Retrieve a writable reference to the abstract value of the discrete
@@ -1741,63 +1764,21 @@ public:
     *          valDbl = Vec3(0.4);
     *      }
     * ```
-    *
+    * For convenience, a templated method that takes care of basic downcasting
+    * is available. See setDiscreteVariableValue<T>().
+    * 
     * @param state State from which to get the value.
-    * @param pathName Specified path of the discrete variable in the Model
-    * heirarchy.
+    * @param path Specified path of the discrete variable in the component
+    * hierarchy.
     * @return Value of the discrete variable as a reference to an
     * AbstractValue.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
-    * @throws Exception if the discrete variable is not found.
+    * @throws VariableNotFound if the specified variable cannot be found at
+    * the specified path.
     */
     SimTK::AbstractValue& updDiscreteVariableAbstractValue(
-        SimTK::State& state, const std::string& name) const;
-
-    /**
-    * %Set the value of a discrete variable allocated by this Component by
-    * name. This method is templated to accommodate Discrete Variables that
-    * are not type double.
-    *
-    * @param s      the State for which to set the value
-    * @param name   the name of the discrete variable
-    * @param value  the value to set
-    * @throws ComponentHasNoSystem if this Component has not been added to a
-    *         System (i.e., if initSystem has not been called)
-    */
-    template <class T>
-    void setDiscreteVariableValue(SimTK::State& s, const std::string& name,
-        const T& value) const
-    {
-        // Must have already called initSystem.
-        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
-
-        std::map<std::string, DiscreteVariableInfo>::const_iterator it;
-        it = _namedDiscreteVariableInfo.find(name);
-
-        if (it != _namedDiscreteVariableInfo.end()) {
-            SimTK::DiscreteVariableIndex dvIndex = it->second.index;
-
-            // Account for non-default subsystem
-            const SimTK::Subsystem* subsystem = it->second.subsystem;
-            if (subsystem == nullptr) subsystem = &getDefaultSubsystem();
-
-            // Update the value
-            SimTK::Value<T>::downcast(
-                subsystem->updDiscreteVariable(s,dvIndex)) = value;
-
-        } else {
-            std::stringstream msg;
-            msg << "Component::setDiscreteVariable: ERR- name '" << name
-                << "' not found.\n "
-                << "for component '" << getName() << "' of type "
-                << getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
-        }
-    }
-
-    // F. C. Anderson ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+        SimTK::State& state, const std::string& path) const;
 
 
     //-------------------------------------------------------------------------
@@ -1897,13 +1878,8 @@ public:
         it = owner->_namedDiscreteVariableInfo.find(dvName);
 
         // Not Found. Throw an exception.
-        if( it == owner->_namedDiscreteVariableInfo.end()) {
-            std::stringstream msg;
-            msg << "Component::getDiscreteVariableTrajectory: ERR- '"
-                << pathName << "' not found.\n "
-                << "for component '" << getName() << "' of type "
-                << getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
+        if(it == owner->_namedDiscreteVariableInfo.end()) {
+            OPENSIM_THROW(VariableNotFound, getName(), dvName);
         }
 
         // Found. Loop over the input and set the output.
@@ -2003,7 +1979,7 @@ public:
     @param output Trajectory of SimTK::State objects with updated values for
     the specified variable. */
     template<class T>
-    void setStatesTrajectoryForStateVariable(const std::string& pathName,
+    void setStateVariableTrajectory(const std::string& pathName,
         const SimTK::Array_<T>& input,
         SimTK::Array_<SimTK::State>& output) const
     {
@@ -2041,7 +2017,7 @@ public:
     @param output Trajectory of SimTK::State objects with updated values for
     the specified variable. */
     template<class T>
-    void setStatesTrajectoryForDiscreteVariable(const std::string& pathName,
+    void setDiscreteVariableTrajectory(const std::string& pathName,
         const SimTK::Array_<T>& input,
         SimTK::Array_<SimTK::State>& output) const
     {
@@ -2062,13 +2038,7 @@ public:
 
         // Not Found. Throw an exception.
         if( it == owner->_namedDiscreteVariableInfo.end()) {
-            std::stringstream msg;
-            msg << "Component::setStatesTrajectoryForDiscreteVariable: "
-                << "ERR- '" << pathName
-                << "' not found.\n "
-                << "for component '" << owner->getName() << "' of type "
-                << owner->getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
+            OPENSIM_THROW(VariableNotFound, getName(), name);
         }
 
         // Found. Loop over the input and set the output.
@@ -2097,9 +2067,9 @@ public:
     @param pathName Path name of the specified variable in the Model heirarchy.
     @param input Trajectory of the specified option.
     @param output Trajectory of SimTK::State objects with updated values for
-    the specified option. */
+    the specified modeling option. */
     template<class T>
-    void setStatesTrajectoryForModelingOption(const std::string& pathName,
+    void setModelingOptionTrajectory(const std::string& pathName,
         const SimTK::Array_<T>& input,
         SimTK::Array_<SimTK::State>& output) const
     {
@@ -3218,15 +3188,15 @@ protected:
     getDiscreteVariableIndex(const std::string& name) const;
 
     /**
-    * Update the state index and associated subsystem of a Component's discrete
-    * variable. This method is intended for a Component that possesses a
-    * discrete variable that was allocated external to OpenSim. Such a
+    * Initialize the state index and associated subsystem of a Component's
+    * discrete variable. This method is intended for a Component that possesses
+    * a discrete variable that was allocated external to OpenSim. Such a
     * situation can occur, for example, when a Simbody subsystem is wrapped
     * and brought into OpenSim as a Component. To access a discrete variable
     * owned by the wrapped Component via the Component API, OpenSim must 
     * know the index of the externally allocated discrete state as well
-    * the subsystem from which it was allocated. The update should be done by
-    * implementing an overridding extendRealizeTopology() method in the
+    * the subsystem from which it was allocated. The initialization should be
+    * done by implementing an overridding extendRealizeTopology() method in the
     * wrapper code and, in that method, calling this method. See class
     * OpenSim::ExponentialContact for an example of how to wrap a Simbody
     * subsystem and bring its externally allocated discrete variables into
@@ -3236,8 +3206,10 @@ protected:
     * @param index State index of the discrete variable.
     * @param subsystem Pointer to the SimTK::Subsystem from which the discrete
     * variable was allocated.
+    * @throws VariableNotFound if the specified variable cannot be found in
+    * this Component.
     */
-    void updDiscreteVariableIndex(const std::string& name,
+    void initializeDiscreteVariableIndex(const std::string& name,
         const SimTK::DiscreteVariableIndex& index,
         const SimTK::Subsystem* subsystem = nullptr) const;
 
@@ -3734,9 +3706,9 @@ private:
     // Added so that discrete states can be serialized and deserialized.
     //
     // Get the number of discrete states that the Component added to the
-    // underlying computational system. It includes the number of built-in
-    // discrete states exposed by this component. It represents the number of
-    // discrete variables managed by this Component.
+    // underlying computational system. The number of built-in discrete
+    // states exposed by this component is included. It represents the number
+    // of discrete variables managed by this Component.
     int getNumDiscreteVariablesAddedByComponent() const {
         return (int)_namedDiscreteVariableInfo.size();
     }
@@ -3746,8 +3718,8 @@ private:
     // Added so that modeling options can be serialized and deserialized.
     //
     // Get the number of modeling options that the Component added to the
-    // underlying computational system. It includes the number of built-in
-    // modeling options exposed by this component. It represents the number
+    // underlying computational system. The number of built-in modeling
+    // options exposed by this component is included. It represents the number
     // of modeling options managed by this Component.
     int getNumModelingOptionsAddedByComponent() const {
         return (int)_namedModelingOptionInfo.size();

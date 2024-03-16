@@ -1088,13 +1088,7 @@ void Component::
 
 
 // F. C. Anderson =============================================================
-// January 2023, May 2023
-// Added the ability to get the value of a discrete variable as a
-// SimTK::AbstractValue, thereby allowing types like Vec3.
-// In addition, getDiscreteVariableAbstractValue() and
-// updDiscreteVariableAbstractValue() accept the path of a discrete
-// variable, not just its name.
-
+// Methods below here added to enhance Component API for discrete variables.
 
 //_____________________________________________________________________________
 // F. C. Anderson (Feb 2023)
@@ -1143,88 +1137,6 @@ Array<std::string> Component::getDiscreteVariableNamesAddedByComponent() const {
 }
 
 //_____________________________________________________________________________
-// F. C. Anderson (Jan 2023)
-// Get the value (assumed to be type double) of a discrete variable allocated
-// by this Component by name. So that existing code does not need to change,
-// this method fulfills the API prior to Jan 2023.
-double
-Component::
-getDiscreteVariableValue(const SimTK::State& s, const std::string& name) const
-{
-    double value = SimTK::NaN;
-    value = SimTK::Value<double>::downcast(
-        getDiscreteVariableAbstractValue(s, name));
-    return value;
-}
-
-//_____________________________________________________________________________
-// F. C. Anderson (March 2024)
-// The following method was added for convenience. It calls
-// resolveVariableNameAndOwner() internally.
-double
-Component::
-getDiscreteVariableValueByPath(const SimTK::State& s,
-    const std::string& path) const
-{
-    double value = SimTK::NaN;
-    value = SimTK::Value<double>::downcast(
-        getDiscreteVariableAbstractValue(s, path));
-    return value;
-}
-
-//_____________________________________________________________________________
-// Set the value (assumed to be double) of a discrete variable allocated by
-// this Component by name.
-void
-Component::
-setDiscreteVariableValue(SimTK::State& s, const std::string& name,
-    double value) const
-{
-    // Must have already called initSystem.
-    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
-
-    std::map<std::string, DiscreteVariableInfo>::const_iterator it;
-    it = _namedDiscreteVariableInfo.find(name);
-
-    if(it != _namedDiscreteVariableInfo.end()) {
-        SimTK::DiscreteVariableIndex dvIndex = it->second.index;
-
-        // F. C. Anderson (Jan 2023)
-        // Previously, it was assumed that all discrete states were allocated
-        // from the default Subsystem. This is likely not the case when
-        // discrete states are allocated by native Simbody objects. For
-        // example, class ExponentialSpringForce allocates 4 discrete states,
-        // not from the default Subsystem, but from the GeneralForceSubsystem.
-        // To account for the fact that an object might allocate discrete
-        // variables from a different Subsystem, a pointer was added to the
-        // DiscreteVariableInfo struct. This pointer is now consulted for any
-        // non-default Subsystem. If this pointer is nullptr, which is its
-        // default value, then the default Subsystem is used.
-        const SimTK::Subsystem* subsystem = it->second.subsystem;
-        if (subsystem == nullptr) subsystem = &getDefaultSubsystem();
-        SimTK::Value<double>::downcast(
-            subsystem->updDiscreteVariable(s, dvIndex)).upd() = value;
-
-    } else {
-        OPENSIM_THROW(VariableNotFound, getName(), name);
-    }
-}
-
-//_____________________________________________________________________________
-// F. C. Anderson (March 2024)
-// The following method was added for convenience. It calls
-// resolveVariableNameAndOwner() internally.
-void
-Component::
-setDiscreteVariableValueByPath(SimTK::State& state,
-    const std::string& path, double value) const
-{
-    std::string varName;
-    const Component* owner = resolveVariableNameAndOwner(path, varName);
-    owner->setDiscreteVariableValue(state, varName, value);
-}
-
-//_____________________________________________________________________________
 // F. C. Anderson (May 2023)
 // Added so that a variable can be accessed based on a specified path.
 const Component*
@@ -1249,7 +1161,7 @@ resolveVariableNameAndOwner(const ComponentPath& path,
 }
 
 //_____________________________________________________________________________
-// F. C. Anderson (Jan 2023, May 2023)
+// F. C. Anderson (Jan 2023, May 2023, Feb 2024)
 // This method was added in order to handle Discrete Variables (DV) that are
 // not type double.  In addition, a DV can be accessed by specifying its path
 // instead of just the name of the DV.
@@ -1275,7 +1187,7 @@ getDiscreteVariableAbstractValue(const SimTK::State& s,
 
         // F. C. Anderson (Jan 2023)
         // Previously, it was assumed that all discrete states were allocated
-        // from the default Subsystem. This is likely not the case when
+        // from the DefaultSubsystem. This is likely not the case when
         // discrete states are allocated by native Simbody objects. For
         // example, class ExponentialSpringForce allocates 4 discrete states,
         // not from the default Subsystem, but from the GeneralForceSubsystem.
@@ -1294,14 +1206,14 @@ getDiscreteVariableAbstractValue(const SimTK::State& s,
 }
 
 //_____________________________________________________________________________
-// F. C. Anderson (Jan 2023, May 2023)
+// F. C. Anderson (Jan 2023, May 2023, Feb 2024)
 // This method was added in order to handle Discrete Variables (DV) that are
 // not type double and, in addition, to allow a path to be specified instead
 // of just the name of the DV.
 SimTK::AbstractValue&
 Component::
 updDiscreteVariableAbstractValue(SimTK::State& s,
-    const std::string& pathName) const
+    const std::string& path) const
 {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
@@ -1309,7 +1221,7 @@ updDiscreteVariableAbstractValue(SimTK::State& s,
     // Resolve the name of the DV and its owner.
     std::string dvName{""};
     const Component* owner =
-        resolveVariableNameAndOwner(pathName, dvName);
+        resolveVariableNameAndOwner(path, dvName);
 
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = owner->_namedDiscreteVariableInfo.find(dvName);
@@ -1337,10 +1249,8 @@ updDiscreteVariableAbstractValue(SimTK::State& s,
     }
 }
 
-
+// Methods above here added to enhance Component API for discrete variables.
 // F. C. Anderson ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
 
 
 
@@ -1692,15 +1602,14 @@ getDiscreteVariableIndex(const std::string& name) const
 // of class Component.
 void
 Component::
-updDiscreteVariableIndex(const std::string& name,
+initializeDiscreteVariableIndex(const std::string& name,
     const SimTK::DiscreteVariableIndex& index,
     const SimTK::Subsystem* subsystem) const
 {
     std::map<std::string, DiscreteVariableInfo>::iterator it;
     it = _namedDiscreteVariableInfo.find(name);
     if (it == _namedDiscreteVariableInfo.end()) {
-        throw Exception("Component::updDiscreteVariableIndex: "
-            " discrete variable '" + name + "' not found.");
+        OPENSIM_THROW(VariableNotFound, getName(), name);
     }
     it->second.index = index;
     it->second.subsystem = subsystem;
