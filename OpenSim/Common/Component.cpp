@@ -871,8 +871,8 @@ const Component::StateVariable* Component::traverseToStateVariable(
     return found;
 }
 
-// Get the names of "continuous" state variables maintained by the Component and
-// its subcomponents.
+// Get the names of "continuous" state variables maintained by the Component
+// and its subcomponents.
 Array<std::string> Component::getStateVariableNames() const
 {
     // Must have already called initSystem.
