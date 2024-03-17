@@ -673,49 +673,44 @@ getModelingOptionNamesAddedByComponent() const {
 
 // Get the value of a ModelingOption flag for this Component.
 int Component::
-getModelingOption(const SimTK::State& s, const std::string& name) const
+getModelingOption(const SimTK::State& s, const std::string& path) const
 {
+    std::string moName{""};
+    const Component* owner =
+        resolveVariableNameAndOwner(path, moName);
     std::map<std::string, ModelingOptionInfo>::const_iterator it;
-    it = _namedModelingOptionInfo.find(name);
+    it = owner->_namedModelingOptionInfo.find(moName);
 
     if(it != _namedModelingOptionInfo.end()) {
         SimTK::DiscreteVariableIndex dvIndex = it->second.index;
         return SimTK::Value<int>::downcast(
             getDefaultSubsystem().getDiscreteVariable(s, dvIndex)).get();
     } else {
-        std::stringstream msg;
-        msg << "Component::getModelingOption: ERR- name '" << name
-            << "' not found.\n "
-            << "for component '"<< getName() << "' of type "
-            << getConcreteClassName();
-        throw Exception(msg.str(),__FILE__,__LINE__);
+        OPENSIM_THROW(VariableNotFound, getName(), moName);
         return -1;
     }
 }
 
-// Set the value of a discrete variable allocated by this Component by name.
+// Set the value of a modeling option allocated by this Component by path.
 void Component::
-setModelingOption(SimTK::State& s, const std::string& name, int flag) const
+setModelingOption(SimTK::State& s, const std::string& path, int flag) const
 {
+    std::string moName{""};
+    const Component* owner =
+        resolveVariableNameAndOwner(path, moName);
     std::map<std::string, ModelingOptionInfo>::const_iterator it;
-    it = _namedModelingOptionInfo.find(name);
+    it = owner->_namedModelingOptionInfo.find(moName);
 
     if(it != _namedModelingOptionInfo.end()) {
         SimTK::DiscreteVariableIndex dvIndex = it->second.index;
         if(flag > it->second.maxOptionValue){
-            std::stringstream msg;
-            msg << "Component::setModelingOption: "<< name
-                << " flag cannot exceed "<< it->second.maxOptionValue <<".\n ";
-        throw Exception(msg.str(),__FILE__,__LINE__);
+            OPENSIM_THROW(ModelingOptionMaxExceeded, getName(), moName, flag,
+                it->second.maxOptionValue);
         }
-
         SimTK::Value<int>::downcast(
             getDefaultSubsystem().updDiscreteVariable(s, dvIndex)).upd() = flag;
     } else {
-        std::stringstream msg;
-        msg << "Component::setModelingOption: modeling option " << name
-            << " not found.\n ";
-        throw Exception(msg.str(),__FILE__,__LINE__);
+        OPENSIM_THROW(VariableNotFound, getName(), moName);
     }
 }
 

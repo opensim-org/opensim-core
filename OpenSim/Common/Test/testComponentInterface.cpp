@@ -99,6 +99,7 @@ private:
         Super::extendAddToSystem(system);
         addStateVariable("subState", Stage::Dynamics);
         addDiscreteVariable("dvX", Stage::Dynamics);
+        addModelingOption("moX", 2);
     }
     void computeStateVariableDerivatives(const SimTK::State& s) const override {
         double deriv = exp(-2.0*s.getTime());
@@ -1646,20 +1647,67 @@ TEST_CASE("Component Interface Component::resolveVariableNameAndOwner")
         VariableNotFound);
 }
 
-TEST_CASE("Component Interface Component::getDiscreteVariableValue")
+TEST_CASE("Component Interface Modeling Options")
 {
-    // ------------------------------------------------------------------------
-    // This test case exercises the following Component methods in the manner
-    // they are intended to be used (i.e., no exceptions should be thrown):
-    //     getDiscreteVariableNames()
-    //     setDiscreteVariableValueByPath(), which calls
-    //         resolveVariableNameAndOwner()
-    //         setDiscreteVariableValue()
-    //     getDiscreteVariableValueByPath(), which calls
-    //         resolveVariableNameAndOwner()
-    //         getDiscreteVariableValue()
-    // ------------------------------------------------------------------------
+    TheWorld top;
+    top.setName("top");
+    Sub* a = new Sub();
+    a->setName("a");
+    Sub* b = new Sub();
+    b->setName("b");
 
+    top.add(a);
+    a->addComponent(b);
+
+    MultibodySystem system;
+    top.buildUpSystem(system);
+    State s = system.realizeTopology();
+
+    // Get the paths of all discrete variables under "top"
+    Array<std::string>& moPaths = top.getModelingOptionNames();
+    REQUIRE(moPaths.size() == 3);
+    REQUIRE(moPaths[0] == "/internalSub/moX");
+    REQUIRE(moPaths[1] == "/a/moX");
+    REQUIRE(moPaths[2] == "/a/b/moX");
+
+    // Set a value for each discrete variable by path.
+    // Discrete variables are not Components, so specialized
+    // traversal methods need to be used.
+    // See Component::resolveVariableNameAndOwner().
+    // Set
+    top.setModelingOption(s, moPaths[0], 0);
+    top.setModelingOption(s, moPaths[1], 1);
+    top.setModelingOption(s, moPaths[2], 2);
+    CHECK_THROWS_AS(top.setModelingOption(s, moPaths[2], 3),
+        ModelingOptionMaxExceeded);
+
+    // Get
+    // ----- With an absolute path, the caller doesn't matter.
+    // caller is top
+    CHECK(top.getModelingOption(s,"/internalSub/moX") == 0);
+    CHECK(top.getModelingOption(s,"/a/moX") == 1);
+    CHECK(top.getModelingOption(s,"/a/b/moX") == 2);
+    // caller is a
+    CHECK(a->getModelingOption(s,"/internalSub/moX") == 0);
+    CHECK(a->getModelingOption(s,"/a/moX") == 1);
+    CHECK(a->getModelingOption(s,"/a/b/moX") == 2);
+    // caller is b
+    CHECK(b->getModelingOption(s,"/internalSub/moX") == 0);
+    CHECK(b->getModelingOption(s,"/a/moX") == 1);
+    CHECK(b->getModelingOption(s,"/a/b/moX") == 2);
+    // ----- With relative paths, the caller matters.
+    // down from a
+    CHECK(a->getModelingOption(s,"moX") == 1);
+    CHECK(a->getModelingOption(s,"b/moX") == 2);
+    // down from b
+    CHECK(b->getModelingOption(s,"/moX") == 2);
+    // up from b
+    CHECK(b->getModelingOption(s,"../moX") == 1);
+    CHECK(b->getModelingOption(s,"../../internalSub/moX") == 0);
+}
+
+TEST_CASE("Component Interface Discrete Variables")
+{
     TheWorld top;
     top.setName("top");
     Sub* a = new Sub();
@@ -1676,10 +1724,10 @@ TEST_CASE("Component Interface Component::getDiscreteVariableValue")
 
     // Get the paths of all discrete variables under "top"
     Array<std::string>& dvPaths = top.getDiscreteVariableNames();
-    SimTK_TEST(dvPaths.size() == 3);
-    SimTK_TEST(dvPaths[0] == "/internalSub/dvX");
-    SimTK_TEST(dvPaths[1] == "/a/dvX");
-    SimTK_TEST(dvPaths[2] == "/a/b/dvX");
+    REQUIRE(dvPaths.size() == 3);
+    REQUIRE(dvPaths[0] == "/internalSub/dvX");
+    REQUIRE(dvPaths[1] == "/a/dvX");
+    REQUIRE(dvPaths[2] == "/a/b/dvX");
 
     // Set a value for each discrete variable by path.
     // Discrete variables are not Components, so specialized
@@ -1693,30 +1741,29 @@ TEST_CASE("Component Interface Component::getDiscreteVariableValue")
     // Get
     // ----- With an absolute path, the caller doesn't matter.
     // caller is top
-    SimTK_TEST(top.getDiscreteVariableValue(s,"/internalSub/dvX") == 0.0);
-    SimTK_TEST(top.getDiscreteVariableValue(s,"/a/dvX") == 10.0);
-    SimTK_TEST(top.getDiscreteVariableValue(s,"/a/b/dvX") == 20.0);
+    CHECK(top.getDiscreteVariableValue(s,"/internalSub/dvX") == 0.0);
+    CHECK(top.getDiscreteVariableValue(s,"/a/dvX") == 10.0);
+    CHECK(top.getDiscreteVariableValue(s,"/a/b/dvX") == 20.0);
     // caller is a
-    SimTK_TEST(a->getDiscreteVariableValue(s,"/internalSub/dvX") == 0.0);
-    SimTK_TEST(a->getDiscreteVariableValue(s,"/a/dvX") == 10.0);
-    SimTK_TEST(a->getDiscreteVariableValue(s,"/a/b/dvX") == 20.0);
+    CHECK(a->getDiscreteVariableValue(s,"/internalSub/dvX") == 0.0);
+    CHECK(a->getDiscreteVariableValue(s,"/a/dvX") == 10.0);
+    CHECK(a->getDiscreteVariableValue(s,"/a/b/dvX") == 20.0);
     // caller is b
-    SimTK_TEST(b->getDiscreteVariableValue(s,"/internalSub/dvX")
-        == 0.0);
-    SimTK_TEST(b->getDiscreteVariableValue(s,"/a/dvX") == 10.0);
-    SimTK_TEST(b->getDiscreteVariableValue(s,"/a/b/dvX") == 20.0);
+    CHECK(b->getDiscreteVariableValue(s,"/internalSub/dvX") == 0.0);
+    CHECK(b->getDiscreteVariableValue(s,"/a/dvX") == 10.0);
+    CHECK(b->getDiscreteVariableValue(s,"/a/b/dvX") == 20.0);
     // ----- With relative paths, the caller matters.
     // down from a
-    SimTK_TEST(a->getDiscreteVariableValue(s,"dvX") == 10.0);
-    SimTK_TEST(a->getDiscreteVariableValue(s,"b/dvX") == 20.0);
+    CHECK(a->getDiscreteVariableValue(s,"dvX") == 10.0);
+    CHECK(a->getDiscreteVariableValue(s,"b/dvX") == 20.0);
     // down from b
-    SimTK_TEST(b->getDiscreteVariableValue(s,"dvX") == 20.0);
+    CHECK(b->getDiscreteVariableValue(s,"/dvX") == 20.0);
     // up from b
-    SimTK_TEST(b->getDiscreteVariableValue(s,"../dvX") == 10.0);
-    SimTK_TEST(b->getDiscreteVariableValue(s,"../../internalSub/dvX") == 0.0);
+    CHECK(b->getDiscreteVariableValue(s,"../dvX") == 10.0);
+    CHECK(b->getDiscreteVariableValue(s,"../../internalSub/dvX") == 0.0);
 }
 
-TEST_CASE("Component Interface getDiscreteVariableValue<Vec3>")
+TEST_CASE("Component Interface Discrete Variables Vec3")
 {
     // ------------------------------------------------------------------------
     // Component Bar possesses a discrete variable called "point", which is
@@ -1760,9 +1807,9 @@ TEST_CASE("Component Interface getDiscreteVariableValue<Vec3>")
 
     // Get the paths of all discrete variables under "theWorld"
     Array<std::string>& dvPaths = theWorld.getDiscreteVariableNames();
-    SimTK_TEST(dvPaths.size() == 2);
-    SimTK_TEST(dvPaths[0] == "/internalSub/dvX");
-    SimTK_TEST(dvPaths[1] == "/Bar/point");
+    REQUIRE(dvPaths.size() == 2);
+    REQUIRE(dvPaths[0] == "/internalSub/dvX");
+    REQUIRE(dvPaths[1] == "/Bar/point");
 
     // Get the starting value of point
     // The starting value should be (0.0, 0.1, 0.2). See ~line 403.
@@ -1815,14 +1862,19 @@ TEST_CASE("Component Interface State Trajectories")
     // Form the q and u vectors
     const Array<std::string>& svPaths = wrld.getStateVariableNames();
     cout << "svPaths = " << svPaths << endl;
-    REQUIRE(svPaths.size() == s.getNQ());
-    const Vector q = Vector(s.getNQ(), 0.1);
+    REQUIRE(svPaths.size() == 4);
+    const Vector y = Vector(svPaths.size(), 0.1);
 
     // Get the paths of all discrete variables under "wrld"
     OpenSim::Array<std::string>& dvPaths = wrld.getDiscreteVariableNames();
     REQUIRE(dvPaths.size() == 2);
     REQUIRE(dvPaths[0] == "/internalSub/dvX");
     REQUIRE(dvPaths[1] == "/Bar/point");
+
+    // Get the paths of all modeling moptions under "wrld"
+    OpenSim::Array<std::string>& moPaths = wrld.getModelingOptionNames();
+    REQUIRE(moPaths.size() == 1);
+    REQUIRE(moPaths[0] == "/internalSub/moX");
 
     // Get the starting value of point
     // The starting value should be (0.0, 0.1, 1.0). See ~line 403.
@@ -1832,81 +1884,98 @@ TEST_CASE("Component Interface State Trajectories")
     SimTK::Array_<SimTK::State> simTraj;
     int nsteps{11};
     simTraj.reserve(nsteps);
+    int moX{0};
     double dvX{0.0};
     Vec3 point(0.0);
     for (int i = 0; i < nsteps; ++i){
         // Time
         s.updTime() = i*0.01;
         // State Variables
-        wrld.setStateVariableValue(s, svPaths[0], i*q[0] + 0);
-        wrld.setStateVariableValue(s, svPaths[1], i*q[1] + 1);
-        wrld.setStateVariableValue(s, svPaths[2], i*q[2] + 2);
-        wrld.setStateVariableValue(s, svPaths[3], i*q[3] + 3);
+        wrld.setStateVariableValue(s, svPaths[0], i*y[0] + 0);
+        wrld.setStateVariableValue(s, svPaths[1], i*y[1] + 1);
+        wrld.setStateVariableValue(s, svPaths[2], i*y[2] + 2);
+        wrld.setStateVariableValue(s, svPaths[3], i*y[3] + 3);
         // Discrete Variables
         dvX = i*0.5 ;
         wrld.setDiscreteVariableValue(s, dvPaths[0], dvX);
         point = i*pointStart;
         wrld.setDiscreteVariableValue<Vec3>(s, dvPaths[1], point);
         system.realize(s, Stage::Report);
+        // Modeling Option
+        moX = 1;
+        wrld.setModelingOption(s, moPaths[0], moX);
         // Accumulate the simulated state trajectory
         simTraj.emplace_back(s);
     }
 
     // Extract individual variable trajectories (as though serializing)
     // state variables
-    SimTK::Array_<double> q0Traj, q1Traj, q2Traj, q3Traj;
-    wrld.getStateVariableTrajectory<double>(svPaths[0], simTraj, q0Traj);
-    wrld.getStateVariableTrajectory<double>(svPaths[1], simTraj, q1Traj);
-    wrld.getStateVariableTrajectory<double>(svPaths[2], simTraj, q2Traj);
-    wrld.getStateVariableTrajectory<double>(svPaths[3], simTraj, q3Traj);
+    SimTK::Array_<double> y0Traj, y1Traj, y2Traj, y3Traj;
+    wrld.getStateVariableTrajectory<double>(svPaths[0], simTraj, y0Traj);
+    wrld.getStateVariableTrajectory<double>(svPaths[1], simTraj, y1Traj);
+    wrld.getStateVariableTrajectory<double>(svPaths[2], simTraj, y2Traj);
+    wrld.getStateVariableTrajectory<double>(svPaths[3], simTraj, y3Traj);
     // discrete variables
     SimTK::Array_<double> dv0Traj;
     SimTK::Array_<Vec3> dv1Traj;
     wrld.getDiscreteVariableTrajectory<double>(dvPaths[0], simTraj, dv0Traj);
     wrld.getDiscreteVariableTrajectory<Vec3>(dvPaths[1], simTraj, dv1Traj);
+    // modeling option
+    SimTK::Array_<int> mo0Traj;
+    wrld.getModelingOptionTrajectory<int>(moPaths[0], simTraj, mo0Traj);
 
     // Check the individual variable trajectories
     for (int i = 0; i < nsteps; ++i){
         // state variables
-        CHECK(q0Traj[i] == i*q[0] + 0);
-        CHECK(q1Traj[i] == i*q[1] + 1);
-        CHECK(q2Traj[i] == i*q[2] + 2);
-        CHECK(q3Traj[i] == i*q[3] + 3);
+        CHECK(y0Traj[i] == i*y[0] + 0);
+        CHECK(y1Traj[i] == i*y[1] + 1);
+        CHECK(y2Traj[i] == i*y[2] + 2);
+        CHECK(y3Traj[i] == i*y[3] + 3);
         // discrete variables
         CHECK(dv0Traj[i] == i*0.5);
         CHECK(dv1Traj[i] == i*pointStart);
+        // modeling option
+        CHECK(mo0Traj[i] == 1);
     }
 
     // Create a new state trajectory (as though deserializing)
-    // newTraj must be must be the expected size
+    // Alter the modeling option so we know that its trajectory has been set.
+    // moX is different because it doesn't change during the "simulation".
+    wrld.setModelingOption(s, moPaths[0], 2);
+    // newTraj must be must the expected size before any set calls.
     SimTK::Array_<SimTK::State> newTraj;
     for (int i = 0; i < nsteps; ++i) newTraj.emplace_back(s);
     // state variables
-    wrld.setStateVariableTrajectory<double>(svPaths[0], q0Traj, newTraj);
-    wrld.setStateVariableTrajectory<double>(svPaths[1], q1Traj, newTraj);
-    wrld.setStateVariableTrajectory<double>(svPaths[2], q2Traj, newTraj);
-    wrld.setStateVariableTrajectory<double>(svPaths[3], q3Traj, newTraj);
+    wrld.setStateVariableTrajectory<double>(svPaths[0], y0Traj, newTraj);
+    wrld.setStateVariableTrajectory<double>(svPaths[1], y1Traj, newTraj);
+    wrld.setStateVariableTrajectory<double>(svPaths[2], y2Traj, newTraj);
+    wrld.setStateVariableTrajectory<double>(svPaths[3], y3Traj, newTraj);
     // discrete variables
     wrld.setDiscreteVariableTrajectory<double>(dvPaths[0], dv0Traj, newTraj);
     wrld.setDiscreteVariableTrajectory<Vec3>(dvPaths[1], dv1Traj, newTraj);
+    // modeling option
+    wrld.setModelingOptionTrajectory<int>(moPaths[0], mo0Traj, newTraj);
 
     // Check the new state trajectory
     SimTK::Array_<double> nq0Traj, nq1Traj, nq2Traj, nq3Traj;
     SimTK::Array_<double> ndv0Traj;
     SimTK::Array_<Vec3> ndv1Traj;
+    SimTK::Array_<int> nmo0Traj;
     wrld.getStateVariableTrajectory<double>(svPaths[0], newTraj, nq0Traj);
     wrld.getStateVariableTrajectory<double>(svPaths[1], newTraj, nq1Traj);
     wrld.getStateVariableTrajectory<double>(svPaths[2], newTraj, nq2Traj);
     wrld.getStateVariableTrajectory<double>(svPaths[3], newTraj, nq3Traj);
     wrld.getDiscreteVariableTrajectory<double>(dvPaths[0], newTraj, ndv0Traj);
     wrld.getDiscreteVariableTrajectory<Vec3>(dvPaths[1], newTraj, ndv1Traj);
+    wrld.getModelingOptionTrajectory<int>(moPaths[0], newTraj, nmo0Traj);
     for (int i = 0; i < nsteps; ++i){
-        CHECK(nq0Traj[i] == i*q[0] + 0);
-        CHECK(nq1Traj[i] == i*q[1] + 1);
-        CHECK(nq2Traj[i] == i*q[2] + 2);
-        CHECK(nq3Traj[i] == i*q[3] + 3);
+        CHECK(nq0Traj[i] == i*y[0] + 0);
+        CHECK(nq1Traj[i] == i*y[1] + 1);
+        CHECK(nq2Traj[i] == i*y[2] + 2);
+        CHECK(nq3Traj[i] == i*y[3] + 3);
         CHECK(ndv0Traj[i] == i*0.5);
         CHECK(ndv1Traj[i] == i*pointStart);
+        CHECK(nmo0Traj[i] == 1);
     }
 }
 

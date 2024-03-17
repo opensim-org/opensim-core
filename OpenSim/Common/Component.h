@@ -140,6 +140,25 @@ public:
     }
 };
 
+class ModelingOptionMaxExceeded : public Exception {
+public:
+    ModelingOptionMaxExceeded(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& componentName,
+        const std::string& moName,
+        const int flag,
+        const int max) :
+        Exception(file, line, func) {
+        std::string msg = componentName + "." + func;
+        msg += "(): called with flag = ";
+        msg += std::to_string(flag) += ".\n";
+        msg += "Value of modeling option '" + moName + "' cannot exceed ";
+        msg += std::to_string(max) + ".";
+        addMessage(msg);
+    }
+};
+
 class VariableNotFound : public Exception {
 public:
     VariableNotFound(const std::string& file,
@@ -149,7 +168,7 @@ public:
         const std::string& varName) :
         Exception(file, line, func) {
         std::string msg = componentName + "." + func;
-        msg += "(): Variable '" + varName + "' not found.";
+        msg += "(): variable or option '" + varName + "' not found.";
         addMessage(msg);
     }
 };
@@ -897,7 +916,7 @@ public:
     int getNumStateVariables() const;
 
     /**
-     * Get the names of "continuous" state variables maintained by the
+     * Get the names of continuous state variables maintained by the
      * Component and its subcomponents. Each variable's name is prepended
      * by its path in the component hierarchy.
      * @throws ComponentHasNoSystem if this Component has not been added to a
@@ -920,8 +939,8 @@ public:
     Array<std::string> getDiscreteVariableNames() const;
 
     /**
-    * Get the names of the modeling optinons maintained by the Component
-    * and its subcomponents. Each variable's name is prepended by its path in
+    * Get the names of the modeling options maintained by the Component
+    * and its subcomponents. Each options's name is prepended by its path in
     * the component hierarchy.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called)
@@ -1415,27 +1434,49 @@ public:
     //@{
 
     /**
-     * Get a ModelingOption flag for this Component by name.
-     * The flag is an integer corresponding to the index of modelingOptionNames used
-     * add the modeling option to the component. @see addModelingOption
-    *
-     * @param state  the State in which to set the modeling option
-     * @param name   the name (string) of the modeling option of interest
-     * @return flag  integer value for modeling option
+     * Get the value of a modeling option by specifying its path in the
+     * component hierarchy.
+     *
+     * @param state State in which to set the modeling option.
+     * @param path Path of the modeling option in the component hierarchy.
+     * The last name in the path should be the name of the modeling option.
+     * A path can consist of just the name of the modeling option, in which
+     * case the calling component is assumed to be the owner of the option.
+     * @return flag Value of the modeling option.
+     * @throws EmptyComponentPath if the path is empty.
+     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+     * of the modeling option cannot be found at the specified path.
+     * @throws VariableNotFound if the specified modeling option cannot be
+     * found in the candidate owner.
     */
-    int getModelingOption(const SimTK::State& state, const std::string& name) const;
+    int getModelingOption(const SimTK::State& state,
+        const std::string& path) const;
 
     /**
-     * %Set the value of a ModelingOption flag for this Component.
-     * if the integer value exceeds the number of option names used to
-     * define the options, an exception is thrown. The SimTK::State
-     * Stage will be reverted back to Stage::Instance.
+     * %Set the value of a modeling option by specifying its path in the
+     * component hierarchy. If the value of the flag exceeds the maximum
+     * allowed for the specified modeling option, an exception will be thrown.
+     * See Component::addModelingOption().
+     * 
+     * Note that successfully setting the value of the modeling option will
+     * revert the realization stage back to SimTK::Stage::Instance.
      *
-     * @param state  the State in which to set the flag
-     * @param name   the name (string) of the modeling option of interest
-     * @param flag   the desired flag (int) value specifying the modeling option
+     * @param state State in which to set the modeling option.
+     * @param path Path of the modeling option in the component hierarchy.
+     * The last name in the path should be the name of the modeling option.
+     * A path can consist of just the name of the modeling option, in which
+     * case the calling component is assumed to be the owner of the option.
+     * @param flag Value to which to set the modeling option.
+     * @throws ModelingOptionMaxExceeded if the flag is greater that the
+     * maximum allowed.
+     * @throws EmptyComponentPath if the path is empty.
+     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+     * of the modeling option cannot be found at the specified path.
+     * @throws VariableNotFound if the specified modeling option cannot be
+     * found in the candidate owner.
      */
-    void setModelingOption(SimTK::State& state, const std::string& name, int flag) const;
+    void setModelingOption(SimTK::State& state, const std::string& path,
+        int flag) const;
 
     /**
     * Get the Input value that this component is dependent on.
@@ -1575,14 +1616,14 @@ public:
     * Based on a specified path, resolve the name of a discrete variable or
     * modeling option and the component that owns it (i.e., its parent).
     * 
-    * The name of the variable or option is the last string in the path.
-    * The balance of the path gives the path of the variable's owner.
-    * The following illustrates a typical path structure:
+    * The name of the variable or option should be the last string in the path.
+    * The balance of the path gives the path to the owner. The following
+    * illustrates a typical path structure:
     * ```
     *   /grandparent_name/owner_name/variable_name
     * ```
-    * This method does not verify that the variable can actually be found
-    * at the spcified path. It simply parses the path, splitting off the
+    * This method does not verify that the variable or option can actually be
+    * found at the spcified path. It simply parses the path, splitting off the
     * variable name and verifying that the candidate owner exists.
     * 
     * A need for this method arises because discrete variables and modeling
@@ -1590,14 +1631,14 @@ public:
     * methods can be used to locate an owner, they cannot be used to locate
     * a variable or option directly.
     *
-    * @param path Specified path of the variable in the Model heirarchy.
+    * @param path Path of the variable or option in the component heirarchy.
     * @param varName The name of the discrete variable or modeling option is
     * returned in this parameter.
-    * @return Pointer to the Component that, according to the path, owns the
+    * @return Pointer to the component that, according to the path, owns the
     * discrete variable or modeling option.
     * @throws EmptyComponentPath if the path is empty.
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
-    * of the variable cannot be found at the specified path.
+    * cannot be found at the specified path.
     */
     const Component* resolveVariableNameAndOwner(
         const ComponentPath& path, std::string& varName) const;
@@ -1608,9 +1649,12 @@ public:
     *
     * @param state State from which to get the value.
     * @param path Path of the discrete variable in the component hierarchy.
+    * The last name in the path should be the name of the discrete variable.
+    * A path can consist of just the name of the discrete variable, in which
+    * case the calling component is assumed to be the owner of the variable.
     * @return value Value of the discrete State.
     * @throws ComponentHasNoSystem if this Component has not been added to a
-    *         System (i.e., if initSystem has not been called).
+    * System (i.e., if initSystem has not been called).
     * @throws EmptyComponentPath if the path is empty.
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     * of the variable cannot be found at the specified path.
@@ -1618,10 +1662,10 @@ public:
     * the candidate owner.
     */
     double getDiscreteVariableValue(const SimTK::State& state,
-        const std::string& name) const
+        const std::string& path) const
     {
         double value{SimTK::NaN};
-        value = getDiscreteVariableValue<double>(state, name);
+        value = getDiscreteVariableValue<double>(state, path);
         return value;
     }
 
@@ -1629,17 +1673,19 @@ public:
     * Get the value (assumed to be type double) of the discrete variable
     * by specifying its path in the component hierarchy.
     *
-    * @param state   The State from which to get the value.
-    * @param path    The path of the discrete variable in the component
-    * hierarchy.
-    * @return value  The discrete variable value as a double.
+    * @param state State from which to get the value.
+    * @param path Path of the discrete variable in the component hierarchy.
+    * The last name in the path should be the name of the discrete variable.
+    * A path can consist of just the name of the discrete variable, in which
+    * case the calling component is assumed to be the owner of the variable.
+    * @return value Value of the discrete variable.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
     * @throws EmptyComponentPath if the path is empty.
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     * of the variable cannot be found at the specified path.
-    * @throws VariableNotFound if the specified variable cannot be found at
-    * the path. 
+    * @throws VariableNotFound if the specified variable cannot be found in
+    * the candidate owner. 
     */
     template<class T>
     T getDiscreteVariableValue(const SimTK::State& state,
@@ -1686,8 +1732,8 @@ public:
     *         System (i.e., if initSystem has not been called).
     * @throws EmptyComponentPath if the path is empty.
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
-    * @throws VariableNotFound if the specified variable cannot be found at
-    * the specified path. 
+    * @throws VariableNotFound if the specified variable cannot be found in
+    * the candidate owner. 
     */
     const SimTK::AbstractValue& getDiscreteVariableAbstractValue(
         const SimTK::State& state, const std::string& path) const;
@@ -1696,18 +1742,19 @@ public:
     * %Set the value of a discrete variable by specifying its path in the
     * component hierarchy.
     *
-    * @param state  The State on which to set the value.
-    * @param path   The path of the discrete variable. If the path only
-    * contains the name of the variable, the calling component is assumed to be
-    * the variable's owner.
-    * @param value  The value to set.
+    * @param state State in which to set the discrete variable.
+    * @param path Path of the discrete variable in the component hierarchy.
+    * The last name in the path should be the name of the discrete variable.
+    * A path can consist of just the name of the discrete variable, in which
+    * case the calling component is assumed to be the owner of the variable.
+    * @param value Value to which to set the discrete variable.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
     * @throws EmptyComponentPath if the specified path is empty.
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     * of the variable cannot be found at the specified path.
-    * @throws VariableNotFound if the specified variable cannot be found at the
-    * specified path.
+    * @throws VariableNotFound if the specified variable cannot be found in
+    * the candidate owner.
     */
     void setDiscreteVariableValue(SimTK::State& state,
         const std::string& path, double value) const
@@ -1722,6 +1769,9 @@ public:
     *
     * @param state State for which to set the value.
     * @param path Path of the discrete variable in the component hierarchy.
+    * The last name in the path should be the name of the discrete variable.
+    * A path can consist of just the name of the discrete variable, in which
+    * case the calling component is assumed to be the owner of the variable.
     * @param value Value to which to set the discrete variable.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     * System (i.e., if initSystem has not been called).
@@ -1768,14 +1818,19 @@ public:
     * is available. See setDiscreteVariableValue<T>().
     * 
     * @param state State from which to get the value.
-    * @param path Specified path of the discrete variable in the component
-    * hierarchy.
+    * @param path Path of the discrete variable in the component hierarchy.
+    * The last name in the path should be the name of the discrete variable.
+    * A path can consist of just the name of the discrete variable, in which
+    * case the calling component is assumed to be the owner of the variable.
     * @return Value of the discrete variable as a reference to an
     * AbstractValue.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
-    * @throws VariableNotFound if the specified variable cannot be found at
-    * the specified path.
+    * @throws EmptyComponentPath if the path is empty.
+    * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    * of the variable cannot be found at the specified path.
+    * @throws VariableNotFound if the specified variable cannot be found in
+    * this Component.
     */
     SimTK::AbstractValue& updDiscreteVariableAbstractValue(
         SimTK::State& state, const std::string& path) const;
@@ -1835,6 +1890,7 @@ public:
         output.reserve(n);
 
         // Find the state variable
+        // This path traversal only needs to be done once.
         const StateVariable* var = traverseToStateVariable(pathName);
 
         // Loop over input and set the output
@@ -1862,15 +1918,14 @@ public:
         const SimTK::Array_<SimTK::State>& input,
         SimTK::Array_<T>& output) const
     {
-        // Clear the output Vector
-        output.clear();
-
         // Prepare the output Vector
+        output.clear();
         int n = input.size();
         if(n<=0) return;
         output.reserve(n);
 
         // Find the info struct for the discrete variable.
+        // This path traversal only needs to be done once.
         std::string dvName{""};
         const Component* owner =
             resolveVariableNameAndOwner(pathName, dvName);
@@ -1910,7 +1965,13 @@ public:
 
     @param pathName Path name of the specified variable in the Model heirarchy.
     @param input States trajectory.
-    @param output Corresponding trajectory of the specified option. */
+    @param output Corresponding trajectory of the specified option.
+    @throws EmptyComponentPath if the path is empty.
+    @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    of the modeling option cannot be found at the specified path.
+    @throws VariableNotFound if the specified modeling option cannot be found
+    in the candidate owner.
+    */
     template<class T>
     void getModelingOptionTrajectory(const std::string& pathName,
         const SimTK::Array_<SimTK::State>& input,
@@ -1923,6 +1984,7 @@ public:
         output.reserve(n);
 
         // Find the info struct for the modeling option.
+        // This path traversal only needs to be done once.
         std::string moName{""};
         const Component* owner =
             resolveVariableNameAndOwner(pathName, moName);
@@ -1931,13 +1993,7 @@ public:
 
         // Not Found. Throw an exception.
         if( it == owner->_namedModelingOptionInfo.end()) {
-            std::stringstream msg;
-            msg << "Component::getModelingOptionTrajectory: ERR- '"
-                << pathName
-                << "' not found.\n "
-                << "for component '" << getName() << "' of type "
-                << getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
+            OPENSIM_THROW(VariableNotFound, getName(), moName);
         }
 
         // Found. Loop over the input and set the output.
@@ -1992,6 +2048,7 @@ public:
             ni, no);
 
         // Find the state variable
+        // This path traversal only needs to be done once.
         const StateVariable* var = traverseToStateVariable(pathName);
 
         // Loop over input values
@@ -2030,6 +2087,7 @@ public:
             ni, no);
 
         // Find the info struct for the discrete variable.
+        // This path traversal only needs to be done once.
         std::string dvName{""};
         const Component* owner =
             resolveVariableNameAndOwner(pathName, dvName);
@@ -2067,7 +2125,12 @@ public:
     @param pathName Path name of the specified variable in the Model heirarchy.
     @param input Trajectory of the specified option.
     @param output Trajectory of SimTK::State objects with updated values for
-    the specified modeling option. */
+    the specified modeling option.
+    @throws EmptyComponentPath if the path is empty.
+    @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    of the modeling option cannot be found at the specified path.
+    @throws VariableNotFound if the specified modeling option cannot be found
+    in the candidate owner. */
     template<class T>
     void setModelingOptionTrajectory(const std::string& pathName,
         const SimTK::Array_<T>& input,
@@ -2082,6 +2145,7 @@ public:
             ni, no);
 
         // Find the info struct for the modeling option.
+        // This path traversal only needs to be done once.
         std::string moName{""};
         const Component* owner =
             resolveVariableNameAndOwner(pathName, moName);
@@ -2090,13 +2154,7 @@ public:
 
         // Not Found. Throw an exception.
         if( it == owner->_namedModelingOptionInfo.end()) {
-            std::stringstream msg;
-            msg << "Component::setStatesTrajectoryForModelingOption: "
-                << "ERR - '" << pathName
-                << "' not found.\n "
-                << "for component '" << owner->getName() << "' of type "
-                << owner->getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
+            OPENSIM_THROW(VariableNotFound, getName(), moName);
         }
 
         // Found. Loop over the input and set the output.
