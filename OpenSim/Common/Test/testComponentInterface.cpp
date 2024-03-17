@@ -1784,88 +1784,130 @@ TEST_CASE("Component Interface getDiscreteVariableValue<Vec3>")
     REQUIRE(point3 == point);
 }
 
-TEST_CASE("Component Interface getDiscreteVariableTrajectory")
+TEST_CASE("Component Interface State Trajectories")
 {
-    // ------------------------------------------------------------------------
-    // Component Bar possesses a discrete variable called "refPoint", which is
-    // a Vec3. Additionally, point was allocated as though it were a member
-    // of a pre-existing Simbody object (e.g., it was allocated from the
-    // GeneralForceSubsystem and not from the DefaultSybsystem like most, if
-    // not all, discrete variables allocated in OpenSim).
-    // This test case 
-    // 1) checks the interface for handling discrete variables that are not
-    //    type double, and
-    // 2) verifies that OpenSim can properly wrap discrete state variables
-    //    when those variables are allocated externally (i.e., are not
-    //    allocated by calling Component::addDiscreteVariable()).
-    // ------------------------------------------------------------------------
-
     MultibodySystem system;
-    TheWorld theWorld;
-    theWorld.setName("World");
+    TheWorld wrld;
+    wrld.setName("World");
 
     Foo& foo = *new Foo();
     foo.setName("Foo");
-    theWorld.add(&foo);
+    wrld.add(&foo);
     foo.set_mass(2.0);
 
     Foo& foo2 = *new Foo();
     foo2.setName("Foo2");
     foo2.set_mass(3.0);
-    theWorld.add(&foo2);
+    wrld.add(&foo2);
 
     Bar& bar = *new Bar();
     bar.setName("Bar");
-    theWorld.add(&bar);
+    wrld.add(&bar);
 
     bar.connectSocket_parentFoo(foo);
     bar.connectSocket_childFoo(foo2);
 
-    theWorld.connect();
-    theWorld.buildUpSystem(system);
+    wrld.connect();
+    wrld.buildUpSystem(system);
 
     State s = system.realizeTopology();
 
-    // Get the paths of all discrete variables under "theWorld"
-    Array<std::string>& dvPaths = theWorld.getDiscreteVariableNames();
-    SimTK_TEST(dvPaths.size() == 2);
-    SimTK_TEST(dvPaths[0] == "/internalSub/dvX");
-    SimTK_TEST(dvPaths[1] == "/Bar/point");
+    // Form the q and u vectors
+    const Array<std::string>& svPaths = wrld.getStateVariableNames();
+    cout << "svPaths = " << svPaths << endl;
+    REQUIRE(svPaths.size() == s.getNQ());
+    const Vector q = Vector(s.getNQ(), 0.1);
+
+    // Get the paths of all discrete variables under "wrld"
+    OpenSim::Array<std::string>& dvPaths = wrld.getDiscreteVariableNames();
+    REQUIRE(dvPaths.size() == 2);
+    REQUIRE(dvPaths[0] == "/internalSub/dvX");
+    REQUIRE(dvPaths[1] == "/Bar/point");
 
     // Get the starting value of point
-    // The starting value should be (0.0, 0.1, 0.2). See ~line 403.
-    Vec3 pointStart(0.0, 0.1, 0.2);
-    Vec3 point = SimTK::Value<Vec3>::downcast(
-        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/point"));
-    REQUIRE(point == pointStart);
+    // The starting value should be (0.0, 0.1, 1.0). See ~line 403.
+    Vec3 pointStart = wrld.getDiscreteVariableValue<Vec3>(s, "/Bar/point");
 
-    // Verify that changes to the local variable point does not change
-    // the value of the discrete variable. That is, verify that the local
-    // variable point holds a copy of the data.
-    point *= 10.0;
-    Vec3 point2 = SimTK::Value<Vec3>::downcast(
-        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/point"));
-    REQUIRE(point2 == pointStart);
-
-    // Set a new value for point and check it.
-    // Note that pointNew is a reference and so points directly to the
-    // data held by the discrete variable. Thus, changes to pointNew
-    // change the value of the discrete variable.
-    Vec3& pointNew = SimTK::Value<Vec3>::updDowncast(
-        theWorld.updDiscreteVariableAbstractValue(s, "/Bar/point"));
-    pointNew += pointStart;
-    Vec3 point3 = SimTK::Value<Vec3>::downcast(
-        theWorld.getDiscreteVariableAbstractValue(s, "/Bar/point"));
-    REQUIRE(point3 == pointNew);
-
-    /*
-    const Vector q = Vector(s.getNQ(), SimTK::Pi/2);
-    for (int i = 0; i < 10; ++i){
-    s.updTime() = i*0.01234;
-    s.updQ() = (i+1)*q/10.0;
-    system.realize(s, Stage::Report);
+    // Run an artificial simulation and record the state trajectory
+    SimTK::Array_<SimTK::State> simTraj;
+    int nsteps{11};
+    simTraj.reserve(nsteps);
+    double dvX{0.0};
+    Vec3 point(0.0);
+    for (int i = 0; i < nsteps; ++i){
+        // Time
+        s.updTime() = i*0.01;
+        // State Variables
+        wrld.setStateVariableValue(s, svPaths[0], i*q[0] + 0);
+        wrld.setStateVariableValue(s, svPaths[1], i*q[1] + 1);
+        wrld.setStateVariableValue(s, svPaths[2], i*q[2] + 2);
+        wrld.setStateVariableValue(s, svPaths[3], i*q[3] + 3);
+        // Discrete Variables
+        dvX = i*0.5 ;
+        wrld.setDiscreteVariableValue(s, dvPaths[0], dvX);
+        point = i*pointStart;
+        wrld.setDiscreteVariableValue<Vec3>(s, dvPaths[1], point);
+        system.realize(s, Stage::Report);
+        // Accumulate the simulated state trajectory
+        simTraj.emplace_back(s);
     }
-    */
+
+    // Extract individual variable trajectories (as though serializing)
+    // state variables
+    SimTK::Array_<double> q0Traj, q1Traj, q2Traj, q3Traj;
+    wrld.getStateVariableTrajectory<double>(svPaths[0], simTraj, q0Traj);
+    wrld.getStateVariableTrajectory<double>(svPaths[1], simTraj, q1Traj);
+    wrld.getStateVariableTrajectory<double>(svPaths[2], simTraj, q2Traj);
+    wrld.getStateVariableTrajectory<double>(svPaths[3], simTraj, q3Traj);
+    // discrete variables
+    SimTK::Array_<double> dv0Traj;
+    SimTK::Array_<Vec3> dv1Traj;
+    wrld.getDiscreteVariableTrajectory<double>(dvPaths[0], simTraj, dv0Traj);
+    wrld.getDiscreteVariableTrajectory<Vec3>(dvPaths[1], simTraj, dv1Traj);
+
+    // Check the individual variable trajectories
+    for (int i = 0; i < nsteps; ++i){
+        // state variables
+        CHECK(q0Traj[i] == i*q[0] + 0);
+        CHECK(q1Traj[i] == i*q[1] + 1);
+        CHECK(q2Traj[i] == i*q[2] + 2);
+        CHECK(q3Traj[i] == i*q[3] + 3);
+        // discrete variables
+        CHECK(dv0Traj[i] == i*0.5);
+        CHECK(dv1Traj[i] == i*pointStart);
+    }
+
+    // Create a new state trajectory (as though deserializing)
+    // newTraj must be must be the expected size
+    SimTK::Array_<SimTK::State> newTraj;
+    for (int i = 0; i < nsteps; ++i) newTraj.emplace_back(s);
+    // state variables
+    wrld.setStateVariableTrajectory<double>(svPaths[0], q0Traj, newTraj);
+    wrld.setStateVariableTrajectory<double>(svPaths[1], q1Traj, newTraj);
+    wrld.setStateVariableTrajectory<double>(svPaths[2], q2Traj, newTraj);
+    wrld.setStateVariableTrajectory<double>(svPaths[3], q3Traj, newTraj);
+    // discrete variables
+    wrld.setDiscreteVariableTrajectory<double>(dvPaths[0], dv0Traj, newTraj);
+    wrld.setDiscreteVariableTrajectory<Vec3>(dvPaths[1], dv1Traj, newTraj);
+
+    // Check the new state trajectory
+    SimTK::Array_<double> nq0Traj, nq1Traj, nq2Traj, nq3Traj;
+    SimTK::Array_<double> ndv0Traj;
+    SimTK::Array_<Vec3> ndv1Traj;
+    wrld.getStateVariableTrajectory<double>(svPaths[0], newTraj, nq0Traj);
+    wrld.getStateVariableTrajectory<double>(svPaths[1], newTraj, nq1Traj);
+    wrld.getStateVariableTrajectory<double>(svPaths[2], newTraj, nq2Traj);
+    wrld.getStateVariableTrajectory<double>(svPaths[3], newTraj, nq3Traj);
+    wrld.getDiscreteVariableTrajectory<double>(dvPaths[0], newTraj, ndv0Traj);
+    wrld.getDiscreteVariableTrajectory<Vec3>(dvPaths[1], newTraj, ndv1Traj);
+    for (int i = 0; i < nsteps; ++i){
+        CHECK(nq0Traj[i] == i*q[0] + 0);
+        CHECK(nq1Traj[i] == i*q[1] + 1);
+        CHECK(nq2Traj[i] == i*q[2] + 2);
+        CHECK(nq3Traj[i] == i*q[3] + 3);
+        CHECK(ndv0Traj[i] == i*0.5);
+        CHECK(ndv1Traj[i] == i*pointStart);
+    }
 }
 
 TEST_CASE("Component Interface Input/Output Connections")
