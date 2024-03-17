@@ -2038,7 +2038,7 @@ public:
 
         // Not Found. Throw an exception.
         if( it == owner->_namedDiscreteVariableInfo.end()) {
-            OPENSIM_THROW(VariableNotFound, getName(), name);
+            OPENSIM_THROW(VariableNotFound, getName(), dvName);
         }
 
         // Found. Loop over the input and set the output.
@@ -3695,9 +3695,9 @@ private:
     }
 
     // Get the number of continuous states that the Component added to the
-    // underlying computational system. It includes the number of built-in states
-    // exposed by this component. It represents the number of state variables
-    // managed by this Component.
+    // underlying computational system. It includes the number of built-in
+    // states exposed by this component. It represents the number of state
+    // variables managed by this Component.
     int getNumStateVariablesAddedByComponent() const
     {   return (int)_namedStateVariableInfo.size(); }
     Array<std::string> getStateVariableNamesAddedByComponent() const;
