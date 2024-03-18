@@ -168,7 +168,8 @@ public:
         const std::string& varName) :
         Exception(file, line, func) {
         std::string msg = componentName + "." + func;
-        msg += "(): variable or option '" + varName + "' not found.";
+        msg += "(): discrete variable or modeling option '" +
+        msg += varName + "' not found.";
         addMessage(msg);
     }
 };
@@ -925,9 +926,8 @@ public:
     Array<std::string> getStateVariableNames() const;
 
 
-    // F. C. Anderson --------------------------------------------------------
-    // Added to support serialization for Discrete Variables and
-    // Modeling Options.
+    // F. C. Anderson ---------------------------------------------------------
+    // Added support for Discrete Variables and Modeling Options.
 
     /**
     * Get the names of discrete state variables maintained by the Component
@@ -947,7 +947,7 @@ public:
     */
     Array<std::string> getModelingOptionNames() const;
 
-    // F. C. Anderson ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    // F. C. Anderson ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
     /** @name Component Socket Access methods
@@ -1433,50 +1433,57 @@ public:
      */
     //@{
 
+    // F. C. Anderson ---------------------------------------------------------
+    // Enhanced support for Discrete Variables and Modeling Options.
+
     /**
-     * Get the value of a modeling option by specifying its path in the
-     * component hierarchy.
+     * Based on a specified path, get the value of a modeling option.
+     * 
+     * The specified path consists of the name of the modeling option
+     * prepended by its absolute or relative path in the component hierarchy.
+     * If this component is the owner of the modeling option, the path should
+     * simply be the name of the modeling option.
      *
      * @param state State in which to set the modeling option.
      * @param path Path of the modeling option in the component hierarchy.
-     * The last name in the path should be the name of the modeling option.
-     * A path can consist of just the name of the modeling option, in which
-     * case the calling component is assumed to be the owner of the option.
      * @return flag Value of the modeling option.
      * @throws EmptyComponentPath if the path is empty.
      * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
      * of the modeling option cannot be found at the specified path.
      * @throws VariableNotFound if the specified modeling option cannot be
      * found in the candidate owner.
-    */
+     * @see Component::resolveVariableNameAndOwner()
+     */
     int getModelingOption(const SimTK::State& state,
         const std::string& path) const;
 
     /**
-     * %Set the value of a modeling option by specifying its path in the
-     * component hierarchy. If the value of the flag exceeds the maximum
-     * allowed for the specified modeling option, an exception will be thrown.
-     * See Component::addModelingOption().
+     * Based on a specified path, set the value of a modeling option.
+     * 
+     * The specified path consists of the name of the modeling option
+     * prepended by its absolute or relative path in the component hierarchy.
+     * If this component is the owner of the modeling option, the path should
+     * simply be the name of the modeling option.
      * 
      * Note that successfully setting the value of the modeling option will
      * revert the realization stage back to SimTK::Stage::Instance.
      *
      * @param state State in which to set the modeling option.
      * @param path Path of the modeling option in the component hierarchy.
-     * The last name in the path should be the name of the modeling option.
-     * A path can consist of just the name of the modeling option, in which
-     * case the calling component is assumed to be the owner of the option.
      * @param flag Value to which to set the modeling option.
      * @throws ModelingOptionMaxExceeded if the flag is greater that the
-     * maximum allowed.
+     * maximum allowed for the specified modeling option.
      * @throws EmptyComponentPath if the path is empty.
      * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
      * of the modeling option cannot be found at the specified path.
      * @throws VariableNotFound if the specified modeling option cannot be
      * found in the candidate owner.
+     * @see Component::resolveVariableNameAndOwner()
      */
     void setModelingOption(SimTK::State& state, const std::string& path,
         int flag) const;
+
+    // F. C. Anderson ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     /**
     * Get the Input value that this component is dependent on.
@@ -1611,25 +1618,36 @@ public:
     double getStateVariableDerivativeValue(const SimTK::State& state,
         const std::string& name) const;
 
+    // F. C. Anderson ---------------------------------------------------------
+    // Added support for Discrete Variables and Modeling Options.
 
     /**
     * Based on a specified path, resolve the name of a discrete variable or
     * modeling option and the component that owns it (i.e., its parent).
     * 
-    * The name of the variable or option should be the last string in the path.
-    * The balance of the path gives the path to the owner. The following
-    * illustrates a typical path structure:
-    * ```
-    *   /grandparent_name/owner_name/variable_name
-    * ```
+    * The path consists of the name of the discrete variable or modeling option
+    * prepended by its absolute or relative path in the component hierarchy.
+    * 
     * This method does not verify that the variable or option can actually be
-    * found at the spcified path. It simply parses the path, splitting off the
-    * variable name and verifying that the candidate owner exists.
+    * found at the spcified path. It simply parses the path, returning the
+    * variable name and candidate owner.
     * 
     * A need for this method arises because discrete variables and modeling
-    * options are not OpenSim Components. Although the usual traversal
-    * methods can be used to locate an owner, they cannot be used to locate
-    * a variable or option directly.
+    * options are not themselves Components. Although the usual traversal
+    * methods (e.g., traversePathToComponent<Component>()) can be
+    * used to locate the owner, they cannot be used to locate the variable or
+    * option directly.
+    * 
+    * #### Example Paths
+    *
+    * A relative path in which this component is the owner:
+    *   ```variable_name```
+    * 
+    * An absolute path from the root of the component hierarchy:
+    *   ```/grandparent_name/parent_name/variable_name```
+    * 
+    * A relative path in which a sibling of this component is the owner:
+    *   ```../sibling_name/variable_name```
     *
     * @param path Path of the variable or option in the component heirarchy.
     * @param varName The name of the discrete variable or modeling option is
@@ -1644,15 +1662,16 @@ public:
         const ComponentPath& path, std::string& varName) const;
 
     /**
-    * Get the value (assumed to be type double) of a discrete variable
-    * allocated by this Component by name.
+    * Based on a specified path, get the value of a discrete variable.
     *
+    * The specified path consists of the name of the discrete variable
+    * prepended by its absolute or relative path in the component hierarchy.
+    * If this component is the owner of the discrete variable, the path should
+    * simply be the name of the discrete variable.
+    * 
     * @param state State from which to get the value.
     * @param path Path of the discrete variable in the component hierarchy.
-    * The last name in the path should be the name of the discrete variable.
-    * A path can consist of just the name of the discrete variable, in which
-    * case the calling component is assumed to be the owner of the variable.
-    * @return value Value of the discrete State.
+    * @return Value of the discrete variable.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     * System (i.e., if initSystem has not been called).
     * @throws EmptyComponentPath if the path is empty.
@@ -1660,6 +1679,7 @@ public:
     * of the variable cannot be found at the specified path.
     * @throws VariableNotFound if the specified variable cannot be found in
     * the candidate owner.
+    * @see Component::resolveVariableNameAndOwner()
     */
     double getDiscreteVariableValue(const SimTK::State& state,
         const std::string& path) const
@@ -1670,14 +1690,15 @@ public:
     }
 
     /**
-    * Get the value (assumed to be type double) of the discrete variable
-    * by specifying its path in the component hierarchy.
+    * Based on a specified path, get the value (type T) of a discrete variable.
+    * 
+    * The specified path consists of the name of the discrete variable
+    * prepended by its absolute or relative path in the component hierarchy.
+    * If this component is the owner of the discrete variable, the path should
+    * simply be the name of the discrete variable.
     *
     * @param state State from which to get the value.
     * @param path Path of the discrete variable in the component hierarchy.
-    * The last name in the path should be the name of the discrete variable.
-    * A path can consist of just the name of the discrete variable, in which
-    * case the calling component is assumed to be the owner of the variable.
     * @return value Value of the discrete variable.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
@@ -1686,6 +1707,7 @@ public:
     * of the variable cannot be found at the specified path.
     * @throws VariableNotFound if the specified variable cannot be found in
     * the candidate owner. 
+    * @see Component::resolveVariableNameAndOwner()
     */
     template<class T>
     T getDiscreteVariableValue(const SimTK::State& state,
@@ -1697,14 +1719,20 @@ public:
     }
 
     /**
-    * Retrieve a read-only reference to the abstract value of the discrete
-    * variable at a specified path. This method provides a more general
-    * interface that is not limited to values of type double.
+    * Based on a specified path, retrieve a read-only reference to the
+    * abstract value of the discrete variable at a specified path. This method
+    * provides a more general interface that is not limited to values of type
+    * double.
+    * 
+    * The specified path consists of the name of the discrete variable
+    * prepended by its absolute or relative path in the component hierarchy.
+    * If this component is the owner of the discrete variable, the path should
+    * simply be the name of the discrete variable.
     *
-    * To obtain the type-specific value of a discrete variable, perform
-    * a cast using the template methods provided in class SimTK::Value<T>.
-    * When the type is unknown, it can be queried using the
-    * SimTK::Value<T>::isA() method. For example,
+    * To obtain the type-specific value of a discrete variable from an
+    * AbstractValue, perform a cast using the templated methods provided in
+    * class SimTK::Value<T>. When the type is unknown, it can be queried using
+    * the SimTK::Value<T>::isA() method. For example,
     *
     * ```
     *      const SimTK::AbstractValue& valAbstract =
@@ -1721,32 +1749,34 @@ public:
     *          Vec3 x = valDbl + Vec3(0.4);
     *      }
     * ```
-    * For convenience, a templated method that takes care of basic downcasting
-    * is available. See getDiscreteVariableValue<T>().
+    * For convenience, a templated method that implements basic downcasting
+    * internally is available. See getDiscreteVariableValue<T>().
     *
     * @param state State from which to get the value.
-    * @param path Specified path of the variable in the Model heirarchy.
-    * @return Value of the discrete variable as a reference to an
-    * AbstractValue.
+    * @param path Specified path of the variable in the component heirarchy.
+    * @return Read-only reference to the discrete variable's AbstractValue.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
     * @throws EmptyComponentPath if the path is empty.
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    * of the variable cannot be found at the specified path.
     * @throws VariableNotFound if the specified variable cannot be found in
-    * the candidate owner. 
+    * the candidate owner.
+    * @see Component::resolveVariableNameAndOwner
     */
     const SimTK::AbstractValue& getDiscreteVariableAbstractValue(
         const SimTK::State& state, const std::string& path) const;
 
     /**
-    * %Set the value of a discrete variable by specifying its path in the
-    * component hierarchy.
+    * Based on a specified path, set the value of a discrete variable.
+    * 
+    * The specified path consists of the name of the discrete variable
+    * prepended by its absolute or relative path in the component hierarchy.
+    * If this component is the owner of the discrete variable, the path should
+    * simply be the name of the discrete variable.
     *
     * @param state State in which to set the discrete variable.
     * @param path Path of the discrete variable in the component hierarchy.
-    * The last name in the path should be the name of the discrete variable.
-    * A path can consist of just the name of the discrete variable, in which
-    * case the calling component is assumed to be the owner of the variable.
     * @param value Value to which to set the discrete variable.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
@@ -1755,6 +1785,7 @@ public:
     * of the variable cannot be found at the specified path.
     * @throws VariableNotFound if the specified variable cannot be found in
     * the candidate owner.
+    * @see Component::resolveVariableNameAndOwner()
     */
     void setDiscreteVariableValue(SimTK::State& state,
         const std::string& path, double value) const
@@ -1763,9 +1794,12 @@ public:
     }
 
     /**
-    * %Set the value of a discrete variable allocated by this Component by
-    * name. This method is templated to accommodate Discrete Variables that
-    * are not type double.
+    * Based on a specified path, set the value (type T) of a discrete variable.
+    * 
+    * The specified path consists of the name of the discrete variable
+    * prepended by its absolute or relative path in the component hierarchy.
+    * If this component is the owner of the discrete variable, the path should
+    * simply be the name of the discrete variable.
     *
     * @param state State for which to set the value.
     * @param path Path of the discrete variable in the component hierarchy.
@@ -1780,6 +1814,7 @@ public:
     * of the variable cannot be found at the specified path.
     * @throws VariableNotFound if the specified variable cannot be found in
     * this Component.
+    * @see Component::resolveVariableNameAndOwner()
     */
     template <class T>
     void setDiscreteVariableValue(SimTK::State& state, const std::string& path,
@@ -1790,10 +1825,15 @@ public:
     }
 
     /**
-    * Retrieve a writable reference to the abstract value of the discrete
-    * variable at a specified path. This method provides a more general
+    * Based on a specified path, retrieve a writable reference to the abstract
+    * value of the discrete variable. This method provides a more general
     * interface that is not limited to values of type double.
     *
+    * The specified path consists of the name of the discrete variable
+    * prepended by its absolute or relative path in the component hierarchy.
+    * If this component is the owner of the discrete variable, the path should
+    * simply be the name of the discrete variable.
+    * 
     * To obtain the type-specific value of a discrete variable, perform
     * a cast using the template methods provided in class SimTK::Value<T>.
     * When the type is unknown, it can be queried using the
@@ -1814,16 +1854,12 @@ public:
     *          valDbl = Vec3(0.4);
     *      }
     * ```
-    * For convenience, a templated method that takes care of basic downcasting
-    * is available. See setDiscreteVariableValue<T>().
+    * For convenience, a templated method that implements basic downcasting
+    * internally is available. See setDiscreteVariableValue<T>().
     * 
     * @param state State from which to get the value.
     * @param path Path of the discrete variable in the component hierarchy.
-    * The last name in the path should be the name of the discrete variable.
-    * A path can consist of just the name of the discrete variable, in which
-    * case the calling component is assumed to be the owner of the variable.
-    * @return Value of the discrete variable as a reference to an
-    * AbstractValue.
+    * @return Writable reference to the discrete variable's AbstractValue.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
     * @throws EmptyComponentPath if the path is empty.
@@ -1835,340 +1871,8 @@ public:
     SimTK::AbstractValue& updDiscreteVariableAbstractValue(
         SimTK::State& state, const std::string& path) const;
 
+    // F. C. Anderson ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    //-------------------------------------------------------------------------
-    /* F.C.Anderson (May 2023): Trajectory get/set methods are below here.
-
-    Added methods that support comprehensive de/serialization of a time ordered
-    sequence of SimTK::State objects (i.e., Array_<State>). Such sequences
-    are typically gathered during the course of a simulation by a reporter.
-
-    The approach is comprehensive in that all categories of the variables held
-    in the SimTK::State (ModelingOption%s, StateVariable%s, and
-    DiscreteVariable%s) are included. In addition, because these methods
-    are templatized, they have the flexibility to handle variables of different
-    types (e.g., bool, int, double, Vec3, Quaternion, etc.).
-
-    For the trajectory of SimTK::State objects, note that a SimTK::Array_<T>
-    container is used, as opposed to a SimTK::Vector_<T>. This is because
-    SimTK::State does not possess all of the computational characteristics
-    required by SimTK::Vector_<T>.
-
-    Note also that SimTK::Array_<T> is essentially equivalent to std::vector<T>
-    but with a number of advantages in terms of performance and binary
-    compatibility. */
-
-    // GET METHODS -------------------------
-
-    //_________________________________________________________________________
-    /** From a trajectory of SimTK::State objects, get the corresponding
-    trajectory of a specified state variable of type T.
-
-    The word "trajectory" connotes that the State and variable values are
-    expected to be time-ordered, which will most commonly be the case.
-    To be clear, however, this charicteristic is not essential here and is not
-    checked during execution of this method.
-
-    This method performs only a single string-based path lookup, so it is
-    reasonably efficient.
-
-    Class OpenSim::StatesDocument uses this method to serialize a state
-    trajectory to file.
-
-    @param pathName Path name of the specified variable in the Model heirarchy.
-    @param input States trajectory.
-    @param output Corresponding trajectory of the specified variable. */
-    template<class T>
-    void getStateVariableTrajectory(const std::string& pathName,
-        const SimTK::Array_<SimTK::State>& input,
-        SimTK::Array_<T>& output) const
-    {
-        // Prepare the output Vector
-        output.clear();
-        int n = input.size();
-        if(n<=0) return;
-        output.reserve(n);
-
-        // Find the state variable
-        // This path traversal only needs to be done once.
-        const StateVariable* var = traverseToStateVariable(pathName);
-
-        // Loop over input and set the output
-        for (int i = 0; i < n; ++i) {
-            output.emplace_back(var->getValue(input[i]));
-        }
-    }
-
-    //_________________________________________________________________________
-    /** From a trajectory of SimTK::State objects, get the trajectory of
-    a specified discrete variable. Here, "trajectory" indicates a time-ordered
-    sequence of values.
-
-    This method performs only a single string-based path lookup, so it is
-    reasonably efficient.
-
-    Both OpenSim::StatesTrajectory and OpenSim::StatesDocument rely on this
-    method to serialize a complete trajectory of states to a .ostates document.
-
-    @param pathName Path name of the specified variable in the Model heirarchy.
-    @param input Trajectory of SimTK::State objects.
-    @param output Trajectory of the specified variable. */
-    template<class T>
-    void getDiscreteVariableTrajectory(const std::string& pathName,
-        const SimTK::Array_<SimTK::State>& input,
-        SimTK::Array_<T>& output) const
-    {
-        // Prepare the output Vector
-        output.clear();
-        int n = input.size();
-        if(n<=0) return;
-        output.reserve(n);
-
-        // Find the info struct for the discrete variable.
-        // This path traversal only needs to be done once.
-        std::string dvName{""};
-        const Component* owner =
-            resolveVariableNameAndOwner(pathName, dvName);
-        std::map<std::string, DiscreteVariableInfo>::const_iterator it;
-        it = owner->_namedDiscreteVariableInfo.find(dvName);
-
-        // Not Found. Throw an exception.
-        if(it == owner->_namedDiscreteVariableInfo.end()) {
-            OPENSIM_THROW(VariableNotFound, getName(), dvName);
-        }
-
-        // Found. Loop over the input and set the output.
-        SimTK::DiscreteVariableIndex dvIndex = it->second.index;
-        const SimTK::Subsystem* subsystem = it->second.subsystem;
-        if (subsystem == nullptr) subsystem = &getDefaultSubsystem();
-        for (int i = 0; i < n; ++i) {
-            Value<T> vVal = SimTK::Value<T>::downcast(
-                subsystem->getDiscreteVariable(input[i], dvIndex));
-            output.emplace_back(vVal.getValue<T>());
-        }
-    }
-
-    //_________________________________________________________________________
-    /** From a trajectory of SimTK::State objects, get the corresponding
-    trajectory of a specified modeling option of type T.
-
-    The word "trajectory" connotes that the State and option values are
-    expected to be time-ordered, which will most commonly be the case.
-    To be clear, however, this charicteristic is not essential here and is not
-    checked during execution of this method.
-
-    This method performs only a single string-based path lookup, so it is
-    reasonably efficient.
-
-    Class OpenSim::StatesDocument uses this method to serialize a state
-    trajectory to file.
-
-    @param pathName Path name of the specified variable in the Model heirarchy.
-    @param input States trajectory.
-    @param output Corresponding trajectory of the specified option.
-    @throws EmptyComponentPath if the path is empty.
-    @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
-    of the modeling option cannot be found at the specified path.
-    @throws VariableNotFound if the specified modeling option cannot be found
-    in the candidate owner.
-    */
-    template<class T>
-    void getModelingOptionTrajectory(const std::string& pathName,
-        const SimTK::Array_<SimTK::State>& input,
-        SimTK::Array_<T>& output) const
-    {
-        // Prepare the output Vector
-        output.clear();
-        int n = input.size();
-        if(n<=0) return;
-        output.reserve(n);
-
-        // Find the info struct for the modeling option.
-        // This path traversal only needs to be done once.
-        std::string moName{""};
-        const Component* owner =
-            resolveVariableNameAndOwner(pathName, moName);
-        std::map<std::string, ModelingOptionInfo>::const_iterator it;
-        it = owner->_namedModelingOptionInfo.find(moName);
-
-        // Not Found. Throw an exception.
-        if( it == owner->_namedModelingOptionInfo.end()) {
-            OPENSIM_THROW(VariableNotFound, getName(), moName);
-        }
-
-        // Found. Loop over the input and set the output.
-        // TODO: account for a non-default subsystem. This might occur
-        // when a Simbody subsytem allocates its modeling variables natively,
-        // external to class Component. For an example of how to handle
-        // modeling variables in a more general way, see how discrete variables
-        // are handled. In particular, search on _namedDiscreteVariableInfo
-        // and review the methods that utilize it.
-        // TODO: account for variable types other than int. This will
-        // likely not be necessary, as modeling options are almost always
-        // type bool or int and an int can be used to represent a bool.
-        // Again, for an example, see how discrete variables do this.
-        SimTK::DiscreteVariableIndex dvIndex = it->second.index;
-        const SimTK::Subsystem* subsystem = &getDefaultSubsystem();
-        for (int i = 0; i < n; ++i) {
-            Value<T> vVal = SimTK::Value<T>::downcast(
-                subsystem->getDiscreteVariable(input[i], dvIndex));
-            output.emplace_back(vVal.getValue<T>());
-        }
-    }
-
-    // SET METHODS -------------------------
-
-    //_________________________________________________________________________
-    /** From the trajectory of a specified state variable, set its
-    corresponding values in a trajectory of SimTK::State objects.  Here,
-    "trajectory" indicates a time-ordered sequence of values.
-
-    This method performs only a single string-based path lookup, so it is
-    reasonably efficient.
-
-    Both OpenSim::StatesTrajectory and OpenSim::StatesDocument rely on this
-    method to deserialize a complete trajectory of states from a .ostates
-    document.
-
-    @param pathName Path name of the specified variable in the Model heirarchy.
-    @param input Trajectory of the specified variable.
-    @param output Trajectory of SimTK::State objects with updated values for
-    the specified variable. */
-    template<class T>
-    void setStateVariableTrajectory(const std::string& pathName,
-        const SimTK::Array_<T>& input,
-        SimTK::Array_<SimTK::State>& output) const
-    {
-        // Check that the input and output sizes are the same.
-        // If not, throw an exception.
-        int ni = input.size();
-        int no = output.size();
-        SimTK_ASSERT2_ALWAYS(no == ni,
-            "Variable and State arrays are not the same size (%d != %d).",
-            ni, no);
-
-        // Find the state variable
-        // This path traversal only needs to be done once.
-        const StateVariable* var = traverseToStateVariable(pathName);
-
-        // Loop over input values
-        for (int i = 0; i < ni; ++i) {
-            var->setValue(output[i], input[i]);
-        }
-    }
-
-    //_________________________________________________________________________
-    /** From the trajectory of a specified discrete variable, set its
-    corresponding values in a trajectory of SimTK::State objects.  Here,
-    "trajectory" indicates a time-ordered sequence of values.
-
-    This method performs only a single string-based path lookup, so it is
-    reasonably efficient.
-
-    Both OpenSim::StatesTrajectory and OpenSim::StatesDocument rely on this
-    method to deserialize a complete trajectory of states from a .ostates
-    document.
-
-    @param pathName Path name of the specified variable in the Model heirarchy.
-    @param input Trajectory of the specified variable.
-    @param output Trajectory of SimTK::State objects with updated values for
-    the specified variable. */
-    template<class T>
-    void setDiscreteVariableTrajectory(const std::string& pathName,
-        const SimTK::Array_<T>& input,
-        SimTK::Array_<SimTK::State>& output) const
-    {
-        // Check that the input and output sizes are the same.
-        // If not, throw an exception.
-        int ni = input.size();
-        int no = output.size();
-        SimTK_ASSERT2_ALWAYS(no == ni,
-            "Variable and State arrays are not the same size (%d != %d).",
-            ni, no);
-
-        // Find the info struct for the discrete variable.
-        // This path traversal only needs to be done once.
-        std::string dvName{""};
-        const Component* owner =
-            resolveVariableNameAndOwner(pathName, dvName);
-        std::map<std::string, DiscreteVariableInfo>::const_iterator it;
-        it = owner->_namedDiscreteVariableInfo.find(dvName);
-
-        // Not Found. Throw an exception.
-        if( it == owner->_namedDiscreteVariableInfo.end()) {
-            OPENSIM_THROW(VariableNotFound, getName(), dvName);
-        }
-
-        // Found. Loop over the input and set the output.
-        SimTK::DiscreteVariableIndex dvIndex = it->second.index;
-        const SimTK::Subsystem* subsystem = it->second.subsystem;
-        if (subsystem == nullptr) subsystem = &getDefaultSubsystem();
-        for (int i = 0; i < ni; ++i) {
-            SimTK::Value<T>::downcast(
-                subsystem->updDiscreteVariable(output[i], dvIndex)).upd()
-                = input[i];
-        }
-    }
-
-    //_________________________________________________________________________
-    /** From the trajectory of a specified modeling option, set its
-    corresponding values in a trajectory of SimTK::State objects.  Here,
-    "trajectory" indicates a time-ordered sequence of values.
-
-    This method performs only a single string-based path lookup, so it is
-    reasonably efficient.
-
-    Both OpenSim::StatesTrajectory and OpenSim::StatesDocument rely on this
-    method to deserialize a complete trajectory of states from a .ostates
-    document.
-
-    @param pathName Path name of the specified variable in the Model heirarchy.
-    @param input Trajectory of the specified option.
-    @param output Trajectory of SimTK::State objects with updated values for
-    the specified modeling option.
-    @throws EmptyComponentPath if the path is empty.
-    @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
-    of the modeling option cannot be found at the specified path.
-    @throws VariableNotFound if the specified modeling option cannot be found
-    in the candidate owner. */
-    template<class T>
-    void setModelingOptionTrajectory(const std::string& pathName,
-        const SimTK::Array_<T>& input,
-        SimTK::Array_<SimTK::State>& output) const
-    {
-        // Check that the input and output sizes are the same.
-        // If not, throw an exception.
-        int ni = input.size();
-        int no = output.size();
-        SimTK_ASSERT2_ALWAYS(no == ni,
-            "Option and State arrays are not the same size (%d != %d).",
-            ni, no);
-
-        // Find the info struct for the modeling option.
-        // This path traversal only needs to be done once.
-        std::string moName{""};
-        const Component* owner =
-            resolveVariableNameAndOwner(pathName, moName);
-        std::map<std::string, ModelingOptionInfo>::const_iterator it;
-        it = owner->_namedModelingOptionInfo.find(moName);
-
-        // Not Found. Throw an exception.
-        if( it == owner->_namedModelingOptionInfo.end()) {
-            OPENSIM_THROW(VariableNotFound, getName(), moName);
-        }
-
-        // Found. Loop over the input and set the output.
-        SimTK::DiscreteVariableIndex moIndex = it->second.index;
-        const SimTK::Subsystem* subsystem = &getDefaultSubsystem();
-        for (int i = 0; i < ni; ++i) {
-            SimTK::Value<T>::downcast(
-                subsystem->updDiscreteVariable(output[i], moIndex)).upd()
-                = input[i];
-        }
-    }
-
-    // F.C.Anderson (May 2023): Trajectory get/set methods are above here.
-    //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     /**
      * A cache variable containing a value of type T.
@@ -2663,6 +2367,346 @@ public:
 
     // End of Model Component State Accessors.
     //@}
+
+
+    // F. C. Anderson ---------------------------------------------------------
+
+    /** @name Component State Trajectory Methods
+    Methods that support comprehensive de/serialization of a time ordered
+    ordered sequence (i.e., a "trajectory") of SimTK::State objects. Such
+    trajectories are typically gathered during the course of a simulation.
+
+    - The methods are comprehensive in that all categories of the variables
+    held in the SimTK::State (ModelingOption%s, StateVariable%s, and
+    DiscreteVariable%s) are supported.
+
+    - Because the methods are templatized, they have the flexibility to
+    handle variables of different types (e.g., bool, int, double, Vec3,
+    Quaternion, etc.).
+
+    - Because each method performs only a single string-based path lookup,
+    they are reasonably efficient.
+
+    - SimTK::Array_<T> is used to contain a SimTK::State trajectory, as
+    opposed to a SimTK::Vector_<T>. This is because SimTK::State does not
+    possess all of the computational characteristics required by
+    SimTK::Vector_<T>. Note that SimTK::Array_<T> is essentially equivalent
+    to std::vector<T> but with a number of advantages in terms of performance
+    and binary compatibility.
+
+    */
+    //@{
+
+    // GET TRAJECTORIES -------------------------
+
+    //_________________________________________________________________________
+    /** From a trajectory of SimTK::State objects, get the corresponding
+    trajectory of a specified state variable of type T.
+
+    @param path Path of the specified variable in the component heirarchy.
+    @param input State trajectory.
+    @param output Trajectory of the specified variable. */
+    template<class T>
+    void getStateVariableTrajectory(const std::string& path,
+        const SimTK::Array_<SimTK::State>& input,
+        SimTK::Array_<T>& output) const
+    {
+        // Prepare the output Vector
+        output.clear();
+        int n = input.size();
+        if(n<=0) return;
+        output.reserve(n);
+
+        // Find the state variable
+        // This path traversal only needs to be done once.
+        const StateVariable* var = traverseToStateVariable(path);
+
+        // Loop over input and set the output
+        for (int i = 0; i < n; ++i) {
+            output.emplace_back(var->getValue(input[i]));
+        }
+    }
+
+    //_________________________________________________________________________
+    /** From a trajectory of SimTK::State objects, get the trajectory of
+    a specified discrete variable.
+
+    The word "trajectory" connotes that the State and variable values are
+    expected to be time-ordered, which will most commonly be the case.
+    To be clear, however, this charicteristic is not essential here and is not
+    checked during execution of this method.
+
+    This method performs only a single string-based path lookup, so it is
+    reasonably efficient.
+
+    @param path Path of the specified variable in the component heirarchy.
+    @param input Trajectory of SimTK::State objects.
+    @param output Trajectory of the specified variable.
+    @throws EmptyComponentPath if the path is empty.
+    @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    of the discrete variable cannot be found at the specified path.
+    @throws VariableNotFound if the specified discrete variable cannot be found
+    in the candidate owner. */
+    template<class T>
+    void getDiscreteVariableTrajectory(const std::string& path,
+        const SimTK::Array_<SimTK::State>& input,
+        SimTK::Array_<T>& output) const
+    {
+        // Prepare the output Vector
+        output.clear();
+        int n = input.size();
+        if(n<=0) return;
+        output.reserve(n);
+
+        // Find the info struct for the discrete variable.
+        // This path traversal only needs to be done once.
+        std::string dvName{""};
+        const Component* owner =
+            resolveVariableNameAndOwner(path, dvName);
+        std::map<std::string, DiscreteVariableInfo>::const_iterator it;
+        it = owner->_namedDiscreteVariableInfo.find(dvName);
+
+        // Not Found. Throw an exception.
+        if(it == owner->_namedDiscreteVariableInfo.end()) {
+            OPENSIM_THROW(VariableNotFound, getName(), dvName);
+        }
+
+        // Found. Loop over the input and set the output.
+        SimTK::DiscreteVariableIndex dvIndex = it->second.index;
+        const SimTK::Subsystem* subsystem = it->second.subsystem;
+        if (subsystem == nullptr) subsystem = &getDefaultSubsystem();
+        for (int i = 0; i < n; ++i) {
+            Value<T> vVal = SimTK::Value<T>::downcast(
+                subsystem->getDiscreteVariable(input[i], dvIndex));
+            output.emplace_back(vVal.getValue<T>());
+        }
+    }
+
+    //_________________________________________________________________________
+    /** From a trajectory of SimTK::State objects, get the corresponding
+    trajectory of a specified modeling option of type T.
+
+    The word "trajectory" connotes that the State and option values are
+    expected to be time-ordered, which will most commonly be the case.
+    To be clear, however, this charicteristic is not essential here and is not
+    checked during execution of this method.
+
+    This method performs only a single string-based path lookup, so it is
+    reasonably efficient.
+
+    @param path Path of the specified variable in the component heirarchy.
+    @param input States trajectory.
+    @param output Corresponding trajectory of the specified option.
+    @throws EmptyComponentPath if the path is empty.
+    @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    of the modeling option cannot be found at the specified path.
+    @throws VariableNotFound if the specified modeling option cannot be found
+    in the candidate owner.
+    */
+    template<class T>
+    void getModelingOptionTrajectory(const std::string& path,
+        const SimTK::Array_<SimTK::State>& input,
+        SimTK::Array_<T>& output) const
+    {
+        // Prepare the output Vector
+        output.clear();
+        int n = input.size();
+        if(n<=0) return;
+        output.reserve(n);
+
+        // Find the info struct for the modeling option.
+        // This path traversal only needs to be done once.
+        std::string moName{""};
+        const Component* owner =
+            resolveVariableNameAndOwner(path, moName);
+        std::map<std::string, ModelingOptionInfo>::const_iterator it;
+        it = owner->_namedModelingOptionInfo.find(moName);
+
+        // Not Found. Throw an exception.
+        if( it == owner->_namedModelingOptionInfo.end()) {
+            OPENSIM_THROW(VariableNotFound, getName(), moName);
+        }
+
+        // Found. Loop over the input and set the output.
+        // TODO: account for a non-default subsystem. This might occur
+        // when a Simbody subsytem allocates its modeling variables natively,
+        // external to class Component. For an example of how to handle
+        // modeling variables in a more general way, see how discrete variables
+        // are handled. In particular, search on _namedDiscreteVariableInfo
+        // and review the methods that utilize it.
+        // TODO: account for variable types other than int. This will
+        // likely not be necessary, as modeling options are almost always
+        // type bool or int and an int can be used to represent a bool.
+        // Again, for an example, see how discrete variables do this.
+        SimTK::DiscreteVariableIndex dvIndex = it->second.index;
+        const SimTK::Subsystem* subsystem = &getDefaultSubsystem();
+        for (int i = 0; i < n; ++i) {
+            Value<T> vVal = SimTK::Value<T>::downcast(
+                subsystem->getDiscreteVariable(input[i], dvIndex));
+            output.emplace_back(vVal.getValue<T>());
+        }
+    }
+
+    // SET TRAJECTORIES -------------------------
+
+    //_________________________________________________________________________
+    /** From the trajectory of a specified state variable, set its
+    corresponding values in a trajectory of SimTK::State objects.
+
+    The word "trajectory" connotes that the State and variable values are
+    expected to be time-ordered, which will most commonly be the case.
+    To be clear, however, this charicteristic is not essential here and is not
+    checked during execution of this method.
+
+    This method performs only a single string-based path lookup, so it is
+    reasonably efficient.
+
+    @param path Path of the specified variable in the component heirarchy.
+    @param input Trajectory of the specified variable.
+    @param output Trajectory of SimTK::State objects with updated values for
+    the specified variable. */
+    template<class T>
+    void setStateVariableTrajectory(const std::string& path,
+        const SimTK::Array_<T>& input,
+        SimTK::Array_<SimTK::State>& output) const
+    {
+        // Check that the input and output sizes are the same.
+        // If not, throw an exception.
+        int ni = input.size();
+        int no = output.size();
+        SimTK_ASSERT2_ALWAYS(no == ni,
+            "Variable and State arrays are not the same size (%d != %d).",
+            ni, no);
+
+        // Find the state variable
+        // This path traversal only needs to be done once.
+        const StateVariable* var = traverseToStateVariable(path);
+
+        // Loop over input values
+        for (int i = 0; i < ni; ++i) {
+            var->setValue(output[i], input[i]);
+        }
+    }
+
+    //_________________________________________________________________________
+    /** From the trajectory of a specified discrete variable, set its
+    corresponding values in a trajectory of SimTK::State objects.
+
+    The word "trajectory" connotes that the State and variable values are
+    expected to be time-ordered, which will most commonly be the case.
+    To be clear, however, this charicteristic is not essential here and is not
+    checked during execution of this method.
+
+    This method performs only a single string-based path lookup, so it is
+    reasonably efficient.
+
+    @param path Path name of the specified variable in the component heirarchy.
+    @param input Trajectory of the specified variable.
+    @param output Trajectory of SimTK::State objects with updated values for
+    the specified variable.
+    @throws EmptyComponentPath if the path is empty.
+    @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    of the discrete variable cannot be found at the specified path.
+    @throws VariableNotFound if the specified discrete variable cannot be found
+    in the candidate owner. */
+    template<class T>
+    void setDiscreteVariableTrajectory(const std::string& path,
+        const SimTK::Array_<T>& input,
+        SimTK::Array_<SimTK::State>& output) const
+    {
+        // Check that the input and output sizes are the same.
+        // If not, throw an exception.
+        int ni = input.size();
+        int no = output.size();
+        SimTK_ASSERT2_ALWAYS(no == ni,
+            "Variable and State arrays are not the same size (%d != %d).",
+            ni, no);
+
+        // Find the info struct for the discrete variable.
+        // This path traversal only needs to be done once.
+        std::string dvName{""};
+        const Component* owner =
+            resolveVariableNameAndOwner(path, dvName);
+        std::map<std::string, DiscreteVariableInfo>::const_iterator it;
+        it = owner->_namedDiscreteVariableInfo.find(dvName);
+
+        // Not Found. Throw an exception.
+        if( it == owner->_namedDiscreteVariableInfo.end()) {
+            OPENSIM_THROW(VariableNotFound, getName(), dvName);
+        }
+
+        // Found. Loop over the input and set the output.
+        SimTK::DiscreteVariableIndex dvIndex = it->second.index;
+        const SimTK::Subsystem* subsystem = it->second.subsystem;
+        if (subsystem == nullptr) subsystem = &getDefaultSubsystem();
+        for (int i = 0; i < ni; ++i) {
+            SimTK::Value<T>::downcast(
+                subsystem->updDiscreteVariable(output[i], dvIndex)).upd()
+                = input[i];
+        }
+    }
+
+    //_________________________________________________________________________
+    /** From the trajectory of a specified modeling option, set its
+    corresponding values in a trajectory of SimTK::State objects.
+
+    The word "trajectory" connotes that the State and option values are
+    expected to be time-ordered, which will most commonly be the case.
+    To be clear, however, this charicteristic is not essential here and is not
+    checked during execution of this method.
+
+    This method performs only a single string-based path lookup, so it is
+    reasonably efficient.
+
+    @param path Path of the specified variable in the component heirarchy.
+    @param input Trajectory of the specified option.
+    @param output Trajectory of SimTK::State objects with updated values for
+    the specified modeling option.
+    @throws EmptyComponentPath if the path is empty.
+    @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
+    of the modeling option cannot be found at the specified path.
+    @throws VariableNotFound if the specified modeling option cannot be found
+    in the candidate owner. */
+    template<class T>
+    void setModelingOptionTrajectory(const std::string& path,
+        const SimTK::Array_<T>& input,
+        SimTK::Array_<SimTK::State>& output) const
+    {
+        // Check that the input and output sizes are the same.
+        // If not, throw an exception.
+        int ni = input.size();
+        int no = output.size();
+        SimTK_ASSERT2_ALWAYS(no == ni,
+            "Option and State arrays are not the same size (%d != %d).",
+            ni, no);
+
+        // Find the info struct for the modeling option.
+        // This path traversal only needs to be done once.
+        std::string moName{""};
+        const Component* owner =
+            resolveVariableNameAndOwner(path, moName);
+        std::map<std::string, ModelingOptionInfo>::const_iterator it;
+        it = owner->_namedModelingOptionInfo.find(moName);
+
+        // Not Found. Throw an exception.
+        if( it == owner->_namedModelingOptionInfo.end()) {
+            OPENSIM_THROW(VariableNotFound, getName(), moName);
+        }
+
+        // Found. Loop over the input and set the output.
+        SimTK::DiscreteVariableIndex moIndex = it->second.index;
+        const SimTK::Subsystem* subsystem = &getDefaultSubsystem();
+        for (int i = 0; i < ni; ++i) {
+            SimTK::Value<T>::downcast(
+                subsystem->updDiscreteVariable(output[i], moIndex)).upd()
+                = input[i];
+        }
+    }
+
+    // End of Component State Trajectory Methods.
+    //@}
+    // F. C. Anderson ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 
     /** @name Print information to the console */
     /// @{
