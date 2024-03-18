@@ -37,9 +37,12 @@ namespace CasOC {
 ///
 /// Kinematic constraints and path constraints.
 /// -------------------------------------------
-/// Kinematic constraint and path constraint errors are enforced only at the
-/// mesh points. Errors at collocation points at the mesh interval midpoint
-/// are ignored.
+/// Position- and velocity-level kinematic constraint errors and path constraint 
+/// errors are enforced only at the mesh points. In the kinematic constraint 
+/// method by Bordalba et al. (2023), the acceleration-level constraints are 
+/// also enforced at the collocation points. In the kinematic constraint method 
+/// by Posa et al. (2016), the acceleration-level constraints are only enforced 
+/// at the mesh points.
 class HermiteSimpson : public Transcription {
 public:
     HermiteSimpson(const Solver& solver, const Problem& problem)

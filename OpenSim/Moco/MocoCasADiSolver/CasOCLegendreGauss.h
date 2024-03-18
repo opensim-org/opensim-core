@@ -47,9 +47,10 @@ namespace CasOC {
 ///
 /// Kinematic constraints and path constraints.
 /// -------------------------------------------
-/// Kinematic constraint and path constraint errors are enforced only at the
-/// mesh points. Errors at collocation points within the mesh interval are
-//  ignored.
+/// Position- and velocity-level kinematic constraint errors and path constraint 
+/// errors are enforced only at the mesh points. In the kinematic constraint 
+/// method by Bordalba et al. [3], the acceleration-level constraints are also
+/// enforced at the collocation points.
 ///
 /// References
 /// ----------
