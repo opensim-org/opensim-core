@@ -3,9 +3,9 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim: CasOCTranscription.h                                              *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2018 Stanford University and the Authors                     *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -73,6 +73,7 @@ protected:
     /// scheme applies constraints between control points.
     void createVariablesAndSetBounds(const casadi::DM& grid,
             int numDefectsPerMeshInterval,
+            int numPointsPerMeshInterval,
             const casadi::DM& pointsForInterpControls = casadi::DM());
 
     /// We assume all functions depend on time and parameters.
@@ -126,10 +127,13 @@ protected:
         T defects;
         T multibody_residuals;
         T auxiliary_residuals;
-        T kinematic;
+        T kinematic_qerr;
+        T kinematic_uerr;
+        T kinematic_udoterr;
         std::vector<T> endpoint;
         std::vector<T> path;
         T interp_controls;
+        T projection;
     };
     void printConstraintValues(const Iterate& it,
             const Constraints<casadi::DM>& constraints,
@@ -145,10 +149,13 @@ protected:
     int m_numMeshIntervals = -1;
     int m_numMeshInteriorPoints = -1;
     int m_numDefectsPerMeshInterval = -1;
+    int m_numPointsPerMeshInterval = -1;
+    int m_numUDotErrorPoints = -1;
     int m_numMultibodyResiduals = -1;
     int m_numAuxiliaryResiduals = -1;
     int m_numConstraints = -1;
     int m_numPathConstraintPoints = -1;
+    int m_numProjectionStates = -1;
     casadi::DM m_grid;
     casadi::DM m_pointsForInterpControls;
     casadi::MX m_times;
@@ -161,16 +168,27 @@ private:
     casadi::MX m_paramsTrajMesh;
     casadi::MX m_paramsTrajMeshInterior;
     casadi::MX m_paramsTrajPathCon;
+    casadi::MX m_paramsTrajProjState;
     VariablesDM m_lowerBounds;
     VariablesDM m_upperBounds;
     VariablesDM m_shift;
     VariablesDM m_scale;
+    // This holds a vector of MX types, where each element of the vector
+    // contains the states needed to calculate the defect constraints for a
+    // single mesh interval. The Bordalba et al. (2023) kinematic constraint
+    // method requires that point the end of one mesh interval and the start of
+    // the next mesh interval have different decision variables representing
+    // the state, even though it is the same point in time.
+    casadi::MXVector m_statesByMeshInterval;
+    casadi::MX m_projectionStateDistances;
 
     casadi::DM m_meshIndicesMap;
     casadi::Matrix<casadi_int> m_gridIndices;
     casadi::Matrix<casadi_int> m_meshIndices;
     casadi::Matrix<casadi_int> m_meshInteriorIndices;
     casadi::Matrix<casadi_int> m_pathConstraintIndices;
+    casadi::Matrix<casadi_int> m_projectionStateIndices;
+    casadi::Matrix<casadi_int> m_notProjectionStateIndices;
 
     casadi::MX m_xdot; // State derivatives.
 
@@ -193,8 +211,8 @@ private:
     virtual casadi::DM createMeshIndicesImpl() const = 0;
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
-    virtual void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
-            casadi::MX& defects) const = 0;
+    virtual void calcDefectsImpl(const casadi::MXVector& x,
+            const casadi::MX& xdot, casadi::MX& defects) const = 0;
     virtual void calcInterpolatingControlsImpl(const casadi::MX& /*controls*/,
             casadi::MX& /*interpControls*/) const {
         OPENSIM_THROW_IF(m_pointsForInterpControls.numel(), OpenSim::Exception,
@@ -204,8 +222,7 @@ private:
     void transcribe();
     void setObjectiveAndEndpointConstraints();
     void calcDefects() {
-        calcDefectsImpl(
-                m_unscaledVars.at(states), m_xdot, m_constraints.defects);
+        calcDefectsImpl(m_statesByMeshInterval, m_xdot, m_constraints.defects);
     }
     void calcInterpolatingControls() {
         calcInterpolatingControlsImpl(
@@ -314,13 +331,16 @@ private:
         //    residual_0     x
         //    defect_0       x    x
         //    kinematic_1         x
+        //    projection_1        x
         //    path_1              x
         //    residual_1          x
         //    defect_1            x    x
         //    kinematic_2              x
+        //    projection_2             x
         //    path_2                   x
         //    residual_2               x
         //    kinematic_3                   x
+        //    projection_2                  x
         //    path_3                        x
         //    residual_3                    x
 
@@ -336,18 +356,21 @@ private:
         //    defect_0       x     x     x
         //    interp_con_0   x     x     x
         //    kinematic_1                x
+        //    projection_1               x
         //    path_1                     x     *
         //    residual_1                 x
         //    residual_1.5                     x
         //    defect_1                   x     x     x
         //    interp_con_1               x     x     x
         //    kinematic_2                            x
+        //    projection_2                           x
         //    path_2                                 x     *
         //    residual_2                             x
         //    residual_2.5                                 x
         //    defect_2                               x     x     x
         //    interp_con_2                           x     x     x
         //    kinematic_3                                        x
+        //    projection_3                                       x
         //    path_3                                             x
         //    residual_3                                         x
         //                   0    0.5    1    1.5    2    2.5    3
@@ -366,9 +389,17 @@ private:
         // Index for pointsForInterpControls.
         int icon = 0;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
-            copyColumn(constraints.kinematic, imesh);
+            copyColumn(constraints.kinematic_qerr, imesh);
+            copyColumn(constraints.kinematic_uerr, imesh);
+            if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
+                copyColumn(constraints.kinematic_udoterr, imesh);
+            }
+            if (imesh > 0) copyColumn(constraints.projection, imesh - 1);
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
+                    if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                        copyColumn(constraints.kinematic_udoterr, igrid);
+                    }
                     copyColumn(constraints.multibody_residuals, igrid);
                     copyColumn(constraints.auxiliary_residuals, igrid);
                     ++igrid;
@@ -382,7 +413,11 @@ private:
                 }
             }
         }
-        // The loop above does not handle the residual at the final grid point.
+        // The loop above does not handle the constraints at the final grid
+        // point.
+        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+            copyColumn(constraints.kinematic_udoterr, m_numGridPoints - 1);
+        }
         copyColumn(constraints.multibody_residuals, m_numGridPoints - 1);
         copyColumn(constraints.auxiliary_residuals, m_numGridPoints - 1);
 
@@ -407,8 +442,12 @@ private:
                 m_numGridPoints);
         out.auxiliary_residuals = init(m_numAuxiliaryResiduals,
                 m_numGridPoints);
-        out.kinematic = init(m_problem.getNumKinematicConstraintEquations(),
-                m_numMeshPoints);
+        out.kinematic_qerr = init(m_problem.getNumQErr(),m_numMeshPoints);
+        out.kinematic_uerr = init(m_problem.getNumUErr(), m_numMeshPoints);
+        out.kinematic_udoterr = init(m_problem.getNumUDotErr(),
+                m_numUDotErrorPoints);
+        out.projection = init(m_problem.getNumProjectionConstraintEquations(),
+                m_numMeshIntervals);
         out.endpoint.resize(m_problem.getEndpointConstraintInfos().size());
         for (int iec = 0; iec < (int)m_constraints.endpoint.size(); ++iec) {
             const auto& info = m_problem.getEndpointConstraintInfos()[iec];
@@ -446,11 +485,20 @@ private:
         // Index for pointsForInterpControls.
         int icon = 0;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
-            copyColumn(out.kinematic, imesh);
+            copyColumn(out.kinematic_qerr, imesh);
+            copyColumn(out.kinematic_uerr, imesh);
+            if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
+                copyColumn(out.kinematic_udoterr, imesh);
+            }
+            if (imesh > 0) copyColumn(out.projection, imesh-1);
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
+                    if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                        copyColumn(out.kinematic_udoterr, igrid);
+                    }
                     copyColumn(out.multibody_residuals, igrid);
                     copyColumn(out.auxiliary_residuals, igrid);
+
                     ++igrid;
                 }
                 copyColumn(out.defects, imesh);
@@ -462,7 +510,11 @@ private:
                 }
             }
         }
-        // The loop above does not handle residuals at the final grid point.
+        // The loop above does not handle the constraints at the final grid
+        // point.
+        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+            copyColumn(out.kinematic_udoterr, m_numGridPoints - 1);
+        }
         copyColumn(out.multibody_residuals, m_numGridPoints - 1);
         copyColumn(out.auxiliary_residuals, m_numGridPoints - 1);
 

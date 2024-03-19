@@ -50,7 +50,7 @@ DM HermiteSimpson::createMeshIndicesImpl() const {
     return indices;
 }
 
-void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
+void HermiteSimpson::calcDefectsImpl(const casadi::MXVector& x,
         const casadi::MX& xdot, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
@@ -68,9 +68,9 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
         time_ip1 = 2 * imesh + 2;
 
         const auto h = m_times(time_ip1) - m_times(time_i);
-        const auto x_i = x(Slice(), time_i);
-        const auto x_mid = x(Slice(), time_mid);
-        const auto x_ip1 = x(Slice(), time_ip1);
+        const auto x_i = x[imesh](Slice(), 0);
+        const auto x_mid = x[imesh](Slice(), 1);
+        const auto x_ip1 = x[imesh](Slice(), 2);
         const auto xdot_i = xdot(Slice(), time_i);
         const auto xdot_mid = xdot(Slice(), time_mid);
         const auto xdot_ip1 = xdot(Slice(), time_ip1);
@@ -88,7 +88,7 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
 void HermiteSimpson::calcInterpolatingControlsImpl(
         const casadi::MX& controls, casadi::MX& interpControls) const {
     if (m_problem.getNumControls() &&
-            m_solver.getInterpolateControlMidpoints()) {
+            m_solver.getInterpolateControlMeshInteriorPoints()) {
         int time_i;
         int time_mid;
         int time_ip1;

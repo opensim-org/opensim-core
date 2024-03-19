@@ -39,6 +39,9 @@ enum Var {
     derivatives, // TODO: Rename to accelerations?
     /// Constant in time.
     parameters,
+    /// A "copy" of the multibody states used in the projection method
+    /// for solving kinematic constraints.
+    projection_states,
     /// For internal use (never actually a key for Variables).
     multibody_states = 100
 };
@@ -61,10 +64,12 @@ struct Iterate {
     std::vector<std::string> slack_names;
     std::vector<std::string> derivative_names;
     std::vector<std::string> parameter_names;
+    std::vector<std::string> projection_state_names;
     int iteration = -1;
     /// Return a new iterate in which the data is resampled at the times in
     /// newTimes.
-    Iterate resample(const casadi::DM& newTimes) const;
+    Iterate resample(const casadi::DM& newTimes,
+                     bool addProjectionStates) const;
 };
 
 /// This struct is used to return a solution to a problem. Use `stats`
