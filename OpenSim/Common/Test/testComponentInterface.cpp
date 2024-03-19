@@ -1552,7 +1552,7 @@ TEST_CASE("Component Interface Component::resolveVariableNameAndOwner")
     const Component& internSub = top.getComponent("/internalSub");
 
     // Get the paths of all discrete variables under "top"
-    Array<std::string>& dvPaths = top.getDiscreteVariableNames();
+    const Array<std::string>& dvPaths = top.getDiscreteVariableNames();
     REQUIRE(dvPaths.size() == 3);
     REQUIRE(dvPaths[0] == "/internalSub/dvX");
     REQUIRE(dvPaths[1] == "/a/dvX");
@@ -1664,7 +1664,7 @@ TEST_CASE("Component Interface Modeling Options")
     State s = system.realizeTopology();
 
     // Get the paths of all discrete variables under "top"
-    Array<std::string>& moPaths = top.getModelingOptionNames();
+    const Array<std::string>& moPaths = top.getModelingOptionNames();
     REQUIRE(moPaths.size() == 3);
     REQUIRE(moPaths[0] == "/internalSub/moX");
     REQUIRE(moPaths[1] == "/a/moX");
@@ -1723,7 +1723,7 @@ TEST_CASE("Component Interface Discrete Variables")
     State s = system.realizeTopology();
 
     // Get the paths of all discrete variables under "top"
-    Array<std::string>& dvPaths = top.getDiscreteVariableNames();
+    const Array<std::string>& dvPaths = top.getDiscreteVariableNames();
     REQUIRE(dvPaths.size() == 3);
     REQUIRE(dvPaths[0] == "/internalSub/dvX");
     REQUIRE(dvPaths[1] == "/a/dvX");
@@ -1806,7 +1806,7 @@ TEST_CASE("Component Interface Discrete Variables Vec3")
     State s = system.realizeTopology();
 
     // Get the paths of all discrete variables under "theWorld"
-    Array<std::string>& dvPaths = theWorld.getDiscreteVariableNames();
+    const Array<std::string>& dvPaths = theWorld.getDiscreteVariableNames();
     REQUIRE(dvPaths.size() == 2);
     REQUIRE(dvPaths[0] == "/internalSub/dvX");
     REQUIRE(dvPaths[1] == "/Bar/point");
@@ -1866,13 +1866,15 @@ TEST_CASE("Component Interface State Trajectories")
     const Vector y = Vector(svPaths.size(), 0.1);
 
     // Get the paths of all discrete variables under "wrld"
-    OpenSim::Array<std::string>& dvPaths = wrld.getDiscreteVariableNames();
+    const OpenSim::Array<std::string>& dvPaths =
+        wrld.getDiscreteVariableNames();
     REQUIRE(dvPaths.size() == 2);
     REQUIRE(dvPaths[0] == "/internalSub/dvX");
     REQUIRE(dvPaths[1] == "/Bar/point");
 
     // Get the paths of all modeling moptions under "wrld"
-    OpenSim::Array<std::string>& moPaths = wrld.getModelingOptionNames();
+    const OpenSim::Array<std::string>& moPaths =
+        wrld.getModelingOptionNames();
     REQUIRE(moPaths.size() == 1);
     REQUIRE(moPaths[0] == "/internalSub/moX");
 
