@@ -1818,3 +1818,95 @@ TEMPLATE_TEST_CASE("Multiple MocoPathConstraints", "", MocoCasADiSolver,
     study.initSolver<TestType>();
     study.solve();
 }
+
+
+class ConstantSpeedConstraint : public Constraint {
+OpenSim_DECLARE_CONCRETE_OBJECT(ConstantSpeedConstraint, Constraint);
+
+public:
+    OpenSim_DECLARE_SOCKET(body, PhysicalFrame,
+        "The body participating in this constraint.");
+
+private:
+    void extendAddToSystem(SimTK::MultibodySystem& system) const {
+        Super::extendAddToSystem(system);
+        const PhysicalFrame& f = getConnectee<PhysicalFrame>("body");
+        SimTK::MobilizedBody b = f.getMobilizedBody();
+        SimTK::Constraint::ConstantSpeed simtkConstantSpeed(b,
+            SimTK::MobilizerUIndex(0), SimTK::Real(2.34));
+        assignConstraintIndex(simtkConstantSpeed.getConstraintIndex());
+    }
+};
+
+
+class ConstantAccelerationConstraint : public Constraint {
+OpenSim_DECLARE_CONCRETE_OBJECT(ConstantAccelerationConstraint, Constraint);
+
+public:
+    OpenSim_DECLARE_SOCKET(body, PhysicalFrame,
+        "The body participating in this constraint.");
+
+private:
+    void extendAddToSystem(SimTK::MultibodySystem& system) const {
+        Super::extendAddToSystem(system);
+        const PhysicalFrame& f = getConnectee<PhysicalFrame>("body");
+        SimTK::MobilizedBody b = f.getMobilizedBody();
+        SimTK::Constraint::ConstantAcceleration simtkConstantAcceleration(b,
+            SimTK::MobilizerUIndex(0), SimTK::Real(1.23));
+        assignConstraintIndex(simtkConstantAcceleration.getConstraintIndex());
+    }
+};
+
+MocoStudy createSlidingMassMocoStudy(const Model& model) {
+    MocoStudy study;
+    study.setName("sliding_mass");
+    MocoProblem& mp = study.updProblem();
+    mp.setModel(make_unique<Model>(model));
+    mp.setTimeBounds(0, {0, 10});
+    mp.setStateInfo("/slider/position/value",{0, 1}, 0, 1);
+    mp.setStateInfo("/slider/position/speed", {-100, 100});
+    mp.addGoal<MocoControlGoal>();
+
+    auto& ms = study.initCasADiSolver();
+    ms.set_num_mesh_intervals(50);
+    ms.set_transcription_scheme("legendre-gauss-3");
+    ms.set_kinematic_constraint_method("Bordalba2023");
+
+    return study;
+}
+
+TEST_CASE("ConstantSpeedConstraint") {
+    Model model = ModelFactory::createSlidingPointMass();
+    auto* constraint = new ConstantSpeedConstraint();
+    constraint->setName("constant_speed");
+    constraint->connectSocket_body(model.getComponent<Body>("body"));
+    model.addConstraint(constraint);
+    model.initSystem();
+
+    MocoStudy study = createSlidingMassMocoStudy(model);
+    MocoSolution solution = study.solve();
+
+    const auto& speed = solution.getState("/slider/position/speed");
+    for (int itime = 0; itime < solution.getNumTimes(); ++itime) {
+        CHECK(speed[itime] == Approx(2.34).margin(1e-9));
+    }
+}
+
+TEST_CASE("ConstantAccelerationConstraint") {
+    Model model = ModelFactory::createSlidingPointMass();
+    auto* constraint = new ConstantAccelerationConstraint();
+    constraint->setName("constant_acceleration");
+    constraint->connectSocket_body(model.getComponent<Body>("body"));
+    model.addConstraint(constraint);
+    model.initSystem();
+
+    MocoStudy study = createSlidingMassMocoStudy(model);
+    MocoSolution solution = study.solve();
+
+    const auto& states = solution.exportToStatesTrajectory(model);
+    for (const auto& state : states) {
+        model.realizeAcceleration(state);
+        CHECK(state.getUDot()[0] == Approx(1.23).margin(1e-9));
+    }
+}
+
