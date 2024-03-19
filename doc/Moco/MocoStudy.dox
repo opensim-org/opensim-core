@@ -172,12 +172,12 @@ solver.set_transcription_scheme("trapezoidal");
 
 The transcription schemes supported by Moco are summarized in the table below:
 
-| Transcription scheme   | `transcription_scheme` setting | Theory                            |
-|------------------------|--------------------------------|-----------------------------------|  
-| trapezoidal            | "trapezoidal"                  | @ref mocotraptheory               |
-| Hermite-Simpson        | "hermite-simpson"              | @ref mocohermitesimpsontheory     |
-| Legendre-Gauss         | "legendre-gauss-#"             | @ref mocolegendregausstheory      |
-| Legendre-Gauss-Radau   | "legendre-gauss-radau-#"       | @ref mocolegendregaussradautheory |
+| Scheme               | `transcription_scheme` setting | Theory                            |
+|----------------------|--------------------------------|-----------------------------------|  
+| trapezoidal          | "trapezoidal"                  | @ref mocotraptheory               |
+| Hermite-Simpson      | "hermite-simpson"              | @ref mocohermitesimpsontheory     |
+| Legendre-Gauss       | "legendre-gauss-#"             | @ref mocolegendregausstheory      |
+| Legendre-Gauss-Radau | "legendre-gauss-radau-#"       | @ref mocolegendregaussradautheory |
 
 For the Legendre-Gauss and Legendre-Gauss-Radau transcription schemes, the `#` 
 in the setting string should be replaced by a number between [1, 9], which 
@@ -231,8 +231,8 @@ See @ref mocolegendregausstheory for a mathematical description. Note that
 the Bordalba et al. 2023 method is valid for all transcription schemes, 
 not just Legendre-Gauss collocation. The implementation for each method 
 has been slighly modified from the original publications to be compatible 
-with the Simbody multibody dynamics engine; we refer to the mathematical 
-descriptions linked above which describe the implementations used by Moco.
+with Simbody; we refer to the mathematical descriptions linked above which 
+describe the implementations used by Moco.
 
 When constraint derivatives are enforced, slack variables are added to the 
 problem for projecting the model coordinates back onto the constraint manifold. 
