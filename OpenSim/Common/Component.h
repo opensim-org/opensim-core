@@ -2478,7 +2478,7 @@ public:
         for (int i = 0; i < n; ++i) {
             SimTK::Value<T> vVal = SimTK::Value<T>::downcast(
                 subsystem->getDiscreteVariable(input[i], dvIndex));
-            output.emplace_back(vVal.getValue<T>());
+            output.emplace_back(vVal.template getValue<T>());
         }
     }
 
@@ -2543,7 +2543,7 @@ public:
         for (int i = 0; i < n; ++i) {
             SimTK::Value<T> vVal = SimTK::Value<T>::downcast(
                 subsystem->getDiscreteVariable(input[i], dvIndex));
-            output.emplace_back(vVal.getValue<T>());
+            output.emplace_back(vVal.template getValue<T>());
         }
     }
 
