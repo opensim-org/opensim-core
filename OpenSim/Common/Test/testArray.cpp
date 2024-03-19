@@ -102,7 +102,7 @@ TEST_CASE("Array searchBinary Behaves Similarly to Legacy Implementation")
     }
 }
 
-TEST_CASE("Array findIndexand rfindIndex Behaves Similarly to Legacy Implementation")
+TEST_CASE("Array findIndex and rfindIndex Behave Similarly to Legacy Implementation")
 {
     constexpr int arraySize = 3;
     Array<int> vals;
