@@ -102,8 +102,9 @@ public:
             "'trapezoidal' for trapezoidal transcription, 'hermite-simpson' "
             "(default) for separated Hermite-Simpson transcription, "
             "'legendre-gauss-#' for Legendre-Gauss transcription (where # is "
-            "the number of collocation points per mesh between 1 and 9), and"
-            "'legendre-gauss-radau-#' for Legendre-Gauss-Radau transcription.");
+            "the number of collocation points per mesh interval between 1 and "
+            "9), and 'legendre-gauss-radau-#' for Legendre-Gauss-Radau "
+            "transcription.");
     OpenSim_DECLARE_PROPERTY(interpolate_control_mesh_interior_points, bool,
             "If the transcription scheme is set to 'hermite-simpson' or one of "
             "the pseudospectral schemes (e.g., 'legendre-gauss-3', "
