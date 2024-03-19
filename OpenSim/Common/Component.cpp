@@ -596,7 +596,8 @@ void Component::addStateVariable(Component::StateVariable*  stateVariable) const
 // elswhere. In this case, the derived Component is responsible for
 // initializing the index of the discrete state, as well its Subsystem.
 // This should be done by implementing an overriding extendRealizeTopology()
-// method and, in that method, calling Component::updDiscreteVariableIndex();
+// method and, in that method, calling
+// Component::initializeDiscreteVariableIndex().
 //
 // See ExponentialContact::extendRealizeTopology() for an example.
 void
@@ -619,11 +620,10 @@ addDiscreteVariable(const std::string& discreteVariableName,
         DiscreteVariableInfo(invalidatesStage, allocate);
 }
 
+// F. C. Anderson -------------------------------------------------------------
+// Methods below here added to enhance Component API for modeling options.
 
 //_____________________________________________________________________________
-// F. C. Anderson (May 2023)
-// Added so that modeling options can be serialized and deserialized.
-//
 // Get the names of modeling options maintained by the Component and its
 // subcomponents.
 Array<std::string>
@@ -651,8 +651,6 @@ getModelingOptionNames() const {
 }
 
 //_____________________________________________________________________________
-// F. C. Anderson (May 2023)
-// Added so that modeling options can be serialized and deserialized.
 Array<std::string>
 Component::
 getModelingOptionNamesAddedByComponent() const {
@@ -670,8 +668,9 @@ getModelingOptionNamesAddedByComponent() const {
     return names;
 }
 
-
-// Get the value of a ModelingOption flag for this Component.
+//_____________________________________________________________________________
+// Get the value of a ModelingOption flag.
+// Takes a path instead of just the name of the modeling option.
 int Component::
 getModelingOption(const SimTK::State& s, const std::string& path) const
 {
@@ -691,7 +690,9 @@ getModelingOption(const SimTK::State& s, const std::string& path) const
     }
 }
 
-// Set the value of a modeling option allocated by this Component by path.
+//_____________________________________________________________________________
+// Set the value of a ModelingOption flag.
+// Takes a path instead of just the name of the modeling option.
 void Component::
 setModelingOption(SimTK::State& s, const std::string& path, int flag) const
 {
@@ -713,6 +714,10 @@ setModelingOption(SimTK::State& s, const std::string& path, int flag) const
         OPENSIM_THROW(VariableNotFound, getName(), moName);
     }
 }
+
+// Methods above here added to enhance Component API for modeling options.
+// F. C. Anderson ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 
 unsigned Component::printComponentsMatching(const std::string& substring) const
 {
@@ -1082,7 +1087,7 @@ void Component::
 }
 
 
-// F. C. Anderson =============================================================
+// F. C. Anderson -------------------------------------------------------------
 // Methods below here added to enhance Component API for discrete variables.
 
 //_____________________________________________________________________________
@@ -1163,7 +1168,7 @@ resolveVariableNameAndOwner(const ComponentPath& path,
 const SimTK::AbstractValue&
 Component::
 getDiscreteVariableAbstractValue(const SimTK::State& s,
-    const std::string& pathName) const
+    const std::string& path) const
 {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
@@ -1171,7 +1176,7 @@ getDiscreteVariableAbstractValue(const SimTK::State& s,
     // Resolve the name of the DV and its owner.
     std::string dvName{""};
     const Component* owner =
-        resolveVariableNameAndOwner(pathName, dvName);
+        resolveVariableNameAndOwner(path, dvName);
 
     // Find the variable.
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
