@@ -245,20 +245,20 @@ private:
 /// In general, this utility needs getRecordValues() to report the
 /// following force and torque information at the specified indices:
 ///
-/// index - component (body)
-/// ------------------------
-///     0 - force-x (foot)
-///     1 - force-y (foot)
-///     2 - force-z (foot)
-///     3 - torque-x (foot)
-///     4 - torque-y (foot)
-///     5 - torque-z (foot)
-///     6 - force-x (contact plane)
-///     7 - force-y (contact plane)
-///     8 - force-z (contact plane)
-///     9 - torque-x (contact plane)
-///    10 - torque-y (contact plane)
-///    11 - torque-z (contact plane)
+/// index | component (body)
+/// ----- | ----------------
+///     0 | force-x (foot)
+///     1 | force-y (foot)
+///     2 | force-z (foot)
+///     3 | torque-x (foot)
+///     4 | torque-y (foot)
+///     5 | torque-z (foot)
+///     6 | force-x (contact plane)
+///     7 | force-y (contact plane)
+///     8 | force-z (contact plane)
+///     9 | torque-x (contact plane)
+///    10 | torque-y (contact plane)
+///    11 | torque-z (contact plane)
 ///
 /// @ingroup mocoutil
 OSIMMOCO_API
