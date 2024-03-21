@@ -190,7 +190,7 @@ The goal is computed as follows:
 
 \f[
 \frac{1}{dm} \int_{t_i}^{t_f} 
-    w_v\beta((\frac{1}{s} (\ln (1 + \exp (s\betav))))^p) ~dt
+    w_v \beta((\frac{1}{s} (\ln (1 + \exp (s \beta v))))^p) ~dt
 \f]
 We use the following notation:
 - \f$ d \f$: displacement of the system, if `divide_by_displacement` is
@@ -199,8 +199,8 @@ We use the following notation:
   true; 1 otherwise.
 - \f$ v \f$: the output variable of choice.
 - \f$ w_v \f$: the weight for output variable \f$ v \f$.
-- \f$ \beta \f$: the approximate extremum to be taken (\beta == -1 for
-  minimum; \beta == 1 for maximum).
+- \f$ \beta \f$: the approximate extremum to be taken (\f$ \beta \f$ == -1 for
+  minimum; \f$ \beta \f$ == 1 for maximum).
 - \f$ s \f$: the smoothing factor for approximating the extremum. With
   \f$ s \f$ == 1 the approximation is closer to the true extremum taken.
   For \f$ v \f$ with potentially large magnitudes (> 2000) during a simulation
