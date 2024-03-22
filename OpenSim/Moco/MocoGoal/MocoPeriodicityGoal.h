@@ -60,6 +60,10 @@ To handle initial and final variable values that are equal in absolute value
 but differ in sign (e.g. a pelvis rotation in walking), use
 addNegatedStatePair or addNegatedControlPair.
 
+If you wish to constrain all control signal pairs except those containing a
+control associated with a user-defined controller (e.g., PrescribedController),
+pass 'true' to `setIgnoreControlledActuators()`.
+
 To impose bilateral symmetry in a walking simulation,
 we can simulate over half a gait cycle and impose periodic constraints. For
 bilateral variables (e.g., hip flexion speeds and hamstrings controls), the
@@ -95,6 +99,7 @@ pair_hamstrings2.set_final_variable("/hamstrings_r");
 periodicGoal->append_control_pairs(pair_hamstrings2);
 @endcode
 This is an endpoint constraint goal by default.
+
 @ingroup mocogoal */
 class OSIMMOCO_API MocoPeriodicityGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicityGoal, MocoGoal);
@@ -120,6 +125,16 @@ public:
         append_control_pairs(std::move(pair));
     }
 
+    /// If true, do not constrain controls associated with user-defined
+    /// controllers.
+    void setIgnoreControlledActuators(bool v) {
+        set_ignore_controlled_actuators(v);
+    }
+    /// @copydoc setIgnoreControlledActuators()
+    bool getIgnoreControlledActuators() const {
+        return get_ignore_controlled_actuators();
+    }
+
 protected:
     bool getSupportsEndpointConstraintImpl() const override { return true; }
     Mode getDefaultModeImpl() const override {
@@ -135,6 +150,9 @@ private:
             "Periodic pairs of states.");
     OpenSim_DECLARE_LIST_PROPERTY(control_pairs, MocoPeriodicityGoalPair,
             "Periodic pairs of controls.");
+    OpenSim_DECLARE_PROPERTY(ignore_controlled_actuators, bool,
+            "If true, do not constrain controls belonging to actuators "
+            "controlled by user-defined controllers (default: false).");
     void constructProperties();
     mutable std::vector<std::tuple<int, int, int>> m_indices_states;
     mutable std::vector<std::tuple<int, int, int>> m_indices_controls;

@@ -18,6 +18,8 @@
 
 #include "MocoControlGoal.h"
 
+#include <OpenSim/Moco/Components/ControlDistributor.h>
+#include <OpenSim/Simulation/Control/InputController.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 
@@ -29,6 +31,7 @@ void MocoControlGoal::constructProperties() {
     constructProperty_control_weights(MocoWeightSet());
     constructProperty_control_weights_pattern(MocoWeightSet());
     constructProperty_exponent(2);
+    constructProperty_ignore_controlled_actuators(false);
 }
 
 void MocoControlGoal::setWeightForControl(
@@ -51,13 +54,14 @@ void MocoControlGoal::setWeightForControlPattern(
 
 void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 
-    // Get all expected control names.
+    // Get all the control names and indices in the model.
     auto controlNames = createControlNamesFromModel(model);
+    auto controlIndexMap = createSystemControlIndexMap(model);
 
-    // Check that the model controls are in the correct order.
-    checkOrderSystemControls(model);
+    // Get control names associated with the model's ActuatorInputController.
+    auto actuatorInputControlNames =
+            createControlNamesForControllerType<ActuatorInputController>(model);
 
-    auto systemControlIndexMap = createSystemControlIndexMap(model);
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& thisName = get_control_weights()[i].getName();
@@ -70,7 +74,6 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 
     // Set the regex pattern controls first.
     std::map<std::string, double> weightsFromPatterns;
-
     for (int i = 0; i < get_control_weights_pattern().getSize(); ++i) {
         const auto& mocoWeight = get_control_weights_pattern().get(i);
         const auto& pattern = mocoWeight.getName();
@@ -90,10 +93,22 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
             weight = weightsFromPatterns[controlName];
         }
 
+        if (getIgnoreControlledActuators() &&
+                !actuatorInputControlNames.count(controlName)) {
+            log_info("MocoControlGoal: Control '{}' is associated with a "
+                     "user-defined controller and will be ignored, "
+                     "as requested.",
+                    controlName);
+            continue;
+        }
+
         if (weight != 0.0) {
-            m_controlIndices.push_back(systemControlIndexMap[controlName]);
+            m_controlIndices.push_back(controlIndexMap[controlName]);
             m_weights.push_back(weight);
             m_controlNames.push_back(controlName);
+        } else {
+            log_info("MocoControlGoal: Control '{}' has weight 0 and will be "
+                     "ignored.", controlName);
         }
     }
 
@@ -117,6 +132,7 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 void MocoControlGoal::calcIntegrandImpl(
         const IntegrandInput& input, SimTK::Real& integrand) const {
     const auto& controls = input.controls;
+
     integrand = 0;
     int iweight = 0;
     for (const auto& icontrol : m_controlIndices) {

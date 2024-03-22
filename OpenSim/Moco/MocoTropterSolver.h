@@ -28,6 +28,7 @@ template <typename T>
 class Problem;
 template <typename T>
 class DirectCollocationSolver;
+class Solution;
 }
 /** @endcond */
 

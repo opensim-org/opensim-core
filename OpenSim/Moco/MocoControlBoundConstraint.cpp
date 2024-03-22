@@ -22,6 +22,7 @@
 
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
+#include <OpenSim/Simulation/Control/InputController.h>
 
 using namespace OpenSim;
 
@@ -34,20 +35,22 @@ void MocoControlBoundConstraint::constructProperties() {
     constructProperty_lower_bound();
     constructProperty_upper_bound();
     constructProperty_equality_with_lower(false);
+    constructProperty_ignore_controlled_actuators(false);
 }
 
 void MocoControlBoundConstraint::initializeOnModelImpl(
         const Model& model, const MocoProblemInfo& problemInfo) const {
 
-    // Get all expected control names.
-    auto controlNames = createControlNamesFromModel(model);
-
     // Check that the model controls are in the correct order.
     checkOrderSystemControls(model);
 
+    // Get controls associated with the model's ActuatorInputController.
+    auto actuatorInputControls =
+            createControlNamesForControllerType<ActuatorInputController>(model);
+
     m_hasLower = !getProperty_lower_bound().empty();
     m_hasUpper = !getProperty_upper_bound().empty();
-    if (getProperty_control_paths().size() && !m_hasLower && !m_hasUpper) {
+    if (!getProperty_control_paths().empty() && !m_hasLower && !m_hasUpper) {
         log_warn("In MocoControlBoundConstraint '{}', control paths are "
                  "specified but no bounds are provided.", getName());
     }
@@ -59,8 +62,18 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
             OPENSIM_THROW_IF_FRMOBJ(systemControlIndexMap.count(thisName) == 0,
                     Exception,
                     "Control path '{}' was provided but no such "
-                    "control exists in the model.",
-                    thisName);
+                    "control exists in the model or it is already controlled "
+                    "by a user-defined controller.",
+                    thisName)
+
+            if (getIgnoreControlledActuators() && !actuatorInputControls.count(thisName)) {
+                log_info("MocoControlBoundConstraint: Control '{}' is "
+                         "associated with a user-defined controller and will "
+                         "be ignored, as requested.",
+                        thisName);
+                continue;
+            }
+
             m_controlIndices.push_back(systemControlIndexMap[thisName]);
         }
     }
