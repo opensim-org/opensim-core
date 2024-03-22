@@ -483,7 +483,13 @@ public:
     int rfindIndex(const T& aValue) const
     {
         const auto it = std::find(_storage.rbegin(), _storage.rend(), aValue);
-        return it != _storage.rend() ? static_cast<int>(std::distance(_storage.begin(), it.base())) : -1;
+        if (it != _storage.rend()) {
+            auto idx = std::distance(_storage.begin(), it.base()) - 1;
+            return static_cast<int>(idx);
+        }
+        else {
+            return -1;
+        }
     }
 
     /**
