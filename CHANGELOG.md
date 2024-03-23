@@ -35,6 +35,8 @@ v4.6
   orientation from `Station`s in the model
 - Models with `PrescribedController`s are now supported by Moco (#3701). Controls for actuators controlled by 
   `PrescribedController`s are now excluded from the optimization problem.
+- Fixed documentation error in `Umberger2010MuscleMetabolicsProbe` where muscle mass was incorrectly omitted for the
+  activation maintenance rate.
 
 v4.5
 ====
