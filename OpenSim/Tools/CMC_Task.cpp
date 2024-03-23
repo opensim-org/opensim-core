@@ -899,11 +899,23 @@ getAcceleration(int aWhich) const
  * Compute the Jacobian.
  */
 void CMC_Task::
-computeJacobian()
+computeJacobian(const SimTK::State& s)
 {
     log_error("CMC_Task::computeJacobian: This method should be overridden in "
         "derived classes.");
 }
+
+//_____________________________________________________________________________
+/**
+ * Compute the bias term for the Jacobian.
+ */
+void CMC_Task::
+computeBias(const SimTK::State& s)
+{
+    log_error("CMC_Task::computeBias: This method should be overridden in "
+        "derived classes.");
+}
+
 
 //-----------------------------------------------------------------------------
 // EFFECTIVE MASS MATRIX

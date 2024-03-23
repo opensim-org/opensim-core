@@ -24,6 +24,8 @@ if(BUILD_API_EXAMPLES)
     add_subdirectory(DataAdapter)
     add_subdirectory(Moco)
 
+    add_subdirectory(TaskSpace)
+
 elseif()
 
     add_subdirectory(ControllerExample)

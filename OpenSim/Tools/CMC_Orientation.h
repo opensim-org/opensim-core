@@ -74,7 +74,7 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    void computeJacobian() override;
+    void computeJacobian(const SimTK::State& s) override;
     void computeEffectiveMassMatrix() override;
 
 

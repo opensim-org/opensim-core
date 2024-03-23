@@ -49,6 +49,17 @@
 #include "SMC_Joint.h"
 #include "CMC_TaskSet.h"
 #include "CorrectionController.h"
+
+#include "TaskSpaceTorqueController.h"
+#include "TaskSpaceComputeControlsEventHandler.h"
+#include "TaskSpaceConstraintModel.h"
+#include "TaskSpaceTask.h"
+#include "TaskSpaceBodyTask.h"
+#include "TaskSpaceOrientationTask.h"
+#include "TaskSpaceStationTask.h"
+#include "TaskSpaceCoordinateTask.h"
+#include "TaskSpaceInertiaTask.h"
+
 #include "RegisterTypes_osimTools.h"    // to expose RegisterTypes_osimTools
 
 #endif // OPENSIM_OSIMTOOLS_H_

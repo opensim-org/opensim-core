@@ -90,7 +90,7 @@ setNull()
  * Compute the Jacobian.
  */
 void CMC_Orientation::
-computeJacobian()
+computeJacobian(const SimTK::State& s)
 {
 
 
