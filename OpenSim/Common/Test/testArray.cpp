@@ -101,3 +101,20 @@ TEST_CASE("Array searchBinary Behaves Similarly to Legacy Implementation")
         REQUIRE(legacyOutput == newOutput);
     }
 }
+
+TEST_CASE("Array rFindIndex returns expected results")
+{
+    Array<int> vals;
+    vals.append(0);
+    vals.append(1);
+    vals.append(2);
+    vals.append(2);
+    vals.append(3);
+
+    REQUIRE(vals.rfindIndex(3) == 4);
+    REQUIRE(vals.rfindIndex(2) == 3);
+    REQUIRE(vals.findIndex(2) == 2);  // sanity check for duplicate case
+    REQUIRE(vals.rfindIndex(1) == 1);
+    REQUIRE(vals.rfindIndex(0) == 0);
+    REQUIRE(vals.rfindIndex(1337) == -1);
+}
