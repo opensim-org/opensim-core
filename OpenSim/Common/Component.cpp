@@ -7,9 +7,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2024 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Michael Sherman                                      *
- * Contributor(s): Ayman Habib                                                *
+ * Contributor(s): Ayman Habib, F. C. Anderson                                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -582,12 +582,11 @@ void Component::addStateVariable(Component::StateVariable*  stateVariable) const
 
 
 //_____________________________________________________________________________
-// F. C. Anderson (Jan 2023)
-// A variaible 'allocate' was added to the argument list of
-// addDiscreteVariable(). This was done to prevent double allocation of a
-// discrete variable that is allocated outside of class Component. Such an
-// allocation can occur when a native Simbody class, wrapped as an OpenSim
-// Component, allocates its own discrete variables externally.
+// An argument 'allocate' was added to addDiscreteVariable().
+// This was done to prevent double allocation of a discrete variable that is
+// allocated outside of class Component. Such an allocation can occur when a
+// native Simbody class, wrapped as an OpenSim Component, allocates its own
+// discrete variablee.
 //
 // When 'allocate' is true (default), the discrete state is allocated normally
 // in Component::extendRealizeTopology().
@@ -620,8 +619,6 @@ addDiscreteVariable(const std::string& discreteVariableName,
         DiscreteVariableInfo(invalidatesStage, allocate);
 }
 
-// F. C. Anderson -------------------------------------------------------------
-// Methods below here added to enhance Component API for modeling options.
 
 //_____________________________________________________________________________
 // Get the names of modeling options maintained by the Component and its
@@ -714,10 +711,6 @@ setModelingOption(SimTK::State& s, const std::string& path, int flag) const
         OPENSIM_THROW(VariableNotFound, getName(), moName);
     }
 }
-
-// Methods above here added to enhance Component API for modeling options.
-// F. C. Anderson ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 
 unsigned Component::printComponentsMatching(const std::string& substring) const
 {
@@ -1087,13 +1080,8 @@ void Component::
 }
 
 
-// F. C. Anderson -------------------------------------------------------------
-// Methods below here added to enhance Component API for discrete variables.
-
 //_____________________________________________________________________________
-// F. C. Anderson (Feb 2023)
-// Added so that discrete states can be serialized and deserialized.
-//
+// Added to support de/serialization of discrete variables.
 // Get the names of discrete state variables maintained by the Component and
 // its subcomponents.
 Array<std::string> Component::getDiscreteVariableNames() const {
@@ -1119,8 +1107,7 @@ Array<std::string> Component::getDiscreteVariableNames() const {
 }
 
 //_____________________________________________________________________________
-// F. C. Anderson (Feb 2023)
-// Added so that discrete states can be serialized and deserialized.
+// Added to support de/serialization of discrete variables.
 Array<std::string> Component::getDiscreteVariableNamesAddedByComponent() const {
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.begin();
@@ -1137,8 +1124,8 @@ Array<std::string> Component::getDiscreteVariableNamesAddedByComponent() const {
 }
 
 //_____________________________________________________________________________
-// F. C. Anderson (May 2023)
-// Added so that a variable can be accessed based on a specified path.
+// Added so that a discrete variable or modeling optioncan be accessed based
+// on a relative or absolute specified path.
 const Component*
 Component::
 resolveVariableNameAndOwner(const ComponentPath& path,
@@ -1161,10 +1148,9 @@ resolveVariableNameAndOwner(const ComponentPath& path,
 }
 
 //_____________________________________________________________________________
-// F. C. Anderson (Jan 2023, May 2023, Feb 2024)
 // This method was added in order to handle Discrete Variables (DV) that are
-// not type double.  In addition, a DV can be accessed by specifying its path
-// instead of just the name of the DV.
+// not type double. In addition, a DV can be accessed by specifying its
+// relative or absolute path.
 const SimTK::AbstractValue&
 Component::
 getDiscreteVariableAbstractValue(const SimTK::State& s,
@@ -1185,14 +1171,13 @@ getDiscreteVariableAbstractValue(const SimTK::State& s,
     if (it != owner->_namedDiscreteVariableInfo.end()) {
         SimTK::DiscreteVariableIndex dvIndex = it->second.index;
 
-        // F. C. Anderson (Jan 2023)
         // Previously, it was assumed that all discrete states were allocated
         // from the DefaultSubsystem. This is likely not the case when
         // discrete states are allocated by native Simbody objects. For
         // example, class ExponentialSpringForce allocates 4 discrete states,
         // not from the default Subsystem, but from the GeneralForceSubsystem.
         // To account for the fact that an object might allocate discrete
-        // variables from a different Subsystem, a pointer was added to the
+        // variables from different Subsystems, a pointer was added to the
         // DiscreteVariableInfo struct. This pointer is now consulted for any
         // non-default Subsystem. If this pointer is nullptr, which is its
         // default value, then the default Subsystem is used.
@@ -1206,10 +1191,9 @@ getDiscreteVariableAbstractValue(const SimTK::State& s,
 }
 
 //_____________________________________________________________________________
-// F. C. Anderson (Jan 2023, May 2023, Feb 2024)
 // This method was added in order to handle Discrete Variables (DV) that are
-// not type double and, in addition, to allow a path to be specified instead
-// of just the name of the DV.
+// not type double and, in addition, to allow a variable to be found based on
+// a specified relative or absolute path.
 SimTK::AbstractValue&
 Component::
 updDiscreteVariableAbstractValue(SimTK::State& s,
@@ -1229,14 +1213,13 @@ updDiscreteVariableAbstractValue(SimTK::State& s,
     if (it != owner->_namedDiscreteVariableInfo.end()) {
         SimTK::DiscreteVariableIndex dvIndex = it->second.index;
 
-        // F. C. Anderson (Jan 2023)
         // Previously, it was assumed that all discrete states were allocated
         // from the default Subsystem. This is likely not the case when
         // discrete states are allocated by native Simbody objects. For
         // example, class ExponentialSpringForce allocates 4 discrete states,
         // not from the default Subsystem, but from the GeneralForceSubsystem.
         // To account for the fact that an object might allocate discrete
-        // variables from a different Subsystem, a pointer was added to the
+        // variables from different Subsystems, a pointer was added to the
         // DiscreteVariableInfo struct. This pointer is now consulted for any
         // non-default Subsystem. If this pointer is nullptr, which is its
         // default value, then the default Subsystem is used.
@@ -1248,10 +1231,6 @@ updDiscreteVariableAbstractValue(SimTK::State& s,
         OPENSIM_THROW(VariableNotFound, getName(), dvName);
     }
 }
-
-// Methods above here added to enhance Component API for discrete variables.
-// F. C. Anderson ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 
 
 SimTK::CacheEntryIndex Component::getCacheVariableIndex(const std::string& name) const
@@ -1596,7 +1575,6 @@ getDiscreteVariableIndex(const std::string& name) const
 
 
 //_____________________________________________________________________________
-// F. C. Anderson (Jan 2023)
 // This method was added so that a derived Component can properly initialize
 // the index and Subsystem of a discrete variable that is allocated outside
 // of class Component.
@@ -1673,7 +1651,6 @@ void Component::extendRealizeTopology(SimTK::State& s) const
     for (auto& kv : _namedDiscreteVariableInfo) {
         DiscreteVariableInfo& dvi = kv.second;
 
-        // F. C. Anderson (Jan 2023)
         // Do not allocate if the discrete state is allocated outside of class
         // Component. This case is encountered when a native Simbody object,
         // wrapped as an OpenSim Component, posseses discrete states of its

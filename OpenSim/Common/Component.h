@@ -9,8 +9,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2024 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
+ * Contributor(s): F. C. Anderson                                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -925,10 +926,6 @@ public:
      */
     Array<std::string> getStateVariableNames() const;
 
-
-    // F. C. Anderson ---------------------------------------------------------
-    // Added support for Discrete Variables and Modeling Options.
-
     /**
     * Get the names of discrete state variables maintained by the Component
     * and its subcomponents. Each variable's name is prepended by its path in
@@ -946,9 +943,6 @@ public:
     *         System (i.e., if initSystem has not been called)
     */
     Array<std::string> getModelingOptionNames() const;
-
-    // F. C. Anderson ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 
     /** @name Component Socket Access methods
         Access Sockets of this component by name. */
@@ -1433,9 +1427,6 @@ public:
      */
     //@{
 
-    // F. C. Anderson ---------------------------------------------------------
-    // Enhanced support for Discrete Variables and Modeling Options.
-
     /**
      * Based on a specified path, get the value of a modeling option.
      * 
@@ -1465,8 +1456,8 @@ public:
      * If this component is the owner of the modeling option, the path should
      * simply be the name of the modeling option.
      * 
-     * Note that successfully setting the value of the modeling option will
-     * revert the realization stage back to SimTK::Stage::Instance.
+     * @note Successfully setting the value of the modeling option will revert
+     * the realization stage back to SimTK::Stage::Instance.
      *
      * @param state State in which to set the modeling option.
      * @param path Path of the modeling option in the component hierarchy.
@@ -1482,8 +1473,6 @@ public:
      */
     void setModelingOption(SimTK::State& state, const std::string& path,
         int flag) const;
-
-    // F. C. Anderson ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     /**
     * Get the Input value that this component is dependent on.
@@ -1618,9 +1607,6 @@ public:
     double getStateVariableDerivativeValue(const SimTK::State& state,
         const std::string& name) const;
 
-    // F. C. Anderson ---------------------------------------------------------
-    // Added support for Discrete Variables and Modeling Options.
-
     /**
     * Based on a specified path, resolve the name of a discrete variable or
     * modeling option and the component that owns it (i.e., its parent).
@@ -1746,7 +1732,7 @@ public:
     *      } else if (SimTK::Value<Vec3>::isA(valAbstract)) {
     *          const SimTK::Value<Vec3>& valVec3 =
     *              SimTK::Value<Vec3>::downcast(valAbstract);
-    *          Vec3 x = valDbl + Vec3(0.4);
+    *          Vec3 x = valVec3 + Vec3(0.4);
     *      }
     * ```
     * For convenience, a templated method that implements basic downcasting
@@ -1851,7 +1837,7 @@ public:
     *      } else if (SimTK::Value<Vec3>::isA(valAbstract)) {
     *          SimTK::Value<Vec3>& valVec3 =
     *              SimTK::Value<Vec3>::updDowncast(valAbstract);
-    *          valDbl = Vec3(0.4);
+    *          valVec3 = Vec3(0.4);
     *      }
     * ```
     * For convenience, a templated method that implements basic downcasting
@@ -1870,8 +1856,6 @@ public:
     */
     SimTK::AbstractValue& updDiscreteVariableAbstractValue(
         SimTK::State& state, const std::string& path) const;
-
-    // F. C. Anderson ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
     /**
@@ -2369,8 +2353,6 @@ public:
     //@}
 
 
-    // F. C. Anderson ---------------------------------------------------------
-
     /** @name Component State Trajectory Methods
     Methods that support comprehensive de/serialization of a time ordered
     ordered sequence (i.e., a "trajectory") of SimTK::State objects. Such
@@ -2705,7 +2687,6 @@ public:
 
     // End of Component State Trajectory Methods.
     //@}
-    // F. C. Anderson ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
     /** @name Print information to the console */
@@ -3256,7 +3237,7 @@ protected:
     to be allocated externally (e.g., natively in Simbody) and the variable
     will not be allocated by this Component. In such a case, the variable's
     index and associated subsystem must be updated during System creation.
-    See Component::updDiscreteVariableIndex().
+    See Component::initializeDiscreteVariableIndex().
     */
     void addDiscreteVariable(const std::string& discreteVariableName,
         SimTK::Stage invalidatesStage, bool allocate = true) const;
@@ -3804,10 +3785,8 @@ private:
     {   return (int)_namedStateVariableInfo.size(); }
     Array<std::string> getStateVariableNamesAddedByComponent() const;
 
-    // F. C. Anderson (Feb 2023)
-    // Added so that discrete states can be serialized and deserialized.
-    //
-    // Get the number of discrete states that the Component added to the
+    // Added to support de/serialization of discrete variables.
+    // Get the number of variables states that the Component added to the
     // underlying computational system. The number of built-in discrete
     // states exposed by this component is included. It represents the number
     // of discrete variables managed by this Component.
@@ -3816,9 +3795,7 @@ private:
     }
     Array<std::string> getDiscreteVariableNamesAddedByComponent() const;
 
-    // F. C. Anderson (May 2023)
-    // Added so that modeling options can be serialized and deserialized.
-    //
+    // Added to support de/serialization of modeling options.
     // Get the number of modeling options that the Component added to the
     // underlying computational system. The number of built-in modeling
     // options exposed by this component is included. It represents the number
@@ -4083,12 +4060,10 @@ private:
         // System
         SimTK::DiscreteVariableIndex    index;
 
-        // F. C. Anderson (Jan 2023)
         // Introduced two data members: 'subsystem' and 'allocate'.
-        // These two data members allow OpenSim::Component to expose a
-        // discrete state that was allocated by a class other than
-        // OpenSim::Component and from Subsystem other than the default
-        // SimTK::Subsystem.
+        // These data members allow OpenSim::Component to expose a discrete
+        // state that was allocated by a class other than OpenSim::Component
+        // and from Subsystem other than SimTK::DefaultSubsystem.
 
         // Subsystem to which the discrete state belongs.
         // If 'nullptr' (default), class Component assumes that the discrete
@@ -4103,7 +4078,7 @@ private:
         // derived Component is responsible for initializing the index of the
         // discrete state, as well as its Subsystem. This should be done by
         // implementing an overriding extendRealizeTopology() method and
-        // calling updDiscreteVariableIndex() in that method.
+        // calling initializeDiscreteVariableIndex() in that method.
         // See ExponentialContact::extendRealizeTopology() for an example.
         bool allocate{true};
     };
