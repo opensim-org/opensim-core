@@ -66,11 +66,11 @@ class EmptyComponentPath : public Exception {
 public:
     EmptyComponentPath(const std::string& file,
         size_t line,
-        const std::string& func,
+        const std::string& methodName,
         const std::string& componentName) :
-        Exception(file, line, func) {
+        Exception(file, line, methodName) {
         std::string msg = componentName;
-        msg += "." + func + "() called with empty component path.\n";
+        msg += "." + methodName + "() called with empty component path.\n";
         msg += "Please assign a valid path and try again.";
         addMessage(msg);
     }
@@ -80,9 +80,9 @@ class ComponentHasNoName : public Exception {
 public:
     ComponentHasNoName(const std::string& file,
         size_t line,
-        const std::string& func,
+        const std::string& methodName,
         const std::string& componentConcreteClassName) :
-        Exception(file, line, func) {
+        Exception(file, line, methodName) {
         std::string msg = componentConcreteClassName;
         msg += " was constructed with no name.\n";
         msg += "Please assign a valid name and try again.";
@@ -94,11 +94,11 @@ class InvalidComponentName : public Exception {
 public:
     InvalidComponentName(const std::string& file,
         size_t line,
-        const std::string& func,
+        const std::string& methodName,
         const std::string& thisName,
         const std::string& invalidChars,
         const std::string& componentConcreteClassName) :
-        Exception(file, line, func) {
+        Exception(file, line, methodName) {
         std::string msg = "Component '" + thisName + "' of type " +
             componentConcreteClassName + " contains invalid characters of: '" +
             invalidChars + "'.";
@@ -110,11 +110,11 @@ class ComponentNotFoundOnSpecifiedPath : public ComponentNotFound {
 public:
     ComponentNotFoundOnSpecifiedPath(const std::string& file,
         size_t line,
-        const std::string& func,
+        const std::string& methodName,
         const std::string& toFindName,
         const std::string& toFindClassName,
         const std::string& thisName) :
-        ComponentNotFound(file, line, func) {
+        ComponentNotFound(file, line, methodName) {
         std::string msg = "Component '" + thisName;
         msg += "' could not find '" + toFindName;
         msg += "' of type " + toFindClassName + ". ";
@@ -128,12 +128,12 @@ class VariableOwnerNotFoundOnSpecifiedPath : public ComponentNotFound {
 public:
     VariableOwnerNotFoundOnSpecifiedPath(const std::string& file,
         size_t line,
-        const std::string& func,
+        const std::string& methodName,
         const std::string& componentName,
         const std::string& varName,
         const std::string& ownerPath) :
-        ComponentNotFound(file, line, func) {
-        std::string msg = componentName + "." + func;
+        ComponentNotFound(file, line, methodName) {
+        std::string msg = componentName + "." + methodName;
         msg += "(): No component found at path = '" + ownerPath;
         msg += "' while searching for owner of variable = '" + varName + "'.";
         addMessage(msg);
@@ -144,13 +144,13 @@ class ModelingOptionMaxExceeded : public Exception {
 public:
     ModelingOptionMaxExceeded(const std::string& file,
         size_t line,
-        const std::string& func,
+        const std::string& methodName,
         const std::string& componentName,
         const std::string& moName,
         const int flag,
         const int max) :
-        Exception(file, line, func) {
-        std::string msg = componentName + "." + func;
+        Exception(file, line, methodName) {
+        std::string msg = componentName + "." + methodName;
         msg += "(): called with flag = ";
         msg += std::to_string(flag) += ".\n";
         msg += "Value of modeling option '" + moName + "' cannot exceed ";
@@ -163,11 +163,11 @@ class VariableNotFound : public Exception {
 public:
     VariableNotFound(const std::string& file,
         size_t line,
-        const std::string& func,
+        const std::string& methodName,
         const std::string& componentName,
         const std::string& varName) :
-        Exception(file, line, func) {
-        std::string msg = componentName + "." + func;
+        Exception(file, line, methodName) {
+        std::string msg = componentName + "." + methodName;
         msg += "(): discrete variable or modeling option '" +
         msg += varName + "' not found.";
         addMessage(msg);
@@ -178,10 +178,10 @@ class ComponentIsAnOrphan : public Exception {
 public:
     ComponentIsAnOrphan(const std::string& file,
         size_t line,
-        const std::string& func,
+        const std::string& methodName,
         const std::string& thisName,
         const std::string& componentConcreteClassName) :
-        Exception(file, line, func) {
+        Exception(file, line, methodName) {
         std::string msg = "Component '" + thisName + "' of type " +
             componentConcreteClassName + " has no owner and is not the root.\n" +
             "Verify that finalizeFromProperties() has been invoked on the " +
@@ -195,10 +195,10 @@ class SubcomponentsWithDuplicateName : public Exception {
 public:
     SubcomponentsWithDuplicateName(const std::string& file,
         size_t line,
-        const std::string& func,
+        const std::string& methodName,
         const std::string& thisName,
         const std::string& duplicateName) :
-        Exception(file, line, func) {
+        Exception(file, line, methodName) {
         std::string msg = "Component '" + thisName + "' has subcomponents " +
             "with duplicate name '" + duplicateName + "'. "
             "Please supply unique names for immediate subcomponents.";
@@ -210,10 +210,10 @@ class ComponentIsRootWithNoSubcomponents : public Exception {
 public:
     ComponentIsRootWithNoSubcomponents(const std::string& file,
         size_t line,
-        const std::string& func,
+        const std::string& methodName,
         const std::string& thisName,
         const std::string& componentConcreteClassName) :
-        Exception(file, line, func) {
+        Exception(file, line, methodName) {
         std::string msg = "Component '" + thisName + "' of type " +
             componentConcreteClassName + " is the root but has no " +
             "subcomponents listed.\n" +
@@ -227,10 +227,10 @@ class ComponentAlreadyPartOfOwnershipTree : public Exception {
 public:
     ComponentAlreadyPartOfOwnershipTree(const std::string& file,
                                         size_t line,
-                                        const std::string& func,
+                                        const std::string& methodName,
                                         const std::string& compName,
                                         const std::string& thisName) :
-        Exception(file, line, func) {
+        Exception(file, line, methodName) {
         std::string msg = "Component '" + compName;
         msg += "' already owned by tree to which '" + thisName;
         msg += "' belongs. Clone the component to adopt a fresh copy.";
@@ -242,9 +242,9 @@ class ComponentHasNoSystem : public Exception {
 public:
     ComponentHasNoSystem(const std::string& file,
                          size_t line,
-                         const std::string& func,
+                         const std::string& methodName,
                          const Object& obj) :
-        Exception(file, line, func, obj) {
+        Exception(file, line, methodName, obj) {
         std::string msg = "Component has no underlying System.\n";
         msg += "You must call initSystem() on the top-level Component ";
         msg += "(i.e. Model) first.";
@@ -256,10 +256,10 @@ class SocketNotFound : public Exception {
 public:
     SocketNotFound(const std::string& file,
                    size_t line,
-                   const std::string& func,
+                   const std::string& methodName,
                    const Object& obj,
                    const std::string& socketName) :
-        Exception(file, line, func, obj) {
+        Exception(file, line, methodName, obj) {
         std::string msg = "no Socket '" + socketName;
         msg += "' found for this Component.";
         addMessage(msg);
@@ -270,10 +270,10 @@ class InputNotFound : public Exception {
 public:
     InputNotFound(const std::string& file,
                   size_t line,
-                  const std::string& func,
+                  const std::string& methodName,
                   const Object& obj,
                   const std::string& inputName) :
-        Exception(file, line, func, obj) {
+        Exception(file, line, methodName, obj) {
         std::string msg = "no Input '" + inputName;
         msg += "' found for this Component.";
         addMessage(msg);
@@ -284,10 +284,10 @@ class OutputNotFound : public Exception {
 public:
     OutputNotFound(const std::string& file,
                    size_t line,
-                   const std::string& func,
+                   const std::string& methodName,
                    const Object& obj,
                    const std::string& outputName) :
-        Exception(file, line, func, obj) {
+        Exception(file, line, methodName, obj) {
         std::string msg = "no Output '" + outputName;
         msg += "' found for this Component.";
         addMessage(msg);
