@@ -1529,12 +1529,6 @@ TEST_CASE("Component Interface getStateVariableValue with Component Path")
 
 TEST_CASE("Component Interface Component::resolveVariableNameAndOwner")
 {
-    // ------------------------------------------------------------------------
-    // This test case exercises resolveVariableNameAndOwner() to show that
-    // it functions properly and to verify that it throws exceptions
-    // appropriately.
-    // ------------------------------------------------------------------------
-
     TheWorld top;
     top.setName("top");
     Sub* a = new Sub();
@@ -1551,6 +1545,83 @@ TEST_CASE("Component Interface Component::resolveVariableNameAndOwner")
 
     const Component& internSub = top.getComponent("/internalSub");
 
+    // ----- State Variables
+    // Get the paths of all state variables under "top"
+    const Array<std::string>& svPaths = top.getStateVariableNames();
+    REQUIRE(svPaths.size() == 3);
+    REQUIRE(svPaths[0] == "/internalSub/subState");
+    REQUIRE(svPaths[1] == "/a/subState");
+    REQUIRE(svPaths[2] == "/a/b/subState");
+
+    // Verify correct execution
+    std::string svNameCorrect("subState");
+    std::string svName;
+    const Component* owner;
+    // caller is top
+    owner = top.resolveVariableNameAndOwner(
+        ComponentPath("/internalSub/subState"), svName);
+    CHECK(svName == svNameCorrect);
+    CHECK(owner == &internSub);
+    owner = top.resolveVariableNameAndOwner(
+        ComponentPath("/a/subState"), svName);
+    CHECK(svName == svNameCorrect);
+    CHECK(owner == a);
+    owner = top.resolveVariableNameAndOwner(
+        ComponentPath("/a/b/subState"), svName);
+    CHECK(svName == svNameCorrect);
+    CHECK(owner == b);
+    // caller is a
+    owner = a->resolveVariableNameAndOwner(
+        ComponentPath("/internalSub/subState"), svName);
+    CHECK(svName == svNameCorrect);
+    CHECK(owner == &internSub);
+    owner = a->resolveVariableNameAndOwner(
+        ComponentPath("/a/subState"), svName);
+    CHECK(svName == svNameCorrect);
+    CHECK(owner == a);
+    owner = a->resolveVariableNameAndOwner(
+        ComponentPath("/a/b/subState"), svName);
+    CHECK(svName == svNameCorrect);
+    CHECK(owner == b);
+    // caller is b
+    owner = b->resolveVariableNameAndOwner(
+        ComponentPath("/internalSub/subState"), svName);
+    CHECK(svName == svNameCorrect);
+    CHECK(owner == &internSub);
+    owner = b->resolveVariableNameAndOwner(
+        ComponentPath("/a/subState"), svName);
+    CHECK(svName == svNameCorrect);
+    CHECK(owner == a);
+    owner = b->resolveVariableNameAndOwner(
+        ComponentPath("/a/b/subState"), svName);
+    CHECK(svName == svNameCorrect);
+    CHECK(owner == b);
+    // ----- With relative paths, the caller matters.
+    // down from a
+    owner = a->resolveVariableNameAndOwner(
+        ComponentPath("subState"), svName);
+    CHECK(svName == svNameCorrect);
+    CHECK(owner == a);
+    owner = a->resolveVariableNameAndOwner(
+        ComponentPath("b/subState"), svName);
+    CHECK(svName == svNameCorrect);
+    CHECK(owner == b);
+    // down from b
+    owner = b->resolveVariableNameAndOwner(
+        ComponentPath("subState"), svName);
+    CHECK(svName == svNameCorrect);
+    CHECK(owner == b);
+    // up from b
+    owner = b->resolveVariableNameAndOwner(
+        ComponentPath("../subState"), svName);
+    CHECK(svName == svNameCorrect);
+    CHECK(owner == a);
+    owner = b->resolveVariableNameAndOwner(
+        ComponentPath("../../internalSub/subState"), svName);
+    CHECK(svName == svNameCorrect);
+    CHECK(owner == &internSub);
+
+    // ----- Discrete Variables
     // Get the paths of all discrete variables under "top"
     const Array<std::string>& dvPaths = top.getDiscreteVariableNames();
     REQUIRE(dvPaths.size() == 3);
@@ -1559,91 +1630,90 @@ TEST_CASE("Component Interface Component::resolveVariableNameAndOwner")
     REQUIRE(dvPaths[2] == "/a/b/dvX");
 
     // Verify correct execution
-    std::string varNameCorrect("dvX");
-    std::string varName;
-    const Component* owner;
+    std::string dvNameCorrect("dvX");
+    std::string dvName;
     // ----- With an absolute path, the caller doesn't matter.
     // caller is top
     owner = top.resolveVariableNameAndOwner(ComponentPath("/internalSub/dvX"),
-        varName);
-    CHECK(varName == varNameCorrect);
+        dvName);
+    CHECK(dvName == dvNameCorrect);
     CHECK(owner == &internSub);
     owner = top.resolveVariableNameAndOwner(ComponentPath("/a/dvX"),
-        varName);
-    CHECK(varName == varNameCorrect);
+        dvName);
+    CHECK(dvName == dvNameCorrect);
     CHECK(owner == a);
     owner = top.resolveVariableNameAndOwner(ComponentPath("/a/b/dvX"),
-        varName);
-    CHECK(varName == varNameCorrect);
+        dvName);
+    CHECK(dvName == dvNameCorrect);
     CHECK(owner == b);
     // caller is a
     owner = a->resolveVariableNameAndOwner(ComponentPath("/internalSub/dvX"),
-        varName);
-    CHECK(varName == varNameCorrect);
+        dvName);
+    CHECK(dvName == dvNameCorrect);
     CHECK(owner == &internSub);
     owner = a->resolveVariableNameAndOwner(ComponentPath("/a/dvX"),
-        varName);
-    CHECK(varName == varNameCorrect);
+        dvName);
+    CHECK(dvName == dvNameCorrect);
     CHECK(owner == a);
     owner = a->resolveVariableNameAndOwner(ComponentPath("/a/b/dvX"),
-        varName);
-    CHECK(varName == varNameCorrect);
+        dvName);
+    CHECK(dvName == dvNameCorrect);
     CHECK(owner == b);
     // caller is b
     owner = b->resolveVariableNameAndOwner(ComponentPath("/internalSub/dvX"),
-        varName);
-    CHECK(varName == varNameCorrect);
+        dvName);
+    CHECK(dvName == dvNameCorrect);
     CHECK(owner == &internSub);
     owner = b->resolveVariableNameAndOwner(ComponentPath("/a/dvX"),
-        varName);
-    CHECK(varName == varNameCorrect);
+        dvName);
+    CHECK(dvName == dvNameCorrect);
     CHECK(owner == a);
     owner = b->resolveVariableNameAndOwner(ComponentPath("/a/b/dvX"),
-        varName);
-    CHECK(varName == varNameCorrect);
+        dvName);
+    CHECK(dvName == dvNameCorrect);
     CHECK(owner == b);
     // ----- With relative paths, the caller matters.
     // down from a
     owner = a->resolveVariableNameAndOwner(ComponentPath("dvX"),
-        varName);
-    CHECK(varName == varNameCorrect);
+        dvName);
+    CHECK(dvName == dvNameCorrect);
     CHECK(owner == a);
     owner = a->resolveVariableNameAndOwner(ComponentPath("b/dvX"),
-        varName);
-    CHECK(varName == varNameCorrect);
+        dvName);
+    CHECK(dvName == dvNameCorrect);
     CHECK(owner == b);
     // down from b
     owner = b->resolveVariableNameAndOwner(ComponentPath("dvX"),
-        varName);
-    CHECK(varName == varNameCorrect);
+        dvName);
+    CHECK(dvName == dvNameCorrect);
     CHECK(owner == b);
     // up from b
     owner = b->resolveVariableNameAndOwner(ComponentPath("../dvX"),
-        varName);
-    CHECK(varName == varNameCorrect);
+        dvName);
+    CHECK(dvName == dvNameCorrect);
     CHECK(owner == a);
     owner = b->resolveVariableNameAndOwner(
-        ComponentPath("../../internalSub/dvX"), varName);
-    CHECK(varName == varNameCorrect);
+        ComponentPath("../../internalSub/dvX"), dvName);
+    CHECK(dvName == dvNameCorrect);
     CHECK(owner == &internSub);
 
     // Verify that exceptions are thrown appropriately
     CHECK_THROWS_AS(
         owner = top.resolveVariableNameAndOwner(
-            ComponentPath(""), varName),
+            ComponentPath(""), dvName),
             EmptyComponentPath);
     CHECK_THROWS_AS(
         owner = top.resolveVariableNameAndOwner(
-            ComponentPath("/typoSub/dvX"), varName),
+            ComponentPath("/typoSub/dvX"), dvName),
             VariableOwnerNotFoundOnSpecifiedPath);
     owner = a->resolveVariableNameAndOwner(
-        ComponentPath("discVarTypo"), varName);
+        ComponentPath("discVarTypo"), dvName);
     CHECK_THROWS_AS(
-        owner->setDiscreteVariableValue(s, varName, 3.1415),
+        owner->setDiscreteVariableValue(s, dvName, 3.1415),
         VariableNotFound);
     double value;
     CHECK_THROWS_AS(
-        value = owner->getDiscreteVariableValue(s, varName),
+        value = owner->getDiscreteVariableValue(s, dvName),
         VariableNotFound);
 }
 
