@@ -1608,21 +1608,23 @@ public:
         const std::string& name) const;
 
     /**
-    * Based on a specified path, resolve the name of a discrete variable or
-    * modeling option and the component that owns it (i.e., its parent).
+    * Based on a specified path, resolve the name of a state variable,
+    * discrete variable, or modeling option and resolve the component that
+    * owns it (i.e., its parent).
     * 
-    * The path consists of the name of the discrete variable or modeling option
-    * prepended by its absolute or relative path in the component hierarchy.
+    * The path consists of the name of the state variable, discrete variable,
+    * or modeling option prepended by its absolute or relative path in the
+    * component hierarchy.
     * 
     * This method does not verify that the variable or option can actually be
     * found at the spcified path. It simply parses the path, returning the
     * variable name and candidate owner.
     * 
-    * A need for this method arises because discrete variables and modeling
-    * options are not themselves Components. Although the usual traversal
-    * methods (e.g., traversePathToComponent<Component>()) can be
-    * used to locate the owner, they cannot be used to locate the variable or
-    * option directly.
+    * A need for this method arises because state variables, discrete
+    * variables, and modeling options are not themselves Components. Although
+    * the usual traversal methods (e.g., traversePathToComponent<Component>())
+    * can be used to locate the owner, they cannot be used to locate the
+    * a state variable, discrete variable, or modeling option directly.
     * 
     * #### Example Paths
     *
@@ -1635,11 +1637,12 @@ public:
     * A relative path in which a sibling of this component is the owner:
     *   ```../sibling_name/variable_name```
     *
-    * @param path Path of the variable or option in the component heirarchy.
-    * @param varName The name of the discrete variable or modeling option is
-    * returned in this parameter.
+    * @param path Path of the state variable, discrete variable, or modeling
+    * option in the component heirarchy.
+    * @param varName The name of the state variable, discrete variable,
+    * or modeling option is returned in this parameter.
     * @return Pointer to the component that, according to the path, owns the
-    * discrete variable or modeling option.
+    * state variable, discrete variable, or modeling option.
     * @throws EmptyComponentPath if the path is empty.
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     * cannot be found at the specified path.
