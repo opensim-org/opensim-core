@@ -27,6 +27,15 @@ class TestArrays {
         arrayStrings.remove(0);
         assert arrayStrCopy.getSize() == 1;
         assert arrayStrings.size() == 0;
+        // test set 0th element of an array
+        ArrayStr mtArray =  new ArrayStr();
+        assert mtArray.getSize() == 0;
+        mtArray.append("1");
+        assert mtArray.getSize() == 1;
+        mtArray.set(0, "2");
+        System.out.println("Size = " +mtArray.getSize());
+        System.out.println("Zeroth entry " +mtArray.get(0));
+        assert mtArray.getSize() == 1;
 
     }
   public static void main(String[] args) {
