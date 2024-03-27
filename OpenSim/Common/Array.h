@@ -339,8 +339,8 @@ public:
             return;
         }
 
-        if (aIndex+2 >= static_cast<int>(_storage.capacity())) {
-            setSize(aIndex+2);
+        if (aIndex+1 >= static_cast<int>(_storage.capacity())) {
+            setSize(aIndex+1);
         }
 
         _storage[aIndex] = aValue;
