@@ -119,7 +119,7 @@ TEST_CASE("Array rFindIndex returns expected results")
     REQUIRE(vals.rfindIndex(1337) == -1);
 }
 
-TEST_CASE("Array set keeps size")
+TEST_CASE("Array set keeps size if within bounds")
 {
     Array<int> vals;
     vals.append(0);
