@@ -3295,9 +3295,9 @@ protected:
     * and brought into OpenSim as a Component. To access a discrete variable
     * owned by the wrapped Component via the Component API, OpenSim must 
     * know the index of the externally allocated discrete state as well
-    * the subsystem from which it was allocated. The initialization should be
-    * done by implementing an overridding extendRealizeTopology() method in the
-    * wrapper code and, in that method, calling this method. See class
+    * the subsystem from which it was allocated. Component%s should call this
+    * method from an overriding implementation of extendRealizeTopology() to
+    * initialize externally allocated discrete variables. See class
     * OpenSim::ExponentialContact for an example of how to wrap a Simbody
     * subsystem and bring its externally allocated discrete variables into
     * OpenSim.
