@@ -1432,13 +1432,15 @@ public:
      * 
      * The specified path consists of the name of the modeling option
      * prepended by its absolute or relative path in the component hierarchy.
-     * If this component is the owner of the modeling option, the path should
-     * simply be the name of the modeling option.
+     * 
+     * If this component is the owner of the modeling option, the specified
+     * path should simply be the name of the modeling option.
      *
      * @param state State in which to set the modeling option.
      * @param path Path of the modeling option in the component hierarchy.
      * @return flag Value of the modeling option.
-     * @throws EmptyComponentPath if the path is empty.
+     * @throws EmptyComponentPath if the specified path is an empty string
+     * (i.e., path == "").
      * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
      * of the modeling option cannot be found at the specified path.
      * @throws VariableNotFound if the specified modeling option cannot be
@@ -1453,8 +1455,9 @@ public:
      * 
      * The specified path consists of the name of the modeling option
      * prepended by its absolute or relative path in the component hierarchy.
-     * If this component is the owner of the modeling option, the path should
-     * simply be the name of the modeling option.
+     * 
+     * If this component is the owner of the modeling option, the specified
+     * path should simply be the name of the modeling option.
      * 
      * @note Successfully setting the value of the modeling option will revert
      * the realization stage back to SimTK::Stage::Instance.
@@ -1464,7 +1467,8 @@ public:
      * @param flag Value to which to set the modeling option.
      * @throws ModelingOptionMaxExceeded if the flag is greater that the
      * maximum allowed for the specified modeling option.
-     * @throws EmptyComponentPath if the path is empty.
+     * @throws EmptyComponentPath if the specified path is an empty string
+     * (i.e., path == "").
      * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
      * of the modeling option cannot be found at the specified path.
      * @throws VariableNotFound if the specified modeling option cannot be
@@ -1642,8 +1646,11 @@ public:
     * @param varName The name of the state variable, discrete variable,
     * or modeling option is returned in this parameter.
     * @return Pointer to the component that, according to the path, owns the
-    * state variable, discrete variable, or modeling option.
-    * @throws EmptyComponentPath if the path is empty.
+    * state variable, discrete variable, or modeling option. If the specified
+    * path consists only of the name of the state variable, discrete variable,
+    * or modeling option, a pointer to this component is returned.
+    * @throws EmptyComponentPath if the specified path is an empty string
+    * (i.e., path == "").
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     * cannot be found at the specified path.
     */
@@ -1655,15 +1662,17 @@ public:
     *
     * The specified path consists of the name of the discrete variable
     * prepended by its absolute or relative path in the component hierarchy.
-    * If this component is the owner of the discrete variable, the path should
-    * simply be the name of the discrete variable.
+    * 
+    * If this component is the owner of the discrete variable, the specified
+    * path should simply be the name of the discrete variable.
     * 
     * @param state State from which to get the value.
     * @param path Path of the discrete variable in the component hierarchy.
     * @return Value of the discrete variable.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     * System (i.e., if initSystem has not been called).
-    * @throws EmptyComponentPath if the path is empty.
+    * @throws EmptyComponentPath if the specified path is an empty string
+    * (i.e., path == "").
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     * of the variable cannot be found at the specified path.
     * @throws VariableNotFound if the specified variable cannot be found in
@@ -1683,15 +1692,17 @@ public:
     * 
     * The specified path consists of the name of the discrete variable
     * prepended by its absolute or relative path in the component hierarchy.
-    * If this component is the owner of the discrete variable, the path should
-    * simply be the name of the discrete variable.
+    * 
+    * If this component is the owner of the discrete variable, the specified
+    * path should simply be the name of the discrete variable.
     *
     * @param state State from which to get the value.
     * @param path Path of the discrete variable in the component hierarchy.
     * @return value Value of the discrete variable.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
-    * @throws EmptyComponentPath if the path is empty.
+    * @throws EmptyComponentPath if the specified path is an empty string
+    * (i.e., path == "").
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     * of the variable cannot be found at the specified path.
     * @throws VariableNotFound if the specified variable cannot be found in
@@ -1715,8 +1726,9 @@ public:
     * 
     * The specified path consists of the name of the discrete variable
     * prepended by its absolute or relative path in the component hierarchy.
-    * If this component is the owner of the discrete variable, the path should
-    * simply be the name of the discrete variable.
+    * 
+    * If this component is the owner of the discrete variable, the specified
+    * path should simply be the name of the discrete variable.
     *
     * To obtain the type-specific value of a discrete variable from an
     * AbstractValue, perform a cast using the templated methods provided in
@@ -1746,7 +1758,8 @@ public:
     * @return Read-only reference to the discrete variable's AbstractValue.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
-    * @throws EmptyComponentPath if the path is empty.
+    * @throws EmptyComponentPath if the specified path is an empty string
+    * (i.e., path == "").
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     * of the variable cannot be found at the specified path.
     * @throws VariableNotFound if the specified variable cannot be found in
@@ -1761,15 +1774,17 @@ public:
     * 
     * The specified path consists of the name of the discrete variable
     * prepended by its absolute or relative path in the component hierarchy.
-    * If this component is the owner of the discrete variable, the path should
-    * simply be the name of the discrete variable.
+    * 
+    * If this component is the owner of the discrete variable, the specified
+    * path should simply be the name of the discrete variable.
     *
     * @param state State in which to set the discrete variable.
     * @param path Path of the discrete variable in the component hierarchy.
     * @param value Value to which to set the discrete variable.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
-    * @throws EmptyComponentPath if the specified path is empty.
+    * @throws EmptyComponentPath if the specified path is an empty string
+    * (i.e., path == "").
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     * of the variable cannot be found at the specified path.
     * @throws VariableNotFound if the specified variable cannot be found in
@@ -1787,8 +1802,9 @@ public:
     * 
     * The specified path consists of the name of the discrete variable
     * prepended by its absolute or relative path in the component hierarchy.
-    * If this component is the owner of the discrete variable, the path should
-    * simply be the name of the discrete variable.
+    * 
+    * If this component is the owner of the discrete variable, the specified
+    * path should simply be the name of the discrete variable.
     *
     * @param state State for which to set the value.
     * @param path Path of the discrete variable in the component hierarchy.
@@ -1798,7 +1814,8 @@ public:
     * @param value Value to which to set the discrete variable.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     * System (i.e., if initSystem has not been called).
-    * @throws EmptyComponentPath if the path is empty.
+    * @throws EmptyComponentPath if the specified path is an empty string
+    * (i.e., path == "").
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     * of the variable cannot be found at the specified path.
     * @throws VariableNotFound if the specified variable cannot be found in
@@ -1820,8 +1837,9 @@ public:
     *
     * The specified path consists of the name of the discrete variable
     * prepended by its absolute or relative path in the component hierarchy.
-    * If this component is the owner of the discrete variable, the path should
-    * simply be the name of the discrete variable.
+    * 
+    * If this component is the owner of the discrete variable, the specified
+    * path should simply be the name of the discrete variable.
     * 
     * To obtain the type-specific value of a discrete variable, perform
     * a cast using the template methods provided in class SimTK::Value<T>.
@@ -1851,7 +1869,8 @@ public:
     * @return Writable reference to the discrete variable's AbstractValue.
     * @throws ComponentHasNoSystem if this Component has not been added to a
     *         System (i.e., if initSystem has not been called).
-    * @throws EmptyComponentPath if the path is empty.
+    * @throws EmptyComponentPath if the specified path is an empty string
+    * (i.e., path == "").
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     * of the variable cannot be found at the specified path.
     * @throws VariableNotFound if the specified variable cannot be found in
@@ -2427,7 +2446,8 @@ public:
     @param path Path of the specified variable in the component heirarchy.
     @param input Trajectory of SimTK::State objects.
     @param output Trajectory of the specified variable.
-    @throws EmptyComponentPath if the path is empty.
+    @throws EmptyComponentPath if the specified path is an empty string
+    (i.e., path == "").
     @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     of the discrete variable cannot be found at the specified path.
     @throws VariableNotFound if the specified discrete variable cannot be found
@@ -2482,7 +2502,8 @@ public:
     @param path Path of the specified variable in the component heirarchy.
     @param input States trajectory.
     @param output Corresponding trajectory of the specified option.
-    @throws EmptyComponentPath if the path is empty.
+    @throws EmptyComponentPath if the specified path is an empty string
+    (i.e., path == "").
     @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     of the modeling option cannot be found at the specified path.
     @throws VariableNotFound if the specified modeling option cannot be found
@@ -2589,7 +2610,8 @@ public:
     @param input Trajectory of the specified variable.
     @param output Trajectory of SimTK::State objects with updated values for
     the specified variable.
-    @throws EmptyComponentPath if the path is empty.
+    @throws EmptyComponentPath if the specified path is an empty string
+    (i.e., path == "").
     @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     of the discrete variable cannot be found at the specified path.
     @throws VariableNotFound if the specified discrete variable cannot be found
@@ -2647,7 +2669,8 @@ public:
     @param input Trajectory of the specified option.
     @param output Trajectory of SimTK::State objects with updated values for
     the specified modeling option.
-    @throws EmptyComponentPath if the path is empty.
+    @throws EmptyComponentPath if the specified path is an empty string
+    (i.e., path == "").
     @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     of the modeling option cannot be found at the specified path.
     @throws VariableNotFound if the specified modeling option cannot be found
