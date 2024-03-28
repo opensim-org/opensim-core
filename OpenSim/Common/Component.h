@@ -4077,10 +4077,10 @@ private:
         // System
         SimTK::DiscreteVariableIndex    index;
 
-        // Introduced two data members: 'subsystem' and 'allocate'.
-        // These data members allow OpenSim::Component to expose a discrete
-        // state that was allocated by a class other than OpenSim::Component
-        // and from Subsystem other than SimTK::DefaultSubsystem.
+        // The data members `subsystem` and `allocate` allow an
+        // OpenSim::Component to expose a discrete state that was allocated by
+        // a class other than OpenSim::Component and from Subsystem other than
+        //  SimTK::DefaultSubsystem.
 
         // Subsystem to which the discrete state belongs.
         // If 'nullptr' (default), class Component assumes that the discrete
