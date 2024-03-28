@@ -3244,8 +3244,7 @@ protected:
 
 
     /** Add a system discrete variable that belongs to this Component. The
-    'allocate' flag that appears in the argument list was introduced to
-    accommodate discrete states that are allocated natively in Simbody.
+    `allocate` flag accommodates discrete states allocated natively by Simbody.
     
     @param descreteVariableName Name of the discrete variable.
     @param invalidatesStage The lowest SimTK realization stage that should be
