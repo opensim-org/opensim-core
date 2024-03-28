@@ -2400,7 +2400,6 @@ public:
     /// GET TRAJECTORIES
     //=========================================================================
 
-    //_________________________________________________________________________
     /** From a trajectory of SimTK::State objects, get the corresponding
     trajectory of a specified state variable of type T.
     @param path Path of the specified variable in the component heirarchy.
@@ -2427,7 +2426,6 @@ public:
         }
     }
 
-    //_________________________________________________________________________
     /** From a trajectory of SimTK::State objects, get the trajectory of
     a specified discrete variable.
 
@@ -2483,7 +2481,6 @@ public:
         }
     }
 
-    //_________________________________________________________________________
     /** From a trajectory of SimTK::State objects, get the corresponding
     trajectory of a specified modeling option of type T.
 
@@ -2553,7 +2550,6 @@ public:
     /// SET TRAJECTORIES
     //=========================================================================
 
-    //_________________________________________________________________________
     /** From the trajectory of a specified state variable, set its
     corresponding values in a trajectory of SimTK::State objects.
 
@@ -2592,7 +2588,6 @@ public:
         }
     }
 
-    //_________________________________________________________________________
     /** From the trajectory of a specified discrete variable, set its
     corresponding values in a trajectory of SimTK::State objects.
 
@@ -2651,7 +2646,6 @@ public:
         }
     }
 
-    //_________________________________________________________________________
     /** From the trajectory of a specified modeling option, set its
     corresponding values in a trajectory of SimTK::State objects.
 
