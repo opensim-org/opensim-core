@@ -2374,39 +2374,34 @@ public:
     // End of Model Component State Accessors.
     //@}
 
-
     /** @name Component State Trajectory Methods
     Methods that support comprehensive de/serialization of a time ordered
     ordered sequence (i.e., a "trajectory") of SimTK::State objects. Such
     trajectories are typically gathered during the course of a simulation.
-
     - The methods are comprehensive in that all categories of the variables
     held in the SimTK::State (ModelingOption%s, StateVariable%s, and
     DiscreteVariable%s) are supported.
-
     - Because the methods are templatized, they have the flexibility to
     handle variables of different types (e.g., bool, int, double, Vec3,
     Quaternion, etc.).
-
     - Because each method performs only a single string-based path lookup,
     they are reasonably efficient.
-
     - SimTK::Array_<T> is used to contain a SimTK::State trajectory, as
     opposed to a SimTK::Vector_<T>. This is because SimTK::State does not
     possess all of the computational characteristics required by
     SimTK::Vector_<T>. Note that SimTK::Array_<T> is essentially equivalent
     to std::vector<T> but with a number of advantages in terms of performance
     and binary compatibility.
-
     */
     //@{
 
-    // GET TRAJECTORIES -------------------------
+    //=========================================================================
+    /// GET TRAJECTORIES
+    //=========================================================================
 
     //_________________________________________________________________________
     /** From a trajectory of SimTK::State objects, get the corresponding
     trajectory of a specified state variable of type T.
-
     @param path Path of the specified variable in the component heirarchy.
     @param input State trajectory.
     @param output Trajectory of the specified variable. */
@@ -2553,7 +2548,9 @@ public:
         }
     }
 
-    // SET TRAJECTORIES -------------------------
+    //=========================================================================
+    /// SET TRAJECTORIES
+    //=========================================================================
 
     //_________________________________________________________________________
     /** From the trajectory of a specified state variable, set its
