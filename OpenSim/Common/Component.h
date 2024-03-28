@@ -1624,11 +1624,12 @@ public:
     * found at the spcified path. It simply parses the path, returning the
     * variable name and candidate owner.
     * 
-    * A need for this method arises because state variables, discrete
-    * variables, and modeling options are not themselves Components. Although
-    * the usual traversal methods (e.g., traversePathToComponent<Component>())
-    * can be used to locate the owner, they cannot be used to locate the
-    * a state variable, discrete variable, or modeling option directly.
+    * @note Calling Component::traversPathToComponent<Component>() will not
+    * work for state variables, discrete variables, and modeling options
+    * because these obects are not themselves Components. However, a pointer
+    * to a StateVariable can be obtained in a single step by calling
+    * Component::traverseToStateVariable(). A similar dedicated method is not
+    * available for discrete variables or for modeling options.
     * 
     * #### Example Paths
     *
