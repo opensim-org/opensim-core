@@ -3802,21 +3802,21 @@ private:
     {   return (int)_namedStateVariableInfo.size(); }
     Array<std::string> getStateVariableNamesAddedByComponent() const;
 
-    // Added to support de/serialization of discrete variables.
     // Get the number of variables states that the Component added to the
     // underlying computational system. The number of built-in discrete
     // states exposed by this component is included. It represents the number
-    // of discrete variables managed by this Component.
+    // of discrete variables managed by this Component. This may be useful
+    // when de/serializing discrete variables.
     int getNumDiscreteVariablesAddedByComponent() const {
         return (int)_namedDiscreteVariableInfo.size();
     }
     Array<std::string> getDiscreteVariableNamesAddedByComponent() const;
 
-    // Added to support de/serialization of modeling options.
     // Get the number of modeling options that the Component added to the
     // underlying computational system. The number of built-in modeling
     // options exposed by this component is included. It represents the number
-    // of modeling options managed by this Component.
+    // of modeling options managed by this Component. This may be useful
+    // when de/serializing modeling options.
     int getNumModelingOptionsAddedByComponent() const {
         return (int)_namedModelingOptionInfo.size();
     }
