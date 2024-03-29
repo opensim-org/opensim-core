@@ -275,17 +275,20 @@ TimeSeriesTable createExternalLoadsTableForGait(Model model,
         const std::vector<std::string>& forcePathsRightFoot,
         const std::vector<std::string>& forcePathsLeftFoot);
 
-/// Compute the set of joint moments from the provided Model and MocoTrajectory.
-/// The MocoTrajectory should be compatible with the provided Model (e.g.,
-/// generated from a MocoStudy with the same Model).
+/// Compute the set of generalized coordinate forces from the provided Model and 
+/// MocoTrajectory. The MocoTrajectory should be compatible with the provided 
+/// Model (e.g., generated from a MocoStudy with the same Model). Only the model
+/// Force%s that are specified in `forcePaths` are applied to the model when
+/// calculating the generalized forces.
 ///
-/// `SimbodyMatterSubsystem::calcResidualForce()` is used to compute the joint
+/// `SimbodyMatterSubsystem::calcResidualForce()` is used to calculate the joint
 /// moments. This takes the set of Lagrange multipliers from the MocoTrajectory
-/// and uses them to apply the constraint forces to the model.
+/// and uses them to apply the correct constraint forces to the model.
 ///
 /// @ingroup mocoutil
-OSIMMOCO_API TimeSeriesTable computeJointMoments(Model model,
-        const MocoTrajectory& trajectory);
+OSIMMOCO_API TimeSeriesTable calcGeneralizedForces(Model model,
+        const MocoTrajectory& trajectory,
+        const std::vector<std::string>& forcePaths);
 
 } // namespace OpenSim
 

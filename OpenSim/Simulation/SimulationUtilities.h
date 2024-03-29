@@ -113,6 +113,19 @@ void updatePre40KinematicsFilesFor40MotionType(const Model& model,
         const std::vector<std::string>& filePaths,
         std::string suffix="_updated");
 
+/// Update a vector of labels (in place) from an Inverse Dynamics Tool solution 
+/// to instead use the post-4.0 paths to the associated Coordinate%s in the 
+/// model. For example, this converts labels as follows:
+///   - `pelvis_tilt_moment` -> `/jointset/ground_pelvis/pelvis_tilt`
+///   - `pelvis_tx_force` -> `/jointset/ground_pelvis/pelvis_tx`
+///   - `ankle_angle_r_moment` -> `/jointset/ankle_r/ankle_angle_r`
+/// If a label does not identify a Coordinate in the model, the column
+/// label is not changed.
+/// @throws Exception if labels are not unique.
+/// @ingroup simulationutil
+OSIMSIMULATION_API void updateInverseDynamicsLabelsToCoordinatePaths(
+        const Model& model, std::vector<std::string>& labels);
+
 /** This function attempts to update the connectee path for any Socket anywhere
  * in the model whose connectee path does not point to an existing component.
  * The paths are updated by searching the model for a component with the

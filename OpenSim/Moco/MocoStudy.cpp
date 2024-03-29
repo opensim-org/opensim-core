@@ -114,7 +114,9 @@ TimeSeriesTable MocoStudy::analyze(const MocoTrajectory& trajectory,
             get_problem().createRep().getModelBase(), trajectory, outputPaths);
 }
 
-TimeSeriesTable MocoStudy::computeJointMoments(const MocoTrajectory& trajectory) const {
+TimeSeriesTable MocoStudy::calcGeneralizedForces(
+        const MocoTrajectory& trajectory,
+        std::vector<std::string> forcePaths) const {
     const auto& model = get_problem().getPhase(0).getModelProcessor().process();
-    return OpenSim::computeJointMoments(model, trajectory);
+    return OpenSim::calcGeneralizedForces(model, trajectory, forcePaths);
 }

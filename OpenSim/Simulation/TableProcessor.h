@@ -209,8 +209,8 @@ state names. For example, this converts column labels as follows:
 This can also be used to convert an Inverse Kinematics Tool solution MOT
 file to be used as a states file (with only coordinate values).
 If a column label does not identify a state in the model,
-the column label is not changed. Column labels must be unique.
-This operator is implemented using updateStateLabels40(). */
+the column label is not changed. Column labels must be unique. This operator is 
+implemented using SimulationUtilities::updateStateLabels40(). */
 class OSIMSIMULATION_API TabOpUseAbsoluteStateNames : public TableOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(TabOpUseAbsoluteStateNames, TableOperator);
 
@@ -224,6 +224,34 @@ public:
 
         auto labels = table.getColumnLabels();
         updateStateLabels40(*model, labels);
+        table.setColumnLabels(labels);
+    }
+};
+
+/** Update a vector of labels (in place) from an Inverse Dynamics Tool solution 
+to instead use the post-4.0 paths to the associated Coordinate%s in the 
+model. For example, this converts labels as follows:
+   - `pelvis_tilt_moment` -> `/jointset/ground_pelvis/pelvis_tilt`
+   - `pelvis_tx_force` -> `/jointset/ground_pelvis/pelvis_tx`
+   - `ankle_angle_r_moment` -> `/jointset/ankle_r/ankle_angle_r`
+If a label does not identify a Coordinate in the model, the column
+label is not changed. Column labels must be unique. This operator is implemented 
+using SimulationUtilities::updateInverseDynamicsLabelsToCoordinatePaths(). */
+class OSIMSIMULATION_API TabOpUpdateInverseDynamicsLabelsToCoordinatePaths
+        : public TableOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+        TabOpUpdateInverseDynamicsLabelsToCoordinatePaths, TableOperator);
+
+public:
+    TabOpUpdateInverseDynamicsLabelsToCoordinatePaths() {}
+
+    void operate(TimeSeriesTable& table, const Model* model) const override {
+
+        OPENSIM_THROW_IF(!model, Exception,
+                "Expected a model, but no model was provided.");
+
+        auto labels = table.getColumnLabels();
+        updateInverseDynamicsLabelsToCoordinatePaths(*model, labels);
         table.setColumnLabels(labels);
     }
 };

@@ -193,6 +193,24 @@ void OpenSim::updatePre40KinematicsFilesFor40MotionType(const Model& model,
     }
 }
 
+void OpenSim::updateInverseDynamicsLabelsToCoordinatePaths(
+        const Model& model, std::vector<std::string>& labels) {
+    TableUtilities::checkNonUniqueLabels(labels);
+
+    const auto& coordSet = model.getCoordinateSet();
+    for (int icoord = 0; icoord < coordSet.getSize(); ++icoord) {
+        const auto& coord = coordSet.get(icoord);
+        const auto& coordName = coord.getName();
+        const auto& coordPath = coord.getAbsolutePathString();
+        for (auto& label : labels) {
+            if (label.find(coordName + "_force") != std::string::npos || 
+                    label.find(coordName + "_moment") != std::string::npos) {
+                label = coordPath;
+            }
+        }
+    }
+}
+
 void OpenSim::updateSocketConnecteesBySearch(Model& model)
 {
     int numSocketsUpdated = 0;

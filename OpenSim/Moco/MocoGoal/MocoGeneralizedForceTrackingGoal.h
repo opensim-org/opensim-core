@@ -1,0 +1,143 @@
+#ifndef OPENSIM_MOCOGENERALIZEDFORCETRACKINGGOAL_H
+#define OPENSIM_MOCOGENERALIZEDFORCETRACKINGGOAL_H
+/* -------------------------------------------------------------------------- *
+ * OpenSim: MocoGeneralizedForceTrackingGoal.h                                *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
+ *                                                                            *
+ * Author(s): Nicholas Bianco                                                 *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
+
+#include "MocoGoal.h"
+
+#include <OpenSim/Simulation/TableProcessor.h>
+#include <OpenSim/Moco/MocoWeightSet.h>
+
+namespace OpenSim {
+
+/** 
+\section MocoGeneralizedForceTrackingGoal
+Minimize the squared difference between a model generalized coordinate force and
+a reference force trajectory, summed over the generalized coordinates forces for
+which a reference is provided, and integrated over the phase. The reference can 
+be provided as a file name to a STO or CSV file (or other file types for which 
+there is a FileAdapter), or programmaticaly as a TimeSeriesTable via a 
+TableProcessor.
+Tracking problems in direct collocation perform best when tracking smooth
+data, so it is recommended to filter the data in the reference you provide
+to the cost.
+
+@ingroup mocogoal */
+class OSIMMOCO_API MocoGeneralizedForceTrackingGoal : public MocoGoal {
+OpenSim_DECLARE_CONCRETE_OBJECT(MocoGeneralizedForceTrackingGoal, MocoGoal);
+
+public:
+    MocoGeneralizedForceTrackingGoal();
+    MocoGeneralizedForceTrackingGoal(std::string name) 
+            : MocoGoal(std::move(name)) {
+        constructProperties();
+    }
+    MocoGeneralizedForceTrackingGoal(std::string name, double weight) 
+            : MocoGoal(std::move(name), weight) {
+        constructProperties();
+    }
+
+    /// The table containing reference trajectories for the generalized 
+    /// coordinate forces to track. The column labels should be the paths to
+    /// the generalized coordinates (e.g., `/jointset/ankle_r/ankle_angle_r`).
+    /// The table is not loaded until the MocoProblem is initialized. 
+    void setReference(TableProcessor ref) {
+        set_reference(std::move(ref));
+    }
+    /// @copydoc setReference(TableProcessor ref)
+    const TableProcessor& getReference() const { return get_reference(); }
+
+    /// The paths to model Forces whose body and mobility forces will be
+    /// applied when computing generalized coordinate forces from inverse
+    /// dynamics. Paths can be specified using either full component path names
+    /// or regular expressions.
+    void setForcePaths(const std::vector<std::string>& forcePaths) {
+        for (const auto& path : forcePaths) {
+            append_force_paths(path);
+        }
+    }
+    /// @copydoc setForcePaths(const std::vector<std::string>& forcePaths)
+    std::vector<std::string> getForcePaths() const {
+        std::vector<std::string> paths;
+        for (int i = 0; i < getProperty_force_paths().size(); ++i) {
+            paths.push_back(get_force_paths(i));
+        }
+        return paths;
+    }
+
+    /// Set the tracking weight for the generalized force for an individual 
+    /// coordinate. To remove a coordinate from the cost function, set its 
+    /// weight to 0. If a weight is not specified for a coordinate, the default 
+    /// weight is 1.0. If a weight is already set for the requested coordinate, 
+    /// then the provided weight replaces the previous weight.
+    void setWeightForCoordinate(const std::string& name, double weight) {
+        if (get_coordinate_weights().contains(name)) {
+            upd_coordinate_weights().get(name).setWeight(weight);
+        } else {
+            upd_coordinate_weights().cloneAndAppend({name, weight});
+        }
+    }
+
+    /// Set the MocoWeightSet to weight the generalized coordinate forces in
+    /// the cost. Replaces the weight set if it already exists.
+    void setWeightSet(const MocoWeightSet& weightSet) {
+        upd_coordinate_weights() = weightSet;
+    }
+
+    /// Specify whether or not extra columns in the reference are allowed.
+    /// If set true, the extra references will be ignored by the cost.
+    /// If false, extra reference will cause an Exception to be raised.
+    void setAllowUnusedReferences(bool tf) { set_allow_unused_references(tf); }
+
+protected:
+    void initializeOnModelImpl(const Model&) const override;
+    void calcIntegrandImpl(
+            const IntegrandInput& input, SimTK::Real& integrand) const override;
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override {
+        cost[0] = input.integral;
+    }
+    void printDescriptionImpl() const override;
+
+private:
+    void constructProperties();
+    OpenSim_DECLARE_PROPERTY(reference, TableProcessor,
+            "Trajectries of generalized coordiante forces to track. Column "
+            "labels should be coordinate paths "
+            "(e.g., /jointset/ankle_r/ankle_angle_r");
+    OpenSim_DECLARE_LIST_PROPERTY(force_paths, std::string,
+            "Paths to model Forces whose body and mobility forces will be "
+            "applied when computing generalized coordinate forces from inverse "
+            "dynamics.");
+    OpenSim_DECLARE_PROPERTY(coordinate_weights, MocoWeightSet, 
+            "Set of weight objects to weight the tracking of individual "
+            "generalized coordinate forces in the cost.");
+    OpenSim_DECLARE_PROPERTY(allow_unused_references, bool,
+            "Flag to determine whether or not references contained in the "
+            "reference table are allowed to be ignored by the cost.");
+
+    mutable GCVSplineSet m_refsplines;
+    mutable std::vector<double> m_coordinateWeights;
+    mutable std::vector<std::string> m_coordinatePaths;
+    mutable std::vector<int> m_coordinateIndexes;
+    mutable SimTK::Array_<SimTK::ForceIndex> m_forceIndexes;
+};
+
+} // namespace OpenSim
+
+#endif // OPENSIM_MOCOGENERALIZEDFORCETRACKINGGOAL_H

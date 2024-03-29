@@ -913,6 +913,29 @@ public:
         return getMultibodySystem().calcPotentialEnergy(s);
     }
 
+    /** Calulate the sum of body and mobility forces in the system applied by
+     * the Force%s at the supplied indexes. 
+     * 
+     * @param[in]   state            The system SimTK::State at which to 
+     *                               calculate forces.
+     * @param[in]   forceIndexes     The indexes (SimTK::ForceIndex) of the 
+     *                               forces in the system for which to calculate 
+     *                               forces.
+     * @param[out]  bodyForces       The sum of the body forces applied by the
+     *                               forces at the supplied indexes.
+     * @param[out]  mobilityForces   The sum of the mobility forces applied by
+     *                               the forces at the supplied indexes.
+     * 
+     * @pre Requires that the system has been realized to Stage::Dynamics.
+     * */
+    void calcForces(const SimTK::State& state,
+                    const SimTK::Array_<SimTK::ForceIndex>& forceIndexes,  
+                    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+                    SimTK::Vector& mobilityForces) const {
+        getForceSubsystem().calcForces(
+            state, forceIndexes, bodyForces, mobilityForces);
+    }
+
     int getNumMuscleStates() const;
     int getNumProbeStates() const;
 

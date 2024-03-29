@@ -362,8 +362,9 @@ TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
             forcePathsRightFoot, forcePathsLeftFoot);
 }
 
-TimeSeriesTable OpenSim::computeJointMoments(Model model,
-        const MocoTrajectory& trajectory) {
+TimeSeriesTable OpenSim::calcGeneralizedForces(Model model,
+        const MocoTrajectory& trajectory,
+        const std::vector<std::string>& forcePaths) {
 
     // Get the coordinates in multibody tree order, which is the order that the
     // inverse dynamics operator expects.
@@ -383,55 +384,66 @@ TimeSeriesTable OpenSim::computeJointMoments(Model model,
     }
 
     // Get the multipliers from the trajectory. The inverse dynamics operator
-    // will use these to apply the correct constraint forces to the model.
-    TimeSeriesTable multipliersTable = trajectory.exportToMultipliersTable();
+    // will use these to apply the constraint forces to the model.
+    TimeSeriesTable multipliersTable = trajectory.exportToMultipliersTable();    
 
-    // Create a fresh SimTK::State to use for computing the joint moments.
-    SimTK::State& s = model.initSystem();
-
-    // Disable all actuators in the model.
-    for (auto& actu : model.updComponentList<Actuator>()) {
-        actu.setAppliesForce(s, false);
+    // Get the system indexes for specified forces.
+    std::regex regex;
+    SimTK::Array_<SimTK::ForceIndex> forceIndexes;
+    for (const auto& forcePath : forcePaths) {
+        regex = std::regex(forcePath);
+        for (const auto& force : model.getComponentList<Force>()) {
+            if (std::regex_match(force.getAbsolutePathString(), regex)) {
+                auto it = std::find(forceIndexes.begin(), forceIndexes.end(),
+                        force.getForceIndex());
+                OPENSIM_THROW_IF(it != forceIndexes.end(), Exception,
+                    "Expected unique force paths, but force at path " 
+                    "'{}' was specified multiple times (possibly due to "
+                    "specifying the full path and a regex pattern).", 
+                    force.getAbsolutePathString());
+            
+                forceIndexes.push_back(force.getForceIndex());
+            }
+        }
     }
 
-    // Compute the joint moments.
-    TimeSeriesTable jointMomentsTable;
+    // Add in the gravitational force index.
+    const SimTK::Force::Gravity& gravity = model.getGravityForce();
+    forceIndexes.push_back(gravity.getForceIndex());    
+
+    // Compute the generalized forces.
     const auto& matter = model.getMatterSubsystem();
+    const auto& forceSubsystem = model.getForceSubsystem();
+    SimTK::Vector appliedMobilityForces(matter.getNumMobilities());
+    SimTK::Vector_<SimTK::SpatialVec> appliedBodyForces(matter.getNumBodies());
+    SimTK::Vector generalizedForces(model.getNumCoordinates());
+
+    TimeSeriesTable generalizedForcesTable;
     for (int i = 0; i < statesTraj.getSize(); ++i) {
-        SimTK::Vector jointMoments(model.getNumCoordinates(), SimTK::NaN);
-
         const auto& state = statesTraj[i];
-        s.updTime() = state.getTime();
-        s.updQ() = state.getQ();
-        s.updU() = state.getU();
+        generalizedForces.setToZero();
 
-        model.realizeDynamics(s);
-        const SimTK::Vector& appliedMobilityForces = model.getMobilityForces(s);
-        const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces =
-                model.getRigidBodyForces(s);
+        model.realizeDynamics(state);
+        appliedMobilityForces.setToZero();
+        appliedBodyForces.setToZero();
+        model.calcForces(state, forceIndexes, 
+                appliedBodyForces, appliedMobilityForces);
 
         const auto& udot = ~udots.row(i);
         const auto& multipliers = multipliersTable.getRowAtIndex(i);
-        matter.calcResidualForce(s, appliedMobilityForces, appliedBodyForces,
-                udot, ~multipliers, jointMoments);
+        matter.calcResidualForce(state, appliedMobilityForces, 
+                appliedBodyForces, udot, ~multipliers, generalizedForces);
 
-        jointMomentsTable.appendRow(s.getTime(), ~jointMoments);
+        generalizedForcesTable.appendRow(state.getTime(), ~generalizedForces);
     }
 
-    // Set column labels. This is the same naming convention used by
-    // InverseDynamicsTool.
+    // Set column labels.
     std::vector<std::string> labels;
     labels.reserve(coordinates.size());
     for (const auto& coordinate : coordinates) {
-        std::string suffix;
-        if (coordinate->getMotionType() == Coordinate::MotionType::Rotational) {
-            suffix = "_moment";
-        } else {
-            suffix = "_force";
-        }
-        labels.push_back(coordinate->getName() + suffix);
+        labels.push_back(coordinate->getAbsolutePathString());
     }
-    jointMomentsTable.setColumnLabels(labels);
+    generalizedForcesTable.setColumnLabels(labels);
 
-    return jointMomentsTable;
+    return generalizedForcesTable;
 }

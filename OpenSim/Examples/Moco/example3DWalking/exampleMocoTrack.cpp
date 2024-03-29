@@ -162,8 +162,8 @@ void muscleDrivenStateTracking() {
     // Put a large weight on the pelvis CoordinateActuators, which act as the
     // residual, or 'hand-of-god', forces which we would like to keep as small
     // as possible.
-     Model model = modelProcessor.process();
-     for (const auto& coordAct : model.getComponentList<CoordinateActuator>()) {
+    Model model = modelProcessor.process();
+    for (const auto& coordAct : model.getComponentList<CoordinateActuator>()) {
         auto coordPath = coordAct.getAbsolutePathString();
         if (coordPath.find("pelvis") != std::string::npos) {
             effort.setWeightForControl(coordPath, 10);
@@ -189,6 +189,31 @@ void muscleDrivenStateTracking() {
         periodicityGoal->addControlPair(actu.getAbsolutePathString());
     }
 
+    // Joint moment tracking.
+    bool jointMomentTracking = true;
+    if (jointMomentTracking) {
+        auto* genForceTracking = 
+            problem.addGoal<MocoGeneralizedForceTrackingGoal>(
+                "joint_moment_tracking", 1e-6);
+        TableProcessor generalizedForcesRef = 
+            TableProcessor("inverse_dynamics.sto") |
+            TabOpUpdateInverseDynamicsLabelsToCoordinatePaths() |
+            TabOpLowPassFilter(10);
+        genForceTracking->setReference(generalizedForcesRef);
+        genForceTracking->setForcePaths({".*externalloads.*"});
+        genForceTracking->setAllowUnusedReferences(true);
+        std::vector<std::string> coordinates = {"pelvis_tilt", "pelvis_list",
+            "pelvis_rotation", "pelvis_tx", "pelvis_ty", "pelvis_tz"};
+        for (const auto& coord : coordinates) {
+            genForceTracking->setWeightForCoordinate(
+                "/jointset/ground_pelvis/" + coord, 0);
+        }
+        genForceTracking->setWeightForCoordinate(
+                "/jointset/patellofemoral_l/knee_angle_l_beta", 0);
+        genForceTracking->setWeightForCoordinate(
+                "/jointset/patellofemoral_r/knee_angle_r_beta", 0);
+    }
+
     // Update the solver tolerances.
     auto& solver = study.updSolver<MocoCasADiSolver>();
     solver.set_optim_convergence_tolerance(1e-3);
@@ -199,7 +224,8 @@ void muscleDrivenStateTracking() {
     solution.write("exampleMocoTrack_solution.sto");
 
     // Compute the joint moments and write them to a file.
-    TimeSeriesTable jointMoments = study.computeJointMoments(solution);
+    TimeSeriesTable jointMoments = study.calcGeneralizedForces(solution, 
+            {".*externalloads.*"});
     STOFileAdapter::write(jointMoments, "exampleMocoTrack_joint_moments.sto");
 
     // Save the model.
@@ -215,12 +241,53 @@ int main() {
 //    torqueDrivenMarkerTracking();
 
     // Solve the muscle-driven state tracking problem.
-//    muscleDrivenStateTracking();
+    // muscleDrivenStateTracking();
+
 
     Model model("exampleMocoTrack_model.osim");
-    MocoTrajectory trajectory("exampleMocoTrack_solution.sto");
-    TimeSeriesTable jointMoments = OpenSim::computeJointMoments(model, trajectory);
-    STOFileAdapter::write(jointMoments, "exampleMocoTrack_joint_moments.sto");
+    TableProcessor generalizedForcesRef = 
+        TableProcessor("inverse_dynamics.sto") |
+        TabOpUpdateInverseDynamicsLabelsToCoordinatePaths();
+    TimeSeriesTable generalizedForces = generalizedForcesRef.process(&model);
+    STOFileAdapter::write(generalizedForces, 
+        "exampleMocoTrack_joint_moments_reference.sto");
+
+    // Model model("exampleMocoTrack_model.osim");
+    // model.initSystem();
+    // model.printSubcomponentInfo();
+
+    // TableProcessor tableProcessor = TableProcessor("inverse_dynamics.sto") |
+    //     TabOpUpdateInverseDynamicsLabelsToCoordinatePaths();
+
+    // TimeSeriesTable inverseDynamics = tableProcessor.process(&model);
+    // STOFileAdapter::write(inverseDynamics, "inverse_dynamics_updated_labels.sto");
+    
+
+    // MocoTrajectory trajectory("exampleMocoTrack_solution.sto");
+    // TimeSeriesTable jointMoments = calcGeneralizedForces(model, trajectory, 
+    //         {"/componentset/externalloads/Right_GRF", 
+    //          "/componentset/externalloads/Left_GRF"});
+    // STOFileAdapter::write(jointMoments, "exampleMocoTrack_joint_moments.sto");
+
+    // const auto& coordinateSet = model.getCoordinateSet();
+    // TimeSeriesTable table = trajectory.exportToStatesTable();
+    // auto labels = table.getColumnLabels();
+    // for (int icoord = 0; icoord < coordinateSet.getSize(); ++icoord) {
+    //     const auto& coord = coordinateSet.get(icoord);
+    //     const auto& coordName = coord.getName();
+    //     const auto& coordPath = coord.getAbsolutePathString();
+    //     for (auto& label : labels) {
+    //         if (label.find(coordPath + "/value") != std::string::npos) {
+    //             label = coordName;
+    //         }
+    //     }
+    // }
+    // table.setColumnLabels(labels);
+    // STOFileAdapter::write(table, "exampleMocoTrack_states_for_ID.sto");
+
+
+
+
 
     return EXIT_SUCCESS;
 }
