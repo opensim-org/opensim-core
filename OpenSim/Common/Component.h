@@ -3277,12 +3277,27 @@ protected:
     SimTK::SystemYIndex
         getStateVariableSystemIndex(const std::string& stateVariableName) const;
 
+    /**
+    * Get the index for a Component's discrete variable. This method is
+    * intended for derived Components that may need direct access to its
+    * underlying Subsystem.
+    * 
+    * @return Index of discrete variable.
+    * @deprecated Two indices are needed to properly access a discrete
+    * variable. The first identifies the SimTK::Subystem to which the discrete
+    * variable belongs; the second is the index into that subsystem for the
+    * discrete variable itself. To obtain both indexes, use
+    * Component::getDiscreteVariableIndexes().
+    */
+    const SimTK::DiscreteVariableIndex
+        getDiscreteVariableIndex(const std::string& name) const;
+
    /**
-     * Get the indices for a Component's discrete variable. This method is
+     * Get the indexes for a Component's discrete variable. This method is
      * intended for derived Components that may need direct access to its
      * underlying Subsystem.
      * 
-     * Two indices are needed to properly access a discrete variable in a
+     * Two indexes are needed to properly access a discrete variable in a
      * SimTK::State. The first identifies the SimTK::Subystem to which the
      * discrete variable belongs. The second is the index into that subsystem
      * for the discrete variable itself.
@@ -3292,7 +3307,7 @@ protected:
      * variable itself (second).
      */
     const std::pair<SimTK::SubsystemIndex, SimTK::DiscreteVariableIndex>
-    getDiscreteVariableIndices(const std::string& name) const;
+    getDiscreteVariableIndexes(const std::string& name) const;
 
     /**
     * Initialize the index and associated subsystem index of a Component's
@@ -3316,7 +3331,7 @@ protected:
     * @throws VariableNotFound if the specified variable cannot be found in
     * this Component.
     */
-    void initializeDiscreteVariableIndices(const std::string& name,
+    void initializeDiscreteVariableIndexes(const std::string& name,
         SimTK::SubsystemIndex ssIndex,
         const SimTK::DiscreteVariableIndex& dvIndex) const;
 

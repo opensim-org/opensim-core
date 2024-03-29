@@ -1489,9 +1489,18 @@ getStateVariableSystemIndex(const std::string& stateVariableName) const
     return yix;
 }
 
+const SimTK::DiscreteVariableIndex
+Component::
+getDiscreteVariableIndex(const std::string& name) const
+{
+    std::map<std::string, DiscreteVariableInfo>::const_iterator it;
+    it = _namedDiscreteVariableInfo.find(name);
+    return it->second.dvIndex;
+}
+
 const std::pair<SimTK::SubsystemIndex, SimTK::DiscreteVariableIndex>
 Component::
-getDiscreteVariableIndices(const std::string& name) const
+getDiscreteVariableIndexes(const std::string& name) const
 {
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(name);
@@ -1502,10 +1511,9 @@ getDiscreteVariableIndices(const std::string& name) const
     return indices;
 }
 
-//_____________________________________________________________________________
 void
 Component::
-initializeDiscreteVariableIndices(const std::string& name,
+initializeDiscreteVariableIndexes(const std::string& name,
     const SimTK::SubsystemIndex ssIndex,
     const SimTK::DiscreteVariableIndex& dvIndex) const
 {

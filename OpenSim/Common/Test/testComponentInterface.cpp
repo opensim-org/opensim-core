@@ -416,7 +416,7 @@ protected:
         // Update the discrete variable indices.
         // This is needed because the allocation was not done in
         // addDiscreteVariable() and was not from the default subsystem.
-        initializeDiscreteVariableIndices("point",
+        initializeDiscreteVariableIndexes("point",
             fsub.getMySubsystemIndex(), index);
     }
 
