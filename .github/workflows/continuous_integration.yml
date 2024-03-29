@@ -14,6 +14,10 @@ on:
     tags:
       - '*'
 
+env:
+  perf_mac: ${{ (contains(github.event.pull_request.title, '[perf-mac]') || contains(github.event.pull_request.body, '[perf-mac]')) && !((contains(github.event.pull_request.title, '[perf-win]') || contains(github.event.pull_request.body, '[perf-win]'))) }} 
+  perf_win: ${{ (contains(github.event.pull_request.title, '[perf-win]') || contains(github.event.pull_request.body, '[perf-win]')) || (contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]')) }}
+
 jobs:
   windows:
     name: Windows
@@ -154,7 +158,7 @@ jobs:
   windows2022_target:
     name: Windows2022 [target]
 
-    if: ${{ contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]') }}
+    if: ${{ env.perf_win }}
 
     runs-on: windows-2022
 
@@ -178,7 +182,7 @@ jobs:
       run: python3 -m pip install numpy==1.20.2
 
     - name: Install SWIG
-      run: | 
+      run: |
         choco install swig --version 4.1.1 --yes --limit-output --allow-downgrade
         swig -swiglib
 
@@ -261,7 +265,7 @@ jobs:
     
     runs-on: windows-2022
     
-    name: ${{ (contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]')) && 'Windows2022 [source]' || 'Windows2022' }}
+    name: ${{ env.perf_win && 'Windows2022 [source]' || 'Windows2022' }}
 
     steps:
     - uses: actions/checkout@v3
@@ -367,7 +371,7 @@ jobs:
 
     runs-on: macos-12
 
-    if: ${{ contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]') }}
+    if: ${{ env.perf_mac }}
 
     steps:
     - uses: actions/checkout@v3
@@ -494,7 +498,7 @@ jobs:
 
     runs-on: macos-12
     
-    name: ${{ (contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]')) && 'Mac [source]' || 'Mac' }}
+    name: ${{ env.perf_mac && 'Mac [source]' || 'Mac' }}
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
