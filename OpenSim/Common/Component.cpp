@@ -581,24 +581,6 @@ void Component::addStateVariable(Component::StateVariable*  stateVariable) const
 }
 
 
-//_____________________________________________________________________________
-// An argument 'allocate' was added to addDiscreteVariable().
-// This was done to prevent double allocation of a discrete variable that is
-// allocated outside of class Component. Such an allocation can occur when a
-// native Simbody class, wrapped as an OpenSim Component, allocates its own
-// discrete variablee.
-//
-// When 'allocate' is true (default), the discrete state is allocated normally
-// in Component::extendRealizeTopology().
-//
-// When 'allocate' is false, the discrete variable is assumed to be allocated
-// elswhere. In this case, the derived Component is responsible for
-// initializing the index of the discrete state, as well its Subsystem.
-// This should be done by implementing an overriding extendRealizeTopology()
-// method and, in that method, calling
-// Component::initializeDiscreteVariableIndex().
-//
-// See ExponentialContact::extendRealizeTopology() for an example.
 void
 Component::
 addDiscreteVariable(const std::string& discreteVariableName,
@@ -620,9 +602,6 @@ addDiscreteVariable(const std::string& discreteVariableName,
 }
 
 
-//_____________________________________________________________________________
-// Get the names of modeling options maintained by the Component and its
-// subcomponents.
 Array<std::string>
 Component::
 getModelingOptionNames() const {
@@ -636,7 +615,7 @@ getModelingOptionNames() const {
     }
 
     for (auto& comp : getComponentList<Component>()) {
-        const std::string& pathName = comp.getAbsolutePathString(); // *this);
+        const std::string& pathName = comp.getAbsolutePathString();
         Array<std::string> subMONames =
             comp.getModelingOptionNamesAddedByComponent();
         for (int i = 0; i < subMONames.size(); ++i) {
@@ -647,7 +626,6 @@ getModelingOptionNames() const {
     return moNames;
 }
 
-//_____________________________________________________________________________
 Array<std::string>
 Component::
 getModelingOptionNamesAddedByComponent() const {
@@ -659,15 +637,12 @@ getModelingOptionNamesAddedByComponent() const {
     int i = 0;
     while (it != _namedModelingOptionInfo.end()) {
         names[i] = it->first;
-        it++;
-        i++;
+        ++it;
+        ++i;
     }
     return names;
 }
 
-//_____________________________________________________________________________
-// Get the value of a ModelingOption flag.
-// Takes a path instead of just the name of the modeling option.
 int Component::
 getModelingOption(const SimTK::State& s, const std::string& path) const
 {
@@ -687,9 +662,6 @@ getModelingOption(const SimTK::State& s, const std::string& path) const
     }
 }
 
-//_____________________________________________________________________________
-// Set the value of a ModelingOption flag.
-// Takes a path instead of just the name of the modeling option.
 void Component::
 setModelingOption(SimTK::State& s, const std::string& path, int flag) const
 {
@@ -878,7 +850,7 @@ Array<std::string> Component::getStateVariableNames() const
     }
 
     for (auto& comp : getComponentList<Component>()) {
-        const std::string& pathName = comp.getAbsolutePathString();// *this);
+        const std::string& pathName = comp.getAbsolutePathString();
         Array<std::string> subStateNames =
             comp.getStateVariableNamesAddedByComponent();
         for (int i = 0; i < subStateNames.size(); ++i) {
@@ -1080,10 +1052,6 @@ void Component::
 }
 
 
-//_____________________________________________________________________________
-// Added to support de/serialization of discrete variables.
-// Get the names of discrete state variables maintained by the Component and
-// its subcomponents.
 Array<std::string> Component::getDiscreteVariableNames() const {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
@@ -1095,7 +1063,7 @@ Array<std::string> Component::getDiscreteVariableNames() const {
     }
 
     for (auto& comp : getComponentList<Component>()) {
-        const std::string& pathName = comp.getAbsolutePathString(); // *this);
+        const std::string& pathName = comp.getAbsolutePathString();
         Array<std::string> subDVNames =
             comp.getDiscreteVariableNamesAddedByComponent();
         for (int i = 0; i < subDVNames.size(); ++i) {
@@ -1106,8 +1074,6 @@ Array<std::string> Component::getDiscreteVariableNames() const {
     return dvNames;
 }
 
-//_____________________________________________________________________________
-// Added to support de/serialization of discrete variables.
 Array<std::string> Component::getDiscreteVariableNamesAddedByComponent() const {
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.begin();
@@ -1117,15 +1083,12 @@ Array<std::string> Component::getDiscreteVariableNamesAddedByComponent() const {
     int i = 0;
     while (it != _namedDiscreteVariableInfo.end()) {
         names[i] = it->first;
-        it++;
-        i++;
+        ++it;
+        ++i;
     }
     return names;
 }
 
-//_____________________________________________________________________________
-// Added so that a discrete variable or modeling optioncan be accessed based
-// on a relative or absolute specified path.
 const Component*
 Component::
 resolveVariableNameAndOwner(const ComponentPath& path,
@@ -1147,10 +1110,6 @@ resolveVariableNameAndOwner(const ComponentPath& path,
     return owner;
 }
 
-//_____________________________________________________________________________
-// This method was added in order to handle Discrete Variables (DV) that are
-// not type double. In addition, a DV can be accessed by specifying its
-// relative or absolute path.
 const SimTK::AbstractValue&
 Component::
 getDiscreteVariableAbstractValue(const SimTK::State& s,
@@ -1175,10 +1134,6 @@ getDiscreteVariableAbstractValue(const SimTK::State& s,
     }
 }
 
-//_____________________________________________________________________________
-// This method was added in order to handle Discrete Variables (DV) that are
-// not type double and, in addition, to allow a variable to be found based on
-// a specified relative or absolute path.
 SimTK::AbstractValue&
 Component::
 updDiscreteVariableAbstractValue(SimTK::State& s,
