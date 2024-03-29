@@ -4100,7 +4100,7 @@ private:
 
         // Realization stage at which the SimTK::State is invalidated when a
         // change is made to the value of this discrete variable.
-        SimTK::Stage                    invalidatesStage;
+        SimTK::Stage                invalidatesStage;
 
         // Index of the discrete variable
         SimTK::DiscreteVariableIndex dvIndex{-1};
@@ -4114,7 +4114,7 @@ private:
         // It should be initialized by calling
         // initializeDiscreteVariableIndices() in the most derived
         // implementation of extendRealizeTopology().
-        SimTK::SubsystemIndex ssIndex{-1};
+        SimTK::SubsystemIndex       ssIndex{-1};
 
         // Flag to prevent allocation from happening twice.
         // If 'true' (default), the discrete variable is allocated normally
@@ -4126,7 +4126,7 @@ private:
         // by implementing an overriding extendRealizeTopology() method and
         // calling initializeDiscreteVariableIndex() in that method.
         // See ExponentialContact::extendRealizeTopology() for an example.
-        bool allocate{true};
+        bool                        allocate{true};
     };
 
     /**
