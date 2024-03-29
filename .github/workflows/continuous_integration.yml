@@ -264,7 +264,7 @@ jobs:
     name: ${{ (contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]')) && 'Windows2022 [source]' || 'Windows2022' }}
 
     outputs:
-        version: ${{ steps.configure.outputs.version }}
+      version: ${{ steps.configure.outputs.version }}
 
     steps:
     - uses: actions/checkout@v3
@@ -646,7 +646,7 @@ jobs:
         repo: opensim-perf
         owner: opensim-org
         ref: main
-        workflow: performance_analysis.yml
+        workflow: performance_analysis_win.yml
         workflow_inputs: '{"commit_sha": "${{ github.event.pull_request.head.sha }}", "target_artifact_name": "opensim-core-${{ github.event.pull_request.base.ref }}-win", "source_artifact_name": "opensim-core-${{ needs.windows2022_source.outputs.version }}-win", "target_artifact_zip": "opensim-core-${{ github.event.pull_request.base.ref }}.zip", "source_artifact_zip": "opensim-core-${{ needs.windows2022_source.outputs.version }}.zip"}'
 
     - name: Await opensim-perf workflow
@@ -656,7 +656,7 @@ jobs:
         repo: opensim-perf
         owner: opensim-org
         run_id: ${{ steps.return_dispatch.outputs.run_id }}
-        run_timeout_seconds: 600
+        run_timeout_seconds: 10000
 
     - name: Download performance analysis results
       id: download-artifact
@@ -943,7 +943,8 @@ jobs:
            repo: opensim-gui
            owner: opensim-org
            run_id: ${{ steps.return_dispatch.outputs.run_id }}
-           run_timeout_seconds: 10000 
+           run_timeout_seconds: 10000
+
   style:
     name: Style
 
