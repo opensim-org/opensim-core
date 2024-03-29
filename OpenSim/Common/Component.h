@@ -3303,10 +3303,10 @@ protected:
      * discrete variable belongs; the second is the index into that subsystem
      * for the discrete variable itself.
      *
-     * @param name Name of the discrete variable.
-     * @param ssIndex Reference that returns the index of the subsystem to
-     * which the discrete variable belongs.
-     * @param dvIndex Reference that returns the index of the discrete
+     * @param[in] name Name of the discrete variable.
+     * @param[out] ssIndex Reference that returns the index of the subsystem
+     * to which the discrete variable belongs.
+     * @param[out] dvIndex Reference that returns the index of the discrete
      * variable.
      */
     void
