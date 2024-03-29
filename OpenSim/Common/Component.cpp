@@ -1498,17 +1498,16 @@ getDiscreteVariableIndex(const std::string& name) const
     return it->second.dvIndex;
 }
 
-const std::pair<SimTK::SubsystemIndex, SimTK::DiscreteVariableIndex>
+void
 Component::
-getDiscreteVariableIndexes(const std::string& name) const
+getDiscreteVariableIndexes(const std::string& name,
+    SimTK::SubsystemIndex& ssIndex,
+    SimTK::DiscreteVariableIndex& dvIndex) const
 {
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(name);
-
-    std::pair<SimTK::SubsystemIndex, SimTK::DiscreteVariableIndex> indices;
-    indices.first = it->second.ssIndex;
-    indices.second = it->second.dvIndex;
-    return indices;
+    ssIndex = it->second.ssIndex;
+    dvIndex = it->second.dvIndex;
 }
 
 void

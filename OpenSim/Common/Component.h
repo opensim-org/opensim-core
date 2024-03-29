@@ -3282,15 +3282,16 @@ protected:
     * intended for derived Components that may need direct access to its
     * underlying Subsystem.
     * 
+    * Two indices are needed to properly access a discrete variable. The first
+    * identifies the SimTK::Subystem to which the discrete variable belongs;
+    * the second is the index into that subsystem for the discrete variable
+    * itself. To obtain both indexes, use getDiscreteVariableIndexes().
+    * 
+    * @param name Name of the discrete variable.
     * @return Index of discrete variable.
-    * @deprecated Two indices are needed to properly access a discrete
-    * variable. The first identifies the SimTK::Subystem to which the discrete
-    * variable belongs; the second is the index into that subsystem for the
-    * discrete variable itself. To obtain both indexes, use
-    * Component::getDiscreteVariableIndexes().
     */
     const SimTK::DiscreteVariableIndex
-        getDiscreteVariableIndex(const std::string& name) const;
+    getDiscreteVariableIndex(const std::string& name) const;
 
    /**
      * Get the indexes for a Component's discrete variable. This method is
@@ -3299,15 +3300,19 @@ protected:
      * 
      * Two indexes are needed to properly access a discrete variable in a
      * SimTK::State. The first identifies the SimTK::Subystem to which the
-     * discrete variable belongs. The second is the index into that subsystem
+     * discrete variable belongs; the second is the index into that subsystem
      * for the discrete variable itself.
      *
-     * @return An std::pair containing the index of the subsystem to which
-     * the discrete variable belongs (first) and the index of the discrete
-     * variable itself (second).
+     * @param name Name of the discrete variable.
+     * @param ssIndex Reference that returns the index of the subsystem to
+     * which the discrete variable belongs.
+     * @param dvIndex Reference that returns the index of the discrete
+     * variable.
      */
-    const std::pair<SimTK::SubsystemIndex, SimTK::DiscreteVariableIndex>
-    getDiscreteVariableIndexes(const std::string& name) const;
+    void
+    getDiscreteVariableIndexes(const std::string& name,
+        SimTK::SubsystemIndex& ssIndex,
+        SimTK::DiscreteVariableIndex& dvIndex) const;
 
     /**
     * Initialize the index and associated subsystem index of a Component's
