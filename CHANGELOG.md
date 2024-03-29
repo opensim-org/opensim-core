@@ -35,6 +35,8 @@ v4.6
   orientation from `Station`s in the model
 - Models with `PrescribedController`s are now supported by Moco (#3701). Controls for actuators controlled by
   `PrescribedController`s are now excluded from the optimization problem.
+- Fixed documentation error in `Umberger2010MuscleMetabolicsProbe` where muscle mass was incorrectly omitted for the
+  activation maintenance rate.
 - Methods are now available in `OpenSim::Component` for generating a list of all `ModelingOption`s and `DiscreteVariable`s in an `OpenSim::Model` or other `Component`.
 - `OpenSim::Component` accessor methods for `ModelingOption`s and `DiscreteVariables`s now accept both absolute and relative component paths.
 - `DiscreteVariables` in OpenSim can now be a range of numerical types, including `bool`, `int`, `double`, `Vec2`, `Vec3`, ..., `Vec6`, and `Quaternion`.
