@@ -73,8 +73,7 @@ private:
  *       directory to which the results are written can be specified using the
  *      `setOutputDirectory` method.
  *
- * Settings
- * --------
+ * # Settings
  * Various settings can be adjusted to control the path fitting process. The
  * `setMomentArmsThreshold` method determines whether or not a path depends on a
  * model coordinate. In other words, the absolute value the moment arm of a with
@@ -91,10 +90,10 @@ private:
  * lengths computed from the original model paths and the fitted polynomial
  * paths. The `setNumSamplesPerFrame` method specifies the number of samples
  * taken per time frame in the coordinate values table used to fit each path.
- * The `setParallel` method specifies the number of threads used to parallelize
- * the path fitting process. The `setLatinHypercubeAlgorithm` method specifies
- * the Latin hypercube sampling algorithm used to sample coordinate values for
- * path fitting.
+ * The `setNumParallelThreads` method specifies the number of threads used to 
+ * parallelize the path fitting process. The `setLatinHypercubeAlgorithm` method 
+ * specifies the Latin hypercube sampling algorithm used to sample coordinate 
+ * values for path fitting.
  *
  * The default settings are as follows:
  *
@@ -113,8 +112,7 @@ private:
  *       models with larger or smaller anatomical measures (e.g., dinosaur
  *       models).
  *
- * Usage
- * -----
+ * # Usage
  * The most basic usage of `PolynomialPathFitter` requires the user to provide
  * a model and reference trajectory. The model should contain at least one path
  * object derived from `AbstractGeometryPath` and should not contain any
@@ -145,8 +143,7 @@ private:
  * fitter.run();
  * @endcode
  *
- * Recommendations
- * ---------------
+ * # Recommendations
  * Information from each step of the path fitting process is logged to the
  * console, provided that you have set the OpenSim::Logger to level "info" or
  * greater. Warnings are printed if the number of samples is likely insufficient
@@ -408,7 +405,7 @@ public:
      *       of available hardware threads.
      */
     void setNumParallelThreads(int numThreads);
-    /// @copydoc setParallel()
+    /// @copydoc setNumParallelThreads(int numThreads)
     int getNumParallelThreads() const;
 
     /**

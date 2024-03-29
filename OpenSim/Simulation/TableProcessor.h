@@ -228,7 +228,7 @@ public:
     }
 };
 
-/** Invoke SimulationUtilities::appendCoupledCoordinateValues() on the table.*/
+/** Invoke SimulationUtilities::appendCoupledCoordinateValues() on the table. */
 class OSIMSIMULATION_API TabOpAppendCoupledCoordinateValues
         : public TableOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(TabOpAppendCoupledCoordinateValues,
