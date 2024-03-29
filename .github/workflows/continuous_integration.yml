@@ -263,6 +263,9 @@ jobs:
     
     name: ${{ (contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]')) && 'Windows2022 [source]' || 'Windows2022' }}
 
+    outputs:
+        version: ${{ steps.configure.outputs.version }}
+
     steps:
     - uses: actions/checkout@v3
 
