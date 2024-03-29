@@ -413,13 +413,11 @@ protected:
             fsub.allocateDiscreteVariable(state, Stage::Dynamics,
                 new Value<Vec3>(point));
 
-        // Update the discrete variable index and subsystem.
+        // Update the discrete variable indices.
         // This is needed because the allocation was not done in
         // addDiscreteVariable() and was not from the default subsystem.
-        // ?? Using a pointer to a generic Subsystem -may- be necessary.
-        // If this works I'll try to simplify and see if it still works.
-        SimTK::Subsystem *sub = &fsub;
-        initializeDiscreteVariableIndex("point", index, sub);
+        initializeDiscreteVariableIndices("point",
+            fsub.getMySubsystemIndex(), index);
     }
 
     void computeStateVariableDerivatives(const SimTK::State& state) const override {

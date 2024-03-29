@@ -1169,22 +1169,7 @@ getDiscreteVariableAbstractValue(const SimTK::State& s,
     it = owner->_namedDiscreteVariableInfo.find(dvName);
 
     if (it != owner->_namedDiscreteVariableInfo.end()) {
-        SimTK::DiscreteVariableIndex dvIndex = it->second.index;
-
-        // Previously, it was assumed that all discrete states were allocated
-        // from the DefaultSubsystem. This is likely not the case when
-        // discrete states are allocated by native Simbody objects. For
-        // example, class ExponentialSpringForce allocates 4 discrete states,
-        // not from the default Subsystem, but from the GeneralForceSubsystem.
-        // To account for the fact that an object might allocate discrete
-        // variables from different Subsystems, a pointer was added to the
-        // DiscreteVariableInfo struct. This pointer is now consulted for any
-        // non-default Subsystem. If this pointer is nullptr, which is its
-        // default value, then the default Subsystem is used.
-        const SimTK::Subsystem* subsystem = it->second.subsystem;
-        if (subsystem == nullptr) subsystem = &getDefaultSubsystem();
-        return subsystem->getDiscreteVariable(s, dvIndex);
-
+        return s.getDiscreteVariable(it->second.ssIndex, it->second.dvIndex);
     } else {
         OPENSIM_THROW(VariableNotFound, getName(), dvName);
     }
@@ -1211,22 +1196,7 @@ updDiscreteVariableAbstractValue(SimTK::State& s,
     it = owner->_namedDiscreteVariableInfo.find(dvName);
 
     if (it != owner->_namedDiscreteVariableInfo.end()) {
-        SimTK::DiscreteVariableIndex dvIndex = it->second.index;
-
-        // Previously, it was assumed that all discrete states were allocated
-        // from the default Subsystem. This is likely not the case when
-        // discrete states are allocated by native Simbody objects. For
-        // example, class ExponentialSpringForce allocates 4 discrete states,
-        // not from the default Subsystem, but from the GeneralForceSubsystem.
-        // To account for the fact that an object might allocate discrete
-        // variables from different Subsystems, a pointer was added to the
-        // DiscreteVariableInfo struct. This pointer is now consulted for any
-        // non-default Subsystem. If this pointer is nullptr, which is its
-        // default value, then the default Subsystem is used.
-        const SimTK::Subsystem* subsystem = it->second.subsystem;
-        if (subsystem == nullptr) subsystem = &getDefaultSubsystem();
-        return subsystem->updDiscreteVariable(s, dvIndex);
-
+        return s.updDiscreteVariable(it->second.ssIndex, it->second.dvIndex);
     } else {
         OPENSIM_THROW(VariableNotFound, getName(), dvName);
     }
@@ -1564,33 +1534,33 @@ getStateVariableSystemIndex(const std::string& stateVariableName) const
     return yix;
 }
 
-const SimTK::DiscreteVariableIndex Component::
-getDiscreteVariableIndex(const std::string& name) const
+const std::pair<SimTK::SubsystemIndex, SimTK::DiscreteVariableIndex>
+Component::
+getDiscreteVariableIndices(const std::string& name) const
 {
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(name);
 
-    return it->second.index;
+    std::pair<SimTK::SubsystemIndex, SimTK::DiscreteVariableIndex> indices;
+    indices.first = it->second.ssIndex;
+    indices.second = it->second.dvIndex;
+    return indices;
 }
 
-
 //_____________________________________________________________________________
-// This method was added so that a derived Component can properly initialize
-// the index and Subsystem of a discrete variable that is allocated outside
-// of class Component.
 void
 Component::
-initializeDiscreteVariableIndex(const std::string& name,
-    const SimTK::DiscreteVariableIndex& index,
-    const SimTK::Subsystem* subsystem) const
+initializeDiscreteVariableIndices(const std::string& name,
+    const SimTK::SubsystemIndex ssIndex,
+    const SimTK::DiscreteVariableIndex& dvIndex) const
 {
     std::map<std::string, DiscreteVariableInfo>::iterator it;
     it = _namedDiscreteVariableInfo.find(name);
     if (it == _namedDiscreteVariableInfo.end()) {
         OPENSIM_THROW(VariableNotFound, getName(), name);
     }
-    it->second.index = index;
-    it->second.subsystem = subsystem;
+    it->second.ssIndex = ssIndex;
+    it->second.dvIndex = dvIndex;
 }
 
 
@@ -1656,11 +1626,10 @@ void Component::extendRealizeTopology(SimTK::State& s) const
         // wrapped as an OpenSim Component, posseses discrete states of its
         // own. In such a case, the derived Component is responsible for
         // initializing the discrete state index, as well as its Subsystem.
-        // See ExponentialContact::extendAddToSystem() and
-        // ExponentialContact::extendRealizeTopology for an example.
+        // See initializeDiscreteVariableIndices().
         if (!dvi.allocate) continue;
-
-        dvi.index = subSys.allocateDiscreteVariable(s,
+        dvi.ssIndex = subSys.getMySubsystemIndex();
+        dvi.dvIndex = subSys.allocateDiscreteVariable(s,
             dvi.invalidatesStage, new SimTK::Value<double>(0.0));
     }
 
