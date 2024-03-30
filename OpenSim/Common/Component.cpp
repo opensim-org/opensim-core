@@ -656,7 +656,6 @@ getModelingOption(const SimTK::State& s, const std::string& path) const
     it = owner->_namedModelingOptionInfo.find(moName);
 
     if(it != _namedModelingOptionInfo.end()) {
-        //SimTK::DiscreteVariableIndex moIndex = it->second.moIndex;
         return SimTK::Value<int>::downcast(
             s.getDiscreteVariable(it->second.ssIndex,
                 it->second.moIndex)).get();
@@ -676,7 +675,6 @@ setModelingOption(SimTK::State& s, const std::string& path, int flag) const
     it = owner->_namedModelingOptionInfo.find(moName);
 
     if(it != _namedModelingOptionInfo.end()) {
-        //SimTK::DiscreteVariableIndex moIndex = it->second.moIndex;
         if(flag > it->second.maxOptionValue){
             OPENSIM_THROW(ModelingOptionMaxExceeded, getName(), moName, flag,
                 it->second.maxOptionValue);

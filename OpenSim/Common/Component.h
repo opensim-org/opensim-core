@@ -3198,7 +3198,7 @@ protected:
     - If `allocate == false`, the modeling option is assumed to have been
     allocated externally, in which case the derived Component (i.e., the
     wrapping Component) is responsible for initializing the subsystem index
-    and discrete variable index in its own overriding implementation of
+    and modeling option index in its own overriding implementation of
     extendRealizeTopology() by calling initializeModelingOptionIndexes().
 
     @param moName Name of the modeling option.
@@ -3251,6 +3251,8 @@ protected:
     * @param ssIndex Index of the SimTK::Subsystem to which the modeling
     * option belongs.
     * @param moIndex Index of the modeling option within its SimTK::Subystem.
+    * @note A modeling option is a special kind of discrete variable.
+    * As such, its index type is SimTK::DiscreteVariableIndex.
     * @throws VariableNotFound if the specified modeling option was not
     * found in this Component.
     */
@@ -3394,9 +3396,6 @@ protected:
     * the derived Component should implement an overriding
     * `extendRealizeTopology()` and call this method from within that
     * overriding method.
-    *
-    * See OpenSim::ExponentialContact::extendRealizedTopology() for an
-    * example.
     *
     * @param dvName Name of the discrete variable.
     * @param ssIndex Index of the SimTK::Subsystem to which the discrete
