@@ -114,7 +114,7 @@ public:
 
     TheWorld(const std::string& fileName, bool updFromXMLNode = false)
         : Component(fileName, updFromXMLNode) {
-        // Propagate XML file values to properties 
+        // Propagate XML file values to properties
         updateFromXMLDocument();
         // add components listed as properties as sub components.
         finalizeFromProperties();
@@ -122,7 +122,7 @@ public:
 
     void add(Component* comp) {
         addComponent(comp);
-        // Edit Sub 
+        // Edit Sub
         /*Sub& subc = */updMemberSubcomponent<Sub>(intSubix);
     }
 
@@ -130,7 +130,7 @@ public:
     void connect() {
         Super::finalizeConnections(*this);
     }
-    void buildUpSystem(MultibodySystem& system) { 
+    void buildUpSystem(MultibodySystem& system) {
         connect();
         addToSystem(system);
     }
@@ -166,7 +166,7 @@ protected:
     }
 
 private:
-    // Keep track of pointers to the underlying computational subsystems. 
+    // Keep track of pointers to the underlying computational subsystems.
     mutable ReferencePtr<SimbodyMatterSubsystem> matter;
     mutable ReferencePtr<GeneralForceSubsystem> forces;
 
@@ -301,12 +301,12 @@ private:
 class Bar : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(Bar, Component);
 public:
-    
+
     OpenSim_DECLARE_SOCKET(parentFoo, Foo, "");
     OpenSim_DECLARE_SOCKET(childFoo, Foo, "");
     OpenSim_DECLARE_LIST_SOCKET(listFoo, Foo, "");
 
-    // This is used to test output copying and returns the address of the 
+    // This is used to test output copying and returns the address of the
     // component.
     OpenSim_DECLARE_OUTPUT(copytesting, size_t, myself, SimTK::Stage::Model);
     // Use this member variable to ensure that output functions get copied
@@ -325,14 +325,14 @@ public:
         const GeneralForceSubsystem& forces = world->getForceSubsystem();
         const SimTK::Force& force = forces.getForce(fix);
         const auto& spring = SimTK::Force::TwoPointLinearSpring::downcast(force);
-    
+
         return spring.calcPotentialEnergyContribution(state);
     }
-    
-    /** Returns the `this` pointer. Used to ensure that the std::function 
+
+    /** Returns the `this` pointer. Used to ensure that the std::function
      within Outputs is properly copied when copying components. */
     size_t myself(const SimTK::State& s) const { return size_t(this); }
-    
+
     double getCopytestingMemVar(const SimTK::State& s) const
     { return copytestingViaMemberVariable; }
 
@@ -368,7 +368,7 @@ protected:
             const MobilizedBody& b1 = matter.getMobilizedBody(MobilizedBodyIndex(1));
             const MobilizedBody& b2 = matter.getMobilizedBody(MobilizedBodyIndex(2));
 
-            SimTK::Force::TwoPointLinearSpring 
+            SimTK::Force::TwoPointLinearSpring
                 spring(forces, b1, Vec3(0.5,0,0), b2, Vec3(0.5,0,0), 10.0, 0.1);
             fix = spring.getForceIndex();
         }
@@ -424,7 +424,7 @@ protected:
     void computeStateVariableDerivatives(const SimTK::State& state) const override {
         setStateVariableDerivativeValue(state, "fiberLength", 2.0);
         setStateVariableDerivativeValue(state, "activation", 3.0 * state.getTime());
-        setStateVariableDerivativeValue(state, "hiddenStateVar", 
+        setStateVariableDerivativeValue(state, "hiddenStateVar",
                                           exp(-0.5 * state.getTime()));
     }
 
@@ -486,7 +486,7 @@ private:
         constructProperty_scale1(1.0);
         constructProperty_scale2(2.0);
         constructProperty_scale3(3.0);
-    }   
+    }
 }; // End of Class CompoundFoo
 
 SimTK_NICETYPENAME_LITERAL(Foo);
@@ -556,7 +556,7 @@ TEST_CASE("Component Interface Misc.")
     // allocation (address) from original internal Sub
     ASSERT(&theSub != &cloneSub);
     ASSERT(&theSub != &copySub);
-    // But their contents/values should be identical 
+    // But their contents/values should be identical
     ASSERT(theSub == cloneSub);
     ASSERT(theSub == copySub);
 
@@ -597,13 +597,13 @@ TEST_CASE("Component Interface Misc.")
         std::cout << "Iterator is at: " << it->getAbsolutePathString() << std::endl;
     }
 
-        
+
     std::cout << "Using range-for loop: " << std::endl;
     for (const Component& component : worldTreeAsList) {
         std::cout << "Iterator is at: " << component.getAbsolutePathString() << std::endl;
     }
 
-        
+
     std::cout << "Iterate over only Foo's." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
         std::cout << "Iterator is at: " << component.getAbsolutePathString() << std::endl;
@@ -953,7 +953,7 @@ TEST_CASE("Component Interface List Inputs")
     MultibodySystem system;
     TheWorld theWorld;
     theWorld.setName("World");
-    
+
     Foo& foo = *new Foo();
     foo.setName("Foo");
     theWorld.add(&foo);
@@ -985,7 +985,7 @@ TEST_CASE("Component Interface List Inputs")
     tabReporter->setName("TableReporterMixedOutputs");
     theWorld.add(tabReporter);
 
-    // wire up table reporter inputs (using convenience method) to desired 
+    // wire up table reporter inputs (using convenience method) to desired
     // model outputs
     tabReporter->addToReport(bar.getOutput("fiberLength"));
     tabReporter->addToReport(bar.getOutput("activation"));
@@ -994,9 +994,9 @@ TEST_CASE("Component Interface List Inputs")
 
     theWorld.connect();
     theWorld.buildUpSystem(system);
-    
+
     State s = system.realizeTopology();
-    
+
     const Vector q = Vector(s.getNQ(), SimTK::Pi/2);
     for (int i = 0; i < 10; ++i){
         s.updTime() = i*0.01234;
@@ -1016,7 +1016,7 @@ TEST_CASE("Component Interface Sockets")
     MultibodySystem system;
     TheWorld theWorld;
     theWorld.setName("world");
-    
+
     Foo& foo1 = *new Foo(); foo1.setName("foo1"); foo1.set_mass(2.0);
     theWorld.add(&foo1);
 
@@ -1179,9 +1179,9 @@ TEST_CASE("Component Interface Component Path Names")
     // verify that this illegal name throws when we try to finalize
     // the component from its property values
     ASSERT_THROW(InvalidComponentName, foo.finalizeFromProperties());
-  
-    // Build using real components and assemble them 
-    // into a tree and test the path names that are 
+
+    // Build using real components and assemble them
+    // into a tree and test the path names that are
     // generated on the fly.
     TheWorld top;
     TheWorld otherTop;
@@ -1199,7 +1199,7 @@ TEST_CASE("Component Interface Component Path Names")
     C->setName("C");
     D->setName("D");
     E->setName("E");
-    
+
     top.add(A);
     A->add(B);
     B->add(C);
@@ -1843,7 +1843,7 @@ TEST_CASE("Component Interface Discrete Variables Vec3")
     // of a pre-existing Simbody object (e.g., it was allocated from the
     // GeneralForceSubsystem and not from the DefaultSybsystem like most, if
     // not all, discrete variables allocated in OpenSim).
-    // This test case 
+    // This test case
     // 1) checks the interface for handling discrete variables that are not
     //    type double, and
     // 2) verifies that OpenSim can properly wrap discrete state variables
@@ -2068,7 +2068,7 @@ TEST_CASE("Component Interface Input/Output Connections")
         bar->setName("bar");
         bar->connectSocket_parentFoo(*foo1);
         bar->connectSocket_childFoo(*foo2);
-        
+
         world.add(foo1);
         world.add(foo2);
         world.add(bar);
@@ -2083,7 +2083,7 @@ TEST_CASE("Component Interface Input/Output Connections")
         // Test various exceptions for inputs, outputs, sockets
         ASSERT_THROW(InputNotFound, foo1->getInput("input0"));
         ASSERT_THROW(SocketNotFound, bar->updSocket<Foo>("parentFoo0"));
-        ASSERT_THROW(OutputNotFound, 
+        ASSERT_THROW(OutputNotFound,
             world.getComponent("./internalSub").getOutput("subState0"));
         // Ensure that getOutput does not perform a "find"
         ASSERT_THROW(OutputNotFound,
@@ -2152,7 +2152,7 @@ TEST_CASE("Component Interface Input/Output Connections")
         // The following will work, now that the connection is satisfied.
         b->getInput<double>("in1").getValue(s, 0);
         // Disconnect to get the "not connected"exception.
-        b->clearConnections(); 
+        b->clearConnections();
         SimTK_TEST_MUST_THROW_EXC(b->getInput<double>("in1").getValue(s, 0),
                 InputNotConnected);
     }
@@ -2237,7 +2237,7 @@ TEST_CASE("Component Interface Exceptions when Connectee Type Mismatches")
     public:
         OpenSim_DECLARE_SOCKET(socket1, A, "");
     };
-    
+
     // Test various type mismatches.
     // -----------------------------
     // First, check for exceptions when directly connecting inputs to outputs
@@ -2541,12 +2541,12 @@ TEST_CASE("Component Interface Table Source")
     {
     const std::string src_file{"TestTableSource.osim"};
     TheWorld model{src_file};
-    const auto& tablesource = 
+    const auto& tablesource =
         model.getComponent<TableSourceVec3>("tablesource");
     model.print("TestTableSourceResult.osim");
     // Read the model file again to verify serialization.
     TheWorld model_copy{"TestTableSourceResult.osim"};
-    const auto& tablesource_copy = 
+    const auto& tablesource_copy =
         model_copy.getComponent<TableSourceVec3>("tablesource");
     OPENSIM_THROW_IF(tablesource_copy.get_filename() !=
                      tablesource.get_filename(),
@@ -2629,10 +2629,10 @@ TEST_CASE("Component Interface TableReporter Usage")
         auto* reporter = new TableReporter();
         reporter->set_report_time_interval(0.1);
         model.addComponent(reporter);
-    
+
         MultibodySystem system;
         model.buildUpSystem(system);
-    
+
         {
             SimTK::State s = system.realizeTopology();
             RungeKuttaFeldbergIntegrator integ(system);
@@ -2655,7 +2655,7 @@ TEST_CASE("Component Interface TableReporter Usage")
         SimTK_TEST_MUST_THROW_EXC(
             reporter->getTable().getDependentColumnAtIndex(0),
             EmptyTable);
-    
+
         {
             SimTK::State s = system.realizeTopology();
             RungeKuttaFeldbergIntegrator integ(system);
@@ -2714,16 +2714,16 @@ TEST_CASE("Component Interface List Input Connectee Serialization Behavior")
         // Create the "model," which just contains a reporter.
         TheWorld world;
         world.setName("World");
-        
+
         // TableSource.
         auto* source = new TableSource();
         source->setName("producer");
         source->set_filename(dataFileNameForInputConnecteeSerialization);
-        
+
         // TableReporter.
         auto* reporter = new TableReporter();
         reporter->setName("consumer");
-        
+
         // Add to world.
         world.add(source);
         world.add(reporter);
@@ -2741,22 +2741,22 @@ TEST_CASE("Component Interface List Input Connectee Serialization Behavior")
         world.connect();
         MultibodySystem system;
         world.buildUpSystem(system);
-        
+
         // Grab the connectee paths.
         const auto& input = reporter->getInput("inputs");
         SimTK_TEST(getConnecteePaths(input) == expectedConnecteePaths);
-        
+
         // Get the value of the input at some given time.
         State s = system.realizeTopology();
         system.realize(s, Stage::Model);
         s.setTime(0.3);
         expectedInputValues = Input<double>::downcast(input).getVector(s);
         SimTK_TEST(expectedInputValues.size() == 3);
-        
+
         // Serialize.
         world.print(modelFileName);
     }
-    
+
     // Deserialize and test.
     {
         TheWorld world(modelFileName);
@@ -2772,7 +2772,7 @@ TEST_CASE("Component Interface List Input Connectee Serialization Behavior")
         SimTK_TEST(input.getAlias(0) == ""); // default.
         SimTK_TEST(input.getAlias(1) == ""); // default.
         SimTK_TEST(input.getAlias(2) == "berry"); // specified.
-        
+
         // Check that the value of the input is the same as before.
         MultibodySystem system;
         world.buildUpSystem(system);
@@ -2791,7 +2791,7 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
     // -------------------------------------------------------------
 
     writeTimeSeriesTableForInputConnecteeSerialization();
-    
+
     // Build a model and serialize it.
     std::string modelFileName = "testComponentInterface_"
             "testSingleValueInputConnecteeSerialization_world.xml";
@@ -2800,12 +2800,12 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
         // Create the "model," which just contains a reporter.
         TheWorld world;
         world.setName("World");
-        
+
         // TableSource.
         auto* source = new TableSource();
         source->setName("producer");
         source->set_filename(dataFileNameForInputConnecteeSerialization);
-        
+
         // TableReporter.
         auto* foo = new Foo();
         foo->setName("consumer");
@@ -2813,7 +2813,7 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
         // (future-proofing this test).
         SimTK_TEST(!foo->updInput("input1").isListSocket());
         SimTK_TEST(!foo->updInput("fiberLength").isListSocket());
-        
+
         // Add to world.
         world.add(source);
         world.add(foo);
@@ -2830,22 +2830,22 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
         world.connect();
         MultibodySystem system;
         world.buildUpSystem(system);
-        
+
         // Get the value of the input at some given time.
         State s = system.realizeTopology();
         system.realize(s, Stage::Model);
         s.setTime(0.3);
         const auto& input1 = foo->getInput("input1");
         expectedInput1Value = Input<double>::downcast(input1).getValue(s);
-        
+
         // We won't wire up this input, but its connectee path should still
         // (de)serialize.
         foo->updInput("activation").setConnecteePath("non/existent");
-        
+
         // Serialize.
         world.print(modelFileName);
     }
-    
+
     // Deserialize and test.
     {
         TheWorld world(modelFileName);
@@ -2853,13 +2853,13 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
         const auto& input1 = foo.getInput("input1");
         const auto& fiberLength = foo.getInput("fiberLength");
         auto& activation = foo.updInput("activation");
-        
+
         // Make sure these inputs are single-value after deserialization,
         // even before connecting.
         SimTK_TEST(!input1.isListSocket());
         SimTK_TEST(!fiberLength.isListSocket());
         SimTK_TEST(!activation.isListSocket());
-        
+
         // Check connectee paths before *and* after connecting, since
         // the connecting process edits the connectee_name property.
         SimTK_TEST(input1.getConnecteePath() == "/producer|column:b");
@@ -2870,34 +2870,34 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
         // Now we must clear this before trying to connect, since the connectee
         // doesn't exist.
         activation.setConnecteePath("");
-        
+
         // Connect.
         world.connect();
-        
+
         // Make sure these inputs are single-value even after connecting.
         SimTK_TEST(!input1.isListSocket());
         SimTK_TEST(!fiberLength.isListSocket());
         SimTK_TEST(!activation.isListSocket());
-        
+
         SimTK_TEST(input1.getConnecteePath() == "/producer|column:b");
         SimTK_TEST(fiberLength.getConnecteePath() ==
                    "/producer|column:d(desert)");
-        
+
         // Check aliases.
         SimTK_TEST(input1.getAlias(0) == "");
         SimTK_TEST(fiberLength.getAlias(0) == "desert");
-        
+
         // Check that the value of the input is the same as before.
         MultibodySystem system;
         world.buildUpSystem(system);
         State s = system.realizeTopology();
         system.realize(s, Stage::Model);
         s.setTime(0.3);
-        
+
         SimTK_TEST_EQ(Input<double>::downcast(input1).getValue(s),
                       expectedInput1Value);
     }
-    
+
     // Test error case: single-value input connectee_name has multiple values.
     // -----------------------------------------------------------------------
     // We'll first create an Input with multiple connectee_names (as is possible
@@ -2908,7 +2908,7 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
         TheWorld world;
         auto* foo = new Foo();
         world.add(foo);
-        
+
         // Hack into the Foo and modify its properties! The typical interface
         // for editing the input's connectee_name does not allow multiple
         // connectee paths for a single-value input.
@@ -2918,7 +2918,7 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
         connectee_name.appendValue("apple");
         connectee_name.appendValue("banana");
         connectee_name.appendValue("lemon");
-        
+
         world.print(modelFileNameMultipleValues);
     }
     // Deserialize.
@@ -2928,7 +2928,7 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
              TheWorld world(modelFileNameMultipleValues),
              OpenSim::Exception);
     }
-    
+
     // Test error case: connectee_name has invalid characters.
     // -------------------------------------------------------
     // This test is structured similarly to the one above.

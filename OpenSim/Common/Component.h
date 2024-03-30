@@ -1429,10 +1429,10 @@ public:
 
     /**
      * Based on a specified path, get the value of a modeling option.
-     * 
+     *
      * The specified path consists of the name of the modeling option
      * prepended by its absolute or relative path in the component hierarchy.
-     * 
+     *
      * If this component is the owner of the modeling option, the specified
      * path should simply be the name of the modeling option.
      *
@@ -1452,13 +1452,13 @@ public:
 
     /**
      * Based on a specified path, set the value of a modeling option.
-     * 
+     *
      * The specified path consists of the name of the modeling option
      * prepended by its absolute or relative path in the component hierarchy.
-     * 
+     *
      * If this component is the owner of the modeling option, the specified
      * path should simply be the name of the modeling option.
-     * 
+     *
      * @note Successfully setting the value of the modeling option will revert
      * the realization stage back to SimTK::Stage::Instance.
      *
@@ -1615,30 +1615,30 @@ public:
     * Based on a specified path, resolve the name of a state variable,
     * discrete variable, or modeling option and resolve the component that
     * owns it (i.e., its parent).
-    * 
+    *
     * The path consists of the name of the state variable, discrete variable,
     * or modeling option prepended by its absolute or relative path in the
     * component hierarchy.
-    * 
+    *
     * This method does not verify that the variable or option can actually be
     * found at the spcified path. It simply parses the path, returning the
     * variable name and candidate owner.
-    * 
+    *
     * @note Calling Component::traversPathToComponent<Component>() will not
     * work for state variables, discrete variables, and modeling options
     * because these obects are not themselves Components. However, a pointer
     * to a StateVariable can be obtained in a single step by calling
     * Component::traverseToStateVariable(). A similar dedicated method is not
     * available for discrete variables or for modeling options.
-    * 
+    *
     * #### Example Paths
     *
     * A relative path in which this component is the owner:
     *   ```variable_name```
-    * 
+    *
     * An absolute path from the root of the component hierarchy:
     *   ```/grandparent_name/parent_name/variable_name```
-    * 
+    *
     * A relative path in which a sibling of this component is the owner:
     *   ```../sibling_name/variable_name```
     *
@@ -1663,10 +1663,10 @@ public:
     *
     * The specified path consists of the name of the discrete variable
     * prepended by its absolute or relative path in the component hierarchy.
-    * 
+    *
     * If this component is the owner of the discrete variable, the specified
     * path should simply be the name of the discrete variable.
-    * 
+    *
     * @param state State from which to get the value.
     * @param path Path of the discrete variable in the component hierarchy.
     * @return Value of the discrete variable.
@@ -1690,10 +1690,10 @@ public:
 
     /**
     * Based on a specified path, get the value (type T) of a discrete variable.
-    * 
+    *
     * The specified path consists of the name of the discrete variable
     * prepended by its absolute or relative path in the component hierarchy.
-    * 
+    *
     * If this component is the owner of the discrete variable, the specified
     * path should simply be the name of the discrete variable.
     *
@@ -1707,7 +1707,7 @@ public:
     * @throws VariableOwnerNotFoundOnSpecifiedPath if the candidate owner
     * of the variable cannot be found at the specified path.
     * @throws VariableNotFound if the specified variable cannot be found in
-    * the candidate owner. 
+    * the candidate owner.
     * @see Component::resolveVariableNameAndOwner()
     */
     template<class T>
@@ -1724,10 +1724,10 @@ public:
     * abstract value of the discrete variable at a specified path. This method
     * provides a more general interface that is not limited to values of type
     * double.
-    * 
+    *
     * The specified path consists of the name of the discrete variable
     * prepended by its absolute or relative path in the component hierarchy.
-    * 
+    *
     * If this component is the owner of the discrete variable, the specified
     * path should simply be the name of the discrete variable.
     *
@@ -1772,10 +1772,10 @@ public:
 
     /**
     * Based on a specified path, set the value of a discrete variable.
-    * 
+    *
     * The specified path consists of the name of the discrete variable
     * prepended by its absolute or relative path in the component hierarchy.
-    * 
+    *
     * If this component is the owner of the discrete variable, the specified
     * path should simply be the name of the discrete variable.
     *
@@ -1800,10 +1800,10 @@ public:
 
     /**
     * Based on a specified path, set the value (type T) of a discrete variable.
-    * 
+    *
     * The specified path consists of the name of the discrete variable
     * prepended by its absolute or relative path in the component hierarchy.
-    * 
+    *
     * If this component is the owner of the discrete variable, the specified
     * path should simply be the name of the discrete variable.
     *
@@ -1838,10 +1838,10 @@ public:
     *
     * The specified path consists of the name of the discrete variable
     * prepended by its absolute or relative path in the component hierarchy.
-    * 
+    *
     * If this component is the owner of the discrete variable, the specified
     * path should simply be the name of the discrete variable.
-    * 
+    *
     * To obtain the type-specific value of a discrete variable, perform
     * a cast using the template methods provided in class SimTK::Value<T>.
     * When the type is unknown, it can be queried using the
@@ -1864,7 +1864,7 @@ public:
     * ```
     * For convenience, a templated method that implements basic downcasting
     * internally is available. See setDiscreteVariableValue<T>().
-    * 
+    *
     * @param state State from which to get the value.
     * @param path Path of the discrete variable in the component hierarchy.
     * @return Writable reference to the discrete variable's AbstractValue.
@@ -3190,7 +3190,7 @@ protected:
     acceptable values. Changing the value of a model option invalidates
     Stage::Instance and above in the State, meaning all calculations involving
     time, positions, velocity, and forces are invalidated.
-    
+
     The `allocate` flag accommodates modeling options that are allocated
     external to OpenSim (e.g., in Simbody).
     - If `allocate == true`, the modeling option will be allocated normally
@@ -3206,7 +3206,7 @@ protected:
     @param allocate A flag that, if true, specifies that the option should
     be allocated normally. If false, it specifies that normal allocation
     should be bypassed, in which case the derived Component is responsible for
-    index initialization. 
+    index initialization.
     @see Component::initializeModelingOptionIndexes().
     **/
     void addModelingOption(const std::string&  moName,
@@ -3216,7 +3216,7 @@ protected:
     * Get the indexes for a Component's modeling option. This method is
     * intended for derived Components that may need direct access to its
     * underlying Subsystem.
-    * 
+    *
     * Two indexes are needed to properly access a modeling option in a
     * SimTK::State. The first identifies the SimTK::Subystem to which the
     * modeling option belongs; the second is the index into that subsystem
@@ -3301,7 +3301,7 @@ protected:
 
 
     /** Add a system discrete variable that belongs to this Component.
-    
+
     The `allocate` flag accommodates discrete variables that are allocated
     external to OpenSim (e.g., in Simbody).
     - If `allocate == true`, the discrete variable will be allocated normally
@@ -3318,7 +3318,7 @@ protected:
     @param allocate A flag that, if true, specifies that the variable should
     be allocated normally. If false, it specifies that normal allocation
     should be bypassed, in which case the derived Component is responsible for
-    index initialization. 
+    index initialization.
     @see Component::initializeDiscreteVariableIndexes().
     */
     void addDiscreteVariable(const std::string& dvName,
@@ -3348,12 +3348,12 @@ protected:
     * Get the index for a Component's discrete variable. This method is
     * intended for derived Components that may need direct access to its
     * underlying Subsystem.
-    * 
+    *
     * Two indices are needed to properly access a discrete variable. The first
     * identifies the SimTK::Subystem to which the discrete variable belongs;
     * the second is the index into that subsystem for the discrete variable
     * itself. To obtain both indexes, use getDiscreteVariableIndexes().
-    * 
+    *
     * @param name Name of the discrete variable.
     * @return Index of discrete variable.
     */
@@ -3364,7 +3364,7 @@ protected:
      * Get the indexes for a Component's discrete variable. This method is
      * intended for derived Components that may need direct access to its
      * underlying Subsystem.
-     * 
+     *
      * Two indexes are needed to properly access a discrete variable in a
      * SimTK::State. The first identifies the SimTK::Subystem to which the
      * discrete variable belongs; the second is the index into that subsystem
