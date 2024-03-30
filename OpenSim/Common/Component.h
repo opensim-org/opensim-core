@@ -4184,14 +4184,14 @@ private:
 
         // Realization stage at which the SimTK::State is invalidated when a
         // change is made to the value of this discrete variable
-        SimTK::Stage                invalidatesStage;
+        SimTK::Stage                    invalidatesStage;
 
         // Index of the SimTK::Subsystem to which this discrete variable
         // belongs
-        SimTK::SubsystemIndex       ssIndex{-1};
+        SimTK::SubsystemIndex           ssIndex{-1};
 
         // Index of this discrete variable within its SimTK::Subsystem
-        SimTK::DiscreteVariableIndex dvIndex{-1};
+        SimTK::DiscreteVariableIndex    dvIndex{-1};
 
         // Allocate Flag
         // If true, the discrete variable will be allocated normally in the
@@ -4202,7 +4202,7 @@ private:
         // initializing ssIndex and dvIndex in its own overriding
         // implementation of extendRealizeTopology() by calling
         // Component::initializeDiscreteVariableIndexes().
-        bool                        allocate{true};
+        bool                            allocate{true};
     };
 
     /**
