@@ -1977,11 +1977,11 @@ TEST_CASE("Component Interface State Trajectories")
         wrld.setDiscreteVariableValue(s, dvPaths[0], dvX);
         point = i*pointStart;
         wrld.setDiscreteVariableValue<Vec3>(s, dvPaths[1], point);
-        system.realize(s, Stage::Report);
         // Modeling Option
-        moX = 1;
+        moX = i % 2;
         wrld.setModelingOption(s, moPaths[0], moX);
         // Accumulate the simulated state trajectory
+        system.realize(s, Stage::Report);
         simTraj.emplace_back(s);
     }
 
@@ -2012,12 +2012,11 @@ TEST_CASE("Component Interface State Trajectories")
         CHECK(dv0Traj[i] == i*0.5);
         CHECK(dv1Traj[i] == i*pointStart);
         // modeling option
-        CHECK(mo0Traj[i] == 1);
+        CHECK(mo0Traj[i] == (i%2));
     }
 
     // Create a new state trajectory (as though deserializing)
     // Alter the modeling option so we know that its trajectory has been set.
-    // moX is different because it doesn't change during the "simulation".
     wrld.setModelingOption(s, moPaths[0], 2);
     // newTraj must be must the expected size before any set calls.
     SimTK::Array_<SimTK::State> newTraj;
@@ -2052,7 +2051,7 @@ TEST_CASE("Component Interface State Trajectories")
         CHECK(nq3Traj[i] == i*y[3] + 3);
         CHECK(ndv0Traj[i] == i*0.5);
         CHECK(ndv1Traj[i] == i*pointStart);
-        CHECK(nmo0Traj[i] == 1);
+        CHECK(nmo0Traj[i] == (i%2));
     }
 }
 
