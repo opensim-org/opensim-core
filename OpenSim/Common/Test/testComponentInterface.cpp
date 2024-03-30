@@ -1880,7 +1880,8 @@ TEST_CASE("Component Interface Discrete Variables Vec3")
     REQUIRE(dvPaths[1] == "/Bar/point");
 
     // Get the starting value of point
-    // The starting value should be (0.0, 0.1, 0.2). See ~line 403.
+    // The starting value should be (0.0, 0.1, 0.2).
+    // See Bar::extendRealizeTopology().
     Vec3 pointStart(0.0, 0.1, 0.2);
     Vec3 point = theWorld.getDiscreteVariableValue<Vec3>(s, "/Bar/point");
     REQUIRE(point == pointStart);
@@ -1929,7 +1930,6 @@ TEST_CASE("Component Interface State Trajectories")
 
     // Form the q and u vectors
     const Array<std::string>& svPaths = wrld.getStateVariableNames();
-    cout << "svPaths = " << svPaths << endl;
     REQUIRE(svPaths.size() == 4);
     const Vector y = Vector(svPaths.size(), 0.1);
 
@@ -1947,7 +1947,8 @@ TEST_CASE("Component Interface State Trajectories")
     REQUIRE(moPaths[0] == "/internalSub/moX");
 
     // Get the starting value of point
-    // The starting value should be (0.0, 0.1, 1.0). See ~line 403.
+    // The starting value should be (0.0, 0.1, 1.0).
+    // See Bar::extendRealizeTopology().
     Vec3 pointStart = wrld.getDiscreteVariableValue<Vec3>(s, "/Bar/point");
 
     // Run an artificial simulation and record the state trajectory
