@@ -2471,8 +2471,8 @@ public:
         }
 
         // Found. Loop over the input and set the output.
-        SimTK::DiscreteVariableIndex dvIndex = it->second.dvIndex;
         const SimTK::SubsystemIndex ssIndex = it->second.ssIndex;
+        const SimTK::DiscreteVariableIndex dvIndex = it->second.dvIndex;
         for (int i = 0; i < n; ++i) {
             SimTK::Value<T> vVal = SimTK::Value<T>::downcast(
                 input[i].getDiscreteVariable(ssIndex, dvIndex));
@@ -2526,21 +2526,15 @@ public:
         }
 
         // Found. Loop over the input and set the output.
-        // TODO: account for a non-default subsystem. This might occur
-        // when a Simbody subsytem allocates its modeling variables natively,
-        // external to class Component. For an example of how to handle
-        // modeling variables in a more general way, see how discrete variables
-        // are handled. In particular, search on _namedDiscreteVariableInfo
-        // and review the methods that utilize it.
         // TODO: account for variable types other than int. This will
         // likely not be necessary, as modeling options are almost always
-        // type bool or int and an int can be used to represent a bool.
+        // type bool or int and an int can be used to represent either.
         // Again, for an example, see how discrete variables do this.
-        SimTK::DiscreteVariableIndex dvIndex = it->second.index;
-        const SimTK::Subsystem* subsystem = &getDefaultSubsystem();
+        const SimTK::SubsystemIndex ssIndex = it->second.ssIndex;
+        const SimTK::DiscreteVariableIndex moIndex = it->second.moIndex;
         for (int i = 0; i < n; ++i) {
             SimTK::Value<T> vVal = SimTK::Value<T>::downcast(
-                subsystem->getDiscreteVariable(input[i], dvIndex));
+                input[i].getDiscreteVariable(ssIndex, moIndex));
             output.emplace_back(vVal.template getValue<T>());
         }
     }
@@ -2635,8 +2629,8 @@ public:
         }
 
         // Found. Loop over the input and set the output.
-        SimTK::DiscreteVariableIndex dvIndex = it->second.dvIndex;
         const SimTK::SubsystemIndex ssIndex = it->second.ssIndex;
+        const SimTK::DiscreteVariableIndex dvIndex = it->second.dvIndex;
         for (int i = 0; i < ni; ++i) {
             SimTK::Value<T>::downcast(
                 output[i].updDiscreteVariable(ssIndex, dvIndex)).upd()
@@ -2692,11 +2686,11 @@ public:
         }
 
         // Found. Loop over the input and set the output.
-        SimTK::DiscreteVariableIndex moIndex = it->second.index;
-        const SimTK::Subsystem* subsystem = &getDefaultSubsystem();
+        const SimTK::SubsystemIndex ssIndex = it->second.ssIndex;
+        const SimTK::DiscreteVariableIndex moIndex = it->second.moIndex;
         for (int i = 0; i < ni; ++i) {
             SimTK::Value<T>::downcast(
-                subsystem->updDiscreteVariable(output[i], moIndex)).upd()
+                output[i].updDiscreteVariable(ssIndex, moIndex)).upd()
                 = input[i];
         }
     }
@@ -3195,9 +3189,74 @@ protected:
     Subsequent gets will return 0 or 1 and set will only accept 0 and 1 as
     acceptable values. Changing the value of a model option invalidates
     Stage::Instance and above in the State, meaning all calculations involving
-    time, positions, velocity, and forces are invalidated. **/
-    void addModelingOption(const std::string&  optionName,
-                           int                 maxFlagValue) const;
+    time, positions, velocity, and forces are invalidated.
+    
+    The `allocate` flag accommodates modeling options that are allocated
+    external to OpenSim (e.g., in Simbody).
+    - If `allocate == true`, the modeling option will be allocated normally
+    in the base implementation of Component::extendRealizeTopology().
+    - If `allocate == false`, the modeling option is assumed to have been
+    allocated externally, in which case the derived Component (i.e., the
+    wrapping Component) is responsible for initializing the subsystem index
+    and discrete variable index in its own overriding implementation of
+    extendRealizeTopology() by calling initializeModelingOptionIndexes().
+
+    @param moName Name of the modeling option.
+    @param maxFlagValue The maximum allowed value of the modeling option.
+    @param allocate A flag that, if true, specifies that the option should
+    be allocated normally. If false, it specifies that normal allocation
+    should be bypassed, in which case the derived Component is responsible for
+    index initialization. 
+    @see Component::initializeModelingOptionIndexes().
+    **/
+    void addModelingOption(const std::string&  moName,
+        int maxFlagValue, bool allocate = true) const;
+
+    /**
+    * Get the indexes for a Component's modeling option. This method is
+    * intended for derived Components that may need direct access to its
+    * underlying Subsystem.
+    * 
+    * Two indexes are needed to properly access a modeling option in a
+    * SimTK::State. The first identifies the SimTK::Subystem to which the
+    * modeling option belongs; the second is the index into that subsystem
+    * for the modeling option itself.
+    *
+    * @param[in] moName Name of the modeling option.
+    * @param[out] ssIndex Reference that returns the index of the
+    * SimTK::Subsystem to which the modeling options belongs.
+    * @param[out] moIndex Reference that returns the index of the modeling
+    * option within its SimTK::Subsytem.
+    */
+    void
+    getModelingOptionIndexes(const std::string& moName,
+        SimTK::SubsystemIndex& ssIndex,
+        SimTK::DiscreteVariableIndex& moIndex) const;
+
+    /**
+    * Initialize the index and associated subsystem index of a Component's
+    * modeling option.
+    *
+    * This method is intended to be used by a derived Component that possesses
+    * a modeling option that was allocated external to OpenSim. Such a
+    * situation can occur, for example, when a Simbody class is wrapped and
+    * brought into OpenSim.
+    *
+    * To initialize the indexes of an externally allocated modeling option,
+    * the derived Component should implement an overriding
+    * `extendRealizeTopology()` and call this method from within that
+    * overriding method.
+    *
+    * @param moName Name of the modeling option.
+    * @param ssIndex Index of the SimTK::Subsystem to which the modeling
+    * option belongs.
+    * @param moIndex Index of the modeling option within its SimTK::Subystem.
+    * @throws VariableNotFound if the specified modeling option was not
+    * found in this Component.
+    */
+    void initializeModelingOptionIndexes(const std::string& name,
+        SimTK::SubsystemIndex ssIndex,
+        const SimTK::DiscreteVariableIndex& moIndex) const;
 
 
     /** Add a continuous system state variable belonging to this Component,
@@ -3241,18 +3300,26 @@ protected:
     void addStateVariable(Component::StateVariable*  stateVariable) const;
 
 
-    /** Add a system discrete variable that belongs to this Component. The
-    `allocate` flag accommodates discrete states allocated natively by Simbody.
+    /** Add a system discrete variable that belongs to this Component.
     
+    The `allocate` flag accommodates discrete variables that are allocated
+    external to OpenSim (e.g., in Simbody).
+    - If `allocate == true`, the discrete variable will be allocated normally
+    in the base implementation of Component::extendRealizeTopology().
+    - If `allocate == false`, the discrete variable is assumed to have been
+    allocated externally, in which case the derived Component (i.e., the
+    wrapping Component) is responsible for initializing the subsystem index
+    and discrete variable index in its own overriding implementation of
+    extendRealizeTopology() by calling initializeDiscreteVariableIndexes().
+
     @param dvName Name of the discrete variable.
     @param invalidatesStage The lowest SimTK realization stage that should be
     invalidated if the variables value is changed.
     @param allocate A flag that, if true, specifies that the variable should
-    be allocated normally by this Component. If false, the variable is assumed
-    to be allocated externally (e.g., natively in Simbody) and the variable
-    will not be allocated by this Component. In such a case, the variable's
-    index and associated subsystem must be updated during System creation.
-    See Component::initializeDiscreteVariableIndices().
+    be allocated normally. If false, it specifies that normal allocation
+    should be bypassed, in which case the derived Component is responsible for
+    index initialization. 
+    @see Component::initializeDiscreteVariableIndexes().
     */
     void addDiscreteVariable(const std::string& dvName,
         SimTK::Stage invalidatesStage, bool allocate = true) const;
@@ -3303,40 +3370,42 @@ protected:
      * discrete variable belongs; the second is the index into that subsystem
      * for the discrete variable itself.
      *
-     * @param[in] name Name of the discrete variable.
-     * @param[out] ssIndex Reference that returns the index of the subsystem
-     * to which the discrete variable belongs.
+     * @param[in] dvName Name of the discrete variable.
+     * @param[out] ssIndex Reference that returns the index of the
+     * SimTK::Subsystem to which the discrete variable belongs.
      * @param[out] dvIndex Reference that returns the index of the discrete
-     * variable.
+     * variable within its SimTK::Subsytem.
      */
     void
-    getDiscreteVariableIndexes(const std::string& name,
+    getDiscreteVariableIndexes(const std::string& dvName,
         SimTK::SubsystemIndex& ssIndex,
         SimTK::DiscreteVariableIndex& dvIndex) const;
 
     /**
     * Initialize the index and associated subsystem index of a Component's
-    * discrete variable. This method is intended for a Component that possesses
-    * a discrete variable that was allocated external to OpenSim. Such a
-    * situation can occur, for example, when a Simbody subsystem is wrapped
-    * and brought into OpenSim as a Component. To access a discrete variable
-    * owned by the wrapped Component via the Component API, OpenSim must 
-    * know the index of the externally allocated discrete state as well
-    * the index of the subsystem from which it was allocated. Component%s
-    * should call this method from an overriding implementation of
-    * extendRealizeTopology() to initialize these indices. See class
-    * OpenSim::ExponentialContact for an example of how to wrap a Simbody
-    * subsystem and bring its externally allocated discrete variables into
-    * OpenSim.
+    * discrete variable.
     *
-    * @param name Name of the discrete variable.
+    * This method is intended to be used by a derived Component that possesses
+    * a discrete variable that was allocated external to OpenSim. Such a
+    * situation can occur, for example, when a Simbody class is wrapped and
+    * brought into OpenSim.
+    *
+    * To initialize the indexes of an externally allocated discrete variable,
+    * the derived Component should implement an overriding
+    * `extendRealizeTopology()` and call this method from within that
+    * overriding method.
+    *
+    * See OpenSim::ExponentialContact::extendRealizedTopology() for an
+    * example.
+    *
+    * @param dvName Name of the discrete variable.
     * @param ssIndex Index of the SimTK::Subsystem to which the discrete
     * variable belongs.
-    * @param dvIndex Index of the discrete variable. 
-    * @throws VariableNotFound if the specified variable cannot be found in
-    * this Component.
+    * @param dvIndex Index of the discrete variable within its SimTK::Subystem.
+    * @throws VariableNotFound if the specified discrete variable was not
+    * found in this Component.
     */
-    void initializeDiscreteVariableIndexes(const std::string& name,
+    void initializeDiscreteVariableIndexes(const std::string& dvName,
         SimTK::SubsystemIndex ssIndex,
         const SimTK::DiscreteVariableIndex& dvIndex) const;
 
@@ -4023,13 +4092,29 @@ private:
     // integers 0..maxOptionValue. At run time we keep them in a Simbody
     // discrete state variable that invalidates Model stage if changed.
     struct ModelingOptionInfo {
-        ModelingOptionInfo() : maxOptionValue(-1) {}
-        explicit ModelingOptionInfo(int maxOptVal)
-        :   maxOptionValue(maxOptVal) {}
-        // Model
+        ModelingOptionInfo() : maxOptionValue(-1), allocate(true) {}
+        explicit ModelingOptionInfo(int maxOptVal, bool allocate = true)
+        :   maxOptionValue(maxOptVal), allocate(allocate) {}
+
+        // Maximum allowed value of this modeling option
         int                             maxOptionValue;
-        // System
-        SimTK::DiscreteVariableIndex    index;
+
+        // Index of the SimTK::Subsystem to which this modeling option belongs
+        SimTK::SubsystemIndex           ssIndex{-1};
+
+        // Index of this modeling option within its SimTK::Subsystem
+        SimTK::DiscreteVariableIndex    moIndex{-1};
+
+        // Allocate Flag
+        // If true, the modeling option will be allocated normally in the
+        // base implementation of Componente::extendRealizeTopology().
+        // If false, the modeling option is assumed to have been allocated
+        // external to OpenSim (e.g., in Simbody), in which case the derived
+        // Component (i.e., the wrapping Component) is responsible for
+        // initializing ssIndex and moIndex in its own overriding
+        // implementation of extendRealizeTopology() by calling
+        // Component::initializeModelingOptionIndexes().
+        bool                            allocate{true};
     };
 
     // Class for handling state variable added (allocated) by this Component
@@ -4091,7 +4176,7 @@ private:
         int order;
     };
 
-    // Structure to hold related info about discrete variables.
+    // Structure to hold essential info for discrete variables.
     struct DiscreteVariableInfo {
         DiscreteVariableInfo() {}
         explicit DiscreteVariableInfo(SimTK::Stage invalidates,
@@ -4099,33 +4184,25 @@ private:
             invalidatesStage(invalidates), allocate(allocate) {}
 
         // Realization stage at which the SimTK::State is invalidated when a
-        // change is made to the value of this discrete variable.
+        // change is made to the value of this discrete variable
         SimTK::Stage                invalidatesStage;
 
-        // Index of the discrete variable
-        SimTK::DiscreteVariableIndex dvIndex{-1};
-
-        // The data members `subsystem` and `allocate` allow an
-        // OpenSim::Component to expose a discrete state that was allocated by
-        // a class other than OpenSim::Component and from a Subsystem other
-        // than SimTK::DefaultSubsystem.
-
-        // Index of the SimTK::Subsystem to which the discrete state belongs.
-        // It should be initialized by calling
-        // initializeDiscreteVariableIndices() in the most derived
-        // implementation of extendRealizeTopology().
+        // Index of the SimTK::Subsystem to which this discrete variable
+        // belongs
         SimTK::SubsystemIndex       ssIndex{-1};
 
-        // Flag to prevent allocation from happening twice.
-        // If 'true' (default), the discrete variable is allocated normally
-        // in Component::extendRealizeTopology().
-        // If 'false', allocation in Component::extendRealizeTopology() is
-        // skipped and is assumed to occur elsewhere. In this case, the
-        // derived Component is responsible for initializing the index of the
-        // discrete state, as well as its subsystem index. This should be done
-        // by implementing an overriding extendRealizeTopology() method and
-        // calling initializeDiscreteVariableIndex() in that method.
-        // See ExponentialContact::extendRealizeTopology() for an example.
+        // Index of this discrete variable within its SimTK::Subsystem
+        SimTK::DiscreteVariableIndex dvIndex{-1};
+
+        // Allocate Flag
+        // If true, the discrete variable will be allocated normally in the
+        // base implementation of Component::extendRealizeTopology().
+        // If false, the discrete variable is assumed to have been allocated
+        // external to OpenSim (e.g., in Simbody), in which case the derived
+        // Component (i.e., the wrapping Component) is responsible for
+        // initializing ssIndex and dvIndex in its own overriding
+        // implementation of extendRealizeTopology() by calling
+        // Component::initializeDiscreteVariableIndexes().
         bool                        allocate{true};
     };
 

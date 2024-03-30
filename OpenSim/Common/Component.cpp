@@ -516,20 +516,23 @@ void Component::computeStateVariableDerivatives(const SimTK::State& s) const
 }
 
 
-void Component::
-addModelingOption(const std::string& optionName, int maxFlagValue) const
+void
+Component::
+addModelingOption(const std::string& moName,
+    int maxFlagValue, bool allocate) const
 {
     // don't add modeling option if there is another state with the same
     // name for this component
     std::map<std::string, ModelingOptionInfo>::const_iterator it;
-    it = _namedModelingOptionInfo.find(optionName);
+    it = _namedModelingOptionInfo.find(moName);
     if(it != _namedModelingOptionInfo.end())
         throw Exception("Component::addModelingOption: Modeling option '"
-              + optionName + "' already exists.");
+              + moName + "' already exists.");
     // assign a "slot" for a modeling option by name
     // modeling option index will be invalid by default
     // upon allocation during realizeTopology the index will be set
-    _namedModelingOptionInfo[optionName] = ModelingOptionInfo(maxFlagValue);
+    _namedModelingOptionInfo[moName] =
+        ModelingOptionInfo(maxFlagValue, allocate);
 }
 
 void Component::addStateVariable(const std::string&  stateVariableName,
@@ -583,21 +586,21 @@ void Component::addStateVariable(Component::StateVariable*  stateVariable) const
 
 void
 Component::
-addDiscreteVariable(const std::string& discreteVariableName,
+addDiscreteVariable(const std::string& dvName,
     SimTK::Stage invalidatesStage, bool allocate) const
 {
     // Don't add discrete var if there is another discrete variable with the
     // same name for this component.
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
-    it = _namedDiscreteVariableInfo.find(discreteVariableName);
+    it = _namedDiscreteVariableInfo.find(dvName);
     if(it != _namedDiscreteVariableInfo.end()) {
         throw Exception("Component::addDiscreteVariable: discrete variable '" +
-            discreteVariableName + "' already exists.");
+            dvName + "' already exists.");
     }
     // Assign "slots" for the discrete variables by name.
     // Discrete variable indices will be invalid by default.
     // Upon allocation during realizeTopology, the indices will be set.
-    _namedDiscreteVariableInfo[discreteVariableName] =
+    _namedDiscreteVariableInfo[dvName] =
         DiscreteVariableInfo(invalidatesStage, allocate);
 }
 
@@ -653,9 +656,10 @@ getModelingOption(const SimTK::State& s, const std::string& path) const
     it = owner->_namedModelingOptionInfo.find(moName);
 
     if(it != _namedModelingOptionInfo.end()) {
-        SimTK::DiscreteVariableIndex dvIndex = it->second.index;
+        //SimTK::DiscreteVariableIndex moIndex = it->second.moIndex;
         return SimTK::Value<int>::downcast(
-            getDefaultSubsystem().getDiscreteVariable(s, dvIndex)).get();
+            s.getDiscreteVariable(it->second.ssIndex,
+                it->second.moIndex)).get();
     } else {
         OPENSIM_THROW(VariableNotFound, getName(), moName);
         return -1;
@@ -672,13 +676,14 @@ setModelingOption(SimTK::State& s, const std::string& path, int flag) const
     it = owner->_namedModelingOptionInfo.find(moName);
 
     if(it != _namedModelingOptionInfo.end()) {
-        SimTK::DiscreteVariableIndex dvIndex = it->second.index;
+        //SimTK::DiscreteVariableIndex moIndex = it->second.moIndex;
         if(flag > it->second.maxOptionValue){
             OPENSIM_THROW(ModelingOptionMaxExceeded, getName(), moName, flag,
                 it->second.maxOptionValue);
         }
         SimTK::Value<int>::downcast(
-            getDefaultSubsystem().updDiscreteVariable(s, dvIndex)).upd() = flag;
+            s.updDiscreteVariable(it->second.ssIndex,
+                it->second.moIndex)).upd() = flag;
     } else {
         OPENSIM_THROW(VariableNotFound, getName(), moName);
     }
@@ -1489,41 +1494,71 @@ getStateVariableSystemIndex(const std::string& stateVariableName) const
     return yix;
 }
 
+
+void
+Component::
+getModelingOptionIndexes(const std::string& moName,
+    SimTK::SubsystemIndex& ssIndex,
+    SimTK::DiscreteVariableIndex& moIndex) const
+{
+    std::map<std::string, ModelingOptionInfo>::const_iterator it;
+    it = _namedModelingOptionInfo.find(moName);
+    ssIndex = it->second.ssIndex;
+    moIndex = it->second.moIndex;
+}
+
+void
+Component::
+initializeModelingOptionIndexes(const std::string& moName,
+    const SimTK::SubsystemIndex ssIndex,
+    const SimTK::DiscreteVariableIndex& moIndex) const
+{
+    std::map<std::string, ModelingOptionInfo>::iterator it;
+    it = _namedModelingOptionInfo.find(moName);
+    if (it == _namedModelingOptionInfo.end()) {
+        OPENSIM_THROW(VariableNotFound, getName(), moName);
+    }
+    it->second.ssIndex = ssIndex;
+    it->second.moIndex = moIndex;
+}
+
+
 const SimTK::DiscreteVariableIndex
 Component::
-getDiscreteVariableIndex(const std::string& name) const
+getDiscreteVariableIndex(const std::string& dvName) const
 {
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
-    it = _namedDiscreteVariableInfo.find(name);
+    it = _namedDiscreteVariableInfo.find(dvName);
     return it->second.dvIndex;
 }
 
 void
 Component::
-getDiscreteVariableIndexes(const std::string& name,
+getDiscreteVariableIndexes(const std::string& dvName,
     SimTK::SubsystemIndex& ssIndex,
     SimTK::DiscreteVariableIndex& dvIndex) const
 {
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
-    it = _namedDiscreteVariableInfo.find(name);
+    it = _namedDiscreteVariableInfo.find(dvName);
     ssIndex = it->second.ssIndex;
     dvIndex = it->second.dvIndex;
 }
 
 void
 Component::
-initializeDiscreteVariableIndexes(const std::string& name,
+initializeDiscreteVariableIndexes(const std::string& dvName,
     const SimTK::SubsystemIndex ssIndex,
     const SimTK::DiscreteVariableIndex& dvIndex) const
 {
     std::map<std::string, DiscreteVariableInfo>::iterator it;
-    it = _namedDiscreteVariableInfo.find(name);
+    it = _namedDiscreteVariableInfo.find(dvName);
     if (it == _namedDiscreteVariableInfo.end()) {
-        OPENSIM_THROW(VariableNotFound, getName(), name);
+        OPENSIM_THROW(VariableNotFound, getName(), dvName);
     }
     it->second.ssIndex = ssIndex;
     it->second.dvIndex = dvIndex;
 }
+
 
 
 Array<std::string> Component::
@@ -1556,11 +1591,13 @@ void Component::extendRealizeTopology(SimTK::State& s) const
 {
     const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
 
-    // Allocate Modeling Option
+    // Allocate Modeling Options
     for (auto& kv : _namedModelingOptionInfo) {
         ModelingOptionInfo& moi = kv.second;
-        moi.index = subSys.allocateDiscreteVariable(
-                s, SimTK::Stage::Instance, new SimTK::Value<int>(0));
+        if (!moi.allocate) continue;
+        moi.ssIndex = subSys.getMySubsystemIndex();
+        moi.moIndex = subSys.allocateDiscreteVariable(
+            s, SimTK::Stage::Instance, new SimTK::Value<int>(0));
     }
 
     // Allocate Continuous State Variables
