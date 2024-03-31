@@ -1530,6 +1530,9 @@ getDiscreteVariableIndex(const std::string& dvName) const
 {
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(dvName);
+    if (it == _namedDiscreteVariableInfo.end()) {
+        OPENSIM_THROW(VariableNotFound, getName(), dvName);
+    }
     return it->second.dvIndex;
 }
 

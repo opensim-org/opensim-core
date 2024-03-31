@@ -3227,6 +3227,8 @@ protected:
     * SimTK::Subsystem to which the modeling options belongs.
     * @param[out] moIndex Reference that returns the index of the modeling
     * option within its SimTK::Subsytem.
+    * @throws VariableNotFound if the specified modeling option is not found
+    * in this Component.
     */
     void
     getModelingOptionIndexes(const std::string& moName,
@@ -3356,11 +3358,13 @@ protected:
     * the second is the index into that subsystem for the discrete variable
     * itself. To obtain both indexes, use getDiscreteVariableIndexes().
     *
-    * @param name Name of the discrete variable.
+    * @param dvName Name of the discrete variable.
     * @return Index of discrete variable.
+    * @throws VariableNotFound if the specified discrete variable is not foun
+    * in this Component.
     */
     const SimTK::DiscreteVariableIndex
-    getDiscreteVariableIndex(const std::string& name) const;
+    getDiscreteVariableIndex(const std::string& dvName) const;
 
    /**
      * Get the indexes for a Component's discrete variable. This method is
@@ -3377,6 +3381,8 @@ protected:
      * SimTK::Subsystem to which the discrete variable belongs.
      * @param[out] dvIndex Reference that returns the index of the discrete
      * variable within its SimTK::Subsytem.
+     * @throws VariableNotFound if the specified discrete variable is not foun
+     * in this Component.
      */
     void
     getDiscreteVariableIndexes(const std::string& dvName,
