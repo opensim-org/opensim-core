@@ -1501,6 +1501,9 @@ getModelingOptionIndexes(const std::string& moName,
 {
     std::map<std::string, ModelingOptionInfo>::const_iterator it;
     it = _namedModelingOptionInfo.find(moName);
+    if (it == _namedModelingOptionInfo.end()) {
+        OPENSIM_THROW(VariableNotFound, getName(), moName);
+    }
     ssIndex = it->second.ssIndex;
     moIndex = it->second.moIndex;
 }
@@ -1538,6 +1541,9 @@ getDiscreteVariableIndexes(const std::string& dvName,
 {
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(dvName);
+    if (it == _namedDiscreteVariableInfo.end()) {
+        OPENSIM_THROW(VariableNotFound, getName(), dvName);
+    }
     ssIndex = it->second.ssIndex;
     dvIndex = it->second.dvIndex;
 }
