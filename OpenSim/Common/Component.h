@@ -3360,7 +3360,7 @@ protected:
     *
     * @param dvName Name of the discrete variable.
     * @return Index of discrete variable.
-    * @throws VariableNotFound if the specified discrete variable is not foun
+    * @throws VariableNotFound if the specified discrete variable is not found
     * in this Component.
     */
     const SimTK::DiscreteVariableIndex
@@ -3381,7 +3381,7 @@ protected:
      * SimTK::Subsystem to which the discrete variable belongs.
      * @param[out] dvIndex Reference that returns the index of the discrete
      * variable within its SimTK::Subsytem.
-     * @throws VariableNotFound if the specified discrete variable is not foun
+     * @throws VariableNotFound if the specified discrete variable is not found
      * in this Component.
      */
     void
