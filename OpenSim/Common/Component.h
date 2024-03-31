@@ -169,7 +169,7 @@ public:
         const std::string& varName) :
         Exception(file, line, methodName) {
         std::string msg = componentName + "." + methodName;
-        msg += "(): discrete variable or modeling option '" +
+        msg += "(): discrete variable or modeling option '";
         msg += varName + "' not found.";
         addMessage(msg);
     }
