@@ -383,42 +383,67 @@ protected:
         bool hidden = true;
         addStateVariable("hiddenStateVar", SimTK::Stage::Dynamics, hidden);
 
-        // Add a discrete variable (dv) of type Vec3 as though it were
-        // allocated natively in Simbody. This will allow testing the ability
-        // to accomodate a dv that was allocated from a different subsystem
-        // than the default subsystem and to access a dv that is not type
-        // double in OpenSim.
-        // The following call puts the dv into the map used to contain all
-        // dv's exposed in OpenSim. When Stage::Topology is realized, the dv
-        // is allocated in class Bar's override of extendRealizeTopology().
-        // See below.
+        // Add a modeling option (mo) and a discrete variable (dv) as though
+        // they were allocated natively in Simbody.
+        // This will allow testing the ability to accomodate a mo and dv that
+        // were allocated from subsystem different than the default subsystem
+        // and to access a dv that is not type double.
+        // The following calls put the mo and dv into the maps used to contain
+        // all mo's and dv's exposed in OpenSim. When Stage::Topology is
+        // realized, they will allocated in class Bar's override of
+        // extendRealizeTopology(). See below.
         bool allocate = false;
+        int maxFlagValue = 1;
         addDiscreteVariable("point", Stage::Position, allocate);
+        addModelingOption("moY", maxFlagValue, allocate);
     }
 
     // Manually allocate and update the index and subsystem for any
-    // non-double discrete variables
+    // a discrete variable and a modeling option as though they were
+    // natively allocated in Simbody and brought into OpenSim.
     void extendRealizeTopology(SimTK::State& state) const override {
         Super::extendRealizeTopology(state);
 
-        // Starting value of the reference point.
-        Vec3 point(0.0, 0.1, 0.2);
-
-        // Manually allocate from the GeneralForceSybsystem, the same
-        // subsystem in which the LinearSpring resides.
-        // If the discrete variables were of a native Simbody object,
-        // the manual allocation done here would have already been done
-        // in Simbody and would not be needed.
         GeneralForceSubsystem& fsub = world->updForceSubsystem();
-        SimTK::DiscreteVariableIndex index =
+
+        // Discrete Variable Initialization
+        std::string dvName = "point";
+        Vec3 point(0.0, 0.1, 0.2);
+        SimTK::DiscreteVariableIndex dvIndex =
             fsub.allocateDiscreteVariable(state, Stage::Dynamics,
                 new Value<Vec3>(point));
+        initializeDiscreteVariableIndexes(dvName,
+            fsub.getMySubsystemIndex(), dvIndex);
 
-        // Update the discrete variable indices.
-        // This is needed because the allocation was not done in
-        // addDiscreteVariable() and was not from the default subsystem.
-        initializeDiscreteVariableIndexes("point",
-            fsub.getMySubsystemIndex(), index);
+        // Check the discrete variable indexes
+        SimTK::SubsystemIndex ssIndexTestDV;
+        SimTK::DiscreteVariableIndex dvIndexTest;
+        CHECK_THROWS_AS(
+            getDiscreteVariableIndexes("typo", ssIndexTestDV, dvIndexTest),
+            VariableNotFound);
+        double value;
+        getDiscreteVariableIndexes(dvName, ssIndexTestDV, dvIndexTest);
+        REQUIRE(ssIndexTestDV == fsub.getMySubsystemIndex());
+        REQUIRE(dvIndexTest == dvIndex);
+
+        // Modeling Option Initialization
+        std::string moName = "moY";
+        int moVal{0};
+        SimTK::DiscreteVariableIndex moIndex =
+            fsub.allocateDiscreteVariable(state, Stage::Dynamics,
+                new Value<int>(moVal));
+        initializeModelingOptionIndexes(moName,
+            fsub.getMySubsystemIndex(), moIndex);
+
+        // Check the modeling option indexes
+        SimTK::SubsystemIndex ssIndexTestMO;
+        SimTK::DiscreteVariableIndex moIndexTest;
+        getModelingOptionIndexes(moName, ssIndexTestMO, moIndexTest);
+        CHECK_THROWS_AS(
+            getModelingOptionIndexes("typo", ssIndexTestMO, moIndexTest),
+            VariableNotFound);
+        REQUIRE(ssIndexTestMO == fsub.getMySubsystemIndex());
+        REQUIRE(moIndexTest == moIndex);
     }
 
     void computeStateVariableDerivatives(const SimTK::State& state) const override {
@@ -1949,8 +1974,9 @@ TEST_CASE("Component Interface State Trajectories")
     // Get the paths of all modeling moptions under "wrld"
     const OpenSim::Array<std::string>& moPaths =
         wrld.getModelingOptionNames();
-    REQUIRE(moPaths.size() == 1);
+    REQUIRE(moPaths.size() == 2);
     REQUIRE(moPaths[0] == "/internalSub/moX");
+    REQUIRE(moPaths[1] == "/Bar/moY");
 
     // Get the starting value of point
     // The starting value should be (0.0, 0.1, 1.0).
@@ -1961,7 +1987,7 @@ TEST_CASE("Component Interface State Trajectories")
     SimTK::Array_<SimTK::State> simTraj;
     int nsteps{11};
     simTraj.reserve(nsteps);
-    int moX{0};
+    int moX{0}, moY{0};
     double dvX{0.0};
     Vec3 point(0.0);
     for (int i = 0; i < nsteps; ++i){
@@ -1977,9 +2003,11 @@ TEST_CASE("Component Interface State Trajectories")
         wrld.setDiscreteVariableValue(s, dvPaths[0], dvX);
         point = i*pointStart;
         wrld.setDiscreteVariableValue<Vec3>(s, dvPaths[1], point);
-        // Modeling Option
+        // Modeling Options
         moX = i % 2;
         wrld.setModelingOption(s, moPaths[0], moX);
+        moY = (i+1) % 2;
+        wrld.setModelingOption(s, moPaths[1], moY);
         // Accumulate the simulated state trajectory
         system.realize(s, Stage::Report);
         simTraj.emplace_back(s);
@@ -1997,9 +2025,11 @@ TEST_CASE("Component Interface State Trajectories")
     SimTK::Array_<Vec3> dv1Traj;
     wrld.getDiscreteVariableTrajectory<double>(dvPaths[0], simTraj, dv0Traj);
     wrld.getDiscreteVariableTrajectory<Vec3>(dvPaths[1], simTraj, dv1Traj);
-    // modeling option
+    // modeling options
     SimTK::Array_<int> mo0Traj;
     wrld.getModelingOptionTrajectory<int>(moPaths[0], simTraj, mo0Traj);
+    SimTK::Array_<int> mo1Traj;
+    wrld.getModelingOptionTrajectory<int>(moPaths[1], simTraj, mo1Traj);
 
     // Check the individual variable trajectories
     for (int i = 0; i < nsteps; ++i){
@@ -2011,13 +2041,12 @@ TEST_CASE("Component Interface State Trajectories")
         // discrete variables
         CHECK(dv0Traj[i] == i*0.5);
         CHECK(dv1Traj[i] == i*pointStart);
-        // modeling option
+        // modeling options
         CHECK(mo0Traj[i] == (i%2));
+        CHECK(mo1Traj[i] == ((i+1)%2));
     }
 
     // Create a new state trajectory (as though deserializing)
-    // Alter the modeling option so we know that its trajectory has been set.
-    wrld.setModelingOption(s, moPaths[0], 2);
     // newTraj must be must the expected size before any set calls.
     SimTK::Array_<SimTK::State> newTraj;
     for (int i = 0; i < nsteps; ++i) newTraj.emplace_back(s);
@@ -2031,12 +2060,14 @@ TEST_CASE("Component Interface State Trajectories")
     wrld.setDiscreteVariableTrajectory<Vec3>(dvPaths[1], dv1Traj, newTraj);
     // modeling option
     wrld.setModelingOptionTrajectory<int>(moPaths[0], mo0Traj, newTraj);
+    wrld.setModelingOptionTrajectory<int>(moPaths[1], mo1Traj, newTraj);
 
     // Check the new state trajectory
     SimTK::Array_<double> nq0Traj, nq1Traj, nq2Traj, nq3Traj;
     SimTK::Array_<double> ndv0Traj;
     SimTK::Array_<Vec3> ndv1Traj;
     SimTK::Array_<int> nmo0Traj;
+    SimTK::Array_<int> nmo1Traj;
     wrld.getStateVariableTrajectory<double>(svPaths[0], newTraj, nq0Traj);
     wrld.getStateVariableTrajectory<double>(svPaths[1], newTraj, nq1Traj);
     wrld.getStateVariableTrajectory<double>(svPaths[2], newTraj, nq2Traj);
@@ -2044,6 +2075,7 @@ TEST_CASE("Component Interface State Trajectories")
     wrld.getDiscreteVariableTrajectory<double>(dvPaths[0], newTraj, ndv0Traj);
     wrld.getDiscreteVariableTrajectory<Vec3>(dvPaths[1], newTraj, ndv1Traj);
     wrld.getModelingOptionTrajectory<int>(moPaths[0], newTraj, nmo0Traj);
+    wrld.getModelingOptionTrajectory<int>(moPaths[1], newTraj, nmo1Traj);
     for (int i = 0; i < nsteps; ++i){
         CHECK(nq0Traj[i] == i*y[0] + 0);
         CHECK(nq1Traj[i] == i*y[1] + 1);
@@ -2052,6 +2084,7 @@ TEST_CASE("Component Interface State Trajectories")
         CHECK(ndv0Traj[i] == i*0.5);
         CHECK(ndv1Traj[i] == i*pointStart);
         CHECK(nmo0Traj[i] == (i%2));
+        CHECK(nmo1Traj[i] == ((i+1)%2));
     }
 }
 
