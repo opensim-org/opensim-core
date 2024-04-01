@@ -1501,9 +1501,8 @@ getModelingOptionIndexes(const std::string& moName,
 {
     std::map<std::string, ModelingOptionInfo>::const_iterator it;
     it = _namedModelingOptionInfo.find(moName);
-    if (it == _namedModelingOptionInfo.end()) {
-        OPENSIM_THROW(VariableNotFound, getName(), moName);
-    }
+    OPENSIM_THROW_IF(it == _namedModelingOptionInfo.end(),
+        VariableNotFound, getName(), moName);
     ssIndex = it->second.ssIndex;
     moIndex = it->second.moIndex;
 }
@@ -1516,9 +1515,8 @@ initializeModelingOptionIndexes(const std::string& moName,
 {
     std::map<std::string, ModelingOptionInfo>::iterator it;
     it = _namedModelingOptionInfo.find(moName);
-    if (it == _namedModelingOptionInfo.end()) {
-        OPENSIM_THROW(VariableNotFound, getName(), moName);
-    }
+    OPENSIM_THROW_IF(it == _namedModelingOptionInfo.end(),
+        VariableNotFound, getName(), moName);
     it->second.ssIndex = ssIndex;
     it->second.moIndex = moIndex;
 }
@@ -1530,9 +1528,8 @@ getDiscreteVariableIndex(const std::string& dvName) const
 {
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(dvName);
-    if (it == _namedDiscreteVariableInfo.end()) {
-        OPENSIM_THROW(VariableNotFound, getName(), dvName);
-    }
+    OPENSIM_THROW_IF(it == _namedDiscreteVariableInfo.end(),
+        VariableNotFound, getName(), dvName);
     return it->second.dvIndex;
 }
 
@@ -1544,9 +1541,8 @@ getDiscreteVariableIndexes(const std::string& dvName,
 {
     std::map<std::string, DiscreteVariableInfo>::const_iterator it;
     it = _namedDiscreteVariableInfo.find(dvName);
-    if (it == _namedDiscreteVariableInfo.end()) {
-        OPENSIM_THROW(VariableNotFound, getName(), dvName);
-    }
+    OPENSIM_THROW_IF(it == _namedDiscreteVariableInfo.end(),
+        VariableNotFound, getName(), dvName);
     ssIndex = it->second.ssIndex;
     dvIndex = it->second.dvIndex;
 }
@@ -1559,9 +1555,8 @@ initializeDiscreteVariableIndexes(const std::string& dvName,
 {
     std::map<std::string, DiscreteVariableInfo>::iterator it;
     it = _namedDiscreteVariableInfo.find(dvName);
-    if (it == _namedDiscreteVariableInfo.end()) {
-        OPENSIM_THROW(VariableNotFound, getName(), dvName);
-    }
+    OPENSIM_THROW_IF(it == _namedDiscreteVariableInfo.end(),
+        VariableNotFound, getName(), dvName);
     it->second.ssIndex = ssIndex;
     it->second.dvIndex = dvIndex;
 }

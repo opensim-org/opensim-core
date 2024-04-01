@@ -3356,7 +3356,11 @@ protected:
     * Two indices are needed to properly access a discrete variable. The first
     * identifies the SimTK::Subystem to which the discrete variable belongs;
     * the second is the index into that subsystem for the discrete variable
-    * itself. To obtain both indexes, use getDiscreteVariableIndexes().
+    * itself.
+    *
+    * If you are unsure about which Subystem a discrete variable belongs to,
+    * use getDiscreteVariableIndexes() to obtain the SimTK::SubsytemIndex
+    * and the SimTK::DiscreteVariableIndex.
     *
     * @param dvName Name of the discrete variable.
     * @return Index of discrete variable.

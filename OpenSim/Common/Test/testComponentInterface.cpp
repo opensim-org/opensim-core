@@ -398,7 +398,7 @@ protected:
         addModelingOption("moY", maxFlagValue, allocate);
     }
 
-    // Manually allocate and update the index and subsystem for any
+    // Manually allocate and update the index and subsystem for
     // a discrete variable and a modeling option as though they were
     // natively allocated in Simbody and brought into OpenSim.
     void extendRealizeTopology(SimTK::State& state) const override {
