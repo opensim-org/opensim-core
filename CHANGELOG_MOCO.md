@@ -1,6 +1,18 @@
 Moco Change Log
 ===============
 
+1.3.1
+-----
+- 2024-04-01: Added `MocoGeneralizedForceTrackingGoal` to enable joint moment tracking
+              in `MocoProblem`s, and added the utility `calcGeneralizeForces()` to 
+              `MocoStudy` for computing joint moments from a `MocoTrajectory`. 
+              Added a sub-example to exampleMocoTrack (C++, Python, and Matlab) to 
+              feature this new functionality.
+
+- 2024-02-13: Models with `PrescribedController`s are now supported by Moco. Controls 
+              for actuators controlled by `PrescribedController`s are now excluded from 
+              the optimization problem.
+
 1.3.0
 -----
 - 2023-11-22: `exampleMocoTrack` and `exampleMocoInverse` (C++ and scripting examples) 

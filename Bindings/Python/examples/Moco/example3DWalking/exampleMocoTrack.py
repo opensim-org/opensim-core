@@ -315,7 +315,7 @@ def muscleDrivenJointMomentTracking():
 
 
 # Solve the torque-driven marker tracking problem.
-# torqueDrivenMarkerTracking()
+torqueDrivenMarkerTracking()
 
 # Solve the muscle-driven state tracking problem.
 muscleDrivenStateTracking()
