@@ -195,11 +195,8 @@ void muscleDrivenStateTracking() {
     solver.set_optim_constraint_tolerance(1e-4);
 
     // Solve!
-    MocoSolution solution = study.solve().unseal();
+    MocoSolution solution = study.solve();
     solution.write("exampleMocoTrack_state_tracking_solution.sto");
-
-    // Save the model.
-    model.print("exampleMocoTrack_model.osim");
 
     // Visualize the solution.
     study.visualize(solution);
@@ -222,10 +219,9 @@ void muscleDrivenJointMomentTracking() {
             "subject_walk_scaled_FunctionBasedPathSet.xml"));
     track.setModel(modelProcessor);
 
-    // We will still track the states reference, but this time we will use a 
-    // lower tracking weight to let the joint moment tracking goal dominate.
+    // We will still track the coordinates trajectory, but with a lower weight.
     track.setStatesReference(TableProcessor("coordinates.sto"));
-    track.set_states_global_tracking_weight(1e-2);
+    track.set_states_global_tracking_weight(0.1);
     track.set_allow_unused_references(true);
     track.set_track_reference_position_derivatives(true);
 
@@ -235,8 +231,6 @@ void muscleDrivenJointMomentTracking() {
     track.set_mesh_interval(0.02);
 
     // Set the control effort weights.
-    track.set_control_effort_weight(0.1);
-
     MocoWeightSet controlsWeightSet;
     Model model = modelProcessor.process();
     for (const auto& coordAct : model.getComponentList<CoordinateActuator>()) {
@@ -245,13 +239,15 @@ void muscleDrivenJointMomentTracking() {
             controlsWeightSet.cloneAndAppend({coordPath, 10});
         }
     }
+
+    track.set_control_effort_weight(0.1);
     track.set_controls_weight_set(controlsWeightSet);
 
     // Get the underlying MocoStudy.
     MocoStudy study = track.initialize();
     MocoProblem& problem = study.updProblem();
 
-    // Constraint the states and controls to be periodic.
+    // Constrain the states and controls to be periodic.
     auto* periodicityGoal = problem.addGoal<MocoPeriodicityGoal>("periodicity");
     model.initSystem();
     for (const auto& coord : model.getComponentList<Coordinate>()) {
@@ -271,36 +267,55 @@ void muscleDrivenJointMomentTracking() {
     }
 
     // Add a joint moment tracking goal to the problem.
-    auto* genForceTracking = 
+    auto* jointMomentTracking = 
         problem.addGoal<MocoGeneralizedForceTrackingGoal>(
             "joint_moment_tracking", 1e-2);
-    TableProcessor generalizedForcesRef = 
+
+    // Set the reference joint moments from an inverse dynamics solution. The 
+    // TableOperators convert the column labels from the InverseDynamicsTool 
+    // format to the one expected by the MocoGeneralizedForceTrackingGoal
+    // (i.e. "ankle_angle_r_moment" -> "/jointset/ankle_r/ankle_angle_r") and
+    // low-pass filter the data at 10 Hz.
+    TableProcessor jointMomentRef = 
         TableProcessor("inverse_dynamics.sto") |
         TabOpUpdateInverseDynamicsLabelsToCoordinatePaths() |
         TabOpLowPassFilter(10);
-    genForceTracking->setReference(generalizedForcesRef);
-    genForceTracking->setForcePaths({".*externalloads.*"});
-    genForceTracking->setAllowUnusedReferences(true);
-    genForceTracking->setNormalizeTrackingError(true);
+    jointMomentTracking->setReference(jointMomentRef);
+
+    // Set the force paths that will be applied to the model to compute the
+    // generalized forces. Usually these are the external loads and actuators 
+    // (e.g., muscles) should be excluded, but any model force can be included 
+    // or excluded. Gravitational force is applied by default.
+    // Regular expression are supported when setting the force paths.
+    jointMomentTracking->setForcePaths({".*externalloads.*"});
+
+    // Allow unused columns in the reference data.
+    jointMomentTracking->setAllowUnusedReferences(true);
+
+    // Normalize the tracking error for each generalized for by the maximum 
+    // absolute value in the reference data for that generalized force.
+    jointMomentTracking->setNormalizeTrackingError(true);
+
     // Ignore coordinates that are locked, prescribed, or coupled to other
     // coordinates via CoordinateCouplerConstraints (true by default).
-    genForceTracking->setIgnoreConstrainedCoordinates(true);
+    jointMomentTracking->setIgnoreConstrainedCoordinates(true);
     for (const auto& coordinate : model.getComponentList<Coordinate>()) {
         const auto& coordPath = coordinate.getAbsolutePathString();
         // Don't track generalized forces associated with pelvis residuals.
         if (coordPath.find("pelvis") != std::string::npos) {
-            genForceTracking->setWeightForCoordinate(coordPath, 0);
+            jointMomentTracking->setWeightForCoordinate(coordPath, 0);
         }
         // Encourage better tracking of the ankle joint moments.
         if (coordPath.find("ankle") != std::string::npos) {
-            genForceTracking->setWeightForCoordinate(coordPath, 50);
+            jointMomentTracking->setWeightForCoordinate(coordPath, 50);
         }
     }
     
-    // Update the solver tolerances.
+    // Update the solver problem and tolerances.
     auto& solver = study.updSolver<MocoCasADiSolver>();
     solver.set_optim_convergence_tolerance(1e-3);
     solver.set_optim_constraint_tolerance(1e-4);
+    solver.resetProblem(problem);
 
     // Set the guess, if available.
     if (IO::FileExists("exampleMocoTrack_state_tracking_solution.sto")) {
@@ -308,16 +323,16 @@ void muscleDrivenJointMomentTracking() {
     }
 
     // Solve!
-    MocoSolution solution = study.solve().unseal();
+    MocoSolution solution = study.solve();
     solution.write("exampleMocoTrack_joint_moment_tracking_solution.sto");
+
+    // Save the model to a file.
+    model.print("exampleMocoTrack_model.osim");
 
     // Compute the joint moments and write them to a file.
     TimeSeriesTable jointMoments = study.calcGeneralizedForces(solution, 
             {".*externalloads.*"});
     STOFileAdapter::write(jointMoments, "exampleMocoTrack_joint_moments.sto");
-
-    // Save the model.
-    model.print("exampleMocoTrack_model.osim");
 
     // Visualize the solution.
     study.visualize(solution);
@@ -329,7 +344,7 @@ int main() {
     // torqueDrivenMarkerTracking();
 
     // Solve the muscle-driven state tracking problem.
-    // muscleDrivenStateTracking();
+    muscleDrivenStateTracking();
 
     // Solve the muscle-driven joint moment tracking problem.
     muscleDrivenJointMomentTracking();

@@ -22,6 +22,8 @@
 %    to solve a torque-driven marker tracking problem. 
 %  - The second problem shows how to customize a muscle-driven state tracking 
 %    problem using more advanced features of the tool interface.
+%  - The third problem demonstrates how to solve a muscle-driven joint moment
+%    tracking problem.
 %
 % This example also shows how to use the osimMocoTrajectoryReport.m utility to
 % create a PDF report of plots of a solution.
@@ -35,6 +37,9 @@ torqueDrivenMarkerTracking();
 
 % Solve the muscle-driven state tracking problem.
 muscleDrivenStateTracking();
+
+% Solve the muscle-driven joint moment tracking problem.
+muscleDrivenJointMomentTracking();
 
 end
 
@@ -191,17 +196,178 @@ for i = 0:forceSet.getSize()-1
    end
 end
 
-% Constrain the muscle activations at the initial time point to equal
-% the initial muscle excitation value.
-problem.addGoal(MocoInitialActivationGoal('initial_activation'));
+% Constrain the states and controls to be periodic.
+periodicityGoal = MocoPeriodicityGoal("periodicity");
+for i = 1:model.getNumStateVariables()
+    currentStateName = string(model.getStateVariableNames().getitem(i-1));
+    if (~contains(currentStateName,'pelvis_tx/value'))
+        symmetryGoal.addStatePair(MocoPeriodicityGoalPair(currentStateName));
+    end
+end
+
+forceSet = model.getForceSet();
+for i = 0:forceSet.getSize()-1
+    forcePath = forceSet.get(i).getAbsolutePathString();
+    symmetryGoal.addControlPair(MocoPeriodicityGoalPair(forcePath));
+end
+
+problem.addGoal(periodicityGoal);
 
 % Update the solver tolerances.
 solver = MocoCasADiSolver.safeDownCast(study.updSolver());
 solver.set_optim_convergence_tolerance(1e-3);
 solver.set_optim_constraint_tolerance(1e-4);
+solver.resetProblem(problem);
 
-% Solve and visualize.
+% Solve!
 solution = study.solve();
+solution.write("exampleMocoTrack_state_tracking_solution.sto");
+
+% Visualize the solution.
+study.visualize(solution);
+
+end
+
+function muscleDrivenJointMomentTracking()
+
+import org.opensim.modeling.*;
+
+% Create and name an instance of the MocoTrack tool. 
+track = MocoTrack();
+track.setName("muscle_driven_joint_moment_tracking");
+
+% Construct a ModelProcessor and set it on the tool.
+modelProcessor = ModelProcessor("subject_walk_scaled.osim");
+modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+modelProcessor.append(ModOpIgnoreTendonCompliance());
+modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
+modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
+modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
+modelProcessor.append(ModOpReplacePathsWithFunctionBasedPaths(...
+        "subject_walk_scaled_FunctionBasedPathSet.xml"));
+track.setModel(modelProcessor);
+
+% We will still track the coordinates trajectory, but with a lower weight.
+track.setStatesReference(TableProcessor("coordinates.sto"));
+track.set_states_global_tracking_weight(0.1);
+track.set_allow_unused_references(true);
+track.set_track_reference_position_derivatives(true);
+
+% Initial time, final time, and mesh interval.
+track.set_initial_time(0.48);
+track.set_final_time(1.61);
+track.set_mesh_interval(0.02);
+
+% Set the control effort weights.
+controlsWeightSet = MocoWeightSet();
+model = modelProcessor.process();
+model.initSystem();
+forceSet = model.getForceSet();
+for i = 0:forceSet.getSize()-1
+    forcePath = forceSet.get(i).getAbsolutePathString();
+    if contains(string(forcePath), "pelvis")
+        controlsWeightSet.cloneAndAppend(MocoWeight(forcePath, 10));
+    end
+end
+
+track.set_control_effort_weight(0.1);
+track.set_controls_weight_set(controlsWeightSet);
+    
+% Get the underlying MocoStudy.
+study = track.initialize();
+problem = study.updProblem();
+
+% Constrain the states and controls to be periodic.
+periodicityGoal = MocoPeriodicityGoal("periodicity");
+for i = 0:model.getNumStateVariables()-1
+    currentStateName = string(model.getStateVariableNames().getitem(i));
+    if (~contains(currentStateName,"pelvis_tx/value"))
+        periodicityGoal.addStatePair(MocoPeriodicityGoalPair(currentStateName));
+    end
+end
+
+forceSet = model.getForceSet();
+for i = 0:forceSet.getSize()-1
+    forcePath = forceSet.get(i).getAbsolutePathString();
+    periodicityGoal.addControlPair(MocoPeriodicityGoalPair(forcePath));
+end
+
+problem.addGoal(periodicityGoal);
+
+% Add a joint moment tracking goal to the problem.
+jointMomentTracking = MocoGeneralizedForceTrackingGoal(...
+        "joint_moment_tracking", 1e-2);
+
+% Set the reference joint moments from an inverse dynamics solution. The 
+% TableOperators convert the column labels from the InverseDynamicsTool 
+% format to the one expected by the MocoGeneralizedForceTrackingGoal
+% (i.e. "ankle_angle_r_moment" -> "/jointset/ankle_r/ankle_angle_r") and
+% low-pass filter the data at 10 Hz.
+jointMomentRef = TableProcessor("inverse_dynamics.sto");
+jointMomentRef.append(TabOpUpdateInverseDynamicsLabelsToCoordinatePaths());
+jointMomentRef.append(TabOpLowPassFilter(10));
+jointMomentTracking.setReference(jointMomentRef);
+
+% Set the force paths that will be applied to the model to compute the
+% generalized forces. Usually these are the external loads and actuators 
+% (e.g., muscles) should be excluded, but any model force can be included 
+% or excluded. Gravitational force is applied by default.
+% Regular expression are supported when setting the force paths.
+% Regular expression are supported when setting the force paths.
+forcePaths = StdVectorString();
+forcePaths.add(".*externalloads.*");
+jointMomentTracking.setForcePaths(forcePaths);
+
+% Allow unused columns in the reference data.
+jointMomentTracking.setAllowUnusedReferences(true);
+
+% Normalize the tracking error for each generalized for by the maximum 
+% absolute value in the reference data for that generalized force.
+jointMomentTracking.setNormalizeTrackingError(true);
+
+% Ignore coordinates that are locked, prescribed, or coupled to other
+% coordinates via CoordinateCouplerConstraints (true by default).
+jointMomentTracking.setIgnoreConstrainedCoordinates(true);
+coordinateSet = model.getCoordinateSet();
+for i = 0:coordinateSet.getSize()-1
+    coordinate = coordinateSet.get(i);
+    coordPath = coordinate.getAbsolutePathString();
+    % Don't track generalized forces associated with pelvis residuals.
+    if contains(string(coordPath), "pelvis")
+        jointMomentTracking.setWeightForCoordinate(coordPath, 0);
+    end
+    % Encourage better tracking of the ankle joint moments.
+    if contains(string(coordPath), "ankle")
+        jointMomentTracking.setWeightForCoordinate(coordPath, 50);
+    end
+end
+problem.addGoal(jointMomentTracking);
+
+% Update the solver problem and tolerances.
+solver = MocoCasADiSolver.safeDownCast(study.updSolver());
+solver.set_optim_convergence_tolerance(1e-3);
+solver.set_optim_constraint_tolerance(1e-4);
+solver.resetProblem(problem);
+
+% Set the guess, if available.
+if (exist("exampleMocoTrack_state_tracking_solution.sto", "file"))
+    study.setGuessFile("exampleMocoTrack_state_tracking_solution.sto");
+end
+
+% Solve!
+solution = study.solve();
+solution.write("exampleMocoTrack_joint_moment_tracking_solution.sto");
+
+% Save the model to a file.
+model.print("exampleMocoTrack_model.osim");
+
+% Compute the joint moments and write them to a file.
+forcePaths = StdVectorString();
+forcePaths.add(".*externalloads.*");
+jointMoments = study.calcGeneralizedForces(solution, forcePaths);
+STOFileAdapter.write(jointMoments, "exampleMocoTrack_joint_moments.sto");
+
+% Visualize the solution.
 study.visualize(solution);
 
 end

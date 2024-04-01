@@ -93,7 +93,7 @@ MocoStudy MocoTrack::initialize() {
         auto* effort = problem.addGoal<MocoControlGoal>("control_effort");
         effort->setWeight(get_control_effort_weight());
 
-        for (int i = 0; i < getProperty_controls_weight_set().size(); ++i) {
+        for (int i = 0; i < get_controls_weight_set().getSize(); ++i) {
             const auto& weight = get_controls_weight_set().get(i);
             effort->setWeightForControl(weight.getName(), weight.getWeight());
         }
