@@ -154,7 +154,7 @@ jobs:
   windows2022_target:
     name: Windows2022 [target]
 
-    if: ${{ contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]') }}
+    if: ${{ contains(github.event.pull_request.title, '[perf-win]') || contains(github.event.pull_request.body, '[perf-win]') }}
 
     runs-on: windows-2022
 
@@ -261,7 +261,7 @@ jobs:
     
     runs-on: windows-2022
     
-    name: ${{ (contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]')) && 'Windows2022 [source]' || 'Windows2022' }}
+    name: ${{ (contains(github.event.pull_request.title, '[perf-win]') || contains(github.event.pull_request.body, '[perf-win]')) && 'Windows2022 [source]' || 'Windows2022' }}
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
@@ -370,8 +370,7 @@ jobs:
 
     runs-on: macos-12
 
-    # if: ${{ contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]') }}
-    if: false
+    if: ${{ contains(github.event.pull_request.title, '[perf-mac]') || contains(github.event.pull_request.body, '[perf-mac]') }}
 
     steps:
     - uses: actions/checkout@v3
@@ -498,8 +497,7 @@ jobs:
 
     runs-on: macos-12
     
-    name: Mac
-    # name: ${{ (contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]')) && 'Mac [source]' || 'Mac' }}
+    name: ${{ (contains(github.event.pull_request.title, '[perf-mac]') || contains(github.event.pull_request.body, '[perf-mac]')) && 'Mac [source]' || 'Mac' }}
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
@@ -623,8 +621,11 @@ jobs:
         name: opensim-core-${{ steps.configure.outputs.version }}-mac
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
-  performance_analysis:
-    name: Performance Analysis
+  performance_analysis_win:
+    name: Performance Analysis (Windows)
+
+    env:
+      GH_TOKEN: ${{ github.token }}
 
     needs:
       - windows2022_target
@@ -632,10 +633,7 @@ jobs:
 
     runs-on: macos-12
 
-    env:
-      GH_TOKEN: ${{ github.token }}
-
-    if: ${{ contains(github.event.pull_request.title, '[perf]') || contains(github.event.pull_request.body, '[perf]') }}
+    if: ${{ contains(github.event.pull_request.title, '[perf-win]') || contains(github.event.pull_request.body, '[perf-win]') }}
 
     steps:
     - name: Trigger opensim-perf workflow
@@ -647,7 +645,12 @@ jobs:
         owner: opensim-org
         ref: main
         workflow: performance_analysis_win.yml
-        workflow_inputs: '{"commit_sha": "${{ github.event.pull_request.head.sha }}", "target_artifact_name": "opensim-core-${{ github.event.pull_request.base.ref }}-win", "source_artifact_name": "opensim-core-${{ needs.windows2022_source.outputs.version }}-win", "target_artifact_zip": "opensim-core-${{ github.event.pull_request.base.ref }}.zip", "source_artifact_zip": "opensim-core-${{ needs.windows2022_source.outputs.version }}.zip"}'
+        workflow_inputs: |
+          '{"commit_sha": "${{ github.event.pull_request.head.sha }}", 
+            "target_artifact_name": "opensim-core-${{ github.event.pull_request.base.ref }}-win", 
+            "source_artifact_name": "opensim-core-${{ needs.windows2022_source.outputs.version }}-win", 
+            "target_artifact_zip": "opensim-core-${{ github.event.pull_request.base.ref }}.zip", 
+            "source_artifact_zip": "opensim-core-${{ needs.windows2022_source.outputs.version }}.zip"}'
 
     - name: Await opensim-perf workflow
       uses: Codex-/await-remote-run@v1.11.0
@@ -703,7 +706,94 @@ jobs:
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
           repos/opensim-org/opensim-core/pulls/${PR_NUMBER} \
           -f "body=${NEW_COMMENT_BODY}"
- 
+
+  performance_analysis_mac:
+
+    name: Performance Analysis (Mac)
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    needs:
+      - mac_target
+      - mac_source
+
+    runs-on: macos-12
+
+    if: ${{ contains(github.event.pull_request.title, '[perf-mac]') || contains(github.event.pull_request.body, '[perf-mac]') }}
+
+    steps:
+    - name: Trigger opensim-perf workflow
+      uses: Codex-/return-dispatch@v1.12.0
+      id: return_dispatch
+      with:
+        token: ${{ secrets.PERF_DISPATCH_PAT }}
+        repo: opensim-perf
+        owner: opensim-org
+        ref: main
+        workflow: performance_analysis_mac.yml
+        workflow_inputs: |
+          '{"commit_sha": "${{ github.event.pull_request.head.sha }}", 
+            "target_artifact_name": "opensim-core-${{ github.event.pull_request.base.ref }}-mac", 
+            "source_artifact_name": "opensim-core-${{ needs.mac_source.outputs.version }}-mac", 
+            "target_artifact_zip": "opensim-core-${{ github.event.pull_request.base.ref }}.zip", 
+            "source_artifact_zip": "opensim-core-${{ needs.mac_source.outputs.version }}.zip"}'
+
+    - name: Await opensim-perf workflow
+      uses: Codex-/await-remote-run@v1.11.0
+      with:
+        token: ${{ secrets.PERF_DISPATCH_PAT }}
+        repo: opensim-perf
+        owner: opensim-org
+        run_id: ${{ steps.return_dispatch.outputs.run_id }}
+        run_timeout_seconds: 10000
+
+    - name: Download performance analysis results
+      id: download-artifact
+      uses: dawidd6/action-download-artifact@v3.0.0
+      with:
+        github_token: ${{ secrets.PERF_DISPATCH_PAT }}
+        run_id: ${{ steps.return_dispatch.outputs.run_id }}
+        workflow: performance_analysis_mac.yml
+        name: performance-results
+        path: results
+        repo: opensim-org/opensim-perf
+
+    - name: Post results to pull request description
+      run: |
+        PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+        EXISTING_COMMENT_CONTENT=$(gh api /repos/opensim-org/opensim-core/pulls/${PR_NUMBER} | jq -r '.body')
+        CUSTOM_HEADER="### Performance analysis"
+
+        REVIEWABLE_TAG="<!-- Reviewable:start -->"
+        REVIEWABLE_BLOCK=""
+        if [[ $EXISTING_COMMENT_CONTENT == *"$REVIEWABLE_TAG"* ]]; then
+          REVIEWABLE_BLOCK=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$REVIEWABLE_TAG/,0")
+        fi
+
+        if [[ $EXISTING_COMMENT_CONTENT == *"$CUSTOM_HEADER"* ]]; then
+          CONTENT_TO_REPLACE=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$CUSTOM_HEADER/,0")
+        else
+          CONTENT_TO_REPLACE=${REVIEWABLE_BLOCK}
+        fi
+
+        NEW_CONTENT="${CUSTOM_HEADER}
+
+        $(cat results/performance_results.md)
+
+        ${REVIEWABLE_BLOCK}
+        "
+        NEW_COMMENT_BODY="${EXISTING_COMMENT_CONTENT/"${CONTENT_TO_REPLACE}"/${NEW_CONTENT}}"
+
+        # Update the existing description
+        gh api \
+          --method PATCH \
+          -H "Content-Type: application/json" \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          repos/opensim-org/opensim-core/pulls/${PR_NUMBER} \
+          -f "body=${NEW_COMMENT_BODY}"
+
   ubuntu20:
     name: Ubuntu2004
 
