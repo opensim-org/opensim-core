@@ -426,7 +426,7 @@ TimeSeriesTable OpenSim::calcGeneralizedForces(Model model,
         model.realizeDynamics(state);
         appliedMobilityForces.setToZero();
         appliedBodyForces.setToZero();
-        model.calcForces(state, forceIndexes, 
+        model.calcForceContributionsSum(state, forceIndexes, 
                 appliedBodyForces, appliedMobilityForces);
 
         const auto& udot = ~udots.row(i);

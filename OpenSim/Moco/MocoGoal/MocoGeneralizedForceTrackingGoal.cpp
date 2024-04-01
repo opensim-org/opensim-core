@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoGeneralizedForceTrackingGoal.h"
+#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 
 using namespace OpenSim;
 
@@ -29,6 +30,8 @@ void MocoGeneralizedForceTrackingGoal::constructProperties() {
     constructProperty_force_paths();
     constructProperty_coordinate_weights(MocoWeightSet());
     constructProperty_allow_unused_references(false);
+    constructProperty_normalize_tracking_error(false);
+    constructProperty_ignore_constrained_coordinates(true);
 }
 
 void MocoGeneralizedForceTrackingGoal::initializeOnModelImpl(
@@ -42,9 +45,14 @@ void MocoGeneralizedForceTrackingGoal::initializeOnModelImpl(
     TableUtilities::checkNonUniqueLabels(tableToUse.getColumnLabels());
 
     // Create a map between coordinate paths and their indices in the system.
+    SimTK::State state = model.getWorkingState();
     const auto& coordinates = model.getCoordinatesInMultibodyTreeOrder();
     std::unordered_map<std::string, int> allCoordinateIndices;
     for (int i = 0; i < coordinates.size(); ++i) {
+        if (coordinates[i]->isConstrained(state)) {
+            continue;
+        }
+
         allCoordinateIndices[coordinates[i]->getAbsolutePathString()] = i;
     }
 
@@ -79,7 +87,8 @@ void MocoGeneralizedForceTrackingGoal::initializeOnModelImpl(
         if (allCoordinateIndices.count(weightName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
                     "Weight provided with name '{}' but this is "
-                    "not a recognized coordinate.",
+                    "not a recognized coordinate or it is a constrained "
+                    "coordinate and set to be ignored.",
                     weightName);
         }
     }
@@ -90,18 +99,35 @@ void MocoGeneralizedForceTrackingGoal::initializeOnModelImpl(
             if (get_allow_unused_references()) { continue; }
             OPENSIM_THROW_FRMOBJ(Exception,
                     "Reference provided with name '{}' but this is "
-                    "not a recognized coordinate.",
+                    "not a recognized coordinate or it is a constrained "
+                    "coordinate and set to be ignored.",
                     refName);
         }
 
-        m_coordinateIndexes.push_back(allCoordinateIndices.at(refName));
         double refWeight = 1.0;
         if (get_coordinate_weights().contains(refName)) {
             refWeight = get_coordinate_weights().get(refName).getWeight();
+            if (refWeight == 0) { continue; }
         }
+        m_coordinateIndexes.push_back(allCoordinateIndices.at(refName));
         m_coordinateWeights.push_back(refWeight);
         m_coordinatePaths.push_back(refName);
         m_refsplines.cloneAndAppend(allSplines[iref]);
+
+        // Compute normalization factors.
+        if (get_normalize_tracking_error()) {
+            double factor = SimTK::max(
+                tableToUse.getDependentColumn(refName).abs());
+            OPENSIM_THROW_IF_FRMOBJ(factor < SimTK::SignificantReal,
+                    Exception,
+                    "The property `normalize_tracking_error` was enabled, "
+                    "but the peak magnitude of the generalized force for "
+                    "coordinate is close to zero.",
+                    refName);
+            m_normalizationFactors.push_back(1.0 / factor);
+        } else {
+            m_normalizationFactors.push_back(1.0);
+        }
     }
 
     setRequirements(1, 1, SimTK::Stage::Acceleration);
@@ -120,7 +146,7 @@ void MocoGeneralizedForceTrackingGoal::calcIntegrandImpl(
     // Compute the applied body and mobility forces.
     SimTK::Vector_<SimTK::SpatialVec> appliedBodyForces(matter.getNumBodies());
     SimTK::Vector appliedMobilityForces(matter.getNumMobilities());
-    getModel().calcForces(
+    getModel().calcForceContributionsSum(
         state, m_forceIndexes, appliedBodyForces, appliedMobilityForces);
 
     // Compute the generalized forces.
@@ -138,7 +164,7 @@ void MocoGeneralizedForceTrackingGoal::calcIntegrandImpl(
         const auto& refValue = m_refsplines[iref].calcValue(timeVec);
 
         // Compute the tracking error.
-        double error = modelValue - refValue;
+        double error = m_normalizationFactors[iref] * (modelValue - refValue);
 
         // Compute the integrand.
         integrand += m_coordinateWeights[iref] * error * error;

@@ -928,11 +928,11 @@ public:
      * 
      * @pre Requires that the system has been realized to Stage::Dynamics.
      * */
-    void calcForces(const SimTK::State& state,
-                    const SimTK::Array_<SimTK::ForceIndex>& forceIndexes,  
-                    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                    SimTK::Vector& mobilityForces) const {
-        getForceSubsystem().calcForces(
+    void calcForceContributionsSum(const SimTK::State& state,
+            const SimTK::Array_<SimTK::ForceIndex>& forceIndexes,  
+            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+            SimTK::Vector& mobilityForces) const {
+        getForceSubsystem().calcForceContributionsSum(
             state, forceIndexes, bodyForces, mobilityForces);
     }
 

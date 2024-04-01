@@ -104,6 +104,27 @@ public:
     /// If false, extra reference will cause an Exception to be raised.
     void setAllowUnusedReferences(bool tf) { set_allow_unused_references(tf); }
 
+    /// Normalize the tracking error for each generalized force by the peak 
+    /// magnitude of the force in the reference tracking data. If the peak 
+    /// magnitude of the reference generalized force data is close to zero, an 
+    /// exception is thrown (default: false).
+    void setNormalizeTrackingError(bool tf) {
+        set_normalize_tracking_error(tf);
+    }
+    /// @copydoc setNormalizeTrackingError(bool tf)
+    bool getNormalizeTrackingError() { return get_normalize_tracking_error(); }
+
+    /// Whether or not to ignore coordinates that are locked, prescribed, or
+    /// coupled to other coordinates based on the returned from 
+    /// `Coordinate::isConstrained()` (default: true).
+    void setIgnoreConstrainedCoordinates(bool tf) {
+        set_ignore_constrained_coordinates(tf);
+    }
+    /// @copydoc setIgnoreConstrainedCoordinates(bool tf)
+    bool getIgnoreConstrainedCoordinates() const {
+        return get_ignore_constrained_coordinates();
+    }
+
 protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
@@ -130,11 +151,21 @@ private:
     OpenSim_DECLARE_PROPERTY(allow_unused_references, bool,
             "Flag to determine whether or not references contained in the "
             "reference table are allowed to be ignored by the cost.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(normalize_tracking_error, bool,
+            "Normalize the tracking error for each generalized force by the "
+            "peak magnitude of the force in the reference tracking data. "
+            "If the peak magnitude of the reference generalized force data is "
+            "close to zero, an exception is thrown (default: false).");
+    OpenSim_DECLARE_PROPERTY(ignore_constrained_coordinates, bool,
+            "Flag to determine whether or not to ignore coordinates that are "
+            "locked, prescribed, or coupled to other coordinates "
+            "(default: true).");
 
     mutable GCVSplineSet m_refsplines;
     mutable std::vector<double> m_coordinateWeights;
     mutable std::vector<std::string> m_coordinatePaths;
     mutable std::vector<int> m_coordinateIndexes;
+    mutable std::vector<double> m_normalizationFactors;
     mutable SimTK::Array_<SimTK::ForceIndex> m_forceIndexes;
 };
 

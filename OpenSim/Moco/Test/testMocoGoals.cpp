@@ -249,15 +249,12 @@ void testDoublePendulumTracking(MocoStudy study,
 
     study.updSolver<SolverType>().resetProblem(problem);
     auto solutionTracking = study.solve();
-    // solutionTracking.write(
-    //         "testMocoGoals_" + TrackingType::getClassName()
-    //         + "_tracking_solution.sto");
 
     // The tracking solution should match the effort solution.
     SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
-            solutionTracking.getControlsTrajectory(), 1e-1);
+            solutionTracking.getControlsTrajectory(), 1e-6);
     SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
-            solutionTracking.getStatesTrajectory(), 1e-1);
+            solutionTracking.getStatesTrajectory(), 1e-6);
 }
 
 TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
@@ -267,8 +264,6 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
     // a trajectory to track.
     MocoStudy study = setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
     auto solutionEffort = study.solve();
-    // solutionEffort.write(
-    //         "testMocoGoals_DoublePendulumMinimizeEffort_solution.sto");
 
     SECTION ("MocoControlTrackingGoal") {
         // Re-run problem, now setting effort cost function to zero and adding a
@@ -294,14 +289,12 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
         guessTracking.randomizeAdd();
         solver.setGuess(guessTracking);
         auto solutionTracking = study.solve();
-        // solutionTracking.write(
-        //         "testMocoGoals_MocoControlTrackingGoal_tracking_solution.sto");
 
         // Make sure control tracking problem matches control effort problem.
         OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getControlsTrajectory(),
-                solutionTracking.getControlsTrajectory(), 1e-4);
+                solutionTracking.getControlsTrajectory(), 1e-6);
         OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getStatesTrajectory(),
-                solutionTracking.getStatesTrajectory(), 1e-4);
+                solutionTracking.getStatesTrajectory(), 1e-6);
     }
 
     SECTION ("MocoOrientationTrackingGoal") {
@@ -350,14 +343,12 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
 
         studyAccelerationTracking.updSolver<TestType>().resetProblem(problem);
         auto solutionTracking = studyAccelerationTracking.solve();
-        // solutionTracking.write("testMocoGoals_MocoAccelerationTrackingGoal_"
-        //                        "tracking_solution.sto");
 
         // The tracking solution should match the effort solution.
         SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
-                solutionTracking.getControlsTrajectory(), 1e-1);
+                solutionTracking.getControlsTrajectory(), 1e-6);
         SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
-                solutionTracking.getStatesTrajectory(), 1e-1);
+                solutionTracking.getStatesTrajectory(), 1e-6);
     }
 
     SECTION ("MocoAccelerationTrackingGoal (IMU tracking)") {
@@ -386,19 +377,17 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
 
         studyAccelerationTracking.updSolver<TestType>().resetProblem(problem);
         auto solutionTracking = studyAccelerationTracking.solve();
-        // solutionTracking.write("testMocoGoals_MocoAccelerationTrackingGoal_"
-        //                        "imu_tracking_solution.sto");
 
         // The tracking solution should match the effort solution.
         SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
-                          solutionTracking.getControlsTrajectory(), 1e-1);
+                          solutionTracking.getControlsTrajectory(), 1e-6);
         SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
-                          solutionTracking.getStatesTrajectory(), 1e-1);
+                          solutionTracking.getStatesTrajectory(), 1e-6);
     }
 
     SECTION("MocoGeneralizedForceTrackingGoal") {
         TimeSeriesTable generalizedForces = 
-                study.calcGeneralizedForces(solutionEffort);
+                study.calcGeneralizedForces(solutionEffort, {});
         MocoStudy studyGenForceTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         // Re-run problem, now setting effort cost function to a low weight and
@@ -410,14 +399,12 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
         genForceTracking->setReference(generalizedForces);
         studyGenForceTracking.updSolver<TestType>().resetProblem(problem);
         auto solutionTracking = studyGenForceTracking.solve();
-        // solutionTracking.write("testMocoGoals_MocoGeneralizedForceTrackingGoal_"
-        //                        "tracking_solution.sto");
 
         // The tracking solution should match the effort solution.
         SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
-                          solutionTracking.getControlsTrajectory(), 1e-1);
+                          solutionTracking.getControlsTrajectory(), 1e-6);
         SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
-                          solutionTracking.getStatesTrajectory(), 1e-1);
+                          solutionTracking.getStatesTrajectory(), 1e-6);
     }
 }
 
