@@ -181,8 +181,11 @@ def muscleDrivenStateTracking():
     solver.set_optim_constraint_tolerance(1e-4)
     solver.resetProblem(problem)
     
-    # Solve and visualize.
+    # Solve!
     solution = study.solve()
+    solution.write('exampleMocoTrack_state_tracking_solution.sto')
+
+    # Visualize the solution.
     study.visualize(solution)
 
 def muscleDrivenJointMomentTracking():
@@ -302,11 +305,11 @@ def muscleDrivenJointMomentTracking():
     solution.write('exampleMocoTrack_joint_moment_tracking_solution.sto')
 
     # Save the model to a file.
-    model.print('exampleMocoTrack_model.osim')
+    model.printToXML('exampleMocoTrack_model.osim')
 
     # Compute the joint moments and write them to a file.
     forcePaths = osim.StdVectorString()
-    forcePaths.add('.*externalloads.*')
+    forcePaths.append('.*externalloads.*')
     jointMoments = study.calcGeneralizedForces(solution, forcePaths)
     osim.STOFileAdapter.write(jointMoments, 'exampleMocoTrack_joint_moments.sto')
 
@@ -315,10 +318,10 @@ def muscleDrivenJointMomentTracking():
 
 
 # Solve the torque-driven marker tracking problem.
-torqueDrivenMarkerTracking()
+# torqueDrivenMarkerTracking()
 
 # Solve the muscle-driven state tracking problem.
 muscleDrivenStateTracking()
 
 # Solve the muscle-driven joint moment tracking problem.
-muscleDrivenJointMomentTracking()
+# muscleDrivenJointMomentTracking()
