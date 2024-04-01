@@ -170,7 +170,7 @@ void muscleDrivenStateTracking() {
         }
     }
 
-    // Constraint the states and controls to be periodic.
+    // Constrain the states and controls to be periodic.
     auto* periodicityGoal = problem.addGoal<MocoPeriodicityGoal>("periodicity");
     model.initSystem();
     for (const auto& coord : model.getComponentList<Coordinate>()) {
@@ -179,12 +179,10 @@ void muscleDrivenStateTracking() {
         }
         periodicityGoal->addStatePair(coord.getStateVariableNames()[1]);
     }
-
     for (const auto& muscle : model.getComponentList<Muscle>()) {
         periodicityGoal->addStatePair(muscle.getStateVariableNames()[0]);
         periodicityGoal->addControlPair(muscle.getAbsolutePathString());
     }
-
     for (const auto& actu : model.getComponentList<Actuator>()) {
         periodicityGoal->addControlPair(actu.getAbsolutePathString());
     }
@@ -256,12 +254,10 @@ void muscleDrivenJointMomentTracking() {
         }
         periodicityGoal->addStatePair(coord.getStateVariableNames()[1]);
     }
-
     for (const auto& muscle : model.getComponentList<Muscle>()) {
         periodicityGoal->addStatePair(muscle.getStateVariableNames()[0]);
         periodicityGoal->addControlPair(muscle.getAbsolutePathString());
     }
-
     for (const auto& actu : model.getComponentList<Actuator>()) {
         periodicityGoal->addControlPair(actu.getAbsolutePathString());
     }

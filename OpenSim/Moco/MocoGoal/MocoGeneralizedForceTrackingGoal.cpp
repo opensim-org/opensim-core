@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim: MocoGeneralizedForceTrackingGoal.cp                               *
+ * OpenSim: MocoGeneralizedForceTrackingGoal.cpp                              *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *

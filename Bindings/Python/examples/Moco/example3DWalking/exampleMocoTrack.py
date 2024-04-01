@@ -262,7 +262,6 @@ def muscleDrivenJointMomentTracking():
     # generalized forces. Usually these are the external loads and actuators 
     # (e.g., muscles) should be excluded, but any model force can be included 
     # or excluded. Gravitational force is applied by default.
-    # Regular expression are supported when setting the force paths.    
     # Regular expression are supported when setting the force paths.
     forcePaths = osim.StdVectorString()
     forcePaths.append('.*externalloads.*')

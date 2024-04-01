@@ -62,10 +62,10 @@ public:
     /// @copydoc setReference(TableProcessor ref)
     const TableProcessor& getReference() const { return get_reference(); }
 
-    /// The paths to model Forces whose body and mobility forces will be
+    /// The paths to model Force%s whose body and mobility forces will be
     /// applied when computing generalized coordinate forces from inverse
-    /// dynamics. Paths can be specified using either full component path names
-    /// or regular expressions.
+    /// dynamics. Paths should be specified using either full component path 
+    /// names or regular expressions, but not both for the same Force.
     void setForcePaths(const std::vector<std::string>& forcePaths) {
         for (const auto& path : forcePaths) {
             append_force_paths(path);
@@ -101,7 +101,7 @@ public:
 
     /// Specify whether or not extra columns in the reference are allowed.
     /// If set true, the extra references will be ignored by the cost.
-    /// If false, extra reference will cause an Exception to be raised.
+    /// If false, extra reference will cause an exception to be raised.
     void setAllowUnusedReferences(bool tf) { set_allow_unused_references(tf); }
 
     /// Normalize the tracking error for each generalized force by the peak 
@@ -115,7 +115,7 @@ public:
     bool getNormalizeTrackingError() { return get_normalize_tracking_error(); }
 
     /// Whether or not to ignore coordinates that are locked, prescribed, or
-    /// coupled to other coordinates based on the returned from 
+    /// coupled to other coordinates. This is based on the value returned from 
     /// `Coordinate::isConstrained()` (default: true).
     void setIgnoreConstrainedCoordinates(bool tf) {
         set_ignore_constrained_coordinates(tf);

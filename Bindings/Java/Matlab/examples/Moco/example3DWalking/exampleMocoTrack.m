@@ -198,8 +198,8 @@ end
 
 % Constrain the states and controls to be periodic.
 periodicityGoal = MocoPeriodicityGoal("periodicity");
-for i = 1:model.getNumStateVariables()
-    currentStateName = string(model.getStateVariableNames().getitem(i-1));
+for i = 0:model.getNumStateVariables()-1
+    currentStateName = string(model.getStateVariableNames().getitem(i));
     if (~contains(currentStateName,'pelvis_tx/value'))
         symmetryGoal.addStatePair(MocoPeriodicityGoalPair(currentStateName));
     end
@@ -312,7 +312,6 @@ jointMomentTracking.setReference(jointMomentRef);
 % generalized forces. Usually these are the external loads and actuators 
 % (e.g., muscles) should be excluded, but any model force can be included 
 % or excluded. Gravitational force is applied by default.
-% Regular expression are supported when setting the force paths.
 % Regular expression are supported when setting the force paths.
 forcePaths = StdVectorString();
 forcePaths.add(".*externalloads.*");
