@@ -33,10 +33,13 @@ v4.6
 - Bumped the version of `ezc3d` to 1.5.8, which can now deal properly with Type-3 force platforms and c3d from Shadow
 - Added `StationDefinedFrame` component, which is a `Frame` component that automatically computes its position and
   orientation from `Station`s in the model
+- Models with `PrescribedController`s are now supported by Moco (#3701). Controls for actuators controlled by
+  `PrescribedController`s are now excluded from the optimization problem.
 - Fixed documentation error in `Umberger2010MuscleMetabolicsProbe` where muscle mass was incorrectly omitted for the
   activation maintenance rate.
 - Added `Model::calcForceContributionsSum()`, a wrapper method for `GeneralForceSubsystem` for efficiently 
-  calculating a subset of a model's body and mobility forces. Added `Force::getForceIndex()`. (#3755)
+  calculating a subset of a model's body and mobility forces. (#3755) 
+- Added `Force::getForceIndex()` to allow accessing the `SimTK::ForceIndex` for force elements. (#3755) 
 
 v4.5
 ====
