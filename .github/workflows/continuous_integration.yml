@@ -683,19 +683,17 @@ jobs:
         MAC_HEADER="### Performance analysis (Mac)"
         if [[ $EXISTING_COMMENT_CONTENT == *"$MAC_HEADER"* ]]; then
           MAC_CONTENT=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$MAC_HEADER/,/$REVIEWABLE_TAG/")
-        fi  
+        fi 
+        echo "MAC_CONTENT: $MAC_CONTENT" 
     
         if [[ $EXISTING_COMMENT_CONTENT == *"$CUSTOM_HEADER"* ]]; then
           CONTENT_TO_REPLACE=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$CUSTOM_HEADER/,0")
         else
-          if [[ $EXISTING_COMMENT_CONTENT == *"$MAC_HEADER"* ]]; then
-            CONTENT_TO_REPLACE="${MAC_CONTENT}
-            
-            ${REVIEWABLE_CONTENT}"
-          else
-            CONTENT_TO_REPLACE=${REVIEWABLE_CONTENT}
-          fi
+          CONTENT_TO_REPLACE="${MAC_CONTENT}
+
+          ${REVIEWABLE_CONTENT}"
         fi
+        echo "CONTENT_TO_REPLACE: $CONTENT_TO_REPLACE"
 
         NEW_CONTENT="${CUSTOM_HEADER}
 
@@ -705,6 +703,8 @@ jobs:
 
         ${REVIEWABLE_CONTENT}
         "
+        echo "NEW_CONTENT: $NEW_CONTENT"
+
         NEW_COMMENT_BODY="${EXISTING_COMMENT_CONTENT/"${CONTENT_TO_REPLACE}"/${NEW_CONTENT}}"
 
         # Update the existing description
