@@ -678,9 +678,11 @@ jobs:
         if [[ $EXISTING_COMMENT_CONTENT == *"$REVIEWABLE_TAG"* ]]; then
           BOTTOM_CONTENT=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$REVIEWABLE_TAG/,0")
         fi
+        echo "BOTTOM_CONTENT: $BOTTOM_CONTENT" 
 
         MAC_HEADER="### Performance analysis (Mac)"
         if [[ $EXISTING_COMMENT_CONTENT == *"$MAC_HEADER"* ]]; then
+          echo "MAC_HEADER found"
           BOTTOM_CONTENT=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$MAC_HEADER/,0")
         fi 
         echo "BOTTOM_CONTENT: $BOTTOM_CONTENT" 
