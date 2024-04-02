@@ -667,7 +667,7 @@ jobs:
       with:
         github_token: ${{ secrets.PERF_DISPATCH_PAT }}
         run_id: ${{ steps.return_dispatch.outputs.run_id }}
-        workflow: performance_analysis.yml
+        workflow: performance_analysis_win.yml
         name: performance-results
         path: results
         repo: opensim-org/opensim-perf
@@ -676,25 +676,38 @@ jobs:
       run: |
         PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
         EXISTING_COMMENT_CONTENT=$(gh api /repos/opensim-org/opensim-core/pulls/${PR_NUMBER} | jq -r '.body')
-        CUSTOM_HEADER="### Performance analysis"
+        CUSTOM_HEADER="### Performance analysis (Windows)"
+        MAC_HEADER="### Performance analysis (Mac)"
 
         REVIEWABLE_TAG="<!-- Reviewable:start -->"
-        REVIEWABLE_BLOCK=""
+        REVIEWABLE_CONTENT=""
         if [[ $EXISTING_COMMENT_CONTENT == *"$REVIEWABLE_TAG"* ]]; then
-          REVIEWABLE_BLOCK=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$REVIEWABLE_TAG/,0")
+          REVIEWABLE_CONTENT=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$REVIEWABLE_TAG/,0")
         fi
 
-        if [[ $EXISTING_COMMENT_CONTENT == *"$CUSTOM_HEADER"* ]]; then
-          CONTENT_TO_REPLACE=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$CUSTOM_HEADER/,0")
+        MAC_CONTENT=""
+        if [[ $EXISTING_COMMENT_CONTENT == *"$MAC_HEADER"* ]]; then
+          MAC_CONTENT=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$MAC_HEADER/,0")
+          if [[ $EXISTING_COMMENT_CONTENT == *"$CUSTOM_HEADER"* ]]; then
+            CONTENT_TO_REPLACE=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$CUSTOM_HEADER/,0")
+          else
+            CONTENT_TO_REPLACE=${MAC_CONTENT}
+          fi
         else
-          CONTENT_TO_REPLACE=${REVIEWABLE_BLOCK}
+          if [[ $EXISTING_COMMENT_CONTENT == *"$CUSTOM_HEADER"* ]]; then
+            CONTENT_TO_REPLACE=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$CUSTOM_HEADER/,0")
+          else
+            CONTENT_TO_REPLACE=${REVIEWABLE_CONTENT}
+          fi
         fi
 
         NEW_CONTENT="${CUSTOM_HEADER}
 
         $(cat results/performance_results.md)
 
-        ${REVIEWABLE_BLOCK}
+        ${MAC_CONTENT}
+
+        ${REVIEWABLE_CONTENT}
         "
         NEW_COMMENT_BODY="${EXISTING_COMMENT_CONTENT/"${CONTENT_TO_REPLACE}"/${NEW_CONTENT}}"
 
@@ -763,25 +776,25 @@ jobs:
       run: |
         PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
         EXISTING_COMMENT_CONTENT=$(gh api /repos/opensim-org/opensim-core/pulls/${PR_NUMBER} | jq -r '.body')
-        CUSTOM_HEADER="### Performance analysis"
+        CUSTOM_HEADER="### Performance analysis (Mac)"
 
         REVIEWABLE_TAG="<!-- Reviewable:start -->"
-        REVIEWABLE_BLOCK=""
+        REVIEWABLE_CONTENT=""
         if [[ $EXISTING_COMMENT_CONTENT == *"$REVIEWABLE_TAG"* ]]; then
-          REVIEWABLE_BLOCK=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$REVIEWABLE_TAG/,0")
+          REVIEWABLE_CONTENT=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$REVIEWABLE_TAG/,0")
         fi
 
         if [[ $EXISTING_COMMENT_CONTENT == *"$CUSTOM_HEADER"* ]]; then
           CONTENT_TO_REPLACE=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$CUSTOM_HEADER/,0")
         else
-          CONTENT_TO_REPLACE=${REVIEWABLE_BLOCK}
+          CONTENT_TO_REPLACE=${REVIEWABLE_CONTENT}
         fi
 
         NEW_CONTENT="${CUSTOM_HEADER}
 
         $(cat results/performance_results.md)
 
-        ${REVIEWABLE_BLOCK}
+        ${REVIEWABLE_CONTENT}
         "
         NEW_COMMENT_BODY="${EXISTING_COMMENT_CONTENT/"${CONTENT_TO_REPLACE}"/${NEW_CONTENT}}"
 
