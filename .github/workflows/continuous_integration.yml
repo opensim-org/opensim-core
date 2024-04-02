@@ -674,24 +674,21 @@ jobs:
         CUSTOM_HEADER="### Performance analysis (Windows)"
 
         REVIEWABLE_TAG="<!-- Reviewable:start -->"
-        REVIEWABLE_CONTENT=""
+        BOTTOM_CONTENT=""
         if [[ $EXISTING_COMMENT_CONTENT == *"$REVIEWABLE_TAG"* ]]; then
-          REVIEWABLE_CONTENT=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$REVIEWABLE_TAG/,0")
+          BOTTOM_CONTENT=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$REVIEWABLE_TAG/,0")
         fi
 
-        MAC_CONTENT=""
         MAC_HEADER="### Performance analysis (Mac)"
         if [[ $EXISTING_COMMENT_CONTENT == *"$MAC_HEADER"* ]]; then
-          MAC_CONTENT=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$MAC_HEADER/,/$REVIEWABLE_TAG/")
+          BOTTOM_CONTENT=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$MAC_HEADER/,0")
         fi 
-        echo "MAC_CONTENT: $MAC_CONTENT" 
+        echo "BOTTOM_CONTENT: $BOTTOM_CONTENT" 
     
         if [[ $EXISTING_COMMENT_CONTENT == *"$CUSTOM_HEADER"* ]]; then
           CONTENT_TO_REPLACE=$(echo "$EXISTING_COMMENT_CONTENT" | awk "/$CUSTOM_HEADER/,0")
         else
-          CONTENT_TO_REPLACE="${MAC_CONTENT}
-
-          ${REVIEWABLE_CONTENT}"
+          CONTENT_TO_REPLACE="${BOTTOM_CONTENT}"
         fi
         echo "CONTENT_TO_REPLACE: $CONTENT_TO_REPLACE"
 
@@ -699,9 +696,7 @@ jobs:
 
         $(cat results/performance_results.md)
 
-        ${MAC_CONTENT}
-
-        ${REVIEWABLE_CONTENT}
+        ${BOTTOM_CONTENT}
         "
         echo "NEW_CONTENT: $NEW_CONTENT"
 
