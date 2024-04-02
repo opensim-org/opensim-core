@@ -48,7 +48,7 @@ void MocoGeneralizedForceTrackingGoal::initializeOnModelImpl(
     SimTK::State state = model.getWorkingState();
     const auto& coordinates = model.getCoordinatesInMultibodyTreeOrder();
     std::unordered_map<std::string, int> allCoordinateIndices;
-    for (int i = 0; i < coordinates.size(); ++i) {
+    for (int i = 0; i < static_cast<int>(coordinates.size()); ++i) {
         if (coordinates[i]->isConstrained(state)) {
             continue;
         }
@@ -172,7 +172,7 @@ void MocoGeneralizedForceTrackingGoal::calcIntegrandImpl(
 }
 
 void MocoGeneralizedForceTrackingGoal::printDescriptionImpl() const {
-    for (int i = 0; i < (int)m_coordinatePaths.size(); i++) {
+    for (int i = 0; i < static_cast<int>(m_coordinatePaths.size()); i++) {
         log_cout("        coordinate: {}, weight: {}", 
                 m_coordinatePaths[i],
                 m_coordinateWeights[i]);
