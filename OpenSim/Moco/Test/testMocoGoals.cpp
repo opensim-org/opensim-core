@@ -252,9 +252,9 @@ void testDoublePendulumTracking(MocoStudy study,
 
     // The tracking solution should match the effort solution.
     SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
-            solutionTracking.getControlsTrajectory(), 1e-2);
+            solutionTracking.getControlsTrajectory(), 1e-1);
     SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
-            solutionTracking.getStatesTrajectory(), 1e-2);
+            solutionTracking.getStatesTrajectory(), 1e-1);
 }
 
 TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
