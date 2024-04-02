@@ -645,12 +645,7 @@ jobs:
         owner: opensim-org
         ref: main
         workflow: performance_analysis_win.yml
-        workflow_inputs: |
-          '{"commit_sha": "${{ github.event.pull_request.head.sha }}", 
-            "target_artifact_name": "opensim-core-${{ github.event.pull_request.base.ref }}-win", 
-            "source_artifact_name": "opensim-core-${{ needs.windows2022_source.outputs.version }}-win", 
-            "target_artifact_zip": "opensim-core-${{ github.event.pull_request.base.ref }}.zip", 
-            "source_artifact_zip": "opensim-core-${{ needs.windows2022_source.outputs.version }}.zip"}'
+        workflow_inputs: '{"commit_sha": "${{ github.event.pull_request.head.sha }}", "target_artifact_name": "opensim-core-${{ github.event.pull_request.base.ref }}-win", "source_artifact_name": "opensim-core-${{ needs.windows2022_source.outputs.version }}-win", "target_artifact_zip": "opensim-core-${{ github.event.pull_request.base.ref }}.zip", "source_artifact_zip": "opensim-core-${{ needs.windows2022_source.outputs.version }}.zip"}'
 
     - name: Await opensim-perf workflow
       uses: Codex-/await-remote-run@v1.11.0
@@ -745,12 +740,7 @@ jobs:
         owner: opensim-org
         ref: main
         workflow: performance_analysis_mac.yml
-        workflow_inputs: |
-          '{"commit_sha": "${{ github.event.pull_request.head.sha }}", 
-            "target_artifact_name": "opensim-core-${{ github.event.pull_request.base.ref }}-mac", 
-            "source_artifact_name": "opensim-core-${{ needs.mac_source.outputs.version }}-mac", 
-            "target_artifact_zip": "opensim-core-${{ github.event.pull_request.base.ref }}.zip", 
-            "source_artifact_zip": "opensim-core-${{ needs.mac_source.outputs.version }}.zip"}'
+        workflow_inputs: '{"commit_sha": "${{ github.event.pull_request.head.sha }}", "target_artifact_name": "opensim-core-${{ github.event.pull_request.base.ref }}-mac", "source_artifact_name": "opensim-core-${{ needs.mac_source.outputs.version }}-mac", "target_artifact_zip": "opensim-core-${{ github.event.pull_request.base.ref }}.zip", "source_artifact_zip": "opensim-core-${{ needs.mac_source.outputs.version }}.zip"}'
 
     - name: Await opensim-perf workflow
       uses: Codex-/await-remote-run@v1.11.0
