@@ -107,7 +107,11 @@ void MocoGeneralizedForceTrackingGoal::initializeOnModelImpl(
         double refWeight = 1.0;
         if (get_coordinate_weights().contains(refName)) {
             refWeight = get_coordinate_weights().get(refName).getWeight();
-            if (SimTK::abs(refWeight) < SimTK::SignificantReal) { continue; }
+            OPENSIM_THROW_IF_FRMOBJ(refWeight < 0, Exception,
+                    "Expected coordinate weights to be non-negative, but "
+                    "received a negative weight for coordinate '{}'.",
+                    refName);
+            if (refWeight < SimTK::SignificantReal) { continue; }
         }
         m_coordinateIndexes.push_back(allCoordinateIndices.at(refName));
         m_coordinateWeights.push_back(refWeight);
