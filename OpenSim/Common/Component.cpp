@@ -1521,18 +1521,6 @@ initializeModelingOptionIndexes(const std::string& moName,
     it->second.moIndex = moIndex;
 }
 
-
-const SimTK::DiscreteVariableIndex
-Component::
-getDiscreteVariableIndex(const std::string& dvName) const
-{
-    std::map<std::string, DiscreteVariableInfo>::const_iterator it;
-    it = _namedDiscreteVariableInfo.find(dvName);
-    OPENSIM_THROW_IF(it == _namedDiscreteVariableInfo.end(),
-        VariableNotFound, getName(), dvName);
-    return it->second.dvIndex;
-}
-
 void
 Component::
 getDiscreteVariableIndexes(const std::string& dvName,

@@ -3348,27 +3348,6 @@ protected:
     SimTK::SystemYIndex
         getStateVariableSystemIndex(const std::string& stateVariableName) const;
 
-    /**
-    * Get the index for a Component's discrete variable. This method is
-    * intended for derived Components that may need direct access to its
-    * underlying Subsystem.
-    *
-    * Two indices are needed to properly access a discrete variable. The first
-    * identifies the SimTK::Subystem to which the discrete variable belongs;
-    * the second is the index into that subsystem for the discrete variable
-    * itself.
-    *
-    * If you are unsure about which Subystem a discrete variable belongs to,
-    * use getDiscreteVariableIndexes() to obtain the SimTK::SubsytemIndex
-    * and the SimTK::DiscreteVariableIndex.
-    *
-    * @param dvName Name of the discrete variable.
-    * @return Index of discrete variable.
-    * @throws VariableNotFound if the specified discrete variable is not found
-    * in this Component.
-    */
-    const SimTK::DiscreteVariableIndex
-    getDiscreteVariableIndex(const std::string& dvName) const;
 
    /**
      * Get the indexes for a Component's discrete variable. This method is
