@@ -671,7 +671,7 @@ jobs:
       run: |
         PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
         EXISTING_COMMENT_CONTENT=$(gh api /repos/opensim-org/opensim-core/pulls/${PR_NUMBER} | jq -r '.body')
-        CUSTOM_HEADER="### Performance analysis (Windows)"
+        CUSTOM_HEADER="### Performance analysis"
 
         REVIEWABLE_TAG="<!-- Reviewable:start -->"
         REVIEWABLE_CONTENT=""
@@ -686,6 +686,8 @@ jobs:
         fi
 
         NEW_CONTENT="${CUSTOM_HEADER}
+
+        Platform: Windows, self-hosted runner
 
         $(cat results/performance_results.md)
 
@@ -753,7 +755,7 @@ jobs:
       run: |
         PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
         EXISTING_COMMENT_CONTENT=$(gh api /repos/opensim-org/opensim-core/pulls/${PR_NUMBER} | jq -r '.body')
-        CUSTOM_HEADER="### Performance analysis (Mac)"
+        CUSTOM_HEADER="### Performance analysis"
 
         REVIEWABLE_TAG="<!-- Reviewable:start -->"
         REVIEWABLE_CONTENT=""
@@ -768,6 +770,8 @@ jobs:
         fi
 
         NEW_CONTENT="${CUSTOM_HEADER}
+
+        Platform: Mac, GitHub Actions runner
 
         $(cat results/performance_results.md)
 
