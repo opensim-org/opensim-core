@@ -206,6 +206,7 @@ state names. For example, this converts column labels as follows:
   - `pelvis_tilt_u` -> `/jointset/ground_pelvis/pelvis_tilt/speed`
   - `soleus.activation` -> `/forceset/soleus/activation`
   - `soleus.fiber_length` -> `/forceset/soleus/fiber_length`
+
 This can also be used to convert an Inverse Kinematics Tool solution MOT
 file to be used as a states file (with only coordinate values).
 If a column label does not identify a state in the model,
@@ -234,6 +235,7 @@ model. For example, this converts labels as follows:
    - `pelvis_tilt_moment` -> `/jointset/ground_pelvis/pelvis_tilt`
    - `pelvis_tx_force` -> `/jointset/ground_pelvis/pelvis_tx`
    - `ankle_angle_r_moment` -> `/jointset/ankle_r/ankle_angle_r`
+
 If a label does not identify a Coordinate in the model, the column
 label is not changed. Column labels must be unique. This operator is implemented 
 using SimulationUtilities::updateInverseDynamicsLabelsToCoordinatePaths(). */

@@ -138,7 +138,7 @@ protected:
 private:
     void constructProperties();
     OpenSim_DECLARE_PROPERTY(reference, TableProcessor,
-            "Trajectries of generalized coordiante forces to track. Column "
+            "Trajectories of generalized coordiante forces to track. Column "
             "labels should be coordinate paths "
             "(e.g., /jointset/ankle_r/ankle_angle_r");
     OpenSim_DECLARE_LIST_PROPERTY(force_paths, std::string,
