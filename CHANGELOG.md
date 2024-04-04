@@ -8,8 +8,8 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.6
 ====
-- Added support for list `Socket`s via the macro `OpenSim_DECLARE_LIST_SOCKET`. The macro-generated method 
-  `appendSocketConnectee_*` can be used to connect `Object`s to a list `Socket`. In addition, `Component` and Socket have 
+- Added support for list `Socket`s via the macro `OpenSim_DECLARE_LIST_SOCKET`. The macro-generated method
+  `appendSocketConnectee_*` can be used to connect `Object`s to a list `Socket`. In addition, `Component` and Socket have
   new `getConnectee` overloads that take an index to a desired object in the list `Socket` (#3652).
 - Added `ComponentPath::root()`, which returns a `ComponentPath` equivalent to "/"
 - `ComponentPath` is now less-than (`<`) comparable, making it usable in (e.g.) `std::map`
@@ -25,7 +25,7 @@ v4.6
   implementation will now fall back to the (slower) method of following the socket's connectee path property. This
   is useful if (e.g.) following sockets *during* a call to `Component::finalizeConnections`
 - `Controller` now manages the list of controlled actuators using a list `Socket` instead of a `Set<Actuators>` (#3683).
-  The `actuator_list` property has been removed from `Controller` in lieu of the list `Socket`, which appears as 
+  The `actuator_list` property has been removed from `Controller` in lieu of the list `Socket`, which appears as
   `socket_actuators` in the XML. This change also necessitated the addition of an added `initSystem()` call in
   `AbstractTool::updateModelForces()` so that connected actuators have the same root component as the `Model`
   at the time of `Socket` connection. Finally, `PrescribedController::prescribeControlForActuator(int, Function*)` is
@@ -33,10 +33,16 @@ v4.6
 - Bumped the version of `ezc3d` to 1.5.8, which can now deal properly with Type-3 force platforms and c3d from Shadow
 - Added `StationDefinedFrame` component, which is a `Frame` component that automatically computes its position and
   orientation from `Station`s in the model
-- Models with `PrescribedController`s are now supported by Moco (#3701). Controls for actuators controlled by 
+- Models with `PrescribedController`s are now supported by Moco (#3701). Controls for actuators controlled by
   `PrescribedController`s are now excluded from the optimization problem.
 - Fixed documentation error in `Umberger2010MuscleMetabolicsProbe` where muscle mass was incorrectly omitted for the
   activation maintenance rate.
+- Methods are now available in `OpenSim::Component` for generating a list of all `ModelingOption`s and `DiscreteVariable`s in an `OpenSim::Model` or other `Component`. (#3745)
+- `OpenSim::Component` accessor methods for `ModelingOption`s and `DiscreteVariables`s now accept both absolute and relative component paths. (#3745)
+- `DiscreteVariables` in OpenSim can now be a range of numerical types, including `bool`, `int`, `double`, `Vec2`, `Vec3`, ..., `Vec6`, and `Quaternion`. (#3745)
+- `DiscreteVariable`s and `ModelingOption`s allocated natively in Simbody can now be added to an `OpenSim::Component` and accessed via its `Component` API. To support this capability, `getDiscreteVariableIndex()` has been replaced by `getDiscreteVariableIndexes()` which returns both the index of the discrete variable and the index of the `SimTK::Subsystem` to which the descrete variable belongs. (#3745)
+- Computationally efficient methods are now available for extracting the time histories of individual state variables, discrete states, and modeling options from a state trajectory (i.e., a `SimTK::Array_<SimTK::State>`). Collectively, these methods form the basis for performing a comprehensive serialzation of a state trajectory to file. (#3745)
+- Computationally efficient methods are now available for building a state trajectory (i.e., a `SimTK::Array_<SimTK::State>`) from the time histories of individual state variables, discrete states, and modeling options. Collectively, these methods form the basis for performing a comprehenvise deserialization of a states trajectory from file. (#3745)
 
 v4.5
 ====
@@ -64,7 +70,7 @@ and `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`,
   (multiplyAssign) to speed up data processing.
 - Fixed xml-related memory leaks that were occuring when deserializing OpenSim models. (Issue #3537, PR #3594)
 - Fixed a minor bug when the locally installed package (via `pip`) couldn't find the dependencies (PR #3593). Added `data_files` argument to the `setup.py` to copy all the dependencies into the opensim package folder in the Python environment.
-- Added `PolynomialPathFitter`, A utility class for fitting a set of `FunctionBasedPath`s to existing geometry-path in 
+- Added `PolynomialPathFitter`, A utility class for fitting a set of `FunctionBasedPath`s to existing geometry-path in
   an OpenSim model using `MultivariatePolynomialFunction`s (#3390)
 - Added `examplePolynomialPathFitter.py`, a scripting example that demonstrates how to use `PolynomialPathFitter` (#3607)
 - Fixed a bug where using `to_numpy()` to convert `RowVectorView`s to Python arrays returned incorrect data (#3613)
