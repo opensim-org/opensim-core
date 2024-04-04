@@ -22,6 +22,8 @@
 ///    to solve a torque-driven marker tracking problem. 
 ///  - The second problem shows how to customize a muscle-driven state tracking 
 ///    problem using more advanced features of the tool interface.
+///  - The third problem demonstrates how to solve a muscle-driven joint moment
+///    tracking problem.
 ///
 /// See the README.txt next to this file for more information.
 
@@ -219,7 +221,7 @@ void muscleDrivenJointMomentTracking() {
 
     // We will still track the coordinates trajectory, but with a lower weight.
     track.setStatesReference(TableProcessor("coordinates.sto"));
-    track.set_states_global_tracking_weight(0.1);
+    track.set_states_global_tracking_weight(0.01);
     track.set_allow_unused_references(true);
     track.set_track_reference_position_derivatives(true);
 
@@ -267,14 +269,11 @@ void muscleDrivenJointMomentTracking() {
         problem.addGoal<MocoGeneralizedForceTrackingGoal>(
             "joint_moment_tracking", 1e-2);
 
-    // Set the reference joint moments from an inverse dynamics solution. The 
-    // TableOperators convert the column labels from the InverseDynamicsTool 
-    // format to the one expected by the MocoGeneralizedForceTrackingGoal
-    // (i.e. "ankle_angle_r_moment" -> "/jointset/ankle_r/ankle_angle_r") and
-    // low-pass filter the data at 10 Hz.
+    // Set the reference joint moments from an inverse dynamics solution and
+    // low-pass filter the data at 10 Hz. The reference data should use the 
+    // same column label format as the output of the Inverse Dynamics Tool.
     TableProcessor jointMomentRef = 
         TableProcessor("inverse_dynamics.sto") |
-        TabOpUpdateInverseDynamicsLabelsToCoordinatePaths() |
         TabOpLowPassFilter(10);
     jointMomentTracking->setReference(jointMomentRef);
 
@@ -296,14 +295,14 @@ void muscleDrivenJointMomentTracking() {
     // coordinates via CoordinateCouplerConstraints (true by default).
     jointMomentTracking->setIgnoreConstrainedCoordinates(true);
     for (const auto& coordinate : model.getComponentList<Coordinate>()) {
-        const auto& coordPath = coordinate.getAbsolutePathString();
+        const auto& coordName = coordinate.getName();
         // Don't track generalized forces associated with pelvis residuals.
-        if (coordPath.find("pelvis") != std::string::npos) {
-            jointMomentTracking->setWeightForCoordinate(coordPath, 0);
+        if (coordName.find("pelvis") != std::string::npos) {
+            jointMomentTracking->setWeightForGeneralizedForce(coordName, 0);
         }
         // Encourage better tracking of the ankle joint moments.
-        if (coordPath.find("ankle") != std::string::npos) {
-            jointMomentTracking->setWeightForCoordinate(coordPath, 50);
+        if (coordName.find("ankle") != std::string::npos) {
+            jointMomentTracking->setWeightForGeneralizedForce(coordName, 100);
         }
     }
     

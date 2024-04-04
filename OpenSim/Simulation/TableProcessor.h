@@ -229,35 +229,6 @@ public:
     }
 };
 
-/** Update a vector of labels (in place) from an Inverse Dynamics Tool solution 
-to instead use the post-4.0 paths to the associated Coordinate%s in the 
-model. For example, this converts labels as follows:
-   - `pelvis_tilt_moment` -> `/jointset/ground_pelvis/pelvis_tilt`
-   - `pelvis_tx_force` -> `/jointset/ground_pelvis/pelvis_tx`
-   - `ankle_angle_r_moment` -> `/jointset/ankle_r/ankle_angle_r`
-
-If a label does not identify a Coordinate in the model, the column
-label is not changed. Column labels must be unique. This operator is implemented 
-using SimulationUtilities::updateInverseDynamicsLabelsToCoordinatePaths(). */
-class OSIMSIMULATION_API TabOpUpdateInverseDynamicsLabelsToCoordinatePaths
-        : public TableOperator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(
-        TabOpUpdateInverseDynamicsLabelsToCoordinatePaths, TableOperator);
-
-public:
-    TabOpUpdateInverseDynamicsLabelsToCoordinatePaths() {}
-
-    void operate(TimeSeriesTable& table, const Model* model) const override {
-
-        OPENSIM_THROW_IF(!model, Exception,
-                "Expected a model, but no model was provided.");
-
-        auto labels = table.getColumnLabels();
-        updateInverseDynamicsLabelsToCoordinatePaths(*model, labels);
-        table.setColumnLabels(labels);
-    }
-};
-
 /** Invoke SimulationUtilities::appendCoupledCoordinateValues() on the table. */
 class OSIMSIMULATION_API TabOpAppendCoupledCoordinateValues
         : public TableOperator {

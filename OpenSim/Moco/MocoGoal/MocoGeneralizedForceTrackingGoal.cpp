@@ -28,7 +28,7 @@ MocoGeneralizedForceTrackingGoal::MocoGeneralizedForceTrackingGoal() {
 void MocoGeneralizedForceTrackingGoal::constructProperties() {
     constructProperty_reference(TableProcessor());
     constructProperty_force_paths();
-    constructProperty_coordinate_weights(MocoWeightSet());
+    constructProperty_generalized_force_weights(MocoWeightSet());
     constructProperty_allow_unused_references(false);
     constructProperty_normalize_tracking_error(false);
     constructProperty_ignore_constrained_coordinates(true);
@@ -49,11 +49,30 @@ void MocoGeneralizedForceTrackingGoal::initializeOnModelImpl(
     const auto& coordinates = model.getCoordinatesInMultibodyTreeOrder();
     std::unordered_map<std::string, int> allCoordinateIndices;
     for (int i = 0; i < static_cast<int>(coordinates.size()); ++i) {
-        if (coordinates[i]->isConstrained(state)) {
+        if (get_ignore_constrained_coordinates() && 
+                coordinates[i]->isConstrained(state)) {
             continue;
         }
 
-        allCoordinateIndices[coordinates[i]->getAbsolutePathString()] = i;
+        std::string label = coordinates[i]->getName();
+        if (coordinates[i]->getMotionType() == 
+                Coordinate::MotionType::Rotational) {
+            label += "_moment";
+        } else if (coordinates[i]->getMotionType() == 
+                Coordinate::MotionType::Translational) {
+            label += "_force";
+        } else if (coordinates[i]->getMotionType() == 
+                Coordinate::MotionType::Coupled) {
+            label += "_force";
+        } else {
+            OPENSIM_THROW_FRMOBJ(Exception,
+                    "Expected coordinate '{}' to have Coordinate::MotionType "
+                    "of Translational, Rotational, or Coupled, but it is "
+                    "undefined.",
+                    coordinates[i]->getName());
+        }
+
+        allCoordinateIndices[label] = i;
     }
 
     // Get the system indexes for specified forces.
@@ -82,8 +101,9 @@ void MocoGeneralizedForceTrackingGoal::initializeOnModelImpl(
     m_forceIndexes.push_back(gravity.getForceIndex());
 
     // Validate the coordinate weights.
-    for (int i = 0; i < get_coordinate_weights().getSize(); ++i) {
-        const auto& weightName = get_coordinate_weights().get(i).getName();
+    for (int i = 0; i < get_generalized_force_weights().getSize(); ++i) {
+        const auto& weightName = 
+            get_generalized_force_weights().get(i).getName();
         if (allCoordinateIndices.count(weightName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
                     "Weight provided with name '{}' but this is "
@@ -105,8 +125,9 @@ void MocoGeneralizedForceTrackingGoal::initializeOnModelImpl(
         }
 
         double refWeight = 1.0;
-        if (get_coordinate_weights().contains(refName)) {
-            refWeight = get_coordinate_weights().get(refName).getWeight();
+        if (get_generalized_force_weights().contains(refName)) {
+            refWeight = 
+                get_generalized_force_weights().get(refName).getWeight();
             OPENSIM_THROW_IF_FRMOBJ(refWeight < 0, Exception,
                     "Expected coordinate weights to be non-negative, but "
                     "received a negative weight for coordinate '{}'.",
@@ -114,8 +135,8 @@ void MocoGeneralizedForceTrackingGoal::initializeOnModelImpl(
             if (refWeight < SimTK::SignificantReal) { continue; }
         }
         m_coordinateIndexes.push_back(allCoordinateIndices.at(refName));
-        m_coordinateWeights.push_back(refWeight);
-        m_coordinatePaths.push_back(refName);
+        m_generalizedForceWeights.push_back(refWeight);
+        m_generalizedForceNames.push_back(refName);
         m_refsplines.cloneAndAppend(allSplines[iref]);
 
         // Compute normalization factors.
@@ -171,14 +192,14 @@ void MocoGeneralizedForceTrackingGoal::calcIntegrandImpl(
         double error = m_normalizationFactors[iref] * (modelValue - refValue);
 
         // Compute the integrand.
-        integrand += m_coordinateWeights[iref] * error * error;
+        integrand += m_generalizedForceWeights[iref] * error * error;
     }
 }
 
 void MocoGeneralizedForceTrackingGoal::printDescriptionImpl() const {
-    for (int i = 0; i < static_cast<int>(m_coordinatePaths.size()); i++) {
-        log_cout("        coordinate: {}, weight: {}", 
-                m_coordinatePaths[i],
-                m_coordinateWeights[i]);
+    for (int i = 0; i < static_cast<int>(m_generalizedForceNames.size()); i++) {
+        log_cout("        generalized force: {}, weight: {}", 
+                m_generalizedForceNames[i],
+                m_generalizedForceWeights[i]);
     }
 }

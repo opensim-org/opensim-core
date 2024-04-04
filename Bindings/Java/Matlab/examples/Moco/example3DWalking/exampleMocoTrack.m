@@ -249,7 +249,7 @@ track.setModel(modelProcessor);
 
 % We will still track the coordinates trajectory, but with a lower weight.
 track.setStatesReference(TableProcessor("coordinates.sto"));
-track.set_states_global_tracking_weight(0.1);
+track.set_states_global_tracking_weight(0.01);
 track.set_allow_unused_references(true);
 track.set_track_reference_position_derivatives(true);
 
@@ -298,13 +298,10 @@ problem.addGoal(periodicityGoal);
 jointMomentTracking = MocoGeneralizedForceTrackingGoal(...
         "joint_moment_tracking", 1e-2);
 
-% Set the reference joint moments from an inverse dynamics solution. The 
-% TableOperators convert the column labels from the InverseDynamicsTool 
-% format to the one expected by the MocoGeneralizedForceTrackingGoal
-% (i.e. "ankle_angle_r_moment" -> "/jointset/ankle_r/ankle_angle_r") and
-% low-pass filter the data at 10 Hz.
+% Set the reference joint moments from an inverse dynamics solution and
+% low-pass filter the data at 10 Hz. The reference data should use the 
+% same column label format as the output of the Inverse Dynamics Tool.
 jointMomentRef = TableProcessor("inverse_dynamics.sto");
-jointMomentRef.append(TabOpUpdateInverseDynamicsLabelsToCoordinatePaths());
 jointMomentRef.append(TabOpLowPassFilter(10));
 jointMomentTracking.setReference(jointMomentRef);
 
@@ -330,14 +327,14 @@ jointMomentTracking.setIgnoreConstrainedCoordinates(true);
 coordinateSet = model.getCoordinateSet();
 for i = 0:coordinateSet.getSize()-1
     coordinate = coordinateSet.get(i);
-    coordPath = coordinate.getAbsolutePathString();
+    coordName = coordinate.getName();
     % Don't track generalized forces associated with pelvis residuals.
-    if contains(string(coordPath), "pelvis")
-        jointMomentTracking.setWeightForCoordinate(coordPath, 0);
+    if contains(string(coordName), "pelvis")
+        jointMomentTracking.setWeightForCoordinate(coordName, 0);
     end
     % Encourage better tracking of the ankle joint moments.
-    if contains(string(coordPath), "ankle")
-        jointMomentTracking.setWeightForCoordinate(coordPath, 50);
+    if contains(string(coordName), "ankle")
+        jointMomentTracking.setWeightForCoordinate(coordName, 100);
     end
 end
 problem.addGoal(jointMomentTracking);

@@ -53,9 +53,15 @@ public:
     }
 
     /// The table containing reference trajectories for the generalized 
-    /// coordinate forces to track. The column labels should be the paths to
-    /// the generalized coordinates (e.g., `/jointset/ankle_r/ankle_angle_r`).
-    /// The table is not loaded until the MocoProblem is initialized. 
+    /// coordinate forces to track. The column labels should follow the format
+    /// used by the OpenSim Inverse Dynamics Tool: the coordinates names with 
+    /// suffixes denoting whether they are translational 
+    /// (e.g. `pelvis_tx_force`) or rotational (e.g., `ankle_angle_r_moment`) 
+    /// generalized forces. It is assumed that coordinates with 
+    /// `Coordinate::MotionType::Coupled` are suffixed with `_force` (although 
+    /// it recommend that these coordinates are ignored via  
+    /// `setIgnoreConstrainedCoordinates()`). The table is not loaded until the
+    /// MocoProblem initialized. 
     void setReference(TableProcessor ref) {
         set_reference(std::move(ref));
     }
@@ -84,19 +90,21 @@ public:
     /// coordinate. To remove a coordinate from the cost function, set its 
     /// weight to 0. If a weight is not specified for a coordinate, the default 
     /// weight is 1.0. If a weight is already set for the requested coordinate, 
-    /// then the provided weight replaces the previous weight.
-    void setWeightForCoordinate(const std::string& name, double weight) {
-        if (get_coordinate_weights().contains(name)) {
-            upd_coordinate_weights().get(name).setWeight(weight);
+    /// then the provided weight replaces the previous weight. Weight names 
+    /// should match the column labels in the reference table (e.g., 
+    /// `ankle_angle_r_moment`, `pelvis_tx_force`, etc.).
+    void setWeightForGeneralizedForce(const std::string& name, double weight) {
+        if (get_generalized_force_weights().contains(name)) {
+            upd_generalized_force_weights().get(name).setWeight(weight);
         } else {
-            upd_coordinate_weights().cloneAndAppend({name, weight});
+            upd_generalized_force_weights().cloneAndAppend({name, weight});
         }
     }
 
     /// Set the MocoWeightSet to weight the generalized coordinate forces in
     /// the cost. Replaces the weight set if it already exists.
     void setWeightSet(const MocoWeightSet& weightSet) {
-        upd_coordinate_weights() = weightSet;
+        upd_generalized_force_weights() = weightSet;
     }
 
     /// Specify whether or not extra columns in the reference are allowed.
@@ -145,7 +153,7 @@ private:
             "Paths to model Forces whose body and mobility forces will be "
             "applied when computing generalized coordinate forces from inverse "
             "dynamics.");
-    OpenSim_DECLARE_PROPERTY(coordinate_weights, MocoWeightSet, 
+    OpenSim_DECLARE_PROPERTY(generalized_force_weights, MocoWeightSet, 
             "Set of weight objects to weight the tracking of individual "
             "generalized coordinate forces in the cost.");
     OpenSim_DECLARE_PROPERTY(allow_unused_references, bool,
@@ -162,8 +170,8 @@ private:
             "(default: true).");
 
     mutable GCVSplineSet m_refsplines;
-    mutable std::vector<double> m_coordinateWeights;
-    mutable std::vector<std::string> m_coordinatePaths;
+    mutable std::vector<double> m_generalizedForceWeights;
+    mutable std::vector<std::string> m_generalizedForceNames;
     mutable std::vector<int> m_coordinateIndexes;
     mutable std::vector<double> m_normalizationFactors;
     mutable SimTK::Array_<SimTK::ForceIndex> m_forceIndexes;

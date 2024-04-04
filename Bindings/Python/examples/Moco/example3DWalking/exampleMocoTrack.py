@@ -22,6 +22,8 @@
 #    to solve a torque-driven marker tracking problem. 
 #  - The second problem shows how to customize a muscle-driven state tracking 
 #    problem using more advanced features of the tool interface.
+#  - The third problem demonstrates how to solve a muscle-driven joint moment
+#    tracking problem.
 # 
 # See the README.txt next to this file for more information.
 
@@ -251,13 +253,10 @@ def muscleDrivenJointMomentTracking():
     jointMomentTracking = osim.MocoGeneralizedForceTrackingGoal(
             'joint_moment_tracking', 1e-2)
     
-    # Set the reference joint moments from an inverse dynamics solution. The 
-    # TableOperators convert the column labels from the InverseDynamicsTool 
-    # format to the one expected by the MocoGeneralizedForceTrackingGoal
-    # (i.e. "ankle_angle_r_moment" -> "/jointset/ankle_r/ankle_angle_r") and
-    # low-pass filter the data at 10 Hz.
+    # Set the reference joint moments from an inverse dynamics solution and
+    # low-pass filter the data at 10 Hz. The reference data should use the 
+    # same column label format as the output of the Inverse Dynamics Tool.
     jointMomentRef = osim.TableProcessor('inverse_dynamics.sto')
-    jointMomentRef.append(osim.TabOpUpdateInverseDynamicsLabelsToCoordinatePaths())
     jointMomentRef.append(osim.TabOpLowPassFilter(10))
     jointMomentTracking.setReference(jointMomentRef)
 
@@ -283,14 +282,14 @@ def muscleDrivenJointMomentTracking():
     coordinateSet = model.getCoordinateSet()
     for i in range(coordinateSet.getSize()):
         coordinate = coordinateSet.get(i)
-        coordPath = coordinate.getAbsolutePathString()
+        coordName = coordinate.getName()
         # Don't track generalized forces associated with pelvis residuals.
-        if 'pelvis' in coordPath:
-            jointMomentTracking.setWeightForCoordinate(coordPath, 0)
+        if 'pelvis' in coordName:
+            jointMomentTracking.setWeightForCoordinate(coordName, 0)
         
         # Encourage better tracking of the ankle joint moments.
-        if 'ankle' in coordPath:
-            jointMomentTracking.setWeightForCoordinate(coordPath, 50)
+        if 'ankle' in coordName:
+            jointMomentTracking.setWeightForCoordinate(coordName, 100)
         
     problem.addGoal(jointMomentTracking)
 
