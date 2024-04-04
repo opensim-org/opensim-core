@@ -17,9 +17,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoPeriodicityGoal.h"
+#include <OpenSim/Moco/Components/ActuatorInputController.h>
 
 #include <OpenSim/Simulation/SimulationUtilities.h>
-#include <OpenSim/Simulation/Control/InputController.h>
+
 
 using namespace OpenSim;
 

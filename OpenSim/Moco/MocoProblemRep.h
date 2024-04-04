@@ -345,6 +345,20 @@ public:
                         .getControls(stateDisabledConstraints);
     }
 
+    const SimTK::Vector& getUniqueInputControls(
+            const SimTK::State& stateDisabledConstraints) {
+        const auto& inputControls = getControlDistributorDisabledConstraints()
+                        .getControls(stateDisabledConstraints);
+        if (m_numUniqueControls == 0) {
+            return inputControls;
+        } else {
+            const auto& uniqueInputControls = 
+                    inputControls.block(0, 0, m_numUniqueControls, 1);
+            return uniqueInputControls.getAsVectorView();
+        }
+
+    }
+
     /// Append the missing controls from the model to the MocoSolution. This
     /// function is intended for use by solvers to ensure that the controls
     /// trajectory in the MocoTrajectory contains all the controls from the
@@ -481,6 +495,7 @@ private:
 
     bool m_prescribedKinematics = false;
     bool m_computeControlsFromModel = false;
+    int m_numUniqueControls = 0;
 
     std::unordered_map<std::string, MocoVariableInfo> m_state_infos;
     std::unordered_map<std::string, MocoVariableInfo> m_control_infos;

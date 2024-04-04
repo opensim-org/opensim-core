@@ -20,9 +20,10 @@
 
 #include "MocoProblemInfo.h"
 
+#include "Components/ActuatorInputController.h"
+
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
-#include <OpenSim/Simulation/Control/InputController.h>
 
 using namespace OpenSim;
 
@@ -66,7 +67,8 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
                     "by a user-defined controller.",
                     thisName)
 
-            if (getIgnoreControlledActuators() && !actuatorInputControls.count(thisName)) {
+            if (getIgnoreControlledActuators() && 
+                    !actuatorInputControls.count(thisName)) {
                 log_info("MocoControlBoundConstraint: Control '{}' is "
                          "associated with a user-defined controller and will "
                          "be ignored, as requested.",

@@ -334,6 +334,8 @@ private:
     void calcCostIntegrand(int index, const ContinuousInput& input,
             double& integrand) const override {
         auto mocoProblemRep = m_jar->take();
+        const auto& controlDistributor = 
+            mocoProblemRep->getControlDistributorDisabledConstraints();
 
         const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
         const auto stageDep = mocoCost.getStageDependency();
@@ -348,15 +350,20 @@ private:
                 mocoProblemRep->updStateDisabledConstraints();
         const SimTK::Vector& controls = mocoProblemRep->getControls(
                 simtkStateDisabledConstraints);
+        const SimTK::Vector& inputControls = controlDistributor.getControls(
+                simtkStateDisabledConstraints);
 
         integrand = mocoCost.calcIntegrand(
-                {input.time, simtkStateDisabledConstraints, controls});
+                {input.time, simtkStateDisabledConstraints, controls, 
+                        inputControls});
 
         m_jar->leave(std::move(mocoProblemRep));
     }
     void calcCost(int index, const CostInput& input,
             casadi::DM& cost) const override {
         auto mocoProblemRep = m_jar->take();
+        const auto& controlDistributor = 
+            mocoProblemRep->getControlDistributorDisabledConstraints();
 
         const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
         const auto stageDep = mocoCost.getStageDependency();
@@ -370,6 +377,9 @@ private:
                 mocoProblemRep->updStateDisabledConstraints(0);
         const SimTK::Vector& controlsInitial = mocoProblemRep->getControls(
                 simtkStateDisabledConstraintsInitial);
+        const SimTK::Vector& inputControlsInitial = 
+                controlDistributor.getControls(
+                        simtkStateDisabledConstraintsInitial);
 
         applyInput(stageDep, input.final_time, input.final_states,
                 input.final_controls, input.final_multipliers,
@@ -378,14 +388,17 @@ private:
                 mocoProblemRep->updStateDisabledConstraints(1);
         const SimTK::Vector& controlsFinal = mocoProblemRep->getControls(
                 simtkStateDisabledConstraintsFinal);
+        const SimTK::Vector& inputControlsFinal =
+                controlDistributor.getControls(
+                        simtkStateDisabledConstraintsFinal);
 
         // Compute the cost for this cost term.
         SimTK::Vector simtkCost((int)cost.rows(), cost.ptr(), true);
         mocoCost.calcGoal(
                 {input.initial_time, simtkStateDisabledConstraintsInitial,
-                        controlsInitial, input.final_time,
+                        controlsInitial, inputControlsInitial, input.final_time,
                         simtkStateDisabledConstraintsFinal, controlsFinal,
-                        input.integral},
+                        inputControlsFinal, input.integral},
                 simtkCost);
 
         m_jar->leave(std::move(mocoProblemRep));
@@ -394,6 +407,8 @@ private:
     void calcEndpointConstraintIntegrand(int index,
             const ContinuousInput& input, double& integrand) const override {
         auto mocoProblemRep = m_jar->take();
+        const auto& controlDistributor = 
+            mocoProblemRep->getControlDistributorDisabledConstraints();
 
         const auto& mocoEC =
                 mocoProblemRep->getEndpointConstraintByIndex(index);
@@ -409,15 +424,20 @@ private:
                 mocoProblemRep->updStateDisabledConstraints();
         const SimTK::Vector& controls = mocoProblemRep->getControls(
                 simtkStateDisabledConstraints);
+        const SimTK::Vector& inputControls = controlDistributor.getControls(
+                simtkStateDisabledConstraints);
 
         integrand = mocoEC.calcIntegrand(
-                {input.time, simtkStateDisabledConstraints, controls});
+                {input.time, simtkStateDisabledConstraints, controls, 
+                        inputControls});
 
         m_jar->leave(std::move(mocoProblemRep));
     }
     void calcEndpointConstraint(int index, const CostInput& input,
             casadi::DM& values) const override {
         auto mocoProblemRep = m_jar->take();
+        const auto& controlDistributor = 
+            mocoProblemRep->getControlDistributorDisabledConstraints();
 
         const auto& mocoEC =
                 mocoProblemRep->getEndpointConstraintByIndex(index);
@@ -432,6 +452,9 @@ private:
                 mocoProblemRep->updStateDisabledConstraints(0);
         const SimTK::Vector& controlsInitial = mocoProblemRep->getControls(
                 simtkStateDisabledConstraintsInitial);
+        const SimTK::Vector& inputControlsInitial =
+                controlDistributor.getControls(
+                        simtkStateDisabledConstraintsInitial);
 
         applyInput(stageDep, input.final_time, input.final_states,
                 input.final_controls, input.final_multipliers,
@@ -440,14 +463,17 @@ private:
                 mocoProblemRep->updStateDisabledConstraints(1);
         const SimTK::Vector& controlsFinal = mocoProblemRep->getControls(
                 simtkStateDisabledConstraintsFinal);
+        const SimTK::Vector& inputControlsFinal =
+                controlDistributor.getControls(
+                        simtkStateDisabledConstraintsFinal);
 
         // Compute the cost for this cost term.
         SimTK::Vector simtkValues((int)values.rows(), values.ptr(), true);
         mocoEC.calcGoal(
                 {input.initial_time, simtkStateDisabledConstraintsInitial,
-                        controlsInitial, input.final_time,
+                        controlsInitial, inputControlsInitial, input.final_time,
                         simtkStateDisabledConstraintsFinal,
-                        controlsFinal, input.integral},
+                        controlsFinal, inputControlsFinal, input.integral},
                 simtkValues);
 
         m_jar->leave(std::move(mocoProblemRep));

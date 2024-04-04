@@ -199,6 +199,8 @@ public:
         /// provides data structures that can be indexed in the same way as this
         /// field. Use this field rather than Model::getControls().
         const SimTK::Vector& controls;
+
+        const SimTK::Vector& input_controls;
     };
     /// Calculate the integrand that should be integrated and passed to
     /// calcCost(). If getNumIntegrals() is not zero, this must be implemented.
@@ -228,9 +230,11 @@ public:
         const SimTK::Real& initial_time;
         const SimTK::State& initial_state;
         const SimTK::Vector& initial_controls;
+        const SimTK::Vector& initial_input_controls;
         const SimTK::Real& final_time;
         const SimTK::State& final_state;
         const SimTK::Vector& final_controls;
+        const SimTK::Vector& final_input_controls;
         /// The solver computes the integral by integrating calcIntegrand().
         const double& integral;
     };

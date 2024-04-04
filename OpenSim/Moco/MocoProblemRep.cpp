@@ -20,6 +20,7 @@
 
 #include "Components/AccelerationMotion.h"
 #include "Components/DiscreteForces.h"
+#include "Components/ActuatorInputController.h"
 #include "MocoProblem.h"
 #include "MocoProblemInfo.h"
 #include "MocoScaleFactor.h"
@@ -170,12 +171,28 @@ void MocoProblemRep::initialize() {
     if (m_computeControlsFromModel) {
         for (const auto& controller :
                 m_model_base.getComponentList<InputController>()) {
+
+            // Skip ActuatorInputController for now so we can add its controls
+            // last.
+            if (dynamic_cast<const ActuatorInputController*>(&controller)) {
+                continue;
+            } 
             const auto expectedAliases =
                     controller.getExpectedInputChannelAliases();
             for (const auto& alias : expectedAliases) {
                 controlDistributorUPtr->addControl(alias);
+                ++m_numUniqueControls;
             }
         }
+
+        auto& actuatorInputController =
+            *m_model_base.updComponentList<ActuatorInputController>().begin();
+        const auto expectedAliases =
+                actuatorInputController.getExpectedInputChannelAliases();
+        for (const auto& alias : expectedAliases) {
+            controlDistributorUPtr->addControl(alias);
+        }
+
     } else {
         // This is valid since we already checked above that the order of the
         // controls in the model matches the system controls.
@@ -199,6 +216,9 @@ void MocoProblemRep::initialize() {
                             .getChannel(alias);
             controller.connectInput_inputs(channel, alias);
         }
+        // Check that the InputController is connected to the correct number of
+        // input channels.
+        controller.checkInputConnections();
     }
     m_model_base.finalizeConnections();
 

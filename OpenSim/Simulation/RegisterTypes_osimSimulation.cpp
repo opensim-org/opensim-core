@@ -271,7 +271,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::registerType( ControlSetController() );
     Object::registerType( PrescribedController() );
-    Object::registerType( ActuatorInputController() );
 
     Object::registerType( PathActuator() );
     Object::registerType( ProbeSet() );

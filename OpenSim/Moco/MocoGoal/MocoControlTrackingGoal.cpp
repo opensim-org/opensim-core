@@ -20,9 +20,9 @@
 #include "MocoControlTrackingGoal.h"
 
 #include <OpenSim/Moco/MocoUtilities.h>
+#include <OpenSim/Moco/Components/ActuatorInputController.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Control/InputController.h>
 
 using namespace OpenSim;
 
@@ -160,7 +160,8 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
             continue;
         }
 
-        if (getIgnoreControlledActuators() && !actuatorInputControls.count(controlToTrack)) {
+        if (getIgnoreControlledActuators() && 
+                !actuatorInputControls.count(controlToTrack)) {
             log_info("MocoControlTrackingGoal: Control '{}' is associated "
                      "with a user-defined controller and will be ignored, as "
                      "requested.", controlToTrack);

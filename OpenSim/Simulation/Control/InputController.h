@@ -69,7 +69,7 @@ public:
 //=============================================================================
 // METHODS
 //=============================================================================
-
+public:
     // CONSTRUCTION AND DESTRUCTION
     InputController();
     ~InputController() override;
@@ -93,9 +93,9 @@ public:
      * has been called:
      *
      * @code
-     * // Create an ActuatorInputController and add it to the model.
-     * ActuatorInputController* controller = new ActuatorInputController();
-     * controller->setName("my_actuator_controller");
+     * // Create an InputController and add it to the model.
+     * MyInputController* controller = new MyInputController();
+     * controller->setName("my_input_controller");
      * controller->addActuator(actu1);
      * controller->addActuator(actu2);
      * ...
@@ -109,6 +109,8 @@ public:
      * @endcode
      */
     virtual std::vector<std::string> getExpectedInputChannelAliases() const = 0;
+
+    virtual void checkInputConnections() const = 0;
 
     // METHODS
     /**
@@ -156,45 +158,6 @@ protected:
 private:
     std::vector<std::string> m_controlNames;
     std::vector<int> m_controlIndexes;
-};
-
-/**
- * ActuatorInputController is the simplest concrete implementation of an
- * InputController.
- *
- * It passes the scalar values from the controller's list Input to the actuators
- * in the controller's ActuatorSet. Therefore, the expected Input channel aliases
- * are simply the names of the actuator controls added to this controller. The
- * Input channel aliases must match the names of the actuator controls in the
- * model, but they do not need to be in the same order.
- */
-class OSIMSIMULATION_API ActuatorInputController : public InputController {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorInputController, InputController);
-public:
-
-    // CONSTRUCTION AND DESTRUCTION
-    ActuatorInputController();
-    ~ActuatorInputController() override;
-
-    ActuatorInputController(const ActuatorInputController& other);
-    ActuatorInputController& operator=(const ActuatorInputController& other);
-
-    ActuatorInputController(ActuatorInputController&& other);
-    ActuatorInputController& operator=(ActuatorInputController&& other);
-
-    // INPUT CONTROLLER INTERFACE
-    std::vector<std::string> getExpectedInputChannelAliases() const override;
-
-    // CONTROLLER INTERFACE
-    void computeControls(
-            const SimTK::State& s, SimTK::Vector& controls) const override;
-
-protected:
-    // MODEL COMPONENT INTERFACE
-    void extendConnectToModel(Model& model) override;
-
-private:
-    std::vector<int> m_controlIndexesInConnecteeOrder;
 };
 
 } // namespace OpenSim

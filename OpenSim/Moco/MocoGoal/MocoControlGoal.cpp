@@ -18,8 +18,7 @@
 
 #include "MocoControlGoal.h"
 
-#include <OpenSim/Moco/Components/ControlDistributor.h>
-#include <OpenSim/Simulation/Control/InputController.h>
+#include <OpenSim/Moco/Components/ActuatorInputController.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 
