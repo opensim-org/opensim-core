@@ -185,7 +185,7 @@ public:
     /// @pre The MocoProblem must contain the model corresponding to the 
     ///      provided trajectory.
     TimeSeriesTable calcGeneralizedForces(const MocoTrajectory& traj,
-            std::vector<std::string> forcePaths) const;
+            const std::vector<std::string>& forcePaths) const;
 
     /// @name Using other solvers
     /// @{

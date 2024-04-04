@@ -116,7 +116,7 @@ TimeSeriesTable MocoStudy::analyze(const MocoTrajectory& trajectory,
 
 TimeSeriesTable MocoStudy::calcGeneralizedForces(
         const MocoTrajectory& trajectory,
-        std::vector<std::string> forcePaths) const {
+        const std::vector<std::string>& forcePaths) const {
     const auto& model = get_problem().getPhase(0).getModelProcessor().process();
     return OpenSim::calcGeneralizedForces(model, trajectory, forcePaths);
 }
