@@ -285,6 +285,12 @@ TimeSeriesTable createExternalLoadsTableForGait(Model model,
 /// moments. This takes the set of Lagrange multipliers from the MocoTrajectory
 /// and uses them to apply the correct constraint forces to the model.
 ///
+/// The generalized coordinate forces are returned as a TimeSeriesTable, where
+/// the column labels match the convention used by the InverseDynamicsTool: 
+/// the coordinates names with suffixes denoting whether they are translational
+/// (e.g. `pelvis_tx_force`) or rotational (e.g., `ankle_angle_r_moment`)
+/// generalized forces.
+///
 /// @ingroup mocoutil
 OSIMMOCO_API TimeSeriesTable calcGeneralizedForces(Model model,
         const MocoTrajectory& trajectory,

@@ -441,7 +441,24 @@ TimeSeriesTable OpenSim::calcGeneralizedForces(Model model,
     std::vector<std::string> labels;
     labels.reserve(coordinates.size());
     for (const auto& coordinate : coordinates) {
-        labels.push_back(coordinate->getAbsolutePathString());
+        std::string label = coordinate->getName();
+        if (coordinate->getMotionType() == 
+                Coordinate::MotionType::Rotational) {
+            label += "_moment";
+        } else if (coordinate->getMotionType() == 
+                Coordinate::MotionType::Translational) {
+            label += "_force";
+        } else if (coordinate->getMotionType() == 
+                Coordinate::MotionType::Coupled) {
+            label += "_force";
+        } else {
+            OPENSIM_THROW(Exception,
+                    "Expected coordinate '{}' to have Coordinate::MotionType "
+                    "of Translational, Rotational, or Coupled, but it is "
+                    "undefined.",
+                    coordinate->getName());
+        }
+        labels.push_back(label);
     }
     generalizedForcesTable.setColumnLabels(labels);
 
