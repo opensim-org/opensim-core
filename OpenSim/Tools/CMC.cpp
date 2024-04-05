@@ -1095,7 +1095,7 @@ FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
 // compute the control value for all actuators this Controller is responsible for
 void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
 {
-    SimTK_ASSERT( _controlSet.getSize() == getActuatorSet().getSize() , 
+    SimTK_ASSERT( _controlSet.getSize() == getNumActuators(),
         "CMC::computeControls number of controls does not match number of actuators.");
     
     SimTK::Vector actControls(1, 0.0);

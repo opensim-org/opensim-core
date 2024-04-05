@@ -86,7 +86,7 @@ public:
         set_rotation_reference_file("");
         m_rotation_table = ref;
     }
-    /** @copydoc setRotationReference(const TimeSeriesTable_<SimTK::Rotation>& ref) */
+    /** @copydoc setRotationReference(const TimeSeriesTable_<SimTK::Rotation_<double>>& ref) */
     void setRotationReference(const TimeSeriesTable_<SimTK::Quaternion_<double>>& ref) {
         set_states_reference(TableProcessor());
         set_rotation_reference_file("");

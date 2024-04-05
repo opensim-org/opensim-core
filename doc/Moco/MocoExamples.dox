@@ -47,8 +47,6 @@ EMG-driven simulation of walking.
 @example exampleMinimizeJointReaction.m
 This is an example of MocoJointReactionGoal.
 
-
-
 @example exampleOptimizeMass.m
 A simple parameter optimization example.
 
@@ -63,6 +61,9 @@ This is Moco's simplest example.
 This example conducts a 2-D prediction of walking, employing a
 MocoPerodicityGoal.
 
+@example examplePolynomialPathFitter.m
+This example demonstrates how to use PolynomialPathFitter to 
+create a set of FunctionBasedPaths for a model.
 
 
 @example exampleMocoTrack.py
@@ -123,6 +124,10 @@ MocoSolution.
 @example exampleKinematicConstraints.py
 This example demonstrates how Moco solves problems with kinematic constraints
 and includes a visualization of the Lagrange multipliers that Moco solves for.
+
+@example examplePolynomialPathFitter.py
+This example demonstrates how to use PolynomialPathFitter to 
+create a set of FunctionBasedPaths for a model.
 
 
 
@@ -211,6 +216,7 @@ IMUTracking | torque-driven single leg | MocoStudy motion prediction, MocoAccele
 EMGTracking | lower-limb | MocoInverse, MocoControlTrackingGoal | [MATLAB](@ref exampleEMGTracking_answers.m) [Python](@ref exampleEMGTracking_answers.py)
 PredictAndTrack | double pendulum | MocoMarkerFinalGoal, MocoFinalTimeGoal, MocoMarkerTrackingGoal, MocoStateTrackingGoal | [Python](@ref examplePredictAndTrack.py)
 PrototypeCustomGoal | N/A | Sandbox for defining a custom MocoGoal | [MATLAB](@ref examplePrototypeCustomGoal.m)
+PolynomialPathFitter | N/A | Fit FunctionBasedPath%s to a model | [MATLAB](@ref examplePolynomialPathFitter.m) [Python](@ref examplePolynomialPathFitter.py)
 
 @section Advanced
 

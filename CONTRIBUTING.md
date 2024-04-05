@@ -122,6 +122,12 @@ can be used to specify platform-specific tests.
 | Windows and Linux | `"[win/linux]"`, `"[linux/win]"`             |
 | All platforms     | (no tag)                                     |
 
+Building GUI
+-------------
+In case you suspect your changes to the opensim-core is breaking API (can break client
+code including the OpenSim application/GUI) you can include the tag [build-gui] in the
+commit message and a separate build of the GUI (from the opensim-gui repository) will be
+triggered.
 
 Running Moco tests
 ------------------

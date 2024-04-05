@@ -111,8 +111,8 @@ class Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet;
  *
  * <H2><B> ACTIVATION & MAINTENANCE HEAT RATE (W) </B></H2>
  * If <I>activation_maintenance_rate_on</I> is set to true, then Adot+Mdot is calculated as follows:\n
- * <B>Adot+Mdot = [128*(1-r) + 25] * A^0.6 * S                                         </B>,  <I> l_CE <= l_CE_opt </I>\n 
- * <B>Adot+Mdot = (0.4*[128*(1-r) + 25] + 0.6*[128*(1-r) + 25]*F_CE_iso) * A^0.6 * S   </B>,  <I> l_CE >  l_CE_opt </I>
+ * <B>Adot+Mdot = m * [128*(1-r) + 25] * A^0.6 * S                                         </B>,  <I> l_CE <= l_CE_opt </I>\n 
+ * <B>Adot+Mdot = m * (0.4*[128*(1-r) + 25] + 0.6*[128*(1-r) + 25]*F_CE_iso) * A^0.6 * S   </B>,  <I> l_CE >  l_CE_opt </I>
  *     - <B>A = u          </B>,    u >  a
  *     - <B>A = (u+a)/2    </B>,    u <= a
  *
