@@ -169,6 +169,31 @@ TEST_CASE("MultivariatePolynomialFunction") {
         CHECK(f.calcValue(input) == expected);
         CHECK(f.calcDerivative({0}, input) == c[6]);
     }
+    // SECTION("Test createDerivativeFunction()") {
+    //     // 2-DOF polynomial function.
+    //     // f = 1 + 2*q_y + 3*q_y^2 + 4*q_x + 5*q_x*q_y + 6*q_x^2
+    //     MultivariatePolynomialFunction f(
+    //             createVector({1.0, 2.0, 3.0, 4.0, 5.0, 6.0}), 2, 2);
+
+    //     // Partial derivatives.
+    //     // f_x = dl/dq_x = 4 + 5*q_y + 12*q_x
+    //     // f_y = dl/dq_y = 2 + 6*q_y + 5*q_x
+    //     MultivariatePolynomialFunction f_x(
+    //             createVector({4.0, 5.0, 12.0}), 2, 1);
+    //     MultivariatePolynomialFunction f_y(
+    //             createVector({2.0, 6.0, 5.0}), 2, 1);
+
+    //     MultivariatePolynomialFunction f_x_calc = 
+    //             f.createDerivativeFunction(f, 0);
+    //     MultivariatePolynomialFunction f_y_calc =
+    //             f.createDerivativeFunction(f, 1);
+
+    //     SimTK::Vector q = SimTK::Test::randVector(2);
+    //     CHECK(f.calcDerivative({0}, q) == f_x.calcValue(q));
+    //     CHECK(f.calcDerivative({1}, q) == f_y.calcValue(q));
+    //     CHECK(f_x.calcValue(q) == f_x_calc.calcValue(q));
+    //     CHECK(f_y.calcValue(q) == f_y_calc.calcValue(q));
+    // }
 }
 
 TEST_CASE("solveBisection()") {

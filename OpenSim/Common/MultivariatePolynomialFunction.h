@@ -128,6 +128,9 @@ public:
     SimTK::Vector getTermDerivatives(const std::vector<int>& derivComponent,
             const SimTK::Vector& x) const;
 
+    static SimTK::Vector calcDerivativeCoefficients(
+            const MultivariatePolynomialFunction& mvpoly, int derivComponent);
+
 private:
     void constructProperties() {
         constructProperty_coefficients(SimTK::Vector(0));

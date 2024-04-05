@@ -425,6 +425,13 @@ public:
     /// @copydoc setLatinHypercubeAlgorithm()
     std::string getLatinHypercubeAlgorithm() const;
 
+    void setIncludeMomentArmFunctions(bool includeMomentArmFunctions) {
+        set_include_moment_arm_functions(includeMomentArmFunctions);
+    }
+    bool getIncludeMomentArmFunctions() const {
+        return get_include_moment_arm_functions();
+    }
+
     // HELPER FUNCTIONS
     /**
      * Print out a summary of the path fitting results, including information
@@ -498,6 +505,9 @@ private:
             latin_hypercube_algorithm, std::string,
             "The Latin hypercube sampling algorithm used to sample coordinate "
             "values for path fitting (default: 'random').");
+    OpenSim_DECLARE_PROPERTY(include_moment_arm_functions, bool,
+            "Whether or not to include moment arm functions in the fitted "
+            "path (default: false).");
 
     void constructProperties();
 

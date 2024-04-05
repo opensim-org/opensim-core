@@ -253,3 +253,148 @@ SimTK::Vector MultivariatePolynomialFunction::getTermDerivatives(
                     _function)->calcTermDerivatives(
                         SimTK::ArrayViewConst_<int>(derivComponent), x);
 }
+
+class PolynomialDerivativeHelper {
+
+public:
+    SimTK::Vector calcDerivativeCoefficients(
+            const MultivariatePolynomialFunction& mvpoly, int derivComponent) {
+
+        std::string var = "q" + std::to_string(derivComponent);
+                
+        SimTK::Vector coefficients = mvpoly.getCoefficients();
+        int order = mvpoly.getOrder();
+        int dimension = mvpoly.getDimension();
+
+        Polynomial poly = constructPolynomial(order, dimension);
+        // Set the coefficients of the polynomial to the coefficients of the
+        // MultivariatePolynomialFunction.
+        for (auto it = poly.begin(); it != poly.end(); it++) {
+            it->second = coefficients[it->second];
+        }
+
+        Polynomial deriv_q0 = calcDerivative(poly, var);
+        Polynomial deriv_q0_temp = constructPolynomial(order - 1, dimension);
+
+        // Use the order of terms in deriv_q0_temp to construct a new vector of 
+        // coefficients for the derivative function.
+        int numDerivCoeffs = choose(dimension + order - 1, order - 1);
+        SimTK::Vector derivCoefficients(numDerivCoeffs, 0.0);
+        for (auto it2 = deriv_q0_temp.begin(); it2 != deriv_q0_temp.end(); ++it2) {
+            auto it = deriv_q0.find(it2->first);
+            if (it != deriv_q0.end()) {
+                derivCoefficients[it2->second] = it->second;
+            }
+        }
+
+        return derivCoefficients;
+    }
+
+private:
+    typedef std::map<std::string, int> Term;
+    typedef std::map<Term, double> Polynomial;
+
+    int choose(int n, int k) {
+        if (k == 0) { return 1; }
+        return (n * choose(n - 1, k - 1)) / k;
+    }
+
+    Polynomial constructPolynomial(int m_order, int m_dimension) {
+        std::array<int, 6> nq{{0, 0, 0, 0, 0, 0}};
+        int nqNonNegative;
+        int numCoefficients = choose(m_dimension + m_order, m_order);
+        std::vector<Term> terms;
+        terms.resize(numCoefficients);
+
+        // Cycle through all possible combinations of powers for the polynomial
+        // terms.
+        int coeffIndex = 0;
+        for (nq[0] = 0; nq[0] < m_order + 1; ++nq[0]) {
+            int nq2_s;
+            if (m_dimension < 2)
+                nq2_s = 0;
+            else
+                nq2_s = m_order - nq[0];
+            for (nq[1] = 0; nq[1] < nq2_s + 1; ++nq[1]) {
+                int nq3_s;
+                if (m_dimension < 3)
+                    nq3_s = 0;
+                else
+                    nq3_s = m_order - nq[0] - nq[1];
+                for (nq[2] = 0; nq[2] < nq3_s + 1; ++nq[2]) {
+                    int nq4_s;
+                    if (m_dimension < 4)
+                        nq4_s = 0;
+                    else
+                        nq4_s = m_order - nq[0] - nq[1] - nq[2];
+                    for (nq[3] = 0; nq[3] < nq4_s + 1; ++nq[3]) {
+                        int nq5_s;
+                        if (m_dimension < 5)
+                            nq5_s = 0;
+                        else
+                            nq5_s = m_order - nq[0] - nq[1] - nq[2] - nq[3];
+                        for (nq[4] = 0; nq[4] < nq5_s + 1; ++nq[4]) {
+                            int nq6_s;
+                            if (m_dimension < 6)
+                                nq6_s = 0;
+                            else
+                                nq6_s = m_order - nq[0] - nq[1] - nq[2] -
+                                        nq[3] - nq[4];
+                            for (nq[5] = 0; nq[5] < nq6_s + 1; ++nq[5]) {
+
+                                // Construct the polynomial term.
+                                Term term;
+                                for (int i = 0; i < m_dimension; ++i) {
+                                    if (nq[i] > 0) {
+                                        term["q" + std::to_string(i)] = nq[i];
+                                    }
+                                }
+
+                                // Add the term to the polynomial.
+                                terms.at(coeffIndex) = term;
+
+                                // Increment the number of coefficients.
+                                ++coeffIndex;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Polynomial poly;
+        for (int i = 0; i < numCoefficients; ++i) {
+            poly[terms[i]] = i;
+        }
+
+        return poly;
+    }
+
+    Polynomial calcDerivative(const Polynomial& poly, const std::string& var) {
+        Polynomial deriv;
+        for (auto it = poly.begin(); it != poly.end(); it++) {
+            Term t = it->first;
+            double c = it->second;
+            for (auto it2 = t.begin(); it2 != t.end(); it2++) {
+                Term t2 = t;
+                if (it2->first == var) {
+                    t2.erase(it2->first);
+                    if (it2->second > 1) {
+                        t2[it2->first] = it2->second - 1;
+                    }
+                    deriv[t2] = c * it2->second;
+                }
+            }
+        }
+        return deriv;
+    }
+
+    
+
+};
+
+SimTK::Vector MultivariatePolynomialFunction::calcDerivativeCoefficients(
+        const MultivariatePolynomialFunction& mvpoly, int derivComponent) {
+    PolynomialDerivativeHelper helper;
+    return helper.calcDerivativeCoefficients(mvpoly, derivComponent);
+}

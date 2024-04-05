@@ -1032,11 +1032,9 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
                     }
                 }
 
-                // Solve the least-squares problem. We assume that 'A' is a tall
-                // rectangular matrix with full column rank, so we use the left
-                // pseudo-inverse to solve for the coefficients.
-                SimTK::Matrix pinv_A = (~A * A).invert() * ~A;
-                coefficients = pinv_A * b;
+                // Solve the least-squares problem.
+                SimTK::FactorQTZ factor(A);
+                factor.solve(b, coefficients);
 
                 // Calculate the RMS error.
                 SimTK::Vector b_fit = A * coefficients;
@@ -1070,6 +1068,21 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
             functionBasedPath->setName(forcePath);
             functionBasedPath->setCoordinatePaths(coordinatePathsThisForce);
             functionBasedPath->setLengthFunction(lengthFunction);
+
+            if (getIncludeMomentArmFunctions()) {
+                for (int iq = 0; iq < numCoordinatesThisForce; ++iq) {
+                    SimTK::Vector momentArmCoefficients =
+                            MultivariatePolynomialFunction::calcDerivativeCoefficients(
+                                    lengthFunction, iq);
+                    momentArmCoefficients.negateInPlace();
+
+                    MultivariatePolynomialFunction momentArmFunction;
+                    momentArmFunction.setDimension(numCoordinatesThisForce);
+                    momentArmFunction.setOrder(order-1);
+                    momentArmFunction.setCoefficients(momentArmCoefficients);
+                    functionBasedPath->appendMomentArmFunction(momentArmFunction);
+                }
+            }
 
             // Save the FunctionBasedPath.
             thesePaths.push_back(std::move(functionBasedPath));
@@ -1416,6 +1429,7 @@ void PolynomialPathFitter::constructProperties() {
     constructProperty_num_samples_per_frame(25);
     constructProperty_latin_hypercube_algorithm("random");
     constructProperty_output_directory("");
+    constructProperty_include_moment_arm_functions(false);
 }
 
 std::string PolynomialPathFitter::getDocumentDirectory() const {
