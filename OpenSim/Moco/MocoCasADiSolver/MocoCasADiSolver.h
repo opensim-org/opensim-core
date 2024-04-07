@@ -191,7 +191,7 @@ public:
             "The bounds on the slack variables added to the problem which "
             "determine the magnitude of the constraint projection at each "
             "mesh interval when using the 'Bordalba2023' method for "
-            "enforcing kinematic constraints. Default: [-0.1, 0.1].");
+            "enforcing kinematic constraints. Default: [-1e6, 1e6].");
 
     MocoCasADiSolver();
 

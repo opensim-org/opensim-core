@@ -57,7 +57,7 @@ void MocoCasADiSolver::constructProperties() {
     constructProperty_enforce_path_constraint_mesh_interior_points(false);
     constructProperty_minimize_state_projection_distance(true);
     constructProperty_state_projection_distance_weight(1e-6);
-    constructProperty_projection_slack_variable_bounds({-0.1, 0.1});
+    constructProperty_projection_slack_variable_bounds({-1e6, 1e6});
 }
 
 bool MocoCasADiSolver::isAvailable() {

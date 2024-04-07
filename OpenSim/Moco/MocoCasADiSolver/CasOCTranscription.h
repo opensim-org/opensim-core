@@ -176,9 +176,9 @@ private:
     // This holds a vector of MX types, where each element of the vector
     // contains the states needed to calculate the defect constraints for a
     // single mesh interval. The Bordalba et al. (2023) kinematic constraint
-    // method requires that point the end of one mesh interval and the start of
-    // the next mesh interval have different decision variables representing
-    // the state, even though it is the same point in time.
+    // method requires that the point at the end of one mesh interval and the 
+    // start of the next mesh interval have different decision variables 
+    // representing the state, even though they share the same time point.
     casadi::MXVector m_statesByMeshInterval;
     casadi::MX m_projectionStateDistances;
 

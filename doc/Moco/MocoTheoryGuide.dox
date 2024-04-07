@@ -296,7 +296,7 @@ The resulting finite-dimensional NLP is as follows:
          + w_{\lambda} \sum_{i=1}^{n} \textrm{simpson}_i(\|\lambda\|_2^2)  \\
          & \quad\quad S_{c,j} = \sum_{i=1}^{n} \textrm{simpson}_i(s_{c,j}(t, y, x, \lambda, p)) \\
         \mbox{subject to} \quad
-         & \bar{q}_i = \textrm{hermite}_i(q, u) + G(\bar{q}_i, p)^T \bar{\gamma}_i && i = 1, \ldots, n \\
+         & \bar{q}_i = \textrm{hermite}_i(q, u) + P(\bar{q}_i, p)^T \bar{\gamma}_i && i = 1, \ldots, n \\
          & q_i = q_{i-1} + \textrm{simpson}_i(u) && i = 1, \ldots, n \\
          & \bar{u}_i = \textrm{hermite}_i(u, f_{\dot{u}}(t, y, x, \lambda, p)) && i = 1, \ldots, n \\
          & u_i = u_{i-1} + \textrm{simpson}_i(f_{\dot{u}}(t, y, x, \lambda, p))  && i = 1, \ldots, n \\
@@ -338,20 +338,24 @@ in Trapezoidal transcription.
 
 This formulation includes the equations needed to enforce kinematic constraints based
 on the method from Posa et al. (2016) (see @ref kincon for more details). The 
-\f$ G(\bar{q}_i, p)^T \bar{\gamma}_i \f$ term represents a velocity correction that 
+\f$ P(\bar{q}_i, p)^T \bar{\gamma}_i \f$ term represents a velocity correction that 
 is necessary to impose when enforcing derivatives of kinematic constraints in the NLP. 
 The additional variables \f$ \bar{\gamma}_i \f$ help avoid problems becoming 
-overconstrained, and the kinematic Jacobian transpose operator, \f$ G(\bar{q}_i, p)^T \f$, 
+overconstrained, and the kinematic Jacobian transpose operator, \f$ P(\bar{q}_i, p)^T \f$, 
 restricts the velocity correction to the tangent plane of the constraint manifold. 
 When using the Posa et al. (2016) method, we only support enforcing derivatives of 
 position-level, or holonomic, constraints, represented by the equations:
 
 \f[
     \begin{alignat*}{2}
-         & 0 = \dot{\phi}(q, u, p) = G(q, p) u - c(t, q, p)\\
-         & 0 = \ddot{\phi}(q, u, x, \lambda, p) = G(q, p) f_{\textrm{mb}}(t, y, x, \lambda, p) - b_p(t, q, u, p) \\
+         & 0 = \dot{\phi}(q, u, p) = P(q, p) u - c(t, q, p)\\
+         & 0 = \ddot{\phi}(q, u, x, \lambda, p) = P(q, p) f_{\textrm{mb}}(t, y, x, \lambda, p) - b_p(t, q, u, p) \\
     \end{alignat*}
 \f]
+
+Where \f$ P(q, p) \f$ is the Jacobian of the holonomic constraints, which is a submatrix
+of the kinematic constraint Jacobian \f$ G(q, p) \f$. When only holonomic constraints are
+present in the multibody system, \f$ G = P \f$.
 
 The explicit multibody dynamics function is used here where \f$ \dot{u} \f$ 
 would be if it were a continuous variable in the problem (as is in implicit mode,
@@ -384,20 +388,20 @@ polynomials of degree \f$ d \f$:
 
 \f[
     \begin{alignat*}{1}
-        \mathcal{L}(t, c_k) = y_{i,0} \cdot l_0(t - t_i) + \cdots + y_{i,d} \cdot l_d(t - t_i)
+        \mathcal{L}(t, c_i) = y_{i,0} \cdot l_0(t - t_i) + \cdots + y_{i,d} \cdot l_d(t - t_i)
     \end{alignat*}
 \f]
 
-where \f$ l_k \f$ are the Lagrange polynomial basis functions and \f$ c_k \f$ is 
+where \f$ l_k \f$ are the Lagrange polynomial basis functions and \f$ c_i \f$ is 
 the vector of interpolated state values which represent the polynomial coefficients: 
 
 \f[
     \begin{alignat*}{1}
-        c_k = (y_{i,0}, \ldots, y_{i,d})
+        c_i = (y_{i,0}, \ldots, y_{i,d})
     \end{alignat*}
 \f]
 
-These polynomials only depend on the collocation points \f$ t_{i,0}, \ldots, t_{i,d} \f$ and 
+These polynomials only depend on the time points \f$ t_{i,0}, \ldots, t_{i,d} \f$ and 
 take on the following values:  
 
 \f[
@@ -416,17 +420,18 @@ evaluated at the collocation points:
 
 \f[
     \begin{alignat*}{1}
-        \mathcal{L}(t_{i,k}, c_k) = y_{i,k} \quad \textrm{for } k = 0, \ldots, d
+        \mathcal{L}(t_{i,k}, c_i) = y_{i,k} \quad \textrm{for } k = 0, \ldots, d
     \end{alignat*}
 \f]
 
 The polynomial at the initial time point of the mesh interval is simply the state variable
 at the initial mesh point, \f$ y_{i,0} = y_i \f$. The remaining polynomial coefficients can 
-be determined by enforcing the \f$ d \f$ collocation constraints:
+be determined by enforcing the \f$ d \f$ collocation constraints at the collocation points 
+\f$ t_{i,1}, \ldots, t_{i,d} \f$:
 
 \f[
     \begin{alignat*}{1}
-        \mathcal{\dot L}_i(t_{i,k}, c_k) = f(t_{i,k}, y_{i,k}, x_{i,k}, \lambda_{i,k}, p) \quad \textrm{for } k = 1, \ldots, d
+        \mathcal{\dot L}_i(t_{i,k}, c_i) = f(t_{i,k}, y_{i,k}, x_{i,k}, \lambda_{i,k}, p) \quad \textrm{for } k = 1, \ldots, d
     \end{alignat*}
 \f]
 
@@ -434,7 +439,7 @@ The left-hand side can be formulated using the constant differentiation matrix, 
 
 \f[
     \begin{alignat*}{1}
-        \mathcal{\dot L}_i(t_{i,k}, c_k) = D(t_{i,0},\ldots,t_{i,d}) \cdot y_i
+        \mathcal{\dot L}_i(t_{i,k}, c_i) = D(t_{i,0},\ldots,t_{i,d}) \cdot y_i
     \end{alignat*}
 \f]
 
@@ -442,7 +447,7 @@ Finally, the end state of the mesh interval, \f$ y_{i+1} \f$, is given by:
 
 \f[
     \begin{alignat*}{1}
-        y_{i+1} = \mathcal{L}(t_{i+1}, c_k)
+        y_{i+1} = \mathcal{L}(t_{i+1}, c_i)
     \end{alignat*}
 \f]
 
@@ -461,35 +466,40 @@ roots of the \f$ d \f$-th order Legendre polynomial, \f$ \textrm{legendre_roots}
     \end{alignat*}
 \f]
 
-The equations above can be described using the following defect constraint function:
+The collocation constraint equations and endpoint state equation above can be described using the following defect constraint function:
 
 \f[
     \begin{alignat*}{1}
-        \textrm{legendre_gauss}_i(\eta, F(\eta, p)) = \begin{bmatrix} h_i * F(\eta_i, p) - D_i \cdot \eta_i \\ \eta_{i+1} - C_i \cdot \eta_i \end{bmatrix}
+        \textrm{legendre_gauss}_i(\eta_i, F(\eta_i, p)) = \begin{bmatrix} h_i * F(\eta_{i,1:d}, p) - D_i \cdot \eta_{i,0:d} \\ \eta_{i, d+1} - C_i \cdot \eta_{i, 0:d} \end{bmatrix}
     \end{alignat*}
 \f]
 
 where \f$ \eta \f$ is any continuous state variable in the optimal control problem
 (e.g., \f$ y \f$), \f$ F \f$ is any function, \f$ D_i \f$ is the differentiation matrix
 described above, and \f$ C_i \f$ a matrix containing values to perform the polynomial 
-interpolation for \f$ \eta_{i+1} \f$.
+interpolation for \f$ \eta_{i, d+1} \f$. Note that the end state is coincident with time 
+point \f$ t_{i+1} \f$, but we use the the notation \f$ \eta_{i, d+1} \f$ to denote the end 
+state of the mesh interval.
 
-In Legendre-Gauss transcription, \f$ \eta_i \f$ and \f$ F \f$ are vector quantities 
-with size based on the polynomial degree \f$ d \f$:
+\f$ \eta_{i,0:d} \f$ and \f$ F(\eta_{i,1:d}, p) \f$ are matrix quantities 
+with row size based on the polynomial degree \f$ d \f$:
 
 \f[
     \begin{alignat*}{1}
-        \eta_i &= \begin{bmatrix} \eta_{i,0} \\ \vdots \\ \eta_{i,d} \end{bmatrix} \quad
-        F(\eta_i, p) &= \begin{bmatrix} F(t_{i,1}, \eta_{i,1}, p) \\ \vdots \\ F(t_{i,d}, \eta_{i,d}, p) \end{bmatrix} \quad
+        \eta_{i,0:d} &= \begin{bmatrix} \eta_{i,0} \\ \vdots \\ \eta_{i,d} \end{bmatrix} \quad
+        F(\eta_{i,1:d}, p) &= \begin{bmatrix} F(t_{i,1}, \eta_{i,1}, p) \\ \vdots \\ F(t_{i,d}, \eta_{i,d}, p) \end{bmatrix} \quad
     \end{alignat*}
 \f]
+
+These are matrix quantities since \f$ \eta_{i,k} \f$ and \f$ F(\eta_{i,k}, p) \f$ are 
+row vectors containing the state variable values and their derivatives, respectively.
 
 Similarly, integrals are replaced using Gauss quadrature at the Legendre polynomial roots 
 with coefficients \f$ \omega_k \f$:
 
 \f[
     \begin{alignat*}{1}
-        \textrm{quadrature}_i(G(\eta, p)) = \sum^d_{k=1} \omega_k * G(\eta_{i,k}, p)
+        \textrm{quadrature}_i(Q(\eta, p)) = \sum^d_{k=1} \omega_k * Q(\eta_{i,k}, p)
     \end{alignat*}
 \f]
 
@@ -518,7 +528,7 @@ The resulting finite-dimensional NLP is as follows:
          & 0 = \dot{\nu}(q_{i,k}, u_{i,k}, x_{i,k}, \lambda_{i,k}, p) && i = 0, \ldots, n && k = 0, \ldots, d \\
          & 0 = \alpha(q_{i,k}, u_{i,k}, x_{i,k}, \lambda_{i,k}, p)  && i = 0, \ldots, n && k = 0, \ldots, d \\
          & q_{i+1} = q^{\prime}_{i+1} + P_q(q_{i+1},p)^T \mu^{q}_i && i = 0, \ldots, n-1 \\
-         & u_{i+1} = u^{\prime}_{i+1} + PV(q_{i+1},p)^T \mu^{u}_i && i = 0, \ldots, n-1 \\
+         & u_{i+1} = u^{\prime}_{i+1} + G_{pv}(q_{i+1},p)^T \mu^{u}_i && i = 0, \ldots, n-1 \\
          & V_{L,k} \leq V_k(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{b,k}) \leq V_{U,k} \\
          & \quad\quad S_{b,k} = \sum_{i=1}^{n} \textrm{quadrature}_i(s_{b,k}(t, y, x, \lambda, p)) && k = 1, \ldots, K \\
          & g_{L} \leq g(t_i, y_i, x_{i}, \lambda_i, p) \leq g_{U}  && i = 0, \ldots, n\\
@@ -533,6 +543,10 @@ The resulting finite-dimensional NLP is as follows:
          & x_n \in [x_{f,L}, x_{f,U}] && \\
          & x_{i,k} \in [x_{L}, x_{U}] && i = 1, \ldots, n - 1 && k = 0, \ldots, d \\
          & \lambda_{i,k} \in [\lambda_L, \lambda_U] && i = 0, \ldots, n && k = 0, \ldots, d \\
+         & q^{\prime}_{i} \in [q^{\prime}_{L}, q^{\prime}_{U}] && i = 1, \ldots, n \\
+         & u^{\prime}_{i} \in [u^{\prime}_{L}, u^{\prime}_{U}] && i = 1, \ldots, n \\
+         & \mu^{q}_{i} \in [\mu^{q}_{L}, \mu^{q}_{U}] && i = 1, \ldots, n \\
+         & \mu^{u}_{i} \in [\mu^{u}_{L}, \mu^{u}_{U}] && i = 1, \ldots, n \\
          & p \in [p_{L}, p_{U}].
     \end{aligned}
 \end{align}
@@ -559,13 +573,14 @@ multibody dynamics defect constraints is a slight modification of the function
 where \f$ \eta^{\prime}_{i+1} \f$ represents the auxiliary state variables used in the 
 method from Bordalba et al. (2023). The true state variables \f$ \eta_{i+1} \f$ are the 
 projection of the auxiliary state variables onto the constraint manifold. The matrices 
-\f$ P_q(q_{i+1},p) \f$ and \f$ PV(q_{i+1},p) \f$ are used to perform the projection for 
+\f$ P_q(q_{i+1},p) \f$ and \f$ G_{pv}(q_{i+1},p) \f$ are used to perform the projection for 
 the coordinate values, \f$ q \f$, and coordinate speeds, \f$ u \f$, respectively.
-\f$ PV \f$ contains the submatrices of the kinematic constraint Jacobian, 
-\f$ G = [P; V; A] \f$, containing the acceleration-level constraint equation derivatives 
-for the holonomic, \f$ P \f$, and non-holonomic, \f$ V \f$, constraints. 
-\f$ Pq = P N^{-1} \f$, where \f$ N \f$ is a matrix relating the generalized speeds to 
-the generalized coordinate derivatives \f$ \dot q = N u \f$. Finally, the vectors 
+\f$ G_{pv} = [P; V] \f$ contains submatrices of the full kinematic constraint Jacobian 
+(\f$ G = [P; V; A] \f$) for the holonomic, \f$ P \f$, and non-holonomic, \f$ V \f$, 
+constraints. \f$ Pq = P N^{-1} \f$, where \f$ N \f$ is a matrix relating the generalized 
+speeds to the generalized coordinate derivatives \f$ \dot q = N u \f$. Currently, Moco 
+requires that \f$ N = I \f$, but the Bordalba et al. (2023) method will be valid when 
+Moco supports joints where \f$ \dot q \neq u \f$, in the future. Finally, the vectors 
 \f$ \mu^{q}_i \f$ and \f$ \mu^{u}_i \f$ are arbitrary slack variables used by the 
 optimizer to scale the projection magnitude to reach the constraint manifold.
 
@@ -598,13 +613,30 @@ interpolation constraint for the final mesh interval state:
 
 \f[
     \begin{alignat*}{1}
-        \textrm{legendre_gauss_radau}_i(\eta, F(\eta, p)) = h_i * F(\eta_i, p) - D_i \cdot \eta_i
+        \textrm{legendre_gauss_radau}_i(\eta_i, F(\eta_i, p)) = h_i * F(\eta_{i,1:d}, p) - D_i \cdot \eta_{i,0:d}
     \end{alignat*}
 \f]
 
 Replacing \f$ \textrm{legendre_gauss}_i \f$ in @ref mocolegendregausstheory above with 
 \f$ \textrm{legendre_gauss_radau}_i \f$ will yield the equations for Legendre-Gauss-Radau
-transcription.
+transcription. The modified equation needed to enforce the kinematic constraints,
+\f$ \textrm{legendre_gauss_radau}^{\prime}_i \f$, has the same form, but uses a modified 
+\f$ \eta^{\prime}_i \f$ matrix where the final row contains the auxiliary state variables:
+
+\f[
+    \begin{alignat*}{1}
+        \textrm{legendre_gauss_radau}^{\prime}_i(\eta^{\prime}_i, F(\eta^{\prime}_i, p)) = h_i * F(\eta^{\prime}_{i,1:d}, p) - D_i \cdot \eta^{\prime}_{i,0:d}
+    \end{alignat*}
+\f]
+
+\f[
+    \begin{alignat*}{1}
+        \eta^{\prime}_{i,0:d} &= \begin{bmatrix} \eta_{i,0} \\ \vdots \\ \eta^{\prime}_{i,d} \end{bmatrix} \quad
+        F(\eta^{\prime}_{i,1:d}, p) &= \begin{bmatrix} F(t_{i,1}, \eta_{i,1}, p) \\ \vdots \\ F(t_{i,d}, \eta^{\prime}_{i,d}, p) \end{bmatrix} \quad
+    \end{alignat*}
+\f]
+
+
 
 */
 } // namespace OpenSim
