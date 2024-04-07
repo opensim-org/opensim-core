@@ -625,18 +625,18 @@ transcription. The modified equation needed to enforce the kinematic constraints
 
 \f[
     \begin{alignat*}{1}
-        \textrm{legendre_gauss_radau}^{\prime}_i(\eta^{\prime}_i, F(\eta^{\prime}_i, p)) = h_i * F(\eta^{\prime}_{i,1:d}, p) - D_i \cdot \eta^{\prime}_{i,0:d}
+        \textrm{legendre_gauss_radau}^{\prime}_i(\eta^{\prime}_i, F(\eta_i, p)) = h_i * F(\eta_{i,1:d}, p) - D_i \cdot \eta^{\prime}_{i,0:d}
     \end{alignat*}
 \f]
 
 \f[
     \begin{alignat*}{1}
         \eta^{\prime}_{i,0:d} &= \begin{bmatrix} \eta_{i,0} \\ \vdots \\ \eta^{\prime}_{i,d} \end{bmatrix} \quad
-        F(\eta^{\prime}_{i,1:d}, p) &= \begin{bmatrix} F(t_{i,1}, \eta_{i,1}, p) \\ \vdots \\ F(t_{i,d}, \eta^{\prime}_{i,d}, p) \end{bmatrix} \quad
+        F(\eta_{i,1:d}, p) &= \begin{bmatrix} F(t_{i,1}, \eta_{i,1}, p) \\ \vdots \\ F(t_{i,d}, \eta_{i,d}, p) \end{bmatrix} \quad
     \end{alignat*}
 \f]
 
-
+TODO should we be computing \f$ F(t_{i,d}, \eta_{i,d}, p) \f$ with \f$ \eta^{\prime}_{i,d} \f$ instead?
 
 */
 } // namespace OpenSim
