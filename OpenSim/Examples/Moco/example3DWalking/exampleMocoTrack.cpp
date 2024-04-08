@@ -252,15 +252,20 @@ void muscleDrivenJointMomentTracking() {
     model.initSystem();
     for (const auto& coord : model.getComponentList<Coordinate>()) {
         if (!IO::EndsWith(coord.getName(), "_tx")) {
+            // Add a state pair for the coordinate value.
             periodicityGoal->addStatePair(coord.getStateVariableNames()[0]);
         }
+        // Add a state pair for the coordinate speed.
         periodicityGoal->addStatePair(coord.getStateVariableNames()[1]);
     }
     for (const auto& muscle : model.getComponentList<Muscle>()) {
-        periodicityGoal->addStatePair(muscle.getStateVariableNames()[0]);
+        // Add a control pair for the muscle excitation.
         periodicityGoal->addControlPair(muscle.getAbsolutePathString());
+        // Add a state pair for the muscle activation.
+        periodicityGoal->addStatePair(muscle.getStateVariableNames()[0]);
     }
     for (const auto& actu : model.getComponentList<Actuator>()) {
+        // Add a control pair for the actuator control.
         periodicityGoal->addControlPair(actu.getAbsolutePathString());
     }
 
@@ -300,6 +305,7 @@ void muscleDrivenJointMomentTracking() {
         if (coordName.find("pelvis") != std::string::npos) {
             jointMomentTracking->setWeightForGeneralizedForce(coordName, 0);
         }
+
         // Encourage better tracking of the ankle joint moments.
         if (coordName.find("ankle") != std::string::npos) {
             jointMomentTracking->setWeightForGeneralizedForce(coordName, 100);
