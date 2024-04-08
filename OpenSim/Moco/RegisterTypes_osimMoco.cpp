@@ -46,6 +46,7 @@
 #include "MocoGoal/MocoStepTimeAsymmetryGoal.h"
 #include "MocoGoal/MocoSumSquaredStateGoal.h"
 #include "MocoGoal/MocoTranslationTrackingGoal.h"
+#include "MocoGoal/MocoGeneralizedForceTrackingGoal.h"
 #include "MocoInverse.h"
 #include "MocoParameter.h"
 #include "MocoProblem.h"
@@ -93,6 +94,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoFinalOutputGoal());
         Object::registerType(MocoStepTimeAsymmetryGoal());
         Object::registerType(MocoStepLengthAsymmetryGoal());
+        Object::registerType(MocoGeneralizedForceTrackingGoal());
         Object::registerType(MocoBounds());
         Object::registerType(MocoInitialBounds());
         Object::registerType(MocoFinalBounds());

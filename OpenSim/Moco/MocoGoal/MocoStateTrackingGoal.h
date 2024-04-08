@@ -177,7 +177,7 @@ private:
 
     OpenSim_DECLARE_PROPERTY(allow_unused_references, bool,
             "Flag to determine whether or not references contained in the "
-            "reference_file are allowed to be ignored by the cost.");
+            "reference table are allowed to be ignored by the cost.");
 
     OpenSim_DECLARE_PROPERTY(scale_weights_with_range, bool, 
             "Use the range, or the distance between the maximum and minimum "

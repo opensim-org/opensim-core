@@ -22,6 +22,8 @@
 #    to solve a torque-driven marker tracking problem. 
 #  - The second problem shows how to customize a muscle-driven state tracking 
 #    problem using more advanced features of the tool interface.
+#  - The third problem demonstrates how to solve a muscle-driven joint moment
+#    tracking problem.
 # 
 # See the README.txt next to this file for more information.
 
@@ -161,17 +163,156 @@ def muscleDrivenStateTracking():
         if 'pelvis' in str(forcePath):
             effort.setWeightForControl(forcePath, 10)
 
-    # Constrain the muscle activations at the initial time point to equal
-    # the initial muscle excitation value.
-    problem.addGoal(osim.MocoInitialActivationGoal('initial_activation'))
+    # Constrain the states and controls to be periodic.
+    periodicityGoal = osim.MocoPeriodicityGoal("periodicity")
+    for i in range(model.getNumStateVariables()):
+        currentStateName = str(model.getStateVariableNames().getitem(i))
+        if 'pelvis_tx/value' not in currentStateName:
+            periodicityGoal.addStatePair(osim.MocoPeriodicityGoalPair(currentStateName))
+        
+    forceSet = model.getForceSet()
+    for i in range(forceSet.getSize()):
+        forcePath = forceSet.get(i).getAbsolutePathString()
+        periodicityGoal.addControlPair(osim.MocoPeriodicityGoalPair(forcePath))
+    
+    problem.addGoal(periodicityGoal)
+
+    # Update the solver problem and tolerances.
+    solver = osim.MocoCasADiSolver.safeDownCast(study.updSolver())
+    solver.set_optim_convergence_tolerance(1e-3)
+    solver.set_optim_constraint_tolerance(1e-4)
+    solver.resetProblem(problem)
+    
+    # Solve!
+    solution = study.solve()
+    solution.write('exampleMocoTrack_state_tracking_solution.sto')
+
+    # Visualize the solution.
+    study.visualize(solution)
+
+def muscleDrivenJointMomentTracking():
+
+    # Create and name an instance of the MocoTrack tool.
+    track = osim.MocoTrack()
+    track.setName('muscle_driven_joint_moment_tracking')
+
+    # Construct a ModelProcessor and set it on the tool.
+    modelProcessor = osim.ModelProcessor('subject_walk_scaled.osim')
+    modelProcessor.append(osim.ModOpAddExternalLoads('grf_walk.xml'))
+    modelProcessor.append(osim.ModOpIgnoreTendonCompliance())
+    modelProcessor.append(osim.ModOpReplaceMusclesWithDeGrooteFregly2016())
+    modelProcessor.append(osim.ModOpIgnorePassiveFiberForcesDGF())
+    modelProcessor.append(osim.ModOpScaleActiveFiberForceCurveWidthDGF(1.5))
+    modelProcessor.append(osim.ModOpReplacePathsWithFunctionBasedPaths(
+            'subject_walk_scaled_FunctionBasedPathSet.xml'))
+    track.setModel(modelProcessor)
+
+    # We will still track the coordinates trajectory, but with a lower weight.
+    track.setStatesReference(osim.TableProcessor('coordinates.sto'))
+    track.set_states_global_tracking_weight(0.1)
+    track.set_allow_unused_references(True)
+    track.set_track_reference_position_derivatives(True)
+
+    # Initial time, final time, and mesh interval.
+    track.set_initial_time(0.48)
+    track.set_final_time(1.61)
+    track.set_mesh_interval(0.02)
+
+    # Set the control effort weights.
+    controlsWeightSet = osim.MocoWeightSet()
+    model = modelProcessor.process()
+    model.initSystem()
+    forceSet = model.getForceSet()
+    for i in range(forceSet.getSize()):
+        forcePath = forceSet.get(i).getAbsolutePathString()
+        if 'pelvis' in str(forcePath):
+            controlsWeightSet.cloneAndAppend(osim.MocoWeight(forcePath, 10))
+
+    track.set_control_effort_weight(0.1)
+    track.set_controls_weight_set(controlsWeightSet)
+
+    # Get the underlying MocoStudy.
+    study = track.initialize()
+    problem = study.updProblem()
+
+    # Constrain the states and controls to be periodic.
+    periodicityGoal = osim.MocoPeriodicityGoal('periodicity')
+    for i in range(model.getNumStateVariables()):
+        currentStateName = str(model.getStateVariableNames().getitem(i))
+        if 'pelvis_tx/value' not in currentStateName:
+            periodicityGoal.addStatePair(osim.MocoPeriodicityGoalPair(currentStateName))
+        
+    forceSet = model.getForceSet()
+    for i in range(forceSet.getSize()):
+        forcePath = forceSet.get(i).getAbsolutePathString()
+        periodicityGoal.addControlPair(osim.MocoPeriodicityGoalPair(forcePath))
+    
+    problem.addGoal(periodicityGoal)
+
+    # Add a joint moment tracking goal to the problem.
+    jointMomentTracking = osim.MocoGeneralizedForceTrackingGoal(
+            'joint_moment_tracking', 1e-2)
+    
+    # Set the reference joint moments from an inverse dynamics solution and
+    # low-pass filter the data at 10 Hz. The reference data should use the 
+    # same column label format as the output of the Inverse Dynamics Tool.
+    jointMomentRef = osim.TableProcessor('inverse_dynamics.sto')
+    jointMomentRef.append(osim.TabOpLowPassFilter(10))
+    jointMomentTracking.setReference(jointMomentRef)
+
+    # Set the force paths that will be applied to the model to compute the
+    # generalized forces. Usually these are the external loads and actuators 
+    # (e.g., muscles) should be excluded, but any model force can be included 
+    # or excluded. Gravitational force is applied by default.
+    # Regular expression are supported when setting the force paths.
+    forcePaths = osim.StdVectorString()
+    forcePaths.append('.*externalloads.*')
+    jointMomentTracking.setForcePaths(forcePaths)
+
+    # Allow unused columns in the reference data.
+    jointMomentTracking.setAllowUnusedReferences(True)
+
+    # Normalize the tracking error for each generalized for by the maximum 
+    # absolute value in the reference data for that generalized force.
+    jointMomentTracking.setNormalizeTrackingError(True)
+
+    # Ignore coordinates that are locked, prescribed, or coupled to other
+    # coordinates via CoordinateCouplerConstraints (true by default).
+    jointMomentTracking.setIgnoreConstrainedCoordinates(True)
+    coordinateSet = model.getCoordinateSet()
+    for i in range(coordinateSet.getSize()):
+        coordinate = coordinateSet.get(i)
+        coordName = coordinate.getName()
+        # Don't track generalized forces associated with pelvis residuals.
+        if 'pelvis' in coordName:
+            jointMomentTracking.setWeightForCoordinate(coordName, 0)
+        
+        # Encourage better tracking of the ankle joint moments.
+        if 'ankle' in coordName:
+            jointMomentTracking.setWeightForCoordinate(coordName, 100)
+        
+    problem.addGoal(jointMomentTracking)
 
     # Update the solver tolerances.
     solver = osim.MocoCasADiSolver.safeDownCast(study.updSolver())
     solver.set_optim_convergence_tolerance(1e-3)
     solver.set_optim_constraint_tolerance(1e-4)
+    solver.resetProblem(problem)
     
-    # Solve and visualize.
+    # Solve!
     solution = study.solve()
+    solution.write('exampleMocoTrack_joint_moment_tracking_solution.sto')
+
+    # Save the model to a file.
+    model.printToXML('exampleMocoTrack_model.osim')
+
+    # Compute the joint moments and write them to a file.
+    forcePaths = osim.StdVectorString()
+    forcePaths.append('.*externalloads.*')
+    jointMoments = study.calcGeneralizedForces(solution, forcePaths)
+    osim.STOFileAdapter.write(jointMoments, 'exampleMocoTrack_joint_moments.sto')
+
+    # Visualize the solution.
     study.visualize(solution)
 
 
@@ -180,3 +321,6 @@ torqueDrivenMarkerTracking()
 
 # Solve the muscle-driven state tracking problem.
 muscleDrivenStateTracking()
+
+# Solve the muscle-driven joint moment tracking problem.
+muscleDrivenJointMomentTracking()
