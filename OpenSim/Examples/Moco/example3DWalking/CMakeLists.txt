@@ -6,6 +6,7 @@ set(EXAMPLE_MOCO_TRACK_FILES
         grf_walk.xml
         marker_trajectories.trc
         electromyography.sto
+        inverse_dynamics.sto
         README.txt)
 
 OpenSimAddExampleCXX(NAME example3DWalking SUBDIR Moco
