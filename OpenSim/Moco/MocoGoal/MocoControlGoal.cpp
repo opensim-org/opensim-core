@@ -156,8 +156,8 @@ void MocoControlGoal::calcIntegrandImpl(
 
     // TODO temporary hack for testing.
     // std::cout << "input control: " << input.input_controls[0] << std::endl;
-    const auto& input_control = input.input_controls[0];
-    integrand += m_power_function(input_control);
+    // const auto& input_control = input.input_controls[0];
+    // integrand += m_power_function(input_control);
 }
 
 void MocoControlGoal::calcGoalImpl(

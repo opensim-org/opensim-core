@@ -84,6 +84,8 @@ ActuatorInputController::getExpectedInputChannelAliases() const {
 
 void ActuatorInputController::checkInputConnections() const {
     const auto& input = getInput<double>("inputs");
+    std::cout << "input.getNumConnectees(): " << input.getNumConnectees() << std::endl;
+    std::cout << "getNumControls(): " << getNumControls() << std::endl;
     OPENSIM_THROW_IF(
             static_cast<int>(input.getNumConnectees()) != getNumControls(),
             Exception,

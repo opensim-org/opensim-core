@@ -129,8 +129,11 @@ void MocoProblemRep::initialize() {
     // Add the non-controlled, enabled actuators to an ActuatorInputController.
     auto actuatorController = make_unique<ActuatorInputController>();
     for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
+        std::cout << "DEBUG: actu.getAbsolutePathString(): " << actu.getAbsolutePathString() << std::endl;
         if (!controlledActuatorPaths.count(actu.getAbsolutePathString()) &&
                 actu.get_appliesForce()) {
+            std::cout << "DEBUG2: actu.getAbsolutePathString(): " << actu.getAbsolutePathString() << std::endl;
+
             actuatorController->addActuator(actu);
         }
     }
@@ -236,12 +239,14 @@ void MocoProblemRep::initialize() {
 
             
         }
-        // Check that the InputController is connected to the correct number of
-        // input channels.
-        controller.updInput("inputs").finalizeConnection(m_model_base);
-        controller.checkInputConnections();
     }
     m_model_base.finalizeConnections();
+
+    // Check that all InputControllers have the correct number of Input
+    // connectees.
+    for (auto& controller : m_model_base.updComponentList<InputController>()) {
+        controller.checkInputConnections();
+    }
 
     // Scale factors
     // -------------
