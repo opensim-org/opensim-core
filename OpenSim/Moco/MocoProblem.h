@@ -156,6 +156,9 @@ public:
     void setControlInfo(const std::string& name, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
 
+    void setInputControlInfo(const std::string& name, const MocoBounds&,
+            const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
+
     /// Set the bounds on generalized speed state variables
     /// for which explicit bounds are not set.
     void setDefaultSpeedBounds(const MocoBounds& bounds) {
@@ -171,6 +174,11 @@ public:
     /// control variable.
     void setControlInfoPattern(const std::string& pattern, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
+
+    void setInputControlInfoPattern(const std::string& pattern, 
+            const MocoBounds&, const MocoInitialBounds& = {}, 
+            const MocoFinalBounds& = {});
+    
     /// For muscles without explicit activation bounds, set the bounds for
     /// muscle activation (if activation dynamics are enabled) from the bounds
     /// for muscle control (excitation), using min/max control if explicit
@@ -376,6 +384,11 @@ protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_LIST_PROPERTY(control_infos_pattern, MocoVariableInfo,
             "Set control variable bounds for all controls matching a regular "
             "expression.");
+    OpenSim_DECLARE_LIST_PROPERTY(input_control_infos, MocoVariableInfo, 
+            "The Input control variables' bounds.");
+    OpenSim_DECLARE_LIST_PROPERTY(input_control_infos_pattern, MocoVariableInfo,
+            "Set control variable bounds for all Input controls matching a "
+            "regular expression.");
     OpenSim_DECLARE_LIST_PROPERTY(parameters, MocoParameter,
             "Parameter variables (model properties) to optimize.");
     OpenSim_DECLARE_LIST_PROPERTY(goals, MocoGoal,
@@ -462,6 +475,13 @@ public:
     /// Set bounds for a control variable using a regular expression.
     void setControlInfoPattern(const std::string& pattern, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
+    /// Set bounds for an Input control variable for phase 0.
+    void setInputControlInfo(const std::string& name, const MocoBounds&,
+            const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
+    /// Set bounds for an Input control variable using a regular expression.
+    void setInputControlInfoPattern(const std::string& pattern, 
+            const MocoBounds&, const MocoInitialBounds& = {}, 
+            const MocoFinalBounds& = {});
     /// Set bounds for the kinematic constraints in phase 0.
     void setKinematicConstraintBounds(const MocoBounds& bounds);
     /// Set bounds for the Lagrange multipliers in phase 0.

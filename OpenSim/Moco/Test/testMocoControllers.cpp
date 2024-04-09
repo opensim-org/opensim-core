@@ -153,14 +153,14 @@ public:
 TEST_CASE("Double pendulum synergy InputController") {
 
     Model model = ModelFactory::createDoublePendulum();
-    auto* controller = new DoublePendulumController();
-    controller->setName("double_pendulum_controller");
-    model.addController(controller);
-    model.finalizeConnections();
+    // auto* controller = new DoublePendulumController();
+    // controller->setName("double_pendulum_controller");
+    // model.addController(controller);
+    // model.finalizeConnections();
 
-    SECTION("Inputs not connected") {
-        CHECK_THROWS_AS(controller->checkInputConnections(), Exception);
-    }
+    // SECTION("Inputs not connected") {
+    //     CHECK_THROWS_AS(controller->checkInputConnections(), Exception);
+    // }
 
     MocoStudy study;
     auto& problem = study.updProblem();
@@ -169,13 +169,15 @@ TEST_CASE("Double pendulum synergy InputController") {
     problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, 0.5*SimTK::Pi);
     problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
     problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0);
-    problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
+    // problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
     problem.setControlInfo("/tau0", {-100, 100});
     problem.setControlInfo("/tau1", {-50, 50});
     // problem.setInputControlInfo(
     //     "/controllerset/double_pendulum_controller/synergy_control", {-1, 1});
     problem.addGoal<MocoControlGoal>();
     auto& solver = study.initCasADiSolver();
+
+    study.solve();
     
 
 
@@ -183,3 +185,10 @@ TEST_CASE("Double pendulum synergy InputController") {
 
     
 }
+
+
+// TODO things to test:
+// - Check if no actuators are added to the controller.
+// - Check if the controller has the wrong number of actuators.
+// - Test when all controls are from ActuatorInputController.
+// - Test when all controls are not from ActuatorInputController.

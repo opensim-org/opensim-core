@@ -166,6 +166,8 @@ public:
     std::vector<std::string> createStateInfoNames() const;
     /// Get the control names of all the control infos.
     std::vector<std::string> createControlInfoNames() const;
+    /// Get the control names of all the Input control infos.
+    std::vector<std::string> createInputControlInfoNames() const;
     /// Get the names of all the parameters.
     std::vector<std::string> createParameterNames() const;
     /// Get the names of all the goals in cost mode.
@@ -206,6 +208,10 @@ public:
     /// path appended by the control index (e.g. "/actuator_0");
     /// See MocoPhase::setControlInfo().
     const MocoVariableInfo& getControlInfo(const std::string& name) const;
+    /// Get information for Input control variables. 
+    /// See MocoPhase::setInputControlInfo().
+    const MocoVariableInfo& getInputControlInfo(const std::string& name) const;
+    /// Get information for a parameter. See MocoPhase::addParameter().
     const MocoParameter& getParameter(const std::string& name) const;
     /// Get a cost by name. This returns a MocoGoal in cost mode.
     const MocoGoal& getCost(const std::string& name) const;
@@ -345,18 +351,41 @@ public:
                         .getControls(stateDisabledConstraints);
     }
 
-    const SimTK::Vector& getUniqueInputControls(
-            const SimTK::State& stateDisabledConstraints) {
+    /// Get the vector of all InputController controls. This includes both 
+    /// controls from InputController%s added by the user and controls from the 
+    /// ActuatorInputController added by MocoProblemRep. Controls from user-added
+    /// InputController%s come first in this vector, followed by controls 
+    /// associated with the ActuatorInputController. This function is intended 
+    /// for use by solvers to compute InputController controls needed by 
+    /// MocoGoal%s and MocoPathConstraint%s. The SimTK::State argument should be
+    /// obtained from `updStateDisabledConstraints()`.
+    SimTK::VectorView getInputControls(
+            const SimTK::State& stateDisabledConstraints) const {
         const auto& inputControls = getControlDistributorDisabledConstraints()
-                        .getControls(stateDisabledConstraints);
-        if (m_numUniqueControls == 0) {
-            return inputControls;
-        } else {
-            const auto& uniqueInputControls = 
-                    inputControls.block(0, 0, m_numUniqueControls, 1);
-            return uniqueInputControls.getAsVectorView();
-        }
+                .getControls(stateDisabledConstraints);
+        return inputControls.block(0, 0, m_numUniqueInputControls, 1).getAsVectorView();
+    }
 
+    std::vector<std::string> getControlNames() const {
+        std::vector<std::string> controlNames;
+        const auto& allControlNames = getControlDistributorDisabledConstraints()
+                .getControlNamesInOrder();
+        int numControlNames = allControlNames.size() - m_numUniqueInputControls;
+        for (int i = 0; i < numControlNames; ++i) {
+            controlNames.push_back(
+                allControlNames[i + m_numUniqueInputControls]);
+        }
+        return controlNames;
+    }
+
+    std::vector<std::string> getInputControlNames() const {
+        std::vector<std::string> inputControlNames;
+        const auto& allControlNames = getControlDistributorDisabledConstraints()
+                .getControlNamesInOrder();
+        for (int i = 0; i < m_numUniqueInputControls; ++i) {
+            inputControlNames.push_back(allControlNames[i]);
+        }   
+        return inputControlNames;
     }
 
     /// Append the missing controls from the model to the MocoSolution. This
@@ -495,10 +524,11 @@ private:
 
     bool m_prescribedKinematics = false;
     bool m_computeControlsFromModel = false;
-    int m_numUniqueControls = 0;
+    int m_numUniqueInputControls = 0;
 
     std::unordered_map<std::string, MocoVariableInfo> m_state_infos;
     std::unordered_map<std::string, MocoVariableInfo> m_control_infos;
+    std::unordered_map<std::string, MocoVariableInfo> m_input_control_infos;
 
     std::vector<std::unique_ptr<MocoParameter>> m_parameters;
     std::vector<std::unique_ptr<MocoGoal>> m_costs;

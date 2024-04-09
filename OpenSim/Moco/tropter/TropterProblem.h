@@ -96,8 +96,16 @@ protected:
     }
 
     void addControlVariables() {
-        auto controlNames = m_mocoProbRep.getControlDistributorBase()
-                                         .getControlNamesInOrder();
+        auto inputControlNames = m_mocoProbRep.getInputControlNames();
+        for (const auto& inputControlName : inputControlNames) {
+            const auto& info = 
+                    m_mocoProbRep.getInputControlInfo(inputControlName);
+            this->add_control(inputControlName, convertBounds(info.getBounds()),
+                    convertBounds(info.getInitialBounds()),
+                    convertBounds(info.getFinalBounds()));
+        }
+
+        auto controlNames = m_mocoProbRep.getControlNames();
         for (const auto& controlName : controlNames) {
             const auto& info = m_mocoProbRep.getControlInfo(controlName);
             this->add_control(controlName, convertBounds(info.getBounds()),
@@ -365,11 +373,14 @@ protected:
 
         const SimTK::Vector& controls = m_mocoProbRep.getControls(
                 this->m_stateDisabledConstraints);
+        const SimTK::Vector& inputControls = m_mocoProbRep.getInputControls(
+                this->m_stateDisabledConstraints);
 
         // Compute the integrand for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
         integrand = cost.calcIntegrand(
-                {in.time, this->m_stateDisabledConstraints, controls});
+                {in.time, this->m_stateDisabledConstraints, controls, 
+                        inputControls});
     }
 
     void calc_cost(int cost_index, const tropter::CostInput<T>& in,
@@ -389,13 +400,18 @@ protected:
                 initialState);
         const SimTK::Vector& controlsFinal = m_mocoProbRep.getControls(
                 finalState);
+        const SimTK::Vector& inputControlsInitial = 
+                m_mocoProbRep.getInputControls(initialState);
+        const SimTK::Vector& inputControlsFinal = 
+                m_mocoProbRep.getInputControls(finalState);
+
 
         // Compute the cost for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
         SimTK::Vector costVector(cost.getNumOutputs());
         cost.calcGoal({in.initial_time, initialState, controlsInitial,
-                              in.final_time, finalState, controlsFinal,
-                              in.integral},
+                              inputControlsInitial, in.final_time, finalState, 
+                              controlsFinal, inputControlsFinal, in.integral},
                 costVector);
         cost_value = costVector.sum();
     }

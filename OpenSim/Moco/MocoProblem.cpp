@@ -38,6 +38,8 @@ void MocoPhase::constructProperties() {
     constructProperty_state_infos_pattern();
     constructProperty_control_infos();
     constructProperty_control_infos_pattern();
+    constructProperty_input_control_infos();
+    constructProperty_input_control_infos_pattern();
     constructProperty_parameters();
     constructProperty_goals();
     constructProperty_path_constraints();
@@ -145,6 +147,29 @@ void MocoPhase::setControlInfoPattern(const std::string& pattern,
     else
         upd_control_infos_pattern(idx) = info;
 }
+void MocoPhase::setInputControlInfo(const std::string& name,
+        const MocoBounds& bounds, const MocoInitialBounds& initial,
+        const MocoFinalBounds& final) {
+    int idx = getProperty_input_control_infos().findIndexForName(name);
+
+    MocoVariableInfo info(name, bounds, initial, final);
+    if (idx == -1)
+        append_input_control_infos(info);
+    else
+        upd_input_control_infos(idx) = info;
+}
+void MocoPhase::setInputControlInfoPattern(const std::string& pattern,
+        const MocoBounds& bounds, const MocoInitialBounds& initial,
+        const MocoFinalBounds& final) {
+    int idx = 
+        getProperty_input_control_infos_pattern().findIndexForName(pattern);
+
+    MocoVariableInfo info(pattern, bounds, initial, final);
+    if (idx == -1)
+        append_input_control_infos_pattern(info);
+    else
+        upd_input_control_infos_pattern(idx) = info;
+}
 MocoInitialBounds MocoPhase::getTimeInitialBounds() const {
     return get_time_initial_bounds();
 }
@@ -244,6 +269,11 @@ void MocoProblem::setControlInfo(const std::string& name,
         const MocoFinalBounds& final) {
     upd_phases(0).setControlInfo(name, bounds, initial, final);
 }
+void MocoProblem::setInputControlInfo(const std::string& name,
+        const MocoBounds& bounds, const MocoInitialBounds& initial,
+        const MocoFinalBounds& final) {
+    upd_phases(0).setInputControlInfo(name, bounds, initial, final);
+}
 void MocoProblem::setKinematicConstraintBounds(const MocoBounds& bounds) {
     upd_phases(0).setKinematicConstraintBounds(bounds);
 }
@@ -261,9 +291,13 @@ void MocoProblem::setStateInfoPattern(const std::string& pattern,
         const MocoFinalBounds& final) {
     upd_phases(0).setStateInfoPattern(pattern, bounds, initial, final);
 }
-
 void MocoProblem::setControlInfoPattern(const std::string& pattern,
         const MocoBounds& bounds, const MocoInitialBounds& initial,
         const MocoFinalBounds& final) {
     upd_phases(0).setControlInfoPattern(pattern, bounds, initial, final);
+}
+void MocoProblem::setInputControlInfoPattern(const std::string& pattern,
+        const MocoBounds& bounds, const MocoInitialBounds& initial,
+        const MocoFinalBounds& final) {
+    upd_phases(0).setInputControlInfoPattern(pattern, bounds, initial, final);
 }

@@ -19,6 +19,7 @@
 #include "MocoControlGoal.h"
 
 #include <OpenSim/Moco/Components/ActuatorInputController.h>
+#include <OpenSim/Moco/Components/ControlDistributor.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 
@@ -60,6 +61,19 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
     // Get control names associated with the model's ActuatorInputController.
     auto actuatorInputControlNames =
             createControlNamesForControllerType<ActuatorInputController>(model);
+
+    // Get the remaining Input control names from the ControlDistributor.
+    auto allControlNames = 
+            model.getComponentList<ControlDistributor>().begin()
+                    ->getControlNamesInOrder();
+    int numInputControls = 
+            allControlNames.size() - actuatorInputControlNames.size();
+    std::vector<std::string> inputControlNames;
+    inputControlNames.reserve(numInputControls);
+    for (int i = 0; i < numInputControls; ++i) {
+        inputControlNames.push_back(allControlNames[i]);
+    }
+
 
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
@@ -139,6 +153,11 @@ void MocoControlGoal::calcIntegrandImpl(
         integrand += m_weights[iweight] * m_power_function(control);
         ++iweight;
     }
+
+    // TODO temporary hack for testing.
+    // std::cout << "input control: " << input.input_controls[0] << std::endl;
+    const auto& input_control = input.input_controls[0];
+    integrand += m_power_function(input_control);
 }
 
 void MocoControlGoal::calcGoalImpl(
