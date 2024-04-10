@@ -359,11 +359,10 @@ public:
     /// for use by solvers to compute InputController controls needed by 
     /// MocoGoal%s and MocoPathConstraint%s. The SimTK::State argument should be
     /// obtained from `updStateDisabledConstraints()`.
-    SimTK::VectorView getInputControls(
+    const SimTK::Vector& getInputControls(
             const SimTK::State& stateDisabledConstraints) const {
-        const auto& inputControls = getControlDistributorDisabledConstraints()
+        return getControlDistributorDisabledConstraints()
                 .getControls(stateDisabledConstraints);
-        return inputControls.block(0, 0, m_numUniqueInputControls, 1).getAsVectorView();
     }
 
     std::vector<std::string> getControlNames() const {

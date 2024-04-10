@@ -62,18 +62,10 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
     auto actuatorInputControlNames =
             createControlNamesForControllerType<ActuatorInputController>(model);
 
-    // Get the remaining Input control names from the ControlDistributor.
-    auto allControlNames = 
+    // Get the Input control index map from the ControlDistributor.
+    auto inputControlIndexMap = 
             model.getComponentList<ControlDistributor>().begin()
-                    ->getControlNamesInOrder();
-    int numInputControls = 
-            allControlNames.size() - actuatorInputControlNames.size();
-    std::vector<std::string> inputControlNames;
-    inputControlNames.reserve(numInputControls);
-    for (int i = 0; i < numInputControls; ++i) {
-        inputControlNames.push_back(allControlNames[i]);
-    }
-
+                    ->getControlIndexMap();
 
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {

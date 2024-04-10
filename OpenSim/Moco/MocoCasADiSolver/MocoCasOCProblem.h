@@ -348,7 +348,7 @@ private:
                 mocoProblemRep->updStateDisabledConstraints();
         const SimTK::Vector& controls = mocoProblemRep->getControls(
                 simtkStateDisabledConstraints);
-        SimTK::VectorView inputControls = mocoProblemRep->getInputControls(
+        const SimTK::Vector& inputControls = mocoProblemRep->getInputControls(
                 simtkStateDisabledConstraints);
 
         integrand = mocoCost.calcIntegrand(
@@ -373,7 +373,7 @@ private:
                 mocoProblemRep->updStateDisabledConstraints(0);
         const SimTK::Vector& controlsInitial = mocoProblemRep->getControls(
                 simtkStateDisabledConstraintsInitial);
-        SimTK::VectorView inputControlsInitial = 
+        const SimTK::Vector& inputControlsInitial = 
                 mocoProblemRep->getInputControls(
                         simtkStateDisabledConstraintsInitial);
 
@@ -384,7 +384,7 @@ private:
                 mocoProblemRep->updStateDisabledConstraints(1);
         const SimTK::Vector& controlsFinal = mocoProblemRep->getControls(
                 simtkStateDisabledConstraintsFinal);
-        SimTK::VectorView inputControlsFinal =
+        const SimTK::Vector& inputControlsFinal =
                 mocoProblemRep->getInputControls(
                         simtkStateDisabledConstraintsFinal);
 
@@ -418,7 +418,7 @@ private:
                 mocoProblemRep->updStateDisabledConstraints();
         const SimTK::Vector& controls = mocoProblemRep->getControls(
                 simtkStateDisabledConstraints);
-        SimTK::VectorView inputControls = mocoProblemRep->getInputControls(
+        const SimTK::Vector& inputControls = mocoProblemRep->getInputControls(
                 simtkStateDisabledConstraints);
 
         integrand = mocoEC.calcIntegrand(
@@ -444,7 +444,7 @@ private:
                 mocoProblemRep->updStateDisabledConstraints(0);
         const SimTK::Vector& controlsInitial = mocoProblemRep->getControls(
                 simtkStateDisabledConstraintsInitial);
-        SimTK::VectorView inputControlsInitial =
+        const SimTK::Vector& inputControlsInitial =
                 mocoProblemRep->getInputControls(
                         simtkStateDisabledConstraintsInitial);
 
@@ -455,7 +455,7 @@ private:
                 mocoProblemRep->updStateDisabledConstraints(1);
         const SimTK::Vector& controlsFinal = mocoProblemRep->getControls(
                 simtkStateDisabledConstraintsFinal);
-        SimTK::VectorView inputControlsFinal =
+        const SimTK::Vector& inputControlsFinal =
                 mocoProblemRep->getInputControls(
                         simtkStateDisabledConstraintsFinal);
 

@@ -200,7 +200,7 @@ public:
         /// field. Use this field rather than Model::getControls().
         const SimTK::Vector& controls;
 
-        const SimTK::VectorView input_controls;
+        const SimTK::Vector& input_controls;
     };
     /// Calculate the integrand that should be integrated and passed to
     /// calcCost(). If getNumIntegrals() is not zero, this must be implemented.
