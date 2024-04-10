@@ -206,11 +206,12 @@ state names. For example, this converts column labels as follows:
   - `pelvis_tilt_u` -> `/jointset/ground_pelvis/pelvis_tilt/speed`
   - `soleus.activation` -> `/forceset/soleus/activation`
   - `soleus.fiber_length` -> `/forceset/soleus/fiber_length`
+
 This can also be used to convert an Inverse Kinematics Tool solution MOT
 file to be used as a states file (with only coordinate values).
 If a column label does not identify a state in the model,
-the column label is not changed. Column labels must be unique.
-This operator is implemented using updateStateLabels40(). */
+the column label is not changed. Column labels must be unique. This operator is 
+implemented using SimulationUtilities::updateStateLabels40(). */
 class OSIMSIMULATION_API TabOpUseAbsoluteStateNames : public TableOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(TabOpUseAbsoluteStateNames, TableOperator);
 

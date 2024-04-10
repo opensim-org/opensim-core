@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim: MocoUtilities.h                                                   *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
@@ -274,6 +274,27 @@ TimeSeriesTable createExternalLoadsTableForGait(Model model,
         const MocoTrajectory& trajectory,
         const std::vector<std::string>& forcePathsRightFoot,
         const std::vector<std::string>& forcePathsLeftFoot);
+
+/// Compute the set of generalized coordinate forces from the provided Model and 
+/// MocoTrajectory. The MocoTrajectory should be compatible with the provided 
+/// Model (e.g., generated from a MocoStudy with the same Model). Only the model
+/// Force%s that are specified in `forcePaths` are applied to the model when
+/// calculating the generalized forces.
+///
+/// `SimbodyMatterSubsystem::calcResidualForce()` is used to calculate the joint
+/// moments. This takes the set of Lagrange multipliers from the MocoTrajectory
+/// and uses them to apply the correct constraint forces to the model.
+///
+/// The generalized coordinate forces are returned as a TimeSeriesTable, where
+/// the column labels match the convention used by the InverseDynamicsTool: 
+/// the coordinates names with suffixes denoting whether they are translational
+/// (e.g. `pelvis_tx_force`) or rotational (e.g., `ankle_angle_r_moment`)
+/// generalized forces.
+///
+/// @ingroup mocoutil
+OSIMMOCO_API TimeSeriesTable calcGeneralizedForces(Model model,
+        const MocoTrajectory& trajectory,
+        const std::vector<std::string>& forcePaths);
 
 } // namespace OpenSim
 
