@@ -651,14 +651,22 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
     // Assemble the results into one TimeSeriesTable.
     int timeIdx = 0;
     const auto& times = values.getIndependentColumn();
-    double dt = (times[1] - times[0]) / (get_num_samples_per_frame() + 1);
     TimeSeriesTable valuesSampled;
+    double dt = (times[1] - times[0]) / (get_num_samples_per_frame() + 2);
     for (int i = 0; i < get_num_parallel_threads(); ++i) {
         int numTimeIndexes = outputs[i].nrow() / get_num_samples_per_frame();
         for (int j = 0; j < numTimeIndexes; ++j) {
             // Append the original values.
             valuesSampled.appendRow(times[timeIdx], 
                     values.getRowAtIndex(timeIdx));
+
+            // Update the time step, if possible. Otherwise, use the last time
+            // step.
+            if (timeIdx+1 < static_cast<int>(values.getNumRows())) {
+                dt = (times[timeIdx+1] - times[timeIdx]) / 
+                     (get_num_samples_per_frame() + 2);
+            }
+
             // Append the sampled values.
             for (int irow = 0; irow < get_num_samples_per_frame(); ++irow) {
                 valuesSampled.appendRow(times[timeIdx] + (irow + 1)*dt,
@@ -1007,7 +1015,7 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
                 // Initialize the multivariate polynomial function.
                 int numCoefficients =
                         choose(numCoordinatesThisForce + order, order);
-                SimTK::Vector dummyCoefficients(numCoefficients, 0.0);
+                SimTK::Vector dummyCoefficients(numCoefficients, 1.0);
                 MultivariatePolynomialFunction dummyFunction(dummyCoefficients,
                         numCoordinatesThisForce, order);
 
@@ -1068,20 +1076,19 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
             functionBasedPath->setName(forcePath);
             functionBasedPath->setCoordinatePaths(coordinatePathsThisForce);
             functionBasedPath->setLengthFunction(lengthFunction);
-
             if (getIncludeMomentArmFunctions()) {
                 for (int iq = 0; iq < numCoordinatesThisForce; ++iq) {
-                    SimTK::Vector momentArmCoefficients =
-                            MultivariatePolynomialFunction::calcDerivativeCoefficients(
-                                    lengthFunction, iq);
-                    momentArmCoefficients.negateInPlace();
-
-                    MultivariatePolynomialFunction momentArmFunction;
-                    momentArmFunction.setDimension(numCoordinatesThisForce);
-                    momentArmFunction.setOrder(order-1);
-                    momentArmFunction.setCoefficients(momentArmCoefficients);
-                    functionBasedPath->appendMomentArmFunction(momentArmFunction);
+                    MultivariatePolynomialFunction momentArmFunction =
+                            lengthFunction.generateDerivativeFunction(iq, true);
+                    functionBasedPath->appendMomentArmFunction(
+                            momentArmFunction);
                 }
+            }
+            if (getIncludeLengtheningSpeedFunction()) {
+                MultivariatePolynomialFunction lengtheningSpeedFunction = 
+                        lengthFunction.generateChainRuleFunction();
+                functionBasedPath->setLengtheningSpeedFunction(
+                        lengtheningSpeedFunction);
             }
 
             // Save the FunctionBasedPath.
@@ -1429,7 +1436,8 @@ void PolynomialPathFitter::constructProperties() {
     constructProperty_num_samples_per_frame(25);
     constructProperty_latin_hypercube_algorithm("random");
     constructProperty_output_directory("");
-    constructProperty_include_moment_arm_functions(false);
+    constructProperty_include_moment_arm_functions(true);
+    constructProperty_include_lengthening_speed_function(false);
 }
 
 std::string PolynomialPathFitter::getDocumentDirectory() const {

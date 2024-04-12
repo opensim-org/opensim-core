@@ -25,11 +25,10 @@ namespace OpenSim {
 
 /** A multivariate polynomial function.
  *
- * This implementation assumes a maximum of six input dimensions and allows
- * computation of first-order derivatives only.
+ * This implementation allows computation of first-order derivatives only.
  *
- * For a third-order polynomial that is a function of three components (X, Y, Z),
- * the order is a follows:
+ * For a third-order polynomial that is a function of three components 
+ * (X, Y, Z), the order is a follows:
  *
  * <pre>
  * Index | X  Y  Z
@@ -128,8 +127,10 @@ public:
     SimTK::Vector getTermDerivatives(const std::vector<int>& derivComponent,
             const SimTK::Vector& x) const;
 
-    static SimTK::Vector calcDerivativeCoefficients(
-            const MultivariatePolynomialFunction& mvpoly, int derivComponent);
+    MultivariatePolynomialFunction generateDerivativeFunction(
+            int derivComponent, bool negateCoefficients = false) const;
+
+    MultivariatePolynomialFunction generateChainRuleFunction() const;
 
 private:
     void constructProperties() {
@@ -138,6 +139,124 @@ private:
         constructProperty_order(0);
     }
 };
+
+
+typedef std::map<std::string, int> Term;
+    
+class MultivariatePolynomial : public std::map<Term, double> {
+public:
+    MultivariatePolynomial(std::map<Term, double> terms) : 
+            std::map<Term, double>(terms) {}
+
+    // Coeffs: c = (1, 2, ..., N)
+    MultivariatePolynomial(
+            int dimension, int order, const std::vector<std::string>& vars);
+
+    // Coeffs: from MultivariatePolynomialFunction
+    MultivariatePolynomial(
+            const MultivariatePolynomialFunction& mvp, 
+            const std::vector<std::string>& vars);
+
+    MultivariatePolynomial getDerivative(const std::string& var) const;
+
+    SimTK::Vector calcCoefficients(int dimension, int order,
+            const std::vector<std::string>& vars) const;
+
+    int calcOrder() const {
+        int order = 0;
+        for (auto it = begin(); it != end(); it++) {
+            int sum = 0;
+            for (auto it2 = it->first.begin(); it2 != it->first.end(); it2++) {
+                sum += it2->second;
+            }
+            if (sum > order) {
+                order = sum;
+            }
+        }
+        return order;
+    }
+
+    MultivariatePolynomial multiplyByVariable(
+            const std::string& var, int exponent) {
+        std::map<Term, double> terms;
+        const MultivariatePolynomial& poly = *this;
+        for (auto it = poly.begin(); it != poly.end(); it++) {
+            Term term = it->first;
+            if (term.find(var) == term.end()) {
+                term[var] = exponent;
+            } else {
+                term[var] += exponent;
+            }
+            terms[term] = it->second;
+        }
+        MultivariatePolynomial result(terms);
+        return result;
+    }
+
+    std::pair<MultivariatePolynomial, MultivariatePolynomial> factorVariable(
+            const std::string& var) const {
+        // All the terms that do not contain the variable.
+        std::map<Term, double> termsLeft;
+        // All the terms that contain the variable.
+        std::map<Term, double> termsRight;
+
+        const MultivariatePolynomial& poly = *this;
+        for (auto it = poly.begin(); it != poly.end(); it++) {
+            Term term = it->first;
+            if (term.find(var) == term.end()) {
+                termsLeft[term] = it->second;
+            } else {
+                term[var] -= 1;
+                if (term[var] == 0) {
+                    term.erase(var);
+                }
+                termsRight[term] = it->second;
+            }
+        }
+        MultivariatePolynomial left(termsLeft);
+        MultivariatePolynomial right(termsRight);
+        return std::make_pair(left, right);
+    }
+
+    friend std::ostream& operator<<(
+            std::ostream& os, const MultivariatePolynomial& poly) {
+        for (auto it = poly.begin(); it != poly.end(); it++) {
+            os << it->second;
+            for (auto it2 = it->first.begin(); it2 != it->first.end(); it2++) {
+                os << it2->first << "^" << it2->second;
+            }
+            if (std::next(it) != poly.end())
+                os << " + ";
+        }
+        return os;
+    }
+
+    static MultivariatePolynomial sum(
+            const std::vector<MultivariatePolynomial>& polys);
+
+    static int choose(int n, int k) {
+        if (k == 0) { return 1; }
+        return (n * choose(n - 1, k - 1)) / k;
+    }
+
+    static void generateCombinations(std::vector<int> current, int level, 
+            int sum, int dimension, int order, 
+            std::vector<std::vector<int>>& combinations) {
+        if (level == dimension) {
+            if (sum <= order) {
+                combinations.push_back(current);
+            }
+            return;
+        }
+        for (int i = 0; i <= order - sum; ++i) {
+            current.push_back(i);
+            generateCombinations(current, level + 1, sum + i, 
+                    dimension, order, combinations);
+            current.pop_back();
+        }
+    }
+};
+
 
 } // namespace OpenSim
 
