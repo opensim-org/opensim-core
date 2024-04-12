@@ -601,9 +601,9 @@ TEST_CASE("testFunctionBasedPath") {
         // momentArm_y = -dl/dq_y = -2 - 6*q_y - 5*q_x
         bool negateCoefficients = true;
         MultivariatePolynomialFunction momentArmFunc_x = 
-            lengthFunc.generateDerivativeFunction(0, negateCoefficients);
+            lengthFunc.generateFunctionFirstDerivative(0, negateCoefficients);
         MultivariatePolynomialFunction momentArmFunc_y =
-            lengthFunc.generateDerivativeFunction(1, negateCoefficients);
+            lengthFunc.generateFunctionFirstDerivative(1, negateCoefficients);
 
         // Speed function.
         // speed = -qdot_x * momentArm_x - qdot_y * momentArm_y
@@ -614,7 +614,7 @@ TEST_CASE("testFunctionBasedPath") {
         // See the documentation for MultivariatePolynomialFunction for an
         // explanation of the coefficients.
         MultivariatePolynomialFunction speedFunc = 
-                lengthFunc.generateChainRuleFunction();
+                lengthFunc.generateFunctionChainRule();
 
         // Test values.
         const double length = 1.0 + 2.0 * q_y + 3.0 * q_y * q_y + 4.0 * q_x + 

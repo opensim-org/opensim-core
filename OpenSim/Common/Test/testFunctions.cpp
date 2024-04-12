@@ -180,9 +180,9 @@ TEST_CASE("MultivariatePolynomialFunction") {
                 createVector({2.0, 6.0, 5.0}), 2, 1);
 
         MultivariatePolynomialFunction f_x_test = 
-                f.generateDerivativeFunction(0);
+                f.generateFunctionFirstDerivative(0);
         MultivariatePolynomialFunction f_y_test = 
-                f.generateDerivativeFunction(1);
+                f.generateFunctionFirstDerivative(1);
 
         SimTK::Vector q = SimTK::Test::randVector(2);
         SimTK_TEST_EQ(f.calcDerivative({0}, q), f_x.calcValue(q));

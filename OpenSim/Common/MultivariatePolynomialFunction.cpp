@@ -21,6 +21,9 @@
 
 using namespace OpenSim;
 
+//=============================================================================
+//                        MULTIVARIATE POLYNOMIAL
+//=============================================================================
 MultivariatePolynomial::MultivariatePolynomial(
         int dimension, int order, const std::vector<std::string>& vars) {
 
@@ -95,38 +98,21 @@ MultivariatePolynomial::MultivariatePolynomial(
     }
 }
 
-MultivariatePolynomial MultivariatePolynomial::getDerivative(
-        const std::string& var) const {
-    const MultivariatePolynomial& poly = *this;
-    std::map<Term, double> terms;
-    for (auto it = poly.begin(); it != poly.end(); it++) {
-        Term t = it->first;
-        double c = it->second;
-        for (auto it2 = t.begin(); it2 != t.end(); it2++) {
-            Term t2 = t;
-            if (it2->first == var) {
-                t2.erase(it2->first);
-                if (it2->second > 1) {
-                    t2[it2->first] = it2->second - 1;
-                }
-                terms[t2] = c * it2->second;
-            }
+//=============================================================================
+//                               CALC METHODS
+//=============================================================================
+int MultivariatePolynomial::calcOrder() const {
+    int order = 0;
+    for (auto it = begin(); it != end(); it++) {
+        int sum = 0;
+        for (auto it2 = it->first.begin(); it2 != it->first.end(); it2++) {
+            sum += it2->second;
+        }
+        if (sum > order) {
+            order = sum;
         }
     }
-    MultivariatePolynomial deriv(terms);
-    return deriv;
-}
-
-MultivariatePolynomial MultivariatePolynomial::sum(
-        const std::vector<MultivariatePolynomial>& polys) {
-    std::map<Term, double> terms;
-    for (const auto& poly : polys) {
-        for (auto it = poly.begin(); it != poly.end(); it++) {
-            terms[it->first] += it->second;
-        }
-    }
-    MultivariatePolynomial sum(terms);
-    return sum;
+    return order;
 }
 
 SimTK::Vector MultivariatePolynomial::calcCoefficients(int dimension, int order, 
@@ -152,10 +138,120 @@ SimTK::Vector MultivariatePolynomial::calcCoefficients(int dimension, int order,
     return coefficients;
 }
 
+//=============================================================================
+//                        POLYNOMIAL OPERATIONS
+//=============================================================================
+MultivariatePolynomial MultivariatePolynomial::getDerivative(
+        const std::string& var) const {
+    const MultivariatePolynomial& poly = *this;
+    MultivariatePolynomial deriv;
+    for (auto it = poly.begin(); it != poly.end(); it++) {
+        Term t = it->first;
+        double c = it->second;
+        for (auto it2 = t.begin(); it2 != t.end(); it2++) {
+            Term t2 = t;
+            if (it2->first == var) {
+                t2.erase(it2->first);
+                if (it2->second > 1) {
+                    t2[it2->first] = it2->second - 1;
+                }
+                deriv[t2] = c * it2->second;
+            }
+        }
+    }
+    return deriv;
+}
 
+MultivariatePolynomial MultivariatePolynomial::multiplyByVariable(
+            const std::string& var, int exponent) const {
+    MultivariatePolynomial result;
+    const MultivariatePolynomial& poly = *this;
+    for (auto it = poly.begin(); it != poly.end(); it++) {
+        Term term = it->first;
+        if (term.find(var) == term.end()) {
+            term[var] = exponent;
+        } else {
+            term[var] += exponent;
+        }
+        result[term] = it->second;
+    }
+    return result;
+}
 
+std::pair<MultivariatePolynomial, MultivariatePolynomial> 
+MultivariatePolynomial::factorVariable(const std::string& var) const {
+    // All the terms that do not contain the variable.
+    MultivariatePolynomial left;
+    // All the terms that contain the variable.
+    MultivariatePolynomial right;
 
+    const MultivariatePolynomial& poly = *this;
+    for (auto it = poly.begin(); it != poly.end(); it++) {
+        Term term = it->first;
+        if (term.find(var) == term.end()) {
+            left[term] = it->second;
+        } else {
+            term[var] -= 1;
+            if (term[var] == 0) {
+                term.erase(var);
+            }
+            right[term] = it->second;
+        }
+    }
+    return std::make_pair(left, right);
+}
 
+MultivariatePolynomial 
+MultivariatePolynomial::sum(const std::vector<MultivariatePolynomial>& polys) {
+    MultivariatePolynomial sum;
+    for (const auto& poly : polys) {
+        for (auto it = poly.begin(); it != poly.end(); it++) {
+            sum[it->first] += it->second;
+        }
+    }
+    return sum;
+}
+
+//=============================================================================
+//                              HELPER METHODS
+//=============================================================================
+int MultivariatePolynomial::choose(int n, int k) {
+    if (k == 0) { return 1; }
+    return (n * choose(n - 1, k - 1)) / k;
+}
+
+void MultivariatePolynomial::generateCombinations(std::vector<int> current, 
+        int level, int sum, int dimension, int order, 
+        std::vector<std::vector<int>>& combinations) {
+    if (level == dimension) {
+        if (sum <= order) {
+            combinations.push_back(current);
+        }
+        return;
+    }
+    for (int i = 0; i <= order - sum; ++i) {
+        current.push_back(i);
+        generateCombinations(current, level + 1, sum + i, 
+                dimension, order, combinations);
+        current.pop_back();
+    }
+}
+
+std::ostream& operator<<(std::ostream& os, const MultivariatePolynomial& poly) {
+    for (auto it = poly.begin(); it != poly.end(); it++) {
+        os << it->second;
+        for (auto it2 = it->first.begin(); it2 != it->first.end(); it2++) {
+            os << it2->first << "^" << it2->second;
+        }
+        if (std::next(it) != poly.end())
+            os << " + ";
+    }
+    return os;
+}
+
+//=============================================================================
+//                     MULTIVARIATE POLYNOMIAL FUNCTION
+//=============================================================================
 template <class T>
 class SimTKMultivariatePolynomial : public SimTK::Function_<T> {
 public:
@@ -176,7 +272,7 @@ public:
         precomputeCombinations();
 
         // Construct a Horner's scheme for the polynomial.
-        std::map<Term, double> terms;
+        MultivariatePolynomial poly;
         std::vector<std::string> vars;
         for (int i = 0; i < dimension; ++i) {
             vars.push_back("x" + std::to_string(i));
@@ -188,11 +284,17 @@ public:
                     term[vars[j]] = m_combinations[i][j];
                 }
             }
-            terms[term] = m_coefficients[i];
+            poly[term] = m_coefficients[i];
         }
-        MultivariatePolynomial poly(terms);
+        m_value = createHornerScheme(vars, poly);    
 
-        m_hornerScheme = createHornerScheme(vars, poly);    
+        // Construct Horner's schemes for the polynomial derivatives.
+        for (int i = 0; i < dimension; ++i) {
+            std::string var = "x" + std::to_string(i);
+            MultivariatePolynomial deriv = poly.getDerivative(var);
+            m_derivatives.push_back(createHornerScheme(vars, deriv));
+        }
+
     }
 
     // T calcValue(const SimTK::Vector& x) const {
@@ -209,7 +311,7 @@ public:
     // }
 
     T calcValue(const SimTK::Vector& x) const {
-        return m_hornerScheme->calcValue(x);
+        return m_value->calcValue(x);
     }
 
     SimTK::Vector_<T> calcTermValues(const SimTK::Vector& x) const {
@@ -225,24 +327,29 @@ public:
         return values;
     }
 
+    // T calcDerivative(const SimTK::Array_<int>& derivComponent, 
+    //         const SimTK::Vector& x) const {
+    //     T result = static_cast<T>(0);
+    //     for (int i = 0; i < m_coefficients.size(); ++i) {
+    //         if (m_combinations[i][derivComponent[0]] > 0) {
+    //             T term = m_coefficients[i];
+    //             for (int j = 0; j < m_dimension; ++j) {
+    //                 if (j == derivComponent[0]) {
+    //                     term *= m_combinations[i][j];
+    //                     term *= std::pow(x[j], m_combinations[i][j] - 1);
+    //                 } else {
+    //                     term *= std::pow(x[j], m_combinations[i][j]);
+    //                 }
+    //             }
+    //             result += term;
+    //         }
+    //     }
+    //     return result;
+    // }
+
     T calcDerivative(const SimTK::Array_<int>& derivComponent, 
             const SimTK::Vector& x) const {
-        T result = static_cast<T>(0);
-        for (int i = 0; i < m_coefficients.size(); ++i) {
-            if (m_combinations[i][derivComponent[0]] > 0) {
-                T term = m_coefficients[i];
-                for (int j = 0; j < m_dimension; ++j) {
-                    if (j == derivComponent[0]) {
-                        term *= m_combinations[i][j];
-                        term *= std::pow(x[j], m_combinations[i][j] - 1);
-                    } else {
-                        term *= std::pow(x[j], m_combinations[i][j]);
-                    }
-                }
-                result += term;
-            }
-        }
-        return result;
+        return m_derivatives[derivComponent[0]]->calcValue(x);
     }
 
     SimTK::Vector_<T> calcTermDerivatives(
@@ -379,9 +486,9 @@ private:
             return SimTK::ClonePtr<Factor>(factor); 
         }
     }
-
     
-    SimTK::ClonePtr<HornerSchemeNode> m_hornerScheme;
+    SimTK::ClonePtr<HornerSchemeNode> m_value;
+    std::vector<SimTK::ClonePtr<HornerSchemeNode>> m_derivatives;
 };
 
 SimTK::Function* MultivariatePolynomialFunction::createSimTKFunction() const {
@@ -409,7 +516,7 @@ SimTK::Vector MultivariatePolynomialFunction::getTermDerivatives(
 }
 
 MultivariatePolynomialFunction 
-MultivariatePolynomialFunction::generateDerivativeFunction(
+MultivariatePolynomialFunction::generateFunctionFirstDerivative(
         int derivComponent, bool negateCoefficients) const {
     
     SimTK::Vector coefficients = getCoefficients();
@@ -438,7 +545,7 @@ MultivariatePolynomialFunction::generateDerivativeFunction(
 }
 
 MultivariatePolynomialFunction 
-MultivariatePolynomialFunction::generateChainRuleFunction() const {
+MultivariatePolynomialFunction::generateFunctionChainRule() const {
 
     SimTK::Vector coefficients = getCoefficients();
     int order = getOrder();
