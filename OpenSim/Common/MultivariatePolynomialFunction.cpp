@@ -38,8 +38,7 @@ MultivariatePolynomial::MultivariatePolynomial(
             vars.size(), dimension)
 
     std::vector<std::vector<int>> combinations;
-    generateCombinations(
-            std::vector<int>(), 0, 0, dimension, order, combinations);
+    generateCombinations(dimension, order, combinations);
     for (int i = 0; i < numCoefficients; ++i) {
         Term term;
         for (int j = 0; j < dimension; ++j) {
@@ -81,8 +80,7 @@ MultivariatePolynomial::MultivariatePolynomial(
             vars.size(), dimension)
 
     std::vector<std::vector<int>> combinations;
-    generateCombinations(
-            std::vector<int>(), 0, 0, dimension, order, combinations);
+    generateCombinations(dimension, order, combinations);
     for (int i = 0; i < coefficients.size(); ++i) {
         Term term;
         for (int j = 0; j < dimension; ++j) {
@@ -237,6 +235,13 @@ void MultivariatePolynomial::generateCombinations(std::vector<int> current,
     }
 }
 
+void MultivariatePolynomial::generateCombinations(int dimension, int order, 
+        std::vector<std::vector<int>>& combinations) {
+    combinations.clear();
+    generateCombinations(std::vector<int>(), 0, 0, 
+            dimension, order, combinations);
+}
+
 std::ostream& operator<<(std::ostream& os, const MultivariatePolynomial& poly) {
     for (auto it = poly.begin(); it != poly.end(); it++) {
         os << it->second;
@@ -269,7 +274,8 @@ public:
                 "Expected {} coefficients but got {}.", 
                 numCoefs, coefficients.size());
 
-        precomputeCombinations();
+        MultivariatePolynomial::generateCombinations(m_dimension, m_order, 
+                m_combinations);
 
         // Construct a Horner's scheme for the polynomial.
         MultivariatePolynomial poly;
@@ -278,7 +284,7 @@ public:
             vars.push_back("x" + std::to_string(i));
         }
         for (int i = 0; i < numCoefs; ++i) {
-            Term term;
+            std::map<std::string, int> term;
             for (int j = 0; j < dimension; ++j) {
                 if (m_combinations[i][j] > 0) {
                     term[vars[j]] = m_combinations[i][j];
@@ -288,7 +294,7 @@ public:
         }
         m_value = createHornerScheme(vars, poly);    
 
-        // Construct Horner's schemes for the polynomial derivatives.
+        // Construct a Horner's scheme for each polynomial derivatives.
         for (int i = 0; i < dimension; ++i) {
             std::string var = "x" + std::to_string(i);
             MultivariatePolynomial deriv = poly.getDerivative(var);
@@ -297,21 +303,13 @@ public:
 
     }
 
-    // T calcValue(const SimTK::Vector& x) const {
-    //     T result = static_cast<T>(0);
-    //     for (int i = 0; i < m_coefficients.size(); ++i) {
-    //         T term = m_coefficients[i];
-    //         for (int j = 0; j < m_dimension; ++j) {
-    //             term *= std::pow(x[j], m_combinations[i][j]);
-    //         }
-    //         result += term;
-    //     }
-        
-    //     return result;
-    // }
-
     T calcValue(const SimTK::Vector& x) const {
         return m_value->calcValue(x);
+    }
+
+    T calcDerivative(const SimTK::Array_<int>& derivComponent, 
+            const SimTK::Vector& x) const {
+        return m_derivatives[derivComponent[0]]->calcValue(x);
     }
 
     SimTK::Vector_<T> calcTermValues(const SimTK::Vector& x) const {
@@ -325,31 +323,6 @@ public:
         }
         
         return values;
-    }
-
-    // T calcDerivative(const SimTK::Array_<int>& derivComponent, 
-    //         const SimTK::Vector& x) const {
-    //     T result = static_cast<T>(0);
-    //     for (int i = 0; i < m_coefficients.size(); ++i) {
-    //         if (m_combinations[i][derivComponent[0]] > 0) {
-    //             T term = m_coefficients[i];
-    //             for (int j = 0; j < m_dimension; ++j) {
-    //                 if (j == derivComponent[0]) {
-    //                     term *= m_combinations[i][j];
-    //                     term *= std::pow(x[j], m_combinations[i][j] - 1);
-    //                 } else {
-    //                     term *= std::pow(x[j], m_combinations[i][j]);
-    //                 }
-    //             }
-    //             result += term;
-    //         }
-    //     }
-    //     return result;
-    // }
-
-    T calcDerivative(const SimTK::Array_<int>& derivComponent, 
-            const SimTK::Vector& x) const {
-        return m_derivatives[derivComponent[0]]->calcValue(x);
     }
 
     SimTK::Vector_<T> calcTermDerivatives(
@@ -380,12 +353,6 @@ public:
     }
 
 private:
-    void precomputeCombinations() {
-        m_combinations.clear();
-        MultivariatePolynomial::generateCombinations(
-            std::vector<int>(), 0, 0, m_dimension, m_order, m_combinations);
-    }
-
     SimTK::Vector_<T> m_coefficients;
     int m_dimension;
     int m_order;
