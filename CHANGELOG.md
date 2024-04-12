@@ -43,6 +43,9 @@ v4.6
 - `DiscreteVariable`s and `ModelingOption`s allocated natively in Simbody can now be added to an `OpenSim::Component` and accessed via its `Component` API. To support this capability, `getDiscreteVariableIndex()` has been replaced by `getDiscreteVariableIndexes()` which returns both the index of the discrete variable and the index of the `SimTK::Subsystem` to which the descrete variable belongs. (#3745)
 - Computationally efficient methods are now available for extracting the time histories of individual state variables, discrete states, and modeling options from a state trajectory (i.e., a `SimTK::Array_<SimTK::State>`). Collectively, these methods form the basis for performing a comprehensive serialzation of a state trajectory to file. (#3745)
 - Computationally efficient methods are now available for building a state trajectory (i.e., a `SimTK::Array_<SimTK::State>`) from the time histories of individual state variables, discrete states, and modeling options. Collectively, these methods form the basis for performing a comprehenvise deserialization of a states trajectory from file. (#3745)
+- Added `Model::calcForceContributionsSum()`, a wrapper method for `GeneralForceSubsystem` for efficiently 
+  calculating a subset of a model's body and mobility forces. (#3755) 
+- Added `Force::getForceIndex()` to allow accessing the `SimTK::ForceIndex` for force elements. (#3755) 
 
 v4.5
 ====

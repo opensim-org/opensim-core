@@ -73,7 +73,7 @@ choco install git.install -y
 # Install dependencies of opensim-core
 choco install python3  -y
 choco install jdk8  -y
-choco install swig  -y
+choco install swig  -y --version 4.1.1
 choco install nsis  -y
 py -m pip install numpy
 

@@ -30,6 +30,7 @@
 #include <OpenSim/Moco/MocoGoal/MocoTranslationTrackingGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoStepTimeAsymmetryGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoStepLengthAsymmetryGoal.h>
+#include <OpenSim/Moco/MocoGoal/MocoGeneralizedForceTrackingGoal.h>
 #include <OpenSim/Moco/MocoInverse.h>
 #include <OpenSim/Moco/MocoParameter.h>
 #include <OpenSim/Moco/MocoProblem.h>

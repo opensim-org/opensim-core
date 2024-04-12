@@ -260,11 +260,12 @@ public:
             const MocoBounds& bounds);
 
     /// Normalize each component of the 3-D tracking error by the peak value of 
-    /// each contact force component in the tracking data. No normalization is 
-    /// applied when tracking data is close to zero (default: false).
+    /// each contact force component in the tracking data. An exception is 
+    /// thrown when tracking data is close to zero (default: false).
     void setNormalizeTrackingError(bool tf) {
         set_normalize_tracking_error(tf);
     }
+    /// @copydoc setNormalizeTrackingError(bool tf)
     bool getNormalizeTrackingError() { return get_normalize_tracking_error(); }
 
 protected:

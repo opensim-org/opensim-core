@@ -20,6 +20,9 @@
 
 #include "MocoProblem.h"
 #include "MocoTrajectory.h"
+#include "OpenSim/Simulation/InverseDynamicsSolver.h"
+#include "OpenSim/Simulation/Model/ExternalLoads.h"
+#include "OpenSim/Common/STOFileAdapter.h"
 #include <regex>
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
@@ -357,4 +360,107 @@ TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
     StatesTrajectory statesTraj = trajectory.exportToStatesTrajectory(model);
     return createExternalLoadsTableForGait(std::move(model), statesTraj,
             forcePathsRightFoot, forcePathsLeftFoot);
+}
+
+TimeSeriesTable OpenSim::calcGeneralizedForces(Model model,
+        const MocoTrajectory& trajectory,
+        const std::vector<std::string>& forcePaths) {
+
+    // Get the coordinates in multibody tree order, which is the order that the
+    // inverse dynamics operator expects.
+    model.initSystem();
+    const auto& coordinates = model.getCoordinatesInMultibodyTreeOrder();
+
+    // Compute the "known" udots from the trajectory.
+    StatesTrajectory statesTraj = trajectory.exportToStatesTrajectory(model);
+    TimeSeriesTable accelerationsTable =
+            analyzeMocoTrajectory<double>(model, trajectory, {".*acceleration"});
+    SimTK::Matrix udots(statesTraj.getSize(), model.getNumCoordinates());
+    for (int j = 0; j < static_cast<int>(coordinates.size()); ++j) {
+        const auto& coordinate = coordinates[j];
+        udots.updCol(j) = accelerationsTable.getDependentColumn(
+                fmt::format("{}|acceleration",
+                            coordinate->getAbsolutePathString()));
+    }
+
+    // Get the multipliers from the trajectory. The inverse dynamics operator
+    // will use these to apply the constraint forces to the model.
+    TimeSeriesTable multipliersTable = trajectory.exportToMultipliersTable();    
+
+    // Get the system indexes for specified forces.
+    std::regex regex;
+    SimTK::Array_<SimTK::ForceIndex> forceIndexes;
+    for (const auto& forcePath : forcePaths) {
+        regex = std::regex(forcePath);
+        for (const auto& force : model.getComponentList<Force>()) {
+            if (std::regex_match(force.getAbsolutePathString(), regex)) {
+                auto it = std::find(forceIndexes.begin(), forceIndexes.end(),
+                        force.getForceIndex());
+                OPENSIM_THROW_IF(it != forceIndexes.end(), Exception,
+                    "Expected unique force paths, but force at path " 
+                    "'{}' was specified multiple times (possibly due to "
+                    "specifying the full path and a regex pattern).", 
+                    force.getAbsolutePathString());
+            
+                forceIndexes.push_back(force.getForceIndex());
+            }
+        }
+    }
+
+    // Add in the gravitational force index.
+    const SimTK::Force::Gravity& gravity = model.getGravityForce();
+    forceIndexes.push_back(gravity.getForceIndex());    
+
+    // Compute the generalized forces.
+    const auto& matter = model.getMatterSubsystem();
+    const auto& forceSubsystem = model.getForceSubsystem();
+    SimTK::Vector appliedMobilityForces(matter.getNumMobilities());
+    SimTK::Vector_<SimTK::SpatialVec> appliedBodyForces(matter.getNumBodies());
+    SimTK::Vector generalizedForces(model.getNumCoordinates());
+
+    TimeSeriesTable generalizedForcesTable;
+    for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
+        const auto& state = statesTraj[i];
+        generalizedForces.setToZero();
+
+        model.realizeDynamics(state);
+        appliedMobilityForces.setToZero();
+        appliedBodyForces.setToZero();
+        model.calcForceContributionsSum(state, forceIndexes, 
+                appliedBodyForces, appliedMobilityForces);
+
+        const auto& udot = ~udots.row(i);
+        const auto& multipliers = multipliersTable.getRowAtIndex(i);
+        matter.calcResidualForce(state, appliedMobilityForces, 
+                appliedBodyForces, udot, ~multipliers, generalizedForces);
+
+        generalizedForcesTable.appendRow(state.getTime(), ~generalizedForces);
+    }
+
+    // Set column labels.
+    std::vector<std::string> labels;
+    labels.reserve(coordinates.size());
+    for (const auto& coordinate : coordinates) {
+        std::string label = coordinate->getName();
+        if (coordinate->getMotionType() == 
+                Coordinate::MotionType::Rotational) {
+            label += "_moment";
+        } else if (coordinate->getMotionType() == 
+                Coordinate::MotionType::Translational) {
+            label += "_force";
+        } else if (coordinate->getMotionType() == 
+                Coordinate::MotionType::Coupled) {
+            label += "_force";
+        } else {
+            OPENSIM_THROW(Exception,
+                    "Expected coordinate '{}' to have Coordinate::MotionType "
+                    "of Translational, Rotational, or Coupled, but it is "
+                    "undefined.",
+                    coordinate->getName());
+        }
+        labels.push_back(label);
+    }
+    generalizedForcesTable.setColumnLabels(labels);
+
+    return generalizedForcesTable;
 }

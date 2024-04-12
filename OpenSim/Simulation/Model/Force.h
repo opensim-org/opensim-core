@@ -54,9 +54,10 @@ public:
         "NOTE: Prior to OpenSim 4.0, this behavior was controlled by the "
         "'isDisabled' property, where 'true' meant that force was not being "
         "applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.");
-    //=========================================================================
-    // OUTPUTS
-    //=========================================================================
+
+//=========================================================================
+// OUTPUTS
+//=========================================================================
     OpenSim_DECLARE_OUTPUT(potential_energy, double,
                            computePotentialEnergy, SimTK::Stage::Velocity);
 
@@ -65,7 +66,7 @@ public:
 //=============================================================================
 
     /**
-    * Tell SimBody to parallelize this force. Should be 
+    * Tell Simbody to parallelize this force. Should be 
     * set to true for any forces that will take time to 
     * complete their calcForce method. Note that all forces
     * that set this flag to false will be put in series on a
@@ -105,6 +106,9 @@ public:
      * specific subclass, it must also implement the getPath() method. 
      */
     virtual bool hasVisualPath() const { return false; }
+
+    /** Return the index to the SimTK::Force in the underlying system. */
+    SimTK::ForceIndex getForceIndex() const { return _index; }
 
 protected:
     /** Default constructor sets up Force-level properties; can only be
