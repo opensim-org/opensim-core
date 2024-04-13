@@ -146,7 +146,17 @@ public:
     MultivariatePolynomialFunction generateFunctionFirstDerivative(
             int derivComponent, bool negateCoefficients = false) const;
 
-
+    /**
+     * Generate a new MultivariatePolynomialFunction representing the dot
+     * product of the function first derivatives with a new vector of variables.
+     * This is useful for generating a function that represents the derivative
+     * of the current function with respect to a different independent variable
+     * (e.g., time).
+     * 
+     * For example, if the current function has the arguments 
+     * \f$ x = x_0, x_1, \ldots, x_N \f$
+     *  
+     */
     MultivariatePolynomialFunction generateFunctionChainRule() const;
 
 private:
@@ -162,7 +172,7 @@ private:
  * A helper class to construct and manipulate multivariate polynomials using 
  * symbolic operations.
  */ 
-class MultivariatePolynomial : 
+class OSIMCOMMON_API MultivariatePolynomial : 
         public std::map<std::map<std::string, int>, double> {
 
 public:
