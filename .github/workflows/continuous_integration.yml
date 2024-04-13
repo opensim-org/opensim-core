@@ -160,6 +160,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+          ref: ${{ github.event.pull_request.base.ref }} 
 
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.

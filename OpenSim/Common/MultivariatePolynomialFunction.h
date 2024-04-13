@@ -23,7 +23,8 @@
 
 namespace OpenSim {
 
-/** A multivariate polynomial function.
+/** 
+ * A multivariate polynomial function.
  *
  * This implementation allows computation of first-order derivatives only.
  *
@@ -61,7 +62,7 @@ namespace OpenSim {
  * @param coefficients the polynomial coefficients in order of ascending
  *        powers starting from the last independent component.
  *
- * @note The order of coefficients for this class is the *opposite** from the
+ * @note The order of coefficients for this class is the **opposite** from the
  *       order used in the univariate PolynomialFunction.
  */
 class OSIMCOMMON_API MultivariatePolynomialFunction : public Function {
@@ -152,9 +153,6 @@ public:
      * This is useful for generating a function that represents the derivative
      * of the current function with respect to a different independent variable
      * (e.g., time).
-     * 
-     * For example, if the current function has the arguments 
-     * \f$ x = x_0, x_1, \ldots, x_N \f$
      *  
      */
     MultivariatePolynomialFunction generateFunctionChainRule() const;
@@ -166,7 +164,6 @@ private:
         constructProperty_order(0);
     }
 };
-
 
 /** 
  * A helper class to construct and manipulate multivariate polynomials using 
