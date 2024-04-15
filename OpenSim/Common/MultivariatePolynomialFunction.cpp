@@ -21,238 +21,267 @@
 
 using namespace OpenSim;
 
-//=============================================================================
-//                        MULTIVARIATE POLYNOMIAL
-//=============================================================================
-MultivariatePolynomial::MultivariatePolynomial(
-        int dimension, int order, const std::vector<std::string>& vars) {
+/** 
+ * A helper class to construct and manipulate multivariate polynomials using 
+ * symbolic operations.
+ */ 
+typedef std::map<std::string, int> Term;
+class MultivariatePolynomial : public std::map<Term, double> {
 
-    int numCoefficients = choose(dimension + order, order);
-    std::vector<Term> terms;
-    terms.resize(numCoefficients);
+public:
+    MultivariatePolynomial() = default;
 
-    OPENSIM_THROW_IF(static_cast<int>(vars.size()) != dimension, 
-            Exception,
-            "Expected the number of variable names ({}) to match the "
-            "polynomial dimension ({}), but it does not.", 
-            vars.size(), dimension)
+    MultivariatePolynomial(
+            int dimension, int order, const std::vector<std::string>& vars) {
 
-    std::vector<std::vector<int>> combinations;
-    generateCombinations(dimension, order, combinations);
-    for (int i = 0; i < numCoefficients; ++i) {
-        Term term;
-        for (int j = 0; j < dimension; ++j) {
-            if (combinations[i][j] > 0) {
-                term[vars[j]] = combinations[i][j];
-            }
-        }
-        terms.at(i) = term;
-    }
-    
-    for (int i = 0; i < numCoefficients; ++i) {
-        (*this)[terms[i]] = i;
-    }
-}
+        int numCoefficients = choose(dimension + order, order);
+        std::vector<Term> terms;
+        terms.resize(numCoefficients);
 
-MultivariatePolynomial::MultivariatePolynomial(
-        const MultivariatePolynomialFunction& mvp, 
-        const std::vector<std::string>& vars) {
+        OPENSIM_THROW_IF(static_cast<int>(vars.size()) != dimension, 
+                Exception,
+                "Expected the number of variable names ({}) to match the "
+                "polynomial dimension ({}), but it does not.", 
+                vars.size(), dimension)
 
-    int dimension = mvp.getDimension();
-    int order = mvp.getOrder();
-    SimTK::Vector coefficients = mvp.getCoefficients();
-
-    OPENSIM_THROW_IF(
-            coefficients.size() != choose(dimension + order, order), 
-            Exception,
-            "Expected the number of coefficients ({}) to match the "
-            "number of coefficients in a polynomial of dimension {} and order "
-            "{}, but it does not.", 
-            coefficients.size(), dimension, order);
-
-    std::vector<Term> terms;
-    terms.resize(coefficients.size());
-
-    OPENSIM_THROW_IF(static_cast<int>(vars.size()) != dimension, 
-            Exception,
-            "Expected the number of variable names ({}) to match the "
-            "polynomial dimension ({}), but it does not.", 
-            vars.size(), dimension)
-
-    std::vector<std::vector<int>> combinations;
-    generateCombinations(dimension, order, combinations);
-    for (int i = 0; i < coefficients.size(); ++i) {
-        Term term;
-        for (int j = 0; j < dimension; ++j) {
-            if (combinations[i][j] > 0) {
-                term[vars[j]] = combinations[i][j];
-            }
-        }
-        terms.at(i) = term;
-    }
-    
-    for (int i = 0; i < coefficients.size(); ++i) {
-        (*this)[terms[i]] = coefficients[i];
-    }
-}
-
-//=============================================================================
-//                               CALC METHODS
-//=============================================================================
-int MultivariatePolynomial::calcOrder() const {
-    int order = 0;
-    for (auto it = begin(); it != end(); it++) {
-        int sum = 0;
-        for (auto it2 = it->first.begin(); it2 != it->first.end(); it2++) {
-            sum += it2->second;
-        }
-        if (sum > order) {
-            order = sum;
-        }
-    }
-    return order;
-}
-
-SimTK::Vector MultivariatePolynomial::calcCoefficients(int dimension, int order, 
-        const std::vector<std::string>& vars) const {
-
-    OPENSIM_THROW_IF(static_cast<int>(vars.size()) != dimension, 
-            Exception,
-            "Expected the number of variable names ({}) to match the "
-            "polynomial dimension ({}), but it does not.", 
-            vars.size(), dimension)
-    
-    const MultivariatePolynomial& poly = *this;
-    MultivariatePolynomial temp(dimension, order, vars);
-    int numCoefficients = choose(dimension + order, order);
-    SimTK::Vector coefficients(numCoefficients, 0.0);
-    for (auto it2 = temp.begin(); it2 != temp.end(); ++it2) {
-        auto it = poly.find(it2->first);
-        if (it != poly.end()) {
-            coefficients[it2->second] = it->second;
-        }
-    }
-
-    return coefficients;
-}
-
-//=============================================================================
-//                        POLYNOMIAL OPERATIONS
-//=============================================================================
-MultivariatePolynomial MultivariatePolynomial::getDerivative(
-        const std::string& var) const {
-    const MultivariatePolynomial& poly = *this;
-    MultivariatePolynomial deriv;
-    for (auto it = poly.begin(); it != poly.end(); it++) {
-        Term t = it->first;
-        double c = it->second;
-        for (auto it2 = t.begin(); it2 != t.end(); it2++) {
-            Term t2 = t;
-            if (it2->first == var) {
-                t2.erase(it2->first);
-                if (it2->second > 1) {
-                    t2[it2->first] = it2->second - 1;
+        std::vector<std::vector<int>> combinations;
+        generateCombinations(dimension, order, combinations);
+        for (int i = 0; i < numCoefficients; ++i) {
+            Term term;
+            for (int j = 0; j < dimension; ++j) {
+                if (combinations[i][j] > 0) {
+                    term[vars[j]] = combinations[i][j];
                 }
-                deriv[t2] = c * it2->second;
+            }
+            terms.at(i) = term;
+        }
+        
+        for (int i = 0; i < numCoefficients; ++i) {
+            (*this)[terms[i]] = i;
+        }
+    }
+
+    MultivariatePolynomial(
+            const MultivariatePolynomialFunction& mvp, 
+            const std::vector<std::string>& vars) {
+
+        int dimension = mvp.getDimension();
+        int order = mvp.getOrder();
+        SimTK::Vector coefficients = mvp.getCoefficients();
+
+        OPENSIM_THROW_IF(
+                coefficients.size() != choose(dimension + order, order), 
+                Exception,
+                "Expected the number of coefficients ({}) to match the number "
+                "of coefficients in a polynomial of dimension {} and order {}, "
+                "but it does not.", coefficients.size(), dimension, order);
+
+        std::vector<Term> terms;
+        terms.resize(coefficients.size());
+
+        OPENSIM_THROW_IF(static_cast<int>(vars.size()) != dimension, 
+                Exception,
+                "Expected the number of variable names ({}) to match the "
+                "polynomial dimension ({}), but it does not.", 
+                vars.size(), dimension)
+
+        std::vector<std::vector<int>> combinations;
+        generateCombinations(dimension, order, combinations);
+        for (int i = 0; i < coefficients.size(); ++i) {
+            Term term;
+            for (int j = 0; j < dimension; ++j) {
+                if (combinations[i][j] > 0) {
+                    term[vars[j]] = combinations[i][j];
+                }
+            }
+            terms.at(i) = term;
+        }
+        
+        for (int i = 0; i < coefficients.size(); ++i) {
+            (*this)[terms[i]] = coefficients[i];
+        }
+    }
+
+    // CALC METHODS
+    /**
+     * Calculate the order of the polynomial.
+     */
+    int calcOrder() const {
+        int order = 0;
+        for (auto it = begin(); it != end(); it++) {
+            int sum = 0;
+            for (auto it2 = it->first.begin(); it2 != it->first.end(); it2++) {
+                sum += it2->second;
+            }
+            if (sum > order) {
+                order = sum;
             }
         }
+        return order;
     }
-    return deriv;
-}
 
-MultivariatePolynomial MultivariatePolynomial::multiplyByVariable(
-            const std::string& var, int exponent) const {
-    MultivariatePolynomial result;
-    const MultivariatePolynomial& poly = *this;
-    for (auto it = poly.begin(); it != poly.end(); it++) {
-        Term term = it->first;
-        if (term.find(var) == term.end()) {
-            term[var] = exponent;
-        } else {
-            term[var] += exponent;
-        }
-        result[term] = it->second;
-    }
-    return result;
-}
+    /**
+     * Calculate the vector of coefficients of the polynomial for a given order
+     * and dimension. 
+     */
+    SimTK::Vector calcCoefficients(int dimension, int order, 
+            const std::vector<std::string>& vars) const {
 
-std::pair<MultivariatePolynomial, MultivariatePolynomial> 
-MultivariatePolynomial::factorVariable(const std::string& var) const {
-    // All the terms that do not contain the variable.
-    MultivariatePolynomial left;
-    // All the terms that contain the variable.
-    MultivariatePolynomial right;
-
-    const MultivariatePolynomial& poly = *this;
-    for (auto it = poly.begin(); it != poly.end(); it++) {
-        Term term = it->first;
-        if (term.find(var) == term.end()) {
-            left[term] = it->second;
-        } else {
-            term[var] -= 1;
-            if (term[var] == 0) {
-                term.erase(var);
+        OPENSIM_THROW_IF(static_cast<int>(vars.size()) != dimension, 
+                Exception,
+                "Expected the number of variable names ({}) to match the "
+                "polynomial dimension ({}), but it does not.", 
+                vars.size(), dimension)
+        
+        const MultivariatePolynomial& poly = *this;
+        MultivariatePolynomial temp(dimension, order, vars);
+        int numCoefficients = choose(dimension + order, order);
+        SimTK::Vector coefficients(numCoefficients, 0.0);
+        for (auto it2 = temp.begin(); it2 != temp.end(); ++it2) {
+            auto it = poly.find(it2->first);
+            if (it != poly.end()) {
+                coefficients[it2->second] = it->second;
             }
-            right[term] = it->second;
         }
-    }
-    return std::make_pair(left, right);
-}
 
-MultivariatePolynomial 
-MultivariatePolynomial::sum(const std::vector<MultivariatePolynomial>& polys) {
-    MultivariatePolynomial sum;
-    for (const auto& poly : polys) {
+        return coefficients;
+    }
+
+    // POLYNOMIAL OPERATIONS
+    /**
+     * Get a new polynomial that is the first derivative of the current 
+     * polynomial with respect to the specified variable. 
+     */
+    MultivariatePolynomial getDerivative(const std::string& var) const {
+        const MultivariatePolynomial& poly = *this;
+        MultivariatePolynomial deriv;
         for (auto it = poly.begin(); it != poly.end(); it++) {
-            sum[it->first] += it->second;
+            Term t = it->first;
+            double c = it->second;
+            for (auto it2 = t.begin(); it2 != t.end(); it2++) {
+                Term t2 = t;
+                if (it2->first == var) {
+                    t2.erase(it2->first);
+                    if (it2->second > 1) {
+                        t2[it2->first] = it2->second - 1;
+                    }
+                    deriv[t2] = c * it2->second;
+                }
+            }
         }
+        return deriv;
     }
-    return sum;
-}
 
-//=============================================================================
-//                              HELPER METHODS
-//=============================================================================
-int MultivariatePolynomial::choose(int n, int k) {
-    if (k == 0) { return 1; }
-    return (n * choose(n - 1, k - 1)) / k;
-}
-
-void MultivariatePolynomial::generateCombinations(std::vector<int> current, 
-        int level, int sum, int dimension, int order, 
-        std::vector<std::vector<int>>& combinations) {
-    if (level == dimension) {
-        if (sum <= order) {
-            combinations.push_back(current);
+    /**
+     * Get a new polynomial that is the product of the current polynomial and 
+     * a specified variable. The `exponent` argument specifies the power to
+     * which the variable is raised.
+     */
+    MultivariatePolynomial multiplyByVariable(const std::string& var, 
+            int exponent) const {
+        MultivariatePolynomial result;
+        const MultivariatePolynomial& poly = *this;
+        for (auto it = poly.begin(); it != poly.end(); it++) {
+            Term term = it->first;
+            if (term.find(var) == term.end()) {
+                term[var] = exponent;
+            } else {
+                term[var] += exponent;
+            }
+            result[term] = it->second;
         }
-        return;
+        return result;
     }
-    for (int i = 0; i <= order - sum; ++i) {
-        current.push_back(i);
-        generateCombinations(current, level + 1, sum + i, 
+
+    /**
+     * Given a variable, factor the current polynomial into two polynomials: one 
+     * that contains all the terms did not contain the variable, and one that
+     * contains all the terms that did contain the variable with the variable 
+     * factored out. The former polynomial is returned as the first element of
+     * the pair, and the latter polynomial is returned as the second element.
+     *
+     * The variable is factored out to only the first order. For example, if the
+     * variable is X, the second polynomial X^3 + X^2 Y would be factored as 
+     * X (X^2 + X Y) (the first polynomial here is 0).
+     */
+    std::pair<MultivariatePolynomial, MultivariatePolynomial> 
+    factorVariable(const std::string& var) const {
+        // All the terms that do not contain the variable.
+        MultivariatePolynomial left;
+        // All the terms that contain the variable.
+        MultivariatePolynomial right;
+
+        const MultivariatePolynomial& poly = *this;
+        for (auto it = poly.begin(); it != poly.end(); it++) {
+            Term term = it->first;
+            if (term.find(var) == term.end()) {
+                left[term] = it->second;
+            } else {
+                term[var] -= 1;
+                if (term[var] == 0) {
+                    term.erase(var);
+                }
+                right[term] = it->second;
+            }
+        }
+        return std::make_pair(left, right);
+    }
+
+    /**
+     * Return the sum of two MultivariatePolynomials.
+     */
+    static MultivariatePolynomial sum(
+            const std::vector<MultivariatePolynomial>& polys) {
+        MultivariatePolynomial sum;
+        for (const auto& poly : polys) {
+            for (auto it = poly.begin(); it != poly.end(); it++) {
+                sum[it->first] += it->second;
+            }
+        }
+        return sum;
+    }
+
+    // HELPER METHODS
+    /**
+     * Generate all possible combinations of `k` elements from a set of `n`
+     * total elements.
+     */
+    static int choose(int n, int k) {
+        if (k == 0) { return 1; }
+        return (n * choose(n - 1, k - 1)) / k;
+    }
+
+    /**
+     * Generate all possible combinations of powers representing the terms of a
+     * multivariate polynomial. Each combination is represented as a vector of
+     * integers, where the `i`-th element is the power of the `i`-th variable.
+     * For example, the combination (2, 1, 0) represents the term X^2 Y Z.
+     */
+    static void generateCombinations(int dimension, int order, 
+            std::vector<std::vector<int>>& combinations) {
+        combinations.clear();
+        generateCombinations(std::vector<int>(), 0, 0, 
                 dimension, order, combinations);
-        current.pop_back();
     }
-}
 
-void MultivariatePolynomial::generateCombinations(int dimension, int order, 
-        std::vector<std::vector<int>>& combinations) {
-    combinations.clear();
-    generateCombinations(std::vector<int>(), 0, 0, 
-            dimension, order, combinations);
-}
-
-std::ostream& operator<<(std::ostream& os, const MultivariatePolynomial& poly) {
-    for (auto it = poly.begin(); it != poly.end(); it++) {
-        os << it->second;
-        for (auto it2 = it->first.begin(); it2 != it->first.end(); it2++) {
-            os << it2->first << "^" << it2->second;
+private:
+    static void generateCombinations(std::vector<int> current, int level, 
+            int sum, int dimension, int order, 
+            std::vector<std::vector<int>>& combinations) {
+        if (level == dimension) {
+            if (sum <= order) {
+                combinations.push_back(current);
+            }
+            return;
         }
-        if (std::next(it) != poly.end())
-            os << " + ";
+        for (int i = 0; i <= order - sum; ++i) {
+            current.push_back(i);
+            generateCombinations(current, level + 1, sum + i, 
+                    dimension, order, combinations);
+            current.pop_back();
+        }
     }
-    return os;
-}
+};
 
 //=============================================================================
 //                     MULTIVARIATE POLYNOMIAL FUNCTION
