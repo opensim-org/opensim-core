@@ -590,31 +590,27 @@ TEST_CASE("testFunctionBasedPath") {
         CHECK_THAT(genForce_y, WithinAbs(residuals[1], tol));
     }
 
-    SECTION("Planar point mass, MultivariatePolynoimalHelper") {
+    SECTION("Planar point mass, MultivariatePolynoimalFunction helpers") {
         // 2-DOF polynomial path function.
         // length = 1 + 2*q_y + 3*q_y^2 + 4*q_x + 5*q_x*q_y + 6*q_x^2
         MultivariatePolynomialFunction lengthFunc(
                 createVector({1.0, 2.0, 3.0, 4.0, 5.0, 6.0}), 2, 2);
 
         // Moment arm functions.
-        // momentArm_x = -dl/dq_x = -4 - 5*q_y - 12*q_x
-        // momentArm_y = -dl/dq_y = -2 - 6*q_y - 5*q_x
+        // These functions are the first derivative with respect to the
+        // corresponding coordinate of the length function. The coefficients are
+        // negated to match the convention in OpenSim.
         bool negateCoefficients = true;
         MultivariatePolynomialFunction momentArmFunc_x = 
-            lengthFunc.generateFunctionFirstDerivative(0, negateCoefficients);
+            lengthFunc.generateDerivativeFunction(0, negateCoefficients);
         MultivariatePolynomialFunction momentArmFunc_y =
-            lengthFunc.generateFunctionFirstDerivative(1, negateCoefficients);
+            lengthFunc.generateDerivativeFunction(1, negateCoefficients);
 
         // Speed function.
-        // speed = -qdot_x * momentArm_x - qdot_y * momentArm_y
-        //       = qdot_x * (4 + 5*q_y + 12*q_x) + qdot_y * (2 + 5*q_x + 6*q_y)
-        //       = 4*qdot_x + 5*qdot_x*q_y + 12*qdot_x*q_x + 2*qdot_y +
-        //         5*qdot_y*q_x + 6*qdot_y*q_y
-        // 
-        // See the documentation for MultivariatePolynomialFunction for an
-        // explanation of the coefficients.
+        // The lengthening speed function is the time derivative of the length
+        // length function, which be computed by 
         MultivariatePolynomialFunction speedFunc = 
-                lengthFunc.generateFunctionChainRule();
+                lengthFunc.generatePartialVelocityFunction();
 
         // Test values.
         const double length = 1.0 + 2.0 * q_y + 3.0 * q_y * q_y + 4.0 * q_x + 

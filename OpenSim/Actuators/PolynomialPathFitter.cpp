@@ -1079,14 +1079,14 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
             if (getIncludeMomentArmFunctions()) {
                 for (int iq = 0; iq < numCoordinatesThisForce; ++iq) {
                     MultivariatePolynomialFunction momentArmFunction =
-                            lengthFunction.generateFunctionFirstDerivative(iq, true);
+                            lengthFunction.generateDerivativeFunction(iq, true);
                     functionBasedPath->appendMomentArmFunction(
                             momentArmFunction);
                 }
             }
             if (getIncludeLengtheningSpeedFunction()) {
                 MultivariatePolynomialFunction lengtheningSpeedFunction = 
-                        lengthFunction.generateFunctionChainRule();
+                        lengthFunction.generatePartialVelocityFunction();
                 functionBasedPath->setLengtheningSpeedFunction(
                         lengtheningSpeedFunction);
             }

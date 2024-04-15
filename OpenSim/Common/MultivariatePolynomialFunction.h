@@ -144,7 +144,7 @@ public:
      * @param negateCoefficients If true, the coefficients of the derivative
      *        function will be negated.
      */
-    MultivariatePolynomialFunction generateFunctionFirstDerivative(
+    MultivariatePolynomialFunction generateDerivativeFunction(
             int derivComponent, bool negateCoefficients = false) const;
 
     /**
@@ -155,7 +155,7 @@ public:
      * (e.g., time).
      *  
      */
-    MultivariatePolynomialFunction generateFunctionChainRule() const;
+    MultivariatePolynomialFunction generatePartialVelocityFunction() const;
 
 private:
     void constructProperties() {

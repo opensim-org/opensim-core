@@ -31,18 +31,18 @@ class MultivariatePolynomial : public std::map<Term, double> {
 public:
     MultivariatePolynomial() = default;
 
-    MultivariatePolynomial(
-            int dimension, int order, const std::vector<std::string>& vars) {
-
-        int numCoefficients = choose(dimension + order, order);
-        std::vector<Term> terms;
-        terms.resize(numCoefficients);
+    MultivariatePolynomial(int dimension, int order, 
+            const std::vector<std::string>& vars) {
 
         OPENSIM_THROW_IF(static_cast<int>(vars.size()) != dimension, 
                 Exception,
                 "Expected the number of variable names ({}) to match the "
                 "polynomial dimension ({}), but it does not.", 
                 vars.size(), dimension)
+
+        int numCoefficients = choose(dimension + order, order);
+        std::vector<Term> terms;
+        terms.resize(numCoefficients);
 
         std::vector<std::vector<int>> combinations;
         generateCombinations(dimension, order, combinations);
@@ -512,7 +512,7 @@ SimTK::Vector MultivariatePolynomialFunction::getTermDerivatives(
 }
 
 MultivariatePolynomialFunction 
-MultivariatePolynomialFunction::generateFunctionFirstDerivative(
+MultivariatePolynomialFunction::generateDerivativeFunction(
         int derivComponent, bool negateCoefficients) const {
     
     SimTK::Vector coefficients = getCoefficients();
@@ -541,7 +541,7 @@ MultivariatePolynomialFunction::generateFunctionFirstDerivative(
 }
 
 MultivariatePolynomialFunction 
-MultivariatePolynomialFunction::generateFunctionChainRule() const {
+MultivariatePolynomialFunction::generatePartialVelocityFunction() const {
 
     SimTK::Vector coefficients = getCoefficients();
     int order = getOrder();
@@ -576,10 +576,10 @@ MultivariatePolynomialFunction::generateFunctionChainRule() const {
     SimTK::Vector chainRuleCoeffs = polysSum.calcCoefficients(
             2*dimension, order, vars);
 
-    MultivariatePolynomialFunction compositePoly;
-    compositePoly.setDimension(2*dimension);
-    compositePoly.setOrder(order);
-    compositePoly.setCoefficients(chainRuleCoeffs);
+    MultivariatePolynomialFunction chainRulePoly;
+    chainRulePoly.setDimension(2*dimension);
+    chainRulePoly.setOrder(order);
+    chainRulePoly.setCoefficients(chainRuleCoeffs);
  
-    return compositePoly;
+    return chainRulePoly;
 }
