@@ -512,11 +512,10 @@ private:
                     index = i;
                 }
             }
-            std::string var = vars[index];
 
             // Factor the polynomial. This returns a pair of polynomials: the
             // "left" polynomial and the "right" polynomial described above.
-            auto factors = poly.factorVariable(var);
+            auto factors = poly.factorVariable(vars[index]);
 
             // Recursively continue constructing the binary tree.
             SimTK::ClonePtr<HornerSchemeNode> left =

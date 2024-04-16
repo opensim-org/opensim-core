@@ -1436,7 +1436,7 @@ void PolynomialPathFitter::constructProperties() {
     constructProperty_num_samples_per_frame(25);
     constructProperty_latin_hypercube_algorithm("random");
     constructProperty_output_directory("");
-    constructProperty_include_moment_arm_functions(true);
+    constructProperty_include_moment_arm_functions(false);
     constructProperty_include_lengthening_speed_function(false);
 }
 

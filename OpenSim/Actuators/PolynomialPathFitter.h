@@ -427,7 +427,7 @@ public:
 
     /**
      * Whether or not to include moment arm functions in the fitted path 
-     * (default: true).
+     * (default: false).
      * 
      * The moment arm functions are constructed by taking the derivative of the
      * path length function with respect to the coordinate values using 
@@ -437,7 +437,7 @@ public:
     void setIncludeMomentArmFunctions(bool tf) {
         set_include_moment_arm_functions(tf);
     }
-    // @copydoc setIncludeMomentArmFunctions(bool tf)
+    /// @copydoc setIncludeMomentArmFunctions(bool tf)
     bool getIncludeMomentArmFunctions() const {
         return get_include_moment_arm_functions();
     }
@@ -448,19 +448,20 @@ public:
      * 
      * The lengthening speed function is computed by taking dot product of the 
      * moment arm functions by the vector of time derivatives of the coordinate 
-     * values using symbolic math. The result is negated to match the 
-     * lengthening speed convention in OpenSim.
+     * values using symbolic math. The result is negated to offset the negation 
+     * applied to the moment arm function expressions.
      * 
-     * @note Since FunctionBasedPath will use cached moment arm values to 
-     *       compute lengthening speed, including this function in the path
-     *       definition may make lengthening speed evaluation slower compared to
-     *       only including the moment arm functions. Therefore, this setting is 
+     * @note Since FunctionBasedPath uses cached moment arm values to compute 
+     *       lengthening speed, including this function in the path definition 
+     *       may make lengthening speed evaluation slower compared to
+     *       only including the moment arm functions (the moment arm expressions
+     *       are effectively evaluated twice). Therefore, this setting is 
      *       disabled by default.
      */
     void setIncludeLengtheningSpeedFunction(bool tf) {
         set_include_lengthening_speed_function(tf);
     }
-    // @copydoc setIncludeLengtheningSpeedFunction(bool tf)
+    /// @copydoc setIncludeLengtheningSpeedFunction(bool tf)
     bool getIncludeLengtheningSpeedFunction() const {
         return get_include_lengthening_speed_function();
     }
@@ -538,15 +539,11 @@ private:
             "The Latin hypercube sampling algorithm used to sample coordinate "
             "values for path fitting (default: 'random').");
     OpenSim_DECLARE_PROPERTY(include_moment_arm_functions, bool,
-            "Whether or not to include moment arm functions in the fitted "
-            "path (default: true).");
+            "Whether or not to include the moment arm functions in the fitted "
+            "path (default: false).");
     OpenSim_DECLARE_PROPERTY(include_lengthening_speed_function, bool,
             "Whether or not to include the lengthening speed function in the "
-            "fitted path (default: false). Since FunctionBasedPath will use "
-            "cached moment arm values to compute lengthening speed, including "
-            "this function in the path definition may make lengthening speed "
-            "evaluation slower compared to only including moment arm "
-            "functions.");
+            "fitted path (default: false).");
 
     void constructProperties();
 
