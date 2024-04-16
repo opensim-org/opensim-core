@@ -387,12 +387,22 @@ private:
     int m_order;
     std::vector<std::vector<int>> m_combinations;
 
+    // HORNER'S SCHEME
+
+    // A base class representing a node for a binary tree representation of 
+    // Horner's scheme for a multivariate polynomial.
     class HornerSchemeNode {
         public:
+            virtual ~HornerSchemeNode() = default;
             virtual T calcValue(const SimTK::Vector_<T>& x) const = 0;
-            HornerSchemeNode* clone() const { return nullptr; }
+
+            // SimTK::ClonePtr requires a clone method.
+            virtual HornerSchemeNode* clone() const = 0;
     };
 
+    // A node representing a polynomial factorization. The value of the node is
+    // the sum of the left node and the product of the right node and the
+    // variable at the specified index.
     class Factor : public HornerSchemeNode {
         public:
             Factor(HornerSchemeNode* left, HornerSchemeNode* right, int index) : 
@@ -401,12 +411,19 @@ private:
             T calcValue(const SimTK::Vector_<T>& x) const override {
                 return m_left->calcValue(x) + x[m_index] * m_right->calcValue(x);
             }
+
+            HornerSchemeNode* clone() const override {
+                return new Factor(m_left->clone(), m_right->clone(), m_index);
+            }
         private:
             HornerSchemeNode* m_left;
             HornerSchemeNode* m_right;
             int m_index;
     };
 
+    // A node representing a monomial. The value of the node is the constant
+    // term plus the sum of the product of the polynomial coefficients and the 
+    // variables.
     class Monomial : public HornerSchemeNode {
         public:
             Monomial(T constant, const SimTK::Vector_<T>& coefficients) : 
@@ -420,28 +437,43 @@ private:
                 }
                 return result;
             }
+
+            HornerSchemeNode* clone() const override {
+                return new Monomial(m_constant, m_coefficients);
+            }
         private:
             T m_constant;
             SimTK::Vector_<T> m_coefficients;
             int m_numCoefficients;
     };
 
+    // Construct Horner's scheme for a multivariate polynomial. Uses the 
+    // "greedy" algorithm described in Ceberio and Kreinovich (2004), "Greedy 
+    // Algorithms for Optimizing Multivariate Horner Schemes". The algorithm is
+    // represented by a binary tree where each successive node is constructed 
+    // by factoring out the variable that appears in the most terms of the 
+    // polynomial.
     SimTK::ClonePtr<HornerSchemeNode> createHornerScheme(
             const std::vector<std::string>& vars,
             const MultivariatePolynomial& poly) {
 
         int order = poly.calcOrder();
         if (order == 0) {
+            // For a zeroth order polynomial, construct a Monomial node with a 
+            // constant term and no coefficients.
             Monomial* monomial = new Monomial(
                     static_cast<T>(poly.at({})), SimTK::Vector_<T>());
             return SimTK::ClonePtr<Monomial>(monomial);
 
         } else if (order == 1) {
+            // For a first order polynomial, construct a Monomial node with a
+            // constant term and coefficients equal to the polynomial 
+            // coefficients.
             int dimension = vars.size();
             SimTK::Vector_<T> coefficients = 
                     poly.calcCoefficients(dimension, order, vars);
 
-            // We need to reverse the coefficients of the monomial to match the
+            // We reverse the coefficients of the monomial to match the
             // convention of the MultivariatePolynomialFunction.
             SimTK::Vector_<T> x_coefs(dimension);
             int index = 0;
@@ -455,7 +487,12 @@ private:
             return SimTK::ClonePtr<Monomial>(monomial);
 
         } else {
-            // Find the variable in "vars" that appears in the most terms.
+            // For a polynomial of order greater than 1, factor out the variable
+            // that appears in the most terms of the polynomial. Construct two 
+            // Factor nodes: the "left" node represents the polynomial terms 
+            // that do not contain the variable, and the "right" node represents
+            // the polynomial terms that did contain the variable with it
+            // factored out to the first order.
             int index = 0;
             int maxCount = 0;
             for (int i = 0; i < static_cast<int>(vars.size()); ++i) {
@@ -470,14 +507,19 @@ private:
                     index = i;
                 }
             }
-
             std::string var = vars[index];
+
+            // Factor the polynomial. This returns a pair of polynomials: the
+            // "left" polynomial and the "right" polynomial described above.
             auto factors = poly.factorVariable(var);
+
+            // Recursively continue constructing the binary tree.
             SimTK::ClonePtr<HornerSchemeNode> left =
                     createHornerScheme(vars, factors.first);
             SimTK::ClonePtr<HornerSchemeNode> right =
                     createHornerScheme(vars, factors.second);
 
+            // Construct a Factor node.
             Factor* factor = new Factor(left.release(), right.release(), index);
             return SimTK::ClonePtr<Factor>(factor); 
         }
