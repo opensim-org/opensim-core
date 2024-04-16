@@ -161,7 +161,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        ref: ${{ github.event.pull_request.base.ref }} 
+        ref: ${{ github.event.pull_request.base.ref }}
 
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
@@ -180,7 +180,7 @@ jobs:
       run: python3 -m pip install numpy==1.20.2
 
     - name: Install SWIG
-      run: | 
+      run: |
         choco install swig --version 4.1.1 --yes --limit-output --allow-downgrade
         swig -swiglib
 
