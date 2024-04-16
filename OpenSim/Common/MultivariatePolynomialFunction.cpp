@@ -405,19 +405,24 @@ private:
     // variable at the specified index.
     class Factor : public HornerSchemeNode {
         public:
-            Factor(HornerSchemeNode* left, HornerSchemeNode* right, int index) : 
-                    m_left(left), m_right(right), m_index(index) {}
+            Factor(SimTK::ClonePtr<HornerSchemeNode> left, 
+                    SimTK::ClonePtr<HornerSchemeNode> right, int index) : 
+                    m_left(std::move(left)), m_right(std::move(right)), 
+                    m_index(index) {}
 
             T calcValue(const SimTK::Vector_<T>& x) const override {
                 return m_left->calcValue(x) + x[m_index] * m_right->calcValue(x);
             }
 
             HornerSchemeNode* clone() const override {
-                return new Factor(m_left->clone(), m_right->clone(), m_index);
+                return new Factor(
+                    SimTK::ClonePtr<HornerSchemeNode>(m_left->clone()), 
+                    SimTK::ClonePtr<HornerSchemeNode>(m_right->clone()), 
+                    m_index);
             }
         private:
-            HornerSchemeNode* m_left;
-            HornerSchemeNode* m_right;
+            SimTK::ClonePtr<HornerSchemeNode> m_left;
+            SimTK::ClonePtr<HornerSchemeNode> m_right;
             int m_index;
     };
 
@@ -452,7 +457,7 @@ private:
     // Algorithms for Optimizing Multivariate Horner Schemes". The algorithm is
     // represented by a binary tree where each successive node is constructed 
     // by factoring out the variable that appears in the most terms of the 
-    // polynomial.
+    // current polynomial.
     SimTK::ClonePtr<HornerSchemeNode> createHornerScheme(
             const std::vector<std::string>& vars,
             const MultivariatePolynomial& poly) {
@@ -473,7 +478,7 @@ private:
             SimTK::Vector_<T> coefficients = 
                     poly.calcCoefficients(dimension, order, vars);
 
-            // We reverse the coefficients of the monomial to match the
+            // Reverse the coefficients of the monomial to match the
             // convention of the MultivariatePolynomialFunction.
             SimTK::Vector_<T> x_coefs(dimension);
             int index = 0;
@@ -520,13 +525,13 @@ private:
                     createHornerScheme(vars, factors.second);
 
             // Construct a Factor node.
-            Factor* factor = new Factor(left.release(), right.release(), index);
+            Factor* factor = new Factor(left, right, index);
             return SimTK::ClonePtr<Factor>(factor); 
         }
     }
     
     SimTK::ClonePtr<HornerSchemeNode> m_value;
-    std::vector<SimTK::ClonePtr<HornerSchemeNode>> m_derivatives;
+    SimTK::Array_<SimTK::ClonePtr<HornerSchemeNode>> m_derivatives;
 };
 
 SimTK::Function* MultivariatePolynomialFunction::createSimTKFunction() const {

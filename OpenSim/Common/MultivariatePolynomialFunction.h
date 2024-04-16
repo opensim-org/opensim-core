@@ -148,11 +148,14 @@ public:
             int derivComponent, bool negateCoefficients = false) const;
 
     /**
-     * Generate a new MultivariatePolynomialFunction representing the dot
-     * product of the function first derivatives with a new vector of variables.
-     * This is useful for generating a function that represents the derivative
-     * of the current function with respect to a different independent variable
-     * (e.g., time).
+     * Generate a new MultivariatePolynomialFunction representing the derivative
+     * of the current function with respect to an independent variable not 
+     * included in the current function. If, for example, differentiating with 
+     * respect to time, the resulting function will have the form:
+     * 
+     * \f[
+     * \dot f = \frac{df}{dt} = \sum_i \frac{\partial f}{\partial q_i} \dot q_i
+     * \f]
      *  
      */
     MultivariatePolynomialFunction generatePartialVelocityFunction() const;
