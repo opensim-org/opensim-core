@@ -131,10 +131,11 @@ public:
     /**
      * Generate a new MultivariatePolynomialFunction representing the first
      * derivative of the current function with respect to the specified
-     * component. Therefore, the resulting function with have the same dimension
-     * as the original function, but the order will be reduced by one.
-     *
-     * The coefficients of the derivative function can be negated using the 
+     * component. 
+     * 
+     * Therefore, the resulting function with have the same dimension
+     * as the original function, but the order will be reduced by one. The 
+     * coefficients of the derivative function can be negated using the 
      * `negateCoefficients` argument. This may be useful, for example, if the 
      * current function represents the length of a muscle path and the 
      * derivative is needed for computing muscle moment arms.
@@ -150,13 +151,32 @@ public:
     /**
      * Generate a new MultivariatePolynomialFunction representing the derivative
      * of the current function with respect to an independent variable not 
-     * included in the current function. If, for example, differentiating with 
-     * respect to time, the resulting function will have the form:
+     * included in the current function. 
+     * 
+     * If, for example, differentiating with respect to time, the resulting 
+     * function will have the form:
      * 
      * \f[
-     * \dot f = \frac{df}{dt} = \sum_i \frac{\partial f}{\partial q_i} \dot q_i
+     * \dot f = \frac{df}{dt} = \sum_i \frac{\partial f}{\partial q_i} \dot q_i = P \dot q
      * \f]
-     *  
+     * 
+     * where \f$f\f$ is the current function, \f$q_i\f$ are the independent
+     * variables of the current function, and \f$\dot q_i\f$ are the derivative
+     * of the independent variables with respect to time. The matrix \f$P\f$ is
+     * a 1 x \f$n_q\f$ "partial velocity matrix" with entries 
+     * \f$ p_i = \frac{\partial f}{\partial q_i}\f$ (see Sherman et al. (2013), 
+     * "What is a Moment Arm? Calculating Muscle Effectiveness in Biomechanical 
+     * Models Using Generalized Coordinates").
+     *
+     * While this example and the method name suggest that the derivative is
+     * with respect to time, the method can be used to generate the derivative
+     * with respect to any independent variable not included in the current
+     * function. 
+     * 
+     * Since the resulting function requires the independent variable
+     * derivatives as an input, the dimension of the resulting function will be
+     * twice the dimension of the current function. The order of the resulting
+     * function will be the same as the order of the current function.
      */
     MultivariatePolynomialFunction generatePartialVelocityFunction() const;
 
