@@ -59,12 +59,12 @@ public:
 int main() {
 
     Model model = ModelFactory::createDoublePendulum();
-    // auto* controller = new DoublePendulumController();
-    // controller->setName("double_pendulum_controller");
-    // controller->addActuator(model.getComponent<CoordinateActuator>("/tau0"));
-    // controller->addActuator(model.getComponent<CoordinateActuator>("/tau1"));
-    // model.addController(controller);
-    // model.finalizeConnections();
+    auto* controller = new DoublePendulumController();
+    controller->setName("double_pendulum_controller");
+    controller->addActuator(model.getComponent<CoordinateActuator>("/tau0"));
+    controller->addActuator(model.getComponent<CoordinateActuator>("/tau1"));
+    model.addController(controller);
+    model.finalizeConnections();
 
     MocoStudy study;
     auto& problem = study.updProblem();
@@ -74,12 +74,14 @@ int main() {
     problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
     problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0);
     problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
-    problem.setControlInfo("/tau0", {-100, 100});
-    problem.setControlInfo("/tau1", {-50, 50});
-    // problem.setInputControlInfo(
-    //     "/controllerset/double_pendulum_controller/synergy_control", 
-    //         {-500, 500});
-    problem.addGoal<MocoControlGoal>();
+    // problem.setControlInfo("/tau0", {-100, 100});
+    // problem.setControlInfo("/tau1", {-50, 50});
+    problem.setInputControlInfo(
+        "/controllerset/double_pendulum_controller/synergy_control", 
+            {-500, 500});
+    auto* effort = problem.addGoal<MocoControlGoal>();
+    effort->setIgnoreControlledActuators(false);
+    effort->setIgnoreInputControls(true);
     auto& solver = study.initCasADiSolver();
     solver.set_parallel(0);
 

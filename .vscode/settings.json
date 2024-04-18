@@ -1,6 +1,12 @@
 {
     "files.associations": {
+        "functional": "cpp",
         "vector": "cpp",
+        "xstring": "cpp",
+        "utility": "cpp",
+        "chrono": "cpp",
+        "xtree": "cpp",
+        "unordered_set": "cpp",
         "algorithm": "cpp",
         "any": "cpp",
         "array": "cpp",
@@ -9,7 +15,6 @@
         "bitset": "cpp",
         "cctype": "cpp",
         "charconv": "cpp",
-        "chrono": "cpp",
         "clocale": "cpp",
         "cmath": "cpp",
         "compare": "cpp",
@@ -29,7 +34,6 @@
         "format": "cpp",
         "forward_list": "cpp",
         "fstream": "cpp",
-        "functional": "cpp",
         "future": "cpp",
         "initializer_list": "cpp",
         "iomanip": "cpp",
@@ -66,8 +70,6 @@
         "type_traits": "cpp",
         "typeinfo": "cpp",
         "unordered_map": "cpp",
-        "unordered_set": "cpp",
-        "utility": "cpp",
         "variant": "cpp",
         "xfacet": "cpp",
         "xhash": "cpp",
@@ -81,9 +83,7 @@
         "xloctime": "cpp",
         "xmemory": "cpp",
         "xstddef": "cpp",
-        "xstring": "cpp",
         "xtr1common": "cpp",
-        "xtree": "cpp",
         "xutility": "cpp"
     }
 }

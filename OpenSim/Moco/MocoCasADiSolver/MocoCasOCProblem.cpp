@@ -63,25 +63,14 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 convertBounds(info.getFinalBounds()));
     }
 
-
-    auto inputControlNames = problemRep.getInputControlNames();
-    for (const auto& inputControlName : inputControlNames) {
-        std::cout << "inputControlName: " << inputControlName << std::endl;
-
-        const auto& info = problemRep.getInputControlInfo(inputControlName);
-        std::cout << "info.getBounds(): " << info.getBounds() << std::endl;
-        std::cout << "info.getInitialBounds(): " << info.getInitialBounds() << std::endl;
-        std::cout << "info.getFinalBounds(): " << info.getFinalBounds() << std::endl;
-        
-
-        addControl(inputControlName, convertBounds(info.getBounds()),
-                convertBounds(info.getInitialBounds()),
-                convertBounds(info.getFinalBounds()));
-    }
-
-    auto controlNames = problemRep.getControlNames();
-    for (const auto& controlName : controlNames) {
-        const auto& info = problemRep.getControlInfo(controlName);
+    // Control names need to be in the order expected by the ControlDistributor.
+    auto allControlNames = 
+            problemRep.getControlDistributorDisabledConstraints()
+                      .getControlNamesInOrder();
+    for (const auto& controlName : allControlNames) {
+        const auto& info = problemRep.hasInputControlInfo(controlName) ? 
+                problemRep.getInputControlInfo(controlName) :
+                problemRep.getControlInfo(controlName);
         addControl(controlName, convertBounds(info.getBounds()),
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));

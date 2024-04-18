@@ -20,6 +20,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/InputController.h>
 #include <OpenSim/Actuators/ModelFactory.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 
 #include <catch2/catch_all.hpp>
 #include "Testing.h"
@@ -126,8 +127,9 @@ TEST_CASE("MocoControlGoal: ignoring controlled actuators") {
     }
 }
 
-class DoublePendulumController : public InputController {
-    OpenSim_DECLARE_CONCRETE_OBJECT(DoublePendulumController, InputController);
+class DoublePendulumInputController : public InputController {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            DoublePendulumInputController, InputController);
 
 public:
     std::vector<std::string> getExpectedInputChannelAliases() const override {
@@ -150,17 +152,15 @@ public:
     }
 };
 
-TEST_CASE("Double pendulum synergy InputController") {
+TEST_CASE("Double pendulum synergy-like InputController") {
 
     Model model = ModelFactory::createDoublePendulum();
-    // auto* controller = new DoublePendulumController();
-    // controller->setName("double_pendulum_controller");
-    // model.addController(controller);
-    // model.finalizeConnections();
-
-    // SECTION("Inputs not connected") {
-    //     CHECK_THROWS_AS(controller->checkInputConnections(), Exception);
-    // }
+    auto* controller = new DoublePendulumInputController();
+    controller->setName("double_pendulum_input_controller");
+    controller->addActuator(model.getComponent<CoordinateActuator>("/tau0"));
+    controller->addActuator(model.getComponent<CoordinateActuator>("/tau1"));
+    model.addController(controller);
+    model.finalizeConnections();
 
     MocoStudy study;
     auto& problem = study.updProblem();
@@ -169,21 +169,12 @@ TEST_CASE("Double pendulum synergy InputController") {
     problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, 0.5*SimTK::Pi);
     problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
     problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0);
-    // problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
-    problem.setControlInfo("/tau0", {-100, 100});
-    problem.setControlInfo("/tau1", {-50, 50});
-    // problem.setInputControlInfo(
-    //     "/controllerset/double_pendulum_controller/synergy_control", {-1, 1});
+    problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
+    problem.setInputControlInfo(
+        "/controllerset/double_pendulum_controller/synergy_control", {-1, 1});
     problem.addGoal<MocoControlGoal>();
     auto& solver = study.initCasADiSolver();
-
-    study.solve();
-    
-
-
-
-
-    
+    study.solve();    
 }
 
 
@@ -192,3 +183,8 @@ TEST_CASE("Double pendulum synergy InputController") {
 // - Check if the controller has the wrong number of actuators.
 // - Test when all controls are from ActuatorInputController.
 // - Test when all controls are not from ActuatorInputController.
+// - Test that actuator Input connections are valid/invalid:
+//       SECTION("Inputs not connected") {
+//          CHECK_THROWS_AS(controller->checkInputConnections(), Exception);
+//       }
+// - Test reusing solution with controllers as initial guess.

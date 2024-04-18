@@ -53,6 +53,8 @@ public:
     ActuatorInputController& operator=(ActuatorInputController&& other);
 
     // INPUT CONTROLLER INTERFACE
+
+    // TODO only available after socket connections are finalized
     std::vector<std::string> getExpectedInputChannelAliases() const override;
     void checkInputConnections() const override;
 

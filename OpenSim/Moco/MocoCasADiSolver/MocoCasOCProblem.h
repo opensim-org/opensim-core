@@ -68,7 +68,8 @@ inline casadi::DM convertToCasADiDM(const SimTK::Vector& simtkVec) {
 }
 
 /// This resamples the iterate to obtain values that lie on the mesh.
-inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt) {
+inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt,
+        std::vector<int> inputControlIndexes = {}) {
     CasOC::Iterate casIt;
     CasOC::VariablesDM& casVars = casIt.variables;
     using CasOC::Var;
@@ -126,7 +127,8 @@ inline SimTK::Matrix convertToSimTKMatrix(const casadi::DM& casMatrix) {
 }
 
 template <typename TOut = MocoTrajectory>
-TOut convertToMocoTrajectory(const CasOC::Iterate& casIt) {
+TOut convertToMocoTrajectory(const CasOC::Iterate& casIt, 
+        std::vector<int> inputControlIndexes = {}) {
     SimTK::Matrix simtkStates;
     const auto& casVars = casIt.variables;
     using CasOC::Var;
@@ -137,6 +139,27 @@ TOut convertToMocoTrajectory(const CasOC::Iterate& casIt) {
     if (!casIt.control_names.empty()) {
         simtkControls = convertToSimTKMatrix(casVars.at(Var::controls));
     }
+    // SimTK::Matrix simtkInputControls
+    // if (!casIt.control_names.empty()) {
+    //     SimTK::Matrix allControls = convertToSimTKMatrix(
+    //             casVars.at(Var::controls));
+    //     simtkControls.resize(allControls.nrow(), 
+    //             allControls.ncol() - inputControlIndexes.size());
+    //     simtkInputControls.resize(allControls.nrow(),
+    //             inputControlIndexes.size());
+    //     int icontrol = 0;
+    //     int iinputControl = 0;
+    //     for (int i = 0; i < allControls.ncol(); ++i) {
+    //         if (std::find(inputControlIndexes.begin(), 
+    //                 inputControlIndexes.end(), i) != inputControlIndexes.end()) {
+    //             simtkInputControls.updCol(iinputControl) = allControls.col(i);
+    //             ++iinputControl;
+    //         } else {
+    //             simtkControls.updCol(icontrol) = allControls.col(i);
+    //             ++icontrol;
+    //         }
+    //     }
+    // }
     SimTK::Matrix simtkMultipliers;
     if (!casIt.multiplier_names.empty()) {
         const auto multsValue = casVars.at(Var::multipliers);

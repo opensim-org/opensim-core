@@ -96,18 +96,15 @@ protected:
     }
 
     void addControlVariables() {
-        auto inputControlNames = m_mocoProbRep.getInputControlNames();
-        for (const auto& inputControlName : inputControlNames) {
-            const auto& info = 
-                    m_mocoProbRep.getInputControlInfo(inputControlName);
-            this->add_control(inputControlName, convertBounds(info.getBounds()),
-                    convertBounds(info.getInitialBounds()),
-                    convertBounds(info.getFinalBounds()));
-        }
 
-        auto controlNames = m_mocoProbRep.getControlNames();
-        for (const auto& controlName : controlNames) {
-            const auto& info = m_mocoProbRep.getControlInfo(controlName);
+        // Control names need to be in the order expected by the ControlDistributor.
+        auto allControlNames = 
+                m_mocoProbRep.getControlDistributorDisabledConstraints()
+                             .getControlNamesInOrder();
+        for (const auto& controlName : allControlNames) {
+            const auto& info = m_mocoProbRep.hasInputControlInfo(controlName) ? 
+                    m_mocoProbRep.getInputControlInfo(controlName) :
+                    m_mocoProbRep.getControlInfo(controlName);
             this->add_control(controlName, convertBounds(info.getBounds()),
                     convertBounds(info.getInitialBounds()),
                     convertBounds(info.getFinalBounds()));

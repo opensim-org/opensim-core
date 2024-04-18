@@ -358,7 +358,8 @@ MocoSolution MocoTropterSolver::solveImpl() const {
 
     // If the model contains any user-added Controllers, append to the solution
     // the missing controls that were not present in the optimization problem.
-    getProblemRep().appendMissingModelControls(mocoSolution);
+    // TODO only do this if the user asks for it.
+    //getProblemRep().appendMissingModelControls(mocoSolution);
 
     // If enforcing model constraints and not minimizing Lagrange
     // multipliers, check the rank of the constraint Jacobian and if

@@ -96,10 +96,20 @@ public:
     void setIgnoreControlledActuators(bool v) {
         set_ignore_controlled_actuators(v);
     }
-    /// @copydoc setIgnoreControlledActuators()
+    /// @copydoc setIgnoreControlledActuators(bool v)
     bool getIgnoreControlledActuators() const {
         return get_ignore_controlled_actuators();
     }
+
+    /// If true, do not minimize Input controls (default: false).
+    void setIgnoreInputControls(bool v) {
+        set_ignore_input_controls(v);
+    }
+    /// @copydoc setIgnoreInputControls(bool v)
+    bool getIgnoreInputControls() const {
+        return get_ignore_input_controls();
+    }
+
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
@@ -123,12 +133,15 @@ private:
     OpenSim_DECLARE_PROPERTY(ignore_controlled_actuators, bool,
             "If true, do not minimize controls belonging to actuators "
             "controlled by user-defined controllers (default: false).");
+    OpenSim_DECLARE_PROPERTY(ignore_input_controls, bool,
+            "If true, do not minimize Input controls (default: false).");
     mutable std::vector<double> m_weights;
     mutable std::vector<int> m_controlIndices;
     mutable std::vector<std::string> m_controlNames;
+    mutable std::vector<double> m_inputControlWeights;
+    mutable std::vector<int> m_inputControlIndices;
+    mutable std::vector<std::string> m_inputControlNames;
     mutable std::function<double(const double&)> m_power_function;
-    // TODO temporary
-    mutable int m_numInputControls = 0; 
 };
 
 } // namespace OpenSim
