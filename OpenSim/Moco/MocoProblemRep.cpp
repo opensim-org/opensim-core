@@ -139,15 +139,14 @@ void MocoProblemRep::initialize() {
     // User-added InputControllers.
     std::vector<std::string> inputControlNames;
     for (auto& controller : m_model_base.updComponentList<InputController>()) {
-        const auto expectedAliases =
-                controller.getExpectedInputChannelAliases();
-        for (const auto& alias : expectedAliases) {
+        const auto labels = controller.getInputControlLabels();
+        for (const auto& label : labels) {
             // Apply the Input control name convention:
             //     "<controller_path>/<alias>".
-            std::string controlName = fmt::format(
-                    "{}/{}", controller.getAbsolutePathString(), alias);
-            controlDistributorUPtr->addControl(controlName);
-            inputControlNames.push_back(controlName);
+            std::string inputControlName = fmt::format(
+                    "{}/{}", controller.getAbsolutePathString(), label);
+            controlDistributorUPtr->addControl(inputControlName);
+            inputControlNames.push_back(inputControlName);
         }
     }
 
@@ -160,10 +159,13 @@ void MocoProblemRep::initialize() {
     // ActuatorInputController and controls to the ControlDistributor in system
     // order. Therefore, this is valid whether or not solvers need to compute
     // the controls from the model.
+    // TODO test this ^
     auto actuatorController = make_unique<ActuatorInputController>();
+    actuatorController->setName("actuator_controller");
     for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
         if (!controlledActuatorPaths.count(actu.getAbsolutePathString()) &&
                 actu.get_appliesForce()) {
+            std::cout << "Adding actuator: " << actu.getAbsolutePathString() << std::endl;
             actuatorController->addActuator(actu);
             std::string actuPath = actu.getAbsolutePathString();
             if (actu.numControls() == 1) {
@@ -178,40 +180,38 @@ void MocoProblemRep::initialize() {
     }
     m_model_base.addController(actuatorController.release());
 
+    // Finalize the connection between the ActuatorInputController and the
+    // actuators in the model so that the Input control names are available 
+    // below.
+    auto& actuatorControllerRef = 
+            m_model_base.updComponent<ActuatorInputController>(
+                    "/controllerset/actuator_controller");
+    auto& socketRef = actuatorControllerRef.updSocket<Actuator>("actuators");
+    socketRef.finalizeConnection(m_model_base);
+
     // Wire the ControlDistributor to the InputControllers in the model.
     m_control_distributor_base.reset(controlDistributorUPtr.get());
     m_model_base.addComponent(controlDistributorUPtr.release());
     for (auto& controller : m_model_base.updComponentList<InputController>()) {
-        const auto expectedAliases =
-                controller.getExpectedInputChannelAliases();
-        for (const auto& alias : expectedAliases) {
-            std::string controlName;
+        const auto labels = controller.getInputControlLabels();
+        for (const auto& label : labels) {
             if (auto* aiController = 
                     dynamic_cast<ActuatorInputController*>(&controller)) {
-                controlName = alias;
                 const auto& channel =
                         m_control_distributor_base->getOutput("controls")
-                            .getChannel(controlName);
-                aiController->connectInput_inputs(channel, controlName);
+                                .getChannel(label);
+                aiController->connectInput_controls(channel, label);
             }  else {
-                controlName = fmt::format(
-                        "{}/{}", controller.getAbsolutePathString(), alias);
+                std::string inputControlName = fmt::format(
+                        "{}/{}", controller.getAbsolutePathString(), label);
                 const auto& channel =
                         m_control_distributor_base->getOutput("controls")
-                            .getChannel(controlName);
-                controller.connectInput_inputs(channel, controlName);
+                                .getChannel(inputControlName);
+                controller.connectInput_controls(channel, inputControlName);
             }
-
-            
         }
     }
     m_model_base.finalizeConnections();
-
-    // Check that all InputControllers have the correct number of Input
-    // connectees.
-    for (auto& controller : m_model_base.updComponentList<InputController>()) {
-        controller.checkInputConnections();
-    }
 
     // Scale factors
     // -------------

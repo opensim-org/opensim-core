@@ -54,12 +54,10 @@ public:
 
     // INPUT CONTROLLER INTERFACE
 
-    // TODO only available after socket connections are finalized
-    std::vector<std::string> getExpectedInputChannelAliases() const override;
-    void checkInputConnections() const override;
-
-    // CONTROLLER INTERFACE
-    void computeControls(
+    /// @brief Test comment. 
+    // TODO if no actuators connected, returns empty vector.
+    std::vector<std::string> getInputControlLabels() const override;
+    void computeControlsImpl(
             const SimTK::State& s, SimTK::Vector& controls) const override;
 
 protected:

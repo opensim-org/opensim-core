@@ -63,8 +63,9 @@ public:
 //=============================================================================
 // INPUTS
 //=============================================================================
-    OpenSim_DECLARE_LIST_INPUT(inputs, double, SimTK::Stage::Velocity,
-        "The scalar values used to compute the controls for the actuators.");
+    OpenSim_DECLARE_LIST_INPUT(controls, double, SimTK::Stage::Velocity,
+        "The scalar control values used to compute the model controls for the "
+        "Actuators connected to this controller.");
 
 //=============================================================================
 // METHODS
@@ -80,19 +81,26 @@ public:
     InputController(InputController&& other);
     InputController& operator=(InputController&& other);
 
+    // CONTROLLER INTERFACE
+    void computeControls(const SimTK::State& state,
+                         SimTK::Vector& controls) const override final;
+
     // INTERFACE METHODS
     /**
-     * Get the expected list of Input channel aliases.
-     *
-     * Concrete implementations of InputController must implement this method
-     * to provide a list of expected Input channel connections to Output channels
-     * from other components.
+     * Get the 
      */
-    virtual std::vector<std::string> getExpectedInputChannelAliases() const = 0;
+    virtual std::vector<std::string> getInputControlLabels() const = 0;
 
-    virtual void checkInputConnections() const = 0;
+    // virtual void checkInputConnections() const = 0;
+
+    virtual void computeControlsImpl(const SimTK::State& state,
+                                 SimTK::Vector& controls) const = 0;
 
     // METHODS
+    int getNumInputControls() const { 
+        return getInputControlLabels().size(); 
+    }
+
     /**
      * Get the names of the controls for the actuators in the controller's
      * ActuatorSet.
@@ -138,6 +146,7 @@ protected:
 private:
     std::vector<std::string> m_controlNames;
     std::vector<int> m_controlIndexes;
+    bool m_computeControls = false;
 };
 
 } // namespace OpenSim

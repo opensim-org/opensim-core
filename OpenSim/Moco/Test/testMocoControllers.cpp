@@ -28,6 +28,7 @@
 using namespace OpenSim;
 
 using Catch::Approx;
+using Catch::Matchers::ContainsSubstring;
 
 TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
         MocoCasADiSolver, MocoTropterSolver) {
@@ -127,39 +128,105 @@ TEST_CASE("MocoControlGoal: ignoring controlled actuators") {
     }
 }
 
-class DoublePendulumInputController : public InputController {
+class TriplePendulumController : public InputController {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-            DoublePendulumInputController, InputController);
+            TriplePendulumController, InputController);
 
 public:
-    std::vector<std::string> getExpectedInputChannelAliases() const override {
-        return {"synergy_control"};
+    TriplePendulumController() {
+        m_synergyVectors.resize(3, 2);
+        m_synergyVectors(0, 0) = 0.25;
+        m_synergyVectors(0, 1) = 0.5;
+        m_synergyVectors(1, 0) = 0.75;
+        m_synergyVectors(1, 1) = 0.5;
+        m_synergyVectors(2, 0) = 0.5;
+        m_synergyVectors(2, 1) = 0.25;
     }
 
-    void checkInputConnections() const override {
-        const auto& input = getInput<double>("inputs");
-        OPENSIM_THROW_IF(static_cast<int>(input.getNumConnectees()) != 1,
-            Exception, "Expected one input control connectee but received {}.",
-            input.getNumConnectees());
+    std::vector<std::string> getInputControlLabels() const override {
+        return {"synergy_control_0", "synergy_control_1"};
     }
 
-    void computeControls(const SimTK::State& state,
+    void computeControlsImpl(const SimTK::State& state,
             SimTK::Vector& controls) const override {
-        const auto& input = getInput<double>("inputs");
-        double synergyControl = input.getValue(state, 0);
-        controls[0] = 0.25*synergyControl;
-        controls[1] = 0.75*synergyControl;
+        const auto& input = getInput<double>("controls");
+        for (int i = 0; i < input.getNumConnectees(); ++i) {
+            controls += m_synergyVectors.col(i) * input.getValue(state, i);
+        }
+
     }
+
+    const SimTK::Matrix& getSynergyVectors() const { return m_synergyVectors; }
+
+private:
+    SimTK::Matrix m_synergyVectors;
 };
 
-TEST_CASE("Double pendulum synergy-like InputController") {
-
-    Model model = ModelFactory::createDoublePendulum();
-    auto* controller = new DoublePendulumInputController();
-    controller->setName("double_pendulum_input_controller");
+TEST_CASE("InputController behavior") {
+    Model model = ModelFactory::createNLinkPendulum(3);
+    auto* controller = new TriplePendulumController();
+    controller->setName("controller");
     controller->addActuator(model.getComponent<CoordinateActuator>("/tau0"));
     controller->addActuator(model.getComponent<CoordinateActuator>("/tau1"));
-    model.addController(controller);
+    controller->addActuator(model.getComponent<CoordinateActuator>("/tau2"));
+    model.addComponent(controller);
+    model.finalizeConnections();    
+
+    SECTION("No Inputs connected (controls are default)") {
+        SimTK::State state = model.initSystem();
+        model.realizeVelocity(state);
+        SimTK::Vector defaults = SimTK::Test::randVector(3);
+        model.updDefaultControls() = defaults;
+
+        SimTK::Vector controls = model.getControls(state);
+        SimTK_TEST_EQ(defaults, controls);
+    }
+
+    SECTION("Incorrect number of Inputs connected") {
+        SignalGenerator* constant = new SignalGenerator();
+        constant->set_function(Constant(1.0));
+        model.addComponent(constant);
+
+        auto& controller = 
+                model.updComponent<TriplePendulumController>("/controller");
+        controller.connectInput_controls(constant->getOutput("signal"));
+
+        CHECK_THROWS_WITH(model.finalizeConnections(),
+                ContainsSubstring("Expected 2 Input connectee(s)"));
+    }
+
+    SECTION("Correct number of Inputs connected") {
+        SimTK::Vector constants = SimTK::Test::randVector(2);
+        SignalGenerator* constant0 = new SignalGenerator();
+        constant0->set_function(Constant(constants[0]));
+        model.addComponent(constant0);
+        SignalGenerator* constant1 = new SignalGenerator();
+        constant1->set_function(Constant(constants[1]));
+        model.addComponent(constant1);
+
+        auto& controller = 
+                model.updComponent<TriplePendulumController>("/controller");
+        controller.connectInput_controls(constant0->getOutput("signal"));
+        controller.connectInput_controls(constant1->getOutput("signal"));
+        model.finalizeConnections();
+        SimTK::State state = model.initSystem();
+        model.realizeVelocity(state);
+
+        SimTK::Vector expected = controller.getSynergyVectors() * constants;
+        SimTK::Vector controls = model.getControls(state);
+        SimTK_TEST_EQ(expected, controls);
+    }
+}
+
+TEST_CASE("Double pendulum with synergy-like InputController") {
+
+    Model model = ModelFactory::createNLinkPendulum(3);
+    auto* controller = new TriplePendulumController();
+    controller->setName("controller");
+    controller->addActuator(model.getComponent<CoordinateActuator>("/tau0"));
+    controller->addActuator(model.getComponent<CoordinateActuator>("/tau1"));
+    controller->addActuator(model.getComponent<CoordinateActuator>("/tau2"));
+    model.addComponent(controller);
     model.finalizeConnections();
 
     MocoStudy study;
@@ -170,8 +237,10 @@ TEST_CASE("Double pendulum synergy-like InputController") {
     problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
     problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0);
     problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
-    problem.setInputControlInfo(
-        "/controllerset/double_pendulum_controller/synergy_control", {-1, 1});
+    problem.setStateInfo("/jointset/j2/q2/value", {-10, 10}, 0);
+    problem.setStateInfo("/jointset/j2/q2/speed", {-50, 50}, 0);
+    problem.setInputControlInfo("/controller/synergy_control_0", {-1, 1});
+    problem.setInputControlInfo("/controller/synergy_control_1", {-1, 1});
     problem.addGoal<MocoControlGoal>();
     auto& solver = study.initCasADiSolver();
     study.solve();    
@@ -183,8 +252,4 @@ TEST_CASE("Double pendulum synergy-like InputController") {
 // - Check if the controller has the wrong number of actuators.
 // - Test when all controls are from ActuatorInputController.
 // - Test when all controls are not from ActuatorInputController.
-// - Test that actuator Input connections are valid/invalid:
-//       SECTION("Inputs not connected") {
-//          CHECK_THROWS_AS(controller->checkInputConnections(), Exception);
-//       }
 // - Test reusing solution with controllers as initial guess.

@@ -42,6 +42,16 @@ InputController::InputController(InputController&& other) = default;
 InputController& InputController::operator=(InputController&& other) = default;
 
 //=============================================================================
+// CONTROLLER INTERFACE
+//=============================================================================
+void InputController::computeControls(const SimTK::State& s,
+        SimTK::Vector& controls) const {
+    if (m_computeControls) {
+        computeControlsImpl(s, controls);
+    }
+}
+
+//=============================================================================
 // METHODS
 //=============================================================================
 const std::vector<std::string>& InputController::getControlNames() const {
@@ -95,4 +105,18 @@ void InputController::extendConnectToModel(Model& model) {
     }
 
     setNumControls(static_cast<int>(m_controlNames.size()));
+
+    // Check Input connections.
+    const auto& input = getInput<double>("controls");
+    int numConnectees = static_cast<int>(input.getNumConnectees());
+    if (numConnectees > 0) {
+        OPENSIM_THROW_IF_FRMOBJ(numConnectees != getNumInputControls(),
+            Exception, "Expected {} Input connectee(s), but received {}.",
+            getNumInputControls(), numConnectees);
+        m_computeControls = true;
+    } else {
+        log_warn("No Input controls connected to {}, therefore it will be "
+                 "ignored when computing model controls.", getName());
+        m_computeControls = false;
+    } 
 }
