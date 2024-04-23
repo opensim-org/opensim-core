@@ -375,7 +375,8 @@ TimeSeriesTable OpenSim::calcGeneralizedForces(Model model,
     StatesTrajectory statesTraj = trajectory.exportToStatesTrajectory(model);
     TimeSeriesTable accelerationsTable =
             analyzeMocoTrajectory<double>(model, trajectory, {".*acceleration"});
-    SimTK::Matrix udots(statesTraj.getSize(), model.getNumCoordinates());
+    SimTK::Matrix udots(static_cast<int>(statesTraj.getSize()), 
+            static_cast<int>(model.getNumCoordinates()));
     for (int j = 0; j < static_cast<int>(coordinates.size()); ++j) {
         const auto& coordinate = coordinates[j];
         udots.updCol(j) = accelerationsTable.getDependentColumn(

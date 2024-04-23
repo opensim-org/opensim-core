@@ -115,7 +115,7 @@ void MocoPhase::printControlNamesWithSubstring(const std::string& substring) {
     std::vector<std::string> controlledActuators;
     for (const auto& controller : model.getComponentList<Controller>()) {
         const auto& socket = controller.getSocket<Actuator>("actuators");
-        for (int i = 0; i < socket.getNumConnectees(); ++i) {
+        for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
             const auto& actuPath = 
                     socket.getConnectee(i).getAbsolutePathString();
             controlledActuators.push_back(actuPath);

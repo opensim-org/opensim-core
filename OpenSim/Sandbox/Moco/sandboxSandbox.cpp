@@ -44,10 +44,6 @@ public:
         
         controls[0] += 0.9 * synergyControl;
         controls[1] += 0.1 * synergyControl;
-
-        std::cout << "all controls: " << controls << std::endl;
-        std::cout << "synergyControl: " << synergyControl << std::endl;
-
     }
 };
 
@@ -172,8 +168,8 @@ void testDoublePendulum() {
     problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
     problem.setInputControlInfo("/controller/synergy_control", {-100, 100});
     auto* effort = problem.addGoal<MocoControlGoal>();
-    effort->setIgnoreInputControls(true);
-    effort->setIgnoreControlledActuators(false);
+    effort->setIgnoreInputControls(false);
+    effort->setIgnoreControlledActuators(true);
     auto& solver = study.initCasADiSolver();
     solver.set_parallel(0);
     MocoSolution solution = study.solve().unseal();

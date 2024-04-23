@@ -492,8 +492,11 @@ private:
     const SimTK::Vector& getModelDisabledConstraintsControls(
             const SimTK::State& state) const {
         const auto& model = getModelDisabledConstraints();
-        model.realizeDynamics(state);
-        return model.getControls(state);
+        model.realizeVelocity(state);
+        SimTK::Vector& controls = model.updControls(state);
+        controls = model.getDefaultControls();
+        model.computeControls(state, controls);
+        return controls;
     }
 
     const MocoProblem* m_problem;

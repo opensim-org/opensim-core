@@ -448,7 +448,7 @@ void MocoTrajectory::insertControlsTrajectoryFromModel(
         model.realizeDynamics(state);
         const auto& controls = model.getControls(state);
 
-        SimTK::RowVector rowToAppend(controlNames.size());
+        SimTK::RowVector rowToAppend(static_cast<int>(controlNames.size()));
         int icon = 0;
         for (const auto& controlName : controlNames) {
             std::cout << "controlName: " << controlName << std::endl;

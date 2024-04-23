@@ -85,7 +85,8 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt,
     std::vector<std::string> controlNames = mocoIt.getControlNames();
     std::vector<std::string> inputControlNames = mocoIt.getInputControlNames();
     std::vector<std::string> casControlNames;
-    int numTotalControls = controls.rows() + input_controls.rows();
+    int numTotalControls = static_cast<int>(controls.rows()) + 
+            static_cast<int>(input_controls.rows());
     casadi::DM casControls(numTotalControls, controls.columns());
     for (int i = 0; i < numTotalControls; ++i) {
         bool foundInputControl = std::find(inputControlIndexes.begin(), 
@@ -165,9 +166,10 @@ TOut convertToMocoTrajectory(const CasOC::Iterate& casIt,
         SimTK::Matrix allControls = convertToSimTKMatrix(
                 casVars.at(Var::controls));
         simtkControls.resize(allControls.nrow(), 
-                allControls.ncol() - inputControlIndexes.size());
+                allControls.ncol() - 
+                        static_cast<int>(inputControlIndexes.size()));
         simtkInputControls.resize(allControls.nrow(),
-                inputControlIndexes.size());
+                static_cast<int>(inputControlIndexes.size()));
         int icontrol = 0;
         int iinputControl = 0;
         for (int i = 0; i < allControls.ncol(); ++i) {

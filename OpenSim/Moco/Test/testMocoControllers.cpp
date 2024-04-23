@@ -249,7 +249,7 @@ TEST_CASE("Triple pendulum with synergy-like InputController") {
     CHECK(solution.getNumInputControls() == 2);
     CHECK(solution.getNumControls() == 0);
 
-    solution.insertControlsTrajectoryFromModel(model);
+    // solution.insertControlsTrajectoryFromModel(model);
     CHECK(solution.getNumControls() == 3);
 }
 

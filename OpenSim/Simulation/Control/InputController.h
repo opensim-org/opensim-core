@@ -118,7 +118,7 @@ public:
      * Get the number of Input controls expected by the controller.
      */
     int getNumInputControls() const { 
-        return getInputControlLabels().size(); 
+        return static_cast<int>(getInputControlLabels().size()); 
     }
 
     /**
