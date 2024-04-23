@@ -431,6 +431,37 @@ void MocoTrajectory::insertControlsTrajectory(
     }
 }
 
+void MocoTrajectory::insertControlsTrajectoryFromModel(
+        const MocoProblemRep& rep, bool overwrite) {
+    ensureUnsealed();
+
+    // All possible model control names (exludes disabled actuators).
+    Model model = rep.getModelDisabledConstraints();
+    model.initSystem();
+    auto controlNames = createControlNamesFromModel(model);
+    auto controlIndexMap = createSystemControlIndexMap(model);
+
+    TimeSeriesTable modelControls;
+    StatesTrajectory statesTraj = exportToStatesTrajectory(model);
+    for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
+        const auto& state = statesTraj.get(i);
+        model.realizeDynamics(state);
+        const auto& controls = model.getControls(state);
+
+        SimTK::RowVector rowToAppend(controlNames.size());
+        int icon = 0;
+        for (const auto& controlName : controlNames) {
+            std::cout << "controlName: " << controlName << std::endl;
+            std::cout << "control value: " << controls[controlIndexMap.at(controlName)];
+            rowToAppend[icon++] = controls[controlIndexMap.at(controlName)];
+        }
+        modelControls.appendRow(state.getTime(), rowToAppend);
+    }
+    modelControls.setColumnLabels(controlNames);
+
+    insertControlsTrajectory(modelControls, overwrite);
+}
+
 void MocoTrajectory::generateSpeedsFromValues() {
     auto valuesTable = exportToValuesTable();
     int numValues = (int)valuesTable.getNumColumns();

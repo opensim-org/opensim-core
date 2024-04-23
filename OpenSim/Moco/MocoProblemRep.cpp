@@ -165,7 +165,6 @@ void MocoProblemRep::initialize() {
     for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
         if (!controlledActuatorPaths.count(actu.getAbsolutePathString()) &&
                 actu.get_appliesForce()) {
-            std::cout << "Adding actuator: " << actu.getAbsolutePathString() << std::endl;
             actuatorController->addActuator(actu);
             std::string actuPath = actu.getAbsolutePathString();
             if (actu.numControls() == 1) {

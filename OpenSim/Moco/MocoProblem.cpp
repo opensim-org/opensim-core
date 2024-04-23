@@ -107,10 +107,21 @@ void MocoPhase::setStateInfoPattern(const std::string& pattern,
         upd_state_infos_pattern(idx) = info;
 }
 void MocoPhase::printControlNamesWithSubstring(const std::string& substring) {
+    // TODO: update to be consistent with new controller support.
     std::vector<std::string> foundNames;
     Model model = get_model().process();
     model.initSystem();
     const auto controlNames = createControlNamesFromModel(model);
+    std::vector<std::string> controlledActuators;
+    for (const auto& controller : model.getComponentList<Controller>()) {
+        const auto& socket = controller.getSocket<Actuator>("actuators");
+        for (int i = 0; i < socket.getNumConnectees(); ++i) {
+            const auto& actuPath = 
+                    socket.getConnectee(i).getAbsolutePathString();
+            controlledActuators.push_back(actuPath);
+        }
+    }
+    
     for (int i = 0; i < (int)controlNames.size(); ++i) {
         if (controlNames[i].find(substring) != std::string::npos) {
             foundNames.push_back(controlNames[i]);

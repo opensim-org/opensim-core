@@ -27,9 +27,12 @@
 using namespace OpenSim;
 
 class DoublePendulumController : public InputController {
-    OpenSim_DECLARE_CONCRETE_OBJECT(DoublePendulumController, InputController);
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            DoublePendulumController, InputController);
 
 public:
+    DoublePendulumController() = default;
+
     std::vector<std::string> getInputControlLabels() const override {
         return {"synergy_control"};
     }
@@ -37,16 +40,53 @@ public:
     void computeControlsImpl(const SimTK::State& state,
             SimTK::Vector& controls) const override {
         const auto& input = getInput<double>("controls");
-        double synergyControl = input.getValue(state, 0);
-        std::vector<double> weights = {0.25, 0.75};
+        const auto& synergyControl = input.getValue(state, 0);
+        
+        controls[0] += 0.9 * synergyControl;
+        controls[1] += 0.1 * synergyControl;
 
-        SimTK::Vector actControls(1, 0.0);
-        const auto& socket = getSocket<Actuator>("actuators");
-        for(int i = 0; i < (int)socket.getNumConnectees(); ++i){
-            actControls[0] = weights[i]*synergyControl;
-            socket.getConnectee(i).addInControls(actControls, controls);
-        }
+        std::cout << "all controls: " << controls << std::endl;
+        std::cout << "synergyControl: " << synergyControl << std::endl;
+
     }
+};
+
+class TriplePendulumController : public InputController {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            TriplePendulumController, InputController);
+
+public:
+    TriplePendulumController() {
+        m_synergyVectors.resize(3, 2);
+        m_synergyVectors(0, 0) = 1.0;
+        m_synergyVectors(0, 1) = 0.0;
+        m_synergyVectors(1, 0) = 0.0;
+        m_synergyVectors(1, 1) = 0.25;
+        m_synergyVectors(2, 0) = 0.0;
+        m_synergyVectors(2, 1) = 0.75;
+    }
+
+    std::vector<std::string> getInputControlLabels() const override {
+        return {"synergy_control_0", "synergy_control_1"};
+    }
+
+    void computeControlsImpl(const SimTK::State& state,
+            SimTK::Vector& controls) const override {
+        const auto& input = getInput<double>("controls");
+        const auto& synergyControl0 = input.getValue(state, 0);
+        const auto& synergyControl1 = input.getValue(state, 1);
+        controls[0] = synergyControl0 * m_synergyVectors(0, 0) +
+                synergyControl1 * m_synergyVectors(0, 1);
+        controls[1] = synergyControl0 * m_synergyVectors(1, 0) +
+                synergyControl1 * m_synergyVectors(1, 1);
+        controls[2] = synergyControl0 * m_synergyVectors(2, 0) +
+                synergyControl1 * m_synergyVectors(2, 1);
+    }
+
+    const SimTK::Matrix& getSynergyVectors() const { return m_synergyVectors; }
+
+private:
+    SimTK::Matrix m_synergyVectors;
 };
 
 void testSlidingMass() {
@@ -116,32 +156,76 @@ void testDoublePendulum() {
 
     Model model = ModelFactory::createDoublePendulum();
     auto* controller = new DoublePendulumController();
-    controller->setName("double_pendulum_controller");
+    controller->setName("controller");
     controller->addActuator(model.getComponent<CoordinateActuator>("/tau0"));
     controller->addActuator(model.getComponent<CoordinateActuator>("/tau1"));
-    model.addController(controller);
+    model.addComponent(controller);
     model.finalizeConnections();
 
     MocoStudy study;
     auto& problem = study.updProblem();
     problem.setModelAsCopy(model);
     problem.setTimeBounds(0, 1);
-    problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
+    problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, 0.5*SimTK::Pi);
     problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
     problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0);
     problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
-    problem.setInputControlInfo(
-        "/controllerset/double_pendulum_controller/synergy_control", 
-            {-1, 1});
+    problem.setInputControlInfo("/controller/synergy_control", {-100, 100});
     auto* effort = problem.addGoal<MocoControlGoal>();
-    effort->setIgnoreControlledActuators(false);
     effort->setIgnoreInputControls(true);
+    effort->setIgnoreControlledActuators(false);
     auto& solver = study.initCasADiSolver();
     solver.set_parallel(0);
+    MocoSolution solution = study.solve().unseal();
 
-    study.solve();
+    // model.initSystem();
+    // solution.insertControlsTrajectoryFromModel(problem.createRep());
+
+    solution.write("sandbox_testDoublePendulum_solution.sto");
+
+    std::cout << "num controls: " << solution.getNumControls() << std::endl;
+    std::cout << "num input controls: " << solution.getNumInputControls() << std::endl;
+
+    study.visualize(solution);
 
 }
+
+void testTriplePendulum() {
+
+    Model model = ModelFactory::createNLinkPendulum(3);
+    auto* controller = new TriplePendulumController();
+    controller->setName("controller");
+    controller->addActuator(model.getComponent<CoordinateActuator>("/tau0"));
+    controller->addActuator(model.getComponent<CoordinateActuator>("/tau1"));
+    controller->addActuator(model.getComponent<CoordinateActuator>("/tau2"));
+    model.addComponent(controller);
+    model.finalizeConnections();
+
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.setModelAsCopy(model);
+    problem.setTimeBounds(0, 2);
+    problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, 0.1*SimTK::Pi);
+    problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
+    problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0);
+    problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
+    problem.setStateInfo("/jointset/j2/q2/value", {-10, 10}, 0);
+    problem.setStateInfo("/jointset/j2/q2/speed", {-50, 50}, 0);
+    problem.setInputControlInfo("/controller/synergy_control_0", {-100, 100});
+    problem.setInputControlInfo("/controller/synergy_control_1", {-100, 100});
+    auto* effort = problem.addGoal<MocoControlGoal>();
+    effort->setIgnoreInputControls(false);
+    effort->setIgnoreControlledActuators(false);
+    auto& solver = study.initCasADiSolver();
+    MocoSolution solution = study.solve().unseal();
+
+    solution.write("sandbox_testTriplePendulum_solution.sto");
+
+    std::cout << "num controls: " << solution.getNumControls() << std::endl;
+    std::cout << "num input controls: " << solution.getNumInputControls() << std::endl;
+
+}
+
 int main() {
     testDoublePendulum();
     // testSlidingMass();

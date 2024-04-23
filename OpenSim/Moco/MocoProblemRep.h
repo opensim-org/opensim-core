@@ -366,6 +366,18 @@ public:
                getInputControls(stateDisabledConstraints);
     }
 
+    std::vector<int> getInputControlIndexes() const {
+        std::vector<int> inputControlIndexes;
+        auto allControlNames = getControlDistributorDisabledConstraints()
+                .getControlNamesInOrder();
+        for (int i = 0; i < (int)allControlNames.size(); ++i) {
+            if (hasInputControlInfo(allControlNames[i])) {
+                inputControlIndexes.push_back(i);
+            }
+        }
+        return inputControlIndexes;
+    }
+
     /// Append the missing controls from the model to the MocoSolution. This
     /// function is intended for use by solvers to ensure that the controls
     /// trajectory in the MocoTrajectory contains all the controls from the
@@ -480,7 +492,7 @@ private:
     const SimTK::Vector& getModelDisabledConstraintsControls(
             const SimTK::State& state) const {
         const auto& model = getModelDisabledConstraints();
-        model.realizeVelocity(state);
+        model.realizeDynamics(state);
         return model.getControls(state);
     }
 

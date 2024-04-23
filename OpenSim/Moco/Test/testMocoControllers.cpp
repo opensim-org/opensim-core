@@ -49,7 +49,7 @@ TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
         auto& solver = study.initSolver<TestType>();
         solver.set_num_mesh_intervals(50);
         MocoSolution solution = study.solve();
-        solution.write("testMocoInterface_testSlidingMass_solution.sto");
+        solution.write("testMocoControllers_testSlidingMass_solution.sto");
         statesTrajectory = solution.getStatesTrajectory();
         controlsTable = solution.exportToControlsTable();
     }
@@ -81,7 +81,7 @@ TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
         solver.set_num_mesh_intervals(50);
         MocoSolution solution = study.solve();
         solution.write(
-                "testMocoInterface_testSlidingMass_prescribed_solution.sto");
+                "testMocoControllers_testSlidingMass_prescribed_solution.sto");
 
         OpenSim_REQUIRE_MATRIX_ABSTOL(solution.getStatesTrajectory(),
             statesTrajectory, 1e-9);
@@ -140,6 +140,7 @@ public:
         m_synergyVectors(1, 0) = 0.75;
         m_synergyVectors(1, 1) = 0.5;
         m_synergyVectors(2, 0) = 0.5;
+
         m_synergyVectors(2, 1) = 0.25;
     }
 
@@ -218,7 +219,7 @@ TEST_CASE("InputController behavior") {
     }
 }
 
-TEST_CASE("Double pendulum with synergy-like InputController") {
+TEST_CASE("Triple pendulum with synergy-like InputController") {
 
     Model model = ModelFactory::createNLinkPendulum(3);
     auto* controller = new TriplePendulumController();
@@ -239,11 +240,17 @@ TEST_CASE("Double pendulum with synergy-like InputController") {
     problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
     problem.setStateInfo("/jointset/j2/q2/value", {-10, 10}, 0);
     problem.setStateInfo("/jointset/j2/q2/speed", {-50, 50}, 0);
-    problem.setInputControlInfo("/controller/synergy_control_0", {-1, 1});
-    problem.setInputControlInfo("/controller/synergy_control_1", {-1, 1});
+    problem.setInputControlInfo("/controller/synergy_control_0", {-100, 100});
+    problem.setInputControlInfo("/controller/synergy_control_1", {-100, 100});
     problem.addGoal<MocoControlGoal>();
     auto& solver = study.initCasADiSolver();
-    study.solve();    
+    MocoSolution solution = study.solve();
+
+    CHECK(solution.getNumInputControls() == 2);
+    CHECK(solution.getNumControls() == 0);
+
+    solution.insertControlsTrajectoryFromModel(model);
+    CHECK(solution.getNumControls() == 3);
 }
 
 
@@ -253,3 +260,4 @@ TEST_CASE("Double pendulum with synergy-like InputController") {
 // - Test when all controls are from ActuatorInputController.
 // - Test when all controls are not from ActuatorInputController.
 // - Test reusing solution with controllers as initial guess.
+// - Test workflow with disabled actuators

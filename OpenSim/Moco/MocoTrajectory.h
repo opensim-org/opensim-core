@@ -454,6 +454,9 @@ public:
     void insertControlsTrajectory(
             const TimeSeriesTable& subsetOfControls, bool overwrite = false);
 
+    void insertControlsTrajectoryFromModel(const MocoProblemRep& rep, 
+            bool overwrite = false);
+
     /// Compute coordinate speeds based on coordinate position values and append
     /// to the trajectory. Coordinate values must exist in the original
     /// trajectory.

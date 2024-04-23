@@ -34,19 +34,24 @@ namespace OpenSim {
  * InputController is a simple intermediate abstract class for a Controller that
  * computes controls based on scalar values defined via a list Input.
  *
- * Since InputController is an abstract class, derived classes must still
- * implement Controller's virtual computeControls() method. Additionally, it is
- * up to the derived class to define how the scalar values from the Input are
- * mapped to the controls for the actuators in the controller's ActuatorSet.
- * Finally, derived classes must implement the getExpectedInputChannelAliases()
- * method to provide a list of expected Input channel connections to Output
- * channels from other components (e.g., ControlDistributor).
+ * Concrete implementations of InputController must provide a relevant 
+ * implementation for the computeControlsImpl() method. This method is called by
+ * computeControls() only if the InputController has the correct number of 
+ * connected Input controls. Otherwise, computeControls() does modify the
+ * model controls vector. It is up to each concrete implementation class to 
+ * define how the scalar values from the list Input are mapped to the controls 
+ * for the actuators in the controller's ActuatorSet. Additionally, concrete 
+ * implementations must implement getInputControlLabels() to provide a vector of
+ * labels denoting the order and length of the scalar Input values expected by 
+ * the controller. These labels may be useful in simulation tools (e.g., Moco)
+ * to make connections between control signals from other sources 
+ * (e.g., ControlDistributor) and the Input controls of the controller.
  *
  * InputController provides convenience methods for getting the names and
  * indexes of the controls for the actuators in the controller's ActuatorSet.
  * Non-scalar actuators will have multiple controls, and therefore have multiple
- * control names and indexes. Control information is only available after calling
- * Model::finalizeConnections().
+ * control names and indexes. Control information is only available after 
+ * calling Model::finalizeConnections().
  *
  * Actuator control names and indexes are based on the convention used by the
  * utility function SimulationUtilities::createControlNamesFromModel(), which
@@ -81,22 +86,37 @@ public:
     InputController(InputController&& other);
     InputController& operator=(InputController&& other);
 
+    // INTERFACE METHODS
+    /**
+     * Get the vector of labels for the Input controls expected by the
+     * controller.
+     * 
+     * The connected Input controls must match the length and order of the 
+     * labels returned by this method. These labels may be useful in simulation
+     * tools (e.g., Moco) for mapping control signals from another source to 
+     * the Input controls of the controller.
+     */
+    virtual std::vector<std::string> getInputControlLabels() const = 0;
+
+    /**
+     * Compute the controls for the actuators in the controller's ActuatorSet
+     * based on the scalar values provided by the Input controls.
+     * 
+     * This method is only called by computeControls() if the InputController
+     * has the correct number of connected Input controls. Concrete 
+     * implementations of this class must provide a relevant implementation.
+     */
+    virtual void computeControlsImpl(const SimTK::State& state,
+                                 SimTK::Vector& controls) const = 0;
+
     // CONTROLLER INTERFACE
     void computeControls(const SimTK::State& state,
                          SimTK::Vector& controls) const override final;
 
-    // INTERFACE METHODS
-    /**
-     * Get the 
-     */
-    virtual std::vector<std::string> getInputControlLabels() const = 0;
-
-    // virtual void checkInputConnections() const = 0;
-
-    virtual void computeControlsImpl(const SimTK::State& state,
-                                 SimTK::Vector& controls) const = 0;
-
     // METHODS
+    /**
+     * Get the number of Input controls expected by the controller.
+     */
     int getNumInputControls() const { 
         return getInputControlLabels().size(); 
     }

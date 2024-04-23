@@ -182,7 +182,9 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 void MocoControlGoal::calcIntegrandImpl(
         const IntegrandInput& input, SimTK::Real& integrand) const {
     const auto& controls = input.controls;
+    std::cout << "controls: " << controls << std::endl;
     const auto& input_controls = input.input_controls;
+    std::cout << "input_controls: " << input_controls << std::endl;
 
     integrand = 0;
     int iweight = 0;
