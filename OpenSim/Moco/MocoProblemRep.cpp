@@ -20,7 +20,6 @@
 
 #include "Components/AccelerationMotion.h"
 #include "Components/DiscreteForces.h"
-#include "Components/ActuatorInputController.h"
 #include "MocoProblem.h"
 #include "MocoProblemInfo.h"
 #include "MocoScaleFactor.h"
@@ -109,7 +108,7 @@ void MocoProblemRep::initialize() {
     for (const auto& controlDistributor :
                 m_model_base.getComponentList<ControlDistributor>()) {
         OPENSIM_THROW(Exception, "Expected no user-added ControlDistributors "
-                                 "in the model, but found '{}'.",
+                "in the model, but found '{}'.",
                 controlDistributor.getAbsolutePathString());
     }
     auto controlDistributorUPtr = make_unique<ControlDistributor>();
@@ -142,7 +141,7 @@ void MocoProblemRep::initialize() {
         const auto labels = controller.getInputControlLabels();
         for (const auto& label : labels) {
             // Apply the Input control name convention:
-            //     "<controller_path>/<alias>".
+            //     "<controller_path>/<control_label>".
             std::string inputControlName = fmt::format(
                     "{}/{}", controller.getAbsolutePathString(), label);
             controlDistributorUPtr->addControl(inputControlName);
@@ -193,19 +192,16 @@ void MocoProblemRep::initialize() {
     m_model_base.addComponent(controlDistributorUPtr.release());
     for (auto& controller : m_model_base.updComponentList<InputController>()) {
         const auto labels = controller.getInputControlLabels();
+        const auto& output = m_control_distributor_base->getOutput("controls");
         for (const auto& label : labels) {
             if (auto* aiController = 
                     dynamic_cast<ActuatorInputController*>(&controller)) {
-                const auto& channel =
-                        m_control_distributor_base->getOutput("controls")
-                                .getChannel(label);
+                const auto& channel = output.getChannel(label);
                 aiController->connectInput_controls(channel, label);
             }  else {
                 std::string inputControlName = fmt::format(
                         "{}/{}", controller.getAbsolutePathString(), label);
-                const auto& channel =
-                        m_control_distributor_base->getOutput("controls")
-                                .getChannel(inputControlName);
+                const auto& channel = output.getChannel(inputControlName);
                 controller.connectInput_controls(channel, inputControlName);
             }
         }

@@ -23,6 +23,7 @@
 #include "MocoParameter.h"
 #include "MocoVariableInfo.h"
 #include "Components/ControlDistributor.h"
+#include "Components/ActuatorInputController.h"
 #include "osimMocoDLL.h"
 
 #include <OpenSim/Common/Assertion.h>
@@ -340,9 +341,7 @@ public:
 
     /// Get the vector of all InputController controls. This includes both 
     /// controls from InputController%s added by the user and controls from the 
-    /// ActuatorInputController added by MocoProblemRep. Controls from
-    /// user-added InputController%s come first in this vector, followed by 
-    /// controls associated with the ActuatorInputController. This function is 
+    /// ActuatorInputController added by MocoProblemRep. This function is 
     /// intended for use by solvers to compute InputController controls needed 
     /// by MocoGoal%s and MocoPathConstraint%s. The SimTK::State argument should 
     /// be obtained from `updStateDisabledConstraints()`.
@@ -388,48 +387,54 @@ public:
         // TODO: this would need to be updated if we allowed stacking OCP
         //       control on top of user-defined controls.
         const auto& model = getModelBase();
+
         auto modelControlNames = createControlNamesFromModel(model);
-        auto controlIndexMap = createSystemControlIndexMap(model);
+        auto modelControlIndexMap = createSystemControlIndexMap(model);
 
-        // Find model control names that are not in the trajectory.
-        auto controlNames = traj.getControlNames();
-        std::vector<std::string> missingControlNames;
-        for (const auto& modelControlName : modelControlNames) {
-            if (std::find(controlNames.begin(), controlNames.end(),
-                        modelControlName) == controlNames.end()) {
-                missingControlNames.push_back(modelControlName);
-            }
-        }
-        if (missingControlNames.empty()) { return; }
+        auto controlDistributor = 
+                model.getComponentList<ControlDistributor>().begin();
+        auto controlDistributorIndexMap = 
+                controlDistributor->getControlIndexMap();
+        int numTotalControls = 
+                static_cast<int>(controlDistributorIndexMap.size());
 
-        // Compute the missing controls from the model.
-        const SimTK::Vector& times = traj.getTime();
-        std::vector<double> indVec;
-        indVec.reserve(times.size());
-        for (int i = 0; i < static_cast<int>(times.size()); ++i) {
-            indVec.push_back(times[i]);
-        }
-        TimeSeriesTable missingControls(indVec);
-        auto statesTraj = traj.exportToStatesTrajectory(model);
-        int numMissingControls = static_cast<int>(missingControlNames.size());
-        SimTK::Matrix missingControlsMatrix(
-                static_cast<int>(statesTraj.getSize()), numMissingControls);
+        TimeSeriesTable modelControls;
+        StatesTrajectory statesTraj = traj.exportToStatesTrajectory(model);
+        TimeSeriesTable controls = traj.exportToControlsTable();
+        TimeSeriesTable inputControls = traj.exportToInputControlsTable();
+        std::vector<std::string> controlNames = controls.getColumnLabels();
+        std::vector<std::string> inputControlNames = 
+                inputControls.getColumnLabels();
+        SimTK::Vector controlsVec(numTotalControls, 0.0);
         for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
-            const auto& state = statesTraj.get(i);
-            model.realizeDynamics(state);
-            const auto& controls = model.getControls(state);
-            for (int j = 0; j < numMissingControls; ++j) {
-                missingControlsMatrix(i, j) = controls.get(
-                        controlIndexMap.at(missingControlNames[j]));
-            }
-        }
-        for (int j = 0; j < numMissingControls; ++j) {
-            missingControls.appendColumn(missingControlNames[j],
-                    missingControlsMatrix.col(j));
-        }
+            auto state = statesTraj.get(i);
 
-        // Insert the missing controls into the trajectory.
-        traj.insertControlsTrajectory(missingControls);
+            for (const auto& controlName : controlNames) {
+                int index = controlDistributorIndexMap.at(controlName);
+                controlsVec[index] = 
+                        controls.getDependentColumn(controlName)[i];
+            }
+            for (const auto& inputControlName : inputControlNames) {
+                int index = controlDistributorIndexMap.at(inputControlName);
+                controlsVec[index] = 
+                        inputControls.getDependentColumn(inputControlName)[i];
+            }
+
+            controlDistributor->setControls(state, controlsVec);
+
+            model.realizeVelocity(state);
+            const auto& controls = model.getControls(state);
+
+            SimTK::RowVector rowToAppend(static_cast<int>(modelControlNames.size()));
+            int icon = 0;
+            for (const auto& modelControlName : modelControlNames) {
+                rowToAppend[icon++] = controls[modelControlIndexMap.at(modelControlName)];
+            }
+            modelControls.appendRow(state.getTime(), rowToAppend);
+        }
+        modelControls.setColumnLabels(modelControlNames);
+
+        traj.insertControlsTrajectory(modelControls, false);
     }
     /// @}
 
@@ -493,6 +498,11 @@ private:
             const SimTK::State& state) const {
         const auto& model = getModelDisabledConstraints();
         // model.realizeVelocity(state);
+        // return model.getControls(state);
+        // TODO this is required to support InputController. For some reason,
+        // the controls cache in the model is marked "valid", so calling 
+        // getControls() after realizing to SimTK::Stage::Velocity does not
+        // update the controls. Why?
         SimTK::Vector& controls = model.updControls(state);
         controls = model.getDefaultControls();
         model.computeControls(state, controls);

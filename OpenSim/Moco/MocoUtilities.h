@@ -296,6 +296,9 @@ OSIMMOCO_API TimeSeriesTable calcGeneralizedForces(Model model,
         const MocoTrajectory& trajectory,
         const std::vector<std::string>& forcePaths);
 
+OSIMMOCO_API std::unique_ptr<ControlDistributor> 
+addControlDistributorForInputControllers(Model& model);
+
 } // namespace OpenSim
 
 #endif // OPENSIM_MOCOUTILITIES_H

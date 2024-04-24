@@ -233,6 +233,44 @@ TEST_CASE("Triple pendulum with synergy-like InputController") {
     MocoStudy study;
     auto& problem = study.updProblem();
     problem.setModelAsCopy(model);
+    problem.setTimeBounds(0, 2);
+    problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, 0.1*SimTK::Pi);
+    problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
+    problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0);
+    problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
+    problem.setStateInfo("/jointset/j2/q2/value", {-10, 10}, 0);
+    problem.setStateInfo("/jointset/j2/q2/speed", {-50, 50}, 0);
+    problem.setInputControlInfo("/controller/synergy_control_0", {-100, 100});
+    problem.setInputControlInfo("/controller/synergy_control_1", {-100, 100});
+    auto* effort = problem.addGoal<MocoControlGoal>();
+    effort->setIgnoreInputControls(false);
+    effort->setIgnoreControlledActuators(true);
+    auto& solver = study.initCasADiSolver();
+    MocoSolution solution = study.solve();
+
+    solution.write("testMocoControllers_testTriplePendulum_solution.sto");
+
+    CHECK(solution.getNumInputControls() == 2);
+    // CHECK(solution.getNumControls() == 0);
+
+    // solution.insertControlsTrajectoryFromModel(model);
+    CHECK(solution.getNumControls() == 3);
+}
+
+TEST_CASE("Test MocoProblemRep") {
+
+    Model model = ModelFactory::createNLinkPendulum(3);
+    auto* controller = new TriplePendulumController();
+    controller->setName("controller");
+    controller->addActuator(model.getComponent<CoordinateActuator>("/tau0"));
+    controller->addActuator(model.getComponent<CoordinateActuator>("/tau1"));
+    controller->addActuator(model.getComponent<CoordinateActuator>("/tau2"));
+    model.addComponent(controller);
+    model.finalizeConnections();
+
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.setModelAsCopy(model);
     problem.setTimeBounds(0, 1);
     problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, 0.5*SimTK::Pi);
     problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
@@ -243,14 +281,15 @@ TEST_CASE("Triple pendulum with synergy-like InputController") {
     problem.setInputControlInfo("/controller/synergy_control_0", {-100, 100});
     problem.setInputControlInfo("/controller/synergy_control_1", {-100, 100});
     problem.addGoal<MocoControlGoal>();
-    auto& solver = study.initCasADiSolver();
-    MocoSolution solution = study.solve();
 
-    CHECK(solution.getNumInputControls() == 2);
-    CHECK(solution.getNumControls() == 0);
+    MocoProblemRep problemRep = problem.createRep();
+    const Model& modelDisabledConstraints = 
+            problemRep.getModelDisabledConstraints();
+    SimTK::State state = modelDisabledConstraints.getWorkingState();
 
-    // solution.insertControlsTrajectoryFromModel(model);
-    CHECK(solution.getNumControls() == 3);
+    std::cout << "Compute controls from model: " << problemRep.getComputeControlsFromModel() << std::endl;
+    std::cout << "getControls(): " << problemRep.getControls(state) << std::endl;
+
 }
 
 
@@ -261,3 +300,4 @@ TEST_CASE("Triple pendulum with synergy-like InputController") {
 // - Test when all controls are not from ActuatorInputController.
 // - Test reusing solution with controllers as initial guess.
 // - Test workflow with disabled actuators
+// - Test enabled/disabled controllers

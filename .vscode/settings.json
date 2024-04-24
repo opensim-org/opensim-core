@@ -85,6 +85,9 @@
         "xstddef": "cpp",
         "xtr1common": "cpp",
         "xutility": "cpp",
-        "adolcforward": "cpp"
+        "adolcforward": "cpp",
+        "coroutine": "cpp",
+        "ranges": "cpp",
+        "span": "cpp"
     }
 }
