@@ -88,16 +88,21 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt,
     int numTotalControls = static_cast<int>(controls.rows()) + 
             static_cast<int>(input_controls.rows());
     casadi::DM casControls(numTotalControls, controls.columns());
+    
+    int ic = 0;
+    int iic = 0;
+    std::sort(inputControlIndexes.begin(), inputControlIndexes.end());
+    int numInputControls = static_cast<int>(inputControlIndexes.size());
     for (int i = 0; i < numTotalControls; ++i) {
-        bool foundInputControl = std::find(inputControlIndexes.begin(), 
-                    inputControlIndexes.end(), i) != inputControlIndexes.end();
-        if (foundInputControl) {
+        if (iic < numInputControls && inputControlIndexes[iic] == i) {
             casControls(i, casadi::Slice()) = 
-                    input_controls(i, casadi::Slice());
-            casControlNames.push_back(inputControlNames[i]);
+                    input_controls(iic, casadi::Slice());
+            casControlNames.push_back(inputControlNames[iic]);
+            ++iic;
         } else {
-            casControls(i, casadi::Slice()) = controls(i, casadi::Slice());
-            casControlNames.push_back(controlNames[i]);
+            casControls(i, casadi::Slice()) = controls(ic, casadi::Slice());
+            casControlNames.push_back(controlNames[ic]);
+            ++ic;
         }
     }
     casVars[Var::controls] = casControls;
@@ -158,31 +163,31 @@ TOut convertToMocoTrajectory(const CasOC::Iterate& casIt,
     if (!casIt.state_names.empty()) {
         simtkStates = convertToSimTKMatrix(casVars.at(Var::states));
     }
+    int numTotalControls = static_cast<int>(casIt.control_names.size());
+    int numInputControls = static_cast<int>(inputControlIndexes.size());
+    int numControls = numTotalControls - numInputControls;
+    OPENSIM_ASSERT(numControls >= 0);
     SimTK::Matrix simtkControls;
     SimTK::Matrix simtkInputControls;
     std::vector<std::string> controlNames;
     std::vector<std::string> inputControlNames;
-    if (!casIt.control_names.empty()) {
-        SimTK::Matrix allControls = convertToSimTKMatrix(
-                casVars.at(Var::controls));
-        simtkControls.resize(allControls.nrow(), 
-                allControls.ncol() - 
-                        static_cast<int>(inputControlIndexes.size()));
-        simtkInputControls.resize(allControls.nrow(),
-                static_cast<int>(inputControlIndexes.size()));
-        int icontrol = 0;
-        int iinputControl = 0;
+    if (numTotalControls) {
+        SimTK::Matrix allControls = 
+                convertToSimTKMatrix(casVars.at(Var::controls));
+        simtkControls.resize(allControls.nrow(), numControls);
+        simtkInputControls.resize(allControls.nrow(), numInputControls);
+        int ic = 0;
+        int iic = 0;
+        std::sort(inputControlIndexes.begin(), inputControlIndexes.end());
         for (int i = 0; i < allControls.ncol(); ++i) {
-            bool foundInputControl = std::find(inputControlIndexes.begin(), 
-                    inputControlIndexes.end(), i) != inputControlIndexes.end();
-            if (foundInputControl) {
-                simtkInputControls.updCol(iinputControl) = allControls.col(i);
+            if (iic < numInputControls && inputControlIndexes[iic] == i) {
+                simtkInputControls.updCol(iic) = allControls.col(i);
                 inputControlNames.push_back(casIt.control_names[i]);
-                ++iinputControl;
+                ++iic;
             } else {
-                simtkControls.updCol(icontrol) = allControls.col(i);
+                simtkControls.updCol(ic) = allControls.col(i);
                 controlNames.push_back(casIt.control_names[i]);
-                ++icontrol;
+                ++ic;
             }
         }
     }

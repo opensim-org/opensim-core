@@ -376,66 +376,6 @@ public:
         }
         return inputControlIndexes;
     }
-
-    /// Append the missing controls from the model to the MocoSolution. This
-    /// function is intended for use by solvers to ensure that the controls
-    /// trajectory in the MocoTrajectory contains all the controls from the
-    /// model. This function is useful when the model contains user-defined
-    /// controllers, which require the controls that are not present in the
-    /// optimal control problem to be computed from the model.
-    void appendMissingModelControls(MocoTrajectory& traj) const {
-        // TODO: this would need to be updated if we allowed stacking OCP
-        //       control on top of user-defined controls.
-        const auto& model = getModelBase();
-
-        auto modelControlNames = createControlNamesFromModel(model);
-        auto modelControlIndexMap = createSystemControlIndexMap(model);
-
-        auto controlDistributor = 
-                model.getComponentList<ControlDistributor>().begin();
-        auto controlDistributorIndexMap = 
-                controlDistributor->getControlIndexMap();
-        int numTotalControls = 
-                static_cast<int>(controlDistributorIndexMap.size());
-
-        TimeSeriesTable modelControls;
-        StatesTrajectory statesTraj = traj.exportToStatesTrajectory(model);
-        TimeSeriesTable controls = traj.exportToControlsTable();
-        TimeSeriesTable inputControls = traj.exportToInputControlsTable();
-        std::vector<std::string> controlNames = controls.getColumnLabels();
-        std::vector<std::string> inputControlNames = 
-                inputControls.getColumnLabels();
-        SimTK::Vector controlsVec(numTotalControls, 0.0);
-        for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
-            auto state = statesTraj.get(i);
-
-            for (const auto& controlName : controlNames) {
-                int index = controlDistributorIndexMap.at(controlName);
-                controlsVec[index] = 
-                        controls.getDependentColumn(controlName)[i];
-            }
-            for (const auto& inputControlName : inputControlNames) {
-                int index = controlDistributorIndexMap.at(inputControlName);
-                controlsVec[index] = 
-                        inputControls.getDependentColumn(inputControlName)[i];
-            }
-
-            controlDistributor->setControls(state, controlsVec);
-
-            model.realizeVelocity(state);
-            const auto& controls = model.getControls(state);
-
-            SimTK::RowVector rowToAppend(static_cast<int>(modelControlNames.size()));
-            int icon = 0;
-            for (const auto& modelControlName : modelControlNames) {
-                rowToAppend[icon++] = controls[modelControlIndexMap.at(modelControlName)];
-            }
-            modelControls.appendRow(state.getTime(), rowToAppend);
-        }
-        modelControls.setColumnLabels(modelControlNames);
-
-        traj.insertControlsTrajectory(modelControls, false);
-    }
     /// @}
 
 private:

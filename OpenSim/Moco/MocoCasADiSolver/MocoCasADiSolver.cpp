@@ -394,11 +394,6 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     MocoSolution mocoSolution = convertToMocoTrajectory<MocoSolution>(
             casSolution, inputControlIndexes);
 
-    // If the model contains a user-added Controllers, append to the solution
-    // the missing controls that were not present in the optimization problem.
-    // TODO only do this if the user asks for it.
-    getProblemRep().appendMissingModelControls(mocoSolution);
-
     // If enforcing model constraints and not minimizing Lagrange multipliers,
     // check the rank of the constraint Jacobian and if rank-deficient, print
     // recommendation to the user to enable Lagrange multiplier minimization.

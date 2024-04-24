@@ -548,15 +548,19 @@ protected:
 public:
     template <typename MocoTrajectoryType, typename tropIterateType>
     MocoTrajectoryType convertIterateTropterToMoco(
-            const tropIterateType& tropSol) const;
+            const tropIterateType& tropSol, 
+            std::vector<int> inputControlIndexes = {}) const;
 
     MocoTrajectory convertToMocoTrajectory(
-            const tropter::Iterate& tropSol) const;
+            const tropter::Iterate& tropSol,
+            std::vector<int> inputControlIndexes = {}) const;
 
-    MocoSolution convertToMocoSolution(const tropter::Solution& tropSol) const;
+    MocoSolution convertToMocoSolution(const tropter::Solution& tropSol,
+            std::vector<int> inputControlIndexes = {}) const;
 
     tropter::Iterate convertToTropterIterate(
-            const MocoTrajectory& mocoIter) const;
+            const MocoTrajectory& mocoIter, 
+            std::vector<int> inputControlIndexes = {}) const;
 };
 
 template <typename T>

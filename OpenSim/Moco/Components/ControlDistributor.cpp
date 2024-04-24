@@ -100,6 +100,7 @@ void ControlDistributor::extendRealizeTopology(SimTK::State& state) const {
 
 void ControlDistributor::extendFinalizeFromProperties() {
     Super::extendFinalizeFromProperties();
+    updOutput("controls").clearChannels();
     for (const auto& kv : m_controlIndexMap) {
         updOutput("controls").addChannel(kv.first);
     }

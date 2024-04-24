@@ -115,8 +115,9 @@ void InputController::extendConnectToModel(Model& model) {
             getNumInputControls(), numConnectees);
         m_computeControls = true;
     } else {
-        log_warn("No Input controls connected to {}, therefore it will be "
-                 "ignored when computing model controls.", getName());
+        log_info("No Input controls are connected to InputController {}, "
+                "therefore it will be ignored when computing model controls.", 
+                 getAbsolutePathString());
         m_computeControls = false;
     } 
 }

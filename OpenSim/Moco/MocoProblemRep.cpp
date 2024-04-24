@@ -105,6 +105,12 @@ void MocoProblemRep::initialize() {
     // Check that any controllers added by the user are valid.
     std::unordered_set<std::string> controlledActuatorPaths;
     for (const auto& controller : m_model_base.getComponentList<Controller>()) {
+        if (!controller.isEnabled()) {
+            log_warn("Controller '{}' is disabled and will be ignored in "
+                    "the MocoProblem.", controller.getAbsolutePathString());
+            continue;
+        }
+
         if (dynamic_cast<const ActuatorInputController*>(&controller)) {
            OPENSIM_THROW(Exception, "Detected controller '{}' of type "
                    "ActuatorInputController, but user-defined controllers "
@@ -116,7 +122,6 @@ void MocoProblemRep::initialize() {
         OPENSIM_THROW_IF(socket.getNumConnectees() == 0,
                 Exception, "Controller '{}' has no actuators connected.",
                 controller.getAbsolutePathString());
-
         for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
             controlledActuatorPaths.insert(socket.getConnecteePath(i));
         }
@@ -130,7 +135,7 @@ void MocoProblemRep::initialize() {
     // OCP controls to all InputControllers in the model, including the
     // ActuatorInputController we just added for actuators that are not already
     // controlled by a user-defined controller.
-    addControlDistributorForInputControllers(m_model_base);
+    addControlDistributorAndConnectInputControllers(m_model_base);
     auto& controlDistributor = m_model_base.updComponent<ControlDistributor>(
             "/control_distributor");
     auto inputControlNames = controlDistributor.getControlNamesInOrder();
@@ -151,17 +156,19 @@ void MocoProblemRep::initialize() {
             if (actu.numControls() == 1) {
                 controlDistributor.addControl(actuPath);
                 controlDistributor.finalizeFromProperties();
-                actuatorController->connectInput_controls(
-                        controlDistributor.getOutput("controls"),
-                        actuPath);
+                const auto& output = controlDistributor.getOutput("controls");
+                const auto& channel = output.getChannel(actuPath);
+                actuatorController->connectInput_controls(channel, actuPath);
             } else {
                 for (int i = 0; i < actu.numControls(); ++i) {
                     std::string controlName = fmt::format("{}_{}", actuPath, i);
                     controlDistributor.addControl(controlName);
                     controlDistributor.finalizeFromProperties();
+                    const auto& output = 
+                            controlDistributor.getOutput("controls");
+                    const auto& channel = output.getChannel(actuPath);
                     actuatorController->connectInput_controls(
-                            controlDistributor.getOutput("controls"),
-                            controlName);
+                            channel, controlName);
                 }
             }
         }

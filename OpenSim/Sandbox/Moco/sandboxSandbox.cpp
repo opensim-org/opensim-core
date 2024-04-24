@@ -162,13 +162,13 @@ void testDoublePendulum() {
     auto& problem = study.updProblem();
     problem.setModelAsCopy(model);
     problem.setTimeBounds(0, 1);
-    problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, 0.5*SimTK::Pi);
+    problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
     problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
     problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0);
     problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
     problem.setInputControlInfo("/controller/synergy_control", {-100, 100});
     auto* effort = problem.addGoal<MocoControlGoal>();
-    effort->setIgnoreInputControls(false);
+    effort->setIgnoreInputControls(true);
     effort->setIgnoreControlledActuators(true);
     auto& solver = study.initCasADiSolver();
     solver.set_parallel(0);

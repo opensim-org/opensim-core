@@ -453,10 +453,6 @@ public:
     /// can change this behavior with `overwrite`.
     void insertControlsTrajectory(
             const TimeSeriesTable& subsetOfControls, bool overwrite = false);
-
-    void insertControlsTrajectoryFromModel(const MocoProblemRep& rep, 
-            bool overwrite = false);
-
     /// Compute coordinate speeds based on coordinate position values and append
     /// to the trajectory. Coordinate values must exist in the original
     /// trajectory.
@@ -472,6 +468,9 @@ public:
     /// trajectory.
     /// @note Overrides any existing acceleration values in the trajectory.
     void generateAccelerationsFromSpeeds();
+
+    void generateControlsFromModelControllers(Model model, 
+            bool overwrite = false);
     /// Trim the trajectory to include the rows starting at newStartIndex and
     /// and ending at newFinalIndex.
     void trimToIndices(int newStartIndex, int newFinalIndex);

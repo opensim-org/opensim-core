@@ -239,7 +239,8 @@ MocoTrajectory MocoTropterSolver::createGuess(const std::string& type) const {
     } else if (type == "random") {
         tropIter = dircol->make_random_iterate_within_bounds();
     }
-    return ocp->convertToMocoTrajectory(tropIter);
+    return ocp->convertToMocoTrajectory(tropIter, 
+            getProblemRep().getInputControlIndexes());
 #else
     OPENSIM_THROW(MocoTropterSolverNotAvailable);
 #endif
@@ -338,7 +339,10 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     }
     auto dircol = createTropterSolver(ocp);
     MocoTrajectory guess = getGuess();
-    tropter::Iterate tropIterate = ocp->convertToTropterIterate(guess);
+    std::vector<int> inputControlIndexes = 
+            getProblemRep().getInputControlIndexes();
+    tropter::Iterate tropIterate = 
+            ocp->convertToTropterIterate(guess, inputControlIndexes);
 
     // Temporarily disable printing of negative muscle force warnings so the
     // output stream isn't flooded while computing finite differences.
@@ -354,12 +358,8 @@ MocoSolution MocoTropterSolver::solveImpl() const {
 
     if (get_verbosity()) { dircol->print_constraint_values(tropSolution); }
 
-    MocoSolution mocoSolution = ocp->convertToMocoSolution(tropSolution);
-
-    // If the model contains any user-added Controllers, append to the solution
-    // the missing controls that were not present in the optimization problem.
-    // TODO only do this if the user asks for it.
-    //getProblemRep().appendMissingModelControls(mocoSolution);
+    MocoSolution mocoSolution = 
+            ocp->convertToMocoSolution(tropSolution, inputControlIndexes);
 
     // If enforcing model constraints and not minimizing Lagrange
     // multipliers, check the rank of the constraint Jacobian and if

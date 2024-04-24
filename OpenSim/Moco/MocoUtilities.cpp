@@ -466,7 +466,7 @@ TimeSeriesTable OpenSim::calcGeneralizedForces(Model model,
     return generalizedForcesTable;
 }
 
-void OpenSim::addControlDistributorForInputControllers(Model& model) {
+void OpenSim::addControlDistributorAndConnectInputControllers(Model& model) {
 
     for (const auto& controlDistributor :
                 model.getComponentList<ControlDistributor>()) {
@@ -479,18 +479,20 @@ void OpenSim::addControlDistributorForInputControllers(Model& model) {
 
     const auto& output = controlDistributorUPtr->getOutput("controls");
     for (auto& controller : model.updComponentList<InputController>()) {
+        if (!controller.isEnabled()) {
+            continue;
+        }
         const auto labels = controller.getInputControlLabels();
         for (const auto& label : labels) {
             std::string inputControlName = fmt::format(
                     "{}/{}", controller.getAbsolutePathString(), label);
             controlDistributorUPtr->addControl(inputControlName);
             controlDistributorUPtr->finalizeFromProperties();
-
             const auto& channel = output.getChannel(inputControlName);
             controller.connectInput_controls(channel, inputControlName);
         }
     }
 
     model.addComponent(controlDistributorUPtr.release());
-    model.finalizeConnections();
+    model.initSystem();
 }

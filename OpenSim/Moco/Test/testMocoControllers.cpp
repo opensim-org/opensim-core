@@ -80,6 +80,8 @@ TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
         auto& solver = study.initSolver<TestType>();
         solver.set_num_mesh_intervals(50);
         MocoSolution solution = study.solve();
+        // Add the PrescribedController controls to the solution.
+        solution.generateControlsFromModelControllers(model);
         solution.write(
                 "testMocoControllers_testSlidingMass_prescribed_solution.sto");
 
@@ -128,50 +130,93 @@ TEST_CASE("MocoControlGoal: ignoring controlled actuators") {
     }
 }
 
-class TriplePendulumController : public InputController {
-    OpenSim_DECLARE_CONCRETE_OBJECT(
-            TriplePendulumController, InputController);
+namespace {
+    class TriplePendulumController : public InputController {
+        OpenSim_DECLARE_CONCRETE_OBJECT(
+                TriplePendulumController, InputController);
+    public:
+        TriplePendulumController() {
+            m_synergyVectors.resize(3, 2);
+            m_synergyVectors(0, 0) = 0.25;
+            m_synergyVectors(0, 1) = 0.5;
+            m_synergyVectors(1, 0) = 0.75;
+            m_synergyVectors(1, 1) = 0.5;
+            m_synergyVectors(2, 0) = 0.5;
+            m_synergyVectors(2, 1) = 0.25;
+        }
+        std::vector<std::string> getInputControlLabels() const override {
+            return {"synergy_control_0", "synergy_control_1"};
+        }
+        void computeControlsImpl(const SimTK::State& state,
+                SimTK::Vector& controls) const override {
+            const auto& input = getInput<double>("controls");
+            for (int i = 0; i < input.getNumConnectees(); ++i) {
+                controls += m_synergyVectors.col(i) * input.getValue(state, i);
+            }
 
-public:
-    TriplePendulumController() {
-        m_synergyVectors.resize(3, 2);
-        m_synergyVectors(0, 0) = 0.25;
-        m_synergyVectors(0, 1) = 0.5;
-        m_synergyVectors(1, 0) = 0.75;
-        m_synergyVectors(1, 1) = 0.5;
-        m_synergyVectors(2, 0) = 0.5;
+        }
+        const SimTK::Matrix& getSynergyVectors() const { 
+            return m_synergyVectors; 
+        }
+    private:
+        SimTK::Matrix m_synergyVectors;
+    };
 
-        m_synergyVectors(2, 1) = 0.25;
+    Model createControlledTriplePendulumModel(bool controllerEnabled = true) {
+        Model model = ModelFactory::createNLinkPendulum(3);
+        auto* controller = new TriplePendulumController();
+        controller->setName("triple_pendulum_controller");
+        controller->addActuator(
+                model.getComponent<CoordinateActuator>("/tau0"));
+        controller->addActuator(
+                model.getComponent<CoordinateActuator>("/tau1"));
+        controller->addActuator(
+                model.getComponent<CoordinateActuator>("/tau2"));
+        controller->setEnabled(controllerEnabled);
+        model.addComponent(controller);
+        model.finalizeConnections();
+        return model;
     }
 
-    std::vector<std::string> getInputControlLabels() const override {
-        return {"synergy_control_0", "synergy_control_1"};
-    }
-
-    void computeControlsImpl(const SimTK::State& state,
-            SimTK::Vector& controls) const override {
-        const auto& input = getInput<double>("controls");
-        for (int i = 0; i < input.getNumConnectees(); ++i) {
-            controls += m_synergyVectors.col(i) * input.getValue(state, i);
+    template<typename SolverType = MocoCasADiSolver>
+    MocoStudy createTriplePendulumMocoStudy(const Model& model,
+            bool ignoreControlledActuators = false,
+            bool ignoreInputControls = false) {
+        MocoStudy study;
+        auto& problem = study.updProblem(); 
+        problem.setModelAsCopy(model);
+        problem.setTimeBounds(0, 0.5);
+        problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, -0.5);
+        problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
+        problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0);
+        problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
+        problem.setStateInfo("/jointset/j2/q2/value", {-10, 10}, 0);
+        problem.setStateInfo("/jointset/j2/q2/speed", {-50, 50}, 0);
+        MocoBounds bounds(-100, 100);
+        const auto& controller = model.getComponent<TriplePendulumController>(
+                "/triple_pendulum_controller");
+        if (controller.isEnabled()) {
+            problem.setInputControlInfo(
+                    "/triple_pendulum_controller/synergy_control_0", bounds);
+            problem.setInputControlInfo(
+                    "/triple_pendulum_controller/synergy_control_1", bounds);
+        } else {
+            problem.setControlInfo("/tau0", bounds);
+            problem.setControlInfo("/tau1", bounds);
+            problem.setControlInfo("/tau2", bounds);
         }
 
+        auto* effort = problem.addGoal<MocoControlGoal>();
+        effort->setIgnoreControlledActuators(ignoreControlledActuators);
+        effort->setIgnoreInputControls(ignoreInputControls);
+        auto& solver = study.initSolver<SolverType>();
+        solver.set_num_mesh_intervals(50);
+        return study;
     }
-
-    const SimTK::Matrix& getSynergyVectors() const { return m_synergyVectors; }
-
-private:
-    SimTK::Matrix m_synergyVectors;
-};
+}
 
 TEST_CASE("InputController behavior") {
-    Model model = ModelFactory::createNLinkPendulum(3);
-    auto* controller = new TriplePendulumController();
-    controller->setName("controller");
-    controller->addActuator(model.getComponent<CoordinateActuator>("/tau0"));
-    controller->addActuator(model.getComponent<CoordinateActuator>("/tau1"));
-    controller->addActuator(model.getComponent<CoordinateActuator>("/tau2"));
-    model.addComponent(controller);
-    model.finalizeConnections();    
+    auto model = createControlledTriplePendulumModel(); 
 
     SECTION("No Inputs connected (controls are default)") {
         SimTK::State state = model.initSystem();
@@ -188,8 +233,8 @@ TEST_CASE("InputController behavior") {
         constant->set_function(Constant(1.0));
         model.addComponent(constant);
 
-        auto& controller = 
-                model.updComponent<TriplePendulumController>("/controller");
+        auto& controller = model.updComponent<TriplePendulumController>(
+                "/triple_pendulum_controller");
         controller.connectInput_controls(constant->getOutput("signal"));
 
         CHECK_THROWS_WITH(model.finalizeConnections(),
@@ -205,8 +250,8 @@ TEST_CASE("InputController behavior") {
         constant1->set_function(Constant(constants[1]));
         model.addComponent(constant1);
 
-        auto& controller = 
-                model.updComponent<TriplePendulumController>("/controller");
+        auto& controller = model.updComponent<TriplePendulumController>(
+                "/triple_pendulum_controller");
         controller.connectInput_controls(constant0->getOutput("signal"));
         controller.connectInput_controls(constant1->getOutput("signal"));
         model.finalizeConnections();
@@ -219,85 +264,78 @@ TEST_CASE("InputController behavior") {
     }
 }
 
-TEST_CASE("Triple pendulum with synergy-like InputController") {
+TEMPLATE_TEST_CASE("Triple pendulum with synergy-like InputController", "",
+        MocoCasADiSolver, MocoTropterSolver) {
+    Model model = createControlledTriplePendulumModel();
+    model.initSystem();
 
-    Model model = ModelFactory::createNLinkPendulum(3);
-    auto* controller = new TriplePendulumController();
-    controller->setName("controller");
-    controller->addActuator(model.getComponent<CoordinateActuator>("/tau0"));
-    controller->addActuator(model.getComponent<CoordinateActuator>("/tau1"));
-    controller->addActuator(model.getComponent<CoordinateActuator>("/tau2"));
-    model.addComponent(controller);
-    model.finalizeConnections();
-
-    MocoStudy study;
-    auto& problem = study.updProblem();
-    problem.setModelAsCopy(model);
-    problem.setTimeBounds(0, 2);
-    problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, 0.1*SimTK::Pi);
-    problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
-    problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0);
-    problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
-    problem.setStateInfo("/jointset/j2/q2/value", {-10, 10}, 0);
-    problem.setStateInfo("/jointset/j2/q2/speed", {-50, 50}, 0);
-    problem.setInputControlInfo("/controller/synergy_control_0", {-100, 100});
-    problem.setInputControlInfo("/controller/synergy_control_1", {-100, 100});
-    auto* effort = problem.addGoal<MocoControlGoal>();
-    effort->setIgnoreInputControls(false);
-    effort->setIgnoreControlledActuators(true);
-    auto& solver = study.initCasADiSolver();
+    MocoStudy study = createTriplePendulumMocoStudy<TestType>(model);
     MocoSolution solution = study.solve();
-
     solution.write("testMocoControllers_testTriplePendulum_solution.sto");
+    //study.visualize(solution);
 
     CHECK(solution.getNumInputControls() == 2);
-    // CHECK(solution.getNumControls() == 0);
+    CHECK(solution.getNumControls() == 0);
 
-    // solution.insertControlsTrajectoryFromModel(model);
+    solution.generateControlsFromModelControllers(model);
     CHECK(solution.getNumControls() == 3);
+
+    TimeSeriesTable controlsTable = solution.exportToControlsTable();
+    TimeSeriesTable inputControlsTable = solution.exportToInputControlsTable();
+    const auto& controller = model.updComponent<TriplePendulumController>(
+            "/triple_pendulum_controller");
+    const auto& synergyVectors = controller.getSynergyVectors();
+    for (int i = 0; i < controlsTable.getNumRows(); ++i) {
+        SimTK::Vector expected = 
+                synergyVectors * ~inputControlsTable.getRowAtIndex(i);
+        SimTK_TEST_EQ(controlsTable.getRowAtIndex(i), expected.transpose());
+    }
 }
 
-TEST_CASE("Test MocoProblemRep") {
+TEMPLATE_TEST_CASE("Triple pendulum with disabled InputController", "", 
+        MocoCasADiSolver, MocoTropterSolver) {
+    Model model = createControlledTriplePendulumModel(false);
+    MocoStudy study = createTriplePendulumMocoStudy<TestType>(model);
+    MocoSolution solution = study.solve();
 
+    CHECK(solution.getNumInputControls() == 0);
+    CHECK(solution.getNumControls() == 3);
+    TimeSeriesTable expected = solution.exportToControlsTable();
+
+    solution.generateControlsFromModelControllers(model);
+    CHECK(solution.getNumControls() == 3);
+
+    TimeSeriesTable actual = solution.exportToControlsTable();
+    OpenSim_REQUIRE_MATRIX(actual.getMatrix(), expected.getMatrix());
+}
+
+TEMPLATE_TEST_CASE("No actuators connected to controller", "", 
+        MocoCasADiSolver, MocoTropterSolver) {
     Model model = ModelFactory::createNLinkPendulum(3);
     auto* controller = new TriplePendulumController();
-    controller->setName("controller");
-    controller->addActuator(model.getComponent<CoordinateActuator>("/tau0"));
-    controller->addActuator(model.getComponent<CoordinateActuator>("/tau1"));
-    controller->addActuator(model.getComponent<CoordinateActuator>("/tau2"));
+    controller->setName("triple_pendulum_controller");
     model.addComponent(controller);
     model.finalizeConnections();
-
-    MocoStudy study;
-    auto& problem = study.updProblem();
-    problem.setModelAsCopy(model);
-    problem.setTimeBounds(0, 1);
-    problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, 0.5*SimTK::Pi);
-    problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
-    problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0);
-    problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
-    problem.setStateInfo("/jointset/j2/q2/value", {-10, 10}, 0);
-    problem.setStateInfo("/jointset/j2/q2/speed", {-50, 50}, 0);
-    problem.setInputControlInfo("/controller/synergy_control_0", {-100, 100});
-    problem.setInputControlInfo("/controller/synergy_control_1", {-100, 100});
-    problem.addGoal<MocoControlGoal>();
-
-    MocoProblemRep problemRep = problem.createRep();
-    const Model& modelDisabledConstraints = 
-            problemRep.getModelDisabledConstraints();
-    SimTK::State state = modelDisabledConstraints.getWorkingState();
-
-    std::cout << "Compute controls from model: " << problemRep.getComputeControlsFromModel() << std::endl;
-    std::cout << "getControls(): " << problemRep.getControls(state) << std::endl;
-
+    std::string expectedMessage = "Controller '/triple_pendulum_controller' "
+            "has no actuators connected.";
+    CHECK_THROWS_WITH(createTriplePendulumMocoStudy<TestType>(model), 
+            ContainsSubstring(expectedMessage));
 }
 
+TEMPLATE_TEST_CASE("MocoControlGoal: ignoring Input controls", "",
+        MocoCasADiSolver, MocoTropterSolver) {
+    Model model = createControlledTriplePendulumModel();
+    // Must also ignore the controlled actuators to get an objective value of 0.
+    bool ignoreControlledActuators = true;
+    bool ignoreInputControls = true;
+    MocoStudy study = createTriplePendulumMocoStudy<TestType>(model, 
+            ignoreControlledActuators, ignoreInputControls);
+    auto& solver = study.updSolver<TestType>();
+    solver.set_optim_max_iterations(1);
+    MocoSolution solution = study.solve().unseal();
+    CHECK(solution.getObjective() == 0);
+}
 
 // TODO things to test:
-// - Check if no actuators are added to the controller.
-// - Check if the controller has the wrong number of actuators.
-// - Test when all controls are from ActuatorInputController.
-// - Test when all controls are not from ActuatorInputController.
 // - Test reusing solution with controllers as initial guess.
 // - Test workflow with disabled actuators
-// - Test enabled/disabled controllers

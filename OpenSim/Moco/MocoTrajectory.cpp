@@ -108,6 +108,7 @@ MocoTrajectory::MocoTrajectory(const SimTK::Vector& time,
     } else {
         m_multipliers.resize(m_time.size(), 0);
     }
+    m_input_controls.resize(time.size(), 0);
     m_derivatives.resize(m_time.size(), 0);
     OPENSIM_THROW_IF((int)m_parameter_names.size() != m_parameters.nelt(),
             Exception, "Inconsistent number of parameters.");
@@ -135,7 +136,7 @@ MocoTrajectory::MocoTrajectory(const SimTK::Vector& time,
         OPENSIM_THROW_IF((int)time.size() != m_derivatives.nrow(), Exception,
                 "Inconsistent number of times in derivatives trajectory.");
     } else {
-        m_derivatives.resize(m_time.size(), 0);
+        m_derivatives.resize(time.size(), 0);
     }
 }
 
@@ -165,7 +166,7 @@ MocoTrajectory::MocoTrajectory(const SimTK::Vector& time,
         OPENSIM_THROW_IF((int)time.size() != m_input_controls.nrow(), Exception,
                 "Inconsistent number of times in Input controls trajectory.");
     } else {
-        m_input_controls.resize(m_time.size(), 0);
+        m_input_controls.resize(time.size(), 0);
     }
 }
 
@@ -431,35 +432,6 @@ void MocoTrajectory::insertControlsTrajectory(
     }
 }
 
-void MocoTrajectory::insertControlsTrajectoryFromModel(
-        const MocoProblemRep& rep, bool overwrite) {
-    ensureUnsealed();
-
-    // All possible model control names (exludes disabled actuators).
-    Model model = rep.getModelDisabledConstraints();
-    model.initSystem();
-    auto controlNames = createControlNamesFromModel(model);
-    auto controlIndexMap = createSystemControlIndexMap(model);
-
-    TimeSeriesTable modelControls;
-    StatesTrajectory statesTraj = exportToStatesTrajectory(model);
-    for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
-        const auto& state = statesTraj.get(i);
-        model.realizeDynamics(state);
-        const auto& controls = model.getControls(state);
-
-        SimTK::RowVector rowToAppend(static_cast<int>(controlNames.size()));
-        int icon = 0;
-        for (const auto& controlName : controlNames) {
-            rowToAppend[icon++] = controls[controlIndexMap.at(controlName)];
-        }
-        modelControls.appendRow(state.getTime(), rowToAppend);
-    }
-    modelControls.setColumnLabels(controlNames);
-
-    insertControlsTrajectory(modelControls, overwrite);
-}
-
 void MocoTrajectory::generateSpeedsFromValues() {
     auto valuesTable = exportToValuesTable();
     int numValues = (int)valuesTable.getNumColumns();
@@ -631,6 +603,69 @@ void MocoTrajectory::generateAccelerationsFromSpeeds() {
 
     // Assign derivative names.
     m_derivative_names = derivativeNames;
+}
+
+void MocoTrajectory::generateControlsFromModelControllers(
+        Model model, bool overwrite) {
+    ensureUnsealed();
+    model.initSystem();
+
+    // Get the set of possible model control names (i.e., exlude disabled 
+    // actuators) and their indexes in the model's control vector.
+    auto modelControlNames = createControlNamesFromModel(model);
+    auto modelControlIndexMap = createSystemControlIndexMap(model);
+
+    // Add a ControlDistributor and connect it to any InputControllers in the
+    // model.
+    addControlDistributorAndConnectInputControllers(model);
+    auto controlDistributor = 
+                model.getComponentList<ControlDistributor>().begin();
+    auto controlDistributorIndexMap = 
+            controlDistributor->getControlIndexMap();
+    int numInputControls = 
+            static_cast<int>(controlDistributorIndexMap.size());
+    OPENSIM_THROW_IF(numInputControls != getNumInputControls(), 
+            Exception, "Expected the number of Inputs associated with "
+            "InputControllers in the model to match the number of Input "
+            "controls in the trajectory, but received {} and {}, respectively.",
+            numInputControls, getNumInputControls());
+    TimeSeriesTable inputControls = exportToInputControlsTable();
+    std::vector<std::string> inputControlNames = 
+            inputControls.getColumnLabels();
+    SimTK::Vector inputControlsVec(numInputControls, 0.0);
+
+    // Construct the model controls trajectory.
+    TimeSeriesTable modelControls;
+    StatesTrajectory statesTraj = exportToStatesTrajectory(model);
+    for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
+        auto state = statesTraj.get(i);
+
+        // Set the Input controls, if they exist.
+        if (numInputControls) {
+            for (const auto& inputControlName : inputControlNames) {
+                int index = controlDistributorIndexMap.at(inputControlName);
+                inputControlsVec[index] = 
+                        inputControls.getDependentColumn(inputControlName)[i];
+            }
+            controlDistributor->setControls(state, inputControlsVec);
+        }
+        
+        // Compute the model controls.
+        model.realizeVelocity(state);
+        const auto& controls = model.getControls(state);
+        SimTK::RowVector rowToAppend(
+                static_cast<int>(modelControlNames.size()));
+        int icon = 0;
+        for (const auto& modelControlName : modelControlNames) {
+            rowToAppend[icon++] = 
+                    controls[modelControlIndexMap.at(modelControlName)];
+        }
+        modelControls.appendRow(state.getTime(), rowToAppend);
+    }
+    modelControls.setColumnLabels(modelControlNames);
+
+    // Insert the model controls into the trajectory.
+    insertControlsTrajectory(modelControls, overwrite);
 }
 
 void MocoTrajectory::trimToIndices(int newStartIndex, int newFinalIndex) {
@@ -1357,10 +1392,11 @@ bool MocoTrajectory::isCompatible(const MocoProblemRep& mp,
 
 bool MocoTrajectory::isNumericallyEqual(
         const MocoTrajectory& other, double tol) const {
-    ensureUnsealed();
+    ensureUnsealed();   
 
     return m_state_names == other.m_state_names &&
            m_control_names == other.m_control_names &&
+           m_input_control_names == other.m_input_control_names &&
            m_multiplier_names == other.m_multiplier_names &&
            m_derivative_names == other.m_derivative_names &&
            // TODO include slack variables?
@@ -1370,7 +1406,7 @@ bool MocoTrajectory::isNumericallyEqual(
            SimTK::Test::numericallyEqual(m_states, other.m_states, 1, tol) &&
            SimTK::Test::numericallyEqual(
                    m_controls, other.m_controls, 1, tol) &&
-            SimTK::Test::numericallyEqual(
+           SimTK::Test::numericallyEqual(
                    m_input_controls, other.m_input_controls, 1, tol) &&
            SimTK::Test::numericallyEqual(
                    m_multipliers, other.m_multipliers, 1, tol) &&
