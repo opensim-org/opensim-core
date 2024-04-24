@@ -466,45 +466,31 @@ TimeSeriesTable OpenSim::calcGeneralizedForces(Model model,
     return generalizedForcesTable;
 }
 
-std::unique_ptr<ControlDistributor> 
-OpenSim::addControlDistributorForInputControllers(Model& model) {
+void OpenSim::addControlDistributorForInputControllers(Model& model) {
 
     for (const auto& controlDistributor :
                 model.getComponentList<ControlDistributor>()) {
-        OPENSIM_THROW(Exception, "Expected no ControlDistributors to be present"
-                "in the model, but found '{}'.",
+        OPENSIM_THROW(Exception, "Expected no ControlDistributors to be " 
+                "present in the model, but found '{}'.",
                 controlDistributor.getAbsolutePathString());
     }
     auto controlDistributorUPtr = make_unique<ControlDistributor>();
+    controlDistributorUPtr->setName("control_distributor");
 
+    const auto& output = controlDistributorUPtr->getOutput("controls");
     for (auto& controller : model.updComponentList<InputController>()) {
         const auto labels = controller.getInputControlLabels();
         for (const auto& label : labels) {
             std::string inputControlName = fmt::format(
                     "{}/{}", controller.getAbsolutePathString(), label);
             controlDistributorUPtr->addControl(inputControlName);
+            controlDistributorUPtr->finalizeFromProperties();
+
+            const auto& channel = output.getChannel(inputControlName);
+            controller.connectInput_controls(channel, inputControlName);
         }
     }
 
-    // Wire the ControlDistributor to the InputControllers in the model.
     model.addComponent(controlDistributorUPtr.release());
-    for (auto& controller : model.updComponentList<InputController>()) {
-        const auto labels = controller.getInputControlLabels();
-        const auto& output = controlDistributorUPtr->getOutput("controls");
-        for (const auto& label : labels) {
-            if (auto* aiController = 
-                    dynamic_cast<ActuatorInputController*>(&controller)) {
-                const auto& channel = output.getChannel(label);
-                aiController->connectInput_controls(channel, label);
-            }  else {
-                std::string inputControlName = fmt::format(
-                        "{}/{}", controller.getAbsolutePathString(), label);
-                const auto& channel = output.getChannel(inputControlName);
-                controller.connectInput_controls(channel, inputControlName);
-            }
-        }
-    }
     model.finalizeConnections();
-
-    return controlDistributorUPtr;
 }

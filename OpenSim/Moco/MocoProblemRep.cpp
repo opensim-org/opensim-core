@@ -23,6 +23,7 @@
 #include "MocoProblem.h"
 #include "MocoProblemInfo.h"
 #include "MocoScaleFactor.h"
+#include "OpenSim/Moco/Components/ControlDistributor.h"
 #include <regex>
 #include <unordered_set>
 
@@ -101,18 +102,6 @@ void MocoProblemRep::initialize() {
     // the actuators in the model.
     checkOrderSystemControls(m_model_base);
 
-    // Add a ControlDistributor to the model. This component will distribute the
-    // OCP controls to all InputControllers in the model, including the
-    // ActuatorInputController we just added for actuators that are not already
-    // controlled by a user-defined controller.
-    for (const auto& controlDistributor :
-                m_model_base.getComponentList<ControlDistributor>()) {
-        OPENSIM_THROW(Exception, "Expected no user-added ControlDistributors "
-                "in the model, but found '{}'.",
-                controlDistributor.getAbsolutePathString());
-    }
-    auto controlDistributorUPtr = make_unique<ControlDistributor>();
-
     // Check that any controllers added by the user are valid.
     std::unordered_set<std::string> controlledActuatorPaths;
     for (const auto& controller : m_model_base.getComponentList<Controller>()) {
@@ -123,8 +112,6 @@ void MocoProblemRep::initialize() {
                    controller.getAbsolutePathString())
         }
 
-        // TODO check that the correct number of actuators is connected. (Is 
-        // this possible here?)
         const auto& socket = controller.getSocket<Actuator>("actuators");
         OPENSIM_THROW_IF(socket.getNumConnectees() == 0,
                 Exception, "Controller '{}' has no actuators connected.",
@@ -135,23 +122,18 @@ void MocoProblemRep::initialize() {
         }
     }
 
-    // User-added InputControllers.
-    std::vector<std::string> inputControlNames;
-    for (auto& controller : m_model_base.updComponentList<InputController>()) {
-        const auto labels = controller.getInputControlLabels();
-        for (const auto& label : labels) {
-            // Apply the Input control name convention:
-            //     "<controller_path>/<control_label>".
-            std::string inputControlName = fmt::format(
-                    "{}/{}", controller.getAbsolutePathString(), label);
-            controlDistributorUPtr->addControl(inputControlName);
-            inputControlNames.push_back(inputControlName);
-        }
-    }
-
     // If user-defined controllers are present, then mark that the solvers will
     // need to compute control values from the model.
     m_computeControlsFromModel = !controlledActuatorPaths.empty();
+
+    // Add a ControlDistributor to the model. This component will distribute the
+    // OCP controls to all InputControllers in the model, including the
+    // ActuatorInputController we just added for actuators that are not already
+    // controlled by a user-defined controller.
+    addControlDistributorForInputControllers(m_model_base);
+    auto& controlDistributor = m_model_base.updComponent<ControlDistributor>(
+            "/control_distributor");
+    auto inputControlNames = controlDistributor.getControlNamesInOrder();
 
     // Add the non-controlled, enabled actuators to an ActuatorInputController.
     // If there are no user-defined controllers, this will add Actuators to the 
@@ -167,45 +149,25 @@ void MocoProblemRep::initialize() {
             actuatorController->addActuator(actu);
             std::string actuPath = actu.getAbsolutePathString();
             if (actu.numControls() == 1) {
-                controlDistributorUPtr->addControl(actuPath);
+                controlDistributor.addControl(actuPath);
+                controlDistributor.finalizeFromProperties();
+                actuatorController->connectInput_controls(
+                        controlDistributor.getOutput("controls"),
+                        actuPath);
             } else {
                 for (int i = 0; i < actu.numControls(); ++i) {
                     std::string controlName = fmt::format("{}_{}", actuPath, i);
-                    controlDistributorUPtr->addControl(controlName);
+                    controlDistributor.addControl(controlName);
+                    controlDistributor.finalizeFromProperties();
+                    actuatorController->connectInput_controls(
+                            controlDistributor.getOutput("controls"),
+                            controlName);
                 }
             }
         }
     }
+    m_control_distributor_base.reset(&controlDistributor);
     m_model_base.addController(actuatorController.release());
-
-    // Finalize the connection between the ActuatorInputController and the
-    // actuators in the model so that the Input control names are available 
-    // below.
-    auto& actuatorControllerRef = 
-            m_model_base.updComponent<ActuatorInputController>(
-                    "/controllerset/actuator_controller");
-    auto& socketRef = actuatorControllerRef.updSocket<Actuator>("actuators");
-    socketRef.finalizeConnection(m_model_base);
-
-    // Wire the ControlDistributor to the InputControllers in the model.
-    m_control_distributor_base.reset(controlDistributorUPtr.get());
-    m_model_base.addComponent(controlDistributorUPtr.release());
-    for (auto& controller : m_model_base.updComponentList<InputController>()) {
-        const auto labels = controller.getInputControlLabels();
-        const auto& output = m_control_distributor_base->getOutput("controls");
-        for (const auto& label : labels) {
-            if (auto* aiController = 
-                    dynamic_cast<ActuatorInputController*>(&controller)) {
-                const auto& channel = output.getChannel(label);
-                aiController->connectInput_controls(channel, label);
-            }  else {
-                std::string inputControlName = fmt::format(
-                        "{}/{}", controller.getAbsolutePathString(), label);
-                const auto& channel = output.getChannel(inputControlName);
-                controller.connectInput_controls(channel, inputControlName);
-            }
-        }
-    }
     m_model_base.finalizeConnections();
 
     // Scale factors
