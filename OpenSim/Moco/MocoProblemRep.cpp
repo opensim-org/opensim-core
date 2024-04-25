@@ -166,7 +166,7 @@ void MocoProblemRep::initialize() {
                     controlDistributor.finalizeFromProperties();
                     const auto& output = 
                             controlDistributor.getOutput("controls");
-                    const auto& channel = output.getChannel(actuPath);
+                    const auto& channel = output.getChannel(controlName);
                     actuatorController->connectInput_controls(
                             channel, controlName);
                 }

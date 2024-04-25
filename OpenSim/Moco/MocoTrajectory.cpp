@@ -924,11 +924,12 @@ MocoTrajectory::MocoTrajectory(const std::string& filepath) {
     SimTK::convertStringTo(
             metadata.getValueForKey("num_controls").getValue<std::string>(),
             numControls);
-    int numInputControls;
-    SimTK::convertStringTo(
-            metadata.getValueForKey(
-                "num_input_controls").getValue<std::string>(), 
+    int numInputControls = 0;
+    if (metadata.hasKey("num_input_controls")) {
+        SimTK::convertStringTo(metadata.getValueForKey("num_input_controls")
+                        .getValue<std::string>(),
                 numInputControls);
+    }
     int numMultipliers;
     SimTK::convertStringTo(
             metadata.getValueForKey("num_multipliers").getValue<std::string>(),
