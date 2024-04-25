@@ -83,6 +83,8 @@ MocoTrajectory::MocoTrajectory(const SimTK::Vector& time,
           m_multipliers(multipliersTrajectory), m_parameters(parameters) {
     OPENSIM_THROW_IF((int)m_state_names.size() != m_states.ncol(), Exception,
             "Inconsistent number of states.");
+    std::cout << "m_control_names.size() = " << m_control_names.size() << std::endl;
+    std::cout << "m_controls.ncol() = " << m_controls.ncol() << std::endl;
     OPENSIM_THROW_IF((int)m_control_names.size() != m_controls.ncol(),
             Exception, "Inconsistent number of controls.");
     OPENSIM_THROW_IF((int)m_multiplier_names.size() != m_multipliers.ncol(),

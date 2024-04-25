@@ -150,7 +150,7 @@ namespace {
         void computeControlsImpl(const SimTK::State& state,
                 SimTK::Vector& controls) const override {
             const auto& input = getInput<double>("controls");
-            for (int i = 0; i < input.getNumConnectees(); ++i) {
+            for (int i = 0; i < static_cast<int>(input.getNumConnectees()); ++i) {
                 controls += m_synergyVectors.col(i) * input.getValue(state, i);
             }
 
@@ -285,7 +285,7 @@ TEMPLATE_TEST_CASE("Triple pendulum with synergy-like InputController", "",
     const auto& controller = model.updComponent<TriplePendulumController>(
             "/triple_pendulum_controller");
     const auto& synergyVectors = controller.getSynergyVectors();
-    for (int i = 0; i < controlsTable.getNumRows(); ++i) {
+    for (int i = 0; i < static_cast<int>(controlsTable.getNumRows()); ++i) {
         SimTK::Vector expected = 
                 synergyVectors * ~inputControlsTable.getRowAtIndex(i);
         SimTK_TEST_EQ(controlsTable.getRowAtIndex(i), expected.transpose());
