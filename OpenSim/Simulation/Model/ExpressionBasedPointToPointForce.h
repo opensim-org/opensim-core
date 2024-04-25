@@ -35,7 +35,7 @@ class MobilizedBody;
 namespace OpenSim { 
 
 /**
- * A point-to-point Force who's force magnitude is determined by a user-defined
+ * A point-to-point Force whose force magnitude is determined by a user-defined
  * expression, with the distance (d) and its time derivative (ddot) as variables. 
  * The direction of the force is directed along the line connecting the two 
  * points. 
