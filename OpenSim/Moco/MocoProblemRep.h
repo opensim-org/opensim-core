@@ -365,6 +365,10 @@ public:
                getInputControls(stateDisabledConstraints);
     }
 
+    /// Get a vector of integers representing the indexes of Input controls in
+    /// the ControlDistributor's 'controls' Output. This function is intended
+    /// for use by solvers to account for Input controls when converting between
+    /// a MocoTrajectory and solver-specific trajectory types.
     std::vector<int> getInputControlIndexes() const {
         std::vector<int> inputControlIndexes;
         auto allControlNames = getControlDistributorDisabledConstraints()
@@ -437,12 +441,11 @@ private:
     const SimTK::Vector& getModelDisabledConstraintsControls(
             const SimTK::State& state) const {
         const auto& model = getModelDisabledConstraints();
-        // model.realizeVelocity(state);
-        // return model.getControls(state);
-        // TODO this is required to support InputController. For some reason,
-        // the controls cache in the model is marked "valid", so calling 
-        // getControls() after realizing to SimTK::Stage::Velocity does not
-        // update the controls. Why?
+        // TODO: manually computing model controls is required to apply Input 
+        // control values from InputControllers to the model's control vector. 
+        // For some reason, the controls cache in the model is marked "valid", 
+        // so calling getControls() after realizing to SimTK::Stage::Velocity 
+        // does not properly update the controls.
         SimTK::Vector& controls = model.updControls(state);
         controls = model.getDefaultControls();
         model.computeControls(state, controls);

@@ -156,6 +156,11 @@ public:
     void setControlInfo(const std::string& name, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
 
+    /// Set information about a single Input control variable in this phase.
+    /// Similar to setControlInfo(). The name for an Input control is the path 
+    /// follows the format <InputController_path>/<Input_label> (e.g.,
+    /// "/my_input_controller/input0"). Input labels for an InputController can
+    /// be obtained using InputController::getInputControlLabels().
     void setInputControlInfo(const std::string& name, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
 
@@ -169,12 +174,18 @@ public:
     /// activations, etc. Infos provided via setControlInfoPattern() take
     /// precedence over the default values from the model. Infos provided via
     /// setControlInfo() take precedence over infos provided with
-    /// setControlInfoPattern().  If a state variable name matches multiple
+    /// setControlInfoPattern(). If a control variable name matches multiple
     /// patterns, the info provided with the last pattern is used for that
     /// control variable.
     void setControlInfoPattern(const std::string& pattern, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
 
+    /// Set information for Input control variables whose names match the 
+    /// provided regular expression. Infos provided via 
+    /// setInputControlInfo() take precedence over infos provided with 
+    /// setInputControlInfoPatter(). If an Input control variable name matches
+    /// multiple patterns, the info provided with the last pattern is used for
+    /// that Input control variable.
     void setInputControlInfoPattern(const std::string& pattern, 
             const MocoBounds&, const MocoInitialBounds& = {}, 
             const MocoFinalBounds& = {});

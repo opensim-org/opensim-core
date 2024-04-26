@@ -199,7 +199,13 @@ public:
         /// provides data structures that can be indexed in the same way as this
         /// field. Use this field rather than Model::getControls().
         const SimTK::Vector& controls;
-
+        /// Input controls are available with a stage requirement of
+        /// SimTK::Stage::Model.
+        /// This vector contains the control values for all InputController%s in 
+        /// the model, including those for the ActuatorInputController added by
+        /// MocoProblemRep. To get a map to the indexes for Input controls 
+        /// corresponding to user-added InputController%s, use the function
+        /// getInputControlIndexes().
         const SimTK::Vector& input_controls;
     };
     /// Calculate the integrand that should be integrated and passed to
@@ -381,6 +387,9 @@ public:
     bool getDivideByMass() const {
         return get_divide_by_mass();
     }
+
+    std::unordered_map<std::string, int> 
+    getInputControlIndexMap(const Model& model) const;
 
 protected:
     /// Perform any caching before the problem is solved.

@@ -18,6 +18,8 @@
 
 #include "MocoGoal.h"
 
+#include <OpenSim/Moco/Components/ControlDistributor.h>
+
 using namespace OpenSim;
 
 MocoGoal::MocoGoal() {
@@ -62,6 +64,24 @@ double MocoGoal::calcDuration(const GoalInput& input) const {
 
 double MocoGoal::calcSystemMass(const GoalInput& input) const {
     return getModel().getTotalMass(input.initial_state);
+}
+
+std::unordered_map<std::string, int> MocoGoal::getInputControlIndexMap(
+        const Model& model) const {
+
+    // Get the full Input control index map from the ControlDistributor.
+    auto map = model.getComponentList<ControlDistributor>().begin()
+                    ->getControlIndexMap();
+
+    // Get all possible control names from the model.
+    auto controlNames = createControlNamesFromModel(model);
+
+    // Remove the control names that are associated with the model's
+    // ActuatorInputController.
+    for (const auto& controlName : controlNames) {
+        map.erase(controlName);
+    }
+    return map;
 }
 
 void MocoGoal::constructProperties() {

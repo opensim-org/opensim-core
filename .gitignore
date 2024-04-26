@@ -56,7 +56,6 @@ delete_this_to_stop_optimization*.txt
 .idea/codeStyles/codeStyleConfig.xml
 .idea/codeStyles/Project.xml
 .idea/editor.xml
-.vscode/settings.json
 .cache/clangd/**
 
 # Sensitive or high-churn files:

@@ -383,14 +383,13 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     Logger::Level origLoggerLevel = Logger::getLevel();
     Logger::setLevel(Logger::Level::Warn);
     CasOC::Solution casSolution;
-    // try {
-    casSolution = casSolver->solve(casGuess);
-    // } catch (...) {
-    //     OpenSim::Logger::setLevel(origLoggerLevel);
-    // }
+    try {
+        casSolution = casSolver->solve(casGuess);
+    } catch (...) {
+        OpenSim::Logger::setLevel(origLoggerLevel);
+    }
     OpenSim::Logger::setLevel(origLoggerLevel);
 
-    
     MocoSolution mocoSolution = convertToMocoTrajectory<MocoSolution>(
             casSolution, inputControlIndexes);
 

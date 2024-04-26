@@ -32,11 +32,13 @@ using OpenSim::Exception;
 namespace CasOC {
 
 Iterate Iterate::resample(const casadi::DM& newTimes) const {
-    // TODO okay to skip Input control indexes here?
-    auto mocoIt = OpenSim::convertToMocoTrajectory(*this);
+    // Since we are converting to a MocoTrajectory and immediately converting 
+    // back to a CasOC::Iterate after resampling, we do not need to provide 
+    // Input control indexes, even if they are present in the MocoProblem.
+    auto mocoTraj = OpenSim::convertToMocoTrajectory(*this);
     auto simtkNewTimes = OpenSim::convertToSimTKVector(newTimes);
-    mocoIt.resample(simtkNewTimes);
-    return OpenSim::convertToCasOCIterate(mocoIt);
+    mocoTraj.resample(simtkNewTimes);
+    return OpenSim::convertToCasOCIterate(mocoTraj);
 }
 
 std::vector<std::string>

@@ -96,7 +96,6 @@ public:
      * tools (e.g., Moco) for mapping control signals from another source to 
      * the Input controls of the controller.
      */
-    // TODO document Moco naming convention here?
     virtual std::vector<std::string> getInputControlLabels() const = 0;
 
     /**

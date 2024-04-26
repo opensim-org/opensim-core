@@ -143,9 +143,9 @@ void MocoProblemRep::initialize() {
     // Add the non-controlled, enabled actuators to an ActuatorInputController.
     // If there are no user-defined controllers, this will add Actuators to the 
     // ActuatorInputController and controls to the ControlDistributor in system
-    // order. Therefore, this is valid whether or not solvers need to compute
-    // the controls from the model.
-    // TODO test this ^
+    // order (we verified this with checkOrderSystemControls() above). 
+    // Therefore, this is valid whether or not solvers need to compute the 
+    // controls from the model.
     auto actuatorController = make_unique<ActuatorInputController>();
     actuatorController->setName("actuator_controller");
     for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
@@ -529,8 +529,6 @@ void MocoProblemRep::initialize() {
         const auto& name = ph0.get_control_infos(i).getName();
         auto it = std::find(controlNames.begin(), controlNames.end(), name);
         if (it == controlNames.end()) {
-            // TODO: remove this check if we allow setting control bounds for
-            //       controlled actuators (e.g., via path constraints).
             auto it2 = std::find(allControllerControlNames.begin(),
                     allControllerControlNames.end(), name);
             OPENSIM_THROW_IF(it2 != allControllerControlNames.end(), Exception,

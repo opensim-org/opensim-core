@@ -339,3 +339,4 @@ TEMPLATE_TEST_CASE("MocoControlGoal: ignoring Input controls", "",
 // TODO things to test:
 // - Test reusing solution with controllers as initial guess.
 // - Test workflow with disabled actuators
+// - Test setting no/incorrect setInputControlInfo()/setInputControlInfoPattern().

@@ -19,7 +19,6 @@
 #include "MocoControlBoundConstraint.h"
 
 #include "MocoProblemInfo.h"
-
 #include "Components/ActuatorInputController.h"
 
 #include <OpenSim/Common/GCVSpline.h>

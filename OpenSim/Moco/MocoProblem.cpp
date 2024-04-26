@@ -107,24 +107,37 @@ void MocoPhase::setStateInfoPattern(const std::string& pattern,
         upd_state_infos_pattern(idx) = info;
 }
 void MocoPhase::printControlNamesWithSubstring(const std::string& substring) {
-    // TODO: update to be consistent with new controller support.
     std::vector<std::string> foundNames;
     Model model = get_model().process();
     model.initSystem();
     const auto controlNames = createControlNamesFromModel(model);
-    std::vector<std::string> controlledActuators;
+    std::vector<std::string> controlsToExclude;
     for (const auto& controller : model.getComponentList<Controller>()) {
         const auto& socket = controller.getSocket<Actuator>("actuators");
         for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
-            const auto& actuPath = 
-                    socket.getConnectee(i).getAbsolutePathString();
-            controlledActuators.push_back(actuPath);
+            const auto& actu = socket.getConnectee(i);
+            const auto& actuPath = actu.getAbsolutePathString();
+            if (actu.numControls() == 1) {
+                controlsToExclude.push_back(actuPath);
+            } else {
+                for (int i = 0; i < actu.numControls(); ++i) {
+                    controlsToExclude.push_back(
+                            fmt::format("{}_{}", actuPath, i));
+                }
+            }
+        }
+    }
+    std::vector<std::string> controlNamesToUse;
+    for (const auto& name : controlNames) {
+        if (std::find(controlsToExclude.begin(), controlsToExclude.end(),
+                    name) == controlsToExclude.end()) {
+            controlNamesToUse.push_back(name);
         }
     }
     
-    for (int i = 0; i < (int)controlNames.size(); ++i) {
-        if (controlNames[i].find(substring) != std::string::npos) {
-            foundNames.push_back(controlNames[i]);
+    for (int i = 0; i < (int)controlNamesToUse.size(); ++i) {
+        if (controlNamesToUse[i].find(substring) != std::string::npos) {
+            foundNames.push_back(controlNamesToUse[i]);
         }
     }
     if (foundNames.size() > 0) {

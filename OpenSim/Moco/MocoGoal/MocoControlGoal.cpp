@@ -63,29 +63,15 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
     auto actuatorInputControlNames =
             createControlNamesForControllerType<ActuatorInputController>(model);
 
-    // Get the Input control index map from the ControlDistributor.
-    auto inputControlIndexMap = 
-            model.getComponentList<ControlDistributor>().begin()
-                    ->getControlIndexMap();
+    // Get the full Input control index map from the ControlDistributor.
+    auto inputControlIndexMap = getInputControlIndexMap(model);
     
-    // The control index map from the ControlDistributor will also contain the 
-    // control names from the ActuatorInputController (i.e., the model control 
-    // names). We want to ignore these control names when constructing the Input 
-    // control names.
-    std::vector<std::string> inputControlNames;
-    for (const auto& inputControl : inputControlIndexMap) {
-        if (controlIndexMap.find(inputControl.first) == controlIndexMap.end()) {
-            inputControlNames.push_back(inputControl.first);
-        }
-    }    
-
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& thisName = get_control_weights()[i].getName();
         bool foundControl = std::find(controlNames.begin(), controlNames.end(),
                 thisName) != controlNames.end();
-        bool foundInputControl = std::find(inputControlNames.begin(),
-                inputControlNames.end(), thisName) != inputControlNames.end();
+        bool foundInputControl = inputControlIndexMap.count(thisName);
         OPENSIM_THROW_IF_FRMOBJ(!foundControl && !foundInputControl, Exception,
                 "Unrecognized control '" + thisName + "'.");
     }
@@ -103,9 +89,9 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
             }
         }
         // Input controls.
-        for (const auto& inputControlName : inputControlNames) {
-            if (std::regex_match(inputControlName, regex)) {
-                weightsFromPatterns[inputControlName] = mocoWeight.getWeight();
+        for (const auto& kv : inputControlIndexMap) {
+            if (std::regex_match(kv.first, regex)) {
+                weightsFromPatterns[kv.first] = mocoWeight.getWeight();
             }
         }
     }
@@ -137,28 +123,28 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
         }
     }
 
-    for (const auto& inputControlName : inputControlNames) {
+    for (const auto& kv : inputControlIndexMap) {
         double weight = 1.0;
-        if (get_control_weights().contains(inputControlName)) {
-            weight = get_control_weights().get(inputControlName).getWeight();
-        } else if (weightsFromPatterns.count(inputControlName)) {
-            weight = weightsFromPatterns[inputControlName];
+        if (get_control_weights().contains(kv.first)) {
+            weight = get_control_weights().get(kv.first).getWeight();
+        } else if (weightsFromPatterns.count(kv.first)) {
+            weight = weightsFromPatterns[kv.first];
         }
 
         if (getIgnoreInputControls()) {
             log_info("MocoControlGoal: Input control '{}' will be ignored, "
-                     "as requested.", inputControlName);
+                     "as requested.", kv.first);
             continue;
         }
 
         if (weight != 0.0) {
             m_inputControlIndices.push_back(
-                    inputControlIndexMap.at(inputControlName));
+                    inputControlIndexMap.at(kv.first));
             m_inputControlWeights.push_back(weight);
-            m_inputControlNames.push_back(inputControlName);
+            m_inputControlNames.push_back(kv.first);
         } else {
             log_info("MocoControlGoal: Input control '{}' has weight 0 and will "
-                     "be ignored.", inputControlName);
+                     "be ignored.", kv.first);
         }
     }
 
