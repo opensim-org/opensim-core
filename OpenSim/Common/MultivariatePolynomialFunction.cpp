@@ -134,6 +134,31 @@ public:
         }
     }
 
+    // GET METHODS
+    /**
+     * Get the coefficient of a monomial in the polynomial. If the monomial is
+     * not in the polynomial, the coefficient is zero.
+     */
+    double getCoefficient(const Monomial& monomial) const {
+        auto it = find(monomial);
+        if (it != end()) {
+            return it->second;
+        }
+        return 0.0;
+    }
+
+    /**
+     * Get the exponent of a variable in a monomial. If the variable is not in
+     * the monomial, the exponent is zero.
+     */
+    int getExponent(const Monomial& monomial, const std::string& var) const {
+        auto it = monomial.find(var);
+        if (it != monomial.end()) {
+            return it->second;
+        }
+        return 0;
+    }
+
     // CALC METHODS
     /**
      * Calculate the order of the polynomial.
@@ -144,9 +169,11 @@ public:
         for (auto it = begin(); it != end(); it++) {
             // For this monomial, calculate the sum of the exponents of all
             // variables.
+            const Monomial& monomial = it->first;
             int sum = 0;
-            for (auto it2 = it->first.begin(); it2 != it->first.end(); it2++) {
-                sum += it2->second;
+            for (auto it2 = monomial.begin(); it2 != monomial.end(); it2++) {
+                const std::string& var = it2->first;
+                sum += getExponent(monomial, var);
             }
             // Update the order if the sum is greater than the current order.
             if (sum > order) {
@@ -195,30 +222,6 @@ public:
     }
 
     // POLYNOMIAL OPERATIONS
-    /**
-     * Get the coefficient of a monomial in the polynomial. If the monomial is
-     * not in the polynomial, the coefficient is zero.
-     */
-    double getCoefficient(const Monomial& monomial) const {
-        auto it = find(monomial);
-        if (it != end()) {
-            return it->second;
-        }
-        return 0.0;
-    }
-
-    /**
-     * Get the exponent of a variable in a monomial. If the variable is not in
-     * the monomial, the exponent is zero.
-     */
-    int getExponent(const Monomial& monomial, const std::string& var) const {
-        auto it = monomial.find(var);
-        if (it != monomial.end()) {
-            return it->second;
-        }
-        return 0;
-    }
-
     /**
      * Get a new polynomial that is the first derivative of the current 
      * polynomial with respect to the specified variable. 
