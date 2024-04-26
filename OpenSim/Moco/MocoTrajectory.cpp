@@ -617,7 +617,7 @@ void MocoTrajectory::generateControlsFromModelControllers(
 
     // Add a ControlDistributor and connect it to any InputControllers in the
     // model.
-    addControlDistributorAndConnectInputControllers(model);
+    ControlDistributor::addControlDistributorAndConnectInputControllers(model);
     auto controlDistributor = 
                 model.getComponentList<ControlDistributor>().begin();
     auto controlDistributorIndexMap = 
@@ -643,6 +643,14 @@ void MocoTrajectory::generateControlsFromModelControllers(
         // Set the Input controls, if they exist.
         if (numInputControls) {
             for (const auto& inputControlName : inputControlNames) {
+                bool found = controlDistributorIndexMap.find(inputControlName)
+                        != controlDistributorIndexMap.end();
+                OPENSIM_THROW_IF(found, Exception,
+                        "Expected Input control '{}' in the trajectory to "
+                        "correspond to an InputController in the model, but "
+                        "but no InputController with matching Input control "
+                        "label was found.", 
+                        inputControlName);
                 int index = controlDistributorIndexMap.at(inputControlName);
                 inputControlsVec[index] = 
                         inputControls.getDependentColumn(inputControlName)[i];
@@ -1393,7 +1401,7 @@ bool MocoTrajectory::isCompatible(const MocoProblemRep& mp,
 
 bool MocoTrajectory::isNumericallyEqual(
         const MocoTrajectory& other, double tol) const {
-    ensureUnsealed();   
+    ensureUnsealed();
 
     return m_state_names == other.m_state_names &&
            m_control_names == other.m_control_names &&

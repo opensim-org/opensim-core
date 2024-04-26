@@ -468,7 +468,11 @@ public:
     /// trajectory.
     /// @note Overrides any existing acceleration values in the trajectory.
     void generateAccelerationsFromSpeeds();
-
+    /// Compute model controls based on any Controller%s in the model and append
+    /// to the trajectory. The model must contain InputController%s with Input%s 
+    /// that match the Input control names in the trajectory, if they exist.
+    /// @note Use `overwrite` to replace existing control values in the
+    ///       trajectory, if desired. 
     void generateControlsFromModelControllers(Model model, 
             bool overwrite = false);
     /// Trim the trajectory to include the rows starting at newStartIndex and

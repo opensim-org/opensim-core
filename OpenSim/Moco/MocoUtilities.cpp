@@ -56,7 +56,8 @@ std::unique_ptr<Function> createFunction<GCVSpline>(
 } // anonymous namespace
 
 void OpenSim::prescribeControlsToModel(
-        const MocoTrajectory& trajectory, Model& model, std::string functionType) {
+        const MocoTrajectory& trajectory, Model& model, 
+        std::string functionType) {
     // Get actuator names.
     model.initSystem();
     OpenSim::Array<std::string> actuNames;
@@ -464,35 +465,4 @@ TimeSeriesTable OpenSim::calcGeneralizedForces(Model model,
     generalizedForcesTable.setColumnLabels(labels);
 
     return generalizedForcesTable;
-}
-
-void OpenSim::addControlDistributorAndConnectInputControllers(Model& model) {
-
-    for (const auto& controlDistributor :
-                model.getComponentList<ControlDistributor>()) {
-        OPENSIM_THROW(Exception, "Expected no ControlDistributors to be " 
-                "present in the model, but found '{}'.",
-                controlDistributor.getAbsolutePathString());
-    }
-    auto controlDistributorUPtr = make_unique<ControlDistributor>();
-    controlDistributorUPtr->setName("control_distributor");
-
-    const auto& output = controlDistributorUPtr->getOutput("controls");
-    for (auto& controller : model.updComponentList<InputController>()) {
-        if (!controller.isEnabled()) {
-            continue;
-        }
-        const auto labels = controller.getInputControlLabels();
-        for (const auto& label : labels) {
-            std::string inputControlName = fmt::format(
-                    "{}/{}", controller.getAbsolutePathString(), label);
-            controlDistributorUPtr->addControl(inputControlName);
-            controlDistributorUPtr->finalizeFromProperties();
-            const auto& channel = output.getChannel(inputControlName);
-            controller.connectInput_controls(channel, inputControlName);
-        }
-    }
-
-    model.addComponent(controlDistributorUPtr.release());
-    model.initSystem();
 }

@@ -23,10 +23,10 @@
 
 namespace OpenSim {
 
-/** Minimize the sum of the absolute value of the controls raised to a given
-exponent, integrated over the phase. The default weight for each control is
-1.0; this can be changed by calling setWeight() or editing the
-`control_weights` property in XML.
+/** Minimize the sum of the absolute value of the controls (including Input 
+controls) raised to a given exponent, integrated over the phase. The default 
+weight for each control is 1.0; this can be changed by calling 
+setWeightForControl() or editing the `control_weights` property in XML.
 The exponent must be an integer greater than or equal to 2,
 and is 2 by default.
 If conducting a predictive simulation, you likely want to set
@@ -52,7 +52,8 @@ handle odd exponents.
 
 If you wish to minimize all control signals except those associated with a
 user-defined controller (e.g., PrescribedController), pass 'true' to
-`setIgnoreControlledActuators()`.
+`setIgnoreControlledActuators()`. If you wish ignore Input controls, pass 'true' 
+to `setIgnoreInputControls()`.
 
 @ingroup mocogoal */
 class OSIMMOCO_API MocoControlGoal : public MocoGoal {
@@ -75,6 +76,7 @@ public:
     /// that are associated with actuators for which appliesForce is True are
     /// included in the cost function. Weights set here take precedence over
     /// weights specified with a regular expression.
+    /// @note Use this to also set weights for Input controls.
     void setWeightForControl(
             const std::string& controlName, const double& weight);
 
@@ -84,6 +86,7 @@ public:
     /// function multiple times.
     /// If a control matches multiple patterns, the weight associated with the
     /// last pattern is used.
+    /// @note Use this to also set weights for Input control patterns.
     void setWeightForControlPattern(
             const std::string& pattern, const double& weight);
 

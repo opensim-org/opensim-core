@@ -24,8 +24,9 @@
 namespace OpenSim {
 
 /**
- * This component stores a vector of control values that can be used to
- * allocate controls to other components in a model.
+ * This component is used internally in Moco stores a vector of control values 
+ * that can be used to distributed controls to other components in a model
+ * (e.g., InputController).
  *
  * A control value can be added to the ControlDistributor using `addControl()`.
  * This adds a channel to the Output `controls` which is then available to
@@ -35,14 +36,6 @@ namespace OpenSim {
  * control values are stored in the same order they were added to the
  * distributor. The control values can be set and retrieved using the
  * `setControls()`, `updControls()`, and `getControls()` methods.
- *
- * This class is primarily intended for use in Moco where it is used to
- * distribute control values from an optimal control problem to InputControllers
- * in a model. Therefore, "controls" in the context of this class do not
- * necessarily correspond to controls in a model (i.e., from
- * Model::getControls()). However, this class is generally useful for
- * distributing scalar values stored in a discrete variable to other components
- * in a model that accept an `Input`.
  *
  * ## Usage
  *
@@ -140,6 +133,15 @@ public:
     std::unordered_map<std::string, int> getControlIndexMap() const {
         return m_controlIndexMap;
     }
+
+    /**
+     * Add a ControlDistributor to the model and connect to it all 
+     * InputController%s in the model. One slot in the list Output is assigned
+     * for each Input in each InputController. Control names for each slot set 
+     * on the ControlDistributor follow the format 
+     * "/<InputController_path>/<Input_control_label>".
+     */
+    static void addControlDistributorAndConnectInputControllers(Model& model);
 
 protected:
     // MODEL COMPONENT INTERFACE
