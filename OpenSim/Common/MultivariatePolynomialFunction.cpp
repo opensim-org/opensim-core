@@ -24,14 +24,39 @@ using namespace OpenSim;
 /** 
  * A helper class to construct and manipulate multivariate polynomials using 
  * symbolic operations.
+ * 
+ * A multivariate polynomial is represented as a map of monomials to 
+ * coefficients. Monomials are represented as maps of variable names to 
+ * exponents. For example, the polynomial
+ * 
+ * f = 0.1 x^2 y + 0.7 y^3 z + 0.5 x z^5
+ * 
+ * can be constructed represented as
+ *     
+ * @code
+ * MultivariatePolynomial f; 
+ * Monomial m0 = {{"x", 2}, {"y", 1}};
+ * Monomial m1 = {{"y", 3}, {"z", 1}};
+ * Monomial m2 = {{"x", 1}, {"z", 5}};
+ * f[m0] = 0.1;
+ * f[m1] = 0.7;
+ * f[m2] = 0.5;
+ * @endcode
  */ 
-typedef std::map<std::string, int> Term;
-class MultivariatePolynomial : public std::map<Term, double> {
+using Monomial = std::map<std::string, int>;
+class MultivariatePolynomial : public std::map<Monomial, double> {
 
 public:
     MultivariatePolynomial() = default;
 
-    MultivariatePolynomial(int dimension, int order, 
+    /**
+     * Construct a multivariate polynomial of a given dimension and order with 
+     * variables named according to the provided vector of strings, `var`. All 
+     * possible monomials of the polynomial are generated  in the same order as 
+     * `MultivariatePolynomialFunction` and assigned a coefficient corresponding
+     * to the index of the monomial in the polynomial.
+     */
+    MultivariatePolynomial(int dimension, int order,
             const std::vector<std::string>& vars) {
 
         OPENSIM_THROW_IF(static_cast<int>(vars.size()) != dimension, 
@@ -41,26 +66,33 @@ public:
                 vars.size(), dimension)
 
         int numCoefficients = choose(dimension + order, order);
-        std::vector<Term> terms;
-        terms.resize(numCoefficients);
+        std::vector<Monomial> monomials;
+        monomials.resize(numCoefficients);
 
         std::vector<std::vector<int>> combinations;
         generateCombinations(dimension, order, combinations);
         for (int i = 0; i < numCoefficients; ++i) {
-            Term term;
+            Monomial monomial;
             for (int j = 0; j < dimension; ++j) {
                 if (combinations[i][j] > 0) {
-                    term[vars[j]] = combinations[i][j];
+                    monomial[vars[j]] = combinations[i][j];
                 }
             }
-            terms.at(i) = term;
+            monomials.at(i) = monomial;
         }
         
         for (int i = 0; i < numCoefficients; ++i) {
-            (*this)[terms[i]] = i;
+            (*this)[monomials[i]] = i;
         }
     }
 
+    /**
+     * Construct a multivariate polynomial from a 
+     * MultivariatePolynomialFunction and a vector of variable names. 
+     * The polynomial is constructed by assigning the coefficients of the 
+     * function to the monomials of the polynomial. The number of variable names
+     * must match the dimension of the MultivariatePolynomialFunction.
+     */
     MultivariatePolynomial(
             const MultivariatePolynomialFunction& mvp, 
             const std::vector<std::string>& vars) {
@@ -76,8 +108,8 @@ public:
                 "of coefficients in a polynomial of dimension {} and order {}, "
                 "but it does not.", coefficients.size(), dimension, order);
 
-        std::vector<Term> terms;
-        terms.resize(coefficients.size());
+        std::vector<Monomial> monomials;
+        monomials.resize(coefficients.size());
 
         OPENSIM_THROW_IF(static_cast<int>(vars.size()) != dimension, 
                 Exception,
@@ -88,17 +120,17 @@ public:
         std::vector<std::vector<int>> combinations;
         generateCombinations(dimension, order, combinations);
         for (int i = 0; i < coefficients.size(); ++i) {
-            Term term;
+            Monomial monomial;
             for (int j = 0; j < dimension; ++j) {
                 if (combinations[i][j] > 0) {
-                    term[vars[j]] = combinations[i][j];
+                    monomial[vars[j]] = combinations[i][j];
                 }
             }
-            terms.at(i) = term;
+            monomials.at(i) = monomial;
         }
         
         for (int i = 0; i < coefficients.size(); ++i) {
-            (*this)[terms[i]] = coefficients[i];
+            (*this)[monomials[i]] = coefficients[i];
         }
     }
 
@@ -108,11 +140,15 @@ public:
      */
     int calcOrder() const {
         int order = 0;
+        // Iterate through all monomials.
         for (auto it = begin(); it != end(); it++) {
+            // For this monomial, calculate the sum of the exponents of all
+            // variables.
             int sum = 0;
             for (auto it2 = it->first.begin(); it2 != it->first.end(); it2++) {
                 sum += it2->second;
             }
+            // Update the order if the sum is greater than the current order.
             if (sum > order) {
                 order = sum;
             }
@@ -121,8 +157,13 @@ public:
     }
 
     /**
-     * Calculate the vector of coefficients of the polynomial for a given order
-     * and dimension. 
+     * Calculate the vector of coefficients of the polynomial if it had a given 
+     * order and dimension. This vector matches the coefficients vector of 
+     * MultivariatePolynomialFunction; therefore it will contain coefficients 
+     * for all possible monomials in the same order as a 
+     * MultivariatePolynomialFunction. If the MultivariatePolynomial does not 
+     * contain a monomial for a corresponding slot in the coefficients vector, 
+     * coefficient is set to zero.
      */
     SimTK::Vector calcCoefficients(int dimension, int order, 
             const std::vector<std::string>& vars) const {
@@ -134,9 +175,15 @@ public:
                 vars.size(), dimension)
         
         const MultivariatePolynomial& poly = *this;
+        // Create a temporary polynomial with the same dimension and order as
+        // the desired polynomial.
         MultivariatePolynomial temp(dimension, order, vars);
+        // Initialize the coefficients to zero.
         int numCoefficients = choose(dimension + order, order);
         SimTK::Vector coefficients(numCoefficients, 0.0);
+        // If the current polynomial contains a monomial that matches a monomial
+        // in the temporary polynomial, set its coefficient in the full 
+        // coefficients vector.
         for (auto it2 = temp.begin(); it2 != temp.end(); ++it2) {
             auto it = poly.find(it2->first);
             if (it != poly.end()) {
@@ -149,23 +196,56 @@ public:
 
     // POLYNOMIAL OPERATIONS
     /**
+     * Get the coefficient of a monomial in the polynomial. If the monomial is
+     * not in the polynomial, the coefficient is zero.
+     */
+    double getCoefficient(const Monomial& monomial) const {
+        auto it = find(monomial);
+        if (it != end()) {
+            return it->second;
+        }
+        return 0.0;
+    }
+
+    /**
+     * Get the exponent of a variable in a monomial. If the variable is not in
+     * the monomial, the exponent is zero.
+     */
+    int getExponent(const Monomial& monomial, const std::string& var) const {
+        auto it = monomial.find(var);
+        if (it != monomial.end()) {
+            return it->second;
+        }
+        return 0;
+    }
+
+    /**
      * Get a new polynomial that is the first derivative of the current 
      * polynomial with respect to the specified variable. 
      */
     MultivariatePolynomial getDerivative(const std::string& var) const {
         const MultivariatePolynomial& poly = *this;
         MultivariatePolynomial deriv;
-        for (auto it = poly.begin(); it != poly.end(); it++) {
-            Term t = it->first;
-            double c = it->second;
-            for (auto it2 = t.begin(); it2 != t.end(); it2++) {
-                Term t2 = t;
-                if (it2->first == var) {
-                    t2.erase(it2->first);
-                    if (it2->second > 1) {
-                        t2[it2->first] = it2->second - 1;
+        // Iterate through all monomials in the polynomial.
+        for (auto itp = poly.begin(); itp != poly.end(); itp++) {
+            Monomial monomial = itp->first;
+            double coeff = getCoefficient(monomial);
+            // Iterate through all variables in the monomial.
+            for (auto itm = monomial.begin(); itm != monomial.end(); itm++) {
+                Monomial derivMonomial = monomial;
+                // If the variable is in the monomial, take the derivative.
+                if (itm->first == var) {
+                    // If the exponent is 1, remove the variable from the
+                    // monomial. Otherwise, reduce the exponent by 1.
+                    int exponent = getExponent(monomial, var);
+                    derivMonomial.erase(itm->first);
+                    if (exponent > 1) {
+                        derivMonomial[itm->first] = exponent - 1;
                     }
-                    deriv[t2] = c * it2->second;
+                    // Add the derivative term to the derivative polynomial.
+                    // The coefficient is the product of the original 
+                    // coefficient and previous exponent of the monomial.
+                    deriv[derivMonomial] = coeff * exponent;
                 }
             }
         }
@@ -182,13 +262,9 @@ public:
         MultivariatePolynomial result;
         const MultivariatePolynomial& poly = *this;
         for (auto it = poly.begin(); it != poly.end(); it++) {
-            Term term = it->first;
-            if (term.find(var) == term.end()) {
-                term[var] = exponent;
-            } else {
-                term[var] += exponent;
-            }
-            result[term] = it->second;
+            Monomial monomial = it->first;
+            monomial[var] += exponent;
+            result[monomial] = getCoefficient(monomial);
         }
         return result;
     }
@@ -213,15 +289,21 @@ public:
 
         const MultivariatePolynomial& poly = *this;
         for (auto it = poly.begin(); it != poly.end(); it++) {
-            Term term = it->first;
-            if (term.find(var) == term.end()) {
-                left[term] = it->second;
+            Monomial monomial = it->first;
+            // If the variable is not in the monomial, add the term to the left
+            // polynomial. Otherwise, factor out the variable and add the term
+            // to the right polynomial.
+            if (monomial.find(var) == monomial.end()) {
+                left[monomial] = getCoefficient(monomial);
             } else {
-                term[var] -= 1;
-                if (term[var] == 0) {
-                    term.erase(var);
+                // Factor out the variable.
+                monomial[var] -= 1;
+                // Remove the variable if the exponent is zero.
+                if (monomial[var] == 0) {
+                    monomial.erase(var);
                 }
-                right[term] = it->second;
+                // Add the term to the right polynomial.
+                right[monomial] = getCoefficient(monomial);
             }
         }
         return std::make_pair(left, right);
@@ -233,8 +315,11 @@ public:
     static MultivariatePolynomial sum(
             const std::vector<MultivariatePolynomial>& polys) {
         MultivariatePolynomial sum;
+        // Iterate through all polynomials.
         for (const auto& poly : polys) {
+            // Iterate through all monomials in the polynomial.
             for (auto it = poly.begin(); it != poly.end(); it++) {
+                // Add the coefficient of the monomial to the "sum" polynomial.
                 sum[it->first] += it->second;
             }
         }
@@ -601,7 +686,7 @@ MultivariatePolynomialFunction::generatePartialVelocityFunction() const {
     // using MultivariatePolynomial.
     MultivariatePolynomial mvp(*this, vars);
 
-    // Construct the terms of the "chain rule polynomial".
+    // Construct the terms of the "partial velocity" polynomial.
     std::vector<MultivariatePolynomial> polys;
     for (int i = 0; i < dimension; ++i) {
         std::string x = "x" + std::to_string(i);
@@ -615,17 +700,18 @@ MultivariatePolynomialFunction::generatePartialVelocityFunction() const {
     MultivariatePolynomial polysSum = MultivariatePolynomial::sum(polys);
 
     // Get the coefficients. We need to append "xdot0", "xdot1", etc. to the
-    // variable names to get the correct dimension of the chain rule polynomial.
+    // variable names to get the correct dimension of the partial velocity 
+    // polynomial.
     for (int i = 0; i < dimension; ++i) {
         vars.push_back("xdot" + std::to_string(i));
     }
-    SimTK::Vector chainRuleCoeffs = polysSum.calcCoefficients(
+    SimTK::Vector partialVelocityCoeffs = polysSum.calcCoefficients(
             2*dimension, order, vars);
 
-    MultivariatePolynomialFunction chainRulePoly;
-    chainRulePoly.setDimension(2*dimension);
-    chainRulePoly.setOrder(order);
-    chainRulePoly.setCoefficients(chainRuleCoeffs);
+    MultivariatePolynomialFunction partialVelocityPoly;
+    partialVelocityPoly.setDimension(2*dimension);
+    partialVelocityPoly.setOrder(order);
+    partialVelocityPoly.setCoefficients(partialVelocityCoeffs);
  
-    return chainRulePoly;
+    return partialVelocityPoly;
 }
