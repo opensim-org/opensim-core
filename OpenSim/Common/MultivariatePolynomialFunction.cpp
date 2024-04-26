@@ -171,8 +171,8 @@ public:
             // variables.
             const Monomial& monomial = it->first;
             int sum = 0;
-            for (auto it2 = monomial.begin(); it2 != monomial.end(); it2++) {
-                const std::string& var = it2->first;
+            for (auto itv = monomial.begin(); itv != monomial.end(); itv++) {
+                const std::string& var = itv->first;
                 sum += getExponent(monomial, var);
             }
             // Update the order if the sum is greater than the current order.
@@ -212,10 +212,9 @@ public:
         // in the temporary polynomial, set its coefficient in the full 
         // coefficients vector.
         for (auto it2 = temp.begin(); it2 != temp.end(); ++it2) {
-            auto it = poly.find(it2->first);
-            if (it != poly.end()) {
-                coefficients[it2->second] = it->second;
-            }
+            const Monomial& monomial = it2->first;
+            int index = static_cast<int>(it2->second);
+            coefficients[index] = getCoefficient(monomial);
         }
 
         return coefficients;
@@ -266,8 +265,9 @@ public:
         const MultivariatePolynomial& poly = *this;
         for (auto it = poly.begin(); it != poly.end(); it++) {
             Monomial monomial = it->first;
+            double coeff = getCoefficient(monomial);
             monomial[var] += exponent;
-            result[monomial] = getCoefficient(monomial);
+            result[monomial] = coeff;
         }
         return result;
     }
@@ -296,8 +296,9 @@ public:
             // If the variable is not in the monomial, add the term to the left
             // polynomial. Otherwise, factor out the variable and add the term
             // to the right polynomial.
+            double coeff = getCoefficient(monomial);
             if (monomial.find(var) == monomial.end()) {
-                left[monomial] = getCoefficient(monomial);
+                left[monomial] = coeff;
             } else {
                 // Factor out the variable.
                 monomial[var] -= 1;
@@ -306,7 +307,7 @@ public:
                     monomial.erase(var);
                 }
                 // Add the term to the right polynomial.
-                right[monomial] = getCoefficient(monomial);
+                right[monomial] = coeff;
             }
         }
         return std::make_pair(left, right);
@@ -323,7 +324,8 @@ public:
             // Iterate through all monomials in the polynomial.
             for (auto it = poly.begin(); it != poly.end(); it++) {
                 // Add the coefficient of the monomial to the "sum" polynomial.
-                sum[it->first] += it->second;
+                const Monomial& monomial = it->first;
+                sum[it->first] += poly.getCoefficient(monomial);
             }
         }
         return sum;
@@ -401,13 +403,13 @@ public:
             vars.push_back("x" + std::to_string(i));
         }
         for (int i = 0; i < numCoefs; ++i) {
-            std::map<std::string, int> term;
+            std::map<std::string, int> monomial;
             for (int j = 0; j < dimension; ++j) {
                 if (m_combinations[i][j] > 0) {
-                    term[vars[j]] = m_combinations[i][j];
+                    monomial[vars[j]] = m_combinations[i][j];
                 }
             }
-            poly[term] = m_coefficients[i];
+            poly[monomial] = m_coefficients[i];
         }
         m_value = createHornerScheme(vars, poly);    
 
