@@ -645,7 +645,7 @@ void MocoTrajectory::generateControlsFromModelControllers(
             for (const auto& inputControlName : inputControlNames) {
                 bool found = controlDistributorIndexMap.find(inputControlName)
                         != controlDistributorIndexMap.end();
-                OPENSIM_THROW_IF(found, Exception,
+                OPENSIM_THROW_IF(!found, Exception,
                         "Expected Input control '{}' in the trajectory to "
                         "correspond to an InputController in the model, but "
                         "but no InputController with matching Input control "
