@@ -25,23 +25,20 @@ namespace OpenSim {
 
 class MocoProblemInfo;
 
-/** This class constrains any number of control signals from ScalarActuator%s to
-be between two time-based functions. It is possible to constrain the control
-signal to be exactly to a provided function; see the equality_with_lower
-property.
+/** This class constrains any number of control signals from ScalarActuator%s 
+or Input%s to InputController%s to be between two time-based functions. It is 
+possible to constrain the control signal to be exactly to a provided function; 
+see the equality_with_lower property.
 
 If a function is a GCVSpline, we ensure that the spline covers the entire
 possible time range in the problem (using the problem's time bounds). We do
 not perform such a check for other types of functions.
 
-If you wish to constrain all control signals except those associated with a
-user-defined controller (e.g., PrescribedController), pass 'true' to
-`setIgnoreControlledActuators()`.
-
 @note If you omit the lower and upper bounds, then this class will not
 constrain any control signals, even if you have provided control paths.
 
-@note This class can only constrain control signals for ScalarActuator%s.
+@note This class can only constrain control signals for ScalarActuator%s and 
+Input%s to InputController%s.
 
 @ingroup mocopathcon */
 class OSIMMOCO_API MocoControlBoundConstraint : public MocoPathConstraint {
@@ -53,7 +50,9 @@ public:
 
     /// @name Control paths
     /// Set the control paths (absolute paths to actuators in the model)
-    /// constrained by this class.
+    /// constrained by this class. If constraining an Input control, the path
+    /// will be the path to the InputController appended with the Input control
+    /// label (e.g., "/controllerset/my_input_controller/input_control_0").
     /// @{
     void addControlPath(std::string controlPath) {
         append_control_paths(std::move(controlPath));
@@ -89,16 +88,6 @@ public:
     //// @copydoc setEqualityWithLower()
     bool getEqualityWithLower() const { return get_equality_with_lower(); }
 
-    /// If true, do not constrain controls associated with user-defined
-    /// controllers.
-    void setIgnoreControlledActuators(bool v) {
-        set_ignore_controlled_actuators(v);
-    }
-    /// @copydoc setIgnoreControlledActuators()
-    bool getIgnoreControlledActuators() const {
-        return get_ignore_controlled_actuators();
-    }
-
 protected:
     void initializeOnModelImpl(
             const Model& model, const MocoProblemInfo&) const override;
@@ -108,8 +97,8 @@ protected:
 
 private:
     OpenSim_DECLARE_LIST_PROPERTY(control_paths, std::string,
-            "Constrain the control signal of the actuators specified by these "
-            "paths.");
+            "Constrain the control signal of the actuators or Input controls "
+            "specified by these paths.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(
             lower_bound, Function, "Lower bound as a function of time.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(
@@ -117,15 +106,13 @@ private:
     OpenSim_DECLARE_PROPERTY(equality_with_lower, bool,
             "The control must be equal to the lower bound; "
             "upper must be unspecified (default: false).");
-    OpenSim_DECLARE_PROPERTY(ignore_controlled_actuators, bool,
-            "If true, do not constrain controls belonging to actuators "
-            "controlled by user-defined controllers (default: false).");
 
     void constructProperties();
 
     mutable bool m_hasLower;
     mutable bool m_hasUpper;
     mutable std::vector<int> m_controlIndices;
+    mutable std::vector<bool> m_isInputControl;
 };
 
 } // namespace OpenSim

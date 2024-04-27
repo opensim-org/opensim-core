@@ -19,7 +19,7 @@
 #include "MocoControlBoundConstraint.h"
 
 #include "MocoProblemInfo.h"
-#include "Components/ActuatorInputController.h"
+#include "Components/ControlDistributor.h"
 
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
@@ -35,7 +35,6 @@ void MocoControlBoundConstraint::constructProperties() {
     constructProperty_lower_bound();
     constructProperty_upper_bound();
     constructProperty_equality_with_lower(false);
-    constructProperty_ignore_controlled_actuators(false);
 }
 
 void MocoControlBoundConstraint::initializeOnModelImpl(
@@ -43,10 +42,10 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
 
     // Check that the model controls are in the correct order.
     checkOrderSystemControls(model);
+    auto systemControlIndexMap = createSystemControlIndexMap(model);
 
-    // Get controls associated with the model's ActuatorInputController.
-    auto actuatorInputControls =
-            createControlNamesForControllerType<ActuatorInputController>(model);
+    // Get the Input control index map.
+    auto inputControlIndexMap = getInputControlIndexMap(model);
 
     m_hasLower = !getProperty_lower_bound().empty();
     m_hasUpper = !getProperty_upper_bound().empty();
@@ -56,26 +55,23 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
     }
     // Make sure there are no nonexistent controls.
     if (m_hasLower || m_hasUpper) {
-        auto systemControlIndexMap = createSystemControlIndexMap(model);
         for (int i = 0; i < getProperty_control_paths().size(); ++i) {
             const auto& thisName = get_control_paths(i);
-            OPENSIM_THROW_IF_FRMOBJ(systemControlIndexMap.count(thisName) == 0,
+            bool foundControl = systemControlIndexMap.count(thisName);
+            bool foundInputControl = inputControlIndexMap.count(thisName);
+            OPENSIM_THROW_IF_FRMOBJ(!foundControl && !foundInputControl,
                     Exception,
                     "Control path '{}' was provided but no such "
-                    "control exists in the model or it is already controlled "
-                    "by a user-defined controller.",
+                    "control or Input control exists in the model.",
                     thisName)
 
-            if (getIgnoreControlledActuators() && 
-                    !actuatorInputControls.count(thisName)) {
-                log_info("MocoControlBoundConstraint: Control '{}' is "
-                         "associated with a user-defined controller and will "
-                         "be ignored, as requested.",
-                        thisName);
-                continue;
-            }
-
-            m_controlIndices.push_back(systemControlIndexMap[thisName]);
+            if (foundControl) {
+                m_controlIndices.push_back(systemControlIndexMap[thisName]);
+                m_isInputControl.push_back(false);
+            } else {
+                m_controlIndices.push_back(inputControlIndexMap.at(thisName));
+                m_isInputControl.push_back(true);
+            }   
         }
     }
 
@@ -146,18 +142,25 @@ void MocoControlBoundConstraint::calcPathConstraintErrorsImpl(
         const SimTK::State& state, SimTK::Vector& errors) const {
     getModel().realizeVelocity(state);
     const auto& controls = getModel().getControls(state);
+    const auto& input_controls = 
+            getModel().getComponentList<ControlDistributor>().begin()
+                    ->getControls(state);
     int iconstr = 0;
+    int numConstraints = static_cast<int>(m_controlIndices.size());
     SimTK::Vector time(1);
-    for (const auto& controlIndex : m_controlIndices) {
-        const auto& control = controls[controlIndex];
+    // const auto& controlIndex : m_controlIndices
+    for (int iconstr = 0; iconstr < numConstraints; ++iconstr) {
+        int controlIndex = m_controlIndices[iconstr];
+        const auto& control = m_isInputControl[iconstr] ? 
+                controls[controlIndex] : input_controls[controlIndex];
         time[0] = state.getTime();
         // These if-statements work correctly for either value of
         // equality_with_lower.
         if (m_hasLower) {
-            errors[iconstr++] = control - get_lower_bound().calcValue(time);
+            errors[iconstr] = control - get_lower_bound().calcValue(time);
         }
         if (m_hasUpper) {
-            errors[iconstr++] = control - get_upper_bound().calcValue(time);
+            errors[iconstr] = control - get_upper_bound().calcValue(time);
         }
     }
 }

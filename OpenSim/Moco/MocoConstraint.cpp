@@ -19,6 +19,8 @@
 #include "MocoConstraint.h"
 #include "MocoProblemInfo.h"
 
+#include <OpenSim/Moco/Components/ControlDistributor.h>
+
 using namespace OpenSim;
 
 // ============================================================================
@@ -130,6 +132,24 @@ MocoPathConstraint::MocoPathConstraint() {
 
 void MocoPathConstraint::constructProperties() {
     constructProperty_MocoConstraintInfo(MocoConstraintInfo());
+}
+
+std::unordered_map<std::string, int> 
+MocoPathConstraint::getInputControlIndexMap(const Model& model) const {
+
+    // Get the full Input control index map from the ControlDistributor.
+    auto map = model.getComponentList<ControlDistributor>().begin()
+                    ->getControlIndexMap();
+
+    // Get all possible control names from the model.
+    auto controlNames = createControlNamesFromModel(model);
+
+    // Remove the control names that are associated with the model's
+    // ActuatorInputController.
+    for (const auto& controlName : controlNames) {
+        map.erase(controlName);
+    }
+    return map;
 }
 
 void MocoPathConstraint::initializeOnModel(const Model& model,

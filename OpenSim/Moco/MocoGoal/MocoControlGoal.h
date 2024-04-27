@@ -113,7 +113,6 @@ public:
         return get_ignore_input_controls();
     }
 
-
 protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(

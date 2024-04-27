@@ -388,6 +388,10 @@ public:
         return get_divide_by_mass();
     }
 
+    /// Get a map between Input control names and their indexes in the Input 
+    /// controls vector. This map will only include Input controls associated 
+    /// with InputController%s added by the user (i.e., not 
+    /// ActuatorInputController).
     std::unordered_map<std::string, int> 
     getInputControlIndexMap(const Model& model) const;
 

@@ -198,6 +198,13 @@ public:
         calcPathConstraintErrorsImpl(state, theseErrors);
     }
 
+    /// Get a map between Input control names and their indexes in the Input 
+    /// controls vector. This map will only include Input controls associated 
+    /// with InputController%s added by the user (i.e., not 
+    /// ActuatorInputController).
+    std::unordered_map<std::string, int> 
+    getInputControlIndexMap(const Model& model) const;
+
     /** Perform error checks on user input for this constraint, and cache
     quantities needed when computing the constraint errors.
     to efficiently evaluate the constraint.

@@ -63,7 +63,7 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
     auto actuatorInputControlNames =
             createControlNamesForControllerType<ActuatorInputController>(model);
 
-    // Get the full Input control index map from the ControlDistributor.
+    // Get the Input control index map.
     auto inputControlIndexMap = getInputControlIndexMap(model);
     
     // Make sure there are no weights for nonexistent controls.
