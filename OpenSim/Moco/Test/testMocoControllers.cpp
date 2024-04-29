@@ -281,21 +281,30 @@ TEMPLATE_TEST_CASE("Triple pendulum with synergy-like InputController", "",
     solution.write("testMocoControllers_testTriplePendulum_solution.sto");
     //study.visualize(solution);
 
-    CHECK(solution.getNumInputControls() == 2);
-    CHECK(solution.getNumControls() == 0);
+    SECTION("Solution size is correct") {
+        CHECK(solution.getNumInputControls() == 2);
+        CHECK(solution.getNumControls() == 0);
+    }
 
-    solution.generateControlsFromModelControllers(model);
-    CHECK(solution.getNumControls() == 3);
+    SECTION("Solution is resuable as guess") {
+        auto& solver = study.updSolver<TestType>();
+        solver.setGuess(solution);
+    }
 
-    TimeSeriesTable controlsTable = solution.exportToControlsTable();
-    TimeSeriesTable inputControlsTable = solution.exportToInputControlsTable();
-    const auto& controller = model.updComponent<TriplePendulumController>(
-            "/triple_pendulum_controller");
-    const auto& synergyVectors = controller.getSynergyVectors();
-    for (int i = 0; i < static_cast<int>(controlsTable.getNumRows()); ++i) {
-        SimTK::Vector expected = 
-                synergyVectors * ~inputControlsTable.getRowAtIndex(i);
-        SimTK_TEST_EQ(controlsTable.getRowAtIndex(i), expected.transpose());
+    SECTION("Model controllers produce correct controls") {
+        solution.generateControlsFromModelControllers(model);
+        CHECK(solution.getNumControls() == 3);
+        TimeSeriesTable controlsTable = solution.exportToControlsTable();
+        TimeSeriesTable inputControlsTable = 
+                solution.exportToInputControlsTable();
+        const auto& controller = model.updComponent<TriplePendulumController>(
+                "/triple_pendulum_controller");
+        const auto& synergyVectors = controller.getSynergyVectors();
+        for (int i = 0; i < static_cast<int>(controlsTable.getNumRows()); ++i) {
+            SimTK::Vector expected = 
+                    synergyVectors * ~inputControlsTable.getRowAtIndex(i);
+            SimTK_TEST_EQ(controlsTable.getRowAtIndex(i), expected.transpose());
+        }
     }
 }
 
@@ -304,20 +313,31 @@ TEMPLATE_TEST_CASE("Triple pendulum with disabled InputController", "",
     Model model = createControlledTriplePendulumModel(false);
     MocoStudy study = createTriplePendulumMocoStudy<TestType>(model);
     MocoSolution solution = study.solve();
-
-    CHECK(solution.getNumInputControls() == 0);
-    CHECK(solution.getNumControls() == 3);
     TimeSeriesTable expected = solution.exportToControlsTable();
 
-    solution.generateControlsFromModelControllers(model);
-    CHECK(solution.getNumControls() == 3);
+    SECTION("Solution size is correct") {
+        CHECK(solution.getNumInputControls() == 0);
+        CHECK(solution.getNumControls() == 3);
+    }
 
-    TimeSeriesTable actual = solution.exportToControlsTable();
-    OpenSim_REQUIRE_MATRIX(actual.getMatrix(), expected.getMatrix());
+    SECTION("Updating from model controllers does not change anything") {
+        solution.generateControlsFromModelControllers(model);
+        CHECK(solution.getNumControls() == 3);
+        TimeSeriesTable actual = solution.exportToControlsTable();
+        OpenSim_REQUIRE_MATRIX(actual.getMatrix(), expected.getMatrix());
+    }
 }
 
-TEMPLATE_TEST_CASE("No actuators connected to controller", "", 
-        MocoCasADiSolver, MocoTropterSolver) {
+TEST_CASE("Controllers with disabled actuators") {
+    Model model = createControlledTriplePendulumModel();
+    model.updComponent<Actuator>("/tau0").set_appliesForce(false);
+    std::string expectedMessage = "Expected all actuators controlled by "
+            "'/triple_pendulum_controller' to be enabled";
+    CHECK_THROWS_WITH(createTriplePendulumMocoStudy<MocoCasADiSolver>(model), 
+            ContainsSubstring(expectedMessage));
+}
+
+TEST_CASE("No actuators connected to controller") {
     Model model = ModelFactory::createNLinkPendulum(3);
     auto* controller = new TriplePendulumController();
     controller->setName("triple_pendulum_controller");
@@ -325,7 +345,19 @@ TEMPLATE_TEST_CASE("No actuators connected to controller", "",
     model.finalizeConnections();
     std::string expectedMessage = "Controller '/triple_pendulum_controller' "
             "has no actuators connected.";
-    CHECK_THROWS_WITH(createTriplePendulumMocoStudy<TestType>(model), 
+    CHECK_THROWS_WITH(createTriplePendulumMocoStudy<MocoCasADiSolver>(model), 
+            ContainsSubstring(expectedMessage));
+}
+
+TEST_CASE("Incorrect Input control info") {
+    Model model = createControlledTriplePendulumModel();
+    MocoStudy study = createTriplePendulumMocoStudy<MocoCasADiSolver>(model);
+    auto& problem = study.updProblem();
+    problem.setInputControlInfo("incorrect", {});
+    auto& solver = study.updSolver<MocoCasADiSolver>();
+    std::string expectedMessage = "Input control info provided for nonexistent "
+            "Input control 'incorrect'.";
+    CHECK_THROWS_WITH(solver.resetProblem(problem), 
             ContainsSubstring(expectedMessage));
 }
 
@@ -414,8 +446,3 @@ TEST_CASE("MocoPeriodicityGoal with Input controls") {
             "/triple_pendulum_controller/synergy_control_0");
     CHECK(synergyControl0[0] == Approx(synergyControl0[N-1]).margin(1e-6));
 }
-
-// TODO things to test:
-// - Test reusing solution with controllers as initial guess.
-// - Test workflow with disabled actuators
-// - Test setting no/incorrect setInputControlInfo()/setInputControlInfoPattern().

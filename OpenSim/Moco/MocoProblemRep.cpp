@@ -23,6 +23,7 @@
 #include "MocoProblem.h"
 #include "MocoProblemInfo.h"
 #include "MocoScaleFactor.h"
+#include "OpenSim/Common/Exception.h"
 #include "OpenSim/Moco/Components/ControlDistributor.h"
 #include <regex>
 #include <unordered_set>
@@ -123,7 +124,13 @@ void MocoProblemRep::initialize() {
                 Exception, "Controller '{}' has no actuators connected.",
                 controller.getAbsolutePathString());
         for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
-            controlledActuatorPaths.insert(socket.getConnecteePath(i));
+            const auto& actu = socket.getConnectee(i);
+            const auto& actuPath = actu.getAbsolutePathString();
+            OPENSIM_THROW_IF(!actu.get_appliesForce(), Exception,
+                    "Expected all actuators controlled by '{}' to be enabled, "
+                    "but the 'appliesForce' property for actuator '{}' is set "
+                    "to false", controller.getAbsolutePathString(), actuPath);
+            controlledActuatorPaths.insert(actuPath);
         }
     }
 
@@ -637,7 +644,7 @@ void MocoProblemRep::initialize() {
                 inputControlNames.begin(), inputControlNames.end(), name);
         OPENSIM_THROW_IF(it == inputControlNames.end(), Exception,
                     "Input control info provided for nonexistent "
-                    "InputController input '{}'.", name);
+                    "Input control '{}'.", name);
     }
 
     for (int i = 0; i < ph0.getProperty_input_control_infos().size(); ++i) {
