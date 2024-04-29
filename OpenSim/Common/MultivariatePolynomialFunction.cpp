@@ -147,18 +147,6 @@ public:
         return 0.0;
     }
 
-    /**
-     * Get the exponent of a variable in a monomial. If the variable is not in
-     * the monomial, the exponent is zero.
-     */
-    int getExponent(const Monomial& monomial, const std::string& var) const {
-        auto it = monomial.find(var);
-        if (it != monomial.end()) {
-            return it->second;
-        }
-        return 0;
-    }
-
     // CALC METHODS
     /**
      * Calculate the order of the polynomial.
@@ -172,8 +160,7 @@ public:
             const Monomial& monomial = it->first;
             int sum = 0;
             for (auto itv = monomial.begin(); itv != monomial.end(); itv++) {
-                const std::string& var = itv->first;
-                sum += getExponent(monomial, var);
+                sum += itv->second;
             }
             // Update the order if the sum is greater than the current order.
             if (sum > order) {
@@ -239,7 +226,7 @@ public:
                 if (itm->first == var) {
                     // If the exponent is 1, remove the variable from the
                     // monomial. Otherwise, reduce the exponent by 1.
-                    int exponent = getExponent(monomial, var);
+                    int exponent = itm->second;
                     derivMonomial.erase(itm->first);
                     if (exponent > 1) {
                         derivMonomial[itm->first] = exponent - 1;
@@ -403,7 +390,7 @@ public:
             vars.push_back("x" + std::to_string(i));
         }
         for (int i = 0; i < numCoefs; ++i) {
-            std::map<std::string, int> monomial;
+            Monomial monomial;
             for (int j = 0; j < dimension; ++j) {
                 if (m_combinations[i][j] > 0) {
                     monomial[vars[j]] = m_combinations[i][j];
@@ -431,35 +418,35 @@ public:
         return m_derivatives[derivComponent[0]]->calcValue(x);
     }
 
-    SimTK::Vector_<T> calcTermValues(const SimTK::Vector& x) const {
+    SimTK::Vector_<T> calcMonomialValues(const SimTK::Vector& x) const {
         SimTK::Vector_<T> values(m_coefficients.size(), T(0.0));
         for (int i = 0; i < m_coefficients.size(); ++i) {
-            T term = static_cast<T>(1);
+            T value = static_cast<T>(1);
             for (int j = 0; j < m_dimension; ++j) {
-                term *= std::pow(x[j], m_combinations[i][j]);
+                value *= std::pow(x[j], m_combinations[i][j]);
             }
-            values[i] = term;
+            values[i] = value;
         }
         
         return values;
     }
 
-    SimTK::Vector_<T> calcTermDerivatives(
+    SimTK::Vector_<T> calcMonomialDerivatives(
             const SimTK::Array_<int>& derivComponent,
             const SimTK::Vector& x) const {
         SimTK::Vector_<T> derivatives(m_coefficients.size(), T(0.0));
         for (int i = 0; i < m_coefficients.size(); ++i) {
             if (m_combinations[i][derivComponent[0]] > 0) {
-                T term = static_cast<T>(1);
+                T deriv = static_cast<T>(1);
                 for (int j = 0; j < m_dimension; ++j) {
                     if (j == derivComponent[0]) {
-                        term *= m_combinations[i][j];
-                        term *= std::pow(x[j], m_combinations[i][j] - 1);
+                        deriv *= m_combinations[i][j];
+                        deriv *= std::pow(x[j], m_combinations[i][j] - 1);
                     } else {
-                        term *= std::pow(x[j], m_combinations[i][j]);
+                        deriv *= std::pow(x[j], m_combinations[i][j]);
                     }
                 }
-                derivatives[i] = term;
+                derivatives[i] = deriv;
             }
         }
         return derivatives;
@@ -634,7 +621,7 @@ SimTK::Vector MultivariatePolynomialFunction::getTermValues(
         _function = createSimTKFunction();
     }
     return dynamic_cast<const SimTKMultivariatePolynomial<SimTK::Real>*>(
-                    _function)->calcTermValues(x);
+                    _function)->calcMonomialValues(x);
 }
 
 SimTK::Vector MultivariatePolynomialFunction::getTermDerivatives(
@@ -643,7 +630,7 @@ SimTK::Vector MultivariatePolynomialFunction::getTermDerivatives(
         _function = createSimTKFunction();
     }
     return dynamic_cast<const SimTKMultivariatePolynomial<SimTK::Real>*>(
-                    _function)->calcTermDerivatives(
+                    _function)->calcMonomialDerivatives(
                         SimTK::ArrayViewConst_<int>(derivComponent), x);
 }
 
