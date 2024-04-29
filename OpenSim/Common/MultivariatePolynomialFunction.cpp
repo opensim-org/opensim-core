@@ -480,19 +480,20 @@ private:
     // A node representing a polynomial factorization. The value of the node is
     // the sum of the left node and the product of the right node and the
     // variable at the specified index.
-    class Factor : public HornerSchemeNode {
+    class FactorNode : public HornerSchemeNode {
         public:
-            Factor(SimTK::ClonePtr<HornerSchemeNode> left, 
+            FactorNode(SimTK::ClonePtr<HornerSchemeNode> left, 
                     SimTK::ClonePtr<HornerSchemeNode> right, int index) : 
                     m_left(std::move(left)), m_right(std::move(right)), 
                     m_index(index) {}
 
             T calcValue(const SimTK::Vector_<T>& x) const override {
-                return m_left->calcValue(x) + x[m_index] * m_right->calcValue(x);
+                return m_left->calcValue(x) + 
+                        x[m_index] * m_right->calcValue(x);
             }
 
             HornerSchemeNode* clone() const override {
-                return new Factor(
+                return new FactorNode(
                     SimTK::ClonePtr<HornerSchemeNode>(m_left->clone()), 
                     SimTK::ClonePtr<HornerSchemeNode>(m_right->clone()), 
                     m_index);
@@ -506,9 +507,9 @@ private:
     // A node representing a monomial. The value of the node is the constant
     // term plus the sum of the product of the polynomial coefficients and the 
     // variables.
-    class Monomial : public HornerSchemeNode {
+    class MonomialNode : public HornerSchemeNode {
         public:
-            Monomial(T constant, const SimTK::Vector_<T>& coefficients) : 
+            MonomialNode(T constant, const SimTK::Vector_<T>& coefficients) : 
                     m_constant(constant), m_coefficients(coefficients), 
                     m_numCoefficients(coefficients.size()) {}
 
@@ -521,7 +522,7 @@ private:
             }
 
             HornerSchemeNode* clone() const override {
-                return new Monomial(m_constant, m_coefficients);
+                return new MonomialNode(m_constant, m_coefficients);
             }
         private:
             T m_constant;
@@ -543,9 +544,9 @@ private:
         if (order == 0) {
             // For a zeroth order polynomial, construct a Monomial node with a 
             // constant term and no coefficients.
-            Monomial* monomial = new Monomial(
+            MonomialNode* monomial = new MonomialNode(
                     static_cast<T>(poly.at({})), SimTK::Vector_<T>());
-            return SimTK::ClonePtr<Monomial>(monomial);
+            return SimTK::ClonePtr<MonomialNode>(monomial);
 
         } else if (order == 1) {
             // For a first order polynomial, construct a Monomial node with a
@@ -564,14 +565,14 @@ private:
                 ++index;
             }
             
-            Monomial* monomial = new Monomial(
+            MonomialNode* monomial = new MonomialNode(
                     static_cast<T>(coefficients[0]), x_coefs);
-            return SimTK::ClonePtr<Monomial>(monomial);
+            return SimTK::ClonePtr<MonomialNode>(monomial);
 
         } else {
             // For a polynomial of order greater than 1, factor out the variable
             // that appears in the most terms of the polynomial. Construct two 
-            // Factor nodes: the "left" node represents the polynomial terms 
+            // FactorNodes: the "left" node represents the polynomial terms 
             // that do not contain the variable, and the "right" node represents
             // the polynomial terms that did contain the variable with it
             // factored out to the first order.
@@ -600,9 +601,9 @@ private:
             SimTK::ClonePtr<HornerSchemeNode> right =
                     createHornerScheme(vars, factors.second);
 
-            // Construct a Factor node.
-            Factor* factor = new Factor(left, right, index);
-            return SimTK::ClonePtr<Factor>(factor); 
+            // Construct a FactorNode.
+            FactorNode* factor = new FactorNode(left, right, index);
+            return SimTK::ClonePtr<FactorNode>(factor); 
         }
     }
     
