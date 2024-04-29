@@ -441,15 +441,8 @@ private:
     const SimTK::Vector& getModelDisabledConstraintsControls(
             const SimTK::State& state) const {
         const auto& model = getModelDisabledConstraints();
-        // TODO: manually computing model controls is required to apply Input 
-        // control values from InputControllers to the model's control vector. 
-        // For some reason, the controls cache in the model is marked "valid", 
-        // so calling getControls() after realizing to SimTK::Stage::Velocity 
-        // does not properly update the controls.
-        SimTK::Vector& controls = model.updControls(state);
-        controls = model.getDefaultControls();
-        model.computeControls(state, controls);
-        return controls;
+        model.realizeVelocity(state);
+        return model.getControls(state);
     }
 
     const MocoProblem* m_problem;

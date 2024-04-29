@@ -802,6 +802,13 @@ public:
      */
     void markControlsAsValid(const SimTK::State& s) const;
 
+    /**
+     * Mark controls as invalid after an update at a given state.
+     * Indicates that controls are not valid for use at the dynamics stage.
+     * @param[in]   s         System state in which the controls are updated 
+     */
+    void markControlsAsInvalid(const SimTK::State& s) const;
+
     /** 
      * Alternatively, set the controls on the model at a given state.
      * Note, this method will invalidate the dynamics of the model,

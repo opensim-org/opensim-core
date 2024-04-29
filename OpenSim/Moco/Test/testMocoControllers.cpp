@@ -27,9 +27,11 @@
 #include "OpenSim/Moco/MocoCasADiSolver/MocoCasADiSolver.h"
 #include "OpenSim/Moco/MocoGoal/MocoControlTrackingGoal.h"
 #include "OpenSim/Moco/MocoGoal/MocoPeriodicityGoal.h"
+#include "OpenSim/Moco/MocoUtilities.h"
 #include "OpenSim/Simulation/TableProcessor.h"
 #include <catch2/catch_all.hpp>
 #include "Testing.h"
+#include <catch2/matchers/catch_matchers.hpp>
 
 using namespace OpenSim;
 
@@ -291,8 +293,16 @@ TEMPLATE_TEST_CASE("Triple pendulum with synergy-like InputController", "",
         solver.setGuess(solution);
     }
 
+    SECTION("Calling analyzeMocoTrajectory() is invalid") {
+        std::string expected = "MocoUtilities::analyzeMocoTrajectory(): The "
+                "number of controls in the MocoTrajectory does not match";
+        CHECK_THROWS_WITH(
+            analyzeMocoTrajectory<double>(model, solution, {"output"}), 
+            ContainsSubstring(expected));
+    }
+
+    solution.generateControlsFromModelControllers(model);
     SECTION("Model controllers produce correct controls") {
-        solution.generateControlsFromModelControllers(model);
         CHECK(solution.getNumControls() == 3);
         TimeSeriesTable controlsTable = solution.exportToControlsTable();
         TimeSeriesTable inputControlsTable = 
@@ -305,6 +315,11 @@ TEMPLATE_TEST_CASE("Triple pendulum with synergy-like InputController", "",
                     synergyVectors * ~inputControlsTable.getRowAtIndex(i);
             SimTK_TEST_EQ(controlsTable.getRowAtIndex(i), expected.transpose());
         }
+    }
+
+    SECTION("Calling analyzeMocoTrajectory() is now valid") {
+        CHECK_NOTHROW(
+                analyzeMocoTrajectory<double>(model, solution, {"output"}));
     }
 }
 
@@ -320,7 +335,7 @@ TEMPLATE_TEST_CASE("Triple pendulum with disabled InputController", "",
         CHECK(solution.getNumControls() == 3);
     }
 
-    SECTION("Updating from model controllers does not change anything") {
+    SECTION("generateControlsFromModelControllers() should do nothing") {
         solution.generateControlsFromModelControllers(model);
         CHECK(solution.getNumControls() == 3);
         TimeSeriesTable actual = solution.exportToControlsTable();
@@ -331,10 +346,10 @@ TEMPLATE_TEST_CASE("Triple pendulum with disabled InputController", "",
 TEST_CASE("Controllers with disabled actuators") {
     Model model = createControlledTriplePendulumModel();
     model.updComponent<Actuator>("/tau0").set_appliesForce(false);
-    std::string expectedMessage = "Expected all actuators controlled by "
+    std::string expected = "Expected all actuators controlled by "
             "'/triple_pendulum_controller' to be enabled";
     CHECK_THROWS_WITH(createTriplePendulumMocoStudy<MocoCasADiSolver>(model), 
-            ContainsSubstring(expectedMessage));
+            ContainsSubstring(expected));
 }
 
 TEST_CASE("No actuators connected to controller") {
@@ -343,10 +358,10 @@ TEST_CASE("No actuators connected to controller") {
     controller->setName("triple_pendulum_controller");
     model.addComponent(controller);
     model.finalizeConnections();
-    std::string expectedMessage = "Controller '/triple_pendulum_controller' "
+    std::string expected = "Controller '/triple_pendulum_controller' "
             "has no actuators connected.";
     CHECK_THROWS_WITH(createTriplePendulumMocoStudy<MocoCasADiSolver>(model), 
-            ContainsSubstring(expectedMessage));
+            ContainsSubstring(expected));
 }
 
 TEST_CASE("Incorrect Input control info") {
@@ -355,10 +370,10 @@ TEST_CASE("Incorrect Input control info") {
     auto& problem = study.updProblem();
     problem.setInputControlInfo("incorrect", {});
     auto& solver = study.updSolver<MocoCasADiSolver>();
-    std::string expectedMessage = "Input control info provided for nonexistent "
+    std::string expected = "Input control info provided for nonexistent "
             "Input control 'incorrect'.";
     CHECK_THROWS_WITH(solver.resetProblem(problem), 
-            ContainsSubstring(expectedMessage));
+            ContainsSubstring(expected));
 }
 
 TEMPLATE_TEST_CASE("MocoControlGoal: ignoring Input controls", "",

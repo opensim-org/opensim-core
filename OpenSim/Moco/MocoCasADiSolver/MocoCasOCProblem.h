@@ -628,6 +628,10 @@ private:
             for (int ic = 0; ic < getNumControls(); ++ic) {
                 simtkControls[ic] = *(controls.ptr() + ic);
             }
+            // Updating the Inputs to InputControllers via the 
+            // ControlDistributor does not mark the model controls cache as 
+            // invalid, so we must do it manually here.
+            model.markControlsAsInvalid(simtkState);
         }
     }
     /// Apply variables from the optimizer to the MocoProblemRep's model and

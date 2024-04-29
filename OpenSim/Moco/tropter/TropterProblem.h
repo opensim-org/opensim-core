@@ -337,6 +337,11 @@ protected:
             for (int ic = 0; ic < controls.size(); ++ic) {
                 osimControls[ic] = controls[ic];
             }
+            // Updating the Inputs to InputControllers via the 
+            // ControlDistributor does not mark the model controls cache as 
+            // invalid, so we must do it manually here.
+            modelDisabledConstraints.markControlsAsInvalid(
+                    simTKStateDisabledConstraints);
         }
 
         // If enabled constraints exist in the model, compute constraint forces
