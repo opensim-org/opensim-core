@@ -198,7 +198,7 @@ void MocoControlGoal::printDescriptionImpl() const {
                 m_weights[i]);
     }
     for (int i = 0; i < (int) m_inputControlNames.size(); i++) {
-        log_cout("        input control: {}, weight: {}", 
+        log_cout("        Input control: {}, weight: {}", 
                 m_inputControlNames[i], m_inputControlWeights[i]);
     }
 }

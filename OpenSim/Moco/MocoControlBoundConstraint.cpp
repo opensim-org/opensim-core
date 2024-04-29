@@ -146,21 +146,20 @@ void MocoControlBoundConstraint::calcPathConstraintErrorsImpl(
             getModel().getComponentList<ControlDistributor>().begin()
                     ->getControls(state);
     int iconstr = 0;
-    int numConstraints = static_cast<int>(m_controlIndices.size());
+    int icontrol = 0;
     SimTK::Vector time(1);
-    // const auto& controlIndex : m_controlIndices
-    for (int iconstr = 0; iconstr < numConstraints; ++iconstr) {
-        int controlIndex = m_controlIndices[iconstr];
-        const auto& control = m_isInputControl[iconstr] ? 
-                controls[controlIndex] : input_controls[controlIndex];
+    for (const auto& controlIndex : m_controlIndices) {
+        const auto& control = m_isInputControl[icontrol] ? 
+                input_controls[controlIndex] : controls[controlIndex];
         time[0] = state.getTime();
         // These if-statements work correctly for either value of
         // equality_with_lower.
         if (m_hasLower) {
-            errors[iconstr] = control - get_lower_bound().calcValue(time);
+            errors[iconstr++] = control - get_lower_bound().calcValue(time);
         }
         if (m_hasUpper) {
-            errors[iconstr] = control - get_upper_bound().calcValue(time);
+            errors[iconstr++] = control - get_upper_bound().calcValue(time);
         }
+        ++icontrol;
     }
 }

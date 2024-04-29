@@ -22,6 +22,12 @@
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 
+#include "OpenSim/Common/CommonUtilities.h"
+#include "OpenSim/Common/TimeSeriesTable.h"
+#include "OpenSim/Moco/MocoCasADiSolver/MocoCasADiSolver.h"
+#include "OpenSim/Moco/MocoGoal/MocoControlTrackingGoal.h"
+#include "OpenSim/Moco/MocoGoal/MocoPeriodicityGoal.h"
+#include "OpenSim/Simulation/TableProcessor.h"
 #include <catch2/catch_all.hpp>
 #include "Testing.h"
 
@@ -207,6 +213,7 @@ namespace {
         }
 
         auto* effort = problem.addGoal<MocoControlGoal>();
+        effort->setName("effort");
         effort->setIgnoreControlledActuators(ignoreControlledActuators);
         effort->setIgnoreInputControls(ignoreInputControls);
         auto& solver = study.initSolver<SolverType>();
@@ -334,6 +341,78 @@ TEMPLATE_TEST_CASE("MocoControlGoal: ignoring Input controls", "",
     solver.set_optim_max_iterations(1);
     MocoSolution solution = study.solve().unseal();
     CHECK(solution.getObjective() == 0);
+}
+
+TEMPLATE_TEST_CASE("MocoControlBoundConstraint with Input controls", "",
+        MocoCasADiSolver, MocoTropterSolver) {
+    Model model = createControlledTriplePendulumModel();
+    MocoStudy study = createTriplePendulumMocoStudy<TestType>(model);
+    auto& problem = study.updProblem();
+    auto* controlBoundPC = 
+            problem.addPathConstraint<MocoControlBoundConstraint>();
+    controlBoundPC->addControlPath(
+            "/triple_pendulum_controller/synergy_control_0");
+    controlBoundPC->setLowerBound(Constant(-10));
+    auto& solver = study.updSolver<TestType>();
+    solver.resetProblem(problem);
+    MocoSolution solution = study.solve();
+    int numTimes = solution.getNumTimes();
+    const auto& synergyControl0 = solution.getInputControl(
+            "/triple_pendulum_controller/synergy_control_0");
+    for (int i = 0; i < numTimes; ++i) {
+        CHECK(synergyControl0[i] >= Approx(-10).margin(1e-6));
+    }
+}
+
+TEMPLATE_TEST_CASE("MocoControlTrackingGoal with Input controls", "",
+        MocoCasADiSolver, MocoTropterSolver) {
+    Model model = createControlledTriplePendulumModel();
+    MocoStudy study = createTriplePendulumMocoStudy<TestType>(model);
+
+    auto& problem = study.updProblem();
+    problem.updGoal("effort").setEnabled(false);
+    problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
+    auto* controlTrackingGoal = problem.addGoal<MocoControlTrackingGoal>();
+    controlTrackingGoal->setName("control_tracking");
+    int N = 10;
+    SimTK::Vector time = createVectorLinspace(10, 0, 0.5);
+    std::vector<double> indVec;
+    SimTK::Vector controlRef(N);
+    for (int i = 0; i < N; ++i) {
+        indVec.push_back(time[i]);
+        controlRef[i] = -12.34;
+    }
+    TimeSeriesTable ref(indVec);
+    ref.appendColumn(
+            "/triple_pendulum_controller/synergy_control_0", controlRef);
+    controlTrackingGoal->setReference(TableProcessor(ref));
+    auto& solver = study.updSolver<TestType>();
+    solver.resetProblem(problem);
+
+    MocoSolution solution = study.solve();
+    int numTimes = solution.getNumTimes();
+    const auto& synergyControl0 = solution.getInputControl(
+            "/triple_pendulum_controller/synergy_control_0");
+    for (int i = 0; i < numTimes; ++i) {
+        CHECK(synergyControl0[i] == Approx(-12.34).margin(1e-6));
+    }
+}
+
+TEST_CASE("MocoPeriodicityGoal with Input controls") {
+    Model model = createControlledTriplePendulumModel();
+    MocoStudy study = createTriplePendulumMocoStudy<MocoCasADiSolver>(model);
+    auto& problem = study.updProblem();
+    auto* periodicity = 
+            problem.addGoal<MocoPeriodicityGoal>();
+    periodicity->addControlPair(MocoPeriodicityGoalPair(
+            "/triple_pendulum_controller/synergy_control_0"));
+    auto& solver = study.updSolver<MocoCasADiSolver>();
+    solver.resetProblem(problem);
+    MocoSolution solution = study.solve();
+    int N = solution.getNumTimes();
+    const auto& synergyControl0 = solution.getInputControl(
+            "/triple_pendulum_controller/synergy_control_0");
+    CHECK(synergyControl0[0] == Approx(synergyControl0[N-1]).margin(1e-6));
 }
 
 // TODO things to test:
