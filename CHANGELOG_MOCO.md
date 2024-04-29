@@ -3,6 +3,15 @@ Moco Change Log
 
 1.3.1
 -----
+- 2024-04-29: Added support for optimizing `Input` controls associated with 
+             `InputController`s in a model.
+             TODO
+             - MocoProblem interface (e.g., setInputControlInfo())
+             - MocoTrajectory interface (include generateControlsFromModelControllers)
+             - MocoGoals and MocoPathConstraints updated (include IntegrandInput and GoalInput updates for Input controls)
+             - ActuatorInputController made an internal class to Moco
+             - Added testMocoControllers
+
 - 2024-04-01: Added `MocoGeneralizedForceTrackingGoal` to enable joint moment tracking
               in `MocoProblem`s, and added the utility `calcGeneralizeForces()` to 
               `MocoStudy` for computing joint moments from a `MocoTrajectory`. 
