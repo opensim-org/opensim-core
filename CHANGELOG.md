@@ -46,8 +46,11 @@ v4.6
 - Added `Model::calcForceContributionsSum()`, a wrapper method for `GeneralForceSubsystem` for efficiently 
   calculating a subset of a model's body and mobility forces. (#3755) 
 - Added `Force::getForceIndex()` to allow accessing the `SimTK::ForceIndex` for force elements. (#3755) 
-- TODO fixed bug in SimulationUtilities::analyze<T> related to control vector size
-- TODO InputController changes
+- Fixed a bug in SimulationUtilities::analyze<T> that would provide an incorrectly sized control vector to 
+  the model if controls were missing from the input controls table. (#TODO)
+- Added InputController, an intermediate abstract class of Controller that provides supports for controllers 
+  that map scalar control values from a list Input (connected to Outputs from one or more ModelComponents) 
+  to model actuator controls. (#TODO)
 
 v4.5
 ====
