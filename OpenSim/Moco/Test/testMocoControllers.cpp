@@ -27,6 +27,7 @@
 #include "OpenSim/Moco/MocoCasADiSolver/MocoCasADiSolver.h"
 #include "OpenSim/Moco/MocoGoal/MocoControlTrackingGoal.h"
 #include "OpenSim/Moco/MocoGoal/MocoPeriodicityGoal.h"
+#include "OpenSim/Moco/MocoTrajectory.h"
 #include "OpenSim/Moco/MocoUtilities.h"
 #include "OpenSim/Simulation/TableProcessor.h"
 #include <catch2/catch_all.hpp>
@@ -286,6 +287,14 @@ TEMPLATE_TEST_CASE("Triple pendulum with synergy-like InputController", "",
     SECTION("Solution size is correct") {
         CHECK(solution.getNumInputControls() == 2);
         CHECK(solution.getNumControls() == 0);
+    }
+
+    SECTION("Timestepping produces the same states trajectory") {
+        MocoTrajectory traj = 
+                simulateTrajectoryWithTimeStepping(solution, model);
+        const double error = solution.compareContinuousVariablesRMS(
+                traj, {{"states", {}}});
+        std::cout << "DEBUG RMS error: " << error << std::endl;
     }
 
     SECTION("Solution is resuable as guess") {
