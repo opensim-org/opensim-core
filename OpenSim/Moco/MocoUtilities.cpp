@@ -110,8 +110,8 @@ void OpenSim::prescribeControlsToModel(
                         "Unexpected function type {}.", functionType);
             }
             auto* signal = new SignalGenerator();
-            // signal->setName(inputControlName);
-            signal->set_function(*function.get());
+            signal->setName(label);
+            signal->set_function(*function);
             model.addComponent(signal);
             controller.connectInput_controls(signal->getOutput("signal"));
         }

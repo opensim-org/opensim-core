@@ -94,8 +94,10 @@ TimeSeriesTable_<T> analyzeMocoTrajectory(
 
 /// Given a MocoTrajectory and the associated OpenSim model, return the model
 /// with a PrescribedController appended that will compute the control values
-/// from the MocoTrajectory. This can be useful when computing state-dependent
-/// model quantities that require realization to the Dynamics stage or later.
+/// from the MocoTrajectory. This function will also add SignalGenerator%s to 
+/// prescribe Input control values for any InputController%s in the model.This 
+/// can be useful when computing state-dependent model quantities that require 
+/// realization to the Dynamics stage or later.
 /// The function used to fit the controls can either be GCVSpline or
 /// PiecewiseLinearFunction.
 /// @ingroup mocoutil
@@ -109,7 +111,8 @@ OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& trajectory,
 /// with time stepping. Use integratorAccuracy to override the default setting.
 ///
 /// @note This function expects all Actuator%s in the model to be in the Model's
-/// ForceSet.
+/// ForceSet andexpects all Controller%s in the model to be in the Model's 
+/// ControllerSet.
 /// @ingroup mocoutil
 OSIMMOCO_API MocoTrajectory simulateTrajectoryWithTimeStepping(
         const MocoTrajectory& trajectory, Model model,

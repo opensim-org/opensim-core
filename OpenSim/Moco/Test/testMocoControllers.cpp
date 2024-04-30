@@ -17,22 +17,11 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Moco/osimMoco.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Control/InputController.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 
-#include "OpenSim/Common/CommonUtilities.h"
-#include "OpenSim/Common/TimeSeriesTable.h"
-#include "OpenSim/Moco/MocoCasADiSolver/MocoCasADiSolver.h"
-#include "OpenSim/Moco/MocoGoal/MocoControlTrackingGoal.h"
-#include "OpenSim/Moco/MocoGoal/MocoPeriodicityGoal.h"
-#include "OpenSim/Moco/MocoTrajectory.h"
-#include "OpenSim/Moco/MocoUtilities.h"
-#include "OpenSim/Simulation/TableProcessor.h"
 #include <catch2/catch_all.hpp>
 #include "Testing.h"
-#include <catch2/matchers/catch_matchers.hpp>
 
 using namespace OpenSim;
 
@@ -140,6 +129,57 @@ TEST_CASE("MocoControlGoal: ignoring controlled actuators") {
 }
 
 namespace {
+
+    // Based on ModelFactory::createNLinkPendulum(), but allows us to add the 
+    // CoordinateActuators to the ForceSet, which is necessary for some of the 
+    // tests below.
+    Model createTriplePendulum() {
+        Model model; 
+        model.setName("triple_pendulum");
+        const auto& ground = model.getGround();
+
+        using SimTK::Inertia;
+        using SimTK::Vec3;
+
+        Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
+        bodyGeometry.setColor(SimTK::Gray);
+
+        const PhysicalFrame* prevBody = &ground;
+        for (int i = 0; i < 3; ++i) {
+            const std::string istr = std::to_string(i);
+            auto* bi = new OpenSim::Body("b" + istr, 1, Vec3(0), Inertia(1));
+            model.addBody(bi);
+
+            // Assume each body is 1 m long.
+            auto* ji = new PinJoint("j" + istr, *prevBody, Vec3(0), Vec3(0), 
+                    *bi, Vec3(-1, 0, 0), Vec3(0));
+            auto& qi = ji->updCoordinate();
+            qi.setName("q" + istr);
+            model.addJoint(ji);
+
+            auto* taui = new CoordinateActuator();
+            taui->setCoordinate(&ji->updCoordinate());
+            taui->setName("tau" + istr);
+            taui->setOptimalForce(1);
+            model.addForce(taui);
+
+            auto* marker = new Marker("marker" + istr, *bi, Vec3(0));
+            model.addMarker(marker);
+
+            // Attach an ellipsoid to a frame located at the center of each body.
+            PhysicalOffsetFrame* bicenter = new PhysicalOffsetFrame(
+                    "b" + istr + "center", *bi, 
+                    SimTK::Transform(Vec3(-0.5, 0, 0)));
+            bi->addComponent(bicenter);
+            bicenter->attachGeometry(bodyGeometry.clone());
+
+            prevBody = bi;
+        }
+
+        model.finalizeConnections();
+        return model;
+    }
+
     class TriplePendulumController : public InputController {
         OpenSim_DECLARE_CONCRETE_OBJECT(
                 TriplePendulumController, InputController);
@@ -159,7 +199,8 @@ namespace {
         void computeControlsImpl(const SimTK::State& state,
                 SimTK::Vector& controls) const override {
             const auto& input = getInput<double>("controls");
-            for (int i = 0; i < static_cast<int>(input.getNumConnectees()); ++i) {
+            for (int i = 0; i < static_cast<int>(input.getNumConnectees()); ++i) 
+            {
                 controls += m_synergyVectors.col(i) * input.getValue(state, i);
             }
 
@@ -172,17 +213,17 @@ namespace {
     };
 
     Model createControlledTriplePendulumModel(bool controllerEnabled = true) {
-        Model model = ModelFactory::createNLinkPendulum(3);
+        Model model = createTriplePendulum();
         auto* controller = new TriplePendulumController();
         controller->setName("triple_pendulum_controller");
         controller->addActuator(
-                model.getComponent<CoordinateActuator>("/tau0"));
+                model.getComponent<CoordinateActuator>("/forceset/tau0"));
         controller->addActuator(
-                model.getComponent<CoordinateActuator>("/tau1"));
+                model.getComponent<CoordinateActuator>("/forceset/tau1"));
         controller->addActuator(
-                model.getComponent<CoordinateActuator>("/tau2"));
+                model.getComponent<CoordinateActuator>("/forceset/tau2"));
         controller->setEnabled(controllerEnabled);
-        model.addComponent(controller);
+        model.addController(controller);
         model.finalizeConnections();
         return model;
     }
@@ -203,16 +244,18 @@ namespace {
         problem.setStateInfo("/jointset/j2/q2/speed", {-50, 50}, 0);
         MocoBounds bounds(-100, 100);
         const auto& controller = model.getComponent<TriplePendulumController>(
-                "/triple_pendulum_controller");
+                "/controllerset/triple_pendulum_controller");
         if (controller.isEnabled()) {
             problem.setInputControlInfo(
-                    "/triple_pendulum_controller/synergy_control_0", bounds);
+                "/controllerset/triple_pendulum_controller/synergy_control_0", 
+                bounds);
             problem.setInputControlInfo(
-                    "/triple_pendulum_controller/synergy_control_1", bounds);
+                "/controllerset/triple_pendulum_controller/synergy_control_1", 
+                bounds);
         } else {
-            problem.setControlInfo("/tau0", bounds);
-            problem.setControlInfo("/tau1", bounds);
-            problem.setControlInfo("/tau2", bounds);
+            problem.setControlInfo("/forceset/tau0", bounds);
+            problem.setControlInfo("/forceset/tau1", bounds);
+            problem.setControlInfo("/forceset/tau2", bounds);
         }
 
         auto* effort = problem.addGoal<MocoControlGoal>();
@@ -244,7 +287,7 @@ TEST_CASE("InputController behavior") {
         model.addComponent(constant);
 
         auto& controller = model.updComponent<TriplePendulumController>(
-                "/triple_pendulum_controller");
+                "/controllerset/triple_pendulum_controller");
         controller.connectInput_controls(constant->getOutput("signal"));
 
         CHECK_THROWS_WITH(model.finalizeConnections(),
@@ -261,7 +304,7 @@ TEST_CASE("InputController behavior") {
         model.addComponent(constant1);
 
         auto& controller = model.updComponent<TriplePendulumController>(
-                "/triple_pendulum_controller");
+                "/controllerset/triple_pendulum_controller");
         controller.connectInput_controls(constant0->getOutput("signal"));
         controller.connectInput_controls(constant1->getOutput("signal"));
         model.finalizeConnections();
@@ -294,7 +337,7 @@ TEMPLATE_TEST_CASE("Triple pendulum with synergy-like InputController", "",
                 simulateTrajectoryWithTimeStepping(solution, model);
         const double error = solution.compareContinuousVariablesRMS(
                 traj, {{"states", {}}});
-        std::cout << "DEBUG RMS error: " << error << std::endl;
+        CHECK(error < 1e-3);
     }
 
     SECTION("Solution is resuable as guess") {
@@ -317,7 +360,7 @@ TEMPLATE_TEST_CASE("Triple pendulum with synergy-like InputController", "",
         TimeSeriesTable inputControlsTable = 
                 solution.exportToInputControlsTable();
         const auto& controller = model.updComponent<TriplePendulumController>(
-                "/triple_pendulum_controller");
+                "/controllerset/triple_pendulum_controller");
         const auto& synergyVectors = controller.getSynergyVectors();
         for (int i = 0; i < static_cast<int>(controlsTable.getNumRows()); ++i) {
             SimTK::Vector expected = 
@@ -354,20 +397,21 @@ TEMPLATE_TEST_CASE("Triple pendulum with disabled InputController", "",
 
 TEST_CASE("Controllers with disabled actuators") {
     Model model = createControlledTriplePendulumModel();
-    model.updComponent<Actuator>("/tau0").set_appliesForce(false);
+    model.updComponent<Actuator>("/forceset/tau0").set_appliesForce(false);
     std::string expected = "Expected all actuators controlled by "
-            "'/triple_pendulum_controller' to be enabled";
+            "'/controllerset/triple_pendulum_controller' to be enabled";
     CHECK_THROWS_WITH(createTriplePendulumMocoStudy<MocoCasADiSolver>(model), 
             ContainsSubstring(expected));
 }
 
 TEST_CASE("No actuators connected to controller") {
-    Model model = ModelFactory::createNLinkPendulum(3);
+    Model model = createTriplePendulum();
     auto* controller = new TriplePendulumController();
     controller->setName("triple_pendulum_controller");
-    model.addComponent(controller);
+    model.addController(controller);
     model.finalizeConnections();
-    std::string expected = "Controller '/triple_pendulum_controller' "
+    std::string expected = 
+            "Controller '/controllerset/triple_pendulum_controller' "
             "has no actuators connected.";
     CHECK_THROWS_WITH(createTriplePendulumMocoStudy<MocoCasADiSolver>(model), 
             ContainsSubstring(expected));
@@ -407,14 +451,14 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint with Input controls", "",
     auto* controlBoundPC = 
             problem.addPathConstraint<MocoControlBoundConstraint>();
     controlBoundPC->addControlPath(
-            "/triple_pendulum_controller/synergy_control_0");
+            "/controllerset/triple_pendulum_controller/synergy_control_0");
     controlBoundPC->setLowerBound(Constant(-10));
     auto& solver = study.updSolver<TestType>();
     solver.resetProblem(problem);
     MocoSolution solution = study.solve();
     int numTimes = solution.getNumTimes();
     const auto& synergyControl0 = solution.getInputControl(
-            "/triple_pendulum_controller/synergy_control_0");
+            "/controllerset/triple_pendulum_controller/synergy_control_0");
     for (int i = 0; i < numTimes; ++i) {
         CHECK(synergyControl0[i] >= Approx(-10).margin(1e-6));
     }
@@ -440,7 +484,7 @@ TEMPLATE_TEST_CASE("MocoControlTrackingGoal with Input controls", "",
     }
     TimeSeriesTable ref(indVec);
     ref.appendColumn(
-            "/triple_pendulum_controller/synergy_control_0", controlRef);
+            "/controllerset/triple_pendulum_controller/synergy_control_0", controlRef);
     controlTrackingGoal->setReference(TableProcessor(ref));
     auto& solver = study.updSolver<TestType>();
     solver.resetProblem(problem);
@@ -448,7 +492,7 @@ TEMPLATE_TEST_CASE("MocoControlTrackingGoal with Input controls", "",
     MocoSolution solution = study.solve();
     int numTimes = solution.getNumTimes();
     const auto& synergyControl0 = solution.getInputControl(
-            "/triple_pendulum_controller/synergy_control_0");
+            "/controllerset/triple_pendulum_controller/synergy_control_0");
     for (int i = 0; i < numTimes; ++i) {
         CHECK(synergyControl0[i] == Approx(-12.34).margin(1e-6));
     }
@@ -461,12 +505,12 @@ TEST_CASE("MocoPeriodicityGoal with Input controls") {
     auto* periodicity = 
             problem.addGoal<MocoPeriodicityGoal>();
     periodicity->addControlPair(MocoPeriodicityGoalPair(
-            "/triple_pendulum_controller/synergy_control_0"));
+            "/controllerset/triple_pendulum_controller/synergy_control_0"));
     auto& solver = study.updSolver<MocoCasADiSolver>();
     solver.resetProblem(problem);
     MocoSolution solution = study.solve();
     int N = solution.getNumTimes();
     const auto& synergyControl0 = solution.getInputControl(
-            "/triple_pendulum_controller/synergy_control_0");
+            "/controllerset/triple_pendulum_controller/synergy_control_0");
     CHECK(synergyControl0[0] == Approx(synergyControl0[N-1]).margin(1e-6));
 }
