@@ -17,15 +17,13 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             ${ADOLC_DIR}/lib64/libadolc.dylib
             # /usr/local/opt/boost/lib/libboost_system.dylib
             ${ColPack_ROOT_DIR}/lib/libColPack.0.dylib
-            ${IPOPT_LIBDIR}/libipopt.1.10.8.dylib
-            ${IPOPT_LIBDIR}/libipopt.1.dylib
+            ${IPOPT_LIBDIR}/libipopt.3.dylib
             ${IPOPT_LIBDIR}/libipopt.dylib
-            # #${IPOPT_LIBDIR}/libcoinmumps.1.6.0.dylib
-            # #${IPOPT_LIBDIR}/libcoinmumps.1.dylib
-            # #${IPOPT_LIBDIR}/libcoinmumps.dylib
-            # ${IPOPT_LIBDIR}/libcoinmetis.1.3.5.dylib
-            # ${IPOPT_LIBDIR}/libcoinmetis.1.dylib
-            # ${IPOPT_LIBDIR}/libcoinmetis.dylib
+            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.3.dylib
+            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.dylib
+            ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.1.3.10.dylib
+            ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.1.dylib
+            ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.dylib
 
             # ${gfortran}
             # ${quadmath}
@@ -44,6 +42,7 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
     install(SCRIPT "${script}")
 
 elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
+    message(STATUS "Finding dependencies")
     message(STATUS "getting dir for ${pkgcfg_lib_IPOPT_gfortran}" )
     message(STATUS "ADOLC_DIR dir ${ADOLC_DIR}" )
     message(STATUS "ColPack_ROOT_DIR dir ${ColPack_ROOT_DIR}" )
@@ -63,19 +62,19 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
             # /usr/local/opt/boost/lib/libboost_system.so
             ${ColPack_ROOT_DIR}/lib/libColPack.so.0
             ${ColPack_ROOT_DIR}/lib/libColPack.so
-            ${IPOPT_LIBDIR}/libipopt.so.1.10.8
-            ${IPOPT_LIBDIR}/libipopt.so.1
+            ${IPOPT_LIBDIR}/libipopt.so.3.14.14
+            ${IPOPT_LIBDIR}/libipopt.so.3
             ${IPOPT_LIBDIR}/libipopt.so
-            ${IPOPT_LIBDIR}/libcoinmumps.so.1.6.0
-            ${IPOPT_LIBDIR}/libcoinmumps.so.1
-            ${IPOPT_LIBDIR}/libcoinmumps.so
-            ${IPOPT_LIBDIR}/libcoinmetis.so.1.3.5
-            ${IPOPT_LIBDIR}/libcoinmetis.so.1
-            ${IPOPT_LIBDIR}/libcoinmetis.so
+            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.so.3.0.5
+            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.so.3
+            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.so
+            ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.so.1.3.10
+            ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.so.1
+            ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.so
 
             ${gfortran}
             ${quadmath}
-            ${gcc_libdir}/libgcc_s.so
+            #${gcc_libdir}/libgcc_s.so
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
         set(script

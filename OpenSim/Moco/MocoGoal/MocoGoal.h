@@ -405,6 +405,12 @@ protected:
     /// integrand and goal functions. Setting the stageDependency to stage X
     /// does not mean that the SimTK::State is realized to stage X as a
     /// precondition of calcIntegrandImpl() and calcGoalImpl().
+    ///
+    /// If solving a MocoProblem with a model user-added Controller%s, the
+    /// solvers will internally realize the SimTK::State to
+    /// SimTK::Stage::Velocity in order to compute the control values from the
+    /// model. However, you do not need to raise the stageDependency to
+    /// SimTK::Stage::Velocity to access the control values in goal.
     void setRequirements(int numIntegrals, int numOutputs,
             SimTK::Stage stageDependency = SimTK::Stage::Acceleration) const {
         OPENSIM_THROW_IF(numIntegrals < 0 || numIntegrals > 1, Exception,

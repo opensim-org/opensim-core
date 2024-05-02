@@ -291,11 +291,16 @@ class TestSwigAddtlInterface(unittest.TestCase):
         # Controller.
         contr = osim.PrescribedController()
         contr.addActuator(actu)
-        self.assertRaises(RuntimeError,
-                contr.prescribeControlForActuator, 1, osim.Constant(3))
-        # The following calls should not cause a memory leak:
-        contr.prescribeControlForActuator(0, osim.Constant(2))
         contr.prescribeControlForActuator('actu', osim.Constant(4))
+        model.addController(contr)
+        # Should not throw.
+        model.initSystem()
+
+        contr2 = osim.PrescribedController()
+        contr2.addActuator(actu)
+        contr2.prescribeControlForActuator('notAnActu', osim.Constant(5))
+        model.addController(contr2)
+        self.assertRaises(RuntimeError, model.initSystem)
 
     def test_set_iterator(self):
         fs = osim.FunctionSet()

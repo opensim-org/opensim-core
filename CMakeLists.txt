@@ -610,7 +610,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ## RPATH 
 # If it is necessary to not put RPATHs in the installed binaries, set
 # CMAKE_SKIP_INSTALL_RPATH to ON.
-set(OPENSIM_USE_INSTALL_RPATH FALSE)
+#set(OPENSIM_USE_INSTALL_RPATH FALSE)
 if(UNIX) # Linux and macOS
     # CMake 2.8.12 introduced the ability to set RPATH for shared libraries
     # on OSX. This helps executables find the libraries they depend on

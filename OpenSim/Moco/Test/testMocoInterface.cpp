@@ -50,6 +50,7 @@ namespace {
         model->setName("sliding_mass");
         model->set_gravity(SimTK::Vec3(0, 0, 0));
         auto* body = new Body("body", mass, SimTK::Vec3(0), SimTK::Inertia(0));
+        body->attachGeometry(new Sphere(0.05));
         model->addComponent(body);
 
         // Allows translation along x.
@@ -2163,7 +2164,7 @@ TEST_CASE("generateSpeedsFromValues() does not overwrite auxiliary states.") {
 }
 
 TEST_CASE("generateAccelerationsFromXXX() does not overwrite existing "
-          "non-acceleration derivatives.") {
+          "derivatives.") {
     int N = 20;
     SimTK::Vector time = createVectorLinspace(20, 0.0, 1.0);
     std::vector<std::string> snames{"/jointset/joint/coord/value",
@@ -2233,26 +2234,100 @@ TEMPLATE_TEST_CASE("Locked coordinates ", "",
             ContainsSubstring("Coordinate '/slider/position' is locked"));
 }
 
-/*
-TEMPLATE_TEST_CASE("Controllers in the model", "",
+TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
         MocoCasADiSolver, MocoTropterSolver) {
+
+    // Solve a sliding mass problem and store the results.
+    TimeSeriesTable controlsTable;
+    SimTK::Matrix statesTrajectory;
+    {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        Model model = ModelFactory::createSlidingPointMass();
+        problem.setModelAsCopy(model);
+        problem.setTimeBounds(0, 2);
+        problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
+        problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
+        problem.setControlInfo("/forceset/actuator", {-50, 50});
+        problem.addGoal<MocoControlGoal>();
+        auto& solver = study.initSolver<TestType>();
+        solver.set_num_mesh_intervals(50);
+        MocoSolution solution = study.solve();
+        solution.write("testMocoInterface_testSlidingMass_solution.sto");
+        statesTrajectory = solution.getStatesTrajectory();
+        controlsTable = solution.exportToControlsTable();
+    }
+
+    // Apply the control from the previous problem to a new problem with a
+    // PrescribedController and check that we get the same states trajectory
+    // back.
+    {
+        const auto& time = controlsTable.getIndependentColumn();
+        const auto& control =
+                controlsTable.getDependentColumn("/forceset/actuator");
+        Model model = ModelFactory::createSlidingPointMass();
+        auto* controller = new PrescribedController();
+        controller->addActuator(
+                model.getComponent<Actuator>("/forceset/actuator"));
+        controller->prescribeControlForActuator("/forceset/actuator",
+            new GCVSpline(5, control.size(), time.data(), &control[0],
+                    "/forceset/actuator", 0.0));
+        model.addController(controller);
+        model.finalizeConnections();
+
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        problem.setModelAsCopy(model);
+        problem.setTimeBounds(0, 2);
+        problem.setStateInfo("/slider/position/value", {0, 1}, 0);
+        problem.setStateInfo("/slider/position/speed", {-100, 100}, 0);
+        auto& solver = study.initSolver<TestType>();
+        solver.set_num_mesh_intervals(50);
+        MocoSolution solution = study.solve();
+        solution.write(
+                "testMocoInterface_testSlidingMass_prescribed_solution.sto");
+
+        OpenSim_REQUIRE_MATRIX_ABSTOL(solution.getStatesTrajectory(),
+            statesTrajectory, 1e-9);
+
+        // We should get back exactly the same controls trajectory that we
+        // provided via the PrescribedController.
+        OpenSim_REQUIRE_MATRIX_ABSTOL(solution.getControlsTrajectory(),
+                controlsTable.getMatrix(), 1e-12);
+        REQUIRE(solution.getControlNames() == controlsTable.getColumnLabels());
+    }
+}
+
+TEST_CASE("MocoControlGoal: ignoring controlled actuators") {
+
+    Model model = ModelFactory::createSlidingPointMass();
+    auto* controller = new PrescribedController();
+    controller->addActuator(
+            model.getComponent<Actuator>("/forceset/actuator"));
+    controller->prescribeControlForActuator("/forceset/actuator",
+            new Constant(1.0));
+    model.addController(controller);
+    model.finalizeConnections();
+
     MocoStudy study;
     auto& problem = study.updProblem();
-    auto model = createSlidingMassModel();
-    auto* controller = new PrescribedController();
-    controller->addActuator(model->getComponent<Actuator>("actuator"));
-    controller->prescribeControlForActuator("actuator", new Constant(0.4));
-    model->addController(controller);
-    problem.setModel(std::move(model));
-    problem.setTimeBounds(0, {0, 10});
-    problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
-    problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
-    problem.addGoal<MocoFinalTimeGoal>();
+    problem.setModelAsCopy(model);
+    problem.setTimeBounds(0, 1);
+    problem.setStateInfo("/slider/position/value", {0, 1}, 0);
+    problem.setStateInfo("/slider/position/speed", {-100, 100}, 0);
+    auto& solver = study.initCasADiSolver();
+    solver.set_optim_max_iterations(1);
+    auto* controlGoal = problem.addGoal<MocoControlGoal>();
 
-    auto& solver = study.initSolver<TestType>();
-    solver.set_num_mesh_points(20);
-    MocoSolution solution = study.solve();
-    std::cout << "DEBUG " << solution.getControl("/actuator") << std::endl;
+    SECTION("Default behavior (do not ignore)") {
+        MocoSolution solution = study.solve().unseal();
+        CHECK(solution.getObjective() == Approx(1.0));
+    }
 
+    SECTION("Ignore controlled actuators") {
+        controlGoal->setIgnoreControlledActuators(true);
+        solver.resetProblem(problem);
+        MocoSolution solution = study.solve().unseal();
+        CHECK(solution.getObjective() == 0);
+    }
 }
-*/

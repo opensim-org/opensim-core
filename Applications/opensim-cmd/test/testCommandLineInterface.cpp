@@ -48,7 +48,7 @@ const std::string COMMAND = MAKE_STRING(OSIM_CLI_PATH);
 // ============
 
 // The ?: says not to capture the group; should be slightly faster.
-// [\s\S]* escapes any amount of whitespace and non-whitespace; the 
+// [\s\S]* escapes any amount of whitespace and non-whitespace; the
 // double \\ is to escape the slash.
 const std::string RE_ANY = "(?:[\\s\\S]*)";
 
@@ -66,8 +66,8 @@ struct CommandOutput {
 inline FILE* popen(const char* command, const char* type) {
     return _popen(command, type);
 }
-inline int pclose(FILE* file) { 
-    return _pclose(file); 
+inline int pclose(FILE* file) {
+    return _pclose(file);
 }
 #endif
 
@@ -212,9 +212,9 @@ void testNoCommand() {
     // Library option.
     // ===============
     // Syntax errors.
-    testCommand("-L", EXIT_FAILURE, 
+    testCommand("-L", EXIT_FAILURE,
             ContainsSubstring("-L requires an argument"));
-    testCommand("--library", EXIT_FAILURE, 
+    testCommand("--library", EXIT_FAILURE,
             ContainsSubstring("--library requires an argument"));
     // Must specify a command; can't only list a library to load.
     {
@@ -233,7 +233,7 @@ void testNoCommand() {
     // =====================
     std::string str_bleepbloop("'bleepbloop' is not an opensim-cmd command. "
                                "See 'opensim-cmd --help'.\n");
-    testCommand("bleepbloop", EXIT_FAILURE, 
+    testCommand("bleepbloop", EXIT_FAILURE,
             ContainsSubstring(str_bleepbloop));
 }
 
@@ -274,7 +274,7 @@ void testLoadPluginLibraries(const std::string& subcommand) {
     // Get rid of the quotes surrounding `lib`.
     std::string expectLib = lib.substr(1, lib.size() - 2);
     #ifdef _WIN32
-        // When the library name gets printed back to us, the 
+        // When the library name gets printed back to us, the
         // forward slashes are converted to backslashes. We have to
         // escape backslash for the C++ parser, so '\\' is actually '\'.
         expectLib = replaceString(expectLib, "/", "\\");
@@ -445,30 +445,30 @@ void testUpdateFile() {
     // Syntax errors.
     testCommand("update-file", EXIT_FAILURE,
             ContainsSubstring("Arguments did not match expected patterns"));
-    testCommand("update-file x", EXIT_FAILURE, 
+    testCommand("update-file x", EXIT_FAILURE,
             ContainsSubstring("Arguments did not match expected patterns"));
-    testCommand("update-file x.doc", EXIT_FAILURE, 
+    testCommand("update-file x.doc", EXIT_FAILURE,
             ContainsSubstring("Arguments did not match expected patterns"));
-    testCommand("update-file x.xml", EXIT_FAILURE, 
+    testCommand("update-file x.xml", EXIT_FAILURE,
             ContainsSubstring("Arguments did not match expected patterns"));
-    testCommand("update-file x y", EXIT_FAILURE, 
+    testCommand("update-file x y", EXIT_FAILURE,
             ContainsSubstring("Input file 'x' does not have an extension.\n"));
-    testCommand("update-file x.doc y", EXIT_FAILURE, 
+    testCommand("update-file x.doc y", EXIT_FAILURE,
             ContainsSubstring("Input file 'x.doc' has an unrecognized "
                               "extension.\n"));
 
     // File does not exist.
-    testCommand("update-file x.xml y", EXIT_FAILURE, 
+    testCommand("update-file x.xml y", EXIT_FAILURE,
             std::regex(RE_ANY + "(?:Loading input file 'x.xml')" + RE_ANY +
-                       "(?:Could not make object from file 'x.xml'.\n" + 
+                       "(?:Could not make object from file 'x.xml'.\n" +
                        "Did you intend to load a plugin (with --library)?)" +
                        RE_ANY));
-    testCommand("update-file x.osim y", EXIT_FAILURE, 
+    testCommand("update-file x.osim y", EXIT_FAILURE,
             std::regex(RE_ANY + "(?:Loading input file 'x.osim')" + RE_ANY +
                        "(?:Could not make object from file 'x.osim'.\n" +
                        "Did you intend to load a plugin (with --library)?)" +
                        RE_ANY));
-    testCommand("update-file x.sto y", EXIT_FAILURE, 
+    testCommand("update-file x.sto y", EXIT_FAILURE,
             std::regex(RE_ANY + "(Loading input file 'x.sto')" + RE_ANY +
                        "(Storage: Failed to open file 'x.sto')" + RE_ANY));
 
@@ -481,7 +481,7 @@ void testUpdateFile() {
     testCommand("update-file testupdatefile_Model.osim "
                 "testupdatefile_Model_updated.osim", EXIT_SUCCESS,
                 std::regex(RE_ANY + "(Loading input file "
-                           "'testupdatefile_Model.osim'.\n)" + 
+                           "'testupdatefile_Model.osim'.\n)" +
                            RE_ANY + "(Printing updated file to "
                            "'testupdatefile_Model_updated.osim'.\n)" + RE_ANY));
 

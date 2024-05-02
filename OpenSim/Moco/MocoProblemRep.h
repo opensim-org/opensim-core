@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim: MocoProblemRep.h                                                  *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
@@ -22,6 +22,7 @@
 #include "MocoGoal/MocoGoal.h"
 #include "MocoParameter.h"
 #include "MocoVariableInfo.h"
+#include "Components/ControlDistributor.h"
 #include "osimMocoDLL.h"
 
 #include <OpenSim/Common/Assertion.h>
@@ -31,7 +32,7 @@
 namespace OpenSim {
 
 class MocoProblem;
-class DiscreteController;
+class ControlDistributor;
 class DiscreteForces;
 class PositionMotion;
 class AccelerationMotion;
@@ -55,8 +56,8 @@ class AccelerationMotion;
 /// If kinematics are not prescribed (with PositionMotion),
 /// ModelDisabledConstraints also contains an AccelerationMotion component,
 /// which is used by solvers that rely on implicit multibody dynamics.
-/// The initialize() function adds a DiscreteController
-/// to both models; this controller is used by a solver to set the control
+/// The initialize() function adds a ControlDistributor component
+/// to both models; this component is used by a solver to set the control
 /// signals for actuators to use.
 /// To learn the need for and use of these two models, see @ref impldiverse.
 
@@ -89,8 +90,8 @@ public:
     SimTK::State& updStateBase() const { return m_state_base; }
     /// This is a component inside ModelBase that you can use to
     /// set the value of control signals.
-    const DiscreteController& getDiscreteControllerBase() const {
-        return m_discrete_controller_base.getRef();
+    const ControlDistributor& getControlDistributorBase() const {
+        return m_control_distributor_base.getRef();
     }
     /// Get a reference to a copy of the model being used by this
     /// MocoProblemRep, but with all constraints disabled and an additional
@@ -117,8 +118,8 @@ public:
     }
     /// This is a component inside ModelDisabledConstraints that you can use to
     /// set the value of control signals.
-    const DiscreteController& getDiscreteControllerDisabledConstraints() const {
-        return m_discrete_controller_disabled_constraints.getRef();
+    const ControlDistributor& getControlDistributorDisabledConstraints() const {
+        return m_control_distributor_disabled_constraints.getRef();
     }
     /// This is a component inside ModelDisabledConstraints that you can use
     /// to set the value of discrete forces, intended to hold the constraint
@@ -147,6 +148,13 @@ public:
     /// Does the model contain a PositionMotion to prescribe all generalized
     /// coordinates, speeds, and accelerations?
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
+    /// Do we need to compute controls from the model (e.g., because the model
+    /// contains user-defined controllers)? If the model does not contain
+    /// user-defined controls, then we prefer to use the controls directly from
+    /// the optimal control problem, for efficiency.
+    bool getComputeControlsFromModel() const {
+        return m_computeControlsFromModel;
+    }
     int getNumImplicitAuxiliaryResiduals() const {
         return (int)m_implicit_residual_refs.size();
     }
@@ -321,6 +329,75 @@ public:
     getImplicitComponentReferencePtrs() const {
         return m_implicit_component_refs;
     }
+
+    /// Get the vector of model controls. If the model contains user-defined
+    /// controllers, this function will compute the controls from the model.
+    /// Otherwise, it will return the controls directly from the
+    /// ControlDistributor. This function is intended for use by solvers to
+    /// compute controls needed by MocoGoal%s and MocoPathConstraint%s. The
+    /// SimTK::State argument should be obtain from
+    /// `updStateDisabledConstraints()`.
+    const SimTK::Vector& getControls(
+            const SimTK::State& stateDisabledConstraints) const {
+        return getComputeControlsFromModel() ?
+               getModelDisabledConstraintsControls(stateDisabledConstraints) :
+               getControlDistributorDisabledConstraints()
+                        .getControls(stateDisabledConstraints);
+    }
+
+    /// Append the missing controls from the model to the MocoSolution. This
+    /// function is intended for use by solvers to ensure that the controls
+    /// trajectory in the MocoTrajectory contains all the controls from the
+    /// model. This function is useful when the model contains user-defined
+    /// controllers, which require the controls that are not present in the
+    /// optimal control problem to be computed from the model.
+    void appendMissingModelControls(MocoTrajectory& traj) const {
+        // TODO: this would need to be updated if we allowed stacking OCP
+        //       control on top of user-defined controls.
+        const auto& model = getModelBase();
+        auto modelControlNames = createControlNamesFromModel(model);
+        auto controlIndexMap = createSystemControlIndexMap(model);
+
+        // Find model control names that are not in the trajectory.
+        auto controlNames = traj.getControlNames();
+        std::vector<std::string> missingControlNames;
+        for (const auto& modelControlName : modelControlNames) {
+            if (std::find(controlNames.begin(), controlNames.end(),
+                        modelControlName) == controlNames.end()) {
+                missingControlNames.push_back(modelControlName);
+            }
+        }
+        if (missingControlNames.empty()) { return; }
+
+        // Compute the missing controls from the model.
+        const SimTK::Vector& times = traj.getTime();
+        std::vector<double> indVec;
+        indVec.reserve(times.size());
+        for (int i = 0; i < static_cast<int>(times.size()); ++i) {
+            indVec.push_back(times[i]);
+        }
+        TimeSeriesTable missingControls(indVec);
+        auto statesTraj = traj.exportToStatesTrajectory(model);
+        int numMissingControls = static_cast<int>(missingControlNames.size());
+        SimTK::Matrix missingControlsMatrix(
+                static_cast<int>(statesTraj.getSize()), numMissingControls);
+        for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
+            const auto& state = statesTraj.get(i);
+            model.realizeDynamics(state);
+            const auto& controls = model.getControls(state);
+            for (int j = 0; j < numMissingControls; ++j) {
+                missingControlsMatrix(i, j) = controls.get(
+                        controlIndexMap.at(missingControlNames[j]));
+            }
+        }
+        for (int j = 0; j < numMissingControls; ++j) {
+            missingControls.appendColumn(missingControlNames[j],
+                    missingControlsMatrix.col(j));
+        }
+
+        // Insert the missing controls into the trajectory.
+        traj.insertControlsTrajectory(missingControls);
+    }
     /// @}
 
 private:
@@ -376,23 +453,34 @@ private:
         return outputs;
     }
 
+    /// A helper function to get the controls from the model with disabled
+    /// constraints. This function is used when the model contains user-defined
+    /// controllers, which require the controls to be computed from the model.
+    const SimTK::Vector& getModelDisabledConstraintsControls(
+            const SimTK::State& state) const {
+        const auto& model = getModelDisabledConstraints();
+        model.realizeVelocity(state);
+        return model.getControls(state);
+    }
+
     const MocoProblem* m_problem;
 
     Model m_model_base;
     mutable SimTK::State m_state_base;
-    SimTK::ReferencePtr<const DiscreteController> m_discrete_controller_base;
+    SimTK::ReferencePtr<const ControlDistributor> m_control_distributor_base;
     SimTK::ReferencePtr<const PositionMotion> m_position_motion_base;
 
     Model m_model_disabled_constraints;
     mutable std::array<SimTK::State, 2> m_state_disabled_constraints;
-    SimTK::ReferencePtr<const DiscreteController>
-            m_discrete_controller_disabled_constraints;
+    SimTK::ReferencePtr<const ControlDistributor>
+            m_control_distributor_disabled_constraints;
     SimTK::ReferencePtr<const PositionMotion>
             m_position_motion_disabled_constraints;
     SimTK::ReferencePtr<DiscreteForces> m_constraint_forces;
     SimTK::ReferencePtr<AccelerationMotion> m_acceleration_motion;
 
     bool m_prescribedKinematics = false;
+    bool m_computeControlsFromModel = false;
 
     std::unordered_map<std::string, MocoVariableInfo> m_state_infos;
     std::unordered_map<std::string, MocoVariableInfo> m_control_infos;

@@ -60,7 +60,7 @@ Depending on your needs, there are different ways of downloading and setting up 
   - [Scripting in the GUI](https://simtk-confluence.stanford.edu/display/OpenSim/Scripting+in+the+GUI)
 - **Matlab and Python Scripting**
   - [Setup Instructions](https://simtk-confluence.stanford.edu/display/OpenSim/Scripting)
-- **Scriptiong in Conda**
+- **Scripting in Conda**
   - [Conda Package](https://anaconda.org/opensim-org/opensim)
   - [Source Code](https://github.com/opensim-org/conda-opensim)
   - [More Info](https://simtk-confluence.stanford.edu/display/OpenSim/Conda+Package)
