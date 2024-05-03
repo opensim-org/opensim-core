@@ -155,7 +155,7 @@ OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
                                                    ".*pelvis_tz/value",
                                                    ".*lumbar_bending/value"},
         std::vector<std::pair<std::string, std::string>> symmetryPatterns =
-                {{R"(_r(\/|_|$))", "_l$1"}, {R"(_l(\/|_|$))", "_r$1"}});
+                {{"_r(/|_|$)", "_l$1"}, {"_l(/|_|$)", "_r$1"}});
 
 /// This obtains the value of the OPENSIM_MOCO_PARALLEL environment variable.
 /// The value has the following meanings:
