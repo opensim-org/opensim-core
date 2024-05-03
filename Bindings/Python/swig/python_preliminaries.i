@@ -11,9 +11,6 @@ own project.
 // Make sure clone does not leak memory
 %newobject *::clone;
 
-/* This file is for creation/handling of arrays */
-%include "std_carray.i";
-
 /* This interface file is for better handling of pointers and references */
 %include "typemaps.i"
 %include "std_string.i"

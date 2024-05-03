@@ -321,8 +321,8 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
 
     size_t line_num{};
     // All the lines until "endheader" is header.
-    std::regex endheader{R"([ \t]*)" + _endHeaderString + R"([ \t]*)"};
-    std::regex keyvalue{R"((.*)=(.*))"};
+    std::regex endheader {"[ \t]*" + _endHeaderString + "[ \t]*"};
+    std::regex keyvalue{"(.*)=(.*)"};
     std::string header{};
     std::string line{};
     std::string numberOrDelim = "[0-9][0-9."+_delimitersRead+" -]+";
