@@ -46,6 +46,8 @@ v4.6
 - Added `Model::calcForceContributionsSum()`, a wrapper method for `GeneralForceSubsystem` for efficiently 
   calculating a subset of a model's body and mobility forces. (#3755) 
 - Added `Force::getForceIndex()` to allow accessing the `SimTK::ForceIndex` for force elements. (#3755) 
+- Improved performance in `MultivariatePolynomialFunction` and added convenience methods for automatically generating function derivatives (#3767).
+- Added options to `PolynomialPathFitter` for including moment arm and lengthening speed functions in generated `FunctionBasedPath`s (#3767).
 - Fixed a bug in SimulationUtilities::analyze<T> that would provide an incorrectly sized control vector to 
   the model if controls were missing from the input controls table. (#TODO)
 - Added InputController, an intermediate abstract class of Controller that provides supports for controllers 
