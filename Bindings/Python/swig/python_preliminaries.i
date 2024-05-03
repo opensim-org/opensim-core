@@ -11,6 +11,8 @@ own project.
 // Make sure clone does not leak memory
 %newobject *::clone;
 
+%include "std_container.i"
+
 /* This interface file is for better handling of pointers and references */
 %include "typemaps.i"
 %include "std_string.i"
