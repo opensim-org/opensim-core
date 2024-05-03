@@ -651,14 +651,22 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
     // Assemble the results into one TimeSeriesTable.
     int timeIdx = 0;
     const auto& times = values.getIndependentColumn();
-    double dt = (times[1] - times[0]) / (get_num_samples_per_frame() + 1);
     TimeSeriesTable valuesSampled;
+    double dt = (times[1] - times[0]) / (get_num_samples_per_frame() + 2);
     for (int i = 0; i < get_num_parallel_threads(); ++i) {
         int numTimeIndexes = outputs[i].nrow() / get_num_samples_per_frame();
         for (int j = 0; j < numTimeIndexes; ++j) {
             // Append the original values.
             valuesSampled.appendRow(times[timeIdx], 
                     values.getRowAtIndex(timeIdx));
+
+            // Update the time step, if possible. Otherwise, use the last time
+            // step.
+            if (timeIdx+1 < static_cast<int>(values.getNumRows())) {
+                dt = (times[timeIdx+1] - times[timeIdx]) / 
+                     (get_num_samples_per_frame() + 2);
+            }
+
             // Append the sampled values.
             for (int irow = 0; irow < get_num_samples_per_frame(); ++irow) {
                 valuesSampled.appendRow(times[timeIdx] + (irow + 1)*dt,
@@ -1007,7 +1015,7 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
                 // Initialize the multivariate polynomial function.
                 int numCoefficients =
                         choose(numCoordinatesThisForce + order, order);
-                SimTK::Vector dummyCoefficients(numCoefficients, 0.0);
+                SimTK::Vector dummyCoefficients(numCoefficients, 1.0);
                 MultivariatePolynomialFunction dummyFunction(dummyCoefficients,
                         numCoordinatesThisForce, order);
 
@@ -1032,11 +1040,9 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
                     }
                 }
 
-                // Solve the least-squares problem. We assume that 'A' is a tall
-                // rectangular matrix with full column rank, so we use the left
-                // pseudo-inverse to solve for the coefficients.
-                SimTK::Matrix pinv_A = (~A * A).invert() * ~A;
-                coefficients = pinv_A * b;
+                // Solve the least-squares problem.
+                SimTK::FactorQTZ factor(A);
+                factor.solve(b, coefficients);
 
                 // Calculate the RMS error.
                 SimTK::Vector b_fit = A * coefficients;
@@ -1070,6 +1076,20 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
             functionBasedPath->setName(forcePath);
             functionBasedPath->setCoordinatePaths(coordinatePathsThisForce);
             functionBasedPath->setLengthFunction(lengthFunction);
+            if (getIncludeMomentArmFunctions()) {
+                for (int iq = 0; iq < numCoordinatesThisForce; ++iq) {
+                    MultivariatePolynomialFunction momentArmFunction =
+                            lengthFunction.generateDerivativeFunction(iq, true);
+                    functionBasedPath->appendMomentArmFunction(
+                            momentArmFunction);
+                }
+            }
+            if (getIncludeLengtheningSpeedFunction()) {
+                MultivariatePolynomialFunction lengtheningSpeedFunction = 
+                        lengthFunction.generatePartialVelocityFunction();
+                functionBasedPath->setLengtheningSpeedFunction(
+                        lengtheningSpeedFunction);
+            }
 
             // Save the FunctionBasedPath.
             thesePaths.push_back(std::move(functionBasedPath));
@@ -1416,6 +1436,8 @@ void PolynomialPathFitter::constructProperties() {
     constructProperty_num_samples_per_frame(25);
     constructProperty_latin_hypercube_algorithm("random");
     constructProperty_output_directory("");
+    constructProperty_include_moment_arm_functions(false);
+    constructProperty_include_lengthening_speed_function(false);
 }
 
 std::string PolynomialPathFitter::getDocumentDirectory() const {

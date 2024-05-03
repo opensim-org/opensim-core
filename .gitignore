@@ -78,3 +78,4 @@ cmake-build-*
 
 ## File-based project format:
 *.iws
+.vscode/settings.json

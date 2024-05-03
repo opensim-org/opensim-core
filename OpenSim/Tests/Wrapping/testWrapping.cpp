@@ -589,4 +589,96 @@ TEST_CASE("testFunctionBasedPath") {
         CHECK_THAT(genForce_x, WithinAbs(residuals[0], tol));
         CHECK_THAT(genForce_y, WithinAbs(residuals[1], tol));
     }
+
+    SECTION("Planar point mass, MultivariatePolynoimalFunction helpers") {
+        // 2-DOF polynomial path function.
+        // length = 1 + 2*q_y + 3*q_y^2 + 4*q_x + 5*q_x*q_y + 6*q_x^2
+        MultivariatePolynomialFunction lengthFunc(
+                createVector({1.0, 2.0, 3.0, 4.0, 5.0, 6.0}), 2, 2);
+
+        // Moment arm functions.
+        // These functions are the first derivative with respect to the
+        // corresponding coordinate of the length function. The coefficients are
+        // negated to match the convention in OpenSim.
+        bool negateCoefficients = true;
+        MultivariatePolynomialFunction momentArmFunc_x = 
+            lengthFunc.generateDerivativeFunction(0, negateCoefficients);
+        MultivariatePolynomialFunction momentArmFunc_y =
+            lengthFunc.generateDerivativeFunction(1, negateCoefficients);
+
+        // Speed function.
+        // The lengthening speed function is the time derivative of the length
+        // length function, which be computed by 
+        MultivariatePolynomialFunction speedFunc = 
+                lengthFunc.generatePartialVelocityFunction();
+
+        // Test values.
+        const double length = 1.0 + 2.0 * q_y + 3.0 * q_y * q_y + 4.0 * q_x + 
+                              5.0 * q_x * q_y + 6.0 * q_x * q_x;
+        const double momentArm_x = -4.0 - 5.0 * q_y - 12.0 * q_x;
+        const double momentArm_y = -2.0 - 5.0 * q_x - 6.0 * q_y;
+        const double speed = -qdot_x * momentArm_x - qdot_y * momentArm_y;
+        const double genForce_x = tension * momentArm_x;
+        const double genForce_y = tension * momentArm_y;
+
+        // Create a planar point mass model and add a PathActuator with a 2-DOF
+        // FunctionBasedPath.
+        Model model = ModelFactory::createPlanarPointMass();
+        model.setGravity(SimTK::Vec3(0.0));
+
+        FunctionBasedPath fbPath;
+        fbPath.setName("polynomial_path_2dof");
+        fbPath.setLengthFunction(lengthFunc);
+        fbPath.appendMomentArmFunction(momentArmFunc_x);
+        fbPath.appendMomentArmFunction(momentArmFunc_y);
+        fbPath.setLengtheningSpeedFunction(speedFunc);
+        fbPath.setCoordinatePaths({"/jointset/tx/tx", "/jointset/ty/ty"});
+
+        auto* actu = new PathActuator();
+        actu->set_path(fbPath);
+        actu->setName("actuator");
+        actu->setOptimalForce(1);
+        model.addComponent(actu);
+        model.finalizeConnections();
+
+        // Initialize the system and set the state and controls.
+        SimTK::State state = model.initSystem();
+        model.getCoordinateSet()[0].setValue(state, q_x);
+        model.getCoordinateSet()[1].setValue(state, q_y);
+        model.getCoordinateSet()[0].setSpeedValue(state, qdot_x);
+        model.getCoordinateSet()[1].setSpeedValue(state, qdot_y);
+        model.setControls(state, createVector({tension, 0.0, 0.0}));
+        model.realizeAcceleration(state);
+
+        // Run inverse dynamics to compute the generalized forces applied by the
+        // PathActuator.
+        auto& matter = model.updMatterSubsystem();
+        SimTK::Vector residuals(2, 0.0);
+        matter.calcResidualForce(state, 
+                SimTK::Vector(2, 0.0), 
+                SimTK::Vector_<SimTK::SpatialVec>(3, 
+                    SimTK::SpatialVec(SimTK::Vec3(0), SimTK::Vec3(0))),
+                state.getUDot(), 
+                SimTK::Vector(0),
+                residuals);
+
+        // Check that the length, moment arms, speed, and generalized forces are
+        // correct. Compare quantities that should have been calculated to 
+        // machine tolerance given the problem size, which we'll characterize by 
+        // the number of mobilities (based on Simbody's testing).
+        const auto& path = actu->getPath();
+        const double tol = 10 * state.getNU() * SimTK::Test::defTol<double>();
+        CHECK_THAT(length, WithinAbs(path.getLength(state), tol));
+        auto& tx = model.getCoordinateSet()[0];
+        auto& ty = model.getCoordinateSet()[1];
+        CHECK_THAT(momentArm_x,
+                WithinAbs(path.computeMomentArm(state, tx), tol));
+        CHECK_THAT(momentArm_y, 
+                WithinAbs(path.computeMomentArm(state, ty), tol));
+        CHECK_THAT(speed, 
+                WithinAbs(path.getLengtheningSpeed(state), tol));
+        CHECK_THAT(genForce_x, WithinAbs(residuals[0], tol));
+        CHECK_THAT(genForce_y, WithinAbs(residuals[1], tol));
+    }
+
 }
