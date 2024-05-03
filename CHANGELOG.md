@@ -49,10 +49,10 @@ v4.6
 - Improved performance in `MultivariatePolynomialFunction` and added convenience methods for automatically generating function derivatives (#3767).
 - Added options to `PolynomialPathFitter` for including moment arm and lengthening speed functions in generated `FunctionBasedPath`s (#3767).
 - Fixed a bug in SimulationUtilities::analyze<T> that would provide an incorrectly sized control vector to 
-  the model if controls were missing from the input controls table. (#TODO)
+  the model if controls were missing from the input controls table. (#3769)
 - Added InputController, an intermediate abstract class of Controller that provides supports for controllers 
   that map scalar control values from a list Input (connected to Outputs from one or more ModelComponents) 
-  to model actuator controls. (#TODO)
+  to model actuator controls. (#3769)
 
 v4.5
 ====

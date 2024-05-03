@@ -56,7 +56,7 @@ optimal control problem.
 
 The following Controller%s are currently supported by Moco:
 - PrescribedController
-- InputController (see @ref mocoinputcontroller for more details)
+- InputController (see \ref mocoinputcontrollers for more details)
 
 @subsection mococontrols "Model-controlled" versus "OCP-controlled" actuators
 
