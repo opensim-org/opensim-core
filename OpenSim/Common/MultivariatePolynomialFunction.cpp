@@ -409,12 +409,12 @@ public:
 
     }
 
-    T calcValue(const SimTK::Vector& x) const {
+    T calcValue(const SimTK::Vector& x) const override {
         return m_value->calcValue(x);
     }
 
     T calcDerivative(const SimTK::Array_<int>& derivComponent, 
-            const SimTK::Vector& x) const {
+            const SimTK::Vector& x) const override {
         return m_derivatives[derivComponent[0]]->calcValue(x);
     }
 
@@ -552,7 +552,7 @@ private:
             // For a first order polynomial, construct a Monomial node with a
             // constant term and coefficients equal to the polynomial 
             // coefficients.
-            int dimension = vars.size();
+            int dimension = static_cast<int>(vars.size());
             SimTK::Vector_<T> coefficients = 
                     poly.calcCoefficients(dimension, order, vars);
 

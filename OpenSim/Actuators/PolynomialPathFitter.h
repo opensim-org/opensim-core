@@ -23,6 +23,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <SimTKcommon/internal/BigMatrix.h>
 #include <OpenSim/Simulation/TableProcessor.h>
 #include <OpenSim/Actuators/ModelProcessor.h>
 #include <OpenSim/Simulation/Model/FunctionBasedPath.h>
@@ -101,8 +102,8 @@ private:
  *    - Minimum polynomial order: 2
  *    - Maximum polynomial order: 6
  *    - Global coordinate sampling bounds: [-10, 10] degrees
- *    - Moment arm tolerance: 1e-4 meters
- *    - Path length tolerance: 1e-4 meters
+ *    - Moment arm tolerance: 1e-3 meters
+ *    - Path length tolerance: 1e-3 meters
  *    - Number of samples per frame: 25
  *    - Number of threads: (# of available hardware threads) - 2
  *    - Latin hypercube sampling algorithm: "random"
@@ -124,6 +125,8 @@ private:
  * fitter.setModel(ModelProcessor("model.osim"));
  * fitter.setCoordinateValues(TableProcessor("values.sto"));
  * @endcode
+ *
+ * TODO show how to sample around the neutral position (or make it default)
  *
  * The additional settings can be adjusted using the various `set` methods
  * described above. For example, the global coordinate sampling bounds, bounds
@@ -354,7 +357,7 @@ public:
      * refitted. This process is repeated until the RMS error is less than the
      * tolerance or the maximum polynomial order is reached.
      *
-     * @note The default moment arm tolerance is set to 1e-4 meters.
+     * @note The default moment arm tolerance is set to 1e-3 meters.
      * @note The path length RMS error must also be less than the path length
      *       tolerance for the polynomial order to be accepted (see
      *       `setPathLengthTolerance`).
@@ -375,7 +378,7 @@ public:
      * refitted. This process is repeated until the RMS error is less than the
      * tolerance or the maximum polynomial order is reached.
      *
-     * @note The default path length tolerance is set to 1e-4 meters.
+     * @note The default path length tolerance is set to 1e-3 meters.
      * @note The moment arm RMS error must also be less than the moment arm
      *       tolerance for the polynomial order to be accepted (see
      *      `setMomentArmTolerance`).
@@ -483,8 +486,8 @@ public:
     static void evaluateFunctionBasedPaths(Model model,
             TableProcessor trajectory,
             const std::string& functionBasedPathsFile,
-            double pathLengthTolerance = 1e-4,
-            double momentArmTolerance = 1e-4);
+            double pathLengthTolerance = 1e-3,
+            double momentArmTolerance = 1e-3);
 
 private:
     // PROPERTIES
@@ -496,6 +499,7 @@ private:
             "path fitting.");
     OpenSim_DECLARE_PROPERTY(output_directory, std::string,
             "The directory to which the path fitting results are written.");
+    OpenSim_DECLARE_PROPERTY(use_stepwise_regression, bool, "");
     OpenSim_DECLARE_PROPERTY(moment_arm_threshold, double,
             "The moment arm threshold value that determines whether or not a "
             "path depends on a model coordinate. In other words, the moment "
@@ -522,12 +526,12 @@ private:
             "The tolerance on the root-mean-square (RMS) error (in meters) "
             "between the moment arms computed from an original model path and "
             "a fitted polynomial-based path, which is used to determine the "
-            "order of the polynomial used in the fitted path (default: 1e-4).");
+            "order of the polynomial used in the fitted path (default: 1e-3).");
     OpenSim_DECLARE_PROPERTY(path_length_tolerance, double,
             "The tolerance on the root-mean-square (RMS) error (in meters) "
             "between the path lengths computed from an original model path and "
             "a fitted polynomial-based path, which is used to determine the "
-            "order of the polynomial used in the fitted path (default: 1e-4).");
+            "order of the polynomial used in the fitted path (default: 1e-3).");
     OpenSim_DECLARE_PROPERTY(num_samples_per_frame, int,
             "The number of samples taken per time frame in the coordinate "
             "values table used to fit each path (default: 25).");
@@ -620,6 +624,15 @@ private:
 
     // HELPER FUNCTIONS
     /**
+     * Generate all possible combinations of `k` elements from a set of `n`
+     * total elements.
+     */
+    static int choose(int n, int k) {
+        if (k == 0) { return 1; }
+        return (n * choose(n - 1, k - 1)) / k;
+    }
+
+    /**
      * Get the (canonicalized) absolute directory containing the file from
      * which this tool was loaded. If the `FunctionBasedPathFitter` was not
      * loaded from a file, this returns an empty string.
@@ -632,6 +645,12 @@ private:
      */
     static void removeMomentArmColumns(TimeSeriesTable& momentArms,
             const MomentArmMap& momentArmMap);
+
+    void fitAllCoefficients(const SimTK::Matrix& coordinates, 
+            const SimTK::Vector& b, int& order, 
+            SimTK::Vector& coefficients) const;
+
+    SimTK::Vector fitCoefficientsStepwiseRegression();
 
     /**
      * Get the RMS errors between two sets of path lengths and moment arms

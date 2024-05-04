@@ -911,14 +911,6 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
         const TimeSeriesTable& momentArms,
         const MomentArmMap& momentArmMap) {
 
-    // n-choose-k helper function.
-    // stackoverflow.com/questions/15301885/best-way-of-calculating-n-choose-k
-    std::function<int(int, int)> choose;
-    choose = [&choose](int n, int k) -> int {
-        if (k == 0) { return 1; }
-        return (n * choose(n - 1, k - 1)) / k;
-    };
-
     // Coordinate references.
     // ----------------------
     const CoordinateSet& coordinateSet = model.getCoordinateSet();
@@ -1010,62 +1002,17 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
             // Polynomial fitting.
             // -------------------
             SimTK::Vector coefficients;
-            int order = get_minimum_polynomial_order();
-            while (true) {
-                // Initialize the multivariate polynomial function.
-                int numCoefficients =
-                        choose(numCoordinatesThisForce + order, order);
-                SimTK::Vector dummyCoefficients(numCoefficients, 1.0);
-                MultivariatePolynomialFunction dummyFunction(dummyCoefficients,
-                        numCoordinatesThisForce, order);
+            int order;
 
-                // Initialize the 'A' matrix.
-                SimTK::Matrix A(numTimes * (numCoordinatesThisForce + 1),
-                        numCoefficients, 0.0);
+            if (get_use_stepwise_regression()) {
+                order = get_maximum_polynomial_order();
 
-                // Fill in the A matrix. This contains the polynomial terms for
-                // the path length and moment arms.
-                for (int itime = 0; itime < numTimes; ++itime) {
-                    A(itime, 0, 1, numCoefficients) =
-                            dummyFunction.getTermValues(
-                                coordinatesThisForce.row(itime).getAsVector());
-
-                    for (int ic = 0; ic < numCoordinatesThisForce; ++ic) {
-                        SimTK::Vector termDerivatives =
-                            dummyFunction.getTermDerivatives({ic},
-                                coordinatesThisForce.row(itime).getAsVector())
-                                .negate();
-                        A((ic+1)*numTimes + itime, 0, 1, numCoefficients) =
-                                termDerivatives;
-                    }
-                }
-
-                // Solve the least-squares problem.
-                SimTK::FactorQTZ factor(A);
-                factor.solve(b, coefficients);
-
-                // Calculate the RMS error.
-                SimTK::Vector b_fit = A * coefficients;
-                SimTK::Vector error = b - b_fit;
-
-                // If the fit achieves the path length and moment arm thresholds
-                // we set, then exit the loop.
-                SimTK::Vector pathLengthError = error.block(
-                        0, 0, numTimes, 1).getAsVector();
-                SimTK::Vector momentArmError = error.block(
-                        numTimes, 0, numTimes * numCoordinatesThisForce,
-                        1).getAsVector();
-                double pathLengthRMSError = std::sqrt(
-                        pathLengthError.normSqr() / pathLengthError.size());
-                double momentArmRMSError = std::sqrt(
-                        momentArmError.normSqr() / momentArmError.size());
-                if ((pathLengthRMSError < get_path_length_tolerance() &&
-                        momentArmRMSError < get_moment_arm_tolerance()) ||
-                        order == get_maximum_polynomial_order()) {
-                    break;
-                }
-                ++order;
+            } else {
+                order = get_minimum_polynomial_order();
+                fitAllCoefficients(coordinatesThisForce, b, order, 
+                        coefficients);
             }
+
 
             // Create a FunctionBasedPath for the current path-based force.
             MultivariatePolynomialFunction lengthFunction;
@@ -1310,6 +1257,101 @@ void PolynomialPathFitter::removeMomentArmColumns(TimeSeriesTable& momentArms,
     }
 }
 
+void PolynomialPathFitter::fitAllCoefficients(
+        const SimTK::Matrix& coordinates, const SimTK::Vector& b, int& order,
+        SimTK::Vector& coefficients) const {
+
+    int numTimes = coordinates.nrow();
+    int numCoordinates = coordinates.ncol();
+    while (true) {
+        // Initialize the multivariate polynomial function.
+        int numCoefficients = choose(numCoordinates + order, order);
+        SimTK::Vector dummyCoefficients(numCoefficients, 1.0);
+        MultivariatePolynomialFunction dummyFunction(dummyCoefficients,
+                numCoordinates, order);
+
+        // Initialize the 'A' matrix.
+        SimTK::Matrix A(numTimes * (numCoordinates + 1),
+                numCoefficients, 0.0);
+
+        // Fill in the A matrix. This contains the polynomial terms for
+        // the path length and moment arms.
+        for (int itime = 0; itime < numTimes; ++itime) {
+            A(itime, 0, 1, numCoefficients) =
+                    dummyFunction.getTermValues(
+                        coordinates.row(itime).getAsVector());
+
+            for (int ic = 0; ic < numCoordinates; ++ic) {
+                SimTK::Vector termDerivatives =
+                    dummyFunction.getTermDerivatives({ic},
+                        coordinates.row(itime).getAsVector())
+                        .negate();
+                A((ic+1)*numTimes + itime, 0, 1, numCoefficients) =
+                        termDerivatives;
+            }
+        }
+
+        // Solve the least-squares problem.
+        SimTK::FactorQTZ factor(A);
+        factor.solve(b, coefficients);
+
+        // Calculate the RMS error.
+        SimTK::Vector b_fit = A * coefficients;
+        SimTK::Vector error = b - b_fit;
+
+        // If the fit achieves the path length and moment arm thresholds
+        // we set, then exit the loop.
+        SimTK::Vector pathLengthError = error.block(
+                0, 0, numTimes, 1).getAsVector();
+        SimTK::Vector momentArmError = error.block(
+                numTimes, 0, numTimes * numCoordinates,
+                1).getAsVector();
+        double pathLengthRMSError = std::sqrt(
+                pathLengthError.normSqr() / pathLengthError.size());
+        double momentArmRMSError = std::sqrt(
+                momentArmError.normSqr() / momentArmError.size());
+        if ((pathLengthRMSError < get_path_length_tolerance() &&
+                momentArmRMSError < get_moment_arm_tolerance()) ||
+                order == get_maximum_polynomial_order()) {
+            break;
+        }
+        ++order;
+    }
+}
+
+void PolynomialPathFitter::fitCoefficientsStepwiseRegression(
+        const SimTK::Matrix& coordinates, const SimTK::Vector& b, int order,
+        SimTK::Vector& coefficients) {
+
+    int numTimes = coordinates.nrow();
+    int numCoordinates = coordinates.ncol();
+    int numCoefficients = choose(numCoordinates + order, order);
+    std::vector<bool> mask(numCoefficients, false);
+    while (true) {
+
+        SimTK::Vector dummyCoefficients(numCoefficients, 1.0);
+        MultivariatePolynomialFunction dummyFunction(dummyCoefficients,
+                numCoordinates, order);
+
+        // Initialize the 'A' matrix.
+        int numActiveCoeffs = 
+            static_cast<int>(std::count(mask.begin(), mask.end(), true)) + 1;
+        SimTK::Matrix A(numTimes * (numCoordinates + 1),
+                numActiveCoeffs, 0.0);
+
+        for (int i = 0; i < numCoefficients; ++i) {
+
+        }
+
+        if (pathLengthRMSError < get_path_length_tolerance() &&
+                momentArmRMSError < get_moment_arm_tolerance()) {
+            break;
+        }
+    }
+
+
+}
+
 void PolynomialPathFitter::computeFittingErrors(const Model& modelFitted,
         const TimeSeriesTable& pathLengths, const TimeSeriesTable& momentArms,
         const TimeSeriesTable& pathLengthsFitted,
@@ -1424,9 +1466,11 @@ void PolynomialPathFitter::computeFittingErrors(const Model& modelFitted,
 void PolynomialPathFitter::constructProperties() {
     constructProperty_model(ModelProcessor());
     constructProperty_coordinate_values(TableProcessor());
+    constructProperty_output_directory("");
+    constructProperty_use_stepwise_regression(false);
     constructProperty_moment_arm_threshold(1e-3);
-    constructProperty_moment_arm_tolerance(1e-4);
-    constructProperty_path_length_tolerance(1e-4);
+    constructProperty_moment_arm_tolerance(1e-3);
+    constructProperty_path_length_tolerance(1e-3);
     constructProperty_minimum_polynomial_order(2);
     constructProperty_maximum_polynomial_order(6);
     constructProperty_num_parallel_threads(
@@ -1435,7 +1479,6 @@ void PolynomialPathFitter::constructProperties() {
     constructProperty_coordinate_sampling_bounds();
     constructProperty_num_samples_per_frame(25);
     constructProperty_latin_hypercube_algorithm("random");
-    constructProperty_output_directory("");
     constructProperty_include_moment_arm_functions(false);
     constructProperty_include_lengthening_speed_function(false);
 }
