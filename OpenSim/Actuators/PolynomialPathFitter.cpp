@@ -1003,16 +1003,15 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
             // -------------------
             SimTK::Vector coefficients;
             int order;
-
             if (get_use_stepwise_regression()) {
                 order = get_maximum_polynomial_order();
-
+                fitCoefficientsStepwiseRegression(coordinatesThisForce, b, 
+                        order, coefficients);
             } else {
                 order = get_minimum_polynomial_order();
                 fitAllCoefficients(coordinatesThisForce, b, order, 
                         coefficients);
             }
-
 
             // Create a FunctionBasedPath for the current path-based force.
             MultivariatePolynomialFunction lengthFunction;
@@ -1084,6 +1083,22 @@ void PolynomialPathFitter::setModel(ModelProcessor model) {
 
 void PolynomialPathFitter::setCoordinateValues(TableProcessor values) {
     set_coordinate_values(std::move(values));
+}
+
+void PolynomialPathFitter::setOutputDirectory(std::string directory) {
+    set_output_directory(std::move(directory));
+}
+
+std::string PolynomialPathFitter::getOutputDirectory() const {
+    return get_output_directory();
+}
+
+void PolynomialPathFitter::setUseStepwiseRegression(bool tf) {
+    set_use_stepwise_regression(tf);
+}
+
+bool PolynomialPathFitter::getUseStepwiseRegression() const {
+    return get_use_stepwise_regression();
 }
 
 void PolynomialPathFitter::setMomentArmThreshold(double threshold) {
@@ -1163,14 +1178,6 @@ void PolynomialPathFitter::setLatinHypercubeAlgorithm(
 
 std::string PolynomialPathFitter::getLatinHypercubeAlgorithm() const {
     return get_latin_hypercube_algorithm();
-}
-
-void PolynomialPathFitter::setOutputDirectory(std::string directory) {
-    set_output_directory(std::move(directory));
-}
-
-std::string PolynomialPathFitter::getOutputDirectory() const {
-    return get_output_directory();
 }
 
 //=============================================================================
@@ -1321,35 +1328,117 @@ void PolynomialPathFitter::fitAllCoefficients(
 
 void PolynomialPathFitter::fitCoefficientsStepwiseRegression(
         const SimTK::Matrix& coordinates, const SimTK::Vector& b, int order,
-        SimTK::Vector& coefficients) {
+        SimTK::Vector& coefficients) const {
 
+    // Preliminaries.
     int numTimes = coordinates.nrow();
     int numCoordinates = coordinates.ncol();
     int numCoefficients = choose(numCoordinates + order, order);
-    std::vector<bool> mask(numCoefficients, false);
-    while (true) {
 
-        SimTK::Vector dummyCoefficients(numCoefficients, 1.0);
-        MultivariatePolynomialFunction dummyFunction(dummyCoefficients,
-                numCoordinates, order);
+    // Construct the full 'A' matrix.
+    SimTK::Vector dummyCoefficients(numCoefficients, 1.0);
+    MultivariatePolynomialFunction dummyFunction(dummyCoefficients,
+            numCoordinates, order);
+    SimTK::Matrix Afull(numTimes * (numCoordinates + 1),
+            numCoefficients, 0.0);
+    for (int itime = 0; itime < numTimes; ++itime) {
+        Afull(itime, 0, 1, numCoefficients) =
+                dummyFunction.getTermValues(
+                    coordinates.row(itime).getAsVector());
 
-        // Initialize the 'A' matrix.
-        int numActiveCoeffs = 
-            static_cast<int>(std::count(mask.begin(), mask.end(), true)) + 1;
-        SimTK::Matrix A(numTimes * (numCoordinates + 1),
-                numActiveCoeffs, 0.0);
-
-        for (int i = 0; i < numCoefficients; ++i) {
-
-        }
-
-        if (pathLengthRMSError < get_path_length_tolerance() &&
-                momentArmRMSError < get_moment_arm_tolerance()) {
-            break;
+        for (int ic = 0; ic < numCoordinates; ++ic) {
+            SimTK::Vector termDerivatives =
+                dummyFunction.getTermDerivatives({ic},
+                    coordinates.row(itime).getAsVector())
+                    .negate();
+            Afull((ic+1)*numTimes + itime, 0, 1, numCoefficients) =
+                    termDerivatives;
         }
     }
 
+    // Manage the coefficient indexes that will be included in the final 
+    // polynomial. The "out" indexes are the indexes that are not included in
+    // the final polynomial, which is initialized to all indexes. The "keep" 
+    // indexes are the indexes that are included in the final polynomial, which
+    // is initialized to an empty vector.
+    std::vector<int> outIndexes;
+    outIndexes.reserve(numCoefficients);
+    for (int i = 0; i < numCoefficients; ++i) {
+        outIndexes.push_back(i);
+    }
+    std::vector<int> keepIndexes;
+    while (true) {
 
+        // Initialize the 'A' matrix. 
+        // The number of terms in the polynomial is the number of "kept" 
+        // coefficients plus one. 
+        int numTerms = static_cast<int>(keepIndexes.size()) + 1;
+        SimTK::Matrix A(numTimes * (numCoordinates + 1), numTerms, 0.0);
+
+        // First, set the columns of 'A' for the "kept" coefficients.
+        int icol = 0;
+        for (const auto& ki : keepIndexes) {
+            A.updCol(icol++) = Afull.col(ki);
+        }
+
+        // Next, loop through all of the remaining "out" coefficients and fit 
+        // the polynomial. We will keep the coefficient that results in the
+        // smallest RMS error.
+        SimTK::Real bestError = SimTK::Infinity;
+        int bestIndex = -1;
+        for (const auto& oi : outIndexes) {
+            A.updCol(icol) = Afull.col(oi);
+
+            // Solve the least-squares problem.
+            SimTK::FactorQTZ factor(A);
+            factor.solve(b, coefficients);
+
+            // Calculate the RMS error.
+            SimTK::Vector b_fit = A * coefficients;
+            SimTK::Vector error = b - b_fit;
+
+            // Calculate the RMS error. Update the best error and index.
+            double currentError = std::sqrt(error.normSqr() / error.size());
+            if (currentError < bestError) {
+                bestError = currentError;
+                bestIndex = oi;
+            }
+        }
+
+        // Add the best index to the "keep" indexes and remove it from the "out"
+        // indexes.
+        keepIndexes.push_back(bestIndex);
+        outIndexes.erase(std::remove(outIndexes.begin(), outIndexes.end(),
+                bestIndex), outIndexes.end());
+
+        // Refit the polynomial with the "keep" indexes.
+        icol = 0;
+        for (const auto& ki : keepIndexes) {
+            A.updCol(icol++) = Afull.col(ki);
+        }
+        SimTK::FactorQTZ factor(A);
+        factor.solve(b, coefficients);
+        SimTK::Vector b_fit = A * coefficients;
+        SimTK::Vector error = b - b_fit;
+
+        // If the current polynomial achieves our path length and moment arm
+        // tolerances or if the "out" indexes is empty, exit the loop.
+        SimTK::Vector pathLengthError = error.block(
+                0, 0, numTimes, 1).getAsVector();
+        SimTK::Vector momentArmError = error.block(
+                numTimes, 0, numTimes * numCoordinates,
+                1).getAsVector();
+        double pathLengthRMSError = std::sqrt(
+                pathLengthError.normSqr() / pathLengthError.size());
+        double momentArmRMSError = std::sqrt(
+                momentArmError.normSqr() / momentArmError.size());
+        int numOutIndexes = static_cast<int>(outIndexes.size());
+        if ((pathLengthRMSError < get_path_length_tolerance() &&
+                momentArmRMSError < get_moment_arm_tolerance()) || 
+                !numOutIndexes) {
+            break;
+        }
+    }
 }
 
 void PolynomialPathFitter::computeFittingErrors(const Model& modelFitted,

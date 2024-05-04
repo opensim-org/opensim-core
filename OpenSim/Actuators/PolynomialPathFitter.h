@@ -273,6 +273,9 @@ public:
     void setOutputDirectory(std::string directory);
     std::string getOutputDirectory() const;
 
+    void setUseStepwiseRegression(bool tf);
+    bool getUseStepwiseRegression() const;
+
     /**
      * The moment arm threshold value that determines whether or not a path
      * depends on a model coordinate. In other words, the moment arm of a path
@@ -650,7 +653,9 @@ private:
             const SimTK::Vector& b, int& order, 
             SimTK::Vector& coefficients) const;
 
-    SimTK::Vector fitCoefficientsStepwiseRegression();
+    void fitCoefficientsStepwiseRegression(
+        const SimTK::Matrix& coordinates, const SimTK::Vector& b, int order,
+        SimTK::Vector& coefficients) const;
 
     /**
      * Get the RMS errors between two sets of path lengths and moment arms
