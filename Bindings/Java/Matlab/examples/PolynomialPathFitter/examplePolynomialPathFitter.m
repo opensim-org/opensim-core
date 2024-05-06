@@ -97,7 +97,7 @@ fitter.appendCoordinateSamplingBounds(...
 
 % Set the global coordinate sampling bounds. This will be used for any
 % coordinates that do not have custom bounds set.
-fitter.setGlobalCoordinateSamplingBounds(osim.Vec2(-25, 25));
+fitter.setGlobalCoordinateSamplingBounds(Vec2(-25, 25));
 
 % Use stepwise regression to fit the path lengths and moment arms. This
 % setting evaluates the fit after adding polynomial terms one at a time
