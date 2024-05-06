@@ -359,7 +359,7 @@ else()
             
         ExternalProject_Add(ipopt
             DEPENDS           mumps metis
-            URL https://github.com/coin-or/Ipopt/archive/refs/tags/releases/3.14.14.zip
+            URL https://github.com/coin-or/Ipopt/archive/refs/tags/releases/3.14.16.zip
             INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
             #PATCH_COMMAND cd <SOURCE_DIR>/ && patch < ${CMAKE_SOURCE_DIR}/joris_fixipopt.patch
             # Suppress warnings treated as errors in Clang/LLVM with -Wno-error=implicit-function-declaration
