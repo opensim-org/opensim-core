@@ -107,6 +107,7 @@ private:
  *    - Number of samples per frame: 25
  *    - Number of threads: (# of available hardware threads) - 2
  *    - Latin hypercube sampling algorithm: "random"
+ *    - Use stepwise regression: False
  *
  * @note The default settings were chosen based on testing with a human
  *       lower-extremity model. Different settings may be required for other
@@ -273,6 +274,11 @@ public:
     void setOutputDirectory(std::string directory);
     std::string getOutputDirectory() const;
 
+    /**
+     * TODO
+     * 
+     * @note By default, this setting is false.
+     */
     void setUseStepwiseRegression(bool tf);
     bool getUseStepwiseRegression() const;
 
