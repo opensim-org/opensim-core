@@ -1594,8 +1594,8 @@ void PolynomialPathFitter::constructProperties() {
     constructProperty_output_directory("");
     constructProperty_use_stepwise_regression(false);
     constructProperty_moment_arm_threshold(1e-3);
-    constructProperty_moment_arm_tolerance(1e-3);
-    constructProperty_path_length_tolerance(1e-3);
+    constructProperty_moment_arm_tolerance(1e-4);
+    constructProperty_path_length_tolerance(1e-4);
     constructProperty_minimum_polynomial_order(2);
     constructProperty_maximum_polynomial_order(6);
     constructProperty_num_parallel_threads(

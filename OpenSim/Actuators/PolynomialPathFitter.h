@@ -23,7 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <SimTKcommon/internal/BigMatrix.h>
 #include <OpenSim/Simulation/TableProcessor.h>
 #include <OpenSim/Actuators/ModelProcessor.h>
 #include <OpenSim/Simulation/Model/FunctionBasedPath.h>
@@ -102,8 +101,8 @@ private:
  *    - Minimum polynomial order: 2
  *    - Maximum polynomial order: 6
  *    - Global coordinate sampling bounds: [-10, 10] degrees
- *    - Moment arm tolerance: 1e-3 meters
- *    - Path length tolerance: 1e-3 meters
+ *    - Moment arm tolerance: 1e-4 meters
+ *    - Path length tolerance: 1e-4 meters
  *    - Number of samples per frame: 25
  *    - Number of threads: (# of available hardware threads) - 2
  *    - Latin hypercube sampling algorithm: "random"
@@ -126,9 +125,7 @@ private:
  * fitter.setModel(ModelProcessor("model.osim"));
  * fitter.setCoordinateValues(TableProcessor("values.sto"));
  * @endcode
- *
- * TODO show how to sample around the neutral position (or make it default)
- *
+ * 
  * The additional settings can be adjusted using the various `set` methods
  * described above. For example, the global coordinate sampling bounds, bounds
  * for the coordinate at "/jointset/slider/position", and the number of samples
@@ -275,9 +272,19 @@ public:
     std::string getOutputDirectory() const;
 
     /**
-     * TODO
+     * Whether or not to use stepwise regression to fit a minimal set of 
+     * polynomial coefficients.
+     * 
+     * Stepwise regression builds a vector of coefficients by individually 
+     * adding polynomial terms that result in the smallest path length and
+     * moment arm error. When a new term is added, the fitting process is
+     * repeated to recompute the coefficients. Polynomial terms are added until
+     * the path length and moment arm tolerances are met, or the maximum number
+     * of terms is reached.
      * 
      * @note By default, this setting is false.
+     * @note If enabled, stepwise regression will fit coefficients using the 
+     *       maximum polynomial order based on `setMaximumPolynomialOrder()`.
      */
     void setUseStepwiseRegression(bool tf);
     bool getUseStepwiseRegression() const;
@@ -366,7 +373,7 @@ public:
      * refitted. This process is repeated until the RMS error is less than the
      * tolerance or the maximum polynomial order is reached.
      *
-     * @note The default moment arm tolerance is set to 1e-3 meters.
+     * @note The default moment arm tolerance is set to 1e-4 meters.
      * @note The path length RMS error must also be less than the path length
      *       tolerance for the polynomial order to be accepted (see
      *       `setPathLengthTolerance`).
@@ -387,7 +394,7 @@ public:
      * refitted. This process is repeated until the RMS error is less than the
      * tolerance or the maximum polynomial order is reached.
      *
-     * @note The default path length tolerance is set to 1e-3 meters.
+     * @note The default path length tolerance is set to 1e-4 meters.
      * @note The moment arm RMS error must also be less than the moment arm
      *       tolerance for the polynomial order to be accepted (see
      *      `setMomentArmTolerance`).
@@ -495,8 +502,8 @@ public:
     static void evaluateFunctionBasedPaths(Model model,
             TableProcessor trajectory,
             const std::string& functionBasedPathsFile,
-            double pathLengthTolerance = 1e-3,
-            double momentArmTolerance = 1e-3);
+            double pathLengthTolerance = 1e-4,
+            double momentArmTolerance = 1e-4);
 
 private:
     // PROPERTIES
@@ -508,7 +515,9 @@ private:
             "path fitting.");
     OpenSim_DECLARE_PROPERTY(output_directory, std::string,
             "The directory to which the path fitting results are written.");
-    OpenSim_DECLARE_PROPERTY(use_stepwise_regression, bool, "");
+    OpenSim_DECLARE_PROPERTY(use_stepwise_regression, bool, 
+            "Whether or not to use stepwise regression to fit a minimal set of "
+            "polynomial coefficients.");
     OpenSim_DECLARE_PROPERTY(moment_arm_threshold, double,
             "The moment arm threshold value that determines whether or not a "
             "path depends on a model coordinate. In other words, the moment "
@@ -535,12 +544,12 @@ private:
             "The tolerance on the root-mean-square (RMS) error (in meters) "
             "between the moment arms computed from an original model path and "
             "a fitted polynomial-based path, which is used to determine the "
-            "order of the polynomial used in the fitted path (default: 1e-3).");
+            "order of the polynomial used in the fitted path (default: 1e-4).");
     OpenSim_DECLARE_PROPERTY(path_length_tolerance, double,
             "The tolerance on the root-mean-square (RMS) error (in meters) "
             "between the path lengths computed from an original model path and "
             "a fitted polynomial-based path, which is used to determine the "
-            "order of the polynomial used in the fitted path (default: 1e-3).");
+            "order of the polynomial used in the fitted path (default: 1e-4).");
     OpenSim_DECLARE_PROPERTY(num_samples_per_frame, int,
             "The number of samples taken per time frame in the coordinate "
             "values table used to fit each path (default: 25).");
@@ -655,10 +664,18 @@ private:
     static void removeMomentArmColumns(TimeSeriesTable& momentArms,
             const MomentArmMap& momentArmMap);
 
+    /**
+     * Fit to the path length and moment arm samples using all possible
+     * polynomial coefficients.
+     */
     void fitAllCoefficients(const SimTK::Matrix& coordinates, 
             const SimTK::Vector& b, int& order, 
             SimTK::Vector& coefficients) const;
 
+    /**
+     * Fit to the path length and moment arm samples using stepwise regression
+     * to find a minimal set of polynomial coefficients.
+     */
     void fitCoefficientsStepwiseRegression(
         const SimTK::Matrix& coordinates, const SimTK::Vector& b, int order,
         SimTK::Vector& coefficients) const;
