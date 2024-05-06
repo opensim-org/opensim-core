@@ -125,7 +125,7 @@ private:
  * fitter.setModel(ModelProcessor("model.osim"));
  * fitter.setCoordinateValues(TableProcessor("values.sto"));
  * @endcode
- * 
+ *
  * The additional settings can be adjusted using the various `set` methods
  * described above. For example, the global coordinate sampling bounds, bounds
  * for the coordinate at "/jointset/slider/position", and the number of samples
