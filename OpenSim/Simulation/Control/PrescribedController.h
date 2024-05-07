@@ -97,10 +97,13 @@ public:
     /**
      *  Assign a prescribed control function for the desired actuator identified
      *  by the provided label. The label can be either the name of the actuator,
-     *  or the absolute path to the actuator in the model. Controller takes
-     *  ownership of the function.
+     *  or the absolute path to the actuator in the model.
      *  @param actuLabel            label for the actuator in the controller
      *  @param prescribedFunction   the actuator's control function
+     *
+     *  @note As of OpenSim 4.6, PrescribedController no longer takes ownership
+     *        of the passed in Function. Rather, a clone of the Function at the 
+     *        passed in pointer is made.
      */
     void prescribeControlForActuator(const std::string& actuLabel,
                                      Function* prescribedFunction);
@@ -116,6 +119,8 @@ public:
 protected:
     // MODEL COMPONENT INTERFACE
     void extendConnectToModel(Model& model) override;
+    void updateFromXMLNode(SimTK::Xml::Element& node,
+                           int versionNumber) override;
 
 private:
     // Construct and initialize properties.

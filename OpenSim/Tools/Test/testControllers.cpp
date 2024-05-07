@@ -37,11 +37,15 @@
 
 #include <OpenSim/OpenSim.h>
 
+#include "OpenSim/Simulation/Control/PrescribedController.h"
 #include <catch2/catch_all.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
+using Catch::Matchers::ContainsSubstring;
 
 TEST_CASE("Test Controller interface") {
 
@@ -66,6 +70,33 @@ TEST_CASE("Test Controller interface") {
         controller->setActuators(model.getComponentList<Actuator>());
         model.addController(controller);
         model.finalizeConnections();
+    }
+}
+
+TEST_CASE("PrescribedController behavior") {
+    Model model("testControllers_TugOfWar.osim");
+    model.initSystem();
+    auto& controller = model.updComponent<PrescribedController>(
+            "/controllerset/prescribedcontroller");
+
+    SECTION("Overwriting control function with same label") {
+        controller.prescribeControlForActuator(
+                "actu_slider", new Constant(1.0));
+        CHECK_NOTHROW(model.initSystem());
+    }
+
+    SECTION("Different label for same actuator should throw") {
+        controller.prescribeControlForActuator(
+                "/forceset/actu_slider", new Constant(1.0));
+        std::string msg = "Expected actuator /forceset/actu_slider to have " 
+                          "one control function";
+        CHECK_THROWS_WITH(model.initSystem(), ContainsSubstring(msg));
+    }
+
+    SECTION("Model serialization and deserialization") {
+        model.print("testControllers_TugOfWar_serialized.osim");
+        Model modelDeserialized("testControllers_TugOfWar_serialized.osim");
+        CHECK_NOTHROW(modelDeserialized.initSystem());
     }
 }
 

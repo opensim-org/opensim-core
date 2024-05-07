@@ -25,6 +25,8 @@
 // INCLUDES
 //=============================================================================
 #include "PrescribedController.h"
+#include "OpenSim/Common/Exception.h"
+#include <iostream>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/PiecewiseConstantFunction.h>
@@ -66,6 +68,52 @@ void PrescribedController::constructProperties()
 //=============================================================================
 // MODEL COMPONENT INTERFACE
 //=============================================================================
+void PrescribedController::updateFromXMLNode(SimTK::Xml::Element& node,
+                                   int versionNumber) {
+    int iactu = 0;
+    if (versionNumber < 40600) {
+        if (node.hasElement("actuator_list")) {
+            auto actuators = node.getRequiredElement("actuator_list");
+            std::string values = actuators.getValueAs<std::string>();
+            std::istringstream iss(values);
+            auto actuatorNamesFromXML = std::vector<std::string>{
+                    std::istream_iterator<std::string>{iss},
+                    std::istream_iterator<std::string>{}};
+            for (const auto& actuName : actuatorNamesFromXML) {
+                _actuLabelsToControlFunctionIndexMap[actuName] = iactu++;
+            }
+        }
+    } else {
+        if (node.hasElement("socket_actuators")) {
+            auto actuators = node.getRequiredElement("socket_actuators");
+            std::string values = actuators.getValueAs<std::string>();
+            std::istringstream iss(values);
+            auto actuatorNamesFromXML = std::vector<std::string>{
+                    std::istream_iterator<std::string>{iss},
+                    std::istream_iterator<std::string>{}};
+            for (const auto& actuName : actuatorNamesFromXML) {
+                _actuLabelsToControlFunctionIndexMap[actuName] = iactu++;
+            }
+        }
+    }
+    
+    int ifunc = 0;
+    if (node.hasElement("FunctionSet")) {
+        auto functions = node.getRequiredElement("FunctionSet");
+        auto objects = functions.getRequiredElement("objects");
+        for (auto iter = objects.element_begin();
+                iter != objects.element_end(); ++iter) {
+            ++ifunc;
+        }
+    }
+    OPENSIM_THROW_IF_FRMOBJ(ifunc != iactu, Exception, 
+            "Expected the number of control functions to match the "
+            "number of actuators connected to the controller, but "
+            "received {} and {}, respectively.", ifunc, iactu);
+
+    Super::updateFromXMLNode(node, versionNumber);
+}
+
 void PrescribedController::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
@@ -137,38 +185,29 @@ void PrescribedController::extendConnectToModel(Model& model)
         }
     }
 
-    // Populate the _actuIndexToControlFunctionIndexMap.
+    // Populate the actuator index to control function index map.
+    _actuIndexToControlFunctionIndexMap.clear();
     for (const auto& pair : _actuLabelsToControlFunctionIndexMap) {
         int actuIndex = getActuatorIndexFromLabel(pair.first);
-        if (actuIndex < 0) {
-            OPENSIM_THROW_FRMOBJ(Exception,
-                "Actuator {} was not found in the model.", pair.first)
-        }
-        _actuIndexToControlFunctionIndexMap[actuIndex] = pair.second;
-    }
+        OPENSIM_THROW_IF_FRMOBJ(actuIndex < 0, Exception,
+            "Actuator {} was not found in the model.", pair.first)
+        
+        OPENSIM_THROW_IF_FRMOBJ(
+            _actuIndexToControlFunctionIndexMap.count(actuIndex), Exception, 
+            "Expected actuator {} to have one control function "
+            "assigned, but multiple control functions were detected. "
+            "This may have occurred because a control function was "
+            "specified by actuator name and by actuator path.",
+            socket.getConnectee(actuIndex).getAbsolutePathString())
 
-    // Check for actuators with multiple control functions.
-    std::vector<int> uniqueValues;
-    for (const auto& pair : _actuIndexToControlFunctionIndexMap) {
-        int value = pair.second;
-        if (std::find(uniqueValues.begin(), uniqueValues.end(), value) !=
-                uniqueValues.end()) {
-            OPENSIM_THROW_FRMOBJ(Exception,
-                    "Expected actuator {} to have one control function "
-                    "assigned, but multiple control functions were detected. "
-                    "This may have occurred because a control function was "
-                    "specified by actuator name and by actuator path.",
-                    socket.getConnectee(pair.first).getAbsolutePathString())
-        } else {
-            uniqueValues.push_back(value);
-        }
+        _actuIndexToControlFunctionIndexMap[actuIndex] = pair.second;
     }
 
     // Verify that all actuators have a control function.
     const FunctionSet& controlFuncs = get_ControlFunctions();
     OPENSIM_THROW_IF_FRMOBJ(
-        controlFuncs.getSize() != (int)socket.getNumConnectees(),
-        Exception, "The number of control functions ({}) does not match the "
+        controlFuncs.getSize() != (int)socket.getNumConnectees(), Exception, 
+        "The number of control functions ({}) does not match the "
         "number of actuators ({}) connected to the controller.",
         controlFuncs.getSize(), socket.getNumConnectees());
 }
@@ -193,15 +232,16 @@ void PrescribedController::computeControls(const SimTK::State& s,
 //=============================================================================
 void PrescribedController::prescribeControlForActuator(
         const std::string& actuLabel, Function* prescribedFunction) {
-    prescribedFunction->setName(actuLabel);
+    
+    Function* prescribedFunctionCopy = prescribedFunction->clone();
     FunctionSet& controlFuncs = upd_ControlFunctions();
     if (_actuLabelsToControlFunctionIndexMap.count(actuLabel)) {
         const int index = _actuLabelsToControlFunctionIndexMap.at(actuLabel);
-        controlFuncs.set(index, prescribedFunction);
+        controlFuncs.set(index, prescribedFunctionCopy);
     } else {
         const int size = controlFuncs.getSize();
         controlFuncs.setSize(size + 1);
-        controlFuncs.set(size, prescribedFunction);
+        controlFuncs.set(size, prescribedFunctionCopy);
         _actuLabelsToControlFunctionIndexMap[actuLabel] = size;
     }
 }
