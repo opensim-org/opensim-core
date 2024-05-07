@@ -94,19 +94,6 @@ void PrescribedController::updateFromXMLNode(SimTK::Xml::Element& node,
                 _actuLabelsToControlFunctionIndexMap[actuName] = iactu++;
             }
         }
-        int ifunc = 0;
-        if (node.hasElement("FunctionSet")) {
-            auto functions = node.getRequiredElement("FunctionSet");
-            auto objects = functions.getRequiredElement("objects");
-            for (auto iter = objects.element_begin();
-                    iter != objects.element_end(); ++iter) {
-                ++ifunc;
-            }
-        }
-        OPENSIM_THROW_IF_FRMOBJ(ifunc != iactu, Exception, 
-                "Expected the number of control functions to match the "
-                "number of actuators connected to the controller, but "
-                "received {} and {}, respectively.", ifunc, iactu);
     }
 
     Super::updateFromXMLNode(node, versionNumber);
