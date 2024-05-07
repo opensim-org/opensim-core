@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "PrescribedController.h"
-#include "OpenSim/Common/Exception.h"
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/PiecewiseConstantFunction.h>
