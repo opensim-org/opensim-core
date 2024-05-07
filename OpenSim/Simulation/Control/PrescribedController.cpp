@@ -26,7 +26,6 @@
 //=============================================================================
 #include "PrescribedController.h"
 #include "OpenSim/Common/Exception.h"
-#include <iostream>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/PiecewiseConstantFunction.h>
@@ -186,21 +185,21 @@ void PrescribedController::extendConnectToModel(Model& model)
     }
 
     // Populate the actuator index to control function index map.
-    _actuIndexToControlFunctionIndexMap.clear();
+    std::unordered_map<int, int> actuToControlFunctionIndexMap;
     for (const auto& pair : _actuLabelsToControlFunctionIndexMap) {
         int actuIndex = getActuatorIndexFromLabel(pair.first);
         OPENSIM_THROW_IF_FRMOBJ(actuIndex < 0, Exception,
             "Actuator {} was not found in the model.", pair.first)
         
         OPENSIM_THROW_IF_FRMOBJ(
-            _actuIndexToControlFunctionIndexMap.count(actuIndex), Exception, 
+            actuToControlFunctionIndexMap.count(actuIndex), Exception, 
             "Expected actuator {} to have one control function "
             "assigned, but multiple control functions were detected. "
             "This may have occurred because a control function was "
             "specified by actuator name and by actuator path.",
             socket.getConnectee(actuIndex).getAbsolutePathString())
 
-        _actuIndexToControlFunctionIndexMap[actuIndex] = pair.second;
+        actuToControlFunctionIndexMap[actuIndex] = pair.second;
     }
 
     // Verify that all actuators have a control function.
@@ -210,6 +209,15 @@ void PrescribedController::extendConnectToModel(Model& model)
         "The number of control functions ({}) does not match the "
         "number of actuators ({}) connected to the controller.",
         controlFuncs.getSize(), socket.getNumConnectees());
+
+    // Reorder the control functions to match the order of the actuators. We 
+    // must do this so that the actuator connectee order matches the control
+    // function order during serialization.
+    FunctionSet controlFuncsCopy = get_ControlFunctions();
+    for (int i = 0; i < (int)socket.getNumConnectees(); ++i) {
+        const int controlFuncIndex = actuToControlFunctionIndexMap.at(i);
+        upd_ControlFunctions().set(i, controlFuncsCopy.get(controlFuncIndex));
+    }
 }
 
 //=============================================================================

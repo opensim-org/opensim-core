@@ -35,6 +35,9 @@ class Function;
  * PrescribedController is a concrete Controller that specifies functions that 
  * prescribe the control values of its actuators as a function of time.
  *
+ * TODO if loading from file or setting the ControlFunctions property, note that
+ *      the order of the functions must match the order of connected actuators.
+ *
  * @note Prior to OpenSim 4.6, PrescribedController support setting a prescribed
  *       control based on the actuator's index in the `ControlFunctions`
  *       property. This interface is deprecated and will be removed in a future
@@ -51,7 +54,8 @@ public:
 //=============================================================================
     OpenSim_DECLARE_PROPERTY(ControlFunctions, FunctionSet,
         "Functions (one per control) describing the controls for actuators "
-        "specified for this controller." );
+        "specified for this controller. The control function set must match "
+        "the number and order of connected actuators." );
 
     OpenSim_DECLARE_OPTIONAL_PROPERTY(controls_file, std::string,
         "Controls storage (.sto) file containing controls for individual "
@@ -136,7 +140,6 @@ private:
 
     // Member variables.
     std::unordered_map<std::string, int> _actuLabelsToControlFunctionIndexMap;
-    std::unordered_map<int, int> _actuIndexToControlFunctionIndexMap;
 
 };  // class PrescribedController
 

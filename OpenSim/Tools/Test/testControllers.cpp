@@ -73,6 +73,32 @@ TEST_CASE("Test Controller interface") {
     }
 }
 
+TEST_CASE("PrescribedController control function ordering") {
+    Model model = ModelFactory::createNLinkPendulum(3);
+    auto* controller = new PrescribedController();
+    controller->addActuator(model.getComponent<Actuator>("/tau0"));
+    controller->addActuator(model.getComponent<Actuator>("/tau1"));
+    controller->addActuator(model.getComponent<Actuator>("/tau2"));
+
+    GIVEN("Controls prescribed out of order") {
+        controller->prescribeControlForActuator("/tau1", new Constant(2.0));
+        controller->prescribeControlForActuator("/tau0", new Constant(1.0));
+        controller->prescribeControlForActuator("/tau2", new Constant(3.0));
+        // Control function reordering happens during 
+        // PrescribedController::extendConnectToModel().
+        model.addController(controller);
+        model.finalizeConnections();
+
+        THEN("Control functions are reordered based on connectee order") {
+            SimTK::Vector time(1, 0.0);
+            const auto& controlFunctions = controller->get_ControlFunctions();
+            CHECK(controlFunctions.get(0).calcValue(time) == 1.0);
+            CHECK(controlFunctions.get(1).calcValue(time) == 2.0);
+            CHECK(controlFunctions.get(2).calcValue(time) == 3.0);
+        }
+    }    
+}
+
 TEST_CASE("PrescribedController behavior") {
     Model model("testControllers_TugOfWar.osim");
     model.initSystem();
