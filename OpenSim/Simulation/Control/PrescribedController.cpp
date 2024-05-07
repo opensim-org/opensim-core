@@ -136,7 +136,6 @@ void PrescribedController::extendConnectToModel(Model& model)
         Array<double> data(0.0, nrows);
         controls.getTimeColumn(time);
 
-        const FunctionSet& controlFuncs = get_ControlFunctions();
         for (int i = 0; i < columnLabels.getSize(); ++i) {
             // Skip the time column.
             if (i == tcol) continue;
@@ -176,9 +175,9 @@ void PrescribedController::extendConnectToModel(Model& model)
 
                 // Create the control function and assign it to the actuator.
                 controls.getDataColumn(
-                    controls.getStateIndex(columnLabel), data);
+                        controls.getStateIndex(columnLabel), data);
                 Function* controlFunction = createFunctionFromData(columnLabel,
-                    time, data);
+                        time, data);
                 prescribeControlForActuator(columnLabel, controlFunction);
             }
         }
