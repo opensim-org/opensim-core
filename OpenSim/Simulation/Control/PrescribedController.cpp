@@ -68,8 +68,8 @@ void PrescribedController::constructProperties()
 //=============================================================================
 void PrescribedController::updateFromXMLNode(SimTK::Xml::Element& node,
                                    int versionNumber) {
-    int iactu = 0;
     if (versionNumber < 40600) {
+        int iactu = 0;
         if (node.hasElement("actuator_list")) {
             auto actuators = node.getRequiredElement("actuator_list");
             std::string values = actuators.getValueAs<std::string>();
@@ -82,6 +82,7 @@ void PrescribedController::updateFromXMLNode(SimTK::Xml::Element& node,
             }
         }
     } else {
+        int iactu = 0;
         if (node.hasElement("socket_actuators")) {
             auto actuators = node.getRequiredElement("socket_actuators");
             std::string values = actuators.getValueAs<std::string>();
@@ -93,21 +94,20 @@ void PrescribedController::updateFromXMLNode(SimTK::Xml::Element& node,
                 _actuLabelsToControlFunctionIndexMap[actuName] = iactu++;
             }
         }
-    }
-    
-    int ifunc = 0;
-    if (node.hasElement("FunctionSet")) {
-        auto functions = node.getRequiredElement("FunctionSet");
-        auto objects = functions.getRequiredElement("objects");
-        for (auto iter = objects.element_begin();
-                iter != objects.element_end(); ++iter) {
-            ++ifunc;
+        int ifunc = 0;
+        if (node.hasElement("FunctionSet")) {
+            auto functions = node.getRequiredElement("FunctionSet");
+            auto objects = functions.getRequiredElement("objects");
+            for (auto iter = objects.element_begin();
+                    iter != objects.element_end(); ++iter) {
+                ++ifunc;
+            }
         }
+        OPENSIM_THROW_IF_FRMOBJ(ifunc != iactu, Exception, 
+                "Expected the number of control functions to match the "
+                "number of actuators connected to the controller, but "
+                "received {} and {}, respectively.", ifunc, iactu);
     }
-    OPENSIM_THROW_IF_FRMOBJ(ifunc != iactu, Exception, 
-            "Expected the number of control functions to match the "
-            "number of actuators connected to the controller, but "
-            "received {} and {}, respectively.", ifunc, iactu);
 
     Super::updateFromXMLNode(node, versionNumber);
 }
@@ -116,6 +116,25 @@ void PrescribedController::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
     auto& socket = updSocket<Actuator>("actuators");
+
+    // If the 'ALL' keyword was provide via the actuator list (pre-4.6), then 
+    // populate the labels to control function index map with all actuators in 
+    // connectee order.
+    bool foundAllKeyword = false;
+    for (const auto& kv : _actuLabelsToControlFunctionIndexMap) {
+        if (IO::Uppercase(kv.first) == "ALL") {
+            foundAllKeyword = true;
+            break;
+        }
+    }
+    if (foundAllKeyword) {
+        _actuLabelsToControlFunctionIndexMap.clear();
+        for (int i = 0; i < (int)socket.getNumConnectees(); ++i) {
+            const auto& connectee = socket.getConnectee(i);
+            const auto& path = connectee.getAbsolutePathString();
+            _actuLabelsToControlFunctionIndexMap[path] = i;
+        }
+    }
 
     // If a controls file was specified, load it and create control functions
     // for any actuators that do not already have one.
