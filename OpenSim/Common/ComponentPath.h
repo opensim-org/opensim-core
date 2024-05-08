@@ -25,6 +25,7 @@
 
 #include "osimCommonDLL.h"
 
+#include <iosfwd>
 #include <string>
 #include <vector>
 
@@ -195,6 +196,10 @@ public:
 private:
     std::string _path;
 };
+
+// writes the equivalent of `path.toString()` to the output stream
+std::ostream& operator<<(std::ostream&, const ComponentPath&);
+
 } // end of namespace OpenSim
 
 template<>

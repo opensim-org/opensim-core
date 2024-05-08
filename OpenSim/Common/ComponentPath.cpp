@@ -24,7 +24,9 @@
 #include "ComponentPath.h"
 
 #include "Exception.h"
+
 #include <algorithm>
+#include <ostream>
 #include <sstream>
 
 using OpenSim::ComponentPath;
@@ -461,4 +463,9 @@ void ComponentPath::pushBack(const std::string& pathElement) {
 
 bool ComponentPath::isLegalPathElement(const std::string& pathElement) const {
     return pathElement.find_first_of(legacyInvalidChars) == std::string::npos;
+}
+
+std::ostream& OpenSim::operator<<(std::ostream& o, const ComponentPath& path)
+{
+    return o << path.toString();
 }

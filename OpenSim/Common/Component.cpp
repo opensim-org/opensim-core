@@ -649,6 +649,12 @@ getModelingOptionNamesAddedByComponent() const {
 int Component::
 getModelingOption(const SimTK::State& s, const std::string& path) const
 {
+    return getModelingOption(s, OpenSim::ComponentPath{path});
+}
+
+int Component::
+getModelingOption(const SimTK::State& s, const OpenSim::ComponentPath& path) const
+{
     std::string moName{""};
     const Component* owner =
         resolveVariableNameAndOwner(path, moName);
@@ -667,6 +673,12 @@ getModelingOption(const SimTK::State& s, const std::string& path) const
 
 void Component::
 setModelingOption(SimTK::State& s, const std::string& path, int flag) const
+{
+    setModelingOption(s, OpenSim::ComponentPath{path}, flag);
+}
+
+void Component::
+setModelingOption(SimTK::State& s, const OpenSim::ComponentPath& path, int flag) const
 {
     std::string moName{""};
     const Component* owner =
@@ -897,13 +909,19 @@ double Component::
     getStateVariableDerivativeValue(const SimTK::State& state,
                                 const std::string& name) const
 {
+    return getStateVariableDerivativeValue(state, ComponentPath{name});
+}
+
+double Component::getStateVariableDerivativeValue(const SimTK::State& state,
+        const ComponentPath& name) const
+{
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     computeStateVariableDerivatives(state);
 
     std::map<std::string, StateVariableInfo>::const_iterator it;
-    it = _namedStateVariableInfo.find(name);
+    it = _namedStateVariableInfo.find(name.toString());
 
     if(it != _namedStateVariableInfo.end()) {
         return it->second.stateVariable->getDerivative(state);
@@ -929,6 +947,12 @@ double Component::
 // for this component.
 void Component::
     setStateVariableValue(State& s, const std::string& name, double value) const
+{
+    return setStateVariableValue(s, ComponentPath{name}, value);
+}
+
+void Component::
+    setStateVariableValue(SimTK::State& s, const ComponentPath& name, double value) const
 {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
@@ -1037,8 +1061,15 @@ void Component::
     setStateVariableDerivativeValue(const State& state,
                                const std::string& name, double value) const
 {
+    return setStateVariableDerivativeValue(state, ComponentPath{name}, value);
+}
+
+void Component::
+    setStateVariableDerivativeValue(const SimTK::State& state,
+                               const ComponentPath& name, double value) const
+{
     std::map<std::string, StateVariableInfo>::const_iterator it;
-    it = _namedStateVariableInfo.find(name);
+    it = _namedStateVariableInfo.find(name.toString());
 
     if(it != _namedStateVariableInfo.end()) {
         const StateVariable& sv = *it->second.stateVariable;
@@ -1118,6 +1149,14 @@ Component::
 getDiscreteVariableAbstractValue(const SimTK::State& s,
     const std::string& path) const
 {
+    return getDiscreteVariableAbstractValue(s, OpenSim::ComponentPath{path});
+}
+
+const SimTK::AbstractValue&
+Component::
+getDiscreteVariableAbstractValue(const SimTK::State& s,
+    const OpenSim::ComponentPath& path) const
+{
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
@@ -1141,6 +1180,14 @@ SimTK::AbstractValue&
 Component::
 updDiscreteVariableAbstractValue(SimTK::State& s,
     const std::string& path) const
+{
+    return updDiscreteVariableAbstractValue(s, OpenSim::ComponentPath{path});
+}
+
+SimTK::AbstractValue&
+Component::
+updDiscreteVariableAbstractValue(SimTK::State& s,
+    const ComponentPath& path) const
 {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
