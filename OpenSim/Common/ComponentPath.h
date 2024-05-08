@@ -25,7 +25,7 @@
 
 #include "osimCommonDLL.h"
 
-#include <iosfwd>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -82,6 +82,12 @@ public:
 
     friend bool operator<(const ComponentPath& lhs, const ComponentPath& rhs) {
         return lhs._path < rhs._path;
+    }
+
+    // writes the equivalent of `path.toString()` to the output stream
+    friend std::ostream& operator<<(std::ostream& lhs, const ComponentPath& rhs)
+    {
+        return lhs << rhs.toString();
     }
 
     /**
@@ -196,9 +202,6 @@ public:
 private:
     std::string _path;
 };
-
-// writes the equivalent of `path.toString()` to the output stream
-std::ostream& operator<<(std::ostream&, const ComponentPath&);
 
 } // end of namespace OpenSim
 
