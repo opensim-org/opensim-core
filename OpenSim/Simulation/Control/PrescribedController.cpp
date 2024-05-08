@@ -99,23 +99,30 @@ void PrescribedController::updateFromXMLNode(SimTK::Xml::Element& node,
     Super::updateFromXMLNode(node, versionNumber);
 }
 
-void PrescribedController::extendConnectToModel(Model& model)
-{
+void PrescribedController::extendConnectToModel(Model& model) {
     Super::extendConnectToModel(model);
     auto& socket = updSocket<Actuator>("actuators");
 
+    // Verify that all connected actuators have a control function.
+    const FunctionSet& controlFuncs = get_ControlFunctions();
+    OPENSIM_THROW_IF_FRMOBJ(
+        controlFuncs.getSize() != (int)socket.getNumConnectees(), Exception, 
+        "The number of control functions ({}) does not match the "
+        "number of actuators ({}) connected to the controller.",
+        controlFuncs.getSize(), socket.getNumConnectees());
+
     // If the 'ALL' keyword was provide via the actuator list (pre-4.6), then 
-    // populate the labels to control function index map with all actuators in 
-    // connectee order.
-    bool foundAllKeyword = false;
+    // populate the control function index map with all actuators in 
+    // connectee order. This also handles the case where control functions are
+    // provided via the ControlFunctions property directly (i.e., the index map 
+    // is empty).
     for (const auto& kv : _actuLabelsToControlFunctionIndexMap) {
         if (IO::Uppercase(kv.first) == "ALL") {
-            foundAllKeyword = true;
+            _actuLabelsToControlFunctionIndexMap.clear();
             break;
         }
     }
-    if (foundAllKeyword) {
-        _actuLabelsToControlFunctionIndexMap.clear();
+    if (_actuLabelsToControlFunctionIndexMap.empty()) {
         for (int i = 0; i < (int)socket.getNumConnectees(); ++i) {
             const auto& connectee = socket.getConnectee(i);
             const auto& path = connectee.getAbsolutePathString();
@@ -125,7 +132,7 @@ void PrescribedController::extendConnectToModel(Model& model)
 
     // If a controls file was specified, load it and create control functions
     // for any actuators that do not already have one.
-    if(!getProperty_controls_file().empty()) {
+    if (!getProperty_controls_file().empty()) {
 
         // Load the controls file and find the time column and column labels.
         const Storage controls(get_controls_file());
@@ -205,14 +212,6 @@ void PrescribedController::extendConnectToModel(Model& model)
 
         actuToControlFunctionIndexMap[actuIndex] = pair.second;
     }
-
-    // Verify that all actuators have a control function.
-    const FunctionSet& controlFuncs = get_ControlFunctions();
-    OPENSIM_THROW_IF_FRMOBJ(
-        controlFuncs.getSize() != (int)socket.getNumConnectees(), Exception, 
-        "The number of control functions ({}) does not match the "
-        "number of actuators ({}) connected to the controller.",
-        controlFuncs.getSize(), socket.getNumConnectees());
 
     // Reorder the control functions to match the order of the actuators. We 
     // must do this so that the actuator connectee order matches the control

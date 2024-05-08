@@ -11,6 +11,7 @@
  *                                                                            *
  * Copyright (c) 2005-2024 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
+ * Contributor(s): Nicholas Bianco                                            *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -42,6 +43,14 @@ class Function;
  * after connecting the controller to the model, the added control function will
  * be placed at the correct index in the `ControlFunctions` property.
  *
+ * A controls storage file can be specified in the `controls_file` property.
+ * Each column must be either the name or path of an actuator in the model. If
+ * the actuator name is used as the column label, the first actuator with a 
+ * matching name will be connected to the controller and assigned a control 
+ * function based on the column data. Using actuator paths in the column labels
+ * is recommended to avoid ambiguity. Finally, any actuators with existing 
+ * control functions will be ignored when setting controls from file.
+ *
  * @note Prior to OpenSim 4.6, PrescribedController support setting a prescribed
  *       control based on the actuator's index in the `ControlFunctions`
  *       property. This interface is deprecated and will be removed in a future
@@ -64,8 +73,7 @@ public:
     OpenSim_DECLARE_OPTIONAL_PROPERTY(controls_file, std::string,
         "Controls storage (.sto) file containing controls for individual "
         "actuators in the model. Each column label must be either the name "
-        "of an actuator in the model's ForceSet or the absolute path to an "
-        "actuator anywhere in the model.");
+        "or path to an actuator in the model.");
 
     OpenSim_DECLARE_OPTIONAL_PROPERTY(interpolation_method, int,
         "Interpolate the controls file data using piecewise: '0-constant', "

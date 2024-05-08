@@ -473,8 +473,7 @@ TEST_CASE("PrescribedController behavior") {
     SECTION("Different label for same actuator should throw") {
         controller.prescribeControlForActuator(
                 "/forceset/actu_slider", new Constant(1.0));
-        std::string msg = "Expected actuator /forceset/actu_slider to have " 
-                          "one control function";
+        std::string msg = "The number of control functions (2) does not match"; 
         CHECK_THROWS_WITH(model.initSystem(), ContainsSubstring(msg));
     }
 
