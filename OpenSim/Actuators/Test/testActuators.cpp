@@ -153,7 +153,7 @@ TEST_CASE("testTorqueActuator") {
     PrescribedController* controller =  new PrescribedController();
     controller->addActuator(*actuator);
     // Apply torque about torqueAxis
-    controller->prescribeControlForActuator("torque", new Constant(torqueMag));
+    controller->prescribeControlForActuator("torque", Constant(torqueMag));
 
     model->addController(controller);
 
@@ -305,8 +305,7 @@ TEST_CASE("testClutchedPathSpring") {
     double     timePts[4] = {0.0,  5.0, 6.0, 10.0};
     double clutchOnPts[4] = {1.5, -2.0, 0.5,  0.5};
 
-    PiecewiseConstantFunction* controlfunc = 
-        new PiecewiseConstantFunction(4, timePts, clutchOnPts);
+    PiecewiseConstantFunction controlfunc(4, timePts, clutchOnPts);
 
     controller->prescribeControlForActuator("clutch_spring", controlfunc);
     model->addController(controller);
@@ -443,7 +442,7 @@ TEST_CASE("testMcKibbenActuator") {
 
     PrescribedController* controller = new PrescribedController();
     controller->addActuator(*actuator);
-    controller->prescribeControlForActuator("mckibben", new Constant(pressure));
+    controller->prescribeControlForActuator("mckibben", Constant(pressure));
 
     model->addController(controller);
 
@@ -891,7 +890,7 @@ TEST_CASE("testActivationCoordinateActuator") {
     auto* controller = new PrescribedController();
     controller->addActuator(*aca);
     const double x = 0.15;
-    controller->prescribeControlForActuator("aca", new Constant(x));
+    controller->prescribeControlForActuator("aca", Constant(x));
     model.addController(controller);
 
     auto state = model.initSystem();

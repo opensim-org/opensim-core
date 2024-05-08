@@ -118,18 +118,17 @@ public:
      *  @param prescribedFunction   the actuator's control function
      *
      *  @note As of OpenSim 4.6, PrescribedController no longer takes ownership
-     *        of the passed in Function. Rather, a clone of the Function at the 
-     *        passed in pointer is made.
+     *        of the passed in Function and instead makes a copy.
      */
     void prescribeControlForActuator(const std::string& actuLabel,
-                                     Function* prescribedFunction);
+                                     const Function& prescribedFunction);
 
-    [[deprecated("Use prescribeControlForActuator(const std::string&, Function*) instead")]]
+    [[deprecated("Use prescribeControlForActuator(const std::string&, const Function&) instead")]]
     void prescribeControlForActuator(int index, Function* prescribedFunction) {
         OPENSIM_THROW_FRMOBJ(Exception,
             "PrescribedController::prescribeControlForActuator(int, Function*) "
             "is deprecated. Use prescribeControlForActuator(const std::string&, "
-            "Function*) instead.");
+            "const Function&) instead.");
     }
 
 protected:
@@ -143,7 +142,7 @@ private:
     void constructProperties();
 
     // Utility functions.
-    Function* createFunctionFromData(const std::string& name,
+    std::unique_ptr<Function> createFunctionFromData(const std::string& name,
         const Array<double>& time, const Array<double>& data) const;
     int getActuatorIndexFromLabel(const std::string& actuLabel) const;
 

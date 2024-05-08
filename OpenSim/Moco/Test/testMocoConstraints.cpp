@@ -469,8 +469,7 @@ MocoTrajectory runForwardSimulation(
     controller->setName("prescribed_controller");
     for (int i = 0; i < actuNames.size(); ++i) {
         const auto control = solution.getControl(actuNames[i]);
-        auto* controlFunction =
-                new GCVSpline(5, time.nrow(), &time[0], &control[0]);
+        GCVSpline controlFunction(5, time.nrow(), &time[0], &control[0]);
         const auto& actu = model.getComponent<Actuator>(actuNames[i]);
         controller->addActuator(actu);
         controller->prescribeControlForActuator(

@@ -25,9 +25,11 @@
 // INCLUDES
 //=============================================================================
 #include "PrescribedController.h"
+#include <memory>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/PiecewiseConstantFunction.h>
+#include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 
@@ -188,9 +190,9 @@ void PrescribedController::extendConnectToModel(Model& model) {
                 // Create the control function and assign it to the actuator.
                 controls.getDataColumn(
                         controls.getStateIndex(columnLabel), data);
-                Function* controlFunction = createFunctionFromData(columnLabel,
-                        time, data);
-                prescribeControlForActuator(columnLabel, controlFunction);
+                std::unique_ptr<Function> controlFunction = 
+                        createFunctionFromData(columnLabel, time, data);
+                prescribeControlForActuator(columnLabel, *controlFunction);
             }
         }
     }
@@ -242,17 +244,16 @@ void PrescribedController::computeControls(const SimTK::State& s,
 // GET AND SET
 //=============================================================================
 void PrescribedController::prescribeControlForActuator(
-        const std::string& actuLabel, Function* prescribedFunction) {
+        const std::string& actuLabel, const Function& prescribedFunction) {
     
-    Function* prescribedFunctionCopy = prescribedFunction->clone();
     FunctionSet& controlFuncs = upd_ControlFunctions();
     if (_actuLabelsToControlFunctionIndexMap.count(actuLabel)) {
         const int index = _actuLabelsToControlFunctionIndexMap.at(actuLabel);
-        controlFuncs.set(index, prescribedFunctionCopy);
+        controlFuncs.set(index, prescribedFunction);
     } else {
         const int size = controlFuncs.getSize();
         controlFuncs.setSize(size + 1);
-        controlFuncs.set(size, prescribedFunctionCopy);
+        controlFuncs.set(size, prescribedFunction);
         _actuLabelsToControlFunctionIndexMap[actuLabel] = size;
     }
 }
@@ -260,20 +261,22 @@ void PrescribedController::prescribeControlForActuator(
 //=============================================================================
 // UTILITY
 //=============================================================================
-Function* PrescribedController::createFunctionFromData(const std::string& name,
-        const Array<double>& time, const Array<double>& data) const {
+std::unique_ptr<Function> PrescribedController::createFunctionFromData(
+        const std::string& name, const Array<double>& time, 
+        const Array<double>& data) const {
     int method = 1;
     if(!getProperty_interpolation_method().empty()) {
         method = get_interpolation_method();
     }
 
     if(method > 0) {
-        return new GCVSpline(method, time.getSize(), &time[0], &data[0], name);
+        return OpenSim::make_unique<GCVSpline>(method, time.getSize(), 
+                &time[0], &data[0], name);
     }
 
     if(method == 0) {
-        return new PiecewiseConstantFunction(time.getSize(), 
-                                                    &time[0], &data[0], name);
+        return OpenSim::make_unique<PiecewiseConstantFunction>(
+                time.getSize(), &time[0], &data[0], name);
     }
 
     OPENSIM_THROW_FRMOBJ(Exception, "Invalid interpolation method.");

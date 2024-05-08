@@ -48,8 +48,8 @@ TEST_CASE("Test Controller interface") {
 
     Model model = ModelFactory::createNLinkPendulum(2);
     auto* controller = new PrescribedController();
-    controller->prescribeControlForActuator("/tau0", new Constant(1.0));
-    controller->prescribeControlForActuator("/tau1", new Constant(2.0));
+    controller->prescribeControlForActuator("/tau0", Constant(1.0));
+    controller->prescribeControlForActuator("/tau1", Constant(2.0));
 
     SECTION("No actuators connecteed") {
         model.addController(controller);
@@ -216,7 +216,7 @@ TEST_CASE("testPrescribedControllerOnBlock") {
     actuatorController.setActuators(osimModel.updActuators());
     actuatorController.prescribeControlForActuator(
         osimModel.getActuators().get(0).getAbsolutePathString(),
-        new Constant(controlForce));
+        Constant(controlForce));
     actuatorController.setEnabled(enabled);
 
     // add the controller to the model
@@ -426,9 +426,9 @@ TEST_CASE("PrescribedController control function ordering") {
     controller->addActuator(model.getComponent<Actuator>("/tau2"));
 
     GIVEN("Controls prescribed out of order") {
-        controller->prescribeControlForActuator("/tau1", new Constant(2.0));
-        controller->prescribeControlForActuator("/tau0", new Constant(1.0));
-        controller->prescribeControlForActuator("/tau2", new Constant(3.0));
+        controller->prescribeControlForActuator("/tau1", Constant(2.0));
+        controller->prescribeControlForActuator("/tau0", Constant(1.0));
+        controller->prescribeControlForActuator("/tau2", Constant(3.0));
         // Control function reordering happens during 
         // PrescribedController::extendConnectToModel().
         model.addController(controller);
@@ -466,13 +466,13 @@ TEST_CASE("PrescribedController behavior") {
 
     SECTION("Overwriting control function with same label") {
         controller.prescribeControlForActuator(
-                "actu_slider", new Constant(1.0));
+                "actu_slider", Constant(1.0));
         CHECK_NOTHROW(model.initSystem());
     }
 
     SECTION("Different label for same actuator should throw") {
         controller.prescribeControlForActuator(
-                "/forceset/actu_slider", new Constant(1.0));
+                "/forceset/actu_slider", Constant(1.0));
         std::string msg = "The number of control functions (2) does not match"; 
         CHECK_THROWS_WITH(model.initSystem(), ContainsSubstring(msg));
     }

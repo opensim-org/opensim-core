@@ -184,9 +184,9 @@ int main()
 
         // specify the control function for each actuator
         legController->prescribeControlForActuator("piston",
-                new Constant(0.1));
+                Constant(0.1));
         legController->prescribeControlForActuator("spring", 
-                new PiecewiseLinearFunction(5, t, x));
+                PiecewiseLinearFunction(5, t, x));
 
         // add the controller to the model
         osimModel.addController(legController);     

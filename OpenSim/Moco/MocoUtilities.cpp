@@ -84,7 +84,7 @@ void OpenSim::prescribeControlsToModel(
         const auto& actu = model.getComponent<Actuator>(actuNames[i]);
         controller->addActuator(actu);
         controller->prescribeControlForActuator(
-                actu.getName(), function.release());
+                actu.getName(), *function);
     }
     model.addController(controller);
 }
