@@ -36,12 +36,22 @@ class Function;
  * PrescribedController is a concrete Controller that specifies functions that 
  * prescribe the control values of its actuators as a function of time.
  *
- * The control functions are specified in the `ControlFunctions` property. The
- * number and order of functions must match the number and order of actuators 
- * connected to the controller. Use `prescribeControlForActuator()` to assign a
- * control function to an actuator based on the name or path of the actuator;
- * after connecting the controller to the model, the added control function will
- * be placed at the correct index in the `ControlFunctions` property.
+ * The control functions are specified in the `ControlFunctions` property. Use 
+ * `prescribeControlForActuator()` to assign a control function to an actuator 
+ * based on the name or path of the actuator. After connecting the controller to 
+ * the model, the added control function will be placed at the correct index in 
+ * the `ControlFunctions` property. If modifying the `ControlFunctions` property
+ * directly, the number and order of functions must match the number and order 
+ * of actuators connected to the controller. However, it is recommended to use
+ * `prescribeControlForActuator()` to ensure the correct mapping between 
+ * actuator and control function.
+ *
+ * When loading from file, the order of the control functions in the file must
+ * match the order of actuators connected to the controller. If 
+ * `prescribeControlForActuator()` is used to assign control functions, the 
+ * control functions will be stored in the correct order in the 
+ * `ControlFunctions` when saving the controller to file (since they are 
+ * reordered as described above).
  *
  * A controls storage file can be specified in the `controls_file` property.
  * Each column must be either the name or path of an actuator in the model. If

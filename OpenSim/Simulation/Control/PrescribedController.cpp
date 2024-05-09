@@ -113,7 +113,7 @@ void PrescribedController::extendConnectToModel(Model& model) {
         "number of actuators ({}) connected to the controller.",
         controlFuncs.getSize(), socket.getNumConnectees());
 
-    // If the 'ALL' keyword was provide via the actuator list (pre-4.6), then 
+    // If the 'ALL' keyword was provided via the actuator list (pre-4.6), then 
     // populate the control function index map with all actuators in 
     // connectee order. This also handles the case where control functions are
     // provided via the ControlFunctions property directly (i.e., the index map 

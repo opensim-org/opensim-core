@@ -132,12 +132,12 @@ void simulateMuscle(
     // Create a prescribed controller that simply 
     //applies controls as function of time
     Constant control(0.5);
-    PrescribedController * muscleController = new PrescribedController();
+    PrescribedController* muscleController = new PrescribedController();
 
     muscleController->setActuators(model.updActuators());
     // Set the individual muscle control functions 
     //for the prescribed muscle controller
-    muscleController->prescribeControlForActuator("muscle", *control.clone());
+    muscleController->prescribeControlForActuator("muscle", control);
 
     // Add the control set controller to the model
     model.addController(muscleController);

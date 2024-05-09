@@ -288,7 +288,7 @@ void simulateMuscle(
         // Set the individual muscle control functions 
         //for the prescribed muscle controller
         muscleController->prescribeControlForActuator("muscle", 
-                *control->clone());
+                *control);
 
         // Add the control set controller to the model
         model.addController(muscleController.release());
