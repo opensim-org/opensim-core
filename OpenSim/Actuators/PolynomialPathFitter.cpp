@@ -1018,8 +1018,9 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
                 fitCoefficientsStepwiseRegression(coordinatesThisForce, b, 
                         order, coefficients);
             } else {
-                order = get_minimum_polynomial_order();
-                fitAllCoefficients(coordinatesThisForce, b, order, 
+                order = fitAllCoefficients(coordinatesThisForce, b, 
+                        get_minimum_polynomial_order(), 
+                        get_maximum_polynomial_order(),
                         coefficients);
             }
 
@@ -1274,12 +1275,13 @@ void PolynomialPathFitter::removeMomentArmColumns(TimeSeriesTable& momentArms,
     }
 }
 
-void PolynomialPathFitter::fitAllCoefficients(
-        const SimTK::Matrix& coordinates, const SimTK::Vector& b, int& order,
-        SimTK::Vector& coefficients) const {
+int PolynomialPathFitter::fitAllCoefficients(
+        const SimTK::Matrix& coordinates, const SimTK::Vector& b, int minOrder, 
+        int maxOrder, SimTK::Vector& coefficients) const {
 
     int numTimes = coordinates.nrow();
     int numCoordinates = coordinates.ncol();
+    int order = minOrder;
     while (true) {
         // Initialize the multivariate polynomial function.
         int numCoefficients = choose(numCoordinates + order, order);
@@ -1336,12 +1338,13 @@ void PolynomialPathFitter::fitAllCoefficients(
             }
         }
 
-        if ((pathLengthMet && momentArmMet) ||
-                order == get_maximum_polynomial_order()) {
+        if ((pathLengthMet && momentArmMet) || order == maxOrder) {
             break;
         }
         ++order;
     }
+
+    return order;
 }
 
 void PolynomialPathFitter::fitCoefficientsStepwiseRegression(

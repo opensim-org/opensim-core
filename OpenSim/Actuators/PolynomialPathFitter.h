@@ -666,15 +666,28 @@ private:
 
     /**
      * Fit to the path length and moment arm samples using all possible
-     * polynomial coefficients.
+     * polynomial coefficients. `coordinates` is the matrix of coordinate values
+     * for coordinates that the current path depends on. The vector `b` contains
+     * the path length and moment arm values for the current path.
+     * 
+     * We solve for the coefficients of the polynomial using a least squares of
+     * fit, `Ax = b`. Each row of `A` contains polynomial terms evaluated using 
+     * the coordinate values from a particular point in time. `x` is the vector
+     * polynomial coefficients. The first N elements of `b` contain the path 
+     * length values, where N is the number of time points. The remaining N*Nc 
+     * rows of `b` contain the moment arm values, where Nc is the number of 
+     * coordinates the path depends on.
      */
-    void fitAllCoefficients(const SimTK::Matrix& coordinates, 
-            const SimTK::Vector& b, int& order, 
+    int fitAllCoefficients(const SimTK::Matrix& coordinates, 
+            const SimTK::Vector& b, int minOrder, int maxOrder,
             SimTK::Vector& coefficients) const;
 
     /**
      * Fit to the path length and moment arm samples using stepwise regression
-     * to find a minimal set of polynomial coefficients.
+     * to find a minimal set of polynomial coefficients. `coordinates` is the 
+     * matrix of coordinate values for coordinates that the current path depends
+     * on. The vector `b` contains the path length and moment arm values for the
+     * current path.
      */
     void fitCoefficientsStepwiseRegression(
         const SimTK::Matrix& coordinates, const SimTK::Vector& b, int order,

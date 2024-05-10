@@ -56,7 +56,7 @@ fitter.setModel(ModelProcessor(model));
 values = TimeSeriesTable('coordinates.sto');
 times = values.getIndependentColumn();
 for i = times.size():-1:1
-    if mod(i, 5) ~= 0
+    if mod(i, 10) ~= 0
         values.removeRowAtIndex(i);
     end
 end
@@ -85,7 +85,7 @@ fitter.setMaximumPolynomialOrder(5);
 
 % Set the number of random samples taken at each frame around the nominal 
 % coordinate values.
-fitter.setNumSamplesPerFrame(15);
+fitter.setNumSamplesPerFrame(10);
 
 % By default, coordinate values are sample around the nominal coordinate
 % values using bounds of [-10, 10] degrees. You can set custom bounds for
@@ -96,8 +96,10 @@ fitter.appendCoordinateSamplingBounds(...
     '/jointset/hip_l/hip_flexion_l', Vec2(-15, 15));
 
 % Set the global coordinate sampling bounds. This will be used for any
-% coordinates that do not have custom bounds set.
-fitter.setGlobalCoordinateSamplingBounds(Vec2(-25, 25));
+% coordinates that do not have custom bounds set. We'll use reasonably
+% large bounds here to sample a wide range of the model's coordinate space
+% around the reference trajectory.
+fitter.setGlobalCoordinateSamplingBounds(Vec2(-30, 30));
 
 % Use stepwise regression to fit the path lengths and moment arms. This
 % setting evaluates the fit after adding polynomial terms one at a time
@@ -113,8 +115,8 @@ fitter.setUseStepwiseRegression(true);
 % stop for a given path. Tighter tolerances may result in a better fit,
 % but at the expense of higher polynomial orders (or more polynomial 
 % terms, if using stepwise regression).
-fitter.setPathLengthTolerance(1e-2);
-fitter.setMomentArmTolerance(5e-4);
+fitter.setPathLengthTolerance(1e-3);
+fitter.setMomentArmTolerance(1e-3);
 
 % Run the fitter
 % --------------
