@@ -157,7 +157,7 @@ void createStateStorageFile() {
         controller->addActuator(model.getMuscles()[im]);
         controller->prescribeControlForActuator(
             model.getMuscles()[im].getName(),
-            new Constant(distribution(generator))
+            Constant(distribution(generator))
             );
     }
 

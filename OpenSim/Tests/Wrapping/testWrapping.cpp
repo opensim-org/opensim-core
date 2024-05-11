@@ -88,7 +88,7 @@ namespace {
         for (int i = 0; i < (int)socket.getNumConnectees(); ++i) {
             actuController.prescribeControlForActuator(
                     actuatorsSet.get(i).getAbsolutePathString(),
-                    new Constant(activation));
+                    Constant(activation));
         }
     
         // Add the controller to the model. We need to call disownAllComponents
