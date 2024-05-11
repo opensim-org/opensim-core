@@ -48,6 +48,8 @@ v4.6
 - Added `Force::getForceIndex()` to allow accessing the `SimTK::ForceIndex` for force elements. (#3755) 
 - Improved performance in `MultivariatePolynomialFunction` and added convenience methods for automatically generating function derivatives (#3767).
 - Added options to `PolynomialPathFitter` for including moment arm and lengthening speed functions in generated `FunctionBasedPath`s (#3767).
+- The signature for `PrescribedController::prescribeControlForActuator()` was changed to take a `Function` via a const reference rather than a
+pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Added option to `PolynomialPathFitter` to use stepwise regression for fitting a minimal set of polynomial coefficients for a `FunctionBasedPath` (#3779).
 
 v4.5

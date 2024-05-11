@@ -87,8 +87,8 @@ void testDoublePendulumWithSolver()
         new PrescribedController();
 
     controller->setActuators(pendulum.getActuators());
-    controller->prescribeControlForActuator("Torq1", new Constant(torq1));
-    controller->prescribeControlForActuator("Torq2", new Constant(torq2));
+    controller->prescribeControlForActuator("Torq1", Constant(torq1));
+    controller->prescribeControlForActuator("Torq2", Constant(torq2));
     pendulum.addController(controller);
 
     State &s = pendulum.initSystem();
