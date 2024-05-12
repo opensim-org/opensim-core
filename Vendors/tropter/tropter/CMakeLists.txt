@@ -90,8 +90,8 @@ if(LINUX)
     target_compile_options(tropter PRIVATE ${IPOPT_CFLAGS_OTHER})
     # We must use this flag on Linux for tropter to link to gfortran.
     # In CMake 3.13, we could use target_link_options().
-    message("LINK_FLAGS ${IPOPT_LDFLAGS}")
-    set_target_properties(tropter PROPERTIES LINK_FLAGS ${IPOPT_LDFLAGS})
+    #message("LINK_FLAGS ${IPOPT_LDFLAGS}")
+    #target_link_libraries(tropter PROPERTIES LINK_FLAGS ${IPOPT_LDFLAGS})
 endif()
 # TODO IPOPT_DEFINITIONS, IPOPT_LINK_FLAGS
 
