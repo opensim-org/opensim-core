@@ -57,6 +57,7 @@ delete_this_to_stop_optimization*.txt
 .idea/codeStyles/Project.xml
 .idea/editor.xml
 .vscode/settings.json
+.cache/clangd/**
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/
@@ -78,3 +79,4 @@ cmake-build-*
 
 ## File-based project format:
 *.iws
+.vscode/settings.json
