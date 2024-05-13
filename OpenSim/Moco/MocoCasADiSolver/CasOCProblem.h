@@ -641,7 +641,7 @@ public:
         return m_isKinematicConstraintMethodBordalba2023;
     }
     int getNumProjectionConstraintEquations() const {
-        if (getNumKinematicConstraintEquations() &&
+        if ((getNumQErr() + getNumUErr()) &&
                 isKinematicConstraintMethodBordalba2023()) {
             return getNumMultibodyStates();
         } else {

@@ -376,11 +376,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         for (const auto& info : casProblem->getSlackInfos()) {
             expectedSlackNames.push_back(info.name);
         }
-        bool appendProjectionStates =
-                getProblemRep().getNumKinematicConstraintEquations() &&
-                get_kinematic_constraint_method() == "Bordalba2023";
-        casGuess = convertToCasOCIterate(guess, expectedSlackNames,
-                appendProjectionStates);
+        casGuess = convertToCasOCIterate(guess, expectedSlackNames);
     }
 
     // Temporarily disable printing of negative muscle force warnings so the

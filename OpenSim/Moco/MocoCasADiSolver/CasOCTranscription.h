@@ -173,13 +173,15 @@ private:
     VariablesDM m_upperBounds;
     VariablesDM m_shift;
     VariablesDM m_scale;
-    // This holds a vector of MX types, where each element of the vector
-    // contains the states needed to calculate the defect constraints for a
-    // single mesh interval. The Bordalba et al. (2023) kinematic constraint
-    // method requires that the point at the end of one mesh interval and the 
-    // start of the next mesh interval have different decision variables 
-    // representing the state, even though they share the same time point.
+    // These hold vectors of MX types, where each element of the vector
+    // contains either the states or state derivatives needed to calculate the 
+    // defect constraints for a single mesh interval. The Bordalba et al. (2023) 
+    // kinematic constraint method requires that the point at the end of one 
+    // mesh interval and the start of the next mesh interval have different 
+    // decision variables representing the state, even though they share the 
+    // same time point.
     casadi::MXVector m_statesByMeshInterval;
+    casadi::MXVector m_stateDerivativesByMeshInterval;
     casadi::MX m_projectionStateDistances;
 
     casadi::DM m_meshIndicesMap;
@@ -190,7 +192,11 @@ private:
     casadi::Matrix<casadi_int> m_projectionStateIndices;
     casadi::Matrix<casadi_int> m_notProjectionStateIndices;
 
-    casadi::MX m_xdot; // State derivatives.
+    // State derivatives.
+    casadi::MX m_xdot; 
+    // State derivatives reserved for the Bordalba et al. (2023) kinematic
+    // constraint method based on coordinate projection.
+    casadi::MX m_xdot_projection;
 
     casadi::MX m_objectiveTerms;
     std::vector<std::string> m_objectiveTermNames;
@@ -212,7 +218,7 @@ private:
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
     virtual void calcDefectsImpl(const casadi::MXVector& x,
-            const casadi::MX& xdot, casadi::MX& defects) const = 0;
+            const casadi::MXVector& xdot, casadi::MX& defects) const = 0;
     virtual void calcInterpolatingControlsImpl(const casadi::MX& /*controls*/,
             casadi::MX& /*interpControls*/) const {
         OPENSIM_THROW_IF(m_pointsForInterpControls.numel(), OpenSim::Exception,
@@ -222,7 +228,8 @@ private:
     void transcribe();
     void setObjectiveAndEndpointConstraints();
     void calcDefects() {
-        calcDefectsImpl(m_statesByMeshInterval, m_xdot, m_constraints.defects);
+        calcDefectsImpl(m_statesByMeshInterval, 
+                m_stateDerivativesByMeshInterval, m_constraints.defects);
     }
     void calcInterpolatingControls() {
         calcInterpolatingControlsImpl(
