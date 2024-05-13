@@ -2270,7 +2270,7 @@ TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
         controller->addActuator(
                 model.getComponent<Actuator>("/forceset/actuator"));
         controller->prescribeControlForActuator("/forceset/actuator",
-            new GCVSpline(5, control.size(), time.data(), &control[0],
+                GCVSpline(5, control.size(), time.data(), &control[0],
                     "/forceset/actuator", 0.0));
         model.addController(controller);
         model.finalizeConnections();
@@ -2305,7 +2305,7 @@ TEST_CASE("MocoControlGoal: ignoring controlled actuators") {
     controller->addActuator(
             model.getComponent<Actuator>("/forceset/actuator"));
     controller->prescribeControlForActuator("/forceset/actuator",
-            new Constant(1.0));
+            Constant(1.0));
     model.addController(controller);
     model.finalizeConnections();
 

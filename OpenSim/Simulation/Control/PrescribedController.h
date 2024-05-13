@@ -11,6 +11,7 @@
  *                                                                            *
  * Copyright (c) 2005-2024 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
+ * Contributor(s): Nicholas Bianco                                            *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -35,6 +36,31 @@ class Function;
  * PrescribedController is a concrete Controller that specifies functions that 
  * prescribe the control values of its actuators as a function of time.
  *
+ * The control functions are specified in the `ControlFunctions` property. Use 
+ * `prescribeControlForActuator()` to assign a control function to an actuator 
+ * based on the name or path of the actuator. After connecting the controller to 
+ * the model, the added control function will be placed at the correct index in 
+ * the `ControlFunctions` property. If modifying the `ControlFunctions` property
+ * directly, the number and order of functions must match the number and order 
+ * of actuators connected to the controller. However, it is recommended to use
+ * `prescribeControlForActuator()` to ensure the correct mapping between 
+ * actuator and control function.
+ *
+ * When loading from file, the order of the control functions in the file must
+ * match the order of actuators connected to the controller. If 
+ * `prescribeControlForActuator()` is used to assign control functions, the 
+ * control functions will be stored in the correct order in the 
+ * `ControlFunctions` when saving the controller to file (since they are 
+ * reordered as described above).
+ *
+ * A controls storage file can be specified in the `controls_file` property.
+ * Each column must be either the name or path of an actuator in the model. If
+ * the actuator name is used as the column label, the first actuator with a 
+ * matching name will be connected to the controller and assigned a control 
+ * function based on the column data. Using actuator paths in the column labels
+ * is recommended to avoid ambiguity. Finally, any actuators with existing 
+ * control functions will be ignored when setting controls from file.
+ *
  * @note Prior to OpenSim 4.6, PrescribedController support setting a prescribed
  *       control based on the actuator's index in the `ControlFunctions`
  *       property. This interface is deprecated and will be removed in a future
@@ -51,13 +77,13 @@ public:
 //=============================================================================
     OpenSim_DECLARE_PROPERTY(ControlFunctions, FunctionSet,
         "Functions (one per control) describing the controls for actuators "
-        "specified for this controller." );
+        "specified for this controller. The control function set must match "
+        "the number and order of connected actuators." );
 
     OpenSim_DECLARE_OPTIONAL_PROPERTY(controls_file, std::string,
         "Controls storage (.sto) file containing controls for individual "
         "actuators in the model. Each column label must be either the name "
-        "of an actuator in the model's ForceSet or the absolute path to an "
-        "actuator anywhere in the model.");
+        "or path to an actuator in the model.");
 
     OpenSim_DECLARE_OPTIONAL_PROPERTY(interpolation_method, int,
         "Interpolate the controls file data using piecewise: '0-constant', "
@@ -97,32 +123,36 @@ public:
     /**
      *  Assign a prescribed control function for the desired actuator identified
      *  by the provided label. The label can be either the name of the actuator,
-     *  or the absolute path to the actuator in the model. Controller takes
-     *  ownership of the function.
+     *  or the absolute path to the actuator in the model.
      *  @param actuLabel            label for the actuator in the controller
      *  @param prescribedFunction   the actuator's control function
+     *
+     *  @note As of OpenSim 4.6, PrescribedController no longer takes ownership
+     *        of the passed in Function and instead makes a copy.
      */
     void prescribeControlForActuator(const std::string& actuLabel,
-                                     Function* prescribedFunction);
+                                     const Function& prescribedFunction);
 
-    [[deprecated("Use prescribeControlForActuator(const std::string&, Function*) instead")]]
+    [[deprecated("Use prescribeControlForActuator(const std::string&, const Function&) instead")]]
     void prescribeControlForActuator(int index, Function* prescribedFunction) {
         OPENSIM_THROW_FRMOBJ(Exception,
             "PrescribedController::prescribeControlForActuator(int, Function*) "
             "is deprecated. Use prescribeControlForActuator(const std::string&, "
-            "Function*) instead.");
+            "const Function&) instead.");
     }
 
 protected:
     // MODEL COMPONENT INTERFACE
     void extendConnectToModel(Model& model) override;
+    void updateFromXMLNode(SimTK::Xml::Element& node,
+                           int versionNumber) override;
 
 private:
     // Construct and initialize properties.
     void constructProperties();
 
     // Utility functions.
-    Function* createFunctionFromData(const std::string& name,
+    std::unique_ptr<Function> createFunctionFromData(const std::string& name,
         const Array<double>& time, const Array<double>& data) const;
     int getActuatorIndexFromLabel(const std::string& actuLabel) const;
 
@@ -131,7 +161,6 @@ private:
 
     // Member variables.
     std::unordered_map<std::string, int> _actuLabelsToControlFunctionIndexMap;
-    std::unordered_map<int, int> _actuIndexToControlFunctionIndexMap;
 
 };  // class PrescribedController
 
