@@ -154,7 +154,7 @@ public:
     /// @precondition
     ///     The MocoProblem must contain the model corresponding to
     ///     the provided trajectory.
-    void visualize(const MocoTrajectory& it) const;
+    void visualize(const MocoTrajectory& traj) const;
 
     /// Calculate the requested outputs using the model in the problem and the
     /// states and controls in the MocoTrajectory.
@@ -164,8 +164,28 @@ public:
     /// PositionMotion) is.
     /// @see OpenSim::analyze()
     /// @note Parameters in the MocoTrajectory are **not** applied to the model.
-    TimeSeriesTable analyze(const MocoTrajectory& it,
+    TimeSeriesTable analyze(const MocoTrajectory& traj,
             std::vector<std::string> outputPaths) const;
+
+    /// Compute the generalized coordinate forces for the provided trajectory 
+    /// based on a set of applied model Force%s. This can be used to compute 
+    /// an inverse dynamics solution from a MocoTrajectory, where the applied 
+    /// model Force%s are typically external forces in the system (e.g., 
+    /// ExternalForce or SmoothSphereHalfSpaceForce). However, the `forcePaths`
+    /// argument can contain paths to any Force%s in the model.
+    ///
+    /// @param traj       The MocoTrajectory for which to compute the 
+    ///                   generalized forces.
+    /// @param forcePaths The model paths to the Force%s which will be applied
+    ///                   to the model to compute the generalized forces.
+    ///
+    /// @note Force's `appliesForce` property is obeyed when calculating the
+    ///       generalized forces.
+    ///
+    /// @pre The MocoProblem must contain the model corresponding to the 
+    ///      provided trajectory.
+    TimeSeriesTable calcGeneralizedForces(const MocoTrajectory& traj,
+            const std::vector<std::string>& forcePaths) const;
 
     /// @name Using other solvers
     /// @{
