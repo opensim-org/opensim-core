@@ -247,11 +247,13 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 
 %template(StdVectorIMUs) std::vector< OpenSim::IMU* >;
-
+/*
 %include <OpenSim/Simulation/StatesTrajectory.h>
 // This enables iterating using the getBetween() method.
+
 %template(IteratorRangeStatesTrajectoryIterator)
     SimTK::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
+*/
 %include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 %include <OpenSim/Simulation/PositionMotion.h>
 %include <OpenSim/Simulation/SimulationUtilities.h>

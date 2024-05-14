@@ -107,7 +107,7 @@ MODEL_ADOPT_HELPER(Controller);
 
 // TODO remove.
 %rename(_getBetween) OpenSim::StatesTrajectory::getBetween;
-
+/*
 %extend OpenSim::StatesTrajectory {
 %pythoncode %{
 
@@ -129,7 +129,7 @@ MODEL_ADOPT_HELPER(Controller);
             yield it.next()
 %}
 };
-
+*/
 // TODO we already made a StdVectorState in simbody.i, but this is required
 // to create type traits for the simulation module. Ideally, we would not need
 // the following line:
@@ -175,8 +175,10 @@ SET_ADOPT_HELPER(Analysis);
 // Pythonic operators
 // ==================
 // Allow indexing operator in python (e.g., states[i]).
+/*
 %extend OpenSim::StatesTrajectory {
     const SimTK::State&  __getitem__(int i) const {
         return $self->get(i);
     }
 };
+*/
