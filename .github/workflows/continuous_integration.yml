@@ -66,7 +66,7 @@ jobs:
         # /W0 disables warnings.
         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
         # TODO: CMake provides /W3, which overrides our /W0
-        cmake -E env CXXFLAGS="/W0" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_TROPTER=ON -DOPENSIM_WITH_CASADI=ON
+        cmake -E env CXXFLAGS="/W0" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_TROPTER=OFF -DOPENSIM_WITH_CASADI=ON
         cmake --build . --config Release -- /maxcpucount:4
 
     - name: Configure opensim-core
@@ -206,7 +206,7 @@ jobs:
         # /W0 disables warnings.
         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
         # TODO: CMake provides /W3, which overrides our /W0
-        cmake -E env CXXFLAGS="/W0" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_TROPTER=ON -DOPENSIM_WITH_CASADI=ON
+        cmake -E env CXXFLAGS="/W0" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_TROPTER=OFF -DOPENSIM_WITH_CASADI=ON
         cmake --build . --config Release -- /maxcpucount:4
 
     - name: Configure opensim-core
@@ -314,7 +314,7 @@ jobs:
         # /W0 disables warnings.
         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
         # TODO: CMake provides /W3, which overrides our /W0
-        cmake -E env CXXFLAGS="/W0" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_TROPTER=ON -DOPENSIM_WITH_CASADI=ON
+        cmake -E env CXXFLAGS="/W0" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_TROPTER=OFF -DOPENSIM_WITH_CASADI=ON
         cmake --build . --config Release -- /maxcpucount:4
 
     - name: Configure opensim-core
@@ -557,7 +557,7 @@ jobs:
         DEP_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install)
         DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
         DEP_CMAKE_ARGS+=(-DSUPERBUILD_ezc3d=ON)
-        DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_TROPTER=ON)
+        DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_TROPTER=OFF)
         DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
         DEP_CMAKE_ARGS+=(-DOPENSIM_DISABLE_LOG_FILE=ON)
         DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=11)
@@ -826,7 +826,7 @@ jobs:
         DEP_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install)
         DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
         DEP_CMAKE_ARGS+=(-DSUPERBUILD_ezc3d=ON)
-        DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_TROPTER=ON)
+        DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_TROPTER=OFF)
         DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
         printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
         cmake "${DEP_CMAKE_ARGS[@]}"
@@ -847,7 +847,7 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=~/swig/bin/swig)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_TROPTER=ON)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_TROPTER=OFF)
         # TODO: Update to simbody.github.io/latest
         OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
         OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
