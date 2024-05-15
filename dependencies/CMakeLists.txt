@@ -360,7 +360,7 @@ if(SUPERBUILD_casadi)
                   DEPENDS    ipopt
                   GIT_URL    https://github.com/casadi/casadi.git
                   # This commit is from casadi's develop branch, 2020-06-20
-                  GIT_TAG    d074c221e22bd754f240f3597371418733e5efd4
+                  GIT_TAG    3.6.5
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
                              -DWITH_THREAD:BOOL=ON
                              -DWITH_EXAMPLES:BOOL=OFF

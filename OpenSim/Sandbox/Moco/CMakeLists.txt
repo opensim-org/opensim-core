@@ -37,6 +37,9 @@ MocoAddSandboxExecutable(NAME sandboxCasADi
 MocoAddSandboxExecutable(NAME sandboxCasADiParallelMap
         LIB_DEPENDS SimTKcommon casadi)
 
+MocoAddSandboxExecutable(NAME sandboxAutodiff
+        LIB_DEPENDS SimTKcommon casadi)
+
 MocoAddSandboxExecutable(NAME sandboxSimTKMotion
         LIB_DEPENDS SimTKsimbody)
 
