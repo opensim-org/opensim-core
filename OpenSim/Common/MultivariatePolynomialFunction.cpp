@@ -130,7 +130,9 @@ public:
         }
         
         for (int i = 0; i < coefficients.size(); ++i) {
-            (*this)[monomials[i]] = coefficients[i];
+            if (coefficients[i] != 0.0) {
+                (*this)[monomials[i]] = coefficients[i];
+            }
         }
     }
 
@@ -390,13 +392,15 @@ public:
             vars.push_back("x" + std::to_string(i));
         }
         for (int i = 0; i < numCoefs; ++i) {
-            Monomial monomial;
-            for (int j = 0; j < dimension; ++j) {
-                if (m_combinations[i][j] > 0) {
-                    monomial[vars[j]] = m_combinations[i][j];
+            if (m_coefficients[i] != 0) {
+                Monomial monomial;
+                for (int j = 0; j < dimension; ++j) {
+                    if (m_combinations[i][j] > 0) {
+                        monomial[vars[j]] = m_combinations[i][j];
+                    }
                 }
+                poly[monomial] = m_coefficients[i];
             }
-            poly[monomial] = m_coefficients[i];
         }
         m_value = createHornerScheme(vars, poly);    
 
@@ -409,12 +413,12 @@ public:
 
     }
 
-    T calcValue(const SimTK::Vector& x) const {
+    T calcValue(const SimTK::Vector& x) const override {
         return m_value->calcValue(x);
     }
 
     T calcDerivative(const SimTK::Array_<int>& derivComponent, 
-            const SimTK::Vector& x) const {
+            const SimTK::Vector& x) const override {
         return m_derivatives[derivComponent[0]]->calcValue(x);
     }
 
@@ -543,16 +547,21 @@ private:
         int order = poly.calcOrder();
         if (order == 0) {
             // For a zeroth order polynomial, construct a Monomial node with a 
-            // constant term and no coefficients.
+            // constant term and no coefficients. If no constant term exists,
+            // the constant is set to zero.
+            T constant = 0.0;
+            if (poly.count({})) {
+                constant = static_cast<T>(poly.at({}));
+            }
             MonomialNode* monomial = new MonomialNode(
-                    static_cast<T>(poly.at({})), SimTK::Vector_<T>());
+                    constant, SimTK::Vector_<T>());
             return SimTK::ClonePtr<MonomialNode>(monomial);
 
         } else if (order == 1) {
             // For a first order polynomial, construct a Monomial node with a
             // constant term and coefficients equal to the polynomial 
             // coefficients.
-            int dimension = vars.size();
+            int dimension = static_cast<int>(vars.size());
             SimTK::Vector_<T> coefficients = 
                     poly.calcCoefficients(dimension, order, vars);
 

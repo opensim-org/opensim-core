@@ -106,6 +106,7 @@ private:
  *    - Number of samples per frame: 25
  *    - Number of threads: (# of available hardware threads) - 2
  *    - Latin hypercube sampling algorithm: "random"
+ *    - Use stepwise regression: False
  *
  * @note The default settings were chosen based on testing with a human
  *       lower-extremity model. Different settings may be required for other
@@ -269,6 +270,24 @@ public:
      */
     void setOutputDirectory(std::string directory);
     std::string getOutputDirectory() const;
+
+    /**
+     * Whether or not to use stepwise regression to fit a minimal set of 
+     * polynomial coefficients.
+     * 
+     * Stepwise regression builds a vector of coefficients by individually 
+     * adding polynomial terms that result in the smallest path length and
+     * moment arm error. When a new term is added, the fitting process is
+     * repeated to recompute the coefficients. Polynomial terms are added until
+     * the path length and moment arm tolerances are met, or the maximum number
+     * of terms is reached.
+     * 
+     * @note By default, this setting is false.
+     * @note If enabled, stepwise regression will fit coefficients using the 
+     *       maximum polynomial order based on `setMaximumPolynomialOrder()`.
+     */
+    void setUseStepwiseRegression(bool tf);
+    bool getUseStepwiseRegression() const;
 
     /**
      * The moment arm threshold value that determines whether or not a path
@@ -496,6 +515,9 @@ private:
             "path fitting.");
     OpenSim_DECLARE_PROPERTY(output_directory, std::string,
             "The directory to which the path fitting results are written.");
+    OpenSim_DECLARE_PROPERTY(use_stepwise_regression, bool, 
+            "Whether or not to use stepwise regression to fit a minimal set of "
+            "polynomial coefficients.");
     OpenSim_DECLARE_PROPERTY(moment_arm_threshold, double,
             "The moment arm threshold value that determines whether or not a "
             "path depends on a model coordinate. In other words, the moment "
@@ -620,6 +642,15 @@ private:
 
     // HELPER FUNCTIONS
     /**
+     * Generate all possible combinations of `k` elements from a set of `n`
+     * total elements.
+     */
+    static int choose(int n, int k) {
+        if (k == 0) { return 1; }
+        return (n * choose(n - 1, k - 1)) / k;
+    }
+
+    /**
      * Get the (canonicalized) absolute directory containing the file from
      * which this tool was loaded. If the `FunctionBasedPathFitter` was not
      * loaded from a file, this returns an empty string.
@@ -632,6 +663,35 @@ private:
      */
     static void removeMomentArmColumns(TimeSeriesTable& momentArms,
             const MomentArmMap& momentArmMap);
+
+    /**
+     * Fit to the path length and moment arm samples using all possible
+     * polynomial coefficients. `coordinates` is the matrix of coordinate values
+     * for coordinates that the current path depends on. The vector `b` contains
+     * the path length and moment arm values for the current path.
+     * 
+     * We solve for the coefficients of the polynomial using a least squares of
+     * fit, `Ax = b`. Each row of `A` contains polynomial terms evaluated using 
+     * the coordinate values from a particular point in time. `x` is the vector
+     * polynomial coefficients. The first N elements of `b` contain the path 
+     * length values, where N is the number of time points. The remaining N*Nc 
+     * rows of `b` contain the moment arm values, where Nc is the number of 
+     * coordinates the path depends on.
+     */
+    int fitAllCoefficients(const SimTK::Matrix& coordinates, 
+            const SimTK::Vector& b, int minOrder, int maxOrder,
+            SimTK::Vector& coefficients) const;
+
+    /**
+     * Fit to the path length and moment arm samples using stepwise regression
+     * to find a minimal set of polynomial coefficients. `coordinates` is the 
+     * matrix of coordinate values for coordinates that the current path depends
+     * on. The vector `b` contains the path length and moment arm values for the
+     * current path.
+     */
+    void fitCoefficientsStepwiseRegression(
+        const SimTK::Matrix& coordinates, const SimTK::Vector& b, int order,
+        SimTK::Vector& coefficients) const;
 
     /**
      * Get the RMS errors between two sets of path lengths and moment arms
