@@ -66,15 +66,13 @@ double MocoGoal::calcSystemMass(const GoalInput& input) const {
     return getModel().getTotalMass(input.initial_state);
 }
 
-std::unordered_map<std::string, int> MocoGoal::getInputControlIndexMap(
-        const Model& model) const {
+std::unordered_map<std::string, int> MocoGoal::getInputControlIndexMap() const {
 
     // Get the full Input control index map from the ControlDistributor.
-    auto map = model.getComponentList<ControlDistributor>().begin()
-                    ->getControlIndexMap();
+    auto map = m_control_distributor->getControlIndexMap();
 
     // Get all possible control names from the model.
-    auto controlNames = createControlNamesFromModel(model);
+    auto controlNames = createControlNamesFromModel(getModel());
 
     // Remove the control names that are associated with the model's
     // ActuatorInputController.
@@ -82,6 +80,11 @@ std::unordered_map<std::string, int> MocoGoal::getInputControlIndexMap(
         map.erase(controlName);
     }
     return map;
+}
+
+const SimTK::Vector& MocoGoal::getInputControls(
+        const SimTK::State& state) const {
+    return m_control_distributor->getControls(state);
 }
 
 void MocoGoal::constructProperties() {

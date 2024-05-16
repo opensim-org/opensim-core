@@ -21,6 +21,7 @@
 #include "MocoBounds.h"
 #include "MocoUtilities.h"
 #include "MocoConstraintInfo.h"
+#include "Components/ControlDistributor.h"
 #include "osimMocoDLL.h"
 
 #include <simbody/internal/Constraint.h>
@@ -202,8 +203,12 @@ public:
     /// controls vector. This map will only include Input controls associated 
     /// with InputController%s added by the user (i.e., not 
     /// ActuatorInputController).
-    std::unordered_map<std::string, int> 
-    getInputControlIndexMap(const Model& model) const;
+    std::unordered_map<std::string, int> getInputControlIndexMap() const;
+
+    /// Get the vector of all InputController controls. This includes both 
+    /// controls from InputController%s added by the user and controls from the 
+    /// ActuatorInputController added by MocoProblemRep.
+    const SimTK::Vector& getInputControls(const SimTK::State& state) const;
 
     /** Perform error checks on user input for this constraint, and cache
     quantities needed when computing the constraint errors.
@@ -259,6 +264,7 @@ private:
     void constructProperties();
 
     mutable SimTK::ReferencePtr<const Model> m_model;
+    mutable SimTK::ReferencePtr<const ControlDistributor> m_control_distributor;
     mutable int m_path_constraint_index = -1;
 };
 

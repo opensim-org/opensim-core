@@ -27,8 +27,8 @@ class MocoProblemInfo;
 
 /** This class constrains any number of control signals from ScalarActuator%s 
 or Input%s to InputController%s to be between two time-based functions. It is 
-possible to constrain the control signal to be exactly to a provided function; 
-see the equality_with_lower property.
+possible to constrain the control signal to match the value from a provided 
+function; see the equality_with_lower property.
 
 If a function is a GCVSpline, we ensure that the spline covers the entire
 possible time range in the problem (using the problem's time bounds). We do

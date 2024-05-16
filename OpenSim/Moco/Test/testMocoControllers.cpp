@@ -64,8 +64,8 @@ TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
         controller->addActuator(
                 model.getComponent<Actuator>("/forceset/actuator"));
         controller->prescribeControlForActuator("/forceset/actuator",
-            new GCVSpline(5, control.size(), time.data(), &control[0],
-                    "/forceset/actuator", 0.0));
+                GCVSpline(5, control.size(), time.data(), &control[0],
+                        "/forceset/actuator", 0.0));
         model.addController(controller);
         model.finalizeConnections();
 
@@ -101,7 +101,7 @@ TEST_CASE("MocoControlGoal: ignoring controlled actuators") {
     controller->addActuator(
             model.getComponent<Actuator>("/forceset/actuator"));
     controller->prescribeControlForActuator("/forceset/actuator",
-            new Constant(1.0));
+            Constant(1.0));
     model.addController(controller);
     model.finalizeConnections();
 
@@ -484,7 +484,8 @@ TEMPLATE_TEST_CASE("MocoControlTrackingGoal with Input controls", "",
     }
     TimeSeriesTable ref(indVec);
     ref.appendColumn(
-            "/controllerset/triple_pendulum_controller/synergy_control_0", controlRef);
+            "/controllerset/triple_pendulum_controller/synergy_control_0", 
+            controlRef);
     controlTrackingGoal->setReference(TableProcessor(ref));
     auto& solver = study.updSolver<TestType>();
     solver.resetProblem(problem);

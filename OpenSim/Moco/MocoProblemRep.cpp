@@ -142,10 +142,9 @@ void MocoProblemRep::initialize() {
     // OCP controls to all InputControllers in the model, including the
     // ActuatorInputController we just added for actuators that are not already
     // controlled by a user-defined controller.
-    ControlDistributor::addControlDistributorAndConnectInputControllers(
-                m_model_base);
-    auto& controlDistributor = m_model_base.updComponent<ControlDistributor>(
-            "/control_distributor");
+    auto& controlDistributor = 
+            ControlDistributor::addControlDistributorAndConnectInputControllers(
+                    m_model_base);
     auto inputControlNames = controlDistributor.getControlNamesInOrder();
 
     // Add the non-controlled, enabled actuators to an ActuatorInputController.

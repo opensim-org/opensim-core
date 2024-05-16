@@ -45,7 +45,7 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
     auto systemControlIndexMap = createSystemControlIndexMap(model);
 
     // Get the Input control index map.
-    auto inputControlIndexMap = getInputControlIndexMap(model);
+    auto inputControlIndexMap = getInputControlIndexMap();
 
     m_hasLower = !getProperty_lower_bound().empty();
     m_hasUpper = !getProperty_upper_bound().empty();
@@ -142,9 +142,7 @@ void MocoControlBoundConstraint::calcPathConstraintErrorsImpl(
         const SimTK::State& state, SimTK::Vector& errors) const {
     getModel().realizeVelocity(state);
     const auto& controls = getModel().getControls(state);
-    const auto& input_controls = 
-            getModel().getComponentList<ControlDistributor>().begin()
-                    ->getControls(state);
+    const auto& input_controls = getInputControls(state);
     int iconstr = 0;
     int icontrol = 0;
     SimTK::Vector time(1);

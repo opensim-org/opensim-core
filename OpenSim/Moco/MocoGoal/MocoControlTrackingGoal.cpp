@@ -75,7 +75,7 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
             createControlNamesForControllerType<ActuatorInputController>(model);
 
     // Get the Input control index map.
-    auto inputControlIndexMap = getInputControlIndexMap(model);
+    auto inputControlIndexMap = getInputControlIndexMap();
 
     // Throw exception if a weight is specified for a nonexistent control.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
@@ -231,7 +231,7 @@ void MocoControlTrackingGoal::calcIntegrandImpl(
     const auto& time = input.time;
     SimTK::Vector timeVec(1, time);
     const auto& controls = input.controls;
-    const auto& input_controls = input.input_controls;
+    const auto& input_controls = getInputControls(input.state);
     getModel().getMultibodySystem().realize(input.state, SimTK::Stage::Time);
 
     integrand = 0;

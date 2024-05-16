@@ -403,12 +403,9 @@ private:
                 mocoProblemRep->updStateDisabledConstraints();
         const SimTK::Vector& controls = mocoProblemRep->getControls(
                 simtkStateDisabledConstraints);
-        const SimTK::Vector& inputControls = mocoProblemRep->getInputControls(
-                simtkStateDisabledConstraints);
 
         integrand = mocoCost.calcIntegrand(
-                {input.time, simtkStateDisabledConstraints, controls, 
-                        inputControls});
+                {input.time, simtkStateDisabledConstraints, controls});
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -428,9 +425,6 @@ private:
                 mocoProblemRep->updStateDisabledConstraints(0);
         const SimTK::Vector& controlsInitial = mocoProblemRep->getControls(
                 simtkStateDisabledConstraintsInitial);
-        const SimTK::Vector& inputControlsInitial = 
-                mocoProblemRep->getInputControls(
-                        simtkStateDisabledConstraintsInitial);
 
         applyInput(stageDep, input.final_time, input.final_states,
                 input.final_controls, input.final_multipliers,
@@ -439,17 +433,14 @@ private:
                 mocoProblemRep->updStateDisabledConstraints(1);
         const SimTK::Vector& controlsFinal = mocoProblemRep->getControls(
                 simtkStateDisabledConstraintsFinal);
-        const SimTK::Vector& inputControlsFinal =
-                mocoProblemRep->getInputControls(
-                        simtkStateDisabledConstraintsFinal);
 
         // Compute the cost for this cost term.
         SimTK::Vector simtkCost((int)cost.rows(), cost.ptr(), true);
         mocoCost.calcGoal(
                 {input.initial_time, simtkStateDisabledConstraintsInitial,
-                        controlsInitial, inputControlsInitial, input.final_time,
+                        controlsInitial, input.final_time,
                         simtkStateDisabledConstraintsFinal, controlsFinal,
-                        inputControlsFinal, input.integral},
+                        input.integral},
                 simtkCost);
 
         m_jar->leave(std::move(mocoProblemRep));
@@ -473,12 +464,9 @@ private:
                 mocoProblemRep->updStateDisabledConstraints();
         const SimTK::Vector& controls = mocoProblemRep->getControls(
                 simtkStateDisabledConstraints);
-        const SimTK::Vector& inputControls = mocoProblemRep->getInputControls(
-                simtkStateDisabledConstraints);
 
         integrand = mocoEC.calcIntegrand(
-                {input.time, simtkStateDisabledConstraints, controls, 
-                        inputControls});
+                {input.time, simtkStateDisabledConstraints, controls});
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -499,9 +487,6 @@ private:
                 mocoProblemRep->updStateDisabledConstraints(0);
         const SimTK::Vector& controlsInitial = mocoProblemRep->getControls(
                 simtkStateDisabledConstraintsInitial);
-        const SimTK::Vector& inputControlsInitial =
-                mocoProblemRep->getInputControls(
-                        simtkStateDisabledConstraintsInitial);
 
         applyInput(stageDep, input.final_time, input.final_states,
                 input.final_controls, input.final_multipliers,
@@ -510,17 +495,14 @@ private:
                 mocoProblemRep->updStateDisabledConstraints(1);
         const SimTK::Vector& controlsFinal = mocoProblemRep->getControls(
                 simtkStateDisabledConstraintsFinal);
-        const SimTK::Vector& inputControlsFinal =
-                mocoProblemRep->getInputControls(
-                        simtkStateDisabledConstraintsFinal);
 
         // Compute the cost for this cost term.
         SimTK::Vector simtkValues((int)values.rows(), values.ptr(), true);
         mocoEC.calcGoal(
                 {input.initial_time, simtkStateDisabledConstraintsInitial,
-                        controlsInitial, inputControlsInitial, input.final_time,
+                        controlsInitial, input.final_time,
                         simtkStateDisabledConstraintsFinal,
-                        controlsFinal, inputControlsFinal, input.integral},
+                        controlsFinal, input.integral},
                 simtkValues);
 
         m_jar->leave(std::move(mocoProblemRep));

@@ -157,10 +157,11 @@ public:
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
 
     /// Set information about a single Input control variable in this phase.
-    /// Similar to setControlInfo(). The name for an Input control is the path 
-    /// follows the format <InputController_path>/<Input_label> (e.g.,
-    /// "/my_input_controller/input0"). Input labels for an InputController can
-    /// be obtained using InputController::getInputControlLabels().
+    /// Similar to setControlInfo(). The name for an Input control follows the 
+    /// format <InputController_path>/<Input_label> (e.g.,
+    /// "/my_input_controller/input_control_0"). Input labels for an 
+    /// InputController can be obtained using 
+    /// InputController::getInputControlLabels().
     void setInputControlInfo(const std::string& name, const MocoBounds&,
             const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
 

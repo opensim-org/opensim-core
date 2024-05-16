@@ -617,11 +617,10 @@ void MocoTrajectory::generateControlsFromModelControllers(
 
     // Add a ControlDistributor and connect it to any InputControllers in the
     // model.
-    ControlDistributor::addControlDistributorAndConnectInputControllers(model);
-    auto controlDistributor = 
-                model.getComponentList<ControlDistributor>().begin();
-    auto controlDistributorIndexMap = 
-            controlDistributor->getControlIndexMap();
+    const auto& controlDistributor = 
+            ControlDistributor::addControlDistributorAndConnectInputControllers(
+                    model);
+    auto controlDistributorIndexMap = controlDistributor.getControlIndexMap();
     int numInputControls = 
             static_cast<int>(controlDistributorIndexMap.size());
     OPENSIM_THROW_IF(numInputControls != getNumInputControls(), 
@@ -655,7 +654,7 @@ void MocoTrajectory::generateControlsFromModelControllers(
                 inputControlsVec[index] = 
                         inputControls.getDependentColumn(inputControlName)[i];
             }
-            controlDistributor->setControls(state, inputControlsVec);
+            controlDistributor.setControls(state, inputControlsVec);
         }
         
         // Compute the model controls.

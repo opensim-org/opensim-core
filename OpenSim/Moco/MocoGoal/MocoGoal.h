@@ -24,6 +24,7 @@
 #include <OpenSim/Moco/MocoBounds.h>
 #include <OpenSim/Moco/MocoConstraintInfo.h>
 #include <OpenSim/Moco/MocoScaleFactor.h>
+#include <OpenSim/Moco/Components/ControlDistributor.h>
 #include <OpenSim/Moco/osimMocoDLL.h>
 
 namespace OpenSim {
@@ -199,14 +200,6 @@ public:
         /// provides data structures that can be indexed in the same way as this
         /// field. Use this field rather than Model::getControls().
         const SimTK::Vector& controls;
-        /// Input controls are available with a stage requirement of
-        /// SimTK::Stage::Model.
-        /// This vector contains the control values for all InputController%s in 
-        /// the model, including those for the ActuatorInputController added by
-        /// MocoProblemRep. To get a map to the indexes for Input controls 
-        /// corresponding to user-added InputController%s, use the function
-        /// getInputControlIndexes().
-        const SimTK::Vector& input_controls;
     };
     /// Calculate the integrand that should be integrated and passed to
     /// calcCost(). If getNumIntegrals() is not zero, this must be implemented.
@@ -236,11 +229,9 @@ public:
         const SimTK::Real& initial_time;
         const SimTK::State& initial_state;
         const SimTK::Vector& initial_controls;
-        const SimTK::Vector& initial_input_controls;
         const SimTK::Real& final_time;
         const SimTK::State& final_state;
         const SimTK::Vector& final_controls;
-        const SimTK::Vector& final_input_controls;
         /// The solver computes the integral by integrating calcIntegrand().
         const double& integral;
     };
@@ -301,6 +292,8 @@ public:
     /// calcGoal().
     void initializeOnModel(const Model& model) const {
         m_model.reset(&model);
+        m_control_distributor.reset(
+            &model.getComponent<ControlDistributor>("/control_distributor"));
         if (!get_enabled()) { return; }
 
         // Set mode.
@@ -392,8 +385,12 @@ public:
     /// controls vector. This map will only include Input controls associated 
     /// with InputController%s added by the user (i.e., not 
     /// ActuatorInputController).
-    std::unordered_map<std::string, int> 
-    getInputControlIndexMap(const Model& model) const;
+    std::unordered_map<std::string, int> getInputControlIndexMap() const;
+
+    /// Get the vector of all InputController controls. This includes both 
+    /// controls from InputController%s added by the user and controls from the 
+    /// ActuatorInputController added by MocoProblemRep.
+    const SimTK::Vector& getInputControls(const SimTK::State& state) const;
 
 protected:
     /// Perform any caching before the problem is solved.
@@ -516,6 +513,7 @@ private:
     }
 
     mutable SimTK::ReferencePtr<const Model> m_model;
+    mutable SimTK::ReferencePtr<const ControlDistributor> m_control_distributor;
     mutable double m_weightToUse;
     mutable Mode m_modeToUse;
     mutable SimTK::Stage m_stageDependency = SimTK::Stage::Acceleration;

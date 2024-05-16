@@ -80,7 +80,7 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     }
 
     auto systemControlIndexMap = createSystemControlIndexMap(model);
-    auto inputControlIndexMap = getInputControlIndexMap(model);
+    auto inputControlIndexMap = getInputControlIndexMap();
 
     // Get controls associated with the model's ActuatorInputController.
     auto actuatorInputControls =
@@ -134,8 +134,8 @@ void MocoPeriodicityGoal::calcGoalImpl(
 
     const auto& initialControls = input.initial_controls;
     const auto& finalControls = input.final_controls;
-    const auto& initialInputControls = input.initial_input_controls;
-    const auto& finalInputControls = input.final_input_controls;
+    const auto& initialInputControls = getInputControls(input.initial_state);
+    const auto& finalInputControls = getInputControls(input.final_state);
     int j = 0;
     for (const auto& index_control : m_indices_controls) {
         int initialIndex = std::get<0>(index_control);

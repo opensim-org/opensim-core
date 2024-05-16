@@ -341,10 +341,8 @@ public:
 
     /// Get the vector of all InputController controls. This includes both 
     /// controls from InputController%s added by the user and controls from the 
-    /// ActuatorInputController added by MocoProblemRep. This function is 
-    /// intended for use by solvers to compute InputController controls needed 
-    /// by MocoGoal%s and MocoPathConstraint%s. The SimTK::State argument should 
-    /// be obtained from `updStateDisabledConstraints()`.
+    /// ActuatorInputController added by MocoProblemRep. The SimTK::State 
+    /// argument should be obtained from `updStateDisabledConstraints()`.
     const SimTK::Vector& getInputControls(
             const SimTK::State& stateDisabledConstraints) const {
         return getControlDistributorDisabledConstraints()

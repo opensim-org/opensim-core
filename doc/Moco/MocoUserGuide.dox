@@ -68,7 +68,7 @@ Currently, you cannot add controls from the optimal control problem on top
 of the control values from the Controller. However, control values from
 multiple Controller%s are additive, since this is the behavior in OpenSim.
 
-Controls associated with "OCP-controlled" actuators will not be included 
+Controls associated with "Model-controlled" actuators will not be included 
 the MocoSolution (i.e., the solution controls will match the controls listed
 in the MocoProblem). Therefore, the solution from a MocoStudy that includes 
 a model Controller can be used as an initial guess for a subsequent problem 
@@ -97,11 +97,19 @@ not.
 
 @subsection mocoinputcontrollers InputController support
 
-Moco supports InputController, an intermediate abstract class derived from 
-Controller that provides a list Input for mapping scalar control signals 
-from another component to actuator controls. Concrete implementations 
-provide the method getInputControlLabels() which defines the number, order, 
-and labels of Input controls for the InputController.
+Certain problems may require a controller that defines actuator controls 
+based on a higher-level control signal from the optimizer. For example, 
+controlling muscles using muscle synergies requires a controller that 
+accepts synergy excitation controls as input and maps them to muscle 
+excitation signals. The synergy excitations would be OCP controls and the 
+synergy controller would use synergy weight vectors to convert them to 
+muscle excitation values.
+
+To support these types of problems, Moco provides InputController, an 
+intermediate abstract class derived from Controller that provides a list Input 
+for mapping scalar control signals from another component to actuator controls. 
+Concrete implementations provide the method getInputControlLabels() which defines 
+the number, order, and labels of Input controls for the InputController.
 
 Moco adds OCP controls to the MocoProblem for each "Input control" defined 
 by a InputController in the model. The names for Input control variables
@@ -118,7 +126,7 @@ setInputControl()), and utility (e.g., exportToInputControlsTable())
 methods for accessing or modifying Input controls. MocoSolution%s will 
 include Input controls associated with a solved MocoProblem, and the 
 Input controls trajectory can be accessed via 
-MocoTrajectory::getInputControlsTrajectory. Finally, the method 
+MocoTrajectory::getInputControlsTrajectory(). Finally, the method 
 MocoTrajectory::generateControlsFromModelControllers() also supports 
 Input controls: the Input control trajectories are used to compute the 
 associated model control trajectories via the InputController%s in the 

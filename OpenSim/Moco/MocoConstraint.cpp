@@ -135,14 +135,13 @@ void MocoPathConstraint::constructProperties() {
 }
 
 std::unordered_map<std::string, int> 
-MocoPathConstraint::getInputControlIndexMap(const Model& model) const {
+MocoPathConstraint::getInputControlIndexMap() const {
 
     // Get the full Input control index map from the ControlDistributor.
-    auto map = model.getComponentList<ControlDistributor>().begin()
-                    ->getControlIndexMap();
+    auto map = m_control_distributor->getControlIndexMap();
 
     // Get all possible control names from the model.
-    auto controlNames = createControlNamesFromModel(model);
+    auto controlNames = createControlNamesFromModel(getModel());
 
     // Remove the control names that are associated with the model's
     // ActuatorInputController.
@@ -152,11 +151,18 @@ MocoPathConstraint::getInputControlIndexMap(const Model& model) const {
     return map;
 }
 
+const SimTK::Vector& MocoPathConstraint::getInputControls(
+        const SimTK::State& state) const {
+    return m_control_distributor->getControls(state);
+}
+
 void MocoPathConstraint::initializeOnModel(const Model& model,
         const MocoProblemInfo& problemInfo,
         const int& pathConstraintIndex) const {
 
     m_model.reset(&model);
+    m_control_distributor.reset(
+            &model.getComponent<ControlDistributor>("/control_distributor"));
     initializeOnModelImpl(model, problemInfo);
 
     OPENSIM_THROW_IF_FRMOBJ(get_MocoConstraintInfo().getNumEquations() < 0,

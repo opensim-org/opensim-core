@@ -89,7 +89,8 @@ std::vector<std::string> ControlDistributor::getControlNamesInOrder() const {
     return names;
 }
 
-void ControlDistributor::addControlDistributorAndConnectInputControllers(
+ControlDistributor& 
+ControlDistributor::addControlDistributorAndConnectInputControllers(
         Model& model) {
     for (const auto& controlDistributor :
                 model.getComponentList<ControlDistributor>()) {
@@ -116,8 +117,11 @@ void ControlDistributor::addControlDistributorAndConnectInputControllers(
         }
     }
 
+    ControlDistributor& controlDistributorRef = *controlDistributorUPtr;
     model.addComponent(controlDistributorUPtr.release());
     model.initSystem();
+
+    return controlDistributorRef;
 }
 
 //=============================================================================

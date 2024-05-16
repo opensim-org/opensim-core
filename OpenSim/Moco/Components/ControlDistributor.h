@@ -139,9 +139,13 @@ public:
      * InputController%s in the model. One slot in the list Output is assigned
      * for each Input in each InputController. Control names for each slot set 
      * on the ControlDistributor follow the format 
-     * "/<InputController_path>/<Input_control_label>".
+     * "/<InputController_path>/<Input_control_label>". Returns a modifiable 
+     * reference to the added ControlDistributor.
+     * 
+     * @note The path to the added ControlDistributor is "/control_distributor".
      */
-    static void addControlDistributorAndConnectInputControllers(Model& model);
+    static ControlDistributor& addControlDistributorAndConnectInputControllers(
+            Model& model);
 
 protected:
     // MODEL COMPONENT INTERFACE

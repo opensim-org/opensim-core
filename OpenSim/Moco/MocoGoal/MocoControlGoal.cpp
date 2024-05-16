@@ -64,7 +64,7 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
             createControlNamesForControllerType<ActuatorInputController>(model);
 
     // Get the Input control index map.
-    auto inputControlIndexMap = getInputControlIndexMap(model);
+    auto inputControlIndexMap = getInputControlIndexMap();
     
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
@@ -168,7 +168,7 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 void MocoControlGoal::calcIntegrandImpl(
         const IntegrandInput& input, SimTK::Real& integrand) const {
     const auto& controls = input.controls;
-    const auto& input_controls = input.input_controls;
+    const auto& input_controls = getInputControls(input.state);
 
     integrand = 0;
     int iweight = 0;
