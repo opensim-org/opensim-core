@@ -165,8 +165,8 @@ int main()
         muscleController->setActuators(osimModel.updActuators());
     
         // Set the prescribed muscle controller to use the same muscle control function for each muscle
-        muscleController->prescribeControlForActuator("fatigable", new Constant(1.0));
-        muscleController->prescribeControlForActuator("original", new Constant(1.0));
+        muscleController->prescribeControlForActuator("fatigable", Constant(1.0));
+        muscleController->prescribeControlForActuator("original", Constant(1.0));
 
         // Add the muscle controller to the model
         osimModel.addController(muscleController);
