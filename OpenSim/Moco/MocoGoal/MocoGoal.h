@@ -290,6 +290,8 @@ public:
     /// quantities needed when computing the goal value.
     /// This function must be invoked before invoking calcIntegrand() or
     /// calcGoal().
+    /// @pre This function expects a ControlDistributor to be available in the
+    ///      model at path "/control_distributor".
     void initializeOnModel(const Model& model) const {
         m_model.reset(&model);
         m_control_distributor.reset(

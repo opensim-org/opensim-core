@@ -671,8 +671,28 @@ void MocoTrajectory::generateControlsFromModelControllers(
     }
     modelControls.setColumnLabels(modelControlNames);
 
+
     // Insert the model controls into the trajectory.
-    insertControlsTrajectory(modelControls, overwrite);
+    const auto origControlNames = m_control_names;
+    for (const auto& name : modelControlNames) {
+        auto it = find(m_control_names, name);
+        if (it == m_control_names.cend()) { m_control_names.push_back(name); }
+    }
+
+    m_controls.resizeKeep(getNumTimes(), (int)m_control_names.size());
+
+    const int numTimesTable = (int)modelControls.getNumRows();
+    for (const auto& name : modelControlNames) {
+        if (find(origControlNames, name) == origControlNames.cend()
+                || overwrite) {
+            auto it = find(m_control_names, name);
+            int istate = (int)std::distance(m_control_names.cbegin(), it);
+            for (int itime = 0; itime < m_time.size(); ++itime) {
+                m_controls(itime, istate) = 
+                        modelControls.getDependentColumn(name)[itime];
+            }
+        }
+    }
 }
 
 void MocoTrajectory::trimToIndices(int newStartIndex, int newFinalIndex) {

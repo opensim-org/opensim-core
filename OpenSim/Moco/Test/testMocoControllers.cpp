@@ -317,6 +317,48 @@ TEST_CASE("InputController behavior") {
     }
 }
 
+TEST_CASE("MocoTrajectory::generateControlsFromModelControllers()") {
+    Model model = createTriplePendulum();
+    model.initSystem();
+    auto* controller = new PrescribedController();
+    controller->setName("prescribed_controller");
+    controller->addActuator(
+            model.getComponent<CoordinateActuator>("/forceset/tau0"));
+    controller->addActuator(
+            model.getComponent<CoordinateActuator>("/forceset/tau1"));
+    controller->addActuator(
+            model.getComponent<CoordinateActuator>("/forceset/tau2"));
+    SimTK::Real tau0 = SimTK::Test::randReal();
+    SimTK::Real tau1 = SimTK::Test::randReal();
+    SimTK::Real tau2 = SimTK::Test::randReal();
+    controller->prescribeControlForActuator("/forceset/tau0", Constant(tau0));
+    controller->prescribeControlForActuator("/forceset/tau1", Constant(tau1));
+    controller->prescribeControlForActuator("/forceset/tau2", Constant(tau2));
+    model.addController(controller);
+    model.finalizeConnections();
+
+    std::vector<std::string> stateNames = {"/jointset/j0/q0/value",
+                                           "/jointset/j1/q1/value",
+                                           "/jointset/j2/q2/value", 
+                                           "/jointset/j0/q0/speed",
+                                           "/jointset/j1/q1/speed",
+                                           "/jointset/j2/q2/speed"};
+    SimTK::Matrix states = SimTK::Test::randMatrix(1, 6);
+    MocoTrajectory trajectory(SimTK::Vector(1, 0.0), stateNames, {}, {}, {}, 
+            states, SimTK::Matrix(), SimTK::Matrix(), SimTK::RowVector());
+
+    trajectory.generateControlsFromModelControllers(model);
+    const auto& controls = trajectory.getControlsTrajectory();
+    CHECK(controls.nrow() == 1);
+    CHECK(controls.ncol() == 3);
+
+    // Approx() is necessary because the controls are generated from the 
+    // controllers and then inserted into the MocoTrajectory
+    CHECK(controls(0, 0) == tau0);
+    CHECK(controls(0, 1) == tau1);
+    CHECK(controls(0, 2) == tau2);
+}
+
 TEMPLATE_TEST_CASE("Triple pendulum with synergy-like InputController", "",
         MocoCasADiSolver, MocoTropterSolver) {
     Model model = createControlledTriplePendulumModel();
