@@ -67,6 +67,7 @@ double MocoGoal::calcSystemMass(const GoalInput& input) const {
 }
 
 std::unordered_map<std::string, int> MocoGoal::getInputControlIndexMap() const {
+    OPENSIM_ASSERT(m_control_distributor != nullptr);
 
     // Get the full Input control index map from the ControlDistributor.
     auto map = m_control_distributor->getControlIndexMap();
@@ -84,6 +85,7 @@ std::unordered_map<std::string, int> MocoGoal::getInputControlIndexMap() const {
 
 const SimTK::Vector& MocoGoal::getInputControls(
         const SimTK::State& state) const {
+    OPENSIM_ASSERT(m_control_distributor != nullptr);
     return m_control_distributor->getControls(state);
 }
 

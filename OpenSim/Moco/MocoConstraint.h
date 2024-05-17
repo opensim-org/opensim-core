@@ -203,18 +203,27 @@ public:
     /// controls vector. This map will only include Input controls associated 
     /// with InputController%s added by the user (i.e., not 
     /// ActuatorInputController).
+    /// @pre initializeOnModel() has been invoked and a ControlDistributor is
+    ///      available in the model.
     std::unordered_map<std::string, int> getInputControlIndexMap() const;
 
     /// Get the vector of all InputController controls. This includes both 
     /// controls from InputController%s added by the user and controls from the 
     /// ActuatorInputController added by MocoProblemRep.
+    /// @pre initializeOnModel() has been invoked and a ControlDistributor is
+    ///      available in the model.
     const SimTK::Vector& getInputControls(const SimTK::State& state) const;
 
     /** Perform error checks on user input for this constraint, and cache
     quantities needed when computing the constraint errors.
     to efficiently evaluate the constraint.
     This function must be invoked before invoking
-    calcPathConstraintErrors(). */
+    calcPathConstraintErrors(). 
+    @note If the ControlDistributor at path "/control_distributor" added by 
+          MocoProblemRep is available in the model, this function will store
+          a reference to it, after which getInputControlIndexMap() and
+          getInputControls() are valid.
+    */
     void initializeOnModel(const Model& model, const MocoProblemInfo&,
             const int& pathConstraintIndex) const;
 

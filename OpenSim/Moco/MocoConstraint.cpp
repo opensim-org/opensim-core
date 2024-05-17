@@ -136,6 +136,7 @@ void MocoPathConstraint::constructProperties() {
 
 std::unordered_map<std::string, int> 
 MocoPathConstraint::getInputControlIndexMap() const {
+    OPENSIM_ASSERT(m_control_distributor != nullptr);
 
     // Get the full Input control index map from the ControlDistributor.
     auto map = m_control_distributor->getControlIndexMap();
@@ -153,6 +154,7 @@ MocoPathConstraint::getInputControlIndexMap() const {
 
 const SimTK::Vector& MocoPathConstraint::getInputControls(
         const SimTK::State& state) const {
+    OPENSIM_ASSERT(m_control_distributor != nullptr);
     return m_control_distributor->getControls(state);
 }
 
@@ -161,8 +163,11 @@ void MocoPathConstraint::initializeOnModel(const Model& model,
         const int& pathConstraintIndex) const {
 
     m_model.reset(&model);
-    m_control_distributor.reset(
-            &model.getComponent<ControlDistributor>("/control_distributor"));
+    if (model.hasComponent<ControlDistributor>("/control_distributor")) {
+        m_control_distributor.reset(
+                &model.getComponent<ControlDistributor>(
+                        "/control_distributor"));
+    }
     initializeOnModelImpl(model, problemInfo);
 
     OPENSIM_THROW_IF_FRMOBJ(get_MocoConstraintInfo().getNumEquations() < 0,

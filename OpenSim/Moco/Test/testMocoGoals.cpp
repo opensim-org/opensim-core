@@ -199,7 +199,6 @@ TEST_CASE("Enabled Goals", "") {
     double x = 23920;
     MocoFinalTimeGoal cost;
     Model model;
-    ControlDistributor::addControlDistributorAndConnectInputControllers(model);
     auto state = model.initSystem();
     state.setTime(x);
     SimTK::Vector controls;
@@ -575,7 +574,6 @@ TEST_CASE("Test MocoSumSquaredStateGoal") {
     using SimTK::Inertia;
     using SimTK::Vec3;
     Model model = ModelFactory::createDoublePendulum();
-    ControlDistributor::addControlDistributorAndConnectInputControllers(model);
     const Coordinate& q0 = model.getCoordinateSet().get("q0");
     const Coordinate& q1 = model.getCoordinateSet().get("q1");
     std::string q0_str = q0.getAbsolutePathString() + "/value";
@@ -1024,7 +1022,6 @@ private:
 // they depend on.
 TEST_CASE("MocoGoal stage dependency") {
     Model model;
-    ControlDistributor::addControlDistributorAndConnectInputControllers(model);
     SimTK::State state = model.initSystem();
     MocoStageTestingGoal goal;
     goal.initializeOnModel(model);
@@ -1069,7 +1066,6 @@ protected:
 // Ensure that the "divide by" methods return the correct values.
 TEST_CASE("MocoGoal divide by displacement/duration/mass") {
     Model model = ModelFactory::createSlidingPointMass();
-    ControlDistributor::addControlDistributorAndConnectInputControllers(model);
     SimTK::State state = model.initSystem();
     const double mass = model.getTotalMass(state);
     MocoDivideByTestingGoal goal;

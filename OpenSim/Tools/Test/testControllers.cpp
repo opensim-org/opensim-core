@@ -164,7 +164,6 @@ TEST_CASE("testControlSetControllerOnBlock") {
     osimModel.disownAllComponents();
 }
 
-
 TEST_CASE("testPrescribedControllerOnBlock") {
     using namespace SimTK;
 
@@ -261,7 +260,6 @@ TEST_CASE("testPrescribedControllerOnBlock") {
     states.print("block_push.sto");
 
 }
-
 
 TEST_CASE("testCorrectionControllerOnBlock") {
     using namespace SimTK;
@@ -481,5 +479,36 @@ TEST_CASE("PrescribedController behavior") {
         model.print("testControllers_TugOfWar_serialized.osim");
         Model modelDeserialized("testControllers_TugOfWar_serialized.osim");
         CHECK_NOTHROW(modelDeserialized.initSystem());
+    }
+}
+
+TEST_CASE("Marking controls as invalid") {
+    Model model = ModelFactory::createNLinkPendulum(2);
+    auto* controller = new PrescribedController();
+    controller->addActuator(model.getComponent<Actuator>("/tau0"));
+    controller->addActuator(model.getComponent<Actuator>("/tau1"));
+    SimTK::Real tau0 = SimTK::Test::randReal();
+    SimTK::Real tau1 = SimTK::Test::randReal();
+    controller->prescribeControlForActuator("/tau0", Constant(tau0));
+    controller->prescribeControlForActuator("/tau1", Constant(tau1));
+    model.addController(controller);
+    SimTK::State state = model.initSystem();
+
+    GIVEN("Controls vector set to random values") {
+        SimTK::Vector origControls = SimTK::Test::randVector(2);
+        model.realizeVelocity(state);
+        model.setControls(state, origControls);
+
+        THEN("Controls cache is marked valid") {
+            SimTK_TEST_EQ(model.getControls(state), origControls);
+        }
+
+        THEN("Marking controls invalid invokes Controller::computeControls()") {
+            model.markControlsAsInvalid(state);
+            const SimTK::Vector& newControls = model.getControls(state);
+            CHECK(newControls.size() == 2);
+            CHECK(newControls[0] == tau0);
+            CHECK(newControls[1] == tau1);
+        }
     }
 }
