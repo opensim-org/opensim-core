@@ -919,9 +919,10 @@ TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
 TEST_CASE("DoublePendulum tests using Bordalba2023 method (explicit)",
         "[explicit]") {
     std::string scheme = GENERATE(as<std::string>{},
-            "trapezoidal", "hermite-simpson", "legendre-gauss-radau-3");
+            "trapezoidal", "hermite-simpson", "legendre-gauss-3", 
+            "legendre-gauss-radau-3");
 
-    int num_mesh_intervals = 50;
+    int num_mesh_intervals = 20;
     MocoSolution couplerSol;
     testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
             couplerSol, true, "explicit", "Bordalba2023", scheme,
@@ -937,9 +938,10 @@ TEST_CASE("DoublePendulum tests using Bordalba2023 method (explicit)",
 TEST_CASE("DoublePendulum tests using Bordalba2023 method (implicit)",
         "[implicit]") {
     std::string scheme = GENERATE(as<std::string>{},
-            "trapezoidal", "hermite-simpson", "legendre-gauss-radau-3");
+            "trapezoidal", "hermite-simpson", "legendre-gauss-3", 
+            "legendre-gauss-radau-3");
 
-    int num_mesh_intervals = 100;
+    int num_mesh_intervals = 20;
     MocoSolution couplerSol;
     testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
             couplerSol, true, "implicit", "Bordalba2023", scheme,
@@ -1856,7 +1858,8 @@ private:
     }
 };
 
-MocoStudy createSlidingMassMocoStudy(const Model& model) {
+MocoStudy createSlidingMassMocoStudy(const Model& model, 
+        const std::string& scheme) {
     MocoStudy study;
     study.setName("sliding_mass");
     MocoProblem& mp = study.updProblem();
@@ -1868,13 +1871,17 @@ MocoStudy createSlidingMassMocoStudy(const Model& model) {
 
     auto& ms = study.initCasADiSolver();
     ms.set_num_mesh_intervals(50);
-    ms.set_transcription_scheme("legendre-gauss-3");
+    ms.set_transcription_scheme(scheme);
     ms.set_kinematic_constraint_method("Bordalba2023");
 
     return study;
 }
 
 TEST_CASE("ConstantSpeedConstraint") {
+    std::string scheme = GENERATE(as<std::string>{},
+            "trapezoidal", "hermite-simpson", "legendre-gauss-3", 
+            "legendre-gauss-radau-3");
+
     Model model = ModelFactory::createSlidingPointMass();
     auto* constraint = new ConstantSpeedConstraint();
     constraint->setName("constant_speed");
@@ -1882,7 +1889,7 @@ TEST_CASE("ConstantSpeedConstraint") {
     model.addConstraint(constraint);
     model.initSystem();
 
-    MocoStudy study = createSlidingMassMocoStudy(model);
+    MocoStudy study = createSlidingMassMocoStudy(model, scheme);
     MocoSolution solution = study.solve();
 
     const auto& speed = solution.getState("/slider/position/speed");
@@ -1892,6 +1899,10 @@ TEST_CASE("ConstantSpeedConstraint") {
 }
 
 TEST_CASE("ConstantAccelerationConstraint") {
+    std::string scheme = GENERATE(as<std::string>{},
+            "trapezoidal", "hermite-simpson", "legendre-gauss-3", 
+            "legendre-gauss-radau-3");
+
     Model model = ModelFactory::createSlidingPointMass();
     auto* constraint = new ConstantAccelerationConstraint();
     constraint->setName("constant_acceleration");
@@ -1899,7 +1910,7 @@ TEST_CASE("ConstantAccelerationConstraint") {
     model.addConstraint(constraint);
     model.initSystem();
 
-    MocoStudy study = createSlidingMassMocoStudy(model);
+    MocoStudy study = createSlidingMassMocoStudy(model, scheme);
     MocoSolution solution = study.solve();
 
     const auto& states = solution.exportToStatesTrajectory(model);

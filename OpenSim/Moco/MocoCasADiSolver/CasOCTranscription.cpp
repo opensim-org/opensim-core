@@ -479,6 +479,8 @@ void Transcription::transcribe() {
         m_xdot_projection(Slice(0, NQ), Slice()) = u_projection;
     }
 
+    // projection constraints
+    // ----------------------
     if (m_problem.getNumKinematicConstraintEquations() &&
             !m_problem.isPrescribedKinematics() &&
             m_problem.getEnforceConstraintDerivatives()) {
@@ -513,11 +515,12 @@ void Transcription::transcribe() {
                     m_projectionStateIndices);
             const auto x_proj = projectionOut.at(0);
 
-            m_constraints.projection =
-                    m_unscaledVars[states](Slice(0, NQ + NU),
-                            m_projectionStateIndices) -
-                    m_unscaledVars[projection_states] -
-                    x_proj;
+            const MX x = m_unscaledVars[states](Slice(0, NQ + NU), 
+                    m_projectionStateIndices);
+            const MX x_prime = m_unscaledVars[projection_states];
+
+            // Bordalba et al. (2023) projection equation: x = x' + F_x^T mu.
+            m_constraints.projection = x - x_prime - x_proj;
         }
     }
 
@@ -586,6 +589,22 @@ void Transcription::transcribe() {
             }
         }
 
+        // Points where the multibody residuals depend on the projection states.
+        // TODO not needed for Legendre-Gauss collocation?
+        if (m_numProjectionStates) {
+            const casadi::Function& implicitMultibodyFunction =
+                m_problem.getImplicitMultibodySystemAccelerationConstraints();
+            const auto out = evalOnTrajectory(implicitMultibodyFunction, inputs,
+                    m_projectionStateIndices);
+            // This overwrites the previous function evaluation assignments for
+            // `kinematic_udoterr` and `multibody_residuals` at the mesh indices 
+            // (i.e., for points where we compute algebraic constraints above).
+            m_constraints.multibody_residuals(
+                    Slice(), m_projectionStateIndices) = out.at(0);
+            m_constraints.kinematic_udoterr(
+                    Slice(), m_projectionStateIndices) = out.at(5);
+        }
+
     } else { // Explicit dynamics mode.
         std::vector<Var> inputs{states, controls, multipliers, derivatives};
 
@@ -631,13 +650,19 @@ void Transcription::transcribe() {
             }
         }
 
-        // Points with state derivatives that depend on the projection states.
+        // Points where the state derivatives depend on the projection states.
+        // TODO not needed for Legendre-Gauss collocation?
         if (m_numProjectionStates) {
             const auto out = evalOnTrajectory(
-                    m_problem.getMultibodySystemIgnoringConstraints(), 
+                    m_problem.getMultibodySystemAccelerationConstraints(), 
                     {projection_states, controls, multipliers, derivatives}, 
                     m_projectionStateIndices);
             m_xdot_projection(Slice(NQ, NQ + NU), Slice()) = out.at(0);
+            // This overwrites the previous function evaluation assignments for
+            // `kinematic_udoterr` at the mesh indices (i.e., for points where
+            // we compute algebraic constraints above).
+            m_constraints.kinematic_udoterr(
+                        Slice(), m_projectionStateIndices) = out.at(5);
         }
     }
 
