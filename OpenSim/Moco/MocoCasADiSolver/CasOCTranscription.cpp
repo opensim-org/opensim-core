@@ -590,7 +590,6 @@ void Transcription::transcribe() {
         }
 
         // Points where the multibody residuals depend on the projection states.
-        // TODO not needed for Legendre-Gauss collocation?
         if (m_numProjectionStates) {
             const casadi::Function& implicitMultibodyFunction =
                 m_problem.getImplicitMultibodySystemAccelerationConstraints();
@@ -598,7 +597,7 @@ void Transcription::transcribe() {
                     m_projectionStateIndices);
             // This overwrites the previous function evaluation assignments for
             // `kinematic_udoterr` and `multibody_residuals` at the mesh indices 
-            // (i.e., for points where we compute algebraic constraints above).
+            // (i.e., for "points where we compute algebraic constraints").
             m_constraints.multibody_residuals(
                     Slice(), m_projectionStateIndices) = out.at(0);
             m_constraints.kinematic_udoterr(
@@ -651,16 +650,16 @@ void Transcription::transcribe() {
         }
 
         // Points where the state derivatives depend on the projection states.
-        // TODO not needed for Legendre-Gauss collocation?
         if (m_numProjectionStates) {
             const auto out = evalOnTrajectory(
                     m_problem.getMultibodySystemAccelerationConstraints(), 
                     {projection_states, controls, multipliers, derivatives}, 
                     m_projectionStateIndices);
+            // Note: this state is not used by Legendre-Gauss collocation.
             m_xdot_projection(Slice(NQ, NQ + NU), Slice()) = out.at(0);
             // This overwrites the previous function evaluation assignments for
-            // `kinematic_udoterr` at the mesh indices (i.e., for points where
-            // we compute algebraic constraints above).
+            // `kinematic_udoterr` at the mesh indices (i.e., for "points where
+            // we compute algebraic constraints").
             m_constraints.kinematic_udoterr(
                         Slice(), m_projectionStateIndices) = out.at(5);
         }
