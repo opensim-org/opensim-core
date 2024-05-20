@@ -53,9 +53,8 @@ public:
     ActuatorInputController& operator=(ActuatorInputController&& other);
 
     // INPUT CONTROLLER INTERFACE
-
-    /// @brief Test comment. 
-    // TODO if no actuators connected, returns empty vector.
+    /// @pre Call Socket::finalizeConnection() first, since Input control labels 
+    /// depend on the connected actuators.
     std::vector<std::string> getInputControlLabels() const override;
     void computeControlsImpl(
             const SimTK::State& s, SimTK::Vector& controls) const override;

@@ -1631,7 +1631,7 @@ double MocoTrajectory::compareContinuousVariablesRMSInternal(
             other.m_derivative_names);
 
     // sqrt(1/(T*N) * integral_t (sum_is error_is^2 + sum_ic error_ic^2
-    //                                          + sum_iic error_iic^2                        
+    //                                          + sum_iic error_iic^2
     //                                          + sum_im error_im^2
     //                                          + sum_id error_id^2)
     // `is`: index for states; `ic`: index for controls;

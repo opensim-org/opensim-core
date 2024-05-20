@@ -214,6 +214,11 @@ public:
     const MocoVariableInfo& getInputControlInfo(const std::string& name) const;
     /// Get whether an info object exists for an Input control.
     bool hasInputControlInfo(const std::string& name) const;
+    /// Get information for a control or Input control variable. This internally
+    /// resolves whether the variable is a control or Input control based on 
+    /// the variable name. This is intend for use by solvers, where both
+    /// controls and Input controls are treated as algebraic variables.
+    const MocoVariableInfo& getSolverControlInfo(const std::string& name) const;
     /// Get information for a parameter. See MocoPhase::addParameter().
     const MocoParameter& getParameter(const std::string& name) const;
     /// Get a cost by name. This returns a MocoGoal in cost mode.

@@ -68,9 +68,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
             problemRep.getControlDistributorDisabledConstraints()
                       .getControlNamesInOrder();
     for (const auto& controlName : allControlNames) {
-        const auto& info = problemRep.hasInputControlInfo(controlName) ? 
-                problemRep.getInputControlInfo(controlName) :
-                problemRep.getControlInfo(controlName);
+        const auto& info = problemRep.getSolverControlInfo(controlName);
         addControl(controlName, convertBounds(info.getBounds()),
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));

@@ -169,7 +169,7 @@ public:
     ///       MocoTrajectory::generateControlsFromModelControllers() to populate 
     ///       the trajectory with the correct model controls.
     TimeSeriesTable analyze(const MocoTrajectory& traj,
-            std::vector<std::string> outputPaths) const;
+            const std::vector<std::string>& outputPaths) const;
 
     /// Compute the generalized coordinate forces for the provided trajectory 
     /// based on a set of applied model Force%s. This can be used to compute 

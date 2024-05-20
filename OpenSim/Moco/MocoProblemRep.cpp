@@ -902,6 +902,11 @@ const MocoVariableInfo& MocoProblemRep::getInputControlInfo(
 bool MocoProblemRep::hasInputControlInfo(const std::string& name) const {
     return m_input_control_infos.count(name) > 0;
 }
+const MocoVariableInfo& MocoProblemRep::getSolverControlInfo(
+        const std::string& name) const {
+    return hasInputControlInfo(name) ? getInputControlInfo(name) :
+                                       getControlInfo(name);
+}
 const MocoParameter& MocoProblemRep::getParameter(
         const std::string& name) const {
 

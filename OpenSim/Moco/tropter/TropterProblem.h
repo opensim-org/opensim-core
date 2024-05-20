@@ -102,9 +102,7 @@ protected:
                 m_mocoProbRep.getControlDistributorDisabledConstraints()
                              .getControlNamesInOrder();
         for (const auto& controlName : allControlNames) {
-            const auto& info = m_mocoProbRep.hasInputControlInfo(controlName) ? 
-                    m_mocoProbRep.getInputControlInfo(controlName) :
-                    m_mocoProbRep.getControlInfo(controlName);
+            const auto& info = m_mocoProbRep.getSolverControlInfo(controlName);
             this->add_control(controlName, convertBounds(info.getBounds()),
                     convertBounds(info.getInitialBounds()),
                     convertBounds(info.getFinalBounds()));
