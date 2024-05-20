@@ -97,7 +97,8 @@ protected:
 
     void addControlVariables() {
 
-        // Control names need to be in the order expected by the ControlDistributor.
+        // Control names need to be in the order expected by the 
+        //ControlDistributor.
         auto allControlNames = 
                 m_mocoProbRep.getControlDistributorDisabledConstraints()
                              .getControlNamesInOrder();
