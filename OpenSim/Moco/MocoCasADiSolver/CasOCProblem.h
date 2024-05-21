@@ -736,7 +736,7 @@ private:
     int m_numAccelerationConstraintEquations = 0;
     bool m_enforceConstraintDerivatives = false;
     std::string m_dynamicsMode = "explicit";
-    std::string m_kinematicConstraintMethod = "PKT";
+    std::string m_kinematicConstraintMethod = "Posa2016";
     std::vector<std::string> m_auxiliaryDerivativeNames;
     bool m_isDynamicsModeImplicit = false;
     bool m_isKinematicConstraintMethodBordalba2023 = false;

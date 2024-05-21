@@ -125,12 +125,6 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoTraj,
     // CasOCProblem.
     bool matchedExpectedSlackNames =
             mocoTraj.getSlackNames().size() == expectedSlackNames.size();
-    OPENSIM_THROW_IF(!mocoTraj.getSlackNames().empty() &&
-                     !matchedExpectedSlackNames, Exception,
-            "The MocoTrajectory has {} slack variables, but their names do "
-            "not match the slack names expected by MocoCasADiSolver. Try "
-            "removing the slack variables from the MocoTrajectory.",
-            mocoTraj.getSlackNames().size())
     if (matchedExpectedSlackNames) {
         for (const auto& expectedName : expectedSlackNames) {
             if (std::find(mocoTraj.getSlackNames().begin(),

@@ -272,7 +272,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         int im = 0;
         for (const auto& info : multiplierInfos) {
             setVariableBounds(multipliers, im, Slice(1, m_numGridPoints - 1),
-                              info.bounds);
+                    info.bounds);
             setVariableBounds(multipliers, im, 0, info.initialBounds);
             setVariableBounds(multipliers, im, -1, info.finalBounds);
             setVariableScaling(multipliers, Slice(), Slice(), info.bounds);
@@ -284,20 +284,20 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             // "Slice()" grabs everything in that dimension (like ":" in
             // Matlab).
             setVariableBounds(derivatives, Slice(0, m_problem.getNumSpeeds()),
-                              Slice(), m_solver.getImplicitMultibodyAccelerationBounds());
+                    Slice(), m_solver.getImplicitMultibodyAccelerationBounds());
             setVariableScaling(derivatives, Slice(0, m_problem.getNumSpeeds()),
-                               Slice(), m_solver.getImplicitMultibodyAccelerationBounds());
+                    Slice(), m_solver.getImplicitMultibodyAccelerationBounds());
 
         }
         if (m_problem.getNumAuxiliaryResidualEquations()) {
             setVariableBounds(derivatives,
-                              Slice(m_problem.getNumAccelerations(),
-                                    m_problem.getNumDerivatives()),
-                              Slice(), m_solver.getImplicitAuxiliaryDerivativeBounds());
+                    Slice(m_problem.getNumAccelerations(),
+                            m_problem.getNumDerivatives()),
+                    Slice(), m_solver.getImplicitAuxiliaryDerivativeBounds());
             setVariableScaling(derivatives,
-                               Slice(m_problem.getNumAccelerations(),
-                                     m_problem.getNumDerivatives()),
-                               Slice(), m_solver.getImplicitAuxiliaryDerivativeBounds());
+                    Slice(m_problem.getNumAccelerations(),
+                            m_problem.getNumDerivatives()),
+                    Slice(), m_solver.getImplicitAuxiliaryDerivativeBounds());
         }
     }
     {
@@ -310,13 +310,15 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         }
     }
     {
+        // Use the bounds from the "true" multibody states to set the bounds for
+        // the projection states.
         const auto& stateInfos = m_problem.getStateInfos();
-        for (int ias = 0; ias < m_numProjectionStates; ++ias) {
-            const auto& info = stateInfos[ias];
+        for (int ips = 0; ips < m_numProjectionStates; ++ips) {
+            const auto& info = stateInfos[ips];
             setVariableBounds(
-                    projection_states, ias, Slice(0, m_numMeshIntervals - 1),
+                    projection_states, ips, Slice(0, m_numMeshIntervals - 1),
                     info.bounds);
-            setVariableBounds(projection_states, ias, -1, info.finalBounds);
+            setVariableBounds(projection_states, ips, -1, info.finalBounds);
             setVariableScaling(projection_states, Slice(), Slice(),
                                info.bounds);
         }
@@ -330,7 +332,6 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             ++ip;
         }
     }
-
     m_unscaledVars = unscaleVariables(m_scaledVars);
 
     m_duration = m_unscaledVars[final_time] - m_unscaledVars[initial_time];
