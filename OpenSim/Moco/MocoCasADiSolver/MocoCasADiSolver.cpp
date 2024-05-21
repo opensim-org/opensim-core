@@ -79,12 +79,16 @@ MocoTrajectory MocoCasADiSolver::createGuess(const std::string& type) const {
     auto casProblem = createCasOCProblem();
     auto casSolver = createCasOCSolver(*casProblem);
 
+    std::vector<int> inputControlIndexes = 
+            getProblemRep().getInputControlIndexes();
     if (type == "bounds") {
         return convertToMocoTrajectory(
-                casSolver->createInitialGuessFromBounds());
+                casSolver->createInitialGuessFromBounds(), 
+                inputControlIndexes);
     } else if (type == "random") {
         return convertToMocoTrajectory(
-                casSolver->createRandomIterateWithinBounds());
+                casSolver->createRandomIterateWithinBounds(),
+                inputControlIndexes);
     } else {
         OPENSIM_THROW(Exception, "Internal error.");
     }
@@ -364,12 +368,14 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         log_info("Number of threads: {}", casProblem->getJarSize());
     }
 
+    std::vector<int> inputControlIndexes = 
+            getProblemRep().getInputControlIndexes();
     MocoTrajectory guess = getGuess();
     CasOC::Iterate casGuess;
     if (guess.empty()) {
         casGuess = casSolver->createInitialGuessFromBounds();
     } else {
-        casGuess = convertToCasOCIterate(guess);
+        casGuess = convertToCasOCIterate(guess, inputControlIndexes);
     }
 
     // Temporarily disable printing of negative muscle force warnings so the
@@ -384,12 +390,8 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     }
     OpenSim::Logger::setLevel(origLoggerLevel);
 
-    MocoSolution mocoSolution =
-            convertToMocoTrajectory<MocoSolution>(casSolution);
-
-    // If the model contains a user-added Controllers, append to the solution
-    // the missing controls that were not present in the optimization problem.
-    getProblemRep().appendMissingModelControls(mocoSolution);
+    MocoSolution mocoSolution = convertToMocoTrajectory<MocoSolution>(
+            casSolution, inputControlIndexes);
 
     // If enforcing model constraints and not minimizing Lagrange multipliers,
     // check the rank of the constraint Jacobian and if rank-deficient, print

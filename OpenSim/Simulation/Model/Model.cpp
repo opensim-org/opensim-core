@@ -1975,6 +1975,19 @@ void Model::markControlsAsValid(const SimTK::State& s) const
     controlsCache.markAsValid(s);
 }
 
+void Model::markControlsAsInvalid(const SimTK::State& s) const
+{
+    if( (!_system) || (!_modelControlsIndex.isValid()) ){
+        throw Exception("Model::markControlsAsInvalid() requires an initialized Model./n" 
+            "Prior call to Model::initSystem() is required.");
+    }
+
+    Measure_<Vector>::Result controlsCache = 
+        Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem()
+            .getMeasure(_modelControlsIndex));
+    controlsCache.markAsNotValid(s);
+}
+
 void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) const
 {   
     if( (!_system) || (!_modelControlsIndex.isValid()) ){

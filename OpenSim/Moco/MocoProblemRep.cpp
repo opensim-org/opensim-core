@@ -23,6 +23,8 @@
 #include "MocoProblem.h"
 #include "MocoProblemInfo.h"
 #include "MocoScaleFactor.h"
+#include "OpenSim/Common/Exception.h"
+#include "OpenSim/Moco/Components/ControlDistributor.h"
 #include <regex>
 #include <unordered_set>
 
@@ -104,26 +106,31 @@ void MocoProblemRep::initialize() {
     // Check that any controllers added by the user are valid.
     std::unordered_set<std::string> controlledActuatorPaths;
     for (const auto& controller : m_model_base.getComponentList<Controller>()) {
-        if (!dynamic_cast<const PrescribedController*>(&controller)) {
-            OPENSIM_THROW(Exception, "Moco only supports PrescribedController "
-                    "components. Controller '{}' is of type '{}'.",
-                    controller.getAbsolutePathString(),
-                    controller.getConcreteClassName())
+        if (!controller.isEnabled()) {
+            log_warn("Controller '{}' is disabled and will be ignored in "
+                    "the MocoProblem.", controller.getAbsolutePathString());
+            continue;
         }
 
-        // TODO: When we support other types of controllers, we need to check
-        // that there are no user-defined ActuatorInputControllers in the model
-        // already.
-        // if (dynamic_cast<const ActuatorInputController*>(&controller)) {
-        //    OPENSIM_THROW(Exception, "Detected controller '{}' of type "
-        //            "ActuatorInputController, but user-defined controllers "
-        //            "of this type are not supported.",
-        //            controller.getAbsolutePathString())
-        // }
+        if (dynamic_cast<const ActuatorInputController*>(&controller)) {
+           OPENSIM_THROW(Exception, "Detected controller '{}' of type "
+                   "ActuatorInputController, but user-defined controllers "
+                   "of this type are not supported.",
+                   controller.getAbsolutePathString())
+        }
 
         const auto& socket = controller.getSocket<Actuator>("actuators");
+        OPENSIM_THROW_IF(socket.getNumConnectees() == 0,
+                Exception, "Controller '{}' has no actuators connected.",
+                controller.getAbsolutePathString());
         for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
-            controlledActuatorPaths.insert(socket.getConnecteePath(i));
+            const auto& actu = socket.getConnectee(i);
+            const auto& actuPath = actu.getAbsolutePathString();
+            OPENSIM_THROW_IF(!actu.get_appliesForce(), Exception,
+                    "Expected all actuators controlled by '{}' to be enabled, "
+                    "but the 'appliesForce' property for actuator '{}' is set "
+                    "to false", controller.getAbsolutePathString(), actuPath);
+            controlledActuatorPaths.insert(actuPath);
         }
     }
 
@@ -131,75 +138,50 @@ void MocoProblemRep::initialize() {
     // need to compute control values from the model.
     m_computeControlsFromModel = !controlledActuatorPaths.empty();
 
-    // Add the non-controlled, enabled actuators to an ActuatorInputController.
-    auto actuatorController = make_unique<ActuatorInputController>();
-    for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
-        if (!controlledActuatorPaths.count(actu.getAbsolutePathString()) &&
-                actu.get_appliesForce()) {
-            actuatorController->addActuator(actu);
-        }
-    }
-    m_model_base.addController(actuatorController.release());
-
-    // Finalize Actuator socket connections for all InputControllers. This
-    // allows us to retrieve the names of all controls associated with
-    // InputControllers before any Input connections are required.
-    for (auto& controller : m_model_base.updComponentList<InputController>()) {
-        controller.updSocket<Actuator>("actuators").finalizeConnection(
-                m_model_base);
-    }
-
-    // Check that a ControlDistributor is not already present in the model.
-    for (const auto& controlDistributor :
-                m_model_base.getComponentList<ControlDistributor>()) {
-        OPENSIM_THROW(Exception, "Expected no user-added ControlDistributors "
-                                 "in the model, but found '{}'.",
-                controlDistributor.getAbsolutePathString());
-    }
-
     // Add a ControlDistributor to the model. This component will distribute the
     // OCP controls to all InputControllers in the model, including the
     // ActuatorInputController we just added for actuators that are not already
     // controlled by a user-defined controller.
-    auto controlDistributorUPtr = make_unique<ControlDistributor>();
+    auto& controlDistributor = 
+            ControlDistributor::addControlDistributorAndConnectInputControllers(
+                    m_model_base);
+    auto inputControlNames = controlDistributor.getControlNamesInOrder();
 
-    // If we don't need to compute controls from the model then we need to add
-    // the controls to the ControlDistributor in system order, which is the
-    // order expected by MocoGoals. Otherwise, just get the control names from
-    // the InputControllers in the model based on the input aliases they expect.
-    if (m_computeControlsFromModel) {
-        for (const auto& controller :
-                m_model_base.getComponentList<InputController>()) {
-            const auto expectedAliases =
-                    controller.getExpectedInputChannelAliases();
-            for (const auto& alias : expectedAliases) {
-                controlDistributorUPtr->addControl(alias);
+    // Add the non-controlled, enabled actuators to an ActuatorInputController.
+    // If there are no user-defined controllers, this will add Actuators to the 
+    // ActuatorInputController and controls to the ControlDistributor in system
+    // order (we verified this with checkOrderSystemControls() above). 
+    // Therefore, this is valid whether or not solvers need to compute the 
+    // controls from the model.
+    auto actuatorController = make_unique<ActuatorInputController>();
+    actuatorController->setName("actuator_controller");
+    for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
+        if (!controlledActuatorPaths.count(actu.getAbsolutePathString()) &&
+                actu.get_appliesForce()) {
+            actuatorController->addActuator(actu);
+            std::string actuPath = actu.getAbsolutePathString();
+            if (actu.numControls() == 1) {
+                controlDistributor.addControl(actuPath);
+                controlDistributor.finalizeFromProperties();
+                const auto& output = controlDistributor.getOutput("controls");
+                const auto& channel = output.getChannel(actuPath);
+                actuatorController->connectInput_controls(channel, actuPath);
+            } else {
+                for (int i = 0; i < actu.numControls(); ++i) {
+                    std::string controlName = fmt::format("{}_{}", actuPath, i);
+                    controlDistributor.addControl(controlName);
+                    controlDistributor.finalizeFromProperties();
+                    const auto& output = 
+                            controlDistributor.getOutput("controls");
+                    const auto& channel = output.getChannel(controlName);
+                    actuatorController->connectInput_controls(
+                            channel, controlName);
+                }
             }
         }
-    } else {
-        // This is valid since we already checked above that the order of the
-        // controls in the model matches the system controls.
-        for (const auto& controlName :
-                createControlNamesFromModel(m_model_base)) {
-            controlDistributorUPtr->addControl(controlName);
-        }
     }
-
-    // Add the ControlDistributor to the model.
-    m_control_distributor_base.reset(controlDistributorUPtr.get());
-    m_model_base.addComponent(controlDistributorUPtr.release());
-
-    // Wire the ControlDistributor to the InputControllers in the model.
-    for (auto& controller : m_model_base.updComponentList<InputController>()) {
-        const auto expectedAliases =
-                controller.getExpectedInputChannelAliases();
-        for (const auto& alias : expectedAliases) {
-            const auto& channel =
-                    m_control_distributor_base->getOutput("controls")
-                            .getChannel(alias);
-            controller.connectInput_inputs(channel, alias);
-        }
-    }
+    m_control_distributor_base.reset(&controlDistributor);
+    m_model_base.addController(actuatorController.release());
     m_model_base.finalizeConnections();
 
     // Scale factors
@@ -292,7 +274,8 @@ void MocoProblemRep::initialize() {
 
     m_model_disabled_constraints.finalizeFromProperties();
     m_control_distributor_disabled_constraints.reset(
-            &*m_model_disabled_constraints.getComponentList<ControlDistributor>().begin());
+            &*m_model_disabled_constraints
+                    .getComponentList<ControlDistributor>().begin());
 
 
     if (!m_prescribedKinematics) {
@@ -532,9 +515,7 @@ void MocoProblemRep::initialize() {
 
     // Control infos.
     // --------------
-    // Check for control infos for the actuators in the ActuatorInputController
-    // since these are the only actuators that will have associated optimal
-    // control variables.
+    // Check for control infos for the actuators in the ActuatorInputController.
     auto controlNames =
             createControlNamesForControllerType<ActuatorInputController>(
                     m_model_base);
@@ -555,8 +536,6 @@ void MocoProblemRep::initialize() {
         const auto& name = ph0.get_control_infos(i).getName();
         auto it = std::find(controlNames.begin(), controlNames.end(), name);
         if (it == controlNames.end()) {
-            // TODO: remove this check if we allow setting control bounds for
-            //       controlled actuators (e.g., via path constraints).
             auto it2 = std::find(allControllerControlNames.begin(),
                     allControllerControlNames.end(), name);
             OPENSIM_THROW_IF(it2 != allControllerControlNames.end(), Exception,
@@ -641,7 +620,51 @@ void MocoProblemRep::initialize() {
         }
     }
 
+    // Input control infos.
+    // --------------------
+    // Set the regex pattern Input controls first.
+    int numPatterns = ph0.getProperty_input_control_infos_pattern().size();
+    for (int i = 0; i < numPatterns; ++i) {
+        const auto& pattern = ph0.get_input_control_infos_pattern(i).getName();
+        auto regexPattern = std::regex(pattern);
+        for (const auto& inputControlName : inputControlNames) {
+            if (std::regex_match(inputControlName, regexPattern)) {
+                m_input_control_infos[inputControlName] = 
+                        ph0.get_input_control_infos_pattern(i);
+                m_input_control_infos[inputControlName].setName(
+                        inputControlName);
+            }
+        }
+    }
+
+    for (int i = 0; i < ph0.getProperty_input_control_infos().size(); ++i) {
+        const auto& name = ph0.get_input_control_infos(i).getName();
+        auto it = std::find(
+                inputControlNames.begin(), inputControlNames.end(), name);
+        OPENSIM_THROW_IF(it == inputControlNames.end(), Exception,
+                    "Input control info provided for nonexistent "
+                    "Input control '{}'.", name);
+    }
+
+    for (int i = 0; i < ph0.getProperty_input_control_infos().size(); ++i) {
+        const auto& name = ph0.get_input_control_infos(i).getName();
+        m_input_control_infos[name] = ph0.get_input_control_infos(i);
+    }
+
+    // Add in an empty info for Input controls that do not have one.
+    for (const auto& inputControlName : inputControlNames) {
+        if (m_input_control_infos.count(inputControlName) == 0) {
+            const auto info = MocoVariableInfo(inputControlName, {}, {}, {});
+            m_input_control_infos[inputControlName] = info;
+        }
+        if (!m_input_control_infos[inputControlName].getBounds().isSet()) {
+            m_input_control_infos[inputControlName].setBounds(
+                    MocoBounds::unconstrained());
+        }
+    }
+
     // Auxiliary state implicit residual outputs.
+    // ------------------------------------------
     const auto allImplicitResiduals = getModelOutputReferencePtrs<double>(
             m_model_disabled_constraints, "^implicitresidual_.*", true);
     for (const auto& output : allImplicitResiduals) {
@@ -788,6 +811,15 @@ std::vector<std::string> MocoProblemRep::createControlInfoNames() const {
     }
     return names;
 }
+std::vector<std::string> MocoProblemRep::createInputControlInfoNames() const {
+    std::vector<std::string> names(m_input_control_infos.size());
+    int i = 0;
+    for (const auto& info : m_input_control_infos) {
+        names[i] = info.first;
+        ++i;
+    }
+    return names;
+}
 std::vector<std::string> MocoProblemRep::createMultiplierInfoNames() const {
     std::vector<std::string> names;
     for (const auto& kc : m_kinematic_constraints) {
@@ -860,6 +892,20 @@ const MocoVariableInfo& MocoProblemRep::getControlInfo(
     OPENSIM_THROW_IF(m_control_infos.count(name) == 0, Exception,
             "No info available for control '{}'.", name);
     return m_control_infos.at(name);
+}
+const MocoVariableInfo& MocoProblemRep::getInputControlInfo(
+        const std::string& name) const {
+    OPENSIM_THROW_IF(m_input_control_infos.count(name) == 0, Exception,
+            "No info available for Input control '{}'.", name);
+    return m_input_control_infos.at(name);
+}
+bool MocoProblemRep::hasInputControlInfo(const std::string& name) const {
+    return m_input_control_infos.count(name) > 0;
+}
+const MocoVariableInfo& MocoProblemRep::getSolverControlInfo(
+        const std::string& name) const {
+    return hasInputControlInfo(name) ? getInputControlInfo(name) :
+                                       getControlInfo(name);
 }
 const MocoParameter& MocoProblemRep::getParameter(
         const std::string& name) const {
@@ -1029,6 +1075,11 @@ void MocoProblemRep::printDescription() const {
 
     printHeaderLine("Controls", m_control_infos.size());
     for (const auto& info : m_control_infos) {
+        info.second.printDescription();
+    }
+
+    printHeaderLine("Input controls", m_input_control_infos.size());
+    for (const auto& info : m_input_control_infos) {
         info.second.printDescription();
     }
 

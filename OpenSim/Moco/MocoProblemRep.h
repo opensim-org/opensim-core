@@ -23,6 +23,7 @@
 #include "MocoParameter.h"
 #include "MocoVariableInfo.h"
 #include "Components/ControlDistributor.h"
+#include "Components/ActuatorInputController.h"
 #include "osimMocoDLL.h"
 
 #include <OpenSim/Common/Assertion.h>
@@ -166,6 +167,8 @@ public:
     std::vector<std::string> createStateInfoNames() const;
     /// Get the control names of all the control infos.
     std::vector<std::string> createControlInfoNames() const;
+    /// Get the control names of all the Input control infos.
+    std::vector<std::string> createInputControlInfoNames() const;
     /// Get the names of all the parameters.
     std::vector<std::string> createParameterNames() const;
     /// Get the names of all the goals in cost mode.
@@ -206,6 +209,17 @@ public:
     /// path appended by the control index (e.g. "/actuator_0");
     /// See MocoPhase::setControlInfo().
     const MocoVariableInfo& getControlInfo(const std::string& name) const;
+    /// Get information for Input control variables. 
+    /// See MocoPhase::setInputControlInfo().
+    const MocoVariableInfo& getInputControlInfo(const std::string& name) const;
+    /// Get whether an info object exists for an Input control.
+    bool hasInputControlInfo(const std::string& name) const;
+    /// Get information for a control or Input control variable. This internally
+    /// resolves whether the variable is a control or Input control based on 
+    /// the variable name. This is intend for use by solvers, where both
+    /// controls and Input controls are treated as algebraic variables.
+    const MocoVariableInfo& getSolverControlInfo(const std::string& name) const;
+    /// Get information for a parameter. See MocoPhase::addParameter().
     const MocoParameter& getParameter(const std::string& name) const;
     /// Get a cost by name. This returns a MocoGoal in cost mode.
     const MocoGoal& getCost(const std::string& name) const;
@@ -330,6 +344,16 @@ public:
         return m_implicit_component_refs;
     }
 
+    /// Get the vector of all InputController controls. This includes both 
+    /// controls from InputController%s added by the user and controls from the 
+    /// ActuatorInputController added by MocoProblemRep. The SimTK::State 
+    /// argument should be obtained from `updStateDisabledConstraints()`.
+    const SimTK::Vector& getInputControls(
+            const SimTK::State& stateDisabledConstraints) const {
+        return getControlDistributorDisabledConstraints()
+                .getControls(stateDisabledConstraints);
+    }
+
     /// Get the vector of model controls. If the model contains user-defined
     /// controllers, this function will compute the controls from the model.
     /// Otherwise, it will return the controls directly from the
@@ -341,62 +365,23 @@ public:
             const SimTK::State& stateDisabledConstraints) const {
         return getComputeControlsFromModel() ?
                getModelDisabledConstraintsControls(stateDisabledConstraints) :
-               getControlDistributorDisabledConstraints()
-                        .getControls(stateDisabledConstraints);
+               getInputControls(stateDisabledConstraints);
     }
 
-    /// Append the missing controls from the model to the MocoSolution. This
-    /// function is intended for use by solvers to ensure that the controls
-    /// trajectory in the MocoTrajectory contains all the controls from the
-    /// model. This function is useful when the model contains user-defined
-    /// controllers, which require the controls that are not present in the
-    /// optimal control problem to be computed from the model.
-    void appendMissingModelControls(MocoTrajectory& traj) const {
-        // TODO: this would need to be updated if we allowed stacking OCP
-        //       control on top of user-defined controls.
-        const auto& model = getModelBase();
-        auto modelControlNames = createControlNamesFromModel(model);
-        auto controlIndexMap = createSystemControlIndexMap(model);
-
-        // Find model control names that are not in the trajectory.
-        auto controlNames = traj.getControlNames();
-        std::vector<std::string> missingControlNames;
-        for (const auto& modelControlName : modelControlNames) {
-            if (std::find(controlNames.begin(), controlNames.end(),
-                        modelControlName) == controlNames.end()) {
-                missingControlNames.push_back(modelControlName);
+    /// Get a vector of integers representing the indexes of Input controls in
+    /// the ControlDistributor's 'controls' Output. This function is intended
+    /// for use by solvers to account for Input controls when converting between
+    /// a MocoTrajectory and solver-specific trajectory types.
+    std::vector<int> getInputControlIndexes() const {
+        std::vector<int> inputControlIndexes;
+        auto allControlNames = getControlDistributorDisabledConstraints()
+                .getControlNamesInOrder();
+        for (int i = 0; i < (int)allControlNames.size(); ++i) {
+            if (hasInputControlInfo(allControlNames[i])) {
+                inputControlIndexes.push_back(i);
             }
         }
-        if (missingControlNames.empty()) { return; }
-
-        // Compute the missing controls from the model.
-        const SimTK::Vector& times = traj.getTime();
-        std::vector<double> indVec;
-        indVec.reserve(times.size());
-        for (int i = 0; i < static_cast<int>(times.size()); ++i) {
-            indVec.push_back(times[i]);
-        }
-        TimeSeriesTable missingControls(indVec);
-        auto statesTraj = traj.exportToStatesTrajectory(model);
-        int numMissingControls = static_cast<int>(missingControlNames.size());
-        SimTK::Matrix missingControlsMatrix(
-                static_cast<int>(statesTraj.getSize()), numMissingControls);
-        for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
-            const auto& state = statesTraj.get(i);
-            model.realizeDynamics(state);
-            const auto& controls = model.getControls(state);
-            for (int j = 0; j < numMissingControls; ++j) {
-                missingControlsMatrix(i, j) = controls.get(
-                        controlIndexMap.at(missingControlNames[j]));
-            }
-        }
-        for (int j = 0; j < numMissingControls; ++j) {
-            missingControls.appendColumn(missingControlNames[j],
-                    missingControlsMatrix.col(j));
-        }
-
-        // Insert the missing controls into the trajectory.
-        traj.insertControlsTrajectory(missingControls);
+        return inputControlIndexes;
     }
     /// @}
 
@@ -484,6 +469,7 @@ private:
 
     std::unordered_map<std::string, MocoVariableInfo> m_state_infos;
     std::unordered_map<std::string, MocoVariableInfo> m_control_infos;
+    std::unordered_map<std::string, MocoVariableInfo> m_input_control_infos;
 
     std::vector<std::unique_ptr<MocoParameter>> m_parameters;
     std::vector<std::unique_ptr<MocoGoal>> m_costs;

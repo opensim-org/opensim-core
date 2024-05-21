@@ -48,10 +48,10 @@ private:
 
 /** 
 \section MocoControlTrackingGoal
-The squared difference between a control
-variable value and a reference control variable value, summed over the control variables for which a
-reference is provided, and integrated over the phase. This can be used to
-track actuator controls, muscle excitations, etc.
+The squared difference between a control (or Input control)
+variable value and a reference control variable value, summed over the control 
+variables for which a reference is provided, and integrated over the phase. 
+This can be used to track actuator controls, muscle excitations, etc.
 
 This goal is computed as follows:
 
@@ -94,6 +94,12 @@ e.g., `/forceset/body_actuator_0`, where
 'body_actuator' is the name of the actuator and `_0` specifies the
 control index.
 
+## Input control variable names
+
+An Input control name is based on a path to an InputController in the model 
+appended with the label to the Input control to track, 
+e.g., `/controllerset/my_input_controller/input_control_0`.
+
 ## Reference data
 
 The reference can be provided as a file name to a STO or CSV file (or
@@ -133,7 +139,8 @@ to the cost.
 
 If you wish to track all control signals except those associated with a
 user-defined controller (e.g., PrescribedController), pass 'true' to
-`setIgnoreControlledActuators()`.
+`setIgnoreControlledActuators()`. If you wish ignore Input controls, pass 'true' 
+to `setIgnoreInputControls()`.
 
 @ingroup mocogoal */
 class OSIMMOCO_API MocoControlTrackingGoal : public MocoGoal {
@@ -150,7 +157,7 @@ public:
     }
 
     /// Provide a table containing reference values for the
-    /// controls you want to track.
+    /// controls and/or Input controls you want to track.
     /// In 'auto' labeling mode, each column label must be a control variable
     /// name. In 'manual' labeling mode, the column labels need not be control
     /// variable names; use setReferenceLabel() to associate controls with
@@ -159,9 +166,9 @@ public:
     void setReference(const TableProcessor& ref) {
         set_reference(std::move(ref));
     }
-    /// Set the weight for an individual control variable. If a weight is
-    /// already set for the requested control, then the provided weight
-    /// replaces the previous weight.
+    /// Set the weight for an individual control or Input control variable. If a 
+    /// weight is already set for the requested control, then the provided 
+    /// weight replaces the previous weight.
     /// If no weight is specified for a control, a weight of 1.0 is used
     /// internally.
     /// Set the weight to 0 to avoid tracking a given control.
@@ -174,13 +181,14 @@ public:
             upd_control_weights().cloneAndAppend({controlName, weight});
         }
     }
-    /// Provide a MocoWeightSet to weight the control variables in the cost.
-    /// Replaces the weight set if it already exists.
+    /// Provide a MocoWeightSet to weight the control and/or Input control 
+    /// variables in the cost. Replaces the weight set if it already exists.
     void setWeightSet(const MocoWeightSet& weightSet) {
         upd_control_weights() = weightSet;
     }
 
-    /// Set the column of the reference data that a given control should track.
+    /// Set the column of the reference data that a given control or Input 
+    /// control should track.
     /// Multiple controls can track the same column of the reference data.
     /// This replaces the reference label for the given control, if one had
     /// already been provided.
@@ -204,7 +212,7 @@ public:
     }
 
     /// Specify whether the reference can have columns not associated with
-    /// controls.
+    /// controls or Input control.
     /// If set true, then such columns will be ignored by the cost.
     /// If false, such columns will cause an Exception to be raised.
     /// Only takes effect in 'auto' labeling mode.
@@ -245,9 +253,19 @@ public:
         return get_ignore_controlled_actuators();
     }
 
+    /// If true, do not minimize Input controls (default: false).
+    void setIgnoreInputControls(bool v) {
+        set_ignore_input_controls(v);
+    }
+    /// @copydoc setIgnoreInputControls(bool v)
+    bool getIgnoreInputControls() const {
+        return get_ignore_input_controls();
+    }
+
     /// Add a MocoParameter to the problem that will scale the tracking reference
-    /// data associated with the specified control. Scale factors are applied
-    /// to the tracking error calculations based on the following equation:
+    /// data associated with the specified control or Input control. Scale 
+    /// factors are applied to the tracking error calculations based on the 
+    /// following equation:
     ///
     ///     error = modelValue - scaleFactor * referenceValue
     ///
@@ -291,15 +309,20 @@ private:
             "If true, do not track controls belonging to actuators "
             "controlled by user-defined controllers (default: false).");
 
+    OpenSim_DECLARE_PROPERTY(ignore_input_controls, bool,
+            "If true, do not track Input controls (default: false).");
+
     void constructProperties() {
         constructProperty_reference(TableProcessor());
         constructProperty_allow_unused_references(false);
         constructProperty_control_weights(MocoWeightSet());
         constructProperty_reference_labels();
         constructProperty_ignore_controlled_actuators(false);
+        constructProperty_ignore_input_controls(false);
     }
 
     mutable std::vector<int> m_control_indices;
+    mutable std::vector<bool> m_isInputControl;
     mutable std::vector<double> m_control_weights;
     mutable GCVSplineSet m_ref_splines;
     mutable std::vector<int> m_ref_indices;

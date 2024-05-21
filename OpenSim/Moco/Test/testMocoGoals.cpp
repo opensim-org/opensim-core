@@ -580,6 +580,7 @@ TEST_CASE("Test MocoSumSquaredStateGoal") {
     std::string q1_str = q1.getAbsolutePathString() + "/value";
 
     SimTK::State state = model.initSystem();
+    SimTK::Vector inputControls;
     MocoGoal::IntegrandInput input {0, state, {}};
     q0.setValue(state, 1.0);
     q1.setValue(state, 0.5);
@@ -1025,15 +1026,15 @@ TEST_CASE("MocoGoal stage dependency") {
     MocoStageTestingGoal goal;
     goal.initializeOnModel(model);
     state.invalidateAll(SimTK::Stage::Instance);
-    CHECK_THROWS_WITH(goal.calcIntegrand({0, state, SimTK::Vector()}),
+    CHECK_THROWS_WITH(goal.calcIntegrand({0, state, {}}),
             ContainsSubstring("calcIntegrand()"));
 
     goal.setRealizeInitialState(true);
     state.invalidateAll(SimTK::Stage::Instance);
     auto initialState = state;
     auto finalState = state;
-    MocoGoal::GoalInput input{0, initialState, SimTK::Vector(), 0, finalState,
-            SimTK::Vector(), 0};
+    MocoGoal::GoalInput input{0, initialState, {}, 0, finalState,
+            {}, 0};
     SimTK::Vector goalValue;
     CHECK_THROWS_WITH(goal.calcGoal(input, goalValue),
             ContainsSubstring("calcGoal()") &&
@@ -1087,8 +1088,8 @@ TEST_CASE("MocoGoal divide by displacement/duration/mass") {
     initialState.updQ()[0] = initial_position;
     finalState.updQ()[0] = final_position;
 
-    MocoGoal::GoalInput input{initial_time, initialState, SimTK::Vector(), 
-                final_time, finalState, SimTK::Vector(), 0};
+    MocoGoal::GoalInput input{initial_time, initialState, {}, 
+            final_time, finalState, {}, 0};
     SimTK::Vector goalValues;
     goal.calcGoal(input, goalValues);
 

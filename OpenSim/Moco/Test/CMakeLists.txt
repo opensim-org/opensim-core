@@ -44,6 +44,8 @@ MocoAddTest(NAME testMocoConstraints)
 
 MocoAddTest(NAME testMocoContact)
 
+MocoAddTest(NAME testMocoControllers)
+
 MocoAddTest(NAME testMocoActuators)
 
 MocoAddTest(NAME testMocoInverse RESOURCES

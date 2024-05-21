@@ -18,6 +18,10 @@
 
 #include "ControlDistributor.h"
 
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Control/InputController.h>
+#include <OpenSim/Common/CommonUtilities.h>
+
 using namespace OpenSim;
 
 //=============================================================================
@@ -85,6 +89,41 @@ std::vector<std::string> ControlDistributor::getControlNamesInOrder() const {
     return names;
 }
 
+ControlDistributor& 
+ControlDistributor::addControlDistributorAndConnectInputControllers(
+        Model& model) {
+    for (const auto& controlDistributor :
+                model.getComponentList<ControlDistributor>()) {
+        OPENSIM_THROW(Exception, "Expected no ControlDistributors to be " 
+                "present in the model, but found '{}'.",
+                controlDistributor.getAbsolutePathString());
+    }
+    auto controlDistributorUPtr = make_unique<ControlDistributor>();
+    controlDistributorUPtr->setName("control_distributor");
+
+    const auto& output = controlDistributorUPtr->getOutput("controls");
+    for (auto& controller : model.updComponentList<InputController>()) {
+        if (!controller.isEnabled()) {
+            continue;
+        }
+        const auto labels = controller.getInputControlLabels();
+        for (const auto& label : labels) {
+            std::string inputControlName = fmt::format(
+                    "{}/{}", controller.getAbsolutePathString(), label);
+            controlDistributorUPtr->addControl(inputControlName);
+            controlDistributorUPtr->finalizeFromProperties();
+            const auto& channel = output.getChannel(inputControlName);
+            controller.connectInput_controls(channel, inputControlName);
+        }
+    }
+
+    ControlDistributor& controlDistributorRef = *controlDistributorUPtr;
+    model.addComponent(controlDistributorUPtr.release());
+    model.initSystem();
+
+    return controlDistributorRef;
+}
+
 //=============================================================================
 // MODEL COMPONENT INTERFACE
 //=============================================================================
@@ -100,6 +139,7 @@ void ControlDistributor::extendRealizeTopology(SimTK::State& state) const {
 
 void ControlDistributor::extendFinalizeFromProperties() {
     Super::extendFinalizeFromProperties();
+    updOutput("controls").clearChannels();
     for (const auto& kv : m_controlIndexMap) {
         updOutput("controls").addChannel(kv.first);
     }

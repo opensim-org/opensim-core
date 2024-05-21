@@ -20,6 +20,9 @@
 
 #include "MocoProblem.h"
 #include "MocoTrajectory.h"
+#include "OpenSim/Common/ComponentPath.h"
+#include "OpenSim/Common/SignalGenerator.h"
+#include "OpenSim/Simulation/Control/InputController.h"
 #include "OpenSim/Simulation/InverseDynamicsSolver.h"
 #include "OpenSim/Simulation/Model/ExternalLoads.h"
 #include "OpenSim/Common/STOFileAdapter.h"
@@ -56,22 +59,20 @@ std::unique_ptr<Function> createFunction<GCVSpline>(
 } // anonymous namespace
 
 void OpenSim::prescribeControlsToModel(
-        const MocoTrajectory& trajectory, Model& model, std::string functionType) {
+        const MocoTrajectory& trajectory, Model& model, 
+        std::string functionType) {
     // Get actuator names.
     model.initSystem();
-    OpenSim::Array<std::string> actuNames;
-    for (const auto& actu : model.getComponentList<Actuator>()) {
-        actuNames.append(actu.getAbsolutePathString());
-    }
+    const auto& controlNames = trajectory.getControlNames();
 
-    // Add prescribed controllers to actuators in the model, where the control
-    // functions are splined versions of the actuator controls from the OCP
-    // solution.
+    // Add a PrescribedController to control each actuator in the model, where 
+    // the control functions are splined versions of the actuator controls from 
+    // the OCP solution.
     const SimTK::Vector& time = trajectory.getTime();
     auto* controller = new PrescribedController();
     controller->setName("prescribed_controller");
-    for (int i = 0; i < actuNames.size(); ++i) {
-        const auto control = trajectory.getControl(actuNames[i]);
+    for (int i = 0; i < static_cast<int>(controlNames.size()); ++i) {
+        const auto control = trajectory.getControl(controlNames[i]);
         std::unique_ptr<Function> function;
         if (functionType == "GCVSpline") {
             function = createFunction<GCVSpline>(time, control);
@@ -81,12 +82,41 @@ void OpenSim::prescribeControlsToModel(
             OPENSIM_THROW(
                     Exception, "Unexpected function type {}.", functionType);
         }
-        const auto& actu = model.getComponent<Actuator>(actuNames[i]);
+        const auto& actu = model.getComponent<Actuator>(controlNames[i]);
         controller->addActuator(actu);
         controller->prescribeControlForActuator(
                 actu.getName(), *function);
     }
     model.addController(controller);
+
+    // Add SignalGenerators to the model to control the Input controls 
+    // associated with any InputControllers.
+    for (auto& controller : model.updComponentList<InputController>()) {
+        const auto& labels = controller.getInputControlLabels();
+        for (const auto& label : labels) {
+            std::string inputControlName = fmt::format("{}/{}", 
+                    controller.getAbsolutePathString(), label);
+
+            const auto inputControl = 
+                    trajectory.getInputControl(inputControlName);
+            std::unique_ptr<Function> function;
+            if (functionType == "GCVSpline") {
+                function = createFunction<GCVSpline>(time, inputControl);
+            } else if (functionType == "PiecewiseLinearFunction") {
+                function = createFunction<PiecewiseLinearFunction>(
+                        time, inputControl);
+            } else {
+                OPENSIM_THROW(Exception, 
+                        "Unexpected function type {}.", functionType);
+            }
+            auto* signal = new SignalGenerator();
+            signal->setName(label);
+            signal->set_function(*function);
+            model.addComponent(signal);
+            controller.connectInput_controls(signal->getOutput("signal"));
+        }
+    }
+    model.finalizeConnections();
 }
 
 MocoTrajectory OpenSim::simulateTrajectoryWithTimeStepping(
@@ -375,7 +405,8 @@ TimeSeriesTable OpenSim::calcGeneralizedForces(Model model,
     StatesTrajectory statesTraj = trajectory.exportToStatesTrajectory(model);
     TimeSeriesTable accelerationsTable =
             analyzeMocoTrajectory<double>(model, trajectory, {".*acceleration"});
-    SimTK::Matrix udots(statesTraj.getSize(), model.getNumCoordinates());
+    SimTK::Matrix udots(static_cast<int>(statesTraj.getSize()), 
+            static_cast<int>(model.getNumCoordinates()));
     for (int j = 0; j < static_cast<int>(coordinates.size()); ++j) {
         const auto& coordinate = coordinates[j];
         udots.updCol(j) = accelerationsTable.getDependentColumn(

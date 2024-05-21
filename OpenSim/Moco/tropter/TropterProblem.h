@@ -96,10 +96,14 @@ protected:
     }
 
     void addControlVariables() {
-        auto controlNames = m_mocoProbRep.getControlDistributorBase()
-                                         .getControlNamesInOrder();
-        for (const auto& controlName : controlNames) {
-            const auto& info = m_mocoProbRep.getControlInfo(controlName);
+
+        // Control names need to be in the order expected by the 
+        //ControlDistributor.
+        auto allControlNames = 
+                m_mocoProbRep.getControlDistributorDisabledConstraints()
+                             .getControlNamesInOrder();
+        for (const auto& controlName : allControlNames) {
+            const auto& info = m_mocoProbRep.getSolverControlInfo(controlName);
             this->add_control(controlName, convertBounds(info.getBounds()),
                     convertBounds(info.getInitialBounds()),
                     convertBounds(info.getFinalBounds()));
@@ -332,6 +336,11 @@ protected:
             for (int ic = 0; ic < controls.size(); ++ic) {
                 osimControls[ic] = controls[ic];
             }
+            // Updating the Inputs to InputControllers via the 
+            // ControlDistributor does not mark the model controls cache as 
+            // invalid, so we must do it manually here.
+            modelDisabledConstraints.markControlsAsInvalid(
+                    simTKStateDisabledConstraints);
         }
 
         // If enabled constraints exist in the model, compute constraint forces
@@ -394,8 +403,7 @@ protected:
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
         SimTK::Vector costVector(cost.getNumOutputs());
         cost.calcGoal({in.initial_time, initialState, controlsInitial,
-                              in.final_time, finalState, controlsFinal,
-                              in.integral},
+                       in.final_time, finalState, controlsFinal, in.integral},
                 costVector);
         cost_value = costVector.sum();
     }
@@ -535,15 +543,19 @@ protected:
 public:
     template <typename MocoTrajectoryType, typename tropIterateType>
     MocoTrajectoryType convertIterateTropterToMoco(
-            const tropIterateType& tropSol) const;
+            const tropIterateType& tropSol, 
+            std::vector<int> inputControlIndexes = {}) const;
 
     MocoTrajectory convertToMocoTrajectory(
-            const tropter::Iterate& tropSol) const;
+            const tropter::Iterate& tropSol,
+            std::vector<int> inputControlIndexes = {}) const;
 
-    MocoSolution convertToMocoSolution(const tropter::Solution& tropSol) const;
+    MocoSolution convertToMocoSolution(const tropter::Solution& tropSol,
+            std::vector<int> inputControlIndexes = {}) const;
 
     tropter::Iterate convertToTropterIterate(
-            const MocoTrajectory& mocoIter) const;
+            const MocoTrajectory& mocoIter, 
+            std::vector<int> inputControlIndexes = {}) const;
 };
 
 template <typename T>

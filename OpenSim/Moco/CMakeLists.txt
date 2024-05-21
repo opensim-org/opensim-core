@@ -92,6 +92,8 @@ set(MOCO_SOURCES
         Components/AccelerationMotion.cpp
         Components/ControlDistributor.h
         Components/ControlDistributor.cpp
+        Components/ActuatorInputController.h
+        Components/ActuatorInputController.cpp
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
         MocoInverse.cpp
