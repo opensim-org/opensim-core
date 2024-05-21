@@ -175,10 +175,9 @@ SET_ADOPT_HELPER(Analysis);
 // Pythonic operators
 // ==================
 // Allow indexing operator in python (e.g., states[i]).
-/*
+
 %extend OpenSim::StatesTrajectory {
     const SimTK::State&  __getitem__(int i) const {
         return $self->get(i);
     }
 };
-*/
