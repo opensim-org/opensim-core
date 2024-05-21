@@ -39,7 +39,7 @@ Iterate Iterate::resample(const casadi::DM& newTimes,
     auto mocoTraj = OpenSim::convertToMocoTrajectory(*this);
     auto simtkNewTimes = OpenSim::convertToSimTKVector(newTimes);
     mocoTraj.resample(simtkNewTimes);
-    return OpenSim::convertToCasOCIterate(mocoTraj, mocoIt.getSlackNames(),
+    return OpenSim::convertToCasOCIterate(mocoTraj, mocoTraj.getSlackNames(),
             appendProjectionStates);
 }
 

@@ -375,6 +375,9 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
             getProblemRep().getInputControlIndexes();
     MocoTrajectory guess = getGuess();
     CasOC::Iterate casGuess;
+    // We do not need to append projection states here since they will be 
+    // appended later when the guess is resampled by the solver (if needed).
+    bool appendProjectionStates = false;
     if (guess.empty()) {
         casGuess = casSolver->createInitialGuessFromBounds();
     } else {
@@ -382,8 +385,8 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         for (const auto& info : casProblem->getSlackInfos()) {
             expectedSlackNames.push_back(info.name);
         }
-        casGuess = convertToCasOCIterate(guess, expectedSlackNames, false, 
-                inputControlIndexes);
+        casGuess = convertToCasOCIterate(guess, expectedSlackNames, 
+                appendProjectionStates, inputControlIndexes);
     }
 
     // Temporarily disable printing of negative muscle force warnings so the
