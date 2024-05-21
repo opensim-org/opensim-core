@@ -324,7 +324,10 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
             controlsTable.getColumnLabels();
     const std::unordered_map<std::string, int> controlMap =
             createSystemControlIndexMap(model);
-    SimTK::Vector controls((int)controlsTable.getNumColumns(), 0.0);
+    // This vector will be populated and passed to Model::setControls(), so we
+    // construct it with size equal to the model's control vector and initialize
+    // it with zeros.
+    SimTK::Vector controls((int)controlMap.size(), 0.0);
 
     OPENSIM_THROW_IF(statesTable.getNumRows() != controlsTable.getNumRows(),
             Exception,
@@ -371,10 +374,8 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
 
         // Create a SimTK::Vector of the control values for the current state.
         const auto& controlsRow = controlsTable.getRowAtIndex(itime);
-        for (int icontrol = 0; icontrol < (int)controlNames.size();
-                ++icontrol) {
-            controls[controlMap.at(controlNames[icontrol])] =
-                    controlsRow[icontrol];
+        for (int ic = 0; ic < (int)controlNames.size(); ++ic) {
+            controls[controlMap.at(controlNames[ic])] = controlsRow[ic];
         }
 
         // Set the controls on the state object.

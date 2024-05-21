@@ -156,7 +156,8 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
         const auto expected = std.getControlsTrajectory();
         CHECK(std.compareContinuousVariablesRMS(solution,
                                                 {{"controls", {}}}) < 1e-2);
-        CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-2);
+        CHECK(std.compareContinuousVariablesRMS(solution, 
+                                                {{"states", {}}}) < 1e-2);
 
         // Check muscle-tendon equilibrium.
         TimeSeriesTable outputs = inverseSolution.getOutputs();

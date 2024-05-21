@@ -22,7 +22,7 @@
 
 namespace CasOC {
 class Solver;
-class Solution;
+struct Solution;
 } // namespace CasOC
 
 namespace OpenSim {

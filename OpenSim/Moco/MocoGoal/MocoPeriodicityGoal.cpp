@@ -19,7 +19,7 @@
 #include "MocoPeriodicityGoal.h"
 
 #include <OpenSim/Simulation/SimulationUtilities.h>
-#include <OpenSim/Simulation/Control/InputController.h>
+#include <OpenSim/Moco/Components/ActuatorInputController.h>
 
 using namespace OpenSim;
 
@@ -58,7 +58,6 @@ MocoPeriodicityGoal::MocoPeriodicityGoal() { constructProperties(); }
 void MocoPeriodicityGoal::constructProperties() {
     constructProperty_state_pairs();
     constructProperty_control_pairs();
-    constructProperty_ignore_controlled_actuators(false);
 }
 
 void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
@@ -81,39 +80,37 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     }
 
     auto systemControlIndexMap = createSystemControlIndexMap(model);
+    auto inputControlIndexMap = getInputControlIndexMap();
 
     // Get controls associated with the model's ActuatorInputController.
     auto actuatorInputControls =
             createControlNamesForControllerType<ActuatorInputController>(model);
 
     int nControlPairs = getProperty_control_pairs().size();
-    bool pairHasActuatorInputControl;
     for (int i = 0; i < nControlPairs; ++i) {
         const auto path1 = get_control_pairs(i).get_initial_variable();
-        OPENSIM_THROW_IF(systemControlIndexMap.count(path1) == 0, Exception,
-                "Could not find control variable '{}'.", path1);
-        pairHasActuatorInputControl = actuatorInputControls.count(path1);
+        bool foundControl1 = systemControlIndexMap.count(path1);
+        bool foundInputControl1 = inputControlIndexMap.count(path1);
+        OPENSIM_THROW_IF(!foundControl1 && !foundInputControl1, Exception,
+                "Could not find control or Input control variable "
+                "matching name '{}'.", path1);
 
         const auto path2 = get_control_pairs(i).get_final_variable();
-        OPENSIM_THROW_IF(systemControlIndexMap.count(path2) == 0, Exception,
-                "Could not find control variable '{}'.", path2);
-        pairHasActuatorInputControl = !pairHasActuatorInputControl &&
-                                      actuatorInputControls.count(path2);
+        bool foundControl2 = systemControlIndexMap.count(path2);
+        bool foundInputControl2 = inputControlIndexMap.count(path2);
+        OPENSIM_THROW_IF(!foundControl2 && !foundInputControl2, Exception,
+                "Could not find control or Input control variable "
+                "matching name '{}'.", path2);
 
-        if (getIgnoreControlledActuators() && !pairHasActuatorInputControl) {
-            log_info("MocoPeriodicityGoal: Control pair '{}'/'{}' has at least "
-                     "control associated with a user-defined controller and "
-                     "will be ignored, as requested.",
-                    get_control_pairs(i).get_initial_variable(),
-                    get_control_pairs(i).get_final_variable());
-            continue;
-        }
-
-        int controlIndex1 = systemControlIndexMap[path1];
-        int controlIndex2 = systemControlIndexMap[path2];
+        int controlIndex1 = foundInputControl1 ? 
+                inputControlIndexMap[path1] : systemControlIndexMap[path1];
+        int controlIndex2 = foundInputControl2 ? 
+                inputControlIndexMap[path2] : systemControlIndexMap[path2];
         m_control_names.emplace_back(path1, path2);
         m_indices_controls.emplace_back(controlIndex1, controlIndex2,
                 get_control_pairs(i).get_negate() ? -1 : 1);
+        m_isInputControl.emplace_back(
+                std::make_pair(foundInputControl1, foundInputControl2));
     }
 
     setRequirements(
@@ -137,11 +134,22 @@ void MocoPeriodicityGoal::calcGoalImpl(
 
     const auto& initialControls = input.initial_controls;
     const auto& finalControls = input.final_controls;
+    const auto& initialInputControls = getInputControls(input.initial_state);
+    const auto& finalInputControls = getInputControls(input.final_state);
     int j = 0;
     for (const auto& index_control : m_indices_controls) {
-        goal[i + j] = (initialControls[std::get<0>(index_control)] *
-                              std::get<2>(index_control)) -
-                      finalControls[std::get<1>(index_control)];
+        int initialIndex = std::get<0>(index_control);
+        const auto& initialControl = m_isInputControl[j].first ? 
+                initialInputControls[initialIndex] : 
+                initialControls[initialIndex];
+
+        int finalIndex = std::get<1>(index_control);
+        const auto& finalControl = m_isInputControl[j].second ? 
+                finalInputControls[finalIndex] :
+                finalControls[finalIndex];
+
+        goal[i + j] = 
+                (initialControl * std::get<2>(index_control)) - finalControl;
         if (getModeIsCost()) { goal[i + j] = SimTK::square(goal[i + j]); }
         ++j;
     }

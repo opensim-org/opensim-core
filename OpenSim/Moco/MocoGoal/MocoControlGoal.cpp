@@ -18,8 +18,8 @@
 
 #include "MocoControlGoal.h"
 
+#include <OpenSim/Moco/Components/ActuatorInputController.h>
 #include <OpenSim/Moco/Components/ControlDistributor.h>
-#include <OpenSim/Simulation/Control/InputController.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 
@@ -32,6 +32,7 @@ void MocoControlGoal::constructProperties() {
     constructProperty_control_weights_pattern(MocoWeightSet());
     constructProperty_exponent(2);
     constructProperty_ignore_controlled_actuators(false);
+    constructProperty_ignore_input_controls(false);
 }
 
 void MocoControlGoal::setWeightForControl(
@@ -62,14 +63,17 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
     auto actuatorInputControlNames =
             createControlNamesForControllerType<ActuatorInputController>(model);
 
+    // Get the Input control index map.
+    auto inputControlIndexMap = getInputControlIndexMap();
+    
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& thisName = get_control_weights()[i].getName();
-        if (std::find(controlNames.begin(), controlNames.end(), thisName) ==
-                controlNames.end()) {
-            OPENSIM_THROW_FRMOBJ(
-                    Exception, "Unrecognized control '" + thisName + "'.");
-        }
+        bool foundControl = std::find(controlNames.begin(), controlNames.end(),
+                thisName) != controlNames.end();
+        bool foundInputControl = inputControlIndexMap.count(thisName);
+        OPENSIM_THROW_IF_FRMOBJ(!foundControl && !foundInputControl, Exception,
+                "Unrecognized control '" + thisName + "'.");
     }
 
     // Set the regex pattern controls first.
@@ -78,9 +82,16 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
         const auto& mocoWeight = get_control_weights_pattern().get(i);
         const auto& pattern = mocoWeight.getName();
         const auto regex = std::regex(pattern);
+        // Model controls.
         for (const auto& controlName : controlNames) {
             if (std::regex_match(controlName, regex)) {
                 weightsFromPatterns[controlName] = mocoWeight.getWeight();
+            }
+        }
+        // Input controls.
+        for (const auto& kv : inputControlIndexMap) {
+            if (std::regex_match(kv.first, regex)) {
+                weightsFromPatterns[kv.first] = mocoWeight.getWeight();
             }
         }
     }
@@ -112,6 +123,31 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
         }
     }
 
+    for (const auto& kv : inputControlIndexMap) {
+        double weight = 1.0;
+        if (get_control_weights().contains(kv.first)) {
+            weight = get_control_weights().get(kv.first).getWeight();
+        } else if (weightsFromPatterns.count(kv.first)) {
+            weight = weightsFromPatterns[kv.first];
+        }
+
+        if (getIgnoreInputControls()) {
+            log_info("MocoControlGoal: Input control '{}' will be ignored, "
+                     "as requested.", kv.first);
+            continue;
+        }
+
+        if (weight != 0.0) {
+            m_inputControlIndices.push_back(
+                    inputControlIndexMap.at(kv.first));
+            m_inputControlWeights.push_back(weight);
+            m_inputControlNames.push_back(kv.first);
+        } else {
+            log_info("MocoControlGoal: Input control '{}' has weight 0 and will "
+                     "be ignored.", kv.first);
+        }
+    }
+
     OPENSIM_THROW_IF_FRMOBJ(get_exponent() < 2, Exception,
             "Exponent must be 2 or greater.");
     int exponent = get_exponent();
@@ -132,6 +168,7 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 void MocoControlGoal::calcIntegrandImpl(
         const IntegrandInput& input, SimTK::Real& integrand) const {
     const auto& controls = input.controls;
+    const auto& input_controls = getInputControls(input.state);
 
     integrand = 0;
     int iweight = 0;
@@ -139,6 +176,14 @@ void MocoControlGoal::calcIntegrandImpl(
         const auto& control = controls[icontrol];
         integrand += m_weights[iweight] * m_power_function(control);
         ++iweight;
+    }
+
+    int iweight_ic = 0;
+    for (const auto& icontrol : m_inputControlIndices) {
+        const auto& control = input_controls[icontrol];
+        integrand += 
+                m_inputControlWeights[iweight_ic] * m_power_function(control);
+        ++iweight_ic;
     }
 }
 
@@ -151,5 +196,9 @@ void MocoControlGoal::printDescriptionImpl() const {
     for (int i = 0; i < (int) m_controlNames.size(); i++) {
         log_cout("        control: {}, weight: {}", m_controlNames[i],
                 m_weights[i]);
+    }
+    for (int i = 0; i < (int) m_inputControlNames.size(); i++) {
+        log_cout("        Input control: {}, weight: {}", 
+                m_inputControlNames[i], m_inputControlWeights[i]);
     }
 }

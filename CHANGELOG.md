@@ -50,6 +50,12 @@ v4.6
 - Added options to `PolynomialPathFitter` for including moment arm and lengthening speed functions in generated `FunctionBasedPath`s (#3767).
 - The signature for `PrescribedController::prescribeControlForActuator()` was changed to take a `Function` via a const reference rather than a
 pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
+- Added option to `PolynomialPathFitter` to use stepwise regression for fitting a minimal set of polynomial coefficients for a `FunctionBasedPath` (#3779).
+- Fixed a bug in SimulationUtilities::analyze<T> that would provide an incorrectly sized control vector to 
+  the model if controls were missing from the input controls table. (#3769)
+- Added InputController, an intermediate abstract class of Controller that provides supports for controllers 
+  that map scalar control values from a list Input (connected to Outputs from one or more ModelComponents) 
+  to model actuator controls. (#3769)
 
 v4.5
 ====

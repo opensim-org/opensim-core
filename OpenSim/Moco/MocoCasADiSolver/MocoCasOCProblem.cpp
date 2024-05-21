@@ -68,10 +68,12 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 convertBounds(info.getFinalBounds()));
     }
 
-    auto controlNames =
-            problemRep.getControlDistributorBase().getControlNamesInOrder();
-    for (const auto& controlName : controlNames) {
-        const auto& info = problemRep.getControlInfo(controlName);
+    // Control names need to be in the order expected by the ControlDistributor.
+    auto allControlNames = 
+            problemRep.getControlDistributorDisabledConstraints()
+                      .getControlNamesInOrder();
+    for (const auto& controlName : allControlNames) {
+        const auto& info = problemRep.getSolverControlInfo(controlName);
         addControl(controlName, convertBounds(info.getBounds()),
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));

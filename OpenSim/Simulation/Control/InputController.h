@@ -34,19 +34,24 @@ namespace OpenSim {
  * InputController is a simple intermediate abstract class for a Controller that
  * computes controls based on scalar values defined via a list Input.
  *
- * Since InputController is an abstract class, derived classes must still
- * implement Controller's virtual computeControls() method. Additionally, it is
- * up to the derived class to define how the scalar values from the Input are
- * mapped to the controls for the actuators in the controller's ActuatorSet.
- * Finally, derived classes must implement the getExpectedInputChannelAliases()
- * method to provide a list of expected Input channel connections to Output
- * channels from other components (e.g., ControlDistributor).
+ * Concrete implementations of InputController must provide a relevant 
+ * implementation for the computeControlsImpl() method. This method is called by
+ * computeControls() only if the InputController has the correct number of 
+ * connected Input controls. Otherwise, computeControls() does modify the
+ * model controls vector. It is up to each concrete implementation class to 
+ * define how the scalar values from the list Input are mapped to the controls 
+ * for the actuators in the controller's ActuatorSet. Additionally, concrete 
+ * implementations must implement getInputControlLabels() to provide a vector of
+ * labels denoting the order and length of the scalar Input values expected by 
+ * the controller. These labels may be useful in simulation tools (e.g., Moco)
+ * to make connections between control signals from other sources 
+ * (e.g., ControlDistributor) and the Input controls of the controller.
  *
  * InputController provides convenience methods for getting the names and
  * indexes of the controls for the actuators in the controller's ActuatorSet.
  * Non-scalar actuators will have multiple controls, and therefore have multiple
- * control names and indexes. Control information is only available after calling
- * Model::finalizeConnections().
+ * control names and indexes. Control information is only available after 
+ * calling Model::finalizeConnections().
  *
  * Actuator control names and indexes are based on the convention used by the
  * utility function SimulationUtilities::createControlNamesFromModel(), which
@@ -63,13 +68,14 @@ public:
 //=============================================================================
 // INPUTS
 //=============================================================================
-    OpenSim_DECLARE_LIST_INPUT(inputs, double, SimTK::Stage::Velocity,
-        "The scalar values used to compute the controls for the actuators.");
+    OpenSim_DECLARE_LIST_INPUT(controls, double, SimTK::Stage::Velocity,
+        "The scalar control values used to compute the model controls for the "
+        "Actuators connected to this controller.");
 
 //=============================================================================
 // METHODS
 //=============================================================================
-
+public:
     // CONSTRUCTION AND DESTRUCTION
     InputController();
     ~InputController() override;
@@ -82,35 +88,39 @@ public:
 
     // INTERFACE METHODS
     /**
-     * Get the expected list of Input channel aliases.
-     *
-     * Concrete implementations of InputController must implement this method
-     * to provide a list of expected Input channel connections to Output channels
-     * from other components.
-     *
-     * Since the alias names may depend on the actuator names, this is only
-     * valid after actuators have been connected and Socket::finalizeConnection()
-     * has been called:
-     *
-     * @code
-     * // Create an ActuatorInputController and add it to the model.
-     * ActuatorInputController* controller = new ActuatorInputController();
-     * controller->setName("my_actuator_controller");
-     * controller->addActuator(actu1);
-     * controller->addActuator(actu2);
-     * ...
-     * model.addComponent(controller);
-     *
-     * // Connect the actuators to the controller.
-     * controller->updSocket<Actuator>("actuators").finalizeConnection(model);
-     *
-     * // Get the expected Input channel aliases.
-     * auto expectedAliases = controller->getExpectedInputChannelAliases();
-     * @endcode
+     * Get the vector of labels for the Input controls expected by the
+     * controller.
+     * 
+     * The connected Input controls must match the length and order of the 
+     * labels returned by this method. These labels may be useful in simulation
+     * tools (e.g., Moco) for mapping control signals from another source to 
+     * the Input controls of the controller.
      */
-    virtual std::vector<std::string> getExpectedInputChannelAliases() const = 0;
+    virtual std::vector<std::string> getInputControlLabels() const = 0;
+
+    /**
+     * Compute the controls for the actuators in the controller's ActuatorSet
+     * based on the scalar values provided by the Input controls.
+     * 
+     * This method is only called by computeControls() if the InputController
+     * has the correct number of connected Input controls. Concrete 
+     * implementations of this class must provide a relevant implementation.
+     */
+    virtual void computeControlsImpl(const SimTK::State& state,
+                                 SimTK::Vector& controls) const = 0;
+
+    // CONTROLLER INTERFACE
+    void computeControls(const SimTK::State& state,
+                         SimTK::Vector& controls) const override final;
 
     // METHODS
+    /**
+     * Get the number of Input controls expected by the controller.
+     */
+    int getNumInputControls() const { 
+        return static_cast<int>(getInputControlLabels().size()); 
+    }
+
     /**
      * Get the names of the controls for the actuators in the controller's
      * ActuatorSet.
@@ -156,45 +166,7 @@ protected:
 private:
     std::vector<std::string> m_controlNames;
     std::vector<int> m_controlIndexes;
-};
-
-/**
- * ActuatorInputController is the simplest concrete implementation of an
- * InputController.
- *
- * It passes the scalar values from the controller's list Input to the actuators
- * in the controller's ActuatorSet. Therefore, the expected Input channel aliases
- * are simply the names of the actuator controls added to this controller. The
- * Input channel aliases must match the names of the actuator controls in the
- * model, but they do not need to be in the same order.
- */
-class OSIMSIMULATION_API ActuatorInputController : public InputController {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorInputController, InputController);
-public:
-
-    // CONSTRUCTION AND DESTRUCTION
-    ActuatorInputController();
-    ~ActuatorInputController() override;
-
-    ActuatorInputController(const ActuatorInputController& other);
-    ActuatorInputController& operator=(const ActuatorInputController& other);
-
-    ActuatorInputController(ActuatorInputController&& other);
-    ActuatorInputController& operator=(ActuatorInputController&& other);
-
-    // INPUT CONTROLLER INTERFACE
-    std::vector<std::string> getExpectedInputChannelAliases() const override;
-
-    // CONTROLLER INTERFACE
-    void computeControls(
-            const SimTK::State& s, SimTK::Vector& controls) const override;
-
-protected:
-    // MODEL COMPONENT INTERFACE
-    void extendConnectToModel(Model& model) override;
-
-private:
-    std::vector<int> m_controlIndexesInConnecteeOrder;
+    bool m_computeControls = false;
 };
 
 } // namespace OpenSim

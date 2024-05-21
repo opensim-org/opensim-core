@@ -164,8 +164,12 @@ public:
     /// PositionMotion) is.
     /// @see OpenSim::analyze()
     /// @note Parameters in the MocoTrajectory are **not** applied to the model.
+    /// @note If the MocoTrajectory was generated from a MocoStudy with 
+    ///       Controller%s in the model, first call 
+    ///       MocoTrajectory::generateControlsFromModelControllers() to populate 
+    ///       the trajectory with the correct model controls.
     TimeSeriesTable analyze(const MocoTrajectory& traj,
-            std::vector<std::string> outputPaths) const;
+            const std::vector<std::string>& outputPaths) const;
 
     /// Compute the generalized coordinate forces for the provided trajectory 
     /// based on a set of applied model Force%s. This can be used to compute 

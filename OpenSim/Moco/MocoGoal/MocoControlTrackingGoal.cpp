@@ -20,9 +20,9 @@
 #include "MocoControlTrackingGoal.h"
 
 #include <OpenSim/Moco/MocoUtilities.h>
+#include <OpenSim/Moco/Components/ActuatorInputController.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Control/InputController.h>
 
 using namespace OpenSim;
 
@@ -68,20 +68,25 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // Get a map between control names and their indices in the model. This also
     // checks that the model controls are in the correct order.
-    auto allControlIndices = createSystemControlIndexMap(model);
+    auto systemControlIndexMap = createSystemControlIndexMap(model);
 
     // Get controls associated with the model's ActuatorInputController.
     auto actuatorInputControls =
             createControlNamesForControllerType<ActuatorInputController>(model);
 
+    // Get the Input control index map.
+    auto inputControlIndexMap = getInputControlIndexMap();
+
     // Throw exception if a weight is specified for a nonexistent control.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& weightName = get_control_weights().get(i).getName();
-        if (allControlIndices.count(weightName) == 0) {
+        bool foundControl = systemControlIndexMap.count(weightName);
+        bool foundInputControl = inputControlIndexMap.count(weightName);
+        if (!foundControl && !foundInputControl) {
             OPENSIM_THROW_FRMOBJ(Exception,
                     "Weight provided with name '{}' but this is "
-                    "not a recognized control or it is already controlled by a"
-                    "user-defined controller.",
+                    "not a recognized control or Input control, or it is "
+                    "already controlled by a user-defined controller.",
                     weightName);
         }
     }
@@ -96,10 +101,13 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
     // Throw exception for controls that do not exist in the model.
     for (int i = 0; i < getProperty_reference_labels().size(); ++i) {
         const auto& controlName = get_reference_labels(i).getName();
-        if (allControlIndices.count(controlName) == 0) {
+        bool foundControl = systemControlIndexMap.count(controlName);
+        bool foundInputControl = inputControlIndexMap.count(controlName);
+        if (!foundControl && !foundInputControl) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                    "Control '{}' does not exist in the model or it is already "
-                    "controlled by a user-defined controller.", controlName);
+                    "'{}' is not a model control or Input control, or it is "
+                    "already controlled by a user-defined controller.", 
+                    controlName);
         }
         OPENSIM_THROW_IF_FRMOBJ(controlsToTrack.count(controlName), Exception,
                 "Expected control '{}' to be provided no more "
@@ -133,12 +141,14 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         // populate controlsToTrack, refLabels.
         for (int iref = 0; iref < allSplines.getSize(); ++iref) {
             const auto& refLabel = allSplines[iref].getName();
-            if (allControlIndices.count(refLabel) == 0) {
+            bool foundControl = systemControlIndexMap.count(refLabel);
+            bool foundInputControl = inputControlIndexMap.count(refLabel);
+            if (!foundControl && !foundInputControl) {
                 if (get_allow_unused_references()) { continue; }
                 OPENSIM_THROW_FRMOBJ(Exception,
                         "Reference contains column '{}' which does "
-                        "not match the name of any control variables.",
-                        refLabel);
+                        "not match the name of any control or Input control " 
+                        "variables.", refLabel);
             }
             // In this labeling mode, the refLabel is the control name.
             controlsToTrack.insert(refLabel);
@@ -160,14 +170,28 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
             continue;
         }
 
-        if (getIgnoreControlledActuators() && !actuatorInputControls.count(controlToTrack)) {
+        if (getIgnoreControlledActuators() && 
+                !actuatorInputControls.count(controlToTrack)) {
             log_info("MocoControlTrackingGoal: Control '{}' is associated "
                      "with a user-defined controller and will be ignored, as "
                      "requested.", controlToTrack);
             continue;
         }
 
-        m_control_indices.push_back(allControlIndices[controlToTrack]);
+        if (getIgnoreInputControls() && 
+                inputControlIndexMap.count(controlToTrack)) {
+            log_info("MocoControlTrackingGoal: Input control '{}' will be "
+                     "ignored, as requested.", controlToTrack);
+            continue;        
+        }
+
+        if (inputControlIndexMap.count(controlToTrack)) {
+            m_control_indices.push_back(inputControlIndexMap[controlToTrack]);
+            m_isInputControl.push_back(true);
+        } else {
+            m_control_indices.push_back(systemControlIndexMap[controlToTrack]);
+            m_isInputControl.push_back(false);
+        }
         m_control_weights.push_back(weight);
 
         const auto& refLabel = refLabels[controlToTrack];
@@ -207,11 +231,14 @@ void MocoControlTrackingGoal::calcIntegrandImpl(
     const auto& time = input.time;
     SimTK::Vector timeVec(1, time);
     const auto& controls = input.controls;
+    const auto& input_controls = getInputControls(input.state);
     getModel().getMultibodySystem().realize(input.state, SimTK::Stage::Time);
 
     integrand = 0;
     for (int i = 0; i < (int)m_control_indices.size(); ++i) {
-        const auto& modelValue = controls[m_control_indices[i]];
+        const auto& control = m_isInputControl[i] ?
+                input_controls[m_control_indices[i]] :
+                controls[m_control_indices[i]];
         const auto& refValue =
                 m_ref_splines[m_ref_indices[i]].calcValue(timeVec);
 
@@ -222,7 +249,7 @@ void MocoControlTrackingGoal::calcIntegrandImpl(
         }
 
         // Compute the tracking error.
-        double error = modelValue - (scaleFactor * refValue);
+        double error = control - (scaleFactor * refValue);
 
         // Compute the integrand.
         integrand += m_control_weights[i] * error * error;
@@ -231,8 +258,10 @@ void MocoControlTrackingGoal::calcIntegrandImpl(
 
 void MocoControlTrackingGoal::printDescriptionImpl() const {
     for (int i = 0; i < (int)m_control_names.size(); i++) {
-        log_cout("        control: {}, reference label: {}, weight: {}",
-                m_control_names[i], m_ref_labels[i], m_control_weights[i]);
+        std::string type = m_isInputControl[i] ? "Input control" : "control";
+        log_cout("        {}: {}, reference label: {}, weight: {}", 
+                type, m_control_names[i], m_ref_labels[i], 
+                m_control_weights[i]);
     }
 }
 

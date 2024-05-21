@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoTrajectory.h"
+#include "OpenSim/Common/Exception.h"
 #include "osimMocoDLL.h"
 #include <condition_variable>
 #include <regex>
@@ -61,13 +62,29 @@ class MocoProblem;
 ///
 /// @note Parameters and Lagrange multipliers in the MocoTrajectory are **not**
 ///       applied to the model.
+///
+/// @note If the MocoTrajectory was generated from a MocoStudy with 
+///       Controller%s in the model, first call 
+///       MocoTrajectory::generateControlsFromModelControllers() to populate the
+///       trajectory with the correct model controls.
 /// @ingroup mocoutil
 template <typename T>
 TimeSeriesTable_<T> analyzeMocoTrajectory(
         Model model, const MocoTrajectory& trajectory,
         const std::vector<std::string>& outputPaths) {
     const TimeSeriesTable statesTable = trajectory.exportToStatesTable();
+
     const TimeSeriesTable controlsTable = trajectory.exportToControlsTable();
+    model.initSystem();
+    auto controlNames = createControlNamesFromModel(model);
+    OPENSIM_THROW_IF(controlNames.size() != controlsTable.getNumColumns(),
+            Exception, "MocoUtilities::analyzeMocoTrajectory(): The number of "
+            "controls in the MocoTrajectory does not match the number of "
+            "enabled model controls. If the trajectory was generated from a "
+            "MocoStudy with Controllers in the model, first call "
+            "MocoTrajectory::generateControlsFromModelControllers() to "
+            "populate the trajectory with the correct model controls.");
+
     const TimeSeriesTable derivativesWithoutAccelerationsTable =
             trajectory.exportToDerivativesWithoutAccelerationsTable();
     return analyze<T>(
@@ -76,9 +93,11 @@ TimeSeriesTable_<T> analyzeMocoTrajectory(
 }
 
 /// Given a MocoTrajectory and the associated OpenSim model, return the model
-/// with a prescribed controller appended that will compute the control values
-/// from the MocoTrajectory. This can be useful when computing state-dependent
-/// model quantities that require realization to the Dynamics stage or later.
+/// with a PrescribedController appended that will compute the control values
+/// from the MocoTrajectory. This function will also add SignalGenerator%s to 
+/// prescribe Input control values for any InputController%s in the model.This 
+/// can be useful when computing state-dependent model quantities that require 
+/// realization to the Dynamics stage or later.
 /// The function used to fit the controls can either be GCVSpline or
 /// PiecewiseLinearFunction.
 /// @ingroup mocoutil
@@ -92,7 +111,8 @@ OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& trajectory,
 /// with time stepping. Use integratorAccuracy to override the default setting.
 ///
 /// @note This function expects all Actuator%s in the model to be in the Model's
-/// ForceSet.
+/// ForceSet andexpects all Controller%s in the model to be in the Model's 
+/// ControllerSet.
 /// @ingroup mocoutil
 OSIMMOCO_API MocoTrajectory simulateTrajectoryWithTimeStepping(
         const MocoTrajectory& trajectory, Model model,
