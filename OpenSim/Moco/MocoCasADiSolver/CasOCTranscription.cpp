@@ -596,8 +596,8 @@ void Transcription::transcribe() {
                 m_problem.getImplicitMultibodySystemAccelerationConstraints();
             const auto out = evalOnTrajectory(implicitMultibodyFunction, inputs,
                     m_projectionStateIndices);
-            // This overwrites the previous function evaluation assignments for
-            // `kinematic_udoterr` and `multibody_residuals` at the mesh indices 
+            // This overrides the previous function evaluation assignments for
+            // `kinematic_udoterr` and `multibody_residuals` at the mesh indices
             // (i.e., for "points where we compute algebraic constraints").
             m_constraints.multibody_residuals(
                     Slice(), m_projectionStateIndices) = out.at(0);
@@ -656,13 +656,17 @@ void Transcription::transcribe() {
                     m_problem.getMultibodySystemAccelerationConstraints(), 
                     {projection_states, controls, multipliers, derivatives}, 
                     m_projectionStateIndices);
-            // Note: this state is not used by Legendre-Gauss collocation.
+            // Note: this state derivative is not used by Legendre-Gauss 
+            // collocation since there is no collocation point at mesh interval
+            // endpoint. However, we need this function evaluation, since we
+            // still enforce the acceleration-level kinematic constraints at the
+            // mesh interval endpoints.
             m_xdot_projection(Slice(NQ, NQ + NU), Slice()) = out.at(0);
-            // This overwrites the previous function evaluation assignments for
+            // This overrides the previous function evaluation assignments for
             // `kinematic_udoterr` at the mesh indices (i.e., for "points where
             // we compute algebraic constraints").
             m_constraints.kinematic_udoterr(
-                        Slice(), m_projectionStateIndices) = out.at(5);
+                    Slice(), m_projectionStateIndices) = out.at(5);
         }
     }
 
