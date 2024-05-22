@@ -79,7 +79,9 @@ endif()
 if(UNIX)
     target_link_libraries(tropter PRIVATE PkgConfig::IPOPT)
 else()
-    target_link_libraries(tropter PRIVATE ipopt)
+    # message("Adding ipopt depndency in link line for tropter ${Ipopt_LIBRARIES}")
+    target_link_directories(tropter PRIVATE ${Ipopt_ROOT_DIR}/lib)
+    target_link_libraries(tropter PRIVATE ipopt.dll.lib coinmumps.dll.lib sipopt.dll.lib ipoptamplinterface.dll.lib)
 endif()
 if(LINUX)
     # On Ubuntu, this is useful for setting the HAVE_CSTDDEF definition.
@@ -88,7 +90,8 @@ if(LINUX)
     target_compile_options(tropter PRIVATE ${IPOPT_CFLAGS_OTHER})
     # We must use this flag on Linux for tropter to link to gfortran.
     # In CMake 3.13, we could use target_link_options().
-    set_target_properties(tropter PROPERTIES LINK_FLAGS ${IPOPT_LDFLAGS})
+    #message("LINK_FLAGS ${IPOPT_LDFLAGS}")
+    #target_link_libraries(tropter PROPERTIES LINK_FLAGS ${IPOPT_LDFLAGS})
 endif()
 # TODO IPOPT_DEFINITIONS, IPOPT_LINK_FLAGS
 
@@ -127,6 +130,8 @@ target_include_directories(tropter PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
         # Used by client projects using an installed version of tropter.
         $<INSTALL_INTERFACE:${TROPTER_INSTALL_INCLUDEDIR}>)
+
+target_include_directories(tropter PRIVATE ${Ipopt_ROOT_DIR}/include/coin-or)
 
 set_target_properties(tropter PROPERTIES
         PROJECT_LABEL "Library - tropter"
