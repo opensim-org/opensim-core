@@ -32,7 +32,7 @@ MocoAddSandboxExecutable(NAME sandboxContact
 MocoAddSandboxExecutable(NAME sandboxMuscle
         LIB_DEPENDS osimMoco)
 MocoAddSandboxExecutable(NAME sandboxCasADi
-        LIB_DEPENDS osimMoco casadi tropter)
+        LIB_DEPENDS casadi)
 
 MocoAddSandboxExecutable(NAME sandboxCasADiParallelMap
         LIB_DEPENDS SimTKcommon casadi)

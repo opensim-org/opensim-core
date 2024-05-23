@@ -210,7 +210,8 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     // Set solver options.
     // -------------------
     Dict solverOptions;
-    checkPropertyValueIsInSet(getProperty_optim_solver(), {"ipopt", "snopt"});
+    checkPropertyValueIsInSet(getProperty_optim_solver(), 
+            {"ipopt", "snopt", "fatrop"});
     checkPropertyValueIsInSet(getProperty_transcription_scheme(),
             {"trapezoidal", "hermite-simpson", "legendre-gauss-1",
              "legendre-gauss-2", "legendre-gauss-3", "legendre-gauss-4",
@@ -394,11 +395,11 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     Logger::Level origLoggerLevel = Logger::getLevel();
     Logger::setLevel(Logger::Level::Warn);
     CasOC::Solution casSolution;
-    try {
-        casSolution = casSolver->solve(casGuess);
-    } catch (...) {
-        OpenSim::Logger::setLevel(origLoggerLevel);
-    }
+    // try {
+    casSolution = casSolver->solve(casGuess);
+    // } catch (...) {
+    //     OpenSim::Logger::setLevel(origLoggerLevel);
+    // }
     OpenSim::Logger::setLevel(origLoggerLevel);
 
     MocoSolution mocoSolution = convertToMocoTrajectory<MocoSolution>(

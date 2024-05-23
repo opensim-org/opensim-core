@@ -103,6 +103,8 @@ int main() {
     // =====================
     MocoCasADiSolver& solver = study.initCasADiSolver();
     solver.set_num_mesh_intervals(50);
+    solver.set_optim_solver("ipopt");
+    solver.set_optim_write_sparsity("sliding_mass");
 
     // Now that we've finished setting up the tool, print it to a file.
     study.print("sliding_mass.omoco");

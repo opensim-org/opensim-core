@@ -376,12 +376,15 @@ if(SUPERBUILD_casadi)
                   DEFAULT    ON
                   DEPENDS    ipopt
                   GIT_URL    https://github.com/casadi/casadi.git
-                  GIT_TAG    3.6.4
+                  GIT_TAG    f3255ef37ebf364503d3e4c2d7331d8f5a3c2f35
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
                              -DIPOPT_LIBRARIES:FILEPATH=ipopt.dll.lib
                              -DIPOPT_INCLUDE_DIRS:PATH=${CMAKE_INSTALL_PREFIX}/ipopt/include/coin-or
                              -DLIB_FULL_ipopt.dll.lib:FILEPATH=${CMAKE_INSTALL_PREFIX}/ipopt/lib/ipopt.dll.lib
                              -DWITH_MUMPS:BOOL=OFF
+                             -DWITH_BUILD_FATROP:BOOL=ON
+                             -DWITH_BUILD_BLASFEO:BOOL=ON
+                             -DWITH_FATROP:BOOL=ON
                              -DWITH_THREAD:BOOL=ON
                              -DWITH_BUILD_MUMPS:BOOL=OFF
                              -DWITH_EXAMPLES:BOOL=OFF
@@ -393,10 +396,13 @@ if(SUPERBUILD_casadi)
                   DEFAULT    ON
                   DEPENDS    ipopt
                   GIT_URL    https://github.com/casadi/casadi.git
-                  GIT_TAG    3.6.4
+                  GIT_TAG    f3255ef37ebf364503d3e4c2d7331d8f5a3c2f35
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
                              -DWITH_THREAD:BOOL=ON
                              -DWITH_BUILD_MUMPS:BOOL=OFF
+                             -DWITH_BUILD_FATROP:BOOL=ON
+                             -DWITH_BUILD_BLASFEO:BOOL=ON
+                             -DWITH_FATROP:BOOL=ON
                              -DWITH_EXAMPLES:BOOL=OFF
                              -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
                              -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt

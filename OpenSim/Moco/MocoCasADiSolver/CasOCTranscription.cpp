@@ -991,7 +991,10 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     }
 
     auto x = flattenVariables(m_scaledVars);
+    std::cout << "DEBUG x: " << x << std::endl;
+    std::cout << "DEBUG x.is_symbolic(): " << x.is_symbolic() << std::endl;
     casadi_int numVariables = x.numel();
+    std::cout << "DEBUG number of variables: " << numVariables << std::endl;
 
     // The m_constraints symbolic vector holds all of the expressions for
     // the constraint functions.
@@ -1011,6 +1014,8 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     if (m_objectiveTerms.numel() == 0) {
         objective = 0;
     }
+
+    std::cout << "DEBUG objective: " << objective << std::endl;
     nlp.emplace(std::make_pair("f", objective));
     nlp.emplace(std::make_pair("g", g));
     if (!m_solver.getWriteSparsity().empty()) {
@@ -1032,6 +1037,8 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     }
     const casadi::Function nlpFunc =
             casadi::nlpsol("nlp", m_solver.getOptimSolver(), nlp, options);
+    // const casadi::Function nlpFunc =
+    //     casadi::nlpsol("nlp", "fatrop", nlp, {{"verbose", false}});
 
     // Run the optimization (evaluate the CasADi NLP function).
     // --------------------------------------------------------
