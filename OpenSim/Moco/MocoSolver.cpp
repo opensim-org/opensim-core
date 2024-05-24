@@ -62,16 +62,22 @@ MocoTrajectory MocoSolver::createGuessTimeStepping() const {
     manager.integrate(finalTime);
 
     const auto& statesTable = manager.getStatesTable();
-    auto controlsTable = model.getControlsTable();
 
-    // Forward simulations populate the model's ControlsTables, using the names
-    // of actuators for column labels. MocoTrajectory uses actuator paths, not
-    // names, so we convert the names into paths. We assume all actuators are in
-    // the model's ForceSet. Ideally, the model's ControlsTable would use
-    // actuator paths instead of actuator names.
-    auto labels = controlsTable.getColumnLabels();
-    for (auto& label : labels) { label = "/forceset/" + label; }
-    controlsTable.setColumnLabels(labels);
+    TimeSeriesTable controlsTable;
+    if (model.getNumControls()) {
+        controlsTable = model.getControlsTable();
+        // Forward simulations populate the model's ControlsTables, using the 
+        // names of actuators for column labels. MocoTrajectory uses actuator 
+        // paths, not names, so we convert the names into paths. We assume all 
+        // actuators are in the model's ForceSet. Ideally, the model's 
+        // ControlsTable would use actuator paths instead of actuator names.
+        auto labels = controlsTable.getColumnLabels();
+        for (auto& label : labels) { label = "/forceset/" + label; }
+        controlsTable.setColumnLabels(labels);
+    } else {
+        // If the model has no controls, create an empty controls table.
+        controlsTable = TimeSeriesTable(statesTable.getIndependentColumn());
+    }
 
     // TODO handle parameters.
     // TODO handle derivatives.
