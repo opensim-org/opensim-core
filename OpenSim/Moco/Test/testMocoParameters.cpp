@@ -16,13 +16,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#define CATCH_CONFIG_MAIN
-#include "Testing.h"
-
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+
+#include <catch2/catch_all.hpp>
+#include "Testing.h"
+
 using namespace OpenSim;
 
 // Resharper is a JetBrains add-on to Visual Studio that allows running tests
@@ -99,7 +100,8 @@ TEMPLATE_TEST_CASE("Oscillator mass", "", MocoCasADiSolver,
     MocoSolution sol = study.solve();
     //sol.write("testMocoParameters_testOscillatorMass_sol.sto");
 
-    CHECK(sol.getParameter("oscillator_mass") == Approx(MASS).epsilon(0.003));
+    CHECK(sol.getParameter("oscillator_mass") ==
+            Catch::Approx(MASS).epsilon(0.003));
 }
 
 std::unique_ptr<Model> createOscillatorTwoSpringsModel() {
@@ -165,8 +167,8 @@ TEMPLATE_TEST_CASE("One parameter two springs", "",
 
     // Since springs add in parallel, both stiffness must be the same value
     // and equal half the original spring stiffness.
-    CHECK(sol.getParameter("spring_stiffness")
-        == Approx(0.5*STIFFNESS).epsilon(0.003));
+    CHECK(sol.getParameter("spring_stiffness") ==
+            Catch::Approx(0.5*STIFFNESS).epsilon(0.003));
 }
 
 const double L = 1; 
@@ -255,5 +257,5 @@ TEMPLATE_TEST_CASE("See-saw center of mass", "",
     // Body will be at rest since COM should now be aligned with the pin joint.           
     // moco.visualize(sol);
 
-    CHECK(sol_xCOM == Approx(xCOM).epsilon(0.003));
+    CHECK(sol_xCOM == Catch::Approx(xCOM).epsilon(0.003));
 }

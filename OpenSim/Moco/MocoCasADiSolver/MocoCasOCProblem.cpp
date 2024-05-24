@@ -41,18 +41,6 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     setDynamicsMode(dynamicsMode);
     const auto& model = problemRep.getModelBase();
 
-    // Ensure the model does not have user-provided controllers.
-    int numControllers = 0;
-    for (const auto& controller : model.getComponentList<Controller>()) {
-        // Avoid unused variable warning.
-        (void)&controller;
-        ++numControllers;
-    }
-    // The model has a DiscreteController added by MocoProblemRep; any other
-    // controllers were added by the user.
-    OPENSIM_THROW_IF(numControllers > 1, Exception,
-            "MocoCasADiSolver does not support models with Controllers.");
-
     if (problemRep.isPrescribedKinematics()) {
         setPrescribedKinematics(true, model.getWorkingState().getNU());
     }
@@ -75,10 +63,12 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 convertBounds(info.getFinalBounds()));
     }
 
-    auto controlNames =
-            createControlNamesFromModel(model, m_modelControlIndices);
-    for (const auto& controlName : controlNames) {
-        const auto& info = problemRep.getControlInfo(controlName);
+    // Control names need to be in the order expected by the ControlDistributor.
+    auto allControlNames = 
+            problemRep.getControlDistributorDisabledConstraints()
+                      .getControlNamesInOrder();
+    for (const auto& controlName : allControlNames) {
+        const auto& info = problemRep.getSolverControlInfo(controlName);
         addControl(controlName, convertBounds(info.getBounds()),
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));
@@ -109,11 +99,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 "model.");
     } else {
 
-        int cid, mp, mv, ma;
+        int cid, mv, ma;
         int multIndexThisConstraint;
-        int total_mp = 0;
-        int total_mv = 0;
-        int total_ma = 0;
         std::vector<KinematicLevel> kinLevels;
         const bool enforceConstraintDerivs =
                 mocoCasADiSolver.get_enforce_constraint_derivatives();
@@ -121,7 +108,6 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
             const auto& kc = problemRep.getKinematicConstraint(kcName);
             const auto& multInfos = problemRep.getMultiplierInfos(kcName);
             cid = kc.getSimbodyConstraintIndex();
-            mp = kc.getNumPositionEquations();
             mv = kc.getNumVelocityEquations();
             ma = kc.getNumAccelerationEquations();
             kinLevels = kc.getKinematicLevels();
@@ -141,10 +127,6 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                     "acceleration-level scalar constraints associated with the "
                     "model Constraint at ConstraintIndex {}.",
                     ma, cid);
-
-            total_mp += mp;
-            total_mv += mv;
-            total_ma += ma;
 
             // Loop through all scalar constraints associated with the model
             // constraint and corresponding path constraints to the optimal

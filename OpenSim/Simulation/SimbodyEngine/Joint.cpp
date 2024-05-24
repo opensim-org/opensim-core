@@ -25,6 +25,7 @@
 // INCLUDES
 //==============================================================================
 #include "Joint.h"
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
@@ -479,7 +480,7 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK:
     }
     else{
         // should be the case where gen force is zero.
-        assert(f.norm() < SimTK::SignificantReal);
+        OPENSIM_ASSERT_FRMOBJ(f.norm() < SimTK::SignificantReal);
     }
 
     // The spatial forces above are expressed in the joint frame of the parent
@@ -736,15 +737,6 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
 
         // ONLY the base Joint can do this assignment
         mobilized->setMobilizedBodyIndex(mobod.getMobilizedBodyIndex());
-
-        // Note that setting the mobilized body index of a PhysicalOffsetFrame
-        // does not set it on the parent PhysicalFrame. 
-        // Do the check and set it here as well since only the Joint can set the index.
-        const PhysicalOffsetFrame* physOff =
-            dynamic_cast<const PhysicalOffsetFrame*>(mobilized);
-        if (physOff) {
-            physOff->getParentFrame().setMobilizedBodyIndex(mobod.getMobilizedBodyIndex());
-        }
     }
     const int nc = numCoordinates();
     SimTK_ASSERT3(numMobilities <= (nc - startingCoordinateIndex),

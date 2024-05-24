@@ -263,6 +263,11 @@ public:
     'aNormLength'. */
     double calcValue(double aNormLength) const;
 
+    /** Evaluates the tendon-force-length curve value and derivative at a
+    normalized tendon length of 'aNormLength'. */
+    SmoothSegmentedFunction::ValueAndDerivative calcValueAndDerivative(
+        double aNormLength) const;
+
     /** Calculates the derivative of the tendon-force-length multiplier with
     respect to the normalized tendon length.
     @param aNormLength

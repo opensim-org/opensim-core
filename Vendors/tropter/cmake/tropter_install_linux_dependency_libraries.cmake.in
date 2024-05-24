@@ -1,0 +1,373 @@
+# Temporary hack to package dependencies on Linux.
+# the macro names are kept similar to mac osx despite using 
+# patchelf instead of otool (which is not available on linux)
+# for ease of comparison maintenance. Same with commented lines
+#
+set(libdir "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@")
+message(STATUS "Editing RPATH of tropter dependency libraries")
+
+macro(install_name_tool_add_rpath lib)
+    execute_process(COMMAND bash "-c" "patchelf --force-rpath --set-rpath '$ORIGIN/:$ORIGIN/../../sdk/Simbody/lib' '${libdir}/lib${lib}'"
+        OUTPUT_VARIABLE res)
+    message(STATUS "patchelf --set-rpath '$ORIGIN/:../../sdk/Simbody/lib' '${libdir}/lib${lib}' '${res}'")
+endmacro()
+
+macro(install_name_tool_delete_rpath lib)
+    execute_process(COMMAND bash "-c" "patchelf --remove-rpath '${libdir}/lib${lib}'"
+        OUTPUT_VARIABLE res)
+    message(STATUS "patchelf --remove-rpath '${libdir}/lib${lib}' '${res}'")
+endmacro()
+
+macro(install_name_tool_print_rpath lib)
+    execute_process(COMMAND bash "-c" "patchelf --print-rpath '${libdir}/lib${lib}'"
+        OUTPUT_VARIABLE created_rpath)
+    message(STATUS "RPATH = '${created_rpath}'")
+endmacro()
+
+# Get the directory containing libgcc_s.1.dylib.
+# otool: Get the list of dependencies of gfortran, which includes libgcc_s.
+# grep: Isolate the line containing libgcc.
+# perl: Extract only the directory, without the filename.
+#    ^\\s+     matches all spaces at the start of the string.
+#   (.*)       matches everything up to libgcc, and captures it as match gorup #1
+#   \\/libg.*  matches the rest of the line.
+#   \\1        replaces the contents of the entire match with match group #1
+#execute_process(COMMAND bash "-c"
+#    "otool -L ${libdir}/libgfortran.dylib | grep 'libgcc' | perl -pe 's/^\\s+(.*)\\/libg.*/\\1/gc'"
+#    OUTPUT_VARIABLE libgcc_dir
+#    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+# tropter
+#install_name_tool_change(tropter adolc.2 "@ADOLC_DIR@/lib64")
+#install_name_tool_change(tropter ipopt.1 "@IPOPT_LIBDIR@")
+#install_name_tool_change(tropter coinmumps.1 "@IPOPT_LIBDIR@")
+#install_name_tool_change(tropter coinmetis.1 "@IPOPT_LIBDIR@")
+#install_name_tool_change_gfortran(tropter)
+#install_name_tool_change_quadmath(tropter)
+#install_name_tool_add_rpath(tropter.so)
+
+install_name_tool_print_rpath(tropter.so)
+install_name_tool_delete_rpath(tropter.so)
+install_name_tool_add_rpath(tropter.so)
+install_name_tool_print_rpath(tropter.so)
+
+install_name_tool_print_rpath(ipopt.so)
+install_name_tool_delete_rpath(ipopt.so)
+install_name_tool_add_rpath(ipopt.so)
+install_name_tool_print_rpath(ipopt.so)
+
+install_name_tool_print_rpath(adolc.so)
+install_name_tool_delete_rpath(adolc.so)
+install_name_tool_add_rpath(adolc.so)
+install_name_tool_print_rpath(adolc.so)
+
+install_name_tool_print_rpath(coinmumps.so.1)
+install_name_tool_delete_rpath(coinmumps.so.1)
+install_name_tool_add_rpath(coinmumps.so.1)
+install_name_tool_print_rpath(coinmumps.so.1)
+
+install_name_tool_print_rpath(coinmetis.so.1)
+install_name_tool_delete_rpath(coinmetis.so.1)
+install_name_tool_add_rpath(coinmetis.so.1)
+install_name_tool_print_rpath(coinmetis.so.1)
+
+
+
+install_name_tool_print_rpath(casadi_conic_nlpsol.so)
+install_name_tool_delete_rpath(casadi_conic_nlpsol.so)
+install_name_tool_add_rpath(casadi_conic_nlpsol.so)
+install_name_tool_print_rpath(casadi_conic_nlpsol.so)
+
+install_name_tool_print_rpath(casadi_conic_nlpsol.so.3.6)
+install_name_tool_delete_rpath(casadi_conic_nlpsol.so.3.6)
+install_name_tool_add_rpath(casadi_conic_nlpsol.so.3.6)
+install_name_tool_print_rpath(casadi_conic_nlpsol.so.3.6)
+
+install_name_tool_print_rpath(casadi_conic_qrqp.so)
+install_name_tool_delete_rpath(casadi_conic_qrqp.so)
+install_name_tool_add_rpath(casadi_conic_qrqp.so)
+install_name_tool_print_rpath(casadi_conic_qrqp.so)
+
+install_name_tool_print_rpath(casadi_conic_qrqp.so.3.6)
+install_name_tool_delete_rpath(casadi_conic_qrqp.so.3.6)
+install_name_tool_add_rpath(casadi_conic_qrqp.so.3.6)
+install_name_tool_print_rpath(casadi_conic_qrqp.so.3.6)
+
+install_name_tool_print_rpath(casadi_importer_shell.so)
+install_name_tool_delete_rpath(casadi_importer_shell.so)
+install_name_tool_add_rpath(casadi_importer_shell.so)
+install_name_tool_print_rpath(casadi_importer_shell.so)
+
+install_name_tool_print_rpath(casadi_importer_shell.so.3.6)
+install_name_tool_delete_rpath(casadi_importer_shell.so.3.6)
+install_name_tool_add_rpath(casadi_importer_shell.so.3.6)
+install_name_tool_print_rpath(casadi_importer_shell.so.3.6)
+
+install_name_tool_print_rpath(casadi_integrator_collocation.so)
+install_name_tool_delete_rpath(casadi_integrator_collocation.so)
+install_name_tool_add_rpath(casadi_integrator_collocation.so)
+install_name_tool_print_rpath(casadi_integrator_collocation.so)
+
+install_name_tool_print_rpath(casadi_integrator_collocation.so.3.6)
+install_name_tool_delete_rpath(casadi_integrator_collocation.so.3.6)
+install_name_tool_add_rpath(casadi_integrator_collocation.so.3.6)
+install_name_tool_print_rpath(casadi_integrator_collocation.so.3.6)
+
+install_name_tool_print_rpath(casadi_integrator_cvodes.so)
+install_name_tool_delete_rpath(casadi_integrator_cvodes.so)
+install_name_tool_add_rpath(casadi_integrator_cvodes.so)
+install_name_tool_print_rpath(casadi_integrator_cvodes.so)
+
+install_name_tool_print_rpath(casadi_integrator_cvodes.so.3.6)
+install_name_tool_delete_rpath(casadi_integrator_cvodes.so.3.6)
+install_name_tool_add_rpath(casadi_integrator_cvodes.so.3.6)
+install_name_tool_print_rpath(casadi_integrator_cvodes.so.3.6)
+
+install_name_tool_print_rpath(casadi_integrator_idas.so)
+install_name_tool_delete_rpath(casadi_integrator_idas.so)
+install_name_tool_add_rpath(casadi_integrator_idas.so)
+install_name_tool_print_rpath(casadi_integrator_idas.so)
+
+install_name_tool_print_rpath(casadi_integrator_idas.so.3.6)
+install_name_tool_delete_rpath(casadi_integrator_idas.so.3.6)
+install_name_tool_add_rpath(casadi_integrator_idas.so.3.6)
+install_name_tool_print_rpath(casadi_integrator_idas.so.3.6)
+
+install_name_tool_print_rpath(casadi_integrator_rk.so)
+install_name_tool_delete_rpath(casadi_integrator_rk.so)
+install_name_tool_add_rpath(casadi_integrator_rk.so)
+install_name_tool_print_rpath(casadi_integrator_rk.so)
+
+install_name_tool_print_rpath(casadi_integrator_rk.so.3.6)
+install_name_tool_delete_rpath(casadi_integrator_rk.so.3.6)
+install_name_tool_add_rpath(casadi_integrator_rk.so.3.6)
+install_name_tool_print_rpath(casadi_integrator_rk.so.3.6)
+
+install_name_tool_print_rpath(casadi_interpolant_bspline.so)
+install_name_tool_delete_rpath(casadi_interpolant_bspline.so)
+install_name_tool_add_rpath(casadi_interpolant_bspline.so)
+install_name_tool_print_rpath(casadi_interpolant_bspline.so)
+
+install_name_tool_print_rpath(casadi_interpolant_bspline.so.3.6)
+install_name_tool_delete_rpath(casadi_interpolant_bspline.so.3.6)
+install_name_tool_add_rpath(casadi_interpolant_bspline.so.3.6)
+install_name_tool_print_rpath(casadi_interpolant_bspline.so.3.6)
+
+install_name_tool_print_rpath(casadi_interpolant_linear.so)
+install_name_tool_delete_rpath(casadi_interpolant_linear.so)
+install_name_tool_add_rpath(casadi_interpolant_linear.so)
+install_name_tool_print_rpath(casadi_interpolant_linear.so)
+
+install_name_tool_print_rpath(casadi_interpolant_linear.so.3.6)
+install_name_tool_delete_rpath(casadi_interpolant_linear.so.3.6)
+install_name_tool_add_rpath(casadi_interpolant_linear.so.3.6)
+install_name_tool_print_rpath(casadi_interpolant_linear.so.3.6)
+
+install_name_tool_print_rpath(casadi_linsol_csparsecholesky.so)
+install_name_tool_delete_rpath(casadi_linsol_csparsecholesky.so)
+install_name_tool_add_rpath(casadi_linsol_csparsecholesky.so)
+install_name_tool_print_rpath(casadi_linsol_csparsecholesky.so)
+
+install_name_tool_print_rpath(casadi_linsol_csparsecholesky.so.3.6)
+install_name_tool_delete_rpath(casadi_linsol_csparsecholesky.so.3.6)
+install_name_tool_add_rpath(casadi_linsol_csparsecholesky.so.3.6)
+install_name_tool_print_rpath(casadi_linsol_csparsecholesky.so.3.6)
+
+install_name_tool_print_rpath(casadi_linsol_csparse.so)
+install_name_tool_delete_rpath(casadi_linsol_csparse.so)
+install_name_tool_add_rpath(casadi_linsol_csparse.so)
+install_name_tool_print_rpath(casadi_linsol_csparse.so)
+
+install_name_tool_print_rpath(casadi_linsol_csparse.so.3.6)
+install_name_tool_delete_rpath(casadi_linsol_csparse.so.3.6)
+install_name_tool_add_rpath(casadi_linsol_csparse.so.3.6)
+install_name_tool_print_rpath(casadi_linsol_csparse.so.3.6)
+
+install_name_tool_print_rpath(casadi_linsol_ldl.so)
+install_name_tool_delete_rpath(casadi_linsol_ldl.so)
+install_name_tool_add_rpath(casadi_linsol_ldl.so)
+install_name_tool_print_rpath(casadi_linsol_ldl.so)
+
+install_name_tool_print_rpath(casadi_linsol_ldl.so.3.6)
+install_name_tool_delete_rpath(casadi_linsol_ldl.so.3.6)
+install_name_tool_add_rpath(casadi_linsol_ldl.so.3.6)
+install_name_tool_print_rpath(casadi_linsol_ldl.so.3.6)
+
+install_name_tool_print_rpath(casadi_linsol_lsqr.so)
+install_name_tool_delete_rpath(casadi_linsol_lsqr.so)
+install_name_tool_add_rpath(casadi_linsol_lsqr.so)
+install_name_tool_print_rpath(casadi_linsol_lsqr.so)
+
+install_name_tool_print_rpath(casadi_linsol_lsqr.so.3.6)
+install_name_tool_delete_rpath(casadi_linsol_lsqr.so.3.6)
+install_name_tool_add_rpath(casadi_linsol_lsqr.so.3.6)
+install_name_tool_print_rpath(casadi_linsol_lsqr.so.3.6)
+
+install_name_tool_print_rpath(casadi_linsol_qr.so)
+install_name_tool_delete_rpath(casadi_linsol_qr.so)
+install_name_tool_add_rpath(casadi_linsol_qr.so)
+install_name_tool_print_rpath(casadi_linsol_qr.so)
+
+install_name_tool_print_rpath(casadi_linsol_qr.so.3.6)
+install_name_tool_delete_rpath(casadi_linsol_qr.so.3.6)
+install_name_tool_add_rpath(casadi_linsol_qr.so.3.6)
+install_name_tool_print_rpath(casadi_linsol_qr.so.3.6)
+
+install_name_tool_print_rpath(casadi_linsol_symbolicqr.so)
+install_name_tool_delete_rpath(casadi_linsol_symbolicqr.so)
+install_name_tool_add_rpath(casadi_linsol_symbolicqr.so)
+install_name_tool_print_rpath(casadi_linsol_symbolicqr.so)
+
+install_name_tool_print_rpath(casadi_linsol_symbolicqr.so.3.6)
+install_name_tool_delete_rpath(casadi_linsol_symbolicqr.so.3.6)
+install_name_tool_add_rpath(casadi_linsol_symbolicqr.so.3.6)
+install_name_tool_print_rpath(casadi_linsol_symbolicqr.so.3.6)
+
+install_name_tool_print_rpath(casadi_linsol_tridiag.so)
+install_name_tool_delete_rpath(casadi_linsol_tridiag.so)
+install_name_tool_add_rpath(casadi_linsol_tridiag.so)
+install_name_tool_print_rpath(casadi_linsol_tridiag.so)
+
+install_name_tool_print_rpath(casadi_linsol_tridiag.so.3.6)
+install_name_tool_delete_rpath(casadi_linsol_tridiag.so.3.6)
+install_name_tool_add_rpath(casadi_linsol_tridiag.so.3.6)
+install_name_tool_print_rpath(casadi_linsol_tridiag.so.3.6)
+
+install_name_tool_print_rpath(casadi_nlpsol_ipopt.so)
+install_name_tool_delete_rpath(casadi_nlpsol_ipopt.so)
+install_name_tool_add_rpath(casadi_nlpsol_ipopt.so)
+install_name_tool_print_rpath(casadi_nlpsol_ipopt.so)
+
+install_name_tool_print_rpath(casadi_nlpsol_ipopt.so.3.6)
+install_name_tool_delete_rpath(casadi_nlpsol_ipopt.so.3.6)
+install_name_tool_add_rpath(casadi_nlpsol_ipopt.so.3.6)
+install_name_tool_print_rpath(casadi_nlpsol_ipopt.so.3.6)
+
+install_name_tool_print_rpath(casadi_nlpsol_qrsqp.so)
+install_name_tool_delete_rpath(casadi_nlpsol_qrsqp.so)
+install_name_tool_add_rpath(casadi_nlpsol_qrsqp.so)
+install_name_tool_print_rpath(casadi_nlpsol_qrsqp.so)
+
+install_name_tool_print_rpath(casadi_nlpsol_ipopt.so.3.6)
+install_name_tool_delete_rpath(casadi_nlpsol_ipopt.so.3.6)
+install_name_tool_add_rpath(casadi_nlpsol_ipopt.so.3.6)
+install_name_tool_print_rpath(casadi_nlpsol_ipopt.so.3.6)
+
+install_name_tool_print_rpath(casadi_nlpsol_qrsqp.so)
+install_name_tool_delete_rpath(casadi_nlpsol_qrsqp.so)
+install_name_tool_add_rpath(casadi_nlpsol_qrsqp.so)
+install_name_tool_print_rpath(casadi_nlpsol_qrsqp.so)
+
+install_name_tool_print_rpath(casadi_nlpsol_qrsqp.so.3.6)
+install_name_tool_delete_rpath(casadi_nlpsol_qrsqp.so.3.6)
+install_name_tool_add_rpath(casadi_nlpsol_qrsqp.so.3.6)
+install_name_tool_print_rpath(casadi_nlpsol_qrsqp.so.3.6)
+
+install_name_tool_print_rpath(casadi_nlpsol_scpgen.so)
+install_name_tool_delete_rpath(casadi_nlpsol_scpgen.so)
+install_name_tool_add_rpath(casadi_nlpsol_scpgen.so)
+install_name_tool_print_rpath(casadi_nlpsol_scpgen.so)
+
+install_name_tool_print_rpath(casadi_nlpsol_scpgen.so.3.6)
+install_name_tool_delete_rpath(casadi_nlpsol_scpgen.so.3.6)
+install_name_tool_add_rpath(casadi_nlpsol_scpgen.so.3.6)
+install_name_tool_print_rpath(casadi_nlpsol_scpgen.so.3.6)
+
+install_name_tool_print_rpath(casadi_nlpsol_sqpmethod.so)
+install_name_tool_delete_rpath(casadi_nlpsol_sqpmethod.so)
+install_name_tool_add_rpath(casadi_nlpsol_sqpmethod.so)
+install_name_tool_print_rpath(casadi_nlpsol_sqpmethod.so)
+
+install_name_tool_print_rpath(casadi_nlpsol_sqpmethod.so.3.6)
+install_name_tool_delete_rpath(casadi_nlpsol_sqpmethod.so.3.6)
+install_name_tool_add_rpath(casadi_nlpsol_sqpmethod.so.3.6)
+install_name_tool_print_rpath(casadi_nlpsol_sqpmethod.so.3.6)
+
+install_name_tool_print_rpath(casadi_rootfinder_fast_newton.so)
+install_name_tool_delete_rpath(casadi_rootfinder_fast_newton.so)
+install_name_tool_add_rpath(casadi_rootfinder_fast_newton.so)
+install_name_tool_print_rpath(casadi_rootfinder_fast_newton.so)
+
+install_name_tool_print_rpath(casadi_nlpsol_sqpmethod.so.3.6)
+install_name_tool_delete_rpath(casadi_nlpsol_sqpmethod.so.3.6)
+install_name_tool_add_rpath(casadi_nlpsol_sqpmethod.so.3.6)
+install_name_tool_print_rpath(casadi_nlpsol_sqpmethod.so.3.6)
+
+install_name_tool_print_rpath(casadi_rootfinder_fast_newton.so)
+install_name_tool_delete_rpath(casadi_rootfinder_fast_newton.so)
+install_name_tool_add_rpath(casadi_rootfinder_fast_newton.so)
+install_name_tool_print_rpath(casadi_rootfinder_fast_newton.so)
+
+install_name_tool_print_rpath(casadi_rootfinder_fast_newton.so.3.6)
+install_name_tool_delete_rpath(casadi_rootfinder_fast_newton.so.3.6)
+install_name_tool_add_rpath(casadi_rootfinder_fast_newton.so.3.6)
+install_name_tool_print_rpath(casadi_rootfinder_fast_newton.so.3.6)
+
+install_name_tool_print_rpath(casadi_rootfinder_kinsol.so)
+install_name_tool_delete_rpath(casadi_rootfinder_kinsol.so)
+install_name_tool_add_rpath(casadi_rootfinder_kinsol.so)
+install_name_tool_print_rpath(casadi_rootfinder_kinsol.so)
+
+install_name_tool_print_rpath(casadi_rootfinder_kinsol.so.3.6)
+install_name_tool_delete_rpath(casadi_rootfinder_kinsol.so.3.6)
+install_name_tool_add_rpath(casadi_rootfinder_kinsol.so.3.6)
+install_name_tool_print_rpath(casadi_rootfinder_kinsol.so.3.6)
+
+install_name_tool_print_rpath(casadi_rootfinder_newton.so)
+install_name_tool_delete_rpath(casadi_rootfinder_newton.so)
+install_name_tool_add_rpath(casadi_rootfinder_newton.so)
+install_name_tool_print_rpath(casadi_rootfinder_newton.so)
+
+install_name_tool_print_rpath(casadi_rootfinder_newton.so.3.6)
+install_name_tool_delete_rpath(casadi_rootfinder_newton.so.3.6)
+install_name_tool_add_rpath(casadi_rootfinder_newton.so.3.6)
+install_name_tool_print_rpath(casadi_rootfinder_newton.so.3.6)
+
+install_name_tool_print_rpath(casadi_rootfinder_nlpsol.so)
+install_name_tool_delete_rpath(casadi_rootfinder_nlpsol.so)
+install_name_tool_add_rpath(casadi_rootfinder_nlpsol.so)
+install_name_tool_print_rpath(casadi_rootfinder_nlpsol.so)
+
+install_name_tool_print_rpath(casadi_rootfinder_nlpsol.so.3.6)
+install_name_tool_delete_rpath(casadi_rootfinder_nlpsol.so.3.6)
+install_name_tool_add_rpath(casadi_rootfinder_nlpsol.so.3.6)
+install_name_tool_print_rpath(casadi_rootfinder_nlpsol.so.3.6)
+
+install_name_tool_print_rpath(casadi.so)
+install_name_tool_delete_rpath(casadi.so)
+install_name_tool_add_rpath(casadi.so)
+install_name_tool_print_rpath(casadi.so)
+
+install_name_tool_print_rpath(casadi.so.3.6)
+install_name_tool_delete_rpath(casadi.so.3.6)
+install_name_tool_add_rpath(casadi.so.3.6)
+install_name_tool_print_rpath(casadi.so.3.6)
+
+install_name_tool_print_rpath(casadi_sundials_common.so)
+install_name_tool_delete_rpath(casadi_sundials_common.so)
+install_name_tool_add_rpath(casadi_sundials_common.so)
+install_name_tool_print_rpath(casadi_sundials_common.so)
+
+install_name_tool_print_rpath(casadi_sundials_common.so.3.6)
+install_name_tool_delete_rpath(casadi_sundials_common.so.3.6)
+install_name_tool_add_rpath(casadi_sundials_common.so.3.6)
+install_name_tool_print_rpath(casadi_sundials_common.so.3.6)
+
+install_name_tool_print_rpath(casadi_xmlfile_tinyxml.so)
+install_name_tool_delete_rpath(casadi_xmlfile_tinyxml.so)
+install_name_tool_add_rpath(casadi_xmlfile_tinyxml.so)
+install_name_tool_print_rpath(casadi_xmlfile_tinyxml.so)
+
+install_name_tool_print_rpath(casadi_xmlfile_tinyxml.so.3.6)
+install_name_tool_delete_rpath(casadi_xmlfile_tinyxml.so.3.6)
+install_name_tool_add_rpath(casadi_xmlfile_tinyxml.so.3.6)
+install_name_tool_print_rpath(casadi_xmlfile_tinyxml.so.3.6)
+
+
+
+# adol-c
+#install_name_tool_id(adolc.2)
+#install_name_tool_add_rpath(adolc.so.2.1.0)
+#install_name_tool_add_rpath(adolc.so)
+#install_name_tool_add_rpath(adolc.so.2)
+#install_name_tool_delete_rpath(adolc.2 "@ColPack_ROOT_DIR@/lib")

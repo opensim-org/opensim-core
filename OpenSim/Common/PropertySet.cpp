@@ -57,16 +57,31 @@ PropertySet::PropertySet()
  */
 PropertySet::PropertySet(const PropertySet &aSet)
 {
-    _array = aSet._array;
-    _array.setMemoryOwner(false);
-
+    // CARE: the copy constructor/assignment implementation
+    // for _array will unconditionally take ownership of the
+    // array's contents (see: #3457, #3247)
+    //
+    // long-term, Array::setMemoryOwner should be removed (#3275)
+    _array.setSize(0);
+    for (int i = 0; i < aSet._array.getSize(); ++i)
+    {
+        _array.append(aSet._array[i]);
+    }
 }
 
 PropertySet& PropertySet::operator=(const PropertySet& aSet)
 {
    if (this != &aSet) {
-       _array = aSet._array;
-       _array.setMemoryOwner(false);
+       // CARE: the copy constructor/assignment implementation
+       // for _array will unconditionally take ownership of the
+       // array's contents (see: #3457, #3247)
+       //
+       // long-term, Array::setMemoryOwner should be removed (#3275)
+       _array.setSize(0);
+       for (int i = 0; i < aSet._array.getSize(); ++i)
+       {
+           _array.append(aSet._array[i]);
+       }
    }
    return *this;
 }

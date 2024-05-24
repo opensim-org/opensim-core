@@ -227,7 +227,10 @@ namespace SimTK {
     void _to_numpy(int n, double* numpyout) const {
         SimTK_ASSERT1_ALWAYS(n == $self->size(), "Size of input must be %i.",
                              $self->size());
-        std::copy_n($self->getContiguousScalarData(), n, numpyout);
+        // RowVectorView does not store data contiguously, so we first convert
+        // to a RowVector to ensure we always have contiguous data.
+        RowVector row = $self->getAsRowVector();
+        std::copy_n(row.getContiguousScalarData(), n, numpyout);
     }
 %pythoncode %{
     def to_numpy(self):

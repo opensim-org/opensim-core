@@ -11,6 +11,7 @@
 #include <OpenSim/Moco/MocoOutputConstraint.h>
 #include <OpenSim/Moco/MocoGoal/MocoAccelerationTrackingGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoContactTrackingGoal.h>
+#include <OpenSim/Moco/MocoGoal/MocoContactImpulseTrackingGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoControlGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoControlTrackingGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoGoal.h>
@@ -29,6 +30,7 @@
 #include <OpenSim/Moco/MocoGoal/MocoTranslationTrackingGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoStepTimeAsymmetryGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoStepLengthAsymmetryGoal.h>
+#include <OpenSim/Moco/MocoGoal/MocoGeneralizedForceTrackingGoal.h>
 #include <OpenSim/Moco/MocoInverse.h>
 #include <OpenSim/Moco/MocoParameter.h>
 #include <OpenSim/Moco/MocoProblem.h>

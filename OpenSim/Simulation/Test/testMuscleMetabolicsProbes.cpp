@@ -302,11 +302,9 @@ public:
         mdi.fiberStiffness        = 0;
         mdi.fiberStiffnessAlongTendon = 0;
         mdi.tendonStiffness       = 0;
-        mdi.muscleStiffness       = 0;
         mdi.fiberActivePower      = 0;
         mdi.fiberPassivePower     = 0;
         mdi.tendonPower           = 0;
-        mdi.musclePower           = 0;
     }
 
 private:

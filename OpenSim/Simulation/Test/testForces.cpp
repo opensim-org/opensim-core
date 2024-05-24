@@ -2105,13 +2105,13 @@ void testBlankevoort1991Ligament() {
             new Blankevoort1991Ligament("ligament", stiffness, restlength);
     ligament->set_damping_coefficient(0.0);
 
-    ligament->upd_GeometryPath().appendNewPathPoint(
+    ligament->updGeometryPath().appendNewPathPoint(
             "origin", ground, Vec3(0.0, 0.0, 0.0));
-    ligament->upd_GeometryPath().addPathWrap(*pulley1);
-    ligament->upd_GeometryPath().appendNewPathPoint(
+    ligament->updGeometryPath().addPathWrap(*pulley1);
+    ligament->updGeometryPath().appendNewPathPoint(
             "midpoint", ground, Vec3(0.1, 0.6, 0.0));
-    ligament->upd_GeometryPath().addPathWrap(*pulley2);
-    ligament->upd_GeometryPath().appendNewPathPoint(
+    ligament->updGeometryPath().addPathWrap(*pulley2);
+    ligament->updGeometryPath().appendNewPathPoint(
             "insertion", *block, Vec3(0.0, 0.0, 0.0));
 
     osimModel.addForce(ligament);

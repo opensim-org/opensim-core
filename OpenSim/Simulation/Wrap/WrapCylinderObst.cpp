@@ -35,12 +35,6 @@ static const char* wrapTypeName = "cylinderObst";
 static const double TwoPi = 2.0*SimTK::Pi;
 static const double max_wrap_pts_circle_ang = (5.0/360.0)*TwoPi;
 
-// The following variables could be used for speedy wrap_pts definitions (NOT CURRENTLY USED)
-static const int num_circle_wrap_pts = 36;  // Number of circle points in 360 degrees
-static double circle_wrap_pts_sin[num_circle_wrap_pts];
-static double circle_wrap_pts_cos[num_circle_wrap_pts];
-static bool circle_wrap_pts_inited = false;
-
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -68,12 +62,7 @@ WrapCylinderObst::~WrapCylinderObst()
 //_____________________________________________________________________________
 /** Initialize static data variables used for speedy definition of wrap_pts (for graphics mainly) */
 void WrapCylinderObst::initCircleWrapPts()
-{   int i;  double q;
-    for(i=0; i<num_circle_wrap_pts; i++) {
-        q = TwoPi*(double)(i)/(double)(num_circle_wrap_pts);
-        circle_wrap_pts_sin[i] = sin(q);
-        circle_wrap_pts_cos[i] = cos(q);
-    }   circle_wrap_pts_inited = true;
+{
 }
 
 //_____________________________________________________________________________

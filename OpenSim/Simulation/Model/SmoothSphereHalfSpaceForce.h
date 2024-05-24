@@ -32,8 +32,8 @@ HuntCrossleyForce, the normal force is differentiable as a function of
 penetration depth. This component is designed for use in gradient-based
 optimizations, in which the model is required to be differentiable. This
 component models contact between a single sphere and a single half space.
-This force does NOT use ContactGeometry objects; the description of the
-contact geometries is done through properties of this component.
+This force uses a ContactSphere (via the Socket 'sphere') and a ContactHalfSpace
+(via the Socket 'half_space') to define the contact geometry.
 
 \section const_smoothsphere_force Constant contact force
 
@@ -118,6 +118,14 @@ public:
             "The half-space participating in this contact.");
 
     //=========================================================================
+    // OUTPUTS
+    //=========================================================================
+    OpenSim_DECLARE_OUTPUT(sphere_force, SimTK::SpatialVec, getSphereForce,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(half_space_force, SimTK::SpatialVec,
+            getHalfSpaceForce, SimTK::Stage::Dynamics);
+
+    //=========================================================================
     // PUBLIC METHODS
     //=========================================================================
     SmoothSphereHalfSpaceForce();
@@ -140,6 +148,14 @@ public:
     OpenSim::Array<double> getRecordValues(
             const SimTK::State& state) const override;
 
+    /// Get a SimTK::SpatialVec containing the forces and torques applied to
+    /// the contact sphere.
+    SimTK::SpatialVec getSphereForce(const SimTK::State& s) const;
+
+    /// Get a SimTK::SpatialVec containing the forces and torques applied to
+    /// the contact half space.
+    SimTK::SpatialVec getHalfSpaceForce(const SimTK::State& s) const;
+
 protected:
     /// Create a SimTK::Force which implements this Force.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
@@ -152,6 +168,9 @@ private:
     // INITIALIZATION
     void constructProperties();
     mutable double m_forceVizScaleFactor;
+
+    void calcBodyForces(const SimTK::State& s,
+                        SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
 
 //=============================================================================
 }; // END of class SmoothSphereHalfSpaceForce

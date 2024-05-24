@@ -1,5 +1,8 @@
 include(CMakeParseArguments)
 
+find_package(Catch2 REQUIRED
+        HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
+
 # Create an executable for the file ${TEST_NAME}.cpp, which depends on
 # libraries ${LIB_DEPENDENCIES}. Also create a CTest test for this executable.
 function(MocoAddTest)
@@ -11,17 +14,15 @@ function(MocoAddTest)
     add_executable(${MOCOTEST_NAME} ${MOCOTEST_NAME}.cpp Testing.h)
     # To organize targets in Visual Studio's Solution Explorer.
     set_target_properties(${MOCOTEST_NAME} PROPERTIES FOLDER "Moco/Tests")
-    target_link_libraries(${MOCOTEST_NAME} osimMoco ${MOCOTEST_LIB_DEPENDS})
-    target_include_directories(${MOCOTEST_NAME}
-            PRIVATE "${CMAKE_SOURCE_DIR}/tropter/external/catch")
+    target_link_libraries(${MOCOTEST_NAME} osimMoco ${MOCOTEST_LIB_DEPENDS} Catch2::Catch2WithMain)
     # Skip tests relying on MocoCasADiSolver if CasADi is not available.
     if(NOT OPENSIM_WITH_CASADI)
-        list(APPEND test_args "exclude:*MocoCasADiSolver*")
-        list(APPEND test_args "exclude:[casadi]")
+        list(APPEND test_args "~*MocoCasADiSolver*")
+        list(APPEND test_args "~[casadi]")
     endif()
     if(NOT OPENSIM_WITH_TROPTER)
-        list(APPEND test_args "exclude:*MocoTropterSolver*")
-        list(APPEND test_args "exclude:[tropter]")
+        list(APPEND test_args "~*MocoTropterSolver*")
+        list(APPEND test_args "~[tropter]")
     endif()
     add_test(NAME ${MOCOTEST_NAME} COMMAND ${MOCOTEST_NAME} ${test_args})
     # Tests likely run faster if we parallelize the tests rather than the
@@ -43,6 +44,8 @@ MocoAddTest(NAME testMocoConstraints)
 
 MocoAddTest(NAME testMocoContact)
 
+MocoAddTest(NAME testMocoControllers)
+
 MocoAddTest(NAME testMocoActuators)
 
 MocoAddTest(NAME testMocoInverse RESOURCES
@@ -54,15 +57,19 @@ MocoAddTest(NAME testMocoInverse RESOURCES
         )
 
 MocoAddTest(NAME testMocoTrack RESOURCES
-        testMocoTrack_subject01.osim
+        walk_gait1018_subject01.osim
         walk_gait1018_state_reference.mot
         walk_gait1018_subject01_grf.xml
         walk_gait1018_subject01_grf.mot
         std_testMocoTrackGait10dof18musc_solution.sto
         )
 
-# MocoAddTest(NAME testMultivariatePolynomial)
-
 MocoAddTest(NAME testMocoAnalytic)
 
 MocoAddTest(NAME testMocoMetabolics)
+
+file(COPY subject_walk_armless_18musc.osim subject_walk_armless_coordinates.mot
+     DESTINATION "${CMAKE_BINARY_DIR}/OpenSim/Tests/Wrapping")
+
+file(COPY walk_gait1018_subject01.osim walk_gait1018_state_reference.mot
+        DESTINATION "${CMAKE_BINARY_DIR}/OpenSim/Tests/Wrapping")

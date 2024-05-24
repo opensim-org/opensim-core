@@ -21,13 +21,14 @@
 #include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 //#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Analyses/ForceReporter.h>
 #include <Moco/osimMoco.h>
-#include <OpenSim/Common/Reporter.h>
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/Constant.h>
+#include <OpenSim/Common/Reporter.h>
+#include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 
 #include <MocoSandboxShared.h>
@@ -688,7 +689,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
         springForceActualTime =
                 SimTK::Vector((int)stdTime.size(), stdTime.data());
         springForceActual.resize(X.size());
-        assert(X.size() > 0);
+        OPENSIM_ASSERT(X.size() > 0);
         for (int i = 0; i < X.size(); ++i) {
             SimTK::Vec3 forceVec(X[i], Y[i], Z[i]);
             SimTK::Vec3 lineOfAction(pX[i], pY[i], pZ[i]);

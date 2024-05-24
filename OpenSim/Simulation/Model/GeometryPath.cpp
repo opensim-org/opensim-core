@@ -28,8 +28,10 @@
 #include "ConditionalPathPoint.h"
 #include "MovingPathPoint.h"
 #include "PointForceDirection.h"
-#include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include "Model.h"
+
+#include <OpenSim/Common/Assertion.h>
+#include <OpenSim/Simulation/Wrap/PathWrap.h>
 
 //=============================================================================
 // STATICS
@@ -133,9 +135,7 @@ static void PopulatePathElementLookup(
 /*
  * Default constructor.
  */
-GeometryPath::GeometryPath() :
-    ModelComponent(),
-    _preScaleLength(0.0)
+GeometryPath::GeometryPath() : AbstractGeometryPath()
 {
     setAuthors("Peter Loan");
     constructProperties();
@@ -222,7 +222,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
     const Array<AbstractPathPoint*>& pathPoints = getCurrentPath(state);
 
-    assert(pathPoints.size() > 1);
+    OPENSIM_ASSERT_FRMOBJ(pathPoints.size() > 1);
 
     const AbstractPathPoint* lastPoint = pathPoints[0];
     MobilizedBodyIndex mbix(0);
@@ -281,10 +281,6 @@ void GeometryPath::constructProperties()
     constructProperty_PathPointSet(PathPointSet());
 
     constructProperty_PathWrapSet(PathWrapSet());
-    
-    Appearance appearance;
-    appearance.set_color(SimTK::Gray);
-    constructProperty_Appearance(appearance);
 }
 
 //_____________________________________________________________________________
@@ -296,10 +292,10 @@ void GeometryPath::constructProperties()
  */
 void GeometryPath::namePathPoints(int aStartingIndex)
 {
-    char indx[5];
     for (int i = aStartingIndex; i < get_PathPointSet().getSize(); i++)
     {
-        sprintf(indx,"%d",i+1);
+        char indx[32];
+        snprintf(indx,32,"%d",i+1);
         AbstractPathPoint& point = get_PathPointSet().get(i);
         if (point.getName()=="" && hasOwner()) {
             point.setName(getOwner().getName() + "-P" + indx);
@@ -568,13 +564,6 @@ double GeometryPath::getLengtheningSpeed( const SimTK::State& s) const
 void GeometryPath::setLengtheningSpeed( const SimTK::State& s, double speed ) const
 {
     setCacheVariableValue(s, _speedCV, speed);
-}
-
-void GeometryPath::setPreScaleLength( const SimTK::State& s, double length ) {
-    _preScaleLength = length;
-}
-double GeometryPath::getPreScaleLength( const SimTK::State& s) const {
-    return _preScaleLength;
 }
 
 //=============================================================================

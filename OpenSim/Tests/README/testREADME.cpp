@@ -84,7 +84,7 @@ int main() {
     brain->addActuator(*biceps);
     // Muscle excitation is 0.3 for the first 0.5 seconds, then increases to 1.
     brain->prescribeControlForActuator("biceps",
-            new StepFunction(0.5, 3, 0.3, 1));
+            StepFunction(0.5, 3, 0.3, 1));
 
     // Add components to the model.
     model.addBody(humerus);    model.addBody(radius);

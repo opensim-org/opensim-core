@@ -29,6 +29,7 @@
 //-----------------------------------------------------------------------------
 // INCLUDES
 //-----------------------------------------------------------------------------
+#include "Assertion.h"
 #include "XMLDocument.h"
 #include "Object.h"
 #include <functional>
@@ -66,8 +67,10 @@ using namespace std;
 // 30516 for GeometryPath default_color -> Appearance
 // 30517 for removal of _connectee_name suffix to shorten XML for socket, input
 // 40000 for OpenSim 4.0 release 40000
+// 40500 for updating GeometryPath nodes to have property name 'path'.
+// 40600 for converting Controller actuators to a list Socket.
 
-const int XMLDocument::LatestVersion = 40000;
+const int XMLDocument::LatestVersion = 40600;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
@@ -218,7 +221,7 @@ getVersionAsString(const int aVersion, std::string& aString)
     for(int i=0; i<3; i++)
     {
         int digits = ver / div;
-        sprintf(pad, "%02d",digits); 
+        snprintf(pad, 3, "%02d", digits);
         ver -= div*(ver / div);
         div /=100;
         aString += string(pad);
@@ -244,7 +247,7 @@ updateDocumentVersion()
     }
 
     // Validate >=  10500 and < latest as sanity check
-    assert(_documentVersion >= 10500 && _documentVersion <= LatestVersion);
+    OPENSIM_ASSERT(_documentVersion >= 10500 && _documentVersion <= LatestVersion);
 }
 //_____________________________________________________________________________
 /**

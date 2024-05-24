@@ -32,6 +32,7 @@
 #include "Model/Ground.h"
 #include "Model/OffsetFrame.h"
 #include "Model/PhysicalOffsetFrame.h"
+#include "Model/StationDefinedFrame.h"
 
 #include "Model/AnalysisSet.h"
 #include "Model/ForceSet.h"
@@ -63,6 +64,7 @@
 #include "Model/ConditionalPathPoint.h"
 #include "Model/MovingPathPoint.h"
 #include "Model/GeometryPath.h"
+#include "Model/FunctionBasedPath.h"
 #include "Model/PrescribedForce.h"
 #include "Model/ExternalForce.h"
 #include "Model/PointToPointSpring.h"
@@ -92,6 +94,7 @@
 #include "Control/ControlConstant.h"
 #include "Control/ControlLinear.h"
 #include "Control/PrescribedController.h"
+#include "Control/InputController.h"
 
 #include "Wrap/PathWrap.h"
 #include "Wrap/PathWrapSet.h"
@@ -125,6 +128,7 @@
 #include "SimbodyEngine/CustomJoint.h"
 #include "SimbodyEngine/WeldJoint.h"
 #include "SimbodyEngine/ScapulothoracicJoint.h"
+#include "OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.h"
 #include "SimbodyEngine/TransformAxis.h"
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
@@ -135,6 +139,7 @@
 #include "TableProcessor.h"
 #include "MarkersReference.h"
 #include "PositionMotion.h"
+#include "Control/InputController.h"
 
 #include <string>
 #include <iostream>
@@ -194,6 +199,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( FrameGeometry());
     Object::registerType( Arrow());
     Object::registerType( GeometryPath());
+    Object::registerType( FunctionBasedPath());
 
     Object::registerType( ControlSet() );
     Object::registerType( ControlConstant() );
@@ -216,6 +222,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( OpenSim::Body() );
     Object::registerType( OpenSim::Ground());
     Object::registerType( PhysicalOffsetFrame());
+    Object::registerType( StationDefinedFrame());
 
     Object::registerType( WeldJoint());
     Object::registerType( CustomJoint());
@@ -228,6 +235,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( PinJoint() );
     Object::registerType( SliderJoint() );
     Object::registerType( PlanarJoint() );
+    Object::registerType( ConstantCurvatureJoint() );
     Object::registerType( TransformAxis() );
     Object::registerType( Coordinate() );
     Object::registerType( SpatialTransform() );
@@ -293,6 +301,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::registerType( TabOpLowPassFilter() );
     Object::registerType( TabOpUseAbsoluteStateNames() );
+    Object::registerType( TabOpAppendCoupledCoordinateValues() );
     Object::registerType( PositionMotion() );
 
     // OLD Versions

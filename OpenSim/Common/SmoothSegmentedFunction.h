@@ -24,8 +24,14 @@
  * -------------------------------------------------------------------------- */
 #include "osimCommonDLL.h"
 #include "SegmentedQuinticBezierToolkit.h"
+#include <memory>
 
 namespace OpenSim { 
+
+    /**
+    Struct containing the data used by SmoothSegmentedFuncion.
+    */
+    struct SmoothSegmentedFunctionData;
 
     /**
     This class contains the quintic Bezier curves, x(u) and y(u), that have been
@@ -70,6 +76,15 @@ namespace OpenSim {
         ///NaN's
         SmoothSegmentedFunction();
 
+        SmoothSegmentedFunction(const SmoothSegmentedFunction&);
+
+        SmoothSegmentedFunction& operator=(const SmoothSegmentedFunction&);
+
+        ~SmoothSegmentedFunction() noexcept;
+
+        SmoothSegmentedFunction(SmoothSegmentedFunction&&) noexcept;
+
+        SmoothSegmentedFunction& operator=(SmoothSegmentedFunction&&) noexcept;
 
 
        /**Calculates the value of the curve this object represents.
@@ -121,6 +136,17 @@ namespace OpenSim {
     
        */
        double calcDerivative(double x, int order) const;       
+
+       // Helper struct containing curve value and first derivative together.
+       struct ValueAndDerivative final
+       {
+           double value;
+           double derivative;
+       };
+
+       /// Returns the same as calcValue(x) and calcDerivative(x, 1), but more
+       // efficient than calling them separately.
+       ValueAndDerivative calcValueAndFirstDerivative(double x) const;
 
 #ifndef SWIG
        /// Allow the more general calcDerivative from the base class to be used.
@@ -307,41 +333,10 @@ namespace OpenSim {
        ///@endcond
 
     private:
-       
-        /**Array of spline fit functions X(u) for each Bezier elbow*/
-        SimTK::Array_<SimTK::Spline> _arraySplineUX;        
-        /**Spline fit of the integral of the curve y(x)*/
-        SimTK::Spline _splineYintX;
-        
-        /**Bezier X1,...,Xn control point locations. Control points are 
-        stored in 6x1 vectors in the order above*/
-        SimTK::Array_<SimTK::Vector> _mXVec; 
-        /**Bezier Y1,...,Yn control point locations. Control points are 
-        stored in 6x1 vectors in the order above*/
-        SimTK::Array_<SimTK::Vector> _mYVec; 
 
-        /**The number of quintic Bezier curves that describe the relation*/
-        int _numBezierSections;
+        /**Data required for performing the calculations. **/
+        std::shared_ptr<const SmoothSegmentedFunctionData> _smoothData = nullptr;
 
-        /**The minimum value of the domain*/
-        double _x0;
-        /**The maximum value of the domain*/
-        double _x1;
-        /**The minimum value of the range*/
-        double _y0;
-        /**The maximum value of the range*/
-        double _y1;
-        /**The slope at _x0*/
-        double _dydx0;
-        /**The slope at _x1*/
-        double _dydx1;
-        /**This is the users */
-        bool _computeIntegral;
-
-        /**This variable, when true, indicates that the user wants the integral
-        from left to right (x0 to x1). If it is false, the integral from right
-        to left (x1 to x0) is computed*/
-        bool _intx0x1;
         /**The name of the function**/
         std::string _name;
             
@@ -355,15 +350,15 @@ namespace OpenSim {
        /**
        Creates a set of quintic Bezier Curve.
 
-       @param mX         The matrix of quintic Bezier x point locations (6xn).
-                         Each column vector is the 6 control points required
+       @param ctrlPtsX   The n-vector of quintic Bezier x point locations (6xn).
+                         Each element contains the 6 control points required
                          for each quintic Bezier curve. For C0 continuity 
-                         adjacent columns must share the last and first control
+                         adjacent elements must share the last and first control
                          points. For C1 continuity the last 2 and first two
                          control points of adjacent curves should be on the same
                          curve.
 
-       @param mY         The matrix of quintic Bezier y point locations (6xn).
+       @param ctrlPtsY   The n-vector of quintic Bezier y point locations (6xn).
                         
        @param x0         The minimum x value. This is used for the linear 
                          extrapolation of the Bezier curve. This parameter is
@@ -409,9 +404,18 @@ namespace OpenSim {
        \endverbatim
 
               */
-       SmoothSegmentedFunction(const SimTK::Matrix& mX, const SimTK::Matrix& mY, 
-          double x0, double x1,double y0, double y1,double dydx0, double dydx1,
-          bool computeIntegral, bool intx0x1, const std::string& name); 
+       SmoothSegmentedFunction(
+          const SimTK::Array_<SimTK::Vec6>& ctrlPtsX,
+          const SimTK::Array_<SimTK::Vec6>& ctrlPtsY,
+          double x0,
+          double x1,
+          double y0,
+          double y1,
+          double dydx0,
+          double dydx1,
+          bool computeIntegral,
+          bool intx0x1,
+          const std::string& name);
 
         /**
         This function will print cvs file of the column vector col0 and the 

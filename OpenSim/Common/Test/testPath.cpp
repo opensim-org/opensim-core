@@ -24,6 +24,8 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <catch2/catch_all.hpp>
+
 /* The purpose of this test is strictly to check that classes derived from
  * the Path class work outside of the objects/components they are meant to 
  * service (i.e. check that the path logic works).
@@ -32,7 +34,8 @@
 using namespace OpenSim;
 using namespace std;
 
-void testComponentPath() {
+TEST_CASE("Component Path Behaves as Expected")
+{
     /* Test that creating ComponentPath with paths that should not be cleaned up */
 
     using CP = ComponentPath;
@@ -326,11 +329,51 @@ void testComponentPath() {
     }
 }
 
-int main()
+TEST_CASE("ComponentPath::operator== works as expected")
 {
-    SimTK_START_TEST("testPath");
-        SimTK_SUBTEST(testComponentPath);
-    SimTK_END_TEST();
+    REQUIRE(ComponentPath{"some/path"} == ComponentPath{"some/path"});
+    REQUIRE(!(ComponentPath{"some/path"} == ComponentPath{"some/other/path"}));
+}
 
-    return 0;
+TEST_CASE("ComponentPath::operator!= works as expected")
+{
+    REQUIRE(ComponentPath{"some/path"} != ComponentPath{"some/other/path"});
+    REQUIRE(!(ComponentPath{"some/path"} != ComponentPath{"some/path"}));
+}
+
+TEST_CASE("ComponentPath::operator< works as expected")
+{
+    REQUIRE(ComponentPath{"a"} < ComponentPath{"b"});
+    REQUIRE(!(ComponentPath{"a"} < ComponentPath{"a"}));
+}
+
+TEST_CASE("ComponentPath::root returns root component path")
+{
+    REQUIRE(ComponentPath::root() == ComponentPath{std::string{'/'}});
+}
+
+TEST_CASE("ComponentPath::empty returns true for default-constructed path")
+{
+    REQUIRE(ComponentPath{}.empty());
+}
+
+TEST_CASE("ComponentPath::empty returns false for populated path")
+{
+    REQUIRE(ComponentPath{"some/path"}.empty() == false);
+}
+
+TEST_CASE("ComponentPath::clear clears the content of the path")
+{
+    ComponentPath cp{"some/path"};
+    REQUIRE(cp != ComponentPath{});
+    cp.clear();
+    REQUIRE(cp == ComponentPath{});
+}
+
+TEST_CASE("std::hash<ComponentPath> returns equivalent results to hashing the underlying string")
+{
+    REQUIRE(std::hash<ComponentPath>{}(OpenSim::ComponentPath{"some/path"}) == std::hash<std::string>{}("some/path"));
+
+    // ... but beware of normalization...
+    REQUIRE(std::hash<ComponentPath>{}(OpenSim::ComponentPath{"normalizable/././path"}) != std::hash<std::string>{}("normalizable/././path"));
 }

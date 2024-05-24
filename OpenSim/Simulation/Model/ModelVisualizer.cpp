@@ -196,13 +196,6 @@ findGeometryFile(const Model& aModel,
                 }
             }
         }
-
-        if (!foundIt) {
-            const string installDir = 
-                Pathname::getInstallDir("OPENSIM_HOME", "OpenSim");
-            attempts.push_back(installDir + geoDir + geoFile);
-            foundIt = Pathname::fileExists(attempts.back());
-        }
     }
 
     return foundIt;

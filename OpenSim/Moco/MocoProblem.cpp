@@ -38,6 +38,8 @@ void MocoPhase::constructProperties() {
     constructProperty_state_infos_pattern();
     constructProperty_control_infos();
     constructProperty_control_infos_pattern();
+    constructProperty_input_control_infos();
+    constructProperty_input_control_infos_pattern();
     constructProperty_parameters();
     constructProperty_goals();
     constructProperty_path_constraints();
@@ -109,9 +111,33 @@ void MocoPhase::printControlNamesWithSubstring(const std::string& substring) {
     Model model = get_model().process();
     model.initSystem();
     const auto controlNames = createControlNamesFromModel(model);
-    for (int i = 0; i < (int)controlNames.size(); ++i) {
-        if (controlNames[i].find(substring) != std::string::npos) {
-            foundNames.push_back(controlNames[i]);
+    std::vector<std::string> controlsToExclude;
+    for (const auto& controller : model.getComponentList<Controller>()) {
+        const auto& socket = controller.getSocket<Actuator>("actuators");
+        for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
+            const auto& actu = socket.getConnectee(i);
+            const auto& actuPath = actu.getAbsolutePathString();
+            if (actu.numControls() == 1) {
+                controlsToExclude.push_back(actuPath);
+            } else {
+                for (int i = 0; i < actu.numControls(); ++i) {
+                    controlsToExclude.push_back(
+                            fmt::format("{}_{}", actuPath, i));
+                }
+            }
+        }
+    }
+    std::vector<std::string> controlNamesToUse;
+    for (const auto& name : controlNames) {
+        if (std::find(controlsToExclude.begin(), controlsToExclude.end(),
+                    name) == controlsToExclude.end()) {
+            controlNamesToUse.push_back(name);
+        }
+    }
+    
+    for (int i = 0; i < (int)controlNamesToUse.size(); ++i) {
+        if (controlNamesToUse[i].find(substring) != std::string::npos) {
+            foundNames.push_back(controlNamesToUse[i]);
         }
     }
     if (foundNames.size() > 0) {
@@ -144,6 +170,29 @@ void MocoPhase::setControlInfoPattern(const std::string& pattern,
         append_control_infos_pattern(info);
     else
         upd_control_infos_pattern(idx) = info;
+}
+void MocoPhase::setInputControlInfo(const std::string& name,
+        const MocoBounds& bounds, const MocoInitialBounds& initial,
+        const MocoFinalBounds& final) {
+    int idx = getProperty_input_control_infos().findIndexForName(name);
+
+    MocoVariableInfo info(name, bounds, initial, final);
+    if (idx == -1)
+        append_input_control_infos(info);
+    else
+        upd_input_control_infos(idx) = info;
+}
+void MocoPhase::setInputControlInfoPattern(const std::string& pattern,
+        const MocoBounds& bounds, const MocoInitialBounds& initial,
+        const MocoFinalBounds& final) {
+    int idx = 
+        getProperty_input_control_infos_pattern().findIndexForName(pattern);
+
+    MocoVariableInfo info(pattern, bounds, initial, final);
+    if (idx == -1)
+        append_input_control_infos_pattern(info);
+    else
+        upd_input_control_infos_pattern(idx) = info;
 }
 MocoInitialBounds MocoPhase::getTimeInitialBounds() const {
     return get_time_initial_bounds();
@@ -244,6 +293,11 @@ void MocoProblem::setControlInfo(const std::string& name,
         const MocoFinalBounds& final) {
     upd_phases(0).setControlInfo(name, bounds, initial, final);
 }
+void MocoProblem::setInputControlInfo(const std::string& name,
+        const MocoBounds& bounds, const MocoInitialBounds& initial,
+        const MocoFinalBounds& final) {
+    upd_phases(0).setInputControlInfo(name, bounds, initial, final);
+}
 void MocoProblem::setKinematicConstraintBounds(const MocoBounds& bounds) {
     upd_phases(0).setKinematicConstraintBounds(bounds);
 }
@@ -261,9 +315,13 @@ void MocoProblem::setStateInfoPattern(const std::string& pattern,
         const MocoFinalBounds& final) {
     upd_phases(0).setStateInfoPattern(pattern, bounds, initial, final);
 }
-
 void MocoProblem::setControlInfoPattern(const std::string& pattern,
         const MocoBounds& bounds, const MocoInitialBounds& initial,
         const MocoFinalBounds& final) {
     upd_phases(0).setControlInfoPattern(pattern, bounds, initial, final);
+}
+void MocoProblem::setInputControlInfoPattern(const std::string& pattern,
+        const MocoBounds& bounds, const MocoInitialBounds& initial,
+        const MocoFinalBounds& final) {
+    upd_phases(0).setInputControlInfoPattern(pattern, bounds, initial, final);
 }

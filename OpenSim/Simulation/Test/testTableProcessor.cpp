@@ -16,8 +16,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch.hpp>
+#include <catch2/catch_all.hpp>
+
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/TableProcessor.h>
@@ -49,8 +49,8 @@ TEST_CASE("TableProcessor") {
             TableProcessor proc(TimeSeriesTable{});
             proc.set_filepath("file.sto");
             CHECK_THROWS_WITH(proc.process(),
-                    Catch::Contains("Expected either an in-memory table or a "
-                                    "filepath"));
+                    Catch::Matchers::ContainsSubstring(
+                            "Expected either an in-memory table or a filepath"));
         }
     }
 

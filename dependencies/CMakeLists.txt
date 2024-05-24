@@ -2,13 +2,20 @@
 # compile and install all OpenSim dependencies. Using super-build is optional.
 # OpenSim does not use this file directly.
 
-project(OpenSimDependencies)
 # We require a version of CMake that supports Visual Studio 2015.
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.5)
+
+project(OpenSimDependencies)
 
 include(ExternalProject)
 include(CMakeParseArguments)
 include(CMakeDependentOption)
+
+set(
+    SIMBODY_EXTRA_CMAKE_ARGS ""
+    CACHE STRING
+    "extra arguments to forward when configuring Simbody's build. The format must be: VARNAME1:TYPE1=VALUE1;VARNAME2:TYPE2=VALUE2 (e.g. '-DSIMBODY_EXTRA_CMAKE_ARGS=-DSIMBODY_BUILD_VISUALIZER:BOOL=OFF;-DBUILD_USING_OTHER_LAPACK:PATH=/some/path')"
+)
 
 # Set the default for CMAKE_INSTALL_PREFIX.
 function(SetDefaultCMakeInstallPrefix)
@@ -17,14 +24,14 @@ function(SetDefaultCMakeInstallPrefix)
     get_filename_component(BASE_DIR ${BASE_DIR} DIRECTORY)
     # Default install prefix for OpenSim dependencies. If user changes
     # CMAKE_INSTALL_PREFIX, this directory will be removed.
-    set(DEFAULT_CMAKE_INSTALL_PREFIX 
+    set(DEFAULT_CMAKE_INSTALL_PREFIX
         ${BASE_DIR}/opensim_dependencies_install
         CACHE
         INTERNAL
         "Default CMAKE_INSTALL_PREFIX for OpenSim dependencies.")
 
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-        set(CMAKE_INSTALL_PREFIX 
+        set(CMAKE_INSTALL_PREFIX
             ${DEFAULT_CMAKE_INSTALL_PREFIX}
             CACHE
             PATH
@@ -33,7 +40,7 @@ function(SetDefaultCMakeInstallPrefix)
     endif()
 endfunction()
 
-# CMake doesn't clear prefix directories when user changes it. 
+# CMake doesn't clear prefix directories when user changes it.
 # Remove it to avoid confusion.
 function(RemoveDefaultInstallDirIfEmpty DIR)
     file(GLOB CONTENTS ${DIR}/*)
@@ -66,7 +73,7 @@ endfunction()
 #   GIT_URL    -- (Required) git repository to download the sources from.
 #   GIT_TAG    -- (Required) git tag to checkout before commencing build.
 #   DEPENDS    -- (Optional) Other projects this project depends on.
-#   CMAKE_ARGS -- (Optional) A CMake list of arguments to be passed to CMake 
+#   CMAKE_ARGS -- (Optional) A CMake list of arguments to be passed to CMake
 #                 while building the project.
 # You must provide either URL or GIT_URL and GIT_TAG, but not all 3.
 function(AddDependency)
@@ -170,15 +177,16 @@ SetDefaultCMakeBuildType()
 AddDependency(NAME       ezc3d
               DEFAULT    OFF
               GIT_URL    https://github.com/pyomeca/ezc3d.git
-              GIT_TAG    Release_1.5.0
+              GIT_TAG    Release_1.5.8
               CMAKE_ARGS -DBUILD_EXAMPLE:BOOL=OFF)
 
 AddDependency(NAME       simbody
               DEFAULT    ON
               GIT_URL    https://github.com/simbody/simbody.git
-              GIT_TAG    e855d954a786128c3271a3406d7bda782e7c4c4f
+              GIT_TAG    d98f05fa1899633b544757e6c179562940f0849d
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF
-                         -DBUILD_TESTING:BOOL=OFF)
+                         -DBUILD_TESTING:BOOL=OFF
+                         ${SIMBODY_EXTRA_CMAKE_ARGS})
 
 AddDependency(NAME       docopt
               DEFAULT    ON
@@ -204,6 +212,12 @@ AddDependency(NAME hdf5
                          -DHDF5_CPP_LIB:BOOL=ON
                          -DHDF5_BUILD_EXAMPLES:BOOL=OFF
                          -DHDF5_BUILD_TOOLS:BOOL=OFF)
+                         
+AddDependency(NAME       catch2
+              DEFAULT    ON
+              GIT_URL    https://github.com/catchorg/Catch2.git
+              GIT_TAG    v3.5.0)
+
 # Moco settings.
 # --------------
 option(OPENSIM_WITH_CASADI
@@ -267,7 +281,7 @@ if (WIN32)
 
 
     if(SUPERBUILD_ipopt)
-    
+
         # Ipopt: Download pre-built binaries built by chrisdembia.
         # This binary distribution comes with MUMPS and OpenBLAS.
         # Compiled with clang-cl 5.0 and flang, using conda.

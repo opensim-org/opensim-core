@@ -54,7 +54,8 @@ variable indicates the final state/control variable. Set the initial and
 final variables to the same variable to enforce periodicity on a single
 continuous variable. Only state and control continuous variable pairs are
 supported, and are specified via the 'state_pairs' and 'control_pairs'
-properties.
+properties. Control pairs can include both controls (i.e., model controls) and 
+Input controls.
 
 To handle initial and final variable values that are equal in absolute value
 but differ in sign (e.g. a pelvis rotation in walking), use
@@ -95,6 +96,7 @@ pair_hamstrings2.set_final_variable("/hamstrings_r");
 periodicGoal->append_control_pairs(pair_hamstrings2);
 @endcode
 This is an endpoint constraint goal by default.
+
 @ingroup mocogoal */
 class OSIMMOCO_API MocoPeriodicityGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicityGoal, MocoGoal);
@@ -138,6 +140,7 @@ private:
     void constructProperties();
     mutable std::vector<std::tuple<int, int, int>> m_indices_states;
     mutable std::vector<std::tuple<int, int, int>> m_indices_controls;
+    mutable std::vector<std::pair<bool, bool>> m_isInputControl;
     mutable std::vector<std::pair<std::string,std::string>> m_state_names;
     mutable std::vector<std::pair<std::string,std::string>> m_control_names;
 };

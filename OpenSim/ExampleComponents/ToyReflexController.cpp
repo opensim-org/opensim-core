@@ -66,20 +66,14 @@ void ToyReflexController::extendConnectToModel(Model &model)
 {
     Super::extendConnectToModel(model);
 
-    // get the list of actuators assigned to the reflex controller
-    Set<const Actuator>& actuators = updActuators();
-
-    int cnt=0;
- 
-    while(cnt < actuators.getSize()){
-        const Muscle *musc = dynamic_cast<const Muscle*>(&actuators[cnt]);
-        // control muscles only
-        if(!musc){
-            log_warn("ToyReflexController assigned a non-muscle actuator '{}', "
-                     "which will be ignored.", actuators[cnt].getName());
-            actuators.remove(cnt);
-        }else
-            cnt++;
+    const auto& socket = getSocket<Actuator>("actuators");
+    for (int i = 0; i < (int)socket.getNumConnectees(); ++i) {
+        const auto& actu = socket.getConnectee(i);
+        const auto* musc = dynamic_cast<const Muscle*>(&actu);
+        OPENSIM_THROW_IF_FRMOBJ(!musc, Exception,
+            "Expected only muscle actuators assigned to this controller's "
+            "'actuators' socket, but the non-muscle actuator '{}' was found.",
+            actu.getName());
     }
 }
 
@@ -94,12 +88,10 @@ void ToyReflexController::extendConnectToModel(Model &model)
  * @param controls  system wide controls to which this controller can add
  */
 void ToyReflexController::computeControls(const State& s,
-                                          Vector &controls) const {   
-    // get time
-    s.getTime();
+                                          Vector &controls) const {
 
-    // get the list of actuators assigned to the reflex controller
-    const Set<const Actuator>& actuators = getActuatorSet();
+    // Get the Socket to the list of actuators assigned to the reflex controller.
+    const auto& socket = getSocket<Actuator>("actuators");
 
     // muscle lengthening speed
     double speed = 0;
@@ -108,8 +100,9 @@ void ToyReflexController::computeControls(const State& s,
     //reflex control
     double control = 0;
 
-    for(int i=0; i<actuators.getSize(); ++i){
-        const Muscle *musc = dynamic_cast<const Muscle*>(&actuators[i]);
+    for (int i = 0; i < (int)socket.getNumConnectees(); ++i) {
+        const auto& actu = socket.getConnectee(i);
+        const Muscle *musc = dynamic_cast<const Muscle*>(&actu);
         speed = musc->getLengtheningSpeed(s);
         // un-normalize muscle's maximum contraction velocity (fib_lengths/sec) 
         max_speed =

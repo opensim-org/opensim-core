@@ -112,6 +112,12 @@ public:
 
     // default destructor, copy constructor, copy assignment
 
+protected:
+    //--------------------------------------------------------------------------
+    // Implement ModelComponent Interface
+    //--------------------------------------------------------------------------
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+
 private:
     void constructProperties();
 
@@ -131,10 +137,14 @@ private:
 
     //--------------------------------------------------------------------------
     // Implement Actuator interface (also see getOptimalForce() above)
-    //--------------------------------------------------------------------------    
-    double computeActuation( const SimTK::State& s) const override;
+    //--------------------------------------------------------------------------
+    double computeActuation(const SimTK::State& s) const override;
     // Return the stress, defined as abs(force/optimal_force).
-    double getStress( const SimTK::State& s ) const override;
+    double getStress(const SimTK::State& s) const override;
+    /** Get speed along force vector. */
+    double getSpeed(const SimTK::State& s) const override;
+    /** Computes speed along force vector. */
+    double calcSpeed(const SimTK::State& s) const;
 
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface
@@ -151,6 +161,11 @@ private:
     // The bodies on which this point-to-point actuator acts.
     SimTK::ReferencePtr<Body> _bodyA, _bodyB;
 
+    // CachedVariables: Speed- and direction along force, used to compute power
+    mutable CacheVariable<double> _speedCV;
+    mutable CacheVariable<SimTK::UnitVec3> _directionCV;
+
+    SimTK::UnitVec3 getDirectionBAInGround(const SimTK::State& s) const;
 //=============================================================================
 };  // END of class PointToPointActuator
 

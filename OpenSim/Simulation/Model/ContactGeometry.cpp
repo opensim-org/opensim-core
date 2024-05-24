@@ -189,6 +189,8 @@ void ContactGeometry::updateFromXMLNode(SimTK::Xml::Element& node,
             }
             if (addAppearanceNode) 
                 node.insertNodeAfter(node.element_end(), appearanceNode);
+            else if (appearanceNode.isOrphan())
+                appearanceNode.clearOrphan();
         }
     }
     Super::updateFromXMLNode(node, versionNumber);

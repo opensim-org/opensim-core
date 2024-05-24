@@ -50,9 +50,15 @@ delete_this_to_stop_optimization*.txt
 .idea/dictionaries
 .idea/vcs.xml
 .idea/opensim-core.iml
+.idea/OpenSim.iml
 .idea/misc.xml
+.idea/editor.xml
 .idea/codeStyles/codeStyleConfig.xml
 .idea/codeStyles/Project.xml
+.idea/editor.xml
+.cache/clangd/**
+**/.vscode/
+
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/
@@ -66,8 +72,12 @@ delete_this_to_stop_optimization*.txt
 .idea/deployment.xml
 .idea/other.xml
 
+# Clang-Tidy
+.clang-tidy
+
 # CMake
 cmake-build-*
 
 ## File-based project format:
 *.iws
+.vscode/settings.json

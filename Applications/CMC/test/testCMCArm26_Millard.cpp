@@ -46,7 +46,7 @@ void testCMCArm26() {
     cmc.getModel().formStateStorage(temp, *standard);
 
     // activations within 1.5%, angles within .6 degrees
-    std::vector<double> rms_tols(2*2+2*6, 0.015); 
+    std::vector<double> rms_tols(2*2+2*6, 0.015);
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
     string base = "testCMCArm26 "+ muscleType;
 
@@ -56,10 +56,10 @@ void testCMCArm26() {
     rms_tols[12] = 0.02;   // BICshort/activation
     rms_tols[14] = 0.005;  // BRA/activation
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, 
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__,
         base+" failed");
 
-    
+
     cout << "\n" << base <<" passed\n" << endl;
 }
 
@@ -72,8 +72,8 @@ int main() {
 
     try{
         testCMCArm26();
-    }catch (const std::exception& e) { 
-        cout << e.what() <<endl; failures.push_back("testCMCArm26_Millard"); 
+    }catch (const std::exception& e) {
+        cout << e.what() <<endl; failures.push_back("testCMCArm26_Millard");
     }
 
     if (!failures.empty()) {

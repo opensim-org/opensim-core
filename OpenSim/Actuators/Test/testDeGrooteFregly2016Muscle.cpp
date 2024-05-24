@@ -30,10 +30,10 @@
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
+using Catch::Approx;
 
 // Function to compute fiber force (or fiber force along tendon) versus fiber
 // length (or fiber length along tendon). This checks fiber stiffness
@@ -217,7 +217,8 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
                 Approx(1).epsilon(1e-4));
 
         CHECK(muscle.calcActiveForceLengthMultiplier(1) == Approx(1));
-        CHECK(muscle.calcForceVelocityMultiplier(-1) == 0);
+        CHECK(muscle.calcForceVelocityMultiplier(-1) ==
+                Approx(0).margin(1e-10));
         CHECK(muscle.calcForceVelocityMultiplier(0) == Approx(1));
         CHECK(muscle.calcForceVelocityMultiplier(1) ==
                 Approx(1.794).epsilon(1e-3));

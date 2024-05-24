@@ -214,15 +214,26 @@ void FiberForceLengthCurve::setOptionalProperties(double aStiffnessAtLowForce,
 //==============================================================================
 double FiberForceLengthCurve::calcValue(double normFiberLength) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "FiberForceLengthCurve: Curve is not up-to-date with its properties");
     return m_curve.calcValue(normFiberLength);
+}
+
+SmoothSegmentedFunction::ValueAndDerivative FiberForceLengthCurve::
+    calcValueAndDerivative(double normFiberLength) const
+{
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
+        "FiberForceLengthCurve: Curve is not up-to-date with its properties");
+    return m_curve.calcValueAndFirstDerivative(normFiberLength);
 }
 
 double FiberForceLengthCurve::calcDerivative(double normFiberLength,
                                              int order) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "FiberForceLengthCurve: Curve is not up-to-date with its properties");
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2,
         "FiberForceLengthCurve::calcDerivative",
@@ -240,7 +251,8 @@ double FiberForceLengthCurve::
 
 double FiberForceLengthCurve::calcIntegral(double normFiberLength) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "FiberForceLengthCurve: Curve is not up-to-date with its properties");
 
     if(!m_curve.isIntegralAvailable()) {
@@ -254,7 +266,8 @@ double FiberForceLengthCurve::calcIntegral(double normFiberLength) const
 
 SimTK::Vec2 FiberForceLengthCurve::getCurveDomain() const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "FiberForceLengthCurve: Curve is not up-to-date with its properties");
     return m_curve.getCurveDomain();
 }
@@ -305,7 +318,6 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
     int maxIter   = 20;
     int iter      = 0;
     int localIter = 0;
-    int evalIter  = 0;
 
     while(iter < maxIter && abs(err) > relTol) {
         flag_improvement = false;
@@ -389,8 +401,6 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
                 flag_Newton = false;
             }
         }
-
-        evalIter += localIter;
 
         step = step/2.0;
         iter++;

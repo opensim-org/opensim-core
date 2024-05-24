@@ -102,14 +102,20 @@ void test(const std::string filename) {
 
     std::shared_ptr<TimeSeriesTableVec3> marker_table = c3dFileAdapter.getMarkersTable(tables);
     std::shared_ptr<TimeSeriesTableVec3> force_table = c3dFileAdapter.getForcesTable(tables);
+    std::shared_ptr<TimeSeriesTable> analog_table = c3dFileAdapter.getAnalogDataTable(tables);
     downsample_table(*marker_table, 10);
     downsample_table(*force_table, 100);
+    // analog table has same data as forces table but 
+    // in different frame for the test files so will 
+    // downsample massively
+    downsample_table(*analog_table, 1000);
 
     size_t ext = filename.rfind(".");
     std::string base = filename.substr(0, ext);
 
     const std::string marker_file = base + "_markers.trc";
     const std::string forces_file = base + "_grfs.sto";
+    const std::string analogs_file = base + "_analog.sto";
 
     ASSERT(marker_table->getNumRows() > 0, __FILE__, __LINE__,
         "Failed to read marker data from " + filename);
@@ -132,7 +138,10 @@ void test(const std::string filename) {
     sto_adapter.write((force_table->flatten()), forces_file);
     cout << "\tWrote'" << forces_file << "' in "
         << watch.getElapsedTimeFormatted() << endl;
-
+    watch.reset();
+    sto_adapter.write(*analog_table, analogs_file);
+    cout << "\tWrote'" << analogs_file << "' in "
+        << watch.getElapsedTimeFormatted() << endl;
     // Verify that marker data was written out and can be read in
     watch.reset();
     TimeSeriesTable_<SimTK::Vec3> markers(marker_file);
@@ -186,6 +195,29 @@ void test(const std::string filename) {
                                 SimTK::SqrtEps);
 
     cout << "\tcop_" << forces_file << " is equivalent to its standard."<< endl;
+
+    TimeSeriesTable std_analog("std_" + analogs_file);
+    compare_tables<double>(*analog_table,
+        std_analog,
+        SimTK::SqrtEps);
+    cout << "\t" << analogs_file << " is equivalent to its standard." << endl;
+
+    // For the test files, analog data contains force vectors with some rogod body transform/signs changed
+    // Verify this fact for the first row of data
+    // analog.Fx1 = -forces.f1_2
+    // analog.Fy1 = -forces.f1_1
+    // analog.Fz1 = -forces.f1_3
+    SimTK::RowVectorView analogTableFirstRow = analog_table->getRowAtIndex(0);
+    SimTK::RowVectorView forcesTableFirstRow = forces.getRowAtIndex(0);
+
+
+    ASSERT_EQUAL<double>(analogTableFirstRow.getElt(0, 0), -forcesTableFirstRow.getElt(0, 1), SimTK::SignificantReal, __FILE__, __LINE__,
+        "Analog and Force data at col 0 failed to have matching value.");
+    ASSERT_EQUAL<double>(analogTableFirstRow.getElt(0, 1), -forcesTableFirstRow.getElt(0, 0), SimTK::SignificantReal, __FILE__, __LINE__,
+        "Analog and Force data at col 1 failed to have matching value.");
+    ASSERT_EQUAL<double>(analogTableFirstRow.getElt(0, 2), -forcesTableFirstRow.getElt(0, 2), SimTK::SignificantReal, __FILE__, __LINE__,
+        "Analog and Force data at col 2 failed to have matching value.");
+
 }
 
 int main() {

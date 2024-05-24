@@ -22,8 +22,10 @@
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Analyses/IMUDataReporter.h>
 
-#define CATCH_CONFIG_MAIN
+#include <catch2/catch_all.hpp>
 #include "Testing.h"
+
+using Catch::Approx;
 
 using namespace OpenSim;
 
@@ -154,7 +156,8 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
         const auto expected = std.getControlsTrajectory();
         CHECK(std.compareContinuousVariablesRMS(solution,
                                                 {{"controls", {}}}) < 1e-2);
-        CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-2);
+        CHECK(std.compareContinuousVariablesRMS(solution, 
+                                                {{"states", {}}}) < 1e-2);
 
         // Check muscle-tendon equilibrium.
         TimeSeriesTable outputs = inverseSolution.getOutputs();
@@ -199,8 +202,10 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
         auto med_gas_l_excitation = solution.getControl("/forceset/med_gas_l");
 
         for (int i = 0; i < solution.getNumTimes(); ++i) {
-            CHECK(med_gas_r_excitation[i] < 0.1);
-            CHECK(med_gas_l_excitation[i] < 0.1);
+            CHECK(med_gas_r_excitation[i] <=
+                    Approx(0.1).margin(1e-6));
+            CHECK(med_gas_l_excitation[i] <=
+                    Approx(0.1).margin(1e-6));
         }
 
     }

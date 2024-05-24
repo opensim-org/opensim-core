@@ -29,6 +29,9 @@
 #include <simbody/internal/Visualizer_InputListener.h>
 
 #include <OpenSim/Common/TableUtilities.h>
+#include <OpenSim/Common/CommonUtilities.h>
+#include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 
 using namespace OpenSim;
 
@@ -305,11 +308,11 @@ std::unordered_map<std::string, int> OpenSim::createSystemYIndexMap(
 std::vector<std::string> OpenSim::createControlNamesFromModel(
         const Model& model, std::vector<int>& modelControlIndices) {
     std::vector<std::string> controlNames;
+
     // Loop through all actuators and create control names. For scalar
     // actuators, use the actuator name for the control name. For non-scalar
     // actuators, use the actuator name with a control index appended for the
     // control name.
-    // TODO update when OpenSim supports named controls.
     int count = 0;
     modelControlIndices.clear();
     for (const auto& actu : model.getComponentList<Actuator>()) {
@@ -333,6 +336,7 @@ std::vector<std::string> OpenSim::createControlNamesFromModel(
 
     return controlNames;
 }
+
 std::vector<std::string> OpenSim::createControlNamesFromModel(
         const Model& model) {
     std::vector<int> modelControlIndices;
@@ -348,7 +352,6 @@ std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
     // absolutely sure that the controls are in the same order as actuators,
     // we can run the following check: in order, set an actuator's control
     // signal(s) to NaN and ensure the i-th control is NaN.
-    // TODO update when OpenSim supports named controls.
     std::unordered_map<std::string, int> controlIndices;
     const SimTK::State state = model.getWorkingState();
     auto modelControls = model.updControls(state);
@@ -437,4 +440,109 @@ TimeSeriesTableVec3 OpenSim::createSyntheticIMUAccelerationSignals(
     accelTableIMU.setColumnLabels(framePaths);
 
     return accelTableIMU;
+}
+
+void OpenSim::appendCoupledCoordinateValues(TimeSeriesTable& table,
+        const Model& model, bool overwriteExistingColumns) {
+
+    const CoordinateSet& coordinateSet = model.getCoordinateSet();
+    const auto& couplerConstraints =
+            model.getComponentList<CoordinateCouplerConstraint>();
+    for (const auto& couplerConstraint : couplerConstraints) {
+
+        // Get the dependent coordinate and check if the table already contains
+        // values for it. If so, skip this constraint (unless we are
+        // overwriting existing columns).
+        const Coordinate& coordinate = coordinateSet.get(
+                couplerConstraint.getDependentCoordinateName());
+        const std::string& coupledCoordinatePath =
+                fmt::format("{}/value", coordinate.getAbsolutePathString());
+        if (table.hasColumn(coupledCoordinatePath)) {
+            if (overwriteExistingColumns) {
+                table.removeColumn(coupledCoordinatePath);
+            } else {
+                continue;
+            }
+        }
+
+        // Get the paths to the independent coordinate values.
+        const Array<std::string>& independentCoordinateNames =
+                couplerConstraint.getIndependentCoordinateNames();
+        std::vector<std::string> independentCoordinatePaths;
+        for (int i = 0; i < independentCoordinateNames.getSize(); ++i) {
+            const Coordinate& independentCoordinate = coordinateSet.get(
+                    independentCoordinateNames[i]);
+            independentCoordinatePaths.push_back(
+                    fmt::format("{}/value",
+                        independentCoordinate.getAbsolutePathString()));
+            OPENSIM_THROW_IF(
+                    !table.hasColumn(independentCoordinatePaths.back()),
+                    Exception,
+                    "Expected the coordinates table to contain a column with "
+                    "label '{}', but it does not.",
+                    independentCoordinatePaths.back())
+        }
+
+        // Compute the dependent coordinate values from the function in the
+        // CoordinateCouplerConstraint.
+        SimTK::Vector independentValues(
+                (int)independentCoordinatePaths.size(), 0.0);
+        SimTK::Vector newColumn((int)table.getNumRows());
+        const Function& function = couplerConstraint.getFunction();
+        for (int irow = 0; irow < (int)table.getNumRows(); ++irow) {
+            int ival = 0;
+            for (const auto& independentCoordinatePath :
+                    independentCoordinatePaths) {
+                independentValues[ival++] =
+                        table.getDependentColumn(independentCoordinatePath)[irow];
+            }
+            newColumn[irow] = function.calcValue(independentValues);
+        }
+
+        // Append the new column to the table.
+        table.appendColumn(coupledCoordinatePath, newColumn);
+    }
+}
+
+void OpenSim::appendCoordinateValueDerivativesAsSpeeds(TimeSeriesTable& table,
+        const Model& model, bool overwriteExistingColumns) {
+
+    auto splines = GCVSplineSet(table);
+    const auto& labels = table.getColumnLabels();
+    const auto& times = table.getIndependentColumn();
+    for (int i = 0; i < splines.getSize(); ++i) {
+        auto* spline = splines.getGCVSpline(i);
+        std::string valuePath = labels[i];
+
+        // Check that the current coordinate exists in the model. If so,
+        // generate the model path for the coordinate speed.
+        std::string speedPath;
+        if (valuePath.substr(valuePath.size() - 6) == "/value") {
+            valuePath = valuePath.substr(0, valuePath.size() - 6);
+            if (!model.hasComponent<Coordinate>(valuePath)) {
+                continue;
+            }
+            speedPath = fmt::format("{}/speed", valuePath);
+        } else {
+            continue;
+        }
+
+        // Check if the table already contains values for the speed. If so,
+        // skip this coordinate (unless we are overwriting existing columns).
+        if (table.hasColumn(speedPath)) {
+            if (overwriteExistingColumns) {
+                table.removeColumn(speedPath);
+            } else {
+                continue;
+            }
+        }
+
+        // Compute the speed values from the spline.
+        SimTK::Vector speed((int)times.size());
+        for (int j = 0; j < (int)times.size(); ++j) {
+            speed[j] = spline->calcDerivative({0}, SimTK::Vector(1, times[j]));
+        }
+        table.appendColumn(speedPath, speed);
+    }
+
 }

@@ -25,6 +25,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
@@ -117,7 +118,7 @@ public:
     void getAxis(SimTK::Vec3& axis) const {axis = getAxis();}
     /** Get one component (0,1, or 2) of the axis vector. **/
     double getAxis(int which) const 
-    {   assert(0<=which && which<=2); return getAxis()[which]; }
+    {   OPENSIM_ASSERT_FRMOBJ(0<=which && which<=2); return getAxis()[which]; }
 
     /** Determine whether a custom function has been specified to map between 
     the generalized coordinate and the amount of transformation along the 

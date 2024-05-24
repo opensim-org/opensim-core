@@ -16,11 +16,11 @@
 
 #include <tropter/tropter.h>
 
-#define CATCH_CONFIG_MAIN
-#include <catch.hpp>
-
+#include <catch2/catch_all.hpp>
 #include "testing.h"
 #include "testing_optimalcontrol.h"
+
+using Catch::Approx;
 
 using namespace tropter;
 

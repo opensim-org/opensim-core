@@ -21,7 +21,7 @@
 #include <simbody/internal/Constraint.h>
 
 #include <OpenSim/Moco/Components/AccelerationMotion.h>
-#include <OpenSim/Moco/Components/DiscreteController.h>
+#include <OpenSim/Moco/Components/ControlDistributor.h>
 #include <OpenSim/Moco/Components/DiscreteForces.h>
 #include <OpenSim/Moco/MocoBounds.h>
 #include <OpenSim/Moco/MocoTropterSolver.h>
@@ -56,25 +56,13 @@ protected:
                       m_mocoProbRep.getModelDisabledConstraints()),
               m_stateDisabledConstraints(
                       m_mocoProbRep.updStateDisabledConstraints()),
-              m_implicit(implicit) {
+              m_implicit(implicit)
+        {
 
         // It is sufficient to perform this check only on the original model.
         OPENSIM_THROW_IF(!m_modelBase.getMatterSubsystem().getUseEulerAngles(
                                  m_stateBase),
                 Exception, "Quaternions are not supported.");
-
-        // Ensure the model does not have user-provided controllers.
-        int numControllers = 0;
-        for (const auto& controller :
-                m_modelBase.template getComponentList<Controller>()) {
-            // Avoid unused variable warning.
-            (void)&controller;
-            ++numControllers;
-        }
-        // The model has a DiscreteController added by MocoProblemRep; any other
-        // controllers were added by the user.
-        OPENSIM_THROW_IF(numControllers > 1, Exception,
-                "MocoCasADiSolver does not support models with Controllers.");
 
         // It is sufficient to create these containers from the original model
         // since the discrete variables added to the model with disabled
@@ -108,10 +96,14 @@ protected:
     }
 
     void addControlVariables() {
-        auto controlNames =
-                createControlNamesFromModel(m_modelBase, m_modelControlIndices);
-        for (const auto& controlName : controlNames) {
-            const auto& info = m_mocoProbRep.getControlInfo(controlName);
+
+        // Control names need to be in the order expected by the 
+        //ControlDistributor.
+        auto allControlNames = 
+                m_mocoProbRep.getControlDistributorDisabledConstraints()
+                             .getControlNamesInOrder();
+        for (const auto& controlName : allControlNames) {
+            const auto& info = m_mocoProbRep.getSolverControlInfo(controlName);
             this->add_control(controlName, convertBounds(info.getBounds()),
                     convertBounds(info.getInitialBounds()),
                     convertBounds(info.getFinalBounds()));
@@ -339,11 +331,16 @@ protected:
             // constraints. The base model never gets realized past
             // Stage::Velocity, so we don't ever need to set its controls.
             auto& osimControls =
-                    m_mocoProbRep.getDiscreteControllerDisabledConstraints()
-                            .updDiscreteControls(simTKStateDisabledConstraints);
+                    m_mocoProbRep.getControlDistributorDisabledConstraints()
+                            .updControls(simTKStateDisabledConstraints);
             for (int ic = 0; ic < controls.size(); ++ic) {
-                osimControls[m_modelControlIndices[ic]] = controls[ic];
+                osimControls[ic] = controls[ic];
             }
+            // Updating the Inputs to InputControllers via the 
+            // ControlDistributor does not mark the model controls cache as 
+            // invalid, so we must do it manually here.
+            modelDisabledConstraints.markControlsAsInvalid(
+                    simTKStateDisabledConstraints);
         }
 
         // If enabled constraints exist in the model, compute constraint forces
@@ -375,15 +372,13 @@ protected:
         // point, so that each can preserve their cache?
         this->setSimTKState(in);
 
-        const auto& discreteController =
-                m_mocoProbRep.getDiscreteControllerDisabledConstraints();
-        const auto& rawControls = discreteController.getDiscreteControls(
+        const SimTK::Vector& controls = m_mocoProbRep.getControls(
                 this->m_stateDisabledConstraints);
 
         // Compute the integrand for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
         integrand = cost.calcIntegrand(
-                {in.time, this->m_stateDisabledConstraints, rawControls});
+                {in.time, this->m_stateDisabledConstraints, controls});
     }
 
     void calc_cost(int cost_index, const tropter::CostInput<T>& in,
@@ -399,20 +394,16 @@ protected:
 
         const auto& initialState = m_mocoProbRep.updStateDisabledConstraints(0);
         const auto& finalState = m_mocoProbRep.updStateDisabledConstraints(1);
-
-        const auto& discreteController =
-                m_mocoProbRep.getDiscreteControllerDisabledConstraints();
-        const auto& initialRawControls = discreteController.getDiscreteControls(
+        const SimTK::Vector& controlsInitial = m_mocoProbRep.getControls(
                 initialState);
-        const auto& finalRawControls = discreteController.getDiscreteControls(
+        const SimTK::Vector& controlsFinal = m_mocoProbRep.getControls(
                 finalState);
 
         // Compute the cost for this cost term.
         const auto& cost = m_mocoProbRep.getCostByIndex(cost_index);
         SimTK::Vector costVector(cost.getNumOutputs());
-        cost.calcGoal({in.initial_time, initialState, initialRawControls,
-                              in.final_time, finalState, finalRawControls,
-                              in.integral},
+        cost.calcGoal({in.initial_time, initialState, controlsInitial,
+                       in.final_time, finalState, controlsFinal, in.integral},
                 costVector);
         cost_value = costVector.sum();
     }
@@ -552,15 +543,19 @@ protected:
 public:
     template <typename MocoTrajectoryType, typename tropIterateType>
     MocoTrajectoryType convertIterateTropterToMoco(
-            const tropIterateType& tropSol) const;
+            const tropIterateType& tropSol, 
+            std::vector<int> inputControlIndexes = {}) const;
 
     MocoTrajectory convertToMocoTrajectory(
-            const tropter::Iterate& tropSol) const;
+            const tropter::Iterate& tropSol,
+            std::vector<int> inputControlIndexes = {}) const;
 
-    MocoSolution convertToMocoSolution(const tropter::Solution& tropSol) const;
+    MocoSolution convertToMocoSolution(const tropter::Solution& tropSol,
+            std::vector<int> inputControlIndexes = {}) const;
 
     tropter::Iterate convertToTropterIterate(
-            const MocoTrajectory& mocoIter) const;
+            const MocoTrajectory& mocoIter, 
+            std::vector<int> inputControlIndexes = {}) const;
 };
 
 template <typename T>

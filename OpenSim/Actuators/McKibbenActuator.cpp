@@ -107,7 +107,7 @@ void McKibbenActuator::computeForce(const SimTK::State& s,
 
     double actuation = computeActuation(s);
 
-    getGeometryPath().addInEquivalentForces(s, actuation, bodyForces, generalizedForces);
+    getPath().addInEquivalentForces(s, actuation, bodyForces, generalizedForces);
 }
 //_____________________________________________________________________________
 /**

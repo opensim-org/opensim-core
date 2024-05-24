@@ -48,6 +48,7 @@ void MocoTrack::constructProperties() {
     constructProperty_apply_tracked_states_to_guess(false);
     constructProperty_minimize_control_effort(true);
     constructProperty_control_effort_weight(0.001);
+    constructProperty_controls_weight_set(MocoWeightSet());
 }
 
 MocoStudy MocoTrack::initialize() {
@@ -91,6 +92,11 @@ MocoStudy MocoTrack::initialize() {
 
         auto* effort = problem.addGoal<MocoControlGoal>("control_effort");
         effort->setWeight(get_control_effort_weight());
+
+        for (int i = 0; i < get_controls_weight_set().getSize(); ++i) {
+            const auto& weight = get_controls_weight_set().get(i);
+            effort->setWeightForControl(weight.getName(), weight.getWeight());
+        }
     }
 
     // Set the time range.
@@ -146,7 +152,6 @@ TimeSeriesTable MocoTrack::configureStateTracking(
         MocoProblem& problem, Model& model) {
 
     // Read in the states reference data and spline.
-    // TODO convert Degrees to Radians.
     TimeSeriesTable states = get_states_reference().processAndConvertToRadians(
             getDocumentDirectory(), model);
     auto stateSplines = GCVSplineSet(states, states.getColumnLabels());

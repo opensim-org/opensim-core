@@ -25,12 +25,11 @@
 
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "OpenSim/Simulation/Model/ModelComponent.h"
+#include "OpenSim/Simulation/Model/AbstractGeometryPath.h"
 #include "PathPointSet.h"
-#include <OpenSim/Simulation/Wrap/PathWrapSet.h>
-#include <OpenSim/Simulation/MomentArmSolver.h>
 
+#include <OpenSim/Simulation/MomentArmSolver.h>
+#include <OpenSim/Simulation/Wrap/PathWrapSet.h>
 
 #ifdef SWIG
     #ifdef OSIMSIMULATION_API
@@ -50,37 +49,23 @@ class WrapObject;
 //=============================================================================
 //=============================================================================
 /**
- * A base class representing a path (muscle, ligament, etc.).
+ * A concrete class representing a path (muscle, ligament, etc.) based on 
+ * geometry objects in the model (e.g., PathPoints and PathWraps).
  *
  * @author Peter Loan
- * @version 1.0
  */
-class OSIMSIMULATION_API GeometryPath : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, ModelComponent);
-    //=============================================================================
-    // OUTPUTS
-    //=============================================================================
-    OpenSim_DECLARE_OUTPUT(length, double, getLength, SimTK::Stage::Position);
-    // 
-    OpenSim_DECLARE_OUTPUT(lengthening_speed, double, getLengtheningSpeed,
-        SimTK::Stage::Velocity);
+class OSIMSIMULATION_API GeometryPath : public AbstractGeometryPath {
+OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, AbstractGeometryPath);
 
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-    OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
-        "Default appearance attributes for this GeometryPath");
-
 private:
     OpenSim_DECLARE_UNNAMED_PROPERTY(PathPointSet,
         "The set of points defining the path");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(PathWrapSet,
         "The wrap objects that are associated with this path");
-
-    // used for scaling tendon and fiber lengths
-    double _preScaleLength;
 
     // Solver used to compute moment-arms. The GeometryPath owns this object,
     // but we cannot simply use a unique_ptr because we want the pointer to be
@@ -135,24 +120,12 @@ public:
     // GET
     //--------------------------------------------------------------------------
 
-    /** If you call this prior to extendAddToSystem() it will be used to initialize
-    the color cache variable. Otherwise %GeometryPath will choose its own
-    default which varies depending on owner. **/
-    void setDefaultColor(const SimTK::Vec3& color) {
-        updProperty_Appearance().setValueIsDefault(false);
-        upd_Appearance().set_color(color); 
-    };
-    /** Returns the color that will be used to initialize the color cache
-    at the next extendAddToSystem() call. The actual color used to draw the path
-    will be taken from the cache variable, so may have changed. **/
-    const SimTK::Vec3& getDefaultColor() const { return get_Appearance().get_color(); }
-
     /** %Set the value of the color cache variable owned by this %GeometryPath
     object, in the cache of the given state. The value of this variable is used
     as the color when the path is drawn, which occurs with the state realized 
     to Stage::Dynamics. So you must call this method during realizeDynamics() or 
     earlier in order for it to have any effect. **/
-    void setColor(const SimTK::State& s, const SimTK::Vec3& color) const;
+    void setColor(const SimTK::State& s, const SimTK::Vec3& color) const override;
 
     /** Get the current value of the color cache entry owned by this
     %GeometryPath object in the given state. You can access this value any time
@@ -160,15 +133,13 @@ public:
     the default color value specified in a call to setDefaultColor() earlier,
     or it will have the default color value chosen by %GeometryPath.
     @see setDefaultColor() **/
-    SimTK::Vec3 getColor(const SimTK::State& s) const;
+    SimTK::Vec3 getColor(const SimTK::State& s) const override;
 
-    double getLength( const SimTK::State& s) const;
+    double getLength( const SimTK::State& s) const override;
     void setLength( const SimTK::State& s, double length) const;
-    double getPreScaleLength( const SimTK::State& s) const;
-    void setPreScaleLength( const SimTK::State& s, double preScaleLength);
     const Array<AbstractPathPoint*>& getCurrentPath( const SimTK::State& s) const;
 
-    double getLengtheningSpeed(const SimTK::State& s) const;
+    double getLengtheningSpeed(const SimTK::State& s) const override;
     void setLengtheningSpeed( const SimTK::State& s, double speed ) const;
 
     /** get the path as PointForceDirections directions, which can be used
@@ -186,13 +157,15 @@ public:
     void addInEquivalentForces(const SimTK::State& state,
                                const double& tension, 
                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                               SimTK::Vector& mobilityForces) const;
-
-
+                               SimTK::Vector& mobilityForces) const override;
+    
+    bool isVisualPath() const override { return true; }
+    
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    virtual double computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const;
+    double computeMomentArm(const SimTK::State& s,
+                            const Coordinate& aCoord) const override;
 
     //--------------------------------------------------------------------------
     // SCALING

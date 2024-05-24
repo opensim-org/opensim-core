@@ -279,22 +279,6 @@ getForceStorage()
         return nullptr;
 }
 
-//-----------------------------------------------------------------------------
-// STORAGE CAPACITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the capacity increments of all storage instances.
- *
- * @param aIncrement Increment by which storage capacities will be increased
- * when storage capacities run out.
- */
-void StaticOptimization::
-setStorageCapacityIncrements(int aIncrement)
-{
-    _activationStorage->setCapacityIncrement(aIncrement);
-}
-
 //=============================================================================
 // ANALYSIS
 //=============================================================================
@@ -573,9 +557,7 @@ int StaticOptimization::begin(const SimTK::State& s )
         for(size_t i=0u; i<coordinates.size(); ++i) {
             const Coordinate& coord = *coordinates[i];
             if(!coord.isConstrained(sWorkingCopy)) {
-                Array<int> inds = _statesStore->
-                    getColumnIndicesForIdentifier(coord.getName()) ;
-                _accelerationIndices.append(inds[0]);
+                _accelerationIndices.append(static_cast<int>(i));
             }
         }
 

@@ -27,6 +27,7 @@
 #include "ActuatorForceTargetFast.h"
 #include "AnalyzeTool.h"
 #include "VectorFunctionForActuators.h"
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
@@ -659,7 +660,7 @@ bool RRATool::run()
     // int nra = actSysZ.size();
     // int nrm = modelZ.size();
 
-    assert(actSysZ.size() == modelZ.size());
+    OPENSIM_ASSERT_FRMOBJ(actSysZ.size() == modelZ.size());
     actSysZ = modelZ;
 
     VectorFunctionForActuators *predictor =
@@ -1091,7 +1092,7 @@ string RRATool::
 adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Array<double> &aMAve)
 {
     // CHECK SIZE
-    assert(aFAve.getSize()==3 && aMAve.getSize()==3);
+    OPENSIM_ASSERT_FRMOBJ(aFAve.getSize()==3 && aMAve.getSize()==3);
 
     // GRAVITY
     Vec3 g = _model->getGravity();

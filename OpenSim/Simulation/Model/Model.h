@@ -237,7 +237,16 @@ public:
             calcKineticEnergy, SimTK::Stage::Position);
 
     OpenSim_DECLARE_OUTPUT(potential_energy, double,
-        calcPotentialEnergy, SimTK::Stage::Velocity);
+            calcPotentialEnergy, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(momentum, SimTK::SpatialVec,
+            calcMomentum, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(angular_momentum, SimTK::Vec3,
+            calcAngularMomentum, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(linear_momentum, SimTK::Vec3,
+            calcLinearMomentum, SimTK::Stage::Velocity);
 
 
 //=============================================================================
@@ -513,7 +522,21 @@ public:
     GeneralForceSubsystem allocated by this %Model. **/
     SimTK::GeneralForceSubsystem& updForceSubsystem() 
     {   return *_forceSubsystem; }
-
+    /** (Advanced) Get read only access to internal Simbody RigidBodyForces at Dynamics stage **/
+    const SimTK::Vector_<SimTK::SpatialVec>& getRigidBodyForces(const SimTK::State& state)
+    {
+        return getMultibodySystem().getRigidBodyForces(state, SimTK::Stage::Dynamics);
+    }
+    /** (Advanced) Get read only access to internal Simbody Mobility Forces at Dynamics stage **/
+    const SimTK::Vector& getMobilityForces(const SimTK::State& state)
+    {
+        return getMultibodySystem().getMobilityForces(state, SimTK::Stage::Dynamics);
+    }
+    /** (Advanced) Get read only access to internal Simbody Body Forces due to Gravity **/
+    const SimTK::Vector_<SimTK::SpatialVec>& getGravityBodyForces(const SimTK::State& state) const
+    {
+        return getGravityForce().getBodyForces(state);
+    }
     /**@}**/
 
     /**@name  Realize the Simbody System and State to Computational Stage
@@ -779,6 +802,13 @@ public:
      */
     void markControlsAsValid(const SimTK::State& s) const;
 
+    /**
+     * Mark controls as invalid after an update at a given state.
+     * Indicates that controls are not valid for use at the dynamics stage.
+     * @param[in]   s         System state in which the controls are updated 
+     */
+    void markControlsAsInvalid(const SimTK::State& s) const;
+
     /** 
      * Alternatively, set the controls on the model at a given state.
      * Note, this method will invalidate the dynamics of the model,
@@ -827,19 +857,90 @@ public:
     //--------------------------------------------------------------------------
     // Subsystem computations
     //--------------------------------------------------------------------------
+    /**
+     * Compute the derivatives of the generalized coordinates and speeds.
+     */
     void computeStateVariableDerivatives(const SimTK::State &s) const override;
+
+    /**
+     * Get the total mass of the model.
+     *
+     * @return the mass of the model.
+     */
     double getTotalMass(const SimTK::State &s) const;
+
+    /**
+     * Get the whole-body inertia of the model about the center of mass,
+     * expressed in the Ground frame.
+     */
     SimTK::Inertia getInertiaAboutMassCenter(const SimTK::State &s) const;
+
+    /**
+     * Return the position vector of the system mass center, measured from the
+     * Ground origin, and expressed in Ground.
+     */
     SimTK::Vec3 calcMassCenterPosition(const SimTK::State &s) const;
+
+    /**
+     * Return the velocity vector of the system mass center, measured from the
+     * Ground origin, and expressed in Ground.
+     */
     SimTK::Vec3 calcMassCenterVelocity(const SimTK::State &s) const;
+
+    /**
+     * Return the acceleration vector of the system mass center, measured from
+     * the Ground origin, and expressed in Ground.
+     */
     SimTK::Vec3 calcMassCenterAcceleration(const SimTK::State &s) const;
-    /** return the total Kinetic Energy for the underlying system.*/
+
+    /**
+     * Return the spatial momentum about the system mass center expressed in
+     * Ground.
+     */
+    SimTK::SpatialVec calcMomentum(const SimTK::State &s) const;
+
+    /**
+     * Return the angular momentum about the system mass center expressed in
+     * Ground.
+     */
+    SimTK::Vec3 calcAngularMomentum(const SimTK::State &s) const;
+
+    /**
+     * Return the linear momentum expressed in Ground.
+     */
+    SimTK::Vec3 calcLinearMomentum(const SimTK::State &s) const;
+
+    /** Return the total Kinetic Energy for the underlying system.*/
     double calcKineticEnergy(const SimTK::State &s) const {
         return getMultibodySystem().calcKineticEnergy(s);
-    }    
-    /** return the total Potential Energy for the underlying system.*/
+    }
+
+    /** Return the total Potential Energy for the underlying system.*/
     double calcPotentialEnergy(const SimTK::State &s) const {
         return getMultibodySystem().calcPotentialEnergy(s);
+    }
+
+    /** Calulate the sum of body and mobility forces in the system applied by
+     * the Force%s at the supplied indexes. 
+     * 
+     * @param[in]   state            The system SimTK::State at which to 
+     *                               calculate forces.
+     * @param[in]   forceIndexes     The indexes (SimTK::ForceIndex) of the 
+     *                               forces in the system for which to calculate 
+     *                               forces.
+     * @param[out]  bodyForces       The sum of the body forces applied by the
+     *                               forces at the supplied indexes.
+     * @param[out]  mobilityForces   The sum of the mobility forces applied by
+     *                               the forces at the supplied indexes.
+     * 
+     * @pre Requires that the system has been realized to Stage::Dynamics.
+     * */
+    void calcForceContributionsSum(const SimTK::State& state,
+            const SimTK::Array_<SimTK::ForceIndex>& forceIndexes,  
+            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+            SimTK::Vector& mobilityForces) const {
+        getForceSubsystem().calcForceContributionsSum(
+            state, forceIndexes, bodyForces, mobilityForces);
     }
 
     int getNumMuscleStates() const;
@@ -869,9 +970,17 @@ public:
         in order of the Multibody Tree and now that can be attributed to 
         corresponding generalized Coordinates of the Model. 
         Throws if the MultibodySystem is not valid. */
-    std::vector<SimTK::ReferencePtr<const Coordinate>>
+    std::vector<SimTK::ReferencePtr<const OpenSim::Coordinate>>
         getCoordinatesInMultibodyTreeOrder() const;
 
+    /** A variant of getCoordinatesInMultibodyTreeOrder that returns names for Scripting users */
+    SimTK::Array_<std::string> getCoordinateNamesInMultibodyTreeOrder() {
+        SimTK::Array_<std::string> namesArray;
+        auto coords = getCoordinatesInMultibodyTreeOrder();
+        for (int i=0; i < (int)coords.size(); ++i)
+            namesArray.push_back(coords[i]->getName());
+        return namesArray;
+    }
     /** Get a warning message if any Coordinates have a MotionType that is NOT
         consistent with its previous user-specified value that existed in 
         Model files prior to OpenSim 4.0 */

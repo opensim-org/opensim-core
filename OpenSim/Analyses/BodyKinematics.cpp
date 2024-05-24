@@ -189,7 +189,7 @@ constructDescription()
     strcat(descrip, "velocities and angular velocities, or");
     strcat(descrip, " accelerations and angular accelerations)\n");
     strcat(descrip, "of the centers of mass");
-    sprintf(tmp, " of the body segments in model %s.\n",
+    snprintf(tmp, MAXLEN, " of the body segments in model %s.\n",
         _model->getName().c_str());
     strcat(descrip, tmp);
     strcat(descrip, "\nBody segment orientations are described using");
@@ -382,24 +382,6 @@ Storage* BodyKinematics::
 getPositionStorage()
 {
     return(_pStore);
-}
-
-//-----------------------------------------------------------------------------
-// STORAGE CAPACITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the capacity increments of all storage instances.
- *
- * @param aIncrement Increment by which storage capacities will be increased
- * when storage capacities run out.
- */
-void BodyKinematics::
-setStorageCapacityIncrements(int aIncrement)
-{
-    _aStore->setCapacityIncrement(aIncrement);
-    _vStore->setCapacityIncrement(aIncrement);
-    _pStore->setCapacityIncrement(aIncrement);
 }
 
 //-----------------------------------------------------------------------------

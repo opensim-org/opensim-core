@@ -211,3 +211,18 @@ assert(dt(3, 1) == 125);
 
 pr = mp.createRep();
 assert(pr.createStateInfoNames().size() == 2);
+
+% PositionMotion
+model.initSystem();
+table = TimeSeriesTable();
+for i = 0:9
+    row = RowVector(1, i);
+    table.appendRow(i, row);
+end
+labels = StdVectorString();
+labels.add('/slider/position/value');
+table.setColumnLabels(labels);
+table.addTableMetaDataString('inDegrees', 'no');
+
+posmot = PositionMotion.createFromTable(model, table);
+assert(posmot.get_functions().getSize() == 1)

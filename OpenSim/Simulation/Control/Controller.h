@@ -23,17 +23,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//============================================================================
-// INCLUDE
-//============================================================================
-// These files contain declarations and definitions of variables and methods
-// that will be used by the Controller class.
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Common/Set.h>
 
 namespace OpenSim { 
 
-// Forward declarations of classes that are used by the controller implementation
 class Model;
 class Actuator;
 
@@ -41,13 +35,38 @@ class Actuator;
  * Controller is an abstract ModelComponent that defines the interface for   
  * an OpenSim Controller. A controller computes and sets the values of the  
  * controls for the actuators under its control.
- * The defining method of a Controller is its computeControls() method.
+ *
+ * The defining method of a Controller is its computeControls() method. All
+ * concrete controllers must implement this method.
  * @see computeControls()
  *
- * @note Controllers currently do not use the Socket mechanism to locate 
- * and connect to the Actuators that Controllers depend on. As a result,
- * for now, Controllers do not support controlling multiple actuators with 
- * the same name.
+ * Actuators can be connected to a Controller via the list Socket `actuators`.
+ * Connection can be made via the `addActuator()` convenience method or through
+ * the Socket directly:
+ *
+ * @code{.cpp}
+ * // Add an actuator to the controller.
+ * const auto& actuator = model.getComponent<Actuator>("/path/to/actuator");
+ * controller.addActuator(actuator);
+ *
+ * // Connect an actuator to the controller via the actuators Socket.
+ * controller.appendSocketConnectee_actuators(actuator);
+ * @endcode
+ *
+ * Multiple actuators can be connected to a Controller via the `setActuators()`
+ * convenience methods:
+ *
+ * @code{.cpp}
+ * // Add a Model's Set of Actuators to the controller.
+ * controller.setActuators(model.getActuators());
+ *
+ * // Add a ComponentList of Actuators to the controller.
+ * controller.setActuators(model.getComponentList<Actuator>());
+ * @endcode
+ *
+ * @note Prior to OpenSim 4.6, controlled actuators were managed via the list
+ *       Property `actuator_list`. This interface is no longer supported, all
+ *       actuators must be connected via the `actuators` list Socket.
  *
  * @author Ajay Seth
  */
@@ -55,21 +74,19 @@ class OSIMSIMULATION_API Controller : public ModelComponent {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Controller, ModelComponent);
 
 public:
-//==============================================================================
+//=============================================================================
 // PROPERTIES
-//==============================================================================
+//=============================================================================
     /** Controller is enabled (active) by default.
     NOTE: Prior to OpenSim 4.0, this property was named **isDisabled**.
           If **isDisabled** is **true**, **enabled** is **false**.
-          If **isDisabled** is **false**, **enabled** is **true**.            */
+          If **isDisabled** is **false**, **enabled** is **true**. */
     OpenSim_DECLARE_PROPERTY(enabled, bool, 
         "Flag (true or false) indicating whether or not the controller is "
         "enabled." );
 
-    OpenSim_DECLARE_LIST_PROPERTY(actuator_list, std::string,
-        "The list of model actuators that this controller will control."
-        "The keyword ALL indicates the controller will control all the "
-        "actuators in the model" );
+    OpenSim_DECLARE_LIST_SOCKET(actuators, Actuator,
+        "The list of Actuators that this controller will control.");
 
 //=============================================================================
 // METHODS
@@ -77,16 +94,17 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION AND DESTRUCTION
     //--------------------------------------------------------------------------
-public:
-
-    /** Default constructor. */
     Controller();
+    ~Controller() noexcept override;
 
-    // Uses default (compiler-generated) destructor, copy constructor and copy 
-    // assignment operator.
+    Controller(const Controller&);
+    Controller& operator=(Controller const&);
+
+    Controller(Controller&&);
+    Controller& operator=(Controller&&);
 
     //--------------------------------------------------------------------------
-    // Controller Interface
+    // CONTROLLER INTERFACE
     //--------------------------------------------------------------------------
     /** Get whether or not this controller is enabled.
      * @return true when controller is enabled.
@@ -98,14 +116,12 @@ public:
      */
     void setEnabled(bool enableFlag);
 
-    /** replace the current set of actuators with the provided set */
-    void setActuators(const Set<Actuator>& actuators );
-    /** add to the current set of actuators */
+    /** Replace the current set of actuators with the provided set. */
+    void setActuators(const Set<Actuator>& actuators);
+    void setActuators(const ComponentList<const Actuator>& actuators);
+
+    /** Add to the current set of actuators. */
     void addActuator(const Actuator& actuator);
-    /** get a const reference to the current set of const actuators */
-    const Set<const Actuator>& getActuatorSet() const;
-    /** get a writable reference to the set of const actuators for this controller */
-    Set<const Actuator>& updActuators();
 
     /** Compute the control for actuator
      *  This method defines the behavior for any concrete controller 
@@ -117,44 +133,42 @@ public:
     virtual void computeControls(const SimTK::State& s,
                                  SimTK::Vector &controls) const = 0;
 
-    int getNumControls() const {return _numControls;}
+    /** Get the number of controls this controller computes. */
+    int getNumControls() const { return _numControls; }
+
+    /** Get the number of actuators that this controller is connected to. */
+    int getNumActuators() const {
+        return static_cast<int>(
+            getSocket<Actuator>("actuators").getNumConnectees());
+    }
 
 protected:
+    /** Only a Controller can set its number of controls based on its
+     * actuators. */
+    void setNumControls(int numControls) { _numControls = numControls; }
 
-    /** Model component interface that permits the controller to be "wired" up
-       to its actuators. Subclasses can override to perform additional setup. */
-    void extendConnectToModel(Model& model) override;  
-
-    /** Model component interface that creates underlying computational components
-        in the SimTK::MultibodySystem. This includes adding states, creating 
-        measures, etc... required by the controller. */
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-
-    /** Only a Controller can set its number of controls based on its actuators */
-    void setNumControls(int numControls) {_numControls = numControls; }
-
+    // MODEL COMPONENT INTERFACE
     void updateFromXMLNode(SimTK::Xml::Element& node,
                            int versionNumber) override;
+    void extendConnectToModel(Model& model) override;
 
 private:
-    // number of controls this controller computes 
+    // The number of controls this controller computes.
     int _numControls;
 
-    // the (sub)set of Model actuators that this controller controls */ 
-    Set<const Actuator> _actuatorSet;
-
-    // construct and initialize properties
+    // Construct and initialize properties.
     void constructProperties();
 
-    //friend class ControlSet;
-    friend class ControllerSet;
+    // Used to temporarily store actuator names when reading from XML prior to
+    // XMLDocument version 40600. This is used to support backwards
+    // compatibility with models that use the old actuator_list property. The
+    // actuator names are used to find actuators in the model and connect them
+    // to the list Socket.
+    std::vector<std::string> _actuatorNamesFromXML;
 
-//=============================================================================
-};  // END of class Controller
+};  // class Controller
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // namespace OpenSim
 
 #endif // OPENSIM_CONTROLLER_H_
 

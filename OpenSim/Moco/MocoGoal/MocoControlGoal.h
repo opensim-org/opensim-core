@@ -23,10 +23,10 @@
 
 namespace OpenSim {
 
-/** Minimize the sum of the absolute value of the controls raised to a given
-exponent, integrated over the phase. The default weight for each control is
-1.0; this can be changed by calling setWeight() or editing the
-`control_weights` property in XML.
+/** Minimize the sum of the absolute value of the controls (including Input 
+controls) raised to a given exponent, integrated over the phase. The default 
+weight for each control is 1.0; this can be changed by calling 
+setWeightForControl() or editing the `control_weights` property in XML.
 The exponent must be an integer greater than or equal to 2,
 and is 2 by default.
 If conducting a predictive simulation, you likely want to set
@@ -49,6 +49,12 @@ We use the following notation:
 
 If `p > 2`, we first take the absolute value of the control; this is to properly
 handle odd exponents.
+
+If you wish to minimize all control signals except those associated with a
+user-defined controller (e.g., PrescribedController), pass 'true' to
+`setIgnoreControlledActuators()`. If you wish ignore Input controls, pass 'true' 
+to `setIgnoreInputControls()`.
+
 @ingroup mocogoal */
 class OSIMMOCO_API MocoControlGoal : public MocoGoal {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlGoal, MocoGoal);
@@ -70,6 +76,7 @@ public:
     /// that are associated with actuators for which appliesForce is True are
     /// included in the cost function. Weights set here take precedence over
     /// weights specified with a regular expression.
+    /// @note Use this to also set weights for Input controls.
     void setWeightForControl(
             const std::string& controlName, const double& weight);
 
@@ -79,6 +86,7 @@ public:
     /// function multiple times.
     /// If a control matches multiple patterns, the weight associated with the
     /// last pattern is used.
+    /// @note Use this to also set weights for Input control patterns.
     void setWeightForControlPattern(
             const std::string& pattern, const double& weight);
 
@@ -86,11 +94,23 @@ public:
     void setExponent(int exponent) { set_exponent(exponent); }
     double getExponent() const { return get_exponent(); }
 
-    /** Set if the goal should be divided by the displacement of the system's
-    center of mass over the phase. */
-    void setDivideByDisplacement(bool tf) { set_divide_by_displacement(tf); }
-    bool getDivideByDisplacement() const {
-        return get_divide_by_displacement();
+    /// If true, do not minimize controls associated with user-defined
+    /// controllers.
+    void setIgnoreControlledActuators(bool v) {
+        set_ignore_controlled_actuators(v);
+    }
+    /// @copydoc setIgnoreControlledActuators(bool v)
+    bool getIgnoreControlledActuators() const {
+        return get_ignore_controlled_actuators();
+    }
+
+    /// If true, do not minimize Input controls (default: false).
+    void setIgnoreInputControls(bool v) {
+        set_ignore_input_controls(v);
+    }
+    /// @copydoc setIgnoreInputControls(bool v)
+    bool getIgnoreInputControls() const {
+        return get_ignore_input_controls();
     }
 
 protected:
@@ -108,16 +128,21 @@ private:
             "the weight for unspecified controls is 1.");
     OpenSim_DECLARE_PROPERTY(control_weights_pattern, MocoWeightSet,
             "Set control weights for all controls matching a regular "
-            "expression.")
-    OpenSim_DECLARE_PROPERTY(
-            exponent, int, "The exponent on controls; greater than or equal to "
-                           "2 (default: 2).");
-    OpenSim_DECLARE_PROPERTY(divide_by_displacement, bool,
-            "Divide by the model's displacement over the phase (default: "
-            "false)");
+            "expression.");
+    OpenSim_DECLARE_PROPERTY(exponent, int,
+            "The exponent on controls; greater than or equal to 2 "
+            "(default: 2).");
+    OpenSim_DECLARE_PROPERTY(ignore_controlled_actuators, bool,
+            "If true, do not minimize controls belonging to actuators "
+            "controlled by user-defined controllers (default: false).");
+    OpenSim_DECLARE_PROPERTY(ignore_input_controls, bool,
+            "If true, do not minimize Input controls (default: false).");
     mutable std::vector<double> m_weights;
     mutable std::vector<int> m_controlIndices;
     mutable std::vector<std::string> m_controlNames;
+    mutable std::vector<double> m_inputControlWeights;
+    mutable std::vector<int> m_inputControlIndices;
+    mutable std::vector<std::string> m_inputControlNames;
     mutable std::function<double(const double&)> m_power_function;
 };
 
