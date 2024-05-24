@@ -28,7 +28,7 @@
 #include <docopt.h>
 #include "parse_arguments.h"
 
-static const char HELP_RUN_TOOL[] = 
+static const char HELP_RUN_TOOL[] =
 R"(Run a tool (e.g., Inverse Kinematics) from an XML setup file.
 
 Usage:
@@ -42,13 +42,13 @@ Options:
 Description:
   The Tool to run is detected from the setup file you provide. Supported tools
   include the following:
-  
+
             Scale
             Inverse Kinematics           (IK)
             Inverse Dynamics             (ID)
             Residual Reduction Algorithm (RRA)
             Computed Muscle Control      (CMC)
-            Forward                      
+            Forward
             Analyze
             MocoStudy
 

@@ -16,11 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#define CATCH_CONFIG_MAIN
-#include "Testing.h"
-using Catch::Contains;
 #include <simbody/internal/Constraint.h>
-
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/ModelOperators.h>
@@ -32,6 +28,12 @@ using Catch::Contains;
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/osimSimulation.h>
+
+#include <catch2/catch_all.hpp>
+#include "Testing.h"
+
+using Catch::Matchers::ContainsSubstring;
+using Catch::Approx;
 
 using namespace OpenSim;
 using SimTK::State;
@@ -467,8 +469,7 @@ MocoTrajectory runForwardSimulation(
     controller->setName("prescribed_controller");
     for (int i = 0; i < actuNames.size(); ++i) {
         const auto control = solution.getControl(actuNames[i]);
-        auto* controlFunction =
-                new GCVSpline(5, time.nrow(), &time[0], &control[0]);
+        GCVSpline controlFunction(5, time.nrow(), &time[0], &control[0]);
         const auto& actu = model.getComponent<Actuator>(actuNames[i]);
         controller->addActuator(actu);
         controller->prescribeControlForActuator(
@@ -988,6 +989,31 @@ TEMPLATE_TEST_CASE("DoublePendulumEqualControl", "",
     MocoStudy mocoDeserialize(setup_fname);
     solutionDeserialized = mocoDeserialize.solve();
     SimTK_TEST(solution.isNumericallyEqual(solutionDeserialized));
+}
+
+/// Test that a problem that fails with path constraints does not return a zero
+/// time vector.
+TEMPLATE_TEST_CASE("FailWithPathConstraints", "",
+        MocoCasADiSolver, MocoTropterSolver) {
+    OpenSim::Object::registerType(EqualControlConstraint());
+    MocoStudy study;
+    study.setName("path_constraint_fail");
+    MocoProblem& mp = study.updProblem();
+    auto model = createDoublePendulumModel();
+    model->finalizeConnections();
+    mp.setModelAsCopy(*model);
+    auto* equalControlConstraint =
+            mp.addPathConstraint<EqualControlConstraint>();
+    MocoConstraintInfo cInfo;
+    cInfo.setBounds(std::vector<MocoBounds>(1, {0, 0}));
+    equalControlConstraint->setConstraintInfo(cInfo);
+    mp.setTimeBounds(0, 1);
+    mp.addGoal<MocoControlGoal>();
+    auto& ms = study.initSolver<TestType>();
+    ms.set_optim_max_iterations(1);
+    ms.set_num_mesh_intervals(5);
+    ms.set_verbosity(2);
+    MocoSolution solution = study.solve().unseal();
 }
 
 // This problem is a point mass welded to ground, with gravity. We are
@@ -1556,7 +1582,7 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
         constr->addControlPath("/tau0");
         constr->setLowerBound(violateLower);
         CHECK_THROWS_WITH(study.solve(),
-                Contains("must be less than or equal to the minimum"));
+                ContainsSubstring("must be less than or equal to the minimum"));
         constr->clearLowerBound();
         GCVSpline violateUpper;
         violateUpper.setDegree(5);
@@ -1569,7 +1595,8 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
         violateUpper.addPoint(49.99999, .0319);
         constr->setUpperBound(violateUpper);
         CHECK_THROWS_WITH(study.solve(),
-                Contains("must be greater than or equal to the maximum"));
+                ContainsSubstring(
+                    "must be greater than or equal to the maximum"));
     }
 
     SECTION("Can omit both bounds.") {

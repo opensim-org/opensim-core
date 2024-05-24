@@ -20,6 +20,7 @@
 
 #include <OpenSim/Moco/MocoUtilities.h>
 
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 
@@ -35,14 +36,14 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
                     "") { // reference file provided
         TimeSeriesTableVec3 angularVelocityTableToUse;
         // Should not be able to supply any two simultaneously.
-        assert(get_states_reference().empty());
+        OPENSIM_ASSERT_FRMOBJ(get_states_reference().empty());
         if (get_angular_velocity_reference_file() != "") { // ang. vel. ref file
-            assert(m_angular_velocity_table.getNumColumns() == 0);
+            OPENSIM_ASSERT_FRMOBJ(m_angular_velocity_table.getNumColumns() == 0);
             angularVelocityTableToUse = TimeSeriesTableVec3(
                     get_angular_velocity_reference_file());
 
         } else { // ang. vel. table
-            assert(get_angular_velocity_reference_file() == "");
+            OPENSIM_ASSERT_FRMOBJ(get_angular_velocity_reference_file() == "");
             angularVelocityTableToUse = m_angular_velocity_table;
         }
 
@@ -72,8 +73,8 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
         }
 
     } else { // states reference file or states reference provided
-        assert(get_angular_velocity_reference_file() != "");
-        assert(m_angular_velocity_table.getNumColumns() == 0);
+        OPENSIM_ASSERT_FRMOBJ(get_angular_velocity_reference_file() != "");
+        OPENSIM_ASSERT_FRMOBJ(m_angular_velocity_table.getNumColumns() == 0);
         // TODO: set relativeToDirectory properly.
         TimeSeriesTable statesTableToUse =
                 get_states_reference().processAndConvertToRadians(model);

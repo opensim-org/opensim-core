@@ -2,7 +2,7 @@ set(KIT JavaJNI)
 set(UKIT JAVAJNI)
 
 # For building C++ wrapper.
-find_package(JNI 1.7 REQUIRED)
+find_package(JNI 1.8 REQUIRED)
 
 # Avoid excessive compiler warnings. We set these COMPILE_OPTIONS in the root
 # CMakeLists.txt.

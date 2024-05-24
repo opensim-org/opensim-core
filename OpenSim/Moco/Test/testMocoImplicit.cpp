@@ -15,15 +15,15 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#define CATCH_CONFIG_MAIN
-#include "Testing.h"
 
-#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Moco/Components/AccelerationMotion.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Common/LinearFunction.h>
+
+#include <catch2/catch_all.hpp>
+#include "Testing.h"
 
 using namespace OpenSim;
 using namespace Catch;
@@ -454,8 +454,8 @@ TEST_CASE("Implicit auxiliary dynamics") {
         problem.setTimeBounds(0, 1);
         problem.setStateInfo("/implicit_auxdyn/foo", {0, 3}, 1.0);
         study.initTropterSolver();
-        CHECK_THROWS(study.solve(),
-                Catch::Contains("MocoTropterSolver does not support problems "
-                                "with implicit auxiliary dynamics."));
+        CHECK_THROWS(study.solve(), Catch::Matchers::ContainsSubstring(
+                "MocoTropterSolver does not support problems "
+                "with implicit auxiliary dynamics."));
     }
 }

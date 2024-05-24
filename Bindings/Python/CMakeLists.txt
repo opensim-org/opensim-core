@@ -72,7 +72,7 @@ macro(OpenSimAddPythonModule)
     # We run swig once to get dependencies and then again to actually generate
     # the wrappers. This variable holds the parts of the swig command that
     # are shared between both invocations.
-    set(_swig_common_args -c++ -python -py3
+    set(_swig_common_args -c++ -python
             -I${OpenSim_SOURCE_DIR}
             -I${OpenSim_SOURCE_DIR}/Bindings/
             -I${Simbody_INCLUDE_DIR}
@@ -256,11 +256,6 @@ OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/setup.py" ".")
 OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" opensim)
 
 OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/report.py" opensim)
-# for Python 3.8+/Windows we use a special script
-# setup_win_python38.py to set additional dll directory in __init__.py on client machine
-if (WIN32)
-    OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/setup_win_python38.py" ".")
-endif()
 
 # Test files. If you require more test resource files, list them here.
 foreach(test_file
@@ -402,3 +397,13 @@ install(DIRECTORY ../Java/Matlab/examples/Moco/exampleSquatToStand
         PATTERN "*.m" EXCLUDE)
 install(DIRECTORY OpenSenseExample
         DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}")
+
+# Install the Geometry folder to the Moco examples.
+install(DIRECTORY ../Java/Matlab/OpenSenseExample/Geometry/
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco/example3DWalking/Geometry/")
+install(DIRECTORY ../Java/Matlab/OpenSenseExample/Geometry/
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco/exampleEMGTracking/Geometry/")
+install(DIRECTORY ../Java/Matlab/OpenSenseExample/Geometry/
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco/exampleSquatToStand/Geometry/")
+install(DIRECTORY ../Java/Matlab/OpenSenseExample/Geometry/
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco/exampleSquatToStand/exampleIMUTracking/Geometry/")

@@ -284,8 +284,8 @@ void testExcitationUpdatesWithManager()
     const Set<Muscle> &muscleSet = arm.getMuscles();
     PrescribedController* controller = new PrescribedController();
     controller->addActuator(muscleSet.get(0));
-    Constant* fn = new Constant(0);
-    controller->prescribeControlForActuator(0, fn);
+    controller->prescribeControlForActuator(
+        muscleSet.get(0).getAbsolutePathString(), Constant(0));
     arm.addController(controller);
 
     SimTK::State& state = arm.initSystem();

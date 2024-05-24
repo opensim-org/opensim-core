@@ -165,14 +165,24 @@ classdef osimC3D < matlab.mixin.SetGet
                 % and moment columns will have 'p' and 'm' prefixes,
                 % respectively.
                 if ~startsWith(char(labels.get(i)),'f')
-                   columnData = self.forces.updDependentColumnAtIndex(i);
-                   for u = 0 : nRows - 1
-                     % Divide by 1000
-                     columnData.set(u,columnData.get(u).scalarDivideEq(1000));
-                   end
+                    columnData = self.forces.updDependentColumnAtIndex(i);
+                    % Divide by 1000
+                    columnData.multiplyAssign(.001);
                 end
             end
-           disp('Point and Torque values convert from mm and Nmm to m and Nm, respectively')
+            % Convert markers to meters only if in millimeters
+            markersMetaDataUnits = self.markers.getTableMetaDataString("Units");
+            if (strcmpi(markersMetaDataUnits, "mm"))
+                nRows  = self.markers.getNumRows();
+                for i = 0 : self.markers.getNumColumns - 1
+                    columnData = self.markers.updDependentColumnAtIndex(i);
+                    % Divide by 1000
+                    columnData.multiplyAssign(.001);           
+                end
+                % Fix units in table/trc file to correspond to data
+                self.markers.addTableMetaDataString("Units", "M");
+            end
+            disp('Point and Torque values convert from mm and Nmm to m and Nm, respectively')
         end
         function writeTRC(self,varargin)
             % Write marker data to trc file.

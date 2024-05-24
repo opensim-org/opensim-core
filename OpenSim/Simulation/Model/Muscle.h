@@ -458,11 +458,24 @@ private:
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
+    /** Calculate muscle's power (W). */
+    double calcMusclePower(const SimTK::State& s) const;
+
+protected:
+    /** Calculate muscle's stiffness.
+
+        Muscle stiffness is defined as the partial derivative of muscle force
+        with respect to changes in muscle length. This quantity can be computed
+        by noting that the tendon and the fiber are in series, with the fiber
+        at a pennation angle. Thus
+
+         Kmuscle =   (Kfiber_along_tendon * Ktendon)
+                    /(Kfiber_along_tendon + Ktendon) */
+    virtual double calcMuscleStiffness(const SimTK::State& s) const;
 
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
 
     /** The assumed fixed muscle-width from which the fiber pennation angle can
         be calculated. */
@@ -708,14 +721,12 @@ protected:
             fiberStiffness              force/length         N/m    [7]   
             fiberStiffnessAlongTendon   force/length         N/m    [8]
             tendonStiffness             force/length         N/m    [9]
-            muscleStiffness             force/length         N/m    [10]
                                         
             fiberActivePower            force*velocity       W (N*m/s)
             fiberPassivePower           force*velocity       W (N*m/s)
             tendonPower                 force*velocity       W (N*m/s)
-            musclePower                 force*velocity       W (N*m/s)
 
-            userDefinedDynamicsData     NA                   NA     [11]
+            userDefinedDynamicsData     NA                   NA     [10]
 
         [1] This is a quantity that ranges between 0 and 1 that dictates how
             on or activated a muscle is. This term may or may not have its own
@@ -751,15 +762,7 @@ protected:
         [9] tendonStiffness is defined as the partial derivative of tendon
             force with respect to tendon length
 
-        [10] muscleStiffness is defined as the partial derivative of muscle force
-            with respect to changes in muscle length. This quantity can usually
-            be computed by noting that the tendon and the fiber are in series,
-            with the fiber at a pennation angle. Thus
-
-            Kmuscle =   (Kfiber_along_tendon * Ktendon)
-                       /(Kfiber_along_tendon + Ktendon) 
-
-        [11] This vector is left for the muscle modeler to populate with any
+        [10] This vector is left for the muscle modeler to populate with any
              computationally expensive quantities that might be of interest 
              after dynamics calculations are completed but maybe of use
              in computing muscle derivatives or reporting values of interest.
@@ -780,12 +783,10 @@ protected:
         double fiberStiffness;          // force/length         N/m
         double fiberStiffnessAlongTendon;//force/length         N/m
         double tendonStiffness;         // force/length         N/m
-        double muscleStiffness;         // force/length         N/m
                                         //
         double fiberActivePower;        // force*velocity       W
         double fiberPassivePower;       // force*velocity       W
         double tendonPower;             // force*velocity       W
-        double musclePower;             // force*velocity       W
 
         SimTK::Vector userDefinedDynamicsExtras; //NA          NA
 
@@ -801,11 +802,9 @@ protected:
             fiberStiffness(SimTK::NaN),
             fiberStiffnessAlongTendon(SimTK::NaN),
             tendonStiffness(SimTK::NaN),
-            muscleStiffness(SimTK::NaN),
             fiberActivePower(SimTK::NaN),
             fiberPassivePower(SimTK::NaN),
             tendonPower(SimTK::NaN),
-            musclePower(SimTK::NaN),
             userDefinedDynamicsExtras(0, SimTK::NaN){};
         friend std::ostream& operator<<(std::ostream& o, 
             const MuscleDynamicsInfo& mdi) {

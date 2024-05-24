@@ -368,6 +368,11 @@ private:
     friend Output<T>& Output<T>::operator=(const Output&);
 #endif
 };
+} // end of namespace OpenSim
+
+// below: macro definitions (care: these must be defined such that they
+// can be expanded in classes that are outside of the OpenSim
+// namespace: see issue #3468)
 
 // TODO consider using std::reference_wrapper<T> as type for _output_##oname,
 // since it is copyable.
@@ -502,7 +507,5 @@ private:
 /// @}
 //=============================================================================
 //=============================================================================
-
-} // end of namespace OpenSim
 
 #endif  // OPENSIM_COMPONENT_OUTPUT_H_

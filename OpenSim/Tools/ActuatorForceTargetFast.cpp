@@ -71,7 +71,7 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
     int ny = _controller->getModel().getNumStateVariables();
     int nq = _controller->getModel().getNumCoordinates();
     int nu = _controller->getModel().getNumSpeeds();
-    int na = _controller->getActuatorSet().getSize();
+    int na = _controller->getNumActuators();
 
     _y.setSize(ny);
     _dydt.setSize(ny);
@@ -93,9 +93,9 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
 
     // COMPUTE ACTUATOR AREAS
     Array<double> f(1.0,na);
-    const Set<const Actuator>& fSet = _controller->getActuatorSet();
-    for(int i=0,j=0;i<fSet.getSize();i++) {
-        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
+    const auto& socket = _controller->getSocket<Actuator>("actuators");
+    for(int i = 0, j = 0; i < na; i++) {
+        auto act = dynamic_cast<const ScalarActuator*>(&socket.getConnectee(i));
         auto musc = dynamic_cast<const Muscle *>(act);
         if(musc)
             _recipAreaSquared[j] = f[j]/musc->getMaxIsometricForce();
@@ -117,21 +117,22 @@ prepareToOptimize(SimTK::State& s, double *x)
     // Keep around a "copy" of the state so we can use it in objective function 
     // in cases where we're tracking states
     _saveState = s;
+    int na = _controller->getNumActuators();
+
 #ifdef USE_LINEAR_CONSTRAINT_MATRIX
-    int nf = _controller->getActuatorSet().getSize();
     int nc = getNumConstraints();
 
-    _constraintMatrix.resize(nc,nf);
+    _constraintMatrix.resize(nc,na);
     _constraintVector.resize(nc);
 
-    Vector f(nf), c(nc);
+    Vector f(na), c(nc);
 
     // Build linear constraint matrix and constant constraint vector
     f = 0;
 
     computeConstraintVector(s, f, _constraintVector);
 
-    for(int j=0; j<nf; j++) {
+    for (int j = 0; j < na; j++) {
         f[j] = 1;
         computeConstraintVector(s, f, c);
         _constraintMatrix(j) = (c - _constraintVector);
@@ -146,13 +147,11 @@ prepareToOptimize(SimTK::State& s, double *x)
     getController()->getModel().getMultibodySystem().realize( tempState, SimTK::Stage::Dynamics );
 
     // COMPUTE MAX ISOMETRIC FORCE
-    const Set<const Actuator>& fSet = _controller->getActuatorSet();
-    
     double fOpt = SimTK::NaN;
-
     getController()->getModel().getMultibodySystem().realize(tempState, SimTK::Stage::Dynamics );
-    for(int i=0 ; i<fSet.getSize(); ++i) {
-        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
+    const auto& socket = _controller->getSocket<Actuator>("actuators");
+    for(int i = 0; i < na; ++i) {
+        auto act = dynamic_cast<const ScalarActuator*>(&socket.getConnectee(i));
         auto mus = dynamic_cast<const Muscle*>(act);
         if(mus==NULL) {
             fOpt = act->getOptimalForce();
@@ -194,11 +193,11 @@ prepareToOptimize(SimTK::State& s, double *x)
 int ActuatorForceTargetFast::
 objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 {
-    const Set<const Actuator>& fSet = _controller->getActuatorSet();
     double p = 0.0;
     const CMC_TaskSet& tset=_controller->getTaskSet();
-    for(int i=0,j=0;i<fSet.getSize();i++) {
-        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
+    const auto& socket = _controller->getSocket<Actuator>("actuators");
+    for(int i = 0, j = 0; i < _controller->getNumActuators(); i++) {
+        auto act = dynamic_cast<const ScalarActuator*>(&socket.getConnectee(i));
         auto mus = dynamic_cast<const Muscle*>(act);
         if(mus) {
             p +=  aF[j] * aF[j] * _recipOptForceSquared[j];
@@ -235,10 +234,10 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 int ActuatorForceTargetFast::
 gradientFunc(const Vector &x, const bool new_coefficients, Vector &gradient) const
 {
-    const Set<const Actuator>& fSet = _controller->getActuatorSet();
     // double p = 0.0;
-    for(int i=0,index=0;i<fSet.getSize();i++) {
-        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
+    const auto& socket = _controller->getSocket<Actuator>("actuators");
+    for (int i = 0, index = 0; i < _controller->getNumActuators(); i++) {
+        auto act = dynamic_cast<const ScalarActuator*>(&socket.getConnectee(i));
         auto mus = dynamic_cast<const Muscle*>(act);
         if(mus) {
             gradient[index] =  2.0 * x[index] * _recipOptForceSquared[index];
@@ -296,16 +295,15 @@ constraintFunc(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vecto
 void ActuatorForceTargetFast::
 computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
 {
-    CMC_TaskSet&  taskSet = _controller->updTaskSet();
-    const Set<const Actuator>& fSet = _controller->getActuatorSet();
-
-    int nf = fSet.getSize();
+    CMC_TaskSet& taskSet = _controller->updTaskSet();
+    int na = _controller->getNumActuators();
+    const auto& socket = _controller->getSocket<Actuator>("actuators");
 
     // Now override the actuator forces with computed active force
     // (from static optimization) but also include the passive force
     // contribution of muscles when applying forces to the model
-    for(int i=0;i<nf;i++) {
-        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
+    for(int i = 0; i < na; i++) {
+        auto act = dynamic_cast<const ScalarActuator*>(&socket.getConnectee(i));
         act->overrideActuation(s, true);
         act->setOverrideActuation(s, x[i]);
     }
@@ -321,8 +319,8 @@ computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
         c[i]=w[i]*(aDes[i]-a[i]);
 
     // reset the actuator control 
-    for(int i=0;i<fSet.getSize();i++) {
-        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
+    for(int i = 0; i < na; i++) {
+        auto act = dynamic_cast<const ScalarActuator*>(&socket.getConnectee(i));
         act->overrideActuation(s, false);
     }
 

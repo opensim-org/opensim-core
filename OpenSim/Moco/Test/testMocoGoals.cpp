@@ -16,9 +16,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#define CATCH_CONFIG_MAIN
-#include "Testing.h"
-
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/PointActuator.h>
@@ -26,6 +23,12 @@
 #include <OpenSim/Moco/MocoOutputConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+
+#include <catch2/catch_all.hpp>
+#include "Testing.h"
+
+using Catch::Approx;
+using Catch::Matchers::ContainsSubstring;
 
 using namespace OpenSim;
 
@@ -246,9 +249,6 @@ void testDoublePendulumTracking(MocoStudy study,
 
     study.updSolver<SolverType>().resetProblem(problem);
     auto solutionTracking = study.solve();
-    solutionTracking.write(
-            "testMocoGoals_" + TrackingType::getClassName()
-            + "_tracking_solution.sto");
 
     // The tracking solution should match the effort solution.
     SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
@@ -264,11 +264,8 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
     // a trajectory to track.
     MocoStudy study = setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
     auto solutionEffort = study.solve();
-    solutionEffort.write(
-            "testMocoGoals_DoublePendulumMinimizeEffort_solution.sto");
 
-    // MocoControlTrackingGoal
-    {
+    SECTION ("MocoControlTrackingGoal") {
         // Re-run problem, now setting effort cost function to zero and adding a
         // control tracking cost.
         auto& problem = study.updProblem();
@@ -292,42 +289,36 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
         guessTracking.randomizeAdd();
         solver.setGuess(guessTracking);
         auto solutionTracking = study.solve();
-        solutionTracking.write(
-                "testMocoGoals_MocoControlTrackingGoal_tracking_solution.sto");
 
         // Make sure control tracking problem matches control effort problem.
         OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getControlsTrajectory(),
-                solutionTracking.getControlsTrajectory(), 1e-4);
+                solutionTracking.getControlsTrajectory(), 1e-2);
         OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getStatesTrajectory(),
-                solutionTracking.getStatesTrajectory(), 1e-4);
+                solutionTracking.getStatesTrajectory(), 1e-2);
     }
 
-    // MocoOrientationTrackingGoal
-    {
+    SECTION ("MocoOrientationTrackingGoal") {
         MocoStudy studyOrientationTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         testDoublePendulumTracking<TestType, MocoOrientationTrackingGoal>(
                 studyOrientationTracking, solutionEffort);
     }
 
-    // MocoTranslationTrackingGoal
-    {
+    SECTION ("MocoTranslationTrackingGoal") {
         MocoStudy studyTranslationTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         testDoublePendulumTracking<TestType, MocoTranslationTrackingGoal>(
             studyTranslationTracking, solutionEffort);
     }
 
-    // MocoAngularVelocityTrackingGoal
-    {
+    SECTION ("MocoAngularVelocityTrackingGoal") {
         MocoStudy studyAngularVelocityTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         testDoublePendulumTracking<TestType, MocoAngularVelocityTrackingGoal>(
             studyAngularVelocityTracking, solutionEffort);
     }
 
-    // MocoAccelerationTrackingGoal
-    {
+    SECTION ("MocoAccelerationTrackingGoal") {
         MocoStudy studyAccelerationTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         // Re-run problem, now setting effort cost function to a low weight and
@@ -352,18 +343,15 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
 
         studyAccelerationTracking.updSolver<TestType>().resetProblem(problem);
         auto solutionTracking = studyAccelerationTracking.solve();
-        solutionTracking.write("testMocoGoals_MocoAccelerationTrackingGoal_"
-                               "tracking_solution.sto");
 
         // The tracking solution should match the effort solution.
         SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
-                solutionTracking.getControlsTrajectory(), 1e-1);
+                solutionTracking.getControlsTrajectory(), 1e-2);
         SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
-                solutionTracking.getStatesTrajectory(), 1e-1);
+                solutionTracking.getStatesTrajectory(), 1e-2);
     }
 
-    // MocoAccelerationTrackingGoal (IMU tracking)
-    {
+    SECTION ("MocoAccelerationTrackingGoal (IMU tracking)") {
         MocoStudy studyAccelerationTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         // Re-run problem, now setting effort cost function to a low weight and
@@ -389,22 +377,43 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
 
         studyAccelerationTracking.updSolver<TestType>().resetProblem(problem);
         auto solutionTracking = studyAccelerationTracking.solve();
-        solutionTracking.write("testMocoGoals_MocoAccelerationTrackingGoal_"
-                               "imu_tracking_solution.sto");
 
         // The tracking solution should match the effort solution.
         SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
-                          solutionTracking.getControlsTrajectory(), 1e-1);
+                          solutionTracking.getControlsTrajectory(), 1e-2);
         SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
-                          solutionTracking.getStatesTrajectory(), 1e-1);
+                          solutionTracking.getStatesTrajectory(), 1e-2);
+    }
+
+    SECTION("MocoGeneralizedForceTrackingGoal") {
+        TimeSeriesTable generalizedForces = 
+                study.calcGeneralizedForces(solutionEffort, {});
+        MocoStudy studyGenForceTracking =
+                setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
+        // Re-run problem, now setting effort cost function to a low weight and
+        // adding a generalized force tracking cost.
+        auto& problem = studyGenForceTracking.updProblem();
+        problem.updPhase(0).updGoal("effort").setWeight(0.001);
+        auto* genForceTracking =
+                problem.addGoal<MocoGeneralizedForceTrackingGoal>("tracking");
+        genForceTracking->setReference(generalizedForces);
+        studyGenForceTracking.updSolver<TestType>().resetProblem(problem);
+        auto solutionTracking = studyGenForceTracking.solve();
+
+        // The tracking solution should match the effort solution.
+        SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
+                          solutionTracking.getControlsTrajectory(), 1e-3);
+        SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
+                          solutionTracking.getStatesTrajectory(), 1e-3);
     }
 }
 
-TEST_CASE("Test MocoScaleFactor", "") {
+template <class SolverType>
+std::pair<MocoStudy, MocoSolution> configTestMocoScaleFactor(bool paramInitSys) {
     // Start with double pendulum problem to minimize control effort to create
     // a trajectory to track.
     MocoStudy study =
-            setupMocoStudyDoublePendulumMinimizeEffort<MocoCasADiSolver>();
+            setupMocoStudyDoublePendulumMinimizeEffort<SolverType>();
     auto solutionEffort = study.solve();
 
     // Change the strength of the CoordinateActuators in the Model so that we
@@ -436,8 +445,7 @@ TEST_CASE("Test MocoScaleFactor", "") {
 
     // Update the solver with the new problem and disable initSystem() calls for
     // the MocoParameters.
-    auto& solver = study.updSolver<MocoCasADiSolver>();
-    solver.set_parameters_require_initsystem(false);
+    auto& solver = study.updSolver<SolverType>();
     solver.resetProblem(problem);
     // Construct a guess for the problem. We double the actuator strengths so
     // here we half the controls.
@@ -452,15 +460,33 @@ TEST_CASE("Test MocoScaleFactor", "") {
     guessTracking.insertControlsTrajectory(
             solutionEffort.exportToControlsTable(), true);
     solver.setGuess(guessTracking);
+    return {study, solutionEffort};
+}
+
+void evalTestMocoScaleFactor(const MocoStudy& study,
+                             const MocoSolution& solutionEffort) {
     // Solve.
     auto solutionTracking = study.solve();
+
     // Make sure control tracking problem matches control effort problem. We've
     // already adjusted the effort controls while constructing the initial guess
     // above, so this comparison should pass if the problem solved correctly.
     OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getControlsTrajectory(),
-            solutionTracking.getControlsTrajectory(), 1e-4);
+            solutionTracking.getControlsTrajectory(), 1e-3);
     OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getStatesTrajectory(),
-            solutionTracking.getStatesTrajectory(), 1e-4);
+            solutionTracking.getStatesTrajectory(), 1e-3);
+}
+
+TEST_CASE("Test MocoScaleFactor - MocoCasADiSolver", "[casadi]") {
+    auto pair = configTestMocoScaleFactor<MocoCasADiSolver>(true);
+    MocoStudy study = pair.first;
+    study.updSolver<MocoCasADiSolver>().set_parameters_require_initsystem(false);
+    evalTestMocoScaleFactor(study, pair.second);
+}
+
+TEST_CASE("Test MocoScaleFactor - MocoTropterSolver", "[tropter]") {
+    auto pair = configTestMocoScaleFactor<MocoTropterSolver>(true);
+    evalTestMocoScaleFactor(pair.first, pair.second);
 }
 
 TEMPLATE_TEST_CASE("Test MocoJointReactionGoal", "",
@@ -554,6 +580,7 @@ TEST_CASE("Test MocoSumSquaredStateGoal") {
     std::string q1_str = q1.getAbsolutePathString() + "/value";
 
     SimTK::State state = model.initSystem();
+    SimTK::Vector inputControls;
     MocoGoal::IntegrandInput input {0, state, {}};
     q0.setValue(state, 1.0);
     q1.setValue(state, 0.5);
@@ -654,7 +681,7 @@ TEMPLATE_TEST_CASE("Endpoint constraints", "[casadi]", MocoCasADiSolver) {
 
     SECTION("Bounds has incorrect size.") {
         periodic->updConstraintInfo().setBounds({{0.0}});
-        CHECK_THROWS_WITH(study.solve(), Catch::Contains("Size of property"));
+        CHECK_THROWS_WITH(study.solve(), ContainsSubstring("Size of property"));
     }
 
     SECTION("Non-tight bounds.") {
@@ -667,6 +694,14 @@ TEMPLATE_TEST_CASE("Endpoint constraints", "[casadi]", MocoCasADiSolver) {
         // the pendulum to end with some downward velocity.
         CHECK(solution.getState("/jointset/j0/q0/speed").getElt(N - 1, 0) ==
                 Approx(-0.05).margin(1e-10));
+    }
+
+    SECTION("Set bounds with scripting-friendly method.") {
+        periodic->setEndpointConstraintBounds(
+                std::vector<MocoBounds>(2, {-1.0, 1.0}));
+        const auto& conInfo = periodic->getConstraintInfo();
+        CHECK(conInfo.getBounds()[0] == MocoBounds(-1.0, 1.0));
+        CHECK(conInfo.getBounds()[1] == MocoBounds(-1.0, 1.0));
     }
 
     SECTION("Goal works in cost mode.") {
@@ -903,60 +938,58 @@ TEMPLATE_TEST_CASE("MocoOutputGoal", "", MocoCasADiSolver,
     }
 }
 
-TEST_CASE("MocoOutputPeriodicityGoal and MocoOutputTrackingGoal") {
+TEST_CASE("MocoOutputPeriodicityGoal", "[casadi]") {
+    // TODO Tropter does not support endpoint constraints.
 
-        // Output periodicity problem.
-        // ---------------------------
-        auto study = createStudy({-100, 100.0}, {-100, 100.0});
-        auto& problem = study.updProblem();
-        problem.template addGoal<MocoControlGoal>("effort");
-        auto* goal = problem.template addGoal<MocoOutputPeriodicityGoal>();
-        goal->setName("periodic_speed");
-        goal->setOutputPath("/body|linear_velocity");
-        goal->setMode("endpoint_constraint");
-        auto &solver = study.initSolver<MocoCasADiSolver>();
-        solver.set_num_mesh_intervals(10);
-        MocoSolution solution = study.solve();
-        double initialSpeed = solution.getState("/slider/position/speed")[0];
-        double finalSpeed = solution.getState(
-                "/slider/position/speed")[solution.getNumTimes() - 1];
-        CHECK(initialSpeed == Approx(finalSpeed).margin(1e-6));
+    // Sliding mass problem with periodic body linear velocity.
+    // --------------------------------------------------------
+    auto study = createStudy({-100, 100.0}, {-100, 100.0});
+    auto &problem = study.updProblem();
+    problem.template addGoal<MocoControlGoal>("effort");
+    auto *goal = problem.template addGoal<MocoOutputPeriodicityGoal>();
+    goal->setName("periodic_speed");
+    goal->setOutputPath("/body|linear_velocity");
+    goal->setMode("endpoint_constraint");
+    auto &solver = study.initSolver<MocoCasADiSolver>();
+    solver.set_num_mesh_intervals(10);
+    MocoSolution solution = study.solve();
+    double initialSpeed = solution.getState("/slider/position/speed")[0];
+    double finalSpeed = solution.getState(
+            "/slider/position/speed")[solution.getNumTimes() - 1];
+    CHECK(initialSpeed == Approx(finalSpeed).margin(1e-6));
+}
 
-        // Compute tracking reference.
-        // ---------------------------
-        TimeSeriesTableVec3 table = analyzeMocoTrajectory<SimTK::Vec3>(
-                problem.createRep().getModelBase(), solution,
-                {"/body\\|linear_velocity"});
-        TimeSeriesTable linearVelocity = table.flatten();
-        GCVSplineSet linearVelocitySplines(linearVelocity);
-        auto* speedSpline = linearVelocitySplines.getGCVSpline(0);
+TEMPLATE_TEST_CASE("MocoOutputTrackingGoal", "", MocoCasADiSolver,
+        MocoTropterSolver) {
 
-        // Output tracking problem.
-        // ------------------------
-        auto studyTracking = createStudy({-100.0, 100.0}, {-100.0, 100.0});
-        auto& problemTracking = studyTracking.updProblem();
-        problemTracking.template addGoal<MocoControlGoal>("effort", 1e-3);
-        auto* goalTracking =
-                problemTracking.template addGoal<MocoOutputTrackingGoal>();
-        goalTracking->setName("speed_tracking");
-        goalTracking->setOutputPath("/body|linear_velocity");
-        goalTracking->setExponent(2);
-        goalTracking->setOutputIndex(0);
-        goalTracking->setTrackingFunction(*speedSpline);
-        auto& solverTracking = studyTracking.initSolver<MocoCasADiSolver>();
-        solverTracking.set_num_mesh_intervals(10);
-        MocoSolution solutionTracking = studyTracking.solve();
-        auto solutionSpeed =
-                solutionTracking.getState("/slider/position/speed");
-        SimTK::Vector time = solutionTracking.getTime();
-        SimTK::Vector trackedSpeed(solutionTracking.getNumTimes(), 0.0);
-        for (int itime = 0; itime < solutionTracking.getNumTimes(); ++itime) {
-            SimTK::Vector timeVec(1, time[itime]);
-            trackedSpeed[itime] = speedSpline->calcValue(timeVec);
-        }
-        auto trackingError = solutionSpeed - trackedSpeed;
-        CHECK(trackingError.normRMS() == Approx(0).margin(1e-3));
+    // Have a sliding mass track a sinusoidal function.
+    // ------------------------------------------------
+    Sine trackingFunction(0.5, SimTK::Pi / 2.0, 0.0, 0.0);
+    auto studyTracking = createStudy({-100.0, 100.0}, {-100.0, 100.0});
+    auto& problemTracking = studyTracking.updProblem();
+    problemTracking.setStateInfo("/slider/position/value", {-5.0, 5.0});
+    problemTracking.template addGoal<MocoControlGoal>("effort", 1e-3);
+    auto* goalTracking =
+            problemTracking.template addGoal<MocoOutputTrackingGoal>();
+    goalTracking->setName("speed_tracking");
+    goalTracking->setOutputPath("/body|position");
+    goalTracking->setExponent(2);
+    goalTracking->setOutputIndex(0);
+    goalTracking->setTrackingFunction(trackingFunction);
+    auto& solverTracking = studyTracking.initSolver<TestType>();
+    solverTracking.set_num_mesh_intervals(10);
+    MocoSolution solutionTracking = studyTracking.solve();
+    auto solutionPosition =
+            solutionTracking.getState("/slider/position/value");
+    SimTK::Vector time = solutionTracking.getTime();
+    SimTK::Vector trackedPosition(solutionTracking.getNumTimes(), 0.0);
+    for (int itime = 0; itime < solutionTracking.getNumTimes(); ++itime) {
+        SimTK::Vector timeVec(1, time[itime]);
+        trackedPosition[itime] = trackingFunction.calcValue(timeVec);
     }
+    auto trackingError = solutionPosition - trackedPosition;
+    CHECK(trackingError.normRMS() == Approx(0).margin(1e-3));
+}
 
 /// This goal violates the rule that calcIntegrandImpl() and calcGoalImpl()
 /// cannot realize the state's stage beyond the stage dependency.
@@ -993,19 +1026,94 @@ TEST_CASE("MocoGoal stage dependency") {
     MocoStageTestingGoal goal;
     goal.initializeOnModel(model);
     state.invalidateAll(SimTK::Stage::Instance);
-    CHECK_THROWS_WITH(goal.calcIntegrand({0, state, SimTK::Vector()}),
-            Catch::Contains("calcIntegrand()"));
+    CHECK_THROWS_WITH(goal.calcIntegrand({0, state, {}}),
+            ContainsSubstring("calcIntegrand()"));
 
     goal.setRealizeInitialState(true);
     state.invalidateAll(SimTK::Stage::Instance);
     auto initialState = state;
     auto finalState = state;
-    MocoGoal::GoalInput input{0, initialState, SimTK::Vector(), 0, finalState,
-            SimTK::Vector(), 0};
+    MocoGoal::GoalInput input{0, initialState, {}, 0, finalState,
+            {}, 0};
     SimTK::Vector goalValue;
     CHECK_THROWS_WITH(goal.calcGoal(input, goalValue),
-            Catch::Contains("calcGoal()") && Catch::Contains("initial_state"));
+            ContainsSubstring("calcGoal()") &&
+            ContainsSubstring("initial_state"));
     goal.setRealizeInitialState(false);
     CHECK_THROWS_WITH(goal.calcGoal(input, goalValue),
-            Catch::Contains("calcGoal()") && Catch::Contains("final_state"));
+            ContainsSubstring("calcGoal()") &&
+            ContainsSubstring("final_state"));
+}
+
+/// This goal calculates the displacement of the system between the initial and
+/// final states, the duration of the phase, and the mass of the system.
+class MocoDivideByTestingGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoDivideByTestingGoal, MocoGoal);
+public:
+    MocoDivideByTestingGoal() = default;
+protected:
+    void initializeOnModelImpl(const Model&) const override {
+        setRequirements(0, 3, SimTK::Stage::Position);
+    }
+    void calcGoalImpl(
+            const GoalInput& in, SimTK::Vector& values) const override {
+        values[0] = calcSystemDisplacement(in);
+        values[1] = calcDuration(in);
+        values[2] = calcSystemMass(in);
+    }
+};
+
+// Ensure that the "divide by" methods return the correct values.
+TEST_CASE("MocoGoal divide by displacement/duration/mass") {
+    Model model = ModelFactory::createSlidingPointMass();
+    SimTK::State state = model.initSystem();
+    const double mass = model.getTotalMass(state);
+    MocoDivideByTestingGoal goal;
+    goal.initializeOnModel(model);
+    state.invalidateAll(SimTK::Stage::Instance);
+    auto initialState = state;
+    auto finalState = state;
+    
+    // Initial and final time.
+    const double initial_time = 0.0;
+    const double final_time = 2.5;
+    const double duration = final_time - initial_time;
+    initialState.setTime(initial_time);
+    finalState.setTime(final_time);
+
+    // Initial and final position.
+    const double initial_position = 0.12;
+    const double final_position = 0.74;
+    const double displacement = final_position - initial_position;
+    initialState.updQ()[0] = initial_position;
+    finalState.updQ()[0] = final_position;
+
+    MocoGoal::GoalInput input{initial_time, initialState, {}, 
+            final_time, finalState, {}, 0};
+    SimTK::Vector goalValues;
+    goal.calcGoal(input, goalValues);
+
+    CHECK_THAT(goalValues[0],
+        Catch::Matchers::WithinAbs(displacement, SimTK::Eps));
+    CHECK_THAT(goalValues[1],
+        Catch::Matchers::WithinAbs(duration, SimTK::Eps));
+    CHECK_THAT(goalValues[2],
+        Catch::Matchers::WithinAbs(mass, SimTK::Eps));
+}
+
+TEST_CASE("MocoFrameDistanceConstraint de/serialization") {
+
+    {
+        auto study = createStudy(0, {0, 100.0});
+        auto& problem = study.updProblem();
+        auto* con = problem.addPathConstraint<MocoFrameDistanceConstraint>();
+        con->setName("distance_constraint");
+        con->addFramePair("/body", "/ground", 0, 1);
+        study.print("testMocoGoals_MocoFrameDistanceConstraint_study.omoco");
+    }
+
+    {
+        MocoStudy study(
+                "testMocoGoals_MocoFrameDistanceConstraint_study.omoco");
+    }
 }

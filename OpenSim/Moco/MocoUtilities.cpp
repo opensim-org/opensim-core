@@ -20,6 +20,12 @@
 
 #include "MocoProblem.h"
 #include "MocoTrajectory.h"
+#include "OpenSim/Common/ComponentPath.h"
+#include "OpenSim/Common/SignalGenerator.h"
+#include "OpenSim/Simulation/Control/InputController.h"
+#include "OpenSim/Simulation/InverseDynamicsSolver.h"
+#include "OpenSim/Simulation/Model/ExternalLoads.h"
+#include "OpenSim/Common/STOFileAdapter.h"
 #include <regex>
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
@@ -53,22 +59,20 @@ std::unique_ptr<Function> createFunction<GCVSpline>(
 } // anonymous namespace
 
 void OpenSim::prescribeControlsToModel(
-        const MocoTrajectory& trajectory, Model& model, std::string functionType) {
+        const MocoTrajectory& trajectory, Model& model, 
+        std::string functionType) {
     // Get actuator names.
     model.initSystem();
-    OpenSim::Array<std::string> actuNames;
-    for (const auto& actu : model.getComponentList<Actuator>()) {
-        actuNames.append(actu.getAbsolutePathString());
-    }
+    const auto& controlNames = trajectory.getControlNames();
 
-    // Add prescribed controllers to actuators in the model, where the control
-    // functions are splined versions of the actuator controls from the OCP
-    // solution.
+    // Add a PrescribedController to control each actuator in the model, where 
+    // the control functions are splined versions of the actuator controls from 
+    // the OCP solution.
     const SimTK::Vector& time = trajectory.getTime();
     auto* controller = new PrescribedController();
     controller->setName("prescribed_controller");
-    for (int i = 0; i < actuNames.size(); ++i) {
-        const auto control = trajectory.getControl(actuNames[i]);
+    for (int i = 0; i < static_cast<int>(controlNames.size()); ++i) {
+        const auto control = trajectory.getControl(controlNames[i]);
         std::unique_ptr<Function> function;
         if (functionType == "GCVSpline") {
             function = createFunction<GCVSpline>(time, control);
@@ -78,12 +82,41 @@ void OpenSim::prescribeControlsToModel(
             OPENSIM_THROW(
                     Exception, "Unexpected function type {}.", functionType);
         }
-        const auto& actu = model.getComponent<Actuator>(actuNames[i]);
+        const auto& actu = model.getComponent<Actuator>(controlNames[i]);
         controller->addActuator(actu);
         controller->prescribeControlForActuator(
-                actu.getName(), function.release());
+                actu.getName(), *function);
     }
     model.addController(controller);
+
+    // Add SignalGenerators to the model to control the Input controls 
+    // associated with any InputControllers.
+    for (auto& controller : model.updComponentList<InputController>()) {
+        const auto& labels = controller.getInputControlLabels();
+        for (const auto& label : labels) {
+            std::string inputControlName = fmt::format("{}/{}", 
+                    controller.getAbsolutePathString(), label);
+
+            const auto inputControl = 
+                    trajectory.getInputControl(inputControlName);
+            std::unique_ptr<Function> function;
+            if (functionType == "GCVSpline") {
+                function = createFunction<GCVSpline>(time, inputControl);
+            } else if (functionType == "PiecewiseLinearFunction") {
+                function = createFunction<PiecewiseLinearFunction>(
+                        time, inputControl);
+            } else {
+                OPENSIM_THROW(Exception, 
+                        "Unexpected function type {}.", functionType);
+            }
+            auto* signal = new SignalGenerator();
+            signal->setName(label);
+            signal->set_function(*function);
+            model.addComponent(signal);
+            controller.connectInput_controls(signal->getOutput("signal"));
+        }
+    }
+    model.finalizeConnections();
 }
 
 MocoTrajectory OpenSim::simulateTrajectoryWithTimeStepping(
@@ -280,41 +313,64 @@ TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
         const std::vector<std::string>& forcePathsLeftFoot) {
     model.initSystem();
     TimeSeriesTableVec3 externalForcesTable;
-    int count = 0;
     for (const auto& state : trajectory) {
-        model.realizeVelocity(state);
-        SimTK::Vec3 forcesRight(0);
-        SimTK::Vec3 torquesRight(0);
+        model.realizeDynamics(state);
+        SimTK::Vec3 sphereForcesRight(0);
+        SimTK::Vec3 sphereTorquesRight(0);
+        SimTK::Vec3 halfSpaceForcesRight(0);
+        SimTK::Vec3 halfSpaceTorquesRight(0);
         // Loop through all Forces of the right side.
         for (const auto& smoothForce : forcePathsRightFoot) {
             Array<double> forceValues =
                     model.getComponent<Force>(smoothForce).getRecordValues(state);
-            forcesRight += SimTK::Vec3(forceValues[0], forceValues[1],
+            sphereForcesRight += SimTK::Vec3(forceValues[0], forceValues[1],
                     forceValues[2]);
-            torquesRight += SimTK::Vec3(forceValues[3], forceValues[4],
+            sphereTorquesRight += SimTK::Vec3(forceValues[3], forceValues[4],
                     forceValues[5]);
+            halfSpaceForcesRight += SimTK::Vec3(forceValues[6], forceValues[7],
+                    forceValues[8]);
+            halfSpaceTorquesRight += SimTK::Vec3(forceValues[9], forceValues[10],
+                    forceValues[11]);
         }
-        SimTK::Vec3 forcesLeft(0);
-        SimTK::Vec3 torquesLeft(0);
+        SimTK::Vec3 sphereForcesLeft(0);
+        SimTK::Vec3 sphereTorquesLeft(0);
+        SimTK::Vec3 halfSpaceForcesLeft(0);
+        SimTK::Vec3 halfSpaceTorquesLeft(0);
         // Loop through all Forces of the left side.
         for (const auto& smoothForce : forcePathsLeftFoot) {
             Array<double> forceValues =
                     model.getComponent<Force>(smoothForce).getRecordValues(state);
-            forcesLeft += SimTK::Vec3(forceValues[0], forceValues[1],
+            sphereForcesLeft += SimTK::Vec3(forceValues[0], forceValues[1],
                     forceValues[2]);
-            torquesLeft += SimTK::Vec3(forceValues[3], forceValues[4],
+            sphereTorquesLeft += SimTK::Vec3(forceValues[3], forceValues[4],
                     forceValues[5]);
+            halfSpaceForcesLeft += SimTK::Vec3(forceValues[6], forceValues[7],
+                    forceValues[8]);
+            halfSpaceTorquesLeft += SimTK::Vec3(forceValues[9], forceValues[10],
+                    forceValues[11]);
         }
+
+        // Compute centers of pressure for both feet. We need to use the force
+        // and torque information from the half space to compute the correct
+        // locations.
+        // TODO: Support contact plane normals in any direction.
+        SimTK::Vec3 copRight(0);
+        copRight(0) = halfSpaceTorquesRight(2) / halfSpaceForcesRight(1);
+        copRight(2) = -halfSpaceTorquesRight(0) / halfSpaceForcesRight(1);
+
+        SimTK::Vec3 copLeft(0);
+        copLeft(0) = halfSpaceTorquesLeft(2) / halfSpaceForcesLeft(1);
+        copLeft(2) = -halfSpaceTorquesLeft(0) / halfSpaceForcesLeft(1);
+
         // Append row to table.
         SimTK::RowVector_<SimTK::Vec3> row(6);
-        row(0) = forcesRight;
-        row(1) = SimTK::Vec3(0);
-        row(2) = forcesLeft;
-        row(3) = SimTK::Vec3(0);
-        row(4) = torquesRight;
-        row(5) = torquesLeft;
+        row(0) = sphereForcesRight;
+        row(1) = copRight;
+        row(2) = sphereForcesLeft;
+        row(3) = copLeft;
+        row(4) = sphereTorquesRight;
+        row(5) = sphereTorquesLeft;
         externalForcesTable.appendRow(state.getTime(), row);
-        ++count;
     }
     // Create table.
     std::vector<std::string> labels{"ground_force_r_v", "ground_force_r_p",
@@ -334,4 +390,108 @@ TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
     StatesTrajectory statesTraj = trajectory.exportToStatesTrajectory(model);
     return createExternalLoadsTableForGait(std::move(model), statesTraj,
             forcePathsRightFoot, forcePathsLeftFoot);
+}
+
+TimeSeriesTable OpenSim::calcGeneralizedForces(Model model,
+        const MocoTrajectory& trajectory,
+        const std::vector<std::string>& forcePaths) {
+
+    // Get the coordinates in multibody tree order, which is the order that the
+    // inverse dynamics operator expects.
+    model.initSystem();
+    const auto& coordinates = model.getCoordinatesInMultibodyTreeOrder();
+
+    // Compute the "known" udots from the trajectory.
+    StatesTrajectory statesTraj = trajectory.exportToStatesTrajectory(model);
+    TimeSeriesTable accelerationsTable =
+            analyzeMocoTrajectory<double>(model, trajectory, {".*acceleration"});
+    SimTK::Matrix udots(static_cast<int>(statesTraj.getSize()), 
+            static_cast<int>(model.getNumCoordinates()));
+    for (int j = 0; j < static_cast<int>(coordinates.size()); ++j) {
+        const auto& coordinate = coordinates[j];
+        udots.updCol(j) = accelerationsTable.getDependentColumn(
+                fmt::format("{}|acceleration",
+                            coordinate->getAbsolutePathString()));
+    }
+
+    // Get the multipliers from the trajectory. The inverse dynamics operator
+    // will use these to apply the constraint forces to the model.
+    TimeSeriesTable multipliersTable = trajectory.exportToMultipliersTable();    
+
+    // Get the system indexes for specified forces.
+    std::regex regex;
+    SimTK::Array_<SimTK::ForceIndex> forceIndexes;
+    for (const auto& forcePath : forcePaths) {
+        regex = std::regex(forcePath);
+        for (const auto& force : model.getComponentList<Force>()) {
+            if (std::regex_match(force.getAbsolutePathString(), regex)) {
+                auto it = std::find(forceIndexes.begin(), forceIndexes.end(),
+                        force.getForceIndex());
+                OPENSIM_THROW_IF(it != forceIndexes.end(), Exception,
+                    "Expected unique force paths, but force at path " 
+                    "'{}' was specified multiple times (possibly due to "
+                    "specifying the full path and a regex pattern).", 
+                    force.getAbsolutePathString());
+            
+                forceIndexes.push_back(force.getForceIndex());
+            }
+        }
+    }
+
+    // Add in the gravitational force index.
+    const SimTK::Force::Gravity& gravity = model.getGravityForce();
+    forceIndexes.push_back(gravity.getForceIndex());    
+
+    // Compute the generalized forces.
+    const auto& matter = model.getMatterSubsystem();
+    const auto& forceSubsystem = model.getForceSubsystem();
+    SimTK::Vector appliedMobilityForces(matter.getNumMobilities());
+    SimTK::Vector_<SimTK::SpatialVec> appliedBodyForces(matter.getNumBodies());
+    SimTK::Vector generalizedForces(model.getNumCoordinates());
+
+    TimeSeriesTable generalizedForcesTable;
+    for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
+        const auto& state = statesTraj[i];
+        generalizedForces.setToZero();
+
+        model.realizeDynamics(state);
+        appliedMobilityForces.setToZero();
+        appliedBodyForces.setToZero();
+        model.calcForceContributionsSum(state, forceIndexes, 
+                appliedBodyForces, appliedMobilityForces);
+
+        const auto& udot = ~udots.row(i);
+        const auto& multipliers = multipliersTable.getRowAtIndex(i);
+        matter.calcResidualForce(state, appliedMobilityForces, 
+                appliedBodyForces, udot, ~multipliers, generalizedForces);
+
+        generalizedForcesTable.appendRow(state.getTime(), ~generalizedForces);
+    }
+
+    // Set column labels.
+    std::vector<std::string> labels;
+    labels.reserve(coordinates.size());
+    for (const auto& coordinate : coordinates) {
+        std::string label = coordinate->getName();
+        if (coordinate->getMotionType() == 
+                Coordinate::MotionType::Rotational) {
+            label += "_moment";
+        } else if (coordinate->getMotionType() == 
+                Coordinate::MotionType::Translational) {
+            label += "_force";
+        } else if (coordinate->getMotionType() == 
+                Coordinate::MotionType::Coupled) {
+            label += "_force";
+        } else {
+            OPENSIM_THROW(Exception,
+                    "Expected coordinate '{}' to have Coordinate::MotionType "
+                    "of Translational, Rotational, or Coupled, but it is "
+                    "undefined.",
+                    coordinate->getName());
+        }
+        labels.push_back(label);
+    }
+    generalizedForcesTable.setColumnLabels(labels);
+
+    return generalizedForcesTable;
 }

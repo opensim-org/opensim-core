@@ -19,6 +19,7 @@
 #include "MocoStudyFactory.h"
 
 #include "MocoProblem.h"
+#include <SimTKcommon/Scalar.h>
 
 #include <OpenSim/Actuators/ModelFactory.h>
 
@@ -47,6 +48,11 @@ MocoStudy MocoStudyFactory::createLinearTangentSteeringStudy(
                     get_acceleration() * cos(angle), mobilityForces);
             applyGeneralizedForce(state, coordY,
                     get_acceleration() * sin(angle), mobilityForces);
+        }
+
+        double getSpeed(const SimTK::State& state) const override
+        {
+            return SimTK::NaN;
         }
     };
 

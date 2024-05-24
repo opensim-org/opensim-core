@@ -18,6 +18,7 @@
 
 #include "MocoCasADiSolver.h"
 
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Moco/MocoUtilities.h>
 
 #ifdef OPENSIM_WITH_CASADI
@@ -78,12 +79,16 @@ MocoTrajectory MocoCasADiSolver::createGuess(const std::string& type) const {
     auto casProblem = createCasOCProblem();
     auto casSolver = createCasOCSolver(*casProblem);
 
+    std::vector<int> inputControlIndexes = 
+            getProblemRep().getInputControlIndexes();
     if (type == "bounds") {
         return convertToMocoTrajectory(
-                casSolver->createInitialGuessFromBounds());
+                casSolver->createInitialGuessFromBounds(), 
+                inputControlIndexes);
     } else if (type == "random") {
         return convertToMocoTrajectory(
-                casSolver->createRandomIterateWithinBounds());
+                casSolver->createRandomIterateWithinBounds(),
+                inputControlIndexes);
     } else {
         OPENSIM_THROW(Exception, "Internal error.");
     }
@@ -129,7 +134,7 @@ const MocoTrajectory& MocoCasADiSolver::getGuess() const {
         if (get_guess_file() != "" && m_guessFromFile.empty()) {
             // The API should make it impossible for both guessFromFile and
             // guessFromAPI to be non-empty.
-            assert(m_guessFromAPI.empty());
+            OPENSIM_ASSERT_FRMOBJ(m_guessFromAPI.empty());
             // No need to load from file again if we've already loaded it.
             MocoTrajectory guessFromFile(get_guess_file());
             checkGuess(guessFromFile);
@@ -192,22 +197,28 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     Dict solverOptions;
     checkPropertyValueIsInSet(getProperty_optim_solver(), {"ipopt", "snopt"});
     checkPropertyValueIsInSet(getProperty_transcription_scheme(),
-            {"trapezoidal", "hermite-simpson"});
+            {"trapezoidal", "hermite-simpson", "legendre-gauss-1",
+             "legendre-gauss-2", "legendre-gauss-3", "legendre-gauss-4",
+             "legendre-gauss-5", "legendre-gauss-6", "legendre-gauss-7",
+             "legendre-gauss-8", "legendre-gauss-9", "legendre-gauss-radau-1",
+             "legendre-gauss-radau-2", "legendre-gauss-radau-3",
+             "legendre-gauss-radau-4", "legendre-gauss-radau-5",
+             "legendre-gauss-radau-6", "legendre-gauss-radau-7",
+             "legendre-gauss-radau-8", "legendre-gauss-radau-9"});
     OPENSIM_THROW_IF(casProblem.getNumKinematicConstraintEquations() != 0 &&
                              get_transcription_scheme() == "trapezoidal",
             OpenSim::Exception,
             "Kinematic constraints not supported with "
             "trapezoidal transcription.");
-    // Enforcing constraint derivatives is only supported when Hermite-Simpson
-    // is set as the transcription scheme.
+    // Enforcing constraint derivatives is not supported with trapezoidal
+    // transcription.
     if (casProblem.getNumKinematicConstraintEquations() != 0) {
-        OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
+        OPENSIM_THROW_IF(get_transcription_scheme() == "trapezoidal" &&
                                  get_enforce_constraint_derivatives(),
                 Exception,
-                "If enforcing derivatives of model kinematic "
-                "constraints, then the property 'transcription_scheme' "
-                "must be set to 'hermite-simpson'. "
-                "Currently, it is set to '{}'.",
+                "The current transcription scheme is '{}', but enforcing "
+                "kinematic constraint derivatives is not supported with "
+                "trapezoidal transcription.",
                 get_transcription_scheme());
     }
 
@@ -357,12 +368,14 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         log_info("Number of threads: {}", casProblem->getJarSize());
     }
 
+    std::vector<int> inputControlIndexes = 
+            getProblemRep().getInputControlIndexes();
     MocoTrajectory guess = getGuess();
     CasOC::Iterate casGuess;
     if (guess.empty()) {
         casGuess = casSolver->createInitialGuessFromBounds();
     } else {
-        casGuess = convertToCasOCIterate(guess);
+        casGuess = convertToCasOCIterate(guess, inputControlIndexes);
     }
 
     // Temporarily disable printing of negative muscle force warnings so the
@@ -377,8 +390,8 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     }
     OpenSim::Logger::setLevel(origLoggerLevel);
 
-    MocoSolution mocoSolution =
-            convertToMocoTrajectory<MocoSolution>(casSolution);
+    MocoSolution mocoSolution = convertToMocoTrajectory<MocoSolution>(
+            casSolution, inputControlIndexes);
 
     // If enforcing model constraints and not minimizing Lagrange multipliers,
     // check the rank of the constraint Jacobian and if rank-deficient, print
@@ -386,43 +399,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     if (getProblemRep().getNumKinematicConstraintEquations() &&
             !get_enforce_constraint_derivatives() &&
             !get_minimize_lagrange_multipliers()) {
-        const auto& model = getProblemRep().getModelBase();
-        const auto& matter = model.getMatterSubsystem();
-        TimeSeriesTable states = mocoSolution.exportToStatesTable();
-        // TODO update when we support multiple phases.
-        auto statesTraj =
-                StatesTrajectory::createFromStatesTable(model, states);
-        SimTK::Matrix G;
-        SimTK::FactorQTZ G_qtz;
-        bool isJacobianFullRank = true;
-        int rank;
-        for (const auto& s : statesTraj) {
-            // Jacobian is at most velocity-dependent.
-            model.realizeVelocity(s);
-            matter.calcG(s, G);
-            G_qtz.factor<double>(G);
-            if (G_qtz.getRank() < G.nrow()) {
-                isJacobianFullRank = false;
-                rank = G_qtz.getRank();
-                break;
-            }
-        }
-
-        if (!isJacobianFullRank) {
-            const std::string dashes(52, '-');
-            log_warn(dashes);
-            log_warn("Rank-deficient constraint Jacobian detected.");
-            log_warn(dashes);
-            log_warn("The model constraint Jacobian has {} row(s) but is only "
-                     "rank {}. ", G.nrow(), rank);
-            log_warn("Try removing redundant constraints from the model or "
-                     "enable");
-            log_warn("minimization of Lagrange multipliers by utilizing the "
-                     "solver ");
-            log_warn("properties 'minimize_lagrange_multipliers' and");
-            log_warn("'lagrange_multiplier_weight'.");
-            log_warn(dashes);
-        }
+        checkConstraintJacobianRank(mocoSolution);
     }
 
     const long long elapsed = stopwatch.getElapsedTimeInNs();

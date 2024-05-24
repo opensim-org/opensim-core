@@ -305,6 +305,11 @@ public:
     'normFiberVelocity'. */
     double calcValue(double normFiberVelocity) const;
 
+    /** Evaluates the force-velocity curve value and derivative at a normalized
+    fiber velocity of 'normFiberVelocity'. */
+    SmoothSegmentedFunction::ValueAndDerivative calcValueAndDerivative(
+        double normFiberVelocity) const;
+
     /** Calculates the derivative of the force-velocity multiplier with respect
     to the normalized fiber velocity.
     @param normFiberVelocity

@@ -22,24 +22,16 @@
 
 #include "Lepton.h"
 
+#include <catch2/catch_all.hpp>
+
 using namespace std;
 
-#define ASSERT(cond) {if (!(cond)) throw exception();}
-
-int main() {
-    try {
-        double value = Lepton::Parser::parse("sqrt(9)-1").evaluate();
-        ASSERT(fabs(value-2.) < 1E-7);
-        map<string, double> variables;
-        variables.insert(pair<string, double>("x", 9.0));
-        value = Lepton::Parser::parse("sqrt(x)-1").evaluate(variables);
-        ASSERT(fabs(value-2.) < 1E-7);
-        Lepton::Parser::parse("state.muscle1.activation^2");
-    }
-    catch (...) {
-        //cout << "Failed" << endl;
-        return 1;
-    }
-    //cout << "Done" << endl;
-    return 0;
+TEST_CASE("Test Lepton", "[Lepton]") {
+    double value = Lepton::Parser::parse("sqrt(9)-1").evaluate();
+    CHECK(fabs(value-2.) < 1E-7);
+    map<string, double> variables;
+    variables.insert(pair<string, double>("x", 9.0));
+    value = Lepton::Parser::parse("sqrt(x)-1").evaluate(variables);
+    CHECK(fabs(value-2.) < 1E-7);
+    CHECK_NOTHROW(Lepton::Parser::parse("state.muscle1.activation^2"));
 }

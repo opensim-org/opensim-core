@@ -46,12 +46,3 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 %}
 };
 %enddef
-
-// https://github.com/swig/swig/blob/master/Lib/python/std_auto_ptr.i
-%define opensim_unique_ptr(TYPE)
-%template() std::unique_ptr<TYPE>;
-%newobject std::unique_ptr<TYPE>::release;
-%typemap(out) std::unique_ptr<TYPE> %{
-%set_output(SWIG_NewPointerObj($1.release(), $descriptor(TYPE *), SWIG_POINTER_OWN | %newpointer_flags));
-%}
-%enddef

@@ -19,7 +19,9 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimActuatorsDLL.h"
+#include <OpenSim/Simulation/Model/FunctionBasedPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Actuators/ModelProcessor.h>
 
 namespace OpenSim {
 
@@ -41,10 +43,11 @@ public:
     /// This is a convenience for `createNLinkPendulum(2)`.
     static Model createDoublePendulum() { return createNLinkPendulum(2); }
     /// This model contains:
-    /// - 1 body: mass 1.0 kg, `/bodyset/body`.
+    /// - 1 body: mass 1.0 kg, `/body`.
     /// - 1 joint: SliderJoint along x axis, `/jointset/slider`, with
-    ///            coordinate `/jointset/slider/position`.
-    /// - 1 actuator: CoordinateActuator, controls [-10, 10], `/actuator`.
+    ///            coordinate `/slider/position`.
+    /// - 1 actuator: CoordinateActuator, controls [-10, 10],
+    ///              `/forceset/actuator`.
     /// Gravity is default; that is, (0, -g, 0).
     static Model createSlidingPointMass();
     /// This model contains:
@@ -60,7 +63,7 @@ public:
     /// @name Modify a Model
     /// @{
 
-    /// Replace muscles in a model with a PathActuator of the same GeometryPath,
+    /// Replace muscles in a model with a PathActuator of the same path,
     /// optimal force, and min/max control defaults.
     /// @note This only replaces muscles within the model's ForceSet.
     static void replaceMusclesWithPathActuators(Model& model);
@@ -89,7 +92,14 @@ public:
     static void createReserveActuators(Model& model, double optimalForce,
             double bound = SimTK::NaN,
             bool skipCoordinatesWithExistingActuators = true);
-
+    
+    /// Replace the paths of the forces in the model with the provided Set of
+    /// FunctionBasedPath%s. The name of each FunctionBasedPath should match the
+    /// component path (i.e., '/forceset/soleus_r') of the corresponding Force
+    /// in the model. The Force objects in the model must have a property named
+    /// 'path' that stores an object derived from AbstractGeometryPath.
+    static void replacePathsWithFunctionBasedPaths(Model& model, 
+            const Set<FunctionBasedPath>& functionBasedPaths);
 };
 
 } // namespace OpenSim

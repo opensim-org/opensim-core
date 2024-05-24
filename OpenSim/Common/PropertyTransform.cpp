@@ -30,6 +30,7 @@
 //============================================================================
 #include "PropertyTransform.h"
 
+#include "Assertion.h"
 
 
 
@@ -64,7 +65,7 @@ PropertyTransform(const string &aName,
 PropertyDblArray(aName, aArray)
 {
     setType(Transform);
-    assert(aArray.getSize()==6);
+    OPENSIM_ASSERT(aArray.getSize()==6);
     _transform.updR().setRotationToBodyFixedXYZ(SimTK::Vec3::getAs(&aArray[0]));
     _transform.updP() = SimTK::Vec3::getAs(&aArray[3]);
     setAllowableListSize(6);
@@ -177,7 +178,7 @@ setValue(const SimTK::Transform &aTransform)
 void PropertyTransform::
 setValue(int aSize,const double aArray[])
 {
-    assert(aSize==6);
+    OPENSIM_ASSERT(aSize==6);
     PropertyDblArray::setValue(aSize, aArray);
     _transform.updR().setRotationToBodyFixedXYZ(SimTK::Vec3::getAs(&aArray[0]));
     _transform.updP() = SimTK::Vec3::getAs(&aArray[3]);
@@ -228,7 +229,7 @@ toString() const
     char pad[256];
     double rawData[6];
     getRotationsAndTranslationsAsArray6(rawData);
-    sprintf(pad, "%g %g %g %g %g %g", rawData[0], rawData[1], rawData[2], rawData[3], rawData[4], rawData[5]);
+    snprintf(pad, 256, "%g %g %g %g %g %g", rawData[0], rawData[1], rawData[2], rawData[3], rawData[4], rawData[5]);
     str += string(pad);
     str += ")";
     return str;

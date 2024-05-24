@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim: MocoUtilities.h                                                   *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoTrajectory.h"
+#include "OpenSim/Common/Exception.h"
 #include "osimMocoDLL.h"
 #include <condition_variable>
 #include <regex>
@@ -61,13 +62,29 @@ class MocoProblem;
 ///
 /// @note Parameters and Lagrange multipliers in the MocoTrajectory are **not**
 ///       applied to the model.
+///
+/// @note If the MocoTrajectory was generated from a MocoStudy with 
+///       Controller%s in the model, first call 
+///       MocoTrajectory::generateControlsFromModelControllers() to populate the
+///       trajectory with the correct model controls.
 /// @ingroup mocoutil
 template <typename T>
 TimeSeriesTable_<T> analyzeMocoTrajectory(
         Model model, const MocoTrajectory& trajectory,
         const std::vector<std::string>& outputPaths) {
     const TimeSeriesTable statesTable = trajectory.exportToStatesTable();
+
     const TimeSeriesTable controlsTable = trajectory.exportToControlsTable();
+    model.initSystem();
+    auto controlNames = createControlNamesFromModel(model);
+    OPENSIM_THROW_IF(controlNames.size() != controlsTable.getNumColumns(),
+            Exception, "MocoUtilities::analyzeMocoTrajectory(): The number of "
+            "controls in the MocoTrajectory does not match the number of "
+            "enabled model controls. If the trajectory was generated from a "
+            "MocoStudy with Controllers in the model, first call "
+            "MocoTrajectory::generateControlsFromModelControllers() to "
+            "populate the trajectory with the correct model controls.");
+
     const TimeSeriesTable derivativesWithoutAccelerationsTable =
             trajectory.exportToDerivativesWithoutAccelerationsTable();
     return analyze<T>(
@@ -76,9 +93,11 @@ TimeSeriesTable_<T> analyzeMocoTrajectory(
 }
 
 /// Given a MocoTrajectory and the associated OpenSim model, return the model
-/// with a prescribed controller appended that will compute the control values
-/// from the MocoTrajectory. This can be useful when computing state-dependent
-/// model quantities that require realization to the Dynamics stage or later.
+/// with a PrescribedController appended that will compute the control values
+/// from the MocoTrajectory. This function will also add SignalGenerator%s to 
+/// prescribe Input control values for any InputController%s in the model.This 
+/// can be useful when computing state-dependent model quantities that require 
+/// realization to the Dynamics stage or later.
 /// The function used to fit the controls can either be GCVSpline or
 /// PiecewiseLinearFunction.
 /// @ingroup mocoutil
@@ -92,7 +111,8 @@ OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& trajectory,
 /// with time stepping. Use integratorAccuracy to override the default setting.
 ///
 /// @note This function expects all Actuator%s in the model to be in the Model's
-/// ForceSet.
+/// ForceSet andexpects all Controller%s in the model to be in the Model's 
+/// ControllerSet.
 /// @ingroup mocoutil
 OSIMMOCO_API MocoTrajectory simulateTrajectoryWithTimeStepping(
         const MocoTrajectory& trajectory, Model model,
@@ -224,15 +244,42 @@ private:
 /// Obtain the ground reaction forces, centers of pressure, and torques
 /// resulting from Force elements (e.g., SmoothSphereHalfSpaceForce), using a
 /// model and states trajectory. Forces and torques are expressed in the ground
-/// frame with respect to the ground origin. Hence, the centers of pressure are
-/// at the origin. Paths to Force elements should be provided separately for
-/// elements of the right and left feet. The output is a table formatted for use
-/// with OpenSim tools; the labels of the columns distinguish between right
-/// ("<>_r") and left ("<>_l") forces, centers of pressure, and torques. The
-/// forces and torques used are taken from the first six outputs of
-/// getRecordValues(); this order is of use for, for example, the
-/// SmoothSphereHalfSpaceForce contact model but might have a different meaning
-/// for different contact models.
+/// frame with respect to the ground origin. Paths to Force elements should be
+/// provided separately for elements of the right and left feet. The output is a
+/// table formatted for use with OpenSim tools; the labels of the columns
+/// distinguish between right ("<>_r") and left ("<>_l") forces, centers of
+/// pressure, and torques. Centers of pressure are computed assuming the
+/// that the contact plane's normal is in the y-direction, which is the OpenSim
+/// convention.
+///
+/// The forces and torques are computed from the first six outputs of
+/// getRecordValues(), while the centers of pressure are computed from the second
+/// six outputs. The first six outputs should correspond to the contact force
+/// components applied to the foot bodies (e.g., the "sphere" forces in
+/// SmoothSphereHalfSpaceForce), and the second six outputs should correspond to
+/// the contact force components applied to the contact place (e.g., the
+/// "half-space" forces in SmoothSphereHalfSpaceForce). The contact plane is
+/// often attached to ground for foot-ground contact models, but it need not be,
+/// as long as the contact plane normal is in the y-direction.
+///
+/// In general, this utility needs getRecordValues() to report the
+/// following force and torque information at the specified indices:
+///
+/// index | component (body)
+/// ----- | ----------------
+///     0 | force-x (foot)
+///     1 | force-y (foot)
+///     2 | force-z (foot)
+///     3 | torque-x (foot)
+///     4 | torque-y (foot)
+///     5 | torque-z (foot)
+///     6 | force-x (contact plane)
+///     7 | force-y (contact plane)
+///     8 | force-z (contact plane)
+///     9 | torque-x (contact plane)
+///    10 | torque-y (contact plane)
+///    11 | torque-z (contact plane)
+///
 /// @ingroup mocoutil
 OSIMMOCO_API
 TimeSeriesTable createExternalLoadsTableForGait(Model model,
@@ -247,6 +294,27 @@ TimeSeriesTable createExternalLoadsTableForGait(Model model,
         const MocoTrajectory& trajectory,
         const std::vector<std::string>& forcePathsRightFoot,
         const std::vector<std::string>& forcePathsLeftFoot);
+
+/// Compute the set of generalized coordinate forces from the provided Model and 
+/// MocoTrajectory. The MocoTrajectory should be compatible with the provided 
+/// Model (e.g., generated from a MocoStudy with the same Model). Only the model
+/// Force%s that are specified in `forcePaths` are applied to the model when
+/// calculating the generalized forces.
+///
+/// `SimbodyMatterSubsystem::calcResidualForce()` is used to calculate the joint
+/// moments. This takes the set of Lagrange multipliers from the MocoTrajectory
+/// and uses them to apply the correct constraint forces to the model.
+///
+/// The generalized coordinate forces are returned as a TimeSeriesTable, where
+/// the column labels match the convention used by the InverseDynamicsTool: 
+/// the coordinates names with suffixes denoting whether they are translational
+/// (e.g. `pelvis_tx_force`) or rotational (e.g., `ankle_angle_r_moment`)
+/// generalized forces.
+///
+/// @ingroup mocoutil
+OSIMMOCO_API TimeSeriesTable calcGeneralizedForces(Model model,
+        const MocoTrajectory& trajectory,
+        const std::vector<std::string>& forcePaths);
 
 } // namespace OpenSim
 

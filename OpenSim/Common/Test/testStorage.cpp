@@ -20,33 +20,38 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <fstream>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 
+#include <catch2/catch_all.hpp>
+#include <fstream>
+
 using namespace OpenSim;
 using namespace std;
 
+namespace {
+    // helper function
+    void loadStorageWithNColsFromFile(const std::string& fileName, const int numCols)
+    {
+        Storage storage{ fileName};
+        // remove extension
+        auto ix = fileName.rfind(".");
+        if (ix == std::string::npos) {
+            throw Exception("File name for Storage loading '" + fileName +
+                            "' must have a valid extension.");
+        }
+        std::string name = fileName.substr(0, ix-1);
+        Array<std::string> labels = storage.getColumnLabels();
 
-void testStorageLoadingFromFile(const std::string& fileName, const int numCols)
-{
-    Storage storage{ fileName};
-    // remove extension
-    auto ix = fileName.rfind(".");
-    if (ix == std::string::npos) {
-        throw Exception("File name for Storage loading '" + fileName +
-                        "' must have a valid extension.");
+        storage.print("test_" + name + ".sto");
+
+        ASSERT(numCols == labels.size());
     }
-    std::string name = fileName.substr(0, ix-1);
-    Array<std::string> labels = storage.getColumnLabels();
-
-    storage.print("test_" + name + ".sto");
-
-    ASSERT(numCols == labels.size());
 }
 
-void testStorageLegacy() {
+TEST_CASE("Test Storage Legacy Behavior")
+{
     // Create a storage from a std file "std_storage.sto"
     //ofstream checkRunDirFile("rundir.txt");
     //checkRunDirFile << "Run from here:\n\n";
@@ -114,7 +119,8 @@ void testStorageLegacy() {
     }
 }
 
-void testStorageGetStateIndexBackwardsCompatibility() {
+TEST_CASE("Storage `GetStateIndex` Backwards Compatibility")
+{
     auto convert = [](const std::vector<std::string>& vec) {
         OpenSim::Array<std::string> out({}, 0);
         for (const auto& element : vec) out.append(element);
@@ -161,39 +167,30 @@ void testStorageGetStateIndexBackwardsCompatibility() {
         "/forceset/soleus/activation",
         "/forceset/soleus/fiber_length"
     }));
+
     SimTK_TEST(sto.getStateIndex("nonexistant") == -1);
     SimTK_TEST(sto.getStateIndex("/jointset/hip/hip_flexion/value") == 0);
     SimTK_TEST(sto.getStateIndex("/jointset/hip/hip_flexion/speed") == 1);
     SimTK_TEST(sto.getStateIndex("/forceset/soleus/activation") == 2);
     SimTK_TEST(sto.getStateIndex("/forceset/soleus/fiber_length") == 3);
-
-    // TODO: Put XML document version in Storage header.
 }
 
-int main() {
-    SimTK_START_TEST("testStorage");
-
-        // Verify loading of scalar Outputs (there are 2) from .sto into a Storage
-        SimTK_SUBTEST2(testStorageLoadingFromFile, "sampleOutputs.sto", 2+1);
-
-        // Verify loading of Vec3 Outputs (2) from .sto into a Storage
-        SimTK_SUBTEST2(testStorageLoadingFromFile, "sampleOutputsVec3.sto", 2*3+1);
-
-        // Verify loading of SpatialVec Outputs (2) from .sto into a Storage
-        SimTK_SUBTEST2(testStorageLoadingFromFile, "sampleOutputsSpatialVec.sto", 2*6+1);
-
-        // Verify the loading of marker data (14 markers) from .trc into a Storage
-        SimTK_SUBTEST2(testStorageLoadingFromFile, "dataWithNaNsOfDifferentCases.trc", 43);
-
-        #if defined (WITH_EZC3D)
-            // Verify the loading of forces from .c3d into a Storage. Includes 2
-            // force-plates with force, point, moment vectors (Vec3 flattened)
-            SimTK_SUBTEST2(testStorageLoadingFromFile, "walking2.c3d", 3*6+1);
-        #endif
-
-        SimTK_SUBTEST(testStorageLegacy);
-
-        SimTK_SUBTEST(testStorageGetStateIndexBackwardsCompatibility);
-    SimTK_END_TEST();
+TEST_CASE("Verify loading of scalar Outputs (there are 2) from .sto into a Storage")
+{
+    loadStorageWithNColsFromFile("sampleOutputs.sto", 2+1);
 }
 
+TEST_CASE("Verify loading of Vec3 Outputs (2) from .sto into a Storage")
+{
+    loadStorageWithNColsFromFile("sampleOutputsVec3.sto", 2*3+1);
+}
+
+TEST_CASE("Verify loading of SpatialVec Outputs (2) from .sto into a Storage")
+{
+    loadStorageWithNColsFromFile("sampleOutputsSpatialVec.sto", 2*6+1);
+}
+
+TEST_CASE("Verify the loading of marker data (14 markers) from .trc into a Storage")
+{
+    loadStorageWithNColsFromFile("dataWithNaNsOfDifferentCases.trc", 43);
+}

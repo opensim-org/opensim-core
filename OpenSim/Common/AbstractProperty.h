@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDES
-#include <assert.h>
+#include "Assertion.h"
 #include <string>
 #include <typeinfo>
 #include "osimCommonDLL.h"
@@ -79,13 +79,13 @@ public:
     /** Require that the number of values n in the value list of this property
     be in the range aMin <= n <= aMax. */
     void setAllowableListSize(int aMin, int aMax) 
-    {   assert(0 <= aMin && aMin <= aMax); 
+    {   OPENSIM_ASSERT(0 <= aMin && aMin <= aMax);
        _minListSize = aMin; _maxListSize = aMax; }
 
     /** Require that the number of values n in the value list of this property
     be exactly n=aNum values. **/
     void setAllowableListSize(int aNum) 
-    {   assert(aNum >= 1); _minListSize = _maxListSize = aNum; }
+    {   OPENSIM_ASSERT(aNum >= 1); _minListSize = _maxListSize = aNum; }
     
     // Default copy constructor and copy assignment operator.
 

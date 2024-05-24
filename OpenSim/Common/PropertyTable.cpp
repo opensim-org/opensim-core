@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2024 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -20,152 +20,98 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//============================================================================
-// INCLUDES
-//============================================================================
 #include "PropertyTable.h"
 
+#include "Assertion.h"
 
 using namespace OpenSim;
-using namespace SimTK;
-using namespace std;
 
-//_____________________________________________________________________________
-// Default constructor is inline
-
-//_____________________________________________________________________________
-// Copy constructor has to clone the source properties.
-PropertyTable::PropertyTable(const PropertyTable& source)
+void PropertyTable::clear()
 {
-    replaceProperties(source.properties);
+    _properties.clear();
+    _namelookup.clear();
 }
 
-//_____________________________________________________________________________
-// Destructor must deep-delete the properties since they are owned by the
-// PropertyTable.
-PropertyTable::~PropertyTable()
+bool PropertyTable::equals(const PropertyTable& other) const
 {
-    deleteProperties();
-}
-
-//_____________________________________________________________________________
-// Copy assignment has to clone the source properties.
-PropertyTable& PropertyTable::operator=(const PropertyTable& source)
-{
-    if (&source != this)
-        replaceProperties(source.properties);
-    return *this;
-}
-
-//_____________________________________________________________________________
-// Reinitialize the table to be completely empty.
-void PropertyTable::clear() {
-    deleteProperties();
-}
-
-//_____________________________________________________________________________
-// Equality operator compares each property with the one at the same position.
-bool PropertyTable::equals(const PropertyTable& other) const {
-    if (getNumProperties() != other.getNumProperties())
-        return false;
-    for (int i=0; i < getNumProperties(); ++i) {
-        if (!(getAbstractPropertyByIndex(i) == other.getAbstractPropertyByIndex(i)))
-            return false;
-    }
-    return true;
+    return _properties == other._properties;
 }
 
 int PropertyTable::adoptProperty(AbstractProperty* prop)
 {
-    assert(prop);
-    const int          nxtIndex = properties.size();
-    const std::string& name     = prop->getName();
+    OPENSIM_ASSERT(prop != nullptr);
+    OPENSIM_ASSERT(!prop->getName().empty());  // Unnamed property should have had its Object class name used as its name.
 
-    // Unnamed property should have had its Object class name used as its name.
-    assert(!name.empty());
+    auto idx = static_cast<int>(_properties.size());
+    const bool inserted = _namelookup.emplace(prop->getName(), idx).second;
 
-    if (hasProperty(name))
-        throw OpenSim::Exception
-            ("PropertyTable::adoptProperty(): Property " 
-            + name + " already in table.");
-
-    propertyIndex[name] = nxtIndex;
-    properties.push_back(prop);
-    return nxtIndex;
-}
-
-const AbstractProperty& PropertyTable::
-getAbstractPropertyByIndex(int index) const {
-    if (index == SimTK::InvalidIndex)
-        throw OpenSim::Exception
-           ("PropertyTable::getAbstractPropertyByIndex(): uninitialized " 
-            "property index -- did you forget a constructProperty() call?");
-    if (!(0 <= index && index < getNumProperties()))
-        throw OpenSim::Exception
-           ("PropertyTable::getAbstractPropertyByIndex(): index " 
-            + String(index) + " out of range (" 
-            + String(getNumProperties()) + " properties in table).");        
-    return *properties[index]; 
-}
-
-AbstractProperty& PropertyTable::
-updAbstractPropertyByIndex(int index) {
-    if (index == SimTK::InvalidIndex)
-        throw OpenSim::Exception
-           ("PropertyTable::updAbstractPropertyByIndex(): uninitialized " 
-            "property index -- did you forget a constructProperty() call?");
-    if (!(0 <= index && index < getNumProperties()))
-        throw OpenSim::Exception
-           ("PropertyTable::updAbstractPropertyByIndex(): index " 
-            + String(index) + " out of range (" 
-            + String(getNumProperties()) + " properties in table).");        
-    return *properties[index]; 
-}
-
-const AbstractProperty& PropertyTable::
-getAbstractPropertyByName(const std::string& name) const {
-    const AbstractProperty* p = getPropertyPtr(name);
-    if (p == NULL) throw OpenSim::Exception
-        ("PropertyTable::getAbstractPropertyByName(): Property " 
-        + name + " not found.");
-    return *p;
-}
-
-AbstractProperty& PropertyTable::
-updAbstractPropertyByName(const std::string& name) {
-    AbstractProperty* p = updPropertyPtr(name);
-    if (p == NULL) throw OpenSim::Exception
-        ("PropertyTable::updAbstractPropertyByName(): Property " 
-        + name + " not found.");
-    return *p;
-}
-
-// Look up the property by name in the map to find its index
-// in the property array and return that. If the name isn't there, return -1.
-// This method is reused in the implementation of any method that
-// takes a property by name.
-int PropertyTable::findPropertyIndex(const std::string& name) const {
-    const std::map<std::string, int>::const_iterator 
-        it = propertyIndex.find(name);
-    return it == propertyIndex.end() ? -1 : it->second;
-}
-
-// Private method to replace the existing properties with a deep copy of 
-// the source, and update the index map to match.
-void PropertyTable::replaceProperties
-   (const SimTK::Array_<AbstractProperty*>& source) {
-    deleteProperties();
-    for (unsigned i=0; i < source.size(); ++i) {
-        properties.push_back(source[i]->clone());
-        propertyIndex[source[i]->getName()] = i;
+    if (!inserted) {
+        throw OpenSim::Exception("PropertyTable::adoptProperty(): Property " + prop->getName() + " already in table.");
     }
+
+    _properties.emplace_back(prop);
+    return idx;
 }
 
-// Private method to delete all the properties and clear the index.
-void PropertyTable::deleteProperties() {
-    for (unsigned i=0; i < properties.size(); ++i)
-        delete properties[i];
-    properties.clear();
-    propertyIndex.clear();
+const AbstractProperty* PropertyTable::getPropertyPtr(const std::string& name) const
+{
+    const auto it = _namelookup.find(name);
+    return it != _namelookup.end() ? _properties[it->second].get() : nullptr;
 }
 
+AbstractProperty* PropertyTable::updPropertyPtr(const std::string& name)
+{
+    const auto it = _namelookup.find(name);
+    return it != _namelookup.end() ? _properties[it->second].get() : nullptr;
+}
+
+const AbstractProperty& PropertyTable::getAbstractPropertyByIndex(int index) const
+{
+    if (index == SimTK::InvalidIndex) {
+        throw OpenSim::Exception
+           ("PropertyTable::getAbstractPropertyByIndex(): uninitialized "
+            "property index -- did you forget a constructProperty() call?");
+    }
+    if (!(0 <= index && index < getNumProperties())) {
+        throw OpenSim::Exception
+           ("PropertyTable::getAbstractPropertyByIndex(): index "
+            + SimTK::String(index) + " out of range ("
+            + SimTK::String(getNumProperties()) + " properties in table).");
+    }
+    return *_properties[index];
+}
+
+AbstractProperty& PropertyTable::updAbstractPropertyByIndex(int index) {
+    if (index == SimTK::InvalidIndex) {
+        throw OpenSim::Exception
+           ("PropertyTable::updAbstractPropertyByIndex(): uninitialized "
+            "property index -- did you forget a constructProperty() call?");
+    }
+    if (!(0 <= index && index < getNumProperties())) {
+        throw OpenSim::Exception
+           ("PropertyTable::updAbstractPropertyByIndex(): index "
+            + SimTK::String(index) + " out of range ("
+            + SimTK::String(getNumProperties()) + " properties in table).");
+    }
+    return *_properties[index];
+}
+
+const AbstractProperty& PropertyTable::getAbstractPropertyByName(const std::string& name) const {
+    if (const AbstractProperty* p = getPropertyPtr(name)) {
+        return *p;
+    }
+    throw OpenSim::Exception("PropertyTable::getAbstractPropertyByName(): Property " + name + " not found.");
+}
+
+AbstractProperty& PropertyTable::updAbstractPropertyByName(const std::string& name) {
+    if (AbstractProperty* p = updPropertyPtr(name)) {
+        return *p;
+    }
+    throw OpenSim::Exception("PropertyTable::updAbstractPropertyByName(): Property " + name + " not found.");
+}
+
+int PropertyTable::findPropertyIndex(const std::string& name) const
+{
+    const auto it = _namelookup.find(name);
+    return it != _namelookup.end() ? it->second : -1;
+}

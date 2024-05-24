@@ -52,6 +52,13 @@ isEqual(double a, double b) {
     return std::abs(a - b) <= 1e-7;
 }
 
+bool Property<SimTK::Vec2>::TypeHelper::
+        isEqual(const SimTK::Vec2& a, const SimTK::Vec2& b) {
+    for (int i=0; i < 2; ++i)
+        if (!Property<double>::TypeHelper::isEqual(a[i],b[i]))
+            return false;
+    return true;
+}
 
 bool Property<SimTK::Vec3>::TypeHelper::
 isEqual(const SimTK::Vec3& a, const SimTK::Vec3& b) {

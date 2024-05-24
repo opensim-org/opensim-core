@@ -29,12 +29,14 @@
 #include <OpenSim/Common/SignalGenerator.h>
 #include <OpenSim/Common/Sine.h>
 
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch.hpp>
+#include <catch2/catch_all.hpp>
+
 #include <OpenSim/Common/PolynomialFunction.h>
 
 using namespace OpenSim;
 using namespace SimTK;
+using Catch::Approx;
+using Catch::Matchers::ContainsSubstring;
 
 
 TEST_CASE("SignalGenerator") {
@@ -97,29 +99,24 @@ TEST_CASE("MultivariatePolynomialFunction") {
         {
             MultivariatePolynomialFunction f(createVector({1}), -1, 1);
             CHECK_THROWS_WITH(f.calcValue(SimTK::Vector()),
-                    Catch::Contains("Expected dimension"));
-        }
-        {
-            MultivariatePolynomialFunction f(createVector({1}), 5, 1);
-            CHECK_THROWS_WITH(f.calcValue(SimTK::Vector()),
-                    Catch::Contains("Expected dimension"));
+                    ContainsSubstring("Expected dimension"));
         }
         {
             MultivariatePolynomialFunction f(createVector({1}), 1, -1);
             CHECK_THROWS_WITH(f.calcValue(SimTK::Vector()),
-                    Catch::Contains("Expected order"));
+                    ContainsSubstring("Expected order"));
         }
         {
             SimTK::Vector coefficients(19);
             MultivariatePolynomialFunction f(coefficients, 3, 3);
             CHECK_THROWS_WITH(f.calcValue(createVector({1, 2, 3})),
-                    Catch::Contains("Expected 20 coefficients but got 19"));
+                    ContainsSubstring("Expected 20 coefficients but got 19"));
         }
         {
             SimTK::Vector coefficients(21);
             MultivariatePolynomialFunction f(coefficients, 3, 3);
             CHECK_THROWS_WITH(f.calcValue(createVector({1, 2, 3})),
-                    Catch::Contains("Expected 20 coefficients but got 21"));
+                    ContainsSubstring("Expected 20 coefficients but got 21"));
         }
     }
     SECTION("Consistent with PolynomialFunction") {
@@ -127,7 +124,9 @@ TEST_CASE("MultivariatePolynomialFunction") {
         MultivariatePolynomialFunction multivariate(
                 createVector({3, 1, 2}), 1, 2);
         SimTK::Vector x = createVector({0.338});
-        CHECK(univariate.calcValue(x) == multivariate.calcValue(x));
+        SimTK_TEST_EQ(univariate.calcValue(x), multivariate.calcValue(x));
+        SimTK_TEST_EQ(univariate.calcDerivative({0}, x),
+                multivariate.calcDerivative({0}, x));
     }
     SECTION("Test 3-dimensional 3rd order polynomial") {
         SimTK::Vector c = SimTK::Test::randVector(20);
@@ -141,7 +140,11 @@ TEST_CASE("MultivariatePolynomialFunction") {
                           c[8]*y*y*z + c[9]*y*y*y + c[10]*x + c[11]*x*z +
                           c[12]*x*z*z + c[13]*x*y + c[14]*x*y*z + c[15]*x*y*y +
                           c[16]*x*x + c[17]*x*x*z + c[18]*x*x*y + c[19]*x*x*x;
-        CHECK(f.calcValue(input) == expected);
+        SimTK_TEST_EQ(f.calcValue(input), expected);
+        SimTK_TEST_EQ(f.calcDerivative({0}, input), 
+                c[10] + c[11]*z + c[12]*z*z +
+                c[13]*y + c[14]*y*z + c[15]*y*y + 2*c[16]*x + 2*c[17]*x*z +
+                2*c[18]*x*y + 3*c[19]*x*x);
     }
     SECTION("Test 4-dimensional 1st order polynomial") {
         SimTK::Vector c = SimTK::Test::randVector(5);
@@ -149,7 +152,43 @@ TEST_CASE("MultivariatePolynomialFunction") {
         SimTK::Vector input = createVector({0.3, 7.3, 0.8, 6.4});
         double expected = c[0] + c[1] * input[3] + c[2] * input[2] +
                           c[3] * input[1] + c[4] * input[0];
-        CHECK(f.calcValue(input) == expected);
+        SimTK_TEST_EQ(f.calcValue(input), expected);
+        SimTK_TEST_EQ(f.calcDerivative({0}, input), c[4]);
+    }
+    SECTION("Test 6-dimensional 1st order polynomial") {
+        SimTK::Vector c = SimTK::Test::randVector(7);
+        MultivariatePolynomialFunction f(c, 6, 1);
+        SimTK::Vector input = createVector({0.3, 7.3, 0.8, 6.4, 1.2, 3.4});
+        double expected = c[0] + c[1] * input[5] + c[2] * input[4] +
+                          c[3] * input[3] + c[4] * input[2] + c[5] * input[1] +
+                          c[6] * input[0];
+        SimTK_TEST_EQ(f.calcValue(input), expected);
+        SimTK_TEST_EQ(f.calcDerivative({0}, input), c[6]);
+    }
+    SECTION("Test calcDerivativeCoefficients()") {
+        // 2-DOF polynomial function.
+        // f = 1 + 2*q_y + 3*q_y^2 + 4*q_x + 5*q_x*q_y + 6*q_x^2
+        MultivariatePolynomialFunction f(
+                createVector({1.0, 2.0, 3.0, 4.0, 5.0, 6.0}), 2, 2);
+
+        // Partial derivatives.
+        // f_x = dl/dq_x = 4 + 5*q_y + 12*q_x
+        // f_y = dl/dq_y = 2 + 6*q_y + 5*q_x
+        MultivariatePolynomialFunction f_x(
+                createVector({4.0, 5.0, 12.0}), 2, 1);
+        MultivariatePolynomialFunction f_y(
+                createVector({2.0, 6.0, 5.0}), 2, 1);
+
+        MultivariatePolynomialFunction f_x_test = 
+                f.generateDerivativeFunction(0);
+        MultivariatePolynomialFunction f_y_test = 
+                f.generateDerivativeFunction(1);
+
+        SimTK::Vector q = SimTK::Test::randVector(2);
+        SimTK_TEST_EQ(f.calcDerivative({0}, q), f_x.calcValue(q));
+        SimTK_TEST_EQ(f.calcDerivative({1}, q), f_y.calcValue(q));
+        SimTK_TEST_EQ(f_x.calcValue(q), f_x_test.calcValue(q));
+        SimTK_TEST_EQ(f_y.calcValue(q), f_y_test.calcValue(q));
     }
 }
 

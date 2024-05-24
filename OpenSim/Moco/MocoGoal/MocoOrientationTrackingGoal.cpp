@@ -20,6 +20,7 @@
 
 #include <OpenSim/Moco/MocoUtilities.h>
 
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -35,14 +36,14 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
             get_rotation_reference_file() != "") { // reference file provided
         TimeSeriesTable_<SimTK::Rotation_<double>> rotationTableToUse;
         // Should not be able to supply any two simultaneously.
-        assert(get_states_reference().empty());
+        OPENSIM_ASSERT_FRMOBJ(get_states_reference().empty());
         if (get_rotation_reference_file() != "") { // rotation reference file
-            assert(m_rotation_table.getNumColumns() == 0);
+            OPENSIM_ASSERT_FRMOBJ(m_rotation_table.getNumColumns() == 0);
             rotationTableToUse = TimeSeriesTable_<SimTK::Rotation_<double>>(
                     get_rotation_reference_file());
 
         } else { // rotation table
-            assert(get_rotation_reference_file() == "");
+            OPENSIM_ASSERT_FRMOBJ(get_rotation_reference_file() == "");
             rotationTableToUse = m_rotation_table;
         }
 
@@ -72,8 +73,8 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
         }
 
     } else { // states reference file or states reference provided
-        assert(get_rotation_reference_file() == "");
-        assert(m_rotation_table.getNumColumns() == 0);
+        OPENSIM_ASSERT_FRMOBJ(get_rotation_reference_file() == "");
+        OPENSIM_ASSERT_FRMOBJ(m_rotation_table.getNumColumns() == 0);
         // TODO: set relativeToDirectory properly.
         TimeSeriesTable statesTableToUse =
                 get_states_reference().processAndConvertToRadians(model);

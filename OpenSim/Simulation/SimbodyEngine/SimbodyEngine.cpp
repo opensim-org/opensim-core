@@ -24,6 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Storage.h>
@@ -409,9 +410,9 @@ void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForc
 
     // there may be more mobilized bodies than joint exposed in the OpenSim model
     // since joints and other components may use (massless) bodies internally
-    assert(_model->getMatterSubsystem().getNumBodies() >= nj);
-    assert(nj == rForces.size());
-    assert(rForces.size() == rTorques.size());
+    OPENSIM_ASSERT_FRMOBJ(_model->getMatterSubsystem().getNumBodies() >= nj);
+    OPENSIM_ASSERT_FRMOBJ(nj == rForces.size());
+    OPENSIM_ASSERT_FRMOBJ(rForces.size() == rTorques.size());
 
     SimTK::Vector_<SpatialVec> reactionForces(nj);
 
@@ -996,7 +997,7 @@ void SimbodyEngine::scaleRotationalDofColumns(TimeSeriesTable& table,
  */
 void SimbodyEngine::convertDegreesToRadians(Storage &rStorage) const
 {
-    assert(rStorage.isInDegrees());
+    OPENSIM_ASSERT_FRMOBJ(rStorage.isInDegrees());
     scaleRotationalDofColumns(rStorage, SimTK_DEGREE_TO_RADIAN);
     rStorage.setInDegrees(false);
 }
@@ -1010,7 +1011,7 @@ void SimbodyEngine::convertDegreesToRadians(Storage &rStorage) const
  */
 void SimbodyEngine::convertRadiansToDegrees(Storage &rStorage) const
 {
-    assert(!rStorage.isInDegrees());
+    OPENSIM_ASSERT_FRMOBJ(!rStorage.isInDegrees());
     scaleRotationalDofColumns(rStorage, SimTK_RADIAN_TO_DEGREE);
     rStorage.setInDegrees(true);
 }

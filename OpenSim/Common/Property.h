@@ -25,7 +25,9 @@
 
 // INCLUDES
 #include "AbstractProperty.h"
+#include "Assertion.h"
 #include "Exception.h"
+#include "Logger.h"
 
 #include "SimTKcommon/SmallMatrix.h"
 #include "SimTKcommon/internal/BigMatrix.h"
@@ -516,7 +518,16 @@ public:
         setValueIsDefault(false);
         return adoptAndAppendValueVirtual(value);
     }
-
+    /** Remove specific entry of the list at index **/
+    void removeValueAtIndex(int index) {
+        if (index > getNumValues() || index < 0)
+            throw OpenSim::Exception("Property<T>::removeValueAtIndex(): Property " + getName()
+                + "invalid index, out of range, ignored.");
+        if (getNumValues() - 1 < this->getMinListSize() || getNumValues() - 1 > this->getMaxListSize())
+            throw OpenSim::Exception("Property<T>::removeValueAtIndex(): Property " + getName()
+                + "resulting list has improper size, ignored.");
+        removeValueAtIndexVirtual(index);
+    }
     /** Search the value list for an element that has the given \a value and
     return its index if found, otherwise -1. This requires only that the 
     template type T supports operator==(). This is a linear search so will 
@@ -589,6 +600,7 @@ protected:
     virtual void setValueVirtual(int index, const T& value) = 0;
     virtual int appendValueVirtual(const T& value) = 0;
     virtual int adoptAndAppendValueVirtual(T* value) = 0;
+    virtual void removeValueAtIndexVirtual(int index) = 0;
     /** @endcond **/
 #endif
 };
@@ -645,6 +657,16 @@ template<> struct Property<double>::TypeHelper {
     static SimpleProperty<double>* create(const std::string& name, bool isOne);
     static std::string getTypeName() {return "double";}
     OSIMCOMMON_API static bool isEqual(double a, double b);
+};
+/** TypeHelper specialization for SimTK::Vec2; see double specialization
+for information on floating point comparison. **/
+template<> struct Property<SimTK::Vec2>::TypeHelper  {
+    static const bool IsObjectType = false;
+    static SimpleProperty<SimTK::Vec2>*
+    create(const std::string& name, bool isOne);
+    static std::string getTypeName() {return "Vec2";}
+    OSIMCOMMON_API static bool isEqual(const SimTK::Vec2& a,
+            const SimTK::Vec2& b);
 };
 /** TypeHelper specialization for SimTK::Vec3; see double specialization
 for information on floating point comparison. **/
@@ -866,7 +888,7 @@ public:
         // Property_Deprecated implementation can't copy this flag right.
         if (this->getValueIsDefault() != other.getValueIsDefault())
             return false;
-        assert(this->size() == other.size()); // base class checked
+        OPENSIM_ASSERT(this->size() == other.size()); // base class checked
         const SimpleProperty& otherS = SimpleProperty::getAs(other);
         for (int i=0; i<values.size(); ++i)
             if (!Property<T>::TypeHelper::isEqual(values[i], otherS.values[i]))
@@ -881,27 +903,44 @@ public:
        (SimTK::Xml::Element& propertyElement,
         int                  versionNumber) override final {
         std::istringstream valstream(propertyElement.getValue());
+
+        // read the values _transactionally_: if a read failure occurs then
+        // `values` should return to their original state (#3409)
+        SimTK::Array_<T, int> valuesBackup = values;
+        bool shouldRollback = false;
+
         if (!readSimplePropertyFromStream(valstream)) {
-            std::cerr << "Failed to read " << SimTK::NiceTypeName<T>::name()
-            << " property " << this->getName() << "; input='" 
-            << valstream.str().substr(0,50) // limit displayed length
-            << "'.\n";
+            log_warn("Failed to read '{}': property '{}' with input '{}': the data has been ignored",
+                SimTK::NiceTypeName<T>::name(),
+                this->getName(),
+                valstream.str().substr(0, 50)  // limit displayed length
+            );
+            shouldRollback = true;
         }
         if (values.size() < this->getMinListSize()) {
-            std::cerr << "Not enough values for " 
-            << SimTK::NiceTypeName<T>::name() << " property " << this->getName() 
-            << "; input='" << valstream.str().substr(0,50) // limit displayed length 
-            << "'. Expected " << this->getMinListSize()
-            << ", got " << values.size() << ".\n";
+            log_warn("Failed to read '{}': property '{}' with input '{}': does not contain enough values (minimum: {}, got: {}): the data (all fields) have been ignored",
+                SimTK::NiceTypeName<T>::name(),
+                this->getName(),
+                valstream.str().substr(0,50),  // limit displayed length
+                this->getMinListSize(),
+                values.size()
+            );
+            shouldRollback = true;
         }
         if (values.size() > this->getMaxListSize()) {
-            std::cerr << "Too many values for " 
-            << SimTK::NiceTypeName<T>::name() << " property " << this->getName() 
-            << "; input='" << valstream.str().substr(0,50) // limit displayed length 
-            << "'. Expected " << this->getMaxListSize()
-            << ", got " << values.size() << ". Ignoring extras.\n";
+            log_warn("Truncated '{}': property '{}' with input '{}': contains too many values (maximum: {}, got: {}): the data has been truncated",
+                SimTK::NiceTypeName<T>::name(),
+                this->getName(),
+                valstream.str().substr(0,50),  // limit displayed length
+                this->getMaxListSize(),
+                values.size()
+            );
 
-            values.resize(this->getMaxListSize());
+            values.resize(this->getMaxListSize());  // truncate
+        }
+
+        if (shouldRollback) {
+            values = std::move(valuesBackup);  // perform data rollback
         }
     }
 
@@ -960,17 +999,16 @@ public:
         throw OpenSim::Exception(
             "Property<T>::findIndexForName " + name
             + " called on a list property of non OpenSim Objects. ");
-        return -1;
     }
 private:
     // This is the Property<T> interface implementation.
     // Base class checks the index.
     const T& getValueVirtual(int index) const   override final 
-    {   return values[index]; }
+    {   return values.at(index); }
     T& updValueVirtual(int index)               override final 
-    {   return values[index]; }
+    {   return values.at(index); }
     void setValueVirtual(int index, const T& value) override final
-    {   values[index] = value; }
+    {   values.at(index) = value; }
     int appendValueVirtual(const T& value)     override final
     {   values.push_back(value); return values.size()-1; }
     // Adopting a simple property just means we have to delete the one that
@@ -979,7 +1017,8 @@ private:
     {   values.push_back(*valuep); // make a copy
         delete valuep; // throw out the old one
         return values.size()-1; }
-
+    void removeValueAtIndexVirtual(int index) override final
+    {   values.erase(&values[index]);  }
     // This is the default implementation; specialization is required if
     // the Simbody default behavior is different than OpenSim's; e.g. for
     // Transform serialization.
@@ -1122,13 +1161,13 @@ public:
     const Object& getValueAsObject(int index=-1) const override final {
         if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
             index = 0;
-        return *objects[index];
+        return *objects.at(index);
     }
 
     Object& updValueAsObject(int index=-1) override final {
         if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
             index = 0;
-        return *objects[index];
+        return *objects.at(index);
     }
 
     static bool isA(const AbstractProperty& prop) 
@@ -1156,15 +1195,19 @@ public:
                 return i;
         return -1;
     }
+    // Remove value at specific index
+    void removeValueAtIndexVirtual(int index) override {
+        objects.erase(&objects.at(index));
+    }
 private:
     // Base class checks the index.
     const T& getValueVirtual(int index) const override final 
-    {   return *objects[index]; }
+    {   return *objects.at(index); }
     T& updValueVirtual(int index) override final 
-    {   return *objects[index]; }
+    {   return *objects.at(index); }
     void setValueVirtual(int index, const T& obj) override final
-    {   objects[index].reset((T*)nullptr);
-        objects[index] = obj; }
+    {   objects.at(index).reset((T*)nullptr);
+        objects.at(index) = obj; }
     int appendValueVirtual(const T& obj) override final
     {   objects.push_back();        // add empty element
         objects.back() = obj;       // insert a copy
@@ -1210,6 +1253,10 @@ inline SimpleProperty<double>* Property<double>::
 TypeHelper::create(const std::string& name, bool isOne) 
 {   return new SimpleProperty<double>(name, isOne); }
 
+inline SimpleProperty<SimTK::Vec2>* Property<SimTK::Vec2>::
+        TypeHelper::create(const std::string& name, bool isOne)
+{   return new SimpleProperty<SimTK::Vec2>(name, isOne); }
+
 inline SimpleProperty<SimTK::Vec3>* Property<SimTK::Vec3>::
 TypeHelper::create(const std::string& name, bool isOne) 
 {   return new SimpleProperty<SimTK::Vec3>(name, isOne); }
@@ -1233,16 +1280,21 @@ TypeHelper::create(const std::string& name, bool isOne)
 #ifndef SWIG
 SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 #endif
+} //namespace
+
+// below: macro definitions (care: these must be defined such that they
+// can be expanded in classes that are outside of the OpenSim
+// namespace: see issue #3468)
 
 // Used by OpenSim_DECLARE_PROPERTY_HELPER below to control the members
 // that are used with SWIG.
 #ifndef SWIG
 #define OpenSim_DECLARE_PROPERTY_HELPER_PROPERTY_MEMBERS(name, T)           \
     /** @cond **/                                                           \
-    PropertyIndex PropertyIndex_##name;                                     \
-    const Property<T>& getProperty_##name() const                           \
+    OpenSim::PropertyIndex PropertyIndex_##name;                            \
+    const OpenSim::Property<T>& getProperty_##name() const                  \
     {   return this->template getProperty<T>(PropertyIndex_##name); }       \
-    Property<T>& updProperty_##name()                                       \
+    OpenSim::Property<T>& updProperty_##name()                              \
     {   return this->template updProperty<T>(PropertyIndex_##name); }       \
     /** @endcond **/
 #else
@@ -1589,7 +1641,6 @@ OpenSim_DECLARE_PROPERTY_ATMOST() rather than this macro.
                                         (minSize), (maxSize))               \
     /** @}                                                               */
 
-} //namespace
 //=============================================================================
 //=============================================================================
 

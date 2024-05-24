@@ -22,59 +22,60 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Tools/CMCTool.h>
 #include "OpenSim/Tools/CMC_TaskSet.h"
-
-#define CATCH_CONFIG_MAIN
-#include "Testing.h"
 #include "OpenSim/Tools/CMC_Joint.h"
 
+#include <catch2/catch_all.hpp>
+#include "Testing.h"
+
 using namespace OpenSim;
+namespace {
+    Model createHangingMuscleModel(double optimalFiberLength,
+            double tendonSlackLength, bool ignoreActivationDynamics,
+            bool ignoreTendonCompliance, bool isTendonDynamicsExplicit) {
+        Model model;
+        model.setName("isometric_muscle");
+        model.set_gravity(SimTK::Vec3(9.81, 0, 0));
+        auto* body = new Body("body", 0.5, SimTK::Vec3(0), SimTK::Inertia(0));
+        model.addComponent(body);
 
-Model createHangingMuscleModel(double optimalFiberLength,
-        double tendonSlackLength, bool ignoreActivationDynamics,
-        bool ignoreTendonCompliance, bool isTendonDynamicsExplicit) {
-    Model model;
-    model.setName("isometric_muscle");
-    model.set_gravity(SimTK::Vec3(9.81, 0, 0));
-    auto* body = new Body("body", 0.5, SimTK::Vec3(0), SimTK::Inertia(0));
-    model.addComponent(body);
+        // Allows translation along x.
+        auto* joint = new SliderJoint("joint", model.getGround(), *body);
+        auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+        coord.setName("height");
+        model.addComponent(joint);
 
-    // Allows translation along x.
-    auto* joint = new SliderJoint("joint", model.getGround(), *body);
-    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
-    coord.setName("height");
-    model.addComponent(joint);
+        auto* actu = new DeGrooteFregly2016Muscle();
+        actu->setName("muscle");
+        actu->set_max_isometric_force(10.0);
+        actu->set_optimal_fiber_length(optimalFiberLength);
+        actu->set_tendon_slack_length(tendonSlackLength);
+        actu->set_tendon_strain_at_one_norm_force(0.10);
+        actu->set_ignore_activation_dynamics(ignoreActivationDynamics);
+        actu->set_ignore_tendon_compliance(ignoreTendonCompliance);
+        actu->set_fiber_damping(0.01);
+        if (!isTendonDynamicsExplicit) {
+            actu->set_tendon_compliance_dynamics_mode("implicit");
+        }
+        actu->set_max_contraction_velocity(10);
+        actu->set_pennation_angle_at_optimal(0);
+        actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
+        actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
+        model.addForce(actu);
 
-    auto* actu = new DeGrooteFregly2016Muscle();
-    actu->setName("muscle");
-    actu->set_max_isometric_force(10.0);
-    actu->set_optimal_fiber_length(optimalFiberLength);
-    actu->set_tendon_slack_length(tendonSlackLength);
-    actu->set_tendon_strain_at_one_norm_force(0.10);
-    actu->set_ignore_activation_dynamics(ignoreActivationDynamics);
-    actu->set_ignore_tendon_compliance(ignoreTendonCompliance);
-    actu->set_fiber_damping(0.01);
-    if (!isTendonDynamicsExplicit) {
-        actu->set_tendon_compliance_dynamics_mode("implicit");
+        body->attachGeometry(new Sphere(0.05));
+
+        CMC_TaskSet tasks;
+        CMC_Joint task;
+        task.setName(coord.getName());
+        task.setCoordinateName(coord.getName());
+        task.setKP(100, 1, 1);
+        task.setKV(20, 1, 1);
+        task.setActive(true, false, false);
+        tasks.cloneAndAppend(task);
+        tasks.print("hanging_muscle_cmc_tasks.xml");
+
+        return model;
     }
-    actu->set_max_contraction_velocity(10);
-    actu->set_pennation_angle_at_optimal(0);
-    actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
-    actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
-    model.addForce(actu);
-
-    body->attachGeometry(new Sphere(0.05));
-
-    CMC_TaskSet tasks;
-    CMC_Joint task;
-    task.setName(coord.getName());
-    task.setCoordinateName(coord.getName());
-    task.setKP(100, 1, 1);
-    task.setKV(20, 1, 1);
-    task.setActive(true, false, false);
-    tasks.cloneAndAppend(task);
-    tasks.print("hanging_muscle_cmc_tasks.xml");
-
-    return model;
 }
 
 TEMPLATE_TEST_CASE(
@@ -84,6 +85,8 @@ TEMPLATE_TEST_CASE(
     auto ignoreActivationDynamics = GENERATE(true, false);
     auto ignoreTendonCompliance = GENERATE(true, false);
     auto isTendonDynamicsExplicit = GENERATE(true, false);
+    auto transcription_scheme = GENERATE(as<std::string>{},
+            "hermite-simpson", "legendre-gauss-3", "legendre-gauss-radau-3");
 
     // CAPTURE prints the current value of these variables to the console.
     CAPTURE(ignoreActivationDynamics);
@@ -139,6 +142,7 @@ TEMPLATE_TEST_CASE(
         solver.set_multibody_dynamics_mode("explicit");
         solver.set_optim_convergence_tolerance(1e-4);
         solver.set_optim_constraint_tolerance(1e-4);
+        solver.set_transcription_scheme(transcription_scheme);
 
         solutionTrajOpt = study.solve();
         solutionFilename = "testDeGrooteFregly2016Muscle_solution";
@@ -358,7 +362,7 @@ TEST_CASE("ActivationCoordinateActuator") {
     problem.setModelAsCopy(model);
     auto rep = problem.createRep();
     CHECK(rep.getStateInfo("/forceset/aca/activation").getBounds().getLower() ==
-            Approx(-0.31));
+            Catch::Approx(-0.31));
     CHECK(rep.getStateInfo("/forceset/aca/activation").getBounds().getUpper() ==
-            Approx(0.78));
+            Catch::Approx(0.78));
 }

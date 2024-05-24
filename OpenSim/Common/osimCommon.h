@@ -25,6 +25,7 @@
 
 #include "About.h"
 #include "Adapters.h"
+#include "Assertion.h"
 #include "CommonUtilities.h"
 #include "Constant.h"
 #include "DataTable.h"
@@ -32,6 +33,7 @@
 #include "GCVSpline.h"
 #include "GCVSplineSet.h"
 #include "IO.h"
+#include "LatinHypercubeDesign.h"
 #include "LinearFunction.h"
 #include "LoadOpenSimLibrary.h"
 #include "Logger.h"

@@ -1,7 +1,5 @@
 %newobject *::clone;
 
-/* To recognize SimTK::RowVector in header files (TODO: move to simbody.i) */
-
 %include <OpenSim/Moco/osimMocoDLL.h>
 
 %include <OpenSim/Moco/About.h>
@@ -25,6 +23,7 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoGoal/MocoControlGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoControlTrackingGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoContactTrackingGoal.h>
+%include <OpenSim/Moco/MocoGoal/MocoContactImpulseTrackingGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoInitialActivationGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoJointReactionGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoSumSquaredStateGoal.h>
@@ -38,10 +37,12 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoStepTimeAsymmetryGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoStepLengthAsymmetryGoal.h>
+%include <OpenSim/Moco/MocoGoal/MocoGeneralizedForceTrackingGoal.h>
+%include <OpenSim/Moco/MocoConstraintInfo.h>
+
+%template(StdVectorMocoBounds) std::vector<OpenSim::MocoBounds>;
 
 %ignore OpenSim::MocoMultibodyConstraint::getKinematicLevels;
-%ignore OpenSim::MocoConstraintInfo::getBounds;
-%ignore OpenSim::MocoConstraintInfo::setBounds;
 %ignore OpenSim::MocoProblemRep::getMultiplierInfos;
 
 %include <OpenSim/Moco/MocoConstraint.h>

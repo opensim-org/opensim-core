@@ -24,6 +24,7 @@
 #include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 namespace OpenSim {
 
@@ -205,11 +206,12 @@ state names. For example, this converts column labels as follows:
   - `pelvis_tilt_u` -> `/jointset/ground_pelvis/pelvis_tilt/speed`
   - `soleus.activation` -> `/forceset/soleus/activation`
   - `soleus.fiber_length` -> `/forceset/soleus/fiber_length`
+
 This can also be used to convert an Inverse Kinematics Tool solution MOT
 file to be used as a states file (with only coordinate values).
 If a column label does not identify a state in the model,
-the column label is not changed. Column labels must be unique.
-This operator is implemented using updateStateLabels40(). */
+the column label is not changed. Column labels must be unique. This operator is 
+implemented using SimulationUtilities::updateStateLabels40(). */
 class OSIMSIMULATION_API TabOpUseAbsoluteStateNames : public TableOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(TabOpUseAbsoluteStateNames, TableOperator);
 
@@ -224,6 +226,63 @@ public:
         auto labels = table.getColumnLabels();
         updateStateLabels40(*model, labels);
         table.setColumnLabels(labels);
+    }
+};
+
+/** Invoke SimulationUtilities::appendCoupledCoordinateValues() on the table. */
+class OSIMSIMULATION_API TabOpAppendCoupledCoordinateValues
+        : public TableOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(TabOpAppendCoupledCoordinateValues,
+            TableOperator);
+
+public:
+    OpenSim_DECLARE_PROPERTY(overwrite_existing_columns, bool,
+            "Whether to overwrite existing columns for coupled coordinate "
+            "values in the table (default: true).");
+
+    TabOpAppendCoupledCoordinateValues() {
+        constructProperty_overwrite_existing_columns(true);
+    }
+    TabOpAppendCoupledCoordinateValues(bool overwriteExistingColumns)
+            : TabOpAppendCoupledCoordinateValues() {
+        set_overwrite_existing_columns(overwriteExistingColumns);
+    }
+
+    void operate(TimeSeriesTable& table, const Model* model) const override {
+
+        OPENSIM_THROW_IF(!model, Exception,
+                "Expected a model, but no model was provided.");
+        appendCoupledCoordinateValues(table, *model,
+                get_overwrite_existing_columns());
+    }
+};
+
+/** Invoke SimulationUtilities::appendCoordinateValueDerivativesAsSpeeds() on
+the table */
+class OSIMSIMULATION_API TabOpAppendCoordinateValueDerivativesAsSpeeds
+        : public TableOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            TabOpAppendCoordinateValueDerivativesAsSpeeds, TableOperator);
+
+public:
+    OpenSim_DECLARE_PROPERTY(overwrite_existing_columns, bool,
+            "Whether to overwrite existing columns for coordinate speeds in "
+            "the table (default: true).");
+
+    TabOpAppendCoordinateValueDerivativesAsSpeeds() {
+        constructProperty_overwrite_existing_columns(true);
+    }
+    TabOpAppendCoordinateValueDerivativesAsSpeeds(bool overwriteExistingColumns)
+            : TabOpAppendCoordinateValueDerivativesAsSpeeds() {
+        set_overwrite_existing_columns(overwriteExistingColumns);
+    }
+
+    void operate(TimeSeriesTable& table, const Model* model) const override {
+
+        OPENSIM_THROW_IF(!model, Exception,
+                "Expected a model, but no model was provided.");
+        appendCoordinateValueDerivativesAsSpeeds(table, *model,
+                get_overwrite_existing_columns());
     }
 };
 

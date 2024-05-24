@@ -20,8 +20,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Common/Adapters.h"
+#include <OpenSim/Common/Adapters.h>
 #include <OpenSim/Common/IO.h>
+
+#include <catch2/catch_all.hpp>
 
 #include <fstream>
 #include <cstdio>
@@ -120,7 +122,8 @@ void compareFiles(const std::string& filenameA,
     } // end while
 }
 
-int main() {
+TEST_CASE("TRCFileAdapter (all)")
+{
     using namespace OpenSim;
 
     std::vector<std::string> filenames{};
@@ -186,7 +189,7 @@ int main() {
         }
     }
 
-    if (failed) return 1;
+    if (failed) throw std::runtime_error{"Failure detected"};
     std::cout << "Testing TimeSeriesTable::trim() " << std::endl;
 
     TimeSeriesTable_<SimTK::Vec3> table(tmpfile);
@@ -206,6 +209,4 @@ int main() {
     std::remove(("trimmed_" + tmpfile).c_str());
     std::remove(tmpfile.c_str());
     std::cout << "\nAll tests passed!" << std::endl;
-
-    return 0;
 }

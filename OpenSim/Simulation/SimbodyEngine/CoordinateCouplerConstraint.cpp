@@ -28,61 +28,130 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include "simbody/internal/Constraint.h"
 
-// Helper class to construct functions when user's specify a dependency as qd = f(qi)
-// this function casts as C(q) = 0 = f(qi) - qd;
-
-// Excluding this from Doxygen until it has better documentation! -Sam Hamner
-    /// @cond
+/**
+ * This is a helper class that is used to take a function that computes the value
+ * of a dependent coordinate as a function of independent coordinates and cast
+ * it as a function that computes the value of a constraint function as a
+ * function of all coordinates. This is done by subtracting the value of the
+ * dependent coordinate from the value of the function that computes the
+ * dependent coordinate.
+ *
+ * In other words, if the user specifies the function
+ *
+ * qd = f(qi_1, qi_2, ..., qi_N)
+ *
+ * this class creates a new function with the form
+ *
+ * C(q) = 0 = s * f(qi_1, qi_2, ..., qi_N) - qd
+ *
+ * where qd is the value of the dependent coordinate, and qi_1, qi_2, ..., qi_N
+ * are the values of the independent coordinates. This class also introduces the
+ * optional scale factor 's', which is used to scale the value of the function
+ * that computes the dependent coordinate. By default, the scale factor is 1.
+ */
 class CompoundFunction : public SimTK::Function {
-// returns f1(x[0]) - x[1];
+
 private:
-    std::unique_ptr<const SimTK::Function> f1;
-    const double scale;
+    std::unique_ptr<const SimTK::Function> originalFunction;
+    const double scaleFactor;
 
 public:
-    
-    CompoundFunction(const SimTK::Function *cf, double scale) : f1(cf), scale(scale) {
-    }
 
+    /**
+     * Default constructor.
+     */
+    CompoundFunction(const SimTK::Function* originalFunction,
+                     double scaleFactor) :
+            originalFunction(originalFunction), scaleFactor(scaleFactor) {}
+
+    /**
+     * Compute the residual value of the compound function. The value of the
+     * original function is scaled by the scaleFactor and then subtracted from
+     * the value of the dependent coordinate.
+     */
     double calcValue(const SimTK::Vector& x) const override {
-        SimTK::Vector xf(1);
-        xf[0] = x[0];
-        return scale*f1->calcValue(xf)-x[1];
+        SimTK::Vector xi = getIndependentVariables(x);
+        SimTK::Real xd = getDependentVariable(x);
+        return scaleFactor * originalFunction->calcValue(xi) - xd;
     }
 
-    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const {
-        return calcDerivative(SimTK::ArrayViewConst_<int>(derivComponents),x); 
-    }
+    /**
+     * Compute the derivatives of the compound function. The derivatives of the
+     * original function (multiplied by the scale factor) when derivComponents
+     * contains the independent coordinate(s). The first and second derivatives
+     * with respect to the dependent coordinate are -1 and 0, respectively.
+     */
+    double calcDerivative(const SimTK::Array_<int>& derivComponents,
+            const SimTK::Vector& x) const override {
+        const int N = originalFunction->getArgumentSize();
 
-    double calcDerivative(const SimTK::Array_<int>& derivComponents, const SimTK::Vector& x) const override {
-        if (derivComponents.size() == 1){
-            if (derivComponents[0]==0){
-                SimTK::Vector x1(1);
-                x1[0] = x[0];
-                return scale*f1->calcDerivative(derivComponents, x1);
-            }
-            else if (derivComponents[0]==1)
+        // First derivative.
+        if (derivComponents.size() == 1) {
+            // Derivative with respect to the independent coordinate(s).
+            if (derivComponents[0] < N) {
+                SimTK::Vector xi = getIndependentVariables(x);
+                return scaleFactor * originalFunction->calcDerivative(
+                                             derivComponents, xi);
+
+            // Derivative with respect to the dependent coordinate.
+            } else if (derivComponents[0] == N) {
                 return -1;
-        }
-        else if(derivComponents.size() == 2){
-            if (derivComponents[0]==0 && derivComponents[1] == 0){
-                SimTK::Vector x1(1);
-                x1[0] = x[0];
-                return scale*f1->calcDerivative(derivComponents, x1);
+            }
+
+        // Second derivative.
+        } else if (derivComponents.size() == 2) {
+            // Derivative with respect to the independent coordinate(s).
+            if (derivComponents[0] < N && derivComponents[1] < N) {
+                SimTK::Vector xi = getIndependentVariables(x);
+                return scaleFactor *
+                       originalFunction->calcDerivative(derivComponents, xi);
+
+            // Derivative with respect to the dependent coordinate.
+            } else if (derivComponents[0] == N && derivComponents[1] == N) {
+                return 0;
             }
         }
+
+        // If we got here, we've reached a derivative that we don't need for the
+        // CoordinateCouplerConstraint.
         return 0;
     }
 
-    int getArgumentSize() const override {
-        return 2;
-    }
-    int getMaxDerivativeOrder() const override {
-        return 2;
+    /**
+     * Get the subset of compound function inputs that represent the independent
+     * coordinates.
+     */
+    SimTK::Vector getIndependentVariables(const SimTK::Vector& x) const {
+        const int N = originalFunction->getArgumentSize();
+        SimTK::Vector xi(N);
+        for (int i = 0; i < N; i++) {
+            xi[i] = x[i];
+        }
+        return xi;
     }
 
-    void setFunction(const SimTK::Function *cf) {
-        f1.reset(cf);
+    /**
+     * Get the compound function input that representing the dependent
+     * coordinate.
+     */
+    SimTK::Real getDependentVariable(const SimTK::Vector& x) const {
+        const int N = originalFunction->getArgumentSize();
+        return x[N];
+    }
+
+    /**
+     * Get the number of arguments to the compound function. This is the number
+     * of independent coordinates plus one (for the dependent coordinate).
+     */
+    int getArgumentSize() const override {
+        return originalFunction->getArgumentSize() + 1;
+    }
+
+    /**
+     * Get the number of derivatives that the compound function can compute.
+     */
+    int getMaxDerivativeOrder() const override {
+        return 2;
     }
 };
 
@@ -217,14 +286,15 @@ void CoordinateCouplerConstraint::extendAddToSystem(SimTK::MultibodySystem& syst
     mob_bodies.push_back(aCoordinate._bodyIndex);
     mob_qs.push_back(SimTK::MobilizerQIndex(aCoordinate._mobilizerQIndex));
 
-    if (!mob_qs.size() & (mob_qs.size() != mob_bodies.size())) {
+    if (!mob_qs.size() && (mob_qs.size() != mob_bodies.size())) {
         errorMessage = "CoordinateCouplerConstraint:: requires at least one body and coordinate." ;
         throw (Exception(errorMessage));
     }
 
     // Create and set the underlying coupler constraint function;
     const Function& f = getFunction();
-    SimTK::Function *simtkCouplerFunction = new CompoundFunction(f.createSimTKFunction(), get_scale_factor());
+    SimTK::Function *simtkCouplerFunction = new CompoundFunction(
+            f.createSimTKFunction(), get_scale_factor());
 
 
     // Now create a Simbody Constraint::CoordinateCoupler

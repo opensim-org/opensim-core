@@ -34,6 +34,8 @@ set(MOCO_SOURCES
         MocoGoal/MocoSumSquaredStateGoal.cpp
         MocoGoal/MocoContactTrackingGoal.cpp
         MocoGoal/MocoContactTrackingGoal.h
+        MocoGoal/MocoContactImpulseTrackingGoal.cpp
+        MocoGoal/MocoContactImpulseTrackingGoal.h
         MocoGoal/MocoControlGoal.h
         MocoGoal/MocoControlGoal.cpp
         MocoGoal/MocoControlTrackingGoal.h
@@ -62,6 +64,8 @@ set(MOCO_SOURCES
         MocoGoal/MocoStepTimeAsymmetryGoal.cpp
         MocoGoal/MocoStepLengthAsymmetryGoal.h
         MocoGoal/MocoStepLengthAsymmetryGoal.cpp
+        MocoGoal/MocoGeneralizedForceTrackingGoal.h
+        MocoGoal/MocoGeneralizedForceTrackingGoal.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
@@ -80,14 +84,16 @@ set(MOCO_SOURCES
         MocoFrameDistanceConstraint.cpp
         MocoOutputConstraint.h
         MocoOutputConstraint.cpp
-        Components/DiscreteController.cpp
-        Components/DiscreteController.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
         Components/DiscreteForces.h
         Components/DiscreteForces.cpp
         Components/AccelerationMotion.h
         Components/AccelerationMotion.cpp
+        Components/ControlDistributor.h
+        Components/ControlDistributor.cpp
+        Components/ActuatorInputController.h
+        Components/ActuatorInputController.cpp
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
         MocoInverse.cpp
@@ -118,6 +124,10 @@ if(OPENSIM_WITH_CASADI)
             MocoCasADiSolver/CasOCTrapezoidal.cpp
             MocoCasADiSolver/CasOCHermiteSimpson.h
             MocoCasADiSolver/CasOCHermiteSimpson.cpp
+            MocoCasADiSolver/CasOCLegendreGauss.h
+            MocoCasADiSolver/CasOCLegendreGauss.cpp
+            MocoCasADiSolver/CasOCLegendreGaussRadau.h
+            MocoCasADiSolver/CasOCLegendreGaussRadau.cpp
             MocoCasADiSolver/CasOCIterate.h
             MocoCasADiSolver/MocoCasOCProblem.h
             MocoCasADiSolver/MocoCasOCProblem.cpp

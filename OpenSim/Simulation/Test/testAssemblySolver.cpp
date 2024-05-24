@@ -26,9 +26,11 @@
 // are adequately satisfied or that an appropriate exception is thrown.
 //
 //=============================================================================
-#include <OpenSim/Simulation/osimSimulation.h>
+#include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Common/MultivariatePolynomialFunction.h>
+#include <OpenSim/Simulation/osimSimulation.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -39,6 +41,7 @@ void instrumentSetStateValues(const string& modelFile);
 void testAssembleModelWithConstraints(string modelFile);
 void testAssemblySatisfiesConstraints(string modelFile);
 double calcLigamentLengthError(const SimTK::State &s, const Model &model);
+void testCoordinateCouplerCompoundFunction();
 
 int main()
 {
@@ -53,6 +56,7 @@ int main()
         testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
         testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
         testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
+        testCoordinateCouplerCompoundFunction();
     }
     catch (const std::exception& e) {
         cout << "\ntestAssemblySolver FAILED " << e.what() <<endl;
@@ -127,7 +131,10 @@ void testAssembleModelWithConstraints(string modelFile)
     for(int i=0; i< coords.getSize(); i++) {
         cout << "Coordinate " << coords[i].getName() << " get value = " << coords[i].getValue(state) << endl;
     }
+    auto coordsInOrder = model.getCoordinateNamesInMultibodyTreeOrder();
+    cout << coordsInOrder << std::endl;
 
+    assert(coords.getSize()==coordsInOrder.size());
     // Initial coordinates after initial assembly
     Vector q0 = state.getQ();
 
@@ -365,4 +372,77 @@ double calcLigamentLengthError(const SimTK::State &s, const Model &model)
     }
 
     return error;
+}
+
+void testCoordinateCouplerCompoundFunction() {
+
+    // Test that CoordinateCouplerConstraint properly handles functions with
+    // multiple independent variables.
+
+    // Helper function.
+    auto createConstrainedPendulumModel = [](const Function& f) {
+        Model model = ModelFactory::createNLinkPendulum(3);
+
+        auto* constraint = new CoordinateCouplerConstraint();
+        constraint->setFunction(f);
+        constraint->setDependentCoordinateName("q2");
+        Array<std::string> independentCoordinateNames;
+        independentCoordinateNames.append("q0");
+        independentCoordinateNames.append("q1");
+        constraint->setIndependentCoordinateNames(independentCoordinateNames);
+
+        model.addConstraint(constraint);
+        model.finalizeConnections();
+
+        return model;
+    };
+
+    // Linear function.
+    // ----------------
+    {
+        Array<double> coeffs;
+        coeffs.append(1.0);
+        coeffs.append(2.0);
+        coeffs.append(3.0);
+        LinearFunction function(coeffs);
+        auto model = createConstrainedPendulumModel(function);
+        // Set the initial state to a random value.
+        auto state = model.initSystem();
+        SimTK::Vector q_rand = SimTK::Test::randVector(model.getNumStateVariables());
+        model.setStateVariableValues(state, q_rand);
+        model.assemble(state);
+        // Compute the constraint error.
+        const auto& q = state.getQ();
+        auto error = q[2] - (coeffs[0]*q[0] + coeffs[1]*q[1] + coeffs[2]);
+        ASSERT_EQUAL(0.0, error, 1e-10, __FILE__, __LINE__,
+                "CoordinateCouplerConstraint failed to constrain the dependent "
+                "coordinate based on a LinearFunction.");
+    }
+
+    // Multi-variate polynomial function.
+    // ----------------------------------
+    {
+        // q2 = c0 + c1*q1 + c2*q1^2 + c3*q0 + c4*q0*q1 + c5*q0^2.
+        SimTK::Vector coeffs(6, 1.0);
+        coeffs[1] = 2.0;
+        coeffs[2] = 3.0;
+        coeffs[3] = 4.0;
+        coeffs[4] = 5.0;
+        coeffs[5] = 6.0;
+        MultivariatePolynomialFunction multiPoly(coeffs, 2, 2);
+        auto model = createConstrainedPendulumModel(multiPoly);
+        // Set the initial state to a random value.
+        auto state = model.initSystem();
+        SimTK::Vector q_rand = SimTK::Test::randVector(model.getNumStateVariables());
+        model.setStateVariableValues(state, q_rand);
+        model.assemble(state);
+        // Compute the constraint error.
+        const auto& q = state.getQ();
+        auto polyValue = coeffs[0] + coeffs[1]*q[1] + coeffs[2]*q[1]*q[1] +
+            coeffs[3]*q[0] + coeffs[4]*q[0]*q[1] + coeffs[5]*q[0]*q[0];
+        auto error = q[2] - polyValue;
+        ASSERT_EQUAL(0.0, error, 1e-10, __FILE__, __LINE__,
+                "CoordinateCouplerConstraint failed to constrain the dependent "
+                "coordinate based on a MultivariatePolynomialFunction.");
+    }
 }

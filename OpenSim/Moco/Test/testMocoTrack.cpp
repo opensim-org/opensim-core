@@ -19,19 +19,20 @@
 #include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Moco/osimMoco.h>
 
-#define CATCH_CONFIG_MAIN
+#include <catch2/catch_all.hpp>
 #include "Testing.h"
 
 using namespace OpenSim;
 
 TEST_CASE("MocoTrack interface") {
     MocoTrack track;
-    track.setModel(ModelProcessor("testMocoTrack_subject01.osim"));
+    track.setModel(ModelProcessor("walk_gait1018_subject01.osim"));
 
     SECTION("apply_tracked_states_to_guess() true, but no states reference") {
         track.set_apply_tracked_states_to_guess(true);
         CHECK_THROWS_WITH(track.initialize(),
-            Catch::Contains("Property 'apply_tracked_states_to_guess' was "
+            Catch::Matchers::ContainsSubstring(
+                    "Property 'apply_tracked_states_to_guess' was "
                     "enabled, but no states reference data was provided."));
     }
     track.set_apply_tracked_states_to_guess(false);
@@ -39,8 +40,9 @@ TEST_CASE("MocoTrack interface") {
     SECTION("negative control effort weight") {
         track.set_control_effort_weight(-1);
         CHECK_THROWS_WITH(track.initialize(),
-            Catch::Contains("Expected a non-negative control effort weight, " 
-                    "but got a weight with value"));
+            Catch::Matchers::ContainsSubstring(
+                "Expected a non-negative control effort weight, "
+                "but got a weight with value"));
     }
 }
 
@@ -48,7 +50,7 @@ TEST_CASE("MocoTrack gait10dof18musc", "[casadi]") {
 
     MocoTrack track;
 
-    track.setModel(ModelProcessor("testMocoTrack_subject01.osim") |
+    track.setModel(ModelProcessor("walk_gait1018_subject01.osim") |
             ModOpRemoveMuscles() | ModOpAddReserves(100) |
             ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml"));
     track.setStatesReference(

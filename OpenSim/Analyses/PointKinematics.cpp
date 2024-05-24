@@ -223,12 +223,12 @@ constructDescription()
     strcat(descrip,"(position, velocity, or acceleration) of\n");
     
     if(_relativeToBody){
-        sprintf(tmp,"point (%lf, %lf, %lf) on body %s relative to body %s of model %s.\n",
+        snprintf(tmp, BUFFER_LENGTH, "point (%lf, %lf, %lf) on body %s relative to body %s of model %s.\n",
             _point[0],_point[1],_point[2],_body->getName().c_str(),
             _relativeToBody->getName().c_str(), _model->getName().c_str());
     }
     else{
-        sprintf(tmp,"point (%lf, %lf, %lf) on the %s of model %s.\n",
+        snprintf(tmp, BUFFER_LENGTH, "point (%lf, %lf, %lf) on the %s of model %s.\n",
             _point[0],_point[1],_point[2],_body->getName().c_str(),
             _model->getName().c_str());
     }
@@ -486,24 +486,6 @@ Storage* PointKinematics::
 getPositionStorage()
 {
     return(_pStore);
-}
-
-//-----------------------------------------------------------------------------
-// STORAGE CAPACITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the capacity increments of all storage instances.
- *
- * @param aIncrement Increment by which storage capacities will be increased
- * when storage capacities run out.
- */
-void PointKinematics::
-setStorageCapacityIncrements(int aIncrement)
-{
-    _aStore->setCapacityIncrement(aIncrement);
-    _vStore->setCapacityIncrement(aIncrement);
-    _pStore->setCapacityIncrement(aIncrement);
 }
 
 

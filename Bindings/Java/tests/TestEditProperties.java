@@ -63,6 +63,22 @@ class TestEditProperties {
         }
         long t3  = System.currentTimeMillis();
         System.out.println("Time to perform 10 edits (ms):"+(t3 - t2));
+        // new style properties which are lists we test append and set 
+        // Property class has no interface to remove/delete/shrink the list!
+        OutputReporter outputReporter = new OutputReporter();
+        AbstractProperty pathsList = outputReporter.getPropertyByName("output_paths");
+        PropertyStringList propertyStringList = PropertyStringList.getAs(pathsList);
+        propertyStringList.appendValue("Output1");
+        propertyStringList.appendValue("Output2");
+        assert propertyStringList.findIndex("Output2")==1;
+        assert propertyStringList.size()==2;
+        System.out.println(propertyStringList.toString());
+        propertyStringList.setValue(0, "Output0");
+        System.out.println(propertyStringList.toString());
+        assert propertyStringList.getValue(0).equals("Output0");
+        propertyStringList.removeValueAtIndex(0);
+        assert propertyStringList.size()==1;
+        assert propertyStringList.getValue(0).equals("Output2");
         System.out.println("Test finished!");
         System.exit(0);
     }

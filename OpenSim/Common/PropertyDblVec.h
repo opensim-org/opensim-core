@@ -27,6 +27,7 @@
 #pragma warning( disable : 4251 )
 #endif
 
+#include "Assertion.h"
 #include "osimCommonDLL.h"
 #include <string>
 #include "Property_Deprecated.h"
@@ -120,7 +121,7 @@ public:
     using Property_Deprecated::setValue;
     /** set value of this property from an array of doubles of equal or greater length */
     void setValue(const Array<double> &anArray) override {
-        assert(anArray.getSize() >= M);
+        OPENSIM_ASSERT(anArray.getSize() >= M);
         for(int i=0;i<M; i++)
             _dblvec[i] = anArray[i];
     }
@@ -130,7 +131,7 @@ public:
     const SimTK::Vec<M>& getValueDblVec() const {return SimTK::Vec<M>::getAs(&_dblvec[0]); };
     /** set value from double array */ // to be used by the serialization code
     void setValue(int aSize, const double aArray[]) override { 
-        assert(aSize == M);
+        OPENSIM_ASSERT(aSize == M);
         setValue(SimTK::Vec<M>::getAs(aArray));
     };
 #ifndef SWIG

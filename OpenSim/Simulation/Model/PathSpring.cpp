@@ -25,8 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "PathSpring.h"
-#include "GeometryPath.h"
-#include "PointForceDirection.h"
 
 //=============================================================================
 // STATICS
@@ -34,8 +32,6 @@
 using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
-
-static const Vec3 DefaultPathSpringColor(0, 1, 0); // Green for backward compatibility
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -64,10 +60,14 @@ PathSpring::PathSpring(const string& name, double restLength,
 void PathSpring::constructProperties()
 {
     setAuthors("Ajay Seth");
-    constructProperty_GeometryPath(GeometryPath());
+    constructProperty_path(GeometryPath());
     constructProperty_resting_length(SimTK::NaN);
     constructProperty_stiffness(SimTK::NaN);
     constructProperty_dissipation(SimTK::NaN);
+
+    // override default GeometryPath color (at time of writing, grey) with
+    // green for backwards-compatibility
+    upd_path().upd_Appearance().set_color({0, 1, 0});
 }
 
 //_____________________________________________________________________________
@@ -106,9 +106,6 @@ void PathSpring::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    GeometryPath& path = upd_GeometryPath();
-    path.setDefaultColor(DefaultPathSpringColor);
-
     OPENSIM_THROW_IF_FRMOBJ(
         (SimTK::isNaN(get_resting_length()) || get_resting_length() < 0),
         InvalidPropertyValue, getProperty_resting_length().getName(),
@@ -139,7 +136,7 @@ void PathSpring::extendFinalizeFromProperties()
  */
 double PathSpring::getLength(const SimTK::State& s) const
 {
-    return getGeometryPath().getLength(s);
+    return getPath().getLength(s);
 }
 
 double PathSpring::getStretch(const SimTK::State& s) const
@@ -152,7 +149,7 @@ double PathSpring::getStretch(const SimTK::State& s) const
 
 double PathSpring::getLengtheningSpeed(const SimTK::State& s) const
 {
-    return getGeometryPath().getLengtheningSpeed(s);
+    return getPath().getLengtheningSpeed(s);
 }
 
 double PathSpring::getTension(const SimTK::State& s) const
@@ -174,13 +171,13 @@ extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
     Super::extendPostScale(s, scaleSet);
 
-    GeometryPath& path = upd_GeometryPath();
+    AbstractGeometryPath& path = updPath();
     if (path.getPreScaleLength(s) > 0.0)
     {
         double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
         upd_resting_length() *= scaleFactor;
 
-        // Clear the pre-scale length that was stored in the GeometryPath.
+        // Clear the pre-scale length that was stored in the AbstractGeometryPath.
         path.setPreScaleLength(s, 0.0);
     }
 }
@@ -191,9 +188,10 @@ extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 /**
  * Compute the moment-arm of this muscle about a coordinate.
  */
-double PathSpring::computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const
+double PathSpring::computeMomentArm(const SimTK::State& s,
+        const Coordinate& aCoord) const
 {
-    return getGeometryPath().computeMomentArm(s, aCoord);
+    return getPath().computeMomentArm(s, aCoord);
 }
 
 
@@ -202,17 +200,7 @@ void PathSpring::computeForce(const SimTK::State& s,
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
                               SimTK::Vector& generalizedForces) const
 {
-    const GeometryPath& path = getGeometryPath();
+    const AbstractGeometryPath& path = getPath();
     const double& tension = getTension(s);
-
-    OpenSim::Array<PointForceDirection*> PFDs;
-    path.getPointForceDirections(s, &PFDs);
-
-    for (int i=0; i < PFDs.getSize(); i++) {
-        applyForceToPoint(s, PFDs[i]->frame(), PFDs[i]->point(), 
-                          tension*PFDs[i]->direction(), bodyForces);
-    }
-
-    for(int i=0; i < PFDs.getSize(); i++)
-        delete PFDs[i];
+    path.addInEquivalentForces(s, tension, bodyForces, generalizedForces);
 }

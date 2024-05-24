@@ -268,8 +268,8 @@ int main()
         slopeAndIntercept2[0] = 0.95/(finalTime-initialTime);  slopeAndIntercept2[1] = 0.05;
         
         // Set the individual muscle control functions for the prescribed muscle controller
-        muscleController->prescribeControlForActuator("muscle1", new LinearFunction(slopeAndIntercept1));
-        muscleController->prescribeControlForActuator("muscle2", new LinearFunction(slopeAndIntercept2));
+        muscleController->prescribeControlForActuator("muscle1", LinearFunction(slopeAndIntercept1));
+        muscleController->prescribeControlForActuator("muscle2", LinearFunction(slopeAndIntercept2));
 
         // Add the muscle controller to the model
         osimModel.addController(muscleController);

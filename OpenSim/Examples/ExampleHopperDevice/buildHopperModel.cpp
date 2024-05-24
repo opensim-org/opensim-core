@@ -168,7 +168,7 @@ Model buildHopper(bool showVisualizer) {
     auto brain = new PrescribedController();
     brain->setActuators(hopper.updActuators());
     double t[3] = {0.0, 2.0, 3.9}, x[3] = {0.3, 1.0, 0.1};
-    auto controlFunction = new PiecewiseConstantFunction(3, t, x);
+    PiecewiseConstantFunction controlFunction(3, t, x);
     brain->prescribeControlForActuator("vastus", controlFunction);
     hopper.addController(brain);
 

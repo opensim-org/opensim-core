@@ -779,23 +779,26 @@ void createLuxoJr(OpenSim::Model& model){
     //________________________________________________________________________
     
     // specify a piecwise linear function for the muscle excitations
-    PiecewiseConstantFunction* x_of_t = new PiecewiseConstantFunction(3, times,
-                                                                  excitations);
-    
+    PiecewiseConstantFunction x_of_t(3, times, excitations);
+
     
     PrescribedController* kneeController = new PrescribedController();
     kneeController->addActuator(*kneeExtensorLeft);
     kneeController->addActuator(*kneeExtensorRight);
-    kneeController->prescribeControlForActuator(0, x_of_t);
-    kneeController->prescribeControlForActuator(1, x_of_t->clone());
+    kneeController->prescribeControlForActuator(
+        kneeExtensorLeft->getAbsolutePathString(), x_of_t);
+    kneeController->prescribeControlForActuator(
+        kneeExtensorRight->getAbsolutePathString(), x_of_t);
     
     model.addController(kneeController);
     
     PrescribedController* backController = new PrescribedController();
     backController->addActuator(*backExtensorLeft);
     backController->addActuator(*backExtensorRight);
-    backController->prescribeControlForActuator(0, x_of_t->clone());
-    backController->prescribeControlForActuator(1, x_of_t->clone());
+    backController->prescribeControlForActuator(
+        backExtensorLeft->getAbsolutePathString(), x_of_t);
+    backController->prescribeControlForActuator(
+        backExtensorRight->getAbsolutePathString(), x_of_t);
     
     model.addController(backController);
 
