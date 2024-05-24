@@ -71,7 +71,10 @@ This settling simulation is terminated when the largest change in the Secondary
 Coordinates between time steps is less than the settle_threshold. 
 
 ### References
-[1] 
+[1] Smith, C. R., Vignos, M. F., Lenhart, R. L., Kaiser, J., & Thelen, D. G.
+    (2016). The influence of component alignment and ligament properties on 
+    tibiofemoral contact forces in total knee replacement. 
+    Journal of biomechanical engineering, 138(2), 021017.
 
 [2] 
 
