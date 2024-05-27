@@ -202,12 +202,6 @@ std::unique_ptr<Model> createPendulumModel() {
     q0.setName("q0");
     model->addJoint(j0);
 
-    auto* tau0 = new CoordinateActuator();
-    tau0->setCoordinate(&j0->updCoordinate());
-    tau0->setName("tau0");
-    tau0->setOptimalForce(1);
-    model->addForce(tau0);
-
     // Add display geometry.
     Ellipsoid bodyGeometry(0.1, 0.5, 0.1);
     SimTK::Transform transform(SimTK::Vec3(0, 0.5, 0));
@@ -1275,7 +1269,6 @@ TEMPLATE_TEST_CASE("Guess time-stepping", "[tropter]",
     problem.setTimeBounds(0, 1);
     problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, initialAngle);
     problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, initialSpeed);
-    problem.setControlInfo("/forceset/tau0", 0);
     auto& solver = study.initSolver<TestType>();
     solver.set_num_mesh_intervals(20);
     solver.setGuess("random");
@@ -1301,15 +1294,14 @@ TEMPLATE_TEST_CASE("Guess time-stepping", "[tropter]",
         Manager manager(modelCopy, state);
         manager.integrate(1.0);
 
-        auto controlsTable = modelCopy.getControlsTable();
-        auto labels = controlsTable.getColumnLabels();
-        for (auto& label : labels) { label = "/forceset/" + label; }
-        controlsTable.setColumnLabels(labels);
+        auto statesTable = manager.getStatesTable();
+        // No controls, create an empty controls table.
+        auto controlsTable = TimeSeriesTable(
+                statesTable.getIndependentColumn());
         const auto trajectoryFromManager =
                 MocoTrajectory::createFromStatesControlsTables(
                         study.getProblem().createRep(),
-                        manager.getStatesTable(),
-                        controlsTable);
+                        statesTable, controlsTable);
         SimTK_TEST(solutionSim.compareContinuousVariablesRMS(
                            trajectoryFromManager) < 1e-2);
     }
