@@ -1089,7 +1089,8 @@ void MocoTrajectory::randomize(bool add, const SimTK::Random& randGen) {
 
     // If the controls trajectory has no columns, create an empty vector for the
     // control names.
-    std::vector<std::string> controlNames = controlsTrajectory.getNumColumns()
+    std::vector<std::string> controlNames = 
+            controlsTrajectory.getNumColumns() > 0
             ? controlsTrajectory.getColumnLabels()
             : std::vector<std::string>();
 

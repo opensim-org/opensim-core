@@ -64,7 +64,7 @@ MocoTrajectory MocoSolver::createGuessTimeStepping() const {
     const auto& statesTable = manager.getStatesTable();
 
     TimeSeriesTable controlsTable;
-    if (model.getNumControls()) {
+    if (model.getNumControls() > 0) {
         controlsTable = model.getControlsTable();
         // Forward simulations populate the model's ControlsTables, using the 
         // names of actuators for column labels. MocoTrajectory uses actuator 
