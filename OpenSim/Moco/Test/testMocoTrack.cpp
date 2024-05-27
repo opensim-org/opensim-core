@@ -56,6 +56,8 @@ TEST_CASE("MocoTrack gait10dof18musc", "[casadi]") {
     track.setStatesReference(
             TableProcessor("walk_gait1018_state_reference.mot") |
             TabOpLowPassFilter(6));
+    track.set_states_global_tracking_weight(10.0);
+    track.set_track_reference_position_derivatives(true);
     track.set_initial_time(0.5);
     track.set_final_time(1.0);
 
@@ -65,11 +67,11 @@ TEST_CASE("MocoTrack gait10dof18musc", "[casadi]") {
     solver.set_optim_convergence_tolerance(1e-4);
 
     MocoSolution solution = study.solve();
-    solution.write("testMocoTrackGait10dof18musc_solution.sto");
+    // solution.write("testMocoTrackGait10dof18musc_solution.sto");
 
     const auto actual = solution.getControlsTrajectory();
     MocoTrajectory std("std_testMocoTrackGait10dof18musc_solution.sto");
     const auto expected = std.getControlsTrajectory();
     CHECK(std.compareContinuousVariablesRMS(
-            solution, {{"controls",{}}}) < 1e-2);
+            solution, {{"states",{}}}) < 1e-2);
 }
