@@ -56,12 +56,16 @@ TEST_CASE("MocoTrack gait10dof18musc", "[casadi]") {
     track.setStatesReference(
             TableProcessor("walk_gait1018_state_reference.mot") |
             TabOpLowPassFilter(6));
-    track.set_initial_time(0.01);
-    track.set_final_time(1.3);
-    track.print("testMocoTrack_setup.xml");
+    track.set_initial_time(0.5);
+    track.set_final_time(1.0);
 
-    MocoSolution solution = track.solve();
-    //solution.write("testMocoTrackGait10dof18musc_solution.sto");
+    MocoStudy study = track.initialize();
+    auto& solver = study.updSolver<MocoCasADiSolver>();
+    solver.set_optim_constraint_tolerance(1e-4);
+    solver.set_optim_convergence_tolerance(1e-4);
+
+    MocoSolution solution = study.solve();
+    solution.write("testMocoTrackGait10dof18musc_solution.sto");
 
     const auto actual = solution.getControlsTrajectory();
     MocoTrajectory std("std_testMocoTrackGait10dof18musc_solution.sto");
