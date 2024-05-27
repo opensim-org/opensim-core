@@ -61,11 +61,11 @@ TEST_CASE("MocoTrack gait10dof18musc", "[casadi]") {
 
     MocoStudy study = track.initialize();
     auto& solver = study.updSolver<MocoCasADiSolver>();
-    solver.set_optim_constraint_tolerance(1e-4);
-    solver.set_optim_convergence_tolerance(1e-4);
+    solver.set_optim_constraint_tolerance(1e-5);
+    solver.set_optim_convergence_tolerance(1e-5);
 
     MocoSolution solution = study.solve();
-    solution.write("testMocoTrackGait10dof18musc_solution.sto");
+    // solution.write("testMocoTrackGait10dof18musc_solution.sto");
 
     const auto actual = solution.getControlsTrajectory();
     MocoTrajectory std("std_testMocoTrackGait10dof18musc_solution.sto");
