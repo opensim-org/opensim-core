@@ -364,20 +364,20 @@ private:
         //    path_0         x     *
         //    kinematic_0    x     ^
         //    residual_0     x     x
-        //    interp_con_0   x     x     x
         //    defect_0       x     x     x
+        //    interp_con_0   x     x     x
         //    projection_1               x
         //    path_1                     x     *
         //    kinematic_1                x     ^
         //    residual_1                 x     x
-        //    interp_con_1               x     x     x
         //    defect_1                   x     x     x
+        //    interp_con_1               x     x     x
         //    projection_2                           x
         //    path_2                                 x     *
         //    kinematic_2                            x     ^
         //    residual_2                             x     x
-        //    interp_con_2                           x     x     x
         //    defect_2                               x     x     x
+        //    interp_con_2                           x     x     x
         //    projection_3                                       x
         //    path_3                                             x
         //    kinematic_3                                        x
@@ -423,6 +423,9 @@ private:
                 copyColumn(constraints.multibody_residuals, igrid + i);
                 copyColumn(constraints.auxiliary_residuals, igrid + i);
             }
+
+            // Defect constraints.
+            copyColumn(constraints.defects, imesh);
             
             // Interpolating controls.
             if (m_pointsForInterpControls.numel()) {
@@ -431,23 +434,11 @@ private:
                 }
             }
 
-            // Defect constraints.
-            copyColumn(constraints.defects, imesh);
-
             // Projection constraints.
             copyColumn(constraints.projection, imesh);
         }
 
         // Final grid point.
-        copyColumn(constraints.kinematic_qerr, m_numMeshPoints - 1);
-        copyColumn(constraints.kinematic_uerr, m_numMeshPoints - 1);
-        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-            copyColumn(constraints.kinematic_udoterr, m_numGridPoints - 1);
-        } else {
-            copyColumn(constraints.kinematic_udoterr, m_numMeshPoints - 1);
-        }
-        copyColumn(constraints.multibody_residuals, m_numGridPoints - 1);
-        copyColumn(constraints.auxiliary_residuals, m_numGridPoints - 1);
         if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
             for (const auto& path : constraints.path) {
                 copyColumn(path, m_numGridPoints - 1);
@@ -457,6 +448,15 @@ private:
                 copyColumn(path, m_numMeshPoints - 1);
             }
         }
+        copyColumn(constraints.kinematic_qerr, m_numMeshPoints - 1);
+        copyColumn(constraints.kinematic_uerr, m_numMeshPoints - 1);
+        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+            copyColumn(constraints.kinematic_udoterr, m_numGridPoints - 1);
+        } else {
+            copyColumn(constraints.kinematic_udoterr, m_numMeshPoints - 1);
+        }
+        copyColumn(constraints.multibody_residuals, m_numGridPoints - 1);
+        copyColumn(constraints.auxiliary_residuals, m_numGridPoints - 1);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
                 "Internal error: final value of the index into the flattened "
@@ -548,6 +548,9 @@ private:
                 copyColumn(out.auxiliary_residuals, igrid + i);
             }
 
+            // Defect constraints.
+            copyColumn(out.defects, imesh);
+
             // Interpolating controls.
             if (m_pointsForInterpControls.numel()) {
                 for (int i = 0; i < N-1; ++i) {
@@ -555,23 +558,11 @@ private:
                 }
             }
 
-            // Defect constraints.
-            copyColumn(out.defects, imesh);
-
             // Projection constraints.
             copyColumn(out.projection, imesh);
         }
 
         // Final grid point.
-        copyColumn(out.kinematic_qerr, m_numMeshPoints - 1);
-        copyColumn(out.kinematic_uerr, m_numMeshPoints - 1);
-        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-            copyColumn(out.kinematic_udoterr, m_numGridPoints - 1);
-        } else {
-            copyColumn(out.kinematic_udoterr, m_numMeshPoints - 1);
-        }
-        copyColumn(out.multibody_residuals, m_numGridPoints - 1);
-        copyColumn(out.auxiliary_residuals, m_numGridPoints - 1);
         if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
             for (auto& path : out.path) {
                 copyColumn(path, m_numGridPoints - 1);
@@ -581,6 +572,15 @@ private:
                 copyColumn(path, m_numMeshPoints - 1);
             }
         }
+        copyColumn(out.kinematic_qerr, m_numMeshPoints - 1);
+        copyColumn(out.kinematic_uerr, m_numMeshPoints - 1);
+        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+            copyColumn(out.kinematic_udoterr, m_numGridPoints - 1);
+        } else {
+            copyColumn(out.kinematic_udoterr, m_numMeshPoints - 1);
+        }
+        copyColumn(out.multibody_residuals, m_numGridPoints - 1);
+        copyColumn(out.auxiliary_residuals, m_numGridPoints - 1);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
                 "Internal error: final value of the index into the flattened "
