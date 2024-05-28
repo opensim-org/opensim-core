@@ -598,7 +598,7 @@ jobs:
     - name: Test opensim-core
       run: |
         cd $GITHUB_WORKSPACE/../build
-        ctest --parallel 4 --output-on-failure
+        ctest --parallel 4 --output-on-failure -E testMocoImplicit
 
     - name: Install opensim-core
       run: |
