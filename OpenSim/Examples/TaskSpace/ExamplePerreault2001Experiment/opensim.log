@@ -1,0 +1,742 @@
+[2024-01-18 08:29:30.166] [info] Updating Model file from 30000 to latest format...
+[2024-01-18 08:29:30.208] [info] Loaded model MoBL_2016_Ideal_Muscles from file C:\Users\nathan.pickle\Documents\Source\OpenSim4\opensim-core-source\OpenSim\Examples\TaskSpace\ExamplePerreault2001Experiment\mobl_2016_ideal_muscles.osim
+[2024-01-18 08:29:30.210] [warning] Couldn't find file 'thorax.vtp'.
+[2024-01-18 08:29:30.211] [warning] Couldn't find file 'clavicle.vtp'.
+[2024-01-18 08:29:30.211] [warning] Couldn't find file 'scapula.vtp'.
+[2024-01-18 08:29:30.233] [warning] Couldn't find file 'lunate.vtp'.
+[2024-01-18 08:29:30.233] [warning] Couldn't find file 'sdfastSCAPHOIDw.vtp'.
+[2024-01-18 08:29:30.233] [warning] Couldn't find file 'sdfastPISIFORMw.vtp'.
+[2024-01-18 08:29:30.233] [warning] Couldn't find file 'sdfastTRIQUETRALw.vtp'.
+[2024-01-18 08:29:30.234] [warning] Couldn't find file 'sdfast_1seg_hand_fr_c_5mc.vtp'.
+[2024-01-18 08:29:30.234] [warning] Couldn't find file 'sdfast_1seg_hand_fr_c_4mc.vtp'.
+[2024-01-18 08:29:30.234] [warning] Couldn't find file 'sdfast_1seg_hand_fr_c_3mc.vtp'.
+[2024-01-18 08:29:30.234] [warning] Couldn't find file 'sdfast_1seg_hand_fr_c_2mc.vtp'.
+[2024-01-18 08:29:30.234] [warning] Couldn't find file 'sdfast_1seg_hand_fr_c_trapezium.vtp'.
+[2024-01-18 08:29:30.234] [warning] Couldn't find file 'sdfast_1seg_hand_fr_c_trapezoid.vtp'.
+[2024-01-18 08:29:30.234] [warning] Couldn't find file 'sdfast_1seg_hand_fr_c_hamate.vtp'.
+[2024-01-18 08:29:30.235] [warning] Couldn't find file 'capitate.vtp'.
+[2024-01-18 08:29:30.235] [warning] Couldn't find file 'hand_2proxph.vtp'.
+[2024-01-18 08:29:30.235] [warning] Couldn't find file 'hand_2midph.vtp'.
+[2024-01-18 08:29:30.235] [warning] Couldn't find file 'hand_2distph.vtp'.
+[2024-01-18 08:29:30.235] [warning] Couldn't find file 'hand_3proxph.vtp'.
+[2024-01-18 08:29:30.235] [warning] Couldn't find file 'hand_3midph.vtp'.
+[2024-01-18 08:29:30.235] [warning] Couldn't find file 'hand_3distph.vtp'.
+[2024-01-18 08:29:30.236] [warning] Couldn't find file 'hand_4proxph.vtp'.
+[2024-01-18 08:29:30.236] [warning] Couldn't find file 'hand_4midph.vtp'.
+[2024-01-18 08:29:30.236] [warning] Couldn't find file 'hand_4distph.vtp'.
+[2024-01-18 08:29:30.236] [warning] Couldn't find file 'hand_5proxph.vtp'.
+[2024-01-18 08:29:30.236] [warning] Couldn't find file 'hand_5midph.vtp'.
+[2024-01-18 08:29:30.236] [warning] Couldn't find file 'hand_5distph.vtp'.
+[2024-01-18 08:29:30.236] [warning] Couldn't find file 'hand_thumbprox.vtp'.
+[2024-01-18 08:29:30.236] [warning] Couldn't find file 'hand_thumbdist.vtp'.
+[2024-01-18 08:29:30.236] [warning] Couldn't find file 'hand_1mc.vtp'.
+[2024-01-18 08:29:30.236] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.236] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.236] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.237] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-18 08:29:30.238] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-18 08:29:50.119] [warning] Visualizer couldn't open thorax.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\thorax.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\thorax.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.120] [warning] Visualizer couldn't open clavicle.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\clavicle.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\clavicle.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.121] [warning] Visualizer couldn't open scapula.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\scapula.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\scapula.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.140] [warning] Visualizer couldn't open lunate.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\lunate.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\lunate.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.140] [warning] Visualizer couldn't open sdfastSCAPHOIDw.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfastSCAPHOIDw.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfastSCAPHOIDw.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.140] [warning] Visualizer couldn't open sdfastPISIFORMw.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfastPISIFORMw.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfastPISIFORMw.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.140] [warning] Visualizer couldn't open sdfastTRIQUETRALw.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfastTRIQUETRALw.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfastTRIQUETRALw.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open sdfast_1seg_hand_fr_c_5mc.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfast_1seg_hand_fr_c_5mc.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfast_1seg_hand_fr_c_5mc.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open sdfast_1seg_hand_fr_c_4mc.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfast_1seg_hand_fr_c_4mc.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfast_1seg_hand_fr_c_4mc.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open sdfast_1seg_hand_fr_c_3mc.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfast_1seg_hand_fr_c_3mc.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfast_1seg_hand_fr_c_3mc.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open sdfast_1seg_hand_fr_c_2mc.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfast_1seg_hand_fr_c_2mc.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfast_1seg_hand_fr_c_2mc.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open sdfast_1seg_hand_fr_c_trapezium.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfast_1seg_hand_fr_c_trapezium.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfast_1seg_hand_fr_c_trapezium.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open sdfast_1seg_hand_fr_c_trapezoid.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfast_1seg_hand_fr_c_trapezoid.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfast_1seg_hand_fr_c_trapezoid.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open sdfast_1seg_hand_fr_c_hamate.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfast_1seg_hand_fr_c_hamate.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\sdfast_1seg_hand_fr_c_hamate.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open capitate.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\capitate.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\capitate.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open hand_2proxph.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_2proxph.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_2proxph.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open hand_2midph.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_2midph.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_2midph.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open hand_2distph.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_2distph.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_2distph.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open hand_3proxph.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_3proxph.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_3proxph.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open hand_3midph.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_3midph.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_3midph.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open hand_3distph.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_3distph.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_3distph.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open hand_4proxph.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_4proxph.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_4proxph.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.141] [warning] Visualizer couldn't open hand_4midph.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_4midph.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_4midph.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.142] [warning] Visualizer couldn't open hand_4distph.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_4distph.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_4distph.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.142] [warning] Visualizer couldn't open hand_5proxph.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_5proxph.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_5proxph.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.142] [warning] Visualizer couldn't open hand_5midph.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_5midph.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_5midph.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.142] [warning] Visualizer couldn't open hand_5distph.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_5distph.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_5distph.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.142] [warning] Visualizer couldn't open hand_thumbprox.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_thumbprox.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_thumbprox.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.142] [warning] Visualizer couldn't open hand_thumbdist.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_thumbdist.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_thumbdist.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:29:50.142] [warning] Visualizer couldn't open hand_1mc.vtp because: SimTK Exception thrown at PolygonalMesh.cpp:411:
+  Error detected by Simbody method PolygonalMesh::loadVtpFile(): Attempt to load a VTK PolyData (.vtp) file from file name 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_1mc.vtp' failed with message:
+  SimTK Exception thrown at Xml.cpp:108:
+  Error detected by Simbody method Xml::readFromFile(): Failed to load the Xml file 'C:\OpenSim 4.5-2023-07-13-4cc8683\opensim\..\\Geometry\hand_1mc.vtp' with error 'Failed to open file (line=0, col=0)'.
+  (Required condition 'loadOK' was not met.)
+
+  (Required condition '!"failed"' was not met.)
+
+[2024-01-18 08:30:12.674] [warning] Running tool MoBL_2016_Ideal_Muscles...
+[2024-01-18 08:30:12.674] [info] No external loads will be applied (external loads file not specified).
+[2024-01-18 08:30:12.685] [cout] [info] MODEL: MoBL_2016_Ideal_Muscles
+
+numStates = 40
+numCoordinates = 20
+numSpeeds = 20
+numActuators = 47
+numBodies = 11
+numConstraints = 13
+numProbes = 0
+
+ANALYSES (total: 2)
+analysis[0] = Un-named analysis.
+analysis[1] = Un-named analysis.
+
+BODIES (total: 11)
+body[0] = clavicle. mass: 0.156
+              moments of inertia:  ~[0.00024259,0.00025526,4.442e-05]
+              products of inertia: ~[-1.898e-05,-6.994e-05,5.371e-05]
+body[1] = clavphant. mass: 0.0001
+              moments of inertia:  ~[1,1,1]
+              products of inertia: ~[0,0,0]
+body[2] = scapula. mass: 0.70396
+              moments of inertia:  ~[0.0012429,0.0011504,0.0013651]
+              products of inertia: ~[0.0004494,0.00040922,0.0002411]
+body[3] = scapphant. mass: 0.0001
+              moments of inertia:  ~[1,1,1]
+              products of inertia: ~[0,0,0]
+body[4] = humphant. mass: 0.0001
+              moments of inertia:  ~[1,1,1]
+              products of inertia: ~[0,0,0]
+body[5] = humphant1. mass: 0.0001
+              moments of inertia:  ~[1,1,1]
+              products of inertia: ~[0,0,0]
+body[6] = humerus. mass: 1.99757
+              moments of inertia:  ~[0.0122776,0.00255133,0.0125789]
+              products of inertia: ~[-0.00034741,-0.0002325,0.0012293]
+body[7] = ulna. mass: 1.1053
+              moments of inertia:  ~[0.00541309,0.00115318,0.00494361]
+              products of inertia: ~[0.00031686,-7.615e-05,0.00109169]
+body[8] = radius. mass: 0.23359
+              moments of inertia:  ~[0.00043855,8.859e-05,0.00040258]
+              products of inertia: ~[3.014e-05,-4.24e-06,6.418e-05]
+body[9] = proximal_row. mass: 0.0001
+              moments of inertia:  ~[1e-05,1e-05,1e-05]
+              products of inertia: ~[0,0,0]
+body[10] = hand. mass: 0.5819
+              moments of inertia:  ~[0.00011,6e-05,0.00015]
+              products of inertia: ~[9e-07,-2e-07,1.2e-05]
+
+JOINTS (total: 11)
+joint[0] = sternoclavicular. parent: ground_offset, child: clavicle_offset
+joint[1] = unrotscap. parent: clavicle_offset, child: clavphant_offset
+joint[2] = acromioclavicular. parent: clavphant_offset, child: scapula_offset
+joint[3] = unrothum. parent: scapula_offset, child: scapphant_offset
+joint[4] = shoulder0. parent: scapphant_offset, child: humphant_offset
+joint[5] = shoulder1. parent: humphant_offset, child: humphant1_offset
+joint[6] = shoulder2. parent: humphant1_offset, child: humerus_offset
+joint[7] = elbow. parent: humerus_offset, child: ulna_offset
+joint[8] = radioulnar. parent: ulna_offset, child: radius_offset
+joint[9] = radiocarpal. parent: radius_offset, child: proximal_row_offset
+joint[10] = wrist_hand. parent: proximal_row_offset, child: hand_offset
+
+ACTUATORS (total: 47)
+actuator[0] = DELT1
+actuator[1] = DELT3
+actuator[2] = SUPSP
+actuator[3] = INFSP
+actuator[4] = SUBSC
+actuator[5] = TMIN
+actuator[6] = TMAJ
+actuator[7] = PECM1
+actuator[8] = PECM2
+actuator[9] = PECM3
+actuator[10] = LAT1
+actuator[11] = LAT2
+actuator[12] = LAT3
+actuator[13] = CORB
+actuator[14] = TRIlong
+actuator[15] = TRIlat
+actuator[16] = TRImed
+actuator[17] = ANC
+actuator[18] = SUP
+actuator[19] = BRA
+actuator[20] = BRD
+actuator[21] = ECRL
+actuator[22] = ECRB
+actuator[23] = ECU
+actuator[24] = FCR
+actuator[25] = FCU
+actuator[26] = PL
+actuator[27] = PT
+actuator[28] = PQ
+actuator[29] = FDSL
+actuator[30] = FDSR
+actuator[31] = FDSM
+actuator[32] = FDSI
+actuator[33] = FDPL
+actuator[34] = FDPR
+actuator[35] = FDPM
+actuator[36] = FDPI
+actuator[37] = EDCL
+actuator[38] = EDCR
+actuator[39] = EDCM
+actuator[40] = EDCI
+actuator[41] = EDM
+actuator[42] = EIP
+actuator[43] = EPL
+actuator[44] = EPB
+actuator[45] = FPL
+actuator[46] = APL
+
+STATES (total: 40)
+y[0] = /jointset/sternoclavicular/sternoclavicular_r2/value
+y[1] = /jointset/sternoclavicular/sternoclavicular_r2/speed
+y[2] = /jointset/sternoclavicular/sternoclavicular_r3/value
+y[3] = /jointset/sternoclavicular/sternoclavicular_r3/speed
+y[4] = /jointset/unrotscap/unrotscap_r3/value
+y[5] = /jointset/unrotscap/unrotscap_r3/speed
+y[6] = /jointset/unrotscap/unrotscap_r2/value
+y[7] = /jointset/unrotscap/unrotscap_r2/speed
+y[8] = /jointset/acromioclavicular/acromioclavicular_r2/value
+y[9] = /jointset/acromioclavicular/acromioclavicular_r2/speed
+y[10] = /jointset/acromioclavicular/acromioclavicular_r3/value
+y[11] = /jointset/acromioclavicular/acromioclavicular_r3/speed
+y[12] = /jointset/acromioclavicular/acromioclavicular_r1/value
+y[13] = /jointset/acromioclavicular/acromioclavicular_r1/speed
+y[14] = /jointset/unrothum/unrothum_r1/value
+y[15] = /jointset/unrothum/unrothum_r1/speed
+y[16] = /jointset/unrothum/unrothum_r3/value
+y[17] = /jointset/unrothum/unrothum_r3/speed
+y[18] = /jointset/unrothum/unrothum_r2/value
+y[19] = /jointset/unrothum/unrothum_r2/speed
+y[20] = /jointset/shoulder0/elv_angle/value
+y[21] = /jointset/shoulder0/elv_angle/speed
+y[22] = /jointset/shoulder1/shoulder_elv/value
+y[23] = /jointset/shoulder1/shoulder_elv/speed
+y[24] = /jointset/shoulder1/shoulder1_r2/value
+y[25] = /jointset/shoulder1/shoulder1_r2/speed
+y[26] = /jointset/shoulder2/shoulder_rot/value
+y[27] = /jointset/shoulder2/shoulder_rot/speed
+y[28] = /jointset/elbow/elbow_flexion/value
+y[29] = /jointset/elbow/elbow_flexion/speed
+y[30] = /jointset/radioulnar/pro_sup/value
+y[31] = /jointset/radioulnar/pro_sup/speed
+y[32] = /jointset/radiocarpal/deviation/value
+y[33] = /jointset/radiocarpal/deviation/speed
+y[34] = /jointset/radiocarpal/flexion/value
+y[35] = /jointset/radiocarpal/flexion/speed
+y[36] = /jointset/wrist_hand/wrist_hand_r1/value
+y[37] = /jointset/wrist_hand/wrist_hand_r1/speed
+y[38] = /jointset/wrist_hand/wrist_hand_r3/value
+y[39] = /jointset/wrist_hand/wrist_hand_r3/speed
+
+[2024-01-18 08:30:12.685] [info] Integrating from 0.0 to 5.0.
+[2024-01-19 14:29:14.364] [info] Updating Model file from 30000 to latest format...
+[2024-01-19 14:29:14.442] [info] Loaded model MoBL_2016_Ideal_Muscles from file C:\Users\nathan.pickle\Documents\Source\OpenSim4\opensim-core-source\OpenSim\Examples\TaskSpace\ExamplePerreault2001Experiment\mobl_2016_ideal_muscles.osim
+[2024-01-19 14:29:14.448] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.448] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.448] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.448] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.448] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.448] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.449] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:14.450] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.581] [info] Updating Model file from 30000 to latest format...
+[2024-01-19 14:29:45.616] [info] Loaded model MoBL_2016_Ideal_Muscles from file C:\Users\nathan.pickle\Documents\Source\StanevTaskSpace\data\mobl\mobl_2016_ideal_muscles.osim
+[2024-01-19 14:29:45.618] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.618] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.618] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.618] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.618] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.618] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.618] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.618] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.618] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:29:45.618] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.618] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.619] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:45.620] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.620] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.620] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:45.620] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.620] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:29:45.620] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:29:45.620] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:29:45.620] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.098] [info] Updating Model file from 30000 to latest format...
+[2024-01-19 14:31:32.126] [info] Loaded model MoBL_2016_Ideal_Muscles from file C:\Users\nathan.pickle\Documents\Source\OpenSim4\opensim-core-build\RelWithDebInfo\mobl_2016_ideal_muscles.osim
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'default'. The duplicate is being renamed to 'default_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.129] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_2'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_0'.
+[2024-01-19 14:31:32.130] [warning] GeometryPath 'geometrypath' has subcomponents with duplicate name 'pathwrap'. The duplicate is being renamed to 'pathwrap_1'.

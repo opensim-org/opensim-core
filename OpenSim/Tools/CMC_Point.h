@@ -61,7 +61,7 @@ protected:
 
     // Work Variables
     SimTK::Vec3 _p,_v,_inertialPTrk,_inertialVTrk;
-    Body *_wrtBody,*_expressBody;
+    const Body *_wrtBody,*_expressBody;
 
 //=============================================================================
 // METHODS
@@ -90,7 +90,6 @@ public:
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-    void setModel(Model& aModel) override;
     void setPoint(const SimTK::Vec3 &aPoint);
     SimTK::Vec3 getPoint() const;
 
@@ -101,6 +100,8 @@ public:
     void computeDesiredAccelerations(const SimTK::State& s, double aT) override;
     void computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF) override;
     void computeAccelerations(const SimTK::State& s ) override;
+    void computeJacobian(const SimTK::State& s) override;
+    void computeBias(const SimTK::State& s) override;
 
     //--------------------------------------------------------------------------
     // XML

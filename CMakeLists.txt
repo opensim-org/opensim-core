@@ -799,7 +799,8 @@ include_directories("${Simbody_INCLUDE_DIR}")
 # CasADi
 # ------
 if(OPENSIM_WITH_CASADI)
-    find_package(casadi 3.4.4 REQUIRED)
+    find_package(casadi 3.4.4 REQUIRED
+            HINTS "${OPENSIM_DEPENDENCIES_DIR}/casadi")
     set_package_properties(casadi PROPERTIES
             URL https://web.casadi.org
             TYPE REQUIRED
@@ -831,7 +832,8 @@ if (OPENSIM_WITH_CASADI OR OPENSIM_WITH_TROPTER)
     if(UNIX)
         pkg_check_modules(IPOPT REQUIRED ipopt IMPORTED_TARGET)
     else()
-        find_package(Ipopt REQUIRED CONFIG)
+        find_package(Ipopt REQUIRED CONFIG
+                HINTS "${OPENSIM_DEPENDENCIES_DIR}/ipopt/lib/cmake/Ipopt")
         set_package_properties(IPOPT PROPERTIES
                 URL https://projects.coin-or.org/Ipopt
                 TYPE REQUIRED
