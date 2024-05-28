@@ -612,7 +612,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
         }
     }
 
-    for (auto mc : missingColumnNames) {
+    for (auto& mc : missingColumnNames) {
         log_warn("JointMechanicsTool input_states_file missing state: {}", mc);
     }
     // Fill up trajectory from states in file
@@ -1909,7 +1909,7 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
                 _model.updComponent<Blankevoort1991Ligament>(lig_path);
 
             //Path Points
-            const GeometryPath& geoPath = lig.upd_GeometryPath();
+            const GeometryPath& geoPath = lig.updGeometryPath();
 
             int nPoints = 0;
             SimTK::Vector_<SimTK::Vec3> path_points(_max_path_points, SimTK::Vec3(-1));
@@ -1938,7 +1938,7 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
             Muscle& msl = _model.updComponent<Muscle>(msl_path);
 
             //Path Points
-            const GeometryPath& geoPath = msl.upd_GeometryPath();
+            const GeometryPath& geoPath = msl.updGeometryPath();
 
             int nPoints = 0;
 
@@ -1957,7 +1957,7 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
                 
                 if (output_name == "length") {
                     _muscle_output_double_values[nMsl].set(frame_num, j,
-                        msl.get_GeometryPath().getOutputValue<double>
+                        msl.getGeometryPath().getOutputValue<double>
                         (s, "length"));
                 }
                 else if (output_name == "tension") {
