@@ -478,13 +478,17 @@ public:
 
             // Construct an implicit multibody system only enforcing
             // acceleration-level kinematic constraints.
-            mutThis->m_implicitMultibodyFuncAccelConstraints =
+            if (getEnforceConstraintDerivatives() &&
+                    getNumKinematicConstraintEquations() &&
+                    isKinematicConstraintMethodBordalba2023()) {
+                mutThis->m_implicitMultibodyFuncAccelConstraints =
                     OpenSim::make_unique<
                             MultibodySystemImplicit<false, false, true>>();
-            mutThis->m_implicitMultibodyFuncAccelConstraints
+                mutThis->m_implicitMultibodyFuncAccelConstraints
                     ->constructFunction(this,
-                            "implicit_multibody_system_acceleration_constraints",
+                        "implicit_multibody_system_acceleration_constraints",
                             finiteDiffScheme, pointsForSparsityDetection);
+            }
 
             // Construct an implicit multibody system ignoring kinematic
             // constraints.
@@ -503,12 +507,16 @@ public:
                     "explicit_multibody_system", finiteDiffScheme,
                     pointsForSparsityDetection);
 
-            mutThis->m_multibodyFuncAccelConstraints =
-                    OpenSim::make_unique<
-                            MultibodySystemExplicit<false, false, true>>();
-            mutThis->m_multibodyFuncAccelConstraints->constructFunction(this,
-                        "multibody_system_acceleration_constraints",
-                        finiteDiffScheme, pointsForSparsityDetection);
+            if (getEnforceConstraintDerivatives() &&
+                    getNumKinematicConstraintEquations() &&
+                    isKinematicConstraintMethodBordalba2023()) {
+                mutThis->m_multibodyFuncAccelConstraints =
+                        OpenSim::make_unique<
+                                MultibodySystemExplicit<false, false, true>>();
+                mutThis->m_multibodyFuncAccelConstraints->constructFunction(
+                        this, "multibody_system_acceleration_constraints",
+                                finiteDiffScheme, pointsForSparsityDetection);
+            }
 
             mutThis->m_multibodyFuncIgnoringConstraints =
                     OpenSim::make_unique<
