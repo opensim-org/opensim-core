@@ -33,7 +33,7 @@ jobs:
     - name: Install Python packages
       uses: actions/setup-python@v4
       with:
-        python-version: '3.8'
+        python-version: '3.12'
         
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
@@ -173,7 +173,7 @@ jobs:
     - name: Install Python packages
       uses: actions/setup-python@v4
       with:
-        python-version: '3.8'
+        python-version: '3.12'
         
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
@@ -281,7 +281,7 @@ jobs:
     - name: Install Python packages
       uses: actions/setup-python@v4
       with:
-        python-version: '3.8'
+        python-version: '3.12'
         
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
@@ -381,7 +381,7 @@ jobs:
 
     - uses: actions/setup-python@v4
       with:
-        python-version: '3.8'
+        python-version: '3.12'
         
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
@@ -509,7 +509,7 @@ jobs:
     
     - uses: actions/setup-python@v4
       with:
-        python-version: '3.8'
+        python-version: '3.12'
 
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
