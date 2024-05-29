@@ -133,34 +133,61 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
 
     // Create variables.
     // -----------------
-    m_scaledVars[initial_time] = MX::sym("initial_time");
-    m_scaledVars[final_time] = MX::sym("final_time");
-    m_scaledVars[states] =
-            MX::sym("states", m_problem.getNumStates(), m_numGridPoints);
-    m_scaledVars[projection_states] = MX::sym(
-            "projection_states", m_numProjectionStates, m_numMeshIntervals);
-    m_scaledVars[controls] =
-            MX::sym("controls", m_problem.getNumControls(), m_numGridPoints);
-    m_scaledVars[multipliers] = MX::sym(
-            "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
-    m_scaledVars[derivatives] = MX::sym(
-            "derivatives", m_problem.getNumDerivatives(), m_numGridPoints);
-    m_scaledVars[parameters] =
-            MX::sym("parameters", m_problem.getNumParameters(), 1);
+    m_scaledVectorVars[initial_time].push_back(MX::sym("initial_time"));
+    m_scaledVectorVars[final_time].push_back(MX::sym("final_time"));
+    for (int igrid = 0; igrid < m_numGridPoints; ++igrid) {
+        m_scaledVectorVars[states].push_back(
+                MX::sym("states_" + std::to_string(igrid),
+                        m_problem.getNumStates(), 1));
+        m_scaledVectorVars[controls].push_back(
+                MX::sym("controls_" + std::to_string(igrid),
+                        m_problem.getNumControls(), 1));
+        m_scaledVectorVars[multipliers].push_back(
+                MX::sym("multipliers_" + std::to_string(igrid),
+                        m_problem.getNumMultipliers(), 1));
+        m_scaledVectorVars[derivatives].push_back(
+                MX::sym("derivatives_" + std::to_string(igrid),
+                        m_problem.getNumDerivatives(), 1));
+    }
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        m_scaledVectorVars[projection_states].push_back(
+                MX::sym("projection_states_" + std::to_string(imesh),
+                        m_problem.getNumProjectionStates(), 1));
+    }
+    m_scaledVectorVars[parameters].push_back(
+            MX::sym("parameters", m_problem.getNumParameters(), 1));
 
     if (m_problem.isKinematicConstraintMethodBordalba2023()) {
         // In the projection method for enforcing kinematic constraints, the
         // slack variables are applied at the mesh points at the end of each
         // mesh interval.
-        m_scaledVars[slacks] = MX::sym(
-                "slacks", m_problem.getNumSlacks(), m_numMeshIntervals);
+        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+            m_scaledVectorVars[slacks].push_back(
+                    MX::sym("slacks_" + std::to_string(imesh),
+                            m_problem.getNumSlacks(), 1));
+        }
     } else {
         // In the Posa et al. 2016 method for enforcing kinematic constraints,
         // the mesh interior points will be the mesh interval midpoints in the
         // Hermite-Simpson collocation scheme.
-        m_scaledVars[slacks] = MX::sym(
-                "slacks", m_problem.getNumSlacks(), m_numMeshInteriorPoints);
+        for (int imesh = 0; imesh < m_numMeshInteriorPoints; ++imesh) {
+            m_scaledVectorVars[slacks].push_back(
+                    MX::sym("slacks_" + std::to_string(imesh),
+                            m_problem.getNumSlacks(), 1));
+        }
     }
+
+    // Concatenate variables.
+    m_scaledVars[initial_time] = m_scaledVectorVars[initial_time][0];
+    m_scaledVars[final_time] = m_scaledVectorVars[final_time][0];
+    m_scaledVars[states] = MX::horzcat(m_scaledVectorVars[states]);
+    m_scaledVars[projection_states] = 
+            MX::horzcat(m_scaledVectorVars[projection_states]);
+    m_scaledVars[controls] = MX::horzcat(m_scaledVectorVars[controls]);
+    m_scaledVars[multipliers] = MX::horzcat(m_scaledVectorVars[multipliers]);
+    m_scaledVars[derivatives] = MX::horzcat(m_scaledVectorVars[derivatives]);
+    m_scaledVars[slacks] = MX::horzcat(m_scaledVectorVars[slacks]);
+    m_scaledVars[parameters] = m_scaledVectorVars[parameters][0];
 
     // Each vector contains MX matrix elements (states or state derivatives) 
     // needed to construct the defect constraints for an individual mesh 
@@ -409,6 +436,7 @@ void Transcription::transcribe() {
     m_xdot_projection = MX(m_numProjectionStates, m_numMeshIntervals);
     m_constraints.defects = MX(casadi::Sparsity::dense(
             m_numDefectsPerMeshInterval, m_numMeshIntervals));
+    std::cout << "m_constraints.defects.size(): " << m_constraints.defects.size() << std::endl;
     m_constraintsLowerBounds.defects =
             DM::zeros(m_numDefectsPerMeshInterval, m_numMeshIntervals);
     m_constraintsUpperBounds.defects =
@@ -418,6 +446,7 @@ void Transcription::transcribe() {
     // ---------------------------------------------------
     m_constraints.multibody_residuals = MX(casadi::Sparsity::dense(
             m_numMultibodyResiduals, m_numGridPoints));
+    std::cout << "m_constraints.multibody_residuals.size(): " << m_constraints.multibody_residuals.size() << std::endl;
     m_constraintsLowerBounds.multibody_residuals =
             DM::zeros(m_numMultibodyResiduals, m_numGridPoints);
     m_constraintsUpperBounds.multibody_residuals =
@@ -427,6 +456,7 @@ void Transcription::transcribe() {
     // ---------------------------------------------------
     m_constraints.auxiliary_residuals = MX(casadi::Sparsity::dense(
             m_numAuxiliaryResiduals, m_numGridPoints));
+    std::cout << "m_constraints.auxiliary_residuals.size(): " << m_constraints.auxiliary_residuals.size() << std::endl;
     m_constraintsLowerBounds.auxiliary_residuals =
             DM::zeros(m_numAuxiliaryResiduals, m_numGridPoints);
     m_constraintsUpperBounds.auxiliary_residuals =
@@ -465,6 +495,7 @@ void Transcription::transcribe() {
     m_constraints.projection = MX(
             casadi::Sparsity::dense(numProjectionConstraints,
                                     m_numMeshIntervals));
+    std::cout << "m_constraints.projection.size(): " << m_constraints.projection.size() << std::endl;
     m_constraintsLowerBounds.projection =
             DM::zeros(numProjectionConstraints, m_numMeshIntervals);
     m_constraintsUpperBounds.projection =
@@ -994,7 +1025,7 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         options[m_solver.getOptimSolver()] = m_solver.getSolverOptions();
     }
 
-    auto x = flattenVariables(m_scaledVars);
+    auto x = flattenVariablesMX(m_scaledVectorVars);
     std::cout << "DEBUG x: " << x << std::endl;
     std::cout << "DEBUG x.is_symbolic(): " << x.is_symbolic() << std::endl;
     casadi_int numVariables = x.numel();
@@ -1048,9 +1079,9 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     // --------------------------------------------------------
     // The inputs and outputs of nlpFunc are numeric (casadi::DM).
     const casadi::DMDict nlpResult = nlpFunc(casadi::DMDict{
-                    {"x0", flattenVariables(scaleVariables(guess.variables))},
-                    {"lbx", flattenVariables(scaleVariables(m_lowerBounds))},
-                    {"ubx", flattenVariables(scaleVariables(m_upperBounds))},
+                    {"x0", flattenVariablesDM(scaleVariables(guess.variables))},
+                    {"lbx", flattenVariablesDM(scaleVariables(m_lowerBounds))},
+                    {"ubx", flattenVariablesDM(scaleVariables(m_upperBounds))},
                     {"lbg", flattenConstraints(m_constraintsLowerBounds)},
                     {"ubg", flattenConstraints(m_constraintsUpperBounds)}});
 

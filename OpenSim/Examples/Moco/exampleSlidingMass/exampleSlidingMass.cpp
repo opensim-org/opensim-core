@@ -97,13 +97,14 @@ int main() {
 
     // Cost.
     // -----
-    problem.addGoal<MocoFinalTimeGoal>();
+    // problem.addGoal<MocoFinalTimeGoal>();
 
     // Configure the solver.
     // =====================
     MocoCasADiSolver& solver = study.initCasADiSolver();
-    solver.set_num_mesh_intervals(50);
-    solver.set_optim_solver("ipopt");
+    solver.set_num_mesh_intervals(10);
+    solver.set_transcription_scheme("trapezoidal");
+    solver.set_optim_solver("fatrop");
     solver.set_optim_write_sparsity("sliding_mass");
 
     // Now that we've finished setting up the tool, print it to a file.

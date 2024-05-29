@@ -49,6 +49,8 @@ enum Var {
 template <typename T>
 using Variables = std::unordered_map<Var, T, std::hash<int>>;
 
+using VariablesMXVector = Variables<casadi::MXVector>;
+
 /// Numeric variables for initial guesses and solutions.
 using VariablesDM = Variables<casadi::DM>;
 /// Symbolic variables, used to define the problem.

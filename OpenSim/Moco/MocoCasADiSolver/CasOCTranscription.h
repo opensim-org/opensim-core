@@ -162,6 +162,7 @@ protected:
     casadi::MX m_duration;
 
 private:
+    VariablesMXVector m_scaledVectorVars;
     VariablesMX m_scaledVars;
     VariablesMX m_unscaledVars;
     casadi::MX m_paramsTrajGrid;
@@ -249,63 +250,65 @@ private:
     /// nlpsol(), etc.
     template <typename T>
     static T flattenVariables(const CasOC::Variables<T>& vars) {
-
-    
         std::vector<T> stdvec;
-        stdvec.push_back(vars.at(initial_time));
-        stdvec.push_back(vars.at(final_time));
-        casadi_int nc = vars.at(controls).size1();
-        casadi_int ns = vars.at(states).size1();
-
-        std::vector<casadi_int> offset;
-        for (int i = 0; i < vars.at(controls).size2(); ++i) {
-            offset.push_back(i);
+        for (const auto& key : getSortedVarKeys(vars)) {
+            stdvec.push_back(vars.at(key));
         }
-        offset.push_back(vars.at(controls).size2());
-
-        std::vector<T> c_split = T::horzsplit(vars.at(controls), offset);
-        std::vector<T> s_split = T::horzsplit(vars.at(states), offset);
-
-        for (int i = 0; i < vars.at(controls).size2(); ++i) {
-            stdvec.push_back(c_split[i]);
-            stdvec.push_back(s_split[i]);
-        }
-
-        // std::vector<T> stdvec;
-        // for (const auto& key : getSortedVarKeys(vars)) {
-        //     stdvec.push_back(vars.at(key));
-        // }
-
         return T::veccat(stdvec);
     }
+
+    casadi::MX flattenVariablesMX(const CasOC::VariablesMXVector& vars) const {
+        std::vector<casadi::MX> stdvec;
+        int N = m_numPointsPerMeshInterval - 1;
+        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+            int igrid = imesh * N;
+            for (int i = 0; i < N; ++i) {
+                stdvec.push_back(vars.at(states)[igrid + i]);
+            }
+            for (int i = 0; i < N; ++i) {
+                stdvec.push_back(vars.at(controls)[igrid + i]);
+            }
+        }
+        stdvec.push_back(vars.at(controls)[m_numGridPoints - 1]);
+        stdvec.push_back(vars.at(states)[m_numGridPoints - 1]);
+        stdvec.push_back(vars.at(initial_time)[0]);
+        stdvec.push_back(vars.at(final_time)[0]);
+
+        return casadi::MX::veccat(stdvec);
+    }
+
+    casadi::DM flattenVariablesDM(const CasOC::VariablesDM& vars) const {
+        std::vector<casadi::DM> stdvec;
+        int N = m_numPointsPerMeshInterval - 1;
+        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+            int igrid = imesh * N;
+            for (int i = 0; i < N; ++i) {
+                stdvec.push_back(vars.at(states)(casadi::Slice(), igrid + i));
+            }
+            for (int i = 0; i < N; ++i) {
+                stdvec.push_back(vars.at(controls)(casadi::Slice(), igrid + i));
+            }
+        }
+        stdvec.push_back(vars.at(controls)(casadi::Slice(), m_numGridPoints - 1));
+        stdvec.push_back(vars.at(states)(casadi::Slice(), m_numGridPoints - 1));
+        stdvec.push_back(vars.at(initial_time));
+        stdvec.push_back(vars.at(final_time));
+
+        return casadi::DM::veccat(stdvec);
+    }
+
     /// Convert the 'x' column vector into separate variables.
     CasOC::VariablesDM expandVariables(const casadi::DM& x) const {
         CasOC::VariablesDM out;
         using casadi::Slice;
-        // casadi_int offset = 0;
-        // for (const auto& key : getSortedVarKeys(m_scaledVars)) {
-        //     const auto& value = m_scaledVars.at(key);
-        //     // Convert a portion of the column vector into a matrix.
-        //     out[key] = casadi::DM::reshape(
-        //             x(Slice(offset, offset + value.numel())), value.rows(),
-        //             value.columns());
-        //     offset += value.numel();
-        // }
-
         casadi_int offset = 0;
-        const auto& c = m_scaledVars.at(controls);
-        const auto& s = m_scaledVars.at(states);
-        out[initial_time] = x(offset++);
-        out[final_time] = x(offset++);
-        for (int igrid = 0; igrid < c.size2(); ++igrid) {
-            out[controls](Slice(), igrid) = casadi::DM::reshape(
-                x(Slice(offset, offset + c.rows())),
-                c.rows(), c.columns());
-            offset += c.rows();
-
-            out[states](Slice(), igrid) = casadi::DM::reshape(
-                x(Slice(offset, offset + s.rows())),
-                s.rows(), s.columns());
+        for (const auto& key : getSortedVarKeys(m_scaledVars)) {
+            const auto& value = m_scaledVars.at(key);
+            // Convert a portion of the column vector into a matrix.
+            out[key] = casadi::DM::reshape(
+                    x(Slice(offset, offset + value.numel())), value.rows(),
+                    value.columns());
+            offset += value.numel();
         }
         return out;
     }
