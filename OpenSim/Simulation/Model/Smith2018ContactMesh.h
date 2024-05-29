@@ -352,6 +352,7 @@ public:
 
         OBBTreeNode() : _child1(nullptr), _child2(nullptr), _numTriangles(0) {}
         OBBTreeNode(const OBBTreeNode& copy);
+        OBBTreeNode& operator=(const OBBTreeNode& copy);
         ~OBBTreeNode();
 
         bool rayIntersectOBB(const SimTK::PolygonalMesh& mesh,

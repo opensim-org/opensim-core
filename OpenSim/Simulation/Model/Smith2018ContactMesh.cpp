@@ -877,6 +877,22 @@ Smith2018ContactMesh::OBBTreeNode::OBBTreeNode(const OBBTreeNode& copy):
     }
 }
 
+Smith2018ContactMesh::OBBTreeNode& Smith2018ContactMesh::OBBTreeNode::operator=(const OBBTreeNode& copy)
+{
+    _bounds = copy._bounds;
+    _triangles = copy._triangles;
+    _numTriangles = copy._numTriangles;
+    if (copy._child1 == NULL) {
+        _child1 = NULL;
+        _child2 = NULL;
+    }
+    else {
+        _child1 = new OBBTreeNode(*copy._child1);
+        _child2 = new OBBTreeNode(*copy._child2);
+    }
+    return *this;
+}
+
 Smith2018ContactMesh::OBBTreeNode::~OBBTreeNode() {
     if (_child1 != NULL)
         delete _child1;
