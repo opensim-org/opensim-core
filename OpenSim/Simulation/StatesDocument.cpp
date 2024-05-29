@@ -498,24 +498,24 @@ initializeDiscreteVariables(const Model& model, SimTK::Array_<State>& traj) {
         // Switch based on the type
         // Append the vector according to type
         if (type == "bool") {
-            SDocUtil::initializeStatesForDiscreteVariable<bool>(
-                varElts[i], model, path, traj);
+            SDocUtil::initializeStatesForDiscreteVariable<bool>(varElts[i],
+                model, path, traj);
         }
         else if(type == "int") {
-            SDocUtil::initializeStatesForDiscreteVariable<int>(
-                varElts[i], model, path, traj);
+            SDocUtil::initializeStatesForDiscreteVariable<int>(varElts[i],
+                model, path, traj);
         }
         else if(type == "float") {
-            SDocUtil::initializeStatesForDiscreteVariable<float>(
-                varElts[i], model, path, traj);
+            SDocUtil::initializeStatesForDiscreteVariable<float>(varElts[i],
+                model, path, traj);
         }
         else if(type == "double") {
-            SDocUtil::initializeStatesForDiscreteVariable<double>(
-                varElts[i], model, path, traj);
+            SDocUtil::initializeStatesForDiscreteVariable<double>(varElts[i],
+                model, path, traj);
         }
         else if(type == "Vec2") {
-            SDocUtil::initializeStatesForDiscreteVariable<Vec2>(
-                varElts[i], model, path, traj);
+            SDocUtil::initializeStatesForDiscreteVariable<Vec2>(varElts[i],
+                model, path, traj);
         }
         else if(type == "Vec3") {
             SDocUtil::initializeStatesForDiscreteVariable<Vec3>(varElts[i],
