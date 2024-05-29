@@ -33,11 +33,11 @@ jobs:
     - name: Install Python packages
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '3.10'
         
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
-      run: python3 -m pip install numpy==1.23
+      run: python3 -m pip install numpy==1.21
 
     - name: Install SWIG
       run: |
@@ -173,11 +173,11 @@ jobs:
     - name: Install Python packages
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '3.10'
         
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
-      run: python3 -m pip install numpy==1.23
+      run: python3 -m pip install numpy==1.21
 
     - name: Install SWIG
       run: |
@@ -281,11 +281,11 @@ jobs:
     - name: Install Python packages
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '3.10'
         
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
-      run: python3 -m pip install numpy==1.23
+      run: python3 -m pip install numpy==1.21
 
     - name: Install SWIG
       run: |
@@ -381,14 +381,14 @@ jobs:
 
     - uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '3.10'
         
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
       run: |
         brew install cmake pkgconfig autoconf libtool automake wget pcre doxygen llvm
         brew reinstall gcc
-        pip3 install numpy==1.23
+        pip3 install numpy==1.21
         gfortran -v
         mkdir gfortran_version
         gfortran -v &> gfortran_version/gfortran_version.txt
@@ -509,14 +509,14 @@ jobs:
     
     - uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '3.10'
 
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
       run: |
         brew install cmake pkgconfig autoconf libtool automake wget pcre doxygen llvm
         brew reinstall gcc
-        pip3 install numpy==1.23
+        pip3 install numpy==1.21
         gfortran -v
         mkdir gfortran_version
         gfortran -v &> gfortran_version/gfortran_version.txt
