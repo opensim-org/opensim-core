@@ -386,7 +386,7 @@ void ForsimTool::initializeActuators() {
 
                     control->prescribeControlForActuator(actuator.getName(), control_function);                    
                 }
-                catch (ComponentNotFoundOnSpecifiedPath) {
+                catch (ComponentNotFoundOnSpecifiedPath const &) {
                     OPENSIM_THROW(Exception,
                         "Actuator: " + actuator_path + " not found in model. "
                         "Did you use absolute path?")
@@ -418,7 +418,7 @@ void ForsimTool::initializeActuators() {
 
                     msl.set_ignore_activation_dynamics(true);
                 }
-                catch (ComponentNotFoundOnSpecifiedPath) {
+                catch (ComponentNotFoundOnSpecifiedPath const &) {
                     OPENSIM_THROW(Exception,
                         "Muscle: " + actuator_path + " not found in model. "
                         "Did you use absolute path? Is it a Millard2012EquilibriumMuscle?")
@@ -443,7 +443,7 @@ void ForsimTool::initializeActuators() {
 
                     _frc_functions.adoptAndAppend(frc_function); 
                 }
-                catch (ComponentNotFoundOnSpecifiedPath) {
+                catch (ComponentNotFoundOnSpecifiedPath const&) {
                     
                     OPENSIM_THROW(Exception,
                         "Actuator: " + actuator_path + " not found in model. "
@@ -618,7 +618,7 @@ void ForsimTool::initializeCoordinates() {
             coord.set_locked(false);
             log_info(coord_path);
         }
-        catch (ComponentNotFoundOnSpecifiedPath) {
+        catch (ComponentNotFoundOnSpecifiedPath const&) {
             OPENSIM_THROW(Exception,
                 "Unconstrained Coordinate: " + coord_path + "Not found in model."
                 "Did you use absolute path?")

@@ -255,7 +255,7 @@ SimTK::State COMAKTool::initialize()
     for (int i = 0; i < getProperty_prescribed_coordinates().size(); ++i) {
         std::string name = get_prescribed_coordinates(i);
         try { _model.getComponent<Coordinate>(name);}
-        catch (Exception) {
+        catch (Exception const&) {
             OPENSIM_THROW(Exception, "prescribed_coordinate: " 
                 + name + " not found in model.")
         }
@@ -271,7 +271,7 @@ SimTK::State COMAKTool::initialize()
     for (int i = 0; i < getProperty_primary_coordinates().size(); ++i) {
         std::string name = get_primary_coordinates(i);
         try { _model.getComponent<Coordinate>(name); }
-        catch (Exception) {
+        catch (Exception const&) {
             OPENSIM_THROW(Exception, "primary_coordinate: " 
                 + name + "not found in model.")
         }
@@ -288,7 +288,7 @@ SimTK::State COMAKTool::initialize()
         std::string path = 
             get_COMAKSecondaryCoordinateSet().get(i).get_coordinate();
         try { _model.getComponent<Coordinate>(path); }
-        catch (Exception){
+        catch (Exception const&){
             OPENSIM_THROW(Exception,"secondary_coordinate: " + path +
                 "not found in model.")
         }
@@ -945,7 +945,7 @@ void COMAKTool::performCOMAK()
             try {
                 optimizer.optimize(_optim_parameters);
             }
-            catch (SimTK::Exception::Base ex) {
+            catch (const SimTK::Exception::Base& ex) {
                 log_error("COMAK Optimization failed: {}", ex.getMessage());
             }
 
