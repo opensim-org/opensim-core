@@ -28,82 +28,108 @@ using namespace std;
 using namespace OpenSim;
 using std::cout;
 
+namespace OpenSim {
+
+// Anonymous namespace to ensure local linkage
+namespace {
+
 //-----------------------------------------------------------------------------
-// Local Utility Functions
+// Local utility methods for use with class StatesDocument
 //-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-template<class T>
-void
-appendVarElt(const string& path, const string& tag, const string& type,
-    const Array_<T>& valArr, Element& parent, int precision)
-{
-    // Create the variable element.
-    Element varElt(tag);
-    varElt.setAttributeValue("path", path);
-    varElt.setAttributeValue("type", type);
+struct SDocUtil {
 
-    // Append the variable element
-    varElt.setValueAs<Array_<T>>(valArr, precision);
-    //varElt.setValueAs<Array_<T>>(valArr);
-    parent.appendNode(varElt);
-}
-//_____________________________________________________________________________
-template<class T>
-void
-initializeStatesForStateVariable(Element& varElt, const Model& model,
-    const string& path, Array_<State> & traj)
-{
-    // Interpret the Element value
-    Array_<T> vArr;
-    varElt.getValueAs<Array_<T>>(vArr);
+    //_________________________________________________________________________
+    template<class T>
+    static
+    void
+    appendVarElt(const string& path, const string& tag, const string& type,
+        const Array_<T>& valArr, Element& parent, int precision)
+    {
+        // Create the variable element.
+        Element varElt(tag);
+        varElt.setAttributeValue("path", path);
+        varElt.setAttributeValue("type", type);
 
-    // Check the sizes.
-    int n = vArr.size();
-    SimTK_ASSERT2_ALWAYS(n == traj.size(),
-        "Found %d values. Should match nTime = %d values.",
-        n, traj.size());
+        // Append the variable element
+        varElt.setValueAs<Array_<T>>(valArr, precision);
+        //varElt.setValueAs<Array_<T>>(valArr);
+        parent.appendNode(varElt);
+    }
+    //_________________________________________________________________________
+    template<class T>
+    inline
+    static
+    void
+    getEltValue(const string& path, int expectedSize,
+        Element& varElt, Array_<T>& vArr)
+    {
+        // Interpret the element value
+        varElt.getValueAs<Array_<T>>(vArr);
 
-    // Set variable in the States trajectory
-    model.setStateVariableTrajectory<T>(path, vArr, traj);
-}
-//_____________________________________________________________________________
-template<class T>
-void
-initializeStatesForDiscreteVariable(Element& varElt, const Model& model,
-    const string& path, Array_<State> & traj)
-{
-    // Interpret the Element value
-    Array_<T> vArr;
-    varElt.getValueAs<Array_<T>>(vArr);
+        // Check the size
+        int n = vArr.size();
+        SimTK_ASSERT3_ALWAYS(n == expectedSize,
+            "Found %d values in the element for %s, but there should be %d",
+            n, path, expectedSize);
+    }
+    //_________________________________________________________________________
+    template<class T>
+    inline
+    static
+    void
+    initializeStatesForStateVariable(Element& varElt, const Model& model,
+        const string& path, Array_<State> & traj)
+    {
+        // Interpret the element an array of type T
+        Array_<T> vArr;
+        getEltValue(path, traj.size(), varElt, vArr);
 
-    // Check the sizes.
-    int n = vArr.size();
-    SimTK_ASSERT2_ALWAYS(n == traj.size(),
-        "Found %d values. Should match nTime = %d values.",
-        n, traj.size());
+        // Set variable in the States trajectory
+        model.setStateVariableTrajectory<T>(path, vArr, traj);
+    }
+    //_________________________________________________________________________
+    template<class T>
+    inline
+    static
+    void
+    initializeStatesForDiscreteVariable(Element& varElt, const Model& model,
+        const string& path, Array_<State> & traj)
+    {
+        // Interpret the element an array of type T
+        Array_<T> vArr;
+        getEltValue(path, traj.size(), varElt, vArr);
 
-    // Set variable in the States trajectory
-    model.setDiscreteVariableTrajectory<T>(path, vArr, traj);
-}
-//_____________________________________________________________________________
-template<class T>
-void
-initializeStatesForModelingOption(Element& varElt, const Model& model,
-    const string& path, Array_<State> & traj)
-{
-    // Interpret the Element value
-    Array_<T> vArr;
-    varElt.getValueAs<Array_<T>>(vArr);
+        // Set variable in the States trajectory
+        model.setDiscreteVariableTrajectory<T>(path, vArr, traj);
+    }
+    //_________________________________________________________________________
+    template<class T>
+    inline
+    static
+    void
+    initializeStatesForModelingOption(Element& varElt, const Model& model,
+        const string& path, Array_<State> & traj)
+    {
+        // Interpret the Element value
+        Array_<T> vArr;
+        varElt.getValueAs<Array_<T>>(vArr);
 
-    // Check the sizes.
-    int n = vArr.size();
-    SimTK_ASSERT2_ALWAYS(n == traj.size(),
-        "Found %d values. Should match nTime = %d values.",
-        n, traj.size());
+        // Check the sizes.
+        int n = vArr.size();
+        SimTK_ASSERT2_ALWAYS(n == traj.size(),
+            "Found %d values. Should match nTime = %d values.",
+            n, traj.size());
 
-    // Set variable in the States trajectory
-    model.setModelingOptionTrajectory<T>(path, vArr, traj);
-}
+        // Set variable in the States trajectory
+        model.setModelingOptionTrajectory<T>(path, vArr, traj);
+    }
+};
+
+} // End anonymous namespace
+} // End OpenSim namespace
+
+// Note that the methods below are still in the OpenSim namespace.
+// That namespace declaration is taken care of in the .h file.
 
 //-----------------------------------------------------------------------------
 // Construction
@@ -197,7 +223,8 @@ formContinuousElement(const Model& model, const Array_<State>& traj) {
     for (int i = 0; i < n; ++i) {
         Array_<double> val;
         model.getStateVariableTrajectory<double>(paths[i], traj, val);
-        appendVarElt<double>(paths[i], "variable", "double", val, contElt, precision);
+        SDocUtil::appendVarElt<double>(paths[i], "variable", "double",
+            val, contElt, precision);
     }
 }
 //_____________________________________________________________________________
@@ -225,64 +252,64 @@ formDiscreteElement(const Model& model, const Array_<State>& traj) {
             Array_<bool> vArr;
             model.getDiscreteVariableTrajectory<bool>(
                 paths[i], traj, vArr);
-            appendVarElt<bool>(paths[i], "variable", "bool", vArr,
-                discreteElt, precision);
+            SDocUtil::appendVarElt<bool>(paths[i], "variable", "bool",
+                vArr, discreteElt, precision);
         }
         else if(SimTK::Value<int>::isA(v)) {
             Array_<int> vArr;
             model.getDiscreteVariableTrajectory<int>(
                 paths[i], traj, vArr);
-            appendVarElt<int>(paths[i], "variable", "int", vArr,
-                discreteElt, precision);
+            SDocUtil::appendVarElt<int>(paths[i], "variable", "int",
+                vArr, discreteElt, precision);
         }
         else if(SimTK::Value<float>::isA(v)) {
             Array_<float> vArr;
             model.getDiscreteVariableTrajectory<float>(
                 paths[i], traj, vArr);
-            appendVarElt<float>(paths[i], "variable", "float", vArr,
-                discreteElt, precision);
+            SDocUtil::appendVarElt<float>(paths[i], "variable", "float",
+                vArr, discreteElt, precision);
         }
         else if(SimTK::Value<double>::isA(v)) {
             Array_<double> vArr;
             model.getDiscreteVariableTrajectory<double>(
                 paths[i], traj, vArr);
-            appendVarElt<double>(paths[i], "variable", "double", vArr,
-                discreteElt, precision);
+            SDocUtil::appendVarElt<double>(paths[i], "variable", "double",
+                vArr, discreteElt, precision);
         }
         else if(SimTK::Value<Vec2>::isA(v)) {
             Array_<Vec2> vArr;
             model.getDiscreteVariableTrajectory<Vec2>(
                 paths[i], traj, vArr);
-            appendVarElt<Vec2>(paths[i], "variable", "Vec2", vArr,
-                discreteElt, precision);
+            SDocUtil::appendVarElt<Vec2>(paths[i], "variable", "Vec2",
+                vArr, discreteElt, precision);
         }
         else if(SimTK::Value<Vec3>::isA(v)) {
             Array_<Vec3> vArr;
             model.getDiscreteVariableTrajectory<Vec3>(
                 paths[i], traj, vArr);
-            appendVarElt<Vec3>(paths[i], "variable", "Vec3", vArr,
-                discreteElt, precision);
+            SDocUtil::appendVarElt<Vec3>(paths[i], "variable", "Vec3",
+                vArr, discreteElt, precision);
         }
         else if(SimTK::Value<Vec4>::isA(v)) {
             Array_<Vec4> vArr;
             model.getDiscreteVariableTrajectory<Vec4>(
                 paths[i], traj, vArr);
-            appendVarElt<Vec4>(paths[i], "variable", "Vec4", vArr,
-                discreteElt, precision);
+            SDocUtil::appendVarElt<Vec4>(paths[i], "variable", "Vec4",
+                vArr, discreteElt, precision);
         }
         else if(SimTK::Value<Vec5>::isA(v)) {
             Array_<Vec5> vArr;
             model.getDiscreteVariableTrajectory<Vec5>(
                 paths[i], traj, vArr);
-            appendVarElt<Vec5>(paths[i], "variable", "Vec5", vArr,
-                discreteElt, precision);
+            SDocUtil::appendVarElt<Vec5>(paths[i], "variable", "Vec5",
+                vArr, discreteElt, precision);
         }
         else if(SimTK::Value<Vec6>::isA(v)) {
             Array_<Vec6> vArr;
             model.getDiscreteVariableTrajectory<Vec6>(
                 paths[i], traj, vArr);
-            appendVarElt<Vec6>(paths[i], "variable", "Vec6", vArr,
-                discreteElt, precision);
+            SDocUtil::appendVarElt<Vec6>(paths[i], "variable", "Vec6",
+                vArr, discreteElt, precision);
         }
         else {
             string msg = "Unrecognized type: " + v.getTypeName();
@@ -309,8 +336,8 @@ formModelingElement(const Model& model, const Array_<State>& traj) {
     for (int i = 0; i < n; ++i) {
         Array_<int> val;
         model.getModelingOptionTrajectory<int>(paths[i], traj, val);
-        appendVarElt<int>(paths[i], "option", "int", val, modelingElt,
-            precision);
+        SDocUtil::appendVarElt<int>(paths[i], "option", "int",
+            val, modelingElt, precision);
     }
 }
 
@@ -428,7 +455,7 @@ initializeContinuousVariables(const Model& model, SimTK::Array_<State>& traj) {
         // Switch based on the type.
         // Type double is expected for continuous variable elements.
         if (type == "double") {
-            initializeStatesForStateVariable<double>(varElts[i],
+            SDocUtil::initializeStatesForStateVariable<double>(varElts[i],
                 model, path, traj);
         }
         else {
@@ -471,39 +498,39 @@ initializeDiscreteVariables(const Model& model, SimTK::Array_<State>& traj) {
         // Switch based on the type
         // Append the vector according to type
         if (type == "bool") {
-            initializeStatesForDiscreteVariable<bool>(varElts[i],
-                model, path, traj);
+            SDocUtil::initializeStatesForDiscreteVariable<bool>(
+                varElts[i], model, path, traj);
         }
         else if(type == "int") {
-            initializeStatesForDiscreteVariable<int>(varElts[i],
-                model, path, traj);
+            SDocUtil::initializeStatesForDiscreteVariable<int>(
+                varElts[i], model, path, traj);
         }
         else if(type == "float") {
-            initializeStatesForDiscreteVariable<float>(varElts[i],
-                model, path, traj);
+            SDocUtil::initializeStatesForDiscreteVariable<float>(
+                varElts[i], model, path, traj);
         }
         else if(type == "double") {
-            initializeStatesForDiscreteVariable<double>(varElts[i],
-                model, path, traj);
+            SDocUtil::initializeStatesForDiscreteVariable<double>(
+                varElts[i], model, path, traj);
         }
         else if(type == "Vec2") {
-            initializeStatesForDiscreteVariable<Vec2>(varElts[i],
-                model, path, traj);
+            SDocUtil::initializeStatesForDiscreteVariable<Vec2>(
+                varElts[i], model, path, traj);
         }
         else if(type == "Vec3") {
-            initializeStatesForDiscreteVariable<Vec3>(varElts[i],
+            SDocUtil::initializeStatesForDiscreteVariable<Vec3>(varElts[i],
                 model, path, traj);
         }
         else if(type == "Vec4") {
-            initializeStatesForDiscreteVariable<Vec4>(varElts[i],
+            SDocUtil::initializeStatesForDiscreteVariable<Vec4>(varElts[i],
                 model, path, traj);
         }
         else if(type == "Vec5") {
-            initializeStatesForDiscreteVariable<Vec5>(varElts[i],
+            SDocUtil::initializeStatesForDiscreteVariable<Vec5>(varElts[i],
                 model, path, traj);
         }
         else if(type == "Vec6") {
-            initializeStatesForDiscreteVariable<Vec6>(varElts[i],
+            SDocUtil::initializeStatesForDiscreteVariable<Vec6>(varElts[i],
                 model, path, traj);
         }
         else {
@@ -549,7 +576,7 @@ initializeModelingOptions(const Model& model, SimTK::Array_<State>& traj) {
         // Switch based on the type.
         // Type int is expected for modeling option elements.
         if (type == "int") {
-            initializeStatesForModelingOption<int>(varElts[i],
+            SDocUtil::initializeStatesForModelingOption<int>(varElts[i],
                 model, path, traj);
         }
         else {
