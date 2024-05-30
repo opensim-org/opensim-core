@@ -58,10 +58,10 @@ public:
         }
     }
     casadi::Sparsity get_sparsity_in(casadi_int i) override;
-    bool has_jacobian_sparsity() const override {
+    bool has_jacobian_sparsity() const {
         return !m_fullPointsForSparsityDetection->empty();
     }
-    casadi::Sparsity get_jacobian_sparsity() const override;
+    casadi::Sparsity get_jacobian_sparsity() const;
 
 protected:
     const Problem* m_casProblem;
