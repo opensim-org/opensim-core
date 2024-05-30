@@ -140,7 +140,7 @@ TEST_CASE("IPOPT C++ tutorial problem HS071; has constraints.") {
         VectorXd guess = Vector4d(1.5, 2.5, 3.5, 4.5);
         auto solution = solver.optimize(guess);
 
-        REQUIRE(       solution.variables[0]  == 1.0);
+        REQUIRE(Approx(solution.variables[0]) == 1.0);
         REQUIRE(Approx(solution.variables[1]) == 4.743);
         REQUIRE(Approx(solution.variables[2]) == 3.82115);
         REQUIRE(Approx(solution.variables[3]) == 1.379408);
@@ -155,7 +155,7 @@ TEST_CASE("IPOPT C++ tutorial problem HS071; has constraints.") {
         VectorXd guess = Vector4d(1.5, 2.5, 3.5, 4.5);
         auto solution = solver.optimize(guess);
 
-        REQUIRE(solution.variables[0] == 1.0);
+        REQUIRE(Approx(solution.variables[0]) == 1.0);
         REQUIRE(Approx(solution.variables[1]) == 4.743);
         REQUIRE(Approx(solution.variables[2]) == 3.82115);
         REQUIRE(Approx(solution.variables[3]) == 1.379408);
@@ -170,7 +170,7 @@ TEST_CASE("IPOPT C++ tutorial problem HS071; has constraints.") {
         VectorXd guess = Vector4d(1.5, 2.5, 3.5, 4.5);
         auto solution = solver.optimize(guess);
 
-        REQUIRE(       solution.variables[0]  == 1.0);
+        REQUIRE(Approx(solution.variables[0])  == 1.0);
         REQUIRE(Approx(solution.variables[1]) == 4.743);
         REQUIRE(Approx(solution.variables[2]) == 3.82115);
         REQUIRE(Approx(solution.variables[3]) == 1.379408);
@@ -183,7 +183,7 @@ TEST_CASE("IPOPT C++ tutorial problem HS071; has constraints.") {
         VectorXd guess = Vector4d(1.5, 2.5, 3.5, 4.5);
         auto solution = solver.optimize(guess);
 
-        REQUIRE(       solution.variables[0]  == 1.0);
+        REQUIRE(Approx(solution.variables[0])  == 1.0);
         REQUIRE(Approx(solution.variables[1]) == 4.743);
         REQUIRE(Approx(solution.variables[2]) == 3.82115);
         REQUIRE(Approx(solution.variables[3]) == 1.379408);
