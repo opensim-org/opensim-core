@@ -220,3 +220,62 @@ SimTK::Matrix OpenSim::computeKNearestNeighbors(const SimTK::Matrix& x,
 
     return distances;
 }
+
+void OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A, 
+        int k, int maxIterations, double tolerance, 
+        SimTK::Matrix& W, SimTK::Matrix& H) {
+
+    W.clear();
+    H.clear();
+    W.resize(A.nrow(), k);
+    H.resize(k, A.ncol());
+
+    SimTK::Matrix W0 = SimTK::Test::randMatrix(A.nrow(), k);
+    SimTK::Matrix H0 = SimTK::Test::randMatrix(k, A.ncol());
+
+    int nm = A.nrow() * A.ncol();
+    
+    SimTK::Matrix error(A.nrow(), A.ncol());
+    double normError0 = SimTK::Infinity;
+
+    for (int j = 0; j < maxIterations; ++j) {
+        std::cout << "Iteration = " << j << std::endl;
+
+        // Alternating least squares
+
+        // W * H = A --> H = W^(-1) * A
+        SimTK::FactorSVD svd_W(W0);
+        svd_W.solve(A, H);
+        for (int i = 0; i < H.nrow(); ++i) {
+            for (int k = 0; k < H.ncol(); ++k) {
+                H(i, k) = std::max(0.0, H(i, k));
+            }
+        }
+
+        // ~H * ~W = ~A --> ~W = ~H^(-1) * ~A  
+        SimTK::FactorSVD svd_H(H.transpose().getAsMatrix());
+        svd_H.solve(A.transpose().getAsMatrix(), W.transpose().updAsMatrix());
+        for (int i = 0; i < W.nrow(); ++i) {
+            for (int k = 0; k < W.ncol(); ++k) {
+                W(i, k) = std::max(0.0, W(i, k));
+            }
+        }
+
+        // Compute error
+        error = A - W * H;
+        double normError = std::sqrt(error.scalarNormSqr()) / 
+                           std::sqrt(A.nelt());
+        double delta = normError0 - normError;
+        std::cout << "Norm error = " << normError << std::endl;
+        std::cout << "Delta = " << delta << std::endl;  
+
+        // Check for convergence
+        if (delta < tolerance) {
+            break;
+        } 
+    
+        normError0 = normError;
+        W0 = W;
+        H0 = H;
+    }
+}

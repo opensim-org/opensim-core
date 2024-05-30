@@ -154,11 +154,11 @@ void solveMocoInverseWithEMG() {
 int main() {
 
     // Solve the basic muscle redundancy problem with MocoInverse.
-    solveMocoInverse();
+    // solveMocoInverse();
 
     // This problem penalizes the deviation from electromyography data for a
     // subset of muscles.
-    solveMocoInverseWithEMG();
+    // solveMocoInverseWithEMG();
 
     // If you installed the Moco python package, you can compare both solutions
     // using the following command:
@@ -166,6 +166,40 @@ int main() {
     //          example3DWalking_MocoInverse_solution.sto --bilateral
     //          --ref_files example3DWalking_MocoInverseWithEMG_solution.sto
     //                      controls_reference.sto
+
+    MocoSolution solution("example3DWalking_MocoInverse_solution.sto");
+    std::vector<std::string> controlNames = solution.getControlNames();
+
+    Model model("subject_walk_scaled.osim");
+    std::vector<std::string> leftControlNames;
+    std::vector<std::string> rightControlNames;
+    for (const auto& muscle : model.getComponentList<Muscle>()) {
+        const auto& name = muscle.getName();
+        if (name.compare(name.length() - 2, 2, "_l") == 0) {
+            leftControlNames.push_back(muscle.getAbsolutePathString());
+        } else if (name.compare(name.length() - 2, 2, "_r") == 0) {
+            rightControlNames.push_back(muscle.getAbsolutePathString());
+        }
+    }
+
+    SimTK::Matrix leftControls(solution.getNumTimes(), leftControlNames.size());
+    SimTK::Matrix rightControls(solution.getNumTimes(), 
+            rightControlNames.size());
+    for (int i = 0; i < leftControls.ncol(); ++i) {
+        leftControls.updCol(i) = solution.getControl(leftControlNames[i]);
+    }
+    for (int i = 0; i < rightControls.ncol(); ++i) {
+        rightControls.updCol(i) = solution.getControl(rightControlNames[i]);
+    }
+
+    
+
+
+    SimTK::Matrix W;
+    SimTK::Matrix H;
+    factorizeMatrixNonNegative(leftControls, 5, 1000, 1e-6, W, H);
+
+    TimeSeriesTable leftSynergies;
 
     return EXIT_SUCCESS;
 }

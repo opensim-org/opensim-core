@@ -177,6 +177,10 @@ private:
 OSIMCOMMON_API SimTK::Matrix computeKNearestNeighbors(const SimTK::Matrix& x,
         const SimTK::Matrix& y, int k = 1);
 
+OSIMCOMMON_API void factorizeMatrixNonNegative(
+        const SimTK::Matrix& A, int k, int maxIterations, double tolerance, 
+        SimTK::Matrix& W, SimTK::Matrix& H);
+
 } // namespace OpenSim
 
 #endif // OPENSIM_COMMONUTILITIES_H_
