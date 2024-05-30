@@ -930,7 +930,7 @@ jobs:
         DEP_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install)
         DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
         DEP_CMAKE_ARGS+=(-DSUPERBUILD_ezc3d=ON)
-        DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_TROPTER=ON)
+        DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_TROPTER=OFF)
         DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=OFF)
         printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
         cmake "${DEP_CMAKE_ARGS[@]}"
