@@ -40,7 +40,7 @@ function(SetDefaultCMakeInstallPrefix)
     endif()
 endfunction()
 
-# CMake doesn't clear prefix directories when user changes it. 
+# CMake doesn't clear prefix directories when user changes it.
 # Remove it to avoid confusion.
 function(RemoveDefaultInstallDirIfEmpty DIR)
     file(GLOB CONTENTS ${DIR}/*)
@@ -73,7 +73,7 @@ endfunction()
 #   GIT_URL    -- (Required) git repository to download the sources from.
 #   GIT_TAG    -- (Required) git tag to checkout before commencing build.
 #   DEPENDS    -- (Optional) Other projects this project depends on.
-#   CMAKE_ARGS -- (Optional) A CMake list of arguments to be passed to CMake 
+#   CMAKE_ARGS -- (Optional) A CMake list of arguments to be passed to CMake
 #                 while building the project.
 # You must provide either URL or GIT_URL and GIT_TAG, but not all 3.
 function(AddDependency)
@@ -273,28 +273,11 @@ if (WIN32)
         set(IPOPT_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
             "${CMAKE_BINARY_DIR}/ipopt-prefix/src/ipopt"
             "${CMAKE_INSTALL_PREFIX}/ipopt")
-        ExternalProject_Add(ipopt 
+        ExternalProject_Add(ipopt
             URL https://github.com/coin-or/Ipopt/releases/download/releases%2F3.14.16/Ipopt-3.14.16-win64-msvs2019-md.zip
             CONFIGURE_COMMAND ""
             BUILD_COMMAND ""
             INSTALL_COMMAND ${IPOPT_INSTALL_CMD})
-
-        # Previously attempted option:
-        # Ipopt: Download pre-built binaries from the YARP/iCub project.
-        # This binary distribution comes with MUMPS (which contains Fortran
-        # code compiled with the proprietary Intel Fortran compiler).
-        # set(IPOPT_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
-            # "${CMAKE_BINARY_DIR}/ipopt-prefix/src/ipopt"
-            # "${CMAKE_INSTALL_PREFIX}/ipopt")
-        # ExternalProject_Add(ipopt
-            # URL http://www.icub.org/download/3rd-party/ipopt-3.12.7_msvc14_x86_amd64.zip
-            # CONFIGURE_COMMAND ""
-            # BUILD_COMMAND ""
-            # INSTALL_COMMAND ${IPOPT_INSTALL_CMD})
-
-        # COIN-OR may make binaries available on GitHub (see release 3.13.2),
-        # likely using Intel Fortran.
-        # https://github.com/coin-or/Ipopt/releases
         mark_as_advanced(SUPERBUILD_ipopt)
     endif()
 else()
@@ -356,12 +339,11 @@ else()
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/mumps"
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
-            
+
         ExternalProject_Add(ipopt
             DEPENDS           mumps metis
             URL https://github.com/coin-or/Ipopt/archive/refs/tags/releases/3.14.16.zip
             INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
-            #PATCH_COMMAND cd <SOURCE_DIR>/ && patch < ${CMAKE_SOURCE_DIR}/joris_fixipopt.patch
             # Suppress warnings treated as errors in Clang/LLVM with -Wno-error=implicit-function-declaration
             CONFIGURE_COMMAND <SOURCE_DIR>/configure --with-mumps --prefix=<INSTALL_DIR> --with-mumps-cflags="-I${CMAKE_INSTALL_PREFIX}/mumps/include/coin-or/mumps" --with-mumps-lflags="-L${CMAKE_INSTALL_PREFIX}/mumps/lib -lcoinmumps"
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}

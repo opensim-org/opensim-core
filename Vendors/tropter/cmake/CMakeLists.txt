@@ -11,7 +11,7 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
         "basename `otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libgcc' | awk '{print $1}'`"
         OUTPUT_VARIABLE libgcc_name
         OUTPUT_STRIP_TRAILING_WHITESPACE)
-        
+
     install(FILES
             ${ADOLC_DIR}/lib64/libadolc.2.dylib
             ${ADOLC_DIR}/lib64/libadolc.dylib
@@ -24,10 +24,6 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.1.3.10.dylib
             ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.1.dylib
             ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.dylib
-
-            # ${gfortran}
-            # ${quadmath}
-            # ${gcc_libdir}/${libgcc_name}
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
@@ -74,7 +70,6 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
 
             ${gfortran}
             ${quadmath}
-            #${gcc_libdir}/libgcc_s.so
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
         set(script
