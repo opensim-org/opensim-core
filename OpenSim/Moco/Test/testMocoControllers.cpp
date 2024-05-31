@@ -530,3 +530,19 @@ TEST_CASE("MocoPeriodicityGoal with Input controls") {
             "/controllerset/synergy_controller/synergy_excitation_0");
     CHECK(synergyControl0[0] == Approx(synergyControl0[N-1]).margin(1e-6));
 }
+
+TEST_CASE("SynergyController: incorrect synergy vector size") {
+    Model model = createTriplePendulum();
+    auto* controller = new SynergyController();
+    controller->setName("synergy_controller");
+    controller->addActuator(
+            model.getComponent<CoordinateActuator>("/forceset/tau0"));
+    controller->addActuator(
+            model.getComponent<CoordinateActuator>("/forceset/tau1"));
+    controller->addActuator(
+            model.getComponent<CoordinateActuator>("/forceset/tau2"));
+    controller->addSynergyVector(createVector({0.25, 0.75, 0.5}));
+    // controller->addSynergyVector(createVector({0.5, 0.5, 0.25}));
+    model.addController(controller);
+    model.finalizeConnections();
+}
