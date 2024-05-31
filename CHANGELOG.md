@@ -57,6 +57,8 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
   that map scalar control values from a list Input (connected to Outputs from one or more ModelComponents) 
   to model actuator controls. (#3769)
 - Updated Moco stack to use Casadi 3.6, IPOPT 3.14.14, and compatible coinmumps & metis
+- Upgrade Python and NumPy versions to 3.10 and 1.25, repectively, in ci workflow (#3794).
+
 
 v4.5
 ====
