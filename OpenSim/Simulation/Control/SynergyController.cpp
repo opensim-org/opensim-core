@@ -58,6 +58,38 @@ SynergyController&
 SynergyController::operator=(SynergyController&& other) = default;
 
 //=============================================================================
+// INPUT CONTROLLER INTERFACE
+//=============================================================================
+std::vector<std::string> SynergyController::getInputControlLabels() const {
+    std::vector<std::string> labels;
+    for (int i = 0; i < getProperty_synergy_vectors().size(); ++i) {
+        labels.push_back(fmt::format("synergy_excitation_{}", i));
+    }
+    return labels;
+}
+
+void SynergyController::computeControlsImpl(const SimTK::State& state,
+        SimTK::Vector& controls) const {
+    const auto& input = getInput<double>("controls");
+    const auto& indexes = getControlIndexes();
+    for (int i = 0; i < getProperty_synergy_vectors().size(); ++i) {
+        SimTK::Vector synergy = get_synergy_vectors(i).get_synergy_weights() * 
+                    input.getValue(state, i);
+        for (int ic = 0; ic < indexes.size(); ++ic) {
+            controls[indexes[ic]] += synergy[ic];
+        }
+    }
+}
+
+//=============================================================================
+// MODEL COMPONENT INTERFACE
+//=============================================================================
+void SynergyController::extendConnectToModel(Model& model) {
+    Super::extendConnectToModel(model);
+    validateSynergyVectorSizes();
+}
+
+//=============================================================================
 // METHODS
 //=============================================================================
 void SynergyController::addSynergyVector(const SimTK::Vector& vector) {
@@ -89,8 +121,12 @@ const SimTK::Vector& SynergyController::getSynergyVector(int index) const {
     return get_synergy_vectors(index).get_synergy_weights();
 }
 
+int SynergyController::getNumSynergies() const {
+    return getProperty_synergy_vectors().size();
+}
+
 SimTK::Matrix SynergyController::getSynergyVectorsAsMatrix() const {
-    checkSynergyVectors();
+    validateSynergyVectorSizes();
     SimTK::Matrix matrix(getNumControls(), 
             getProperty_synergy_vectors().size());
     for (int i = 0; i < getProperty_synergy_vectors().size(); ++i) {
@@ -99,40 +135,7 @@ SimTK::Matrix SynergyController::getSynergyVectorsAsMatrix() const {
     return matrix;
 }
 
-//=============================================================================
-// INPUT CONTROLLER INTERFACE
-//=============================================================================
-std::vector<std::string> SynergyController::getInputControlLabels() const {
-    std::vector<std::string> labels;
-    for (int i = 0; i < getProperty_synergy_vectors().size(); ++i) {
-        labels.push_back(fmt::format("synergy_excitation_{}", i));
-    }
-    return labels;
-}
-
-void SynergyController::computeControlsImpl(const SimTK::State& state,
-        SimTK::Vector& controls) const {
-    const auto& input = getInput<double>("controls");
-    const auto& indexes = getControlIndexes();
-    for (int i = 0; i < getProperty_synergy_vectors().size(); ++i) {
-        SimTK::Vector synergy = get_synergy_vectors(i).get_synergy_weights() * 
-                    input.getValue(state, i);
-        for (int ic = 0; ic < indexes.size(); ++ic) {
-            controls[indexes[ic]] += synergy[ic];
-        }
-    }
-    
-}
-
-//=============================================================================
-// MODEL COMPONENT INTERFACE
-//=============================================================================
-void SynergyController::extendConnectToModel(Model& model) {
-    Super::extendConnectToModel(model);
-    checkSynergyVectors();
-}
-
-void SynergyController::checkSynergyVectors() const {
+void SynergyController::validateSynergyVectorSizes() const {
     for (int i = 0; i < getProperty_synergy_vectors().size(); ++i) {
         const auto& weights = get_synergy_vectors(i).get_synergy_weights();
         const auto& name = get_synergy_vectors(i).getName();

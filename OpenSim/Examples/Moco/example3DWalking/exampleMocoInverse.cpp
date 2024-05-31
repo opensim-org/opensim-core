@@ -271,11 +271,11 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
 int main() {
 
     // Solve the basic muscle redundancy problem with MocoInverse.
-    // solveMocoInverse();
+    solveMocoInverse();
 
     // This problem penalizes the deviation from electromyography data for a
     // subset of muscles.
-    // solveMocoInverseWithEMG();
+    solveMocoInverseWithEMG();
 
     /// This problem extracts muscle synergies from the muscle excitations from
     /// the first example and uses them to solve the inverse problem using
