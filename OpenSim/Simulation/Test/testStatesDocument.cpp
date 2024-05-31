@@ -99,7 +99,7 @@ simulate(Model* model) {
     OpenSim::StatesTrajectoryReporter* reporter =
         new StatesTrajectoryReporter();
     reporter->setName("states_reporter");
-    double interval = 0.01;
+    double interval = 0.1;
     reporter->set_report_time_interval(interval);
     model->addComponent(reporter);
 
@@ -135,7 +135,19 @@ TEST_CASE("Getting Started")
 TEST_CASE("StatesDocument Serialization and Deserialization")
 {
     Model *model = buildModel();
-    simulate(model);
+    const StatesTrajectory *traj = simulate(model);
+    int precision = 3;
+    SimTK::String filename = "BlockOnAString.ostates";
+    StatesDocument doc1 = traj->exportToStatesDocument(*model, precision);
+    doc1.serialize(filename);
+
+    StatesDocument doc2(filename);
+    SimTK::Array_<SimTK::State> trajDe;
+    doc2.deserialize(*model, trajDe);
+
+    SimTK::String filename2 = "BlockOnAString02.ostates";
+    StatesDocument doc3(*model, trajDe, precision);
+    doc3.serialize(filename2);
 
     REQUIRE(1 == 1);
 
