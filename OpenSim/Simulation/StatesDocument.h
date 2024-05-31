@@ -88,11 +88,11 @@ which is not a requirement of the underlying SimTK infrastructure.
 
 With the introduction of this class, all state variables {i.e., Continuous
 Variables (OpenSim::StateVariable%s), Discrete Variables, and Modeling Options}
-can be serialized into a single file, which by convention has the```.ostates```
+can be serialized in a single file, which by convention has the `.ostates`
 file name exention. In addition, a variety of types (e.g., bool, int, double,
 Vec3, Vec4, etc.) are supported for Discrete Variables. Continuous States are
 still assumed to be type double, and Modeling Options are still assumed to be
-type int. Note, however, that the ```.ostates``` file format has the
+type `int`. Note, however, that the `.ostates` file format has the
 flexibility to relax these assumptions and include other types if needed.
 
 @note A point of clarification about Data Cache Variables...
@@ -105,7 +105,7 @@ and stored in the SimTK::State. However, because a Data Cache Variable can
 always be computed from the Continuous Variables, Discrete Variables, and
 Modeling Options, they are not serialized.
 
-        SimTK::State Contents    | Serialized in ```.ostates```?
+        SimTK::State Contents    | Serialized in `.ostates`?
         ------------------------ | -----------------------
         Continuous Variables     | yes
         Discrete Variables       | yes
@@ -119,8 +119,7 @@ Design Notes
 
 ### Dependencies
 Most operations in class StatesDocument rely on underlying SimTK classes,
-most notably SimTK::String, SimTK::Vector_<T>, SimTK::Array<T>, SimTK::State,
-and SimTK::Xml.
+most notably SimTK::String, SimTK::Array<T>, SimTK::State, and SimTK::Xml.
 
 StatesDocument has just one key OpenSim dependency: OpenSim::Model.
 OpenSim::Model brings with it all the methods it inherits from class
@@ -163,23 +162,23 @@ the OpenSim::Component class. A few examples follow.
                         SimTK::Array_<T>& output) const
 ```
 A call to the above method first finds a Discrete Variable in the model
-hierarchy based on the specifed path name (```pathName```). Then, from the
-input states trajectory (```input```), the method extracts the values of the
+hierarchy based on the specifed path (`pathName`). Then, from the
+input states trajectory (`input`), the method extracts the values of the
 specified Discrete Variable and returns its trajectory as the output
-(```output```). Notice that the type of the Discrete Variable can be specified
+(`output`). Notice that the type of the Discrete Variable can be specified
 by the caller (i.e., T = int, double, Vec3, Vec4, etc.).
 
 ```
         template<class T>
-        void setStatesTrajectoryForDiscreteVariable(
+        void setDiscreteVariableTrajectory(
                         const std::string& pathName,
                         const SimTK::Array_<T>& input,
                         SimTK::Array_<SimTK::State>& output) const
 ```
 On the other hand, based on the input trajectory of a specified Discrete
-Variable (```input```), a call to the above method sets the appropriate
+Variable (`input`), a call to the above method sets the appropriate
 element in each of the SimTK::State objects held in the states trajectory
-(```output```). Notice again that the type T of the Discrete Variable can be
+(`output`). Notice again that the type T of the Discrete Variable can be
 specified by the caller.
 
 ### Complete and Constant XML Document upon Construction
@@ -188,42 +187,48 @@ internal XML document that represents a complete serialization of a specific
 model's state trajectory. Moreover, that internal XML document cannot be
 altered after construction!
 
-If a model is changed (e.g., a muscle or contact model is added) or
+If a model is changed (e.g., a muscle or contact element is added) or
 a change has occurred in its state trajectory, the intended way to generate
-an internal XML document that reflects those changes is to construct a new
+an XML document that reflects those changes is to construct a new
 StatesDocument instance. Constructing a new instance is the most reliable
 approach for ensuring an accurate serialization. This approach also greatly
 simplifies the implementation of the StatesDocument class, as methods for
-selectively editing aspects of the internal XML document are not needed.
+selectively editing aspects of the internal XML document are consequently
+not needed.
 
 ### Output Precision
-The precision with which numbers are serialized to a ```.ostates``` file can be
-specified at the time of construction. The ```precision``` parameter specifies
+The precision with which numbers are serialized to a `.ostates` file can be
+specified at the time of construction. The `precision` parameter specifies
 the maximum number of significant digits used to represent numbers. If a
 number can be represented without data loss with fewer digits, fewer digits
 are used. In other words, trailing zeros are not written to file, thus
-reducing file size. For example, if ```precision``` = 5, the number
-1.50000000000000000000 would be represented in a ```.ostates``` file
+reducing file size. For example, if `precision` = 5, the number
+1.50000000000000000000 would be represented in a `.ostates` file
 as '1.5'; however, π would be represented as '3.1415'.
 
-By default, the ```precision``` parameter of a StatesDocument is set to the
-constant ```SimTK::LosslessNumDigitsReal```, which results in lossless
-serialization. When ```precision``` = ```SimTK::LosslessNumDigitsReal```, the
-```SimTK::State``` can be serialized and deserialized repeatedly without loss
-of information. In applications where exact values of the states are needed,
-lossless precision should be used.
+By default, the `precision` parameter of a `StatesDocument` is set to the
+constant `SimTK::LosslessNumDigitsReal`, which results in lossless
+serialization. When `precision` = `SimTK::LosslessNumDigitsReal`, the
+`SimTK::State` can be serialized and deserialized repeatedly without loss
+of information. `SimTK::LosslessNumDigitsReal` is platform dependent but
+typically has a value of about `20`. In applications where exact values of the
+states are needed, lossless precision should be used. In applications where
+exact values of the states are not needed, a smaller number of digits can be
+used (e.g., `precsion = 6`) as a means of reducing the size of a `.ostates`
+file or simplifying some types of post analysis (e.g., plotting where the extra
+significant figures would go unnoticed).
 
 
 -------------------
 .ostate File Format
 -------------------
-XML is used as the organizing framework for ```.ostates``` files
+XML is used as the organizing framework for `.ostates` files
 (see SimTK::Xml), allowing them to be viewed and edited with a text editor.
-Internet browsers can be also be used to view a ```.ostate``` file but may
-require a ```.xml``` file extension to be added to the file name for the
+Internet browsers can be also be used to view a `.ostate` file but may
+require a `.xml` file extension to be added to the file name for the
 XML format to be recognized.
 
-### Sample .ostates File
+### Sample `.ostates` File
 ```
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--OpenSim States Document (Version 40000)-->
@@ -253,14 +258,14 @@ XML format to be recognized.
 Successful deserialization of a .ostates file and full initialization of a
 states trajectory for an OpenSim::Model requires the following:
 
-    1) The name of the ```OpenSim::Model``` must match the value of the
-    ```model``` attribute of the top-level ```ostates``` element.
+    1) The name of the `OpenSim::Model` must match the value of the
+    `model` attribute of the top-level `ostates` element.
 
-    2) The number of values recorded for each ```variable``` and each
-    ```option``` in the ```.ostates``` file must be equal to the value of the
-    ```nTime``` attribute of the top-level ```ostates``` element.
+    2) The number of values recorded for each `variable` and each
+    `option` in the `.ostates` file must be equal to the value of the
+    `nTime` attribute of the top-level `ostates` element.
 
-    3) All ```variable``` and ```option``` paths must be found in the model
+    3) All `variable` and `option` paths must be found in the model
     OpenSim::Component heirarchy.
 
     4) The type must be supported. As of January 2024, the following types are
@@ -304,12 +309,12 @@ deserialize those same states and use them to accomplish a few basic things.
     // -------------------------------
     // The reporter records the SimTK::State in a SimTK::Array_<> at a
     // specified time interval.
-    OpenSim::StatesTrajectoryReporter
-        reporter = new StatesTrajectoryReporter();
+    OpenSim::StatesTrajectoryReporter* reporter =
+        new StatesTrajectoryReporter();
     reporter->setName("states_reporter");
     double interval = 0.01;
     reporter->set_report_time_interval(interval);
-    model->addComponent(statesReporter);
+    model->addComponent(reporter);
 
     // -----------------------------------------
     // Build the System and Initialize the State
@@ -352,8 +357,8 @@ deserialize those same states and use them to accomplish a few basic things.
     // Serialize the States to File
     // ----------------------------
     // The file name (see below), can be any string supported by the file
-    // system can be. The recommended convention is for the file name to carry
-    // the suffix ".ostates". Below, the suffix ".ostates" is simply added to
+    // system. The recommended convention is for the file name to carry the
+    // suffix ".ostates". Below, the suffix ".ostates" is simply added to
     // the name of the model, and the document is saved to the current working
     // directory. The file name can also incorporate a valid system path (e.g.,
     // "C:/Users/smith/Documents/Work/BouncingBlock.ostates").
@@ -403,7 +408,7 @@ deserialize those same states and use them to accomplish a few basic things.
     std::string path;
     const SimTK::State* iter;
     for(iter = traj.cbegin(); iter!=traj.cend(); ++iter) {
-        
+
         // Get time
         double t = iter->getTime();
 
@@ -426,11 +431,15 @@ deserialize those same states and use them to accomplish a few basic things.
         path = "/jointset/free/free_coord_0/is_clamped";
         int clamped = model.getModelingOption(*iter, path);
 
+        // Access the value of a data cache variable. Note that this will
+        // require state realization at the appropriate stage.
+        system.realize(*iter, SimTK::Stage::Dynamics);
+        Vec3 force = forces.getContactElement(i)->getForce();
     }
 
-    // ------------------------------------------
-    // Extract Trajectories for Individual States
-    // ------------------------------------------
+    // ----------------------------------------------------
+    // Extract a Complete Trajectory for a Particular State
+    // ----------------------------------------------------
     // Continuous (double)
     path = "/jointset/free/free_coord_0/value";
     SimTK::Array_<double> xTraj;
