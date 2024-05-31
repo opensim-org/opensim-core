@@ -28,6 +28,7 @@
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <SimTKcommon/internal/IteratorRange.h>
+#include <OpenSim/Simulation/StatesDocument.h>
 
 #include "osimSimulationDLL.h"
 
@@ -188,7 +189,7 @@ public:
 
     /** Iterator type that does not allow modifying the trajectory.
      * Most users do not need to understand what this is. */
-    typedef std::vector<SimTK::State>::const_iterator const_iterator;
+    typedef SimTK::Array_<SimTK::State>::const_iterator const_iterator;
 
     /** A helper type to allow using range for loops over a subset of the
      * trajectory. */
@@ -289,9 +290,56 @@ public:
     TimeSeriesTable exportToTable(const Model& model,
             const std::vector<std::string>& stateVars = {}) const;
 
+    /** Export a complete trajectory of states (i.e., one that includes
+    * all continuous, discrete, and modeling states) to an
+    * OpenSim::StatesDocument. That StatesDocument instance can then be
+    * used to serialize the states to an OSTATES file or document string by
+    * calling the following:
+    *
+    *       StatesDocument::serializeToFile()
+    *       StatesDocument::serializeToSring()
+    *
+    * Once the states have been serialized, they can be deserialized by
+    * constructing a new StatesDocument from a file or document string:
+    *
+    *       StatesDocument(const SimTK::String& filename)
+    *       StatesDocument(const char* xmlDocument)
+    *
+    * and then calling the following:
+    *
+    *       StatesDocument::deserialize(const OpenSim::Model& model,
+    *                           SimTK::Array_<SimTK::State>& trajectory)
+    *    *
+    * The OSTATES format is plain-text XML (see SimTK::Xml) with precision
+    * sufficient to restore a time-history of SimTK::State%s with virtually
+    * no trunction or rounding error.
+    *
+    * A note of CAUTION:
+    * Using either
+    *
+    *       StatesTrajectory StatesTrajectory::createFromStatesStorage() or
+    *       StatesTrajectory StatesTrajectory::createFromStatesTable()
+    *
+    * to construct a StatesTrajectory instance will likely leave discrete
+    * states (i.e., OpenSim::DiscreteVariable%s) and modeling states
+    * (i.e., OpenSim::ModelingOptions%s) uninitialized. The reason is that
+    * Storage and TimeSeriesTable objects generally include only the
+    * continuous states (i.e., OpenSim::StateVariable%s).
+    *
+    * Thus, when relying on serialization and deserialization to reproduce a
+    * complete StatesTrajectory, a StatesDocument is the preferred source as
+    * it will include continuous, discrete, and modeling states.
+    */
+    OpenSim::StatesDocument
+    exportToStatesDocument(const OpenSim::Model& model,
+        int precision = SimTK::LosslessNumDigitsReal) const
+    {
+        return OpenSim::StatesDocument(model, m_states, precision);
+    }
+
 private:
 
-    std::vector<SimTK::State> m_states;
+    SimTK::Array_<SimTK::State> m_states;
 
 public:
 
