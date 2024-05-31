@@ -56,6 +56,7 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Added InputController, an intermediate abstract class of Controller that provides supports for controllers 
   that map scalar control values from a list Input (connected to Outputs from one or more ModelComponents) 
   to model actuator controls. (#3769)
+- Upgrade Python and NumPy versions to 3.10 and 1.25, repectively, in ci workflow (#3794).
 - Added SynergyController, a controller that computes controls for a model based on a linear combination of a set of Input control signals and a set of synergy vectors. (#3796)
 
 v4.5
