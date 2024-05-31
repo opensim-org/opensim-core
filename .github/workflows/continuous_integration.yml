@@ -282,7 +282,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-        
+
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
       run: python3 -m pip install numpy==1.25
@@ -306,7 +306,7 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
-      # if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         echo $env:GITHUB_WORKSPACE\\build_deps
         mkdir $env:GITHUB_WORKSPACE\\build_deps
@@ -822,6 +822,7 @@ jobs:
         tar xzf v4.1.1.tar.gz && cd swig-4.1.1
         sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
+
     - name: Cache dependencies
       id: cache-dependencies
       uses: actions/cache@v3
@@ -830,7 +831,7 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
-      # if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         mkdir $GITHUB_WORKSPACE/../build_deps
         cd $GITHUB_WORKSPACE/../build_deps
