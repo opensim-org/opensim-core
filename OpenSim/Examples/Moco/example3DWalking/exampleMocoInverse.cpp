@@ -19,7 +19,9 @@
 /// This example shows how to use the MocoInverse tool to exactly prescribe a
 /// motion and estimate muscle behavior for walking. The first example does not
 /// rely on electromyography data, while the second example penalizes deviation
-/// from electromyography data for a subset of muscles.
+/// from electromyography data for a subset of muscles. The third example
+/// extracts muscle synergies from the muscle excitaitons from the first example
+/// and uses them to solve the inverse problem using SynergyControllers.
 ///
 /// See the README.txt next to this file for more information.
 
@@ -29,7 +31,7 @@
 
 using namespace OpenSim;
 
-/// This problem solves in about 5 minutes.
+/// Solve the basic muscle redundancy problem with MocoInverse.
 void solveMocoInverse() {
 
     // Construct the MocoInverse tool.
@@ -81,7 +83,7 @@ void solveMocoInverse() {
 }
 
 /// This problem penalizes the deviation from electromyography data for a
-/// subset of muscles, and solves in about 30 minutes.
+/// subset of muscles.
 void solveMocoInverseWithEMG() {
 
     // This initial block of code is identical to the code above.
@@ -151,26 +153,30 @@ void solveMocoInverseWithEMG() {
     STOFileAdapter::write(controlsRef, "controls_reference.sto");
 }
 
-int main() {
+/// This problem extracts muscle synergies from the muscle excitations from the
+/// first example and uses them to solve the inverse problem using
+/// SynergyControllers.
+void solveMocoInverseWithSynergies(int numSynergies = 5) {
 
-    // Solve the basic muscle redundancy problem with MocoInverse.
-    // solveMocoInverse();
+    // Construct the base model using a ModelProcessor as in the previous
+    // examples.
+    ModelProcessor modelProcessor("subject_walk_scaled.osim");
+    modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+    modelProcessor.append(ModOpIgnoreTendonCompliance());
+    modelProcessor.append(ModOpIgnoreActivationDynamics());
+    modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
+    modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
+    modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
+    modelProcessor.append(ModOpReplacePathsWithFunctionBasedPaths(
+            "subject_walk_scaled_FunctionBasedPathSet.xml"));
+    // Weaken the reserve actuators to make their controls more costly in the 
+    // objective function.
+    modelProcessor.append(ModOpAddReserves(1.0));
+    Model model = modelProcessor.process();
 
-    // This problem penalizes the deviation from electromyography data for a
-    // subset of muscles.
-    // solveMocoInverseWithEMG();
-
-    // If you installed the Moco python package, you can compare both solutions
-    // using the following command:
-    //      opensim-moco-generate-report subject_walk_scaled.osim
-    //          example3DWalking_MocoInverse_solution.sto --bilateral
-    //          --ref_files example3DWalking_MocoInverseWithEMG_solution.sto
-    //                      controls_reference.sto
-
-    MocoSolution solution("example3DWalking_MocoInverse_solution.sto");
-    std::vector<std::string> controlNames = solution.getControlNames();
-
-    Model model("subject_walk_scaled.osim");
+    // Load the solution from solveMocoInverse() to extract the muscle
+    // control variable names and excitations for the left and right legs.
+    MocoSolution prevSolution("example3DWalking_MocoInverse_solution.sto");
     std::vector<std::string> leftControlNames;
     std::vector<std::string> rightControlNames;
     for (const auto& muscle : model.getComponentList<Muscle>()) {
@@ -182,24 +188,107 @@ int main() {
         }
     }
 
-    SimTK::Matrix leftControls(solution.getNumTimes(), leftControlNames.size());
-    SimTK::Matrix rightControls(solution.getNumTimes(), 
+    SimTK::Matrix leftControls(prevSolution.getNumTimes(), 
+            leftControlNames.size());
+    SimTK::Matrix rightControls(prevSolution.getNumTimes(), 
             rightControlNames.size());
     for (int i = 0; i < leftControls.ncol(); ++i) {
-        leftControls.updCol(i) = solution.getControl(leftControlNames[i]);
+        leftControls.updCol(i) = prevSolution.getControl(leftControlNames[i]);
     }
     for (int i = 0; i < rightControls.ncol(); ++i) {
-        rightControls.updCol(i) = solution.getControl(rightControlNames[i]);
+        rightControls.updCol(i) = prevSolution.getControl(rightControlNames[i]);
     }
 
-    
+    // Use non-negative matrix factorization to extract a set of muscle
+    // synergies for each leg.
+    SimTK::Matrix Wl;
+    SimTK::Matrix Hl;
+    factorizeMatrixNonNegative(leftControls, numSynergies, 1000, 1e-6, Wl, Hl);
 
+    SimTK::Matrix Wr;
+    SimTK::Matrix Hr;
+    factorizeMatrixNonNegative(rightControls, numSynergies, 1000, 1e-6, Wr, Hr);
 
-    SimTK::Matrix W;
-    SimTK::Matrix H;
-    factorizeMatrixNonNegative(leftControls, 5, 1000, 1e-6, W, H);
+    // Add a SynergyController for the left leg to the model.
+    auto* leftController = new SynergyController();
+    leftController->setName("synergy_controller_left_leg");
+    for (const auto& name : leftControlNames) {
+        leftController->addActuator(model.getComponent<Muscle>(name));
+    }
+    for (int i = 0; i < numSynergies; ++i) {
+        leftController->addSynergyVector(Hl.row(i).transpose().getAsVector());
+    }
+    model.addController(leftController);
 
-    TimeSeriesTable leftSynergies;
+    // Add a SynergyController for the right leg to the model.
+    auto* rightController = new SynergyController();
+    rightController->setName("synergy_controller_right_leg");
+    for (const auto& name : rightControlNames) {
+        rightController->addActuator(model.getComponent<Muscle>(name));
+    }
+    for (int i = 0; i < numSynergies; ++i) {
+        rightController->addSynergyVector(Hr.row(i).transpose().getAsVector());
+    }
+    model.addController(rightController);
+    model.finalizeConnections();
+    model.initSystem();
+
+    // Construct the MocoInverse tool.
+    MocoInverse inverse;
+    inverse.setName("example3DWalking_MocoInverse_muscle_synergies");
+    inverse.setModel(ModelProcessor(model));
+    inverse.setKinematics(TableProcessor("coordinates.sto"));
+    inverse.set_initial_time(0.48);
+    inverse.set_final_time(1.61);
+    inverse.set_mesh_interval(0.02);
+    inverse.set_kinematics_allow_extra_columns(true);
+
+    // Initialize the MocoInverse study and set the control bounds for the
+    // muscle synergies excitations.
+    MocoStudy study = inverse.initialize();
+    auto& problem = study.updProblem();
+    for (int i = 0; i < numSynergies; ++i) {
+        std::string nameLeft = fmt::format("/controllerset/"
+                "synergy_controller_left_leg/synergy_excitation_{}", i);
+        problem.setInputControlInfo(nameLeft, {0, 1.0});
+
+        std::string nameRight = fmt::format("/controllerset/"
+                "synergy_controller_right_leg/synergy_excitation_{}", i);
+        problem.setInputControlInfo(nameRight, {0, 1.0});
+    }
+
+    // Solve the problem and write the solution to a Storage file.
+    MocoSolution solution = study.solve();
+    solution.generateControlsFromModelControllers(model);
+    TimeSeriesTable coordinateValues = prevSolution.exportToValuesTable();
+    TimeSeriesTable coordinateSpeeds = prevSolution.exportToSpeedsTable();
+    solution.insertStatesTrajectory(coordinateValues);
+    solution.insertStatesTrajectory(coordinateSpeeds);
+    solution.write(fmt::format("example3DWalking_MocoInverseWithSynergies_"
+            "{}_solution.sto", numSynergies));
+}
+
+int main() {
+
+    // Solve the basic muscle redundancy problem with MocoInverse.
+    // solveMocoInverse();
+
+    // This problem penalizes the deviation from electromyography data for a
+    // subset of muscles.
+    // solveMocoInverseWithEMG();
+
+    /// This problem extracts muscle synergies from the muscle excitations from
+    /// the first example and uses them to solve the inverse problem using
+    /// SynergyControllers.
+    int numSynergies = 5;
+    solveMocoInverseWithSynergies(numSynergies);
+
+    // If you installed the Moco python package, you can compare both solutions
+    // using the following command:
+    //      opensim-moco-generate-report subject_walk_scaled.osim
+    //          example3DWalking_MocoInverse_solution.sto --bilateral
+    //          --ref_files example3DWalking_MocoInverseWithEMG_solution.sto
+    //                      controls_reference.sto
 
     return EXIT_SUCCESS;
 }

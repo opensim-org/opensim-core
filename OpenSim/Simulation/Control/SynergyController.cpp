@@ -113,10 +113,15 @@ std::vector<std::string> SynergyController::getInputControlLabels() const {
 void SynergyController::computeControlsImpl(const SimTK::State& state,
         SimTK::Vector& controls) const {
     const auto& input = getInput<double>("controls");
-    for (int i = 0; i < static_cast<int>(input.getNumConnectees()); ++i) {
-        controls += get_synergy_vectors(i).get_synergy_weights() * 
+    const auto& indexes = getControlIndexes();
+    for (int i = 0; i < getProperty_synergy_vectors().size(); ++i) {
+        SimTK::Vector synergy = get_synergy_vectors(i).get_synergy_weights() * 
                     input.getValue(state, i);
+        for (int ic = 0; ic < indexes.size(); ++ic) {
+            controls[indexes[ic]] += synergy[ic];
+        }
     }
+    
 }
 
 //=============================================================================

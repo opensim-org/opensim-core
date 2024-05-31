@@ -75,6 +75,8 @@ protected:
 
 private:
     void checkSynergyVectors() const;
+
+    std::vector<int> m_controlIndexesInConnecteeOrder;
 };
 
 } // namespace OpenSim

@@ -221,61 +221,101 @@ SimTK::Matrix OpenSim::computeKNearestNeighbors(const SimTK::Matrix& x,
     return distances;
 }
 
-void OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A, 
-        int k, int maxIterations, double tolerance, 
+double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A, 
+        int numFactors, int maxIterations, double tolerance, 
         SimTK::Matrix& W, SimTK::Matrix& H) {
 
+    // Initialize W and H.
+    int k = numFactors;
     W.clear();
     H.clear();
     W.resize(A.nrow(), k);
     H.resize(k, A.ncol());
 
-    SimTK::Matrix W0 = SimTK::Test::randMatrix(A.nrow(), k);
-    SimTK::Matrix H0 = SimTK::Test::randMatrix(k, A.ncol());
+    log_info("");
+    log_info("Non-negative matrix factorization");
+    log_info("---------------------------------");
+    log_info("Number of factors, k = {}", numFactors);
+    log_info("A: {} x {}", A.nrow(), A.ncol());
+    log_info("W: {} x {}", W.nrow(), W.ncol());
+    log_info("H: {} x {}", H.nrow(), H.ncol());
+    log_info("Max iterations = {}", maxIterations);
+    log_info("Tolerance = {}", tolerance);
+    log_info("");
 
-    int nm = A.nrow() * A.ncol();
-    
+    // Create random initial guess.
+    SimTK::Random::Uniform rand(0,1);
+    SimTK::Matrix W0(A.nrow(), k);
+    SimTK::Matrix H0(k, A.ncol());
+    for (int i = 0; i < W0.nrow(); ++i) {
+        for (int j = 0; j < W0.ncol(); ++j) {
+            W0(i, j) = rand.getValue();
+        }
+    }
+    for (int i = 0; i < H0.nrow(); ++i) {
+        for (int j = 0; j < H0.ncol(); ++j) {
+            H0(i, j) = rand.getValue();
+        }
+    }
+
+    // Initialize error matrix.
     SimTK::Matrix error(A.nrow(), A.ncol());
     double normError0 = SimTK::Infinity;
-
+    double normError = SimTK::Infinity;
+    double deltaError = SimTK::Infinity;    
     for (int j = 0; j < maxIterations; ++j) {
-        std::cout << "Iteration = " << j << std::endl;
 
-        // Alternating least squares
-
+        // Alternating least squares.
         // W * H = A --> H = W^(-1) * A
         SimTK::FactorSVD svd_W(W0);
         svd_W.solve(A, H);
         for (int i = 0; i < H.nrow(); ++i) {
             for (int k = 0; k < H.ncol(); ++k) {
+                // Ensure non-negativity.
                 H(i, k) = std::max(0.0, H(i, k));
             }
         }
-
         // ~H * ~W = ~A --> ~W = ~H^(-1) * ~A  
         SimTK::FactorSVD svd_H(H.transpose().getAsMatrix());
         svd_H.solve(A.transpose().getAsMatrix(), W.transpose().updAsMatrix());
         for (int i = 0; i < W.nrow(); ++i) {
             for (int k = 0; k < W.ncol(); ++k) {
+                // Ensure non-negativity.
                 W(i, k) = std::max(0.0, W(i, k));
             }
         }
 
-        // Compute error
-        error = A - W * H;
-        double normError = std::sqrt(error.scalarNormSqr()) / 
-                           std::sqrt(A.nelt());
-        double delta = normError0 - normError;
-        std::cout << "Norm error = " << normError << std::endl;
-        std::cout << "Delta = " << delta << std::endl;  
+        // Scale W and H.
+        for (int i = 0; i < k; ++i) {
+            double scale = W.col(i).norm();
+            W.updCol(i) /= scale;
+            H.updRow(i) *= scale;
+        }
 
-        // Check for convergence
-        if (delta < tolerance) {
+        // Compute error using the Frobenius norm.
+        error = A - W * H;
+        normError = std::sqrt(error.scalarNormSqr()) / 
+                           std::sqrt(A.nelt());
+        deltaError = normError0 - normError;
+        log_info("Iteration {} | norm(error) = {} | change in norm(error) = {}", 
+                j, normError, deltaError);
+
+        // Check for convergence.
+        if (deltaError < tolerance) {
+            log_info("Converged after {} iterations.", j + 1);
+            log_info("");
             break;
-        } 
+        } else if (j == maxIterations - 1) {
+            log_info("Max iterations reached. Exiting...");
+            log_info("");
+            break;
+        }
     
+        // Update variables.
         normError0 = normError;
         W0 = W;
         H0 = H;
     }
+
+    return normError;
 }
