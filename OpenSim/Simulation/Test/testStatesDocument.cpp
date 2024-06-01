@@ -44,6 +44,93 @@ customSquare(double x)
 }
 
 //_____________________________________________________________________________
+// Test for exact equality of two state trajectories.
+// If a state variable fails an equality test, it is likely that that
+// variable has not been added to OpenSim's Component heirarchy and therefore
+// has not been serialized.
+bool
+testEquality(const Model& model,
+    const Array_<State>& trajA, const Array_<State>& trajB)
+{
+    // Check the array size
+    REQUIRE(trajA.size() == trajB.size());
+
+    // Get the SimTK::System
+    const System& sys = model.getSystem();
+
+    // Iterate through the State Trajectory
+    std::string path;
+    double tA, tB;
+    const State* stateA = trajA.cbegin();
+    const State* stateB = trajB.cbegin();
+    // Time
+    for(int iTime=0; stateA!=trajA.cend(); ++iTime, ++stateA, ++stateB) {
+
+        // Check subsystem consistency
+        REQUIRE(stateA->isConsistent(*stateB));
+
+        // Get time
+        tA = stateA->getTime();
+        tB = stateB->getTime();
+        REQUIRE(tA == tB);
+
+        // Check the number of subsystesm
+        int nsubA = stateA->getNumSubsystems();
+        int nsubB = stateB->getNumSubsystems();
+        REQUIRE(nsubA == nsubB);
+
+        // Realize to Stage::Report
+        // This ensures that all states have been initialized, including
+        // quaternion parameters, and that all constraints have been enforced.
+        sys.realize(*stateA, Stage::Report);
+        sys.realize(*stateB, Stage::Report);
+
+        // Continuous variables.
+        // This is an exhaustive, low-level comparision on the SimTK side
+        // that is independent of the OpenSim Component heirarchy.
+        // Q
+        const Vector& qA = stateA->getQ();
+        const Vector& qB = stateB->getQ();
+        int nq = qA.size();
+        for (int i = 0; i < nq; ++i) {
+            if(i==6) std::cout << "q6= " << qA[i] << " " << qB[i] << std::endl;
+            REQUIRE(qA[i] == qB[i]);
+        }
+        // U
+        const Vector& uA = stateA->getU();
+        const Vector& uB = stateB->getU();
+        int nu = uA.size();
+        for (int i = 0; i < nu; ++i) REQUIRE(uA[i] == uB[i]);
+        // Z
+        const Vector& zA = stateA->getZ();
+        const Vector& zB = stateB->getZ();
+        int nz = zA.size();
+        for (int i = 0; i < nz; ++i) REQUIRE(zA[i] == zB[i]);
+
+        // Discrete Variables
+        // The SimTK API does not allow an exhaustive, low-level comparison
+        // on the SimTK side.
+        // The comparision is done only for the discrete variables registered
+        // in the OpenSim Component heirarchy. Any discrete variable that is
+        // not registered in OpenSim will not be serialized, deserialized, or
+        // compared in this unit test.
+
+
+        // Modeling Options
+        // The SimTK API does not allow an exhaustive, low-level comparison
+        // across all subsystems.
+        // The comparision is done only for the modeling options registered
+        // in the OpenSim Component heirarchy.
+        // Note that on the SimTK side, modeling options are just a special
+        // kind of discrete variable.
+
+
+    }
+
+    return(true);
+}
+
+//_____________________________________________________________________________
 // Build the model
 Model*
 buildModel() {
@@ -90,7 +177,7 @@ buildModel() {
 
 //_____________________________________________________________________________
 // Simulate
-const OpenSim::StatesTrajectory*
+SimTK::Array_<SimTK::State>
 simulate(Model* model) {
 
     // Add a StatesTrajectoryReporter
@@ -117,8 +204,8 @@ simulate(Model* model) {
     manager.initialize(state);
     state = manager.integrate(tf);
 
-    // Return the trajectory
-    return &reporter->getStates();
+    // Return a copy of the state trajectory
+    return reporter->getStates().getUnderlyingStateArray();
 }
 
 } // End anonymous namespace
@@ -132,22 +219,29 @@ TEST_CASE("Getting Started")
 }
 
 
-TEST_CASE("StatesDocument Serialization and Deserialization")
+TEST_CASE("Serialization and Deserialization")
 {
+    // Build the model and run a simulation
+    // The output of simulate() is the state trajectory.
+    // Note that a copy of the state trajectory is returned, so we don't have
+    // to worry about the reporter (or any other object) going out of scope
+    // or being deleted.
     Model *model = buildModel();
-    const StatesTrajectory *traj = simulate(model);
+    Array_<State>& trajA = simulate(model);
+
+    // Serialize (A)
     int precision = 3;
     SimTK::String filename = "BlockOnAString.ostates";
-    StatesDocument doc1 = traj->exportToStatesDocument(*model, precision);
-    doc1.serialize(filename);
+    StatesDocument docA(*model, trajA);
+    docA.serialize(filename);
 
-    StatesDocument doc2(filename);
-    SimTK::Array_<SimTK::State> trajDe;
-    doc2.deserialize(*model, trajDe);
+    // Deserialize (B)
+    StatesDocument docB(filename);
+    Array_<State> trajB;
+    docB.deserialize(*model, trajB);
 
-    SimTK::String filename2 = "BlockOnAString02.ostates";
-    StatesDocument doc3(*model, trajDe, precision);
-    doc3.serialize(filename2);
+    // Does A == B?
+    testEquality(*model, trajA, trajB);
 
     REQUIRE(1 == 1);
 
