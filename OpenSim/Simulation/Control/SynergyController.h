@@ -52,6 +52,17 @@ public:
  * signal for that synergy. The synergy vectors should have the same size as the
  * number of actuators connected to the controller, and the controller expects
  * the number Input controls to be equal to the number of synergy vectors.
+ * 
+ * Added synergy vectors are named "synergy_vector_<index>", where <index> is
+ * the index of the vector in the controller (e.g., "synergy_vector_0", 
+ * "synergy_vector_1", etc.). Similarly, the Input control labels are named
+ * "synergy_excitation_<index>" (e.g., "synergy_excitation_0",
+ * "synergy_excitation_1", etc.).
+ * 
+ * @note In Moco, SynergyController%s in a model provided to MocoProblem will
+ * be automatically detected. The Input controls for each SynergyController will
+ * be given variable names based on the path to the controller appended with the
+ * Input control labels (e.g., "/path/to/controller/synergy_excitation_0"). 
  */
 class OSIMSIMULATION_API SynergyController : public InputController {
     OpenSim_DECLARE_CONCRETE_OBJECT(SynergyController, InputController);

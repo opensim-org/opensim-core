@@ -159,7 +159,8 @@ void solveMocoInverseWithEMG() {
 void solveMocoInverseWithSynergies(int numSynergies = 5) {
 
     // Construct the base model using a ModelProcessor as in the previous
-    // examples.
+    // examples, with the exception that we ignore activation dynamics to
+    // simplify the problem given the muscle synergy controllers.
     ModelProcessor modelProcessor("subject_walk_scaled.osim");
     modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
     modelProcessor.append(ModOpIgnoreTendonCompliance());
@@ -187,7 +188,6 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
             rightControlNames.push_back(muscle.getAbsolutePathString());
         }
     }
-
     SimTK::Matrix leftControls(prevSolution.getNumTimes(), 
             leftControlNames.size());
     SimTK::Matrix rightControls(prevSolution.getNumTimes(), 
@@ -198,6 +198,30 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
     for (int i = 0; i < rightControls.ncol(); ++i) {
         rightControls.updCol(i) = prevSolution.getControl(rightControlNames[i]);
     }
+
+    // SynergyController
+    // -----------------
+    // SynergyController defines the controls for actuators connected to the 
+    // controller using a linear combination of time-varying synergy control 
+    // signals (i.e., "synergy excitations") and a set of vectors containing 
+    // weights for each actuator representing the contribution of each synergy
+    // excitation to the total control signal for that actuator 
+    // (i.e., "synergy vectors").
+    //
+    // If 'N' is the number of time points in the trajectory, 'M' is the number
+    // of actuators connected to the controller, and 'K' is the number of   
+    // synergies in the controller, then:
+    // - The synergy excitations are a matrix 'W' of size N x K.
+    // - The synergy vectors are a matrix 'H' of size K x M.
+    // - The controls for the actuators are computed A = W * H.
+    //  
+    // SynergyController is a concrete implementation of InputController, which
+    // means that it uses Input control signals as the synergy excitations.
+    // Moco automatically detects InputController%s in a model provided to a
+    // MocoProblem and adds continuous variables to the optimization problem
+    // for each Input control signal. The variable names are based on the path
+    // to the controller appended with the Input control labels (e.g.,
+    // "/path/to/my_synergy_controller/synergy_excitation_0").
 
     // Use non-negative matrix factorization to extract a set of muscle
     // synergies for each leg.
@@ -212,10 +236,15 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
     // Add a SynergyController for the left leg to the model.
     auto* leftController = new SynergyController();
     leftController->setName("synergy_controller_left_leg");
+    // The number of actuators connected to the controller defines the number of
+    // weights in each synergy vector expected by the controller.
     for (const auto& name : leftControlNames) {
         leftController->addActuator(model.getComponent<Muscle>(name));
     }
-    for (int i = 0; i < numSynergies; ++i) {
+    // Adding a synergy vector increases the number of synergies in the
+    // controller by one. This means that the number of Input control 
+    // signals expected by the controller is also increased by one.
+    for (int i = 0; i < numSynergies; ++i) {    
         leftController->addSynergyVector(Hl.row(i).transpose().getAsVector());
     }
     model.addController(leftController);
@@ -244,7 +273,11 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
     inverse.set_kinematics_allow_extra_columns(true);
 
     // Initialize the MocoInverse study and set the control bounds for the
-    // muscle synergies excitations.
+    // muscle synergies excitations. 'setInputControlInfo()' is equivalent to
+    // 'setControlInfo()', but reserved for Input control variables. Note that 
+    // while we make a distinction between "control" variables and 
+    // "Input control" variables in the API, the optimal control problem
+    // constructed by Moco treats them both as algebraic variables.
     MocoStudy study = inverse.initialize();
     auto& problem = study.updProblem();
     for (int i = 0; i < numSynergies; ++i) {
@@ -271,11 +304,11 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
 int main() {
 
     // Solve the basic muscle redundancy problem with MocoInverse.
-    solveMocoInverse();
+    // solveMocoInverse();
 
     // This problem penalizes the deviation from electromyography data for a
     // subset of muscles.
-    solveMocoInverseWithEMG();
+    // solveMocoInverseWithEMG();
 
     /// This problem extracts muscle synergies from the muscle excitations from
     /// the first example and uses them to solve the inverse problem using

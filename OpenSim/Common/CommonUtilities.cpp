@@ -285,11 +285,12 @@ double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A,
             }
         }
 
-        // Scale W and H.
+        // Scale W and H assuming that the elements of H are all 0.5.
+        SimTK::Vector scaleVec(H.ncol(), 0.5);
         for (int i = 0; i < k; ++i) {
-            double scale = W.col(i).norm();
-            W.updCol(i) /= scale;
+            double scale = scaleVec.norm() / H.row(i).norm();
             H.updRow(i) *= scale;
+            W.updCol(i) /= scale;
         }
 
         // Compute error using the Frobenius norm.
