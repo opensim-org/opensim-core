@@ -223,7 +223,7 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
     // to the controller appended with the Input control labels (e.g.,
     // "/path/to/my_synergy_controller/synergy_excitation_0").
 
-    // Use non-negative matrix factorization to extract a set of muscle
+    // Use non-negative matrix factorization (NNMF) to extract a set of muscle
     // synergies for each leg.
     SimTK::Matrix Wl;
     SimTK::Matrix Hl;
@@ -280,14 +280,18 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
     // constructed by Moco treats them both as algebraic variables.
     MocoStudy study = inverse.initialize();
     auto& problem = study.updProblem();
+    auto& effort = dynamic_cast<MocoControlGoal&>(
+            problem.updGoal("excitation_effort"));
     for (int i = 0; i < numSynergies; ++i) {
         std::string nameLeft = fmt::format("/controllerset/"
                 "synergy_controller_left_leg/synergy_excitation_{}", i);
         problem.setInputControlInfo(nameLeft, {0, 1.0});
+        effort.setWeightForControl(nameLeft, 100);
 
         std::string nameRight = fmt::format("/controllerset/"
                 "synergy_controller_right_leg/synergy_excitation_{}", i);
         problem.setInputControlInfo(nameRight, {0, 1.0});
+        effort.setWeightForControl(nameRight, 100);
     }
 
     // Solve the problem and write the solution to a Storage file.

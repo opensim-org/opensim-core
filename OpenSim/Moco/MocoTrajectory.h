@@ -678,44 +678,58 @@ public:
     SimTK::Matrix getValuesTrajectory() const {
         ensureUnsealed();
         auto indices = getValueIndices();
-        if (indices.empty()) indices.push_back(0);
-        return {m_states.block(0, indices[0],
-                m_states.nrow(), getNumValues())};
+        SimTK::Matrix values(m_states.nrow(), getNumValues());
+        for (int i = 0; i < indices.size(); ++i) {
+            values.updCol(i) = m_states.col(indices[i]);
+        }
+        return values;
     }
     SimTK::Matrix getSpeedsTrajectory() const {
         ensureUnsealed();
         auto indices = getSpeedIndices();
-        if (indices.empty()) indices.push_back(0);
-        return {m_states.block(0, indices[0],
-                m_states.nrow(), getNumSpeeds())};
+        SimTK::Matrix speeds(m_states.nrow(), getNumSpeeds());
+        for (int i = 0; i < indices.size(); ++i) {
+            speeds.updCol(i) = m_states.col(indices[i]);
+        }
+        return speeds;
     }
     SimTK::Matrix getMultibodyStatesTrajectory() const {
         ensureUnsealed();
         auto indices = getMultibodyStateIndices();
-        if (indices.empty()) indices.push_back(0);
-        return {m_states.block(0, indices[0],
-                m_states.nrow(), getNumMultibodyStates())};
+        SimTK::Matrix multibodyStates(m_states.nrow(), getNumMultibodyStates());
+        for (int i = 0; i < indices.size(); ++i) {
+            multibodyStates.updCol(i) = m_states.col(indices[i]);
+        }
+        return multibodyStates;
     }
     SimTK::Matrix getAuxiliaryStatesTrajectory() const {
         ensureUnsealed();
         auto indices = getAuxiliaryStateIndices();
-        if (indices.empty()) indices.push_back(0);
-        return {m_states.block(0, indices[0],
-                m_states.nrow(), getNumAuxiliaryStates())};
+        SimTK::Matrix auxiliaryStates(m_states.nrow(), getNumAuxiliaryStates());
+        for (int i = 0; i < indices.size(); ++i) {
+            auxiliaryStates.updCol(i) = m_states.col(indices[i]);
+        }
+        return auxiliaryStates;
     }
     SimTK::Matrix getAccelerationsTrajectory() const {
         ensureUnsealed();
         auto indices = getAccelerationIndices();
-        if (indices.empty()) indices.push_back(0);
-        return {m_derivatives.block(0, indices[0],
-                m_derivatives.nrow(), getNumAccelerations())};
+        SimTK::Matrix accelerations(m_derivatives.nrow(), 
+                getNumAccelerations());
+        for (int i = 0; i < indices.size(); ++i) {
+            accelerations.updCol(i) = m_derivatives.col(indices[i]);
+        }
+        return accelerations;
     }
     SimTK::Matrix getDerivativesWithoutAccelerationsTrajectory() const {
         ensureUnsealed();
         auto indices = getDerivativeIndicesWithoutAccelerations();
-        if (indices.empty()) indices.push_back(0);
-        return {m_derivatives.block(0, indices[0], m_derivatives.nrow(),
-                getNumDerivativesWithoutAccelerations())};
+        SimTK::Matrix derivatives(m_derivatives.nrow(), 
+                getNumDerivativesWithoutAccelerations());
+        for (int i = 0; i < indices.size(); ++i) {
+            derivatives.updCol(i) = m_derivatives.col(indices[i]);
+        }
+        return derivatives;
     }
     const SimTK::RowVector& getParameters() const {
         ensureUnsealed();

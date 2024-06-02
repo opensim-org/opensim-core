@@ -269,7 +269,6 @@ class Report(object):
             ymin = np.inf
             ymax = -np.inf
             for path, ls in zip(var_dict[key], ls_dict[key]):
-                print(f"Plotting {key} from {path}.")
                 var = self.getVariable(var_type, path)
                 ymin = np.minimum(ymin, np.min(var))
                 ymax = np.maximum(ymax, np.max(var))
@@ -283,7 +282,6 @@ class Report(object):
                         init = getIndexForNearestValue(ref['time'], self.time[0])
                         final = getIndexForNearestValue(ref['time'], 
                             self.time[-1])
-                        print(f"Plotting {pathNoSlashes} from ref file.")
                         y = ref[pathNoSlashes][init:final]
                         plt.plot(ref['time'][init:final],
                                  y, ls=ls,
