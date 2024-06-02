@@ -30,6 +30,9 @@
 
 using namespace SimTK;
 using namespace OpenSim;
+using std::cout;
+using std::endl;
+
 
 // Internal static methods and classes.
 namespace
@@ -44,22 +47,35 @@ customSquare(double x)
 }
 
 //_____________________________________________________________________________
+// Compute the maximum difference that can occur due to rounding a specified
+// value at a specified precision.
+double
+max_eps(int precision, double value)
+{
+    if (value == 0) return 0.0;
+    double leastSig = trunc(log10(fabs(value))-precision);
+    double eps = 0.5*pow(10.0,leastSig);
+    cout << "least= " << leastSig << "  eps= " << eps << endl;
+    return eps;
+}
+
+
+//_____________________________________________________________________________
 // Test for exact equality of two state trajectories.
 // If a state variable fails an equality test, it is likely that that
 // variable has not been added to OpenSim's Component heirarchy and therefore
 // has not been serialized.
 bool
 testEquality(const Model& model,
-    const Array_<State>& trajA, const Array_<State>& trajB)
+    const Array_<State>& trajA, const Array_<State>& trajB, int precision)
 {
     // Check the array size
     REQUIRE(trajA.size() == trajB.size());
 
-    // Get the SimTK::System
-    const System& sys = model.getSystem();
-
-    // Iterate through the State Trajectory
-    std::string path;
+    // Continuous Variables
+    // Continuous variables gathered efficiently without using any
+    // OpenSim::Component methods by using state.getQ(), state.getU(), and
+    // state.getZ().
     double tA, tB;
     const State* stateA = trajA.cbegin();
     const State* stateB = trajB.cbegin();
@@ -67,65 +83,68 @@ testEquality(const Model& model,
     for(int iTime=0; stateA!=trajA.cend(); ++iTime, ++stateA, ++stateB) {
 
         // Check subsystem consistency
+        // This checks that basic parameters like number of subystem, nq, nu,
+        // and nz are the same for two state objects.
         REQUIRE(stateA->isConsistent(*stateB));
 
         // Get time
         tA = stateA->getTime();
         tB = stateB->getTime();
-        REQUIRE(tA == tB);
+        CHECK_THAT(tB, Catch::Matchers::WithinAbs(tA, max_eps(precision,tA)));
 
         // Check the number of subsystesm
         int nsubA = stateA->getNumSubsystems();
         int nsubB = stateB->getNumSubsystems();
         REQUIRE(nsubA == nsubB);
 
-        // Realize to Stage::Report
-        // This ensures that all states have been initialized, including
-        // quaternion parameters, and that all constraints have been enforced.
-        sys.realize(*stateA, Stage::Report);
-        sys.realize(*stateB, Stage::Report);
-
-        // Continuous variables.
-        // This is an exhaustive, low-level comparision on the SimTK side
-        // that is independent of the OpenSim Component heirarchy.
         // Q
+        double eps;
         const Vector& qA = stateA->getQ();
         const Vector& qB = stateB->getQ();
+        double tol = 1.0e-16;
+        Vector diff = (qB - qA)/tol;
         int nq = qA.size();
+        std::cout << "diff= " << diff << std::endl;
         for (int i = 0; i < nq; ++i) {
-            if(i==6) std::cout << "q6= " << qA[i] << " " << qB[i] << std::endl;
-            REQUIRE(qA[i] == qB[i]);
+            eps = max_eps(precision, qA[i]);
+            double diff = qB[i] - qA[i];
+            cout << "diff=" << diff << endl;
+            CHECK_THAT(qB[i], Catch::Matchers::WithinAbs(qA[i], eps));
         }
         // U
         const Vector& uA = stateA->getU();
         const Vector& uB = stateB->getU();
         int nu = uA.size();
-        for (int i = 0; i < nu; ++i) REQUIRE(uA[i] == uB[i]);
+        for (int i = 0; i < nu; ++i) {
+            eps = max_eps(precision, uA[i]);
+            CHECK_THAT(uB[i], Catch::Matchers::WithinAbs(uA[i], eps));
+        }
         // Z
         const Vector& zA = stateA->getZ();
         const Vector& zB = stateB->getZ();
         int nz = zA.size();
-        for (int i = 0; i < nz; ++i) REQUIRE(zA[i] == zB[i]);
-
-        // Discrete Variables
-        // The SimTK API does not allow an exhaustive, low-level comparison
-        // on the SimTK side.
-        // The comparision is done only for the discrete variables registered
-        // in the OpenSim Component heirarchy. Any discrete variable that is
-        // not registered in OpenSim will not be serialized, deserialized, or
-        // compared in this unit test.
-
-
-        // Modeling Options
-        // The SimTK API does not allow an exhaustive, low-level comparison
-        // across all subsystems.
-        // The comparision is done only for the modeling options registered
-        // in the OpenSim Component heirarchy.
-        // Note that on the SimTK side, modeling options are just a special
-        // kind of discrete variable.
-
-
+        for (int i = 0; i < nz; ++i) {
+            eps = max_eps(precision, zA[i]);
+            CHECK_THAT(zB[i], Catch::Matchers::WithinAbs(zA[i], eps));
+        }
     }
+
+    // Discrete Variables
+    // The SimTK API does not allow an exhaustive, low-level comparison
+    // on the SimTK side.
+    // The comparision is done only for the discrete variables registered
+    // in the OpenSim Component heirarchy. Any discrete variable that is
+    // not registered in OpenSim will not be serialized, deserialized, or
+    // compared in this unit test.
+
+
+    // Modeling Options
+    // The SimTK API does not allow an exhaustive, low-level comparison
+    // across all subsystems.
+    // The comparision is done only for the modeling options registered
+    // in the OpenSim Component heirarchy.
+    // Note that on the SimTK side, modeling options are just a special
+    // kind of discrete variable.
 
     return(true);
 }
@@ -167,7 +186,7 @@ buildModel() {
     double kv = 100.0;  // Viscosity (under-damped)
     double restlength = 0.0;
     Vec3 origin(0.0);
-    Vec3 insertion(0.1, 0.1, 0.1);
+    Vec3 insertion(0.1, 0.1, 0.025);
     PointToPointSpring* spring = new PointToPointSpring(ground, origin,
         *block, insertion, kp, restlength);
     model->addForce(spring);
@@ -232,7 +251,7 @@ TEST_CASE("Serialization and Deserialization")
     // Serialize (A)
     int precision = 3;
     SimTK::String filename = "BlockOnAString.ostates";
-    StatesDocument docA(*model, trajA);
+    StatesDocument docA(*model, trajA, precision);
     docA.serialize(filename);
 
     // Deserialize (B)
@@ -241,7 +260,7 @@ TEST_CASE("Serialization and Deserialization")
     docB.deserialize(*model, trajB);
 
     // Does A == B?
-    testEquality(*model, trajA, trajB);
+    testEquality(*model, trajA, trajB, precision);
 
     REQUIRE(1 == 1);
 
