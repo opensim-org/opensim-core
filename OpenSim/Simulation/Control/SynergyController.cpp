@@ -75,7 +75,7 @@ void SynergyController::computeControlsImpl(const SimTK::State& state,
     for (int i = 0; i < getProperty_synergy_vectors().size(); ++i) {
         SimTK::Vector synergy = get_synergy_vectors(i).get_synergy_weights() * 
                     input.getValue(state, i);
-        for (int ic = 0; ic < indexes.size(); ++ic) {
+        for (int ic = 0; ic < static_cast<int>(indexes.size()); ++ic) {
             controls[indexes[ic]] += synergy[ic];
         }
     }

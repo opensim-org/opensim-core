@@ -170,8 +170,6 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
     modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
     modelProcessor.append(ModOpReplacePathsWithFunctionBasedPaths(
             "subject_walk_scaled_FunctionBasedPathSet.xml"));
-    // Weaken the reserve actuators to make their controls more costly in the 
-    // objective function.
     modelProcessor.append(ModOpAddReserves(1.0));
     Model model = modelProcessor.process();
 
@@ -280,27 +278,39 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
     // constructed by Moco treats them both as algebraic variables.
     MocoStudy study = inverse.initialize();
     auto& problem = study.updProblem();
+    // We will also increase the weight on the synergy excitations in the 
+    // control effort cost term. MocoControlGoal, and other MocoGoals, that 
+    // depend on control variables have options configuring cost terms with
+    // Input control values.
     auto& effort = dynamic_cast<MocoControlGoal&>(
             problem.updGoal("excitation_effort"));
     for (int i = 0; i < numSynergies; ++i) {
         std::string nameLeft = fmt::format("/controllerset/"
                 "synergy_controller_left_leg/synergy_excitation_{}", i);
         problem.setInputControlInfo(nameLeft, {0, 1.0});
-        effort.setWeightForControl(nameLeft, 100);
+        effort.setWeightForControl(nameLeft, 10);
 
         std::string nameRight = fmt::format("/controllerset/"
                 "synergy_controller_right_leg/synergy_excitation_{}", i);
         problem.setInputControlInfo(nameRight, {0, 1.0});
-        effort.setWeightForControl(nameRight, 100);
+        effort.setWeightForControl(nameRight, 10);
     }
 
-    // Solve the problem and write the solution to a Storage file.
+    // Solve!
     MocoSolution solution = study.solve();
+
+    // This function computes the model control values from the
+    // SynergyControllers in the model and inserts them into the solution.
     solution.generateControlsFromModelControllers(model);
+
+    // Add the multibody states into the solutions so we can visualize the
+    // trajectory or utilize the plotting utilities.
     TimeSeriesTable coordinateValues = prevSolution.exportToValuesTable();
     TimeSeriesTable coordinateSpeeds = prevSolution.exportToSpeedsTable();
     solution.insertStatesTrajectory(coordinateValues);
     solution.insertStatesTrajectory(coordinateSpeeds);
+
+    // Write the solution to a Storage file.
     solution.write(fmt::format("example3DWalking_MocoInverseWithSynergies_"
             "{}_solution.sto", numSynergies));
 }
