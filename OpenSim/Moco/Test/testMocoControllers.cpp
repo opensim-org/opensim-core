@@ -531,7 +531,7 @@ TEST_CASE("MocoPeriodicityGoal with Input controls") {
     CHECK(synergyControl0[0] == Approx(synergyControl0[N-1]).margin(1e-6));
 }
 
-TEST_CASE("SynergyController: incorrect synergy vector size") {
+TEST_CASE("SynergyController") {
     Model model = createTriplePendulum();
     auto* controller = new SynergyController();
     controller->setName("synergy_controller");
@@ -542,7 +542,29 @@ TEST_CASE("SynergyController: incorrect synergy vector size") {
     controller->addActuator(
             model.getComponent<CoordinateActuator>("/forceset/tau2"));
     controller->addSynergyVector(createVector({0.25, 0.75, 0.5}));
-    // controller->addSynergyVector(createVector({0.5, 0.5, 0.25}));
-    model.addController(controller);
-    model.finalizeConnections();
+
+    SECTION("Invalid synergy vector index") {
+        model.addController(controller);
+        model.finalizeConnections();
+        CHECK_THROWS_WITH(controller->getSynergyVector(-1), 
+                ContainsSubstring("Expected a non-negative synergy vector"));
+        CHECK_THROWS_WITH(controller->updSynergyVector(-1, createVector({})), 
+                ContainsSubstring("Expected a non-negative synergy vector"));
+    }
+
+    SECTION("Synergy vector index outside range") {
+        model.addController(controller);
+        model.finalizeConnections();
+        CHECK_THROWS_WITH(controller->getSynergyVector(1), 
+                ContainsSubstring("Expected a synergy vector index"));
+        CHECK_THROWS_WITH(controller->updSynergyVector(1, createVector({})), 
+                ContainsSubstring("Expected a synergy vector index"));
+    }
+
+    SECTION("Incorrect synergy vector size") {
+        controller->addSynergyVector(createVector({0.5, 0.5}));
+        model.addController(controller);
+        REQUIRE_THROWS_WITH(model.finalizeConnections(),
+                ContainsSubstring("Expected 'synergy_vector_1' to have size "));
+    }
 }

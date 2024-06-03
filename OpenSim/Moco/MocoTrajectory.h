@@ -679,7 +679,7 @@ public:
         ensureUnsealed();
         auto indices = getValueIndices();
         SimTK::Matrix values(m_states.nrow(), getNumValues());
-        for (int i = 0; i < indices.size(); ++i) {
+        for (int i = 0; i < static_cast<int>(indices.size()); ++i) {
             values.updCol(i) = m_states.col(indices[i]);
         }
         return values;
@@ -688,7 +688,7 @@ public:
         ensureUnsealed();
         auto indices = getSpeedIndices();
         SimTK::Matrix speeds(m_states.nrow(), getNumSpeeds());
-        for (int i = 0; i < indices.size(); ++i) {
+        for (int i = 0; i < static_cast<int>(indices.size()); ++i) {
             speeds.updCol(i) = m_states.col(indices[i]);
         }
         return speeds;
@@ -697,7 +697,7 @@ public:
         ensureUnsealed();
         auto indices = getMultibodyStateIndices();
         SimTK::Matrix multibodyStates(m_states.nrow(), getNumMultibodyStates());
-        for (int i = 0; i < indices.size(); ++i) {
+        for (int i = 0; i < static_cast<int>(indices.size()); ++i) {
             multibodyStates.updCol(i) = m_states.col(indices[i]);
         }
         return multibodyStates;
@@ -706,7 +706,7 @@ public:
         ensureUnsealed();
         auto indices = getAuxiliaryStateIndices();
         SimTK::Matrix auxiliaryStates(m_states.nrow(), getNumAuxiliaryStates());
-        for (int i = 0; i < indices.size(); ++i) {
+        for (int i = 0; i < static_cast<int>(indices.size()); ++i) {
             auxiliaryStates.updCol(i) = m_states.col(indices[i]);
         }
         return auxiliaryStates;
@@ -716,7 +716,7 @@ public:
         auto indices = getAccelerationIndices();
         SimTK::Matrix accelerations(m_derivatives.nrow(), 
                 getNumAccelerations());
-        for (int i = 0; i < indices.size(); ++i) {
+        for (int i = 0; i < static_cast<int>(indices.size()); ++i) {
             accelerations.updCol(i) = m_derivatives.col(indices[i]);
         }
         return accelerations;
@@ -726,7 +726,7 @@ public:
         auto indices = getDerivativeIndicesWithoutAccelerations();
         SimTK::Matrix derivatives(m_derivatives.nrow(), 
                 getNumDerivativesWithoutAccelerations());
-        for (int i = 0; i < indices.size(); ++i) {
+        for (int i = 0; i < static_cast<int>(indices.size()); ++i) {
             derivatives.updCol(i) = m_derivatives.col(indices[i]);
         }
         return derivatives;

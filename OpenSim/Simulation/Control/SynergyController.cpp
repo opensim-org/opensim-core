@@ -140,8 +140,8 @@ void SynergyController::validateSynergyVectorSizes() const {
         const auto& weights = get_synergy_vectors(i).get_synergy_weights();
         const auto& name = get_synergy_vectors(i).getName();
         OPENSIM_THROW_IF(weights.size() != getNumControls(),
-                Exception, "Expected {} to have size equal to the number "
+                Exception, "Expected '{}' to have size equal to the number "
                 "controls associated with connected actuators {}, "
-                "but it has size {}.", name, getNumControls());
+                "but it has size {}.", name, getNumControls(), weights.size());
     }
 }
