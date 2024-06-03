@@ -47,18 +47,22 @@ customSquare(double x)
 }
 
 //_____________________________________________________________________________
-// Compute the maximum difference that can occur due to rounding a specified
-// value at a specified precision.
+/**
+Compute the maximum error that can result from rounding a value at a
+specified precision. This method assumes a base-10 representation of the value.
+@param value Value to be rounded.
+@param precision Number of significant figures that will be retained in the
+value.
+*/
 double
-max_eps(int precision, double value)
-{
+computeMaxRoundingError(double value, int precision) {
     if (value == 0) return 0.0;
-    double leastSig = trunc(log10(fabs(value))-precision);
-    double eps = 0.5*pow(10.0,leastSig);
-    cout << "least= " << leastSig << "  eps= " << eps << endl;
-    return eps;
+    int p = clamp(1, precision, SimTK::LosslessNumDigitsReal);
+    double leastSigDigit = trunc(log10(fabs(value))-precision);
+    double max_eps = 0.5*pow(10.0, leastSigDigit);
+    if(max_eps < SimTK::LeastPositiveReal) return SimTK::LeastPositiveReal;
+    return max_eps;
 }
-
 
 //_____________________________________________________________________________
 // Test for exact equality of two state trajectories.
@@ -90,7 +94,8 @@ testEquality(const Model& model,
         // Get time
         tA = stateA->getTime();
         tB = stateB->getTime();
-        CHECK_THAT(tB, Catch::Matchers::WithinAbs(tA, max_eps(precision,tA)));
+        double max_eps = computeMaxRoundingError(tA, precision);
+        CHECK_THAT(tB, Catch::Matchers::WithinAbs(tA, max_eps));
 
         // Check the number of subsystesm
         int nsubA = stateA->getNumSubsystems();
@@ -98,34 +103,30 @@ testEquality(const Model& model,
         REQUIRE(nsubA == nsubB);
 
         // Q
-        double eps;
         const Vector& qA = stateA->getQ();
         const Vector& qB = stateB->getQ();
-        double tol = 1.0e-16;
-        Vector diff = (qB - qA)/tol;
+        Vector diff = qB - qA;
         int nq = qA.size();
         std::cout << "diff= " << diff << std::endl;
         for (int i = 0; i < nq; ++i) {
-            eps = max_eps(precision, qA[i]);
-            double diff = qB[i] - qA[i];
-            cout << "diff=" << diff << endl;
-            CHECK_THAT(qB[i], Catch::Matchers::WithinAbs(qA[i], eps));
+            max_eps = computeMaxRoundingError(qA[i], precision);
+            CHECK_THAT(qB[i], Catch::Matchers::WithinAbs(qA[i], max_eps));
         }
         // U
         const Vector& uA = stateA->getU();
         const Vector& uB = stateB->getU();
         int nu = uA.size();
         for (int i = 0; i < nu; ++i) {
-            eps = max_eps(precision, uA[i]);
-            CHECK_THAT(uB[i], Catch::Matchers::WithinAbs(uA[i], eps));
+            max_eps = computeMaxRoundingError(uA[i], precision);
+            CHECK_THAT(uB[i], Catch::Matchers::WithinAbs(uA[i], max_eps));
         }
         // Z
         const Vector& zA = stateA->getZ();
         const Vector& zB = stateB->getZ();
         int nz = zA.size();
         for (int i = 0; i < nz; ++i) {
-            eps = max_eps(precision, zA[i]);
-            CHECK_THAT(zB[i], Catch::Matchers::WithinAbs(zA[i], eps));
+            max_eps = computeMaxRoundingError(zA[i], precision);
+            CHECK_THAT(zB[i], Catch::Matchers::WithinAbs(zA[i], max_eps));
         }
     }
 
@@ -249,7 +250,7 @@ TEST_CASE("Serialization and Deserialization")
     Array_<State>& trajA = simulate(model);
 
     // Serialize (A)
-    int precision = 3;
+    int precision = 6;
     SimTK::String filename = "BlockOnAString.ostates";
     StatesDocument docA(*model, trajA, precision);
     docA.serialize(filename);
