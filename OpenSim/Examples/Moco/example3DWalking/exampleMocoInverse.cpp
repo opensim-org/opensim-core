@@ -175,7 +175,7 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
 
     // Load the solution from solveMocoInverse() to extract the muscle
     // control variable names and excitations for the left and right legs.
-    MocoSolution prevSolution("example3DWalking_MocoInverse_solution.sto");
+    MocoTrajectory prevSolution("example3DWalking_MocoInverse_solution.sto");
     std::vector<std::string> leftControlNames;
     std::vector<std::string> rightControlNames;
     for (const auto& muscle : model.getComponentList<Muscle>()) {
@@ -223,13 +223,19 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
 
     // Use non-negative matrix factorization (NNMF) to extract a set of muscle
     // synergies for each leg.
+    int maxIterations = 100;
+    double tolerance = 1e-6;
+
     SimTK::Matrix Wl;
     SimTK::Matrix Hl;
-    factorizeMatrixNonNegative(leftControls, numSynergies, 1000, 1e-6, Wl, Hl);
+    // TODO accept TimeSeriesTable as input to factorizeMatrixNonNegative.
+    factorizeMatrixNonNegative(leftControls, numSynergies, maxIterations, 
+            tolerance, Wl, Hl);
 
     SimTK::Matrix Wr;
     SimTK::Matrix Hr;
-    factorizeMatrixNonNegative(rightControls, numSynergies, 1000, 1e-6, Wr, Hr);
+    factorizeMatrixNonNegative(rightControls, numSynergies, maxIterations, 
+            tolerance, Wr, Hr);
 
     // Add a SynergyController for the left leg to the model.
     auto* leftController = new SynergyController();
@@ -262,7 +268,7 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
 
     // Construct the MocoInverse tool.
     MocoInverse inverse;
-    inverse.setName("example3DWalking_MocoInverse_muscle_synergies");
+    inverse.setName("example3DWalking_MocoInverseWithSynergies");
     inverse.setModel(ModelProcessor(model));
     inverse.setKinematics(TableProcessor("coordinates.sto"));
     inverse.set_initial_time(0.48);
@@ -278,6 +284,7 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
     // constructed by Moco treats them both as algebraic variables.
     MocoStudy study = inverse.initialize();
     auto& problem = study.updProblem();
+
     // We will also increase the weight on the synergy excitations in the 
     // control effort cost term. MocoControlGoal, and other MocoGoals, that 
     // depend on control variables have options configuring cost terms with
@@ -311,8 +318,8 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
     solution.insertStatesTrajectory(coordinateSpeeds);
 
     // Write the solution to a Storage file.
-    solution.write(fmt::format("example3DWalking_MocoInverseWithSynergies_"
-            "{}_solution.sto", numSynergies));
+    solution.write(fmt::format("example3DWalking_MocoInverseWith{}Synergies_"
+            "solution.sto", numSynergies));
 }
 
 int main() {
