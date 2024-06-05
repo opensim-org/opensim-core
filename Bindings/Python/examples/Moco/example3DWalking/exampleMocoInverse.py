@@ -23,7 +23,7 @@
 # extracts muscle synergies from the muscle excitaitons from the first example
 # and uses them to solve the inverse problem using SynergyControllers.
 #
-# Both examples use the Python utility osim.report to automatically generate a
+# All examples use the Python utility osim.report to automatically generate a
 # PDF that includes the trajectories of all states and controls in the solution.
 # This utility requires a Python environment with Matplotlib and NumPy installed.
 #
@@ -234,21 +234,28 @@ def solveMocoInverseWithSynergies(numSynergies=5):
 
     # Use non-negative matrix factorization (NNMF) to extract a set of muscle
     # synergies for each leg.
-    maxIterations = 100
-    tolerance = 1e-6
-
-    Wl = osim.Matrix()
-    Hl = osim.Matrix()
-    import pdb
-    pdb.set_trace()
-    osim.factorizeMatrixNonNegative(leftControls.getMatrix().getAsMatrix(), 
-                                    numSynergies, maxIterations, tolerance, Wl, Hl)
-
-    Wr = osim.Matrix()
-    Hr = osim.Matrix()
-    osim.factorizeMatrixNonNegative(rightControls.getMatrix().getAsMatrix(), 
-                                    numSynergies, maxIterations, tolerance, Wr, Hr)
+    from sklearn.decomposition import NMF
+    import numpy as np
+    nmf = NMF(n_components=numSynergies, init='random', random_state=0)
     
+    Al = leftControls.getMatrix().to_numpy()
+    Wl = nmf.fit_transform(Al)
+    Hl = nmf.components_
+
+    Ar = rightControls.getMatrix().to_numpy()
+    Wr = nmf.fit_transform(Ar)
+    Hr = nmf.components_
+
+    # Scale W and H assuming that the elements of H are all 0.5.
+    scaleVec = 0.5*np.ones(Hl.shape[1])
+    for i in range(numSynergies):
+        scale_l = np.linalg.norm(scaleVec) / np.linalg.norm(Hl[i, :])
+        Hl[i, :] *= scale_l
+        Wl[:, i] /= scale_l
+
+        scale_r = np.linalg.norm(scaleVec) / np.linalg.norm(Hr[i, :])
+        Hr[i, :] *= scale_r
+        Wr[:, i] /= scale_r
 
     # Add a SynergyController for the left leg to the model.
     leftController = osim.SynergyController()
@@ -256,29 +263,37 @@ def solveMocoInverseWithSynergies(numSynergies=5):
     # The number of actuators connected to the controller defines the number of
     # weights in each synergy vector expected by the controller.
     for name in leftControlNames:
-        leftController.addActuator(osim.Muscle.safeDownCast(model.getComponent(name)))
+        leftController.addActuator(
+                osim.Muscle.safeDownCast(model.getComponent(name)))
     # Adding a synergy vector increases the number of synergies in the
     # controller by one. This means that the number of Input control 
     # signals expected by the controller is also increased by one.
     for i in range(numSynergies):  
-        leftController.addSynergyVector(Hl.row(i).transpose().getAsVector())
+        synergyVector = osim.Vector(Hl.shape[1], 0.0)
+        for j in range(Hl.shape[1]):
+            synergyVector.set(j, Hl[i, j])
+        leftController.addSynergyVector(synergyVector)
     model.addController(leftController)
 
     # Add a SynergyController for the right leg to the model.
     rightController = osim.SynergyController()
     rightController.setName("synergy_controller_right_leg")
     for name in rightControlNames:
-        rightController.addActuator(osim.Muscle.safeDownCast(model.getComponent(name)))
+        rightController.addActuator(
+                osim.Muscle.safeDownCast(model.getComponent(name)))
     for i in range(numSynergies):
-        rightController.addSynergyVector(Hr.row(i).transpose().getAsVector())
+        synergyVector = osim.Vector(Hr.shape[1], 0.0)
+        for j in range(Hr.shape[1]):
+            synergyVector.set(j, Hr[i, j])
+        rightController.addSynergyVector(synergyVector)
     model.addController(rightController)
     model.finalizeConnections()
     model.initSystem()
 
     # Construct the MocoInverse tool.
     inverse = osim.MocoInverse()
-    inverse.setName("example3DWalking_MocoInverse_muscle_synergies")
-    inverse.setModel(modelProcessor)
+    inverse.setName("example3DWalking_MocoInverseWithSynergies")
+    inverse.setModel(osim.ModelProcessor(model))
     inverse.setKinematics(osim.TableProcessor('coordinates.sto'))
     inverse.set_initial_time(0.48)
     inverse.set_final_time(1.61)
@@ -298,13 +313,16 @@ def solveMocoInverseWithSynergies(numSynergies=5):
     # control effort cost term. MocoControlGoal, and other MocoGoals, that 
     # depend on control variables have options configuring cost terms with
     # Input control values.
-    effort = osim.MocoControlGoal.safeDownCast(problem.updGoal("excitation_effort"))
+    effort = osim.MocoControlGoal.safeDownCast(
+            problem.updGoal("excitation_effort"))
     for i in range(numSynergies):
-        nameLeft = f'/controllerset/synergy_controller_left_leg/synergy_excitation_{i}'
+        nameLeft = (f'/controllerset/synergy_controller_left_leg' 
+                    f'/synergy_excitation_{i}')
         problem.setInputControlInfo(nameLeft, [0, 1.0])
         effort.setWeightForControl(nameLeft, 10)
 
-        nameRight = f'/controllerset/synergy_controller_right_leg/synergy_excitation_{i}'
+        nameRight = (f'/controllerset/synergy_controller_right_leg'
+                     f'/synergy_excitation_{i}')
         problem.setInputControlInfo(nameRight, [0, 1.0])
         effort.setWeightForControl(nameRight, 10)
 
@@ -323,15 +341,29 @@ def solveMocoInverseWithSynergies(numSynergies=5):
     solution.insertStatesTrajectory(coordinateSpeeds)
 
     # Write the solution to a Storage file.
-    solution.write(f"example3DWalking_MocoInverseWith{numSynergies}Synergies_solution.sto")
+    solutionFile = (f'example3DWalking_MocoInverseWith'
+                    f'{numSynergies}Synergies_solution.sto')
+    solution.write(solutionFile)
+    
+    # Generate a report comparing MocoInverse solutions with and without
+    # muscle synergies.
+    output = (f'example3DWalking_MocoInverseWith'
+             f'{numSynergies}Synergies_report.pdf')
+    ref_files = ['example3DWalking_MocoInverse_solution.sto']
+    report = osim.report.Report(model, solutionFile,
+                                output=output, bilateral=True,
+                                ref_files=ref_files,
+                                colors=['black', 'red'])
+    # The PDF is saved to the working directory.
+    report.generate()
     
 
 # Solve the basic muscle redundancy problem with MocoInverse.
-# solveMocoInverse()
+solveMocoInverse()
 
 # This problem penalizes the deviation from electromyography data for a
 # subset of muscles.
-# solveMocoInverseWithEMG()
+solveMocoInverseWithEMG()
 
 # This problem extracts muscle synergies from the muscle excitations from
 # the first example and uses them to solve the inverse problem using

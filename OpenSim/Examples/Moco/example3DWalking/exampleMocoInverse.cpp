@@ -186,15 +186,15 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
             rightControlNames.push_back(muscle.getAbsolutePathString());
         }
     }
-    SimTK::Matrix leftControls(prevSolution.getNumTimes(), 
-            leftControlNames.size());
-    SimTK::Matrix rightControls(prevSolution.getNumTimes(), 
-            rightControlNames.size());
-    for (int i = 0; i < leftControls.ncol(); ++i) {
-        leftControls.updCol(i) = prevSolution.getControl(leftControlNames[i]);
+
+    TimeSeriesTable controls = prevSolution.exportToControlsTable();
+    TimeSeriesTable leftControls(controls.getIndependentColumn());
+    TimeSeriesTable rightControls(controls.getIndependentColumn());
+    for (const auto& name : leftControlNames) {
+        leftControls.appendColumn(name, controls.getDependentColumn(name));
     }
-    for (int i = 0; i < rightControls.ncol(); ++i) {
-        rightControls.updCol(i) = prevSolution.getControl(rightControlNames[i]);
+    for (const auto& name : rightControlNames) {
+        rightControls.appendColumn(name, controls.getDependentColumn(name));
     }
 
     // SynergyController
@@ -228,14 +228,13 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
 
     SimTK::Matrix Wl;
     SimTK::Matrix Hl;
-    // TODO accept TimeSeriesTable as input to factorizeMatrixNonNegative.
-    factorizeMatrixNonNegative(leftControls, numSynergies, maxIterations, 
-            tolerance, Wl, Hl);
+    factorizeMatrixNonNegative(leftControls.getMatrix(), numSynergies, 
+            maxIterations, tolerance, Wl, Hl);
 
     SimTK::Matrix Wr;
     SimTK::Matrix Hr;
-    factorizeMatrixNonNegative(rightControls, numSynergies, maxIterations, 
-            tolerance, Wr, Hr);
+    factorizeMatrixNonNegative(rightControls.getMatrix(), numSynergies, 
+            maxIterations, tolerance, Wr, Hr);
 
     // Add a SynergyController for the left leg to the model.
     auto* leftController = new SynergyController();
@@ -325,11 +324,11 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
 int main() {
 
     // Solve the basic muscle redundancy problem with MocoInverse.
-    solveMocoInverse();
+    // solveMocoInverse();
 
     // This problem penalizes the deviation from electromyography data for a
     // subset of muscles.
-    solveMocoInverseWithEMG();
+    // solveMocoInverseWithEMG();
 
     /// This problem extracts muscle synergies from the muscle excitations from
     /// the first example and uses them to solve the inverse problem using

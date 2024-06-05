@@ -114,6 +114,8 @@ EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MocoFinalBounds);
 %ignore OpenSim::MocoTrajectory::setTime(std::initializer_list<double>);
 %ignore OpenSim::MocoTrajectory::setState(const std::string&,
         std::initializer_list<double>);
+%ignore OpenSim::MocoTrajectory::setInputControl(const std::string&,
+        std::initializer_list<double>);
 %ignore OpenSim::MocoTrajectory::setControl(const std::string&,
         std::initializer_list<double>);
 %ignore OpenSim::MocoTrajectory::setMultiplier(const std::string&,
