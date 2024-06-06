@@ -58,7 +58,7 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
             # /usr/local/opt/boost/lib/libboost_system.so
             ${ColPack_ROOT_DIR}/lib/libColPack.so.0
             ${ColPack_ROOT_DIR}/lib/libColPack.so
-            ${IPOPT_LIBDIR}/libipopt.so.3.14.14
+            ${IPOPT_LIBDIR}/libipopt.so.3.14.16
             ${IPOPT_LIBDIR}/libipopt.so.3
             ${IPOPT_LIBDIR}/libipopt.so
             ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.so.3.0.5
