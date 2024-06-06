@@ -38,6 +38,9 @@ using std::endl;
 namespace
 {
 
+// Constant used to determine equality tolerances
+const double padFactor = 1.0 + SimTK::SignificantReal;
+
 //_____________________________________________________________________________
 // Sample internal method
 double
@@ -53,6 +56,7 @@ specified precision. This method assumes a base-10 representation of the value.
 @param value Value to be rounded.
 @param precision Number of significant figures that will be retained in the
 value.
+@return Maximum rounding error.
 */
 double
 computeMaxRoundingError(double value, int precision) {
@@ -65,25 +69,39 @@ computeMaxRoundingError(double value, int precision) {
 }
 
 //_____________________________________________________________________________
-// Test for exact equality of two state trajectories.
-// If a state variable fails an equality test, it is likely that that
-// variable has not been added to OpenSim's Component heirarchy and therefore
-// has not been serialized.
-bool
-testEquality(const Model& model,
+/**
+Compute the expected error that will occur as a result of rounding a value at
+a specified precision.
+@param value Value to be rounded.
+@param precision Number of significant figures that will be retained in the
+value.
+@return Expected rounding error.
+*/
+double
+computeRoundingError(const double& value, int precision) {
+    int p = clamp(1, precision, SimTK::LosslessNumDigitsReal);
+    SimTK::String valueStr(value, precision);
+    double valueDbl;
+    if(!valueStr.tryConvertToDouble(valueDbl))
+        cout << "Conversion to double failed" << endl;
+    return fabs(valueDbl - value);
+}
+
+//_____________________________________________________________________________
+// Test for equality of the continuous variables in two state trajectories.
+void
+testEqualityForContinuousVariables(const Model& model,
     const Array_<State>& trajA, const Array_<State>& trajB, int precision)
 {
-    // Check the array size
-    REQUIRE(trajA.size() == trajB.size());
-
-    // Continuous Variables
-    // Continuous variables gathered efficiently without using any
+    // Continuous variables are gathered efficiently without using any
     // OpenSim::Component methods by using state.getQ(), state.getU(), and
     // state.getZ().
+    double tol;
     double tA, tB;
     const State* stateA = trajA.cbegin();
     const State* stateB = trajB.cbegin();
-    // Time
+
+    // Loop over time
     for(int iTime=0; stateA!=trajA.cend(); ++iTime, ++stateA, ++stateB) {
 
         // Check subsystem consistency
@@ -94,8 +112,8 @@ testEquality(const Model& model,
         // Get time
         tA = stateA->getTime();
         tB = stateB->getTime();
-        double max_eps = computeMaxRoundingError(tA, precision);
-        CHECK_THAT(tB, Catch::Matchers::WithinAbs(tA, max_eps));
+        tol = padFactor * computeRoundingError(tA, precision);
+        CHECK_THAT(tB, Catch::Matchers::WithinAbs(tA, tol));
 
         // Check the number of subsystesm
         int nsubA = stateA->getNumSubsystems();
@@ -103,51 +121,189 @@ testEquality(const Model& model,
         REQUIRE(nsubA == nsubB);
 
         // Q
+        double diff;
         const Vector& qA = stateA->getQ();
         const Vector& qB = stateB->getQ();
-        Vector diff = qB - qA;
         int nq = qA.size();
-        std::cout << "diff= " << diff << std::endl;
         for (int i = 0; i < nq; ++i) {
-            max_eps = computeMaxRoundingError(qA[i], precision);
-            CHECK_THAT(qB[i], Catch::Matchers::WithinAbs(qA[i], max_eps));
+            tol = padFactor * computeRoundingError(qA[i], precision);
+            CHECK_THAT(qB[i], Catch::Matchers::WithinAbs(qA[i], tol));
         }
         // U
         const Vector& uA = stateA->getU();
         const Vector& uB = stateB->getU();
         int nu = uA.size();
         for (int i = 0; i < nu; ++i) {
-            max_eps = computeMaxRoundingError(uA[i], precision);
-            CHECK_THAT(uB[i], Catch::Matchers::WithinAbs(uA[i], max_eps));
+            tol = padFactor * computeRoundingError(uA[i], precision);
+            CHECK_THAT(uB[i], Catch::Matchers::WithinAbs(uA[i], tol));
         }
         // Z
         const Vector& zA = stateA->getZ();
         const Vector& zB = stateB->getZ();
         int nz = zA.size();
         for (int i = 0; i < nz; ++i) {
-            max_eps = computeMaxRoundingError(zA[i], precision);
-            CHECK_THAT(zB[i], Catch::Matchers::WithinAbs(zA[i], max_eps));
+            tol = padFactor * computeRoundingError(zA[i], precision);
+            CHECK_THAT(zB[i], Catch::Matchers::WithinAbs(zA[i], tol));
         }
     }
+}
 
-    // Discrete Variables
-    // The SimTK API does not allow an exhaustive, low-level comparison
-    // on the SimTK side.
-    // The comparision is done only for the discrete variables registered
-    // in the OpenSim Component heirarchy. Any discrete variable that is
-    // not registered in OpenSim will not be serialized, deserialized, or
-    // compared in this unit test.
+//_____________________________________________________________________________
+// Test for equality of a scalar variable in two state trajectories.
+template <class T>
+void
+checkScalar(const Array_<T>& a, const Array_<T>& b, int precision)
+{
+    double tol;
+    Array_<T> dvA, dvB;
+    for (int i = 0; i < dvA.size(); ++i) {
+        tol = padFactor*computeRoundingError(a[i], precision);
+        CHECK_THAT(b[i], Catch::Matchers::WithinAbs(a[i], tol));
+    }
+}
 
+//_____________________________________________________________________________
+// Test for equality of a Vector variable in two state trajectories.
+template <class T>
+void
+checkVector(const Array_<T>& a, const Array_<T>& b, int precision)
+{
+    double tol;
+    for (int i = 0; i < a.size(); ++i) {
+        for (int j = 0; j < a[i].size(); ++j) {
+            tol = padFactor*computeRoundingError(a[i][j], precision);
+            CHECK_THAT(b[i][j], Catch::Matchers::WithinAbs(a[i][j], tol));
+        }
+    }
+}
 
-    // Modeling Options
-    // The SimTK API does not allow an exhaustive, low-level comparison
-    // across all subsystems.
-    // The comparision is done only for the modeling options registered
-    // in the OpenSim Component heirarchy.
-    // Note that on the SimTK side, modeling options are just a special
-    // kind of discrete variable.
+//_____________________________________________________________________________
+// Test for equality of the discrete variables in two state trajectories.
+//
+// The SimTK API does not allow an exhaustive, low-level comparison of
+// discrete variables on the SimTK side.
+//
+// The comparision is done only for the discrete variables registered
+// in the OpenSim Component heirarchy. Any discrete variable that is
+// not registered in OpenSim will not be serialized, deserialized, or
+// compared in this unit test.
+void
+testEqualityForDiscreteVariables(const Model& model,
+    const Array_<State>& trajA, const Array_<State>& trajB, int precision)
+{
+    double tol;
 
-    return(true);
+    // Loop over the named variables
+    OpenSim::Array<std::string> paths = model.getDiscreteVariableNames();
+    int nPaths = paths.getSize();
+    for (int i = 0; i < nPaths; ++i) {
+
+        // Get one variable so that its type can be ascertained.
+        const AbstractValue& abstractVal =
+            model.getDiscreteVariableAbstractValue(trajA[i],paths[i]);
+
+        // Get the trajectory for the discrete variable
+        if (SimTK::Value<bool>::isA(abstractVal)) {
+            Array_<bool> dvA, dvB;
+            model.getDiscreteVariableTrajectory<bool>(paths[i], trajA, dvA);
+            model.getDiscreteVariableTrajectory<bool>(paths[i], trajB, dvB);
+            for (int j = 0; j < dvA.size(); ++j) CHECK(dvB[j] == dvA[j]);
+        }
+        else if (SimTK::Value<int>::isA(abstractVal)) {
+            Array_<int> dvA, dvB;
+            model.getDiscreteVariableTrajectory<int>(paths[i], trajA, dvA);
+            model.getDiscreteVariableTrajectory<int>(paths[i], trajB, dvB);
+            for (int j = 0; j < dvA.size(); ++j) CHECK(dvB[j] == dvA[j]);
+        }
+        else if (SimTK::Value<float>::isA(abstractVal)) {
+            Array_<float> dvA, dvB;
+            model.getDiscreteVariableTrajectory<float>(paths[i], trajA, dvA);
+            model.getDiscreteVariableTrajectory<float>(paths[i], trajB, dvB);
+            checkScalar<float>(dvA, dvB, precision);
+        }
+        else if (SimTK::Value<double>::isA(abstractVal)) {
+            Array_<double> dvA, dvB;
+            model.getDiscreteVariableTrajectory<double>(paths[i], trajA, dvA);
+            model.getDiscreteVariableTrajectory<double>(paths[i], trajB, dvB);
+            checkScalar<double>(dvA, dvB, precision);
+        }
+        else if (SimTK::Value<Vec2>::isA(abstractVal)) {
+            Array_<Vec2> dvA, dvB;
+            model.getDiscreteVariableTrajectory<Vec2>(paths[i], trajA, dvA);
+            model.getDiscreteVariableTrajectory<Vec2>(paths[i], trajB, dvB);
+            checkVector<Vec2>(dvA, dvB, precision);
+        }
+        else if (SimTK::Value<Vec3>::isA(abstractVal)) {
+            Array_<Vec3> dvA, dvB;
+            model.getDiscreteVariableTrajectory<Vec3>(paths[i], trajA, dvA);
+            model.getDiscreteVariableTrajectory<Vec3>(paths[i], trajB, dvB);
+            checkVector<Vec3>(dvA, dvB, precision);
+        }
+        else if (SimTK::Value<Vec4>::isA(abstractVal)) {
+            Array_<Vec4> dvA, dvB;
+            model.getDiscreteVariableTrajectory<Vec4>(paths[i], trajA, dvA);
+            model.getDiscreteVariableTrajectory<Vec4>(paths[i], trajB, dvB);
+            checkVector<Vec4>(dvA, dvB, precision);
+        }
+        else if (SimTK::Value<Vec5>::isA(abstractVal)) {
+            Array_<Vec5> dvA, dvB;
+            model.getDiscreteVariableTrajectory<Vec5>(paths[i], trajA, dvA);
+            model.getDiscreteVariableTrajectory<Vec5>(paths[i], trajB, dvB);
+            checkVector<Vec5>(dvA, dvB, precision);
+        }
+        else if (SimTK::Value<Vec6>::isA(abstractVal)) {
+            Array_<Vec6> dvA, dvB;
+            model.getDiscreteVariableTrajectory<Vec6>(paths[i], trajA, dvA);
+            model.getDiscreteVariableTrajectory<Vec6>(paths[i], trajB, dvB);
+            checkVector<Vec6>(dvA, dvB, precision);
+        }
+        else {
+            String msg = "Unrecognized type: " + abstractVal.getTypeName();
+            SimTK_ASSERT(false, msg.c_str());
+        }
+    }
+}
+
+//_____________________________________________________________________________
+// Test for equality of the modeling options in two state trajectories.
+//
+// The SimTK API does not allow an exhaustive, low-level comparison of
+// discrete variables on the SimTK side.
+//
+// The comparision is done only for the discrete variables registered
+// in the OpenSim Component heirarchy. Any discrete variable that is
+// not registered in OpenSim will not be serialized, deserialized, or
+// compared in this unit test.
+void
+testEqualityForModelingOptions(const Model& model,
+    const Array_<State>& trajA, const Array_<State>& trajB, int precision)
+{
+    double tol;
+
+    // Loop over the named variables
+    OpenSim::Array<std::string> paths = model.getModelingOptionNames();
+    int nPaths = paths.getSize();
+    for (int i = 0; i < nPaths; ++i) {
+        Array_<int> moA, moB;
+        model.getModelingOptionTrajectory<int>(paths[i], trajA, moA);
+        model.getModelingOptionTrajectory<int>(paths[i], trajB, moB);
+        for (int j = 0; j < moA.size(); ++j) CHECK(moB[j] == moA[j]);
+    }
+}
+
+//_____________________________________________________________________________
+// Test for equality of two state trajectories.
+// If a state variable fails an equality test, it is likely that that
+// variable has not been added to OpenSim's Component heirarchy and therefore
+// has not been serialized.
+void
+testEquality(const Model& model,
+    const Array_<State>& trajA, const Array_<State>& trajB, int precision)
+{
+    REQUIRE(trajA.size() == trajB.size());
+    testEqualityForContinuousVariables(model, trajA, trajB, precision);
+    testEqualityForDiscreteVariables(model, trajA, trajB, precision);
+    testEqualityForModelingOptions(model, trajA, trajB, precision);
 }
 
 //_____________________________________________________________________________
