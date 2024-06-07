@@ -66,6 +66,7 @@ casadi::Sparsity calcJacobianSparsityWithPerturbation(const VectorDM& x0s,
 
     Sparsity combinedSparsity(numOutputs, x0s[0].numel());
     for (const auto& x0 : x0s) {
+        std::cout << "DEBUG: x0.numel(): " << x0.numel() << std::endl;
         OPENSIM_THROW_IF(x0.numel() != x0s[0].numel(), OpenSim::Exception,
                 "x0s contains vectors of different sizes.");
         combinedSparsity = combinedSparsity + sparsityForSingleX0(x0);
@@ -73,11 +74,12 @@ casadi::Sparsity calcJacobianSparsityWithPerturbation(const VectorDM& x0s,
     return combinedSparsity;
 }
 
-casadi::Sparsity Function::get_jacobian_sparsity() const {
+casadi::Sparsity Function::get_jac_sparsity(casadi_int oind, casadi_int iind, 
+        bool symmetric) const {
     using casadi::DM;
     using casadi::Slice;
 
-    auto function = [this](const casadi::DM& x, casadi::DM& y) {
+    auto function = [this, oind, iind](const casadi::DM& x, casadi::DM& y) {
         // Split input into separate DMs.
         std::vector<casadi::DM> in(this->n_in());
         {
@@ -86,7 +88,12 @@ casadi::Sparsity Function::get_jacobian_sparsity() const {
                 OPENSIM_THROW_IF(this->size2_in(iin) != 1, OpenSim::Exception,
                         "Internal error.");
                 const auto size = this->size1_in(iin);
-                in[iin] = x(Slice(offset, offset + size));
+                if (iin == iind) {
+                    in[iin] = x;
+                    // in[iin] = x(Slice(offset, offset + size));
+                } else {
+                    in[iin] = casadi::DM::zeros(size, 1);
+                }
                 offset += size;
             }
         }
@@ -95,13 +102,13 @@ casadi::Sparsity Function::get_jacobian_sparsity() const {
         std::vector<casadi::DM> out = this->eval(in);
 
         // Create output.
-        y = casadi::DM::veccat(out);
+        y = out[oind];
     };
 
-    const VectorDM x0s = getSubsetPointsForSparsityDetection();
+    const VectorDM x0s = getSubsetPointsForSparsityDetection(iind);
 
     return calcJacobianSparsityWithPerturbation(
-            x0s, (int)this->nnz_out(), function);
+            x0s, (int)this->nnz_out(oind), function);
 }
 
 void Function::constructFunction(const Problem* casProblem,
@@ -188,6 +195,40 @@ casadi::Sparsity Endpoint::get_sparsity_in(casadi_int i) {
         return casadi::Sparsity(0, 0);
     }
 }
+casadi::DM Endpoint::getSubsetPoint(const VariablesDM& fullPoint, 
+        casadi_int i) const {
+    using casadi::Slice;
+    if (i == 0) {
+        return fullPoint.at(initial_time);
+    } else if (i == 1) {
+        return fullPoint.at(states)(Slice(), 0);
+    } else if (i == 2) {
+        return fullPoint.at(controls)(Slice(), 0);
+    } else if (i == 3) {
+        return fullPoint.at(multipliers)(Slice(), 0);
+    } else if (i == 4) {
+        return fullPoint.at(derivatives)(Slice(), 0);
+    } else if (i == 5) {
+        return fullPoint.at(final_time);
+    } else if (i == 6) {
+        return fullPoint.at(states)(Slice(), -1);
+    } else if (i == 7) {
+        return fullPoint.at(controls)(Slice(), -1);
+    } else if (i == 8) {
+        return fullPoint.at(multipliers)(Slice(), -1);
+    } else if (i == 9) {
+        return fullPoint.at(derivatives)(Slice(), -1);
+    } else if (i == 10) {
+        return fullPoint.at(parameters);
+    } else if (i == 11) {
+        // TODO: We should find a way to actually compute the integral
+        // from fullPoint. Or, make the integral an optimizatio           
+        // variable.
+        return casadi::DM::zeros(1, 1);
+    } else {
+        return casadi::DM();
+    }
+}
 VectorDM Cost::eval(const VectorDM& args) const {
     Problem::CostInput input{args.at(0).scalar(), args.at(1), args.at(2),
             args.at(3), args.at(4), args.at(5).scalar(), args.at(6), args.at(7),
@@ -272,15 +313,34 @@ casadi::Sparsity VelocityCorrection::get_sparsity_out(casadi_int i) {
     }
 }
 
+// casadi::DM VelocityCorrection::getSubsetPoint(
+//         const VariablesDM& fullPoint) const {
+//     int itime = 0;
+//     using casadi::Slice;
+//     const int NMBS = m_casProblem->getNumStates() -
+//                      m_casProblem->getNumAuxiliaryStates();
+//     return casadi::DM::vertcat({fullPoint.at(initial_time),
+//             fullPoint.at(states)(Slice(0, NMBS), itime),
+//             fullPoint.at(slacks)(Slice(), itime), fullPoint.at(parameters)});
+// }
+
 casadi::DM VelocityCorrection::getSubsetPoint(
-        const VariablesDM& fullPoint) const {
+            const VariablesDM& fullPoint, casadi_int i) const {
     int itime = 0;
     using casadi::Slice;
     const int NMBS = m_casProblem->getNumStates() -
                      m_casProblem->getNumAuxiliaryStates();
-    return casadi::DM::vertcat({fullPoint.at(initial_time),
-            fullPoint.at(states)(Slice(0, NMBS), itime),
-            fullPoint.at(slacks)(Slice(), itime), fullPoint.at(parameters)});
+    if (i == 0) {
+        return fullPoint.at(initial_time);
+    } else if (i == 1) {
+        return fullPoint.at(states)(Slice(0, NMBS), itime);
+    } else if (i == 2) {
+        return fullPoint.at(slacks)(Slice(), itime);
+    } else if (i == 3) {
+        return fullPoint.at(parameters);
+    } else {
+        return casadi::DM();
+    }
 }
 
 VectorDM VelocityCorrection::eval(const VectorDM& args) const {
