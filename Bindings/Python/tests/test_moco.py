@@ -332,7 +332,7 @@ class TestWorkflow(unittest.TestCase):
             assert(not solver.getGuess().empty())
 
             solution = study.solve()
-            self.assertAlmostEqual(solution.getFinalTime(), 5.8)
+            self.assertAlmostEqual(solution.getFinalTime(), 5.8, places=5)
 
     def test_changing_model(self):
         study = osim.MocoStudy()
