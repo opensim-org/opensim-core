@@ -4088,10 +4088,10 @@ private:
         int                             maxOptionValue;
 
         // Index of the SimTK::Subsystem to which this modeling option belongs
-        SimTK::SubsystemIndex           ssIndex{-1};
+        SimTK::SubsystemIndex           ssIndex{999999};
 
         // Index of this modeling option within its SimTK::Subsystem
-        SimTK::DiscreteVariableIndex    moIndex{-1};
+        SimTK::DiscreteVariableIndex    moIndex{999999};
 
         // Allocate Flag
         // If true, the modeling option will be allocated normally in the
@@ -4177,10 +4177,10 @@ private:
 
         // Index of the SimTK::Subsystem to which this discrete variable
         // belongs
-        SimTK::SubsystemIndex           ssIndex{-1};
+        SimTK::SubsystemIndex           ssIndex{999999};
 
         // Index of this discrete variable within its SimTK::Subsystem
-        SimTK::DiscreteVariableIndex    dvIndex{-1};
+        SimTK::DiscreteVariableIndex    dvIndex{999999};
 
         // Allocate Flag
         // If true, the discrete variable will be allocated normally in the
