@@ -25,10 +25,6 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.1.dylib
             ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.dylib
 
-            # ${gfortran}
-            # ${quadmath}
-            # ${gcc_libdir}/${libgcc_name}
-
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
     # This command must be invoked from the cmake subdirectory so that the
@@ -62,7 +58,7 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
             # /usr/local/opt/boost/lib/libboost_system.so
             ${ColPack_ROOT_DIR}/lib/libColPack.so.0
             ${ColPack_ROOT_DIR}/lib/libColPack.so
-            ${IPOPT_LIBDIR}/libipopt.so.3.14.14
+            ${IPOPT_LIBDIR}/libipopt.so.3.14.16
             ${IPOPT_LIBDIR}/libipopt.so.3
             ${IPOPT_LIBDIR}/libipopt.so
             ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.so.3.0.5
@@ -74,7 +70,6 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
 
             ${gfortran}
             ${quadmath}
-            #${gcc_libdir}/libgcc_s.so
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
         set(script

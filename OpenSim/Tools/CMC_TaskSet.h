@@ -104,8 +104,9 @@ public:
     }
     CMC_TaskSet(const CMC_TaskSet& aCMCTaskSet) :
         Set<TrackingTask>(aCMCTaskSet),
-        _dataFileName(_dataFileNameProp.getValueStr()) {
-        _propertySet = aCMCTaskSet.getPropertySet();
+        _dataFileNameProp(aCMCTaskSet._dataFileNameProp),
+        _dataFileName(_dataFileNameProp.getValueStr()){
+
     }
 
 private:

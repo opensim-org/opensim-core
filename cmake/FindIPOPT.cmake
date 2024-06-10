@@ -1,3 +1,5 @@
+# This file was adapted from the file with same name provided on the Casadi repository/build script
+# https://github.com/casadi/casadi/tree/main/cmake
 find_package(Ipopt CONFIG)
 
 
