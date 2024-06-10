@@ -78,16 +78,6 @@ private:
         }
         return out;
     }
-    // virtual casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const {
-    //     int itime = 0;
-    //     using casadi::Slice;
-    //     return casadi::DM::vertcat({fullPoint.at(initial_time),
-    //             fullPoint.at(states)(Slice(), itime),
-    //             fullPoint.at(controls)(Slice(), itime),
-    //             fullPoint.at(multipliers)(Slice(), itime),
-    //             fullPoint.at(derivatives)(Slice(), itime),
-    //             fullPoint.at(parameters)});
-    // }
 
     virtual casadi::DM getSubsetPoint(const VariablesDM& fullPoint, 
             casadi_int i) const {
@@ -239,24 +229,6 @@ public:
     /// provided point, but applying the integrand function and quadrature
     /// scheme here is complicated. For simplicity, we provide the integral as
     /// 0.
-    // casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const override {
-    //     using casadi::Slice;
-    //     return casadi::DM::vertcat({fullPoint.at(initial_time),
-    //             fullPoint.at(states)(Slice(), 0),
-    //             fullPoint.at(controls)(Slice(), 0),
-    //             fullPoint.at(multipliers)(Slice(), 0),
-    //             fullPoint.at(derivatives)(Slice(), 0), fullPoint.at(final_time),
-    //             fullPoint.at(states)(Slice(), -1),
-    //             fullPoint.at(controls)(Slice(), -1),
-    //             fullPoint.at(multipliers)(Slice(), -1),
-    //             fullPoint.at(derivatives)(Slice(), -1),
-    //             fullPoint.at(parameters),
-    //             // TODO: We should find a way to actually compute the integral
-    //             // from fullPoint. Or, make the integral an optimization
-    //             // variable.
-    //             casadi::DM::zeros(1, 1)});
-    // }
-
     casadi::DM getSubsetPoint(const VariablesDM& fullPoint, 
             casadi_int i) const override;
 

@@ -66,7 +66,6 @@ casadi::Sparsity calcJacobianSparsityWithPerturbation(const VectorDM& x0s,
 
     Sparsity combinedSparsity(numOutputs, x0s[0].numel());
     for (const auto& x0 : x0s) {
-        std::cout << "DEBUG: x0.numel(): " << x0.numel() << std::endl;
         OPENSIM_THROW_IF(x0.numel() != x0s[0].numel(), OpenSim::Exception,
                 "x0s contains vectors of different sizes.");
         combinedSparsity = combinedSparsity + sparsityForSingleX0(x0);
@@ -90,7 +89,6 @@ casadi::Sparsity Function::get_jac_sparsity(casadi_int oind, casadi_int iind,
                 const auto size = this->size1_in(iin);
                 if (iin == iind) {
                     in[iin] = x;
-                    // in[iin] = x(Slice(offset, offset + size));
                 } else {
                     in[iin] = casadi::DM::zeros(size, 1);
                 }
@@ -312,17 +310,6 @@ casadi::Sparsity VelocityCorrection::get_sparsity_out(casadi_int i) {
         return casadi::Sparsity(0, 0);
     }
 }
-
-// casadi::DM VelocityCorrection::getSubsetPoint(
-//         const VariablesDM& fullPoint) const {
-//     int itime = 0;
-//     using casadi::Slice;
-//     const int NMBS = m_casProblem->getNumStates() -
-//                      m_casProblem->getNumAuxiliaryStates();
-//     return casadi::DM::vertcat({fullPoint.at(initial_time),
-//             fullPoint.at(states)(Slice(0, NMBS), itime),
-//             fullPoint.at(slacks)(Slice(), itime), fullPoint.at(parameters)});
-// }
 
 casadi::DM VelocityCorrection::getSubsetPoint(
             const VariablesDM& fullPoint, casadi_int i) const {
