@@ -1070,10 +1070,10 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         jacobian.sparsity().to_file(
                 prefix + "constraint_Jacobian_sparsity.mtx");
     }
-    const casadi::Function nlpFunc =
-            casadi::nlpsol("nlp", m_solver.getOptimSolver(), nlp, options);
     // const casadi::Function nlpFunc =
-    //     casadi::nlpsol("nlp", "fatrop", nlp, {{"verbose", false}});
+    //         casadi::nlpsol("nlp", m_solver.getOptimSolver(), nlp, options);
+    const casadi::Function nlpFunc =
+        casadi::nlpsol("nlp", "fatrop", nlp, {{"verbose", false}});
 
     // Run the optimization (evaluate the CasADi NLP function).
     // --------------------------------------------------------

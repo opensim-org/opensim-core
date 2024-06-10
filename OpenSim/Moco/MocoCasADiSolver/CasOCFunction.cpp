@@ -373,15 +373,22 @@ casadi::Sparsity StateProjection::get_sparsity_out(casadi_int i) {
     }
 }
 
-casadi::DM StateProjection::getSubsetPoint(const VariablesDM& fullPoint) const {
+casadi::DM StateProjection::getSubsetPoint(const VariablesDM& fullPoint, 
+        casadi_int i) const {
     int itime = 0;
     using casadi::Slice;
     const int NMBS = m_casProblem->getNumMultibodyStates();
-    return casadi::DM::vertcat(
-            {fullPoint.at(initial_time),
-            fullPoint.at(states)(Slice(0, NMBS), itime),
-            fullPoint.at(slacks)(Slice(), itime),
-            fullPoint.at(parameters)});
+    if (i == 0) {
+        return fullPoint.at(initial_time);
+    } else if (i == 1) {
+        return fullPoint.at(states)(Slice(0, NMBS), itime);
+    } else if (i == 2) {
+        return fullPoint.at(slacks)(Slice(), itime);
+    } else if (i == 3) {
+        return fullPoint.at(parameters);
+    } else {
+        return casadi::DM();
+    }
 }
 
 VectorDM StateProjection::eval(const VectorDM& args) const {

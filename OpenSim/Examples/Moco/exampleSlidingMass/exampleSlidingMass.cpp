@@ -82,7 +82,7 @@ int main() {
     // Bounds.
     // -------
     // Initial time must be 0, final time can be within [0, 5].
-    problem.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(0, 5));
+    problem.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(0.5));
 
     // Position must be within [-5, 5] throughout the motion.
     // Initial position must be 0, final position must be 1.
@@ -105,7 +105,9 @@ int main() {
     solver.set_num_mesh_intervals(10);
     solver.set_transcription_scheme("trapezoidal");
     solver.set_optim_solver("fatrop");
+    solver.set_optim_hessian_approximation("exact");
     solver.set_optim_write_sparsity("sliding_mass");
+    solver.set_parallel(0);
 
     // Now that we've finished setting up the tool, print it to a file.
     study.print("sliding_mass.omoco");
