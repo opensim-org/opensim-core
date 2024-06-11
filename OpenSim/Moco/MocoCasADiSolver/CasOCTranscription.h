@@ -64,6 +64,11 @@ public:
 
     Solution solve(const Iterate& guessOrig);
 
+    casadi::MX m_initialTimeMX = 0;
+    casadi::MX m_finalTimeMX = 0.5;
+    casadi::DM m_initialTimeDM = 0;
+    casadi::DM m_finalTimeDM = 0.5;
+
 protected:
     /// This must be called in the constructor of derived classes so that
     /// overridden virtual methods are accessible to the base class. This
@@ -269,10 +274,10 @@ private:
                 stdvec.push_back(vars.at(controls)[igrid + i]);
             }
         }
-        stdvec.push_back(vars.at(controls)[m_numGridPoints - 1]);
         stdvec.push_back(vars.at(states)[m_numGridPoints - 1]);
-        stdvec.push_back(vars.at(initial_time)[0]);
-        stdvec.push_back(vars.at(final_time)[0]);
+        stdvec.push_back(vars.at(controls)[m_numGridPoints - 1]);
+        // stdvec.push_back(vars.at(initial_time)[0]);
+        // stdvec.push_back(vars.at(final_time)[0]);
 
         return casadi::MX::veccat(stdvec);
     }
@@ -289,10 +294,10 @@ private:
                 stdvec.push_back(vars.at(controls)(casadi::Slice(), igrid + i));
             }
         }
-        stdvec.push_back(vars.at(controls)(casadi::Slice(), m_numGridPoints - 1));
         stdvec.push_back(vars.at(states)(casadi::Slice(), m_numGridPoints - 1));
-        stdvec.push_back(vars.at(initial_time));
-        stdvec.push_back(vars.at(final_time));
+        stdvec.push_back(vars.at(controls)(casadi::Slice(), m_numGridPoints - 1));
+        // stdvec.push_back(vars.at(initial_time));
+        // stdvec.push_back(vars.at(final_time));
 
         return casadi::DM::veccat(stdvec);
     }

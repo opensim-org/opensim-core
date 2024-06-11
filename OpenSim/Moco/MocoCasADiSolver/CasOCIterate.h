@@ -25,8 +25,8 @@ namespace CasOC {
 /// This enum describes the different types of optimization variables, and
 /// are the keys for the Variables map.
 enum Var {
-    initial_time,
-    final_time,
+    // initial_time,
+    // final_time,
     /// Differential variables.
     states,
     /// Algebraic variables.

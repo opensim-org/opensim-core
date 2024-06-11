@@ -75,8 +75,8 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoTraj,
     CasOC::Iterate casIt;
     CasOC::VariablesDM& casVars = casIt.variables;
     using CasOC::Var;
-    casVars[Var::initial_time] = mocoTraj.getInitialTime();
-    casVars[Var::final_time] = mocoTraj.getFinalTime();
+    // casVars[Var::initial_time] = mocoTraj.getInitialTime();
+    // casVars[Var::final_time] = mocoTraj.getFinalTime();
     casVars[Var::states] =
             convertToCasADiDMTranspose(mocoTraj.getStatesTrajectory());
 

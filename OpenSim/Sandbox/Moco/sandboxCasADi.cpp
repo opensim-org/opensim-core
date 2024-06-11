@@ -403,7 +403,7 @@ print(Jf(2))
 #include <vector>
 #include <iostream>
 
-int main() {
+void hello_fatrop() {
     double T = 10.0; // Time horizon
     int N = 10; // Number of control intervals
 
@@ -479,7 +479,9 @@ int main() {
     MX g_cat = vertcat(g);
     std::cout << "w_cat: " << w_cat << std::endl;
     std::cout << "g_cat: " << g_cat << std::endl;
-    Function solver = nlpsol("solver", "ipopt", {{"f", J}, {"x", w_cat}, {"g", g_cat}, {"p", p}}, {{"verbose", false}});
+    auto jacobian = casadi::MX::jacobian(g_cat, w_cat);
+    jacobian.sparsity().to_file("fatrop_demo_constraint_Jacobian_sparsity.mtx");
+    Function solver = nlpsol("solver", "fatrop", {{"f", J}, {"x", w_cat}, {"g", g_cat}, {"p", p}}, {{"verbose", false}});
 
     // Solve the NLP
     DMDict arg = {{"x0", DM(w0)}, {"lbx", DM(lbw)}, {"ubx", DM(ubw)}, {"lbg", DM(lbg)}, {"ubg", DM(ubg)}, {"p", 0.0}};
@@ -491,6 +493,10 @@ int main() {
         std::cout << val << " ";
     }
     std::cout << std::endl;
+}
+
+int main() {
+    hello_fatrop();
 
     return 0;
 }

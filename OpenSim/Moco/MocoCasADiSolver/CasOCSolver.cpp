@@ -122,9 +122,11 @@ Solution Solver::solve(const Iterate& guess) const {
     if (m_sparsity_detection == "initial-guess") {
         // Interpolate the guess.
         Iterate guessCopy(guess);
-        const auto guessTimes =
-                transcription->createTimes(guessCopy.variables.at(initial_time),
-                        guessCopy.variables.at(final_time));
+        const auto guessTimes = transcription->createTimes(
+            transcription->m_initialTimeDM, transcription->m_finalTimeDM);
+        // const auto guessTimes =
+        //         transcription->createTimes(guessCopy.variables.at(initial_time),
+        //                 guessCopy.variables.at(final_time));
         bool appendProjectionStates =
                 m_problem.getNumKinematicConstraintEquations() &&
                 m_problem.isKinematicConstraintMethodBordalba2023();
