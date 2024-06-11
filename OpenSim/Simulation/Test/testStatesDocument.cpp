@@ -41,6 +41,99 @@ namespace
 // Constant used to determine equality tolerances
 const double padFactor = 1.0 + SimTK::SignificantReal;
 
+
+//-----------------------------------------------------------------------------
+// Create a Component class for the purpose of adding discrete variables of
+// all supported types (bool, int, double, Vec2, Vec3, Vec4, Vec5, Vec6.
+class ExtendedPointToPointSpring : public PointToPointSpring {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ExtendedPointToPointSpring,
+        PointToPointSpring);
+
+public:
+    // No new properties
+
+    // Constructor
+    ExtendedPointToPointSpring(const PhysicalFrame& body1, SimTK::Vec3 point1,
+        const PhysicalFrame& body2, SimTK::Vec3 point2,
+        double stiffness, double restlength) {}
+
+    void
+    extendConnectToModel(OpenSim::Model& model) {
+        Super::extendConnectToModel(model);
+
+        /*
+        // Find the OpenSim::Body
+        const string& bodyName = getBodyName();
+        if (getModel().hasComponent(bodyName))
+            _body = &(getModel().getComponent<PhysicalFrame>(bodyName));
+        else
+            _body = &(getModel().getComponent<PhysicalFrame>(
+                "./bodyset/" + bodyName));
+        */
+    }
+
+    void
+    extendAddToSystem(SimTK::MultibodySystem& system) const {
+        Super::extendAddToSystem(system);
+
+        /*
+        // Construct the SimTK::ExponentialContact object
+        SimTK::GeneralForceSubsystem& forces = _model->updForceSubsystem();
+        const SimTK::Transform& XContactPlane = get_contact_plane_transform();
+        const SimTK::Vec3& station = get_body_station();
+        SimTK::ExponentialSpringForce* spr =
+            new SimTK::ExponentialSpringForce(forces, XContactPlane,
+                _body->getMobilizedBody(), station, getParameters());
+
+        // Get the subsystem index so we can access the SimTK::Force later.
+        ExponentialContact* mutableThis =
+            const_cast<ExponentialContact *>(this);
+        mutableThis->_spr = spr;
+        mutableThis->_index = spr->getForceIndex();
+
+        // Expose the discrete states of ExponentialSpringForce in OpenSim
+        bool allocate = false;
+        std::string name = getMuStaticDiscreteStateName();
+        addDiscreteVariable(name, SimTK::Stage::Dynamics, allocate);
+        name = getMuKineticDiscreteStateName();
+        addDiscreteVariable(name, SimTK::Stage::Dynamics, allocate);
+        name = getSlidingDiscreteStateName();
+        addDiscreteVariable(name, SimTK::Stage::Dynamics, allocate);
+        name = getAnchorPointDiscreteStateName();
+        addDiscreteVariable(name, SimTK::Stage::Dynamics, allocate);
+        */
+    }
+
+    void
+    extendRealizeTopology(SimTK::State& state) const {
+        Super::extendRealizeTopology(state);
+
+        /*
+        const SimTK::Subsystem* subsys = getSubsystem();
+        SimTK::DiscreteVariableIndex index;
+        std::string name;
+
+        name = getMuStaticDiscreteStateName();
+        index = _spr->getMuStaticStateIndex();
+        updDiscreteVariableIndex(name, index, subsys);
+
+        name = getMuKineticDiscreteStateName();
+        index = _spr->getMuKineticStateIndex();
+        updDiscreteVariableIndex(name, index, subsys);
+
+        name = getSlidingDiscreteStateName();
+        index = _spr->getSlidingStateIndex();
+        updDiscreteVariableIndex(name, index, subsys);
+
+        name = getAnchorPointDiscreteStateName();
+        index = _spr->getAnchorPointStateIndex();
+        updDiscreteVariableIndex(name, index, subsys);
+        */
+    }
+
+}; // End of class ExtendedPointToPointSpring
+
+
 //_____________________________________________________________________________
 // Sample internal method
 double
@@ -178,7 +271,7 @@ checkVector(const Array_<T>& a, const Array_<T>& b, int precision)
 }
 
 //_____________________________________________________________________________
-// Test for equality of the discrete variables in two state trajectories.
+// Test the equality of the discrete variables.
 //
 // The SimTK API does not allow an exhaustive, low-level comparison of
 // discrete variables on the SimTK side.
@@ -191,8 +284,6 @@ void
 testEqualityForDiscreteVariables(const Model& model,
     const Array_<State>& trajA, const Array_<State>& trajB, int precision)
 {
-    double tol;
-
     // Loop over the named variables
     OpenSim::Array<std::string> paths = model.getDiscreteVariableNames();
     int nPaths = paths.getSize();
@@ -265,15 +356,15 @@ testEqualityForDiscreteVariables(const Model& model,
 }
 
 //_____________________________________________________________________________
-// Test for equality of the modeling options in two state trajectories.
+// Test the equality of the modeling options.
 //
 // The SimTK API does not allow an exhaustive, low-level comparison of
-// discrete variables on the SimTK side.
+// modeling options on the SimTK side.
 //
-// The comparision is done only for the discrete variables registered
-// in the OpenSim Component heirarchy. Any discrete variable that is
-// not registered in OpenSim will not be serialized, deserialized, or
-// compared in this unit test.
+// The comparision is done only for the modeling options registered
+// in the OpenSim Component heirarchy. Any modeling option that is
+// not registered in the OpenSim Component hierarchy will not be serialized,
+// deserialized, or compared.
 void
 testEqualityForModelingOptions(const Model& model,
     const Array_<State>& trajA, const Array_<State>& trajB, int precision)
@@ -300,7 +391,6 @@ void
 testEquality(const Model& model,
     const Array_<State>& trajA, const Array_<State>& trajB, int precision)
 {
-    REQUIRE(trajA.size() == trajB.size());
     testEqualityForContinuousVariables(model, trajA, trajB, precision);
     testEqualityForDiscreteVariables(model, trajA, trajB, precision);
     testEqualityForModelingOptions(model, trajA, trajB, precision);
@@ -344,8 +434,8 @@ buildModel() {
     double restlength = 0.0;
     Vec3 origin(0.0);
     Vec3 insertion(0.1, 0.1, 0.025);
-    PointToPointSpring* spring = new PointToPointSpring(ground, origin,
-        *block, insertion, kp, restlength);
+    ExtendedPointToPointSpring* spring = new ExtendedPointToPointSpring(
+        ground, origin, *block, insertion, kp, restlength);
     model->addForce(spring);
 
     return model;
@@ -403,7 +493,7 @@ TEST_CASE("Serialization and Deserialization")
     // to worry about the reporter (or any other object) going out of scope
     // or being deleted.
     Model *model = buildModel();
-    Array_<State>& trajA = simulate(model);
+    Array_<State> trajA = simulate(model);
 
     // Serialize (A)
     int precision = 6;
@@ -415,6 +505,15 @@ TEST_CASE("Serialization and Deserialization")
     StatesDocument docB(filename);
     Array_<State> trajB;
     docB.deserialize(*model, trajB);
+
+    // Check size
+    REQUIRE(trajA.size() == trajB.size());
+
+    // Realize both state trajectories to Stage::Report
+    for (int i = 0; i < trajA.size(); ++i) {
+        model->getSystem().realize(trajA[i], Stage::Report);
+        model->getSystem().realize(trajB[i], Stage::Report);
+    }
 
     // Does A == B?
     testEquality(*model, trajA, trajB, precision);
