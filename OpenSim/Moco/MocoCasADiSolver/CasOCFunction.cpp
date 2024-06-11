@@ -220,8 +220,7 @@ casadi::DM Endpoint::getSubsetPoint(const VariablesDM& fullPoint,
         return fullPoint.at(parameters);
     } else if (i == 11) {
         // TODO: We should find a way to actually compute the integral
-        // from fullPoint. Or, make the integral an optimizatio           
-        // variable.
+        // from fullPoint. Or, make the integral an optimization variable.
         return casadi::DM::zeros(1, 1);
     } else {
         return casadi::DM();
