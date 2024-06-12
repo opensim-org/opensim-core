@@ -58,7 +58,11 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
-      if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      env:
+        # Work-around for windows-latest GH runner issue, see
+        # https://github.com/actions/runner-images/issues/10004
+        CXXFLAGS: "/D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
+      # if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         echo $env:GITHUB_WORKSPACE\\build_deps
         mkdir $env:GITHUB_WORKSPACE\\build_deps
@@ -85,6 +89,10 @@ jobs:
         echo "version=$version" >> $env:GITHUB_OUTPUT
 
     - name: Build opensim-core
+      env:
+        # Work-around for windows-latest GH runner issue, see
+        # https://github.com/actions/runner-images/issues/10004
+        CXXFLAGS: "/D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
       # Install now to avoid building bindings twice (issue when using Visual Studio 2019).
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
@@ -198,7 +206,11 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
-      if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      env:
+        # Work-around for windows-latest GH runner issue, see
+        # https://github.com/actions/runner-images/issues/10004
+        CXXFLAGS: "/D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
+      # if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         echo $env:GITHUB_WORKSPACE\\build_deps
         mkdir $env:GITHUB_WORKSPACE\\build_deps
@@ -226,6 +238,10 @@ jobs:
 
 
     - name: Build opensim-core
+      env:
+        # Work-around for windows-latest GH runner issue, see
+        # https://github.com/actions/runner-images/issues/10004
+        CXXFLAGS: "/D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
       # Install now to avoid building bindings twice (TODO: issue when using Visual Studio 2019, is this an issue too in Visual Studio 2022?).
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
