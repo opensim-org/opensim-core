@@ -53,7 +53,6 @@ public:
     //==========================================================================
     OpenSim_DECLARE_UNNAMED_PROPERTY(ModelDisplayHints,
         "Model display preferences");
-
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
@@ -63,10 +62,17 @@ public:
     }
     virtual ~ModelVisualPreferences() {};
 
+    bool visualize() const {
+        return _visualize;
+    }
+    void setVisualize(bool visualizationStatus) {
+        _visualize = visualizationStatus;
+    }
 private:
     void constructProperties() {
         constructProperty_ModelDisplayHints(ModelDisplayHints());
     }
+    bool _visualize;
 //=============================================================================
 };  // END of class ModelVisualPreferences
 //=============================================================================
