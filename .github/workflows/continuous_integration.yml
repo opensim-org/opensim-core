@@ -402,7 +402,7 @@ jobs:
         key: ${{ runner.os }}-swig
 
     - name: Install SWIG
-      if: steps.cache-swig.outputs.cache-hit != 'true'
+      # if: steps.cache-swig.outputs.cache-hit != 'true'
       run: |
         mkdir ~/swig-source && cd ~/swig-source
         wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
@@ -532,7 +532,7 @@ jobs:
         key: ${{ runner.os }}-swig
 
     - name: Install SWIG
-      if: steps.cache-swig.outputs.cache-hit != 'true'
+      # if: steps.cache-swig.outputs.cache-hit != 'true'
       run: |
         mkdir ~/swig-source && cd ~/swig-source
         wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
@@ -831,7 +831,7 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
-      if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      # if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         mkdir $GITHUB_WORKSPACE/../build_deps
         cd $GITHUB_WORKSPACE/../build_deps
