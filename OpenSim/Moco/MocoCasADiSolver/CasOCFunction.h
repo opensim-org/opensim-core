@@ -69,7 +69,8 @@ protected:
 
 private:
     /// Here, "point" refers to a vector of all variables in the optimization
-    /// problem.
+    /// problem. This function returns a subset of the variables at a point for 
+    /// a given input index.
     VectorDM getSubsetPointsForSparsityDetection(casadi_int iind) const {
         VectorDM out(m_fullPointsForSparsityDetection->size());
         for (int i = 0; i < (int)out.size(); ++i) {
@@ -79,6 +80,9 @@ private:
         return out;
     }
 
+    /// As of CasADi 3.6, callback functions need to return Jacobian sparsity
+    /// patterns for each pair of inputs and outputs. Therefore this function 
+    /// returns a subset point for a given input index.
     virtual casadi::DM getSubsetPoint(const VariablesDM& fullPoint, 
             casadi_int i) const {
         int itime = 0;
