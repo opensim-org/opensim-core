@@ -75,7 +75,6 @@ public:
 //=============================================================================
 // METHODS
 //=============================================================================
-public:
     // CONSTRUCTION AND DESTRUCTION
     InputController();
     ~InputController() override;

@@ -58,6 +58,7 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
   to model actuator controls. (#3769)
 - Updated Moco stack to use Casadi 3.5.5, IPOPT 3.14.16, and compatible coinmumps & metis
 - Upgrade Python and NumPy versions to 3.10 and 1.25, repectively, in ci workflow (#3794).
+- Added SynergyController, a controller that computes controls for a model based on a linear combination of a set of Input control signals and a set of synergy vectors. (#3796)
 
 
 v4.5

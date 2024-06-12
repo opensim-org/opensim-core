@@ -177,6 +177,26 @@ private:
 OSIMCOMMON_API SimTK::Matrix computeKNearestNeighbors(const SimTK::Matrix& x,
         const SimTK::Matrix& y, int k = 1);
 
+/// Use non-negative matrix factorization to decompose an matrix A (NxM) for a 
+/// selected number of factors 'K' into two matrices W (NxK) and H (KxM) such 
+/// that A = W * H. The alternating least squares (ALS) algorithm is used to 
+/// solve for W and H by minimizing the Frobenius norm of the error between A 
+/// and W * H. The matrices W and H are scaled assuming that the rows of H
+/// have magnitudes as if all elements in H were equal to 0.5. The algorithm 
+/// terminates when the change in the error norm is less than the specified 
+/// tolerance or the maximum number of iterations is reached.
+///
+/// @returns The final Frobenius norm of the error between A and W * H.
+///
+/// Reference
+/// ---------
+/// Berry, M. W., et al. (2007). Algorithms and Applications for Approximate 
+/// Nonnegative Matrix Factorization. Computational Statistics & Data Analysis, 
+/// 52(1), 155-173. doi:10.1016/j.csda.2006.11.006.
+OSIMCOMMON_API double factorizeMatrixNonNegative(const SimTK::Matrix& A, 
+        int numFactors, int maxIterations, double tolerance, 
+        SimTK::Matrix& W, SimTK::Matrix& H);
+
 } // namespace OpenSim
 
 #endif // OPENSIM_COMMONUTILITIES_H_
