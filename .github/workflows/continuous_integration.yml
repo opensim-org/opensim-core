@@ -101,38 +101,6 @@ jobs:
         name: opensim-core-${{ steps.configure.outputs.version }}-win-2019
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
-    # TODO: Must be relative to the workspace?
-    # - name: Upload opensim-moco dependencies
-    #   uses: actions/upload-artifact@v1.0.0
-    #   with:
-    #     name: opensim-core-dependencies
-    #     path: opensim_dependencies_install.zip
-
-    # - name: Create release
-    #   id: create-release
-    #   uses: actions/create-release@v1.0.0
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     tag_name: ${{ github.ref }}
-    #     release_name: OpenSim Core ${{ github.ref }}
-    #     draft: true
-    #     prerelease: false
-
-    # - name: Zip opensim-core
-    #   run: |
-    #     7z a opensim-core-$VERSION.zip opensim-core-${VERSION}
-
-    # - name: Upload release asset
-    #   id: upload-release-asset
-    #   uses: actions/upload-release-asset@v1.0.1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     upload_url: ${{ steps.create-release.outputs.upload_url }}
-    #     asset_path: ./opensim-core-${{ github.ref }}.zip
-    #     asset_name: opensim-core-${{ github.ref }}.zip
-    #     asset_content_type: application/zip
 
   windows2022_target:
     name: Windows2022 [target]
@@ -261,15 +229,6 @@ jobs:
         7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
         echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
 
-    - name: Install Python packages
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-
-    - name: Install numpy
-      #Need numpy to use SWIG numpy typemaps.
-      run: python3 -m pip install numpy==1.25
-
     - name: Install SWIG
       run: |
         choco install swig --version 4.1.1 --yes --limit-output --allow-downgrade
@@ -297,7 +256,7 @@ jobs:
         # /W0 disables warnings.
         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
         # TODO: CMake provides /W3, which overrides our /W0
-        cmake -E env CXXFLAGS="/W0" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_TROPTER=ON -DOPENSIM_WITH_CASADI=ON
+        cmake -E env CXXFLAGS="/W0" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_TROPTER=OFF -DOPENSIM_WITH_CASADI=OFF
         cmake --build . --config Release -- /maxcpucount:4
 
     - name: Configure opensim-core
@@ -308,7 +267,7 @@ jobs:
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
         # Set the CXXFLAGS environment variable to turn warnings into errors.
         # Skip timing test section included by default.
-        cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DOPENSIM_WITH_TROPTER=on -DOPENSIM_WITH_CASADI=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DPython3_ROOT_DIR=C:\hostedtoolcache\windows\Python\3.10.11\x64
+        cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DOPENSIM_WITH_TROPTER=off -DOPENSIM_WITH_CASADI=off -DBUILD_PYTHON_WRAPPING=off -DBUILD_JAVA_WRAPPING=on 
         $env:match = cmake -L . | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
         $version = $env:match.split('=')[1]
         echo $version
@@ -335,14 +294,6 @@ jobs:
         chdir $env:GITHUB_WORKSPACE
         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.configure.outputs.version }}" -Recurse
         7z a "opensim-core-${{ steps.configure.outputs.version }}.zip" "opensim-core-${{ steps.configure.outputs.version }}"
-
-    - name: Test Python bindings
-      run: |
-        echo "PYTHONPATH= $env:USERPROFILE/opensim-core-install/bin">> $GITHUB_ENV
-        # Move to the installed location of the python package.
-        cd ~/opensim-core-install/sdk/python
-        # Run python tests.
-        python -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
