@@ -545,12 +545,13 @@ class Report(object):
                 fig.patch.set_visible(False)
                 ax = plt.axes()
 
-                cell_text = []
                 parameters = convert(self.trajectory.getParameters())
-                cell_text.append(['%10.5f' % p for p in parameters])
+                cell_text = [['%.3f' % p] for p in parameters]
 
                 plt.table(cellText=cell_text, rowLabels=parameter_names,
-                          colLabels=[self.trajectory_fname], loc='center')
+                          colLabels=[self.trajectory_fname], colWidths=[0.75], 
+                          loc='center', cellLoc='center', rowLoc='center', 
+                          colLoc='center', fontsize=16)
                 ax.axis('off')
                 ax.axis('tight')
 
