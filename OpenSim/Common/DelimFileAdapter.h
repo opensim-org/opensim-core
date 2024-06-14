@@ -591,19 +591,17 @@ DelimFileAdapter<T>::extendWrite(const InputTables& absTables,
 
     // First line of the stream is the header.
     if (table->getTableMetaData().hasKey("header")) {
-        out_stream << table->
-                      getTableMetaData().
-                      getValueForKey("header").
-                      template getValue<std::string>() << "\n";
+        const auto& header = table->getTableMetaData().getValueForKey("header");
+        // TODO We assume the header is of type std::string.
+        // This is usually the case, but we don't enforce this anywhere.
+        out_stream << header.template getValue<std::string>() << "\n";
     }
     // Write rest of the key-value pairs and end the header.
     for(const auto& key : table->getTableMetaDataKeys()) {
         try {
             if(key != "header")
                 out_stream << key << "=" 
-                           << table->
-                              template getTableMetaData<std::string>(key) 
-                           << "\n";
+                           << table->getTableMetaDataAsString(key) << "\n";
         } catch(const InvalidTemplateArgument&) {}
     }
     // Write name of the data-type -- vec3, vec6, etc.
