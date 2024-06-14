@@ -30,7 +30,7 @@ function(tropter_add_test)
         list(APPEND test_args "~[mac]~[linux]~[mac/linux]~[linux/mac]~[unix]")
     endif()
     add_test(NAME ${TROPTEST_NAME}
-             COMMAND ${TROPTEST_NAME} --durations yes)
+             COMMAND ${TROPTEST_NAME} ${test_args} --durations yes)
     #if(WIN32) # Instead, we are copying dependencies' DLLs into Tropter.
     #    set_property(TEST ${TEST_NAME} APPEND PROPERTY
     #        ENVIRONMENT "PATH=${IPOPT_DIR}/bin\;${ADOLC_DIR}/bin")
