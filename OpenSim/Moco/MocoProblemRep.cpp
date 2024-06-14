@@ -44,10 +44,6 @@ MocoProblemRep::MocoProblemRep(const MocoProblem& problem)
 }
 void MocoProblemRep::initialize() {
 
-    // Mute non-critical Logger output.
-    Logger::Level origLoggerLevel = Logger::getLevel();
-    Logger::setLevel(Logger::Level::Warn);
-
     // Clear member variables.
     m_model_base = Model();
     m_model_base.updDisplayHints().disableVisualization();
@@ -771,9 +767,6 @@ void MocoProblemRep::initialize() {
         m_num_path_constraint_equations +=
                 m_path_constraints[i]->getConstraintInfo().getNumEquations();
     }
-
-    // Restore logger level.
-    Logger::setLevel(origLoggerLevel);
 }
 
 const std::string& MocoProblemRep::getName() const {

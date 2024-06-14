@@ -246,15 +246,9 @@ double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A,
     // Create random initial guess.
     SimTK::Random::Uniform rand(0,1);
     SimTK::Matrix W0(A.nrow(), k);
-    SimTK::Matrix H0(k, A.ncol());
     for (int i = 0; i < W0.nrow(); ++i) {
         for (int j = 0; j < W0.ncol(); ++j) {
             W0(i, j) = rand.getValue();
-        }
-    }
-    for (int i = 0; i < H0.nrow(); ++i) {
-        for (int j = 0; j < H0.ncol(); ++j) {
-            H0(i, j) = rand.getValue();
         }
     }
 
@@ -315,7 +309,6 @@ double OpenSim::factorizeMatrixNonNegative(const SimTK::Matrix& A,
         // Update variables.
         normError0 = normError;
         W0 = W;
-        H0 = H;
     }
 
     return normError;
