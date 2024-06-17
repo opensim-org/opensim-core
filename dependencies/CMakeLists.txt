@@ -357,7 +357,7 @@ if(SUPERBUILD_casadi)
                   DEFAULT    ON
                   DEPENDS    ipopt
                   GIT_URL    https://github.com/casadi/casadi.git
-                  GIT_TAG    f3255ef37ebf364503d3e4c2d7331d8f5a3c2f35
+                  GIT_TAG    f48be9b3f8731e32c40d0d5dcae7e4559b97a68b
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
                              -DIPOPT_LIBRARIES:FILEPATH=ipopt.dll.lib
                              -DIPOPT_INCLUDE_DIRS:PATH=${CMAKE_INSTALL_PREFIX}/ipopt/include/coin-or
@@ -377,7 +377,7 @@ if(SUPERBUILD_casadi)
                   DEFAULT    ON
                   DEPENDS    ipopt
                   GIT_URL    https://github.com/casadi/casadi.git
-                  GIT_TAG    f3255ef37ebf364503d3e4c2d7331d8f5a3c2f35
+                  GIT_TAG    f48be9b3f8731e32c40d0d5dcae7e4559b97a68b
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
                              -DWITH_THREAD:BOOL=ON
                              -DWITH_BUILD_MUMPS:BOOL=OFF
