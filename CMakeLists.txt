@@ -187,7 +187,6 @@ option(OPENSIM_BUILD_INDIVIDUAL_APPS
     ${OPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT})
 mark_as_advanced(OPENSIM_BUILD_INDIVIDUAL_APPS)
 
-option(BUILD_JAVA_TESTING "Build Java tests." ON)
 
 # Moco settings.
 # --------------
