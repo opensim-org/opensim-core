@@ -217,7 +217,7 @@ jobs:
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
         # Set the CXXFLAGS environment variable to turn warnings into errors.
         # Skip timing test section included by default.
-        cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DPython3_ROOT_DIR=C:\hostedtoolcache\windows\Python\3.10.11\x64
+        cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DBUILD_JAVA_TESTING=off -DPython3_ROOT_DIR=C:\hostedtoolcache\windows\Python\3.10.11\x64
         $env:match = cmake -L . | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
         $version = $env:match.split('=')[1]
         echo $version

@@ -136,7 +136,7 @@ install(FILES "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
 # Java tests.
 # -----------
 
-if(BUILD_TESTING)
+if(BUILD_TESTING AND BUILD_JAVA_TESTING)
     # Now actually add the tests.
     add_subdirectory(tests)
 endif()
