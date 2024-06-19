@@ -380,7 +380,9 @@ void MocoTrajectory::insertStatesTrajectory(
     const auto& labelsToInsert = subsetOfStates.getColumnLabels();
     for (const auto& label : labelsToInsert) {
         auto it = find(m_state_names, label);
-        if (it == m_state_names.cend()) { m_state_names.push_back(label); }
+        if (it == m_state_names.cend()) { 
+            m_state_names.push_back(label); 
+        }
     }
 
     m_states.resizeKeep(getNumTimes(), (int)m_state_names.size());

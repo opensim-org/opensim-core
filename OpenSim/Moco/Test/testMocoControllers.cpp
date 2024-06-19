@@ -19,6 +19,7 @@
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Simulation/Control/SynergyController.h>
 
 #include <catch2/catch_all.hpp>
 #include "Testing.h"
@@ -180,48 +181,18 @@ namespace {
         return model;
     }
 
-    class TriplePendulumController : public InputController {
-        OpenSim_DECLARE_CONCRETE_OBJECT(
-                TriplePendulumController, InputController);
-    public:
-        TriplePendulumController() {
-            m_synergyVectors.resize(3, 2);
-            m_synergyVectors(0, 0) = 0.25;
-            m_synergyVectors(0, 1) = 0.5;
-            m_synergyVectors(1, 0) = 0.75;
-            m_synergyVectors(1, 1) = 0.5;
-            m_synergyVectors(2, 0) = 0.5;
-            m_synergyVectors(2, 1) = 0.25;
-        }
-        std::vector<std::string> getInputControlLabels() const override {
-            return {"synergy_control_0", "synergy_control_1"};
-        }
-        void computeControlsImpl(const SimTK::State& state,
-                SimTK::Vector& controls) const override {
-            const auto& input = getInput<double>("controls");
-            for (int i = 0; i < static_cast<int>(input.getNumConnectees()); ++i) 
-            {
-                controls += m_synergyVectors.col(i) * input.getValue(state, i);
-            }
-
-        }
-        const SimTK::Matrix& getSynergyVectors() const { 
-            return m_synergyVectors; 
-        }
-    private:
-        SimTK::Matrix m_synergyVectors;
-    };
-
     Model createControlledTriplePendulumModel(bool controllerEnabled = true) {
         Model model = createTriplePendulum();
-        auto* controller = new TriplePendulumController();
-        controller->setName("triple_pendulum_controller");
+        auto* controller = new SynergyController();
+        controller->setName("synergy_controller");
         controller->addActuator(
                 model.getComponent<CoordinateActuator>("/forceset/tau0"));
         controller->addActuator(
                 model.getComponent<CoordinateActuator>("/forceset/tau1"));
         controller->addActuator(
                 model.getComponent<CoordinateActuator>("/forceset/tau2"));
+        controller->addSynergyVector(createVector({0.25, 0.75, 0.5}));
+        controller->addSynergyVector(createVector({0.5, 0.5, 0.25}));
         controller->setEnabled(controllerEnabled);
         model.addController(controller);
         model.finalizeConnections();
@@ -243,14 +214,14 @@ namespace {
         problem.setStateInfo("/jointset/j2/q2/value", {-10, 10}, 0);
         problem.setStateInfo("/jointset/j2/q2/speed", {-50, 50}, 0);
         MocoBounds bounds(-100, 100);
-        const auto& controller = model.getComponent<TriplePendulumController>(
-                "/controllerset/triple_pendulum_controller");
+        const auto& controller = model.getComponent<SynergyController>(
+                "/controllerset/synergy_controller");
         if (controller.isEnabled()) {
             problem.setInputControlInfo(
-                "/controllerset/triple_pendulum_controller/synergy_control_0", 
+                "/controllerset/synergy_controller/synergy_excitation_0", 
                 bounds);
             problem.setInputControlInfo(
-                "/controllerset/triple_pendulum_controller/synergy_control_1", 
+                "/controllerset/synergy_controller/synergy_excitation_1", 
                 bounds);
         } else {
             problem.setControlInfo("/forceset/tau0", bounds);
@@ -286,8 +257,8 @@ TEST_CASE("InputController behavior") {
         constant->set_function(Constant(1.0));
         model.addComponent(constant);
 
-        auto& controller = model.updComponent<TriplePendulumController>(
-                "/controllerset/triple_pendulum_controller");
+        auto& controller = model.updComponent<SynergyController>(
+                "/controllerset/synergy_controller");
         controller.connectInput_controls(constant->getOutput("signal"));
 
         CHECK_THROWS_WITH(model.finalizeConnections(),
@@ -303,15 +274,17 @@ TEST_CASE("InputController behavior") {
         constant1->set_function(Constant(constants[1]));
         model.addComponent(constant1);
 
-        auto& controller = model.updComponent<TriplePendulumController>(
-                "/controllerset/triple_pendulum_controller");
+        auto& controller = model.updComponent<SynergyController>(
+                "/controllerset/synergy_controller");
         controller.connectInput_controls(constant0->getOutput("signal"));
         controller.connectInput_controls(constant1->getOutput("signal"));
         model.finalizeConnections();
         SimTK::State state = model.initSystem();
         model.realizeVelocity(state);
 
-        SimTK::Vector expected = controller.getSynergyVectors() * constants;
+
+        SimTK::Matrix synergyVectors = controller.getSynergyVectorsAsMatrix();
+        SimTK::Vector expected = synergyVectors * constants;
         SimTK::Vector controls = model.getControls(state);
         SimTK_TEST_EQ(expected, controls);
     }
@@ -401,9 +374,9 @@ TEMPLATE_TEST_CASE("Triple pendulum with synergy-like InputController", "",
         TimeSeriesTable controlsTable = solution.exportToControlsTable();
         TimeSeriesTable inputControlsTable = 
                 solution.exportToInputControlsTable();
-        const auto& controller = model.updComponent<TriplePendulumController>(
-                "/controllerset/triple_pendulum_controller");
-        const auto& synergyVectors = controller.getSynergyVectors();
+        const auto& controller = model.updComponent<SynergyController>(
+                "/controllerset/synergy_controller");
+        const auto& synergyVectors = controller.getSynergyVectorsAsMatrix();
         for (int i = 0; i < static_cast<int>(controlsTable.getNumRows()); ++i) {
             SimTK::Vector expected = 
                     synergyVectors * ~inputControlsTable.getRowAtIndex(i);
@@ -441,19 +414,19 @@ TEST_CASE("Controllers with disabled actuators") {
     Model model = createControlledTriplePendulumModel();
     model.updComponent<Actuator>("/forceset/tau0").set_appliesForce(false);
     std::string expected = "Expected all actuators controlled by "
-            "'/controllerset/triple_pendulum_controller' to be enabled";
+            "'/controllerset/synergy_controller' to be enabled";
     CHECK_THROWS_WITH(createTriplePendulumMocoStudy<MocoCasADiSolver>(model), 
             ContainsSubstring(expected));
 }
 
 TEST_CASE("No actuators connected to controller") {
     Model model = createTriplePendulum();
-    auto* controller = new TriplePendulumController();
-    controller->setName("triple_pendulum_controller");
+    auto* controller = new SynergyController();
+    controller->setName("synergy_controller");
     model.addController(controller);
     model.finalizeConnections();
     std::string expected = 
-            "Controller '/controllerset/triple_pendulum_controller' "
+            "Controller '/controllerset/synergy_controller' "
             "has no actuators connected.";
     CHECK_THROWS_WITH(createTriplePendulumMocoStudy<MocoCasADiSolver>(model), 
             ContainsSubstring(expected));
@@ -493,14 +466,14 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint with Input controls", "",
     auto* controlBoundPC = 
             problem.addPathConstraint<MocoControlBoundConstraint>();
     controlBoundPC->addControlPath(
-            "/controllerset/triple_pendulum_controller/synergy_control_0");
+            "/controllerset/synergy_controller/synergy_excitation_0");
     controlBoundPC->setLowerBound(Constant(-10));
     auto& solver = study.updSolver<TestType>();
     solver.resetProblem(problem);
     MocoSolution solution = study.solve();
     int numTimes = solution.getNumTimes();
     const auto& synergyControl0 = solution.getInputControl(
-            "/controllerset/triple_pendulum_controller/synergy_control_0");
+            "/controllerset/synergy_controller/synergy_excitation_0");
     for (int i = 0; i < numTimes; ++i) {
         CHECK(synergyControl0[i] >= Approx(-10).margin(1e-6));
     }
@@ -526,7 +499,7 @@ TEMPLATE_TEST_CASE("MocoControlTrackingGoal with Input controls", "",
     }
     TimeSeriesTable ref(indVec);
     ref.appendColumn(
-            "/controllerset/triple_pendulum_controller/synergy_control_0", 
+            "/controllerset/synergy_controller/synergy_excitation_0", 
             controlRef);
     controlTrackingGoal->setReference(TableProcessor(ref));
     auto& solver = study.updSolver<TestType>();
@@ -535,7 +508,7 @@ TEMPLATE_TEST_CASE("MocoControlTrackingGoal with Input controls", "",
     MocoSolution solution = study.solve();
     int numTimes = solution.getNumTimes();
     const auto& synergyControl0 = solution.getInputControl(
-            "/controllerset/triple_pendulum_controller/synergy_control_0");
+            "/controllerset/synergy_controller/synergy_excitation_0");
     for (int i = 0; i < numTimes; ++i) {
         CHECK(synergyControl0[i] == Approx(-12.34).margin(1e-6));
     }
@@ -548,12 +521,50 @@ TEST_CASE("MocoPeriodicityGoal with Input controls") {
     auto* periodicity = 
             problem.addGoal<MocoPeriodicityGoal>();
     periodicity->addControlPair(MocoPeriodicityGoalPair(
-            "/controllerset/triple_pendulum_controller/synergy_control_0"));
+            "/controllerset/synergy_controller/synergy_excitation_0"));
     auto& solver = study.updSolver<MocoCasADiSolver>();
     solver.resetProblem(problem);
     MocoSolution solution = study.solve();
     int N = solution.getNumTimes();
     const auto& synergyControl0 = solution.getInputControl(
-            "/controllerset/triple_pendulum_controller/synergy_control_0");
+            "/controllerset/synergy_controller/synergy_excitation_0");
     CHECK(synergyControl0[0] == Approx(synergyControl0[N-1]).margin(1e-6));
+}
+
+TEST_CASE("SynergyController") {
+    Model model = createTriplePendulum();
+    auto* controller = new SynergyController();
+    controller->setName("synergy_controller");
+    controller->addActuator(
+            model.getComponent<CoordinateActuator>("/forceset/tau0"));
+    controller->addActuator(
+            model.getComponent<CoordinateActuator>("/forceset/tau1"));
+    controller->addActuator(
+            model.getComponent<CoordinateActuator>("/forceset/tau2"));
+    controller->addSynergyVector(createVector({0.25, 0.75, 0.5}));
+
+    SECTION("Invalid synergy vector index") {
+        model.addController(controller);
+        model.finalizeConnections();
+        CHECK_THROWS_WITH(controller->getSynergyVector(-1), 
+                ContainsSubstring("Expected a non-negative synergy vector"));
+        CHECK_THROWS_WITH(controller->updSynergyVector(-1, createVector({})), 
+                ContainsSubstring("Expected a non-negative synergy vector"));
+    }
+
+    SECTION("Synergy vector index outside range") {
+        model.addController(controller);
+        model.finalizeConnections();
+        CHECK_THROWS_WITH(controller->getSynergyVector(1), 
+                ContainsSubstring("Expected a synergy vector index"));
+        CHECK_THROWS_WITH(controller->updSynergyVector(1, createVector({})), 
+                ContainsSubstring("Expected a synergy vector index"));
+    }
+
+    SECTION("Incorrect synergy vector size") {
+        controller->addSynergyVector(createVector({0.5, 0.5}));
+        model.addController(controller);
+        REQUIRE_THROWS_WITH(model.finalizeConnections(),
+                ContainsSubstring("Expected 'synergy_vector_1' to have size "));
+    }
 }
