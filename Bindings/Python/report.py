@@ -225,6 +225,8 @@ class Report(object):
     def getVariable(self, type, path):
         if type == 'state':
             var = convert(self.trajectory.getState(path))
+        elif type == 'input_control':
+            var = convert(self.trajectory.getInputControl(path))
         elif type == 'control':
             var = convert(self.trajectory.getControl(path))
         elif type == 'multiplier':
@@ -484,6 +486,32 @@ class Report(object):
                     aux_label_dict[title] = ''
                 self.plotVariables('derivative', aux_dict, aux_ls_dict,
                                    aux_label_dict)
+                
+            # Input controls
+            # --------------
+            input_control_names = self.trajectory.getInputControlNames()
+            if len(input_control_names) > 0:
+                input_control_dict = OrderedDict()
+                ls_dict = defaultdict(list)
+                label_dict = dict()
+                for input_control_name in input_control_names:
+                    title = input_control_name.replace('/', '')
+                    if self.bilateral:
+                        # If the --bilateral flag was set by the user, remove
+                        # substrings that indicate the body side and update the
+                        # linestyle dict.
+                        title, ls_dict = bilateralize(title, ls_dict)
+                    else:
+                        ls_dict[title].append('-')
+
+                    if not title in input_control_dict:
+                        input_control_dict[title] = list()
+                    # If --bilateral was set, the 'title' key will correspond
+                    # to a list containing paths for both sides of the model.
+                    input_control_dict[title].append(input_control_name)
+                    label_dict[title] = ''
+                self.plotVariables('input_control', input_control_dict, ls_dict, 
+                        label_dict)
 
             # Controls
             # --------
@@ -545,12 +573,13 @@ class Report(object):
                 fig.patch.set_visible(False)
                 ax = plt.axes()
 
-                cell_text = []
                 parameters = convert(self.trajectory.getParameters())
-                cell_text.append(['%10.5f' % p for p in parameters])
+                cell_text = [['%.3f' % p] for p in parameters]
 
                 plt.table(cellText=cell_text, rowLabels=parameter_names,
-                          colLabels=[self.trajectory_fname], loc='center')
+                          colLabels=[self.trajectory_fname], colWidths=[0.75], 
+                          loc='center', cellLoc='center', rowLoc='center', 
+                          colLoc='center', fontsize=16)
                 ax.axis('off')
                 ax.axis('tight')
 

@@ -58,33 +58,50 @@ public:
         }
     }
     casadi::Sparsity get_sparsity_in(casadi_int i) override;
-    bool has_jacobian_sparsity() const {
+    bool has_jac_sparsity(casadi_int oind, casadi_int iind) const override {
         return !m_fullPointsForSparsityDetection->empty();
     }
-    casadi::Sparsity get_jacobian_sparsity() const;
+    casadi::Sparsity get_jac_sparsity(casadi_int oind, casadi_int iind, 
+            bool symmetric) const override;
 
 protected:
     const Problem* m_casProblem;
 
 private:
     /// Here, "point" refers to a vector of all variables in the optimization
-    /// problem.
-    VectorDM getSubsetPointsForSparsityDetection() const {
+    /// problem. This function returns a subset of the variables at a point for 
+    /// a given input index.
+    VectorDM getSubsetPointsForSparsityDetection(casadi_int iind) const {
         VectorDM out(m_fullPointsForSparsityDetection->size());
         for (int i = 0; i < (int)out.size(); ++i) {
-            out[i] = getSubsetPoint(m_fullPointsForSparsityDetection->at(i));
+            out[i] = getSubsetPoint(
+                    m_fullPointsForSparsityDetection->at(i), iind);
         }
         return out;
     }
-    virtual casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const {
+
+    /// As of CasADi 3.6, callback functions need to return Jacobian sparsity
+    /// patterns for each pair of inputs and outputs. Therefore this function 
+    /// returns a subset point for a given input index.
+    virtual casadi::DM getSubsetPoint(const VariablesDM& fullPoint, 
+            casadi_int i) const {
         int itime = 0;
         using casadi::Slice;
-        return casadi::DM::vertcat({fullPoint.at(initial_time),
-                fullPoint.at(states)(Slice(), itime),
-                fullPoint.at(controls)(Slice(), itime),
-                fullPoint.at(multipliers)(Slice(), itime),
-                fullPoint.at(derivatives)(Slice(), itime),
-                fullPoint.at(parameters)});
+        if (i == 0) {
+            return fullPoint.at(initial_time);
+        } else if (i == 1) {
+            return fullPoint.at(states)(Slice(), itime);
+        } else if (i == 2) {
+            return fullPoint.at(controls)(Slice(), itime);
+        } else if (i == 3) {
+            return fullPoint.at(multipliers)(Slice(), itime);
+        } else if (i == 4) {
+            return fullPoint.at(derivatives)(Slice(), itime);
+        } else if (i == 5) {
+            return fullPoint.at(parameters);
+        } else {
+            return casadi::DM();
+        }
     }
 
     std::string m_finite_difference_scheme = "central";
@@ -216,23 +233,9 @@ public:
     /// provided point, but applying the integrand function and quadrature
     /// scheme here is complicated. For simplicity, we provide the integral as
     /// 0.
-    casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const override {
-        using casadi::Slice;
-        return casadi::DM::vertcat({fullPoint.at(initial_time),
-                fullPoint.at(states)(Slice(), 0),
-                fullPoint.at(controls)(Slice(), 0),
-                fullPoint.at(multipliers)(Slice(), 0),
-                fullPoint.at(derivatives)(Slice(), 0), fullPoint.at(final_time),
-                fullPoint.at(states)(Slice(), -1),
-                fullPoint.at(controls)(Slice(), -1),
-                fullPoint.at(multipliers)(Slice(), -1),
-                fullPoint.at(derivatives)(Slice(), -1),
-                fullPoint.at(parameters),
-                // TODO: We should find a way to actually compute the integral
-                // from fullPoint. Or, make the integral an optimization
-                // variable.
-                casadi::DM::zeros(1, 1)});
-    }
+    casadi::DM getSubsetPoint(const VariablesDM& fullPoint, 
+            casadi_int i) const override;
+
 protected:
     int m_index = -1;
     int m_numEquations = -1;
@@ -296,7 +299,8 @@ public:
     casadi::Sparsity get_sparsity_in(casadi_int i) override final;
     casadi::Sparsity get_sparsity_out(casadi_int i) override final;
     VectorDM eval(const VectorDM& args) const override;
-    casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const override;
+    casadi::DM getSubsetPoint(const VariablesDM& fullPoint, 
+            casadi_int i) const override;
 };
 
 /// This function should compute a state projection term to make feasible
