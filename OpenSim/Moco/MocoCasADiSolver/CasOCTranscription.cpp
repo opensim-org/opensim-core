@@ -103,16 +103,17 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numAuxiliaryResiduals = m_problem.getNumAuxiliaryResidualEquations();
     m_numProjectionStates = m_problem.getNumProjectionConstraintEquations();
 
-    m_numUDotErrorPoints = m_problem.isKinematicConstraintMethodBordalba2023()
-            ? m_numGridPoints
-            : m_numMeshPoints;
+    // m_numUDotErrorPoints = m_problem.isKinematicConstraintMethodBordalba2023()
+    //         ? m_numGridPoints
+    //         : m_numMeshPoints;
     m_numConstraints =
             m_numDefectsPerMeshInterval * m_numMeshIntervals +
             m_numMultibodyResiduals * m_numGridPoints +
             m_numAuxiliaryResiduals * m_numGridPoints +
-            m_problem.getNumQErr() * m_numMeshPoints +
-            m_problem.getNumUErr() * m_numMeshPoints +
-            m_problem.getNumUDotErr() * m_numUDotErrorPoints +
+            m_problem.getNumKinematicConstraintEquations() * m_numMeshPoints +
+            // m_problem.getNumQErr() * m_numMeshPoints +
+            // m_problem.getNumUErr() * m_numMeshPoints +
+            // m_problem.getNumUDotErr() * m_numUDotErrorPoints +
             m_problem.getNumControls() * (int)pointsForInterpControls.numel() +
             m_problem.getNumProjectionConstraintEquations() * m_numMeshIntervals;
     m_constraints.endpoint.resize(
@@ -436,27 +437,34 @@ void Transcription::transcribe() {
     // --------------------------------------------
     const auto& kcBounds = m_problem.getKinematicConstraintBounds();
 
-    m_constraints.kinematic_qerr = MX(
-            casadi::Sparsity::dense(m_problem.getNumQErr(), m_numMeshPoints));
-    m_constraintsLowerBounds.kinematic_qerr = casadi::DM::repmat(
-            kcBounds.lower, m_problem.getNumQErr(), m_numMeshPoints);
-    m_constraintsUpperBounds.kinematic_qerr = casadi::DM::repmat(
-            kcBounds.upper, m_problem.getNumQErr(), m_numMeshPoints);
+    m_constraints.kinematic = MX(
+            casadi::Sparsity::dense(m_problem.getNumKinematicConstraintEquations(), m_numMeshPoints));
+    m_constraintsLowerBounds.kinematic = casadi::DM::repmat(
+            kcBounds.lower, m_problem.getNumKinematicConstraintEquations(), m_numMeshPoints);
+    m_constraintsUpperBounds.kinematic = casadi::DM::repmat(
+            kcBounds.upper, m_problem.getNumKinematicConstraintEquations(), m_numMeshPoints);
 
-    m_constraints.kinematic_uerr = MX(
-            casadi::Sparsity::dense(m_problem.getNumUErr(), m_numMeshPoints));
-    m_constraintsLowerBounds.kinematic_uerr = casadi::DM::repmat(
-            kcBounds.lower, m_problem.getNumUErr(), m_numMeshPoints);
-    m_constraintsUpperBounds.kinematic_uerr = casadi::DM::repmat(
-            kcBounds.upper, m_problem.getNumUErr(), m_numMeshPoints);
+    // m_constraints.kinematic_qerr = MX(
+    //         casadi::Sparsity::dense(m_problem.getNumQErr(), m_numMeshPoints));
+    // m_constraintsLowerBounds.kinematic_qerr = casadi::DM::repmat(
+    //         kcBounds.lower, m_problem.getNumQErr(), m_numMeshPoints);
+    // m_constraintsUpperBounds.kinematic_qerr = casadi::DM::repmat(
+    //         kcBounds.upper, m_problem.getNumQErr(), m_numMeshPoints);
 
-    m_constraints.kinematic_udoterr = MX(
-            casadi::Sparsity::dense(
-                    m_problem.getNumUDotErr(), m_numUDotErrorPoints));
-    m_constraintsLowerBounds.kinematic_udoterr = casadi::DM::repmat(
-            kcBounds.lower, m_problem.getNumUDotErr(), m_numUDotErrorPoints);
-    m_constraintsUpperBounds.kinematic_udoterr = casadi::DM::repmat(
-            kcBounds.upper, m_problem.getNumUDotErr(), m_numUDotErrorPoints);
+    // m_constraints.kinematic_uerr = MX(
+    //         casadi::Sparsity::dense(m_problem.getNumUErr(), m_numMeshPoints));
+    // m_constraintsLowerBounds.kinematic_uerr = casadi::DM::repmat(
+    //         kcBounds.lower, m_problem.getNumUErr(), m_numMeshPoints);
+    // m_constraintsUpperBounds.kinematic_uerr = casadi::DM::repmat(
+    //         kcBounds.upper, m_problem.getNumUErr(), m_numMeshPoints);
+
+    // m_constraints.kinematic_udoterr = MX(
+    //         casadi::Sparsity::dense(
+    //                 m_problem.getNumUDotErr(), m_numUDotErrorPoints));
+    // m_constraintsLowerBounds.kinematic_udoterr = casadi::DM::repmat(
+    //         kcBounds.lower, m_problem.getNumUDotErr(), m_numUDotErrorPoints);
+    // m_constraintsUpperBounds.kinematic_udoterr = casadi::DM::repmat(
+    //         kcBounds.upper, m_problem.getNumUDotErr(), m_numUDotErrorPoints);
 
     // Initialize memory for projection constraints.
     // ---------------------------------------------
@@ -559,14 +567,15 @@ void Transcription::transcribe() {
             m_xdot(Slice(NQ + NU, NS), m_meshIndices) = out.at(1);
             m_constraints.auxiliary_residuals(Slice(), m_meshIndices) =
                     out.at(2);
-            m_constraints.kinematic_qerr = out.at(3);
-            m_constraints.kinematic_uerr = out.at(4);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                m_constraints.kinematic_udoterr(Slice(), m_meshIndices) =
-                        out.at(5);
-            } else {
-                m_constraints.kinematic_udoterr = out.at(5);
-            }
+            m_constraints.kinematic = out.at(3);
+            // m_constraints.kinematic_qerr = out.at(3);
+            // m_constraints.kinematic_uerr = out.at(4);
+            // if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+            //     m_constraints.kinematic_udoterr(Slice(), m_meshIndices) =
+            //             out.at(5);
+            // } else {
+            //     m_constraints.kinematic_udoterr = out.at(5);
+            // }
         }
 
         // Points where we ignore algebraic constraints.
@@ -584,10 +593,10 @@ void Transcription::transcribe() {
                     out.at(1);
             m_constraints.auxiliary_residuals(Slice(), m_meshInteriorIndices) =
                     out.at(2);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                m_constraints.kinematic_udoterr(
-                        Slice(), m_meshInteriorIndices) = out.at(5);
-            }
+            // if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+            //     m_constraints.kinematic_udoterr(
+            //             Slice(), m_meshInteriorIndices) = out.at(5);
+            // }
         }
 
         // Points where the multibody residuals depend on the projection states.
@@ -601,8 +610,8 @@ void Transcription::transcribe() {
             // (i.e., for "points where we compute algebraic constraints").
             m_constraints.multibody_residuals(
                     Slice(), m_projectionStateIndices) = out.at(0);
-            m_constraints.kinematic_udoterr(
-                    Slice(), m_projectionStateIndices) = out.at(5);
+            // m_constraints.kinematic_udoterr(
+            //         Slice(), m_projectionStateIndices) = out.at(5);
         }
 
     } else { // Explicit dynamics mode.
@@ -619,14 +628,15 @@ void Transcription::transcribe() {
             m_xdot(Slice(NQ + NU, NS), m_meshIndices) = out.at(1);
             m_constraints.auxiliary_residuals(Slice(), m_meshIndices) =
                     out.at(2);
-            m_constraints.kinematic_qerr = out.at(3);
-            m_constraints.kinematic_uerr = out.at(4);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                m_constraints.kinematic_udoterr(Slice(), m_meshIndices) =
-                        out.at(5);
-            } else {
-                m_constraints.kinematic_udoterr = out.at(5);
-            }
+            m_constraints.kinematic = out.at(3);
+            // m_constraints.kinematic_qerr = out.at(3);
+            // m_constraints.kinematic_uerr = out.at(4);
+            // if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+            //     m_constraints.kinematic_udoterr(Slice(), m_meshIndices) =
+            //             out.at(5);
+            // } else {
+            //     m_constraints.kinematic_udoterr = out.at(5);
+            // }
         }
 
         // Points where we ignore algebraic constraints.
@@ -644,10 +654,10 @@ void Transcription::transcribe() {
                     out.at(1);
             m_constraints.auxiliary_residuals(Slice(), m_meshInteriorIndices) =
                     out.at(2);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                m_constraints.kinematic_udoterr(
-                        Slice(), m_meshInteriorIndices) = out.at(5);
-            }
+            // if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+            //     m_constraints.kinematic_udoterr(
+            //             Slice(), m_meshInteriorIndices) = out.at(5);
+            // }
         }
 
         // Points where the state derivatives depend on the projection states.
@@ -665,8 +675,8 @@ void Transcription::transcribe() {
             // This overrides the previous function evaluation assignments for
             // `kinematic_udoterr` at the mesh indices (i.e., for "points where
             // we compute algebraic constraints").
-            m_constraints.kinematic_udoterr(
-                    Slice(), m_projectionStateIndices) = out.at(5);
+            // m_constraints.kinematic_udoterr(
+            //         Slice(), m_projectionStateIndices) = out.at(5);
         }
     }
 
@@ -1356,60 +1366,60 @@ void Transcription::printConstraintValues(const Iterate& it,
                     "abs"
                 << std::endl;
         row.resize(1, m_numMeshPoints);
-        {
-            int ikc = 0;
-            for (int iq = 0; iq < numQErr; ++iq) {
-                row = constraints.kinematic_qerr(iq, Slice());
-                const double L2 = casadi::DM::norm_2(row).scalar();
-                int argmax;
-                double max = calcL1Norm(row, argmax);
-                const double L1 = max;
-                const double time_of_max = it.times(argmax).scalar();
+        // {
+        //     int ikc = 0;
+        //     for (int iq = 0; iq < numQErr; ++iq) {
+        //         row = constraints.kinematic_qerr(iq, Slice());
+        //         const double L2 = casadi::DM::norm_2(row).scalar();
+        //         int argmax;
+        //         double max = calcL1Norm(row, argmax);
+        //         const double L1 = max;
+        //         const double time_of_max = it.times(argmax).scalar();
 
-                std::string label = kinconNames.at(ikc);
-                ss << std::setfill('0') << std::setw(2) << ikc << ":"
-                   << std::setfill(' ') << std::setw(maxNameLength) << label
-                   << spacer << std::setprecision(2) << std::scientific
-                   << std::setw(9) << L2 << spacer << L1 << spacer
-                   << std::setprecision(6) << std::fixed << time_of_max
-                   << std::endl;
-                ++ikc;
-            }
-            for (int iu = 0; iu < numUErr; ++iu) {
-                row = constraints.kinematic_uerr(iu, Slice());
-                const double L2 = casadi::DM::norm_2(row).scalar();
-                int argmax;
-                double max = calcL1Norm(row, argmax);
-                const double L1 = max;
-                const double time_of_max = it.times(argmax).scalar();
+        //         std::string label = kinconNames.at(ikc);
+        //         ss << std::setfill('0') << std::setw(2) << ikc << ":"
+        //            << std::setfill(' ') << std::setw(maxNameLength) << label
+        //            << spacer << std::setprecision(2) << std::scientific
+        //            << std::setw(9) << L2 << spacer << L1 << spacer
+        //            << std::setprecision(6) << std::fixed << time_of_max
+        //            << std::endl;
+        //         ++ikc;
+        //     }
+        //     for (int iu = 0; iu < numUErr; ++iu) {
+        //         row = constraints.kinematic_uerr(iu, Slice());
+        //         const double L2 = casadi::DM::norm_2(row).scalar();
+        //         int argmax;
+        //         double max = calcL1Norm(row, argmax);
+        //         const double L1 = max;
+        //         const double time_of_max = it.times(argmax).scalar();
 
-                std::string label = kinconNames.at(ikc);
-                ss << std::setfill('0') << std::setw(2) << ikc << ":"
-                   << std::setfill(' ') << std::setw(maxNameLength) << label
-                   << spacer << std::setprecision(2) << std::scientific
-                   << std::setw(9) << L2 << spacer << L1 << spacer
-                   << std::setprecision(6) << std::fixed << time_of_max
-                   << std::endl;
-                ++ikc;
-            }
-            for (int iudot = 0; iudot < numUDotErr; ++iudot) {
-                row = constraints.kinematic_udoterr(iudot, Slice());
-                const double L2 = casadi::DM::norm_2(row).scalar();
-                int argmax;
-                double max = calcL1Norm(row, argmax);
-                const double L1 = max;
-                const double time_of_max = it.times(argmax).scalar();
+        //         std::string label = kinconNames.at(ikc);
+        //         ss << std::setfill('0') << std::setw(2) << ikc << ":"
+        //            << std::setfill(' ') << std::setw(maxNameLength) << label
+        //            << spacer << std::setprecision(2) << std::scientific
+        //            << std::setw(9) << L2 << spacer << L1 << spacer
+        //            << std::setprecision(6) << std::fixed << time_of_max
+        //            << std::endl;
+        //         ++ikc;
+        //     }
+        //     for (int iudot = 0; iudot < numUDotErr; ++iudot) {
+        //         row = constraints.kinematic_udoterr(iudot, Slice());
+        //         const double L2 = casadi::DM::norm_2(row).scalar();
+        //         int argmax;
+        //         double max = calcL1Norm(row, argmax);
+        //         const double L1 = max;
+        //         const double time_of_max = it.times(argmax).scalar();
 
-                std::string label = kinconNames.at(ikc);
-                ss << std::setfill('0') << std::setw(2) << ikc << ":"
-                   << std::setfill(' ') << std::setw(maxNameLength) << label
-                   << spacer << std::setprecision(2) << std::scientific
-                   << std::setw(9) << L2 << spacer << L1 << spacer
-                   << std::setprecision(6) << std::fixed << time_of_max
-                   << std::endl;
-                ++ikc;
-            }
-        }
+        //         std::string label = kinconNames.at(ikc);
+        //         ss << std::setfill('0') << std::setw(2) << ikc << ":"
+        //            << std::setfill(' ') << std::setw(maxNameLength) << label
+        //            << spacer << std::setprecision(2) << std::scientific
+        //            << std::setw(9) << L2 << spacer << L1 << spacer
+        //            << std::setprecision(6) << std::fixed << time_of_max
+        //            << std::endl;
+        //         ++ikc;
+        //     }
+        // }
         ss << "Kinematic constraint values at each mesh point:"
                 << std::endl;
         ss << "      time  ";
@@ -1421,24 +1431,24 @@ void Transcription::printConstraintValues(const Iterate& it,
             ss << std::setfill('0') << std::setw(3) << imesh << "  ";
             ss.fill(' ');
             ss << std::setw(9) << it.times(imesh).scalar() << "  ";
-            for (int iq = 0; iq < numQErr; ++iq) {
-                const auto& value = 
-                        constraints.kinematic_qerr(iq, imesh).scalar();
-                ss << std::setprecision(2) << std::scientific
-                   << std::setw(9) << value << "  ";
-            }
-            for (int iu = 0; iu < numUErr; ++iu) {
-                const auto& value = 
-                        constraints.kinematic_uerr(iu, imesh).scalar();
-                ss << std::setprecision(2) << std::scientific
-                   << std::setw(9) << value << "  ";
-            }
-            for (int iudot = 0; iudot < numUDotErr; ++iudot) {
-                const auto& value = 
-                        constraints.kinematic_udoterr(iudot, imesh).scalar();
-                ss << std::setprecision(2) << std::scientific
-                   << std::setw(9) << value << "  ";
-            }
+            // for (int iq = 0; iq < numQErr; ++iq) {
+            //     const auto& value = 
+            //             constraints.kinematic_qerr(iq, imesh).scalar();
+            //     ss << std::setprecision(2) << std::scientific
+            //        << std::setw(9) << value << "  ";
+            // }
+            // for (int iu = 0; iu < numUErr; ++iu) {
+            //     const auto& value = 
+            //             constraints.kinematic_uerr(iu, imesh).scalar();
+            //     ss << std::setprecision(2) << std::scientific
+            //        << std::setw(9) << value << "  ";
+            // }
+            // for (int iudot = 0; iudot < numUDotErr; ++iudot) {
+            //     const auto& value = 
+            //             constraints.kinematic_udoterr(iudot, imesh).scalar();
+            //     ss << std::setprecision(2) << std::scientific
+            //        << std::setw(9) << value << "  ";
+            // }
             ss << std::endl;
         }
     }

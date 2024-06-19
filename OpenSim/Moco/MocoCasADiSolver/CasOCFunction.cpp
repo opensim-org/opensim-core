@@ -258,22 +258,27 @@ MultibodySystemExplicit<calcQErr, calcUErr, calcUDotErr>::get_sparsity_out(
                 m_casProblem->getNumAuxiliaryResidualEquations(), 1);
     } else if (i == 3) {
         if (calcQErr) {
-            return casadi::Sparsity::dense(m_casProblem->getNumQErr(), 1);
+            return casadi::Sparsity::dense(m_casProblem->getNumKinematicConstraintEquations(), 1);
         } else {
             return casadi::Sparsity(0, 0);
         }
-    } else if (i == 4) {
-        if (calcUErr) {
-            return casadi::Sparsity::dense(m_casProblem->getNumUErr(), 1);
-        } else {
-            return casadi::Sparsity(0, 0);
-        }
-    } else if (i == 5) {
-        if (calcUDotErr) {
-            return casadi::Sparsity::dense(m_casProblem->getNumUDotErr(), 1);
-        } else {
-            return casadi::Sparsity(0, 0);
-        }
+    //     if (calcQErr) {
+    //         return casadi::Sparsity::dense(m_casProblem->getNumQErr(), 1);
+    //     } else {
+    //         return casadi::Sparsity(0, 0);
+    //     }
+    // } else if (i == 4) {
+    //     if (calcUErr) {
+    //         return casadi::Sparsity::dense(m_casProblem->getNumUErr(), 1);
+    //     } else {
+    //         return casadi::Sparsity(0, 0);
+    //     }
+    // } else if (i == 5) {
+    //     if (calcUDotErr) {
+    //         return casadi::Sparsity::dense(m_casProblem->getNumUDotErr(), 1);
+    //     } else {
+    //         return casadi::Sparsity(0, 0);
+    //     }
     } else {
         return casadi::Sparsity(0, 0);
     }
@@ -289,7 +294,9 @@ VectorDM MultibodySystemExplicit<calcQErr, calcUErr, calcUDotErr>::eval(
         out[i] = casadi::DM(sparsity_out(i));
     }
     Problem::MultibodySystemExplicitOutput output{out[0], out[1], out[2],
-            out[3], out[4], out[5]};
+            out[3]};
+    // Problem::MultibodySystemExplicitOutput output{out[0], out[1], out[2],
+    //         out[3], out[4], out[5]};
     m_casProblem->calcMultibodySystemExplicit(
             input, calcQErr, calcUErr, calcUDotErr, output);
     return out;
@@ -411,22 +418,27 @@ MultibodySystemImplicit<calcQErr, calcUErr, calcUDotErr>::get_sparsity_out(
                 m_casProblem->getNumAuxiliaryResidualEquations(), 1);
     } else if (i == 3) {
         if (calcQErr) {
-            return casadi::Sparsity::dense(m_casProblem->getNumQErr(), 1);
+            return casadi::Sparsity::dense(m_casProblem->getNumKinematicConstraintEquations(), 1);
         } else {
             return casadi::Sparsity(0, 0);
         }
-    } else if (i == 4) {
-        if (calcUErr) {
-            return casadi::Sparsity::dense(m_casProblem->getNumUErr(), 1);
-        } else {
-            return casadi::Sparsity(0, 0);
-        }
-    } else if (i == 5) {
-        if (calcUDotErr) {
-            return casadi::Sparsity::dense(m_casProblem->getNumUDotErr(), 1);
-        } else {
-            return casadi::Sparsity(0, 0);
-        }
+    //     if (calcQErr) {
+    //         return casadi::Sparsity::dense(m_casProblem->getNumQErr(), 1);
+    //     } else {
+    //         return casadi::Sparsity(0, 0);
+    //     }
+    // } else if (i == 4) {
+    //     if (calcUErr) {
+    //         return casadi::Sparsity::dense(m_casProblem->getNumUErr(), 1);
+    //     } else {
+    //         return casadi::Sparsity(0, 0);
+    //     }
+    // } else if (i == 5) {
+    //     if (calcUDotErr) {
+    //         return casadi::Sparsity::dense(m_casProblem->getNumUDotErr(), 1);
+    //     } else {
+    //         return casadi::Sparsity(0, 0);
+    //     }
     } else {
         return casadi::Sparsity(0, 0);
     }
@@ -443,7 +455,9 @@ VectorDM MultibodySystemImplicit<calcQErr, calcUErr, calcUDotErr>::eval(
     }
 
     Problem::MultibodySystemImplicitOutput output{out[0], out[1], out[2], 
-            out[3], out[4], out[5]};
+            out[3]};
+    // Problem::MultibodySystemImplicitOutput output{out[0], out[1], out[2], 
+    //         out[3], out[4], out[5]};
     m_casProblem->calcMultibodySystemImplicit(
             input, calcQErr, calcUErr, calcUDotErr, output);
     return out;

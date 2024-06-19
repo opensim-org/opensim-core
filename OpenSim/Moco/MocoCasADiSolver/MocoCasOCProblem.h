@@ -340,9 +340,10 @@ private:
                     calcQErrors, calcUErrors, calcUDotErrors,
                     modelBase, simtkStateBase,
                     simtkStateDisabledConstraints,
-                    output.kinematic_constraint_q_errors,
-                    output.kinematic_constraint_u_errors,
-                    output.kinematic_constraint_udot_errors);
+                    output.kinematic_constraint_errors);
+                    // output.kinematic_constraint_q_errors,
+                    // output.kinematic_constraint_u_errors,
+                    // output.kinematic_constraint_udot_errors);
         }
 
         // Copy state derivative values to output.
@@ -389,9 +390,10 @@ private:
                     calcQErrors, calcUErrors, calcUDotErrors,
                     modelBase, simtkStateBase,
                     simtkStateDisabledConstraints,
-                    output.kinematic_constraint_q_errors,
-                    output.kinematic_constraint_u_errors,
-                    output.kinematic_constraint_udot_errors);
+                    output.kinematic_constraint_errors);
+                    // output.kinematic_constraint_q_errors,
+                    // output.kinematic_constraint_u_errors,
+                    // output.kinematic_constraint_udot_errors);
         }
 
         const SimTK::SimbodyMatterSubsystem& matterDisabledConstraints =
@@ -823,9 +825,10 @@ private:
             const Model& modelBase,
             const SimTK::State& stateBase,
             const SimTK::State& simtkStateDisabledConstraints,
-            casadi::DM& kinematic_constraint_q_errors,
-            casadi::DM& kinematic_constraint_u_errors,
-            casadi::DM& kinematic_constraint_udot_errors) const {
+            casadi::DM& kinematic_constraint_errors) const {
+            // casadi::DM& kinematic_constraint_q_errors,
+            // casadi::DM& kinematic_constraint_u_errors,
+            // casadi::DM& kinematic_constraint_udot_errors) const {
 
         // If all kinematics are prescribed, we assume that the prescribed
         // kinematics obey any kinematic constraints. Therefore, the kinematic
@@ -854,23 +857,43 @@ private:
         // Acceleration-level errors.
         const auto& udoterr = m_pvaerr;
 
+        int uerrOffset;
+        int uerrSize;
+        int udoterrOffset;
+        int udoterrSize;
+        // Velocity-level errors.
+        uerrOffset = 0;
+        uerrSize = uerr.size();
+        // Acceleration-level errors.
+        udoterrOffset = 0;
+        udoterrSize = udoterr.size();
+
         // This way of copying the data avoids a threadsafety issue in
         // CasADi related to cached Sparsity objects.
         if (calcQErr) {
-            std::copy_n(qerr.getContiguousScalarData(),
-                    getNumQErr(),
-                    kinematic_constraint_q_errors.ptr());
+            std::copy_n(qerr.getContiguousScalarData(), qerr.size(),
+                    kinematic_constraint_errors.ptr());
+            std::copy_n(uerr.getContiguousScalarData() + uerrOffset, uerrSize,
+                    kinematic_constraint_errors.ptr() + qerr.size());
+            std::copy_n(udoterr.getContiguousScalarData() + udoterrOffset,
+                    udoterrSize,
+                    kinematic_constraint_errors.ptr() + qerr.size() + uerrSize);
         }
-        if (calcUErr) {
-            std::copy_n(uerr.getContiguousScalarData() + m_uerrOffset,
-                    getNumUErr(),
-                    kinematic_constraint_u_errors.ptr());
-        }
-        if (calcUDotErr) {
-            std::copy_n(udoterr.getContiguousScalarData() + m_udoterrOffset,
-                    getNumUDotErr(),
-                    kinematic_constraint_udot_errors.ptr());
-        }
+        // if (calcQErr) {
+        //     std::copy_n(qerr.getContiguousScalarData(),
+        //             getNumQErr(),
+        //             kinematic_constraint_q_errors.ptr());
+        // }
+        // if (calcUErr) {
+        //     std::copy_n(uerr.getContiguousScalarData() + m_uerrOffset,
+        //             getNumUErr(),
+        //             kinematic_constraint_u_errors.ptr());
+        // }
+        // if (calcUDotErr) {
+        //     std::copy_n(udoterr.getContiguousScalarData() + m_udoterrOffset,
+        //             getNumUDotErr(),
+        //             kinematic_constraint_udot_errors.ptr());
+        // }
     }
 
     void copyImplicitResidualsToOutput(const MocoProblemRep& mocoProblemRep,

@@ -127,9 +127,10 @@ protected:
         T defects;
         T multibody_residuals;
         T auxiliary_residuals;
-        T kinematic_qerr;
-        T kinematic_uerr;
-        T kinematic_udoterr;
+        T kinematic;
+        // T kinematic_qerr;
+        // T kinematic_uerr;
+        // T kinematic_udoterr;
         std::vector<T> endpoint;
         std::vector<T> path;
         T interp_controls;
@@ -408,15 +409,16 @@ private:
             }
 
             // Kinematic constraints.
-            copyColumn(constraints.kinematic_qerr, imesh);
-            copyColumn(constraints.kinematic_uerr, imesh);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                for (int i = 0; i < N; ++i) {
-                    copyColumn(constraints.kinematic_udoterr, igrid + i);
-                }
-            } else {
-                copyColumn(constraints.kinematic_udoterr, imesh);
-            }
+            copyColumn(constraints.kinematic, imesh);
+            // copyColumn(constraints.kinematic_qerr, imesh);
+            // copyColumn(constraints.kinematic_uerr, imesh);
+            // if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+            //     for (int i = 0; i < N; ++i) {
+            //         copyColumn(constraints.kinematic_udoterr, igrid + i);
+            //     }
+            // } else {
+            //     copyColumn(constraints.kinematic_udoterr, imesh);
+            // }
 
             // Multibody and auxiliary residuals.
             for (int i = 0; i < N; ++i) {
@@ -448,13 +450,14 @@ private:
                 copyColumn(path, m_numMeshPoints - 1);
             }
         }
-        copyColumn(constraints.kinematic_qerr, m_numMeshPoints - 1);
-        copyColumn(constraints.kinematic_uerr, m_numMeshPoints - 1);
-        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-            copyColumn(constraints.kinematic_udoterr, m_numGridPoints - 1);
-        } else {
-            copyColumn(constraints.kinematic_udoterr, m_numMeshPoints - 1);
-        }
+        copyColumn(constraints.kinematic, m_numMeshPoints - 1);
+        // copyColumn(constraints.kinematic_qerr, m_numMeshPoints - 1);
+        // copyColumn(constraints.kinematic_uerr, m_numMeshPoints - 1);
+        // if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+        //     copyColumn(constraints.kinematic_udoterr, m_numGridPoints - 1);
+        // } else {
+        //     copyColumn(constraints.kinematic_udoterr, m_numMeshPoints - 1);
+        // }
         copyColumn(constraints.multibody_residuals, m_numGridPoints - 1);
         copyColumn(constraints.auxiliary_residuals, m_numGridPoints - 1);
 
@@ -479,10 +482,12 @@ private:
                 m_numGridPoints);
         out.auxiliary_residuals = init(m_numAuxiliaryResiduals,
                 m_numGridPoints);
-        out.kinematic_qerr = init(m_problem.getNumQErr(),m_numMeshPoints);
-        out.kinematic_uerr = init(m_problem.getNumUErr(), m_numMeshPoints);
-        out.kinematic_udoterr = init(m_problem.getNumUDotErr(),
-                m_numUDotErrorPoints);
+        out.kinematic = init(m_problem.getNumKinematicConstraintEquations(),
+                m_numMeshPoints);
+        // out.kinematic_qerr = init(m_problem.getNumQErr(),m_numMeshPoints);
+        // out.kinematic_uerr = init(m_problem.getNumUErr(), m_numMeshPoints);
+        // out.kinematic_udoterr = init(m_problem.getNumUDotErr(),
+        //         m_numUDotErrorPoints);
         out.projection = init(m_problem.getNumProjectionConstraintEquations(),
                 m_numMeshIntervals);
         out.endpoint.resize(m_problem.getEndpointConstraintInfos().size());
@@ -532,15 +537,16 @@ private:
             }
 
             // Kinematic constraints.
-            copyColumn(out.kinematic_qerr, imesh);
-            copyColumn(out.kinematic_uerr, imesh);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                for (int i = 0; i < N; ++i) {
-                    copyColumn(out.kinematic_udoterr, igrid + i);
-                }
-            } else {
-                copyColumn(out.kinematic_udoterr, imesh);
-            }
+            copyColumn(out.kinematic, imesh);
+            // copyColumn(out.kinematic_qerr, imesh);
+            // copyColumn(out.kinematic_uerr, imesh);
+            // if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+            //     for (int i = 0; i < N; ++i) {
+            //         copyColumn(out.kinematic_udoterr, igrid + i);
+            //     }
+            // } else {
+            //     copyColumn(out.kinematic_udoterr, imesh);
+            // }
 
             // Multibody and auxiliary residuals.
             for (int i = 0; i < N; ++i) {
@@ -572,13 +578,14 @@ private:
                 copyColumn(path, m_numMeshPoints - 1);
             }
         }
-        copyColumn(out.kinematic_qerr, m_numMeshPoints - 1);
-        copyColumn(out.kinematic_uerr, m_numMeshPoints - 1);
-        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-            copyColumn(out.kinematic_udoterr, m_numGridPoints - 1);
-        } else {
-            copyColumn(out.kinematic_udoterr, m_numMeshPoints - 1);
-        }
+        copyColumn(out.kinematic, m_numMeshPoints - 1);
+        // copyColumn(out.kinematic_qerr, m_numMeshPoints - 1);
+        // copyColumn(out.kinematic_uerr, m_numMeshPoints - 1);
+        // if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+        //     copyColumn(out.kinematic_udoterr, m_numGridPoints - 1);
+        // } else {
+        //     copyColumn(out.kinematic_udoterr, m_numMeshPoints - 1);
+        // }
         copyColumn(out.multibody_residuals, m_numGridPoints - 1);
         copyColumn(out.auxiliary_residuals, m_numGridPoints - 1);
 

@@ -154,17 +154,19 @@ public:
         casadi::DM& multibody_derivatives;
         casadi::DM& auxiliary_derivatives;
         casadi::DM& auxiliary_residuals;
-        casadi::DM& kinematic_constraint_q_errors;
-        casadi::DM& kinematic_constraint_u_errors;
-        casadi::DM& kinematic_constraint_udot_errors;
+        casadi::DM& kinematic_constraint_errors;
+        // casadi::DM& kinematic_constraint_q_errors;
+        // casadi::DM& kinematic_constraint_u_errors;
+        // casadi::DM& kinematic_constraint_udot_errors;
     };
     struct MultibodySystemImplicitOutput {
         casadi::DM& multibody_residuals;
         casadi::DM& auxiliary_derivatives;
         casadi::DM& auxiliary_residuals;
-        casadi::DM& kinematic_constraint_q_errors;
-        casadi::DM& kinematic_constraint_u_errors;
-        casadi::DM& kinematic_constraint_udot_errors;
+        casadi::DM& kinematic_constraint_errors;
+        // casadi::DM& kinematic_constraint_q_errors;
+        // casadi::DM& kinematic_constraint_u_errors;
+        // casadi::DM& kinematic_constraint_udot_errors;
     };
 
 protected:
