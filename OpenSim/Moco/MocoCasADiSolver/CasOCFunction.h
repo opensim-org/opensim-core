@@ -327,7 +327,8 @@ public:
     casadi::Sparsity get_sparsity_in(casadi_int i) override final;
     casadi::Sparsity get_sparsity_out(casadi_int i) override final;
     VectorDM eval(const VectorDM& args) const override;
-    casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const override;
+    casadi::DM getSubsetPoint(
+            const VariablesDM& fullPoint, casadi_int i) const override;
 };
 
 template <bool calcQErr, bool calcUErr, bool calcUDotErr>
