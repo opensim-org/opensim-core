@@ -127,9 +127,7 @@ protected:
         T defects;
         T multibody_residuals;
         T auxiliary_residuals;
-        // T kinematic;
-        T kinematic_qerr;
-        T kinematic_uerr;
+        T kinematic;
         T kinematic_udoterr;
         std::vector<T> endpoint;
         std::vector<T> path;
@@ -175,11 +173,11 @@ private:
     VariablesDM m_shift;
     VariablesDM m_scale;
     // These hold vectors of MX types, where each element of the vector
-    // contains either the states or state derivatives needed to calculate the 
-    // defect constraints for a single mesh interval. The Bordalba et al. (2023) 
-    // kinematic constraint method requires that the point at the end of one 
-    // mesh interval and the start of the next mesh interval have different 
-    // decision variables representing the state, even though they share the 
+    // contains either the states or state derivatives needed to calculate the
+    // defect constraints for a single mesh interval. The Bordalba et al. (2023)
+    // kinematic constraint method requires that the point at the end of one
+    // mesh interval and the start of the next mesh interval have different
+    // decision variables representing the state, even though they share the
     // same time point.
     casadi::MXVector m_statesByMeshInterval;
     casadi::MXVector m_stateDerivativesByMeshInterval;
@@ -194,7 +192,7 @@ private:
     casadi::Matrix<casadi_int> m_notProjectionStateIndices;
 
     // State derivatives.
-    casadi::MX m_xdot; 
+    casadi::MX m_xdot;
     // State derivatives reserved for the Bordalba et al. (2023) kinematic
     // constraint method based on coordinate projection.
     casadi::MX m_xdot_projection;
@@ -229,7 +227,7 @@ private:
     void transcribe();
     void setObjectiveAndEndpointConstraints();
     void calcDefects() {
-        calcDefectsImpl(m_statesByMeshInterval, 
+        calcDefectsImpl(m_statesByMeshInterval,
                 m_stateDerivativesByMeshInterval, m_constraints.defects);
     }
     void calcInterpolatingControls() {
@@ -355,7 +353,7 @@ private:
 
         // Hermite-Simpson sparsity pattern for mesh intervals 0, 1 and 2.
         // '*' indicates additional non-zero entry when path constraint
-        // mesh interior points are enforced. '^' indicates points where 
+        // mesh interior points are enforced. '^' indicates points where
         // acceleration-level kinematic constraints are enforced when using
         // the Bordalba et al. (2023) kinematic constraint method. This sparsity
         // pattern also applies to the Legendre-Gauss and Legendre-Gauss-Radau
@@ -388,7 +386,7 @@ private:
         for (const auto& endpoint : constraints.endpoint) {
             copyColumn(endpoint, 0);
         }
-        
+
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
         int icon = 0;
@@ -409,15 +407,11 @@ private:
             }
 
             // Kinematic constraints.
-            // copyColumn(constraints.kinematic, imesh);
-            copyColumn(constraints.kinematic_qerr, imesh);
-            copyColumn(constraints.kinematic_uerr, imesh);
+            copyColumn(constraints.kinematic, imesh);
             if (m_problem.isKinematicConstraintMethodBordalba2023()) {
                 for (int i = 0; i < N; ++i) {
                     copyColumn(constraints.kinematic_udoterr, igrid + i);
                 }
-            } else {
-                copyColumn(constraints.kinematic_udoterr, imesh);
             }
 
             // Multibody and auxiliary residuals.
@@ -428,7 +422,7 @@ private:
 
             // Defect constraints.
             copyColumn(constraints.defects, imesh);
-            
+
             // Interpolating controls.
             if (m_pointsForInterpControls.numel()) {
                 for (int i = 0; i < N-1; ++i) {
@@ -450,13 +444,9 @@ private:
                 copyColumn(path, m_numMeshPoints - 1);
             }
         }
-        // copyColumn(constraints.kinematic, m_numMeshPoints - 1);
-        copyColumn(constraints.kinematic_qerr, m_numMeshPoints - 1);
-        copyColumn(constraints.kinematic_uerr, m_numMeshPoints - 1);
+        copyColumn(constraints.kinematic, m_numMeshPoints - 1);
         if (m_problem.isKinematicConstraintMethodBordalba2023()) {
             copyColumn(constraints.kinematic_udoterr, m_numGridPoints - 1);
-        } else {
-            copyColumn(constraints.kinematic_udoterr, m_numMeshPoints - 1);
         }
         copyColumn(constraints.multibody_residuals, m_numGridPoints - 1);
         copyColumn(constraints.auxiliary_residuals, m_numGridPoints - 1);
@@ -478,16 +468,17 @@ private:
         };
         Constraints<T> out;
         out.defects = init(m_numDefectsPerMeshInterval, m_numMeshPoints - 1);
-        out.multibody_residuals = init(m_numMultibodyResiduals, 
+        out.multibody_residuals = init(m_numMultibodyResiduals,
                 m_numGridPoints);
         out.auxiliary_residuals = init(m_numAuxiliaryResiduals,
                 m_numGridPoints);
-        // out.kinematic = init(m_problem.getNumKinematicConstraintEquations(),
-        //         m_numMeshPoints);
-        out.kinematic_qerr = init(m_problem.getNumQErr(),m_numMeshPoints);
-        out.kinematic_uerr = init(m_problem.getNumUErr(), m_numMeshPoints);
-        out.kinematic_udoterr = init(m_problem.getNumUDotErr(),
-                m_numUDotErrorPoints);
+        int numQErr = m_problem.getNumQErr();
+        int numUErr = m_problem.getNumUErr();
+        int numUDotErr = m_problem.getNumUDotErr();
+        int numKC = m_problem.isKinematicConstraintMethodBordalba2023() ?
+                numQErr + numUErr : numQErr + numUErr + numUDotErr;
+        out.kinematic = init(numKC,m_numMeshPoints);
+        out.kinematic_udoterr = init(numUDotErr, m_numUDotErrorPoints);
         out.projection = init(m_problem.getNumProjectionConstraintEquations(),
                 m_numMeshIntervals);
         out.endpoint.resize(m_problem.getEndpointConstraintInfos().size());
@@ -521,7 +512,7 @@ private:
         int N = m_numPointsPerMeshInterval - 1;
         int icon = 0;
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-            int igrid = imesh * N;  
+            int igrid = imesh * N;
 
             // Path constraints.
             if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
@@ -537,15 +528,11 @@ private:
             }
 
             // Kinematic constraints.
-            // copyColumn(out.kinematic, imesh);
-            copyColumn(out.kinematic_qerr, imesh);
-            copyColumn(out.kinematic_uerr, imesh);
+            copyColumn(out.kinematic, imesh);
             if (m_problem.isKinematicConstraintMethodBordalba2023()) {
                 for (int i = 0; i < N; ++i) {
                     copyColumn(out.kinematic_udoterr, igrid + i);
                 }
-            } else {
-                copyColumn(out.kinematic_udoterr, imesh);
             }
 
             // Multibody and auxiliary residuals.
@@ -579,12 +566,9 @@ private:
             }
         }
         // copyColumn(out.kinematic, m_numMeshPoints - 1);
-        copyColumn(out.kinematic_qerr, m_numMeshPoints - 1);
-        copyColumn(out.kinematic_uerr, m_numMeshPoints - 1);
+        copyColumn(out.kinematic, m_numMeshPoints - 1);
         if (m_problem.isKinematicConstraintMethodBordalba2023()) {
             copyColumn(out.kinematic_udoterr, m_numGridPoints - 1);
-        } else {
-            copyColumn(out.kinematic_udoterr, m_numMeshPoints - 1);
         }
         copyColumn(out.multibody_residuals, m_numGridPoints - 1);
         copyColumn(out.auxiliary_residuals, m_numGridPoints - 1);
