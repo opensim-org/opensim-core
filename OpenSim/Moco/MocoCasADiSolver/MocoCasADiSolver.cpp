@@ -281,12 +281,12 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         }
     }
 
-    if (get_optim_solver() == "fatrop") {
-        checkPropertyValueIsInSet(getProperty_optim_hessian_approximation(),
-                {"exact"});
-        solverOptions["hessian_approximation"] =
-                get_optim_hessian_approximation();
-    }
+    // if (get_optim_solver() == "fatrop") {
+    //     checkPropertyValueIsInSet(getProperty_optim_hessian_approximation(),
+    //             {"exact"});
+    //     solverOptions["hessian_approximation"] =
+    //             get_optim_hessian_approximation();
+    // }
 
     checkPropertyValueIsInSet(getProperty_optim_sparsity_detection(),
             {"none", "random", "initial-guess"});

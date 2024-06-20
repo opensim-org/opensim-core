@@ -184,7 +184,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     // m_scaledVars[initial_time] = m_scaledVectorVars[initial_time][0];
     // m_scaledVars[final_time] = m_scaledVectorVars[final_time][0];
     m_scaledVars[states] = MX::horzcat(m_scaledVectorVars[states]);
-    m_scaledVars[projection_states] = 
+    m_scaledVars[projection_states] =
             MX::horzcat(m_scaledVectorVars[projection_states]);
     m_scaledVars[controls] = MX::horzcat(m_scaledVectorVars[controls]);
     m_scaledVars[multipliers] = MX::horzcat(m_scaledVectorVars[multipliers]);
@@ -192,15 +192,15 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_scaledVars[slacks] = MX::horzcat(m_scaledVectorVars[slacks]);
     m_scaledVars[parameters] = m_scaledVectorVars[parameters][0];
 
-    // Each vector contains MX matrix elements (states or state derivatives) 
-    // needed to construct the defect constraints for an individual mesh 
+    // Each vector contains MX matrix elements (states or state derivatives)
+    // needed to construct the defect constraints for an individual mesh
     // interval.
     m_statesByMeshInterval = MXVector(m_numMeshIntervals);
     m_stateDerivativesByMeshInterval = MXVector(m_numMeshIntervals);
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-        m_statesByMeshInterval[imesh] = 
+        m_statesByMeshInterval[imesh] =
                 MX(m_problem.getNumStates(), m_numPointsPerMeshInterval);
-        m_stateDerivativesByMeshInterval[imesh] = 
+        m_stateDerivativesByMeshInterval[imesh] =
                 MX(m_problem.getNumStates(), m_numPointsPerMeshInterval);
     }
     m_projectionStateDistances = MX(m_numProjectionStates, m_numMeshIntervals);
@@ -364,7 +364,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     }
     m_unscaledVars = unscaleVariables(m_scaledVars);
 
-    
+
     // m_duration = m_unscaledVars[final_time] - m_unscaledVars[initial_time];
     // m_times = createTimes(
     //         m_unscaledVars[initial_time], m_unscaledVars[final_time]);
@@ -395,7 +395,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             // The multibody states at the last point in the mesh interval are
             // the projection states.
             m_statesByMeshInterval[imesh]
-                    (Slice(0, m_numProjectionStates), numPts-1) = 
+                    (Slice(0, m_numProjectionStates), numPts-1) =
                             m_unscaledVars[projection_states](Slice(), imesh);
 
             // The non-multibody states at the last point (i.e., auxiliary state
@@ -528,7 +528,7 @@ void Transcription::transcribe() {
             OpenSim::Exception,
             "Expected the 'hermite-simpson' transcription scheme when using "
             "the Posa et al. 2016 method for enforcing kinematic constraints, "
-            "but the '{}' scheme was selected.", 
+            "but the '{}' scheme was selected.",
             m_solver.getTranscriptionScheme());
 
         if (m_solver.getTranscriptionScheme() == "hermite-simpson" &&
@@ -553,7 +553,7 @@ void Transcription::transcribe() {
                     m_projectionStateIndices);
             const auto x_proj = projectionOut.at(0);
 
-            const MX x = m_unscaledVars[states](Slice(0, NQ + NU), 
+            const MX x = m_unscaledVars[states](Slice(0, NQ + NU),
                     m_projectionStateIndices);
             const MX x_prime = m_unscaledVars[projection_states];
 
@@ -571,7 +571,7 @@ void Transcription::transcribe() {
         m_xdot(Slice(NQ, NQ + NU), Slice()) = w;
         if (m_numProjectionStates) {
             const MX w_projection = m_unscaledVars[derivatives]
-                                    (Slice(0, m_problem.getNumSpeeds()), 
+                                    (Slice(0, m_problem.getNumSpeeds()),
                                             m_projectionStateIndices);
             m_xdot_projection(Slice(NQ, NQ + NU), Slice()) = w_projection;
         }
@@ -690,10 +690,10 @@ void Transcription::transcribe() {
         // Points where the state derivatives depend on the projection states.
         if (m_numProjectionStates) {
             const auto out = evalOnTrajectory(
-                    m_problem.getMultibodySystemAccelerationConstraints(), 
-                    {projection_states, controls, multipliers, derivatives}, 
+                    m_problem.getMultibodySystemAccelerationConstraints(),
+                    {projection_states, controls, multipliers, derivatives},
                     m_projectionStateIndices);
-            // Note: this state derivative is not used by Legendre-Gauss 
+            // Note: this state derivative is not used by Legendre-Gauss
             // collocation since there is no collocation point at mesh interval
             // endpoint. However, we need this function evaluation, since we
             // still enforce the acceleration-level kinematic constraints at the
@@ -722,7 +722,7 @@ void Transcription::transcribe() {
             // The multibody state derivatives at the last point in the mesh
             // interval are the projection state derivatives.
             m_stateDerivativesByMeshInterval[imesh]
-                    (Slice(0, m_numProjectionStates), numPts-1) = 
+                    (Slice(0, m_numProjectionStates), numPts-1) =
                             m_xdot_projection(Slice(), imesh);
 
             // The non-multibody state derivatives at the last point (i.e.,
@@ -847,7 +847,7 @@ void Transcription::setObjectiveAndEndpointConstraints() {
                         m_unscaledVars[controls](Slice(), -1),
                         m_unscaledVars[multipliers](Slice(), -1),
                         m_unscaledVars[derivatives](Slice(), -1),
-                        m_unscaledVars[parameters], 
+                        m_unscaledVars[parameters],
                         integral},
                 costOut);
         m_objectiveTerms(iterm++) = casadi::MX::sum1(costOut.at(0));
@@ -961,7 +961,7 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     const auto guessTimes = createTimes(m_initialTimeDM, m_finalTimeDM);
     // const auto guessTimes = createTimes(guessOrig.variables.at(initial_time),
     //         guessOrig.variables.at(final_time));
-    bool appendProjectionStates = 
+    bool appendProjectionStates =
             m_problem.getNumProjectionConstraintEquations();
     auto guess = guessOrig.resample(guessTimes, appendProjectionStates);
 
@@ -1091,10 +1091,39 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         jacobian.sparsity().to_file(
                 prefix + "constraint_Jacobian_sparsity.mtx");
     }
-    // const casadi::Function nlpFunc =
-    //         casadi::nlpsol("nlp", m_solver.getOptimSolver(), nlp, options);
+
+    if (m_solver.getOptimSolver() == "fatrop") {
+        options["structure_detection"] = "auto";
+        std::vector<bool> equality;
+        for (int i = 0; i < 5*m_numMeshIntervals; ++i) {
+            equality.push_back(true);
+        }
+        options["equality"] = equality;
+
+
+        // options["structure_detection"] = "manual";
+        // options["N"] = m_numMeshIntervals;
+
+        // std::vector<int> nx;
+        // std::vector<int> nu;
+        // std::vector<int> ng;
+        // nx.reserve(m_numMeshPoints);
+        // nu.reserve(m_numMeshPoints);
+        // ng.reserve(m_numMeshPoints);
+        // for (int i = 0; i < m_numMeshPoints; ++i) {
+        //     nx.push_back(m_problem.getNumStates());
+        //     nu.push_back(m_problem.getNumControls());
+        //     ng.push_back(1);
+        // }
+        // options["nx"] = nx;
+        // options["nu"] = nu;
+        // options["ng"] = ng;
+        options["debug"] = true;
+    }
     const casadi::Function nlpFunc =
-        casadi::nlpsol("nlp", "fatrop", nlp, {{"verbose", false}});
+            casadi::nlpsol("nlp", m_solver.getOptimSolver(), nlp, options);
+    // const casadi::Function nlpFunc =
+    //     casadi::nlpsol("nlp", "fatrop", nlp, {{"verbose", false}});
 
     // Run the optimization (evaluate the CasADi NLP function).
     // --------------------------------------------------------
@@ -1482,19 +1511,19 @@ void Transcription::printConstraintValues(const Iterate& it,
             ss.fill(' ');
             ss << std::setw(9) << it.times(imesh).scalar() << "  ";
             for (int iq = 0; iq < numQErr; ++iq) {
-                const auto& value = 
+                const auto& value =
                         constraints.kinematic_qerr(iq, imesh).scalar();
                 ss << std::setprecision(2) << std::scientific
                    << std::setw(9) << value << "  ";
             }
             for (int iu = 0; iu < numUErr; ++iu) {
-                const auto& value = 
+                const auto& value =
                         constraints.kinematic_uerr(iu, imesh).scalar();
                 ss << std::setprecision(2) << std::scientific
                    << std::setw(9) << value << "  ";
             }
             for (int iudot = 0; iudot < numUDotErr; ++iudot) {
-                const auto& value = 
+                const auto& value =
                         constraints.kinematic_udoterr(iudot, imesh).scalar();
                 ss << std::setprecision(2) << std::scientific
                    << std::setw(9) << value << "  ";
@@ -1669,14 +1698,14 @@ casadi::MXVector Transcription::evalOnTrajectory(
     const auto NS = m_problem.getNumStates();
     for (int i = 0; i < (int)inputs.size(); ++i) {
         if (inputs[i] == multibody_states) {
-            mxIn[i + 1] = 
+            mxIn[i + 1] =
                     m_unscaledVars.at(states)(Slice(0, NQ + NU), timeIndices);
         } else if (inputs[i] == projection_states) {
             const auto& proj_states = m_unscaledVars.at(projection_states);
             OPENSIM_ASSERT(proj_states.size2() == timeIndices.size2());
             mxIn[i + 1] = casadi::MX(NS, timeIndices.size2());
-            mxIn[i + 1](Slice(0, NQ + NU), Slice()) = 
-                    m_unscaledVars.at(projection_states)(Slice(0, NQ + NU), 
+            mxIn[i + 1](Slice(0, NQ + NU), Slice()) =
+                    m_unscaledVars.at(projection_states)(Slice(0, NQ + NU),
                             Slice());
             mxIn[i + 1](Slice(NQ + NU, NS), Slice()) =
                     m_unscaledVars.at(states)(Slice(NQ + NU, NS), timeIndices);

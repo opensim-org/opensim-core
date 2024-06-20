@@ -180,11 +180,11 @@ private:
     VariablesDM m_shift;
     VariablesDM m_scale;
     // These hold vectors of MX types, where each element of the vector
-    // contains either the states or state derivatives needed to calculate the 
-    // defect constraints for a single mesh interval. The Bordalba et al. (2023) 
-    // kinematic constraint method requires that the point at the end of one 
-    // mesh interval and the start of the next mesh interval have different 
-    // decision variables representing the state, even though they share the 
+    // contains either the states or state derivatives needed to calculate the
+    // defect constraints for a single mesh interval. The Bordalba et al. (2023)
+    // kinematic constraint method requires that the point at the end of one
+    // mesh interval and the start of the next mesh interval have different
+    // decision variables representing the state, even though they share the
     // same time point.
     casadi::MXVector m_statesByMeshInterval;
     casadi::MXVector m_stateDerivativesByMeshInterval;
@@ -199,7 +199,7 @@ private:
     casadi::Matrix<casadi_int> m_notProjectionStateIndices;
 
     // State derivatives.
-    casadi::MX m_xdot; 
+    casadi::MX m_xdot;
     // State derivatives reserved for the Bordalba et al. (2023) kinematic
     // constraint method based on coordinate projection.
     casadi::MX m_xdot_projection;
@@ -234,7 +234,7 @@ private:
     void transcribe();
     void setObjectiveAndEndpointConstraints();
     void calcDefects() {
-        calcDefectsImpl(m_statesByMeshInterval, 
+        calcDefectsImpl(m_statesByMeshInterval,
                 m_stateDerivativesByMeshInterval, m_constraints.defects);
     }
     void calcInterpolatingControls() {
@@ -401,7 +401,7 @@ private:
 
         // Hermite-Simpson sparsity pattern for mesh intervals 0, 1 and 2.
         // '*' indicates additional non-zero entry when path constraint
-        // mesh interior points are enforced. '^' indicates points where 
+        // mesh interior points are enforced. '^' indicates points where
         // acceleration-level kinematic constraints are enforced when using
         // the Bordalba et al. (2023) kinematic constraint method. This sparsity
         // pattern also applies to the Legendre-Gauss and Legendre-Gauss-Radau
@@ -434,12 +434,15 @@ private:
         for (const auto& endpoint : constraints.endpoint) {
             copyColumn(endpoint, 0);
         }
-        
+
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
         int icon = 0;
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
+
+            // Defect constraints.
+            copyColumn(constraints.defects, imesh);
 
             // Path constraints.
             if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
@@ -471,9 +474,6 @@ private:
                 copyColumn(constraints.auxiliary_residuals, igrid + i);
             }
 
-            // Defect constraints.
-            copyColumn(constraints.defects, imesh);
-            
             // Interpolating controls.
             if (m_pointsForInterpControls.numel()) {
                 for (int i = 0; i < N-1; ++i) {
@@ -522,7 +522,7 @@ private:
         };
         Constraints<T> out;
         out.defects = init(m_numDefectsPerMeshInterval, m_numMeshPoints - 1);
-        out.multibody_residuals = init(m_numMultibodyResiduals, 
+        out.multibody_residuals = init(m_numMultibodyResiduals,
                 m_numGridPoints);
         out.auxiliary_residuals = init(m_numAuxiliaryResiduals,
                 m_numGridPoints);
@@ -563,7 +563,10 @@ private:
         int N = m_numPointsPerMeshInterval - 1;
         int icon = 0;
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-            int igrid = imesh * N;  
+            int igrid = imesh * N;
+
+            // Defect constraints.
+            copyColumn(out.defects, imesh);
 
             // Path constraints.
             if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
@@ -594,9 +597,6 @@ private:
                 copyColumn(out.multibody_residuals, igrid + i);
                 copyColumn(out.auxiliary_residuals, igrid + i);
             }
-
-            // Defect constraints.
-            copyColumn(out.defects, imesh);
 
             // Interpolating controls.
             if (m_pointsForInterpControls.numel()) {

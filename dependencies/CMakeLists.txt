@@ -24,14 +24,14 @@ function(SetDefaultCMakeInstallPrefix)
     get_filename_component(BASE_DIR ${BASE_DIR} DIRECTORY)
     # Default install prefix for OpenSim dependencies. If user changes
     # CMAKE_INSTALL_PREFIX, this directory will be removed.
-    set(DEFAULT_CMAKE_INSTALL_PREFIX 
+    set(DEFAULT_CMAKE_INSTALL_PREFIX
         ${BASE_DIR}/opensim_dependencies_install
         CACHE
         INTERNAL
         "Default CMAKE_INSTALL_PREFIX for OpenSim dependencies.")
 
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-        set(CMAKE_INSTALL_PREFIX 
+        set(CMAKE_INSTALL_PREFIX
             ${DEFAULT_CMAKE_INSTALL_PREFIX}
             CACHE
             PATH
@@ -40,7 +40,7 @@ function(SetDefaultCMakeInstallPrefix)
     endif()
 endfunction()
 
-# CMake doesn't clear prefix directories when user changes it. 
+# CMake doesn't clear prefix directories when user changes it.
 # Remove it to avoid confusion.
 function(RemoveDefaultInstallDirIfEmpty DIR)
     file(GLOB CONTENTS ${DIR}/*)
@@ -73,7 +73,7 @@ endfunction()
 #   GIT_URL    -- (Required) git repository to download the sources from.
 #   GIT_TAG    -- (Required) git tag to checkout before commencing build.
 #   DEPENDS    -- (Optional) Other projects this project depends on.
-#   CMAKE_ARGS -- (Optional) A CMake list of arguments to be passed to CMake 
+#   CMAKE_ARGS -- (Optional) A CMake list of arguments to be passed to CMake
 #                 while building the project.
 # You must provide either URL or GIT_URL and GIT_TAG, but not all 3.
 function(AddDependency)
@@ -357,7 +357,7 @@ if(SUPERBUILD_casadi)
                   DEFAULT    ON
                   DEPENDS    ipopt
                   GIT_URL    https://github.com/casadi/casadi.git
-                  GIT_TAG    f48be9b3f8731e32c40d0d5dcae7e4559b97a68b
+                  GIT_TAG    974f0d9d955b1a0b61d892a6b4c107c116aa8600
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
                              -DIPOPT_LIBRARIES:FILEPATH=ipopt.dll.lib
                              -DIPOPT_INCLUDE_DIRS:PATH=${CMAKE_INSTALL_PREFIX}/ipopt/include/coin-or
@@ -377,7 +377,7 @@ if(SUPERBUILD_casadi)
                   DEFAULT    ON
                   DEPENDS    ipopt
                   GIT_URL    https://github.com/casadi/casadi.git
-                  GIT_TAG    f48be9b3f8731e32c40d0d5dcae7e4559b97a68b
+                  GIT_TAG    974f0d9d955b1a0b61d892a6b4c107c116aa8600
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
                              -DWITH_THREAD:BOOL=ON
                              -DWITH_BUILD_MUMPS:BOOL=OFF
