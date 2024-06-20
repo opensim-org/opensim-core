@@ -24,5 +24,5 @@
 using namespace OpenSim;
 
 int main() {
-     EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
