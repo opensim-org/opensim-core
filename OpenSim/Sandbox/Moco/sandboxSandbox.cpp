@@ -227,7 +227,8 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
         ms.set_lagrange_multiplier_weight(10);
     }
     ms.set_multibody_dynamics_mode(dynamics_mode);
-    ms.set_parallel(0);
+    // ms.set_parallel(0);
+    // ms.set_optim_max_iterations(5);
     ms.setGuess("bounds");
 
     solution = study.solve();

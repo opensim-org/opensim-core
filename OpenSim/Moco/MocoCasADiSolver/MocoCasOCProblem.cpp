@@ -30,8 +30,6 @@ thread_local SimTK::Vector_<SimTK::SpatialVec>
         MocoCasOCProblem::m_constraintBodyForces;
 thread_local SimTK::Vector MocoCasOCProblem::m_constraintMobilityForces;
 thread_local SimTK::Vector MocoCasOCProblem::m_pvaerr;
-thread_local int MocoCasOCProblem::m_uerrOffset;
-thread_local int MocoCasOCProblem::m_udoterrOffset;
 
 MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         const MocoProblemRep& problemRep,
@@ -231,13 +229,17 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         // Set kinematic constraint information on the CasOC::Problem.
         setEnforceConstraintDerivatives(enforceConstraintDerivs);
 
-        // Set the kinematic constraint offsets, if not enforcing the derivatives
-        // of the kinematic constraint equations.
-        m_uerrOffset = getEnforceConstraintDerivatives() ? 0 :
+        // Set the kinematic constraint offsets, if not enforcing the 
+        // derivatives of the kinematic constraint equations.
+        m_uerrOffset = getEnforceConstraintDerivatives() ? 0 : 
                        getNumHolonomicConstraintEquations();
+        m_uerrSize = getEnforceConstraintDerivatives() ? getNumUErr() : 
+                     getNumNonHolonomicConstraintEquations();
         m_udoterrOffset = getEnforceConstraintDerivatives() ? 0 :
-                          getNumHolonomicConstraintEquations() +
+                          getNumHolonomicConstraintEquations() + 
                           getNumNonHolonomicConstraintEquations();
+        m_udoterrSize = getEnforceConstraintDerivatives() ? getNumUDotErr() :
+                        getNumAccelerationConstraintEquations();
 
         // The bounds are the same for all kinematic constraints in the
         // MocoProblem, so just grab the bounds from the first constraint.

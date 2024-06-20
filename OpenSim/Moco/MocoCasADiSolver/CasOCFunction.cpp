@@ -243,9 +243,8 @@ VectorDM EndpointConstraint::eval(const VectorDM& args) const {
     return out;
 }
 
-template <bool calcQErr, bool calcUErr, bool calcUDotErr>
-casadi::Sparsity
-MultibodySystemExplicit<calcQErr, calcUErr, calcUDotErr>::get_sparsity_out(
+template <bool calcKCErr>
+casadi::Sparsity MultibodySystemExplicit<calcKCErr>::get_sparsity_out(
         casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(
@@ -257,7 +256,7 @@ MultibodySystemExplicit<calcQErr, calcUErr, calcUDotErr>::get_sparsity_out(
         return casadi::Sparsity::dense(
                 m_casProblem->getNumAuxiliaryResidualEquations(), 1);
     } else if (i == 3) {
-        if (calcQErr) {
+        if (calcKCErr) {
             return casadi::Sparsity::dense(m_casProblem->getNumKinematicConstraintEquations(), 1);
         } else {
             return casadi::Sparsity(0, 0);
@@ -284,27 +283,28 @@ MultibodySystemExplicit<calcQErr, calcUErr, calcUDotErr>::get_sparsity_out(
     }
 }
 
-template <bool calcQErr, bool calcUErr, bool calcUDotErr>
-VectorDM MultibodySystemExplicit<calcQErr, calcUErr, calcUDotErr>::eval(
-        const VectorDM& args) const {
+template <bool calcKCErr>
+VectorDM MultibodySystemExplicit<calcKCErr>::eval(const VectorDM& args) const {
     Problem::ContinuousInput input{args.at(0).scalar(), args.at(1), args.at(2),
             args.at(3), args.at(4), args.at(5)};
     VectorDM out((int)n_out());
     for (casadi_int i = 0; i < n_out(); ++i) {
         out[i] = casadi::DM(sparsity_out(i));
     }
-    Problem::MultibodySystemExplicitOutput output{out[0], out[1], out[2],
+    Problem::MultibodySystemExplicitOutput output{out[0], out[1], out[2], 
             out[3]};
     // Problem::MultibodySystemExplicitOutput output{out[0], out[1], out[2],
     //         out[3], out[4], out[5]};
-    m_casProblem->calcMultibodySystemExplicit(
-            input, calcQErr, calcUErr, calcUDotErr, output);
+    m_casProblem->calcMultibodySystemExplicit(input, calcKCErr, output);
     return out;
 }
 
-template class CasOC::MultibodySystemExplicit<false, false, false>;
-template class CasOC::MultibodySystemExplicit<false, false, true>;
-template class CasOC::MultibodySystemExplicit<true, true, true>;
+// template class CasOC::MultibodySystemExplicit<false, false, false>;
+// template class CasOC::MultibodySystemExplicit<false, false, true>;
+// template class CasOC::MultibodySystemExplicit<true, true, true>;
+
+template class CasOC::MultibodySystemExplicit<false>;
+template class CasOC::MultibodySystemExplicit<true>;
 
 casadi::Sparsity VelocityCorrection::get_sparsity_in(casadi_int i) {
     if (i == 0) {
@@ -403,9 +403,8 @@ VectorDM StateProjection::eval(const VectorDM& args) const {
     return out;
 }
 
-template <bool calcQErr, bool calcUErr, bool calcUDotErr>
-casadi::Sparsity
-MultibodySystemImplicit<calcQErr, calcUErr, calcUDotErr>::get_sparsity_out(
+template <bool calcKCErr>
+casadi::Sparsity MultibodySystemImplicit<calcKCErr>::get_sparsity_out(
         casadi_int i) {
     if (i == 0) {
         return casadi::Sparsity::dense(
@@ -417,8 +416,9 @@ MultibodySystemImplicit<calcQErr, calcUErr, calcUDotErr>::get_sparsity_out(
         return casadi::Sparsity::dense(
                 m_casProblem->getNumAuxiliaryResidualEquations(), 1);
     } else if (i == 3) {
-        if (calcQErr) {
-            return casadi::Sparsity::dense(m_casProblem->getNumKinematicConstraintEquations(), 1);
+        if (calcKCErr) {
+            return casadi::Sparsity::dense(
+                m_casProblem->getNumKinematicConstraintEquations(), 1);
         } else {
             return casadi::Sparsity(0, 0);
         }
@@ -444,9 +444,8 @@ MultibodySystemImplicit<calcQErr, calcUErr, calcUDotErr>::get_sparsity_out(
     }
 }
 
-template <bool calcQErr, bool calcUErr, bool calcUDotErr>
-VectorDM MultibodySystemImplicit<calcQErr, calcUErr, calcUDotErr>::eval(
-        const VectorDM& args) const {
+template <bool calcKCErr>
+VectorDM MultibodySystemImplicit<calcKCErr>::eval(const VectorDM& args) const {
     Problem::ContinuousInput input{args.at(0).scalar(), args.at(1), args.at(2),
             args.at(3), args.at(4), args.at(5)};
     VectorDM out((int)n_out());
@@ -458,11 +457,14 @@ VectorDM MultibodySystemImplicit<calcQErr, calcUErr, calcUDotErr>::eval(
             out[3]};
     // Problem::MultibodySystemImplicitOutput output{out[0], out[1], out[2], 
     //         out[3], out[4], out[5]};
-    m_casProblem->calcMultibodySystemImplicit(
-            input, calcQErr, calcUErr, calcUDotErr, output);
+    m_casProblem->calcMultibodySystemImplicit(input, calcKCErr, output);
     return out;
 }
 
-template class CasOC::MultibodySystemImplicit<false, false, false>;
-template class CasOC::MultibodySystemImplicit<false, false, true>;
-template class CasOC::MultibodySystemImplicit<true, true, true>;
+// template class CasOC::MultibodySystemImplicit<false, false, false>;
+// template class CasOC::MultibodySystemImplicit<false, false, true>;
+// template class CasOC::MultibodySystemImplicit<true, true, true>;
+
+
+template class CasOC::MultibodySystemImplicit<false>;
+template class CasOC::MultibodySystemImplicit<true>;

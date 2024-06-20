@@ -256,7 +256,7 @@ public:
 
 /// This function should compute forward dynamics (explicit multibody dynamics),
 /// auxiliary explicit dynamics, and the errors for the kinematic constraints.
-template <bool calcQErr, bool calcUErr, bool calcUDotErr>
+template <bool calcKCErr>
 class MultibodySystemExplicit : public Function {
 public:
     casadi_int get_n_out() override final { return 4; }
@@ -332,7 +332,7 @@ public:
             const VariablesDM& fullPoint, casadi_int i) const override;
 };
 
-template <bool calcQErr, bool calcUErr, bool calcUDotErr>
+template <bool calcKCErr>
 class MultibodySystemImplicit : public Function {
     casadi_int get_n_out() override final { return 4; }
     std::string get_name_out(casadi_int i) override final {

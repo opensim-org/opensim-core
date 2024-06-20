@@ -314,7 +314,7 @@ public:
 
 private:
     void calcMultibodySystemExplicit(const ContinuousInput& input,
-            bool calcQErrors, bool calcUErrors, bool calcUDotErrors,
+            bool calcKCErrors,
             MultibodySystemExplicitOutput& output) const override {
         auto mocoProblemRep = m_jar->take();
 
@@ -335,9 +335,8 @@ private:
                 simtkStateDisabledConstraints);
 
         // Compute kinematic constraint errors.
-        if (getNumMultipliers()) {
+        if (getNumMultipliers() && calcKCErrors) {
             calcKinematicConstraintErrors(
-                    calcQErrors, calcUErrors, calcUDotErrors,
                     modelBase, simtkStateBase,
                     simtkStateDisabledConstraints,
                     output.kinematic_constraint_errors);
@@ -361,7 +360,7 @@ private:
         m_jar->leave(std::move(mocoProblemRep));
     }
     void calcMultibodySystemImplicit(const ContinuousInput& input,
-            bool calcQErrors, bool calcUErrors, bool calcUDotErrors,
+            bool calcKCErrors,
             MultibodySystemImplicitOutput& output) const override {
         auto mocoProblemRep = m_jar->take();
 
@@ -385,9 +384,8 @@ private:
                 simtkStateDisabledConstraints);
 
         // Compute kinematic constraint errors.
-        if (getNumMultipliers()) {
+        if (getNumMultipliers() && calcKCErrors) {
             calcKinematicConstraintErrors(
-                    calcQErrors, calcUErrors, calcUDotErrors,
                     modelBase, simtkStateBase,
                     simtkStateDisabledConstraints,
                     output.kinematic_constraint_errors);
@@ -821,7 +819,6 @@ private:
     }
 
     void calcKinematicConstraintErrors(
-            bool calcQErr, bool calcUErr, bool calcUDotErr,
             const Model& modelBase,
             const SimTK::State& stateBase,
             const SimTK::State& simtkStateDisabledConstraints,
@@ -834,7 +831,7 @@ private:
         // kinematics obey any kinematic constraints. Therefore, the kinematic
         // constraints would be redundant, and we need not enforce them.
         if (isPrescribedKinematics()) return;
-
+    
         // Calculate udoterr. We cannot use State::getUDotErr()
         // because that uses Simbody's multipliers and UDot,
         // whereas we have our own multipliers and UDot. Here, we use
@@ -857,28 +854,16 @@ private:
         // Acceleration-level errors.
         const auto& udoterr = m_pvaerr;
 
-        int uerrOffset;
-        int uerrSize;
-        int udoterrOffset;
-        int udoterrSize;
-        // Velocity-level errors.
-        uerrOffset = 0;
-        uerrSize = uerr.size();
-        // Acceleration-level errors.
-        udoterrOffset = 0;
-        udoterrSize = udoterr.size();
-
         // This way of copying the data avoids a threadsafety issue in
         // CasADi related to cached Sparsity objects.
-        if (calcQErr) {
-            std::copy_n(qerr.getContiguousScalarData(), qerr.size(),
-                    kinematic_constraint_errors.ptr());
-            std::copy_n(uerr.getContiguousScalarData() + uerrOffset, uerrSize,
-                    kinematic_constraint_errors.ptr() + qerr.size());
-            std::copy_n(udoterr.getContiguousScalarData() + udoterrOffset,
-                    udoterrSize,
-                    kinematic_constraint_errors.ptr() + qerr.size() + uerrSize);
-        }
+        std::copy_n(qerr.getContiguousScalarData(), qerr.size(),
+                kinematic_constraint_errors.ptr());
+        std::copy_n(uerr.getContiguousScalarData() + m_uerrOffset, m_uerrSize,
+                kinematic_constraint_errors.ptr() + qerr.size());
+        std::copy_n(udoterr.getContiguousScalarData() + m_udoterrOffset,
+                m_udoterrSize,
+                kinematic_constraint_errors.ptr() + qerr.size() + m_uerrSize);
+    
         // if (calcQErr) {
         //     std::copy_n(qerr.getContiguousScalarData(),
         //             getNumQErr(),
@@ -926,8 +911,10 @@ private:
     static thread_local SimTK::Vector m_pvaerr;
     // These offsets are necessary when not enforcing the derivatives of the
     // kinematic constraint equations.
-    static thread_local int m_uerrOffset;
-    static thread_local int m_udoterrOffset;
+    int m_uerrOffset;
+    int m_uerrSize;
+    int m_udoterrOffset;
+    int m_udoterrSize;
 };
 
 } // namespace OpenSim
