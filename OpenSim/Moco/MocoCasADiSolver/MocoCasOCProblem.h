@@ -80,24 +80,24 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoTraj,
     casVars[Var::states] =
             convertToCasADiDMTranspose(mocoTraj.getStatesTrajectory());
 
-    casadi::DM controls = 
+    casadi::DM controls =
             convertToCasADiDMTranspose(mocoTraj.getControlsTrajectory());
-    casadi::DM input_controls = 
+    casadi::DM input_controls =
             convertToCasADiDMTranspose(mocoTraj.getInputControlsTrajectory());
     std::vector<std::string> controlNames = mocoTraj.getControlNames();
     std::vector<std::string> inputControlNames = mocoTraj.getInputControlNames();
     std::vector<std::string> casControlNames;
-    int numTotalControls = static_cast<int>(controls.rows()) + 
+    int numTotalControls = static_cast<int>(controls.rows()) +
             static_cast<int>(input_controls.rows());
     casadi::DM casControls(numTotalControls, controls.columns());
-    
+
     int ic = 0;
     int iic = 0;
     std::sort(inputControlIndexes.begin(), inputControlIndexes.end());
     int numInputControls = static_cast<int>(inputControlIndexes.size());
     for (int i = 0; i < numTotalControls; ++i) {
         if (iic < numInputControls && inputControlIndexes[iic] == i) {
-            casControls(i, casadi::Slice()) = 
+            casControls(i, casadi::Slice()) =
                     input_controls(iic, casadi::Slice());
             casControlNames.push_back(inputControlNames[iic]);
             ++iic;
@@ -108,7 +108,7 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoTraj,
         }
     }
     casVars[Var::controls] = casControls;
-            
+
     casVars[Var::multipliers] =
             convertToCasADiDMTranspose(mocoTraj.getMultipliersTrajectory());
 
@@ -211,7 +211,7 @@ inline SimTK::Matrix convertToSimTKMatrix(const casadi::DM& casMatrix) {
 }
 
 template <typename TOut = MocoTrajectory>
-TOut convertToMocoTrajectory(const CasOC::Iterate& casIt, 
+TOut convertToMocoTrajectory(const CasOC::Iterate& casIt,
         std::vector<int> inputControlIndexes = {}) {
     SimTK::Matrix simtkStates;
     const auto& casVars = casIt.variables;
@@ -228,7 +228,7 @@ TOut convertToMocoTrajectory(const CasOC::Iterate& casIt,
     std::vector<std::string> controlNames;
     std::vector<std::string> inputControlNames;
     if (numTotalControls) {
-        SimTK::Matrix allControls = 
+        SimTK::Matrix allControls =
                 convertToSimTKMatrix(casVars.at(Var::controls));
         simtkControls.resize(allControls.nrow(), numControls);
         simtkInputControls.resize(allControls.nrow(), numInputControls);
@@ -273,10 +273,10 @@ TOut convertToMocoTrajectory(const CasOC::Iterate& casIt,
     }
     SimTK::Vector simtkTimes = convertToSimTKVector(casIt.times);
 
-    TOut mocoTraj(simtkTimes, casIt.state_names, controlNames, 
-            inputControlNames, casIt.multiplier_names, derivativeNames, 
-            casIt.parameter_names, simtkStates, simtkControls, 
-            simtkInputControls, simtkMultipliers, simtkDerivatives, 
+    TOut mocoTraj(simtkTimes, casIt.state_names, controlNames,
+            inputControlNames, casIt.multiplier_names, derivativeNames,
+            casIt.parameter_names, simtkStates, simtkControls,
+            simtkInputControls, simtkMultipliers, simtkDerivatives,
             simtkParameters);
 
     // Append slack variables. MocoTrajectory requires the slack variables to be
@@ -340,9 +340,6 @@ private:
                     modelBase, simtkStateBase,
                     simtkStateDisabledConstraints,
                     output.kinematic_constraint_errors);
-                    // output.kinematic_constraint_q_errors,
-                    // output.kinematic_constraint_u_errors,
-                    // output.kinematic_constraint_udot_errors);
         }
 
         // Copy state derivative values to output.
@@ -389,9 +386,6 @@ private:
                     modelBase, simtkStateBase,
                     simtkStateDisabledConstraints,
                     output.kinematic_constraint_errors);
-                    // output.kinematic_constraint_q_errors,
-                    // output.kinematic_constraint_u_errors,
-                    // output.kinematic_constraint_udot_errors);
         }
 
         const SimTK::SimbodyMatterSubsystem& matterDisabledConstraints =
@@ -715,8 +709,8 @@ private:
             for (int ic = 0; ic < getNumControls(); ++ic) {
                 simtkControls[ic] = *(controls.ptr() + ic);
             }
-            // Updating the Inputs to InputControllers via the 
-            // ControlDistributor does not mark the model controls cache as 
+            // Updating the Inputs to InputControllers via the
+            // ControlDistributor does not mark the model controls cache as
             // invalid, so we must do it manually here.
             model.markControlsAsInvalid(simtkState);
         }
@@ -823,15 +817,12 @@ private:
             const SimTK::State& stateBase,
             const SimTK::State& simtkStateDisabledConstraints,
             casadi::DM& kinematic_constraint_errors) const {
-            // casadi::DM& kinematic_constraint_q_errors,
-            // casadi::DM& kinematic_constraint_u_errors,
-            // casadi::DM& kinematic_constraint_udot_errors) const {
 
         // If all kinematics are prescribed, we assume that the prescribed
         // kinematics obey any kinematic constraints. Therefore, the kinematic
         // constraints would be redundant, and we need not enforce them.
         if (isPrescribedKinematics()) return;
-    
+
         // Calculate udoterr. We cannot use State::getUDotErr()
         // because that uses Simbody's multipliers and UDot,
         // whereas we have our own multipliers and UDot. Here, we use
@@ -863,22 +854,7 @@ private:
         std::copy_n(udoterr.getContiguousScalarData() + m_udoterrOffset,
                 m_udoterrSize,
                 kinematic_constraint_errors.ptr() + qerr.size() + m_uerrSize);
-    
-        // if (calcQErr) {
-        //     std::copy_n(qerr.getContiguousScalarData(),
-        //             getNumQErr(),
-        //             kinematic_constraint_q_errors.ptr());
-        // }
-        // if (calcUErr) {
-        //     std::copy_n(uerr.getContiguousScalarData() + m_uerrOffset,
-        //             getNumUErr(),
-        //             kinematic_constraint_u_errors.ptr());
-        // }
-        // if (calcUDotErr) {
-        //     std::copy_n(udoterr.getContiguousScalarData() + m_udoterrOffset,
-        //             getNumUDotErr(),
-        //             kinematic_constraint_udot_errors.ptr());
-        // }
+
     }
 
     void copyImplicitResidualsToOutput(const MocoProblemRep& mocoProblemRep,

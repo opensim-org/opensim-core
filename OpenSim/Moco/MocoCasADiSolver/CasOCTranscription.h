@@ -565,7 +565,6 @@ private:
                 copyColumn(path, m_numMeshPoints - 1);
             }
         }
-        // copyColumn(out.kinematic, m_numMeshPoints - 1);
         copyColumn(out.kinematic, m_numMeshPoints - 1);
         if (m_problem.isKinematicConstraintMethodBordalba2023()) {
             copyColumn(out.kinematic_udoterr, m_numGridPoints - 1);

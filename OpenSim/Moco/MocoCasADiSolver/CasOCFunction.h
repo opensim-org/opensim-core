@@ -61,7 +61,7 @@ public:
     bool has_jac_sparsity(casadi_int oind, casadi_int iind) const override {
         return !m_fullPointsForSparsityDetection->empty();
     }
-    casadi::Sparsity get_jac_sparsity(casadi_int oind, casadi_int iind, 
+    casadi::Sparsity get_jac_sparsity(casadi_int oind, casadi_int iind,
             bool symmetric) const override;
 
 protected:
@@ -69,7 +69,7 @@ protected:
 
 private:
     /// Here, "point" refers to a vector of all variables in the optimization
-    /// problem. This function returns a subset of the variables at a point for 
+    /// problem. This function returns a subset of the variables at a point for
     /// a given input index.
     VectorDM getSubsetPointsForSparsityDetection(casadi_int iind) const {
         VectorDM out(m_fullPointsForSparsityDetection->size());
@@ -81,9 +81,9 @@ private:
     }
 
     /// As of CasADi 3.6, callback functions need to return Jacobian sparsity
-    /// patterns for each pair of inputs and outputs. Therefore this function 
+    /// patterns for each pair of inputs and outputs. Therefore this function
     /// returns a subset point for a given input index.
-    virtual casadi::DM getSubsetPoint(const VariablesDM& fullPoint, 
+    virtual casadi::DM getSubsetPoint(const VariablesDM& fullPoint,
             casadi_int i) const {
         int itime = 0;
         using casadi::Slice;
@@ -233,7 +233,7 @@ public:
     /// provided point, but applying the integrand function and quadrature
     /// scheme here is complicated. For simplicity, we provide the integral as
     /// 0.
-    casadi::DM getSubsetPoint(const VariablesDM& fullPoint, 
+    casadi::DM getSubsetPoint(const VariablesDM& fullPoint,
             casadi_int i) const override;
 
 protected:
@@ -266,9 +266,6 @@ public:
         case 1: return "auxiliary_derivatives";
         case 2: return "auxiliary_residuals";
         case 3: return "kinematic_constraint_errors";
-        // case 3: return "kinematic_constraint_q_errors";
-        // case 4: return "kinematic_constraint_u_errors";
-        // case 5: return "kinematic_constraint_udot_errors";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
@@ -300,7 +297,7 @@ public:
     casadi::Sparsity get_sparsity_in(casadi_int i) override final;
     casadi::Sparsity get_sparsity_out(casadi_int i) override final;
     VectorDM eval(const VectorDM& args) const override;
-    casadi::DM getSubsetPoint(const VariablesDM& fullPoint, 
+    casadi::DM getSubsetPoint(const VariablesDM& fullPoint,
             casadi_int i) const override;
 };
 
@@ -341,9 +338,6 @@ class MultibodySystemImplicit : public Function {
         case 1: return "auxiliary_derivatives";
         case 2: return "auxiliary_residuals";
         case 3: return "kinematic_constraint_errors";
-        // case 3: return "kinematic_constraint_q_errors";
-        // case 4: return "kinematic_constraint_u_errors";
-        // case 5: return "kinematic_constraint_udot_errors";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }

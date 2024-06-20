@@ -82,11 +82,11 @@ MocoTrajectory MocoCasADiSolver::createGuess(const std::string& type) const {
     auto casProblem = createCasOCProblem();
     auto casSolver = createCasOCSolver(*casProblem);
 
-    std::vector<int> inputControlIndexes = 
+    std::vector<int> inputControlIndexes =
             getProblemRep().getInputControlIndexes();
     if (type == "bounds") {
         return convertToMocoTrajectory(
-                casSolver->createInitialGuessFromBounds(), 
+                casSolver->createInitialGuessFromBounds(),
                 inputControlIndexes);
     } else if (type == "random") {
         return convertToMocoTrajectory(
@@ -371,11 +371,11 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         log_info("Number of threads: {}", casProblem->getJarSize());
     }
 
-    std::vector<int> inputControlIndexes = 
+    std::vector<int> inputControlIndexes =
             getProblemRep().getInputControlIndexes();
     MocoTrajectory guess = getGuess();
     CasOC::Iterate casGuess;
-    // We do not need to append projection states here since they will be 
+    // We do not need to append projection states here since they will be
     // appended later when the guess is resampled by the solver (if needed).
     bool appendProjectionStates = false;
     if (guess.empty()) {
@@ -385,7 +385,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         for (const auto& info : casProblem->getSlackInfos()) {
             expectedSlackNames.push_back(info.name);
         }
-        casGuess = convertToCasOCIterate(guess, expectedSlackNames, 
+        casGuess = convertToCasOCIterate(guess, expectedSlackNames,
                 appendProjectionStates, inputControlIndexes);
     }
 
@@ -394,11 +394,11 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     Logger::Level origLoggerLevel = Logger::getLevel();
     Logger::setLevel(Logger::Level::Warn);
     CasOC::Solution casSolution;
-    // try {
-    casSolution = casSolver->solve(casGuess);
-    // } catch (...) {
-    //     OpenSim::Logger::setLevel(origLoggerLevel);
-    // }
+    try {
+        casSolution = casSolver->solve(casGuess);
+    } catch (...) {
+        OpenSim::Logger::setLevel(origLoggerLevel);
+    }
     OpenSim::Logger::setLevel(origLoggerLevel);
 
     MocoSolution mocoSolution = convertToMocoTrajectory<MocoSolution>(
