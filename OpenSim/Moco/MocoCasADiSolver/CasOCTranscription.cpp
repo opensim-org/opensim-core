@@ -437,6 +437,8 @@ void Transcription::transcribe() {
     // --------------------------------------------
     const auto& kcBounds = m_problem.getKinematicConstraintBounds();
 
+    // TODO have m_constraints.kinematic and m_constraints.kinematic_udoterr, and
+    // only use the latter when using the Bordalba et al. (2023) method.
     // m_constraints.kinematic = MX(
     //         casadi::Sparsity::dense(m_problem.getNumKinematicConstraintEquations(), m_numMeshPoints));
     // m_constraintsLowerBounds.kinematic = casadi::DM::repmat(
