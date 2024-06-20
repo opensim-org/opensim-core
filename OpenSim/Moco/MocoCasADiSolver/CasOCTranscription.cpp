@@ -589,6 +589,8 @@ void Transcription::transcribe() {
         // Points where we ignore algebraic constraints.
         if (m_numMeshInteriorPoints) {
             const casadi::Function& implicitMultibodyFunction =
+                    m_problem.isKinematicConstraintMethodBordalba2023() ?
+                    m_problem.getImplicitMultibodySystem() :
                     m_problem.getImplicitMultibodySystemIgnoringConstraints();
             const auto out = evalOnTrajectory(implicitMultibodyFunction, inputs,
                     m_meshInteriorIndices);
@@ -654,6 +656,8 @@ void Transcription::transcribe() {
         // Points where we ignore algebraic constraints.
         if (m_numMeshInteriorPoints) {
             const casadi::Function& multibodyFunction =
+                    m_problem.isKinematicConstraintMethodBordalba2023() ?
+                    m_problem.getMultibodySystem() :
                     m_problem.getMultibodySystemIgnoringConstraints();
             const auto out = evalOnTrajectory(multibodyFunction, inputs,
                     m_meshInteriorIndices);
@@ -664,6 +668,10 @@ void Transcription::transcribe() {
             m_constraints.auxiliary_residuals(Slice(), m_meshInteriorIndices) =
                     out.at(2);
             if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                std::cout << "out.at(3).size(): " << out.at(3).size() << std::endl;
+                std::cout << "nqerr: " << nqerr << std::endl;
+                std::cout << "nuerr: " << nuerr << std::endl;
+                std::cout << "nudoterr: " << nudoterr << std::endl;
                 m_constraints.kinematic_udoterr(Slice(), m_meshInteriorIndices)
                         = out.at(3)(
                                 Slice(nqerr + nuerr, nqerr + nuerr + nudoterr),
