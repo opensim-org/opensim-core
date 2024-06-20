@@ -619,8 +619,7 @@ void Transcription::transcribe() {
             m_constraints.multibody_residuals(
                     Slice(), m_projectionStateIndices) = out.at(0);
             m_constraints.kinematic_udoterr(Slice(), m_projectionStateIndices)
-                    = out.at(3)(
-                            Slice(nqerr + nuerr, nqerr + nuerr + nudoterr),
+                    = out.at(3)(Slice(nqerr + nuerr, nqerr + nuerr + nudoterr),
                             Slice());
         }
 
@@ -687,8 +686,7 @@ void Transcription::transcribe() {
             // `kinematic_udoterr` at the mesh indices (i.e., for "points where
             // we compute algebraic constraints").
             m_constraints.kinematic_udoterr(Slice(), m_projectionStateIndices)
-                    = out.at(3)(
-                            Slice(nqerr + nuerr, nqerr + nuerr + nudoterr),
+                    = out.at(3)(Slice(nqerr + nuerr, nqerr + nuerr + nudoterr),
                             Slice());
         }
     }
