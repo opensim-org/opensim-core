@@ -493,7 +493,7 @@ void hello_fatrop() {
 
 void sliding_mass() {
     double T = 0.5; // Time horizon
-    int N = 10; // Number of control intervals
+    int N = 500; // Number of control intervals
     double h = T / double(N); // Length of a control interval
 
     // Start with an empty NLP
@@ -509,71 +509,61 @@ void sliding_mass() {
 
     // Slider starts at rest at x1 = 0
     MX Xk = MX::sym("X0", 2);
-    MX Uk = MX::sym("U0");
     w.push_back(Xk);
-    w.push_back(Uk);
     lbw.push_back(0.0);
     lbw.push_back(0.0);
-    lbw.push_back(-50.0);
     ubw.push_back(0.0);
     ubw.push_back(0.0);
-    ubw.push_back(50.0);
     w0.push_back(0.0);
     w0.push_back(0.0);
-    w0.push_back(0.0);
-    integrand.push_back(pow(Uk, 2));
-    quadrature.push_back(0.5);
 
     // Trapezoidal transcription
     for (int k = 0; k < N; ++k) {
 
+        // Control variable
+        MX Uk = MX::sym("U_" + std::to_string(k));
+        w.push_back(Uk);
+        lbw.push_back(-50.0);
+        ubw.push_back(50.0);
+        w0.push_back(0.0);
+        quadrature.push_back(0.5);
+
         // New NLP variables end of interval
         MX Xkp1 = MX::sym("X_" + std::to_string(k+1), 2);
-        MX Ukp1 = MX::sym("U_" + std::to_string(k+1));
         w.push_back(Xkp1);
-        w.push_back(Ukp1);
         if (k == N - 1) {
             // Slider ends at rest at x1 = 1
             lbw.push_back(1.0);
             lbw.push_back(0.0);
-            lbw.push_back(-50.0);
             ubw.push_back(1.0);
             ubw.push_back(0.0);
-            ubw.push_back(50.0);
             w0.push_back(0.0);
             w0.push_back(0.0);
-            w0.push_back(0.0);
-            quadrature.push_back(0.5);
         } else {
             lbw.push_back(-5.0);
             lbw.push_back(-50.0);
-            lbw.push_back(-50.0);
             ubw.push_back(5.0);
             ubw.push_back(50.0);
-            ubw.push_back(50.0);
             w0.push_back(0.0);
             w0.push_back(0.0);
-            w0.push_back(0.0);
-            quadrature.push_back(1.0);
         }
 
         // Model dynamics
         MX Xdotk = vertcat(Xk(1), Uk);
-        MX Xdotkp1 = vertcat(Xkp1(1), Ukp1);
 
-        // Trapzoidal defect constraint
-        g.push_back(Xkp1 - (Xk + 0.5 * h * (Xdotk + Xdotkp1)));
+        // Defect constraint
+        g.push_back(Xkp1 - (Xk + h * Xdotk));
         lbg.push_back(0.0);
         lbg.push_back(0.0);
         ubg.push_back(0.0);
         ubg.push_back(0.0);
 
         // Integral cost
-        integrand.push_back(pow(Ukp1, 2));
+        integrand.push_back(pow(Uk, 2));
 
         // Update variables for next interval
         Xk = Xkp1;
-        Uk = Ukp1;
+        // Uk = Ukp1;
     }
 
     // Integrate the cost
@@ -587,32 +577,35 @@ void sliding_mass() {
     MX w_cat = vertcat(w);
     MX g_cat = vertcat(g);
     casadi::Dict options;
-    // options["structure_detection"] = "auto";
-    // std::vector<bool> equality;
-    // for (int i = 0; i < 2*N; ++i) {
-    //     equality.push_back(false);
-    // }
-    // options["equality"] = equality;
-
-    options["structure_detection"] = "manual";
-    options["N"] = N;
-
-    std::vector<int> nx;
-    std::vector<int> nu;
-    std::vector<int> ng;
-    nx.reserve(N+1);
-    nu.reserve(N+1);
-    ng.reserve(N+1);
-    for (int i = 0; i < N+1; ++i) {
-        nx.push_back(2);
-        nu.push_back(1);
-        ng.push_back(0);
+    options["structure_detection"] = "auto";
+    std::vector<bool> equality;
+    for (int i = 0; i < 2*N; ++i) {
+        equality.push_back(true);
     }
-    options["nx"] = nx;
-    options["nu"] = nu;
-    options["ng"] = ng;
+    options["equality"] = equality;
 
-    options["debug"] = true;
+    // options["structure_detection"] = "manual";
+    // options["N"] = N;
+
+    // std::vector<int> nx;
+    // std::vector<int> nu;
+    // std::vector<int> ng;
+    // nx.reserve(N+1);
+    // nu.reserve(N+1);
+    // ng.reserve(N+1);
+    // for (int i = 0; i < N; ++i) {
+    //     nx.push_back(2);
+    //     nu.push_back(1);
+    //     ng.push_back(0);
+    // }
+    // nx.push_back(2);
+    // nu.push_back(0);
+    // ng.push_back(0);
+    // options["nx"] = nx;
+    // options["nu"] = nu;
+    // options["ng"] = ng;
+
+    // options["debug"] = true;
     auto jacobian = casadi::MX::jacobian(g_cat, w_cat);
     jacobian.sparsity().to_file("sliding_mass_constraint_Jacobian_sparsity.mtx");
     Function solver = nlpsol("solver", "fatrop", {{"f", J}, {"x", w_cat}, {"g", g_cat}}, options);
@@ -793,8 +786,8 @@ void dircol() {
 
 int main() {
     // hello_fatrop();
-    // sliding_mass();
-    dircol();
+    sliding_mass();
+    // dircol();
 
     return 0;
 }
