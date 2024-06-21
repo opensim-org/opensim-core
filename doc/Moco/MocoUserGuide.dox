@@ -110,6 +110,8 @@ intermediate abstract class derived from Controller that provides a list Input
 for mapping scalar control signals from another component to actuator controls. 
 Concrete implementations provide the method getInputControlLabels() which defines 
 the number, order, and labels of Input controls for the InputController.
+SynergyController is an example of a concrete implementation of InputController
+that supports the muscle synergy example described above.
 
 Moco adds OCP controls to the MocoProblem for each "Input control" defined 
 by a InputController in the model. The names for Input control variables
@@ -139,7 +141,7 @@ MocoControlBoundConstraint for details on how each handle Input control
 variables.
 
 The following InputController%s are currently supported by Moco:
-- Coming soon!
+- SynergyController
 
 @section mococustomgoal Defining a custom goal or cost
 

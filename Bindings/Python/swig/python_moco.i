@@ -113,6 +113,24 @@ using namespace SimTK;
     if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
         args[3] = self._convert(MocoFinalBounds, args[3])
 %}
+%pythonprepend OpenSim::MocoPhase::setInputControlInfo %{
+    args = list(args)
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
+%}
+%pythonprepend OpenSim::MocoPhase::setInputControlInfoPattern %{
+    args = list(args)
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
+%}
 
 %extend OpenSim::MocoProblem {
 %pythoncode %{
@@ -166,6 +184,24 @@ using namespace SimTK;
         args[3] = self._convert(MocoFinalBounds, args[3])
 %}
 %pythonprepend OpenSim::MocoProblem::setControlInfoPattern %{
+    args = list(args)
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
+%}
+%pythonprepend OpenSim::MocoProblem::setInputControlInfo %{
+    args = list(args)
+    if len(args) >= 2 and not type(args[1]) is MocoBounds:
+        args[1] = self._convert(MocoBounds, args[1])
+    if len(args) >= 3 and not type(args[2]) is MocoInitialBounds:
+        args[2] = self._convert(MocoInitialBounds, args[2])
+    if len(args) >= 4 and not type(args[3]) is MocoFinalBounds:
+        args[3] = self._convert(MocoFinalBounds, args[3])
+%}
+%pythonprepend OpenSim::MocoProblem::setInputControlInfoPattern %{
     args = list(args)
     if len(args) >= 2 and not type(args[1]) is MocoBounds:
         args[1] = self._convert(MocoBounds, args[1])
@@ -361,6 +397,35 @@ using namespace SimTK;
                 SimTK::Matrix(nrowderivs, ncolderivs, derivs),
                 SimTK::RowVector(nparams, params, true));
     }
+    MocoTrajectory(
+            int ntime,
+            double* time,
+            std::vector<std::string> state_names,
+            std::vector<std::string> control_names,
+            std::vector<std::string> input_control_names,
+            std::vector<std::string> multiplier_names,
+            std::vector<std::string> derivative_names,
+            std::vector<std::string> parameter_names,
+            int nrowstates, int ncolstates, double* states,
+            int nrowcontrols, int ncolcontrols, double* controls,
+            int nrowinputcontrols, int ncolinputcontrols, double* input_controls,
+            int nrowmults, int ncolmults, double* mults,
+            int nrowderivs, int ncolderivs, double* derivs,
+            int nparams, double* params) {
+        return new MocoTrajectory(SimTK::Vector(ntime, time, true),
+                std::move(state_names),
+                std::move(control_names),
+                std::move(input_control_names),
+                std::move(multiplier_names),
+                std::move(derivative_names),
+                std::move(parameter_names),
+                SimTK::Matrix(nrowstates, ncolstates, states),
+                SimTK::Matrix(nrowcontrols, ncolcontrols, controls),
+                SimTK::Matrix(nrowinputcontrols, ncolinputcontrols, input_controls),
+                SimTK::Matrix(nrowmults, ncolmults, mults),
+                SimTK::Matrix(nrowderivs, ncolderivs, derivs),
+                SimTK::RowVector(nparams, params, true));
+    }
     void setTime(const std::vector<double>& time) {
         $self->setTime(SimTK::Vector((int)time.size(), time.data()));
     }
@@ -369,6 +434,9 @@ using namespace SimTK;
     }
     void setControl(const std::string& name, const std::vector<double>& traj) {
         $self->setControl(name, SimTK::Vector((int)traj.size(), traj.data()));
+    }
+    void setInputControl(const std::string& name, const std::vector<double>& traj) {
+        $self->setInputControl(name, SimTK::Vector((int)traj.size(), traj.data()));
     }
     void setMultiplier(const std::string& name, const std::vector<double>& traj)
     {
@@ -397,6 +465,12 @@ using namespace SimTK;
                 "n != getNumTimes()");
         Vector control = $self->getControl(name);
         std::copy_n(control.getContiguousScalarData(), n, controlOut);
+    }
+    void _getInputControlMat(std::string name, int n, double* inputControlOut) const {
+        OPENSIM_THROW_IF(n != $self->getNumTimes(), OpenSim::Exception,
+                "n != getNumTimes()");
+        Vector input_control = $self->getInputControl(name);
+        std::copy_n(input_control.getContiguousScalarData(), n, inputControlOut);
     }
     void _getMultiplierMat(std::string name, int n, double* multOut) const {
         OPENSIM_THROW_IF(n != $self->getNumTimes(), OpenSim::Exception,
@@ -432,6 +506,14 @@ using namespace SimTK;
                 "ncol != number of controls");
         std::copy_n(controls.getContiguousScalarData(), nrow * ncol, controlsOut);
     }
+    void _getInputControlsTrajectoryMat(int nrow, int ncol, double* inputControlsOut) const {
+        OPENSIM_THROW_IF(nrow != $self->getNumTimes(), OpenSim::Exception,
+                "nrow != getNumTimes()");
+        const auto& input_controls = $self->getInputControlsTrajectory();
+        OPENSIM_THROW_IF(ncol != input_controls.ncol(), OpenSim::Exception,
+                "ncol != number of Input controls");
+        std::copy_n(input_controls.getContiguousScalarData(), nrow * ncol, inputControlsOut);
+    }
     void _getMultipliersTrajectoryMat(int nrow, int ncol, double* multsOut) const {
         OPENSIM_THROW_IF(nrow != $self->getNumTimes(), OpenSim::Exception,
                 "nrow != getNumTimes()");
@@ -455,6 +537,8 @@ using namespace SimTK;
         return self._getStateMat(name, self.getNumTimes())
     def getControlMat(self, name):
         return self._getControlMat(name, self.getNumTimes())
+    def getInputControlMat(self, name):
+        return self._getInputControlMat(name, self.getNumTimes())
     def getMultiplierMat(self, name):
         return self._getMultiplierMat(name, self.getNumTimes())
     def getDerivativeMat(self, name):
@@ -471,6 +555,11 @@ using namespace SimTK;
         import numpy as np
         mat = np.empty([self.getNumTimes(), len(self.getControlNames())])
         self._getControlsTrajectoryMat(mat)
+        return mat
+    def getInputControlsTrajectoryMat(self):
+        import numpy as np
+        mat = np.empty([self.getNumTimes(), len(self.getInputControlNames())])
+        self._getInputControlsTrajectoryMat(mat)
         return mat
     def getMultipliersTrajectoryMat(self):
         import numpy as np
