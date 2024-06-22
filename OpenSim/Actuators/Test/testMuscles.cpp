@@ -102,6 +102,7 @@ void testSchutte1993Muscle();
 void testDelp1990Muscle();
 
 void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore);
+void testThelenMuscleEquilibriumInGaitModel();
 
 int main()
 {
@@ -123,6 +124,7 @@ int main()
     catch (const Exception& e)
         { e.print(cerr); failures.push_back("testDelp1990Muscle"); }
 */
+
     try { testRigidTendonMuscle();
         cout << "RigidTendonMuscle Test passed" << endl; }
     catch (const Exception& e)
@@ -132,6 +134,12 @@ int main()
         cout << "Thelen2003Muscle Test passed" << endl; }
     catch (const Exception& e)
         { e.print(cout); failures.push_back("testThelen2003Muscle"); }
+
+    try { testThelenMuscleEquilibriumInGaitModel();
+        cout << "testThelenMuscleEquilibriumInGaitModel  passed" << endl; }
+    catch (const Exception& e) {
+        e.print(cout);
+        failures.push_back("testThelenMuscleEquilibriumInGaitModel"); }
 
     try { testMillard2012EquilibriumMuscle();
         cout << "Millard2012EquilibriumMuscle Test passed" << endl; 
@@ -1149,5 +1157,64 @@ void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
                 muscle.getConcreteClassName() + 
                 " failed to solve for muscle (fiber) and tendon equilibrium. ");
         }
+    }
+}
+
+/** Test case for failure in the equilibrium solve in Thelen2003Muscle.
+    Model and conditions provided by Scott Uhlrich when initializing the
+    Lerner et al. knee model during gait. The model has been stripped down to
+    the single muscle (tib_post_r) where the failure occurs when activation
+    approaches ~0.08 in specific configuration (angles and velocities). The
+    failure does not appear to be due to any approaching singularity in afl or
+    fv multipliers.*/
+void testThelenMuscleEquilibriumInGaitModel()
+{
+    Model model("lerner_one_muscle.osim");
+    const CoordinateSet& coords = model.getCoordinateSet();
+    const Muscle& muscle = model.getMuscles().get("tib_post_r");
+
+    SimTK::State& state = model.initSystem();
+
+    coords.get("subtalar_angle_r").setValue(state, 0.2581);
+    coords.get("ankle_angle_r").setValue(state, 0.2207);
+    coords.get("subtalar_angle_r").setSpeedValue(state, -1.0344);
+    coords.get("ankle_angle_r").setSpeedValue(state, -2.3226);
+
+    double fm = SimTK::NaN, ft = SimTK::NaN;
+
+    for (int i = 1; i < 10; ++i) {
+        cout << i << endl;
+        muscle.setActivation(state, 0.01 * i); // 0.0798916);
+        model.realizeVelocity(state);
+
+        cout << "Input: act=" << muscle.getActivation(state)
+             << " fiberlen=" << muscle.getFiberLength(state)
+             << " afl =" << muscle.getActiveForceLengthMultiplier(state)
+             << " pfl =" << muscle.getPassiveForceMultiplier(state)
+             << " fibervel=" << muscle.getFiberVelocity(state)
+             << " fv =" << muscle.getForceVelocityMultiplier(state)
+             << " fm =" << muscle.getFiberForceAlongTendon(state)
+             << " ft =" << muscle.getTendonForce(state) << endl;
+
+        model.equilibrateMuscles(state);
+
+        fm = muscle.getFiberForceAlongTendon(state);
+        ft = muscle.getTendonForce(state);
+
+        cout << "After: act=" << muscle.getActivation(state)
+             << " fiberlen=" << muscle.getFiberLength(state)
+             << " afl =" << muscle.getActiveForceLengthMultiplier(state)
+             << " pfl =" << muscle.getPassiveForceMultiplier(state)
+             << " fibervel=" << muscle.getFiberVelocity(state)
+             << " fv =" << muscle.getForceVelocityMultiplier(state)
+             << " fm =" << fm
+             << " ft =" << ft << endl;
+
+        // equilibrium demands tendon and muscle fiber forces are equivalent
+        ASSERT_EQUAL<double>(ft, fm, SimTK::SqrtEps, __FILE__, __LINE__,
+                "testThelenMuscleEquilibriumInGaitModel(): " +
+                        muscle.getConcreteClassName() +
+                        " failed to solve for muscle (fiber) and tendon "
+                        "equilibrium. ");
     }
 }
