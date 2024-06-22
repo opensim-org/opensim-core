@@ -1655,6 +1655,10 @@ TEST_CASE("Component Interface Component::resolveVariableNameAndOwner")
         REQUIRE(dvPaths[1] == "/a/dvX");
         REQUIRE(dvPaths[2] == "/a/b/dvX");
 
+        // Check a VariableNotFound exception
+        CHECK_THROWS_AS(top.setModelingOption(s, "/a/should_not_be_found", 0),
+            VariableNotFound);
+
         // Verify correct execution
         std::string dvNameCorrect("dvX");
         std::string dvName;
@@ -1770,6 +1774,12 @@ TEST_CASE("Component Interface Modeling Options")
         REQUIRE(moPaths[1] == "/a/moX");
         REQUIRE(moPaths[2] == "/a/b/moX");
     }
+
+    // Check a VariableNotFound exceptions
+    CHECK_THROWS_AS(top.setModelingOption(s, "/a/should_not_be_found", 0),
+        VariableNotFound);
+    CHECK_THROWS_AS(top.getModelingOption(s, "/a/should_not_be_found"),
+        VariableNotFound);
 
     // Set different values for moX at the different paths
     top.setModelingOption(s, moPaths[0], 0);
