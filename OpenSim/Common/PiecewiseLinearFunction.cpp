@@ -434,7 +434,6 @@ void PiecewiseLinearFunction::calcCoefficients()
 double PiecewiseLinearFunction::calcValue(const Vector& x) const
 {
     int n = _x.getSize();
-    //SimTK_ASSERT(n >= 2, "size < 2. Interpolation requires 2 or more points.");
     double aX = x[0];
 
     if (aX < _x[0])
