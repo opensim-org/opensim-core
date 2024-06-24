@@ -341,7 +341,7 @@ else()
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
 
         ExternalProject_Add(ipopt
-            DEPENDS           mumps metis
+            DEPENDS           mumps
             URL https://github.com/coin-or/Ipopt/archive/refs/tags/releases/3.14.16.zip
             INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
             # Suppress warnings treated as errors in Clang/LLVM with -Wno-error=implicit-function-declaration
