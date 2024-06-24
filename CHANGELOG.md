@@ -43,23 +43,24 @@ v4.6
 - `DiscreteVariable`s and `ModelingOption`s allocated natively in Simbody can now be added to an `OpenSim::Component` and accessed via its `Component` API. To support this capability, `getDiscreteVariableIndex()` has been replaced by `getDiscreteVariableIndexes()` which returns both the index of the discrete variable and the index of the `SimTK::Subsystem` to which the descrete variable belongs. (#3745)
 - Computationally efficient methods are now available for extracting the time histories of individual state variables, discrete states, and modeling options from a state trajectory (i.e., a `SimTK::Array_<SimTK::State>`). Collectively, these methods form the basis for performing a comprehensive serialzation of a state trajectory to file. (#3745)
 - Computationally efficient methods are now available for building a state trajectory (i.e., a `SimTK::Array_<SimTK::State>`) from the time histories of individual state variables, discrete states, and modeling options. Collectively, these methods form the basis for performing a comprehenvise deserialization of a states trajectory from file. (#3745)
-- Added `Model::calcForceContributionsSum()`, a wrapper method for `GeneralForceSubsystem` for efficiently 
-  calculating a subset of a model's body and mobility forces. (#3755) 
-- Added `Force::getForceIndex()` to allow accessing the `SimTK::ForceIndex` for force elements. (#3755) 
+- Added `Model::calcForceContributionsSum()`, a wrapper method for `GeneralForceSubsystem` for efficiently
+  calculating a subset of a model's body and mobility forces. (#3755)
+- Added `Force::getForceIndex()` to allow accessing the `SimTK::ForceIndex` for force elements. (#3755)
 - Improved performance in `MultivariatePolynomialFunction` and added convenience methods for automatically generating function derivatives (#3767).
 - Added options to `PolynomialPathFitter` for including moment arm and lengthening speed functions in generated `FunctionBasedPath`s (#3767).
 - The signature for `PrescribedController::prescribeControlForActuator()` was changed to take a `Function` via a const reference rather than a
 pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Added option to `PolynomialPathFitter` to use stepwise regression for fitting a minimal set of polynomial coefficients for a `FunctionBasedPath` (#3779).
-- Fixed a bug in SimulationUtilities::analyze<T> that would provide an incorrectly sized control vector to 
+- Fixed a bug in SimulationUtilities::analyze<T> that would provide an incorrectly sized control vector to
   the model if controls were missing from the input controls table. (#3769)
-- Added InputController, an intermediate abstract class of Controller that provides supports for controllers 
-  that map scalar control values from a list Input (connected to Outputs from one or more ModelComponents) 
+- Added InputController, an intermediate abstract class of Controller that provides supports for controllers
+  that map scalar control values from a list Input (connected to Outputs from one or more ModelComponents)
   to model actuator controls. (#3769)
 - Updated Moco stack to use Casadi 3.6.5, IPOPT 3.14.16, and compatible MUMPS and Metis. (#3693, #3807)
 - Upgrade Python and NumPy versions to 3.10 and 1.25, repectively, in ci workflow (#3794).
 - Fixed bug in `report.py` preventing plotting multiple MocoParameter values. (#3808)
 - Added SynergyController, a controller that computes controls for a model based on a linear combination of a set of Input control signals and a set of synergy vectors. (#3796)
+- Updated `PolynomialPathFitter` to use all available hardware threads during parallelization. (#3818)
 
 
 v4.5
