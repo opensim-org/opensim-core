@@ -182,7 +182,8 @@ OSIMCOMMON_API SimTK::Matrix computeKNearestNeighbors(const SimTK::Matrix& x,
 /// that A = W * H. The alternating least squares (ALS) algorithm is used to 
 /// solve for W and H by minimizing the Frobenius norm of the error between A 
 /// and W * H. The matrices W and H are scaled assuming that the rows of H
-/// have magnitudes as if all elements in H were equal to 0.5. The algorithm 
+/// have magnitudes as if all elements in H were equal to 0.5, which prevents
+/// individual factors from being very large or very small. The algorithm 
 /// terminates when the change in the error norm is less than the specified 
 /// tolerance or the maximum number of iterations is reached.
 ///

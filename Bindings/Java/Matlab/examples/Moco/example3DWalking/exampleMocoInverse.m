@@ -272,7 +272,9 @@ Al = leftControls.getMatrix().getAsMat();
 Ar = rightControls.getMatrix().getAsMat();
 [Wr, Hr] = nnmf(Ar, numSynergies);
 
-% Scale W and H assuming that the elements of H are all 0.5.
+% Scale W and H assuming that the elements of H are all 0.5. This prevents
+% the synergy vector weights and synergy excitations from being very large 
+% or very small.
 scaleVec = 0.5*ones(1, length(leftControlNames));
 for i = 1:numSynergies
     scale_l = norm(scaleVec) / norm(Hl(i, :));

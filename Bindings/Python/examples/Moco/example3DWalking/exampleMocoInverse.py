@@ -246,7 +246,9 @@ def solveMocoInverseWithSynergies(numSynergies=5):
     Wr = nmf.fit_transform(Ar)
     Hr = nmf.components_
 
-    # Scale W and H assuming that the elements of H are all 0.5.
+    # Scale W and H assuming that the elements of H are all 0.5. This prevents the 
+    # synergy vector weights and synergy excitations from being very large or very
+    # small.
     scaleVec = 0.5*np.ones(Hl.shape[1])
     for i in range(numSynergies):
         scale_l = np.linalg.norm(scaleVec) / np.linalg.norm(Hl[i, :])
