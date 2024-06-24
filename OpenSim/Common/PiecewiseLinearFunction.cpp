@@ -313,7 +313,7 @@ void PiecewiseLinearFunction::updateFromXMLNode(SimTK::Xml::Element& aNode, int 
 {
     Function::updateFromXMLNode(aNode, versionNumber);
     calcCoefficients();
-}   
+}
 
 double PiecewiseLinearFunction::getX(int aIndex) const
 {
