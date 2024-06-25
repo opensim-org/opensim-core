@@ -45,7 +45,8 @@
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Auxiliary/auxiliaryTestMuscleFunctions.h>
 
-// extra comment
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
@@ -92,80 +93,9 @@ void simulateMuscle(const Muscle &aMuscle,
                     const Function *control, 
                     bool printResults);
 
-//void testPathActuator();
-void testRigidTendonMuscle();
-void testThelen2003Muscle_Deprecated();
-void testThelen2003Muscle();
-void testMillard2012EquilibriumMuscle();
-void testMillard2012AccelerationMuscle();
-void testDeGrooteFregly2016Muscle();
-void testSchutte1993Muscle();
-void testDelp1990Muscle();
-
+// simulateMuscle helper
 void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore);
 
-int main()
-{
-    SimTK::Array_<std::string> failures;
-    
-    /*
-    try { testThelen2003Muscle_Deprecated();
-        cout << "Thelen2003Muscle_Deprecated Test passed" << endl; }
-    catch (const Exception& e)
-        { e.print(cerr); failures.push_back("testThelen2003Muscle_Deprecated");}
-        
-    try { testSchutte1993Muscle();
-        cout << "Schutte1993Muscle_Deprecated Test passed" << endl; }
-    catch (const Exception& e)
-        { e.print(cerr); failures.push_back("testSchutte1993Muscle"); }
-
-    try { testDelp1990Muscle();
-        cout << "Delp1990Muscle_Deprecated Test passed" << endl; }
-    catch (const Exception& e)
-        { e.print(cerr); failures.push_back("testDelp1990Muscle"); }
-*/
-    try { testRigidTendonMuscle();
-        cout << "RigidTendonMuscle Test passed" << endl; }
-    catch (const Exception& e)
-        { e.print(cout); failures.push_back("testRigidTendonMuscle"); }
-
-    try { testThelen2003Muscle();
-        cout << "Thelen2003Muscle Test passed" << endl; }
-    catch (const Exception& e)
-        { e.print(cout); failures.push_back("testThelen2003Muscle"); }
-
-    try { testMillard2012EquilibriumMuscle();
-        cout << "Millard2012EquilibriumMuscle Test passed" << endl; 
-    }catch (const Exception& e){ 
-        e.print(cout);
-        failures.push_back("testMillard2012EquilibriumMuscle");
-    }
-    try { testMillard2012AccelerationMuscle();
-        cout << "Millard2012AccelerationMuscle Test passed" << endl; 
-    }catch (const Exception& e){ 
-        e.print(cout);
-        failures.push_back("testMillard2012AccelerationMuscle");
-    }
-    try { testDeGrooteFregly2016Muscle();
-        cout << "DeGrooteFregly2016Muscle Test passed" << endl;
-    } catch (const Exception& e) {
-        e.print(cout);
-        failures.push_back("testDeGrooteFregly2016Muscle");
-    }
-
-    printf("\n\n");
-    cout <<"************************************************************"<<endl;
-    cout <<"************************************************************"<<endl;
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    
-    cout << "testMuscles Done" << endl;
-    return 0;
-}
 
 /*==============================================================================  
     Main test driver to be used on any muscle model (derived from Muscle) so new 
@@ -510,8 +440,7 @@ void simulateMuscle(
 // Individual muscle model (derived from Muscle) test cases can be added here
 //==============================================================================
 
-void testRigidTendonMuscle()
-{
+TEST_CASE("testRigidTendonMuscle") {
     RigidTendonMuscle   muscle( "muscle",
                                 MaxIsometricForce0,
                                 OptimalFiberLength0,
@@ -541,9 +470,8 @@ void testRigidTendonMuscle()
         false);
 }
 
-
-
-void testThelen2003Muscle_Deprecated()
+// old test case
+/*TEST_CASE("testThelen2003Muscle_Deprecated")
 {
     Thelen2003Muscle_Deprecated muscle("muscle",
                                         MaxIsometricForce0,
@@ -567,9 +495,9 @@ void testThelen2003Muscle_Deprecated()
                     NULL, 
                     &control, 
                     false);
-}
+}*/
 
-void testThelen2003Muscle()
+TEST_CASE("testThelen2003Muscle")
 {
 
     Thelen2003Muscle muscle("muscle",
@@ -843,7 +771,7 @@ void testThelen2003Muscle()
 }
 
 
-void testMillard2012EquilibriumMuscle()
+TEST_CASE("testMillard2012EquilibriumMuscle")
 {
     Millard2012EquilibriumMuscle muscle("muscle",
                             MaxIsometricForce0,
@@ -951,7 +879,7 @@ void testMillard2012EquilibriumMuscle()
     }
 }
 
-void testMillard2012AccelerationMuscle()
+TEST_CASE("testMillard2012AccelerationMuscle")
 {
     Millard2012AccelerationMuscle muscle("muscle",
                             MaxIsometricForce0,
@@ -985,7 +913,7 @@ void testMillard2012AccelerationMuscle()
         false);
 }
 
-void testDeGrooteFregly2016Muscle() {
+TEST_CASE("testDeGrooteFregly2016Muscle") {
 
     DeGrooteFregly2016Muscle muscle;
     muscle.setName("muscle");
@@ -1012,7 +940,8 @@ void testDeGrooteFregly2016Muscle() {
         false);
 }
 
-void testSchutte1993Muscle()
+//old test case
+/*TEST_CASE("testSchutte1993Muscle")
 {
     Schutte1993Muscle_Deprecated muscle("muscle",
                                         MaxIsometricForce0,
@@ -1037,10 +966,10 @@ void testSchutte1993Muscle()
         &control,
         false);
 
-}
+}*/
 
-
-void testDelp1990Muscle()
+// old test case
+/*TEST_CASE("testDelp1990Muscle")
 {
     Delp1990Muscle_Deprecated muscle("muscle",
                                     MaxIsometricForce0,
@@ -1065,8 +994,7 @@ void testDelp1990Muscle()
         &motion, 
         &control,
         false);
-}
-
+}*/
 
 
 void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
