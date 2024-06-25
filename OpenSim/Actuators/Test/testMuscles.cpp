@@ -45,6 +45,7 @@
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Auxiliary/auxiliaryTestMuscleFunctions.h>
 
+// extra comment
 using namespace OpenSim;
 using namespace std;
 
