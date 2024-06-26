@@ -571,15 +571,19 @@ void testBoundsCheck() {
     states.append(state);
     states.append(state);
 
-    #ifdef NDEBUG
-        // In DEBUG, Visual Studio puts asserts into the index operator.
-        states[states.getSize() + 100];
-        states[4];
-        states[5];
+    //#ifdef NDEBUG
+    //    // In DEBUG, Visual Studio puts asserts into the index operator.
+    //    states[states.getSize() + 100];
+    //    states[4];
+    //    states[5];
+    //#endif
+
+    // SimTK::Array_<> only throws exceptions when in a DEBUG build
+    #ifdef DEBUG
+        SimTK_TEST_MUST_THROW_EXC(states.get(4), IndexOutOfRange);
+        SimTK_TEST_MUST_THROW_EXC(states.get(states.getSize() + 100),
+                                  IndexOutOfRange);
     #endif
-    SimTK_TEST_MUST_THROW_EXC(states.get(4), IndexOutOfRange);
-    SimTK_TEST_MUST_THROW_EXC(states.get(states.getSize() + 100),
-                              IndexOutOfRange);
 }
 
 void testIntegrityChecks() {
