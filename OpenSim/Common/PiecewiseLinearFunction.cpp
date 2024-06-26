@@ -313,7 +313,7 @@ void PiecewiseLinearFunction::updateFromXMLNode(SimTK::Xml::Element& aNode, int 
 {
     Function::updateFromXMLNode(aNode, versionNumber);
     calcCoefficients();
-}   
+}
 
 double PiecewiseLinearFunction::getX(int aIndex) const
 {
@@ -414,11 +414,15 @@ int PiecewiseLinearFunction::addPoint(double aX, double aY)
 void PiecewiseLinearFunction::calcCoefficients()
 {
    int n = _x.getSize();
+   if (n == 0) return;
 
-   if (n < 2)
-      return;
-
+   // The coefficient array _b must be the same size as _x and _y.
+   // Also, it should be inititlized to 0 when the size is 1.
    _b.setSize(n);
+   if (n == 1) {
+       _b[0] = 0.0;
+      return;
+   }
 
     for (int i=0; i<n-1; i++) {
         double range = MAX(TINY_NUMBER, _x[i+1] - _x[i]);

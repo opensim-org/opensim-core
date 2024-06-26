@@ -380,7 +380,9 @@ void MocoTrajectory::insertStatesTrajectory(
     const auto& labelsToInsert = subsetOfStates.getColumnLabels();
     for (const auto& label : labelsToInsert) {
         auto it = find(m_state_names, label);
-        if (it == m_state_names.cend()) { m_state_names.push_back(label); }
+        if (it == m_state_names.cend()) { 
+            m_state_names.push_back(label); 
+        }
     }
 
     m_states.resizeKeep(getNumTimes(), (int)m_state_names.size());
@@ -1305,7 +1307,12 @@ void MocoTrajectory::randomize(bool add, const SimTK::Random& randGen) {
                 i, statesTime, controlsTime);
     }
 
-    // TODO Support controlsTrajectory being empty.
+    // If the controls trajectory has no columns, create an empty vector for the
+    // control names.
+    std::vector<std::string> controlNames = 
+            controlsTrajectory.getNumColumns() > 0
+            ? controlsTrajectory.getColumnLabels()
+            : std::vector<std::string>();
 
     const auto& statesTimes = statesTrajectory.getIndependentColumn();
     // The "true" means to not copy the data.
@@ -1314,8 +1321,8 @@ void MocoTrajectory::randomize(bool add, const SimTK::Random& randGen) {
     // TODO MocoProblem should be able to produce a MocoTrajectory template;
     // it's what knows the state, control, and parameter names.
     return MocoTrajectory(time, statesTrajectory.getColumnLabels(),
-            controlsTrajectory.getColumnLabels(), {}, // TODO (multiplier_names)
-            {},                                       // TODO (parameter_names)
+            controlNames, {}, // TODO (multiplier_names)
+            {},               // TODO (parameter_names)
             statesTrajectory.getMatrix(), controlsTrajectory.getMatrix(),
             SimTK::Matrix(0, 0),  // TODO (multipliersTrajectory)
             SimTK::RowVector(0)); // TODO (parameters)

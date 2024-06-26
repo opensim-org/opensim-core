@@ -153,6 +153,7 @@ classdef osimMocoTrajectoryReport < handle
             self.plotNormalizedTendonForces();
             self.plotAuxiliaryDerivatives();
             self.plotControls();
+            self.plotInputControls();
             self.plotMultipliers();
             self.plotParameters();
             [status, ~] = system(sprintf('ps2pdf %s %s', self.output_ps, self.output));
@@ -364,6 +365,31 @@ classdef osimMocoTrajectoryReport < handle
             end
             self.plotVariables('control', map, lsMap, labelMap);
         end
+        function plotInputControls(self)
+            map = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            lsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            labelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            
+            names = self.trajectory.getInputControlNames();
+            for ic = 0:(names.size() - 1)
+                name = char(names.get(ic));
+                title = name;
+                if self.bilateral
+                    [title, lsMap] = self.bilateralize(title, lsMap);
+                else
+                    if ~lsMap.isKey(title)
+                        lsMap(title) = {};
+                    end
+                    lsMap(title) = [lsMap(title), {'-'}];
+                end
+                if ~map.isKey(title)
+                    map(title) = {};
+                end
+                map(title) = [map(title), name];
+                labelMap(title) = '';
+            end
+            self.plotVariables('input_control', map, lsMap, labelMap);
+        end
         function plotMultipliers(self)
             map = containers.Map('KeyType', 'char', 'ValueType', 'any');
             lsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
@@ -542,6 +568,8 @@ classdef osimMocoTrajectoryReport < handle
                 var = self.trajectory.getStateMat(path);
             elseif strcmp(type, 'control')
                 var = self.trajectory.getControlMat(path);
+            elseif strcmp(type, 'input_control')
+                var = self.trajectory.getInputControlMat(path);
             elseif strcmp(type, 'multiplier')
                 var = self.trajectory.getMultiplierMat(path);
             elseif strcmp(type, 'derivative')
