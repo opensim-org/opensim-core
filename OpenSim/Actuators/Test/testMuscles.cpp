@@ -72,35 +72,117 @@ static const double Activation0     = 0.01,
                     ShutteDelpActivation1 = 7.6,    
                     ShutteDelpActivation2 = 2.5;
 
-/*
-This function completes a controlled activation, controlled stretch simulation 
-of a muscle. After the simulation has completed, the results can be 
-tested in a number of different ways to ensure that the muscle model is 
-functioning
+// Helper functions for tests
 
-@param aMuscle  a path actuator
-@param startX   the starting position of the muscle anchor. I have no idea
-                why this value is included.
-@param act0     the initial activation of the muscle
-@param motion   the forced stretch of the simulation
-@param control  the activation control signal that is applied to the muscle
-@param printResults print the osim model associated with this test.
+/**
+    This function is a simulateMuscle helper that tests for muscle equilibrium,
+    i.e. that the muscle and tendon forces are equal at every state.
+    Muscle models that are not equilibrium-based are ignored.
+
+    @param model    the model with the muscles to test
+    @param statesStore  the set of states
 */
-void simulateMuscle(const Muscle &aMuscle, 
-                    double startX, 
-                    double act0, 
-                    const Function *motion, 
-                    const Function *control, 
-                    bool printResults);
+void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
+{
+    // Get the muscle to test
+    const Muscle& muscle = model.getMuscles()[0];
 
-// simulateMuscle helper
-void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore);
+    if (dynamic_cast<const Millard2012AccelerationMuscle*>(&muscle)) {
+        // Millard2012AccelerationMuscle is not an Equilibrium-based Muscle
+        return;
+    }
+
+    // Load input data as StatesTrajectory used to perform the Analysis
+    auto statesTraj = StatesTrajectory::createFromStatesStorage(
+        model, statesStore, true, false);
+    size_t nstates = statesTraj.getSize();
+
+    // muscle active, passive, total muscle and tendon force quantities
+    double af, pf, mf, tf, nfl, fv;
+    af = pf = mf = tf = nfl = fv = SimTK::NaN;
+
+    // Tolerance for muscle equilibrium solution
+    const double equilTol = muscle.getMaxIsometricForce()*SimTK::SqrtEps;
+
+    // The maximum acceptable change in force between two contiguous states
+    const double maxDelta = muscle.getMaxIsometricForce() / 10;
+
+    const int N = 20;
+    const double minActivation = muscle.getMinControl();
+    const double dAct = (1.0 - minActivation) / N;
+    double activation = 0;
+
+    SimTK::State s = model.getWorkingState();
+    // Independently compute the active fiber force at every state
+    for (size_t i = 0; i < nstates; ++i) {
+        s = statesTraj[i];
+
+        // test a full sweep of default activations at each state
+        for (int j = 0; j <= N; ++j) {
+            activation = minActivation + j*dAct;
+            muscle.setActivation(s, activation);
+
+            try {
+                muscle.computeEquilibrium(s);
+            }
+            catch (const MuscleCannotEquilibrate&) {
+                // Write out the muscle equilibrium error as a function of
+                // fiber lengths.
+                if (const auto* thelen =
+                    dynamic_cast<const Thelen2003Muscle*>(&muscle)) {
+                    thelen->printCurveToCSVFile(
+                        Thelen2003Muscle::CurveType::FiberForceVelocity, "");
+                    reportTendonAndFiberForcesAcrossFiberLengths(*thelen, s);
+                }
+                else if (const auto* millard =
+                    dynamic_cast<const Millard2012EquilibriumMuscle*>(&muscle)) {
+                    reportTendonAndFiberForcesAcrossFiberLengths(*millard, s);
+                }
+
+                throw;
+            }
+
+            model.realizeDynamics(s);
+
+            // Get the fiber-length
+            nfl = muscle.getNormalizedFiberLength(s);
+
+            SimTK_ASSERT_ALWAYS(nfl >= 0.0,
+                "Equilibrium failed to compute valid fiber length.");
+
+            // get active and passive forces given the default activation
+            af = muscle.getActiveFiberForceAlongTendon(s);
+            pf = muscle.getPassiveFiberForceAlongTendon(s);
+            // now the total muscle force is the active + passive
+            mf = af + pf;
+            tf = muscle.getTendonForce(s);
+
+            // equilibrium demands tendon and muscle fiber forces are equivalent
+            ASSERT_EQUAL<double>(tf, mf, equilTol,
+                __FILE__, __LINE__, "testMuscleEquilibriumSolve(): " +
+                muscle.getConcreteClassName() +
+                " failed to solve for muscle (fiber) and tendon equilibrium. ");
+        }
+    }
+}
 
 
-/*==============================================================================  
-    Main test driver to be used on any muscle model (derived from Muscle) so new 
-    cases should be easy to add currently, the test only verifies that the work 
-    done by the muscle corresponds to the change in system energy.
+/**=============================================================================
+     Main test driver to be used on any muscle model (derived from Muscle) so
+     new cases should be easy to add. This function completes a controlled
+     activation, controlled stretch simulation of a muscle. After the simulation
+     has completed, the results can be tested in a number of different ways to
+     ensure that the muscle model is functioning. Currently, the test only
+     verifies that the work done by the muscle corresponds to the change in
+     system energy.
+
+    @param aMuscModel  a path actuator
+    @param startX   the starting position of the muscle anchor. I have no idea
+                    why this value is included.
+    @param act0     the initial activation of the muscle
+    @param motion   the forced stretch of the simulation
+    @param control  the activation control signal that is applied to the muscle
+    @param printResults print the osim model associated with this test.
 ================================================================================
 */
 void simulateMuscle(
@@ -469,33 +551,6 @@ TEST_CASE("testRigidTendonMuscle") {
         &control, 
         false);
 }
-
-// old test case
-/*TEST_CASE("testThelen2003Muscle_Deprecated")
-{
-    Thelen2003Muscle_Deprecated muscle("muscle",
-                                        MaxIsometricForce0,
-                                        OptimalFiberLength0,
-                                        TendonSlackLength0,
-                                        PennationAngle0);
-
-    muscle.setActivationTimeConstant(Activation0);
-    muscle.setDeactivationTimeConstant(Deactivation0);
-
-    double x0 = 0;
-    double act0 = 0.2;
-
-    Constant control(0.5);
-
-    Sine motion(0.1, SimTK::Pi, 0);
-
-    simulateMuscle( muscle, 
-                    x0, 
-                    act0, 
-                    NULL, 
-                    &control, 
-                    false);
-}*/
 
 TEST_CASE("testThelen2003Muscle")
 {
@@ -940,7 +995,32 @@ TEST_CASE("testDeGrooteFregly2016Muscle") {
         false);
 }
 
-//old test case
+/*TEST_CASE("testThelen2003Muscle_Deprecated")
+{
+    Thelen2003Muscle_Deprecated muscle("muscle",
+                                        MaxIsometricForce0,
+                                        OptimalFiberLength0,
+                                        TendonSlackLength0,
+                                        PennationAngle0);
+
+    muscle.setActivationTimeConstant(Activation0);
+    muscle.setDeactivationTimeConstant(Deactivation0);
+
+    double x0 = 0;
+    double act0 = 0.2;
+
+    Constant control(0.5);
+
+    Sine motion(0.1, SimTK::Pi, 0);
+
+    simulateMuscle( muscle,
+                    x0,
+                    act0,
+                    NULL,
+                    &control,
+                    false);
+}*/
+
 /*TEST_CASE("testSchutte1993Muscle")
 {
     Schutte1993Muscle_Deprecated muscle("muscle",
@@ -968,7 +1048,6 @@ TEST_CASE("testDeGrooteFregly2016Muscle") {
 
 }*/
 
-// old test case
 /*TEST_CASE("testDelp1990Muscle")
 {
     Delp1990Muscle_Deprecated muscle("muscle",
@@ -997,86 +1076,4 @@ TEST_CASE("testDeGrooteFregly2016Muscle") {
 }*/
 
 
-void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
-{
-    // Get the muscle to test
-    const Muscle& muscle = model.getMuscles()[0];
 
-    if (dynamic_cast<const Millard2012AccelerationMuscle*>(&muscle)) {
-        // Millard2012AccelerationMuscle is not an Equilibrium-based Muscle
-        return;
-    }
-
-    // Load input data as StatesTrajectory used to perform the Analysis
-    auto statesTraj = StatesTrajectory::createFromStatesStorage(
-        model, statesStore, true, false);
-    size_t nstates = statesTraj.getSize();
-
-    // muscle active, passive, total muscle and tendon force quantities
-    double af, pf, mf, tf, nfl, fv;
-    af = pf = mf = tf = nfl = fv = SimTK::NaN;
-
-    // Tolerance for muscle equilibrium solution 
-    const double equilTol = muscle.getMaxIsometricForce()*SimTK::SqrtEps;
-
-    // The maximum acceptable change in force between two contiguous states
-    const double maxDelta = muscle.getMaxIsometricForce() / 10;
-
-    const int N = 20;
-    const double minActivation = muscle.getMinControl();
-    const double dAct = (1.0 - minActivation) / N;
-    double activation = 0;
-
-    SimTK::State s = model.getWorkingState();
-    // Independently compute the active fiber force at every state
-    for (size_t i = 0; i < nstates; ++i) {
-        s = statesTraj[i];
-
-        // test a full sweep of default activations at each state
-        for (int j = 0; j <= N; ++j) {
-            activation = minActivation + j*dAct;
-            muscle.setActivation(s, activation);
-
-            try {
-                muscle.computeEquilibrium(s);
-            }
-            catch (const MuscleCannotEquilibrate&) {
-                // Write out the muscle equilibrium error as a function of
-                // fiber lengths.
-                if (const auto* thelen =
-                    dynamic_cast<const Thelen2003Muscle*>(&muscle)) {
-                    thelen->printCurveToCSVFile(
-                        Thelen2003Muscle::CurveType::FiberForceVelocity, "");
-                    reportTendonAndFiberForcesAcrossFiberLengths(*thelen, s);
-                }
-                else if (const auto* millard =
-                    dynamic_cast<const Millard2012EquilibriumMuscle*>(&muscle)) {
-                    reportTendonAndFiberForcesAcrossFiberLengths(*millard, s);
-                }
-
-                throw;
-            }
-
-            model.realizeDynamics(s);
-
-            // Get the fiber-length
-            nfl = muscle.getNormalizedFiberLength(s);
-
-            SimTK_ASSERT_ALWAYS(nfl >= 0.0, 
-                "Equilibrium failed to compute valid fiber length.");
-
-            // get active and passive forces given the default activation
-            af = muscle.getActiveFiberForceAlongTendon(s);
-            pf = muscle.getPassiveFiberForceAlongTendon(s);
-            // now the total muscle force is the active + passive
-            mf = af + pf;
-            tf = muscle.getTendonForce(s);
-
-            // equilibrium demands tendon and muscle fiber forces are equivalent
-            ASSERT_EQUAL<double>(tf, mf, equilTol,
-                __FILE__, __LINE__, "testMuscleEquilibriumSolve(): " +
-                muscle.getConcreteClassName() + 
-                " failed to solve for muscle (fiber) and tendon equilibrium. ");
-        }
-    }
-}
