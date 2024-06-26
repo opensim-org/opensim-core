@@ -67,13 +67,13 @@ void testPopulateTrajectoryAndStatesTrajectoryReporter() {
         const double finalTime = 0.05;
     {
         auto& state = model.initSystem();
-    
+
         SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
         SimTK::TimeStepper ts(model.getSystem(), integrator);
         ts.initialize(state);
         ts.setReportAllSignificantStates(true);
         integrator.setReturnEveryInternalStep(true);
-    
+
         StatesTrajectory states;
         std::vector<double> times;
         while (ts.getState().getTime() < finalTime) {
@@ -84,7 +84,7 @@ void testPopulateTrajectoryAndStatesTrajectoryReporter() {
             // For the StatesTrajectoryReporter:
             model.getMultibodySystem().realize(ts.getState(), SimTK::Stage::Report);
         }
-    
+
         // Make sure we have all the states
         SimTK_TEST_EQ((int)states.getSize(), (int)times.size());
         SimTK_TEST_EQ((int)statesCol->getStates().getSize(), (int)times.size());
@@ -149,7 +149,7 @@ void createStateStorageFile() {
     // histories.
     auto* controller = new PrescribedController();
     // For consistent results, use same seed each time.
-    std::default_random_engine generator(0); 
+    std::default_random_engine generator(0);
     // Uniform distribution between 0.1 and 0.9.
     std::uniform_real_distribution<double> distribution(0.1, 0.8);
 
@@ -399,7 +399,7 @@ void testFromStatesStorageUniqueColumnLabels() {
 
     Model model("gait2354_simbody.osim");
     Storage sto(statesStoFname);
-    
+
     // Edit column labels so that they are not unique.
     auto labels = sto.getColumnLabels();
     labels[10] = labels[7];
@@ -478,7 +478,7 @@ void testFromStatesStoragePre40CorrectStates() {
 
             // Fiber length.
             SimTK_TEST_EQ(
-                    getStorageEntry(sto, itime, muscleName + ".fiber_length"), 
+                    getStorageEntry(sto, itime, muscleName + ".fiber_length"),
                     muscle.getFiberLength(state));
 
             // More complicated computation based on state.
@@ -570,7 +570,7 @@ void testBoundsCheck() {
     states.append(state);
     states.append(state);
     states.append(state);
-    
+
     #ifdef NDEBUG
         // In DEBUG, Visual Studio puts asserts into the index operator.
         states[states.getSize() + 100];
@@ -676,7 +676,7 @@ void testIntegrityChecks() {
     }
 
     // TODO Show weakness of the test: two models with the same number of Q's, U's,
-    // and Z's both pass the check. 
+    // and Z's both pass the check.
 }
 
 void tableAndTrajectoryMatch(const Model& model,
