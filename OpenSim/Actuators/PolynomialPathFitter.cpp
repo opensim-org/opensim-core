@@ -432,10 +432,10 @@ void PolynomialPathFitter::run() {
     log_info("");
     log_info("Printing the sampled path lengths to '{}'...",
             pathLengthsSampledFileName);
-    STOFileAdapter::write(pathLengths, pathLengthsSampledFileName);
+    STOFileAdapter::write(pathLengthsSampled, pathLengthsSampledFileName);
     log_info("Printing the sampled moment arms to '{}'...",
             momentArmsSampledFileName);
-    STOFileAdapter::write(momentArms, momentArmsSampledFileName);
+    STOFileAdapter::write(momentArmsSampled, momentArmsSampledFileName);
 
     // Print the fitted path lengths and moment arms using the original
     // coordinate data to file.
