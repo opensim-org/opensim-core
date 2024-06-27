@@ -245,7 +245,7 @@ formDiscreteElement(const Model& model, const Array_<State>& traj) {
     for (int i = 0; i < n; ++i) {
         // Get a single discrete variable so that its type can be discerned
         const AbstractValue &v =
-            model.getDiscreteVariableAbstractValue(traj[0],paths[i]);
+            model.getDiscreteVariableAbstractValue(traj[0], paths[i]);
 
         // Append the vector according to type
         if (SimTK::Value<bool>::isA(v)) {
