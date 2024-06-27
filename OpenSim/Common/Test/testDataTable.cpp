@@ -918,3 +918,70 @@ TEST_CASE("TableUtilities::resample") {
         CHECK(column[5] == Approx(0.0).margin(1e-10));
     }
 }
+
+TEST_CASE("TimeSeriesTable trimming tests") {
+    // make time table
+    TimeSeriesTable_<double> table{};
+    table.appendRow(1, {10});
+    table.appendRow(2, {20});
+    table.appendRow(2.5, {30});
+    table.appendRow(3, {40});
+
+    SECTION("test trim") {
+        // test trimming is inclusive
+        table.trim(1, 3);
+        CHECK(table.getNumRows() == 4);
+        // can't trim to an empty table
+        SimTK_TEST_MUST_THROW(table.trim(1.1, 1.4));
+        CHECK(table.getNumRows() == 4);  // table should be unchanged
+        // trim off the end is ok
+        table.trim(2, 6);
+        CHECK(table.getNumRows() == 3);
+        CHECK(table.getRowAtIndex(0)[0] == 20);
+    }
+
+    SECTION("test trimTo") {
+        // test normal trim
+        table.trimTo(2.3);
+        CHECK(table.getNumRows() == 2);
+        CHECK(table.getRowAtIndex(0)[0] == 10);
+        CHECK(table.getRowAtIndex(1)[0] == 20);
+        // test empty
+        SimTK_TEST_MUST_THROW(table.trimTo(0));
+        // test 1
+        table.trimTo(1);
+        CHECK(table.getNumRows() == 1);
+    }
+
+    SECTION("test trimFrom") {
+        // test normal
+        table.trimFrom(2);
+        CHECK(table.getNumRows() == 3);
+        CHECK(table.getRowAtIndex(0)[0] == 20);
+        CHECK(table.getRowAtIndex(2)[0] == 40);
+        // test empty
+        SimTK_TEST_MUST_THROW(table.trimFrom(3.1));
+        // test 1
+        table.trimFrom(3);
+        CHECK(table.getNumRows() == 1);
+    }
+
+    SECTION("test trimToIndices") {
+        // test empty
+        SimTK_TEST_MUST_THROW(table.trimToIndices(2, 1));
+        // normal
+        table.trimToIndices(1,2);
+        CHECK(table.getNumRows() == 2);
+        CHECK(table.getRowAtIndex(0)[0] == 20);
+        CHECK(table.getRowAtIndex(1)[0] == 30);
+        // out of range indices
+        SimTK_TEST_MUST_THROW(table.trimToIndices(0, 5));
+        CHECK(table.getNumRows() == 2);
+        // trim to 1
+        table.trimToIndices(1, 1);
+        CHECK(table.getNumRows() == 1);
+        // trim that doesn't change table
+        table.trimToIndices(0, 0);
+        CHECK(table.getNumRows() == 1);
+    }
+}
