@@ -133,9 +133,16 @@ class InvalidIndices : public Exception {
 public:
     InvalidIndices(const std::string& file,
                    size_t line,
-                   const std::string& func) :
+                   const std::string& func,
+                   const size_t index,
+                   const size_t min,
+                   const size_t max) :
         Exception(file, line, func) {
-        addMessage("last_index is out of bounds.");
+        std::string msg = "Index " + std::to_string(index)
+            + " is out of bounds [" + std::to_string(min)
+            + ", " + std::to_string(max) + "].";
+
+        addMessage(msg);
     }
 };
 
@@ -444,8 +451,8 @@ public:
         return row;
     }
     /**
-     * Trim TimeSeriesTable to rows that have times that lies between newStartTime,
-     * newFinalTime inclusive. The trimming is done in place, no copy is made.
+     * Trim TimeSeriesTable to rows that have times that lies between newStartTime
+     * and newFinalTime (inclusive). The trimming is done in place, no copy is made.
      * Uses getRowIndexAfterTime to locate first row and
      *      getRowIndexBeforeTime to locate last row.
      * \throws EmptyTable if the trim would make the table empty.
@@ -478,13 +485,14 @@ public:
         this->trim(this->getIndependentColumn().front(), newFinalTime);
     }
     /**
-     * trim table to rows between start_index and last_index inclusively
+     * Trim table to rows between start_index and last_index (inclusive).
      * \throws InvalidIndices if the last index is out of range.
      * \throws EmptyTable if the trim would make the table empty.
      */
     void trimToIndices(const size_t& start_index, const size_t& last_index) {
         // Error if last_index is out of bounds
-        OPENSIM_THROW_IF(last_index > this->getNumRows() - 1, InvalidIndices);
+        OPENSIM_THROW_IF(last_index > this->getNumRows() - 1, InvalidIndices,
+            last_index, 0, this->getNumRows()-1);
         // Make sure last_index >= start_index before attempting to trim
         OPENSIM_THROW_IF(last_index < start_index, EmptyTable);
 

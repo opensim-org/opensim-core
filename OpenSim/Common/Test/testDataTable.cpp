@@ -919,7 +919,7 @@ TEST_CASE("TableUtilities::resample") {
     }
 }
 
-TEST_CASE("TimeSeriesTable trimming tests") {
+TEST_CASE("TimeSeriesTable trim methods") {
     // make time table
     TimeSeriesTable_<double> table{};
     table.appendRow(1, {10});
@@ -976,6 +976,8 @@ TEST_CASE("TimeSeriesTable trimming tests") {
         CHECK(table.getRowAtIndex(1)[0] == 30);
         // out of range indices
         SimTK_TEST_MUST_THROW(table.trimToIndices(0, 5));
+        CHECK(table.getNumRows() == 2);
+        SimTK_TEST_MUST_THROW(table.trimToIndices(-1, 1));
         CHECK(table.getNumRows() == 2);
         // trim to 1
         table.trimToIndices(1, 1);
