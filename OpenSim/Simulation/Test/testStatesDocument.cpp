@@ -32,6 +32,7 @@ using namespace SimTK;
 using namespace OpenSim;
 using std::cout;
 using std::endl;
+using std::string;
 
 
 // Internal static methods and classes.
@@ -49,91 +50,105 @@ class ExtendedPointToPointSpring : public PointToPointSpring {
     OpenSim_DECLARE_CONCRETE_OBJECT(ExtendedPointToPointSpring,
         PointToPointSpring);
 
+private:
+    // Names of discrete variables
+    string dvNameBool{"dvBool"};
+    string dvNameInt{"dvInt"};
+    string dvNameDbl{"dvDbl"};
+    string dvNameVec2{"dvVec2"};
+    string dvNameVec3{"dvVec3"};
+    string dvNameVec4{"dvVec4"};
+    string dvNameVec5{"dvVec5"};
+    string dvNameVec6{"dvVec6"};
+
 public:
     // No new properties
 
     // Constructor
     ExtendedPointToPointSpring(const PhysicalFrame& body1, SimTK::Vec3 point1,
         const PhysicalFrame& body2, SimTK::Vec3 point2,
-        double stiffness, double restlength) {}
-
-    void
-    extendConnectToModel(OpenSim::Model& model) {
-        Super::extendConnectToModel(model);
-
-        /*
-        // Find the OpenSim::Body
-        const string& bodyName = getBodyName();
-        if (getModel().hasComponent(bodyName))
-            _body = &(getModel().getComponent<PhysicalFrame>(bodyName));
-        else
-            _body = &(getModel().getComponent<PhysicalFrame>(
-                "./bodyset/" + bodyName));
-        */
-    }
+        double stiffness, double restlength) :
+        PointToPointSpring (body1, point1, body2, point2,
+            stiffness, restlength) {}
 
     void
     extendAddToSystem(SimTK::MultibodySystem& system) const {
         Super::extendAddToSystem(system);
 
-        /*
-        // Construct the SimTK::ExponentialContact object
-        SimTK::GeneralForceSubsystem& forces = _model->updForceSubsystem();
-        const SimTK::Transform& XContactPlane = get_contact_plane_transform();
-        const SimTK::Vec3& station = get_body_station();
-        SimTK::ExponentialSpringForce* spr =
-            new SimTK::ExponentialSpringForce(forces, XContactPlane,
-                _body->getMobilizedBody(), station, getParameters());
-
-        // Get the subsystem index so we can access the SimTK::Force later.
-        ExponentialContact* mutableThis =
-            const_cast<ExponentialContact *>(this);
-        mutableThis->_spr = spr;
-        mutableThis->_index = spr->getForceIndex();
-
-        // Expose the discrete states of ExponentialSpringForce in OpenSim
         bool allocate = false;
-        std::string name = getMuStaticDiscreteStateName();
-        addDiscreteVariable(name, SimTK::Stage::Dynamics, allocate);
-        name = getMuKineticDiscreteStateName();
-        addDiscreteVariable(name, SimTK::Stage::Dynamics, allocate);
-        name = getSlidingDiscreteStateName();
-        addDiscreteVariable(name, SimTK::Stage::Dynamics, allocate);
-        name = getAnchorPointDiscreteStateName();
-        addDiscreteVariable(name, SimTK::Stage::Dynamics, allocate);
-        */
+        addDiscreteVariable(dvNameBool, Stage::Position, allocate);
+        addDiscreteVariable(dvNameInt, Stage::Position, allocate);
+        addDiscreteVariable(dvNameDbl, Stage::Position, allocate);
+        addDiscreteVariable(dvNameVec2, Stage::Position, allocate);
+        addDiscreteVariable(dvNameVec3, Stage::Position, allocate);
+        addDiscreteVariable(dvNameVec4, Stage::Position, allocate);
+        addDiscreteVariable(dvNameVec5, Stage::Position, allocate);
+        addDiscreteVariable(dvNameVec6, Stage::Position, allocate);
     }
 
     void
-    extendRealizeTopology(SimTK::State& state) const {
+    extendRealizeTopology(SimTK::State& state) const override {
         Super::extendRealizeTopology(state);
 
-        /*
-        const SimTK::Subsystem* subsys = getSubsystem();
-        SimTK::DiscreteVariableIndex index;
-        std::string name;
+        const DefaultSystemSubsystem& sub = getModel().getDefaultSubsystem();
+        SimTK::SubsystemIndex ssIndex = sub.getMySubsystemIndex();
+        SimTK::DiscreteVariableIndex dvIndex;
 
-        name = getMuStaticDiscreteStateName();
-        index = _spr->getMuStaticStateIndex();
-        updDiscreteVariableIndex(name, index, subsys);
+        // Bool
+        bool dvBool{false};
+        dvIndex = sub.allocateDiscreteVariable(state,
+            Stage::Position, new Value<bool>(dvBool));
+        initializeDiscreteVariableIndexes(dvNameBool, ssIndex, dvIndex);
 
-        name = getMuKineticDiscreteStateName();
-        index = _spr->getMuKineticStateIndex();
-        updDiscreteVariableIndex(name, index, subsys);
+        // Int
+        int dvInt{0};
+        dvIndex = sub.allocateDiscreteVariable(state,
+            Stage::Position, new Value<int>(dvInt));
+        initializeDiscreteVariableIndexes(dvNameInt, ssIndex, dvIndex);
 
-        name = getSlidingDiscreteStateName();
-        index = _spr->getSlidingStateIndex();
-        updDiscreteVariableIndex(name, index, subsys);
+        // Dbl
+        double dvDbl{0.0};
+        dvIndex = sub.allocateDiscreteVariable(state,
+            Stage::Position, new Value<double>(dvDbl));
+        initializeDiscreteVariableIndexes(dvNameDbl, ssIndex, dvIndex);
 
-        name = getAnchorPointDiscreteStateName();
-        index = _spr->getAnchorPointStateIndex();
-        updDiscreteVariableIndex(name, index, subsys);
-        */
+        // Vec2
+        Vec2 dvVec2(0.1, 0.2);
+        dvIndex = sub.allocateDiscreteVariable(state,
+            Stage::Position, new Value<Vec2>(dvVec2));
+        initializeDiscreteVariableIndexes(dvNameVec2, ssIndex, dvIndex);
+
+        // Vec3
+        Vec3 dvVec3(0.1, 0.2, 0.3);
+        dvIndex = sub.allocateDiscreteVariable(state,
+            Stage::Position, new Value<Vec3>(dvVec3));
+        initializeDiscreteVariableIndexes(dvNameVec3, ssIndex, dvIndex);
+
+        // Vec4
+        Vec4 dvVec4(0.1, 0.2, 0.3, 0.4);
+        dvIndex = sub.allocateDiscreteVariable(state,
+            Stage::Position, new Value<Vec4>(dvVec4));
+        initializeDiscreteVariableIndexes(dvNameVec4, ssIndex, dvIndex);
+
+        // Vec5
+        Vec5 dvVec5(0.1, 0.2, 0.3, 0.4, 0.5);
+        dvIndex = sub.allocateDiscreteVariable(state,
+            Stage::Position, new Value<Vec5>(dvVec5));
+        initializeDiscreteVariableIndexes(dvNameVec5, ssIndex, dvIndex);
+
+        // Vec6
+        Vec6 dvVec6(0.1, 0.2, 0.3, 0.4, 0.5, 0.6);
+        dvIndex = sub.allocateDiscreteVariable(state,
+            Stage::Position, new Value<Vec6>(dvVec6));
+        initializeDiscreteVariableIndexes(dvNameVec6, ssIndex, dvIndex);
     }
 
 }; // End of class ExtendedPointToPointSpring
 
 
+//-----------------------------------------------------------------------------
+// Other Local Static Methods
+//-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 // Sample internal method
 double
@@ -497,7 +512,7 @@ TEST_CASE("Serialization and Deserialization")
 
     // Serialize (A)
     int precision = 6;
-    SimTK::String filename = "BlockOnAString.ostates";
+    SimTK::String filename = "BlockOnASpring.ostates";
     StatesDocument docA(*model, trajA, precision);
     docA.serialize(filename);
 
