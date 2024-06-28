@@ -82,7 +82,7 @@ class TestMocoSlidingMass {
     // =====================
     if (MocoCasADiSolver.isAvailable()) {
       MocoCasADiSolver ms = study.initCasADiSolver();
-      ms.set_num_mesh_intervals(100);
+      ms.set_num_mesh_intervals(50);
 
       // Now that we've finished setting up the tool, print it to a file.
       study.print("sliding_mass.omoco");

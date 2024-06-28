@@ -54,18 +54,17 @@ DM LegendreGauss::createMeshIndicesImpl() const {
     return indices;
 }
 
-void LegendreGauss::calcDefectsImpl(const casadi::MX& x,
-        const casadi::MX& xdot, casadi::MX& defects) const {
+void LegendreGauss::calcDefectsImpl(const casadi::MXVector& x,
+        const casadi::MXVector& xdot, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
     const int NS = m_problem.getNumStates();
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         const int igrid = imesh * (m_degree + 1);
         const auto h = m_times(igrid + m_degree + 1) - m_times(igrid);
-        const auto x_i = x(Slice(), Slice(igrid, igrid + m_degree + 1));
-        const auto xdot_i = xdot(Slice(),
-                Slice(igrid + 1, igrid + m_degree + 1));
-        const auto x_ip1 = x(Slice(), igrid + m_degree + 1);
+        const auto x_i = x[imesh](Slice(), Slice(0, m_degree + 1));
+        const auto xdot_i = xdot[imesh](Slice(), Slice(1, m_degree + 1));
+        const auto x_ip1 = x[imesh](Slice(), m_degree + 1);
 
         // Residual function defects.
         MX residual = h * xdot_i - MX::mtimes(x_i, m_differentiationMatrix);
@@ -82,7 +81,7 @@ void LegendreGauss::calcDefectsImpl(const casadi::MX& x,
 void LegendreGauss::calcInterpolatingControlsImpl(
         const casadi::MX& controls, casadi::MX& interpControls) const {
     if (m_problem.getNumControls() &&
-            m_solver.getInterpolateControlMidpoints()) {
+            m_solver.getInterpolateControlMeshInteriorPoints()) {
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             const int igrid = imesh * (m_degree + 1);
             const auto c_i = controls(Slice(), igrid);
