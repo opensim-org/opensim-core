@@ -21,16 +21,20 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "Millard2012EquilibriumMuscle.h"
+
+#include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
-const string Millard2012EquilibriumMuscle::
-    STATE_ACTIVATION_NAME = "activation";
-const string Millard2012EquilibriumMuscle::
-    STATE_FIBER_LENGTH_NAME = "fiber_length";
+// The name used to access the activation state.
+static const OpenSim::ComponentPath s_StateActivationName{"activation"};
+
+// The name used to access the fiber length state.
+static const OpenSim::ComponentPath s_StateFiberLengthName{"fiber_length"};
+
 const double MIN_NONZERO_DAMPING_COEFFICIENT = 0.001;
 
 static constexpr int MLIFiberForceLengthCurveDerivative  = 0;
@@ -685,7 +689,7 @@ setActivation(SimTK::State& s, double activation) const
         setControls(SimTK::Vector(1, activation), controls);
         _model->setControls(s, controls);
     } else {
-        setStateVariableValue(s, STATE_ACTIVATION_NAME,
+        setStateVariableValue(s, s_StateActivationName,
                               getActivationModel().clampActivation(activation));
     }
     markCacheVariableInvalid(s, _velInfoCV);
@@ -727,7 +731,7 @@ void Millard2012EquilibriumMuscle::
 setFiberLength(SimTK::State& s, double fiberLength) const
 {
     if (!get_ignore_tendon_compliance()) {
-        setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,
+        setStateVariableValue(s, s_StateFiberLengthName,
                               clampFiberLength(fiberLength));
         markCacheVariableInvalid(s, _lengthInfoCV);
         markCacheVariableInvalid(s, _velInfoCV);
@@ -847,7 +851,7 @@ void Millard2012EquilibriumMuscle::calcMuscleLengthInfo(const SimTK::State& s,
                                tendonSlackLen));
         } else {                                            // elastic tendon
             mli.fiberLength = clampFiberLength(
-                                getStateVariableValue(s, STATE_FIBER_LENGTH_NAME));
+                                getStateVariableValue(s, s_StateFiberLengthName));
         }
 
         mli.normFiberLength   = mli.fiberLength / optFiberLength;
@@ -1005,7 +1009,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 
             double a = get_ignore_activation_dynamics() ?
                            getControl(s) :
-                           getStateVariableValue(s, STATE_ACTIVATION_NAME);
+                           getStateVariableValue(s, s_StateActivationName);
             a = getActivationModel().clampActivation(a);
 
             SimTK_ERRCHK_ALWAYS(mli.cosPennationAngle > SimTK::SignificantReal,
@@ -1036,7 +1040,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 
             double a = get_ignore_activation_dynamics() ?
                            getControl(s) :
-                           getStateVariableValue(s, STATE_ACTIVATION_NAME);
+                           getStateVariableValue(s, s_StateActivationName);
             a = getActivationModel().clampActivation(a);
 
             double beta = get_fiber_damping();
@@ -1146,7 +1150,7 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         double a = SimTK::NaN;
         if(!get_ignore_activation_dynamics()) {
             a = getActivationModel().clampActivation(
-                    getStateVariableValue(s, STATE_ACTIVATION_NAME));
+                    getStateVariableValue(s, s_StateActivationName));
         } else {
             a = getActivationModel().clampActivation(getControl(s));
         }
@@ -1281,10 +1285,10 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
     Super::extendAddToSystem(system);
 
     if(!get_ignore_activation_dynamics()) {
-        addStateVariable(STATE_ACTIVATION_NAME);
+        addStateVariable(s_StateActivationName.toString());
     }
     if(!get_ignore_tendon_compliance()) {
-        addStateVariable(STATE_FIBER_LENGTH_NAME);
+        addStateVariable(s_StateFiberLengthName.toString());
     }
 }
 
@@ -1307,10 +1311,10 @@ extendSetPropertiesFromState(const SimTK::State& s)
     Super::extendSetPropertiesFromState(s);
 
     if(!get_ignore_activation_dynamics()) {
-        setDefaultActivation(getStateVariableValue(s,STATE_ACTIVATION_NAME));
+        setDefaultActivation(getStateVariableValue(s, s_StateActivationName));
     }
     if(!get_ignore_tendon_compliance()) {
-        setDefaultFiberLength(getStateVariableValue(s,STATE_FIBER_LENGTH_NAME));
+        setDefaultFiberLength(getStateVariableValue(s, s_StateFiberLengthName));
     }
 }
 
@@ -1324,7 +1328,7 @@ void Millard2012EquilibriumMuscle::
         if (appliesForce(s) && !isActuationOverridden(s)) {
             adot =getActivationDerivative(s);
         }
-        setStateVariableDerivativeValue(s, STATE_ACTIVATION_NAME, adot);
+        setStateVariableDerivativeValue(s, s_StateActivationName, adot);
     }
 
     // Fiber length is the next state (if it is a state at all)
@@ -1334,7 +1338,7 @@ void Millard2012EquilibriumMuscle::
         if (appliesForce(s) && !isActuationOverridden(s)) {
             ldot = getFiberVelocity(s);
         }
-        setStateVariableDerivativeValue(s, STATE_FIBER_LENGTH_NAME, ldot);
+        setStateVariableDerivativeValue(s, s_StateFiberLengthName, ldot);
     }
 }
 

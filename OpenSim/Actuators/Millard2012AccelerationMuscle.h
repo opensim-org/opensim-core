@@ -758,13 +758,6 @@ protected:
 
 
 private:
-    //The name used to access the activation state
-    static const std::string STATE_ACTIVATION_NAME;
-    //The name used to access the fiber length state
-    static const std::string STATE_FIBER_LENGTH_NAME;
-    //The name used to access the fiber velocity state
-    static const std::string STATE_FIBER_VELOCITY_NAME;
-
     //A struct that holds all of the necessary quantities to compute
     //the fiber and tendon force, acceleration, and stiffness
     struct AccelerationMuscleInfo;

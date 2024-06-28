@@ -554,11 +554,6 @@ protected:
     void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
 private:
-    // The name used to access the activation state.
-    static const std::string STATE_ACTIVATION_NAME;
-    // The name used to access the fiber length state.
-    static const std::string STATE_FIBER_LENGTH_NAME;
-
     // Indicates whether fiber damping is included in the model (false if
     // dampingCoefficient < 0.001).
     bool use_fiber_damping;

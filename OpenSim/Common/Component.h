@@ -777,6 +777,9 @@ public:
      * checks if `model` has a subcomponent "right_elbow," which has a
      * subcomponent "elbow_flexion." */
     bool hasComponent(const std::string& pathname) const {
+        return hasComponent<Component>(ComponentPath{pathname});
+    }
+    bool hasComponent(const ComponentPath& pathname) const {
         return hasComponent<Component>(pathname);
     }
 
@@ -791,9 +794,13 @@ public:
      * non-templatized hasComponent(). */
     template <class C = Component>
     bool hasComponent(const std::string& pathname) const {
+        return hasComponent<C>(OpenSim::ComponentPath{pathname});
+    }
+    template <class C = Component>
+    bool hasComponent(const ComponentPath& pathname) const {
         static_assert(std::is_base_of<Component, C>::value,
             "Template parameter 'C' must be derived from Component.");
-        const C* comp = this->template traversePathToComponent<C>({pathname});
+        const C* comp = this->template traversePathToComponent<C>(pathname);
         return comp != nullptr;
     }
 
@@ -1449,6 +1456,8 @@ public:
      */
     int getModelingOption(const SimTK::State& state,
         const std::string& path) const;
+    int getModelingOption(const SimTK::State& state,
+        const ComponentPath& path) const;
 
     /**
      * Based on a specified path, set the value of a modeling option.
@@ -1476,6 +1485,8 @@ public:
      * @see Component::resolveVariableNameAndOwner()
      */
     void setModelingOption(SimTK::State& state, const std::string& path,
+        int flag) const;
+    void setModelingOption(SimTK::State& state, const ComponentPath& path,
         int flag) const;
 
     /**
@@ -1566,6 +1577,7 @@ public:
      *         System (i.e., if initSystem has not been called)
      */
     void setStateVariableValue(SimTK::State& state, const std::string& name, double value) const;
+    void setStateVariableValue(SimTK::State& state, const ComponentPath& name, double value) const;
 
 
     /**
@@ -1610,6 +1622,8 @@ public:
      */
     double getStateVariableDerivativeValue(const SimTK::State& state,
         const std::string& name) const;
+    double getStateVariableDerivativeValue(const SimTK::State& state,
+        const ComponentPath& name) const;
 
     /**
     * Based on a specified path, resolve the name of a state variable,
@@ -1683,6 +1697,11 @@ public:
     double getDiscreteVariableValue(const SimTK::State& state,
         const std::string& path) const
     {
+        return getDiscreteVariableValue(state, ComponentPath{path});
+    }
+    double getDiscreteVariableValue(const SimTK::State& state,
+        const ComponentPath& path) const
+    {
         double value{SimTK::NaN};
         value = getDiscreteVariableValue<double>(state, path);
         return value;
@@ -1713,6 +1732,12 @@ public:
     template<class T>
     T getDiscreteVariableValue(const SimTK::State& state,
         const std::string& path) const
+    {
+        return getDiscreteVariableValue<T>(state, ComponentPath{path});
+    }
+    template<class T>
+    T getDiscreteVariableValue(const SimTK::State& state,
+        const ComponentPath& path) const
     {
         T value = SimTK::Value<T>::downcast(
             getDiscreteVariableAbstractValue(state, path));
@@ -1769,6 +1794,8 @@ public:
     */
     const SimTK::AbstractValue& getDiscreteVariableAbstractValue(
         const SimTK::State& state, const std::string& path) const;
+    const SimTK::AbstractValue& getDiscreteVariableAbstractValue(
+        const SimTK::State& state, const ComponentPath& path) const;
 
     /**
     * Based on a specified path, set the value of a discrete variable.
@@ -1794,6 +1821,11 @@ public:
     */
     void setDiscreteVariableValue(SimTK::State& state,
         const std::string& path, double value) const
+    {
+        setDiscreteVariableValue(state, ComponentPath{path}, value);
+    }
+    void setDiscreteVariableValue(SimTK::State& state,
+        const ComponentPath& path, double value) const
     {
         setDiscreteVariableValue<double>(state, path, value);
     }
@@ -1825,6 +1857,12 @@ public:
     */
     template <class T>
     void setDiscreteVariableValue(SimTK::State& state, const std::string& path,
+        const T& value) const
+    {
+        setDiscreteVariableValue<T>(state, ComponentPath{path}, value);
+    }
+    template <class T>
+    void setDiscreteVariableValue(SimTK::State& state, const ComponentPath& path,
         const T& value) const
     {
         SimTK::Value<T>::downcast(
@@ -1879,6 +1917,8 @@ public:
     */
     SimTK::AbstractValue& updDiscreteVariableAbstractValue(
         SimTK::State& state, const std::string& path) const;
+    SimTK::AbstractValue& updDiscreteVariableAbstractValue(
+        SimTK::State& state, const ComponentPath& path) const;
 
 
     /**
@@ -2410,6 +2450,13 @@ public:
         const SimTK::Array_<SimTK::State>& input,
         SimTK::Array_<T>& output) const
     {
+        return getStateVariableTrajectory<T>(ComponentPath{path}, input, output);
+    }
+    template<class T>
+    void getStateVariableTrajectory(const ComponentPath& path,
+        const SimTK::Array_<SimTK::State>& input,
+        SimTK::Array_<T>& output) const
+    {
         // Prepare the output Vector
         output.clear();
         int n = input.size();
@@ -2448,6 +2495,13 @@ public:
     in the candidate owner. */
     template<class T>
     void getDiscreteVariableTrajectory(const std::string& path,
+        const SimTK::Array_<SimTK::State>& input,
+        SimTK::Array_<T>& output) const
+    {
+        return getDiscreteVariableTrajectory<T>(ComponentPath{path}, input, output);
+    }
+    template<class T>
+    void getDiscreteVariableTrajectory(const ComponentPath& path,
         const SimTK::Array_<SimTK::State>& input,
         SimTK::Array_<T>& output) const
     {
@@ -2503,6 +2557,13 @@ public:
     */
     template<class T>
     void getModelingOptionTrajectory(const std::string& path,
+        const SimTK::Array_<SimTK::State>& input,
+        SimTK::Array_<T>& output) const
+    {
+        return getModelingOptionTrajectory<T>(ComponentPath{path}, input, output);
+    }
+    template<class T>
+    void getModelingOptionTrajectory(const ComponentPath& path,
         const SimTK::Array_<SimTK::State>& input,
         SimTK::Array_<T>& output) const
     {
@@ -2563,6 +2624,13 @@ public:
         const SimTK::Array_<T>& input,
         SimTK::Array_<SimTK::State>& output) const
     {
+        setStateVariableTrajectory<T>(ComponentPath{path}, input, output);
+    }
+    template<class T>
+    void setStateVariableTrajectory(const ComponentPath& path,
+        const SimTK::Array_<T>& input,
+        SimTK::Array_<SimTK::State>& output) const
+    {
         // Check that the input and output sizes are the same.
         // If not, throw an exception.
         int ni = input.size();
@@ -2604,6 +2672,13 @@ public:
     in the candidate owner. */
     template<class T>
     void setDiscreteVariableTrajectory(const std::string& path,
+        const SimTK::Array_<T>& input,
+        SimTK::Array_<SimTK::State>& output) const
+    {
+        setDiscreteVariableTrajectory<T>(ComponentPath{path}, input, output);
+    }
+    template<class T>
+    void setDiscreteVariableTrajectory(const ComponentPath& path,
         const SimTK::Array_<T>& input,
         SimTK::Array_<SimTK::State>& output) const
     {
@@ -2661,6 +2736,13 @@ public:
     in the candidate owner. */
     template<class T>
     void setModelingOptionTrajectory(const std::string& path,
+        const SimTK::Array_<T>& input,
+        SimTK::Array_<SimTK::State>& output) const
+    {
+        setModelingOptionTrajectory<T>(ComponentPath{path}, input, output);
+    }
+    template<class T>
+    void setModelingOptionTrajectory(const ComponentPath& path,
         const SimTK::Array_<T>& input,
         SimTK::Array_<SimTK::State>& output) const
     {
@@ -3108,7 +3190,8 @@ protected:
      */
     void setStateVariableDerivativeValue(const SimTK::State& state,
                             const std::string& name, double deriv) const;
-
+    void setStateVariableDerivativeValue(const SimTK::State& state,
+                            const ComponentPath& name, double deriv) const;
 
     // End of Component Extension Interface (protected virtuals).
     ///@}

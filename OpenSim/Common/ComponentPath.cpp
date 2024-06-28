@@ -24,7 +24,9 @@
 #include "ComponentPath.h"
 
 #include "Exception.h"
+
 #include <algorithm>
+#include <ostream>
 #include <sstream>
 
 using OpenSim::ComponentPath;

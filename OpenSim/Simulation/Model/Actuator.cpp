@@ -24,10 +24,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
 #include "Actuator.h"
-#include "OpenSim/Common/DebugUtilities.h"
 
+#include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Common/DebugUtilities.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -37,7 +38,7 @@ using namespace SimTK;
 // std::string. Using a C string literal results in millions of temporary
 // std::strings being constructed so, instead, pre-allocate it in static
 // storage
-static const std::string overrideActuationKey{"override_actuation"};
+static const OpenSim::ComponentPath s_OverrideActuationOptionKey{"override_actuation"};
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -180,13 +181,13 @@ void ScalarActuator::extendAddToSystem(SimTK::MultibodySystem& system) const
     Super::extendAddToSystem(system);
     // Add modeling flag to compute actuation with dynamic or by-pass with 
     // override actuation provided
-    addModelingOption(overrideActuationKey, 1);
+    addModelingOption(s_OverrideActuationOptionKey.toString(), 1);
 
     // Cache the computed actuation of the scalar valued actuator
     _actuationCV = addCacheVariable("actuation", 0.0, Stage::Velocity);
 
     // Discrete state variable is the override actuation value if in override mode
-    addDiscreteVariable(overrideActuationKey, Stage::Time);
+    addDiscreteVariable(s_OverrideActuationOptionKey.toString(), Stage::Time);
 }
 
 double ScalarActuator::getControl(const SimTK::State& s) const
@@ -220,22 +221,22 @@ void ScalarActuator::setActuation(const State& s, double aActuation) const
 
 void ScalarActuator::overrideActuation(SimTK::State& s, bool flag) const
 {
-    setModelingOption(s, overrideActuationKey, int(flag));
+    setModelingOption(s, s_OverrideActuationOptionKey, int(flag));
 }
 
 bool ScalarActuator::isActuationOverridden(const SimTK::State& s) const
 {
-    return (getModelingOption(s, overrideActuationKey) > 0);
+    return (getModelingOption(s, s_OverrideActuationOptionKey) > 0);
 }
        
 void ScalarActuator::setOverrideActuation(SimTK::State& s, double actuation) const
 {
-    setDiscreteVariableValue(s, overrideActuationKey, actuation);;
+    setDiscreteVariableValue(s, s_OverrideActuationOptionKey, actuation);
 }
 
 double ScalarActuator::getOverrideActuation(const SimTK::State& s) const
 {
-    return getDiscreteVariableValue(s, overrideActuationKey);
+    return getDiscreteVariableValue(s, s_OverrideActuationOptionKey);
 }
 double ScalarActuator::computeOverrideActuation(const SimTK::State& s) const
 {
