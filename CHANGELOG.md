@@ -64,7 +64,7 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Updated `PolynomialPathFitter` to use all available hardware threads during parallelization. (#3818)
 - Exposed `TimeSeriesTable::trimToIndices` to public API. (#3824)
 - Fixed bug in `Logger::cout`, now it works at any logger level. (#3826)
-
+- Fixed bugs in `MocoCasOCProblem` and `CasOC::Problem` with incorrect string formatting. (#3828)
 
 
 v4.5
