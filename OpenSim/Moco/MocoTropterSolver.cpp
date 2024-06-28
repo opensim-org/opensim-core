@@ -97,6 +97,8 @@ MocoTropterSolver::createTropterSolver(
     // is set as the transcription scheme.
 
     if (getProblemRep().getNumKinematicConstraintEquations()) {
+        checkPropertyValueIsInSet(
+                getProperty_kinematic_constraint_method(), {"Posa2016"});
         OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
                                  get_enforce_constraint_derivatives(),
                 Exception,

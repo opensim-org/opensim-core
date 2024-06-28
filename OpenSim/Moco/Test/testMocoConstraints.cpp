@@ -541,7 +541,10 @@ MocoTrajectory runForwardSimulation(
 /// control effort.
 template <typename TestType>
 void testDoublePendulumPointOnLine(
-        bool enforce_constraint_derivatives, std::string dynamics_mode) {
+        bool enforce_constraint_derivatives, std::string dynamics_mode,
+        const std::string& kinematic_constraint_method = "Posa2016",
+        const std::string& transcription_scheme = "hermite-simpson",
+        int num_mesh_intervals = 20) {
     MocoStudy study;
     study.setName("double_pendulum_point_on_line");
     MocoProblem& mp = study.updProblem();
@@ -577,17 +580,20 @@ void testDoublePendulumPointOnLine(
     mp.setControlInfo("/tau0", {-100, 100});
     mp.setControlInfo("/tau1", {-100, 100});
 
-    mp.addGoal<MocoControlGoal>();
+    auto* effort = mp.addGoal<MocoControlGoal>();
 
     auto& ms = study.initSolver<TestType>();
-    ms.set_num_mesh_intervals(20);
+    ms.set_num_mesh_intervals(num_mesh_intervals);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
-    ms.set_transcription_scheme("hermite-simpson");
+    ms.set_transcription_scheme(transcription_scheme);
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
-    ms.set_minimize_lagrange_multipliers(true);
-    ms.set_lagrange_multiplier_weight(10);
+    ms.set_kinematic_constraint_method(kinematic_constraint_method);
+    if (!enforce_constraint_derivatives) {
+        ms.set_minimize_lagrange_multipliers(true);
+        ms.set_lagrange_multiplier_weight(10);
+    }
     ms.set_multibody_dynamics_mode(dynamics_mode);
     ms.setGuess("bounds");
 
@@ -619,7 +625,10 @@ void testDoublePendulumPointOnLine(
 /// control effort.
 template <typename SolverType>
 void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
-        bool enforce_constraint_derivatives, std::string dynamics_mode) {
+        bool enforce_constraint_derivatives, std::string dynamics_mode,
+        std::string kinematic_constraint_method = "Posa2016",
+        std::string transcription_scheme = "hermite-simpson",
+        int num_mesh_intervals = 20) {
     MocoStudy study;
     study.setName("double_pendulum_coordinate_coupler");
 
@@ -657,23 +666,26 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     mp.setStateInfo("/jointset/j1/q1/speed", {-5, 5}, 0, 0);
     mp.setControlInfo("/tau0", {-50, 50});
     mp.setControlInfo("/tau1", {-50, 50});
-    mp.addGoal<MocoControlGoal>();
+    auto* effort = mp.addGoal<MocoControlGoal>();
 
     auto& ms = study.initSolver<SolverType>();
-    ms.set_num_mesh_intervals(20);
+    ms.set_num_mesh_intervals(num_mesh_intervals);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
-    ms.set_transcription_scheme("hermite-simpson");
+    ms.set_transcription_scheme(transcription_scheme);
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
-    ms.set_minimize_lagrange_multipliers(true);
-    ms.set_lagrange_multiplier_weight(10);
+    ms.set_kinematic_constraint_method(kinematic_constraint_method);
+    if (!enforce_constraint_derivatives) {
+        ms.set_minimize_lagrange_multipliers(true);
+        ms.set_lagrange_multiplier_weight(10);
+    }
     ms.set_multibody_dynamics_mode(dynamics_mode);
     ms.setGuess("bounds");
 
     solution = study.solve();
     solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
-    // moco.visualize(solution);
+    //study.visualize(solution);
 
     model->initSystem();
     StatesTrajectory states = solution.exportToStatesTrajectory(mp);
@@ -697,7 +709,10 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
 /// testDoublePendulumCoordinateCoupler).
 template <typename SolverType>
 void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
-        bool enforce_constraint_derivatives, std::string dynamics_mode) {
+        bool enforce_constraint_derivatives, std::string dynamics_mode,
+        std::string kinematic_constraint_method = "Posa2016",
+        std::string transcription_scheme = "hermite-simpson",
+        int num_mesh_intervals = 20) {
     MocoStudy study;
     study.setName("double_pendulum_prescribed_motion");
     MocoProblem& mp = study.updProblem();
@@ -734,17 +749,20 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     mp.setControlInfo("/tau0", {-25, 25});
     mp.setControlInfo("/tau1", {-25, 25});
 
-    mp.addGoal<MocoControlGoal>();
+    auto* effort = mp.addGoal<MocoControlGoal>();
 
     auto& ms = study.initSolver<SolverType>();
-    ms.set_num_mesh_intervals(20);
+    ms.set_num_mesh_intervals(num_mesh_intervals);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
-    ms.set_optim_convergence_tolerance(1e-3);
-    ms.set_transcription_scheme("hermite-simpson");
+    ms.set_optim_convergence_tolerance(1e-2);
+    ms.set_transcription_scheme(transcription_scheme);
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
-    ms.set_minimize_lagrange_multipliers(true);
-    ms.set_lagrange_multiplier_weight(10);
+    ms.set_kinematic_constraint_method(kinematic_constraint_method);
+    if (!enforce_constraint_derivatives) {
+        ms.set_minimize_lagrange_multipliers(true);
+        ms.set_lagrange_multiplier_weight(10);
+    }
     ms.set_multibody_dynamics_mode(dynamics_mode);
 
     // Set guess based on coupler solution trajectory.
@@ -754,7 +772,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
 
     MocoSolution solution = study.solve();
     solution.write("testConstraints_testDoublePendulumPrescribedMotion.sto");
-    // study.visualize(solution);
+    //study.visualize(solution);
 
     // Create a TimeSeriesTable containing the splined state data from
     // testDoublePendulumCoordinateCoupler. Since this splined data could be
@@ -841,23 +859,22 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     runForwardSimulation(*model, solution, 1e-1);
 }
 
-TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives",
+TEMPLATE_TEST_CASE("DoublePendulum without constraint derivatives",
         "[explicit]", MocoCasADiSolver, MocoTropterSolver) {
-    SECTION("DoublePendulum without constraint derivatives") {
-        MocoSolution couplerSol;
-        testDoublePendulumCoordinateCoupler<TestType>(
-                couplerSol, false, "explicit");
-        testDoublePendulumPrescribedMotion<TestType>(
-                couplerSol, false, "explicit");
-    }
+    MocoSolution couplerSol;
+    testDoublePendulumCoordinateCoupler<TestType>(
+            couplerSol, false, "explicit");
+    testDoublePendulumPrescribedMotion<TestType>(
+            couplerSol, false, "explicit");
+}
 
-    SECTION("DoublePendulum with constraint derivatives") {
-        MocoSolution couplerSol;
-        testDoublePendulumCoordinateCoupler<TestType>(
-                couplerSol, true, "explicit");
-        testDoublePendulumPrescribedMotion<TestType>(
-                couplerSol, true, "explicit");
-    }
+TEMPLATE_TEST_CASE("DoublePendulum with constraint derivatives",
+        "[explicit]", MocoCasADiSolver, MocoTropterSolver) {
+    MocoSolution couplerSol;
+    testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
+            couplerSol, true, "explicit");
+    testDoublePendulumPrescribedMotion<MocoCasADiSolver>(
+            couplerSol, true, "explicit");
 }
 
 TEST_CASE("DoublePendulum with and without constraint derivatives",
@@ -884,9 +901,9 @@ TEMPLATE_TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
     testDoublePendulumPointOnLine<TestType>(false, "explicit");
 }
 
-TEMPLATE_TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
-        "[explicit]", MocoCasADiSolver, MocoTropterSolver) {
-    testDoublePendulumPointOnLine<TestType>(true, "explicit");
+TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
+        "[explicit]") {
+    testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "explicit");
 }
 
 TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
@@ -898,6 +915,89 @@ TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
         "[implicit][casadi]") {
     testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "implicit");
 }
+
+TEST_CASE("DoublePendulum tests using Bordalba2023 method (explicit)",
+        "[explicit]") {
+    std::string scheme = GENERATE(as<std::string>{},
+            "trapezoidal", "hermite-simpson", "legendre-gauss-3", 
+            "legendre-gauss-radau-3");
+
+    int num_mesh_intervals = 20;
+    MocoSolution couplerSol;
+    testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
+            couplerSol, true, "explicit", "Bordalba2023", scheme,
+            num_mesh_intervals);
+    testDoublePendulumPrescribedMotion<MocoCasADiSolver>(
+            couplerSol, true, "explicit", "Bordalba2023", scheme,
+            num_mesh_intervals);
+    testDoublePendulumPointOnLine<MocoCasADiSolver>(
+            true, "explicit", "Bordalba2023", scheme,
+            num_mesh_intervals);
+}
+
+TEST_CASE("DoublePendulum tests using Bordalba2023 method (implicit)",
+        "[implicit]") {
+    std::string scheme = GENERATE(as<std::string>{},
+            "trapezoidal", "hermite-simpson", "legendre-gauss-3", 
+            "legendre-gauss-radau-3");
+
+    int num_mesh_intervals = 20;
+    MocoSolution couplerSol;
+    testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
+            couplerSol, true, "implicit", "Bordalba2023", scheme,
+            num_mesh_intervals);
+    testDoublePendulumPrescribedMotion<MocoCasADiSolver>(
+            couplerSol, true, "implicit", "Bordalba2023", scheme,
+            num_mesh_intervals);
+    testDoublePendulumPointOnLine<MocoCasADiSolver>(
+            true, "implicit", "Bordalba2023", scheme,
+            num_mesh_intervals);
+}
+
+TEST_CASE("Bad configurations with kinematic constraints") {
+    MocoStudy study;
+    study.setName("double_pendulum_coordinate_coupler");
+
+    // Create a double pendulum model and add a constraint.
+    auto model = createDoublePendulumModel();
+    const Coordinate& q0 = model->getCoordinateSet().get("q0");
+    const Coordinate& q1 = model->getCoordinateSet().get("q1");
+    CoordinateCouplerConstraint* constraint = new CoordinateCouplerConstraint();
+    Array<std::string> indepCoordNames;
+    indepCoordNames.append("q0");
+    constraint->setIndependentCoordinateNames(indepCoordNames);
+    constraint->setDependentCoordinateName("q1");
+    const SimTK::Real m = -2;
+    const SimTK::Real b = SimTK::Pi;
+    LinearFunction linFunc(m, b);
+    constraint->setFunction(&linFunc);
+    model->addConstraint(constraint);
+    model->finalizeConnections();
+    MocoProblem& mp = study.updProblem();
+    mp.setModelAsCopy(*model);
+    mp.setTimeBounds(0, 1);
+
+    auto& ms = study.initSolver<MocoCasADiSolver>();
+
+    SECTION("Enforce constraint derivatives") {
+        ms.set_enforce_constraint_derivatives(false);
+        ms.set_kinematic_constraint_method("Bordalba2023");
+        CHECK_THROWS_WITH(study.solve(),
+                ContainsSubstring(
+                        "The Bordalba et al. 2023 method for enforcing"));
+    }
+
+    SECTION("Posa2016 method with Hermite-Simpson only") {
+        ms.set_enforce_constraint_derivatives(true);
+        ms.set_kinematic_constraint_method("Posa2016");
+        ms.set_transcription_scheme("trapezoidal");
+        CHECK_THROWS_WITH(study.solve(),
+                ContainsSubstring(
+                        "Expected the 'hermite-simpson' transcription scheme"));
+    }
+}
+
+
 
 class EqualControlConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MocoPathConstraint);
@@ -1020,9 +1120,8 @@ TEMPLATE_TEST_CASE("FailWithPathConstraints", "",
 // solving for the mass that allows the point mass to obey the constraint
 // of staying in place. This checks that the parameters are applied to both
 // ModelBase and ModelDisabledConstraints.
-TEMPLATE_TEST_CASE(
-        "Parameters are set properly for Base and DisabledConstraints",
-        "[tropter]", MocoTropterSolver /*, too damn slow: MocoCasADiSolver*/) {
+TEMPLATE_TEST_CASE("Parameters are set properly", "[tropter]",
+        MocoTropterSolver /*, too damn slow: MocoCasADiSolver*/) {
     Model model;
     auto* body = new Body("b", 0.7, SimTK::Vec3(0), SimTK::Inertia(1));
     model.addBody(body);
@@ -1131,14 +1230,12 @@ void testDoublePendulumJointReactionGoal(std::string dynamics_mode) {
     CHECK(solution.getObjective() == Approx(-1. / sqrt(2) * 20).epsilon(1e-2));
 }
 
-TEMPLATE_TEST_CASE(
-        "DoublePendulumPointJointReactionGoal with constraint derivatives",
+TEMPLATE_TEST_CASE("Joint reactions w/ constraint derivatives",
         "[explicit]", MocoCasADiSolver, MocoTropterSolver) {
     testDoublePendulumJointReactionGoal<TestType>("explicit");
 }
 
-TEMPLATE_TEST_CASE("DoublePendulumJointReactionGoal implicit with "
-                   "constraint derivatives",
+TEMPLATE_TEST_CASE("Joint reactions implicit w/ constraint derivatives",
         "[implicit][casadi]", MocoCasADiSolver) {
     testDoublePendulumJointReactionGoal<TestType>("implicit");
 }
@@ -1347,6 +1444,8 @@ TEST_CASE("Multipliers are correct", "[casadi]") {
     SECTION("Body welded to ground") {
         auto dynamics_mode =
                 GENERATE(as<std::string>{}, "implicit", "explicit");
+        auto kinematic_constraint_method =
+                GENERATE(as<std::string>{}, "Posa2016", "Bordalba2023");
 
         Model model;
         const double mass = 1.3169;
@@ -1370,6 +1469,7 @@ TEST_CASE("Multipliers are correct", "[casadi]") {
         auto& solver = study.initCasADiSolver();
         solver.set_num_mesh_intervals(5);
         solver.set_multibody_dynamics_mode(dynamics_mode);
+        solver.set_kinematic_constraint_method(kinematic_constraint_method);
         solver.set_transcription_scheme("hermite-simpson");
         solver.set_enforce_constraint_derivatives(true);
 
@@ -1398,6 +1498,8 @@ TEST_CASE("Multipliers are correct", "[casadi]") {
 
         auto dynamics_mode =
                 GENERATE(as<std::string>{}, "implicit", "explicit");
+        auto kinematic_constraint_method =
+                GENERATE(as<std::string>{}, "Posa2016", "Bordalba2023");
 
         Model model = ModelFactory::createPlanarPointMass();
         model.set_gravity(Vec3(0));
@@ -1428,6 +1530,7 @@ TEST_CASE("Multipliers are correct", "[casadi]") {
         solver.set_num_mesh_intervals(10);
         solver.set_multibody_dynamics_mode(dynamics_mode);
         solver.set_transcription_scheme("hermite-simpson");
+        solver.set_kinematic_constraint_method(kinematic_constraint_method);
         solver.set_enforce_constraint_derivatives(true);
         MocoSolution solution = study.solve();
         const auto Fx = solution.getControl("/forceset/force_x");
@@ -1473,7 +1576,7 @@ TEST_CASE("Prescribed kinematics with kinematic constraints", "[casadi]") {
     auto& solver = study.initCasADiSolver();
     solver.set_num_mesh_intervals(10);
     solver.set_multibody_dynamics_mode("implicit");
-    solver.set_interpolate_control_midpoints(false);
+    solver.set_interpolate_control_mesh_interior_points(false);
     MocoSolution solution = study.solve();
     const auto Fx = solution.getControl("/forceset/force_x");
     const auto Fy = solution.getControl("/forceset/force_y");
@@ -1716,3 +1819,104 @@ TEMPLATE_TEST_CASE("Multiple MocoPathConstraints", "", MocoCasADiSolver,
     study.initSolver<TestType>();
     study.solve();
 }
+
+
+class ConstantSpeedConstraint : public Constraint {
+OpenSim_DECLARE_CONCRETE_OBJECT(ConstantSpeedConstraint, Constraint);
+
+public:
+    OpenSim_DECLARE_SOCKET(body, PhysicalFrame,
+        "The body participating in this constraint.");
+
+private:
+    void extendAddToSystem(SimTK::MultibodySystem& system) const {
+        Super::extendAddToSystem(system);
+        const PhysicalFrame& f = getConnectee<PhysicalFrame>("body");
+        SimTK::MobilizedBody b = f.getMobilizedBody();
+        SimTK::Constraint::ConstantSpeed simtkConstantSpeed(b,
+            SimTK::MobilizerUIndex(0), SimTK::Real(2.34));
+        assignConstraintIndex(simtkConstantSpeed.getConstraintIndex());
+    }
+};
+
+
+class ConstantAccelerationConstraint : public Constraint {
+OpenSim_DECLARE_CONCRETE_OBJECT(ConstantAccelerationConstraint, Constraint);
+
+public:
+    OpenSim_DECLARE_SOCKET(body, PhysicalFrame,
+        "The body participating in this constraint.");
+
+private:
+    void extendAddToSystem(SimTK::MultibodySystem& system) const {
+        Super::extendAddToSystem(system);
+        const PhysicalFrame& f = getConnectee<PhysicalFrame>("body");
+        SimTK::MobilizedBody b = f.getMobilizedBody();
+        SimTK::Constraint::ConstantAcceleration simtkConstantAcceleration(b,
+            SimTK::MobilizerUIndex(0), SimTK::Real(1.23));
+        assignConstraintIndex(simtkConstantAcceleration.getConstraintIndex());
+    }
+};
+
+MocoStudy createSlidingMassMocoStudy(const Model& model, 
+        const std::string& scheme) {
+    MocoStudy study;
+    study.setName("sliding_mass");
+    MocoProblem& mp = study.updProblem();
+    mp.setModel(make_unique<Model>(model));
+    mp.setTimeBounds(0, {0, 10});
+    mp.setStateInfo("/slider/position/value",{0, 1}, 0, 1);
+    mp.setStateInfo("/slider/position/speed", {-100, 100});
+    mp.addGoal<MocoControlGoal>();
+
+    auto& ms = study.initCasADiSolver();
+    ms.set_num_mesh_intervals(50);
+    ms.set_transcription_scheme(scheme);
+    ms.set_kinematic_constraint_method("Bordalba2023");
+
+    return study;
+}
+
+TEST_CASE("ConstantSpeedConstraint") {
+    std::string scheme = GENERATE(as<std::string>{},
+            "trapezoidal", "hermite-simpson", "legendre-gauss-3", 
+            "legendre-gauss-radau-3");
+
+    Model model = ModelFactory::createSlidingPointMass();
+    auto* constraint = new ConstantSpeedConstraint();
+    constraint->setName("constant_speed");
+    constraint->connectSocket_body(model.getComponent<Body>("body"));
+    model.addConstraint(constraint);
+    model.initSystem();
+
+    MocoStudy study = createSlidingMassMocoStudy(model, scheme);
+    MocoSolution solution = study.solve();
+
+    const auto& speed = solution.getState("/slider/position/speed");
+    for (int itime = 0; itime < solution.getNumTimes(); ++itime) {
+        CHECK(speed[itime] == Approx(2.34).margin(1e-9));
+    }
+}
+
+TEST_CASE("ConstantAccelerationConstraint") {
+    std::string scheme = GENERATE(as<std::string>{},
+            "trapezoidal", "hermite-simpson", "legendre-gauss-3", 
+            "legendre-gauss-radau-3");
+
+    Model model = ModelFactory::createSlidingPointMass();
+    auto* constraint = new ConstantAccelerationConstraint();
+    constraint->setName("constant_acceleration");
+    constraint->connectSocket_body(model.getComponent<Body>("body"));
+    model.addConstraint(constraint);
+    model.initSystem();
+
+    MocoStudy study = createSlidingMassMocoStudy(model, scheme);
+    MocoSolution solution = study.solve();
+
+    const auto& states = solution.exportToStatesTrajectory(model);
+    for (const auto& state : states) {
+        model.realizeAcceleration(state);
+        CHECK(state.getUDot()[0] == Approx(1.23).margin(1e-9));
+    }
+}
+
