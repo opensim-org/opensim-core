@@ -103,6 +103,7 @@ public:
         m_data_queue.push(DataQueueEntry_<T>(time, *deepCopy));
         mlock.unlock();     // unlock before notificiation to minimize mutex con
         m_cond.notify_one(); 
+        log_info("Pushed");
     }
     // pop the front of the queue and return data and associated timestamp
     void pop_front(double& time, SimTK::RowVector_<T>& data) { 
@@ -113,6 +114,7 @@ public:
         mlock.unlock(); 
         time = frontEntry.getTimeStamp();
         data = frontEntry.getData();
+        log_info("Popped");
     }
     // check if the queue is empty
     bool isEmpty() { 
