@@ -62,6 +62,7 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Added SynergyController, a controller that computes controls for a model based on a linear combination of a set of Input control signals and a set of synergy vectors. (#3796)
 - Fixed bug in `OpenSim::PiecewiseLinearFunction` that prevented proper initialization of the coefficient array when the number of function points is equal to 1. (#3817)
 - Updated `PolynomialPathFitter` to use all available hardware threads during parallelization. (#3818)
+- Exposed `TimeSeriesTable::trimToIndices` to public API. (#3824)
 
 
 v4.5
