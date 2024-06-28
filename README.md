@@ -34,7 +34,7 @@ OpenSim is software that lets users develop models of musculoskeletal structures
 
 <!-- OpenSim Simulation -->
 <p align="center">
-    <img src="doc/images/opensim_running.gif" alt=Simulation of human running by Sam Hamner (doi:10.1016/j.jbiomech.2010.06.025)¨>
+    <img src="doc/images/opensim_running.gif" alt=Simulation of human running by Sam Hamner (doi:10.1016/j.jbiomech.2010.06.025)Â¨>
 </p>
 
 More information can be found at our websites:
@@ -114,7 +114,6 @@ Acknowledging the OpenSim project helps us and helps you. It allows us to track 
 > Seth A, Hicks JL, Uchida TK, Habib A, Dembia CL, et al. (2018) **OpenSim: Simulating musculoskeletal dynamics and neuromuscular control to study human and animal movement.** _PLOS Computational Biology_ 14(7): e1006223. https://doi.org/10.1371/journal.pcbi.1006223
 
 If you use plugins, models, or other components contributed by your fellow researchers, you must acknowledge their work as described in the license that accompanies each of these files.
-
 
 ## Funding
 
