@@ -66,6 +66,7 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Fixed bug in `Logger::cout`, now it works at any logger level. (#3826)
 
 
+
 v4.5
 ====
 - Added `AbstractGeometryPath` which is a base class for `GeometryPath` and other path types (#3388). All path-based
