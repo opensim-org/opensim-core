@@ -11,8 +11,7 @@ own project.
 // Make sure clone does not leak memory
 %newobject *::clone;
 
-/* This file is for creation/handling of arrays */
-%include "std_carray.i";
+%include "std_container.i"
 
 /* This interface file is for better handling of pointers and references */
 %include "typemaps.i"
@@ -21,6 +20,11 @@ own project.
 /* If needed %extend will be used, these operators are not supported.*/
 %ignore *::operator[];
 %ignore *::operator=;
+%ignore *::operator==;
+%ignore *::operator!=;
+%ignore *::operator>;
+%ignore *::operator>=;
+%ignore *::operator<=;
 
 // For reference (doesn't work and should not be necessary):
 // %rename(__add__) operator+;
