@@ -300,8 +300,22 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
     SECTION ("MocoOrientationTrackingGoal") {
         MocoStudy studyOrientationTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
-        testDoublePendulumTracking<TestType, MocoOrientationTrackingGoal>(
+
+        SECTION("Accurately tracks states reference") {
+            testDoublePendulumTracking<TestType, MocoOrientationTrackingGoal>(
                 studyOrientationTracking, solutionEffort);
+        }
+
+        SECTION("Missing coordinate value in states reference") {
+            auto& problem = study.updProblem();
+            auto* tracking = problem.addGoal<MocoOrientationTrackingGoal>("tracking");
+            tracking->setFramePaths({"/bodyset/b0", "/bodyset/b1"});
+            TimeSeriesTable table = solutionEffort.exportToStatesTable();
+            table.removeColumn("/jointset/j0/q0/value");
+            tracking->setStatesReference(table);
+            SimTK_TEST_MUST_THROW(tracking->initializeOnModel(
+                problem.getPhase(0).getModel()));
+        }
     }
 
     SECTION ("MocoTranslationTrackingGoal") {
