@@ -145,15 +145,15 @@ public:
     }
 
     /// Use this function to log messages that would normally be sent to
-    /// std::cout. These messages always appear, and are also logged to the
-    /// filesink (addFileSink()) and any sinks added via addSink().
-    /// The main use case for this function is inside of functions whose intent
-    /// is to print information (e.g., Component::printSubcomponentInfo()).
+    /// std::cout. These messages always appear (unless the logger is off), and
+    /// are also logged to the filesink (addFileSink()) and any sinks added via
+    /// addSink(). The main use case for this function is inside of functions
+    /// whose intent is to print information (e.g., Component::printSubcomponentInfo()).
     /// Besides such use cases, this function should be used sparingly to
     /// give users control over what gets logged.
     template <typename... Args>
     static void cout(spdlog::string_view_t fmt, const Args&... args) {
-        getCoutLogger().log(spdlog::level::info, fmt, args...);
+        getCoutLogger().log(spdlog::level::critical, fmt, args...);
     }
 
     /// @}
