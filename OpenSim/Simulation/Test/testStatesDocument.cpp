@@ -22,6 +22,7 @@
 * -------------------------------------------------------------------------- */
 #include <simbody/internal/Force.h>
 #include <OpenSim/Simulation/Model/Force.h>
+
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/StatesDocument.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
@@ -44,12 +45,15 @@ namespace
 // Constant used to determine equality tolerances
 const double padFactor = 1.0 + SimTK::SignificantReal;
 
-//=============================================================================
-// Extension of the underlying Simbody TwoPointLinearSpring force class.
-// Discrete variables of all types supported by OpenSim are added to the
-// SimTK::State and given values in an overriding SimTK::relalizePosition()
-// implementation.
-class ExtendedTwoPointLinearSpring : public SimTK::Force::TwoPointLinearSpring {
+
+//-----------------------------------------------------------------------------
+// Create a force derived from PointToPointSpring that adds on a discrete
+// variables of each supported type (bool, int, double, Vec2, Vec3, Vec4,
+// Vec5, Vec6.
+class ExtendedPointToPointSpring : public OpenSim::PointToPointSpring
+{
+    OpenSim_DECLARE_CONCRETE_OBJECT(ExtendedPointToPointSpring,
+        OpenSim::PointToPointSpring);
 
 public:
     // Subsystem index
@@ -74,21 +78,40 @@ public:
     string nameVec6{"dvVec6"};
 
     // Constructor
-    ExtendedTwoPointLinearSpring(SimTK::GeneralForceSubsystem& subsystem,
-        const MobilizedBody& body1, const Vec3 point1,
-        const MobilizedBody& body2, const Vec3 point2,
+    ExtendedPointToPointSpring(const PhysicalFrame& body1, SimTK::Vec3 point1,
+        const PhysicalFrame& body2, SimTK::Vec3 point2,
         double stiffness, double restlength) :
-        TwoPointLinearSpring(subsystem, body1, point1, body2, point2,
-                stiffness, restlength) {}
+        PointToPointSpring(body1, point1, body2, point2, stiffness, restlength)
+    { }
 
-    // Allocate the discrete variables
-    void realizeTopology(SimTK::State& state) const {
+    void
+    extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) const override
+    {
+        Super::extendAddToSystemAfterSubcomponents(system);
+
+        // Add the discrete variables to the list of OpenSim Components
+        bool allocate = false;
+        addDiscreteVariable(nameBool, Stage::Position, allocate);
+        addDiscreteVariable(nameInt, Stage::Position, allocate);
+        addDiscreteVariable(nameDbl, Stage::Position, allocate);
+        addDiscreteVariable(nameVec2, Stage::Position, allocate);
+        addDiscreteVariable(nameVec3, Stage::Position, allocate);
+        addDiscreteVariable(nameVec4, Stage::Position, allocate);
+        addDiscreteVariable(nameVec5, Stage::Position, allocate);
+        addDiscreteVariable(nameVec6, Stage::Position, allocate);
+    }
+
+    void
+    extendRealizeTopology(SimTK::State& state) const override
+    {
+        Super::extendRealizeTopology(state);
+
         // Create a mutableThis
-        ExtendedTwoPointLinearSpring* mutableThis =
-            const_cast<ExtendedTwoPointLinearSpring*>(this);
+        ExtendedPointToPointSpring* mutableThis =
+            const_cast<ExtendedPointToPointSpring*>(this);
 
         // Get the GeneralForceSubsystem
-        const GeneralForceSubsystem& fsub = getForceSubsystem();
+        const GeneralForceSubsystem& fsub = getModel().getForceSubsystem();
         mutableThis->indexSS = fsub.getMySubsystemIndex();
 
         // Bool
@@ -130,20 +153,38 @@ public:
         Vec6 dvVec6(0.1, 0.2, 0.3, 0.4, 0.5, 0.6);
         mutableThis->indexVec6 = fsub.allocateAutoUpdateDiscreteVariable(state,
             Stage::Position, new Value<Vec6>(dvVec6), Stage::Position);
+
+        // Initialize discrete variable indexes
+        initializeDiscreteVariableIndexes(nameBool, indexSS, indexBool);
+        initializeDiscreteVariableIndexes(nameInt, indexSS, indexInt);
+        initializeDiscreteVariableIndexes(nameDbl, indexSS, indexDbl);
+        initializeDiscreteVariableIndexes(nameVec2, indexSS, indexVec2);
+        initializeDiscreteVariableIndexes(nameVec3, indexSS, indexVec3);
+        initializeDiscreteVariableIndexes(nameVec4, indexSS, indexVec4);
+        initializeDiscreteVariableIndexes(nameVec5, indexSS, indexVec5);
+        initializeDiscreteVariableIndexes(nameVec6, indexSS, indexVec6);
     }
 
-    // Set values of the discrete variables
-    // These values don't mean anything. They just provided a means of
-    // validating that the discrete variables are changing during a simulation
-    // and are being de/serialized correctly.
-    void realizePosition(const State& state) const {
+    // Set the values of the discrete variables.
+    // The force calculation is done in SimTK::TwoPointLinearSpring.
+    // This method just provided a means of setting the added discrete
+    // variables, validating that they are changing during a simulation
+    // and being de/serialized correctly.
+    virtual void computeForce(const SimTK::State& state,
+        SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+        SimTK::Vector& generalizedForces) const override
+    {
+        Super::computeForce(state, bodyForces, generalizedForces);
 
         SimTK::GeneralForceSubsystem& fsub = SimTK::GeneralForceSubsystem();
         const SimTK::Vector& u = state.getU();
 
+        return;
+
         // Bool
-        SimTK::Value<bool>::downcast(
-            fsub.updDiscreteVarUpdateValue(state, indexBool)) = u[0];
+        bool& vBool = SimTK::Value<bool>::downcast(
+            fsub.updDiscreteVarUpdateValue(state, indexBool));
+        vBool = u[0];
         fsub.markDiscreteVarUpdateValueRealized(state, indexBool);
 
         // Int
@@ -201,166 +242,6 @@ public:
         v6[5] = u[5];
         fsub.markDiscreteVarUpdateValueRealized(state, indexVec6);
     }
-
-};
-
-
-//-----------------------------------------------------------------------------
-// Create a Component class for the purpose of adding discrete variables of
-// all supported types (bool, int, double, Vec2, Vec3, Vec4, Vec5, Vec6.
-class ExtendedPointToPointSpring : public OpenSim::Force {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ExtendedPointToPointSpring, OpenSim::Force);
-
-public:
-
-    ExtendedTwoPointLinearSpring* sbSpring{nullptr};
-
-    // Properties
-    OpenSim_DECLARE_PROPERTY(point1, SimTK::Vec3,
-        "Spring attachment point on body1.");
-    OpenSim_DECLARE_PROPERTY(point2, SimTK::Vec3,
-        "Spring attachment point on body2.");
-    OpenSim_DECLARE_PROPERTY(stiffness, double,
-        "Spring stiffness (N/m).");
-    OpenSim_DECLARE_PROPERTY(rest_length, double,
-        "Spring resting length (m).");
-
-    // Sockets
-    OpenSim_DECLARE_SOCKET(body1, PhysicalFrame,
-        "A frame on the first body that this spring connects to.");
-    OpenSim_DECLARE_SOCKET(body2, PhysicalFrame,
-        "A frame on the second body that this spring connects to.");
-
-    // Constructor
-    ExtendedPointToPointSpring(const PhysicalFrame& body1, SimTK::Vec3 point1,
-        const PhysicalFrame& body2, SimTK::Vec3 point2,
-        double stiffness, double restlength)
-    {
-        setNull();
-        constructProperties();
-
-        // Set properties to the passed-in values.
-        setBody1(body1);
-        setBody2(body2);
-
-        setPoint1(point1);
-        setPoint2(point2);
-
-        setStiffness(stiffness);
-        setRestlength(restlength);
-
-    }
-
-    // Body accessors
-    void setBody1(const PhysicalFrame& body) {
-        connectSocket_body1(body); }
-    void setBody2(const PhysicalFrame& body) {
-        connectSocket_body2(body); }
-    const PhysicalFrame& getBody1() const {
-        return getConnectee<PhysicalFrame>("body1"); }
-    const PhysicalFrame& getBody2() const {
-        return getConnectee<PhysicalFrame>("body2"); }
-    // Point accessors
-    void setPoint1(SimTK::Vec3 aPosition) { set_point1(aPosition); }
-    const SimTK::Vec3& getPoint1() const { return get_point1(); }
-    void setPoint2(SimTK::Vec3 aPosition) { set_point2(aPosition); }
-    const SimTK::Vec3& getPoint2() const { return get_point2(); }
-    // Consitutive accessors
-    void setStiffness(double stiffness) {set_stiffness(stiffness);}
-    double getStiffness() const {return get_stiffness();}
-    void setRestlength(double restLength) {set_rest_length(restLength);}
-    double getRestlength() const {return get_rest_length();}
-
-
-    void
-    extendAddToSystem(SimTK::MultibodySystem& system) const {
-        Super::extendAddToSystem(system);
-
-
-    }
-
-
-    void
-    extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) const {
-        Super::extendAddToSystemAfterSubcomponents(system);
-
-        const PhysicalFrame& body1 = getBody1();
-        const PhysicalFrame& body2 = getBody2();
-
-        // Get underlying mobilized bodies
-        const SimTK::MobilizedBody& b1 = body1.getMobilizedBody();
-        const SimTK::MobilizedBody& b2 = body2.getMobilizedBody();
-
-        // Now create a Simbody Force::ExtendedTwoPointLinearSpring
-        ExtendedPointToPointSpring* mutableThis =
-            const_cast<ExtendedPointToPointSpring *>(this);
-        mutableThis->sbSpring = new ExtendedTwoPointLinearSpring(
-                _model->updForceSubsystem(),
-                b1, getPoint1(), b2, getPoint2(),
-                getStiffness(), getRestlength());
-
-        // Beyond the const Component get the index so we can access the
-        // SimTK::Force later.
-        mutableThis->_index = mutableThis->sbSpring->getForceIndex();
-
-        // Initialize the indexes
-        bool allocate = false;
-        addDiscreteVariable(sbSpring->nameBool, Stage::Position, allocate);
-        addDiscreteVariable(sbSpring->nameInt, Stage::Position, allocate);
-        addDiscreteVariable(sbSpring->nameDbl, Stage::Position, allocate);
-        addDiscreteVariable(sbSpring->nameVec2, Stage::Position, allocate);
-        addDiscreteVariable(sbSpring->nameVec3, Stage::Position, allocate);
-        addDiscreteVariable(sbSpring->nameVec4, Stage::Position, allocate);
-        addDiscreteVariable(sbSpring->nameVec5, Stage::Position, allocate);
-        addDiscreteVariable(sbSpring->nameVec6, Stage::Position, allocate);
-    }
-
-    void extendConnectToModel(Model& model) override {
-        // validate that the spring is attached to two different base
-        // frames; otherwise, unusual simulation behavior may occur
-        // (#3485)
-        auto const& pf1 = getConnectee<PhysicalFrame>("body1");
-        auto const& pf2 = getConnectee<PhysicalFrame>("body2");
-        OpenSim::Frame const& pf1Base = pf1.findBaseFrame();
-
-        if (&pf1Base == &pf2.findBaseFrame()) {
-            std::stringstream ss;
-            ss << " body1 (" << pf1.getAbsolutePathString() << ") and body2 (" << pf2.getAbsolutePathString() << ") have the same base frame (" << pf1Base.getAbsolutePathString() << "), this is not permitted.";
-            OPENSIM_THROW_FRMOBJ(OpenSim::Exception, std::move(ss).str());
-        }
-    }
-
-    void
-    extendRealizeTopology(SimTK::State& state) const override {
-        Super::extendRealizeTopology(state);
-        initializeDiscreteVariableIndexes(sbSpring->nameBool,
-            sbSpring->indexSS, sbSpring->indexBool);
-        initializeDiscreteVariableIndexes(sbSpring->nameInt,
-            sbSpring->indexSS, sbSpring->indexInt);
-        initializeDiscreteVariableIndexes(sbSpring->nameDbl,
-            sbSpring->indexSS, sbSpring->indexDbl);
-        initializeDiscreteVariableIndexes(sbSpring->nameVec2,
-            sbSpring->indexSS, sbSpring->indexVec2);
-        initializeDiscreteVariableIndexes(sbSpring->nameVec3,
-            sbSpring->indexSS, sbSpring->indexVec3);
-        initializeDiscreteVariableIndexes(sbSpring->nameVec4,
-            sbSpring->indexSS, sbSpring->indexVec4);
-        initializeDiscreteVariableIndexes(sbSpring->nameVec5,
-            sbSpring->indexSS, sbSpring->indexVec5);
-        initializeDiscreteVariableIndexes(sbSpring->nameVec6,
-            sbSpring->indexSS, sbSpring->indexVec6);
-    }
-
-private:
-    void setNull() { }
-    void constructProperties() {
-        const SimTK::Vec3 bodyOrigin(0.0, 0.0, 0.0);
-        constructProperty_point1(bodyOrigin);
-        constructProperty_point2(bodyOrigin);
-
-        constructProperty_stiffness(1.0);
-        constructProperty_rest_length(0.0);
-    };
 
 }; // End of class ExtendedPointToPointSpring
 
