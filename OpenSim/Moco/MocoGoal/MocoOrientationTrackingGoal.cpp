@@ -82,16 +82,18 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
         // Check that the reference state names match the model state names.
         checkLabelsMatchModelStates(model, statesTableToUse.getColumnLabels());
 
-        // Check that all coordinates are in the table
+        // Check that all coordinate values are in the table
         const CoordinateSet& coords = model.getCoordinateSet();
-        std::vector<std::string> columns = statesTableToUse.getColumnLabels();
+        auto columns = statesTableToUse.getColumnLabels();
         for (int i = 0; i < coords.getSize(); ++i) {
-            const Coordinate& c = coords.get(i);
-            std::string path = fmt::format("{}/value", c.getAbsolutePathString());
+            const Coordinate& coord = coords.get(i);
+            std::string path = fmt::format("{}/value", coord.getAbsolutePathString());
             OPENSIM_THROW_IF(
                 std::find(columns.begin(), columns.end(), path) == columns.end(),
                 Exception,
-                fmt::format("Coordinate {} not found in states table.", path));
+                fmt::format("Expected the states reference table to contain "
+                            "columns for all coordinate values in the model, "
+                            "but {} was not found.", path));
         }
 
         // Create the StatesTrajectory.

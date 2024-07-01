@@ -301,14 +301,13 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
         MocoStudy studyOrientationTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
 
-        SECTION("normal") {
+        SECTION("Accurately tracks states reference") {
             testDoublePendulumTracking<TestType, MocoOrientationTrackingGoal>(
                 studyOrientationTracking, solutionEffort);
         }
 
-        SECTION("removed column") {
+        SECTION("Missing coordinate value in states reference") {
             auto& problem = study.updProblem();
-            problem.updPhase(0).updGoal("effort").setWeight(0.001);
             auto* tracking = problem.addGoal<MocoOrientationTrackingGoal>("tracking");
             tracking->setFramePaths({"/bodyset/b0", "/bodyset/b1"});
             TimeSeriesTable table = solutionEffort.exportToStatesTable();
