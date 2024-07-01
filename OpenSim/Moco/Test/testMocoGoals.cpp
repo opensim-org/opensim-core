@@ -303,7 +303,7 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
 
         SECTION("normal") {
             testDoublePendulumTracking<TestType, MocoOrientationTrackingGoal>(
-            studyOrientationTracking, solutionEffort);
+                studyOrientationTracking, solutionEffort);
         }
 
         SECTION("removed column") {
