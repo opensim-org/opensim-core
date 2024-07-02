@@ -95,11 +95,12 @@ public:
     /** Provide a table containing values of model state variables. These data
     are used to create a StatesTrajectory internally, from which the
     rotation data for the frames specified in setFramePaths() are computed.
-    Each column label in the reference must be the path of a state variable,
-    e.g., `/jointset/ankle_angle_r/value`. Calling this function clears the
-    table provided via setRotationReference(), or the
-    `rotation_reference_file` property, if any. The table is not loaded
-    until the MocoProblem is initialized. */
+    Each column label in the reference should be the path of a coordinate value,
+    e.g., `/jointset/ankle_r/ankle_angle_r/value`. Columns for states that body
+    orientations do not depend on (e.g., `/forceset/soleus_r/activation`) are
+    not needed. Calling this function clears the table provided via
+    setRotationReference(), or the `rotation_reference_file` property, if any.
+    The table is not loaded until the MocoProblem is initialized. */
     void setStatesReference(const TableProcessor& ref) {
         set_rotation_reference_file("");
         m_rotation_table = TimeSeriesTable_<SimTK::Rotation_<double>>();
