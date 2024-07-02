@@ -36,6 +36,8 @@
 //     Add tests here as new constraint types are added to OpenSim
 //
 //==============================================================================
+#include <catch2/catch_all.hpp>
+
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/PointKinematics.h>
 #include <OpenSim/Analyses/ForceReporter.h>
@@ -65,6 +67,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKsimbody.h"
+
+
 
 using namespace OpenSim;
 using namespace std;
