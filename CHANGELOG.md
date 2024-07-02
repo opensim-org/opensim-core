@@ -65,8 +65,9 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Exposed `TimeSeriesTable::trimToIndices` to public API. (#3824)
 - Fixed bug in `Logger::cout`, now it works at any logger level. (#3826)
 - Fixed bugs in `MocoCasOCProblem` and `CasOC::Problem` with incorrect string formatting. (#3828)
-- Added error handling to the solve call in `MocoCasADiSolver::solveImpl()`. (#3834)
+- Fixed `MocoOrientationTrackingGoal::initializeOnModelImpl` to check for missing kinematic states, but allow other missing columns. (#3830)
 - Improved exception handling for internal errors in `MocoCasADiSolver`. Problems will now abort and print a descriptive error message (rather than fail due to an empty trajectory). (#3834)
+
 
 
 v4.5
