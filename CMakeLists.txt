@@ -844,6 +844,12 @@ if (OPENSIM_WITH_CASADI OR OPENSIM_WITH_TROPTER)
     endif()
 endif()
 
+find_package(Enzyme REQUIRED CONFIG NO_DEFAULT_PATH)
+message("found dir ${Enzyme_DIR}")
+message("found ${Enzyme_FOUND}")
+get_property(importTargetsAfter DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY IMPORTED_TARGETS)
+message("imported targets ${importTargetsAfter}")
+
 # Installing dependencies into OpenSim's installation.
 # ----------------------------------------------------
 if(${OPENSIM_COPY_DEPENDENCIES})
