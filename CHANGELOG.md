@@ -63,7 +63,7 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Fixed bug in `OpenSim::PiecewiseLinearFunction` that prevented proper initialization of the coefficient array when the number of function points is equal to 1. (#3817)
 - Updated `PolynomialPathFitter` to use all available hardware threads during parallelization. (#3818)
 - Exposed `TimeSeriesTable::trimToIndices` to public API. (#3824)
-- Added error handling to the solve call in `MocoCasADiSolver::solveImpl()`. (#3834)
+- Improved exception handling for internal errors in `MocoCasADiSolver`. Problems will now abort and print a descriptive error message (rather than fail due to an empty trajectory). (#3834)
 
 
 v4.5
