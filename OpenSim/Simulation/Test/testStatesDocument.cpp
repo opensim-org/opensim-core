@@ -47,15 +47,15 @@ const double padFactor = 1.0 + SimTK::SignificantReal;
 
 
 //-----------------------------------------------------------------------------
-// Create a force derived from PointToPointSpring that adds on a discrete
-// variables of each supported type (bool, int, double, Vec2, Vec3, Vec4,
-// Vec5, Vec6.
+// Create a force component derived from PointToPointSpring that adds on a
+// discrete variables of each supported type (bool, int, double, Vec2, Vec3,
+// Vec4, Vec5, Vec6).
 class ExtendedPointToPointSpring : public OpenSim::PointToPointSpring
 {
     OpenSim_DECLARE_CONCRETE_OBJECT(ExtendedPointToPointSpring,
         OpenSim::PointToPointSpring);
 
-public:
+private:
     // Subsystem index
     SubsystemIndex indexSS;
     // Indexes of discrete variables
@@ -76,6 +76,8 @@ public:
     string nameVec4{"dvVec4"};
     string nameVec5{"dvVec5"};
     string nameVec6{"dvVec6"};
+
+public:
 
     // Constructor
     ExtendedPointToPointSpring(const PhysicalFrame& body1, SimTK::Vec3 point1,
@@ -102,57 +104,57 @@ public:
     }
 
     void
-    extendRealizeTopology(SimTK::State& state) const override
+    extendRealizeTopology(SimTK::State& s) const override
     {
-        Super::extendRealizeTopology(state);
+        Super::extendRealizeTopology(s);
 
         // Create a mutableThis
         ExtendedPointToPointSpring* mutableThis =
             const_cast<ExtendedPointToPointSpring*>(this);
 
-        // Get the GeneralForceSubsystem
-        const GeneralForceSubsystem& fsub = getModel().getForceSubsystem();
+        // Get the Subsystem
+        const DefaultSystemSubsystem& fsub = getModel().getDefaultSubsystem();
         mutableThis->indexSS = fsub.getMySubsystemIndex();
 
         // Bool
         bool dvBool{false};
-        mutableThis->indexBool = fsub.allocateAutoUpdateDiscreteVariable(state,
-            Stage::Position, new Value<bool>(dvBool), Stage::Position);
+        mutableThis->indexBool = s.allocateAutoUpdateDiscreteVariable(indexSS,
+            Stage::Velocity, new Value<bool>(dvBool), Stage::Dynamics);
 
         // Int
         int dvInt{0};
-        mutableThis->indexInt = fsub.allocateAutoUpdateDiscreteVariable(state,
-            Stage::Position, new Value<int>(dvInt), Stage::Position);
+        mutableThis->indexInt = s.allocateAutoUpdateDiscreteVariable(
+            indexSS, Stage::Velocity, new Value<int>(dvInt), Stage::Dynamics);
 
         // Dbl
         double dvDbl{0.0};
-        mutableThis->indexDbl = fsub.allocateAutoUpdateDiscreteVariable(state,
-            Stage::Position, new Value<double>(dvDbl), Stage::Position);
+        mutableThis->indexDbl = s.allocateAutoUpdateDiscreteVariable(indexSS,
+            Stage::Velocity, new Value<double>(dvDbl), Stage::Dynamics);
 
         // Vec2
         Vec2 dvVec2(0.1, 0.2);
-        mutableThis->indexVec2 = fsub.allocateAutoUpdateDiscreteVariable(state,
-            Stage::Position, new Value<Vec2>(dvVec2), Stage::Position);
+        mutableThis->indexVec2 = s.allocateAutoUpdateDiscreteVariable(indexSS,
+            Stage::Velocity, new Value<Vec2>(dvVec2), Stage::Dynamics);
 
         // Vec3
         Vec3 dvVec3(0.1, 0.2, 0.3);
-        mutableThis->indexVec3 = fsub.allocateAutoUpdateDiscreteVariable(state,
-            Stage::Position, new Value<Vec3>(dvVec3), Stage::Position);
+        mutableThis->indexVec3 = s.allocateAutoUpdateDiscreteVariable(indexSS,
+            Stage::Velocity, new Value<Vec3>(dvVec3), Stage::Dynamics);
 
         // Vec4
         Vec4 dvVec4(0.1, 0.2, 0.3, 0.4);
-        mutableThis->indexVec4 = fsub.allocateAutoUpdateDiscreteVariable(state,
-            Stage::Position, new Value<Vec4>(dvVec4), Stage::Position);
+        mutableThis->indexVec4 = s.allocateAutoUpdateDiscreteVariable(indexSS,
+            Stage::Velocity, new Value<Vec4>(dvVec4), Stage::Dynamics);
 
         // Vec5
         Vec5 dvVec5(0.1, 0.2, 0.3, 0.4, 0.5);
-        mutableThis->indexVec5 = fsub.allocateAutoUpdateDiscreteVariable(state,
-            Stage::Position, new Value<Vec5>(dvVec5), Stage::Position);
+        mutableThis->indexVec5 = s.allocateAutoUpdateDiscreteVariable(indexSS,
+            Stage::Velocity, new Value<Vec5>(dvVec5), Stage::Dynamics);
 
         // Vec6
         Vec6 dvVec6(0.1, 0.2, 0.3, 0.4, 0.5, 0.6);
-        mutableThis->indexVec6 = fsub.allocateAutoUpdateDiscreteVariable(state,
-            Stage::Position, new Value<Vec6>(dvVec6), Stage::Position);
+        mutableThis->indexVec6 = s.allocateAutoUpdateDiscreteVariable(indexSS,
+            Stage::Velocity, new Value<Vec6>(dvVec6), Stage::Dynamics);
 
         // Initialize discrete variable indexes
         initializeDiscreteVariableIndexes(nameBool, indexSS, indexBool);
@@ -166,81 +168,77 @@ public:
     }
 
     // Set the values of the discrete variables.
-    // The force calculation is done in SimTK::TwoPointLinearSpring.
-    // This method just provided a means of setting the added discrete
-    // variables, validating that they are changing during a simulation
-    // and being de/serialized correctly.
+    // The actual force calculation is done in SimTK::TwoPointLinearSpring.
+    // This method just provides a means of setting the added discrete
+    // variables so that they change during the course a simulation.
     virtual void computeForce(const SimTK::State& state,
         SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
         SimTK::Vector& generalizedForces) const override
     {
         Super::computeForce(state, bodyForces, generalizedForces);
 
-        SimTK::GeneralForceSubsystem& fsub = SimTK::GeneralForceSubsystem();
         const SimTK::Vector& u = state.getU();
-
-        return;
 
         // Bool
         bool& vBool = SimTK::Value<bool>::downcast(
-            fsub.updDiscreteVarUpdateValue(state, indexBool));
+            state.updDiscreteVarUpdateValue(indexSS, indexBool));
         vBool = u[0];
-        fsub.markDiscreteVarUpdateValueRealized(state, indexBool);
+        state.markDiscreteVarUpdateValueRealized(indexSS, indexBool);
 
         // Int
         SimTK::Value<int>::downcast(
-            fsub.updDiscreteVarUpdateValue(state, indexInt)) = u[0];
-        fsub.markDiscreteVarUpdateValueRealized(state, indexInt);
+            state.updDiscreteVarUpdateValue(indexSS, indexInt)) = u[0];
+        state.markDiscreteVarUpdateValueRealized(indexSS, indexInt);
 
         // Dbl
         SimTK::Value<double>::downcast(
-            fsub.updDiscreteVarUpdateValue(state, indexDbl)) = u[0];
-        fsub.markDiscreteVarUpdateValueRealized(state, indexDbl);
+            state.updDiscreteVarUpdateValue(indexSS, indexDbl)) = u[0];
+        state.markDiscreteVarUpdateValueRealized(indexSS, indexDbl);
 
         // Vec2
         Vec2& v2 = SimTK::Value<Vec2>::downcast(
-            fsub.updDiscreteVarUpdateValue(state, indexVec2));
+            state.updDiscreteVarUpdateValue(indexSS, indexVec2));
         v2[0] = u[0];
         v2[1] = u[1];
-        fsub.markDiscreteVarUpdateValueRealized(state, indexVec2);
+        state.markDiscreteVarUpdateValueRealized(indexSS, indexVec2);
 
         // Vec3
         Vec3& v3 = SimTK::Value<Vec3>::downcast(
-            fsub.updDiscreteVarUpdateValue(state, indexVec3));
+            state.updDiscreteVarUpdateValue(indexSS, indexVec3));
         v3[0] = u[0];
         v3[1] = u[1];
         v3[2] = u[2];
-        fsub.markDiscreteVarUpdateValueRealized(state, indexVec3);
+        state.markDiscreteVarUpdateValueRealized(indexSS, indexVec3);
 
         // Vec4
         Vec4& v4 = SimTK::Value<Vec4>::downcast(
-            fsub.updDiscreteVarUpdateValue(state, indexVec4));
+            state.updDiscreteVarUpdateValue(indexSS, indexVec4));
         v4[0] = u[0];
         v4[1] = u[1];
         v4[2] = u[2];
         v4[3] = u[3];
-        fsub.markDiscreteVarUpdateValueRealized(state, indexVec4);
+        state.markDiscreteVarUpdateValueRealized(indexSS, indexVec4);
 
         // Vec5
         Vec5& v5 = SimTK::Value<Vec5>::downcast(
-            fsub.updDiscreteVarUpdateValue(state, indexVec5));
+            state.updDiscreteVarUpdateValue(indexSS, indexVec5));
         v5[0] = u[0];
         v5[1] = u[1];
         v5[2] = u[2];
         v5[3] = u[3];
         v5[4] = u[4];
-        fsub.markDiscreteVarUpdateValueRealized(state, indexVec5);
+        state.markDiscreteVarUpdateValueRealized(indexSS, indexVec5);
 
         // Vec6
         Vec6& v6 = SimTK::Value<Vec6>::downcast(
-            fsub.updDiscreteVarUpdateValue(state, indexVec6));
+            state.updDiscreteVarUpdateValue(indexSS, indexVec6));
         v6[0] = u[0];
         v6[1] = u[1];
         v6[2] = u[2];
         v6[3] = u[3];
         v6[4] = u[4];
         v6[5] = u[5];
-        fsub.markDiscreteVarUpdateValueRealized(state, indexVec6);
+        state.markDiscreteVarUpdateValueRealized(indexSS, indexVec6);
     }
 
 }; // End of class ExtendedPointToPointSpring
