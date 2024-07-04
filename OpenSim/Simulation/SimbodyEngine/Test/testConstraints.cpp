@@ -135,38 +135,6 @@ public:
     }
 }; // End of MultidimensionalFunction
 
-void testRollingOnSurfaceConstraint();
-void testCoordinateLocking();
-void testWeldConstraint();
-void testPointOnLineConstraint();
-void testCoordinateCouplerConstraint();
-void testPointConstraint();
-void testConstantDistanceConstraint();
-void testSerializeDeserialize();
-
-int main()
-{
-    try {
-        testPointConstraint();
-        testConstantDistanceConstraint();
-        testCoordinateLocking();
-        testWeldConstraint();
-        // Compare behavior of PointOnLineConstraint between the foot and ground
-        testPointOnLineConstraint();
-        // Compare behavior of CoordinateCouplerConstraint as a custom knee
-        testCoordinateCouplerConstraint();
-        // test OpenSim roll constraint against a composite of Simbody constraints
-        testRollingOnSurfaceConstraint();
-        testSerializeDeserialize();
-    }
-    catch(const OpenSim::Exception& e) {
-        e.print(cerr);
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
-}
-
 //==============================================================================
 // Common Functions 
 //==============================================================================
@@ -320,7 +288,7 @@ void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, Mod
 // Test Cases
 //==========================================================================================================
 
-void testPointConstraint()
+TEST_CASE("testPointConstraint")
 {
     using namespace SimTK;
 
@@ -391,7 +359,7 @@ void testPointConstraint()
     compareSimulations(system, state, osimModel, osim_state, "testPointConstraint FAILED\n");
 }
 
-void testConstantDistanceConstraint()
+TEST_CASE("testConstantDistanceConstraint")
 {
     using namespace SimTK;
 
@@ -472,7 +440,7 @@ void testConstantDistanceConstraint()
     compareSimulations(system, state, &osimModel, osim_state,
                        "testConstantDistanceConstraint FAILED\n");
 }
-void testCoordinateLocking()
+TEST_CASE("testCoordinateLocking")
 {
     using namespace SimTK;
 
@@ -568,7 +536,7 @@ void testCoordinateLocking()
     ASSERT(fabs(qf[1]-fixedKneeAngle) <= integ_accuracy, __FILE__, __LINE__, errorMessage.str());
 }
 
-void testWeldConstraint()
+TEST_CASE("testWeldConstraint")
 {
     using namespace SimTK;
 
@@ -673,7 +641,7 @@ void testWeldConstraint()
         "testWeldConstraint FAILED\n");
 }
 
-void testPointOnLineConstraint()
+TEST_CASE("testPointOnLineConstraint")
 {
     using namespace SimTK;
 
@@ -751,7 +719,7 @@ void testPointOnLineConstraint()
     compareSimulations(system, state, osimModel, osim_state, "testPointOnLineConstraint FAILED\n");
 } // end testPointOnLineConstraint
 
-void testCoordinateCouplerConstraint()
+TEST_CASE("testCoordinateCouplerConstraint")
 {
     using namespace SimTK;
 
@@ -955,7 +923,7 @@ void testCoordinateCouplerConstraint()
     }
 }
 
-void testRollingOnSurfaceConstraint()
+TEST_CASE("testRollingOnSurfaceConstraint")
 {
     using namespace SimTK;
 
@@ -1092,7 +1060,8 @@ void testRollingOnSurfaceConstraint()
     compareSimulations(system, state, osimModel, osim_state, "testRollingOnSurfaceConstraint FAILED\n");
 }
 
-void testSerializeDeserialize() {
+TEST_CASE("testSerializeDeserialize")
+{
     std::cout << "Test serialize & deserialize." << std::endl;
 
     std::string origModelFile{"testJointConstraints.osim"};
