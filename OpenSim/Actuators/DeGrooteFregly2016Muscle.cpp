@@ -152,12 +152,7 @@ void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
             "Pennation angle at optimal fiber length must be in the range [0, "
             "Pi/2).");
 
-    m_fiberWidth = get_m_fiberWidth();
-    m_squareFiberWidth = get_m_squareFiberWidth();
-    m_maxContractionVelocityInMetersPerSecond =
-            get_m_maxContractionVelocityInMetersPerSecond();
-    m_kT = get_m_kT();
-    m_isTendonDynamicsExplicit = get_m_isTendonDynamicsExplicit();
+    m_isTendonDynamicsExplicit = get_tendon_compliance_dynamics_mode() == "explicit";
 }
 
 void DeGrooteFregly2016Muscle::extendAddToSystem(
@@ -275,13 +270,13 @@ void DeGrooteFregly2016Muscle::calcMuscleLengthInfoHelper(
     // ------
     mli.fiberLengthAlongTendon = muscleTendonLength - mli.tendonLength;
     mli.fiberLength = sqrt(
-            SimTK::square(mli.fiberLengthAlongTendon) + get_m_squareFiberWidth());
+            SimTK::square(mli.fiberLengthAlongTendon) + getSquareFiberWidth());
     mli.normFiberLength = mli.fiberLength / get_optimal_fiber_length();
 
     // Pennation.
     // ----------
     mli.cosPennationAngle = mli.fiberLengthAlongTendon / mli.fiberLength;
-    mli.sinPennationAngle = get_m_fiberWidth() / mli.fiberLength;
+    mli.sinPennationAngle = getFiberWidth() / mli.fiberLength;
     mli.pennationAngle = asin(mli.sinPennationAngle);
 
     // Multipliers.
@@ -307,7 +302,7 @@ void DeGrooteFregly2016Muscle::calcFiberVelocityInfoHelper(
         fvi.normFiberVelocity =
                 calcForceVelocityInverseCurve(fvi.fiberForceVelocityMultiplier);
         fvi.fiberVelocity = fvi.normFiberVelocity *
-                            get_m_maxContractionVelocityInMetersPerSecond();
+                            getMaxContractionVelocityInMetersPerSecond();
         fvi.fiberVelocityAlongTendon =
                 fvi.fiberVelocity / mli.cosPennationAngle;
         fvi.tendonVelocity =
@@ -327,13 +322,13 @@ void DeGrooteFregly2016Muscle::calcFiberVelocityInfoHelper(
         fvi.fiberVelocity =
                 fvi.fiberVelocityAlongTendon * mli.cosPennationAngle;
         fvi.normFiberVelocity =
-                fvi.fiberVelocity / get_m_maxContractionVelocityInMetersPerSecond();
+                fvi.fiberVelocity / getMaxContractionVelocityInMetersPerSecond();
         fvi.fiberForceVelocityMultiplier =
                 calcForceVelocityMultiplier(fvi.normFiberVelocity);
     }
 
     const SimTK::Real tanPennationAngle =
-            get_m_fiberWidth() / mli.fiberLengthAlongTendon;
+            getFiberWidth() / mli.fiberLengthAlongTendon;
     fvi.pennationAngularVelocity =
             -fvi.fiberVelocity / mli.fiberLength * tanPennationAngle;
 }

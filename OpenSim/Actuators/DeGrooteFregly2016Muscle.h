@@ -493,14 +493,14 @@ public:
     // TODO: In explicit mode, do not allow negative tendon forces?
     SimTK::Real calcTendonForceMultiplier(
             const SimTK::Real& normTendonLength) const {
-        return c1 * exp(get_m_kT() * (normTendonLength - c2)) - c3;
+        return c1 * exp(getkT() * (normTendonLength - c2)) - c3;
     }
 
     /// This is the derivative of the tendon-force length curve with respect to
     /// normalized tendon length.
     SimTK::Real calcTendonForceMultiplierDerivative(
             const SimTK::Real& normTendonLength) const {
-        return c1 * get_m_kT() * exp(get_m_kT() * (normTendonLength - c2));
+        return c1 * getkT() * exp(getkT() * (normTendonLength - c2));
     }
 
     /// This is the integral of the tendon-force length curve with respect to
@@ -513,8 +513,8 @@ public:
         const double minNormTendonLength =
                 calcTendonForceLengthInverseCurve(m_minNormTendonForce);
         const double temp1 =
-                exp(get_m_kT() * normTendonLength) - exp(get_m_kT() * minNormTendonLength);
-        const double temp2 = c1 * exp(-c2 * get_m_kT()) / get_m_kT();
+                exp(getkT() * normTendonLength) - exp(getkT() * minNormTendonLength);
+        const double temp2 = c1 * exp(-c2 * getkT()) / getkT();
         const double temp3 = c3 * (normTendonLength - minNormTendonLength);
         return temp1 * temp2 - temp3;
     }
@@ -523,7 +523,7 @@ public:
     /// normalized tendon length as a function of the normalized tendon force.
     SimTK::Real calcTendonForceLengthInverseCurve(
             const SimTK::Real& normTendonForce) const {
-        return log((1.0 / c1) * (normTendonForce + c3)) / get_m_kT() + c2;
+        return log((1.0 / c1) * (normTendonForce + c3)) / getkT() + c2;
     }
 
     /// This returns normalized tendon velocity given the derivative of 
@@ -535,7 +535,7 @@ public:
             const SimTK::Real& derivNormTendonForce,
             const SimTK::Real& normTendonLength) const {
         return derivNormTendonForce /
-               (c1 * get_m_kT() * exp(get_m_kT() * (normTendonLength - c2)));
+               (c1 * getkT() * exp(getkT() * (normTendonLength - c2)));
     }
 
     /// This computes both the total fiber force and the individual components
@@ -632,8 +632,8 @@ public:
         // pennationAngle = asin(fiberWidth/fiberLength)
         // d_pennationAngle/d_fiberLength =
         //          d/d_fiberLength (asin(fiberWidth/fiberLength))
-        return (-get_m_fiberWidth() / square(fiberLength)) /
-               sqrt(1.0 - square(get_m_fiberWidth() / fiberLength));
+        return (-getFiberWidth() / square(fiberLength)) /
+               sqrt(1.0 - square(getFiberWidth() / fiberLength));
     }
 
     /// The derivative of the fiber force along the tendon with respect to fiber
@@ -838,24 +838,21 @@ private:
     void calcMusclePotentialEnergyInfoHelper(const bool& ignoreTendonCompliance,
             const MuscleLengthInfo& mli, MusclePotentialEnergyInfo& mpei) const;
 
-    //
-    SimTK::Real get_m_fiberWidth() const {
+    SimTK::Real getFiberWidth() const {
         const auto normFiberWidth = sin(get_pennation_angle_at_optimal());
         return get_optimal_fiber_length() * normFiberWidth;
     }
-    SimTK::Real get_m_squareFiberWidth() const {
-        using SimTK::square;
-        return square(get_m_fiberWidth());
+    SimTK::Real getSquareFiberWidth() const {
+        return SimTK::square(getFiberWidth());
     }
-    SimTK::Real get_m_maxContractionVelocityInMetersPerSecond() const {
+    SimTK::Real getMaxContractionVelocityInMetersPerSecond() const {
         return get_max_contraction_velocity() * get_optimal_fiber_length();
     }
-    SimTK::Real get_m_kT() const {
+    /// Tendon stiffness parameter from De Groote et al., 2016. Instead of
+    /// kT, users specify tendon strain at 1 norm force, which is more intuitive.
+    SimTK::Real getkT() const {
         return log((1.0 + c3) / c1) /
            (1.0 + get_tendon_strain_at_one_norm_force() - c2);
-    }
-    bool get_m_isTendonDynamicsExplicit() const {
-        return get_tendon_compliance_dynamics_mode() == "explicit";
     }
 
     /// This is a Gaussian-like function used in the active force-length curve.
@@ -969,14 +966,6 @@ private:
 
     // Computed from properties.
     // -------------------------
-
-    // The square of (fiber_width / optimal_fiber_length).
-    SimTK::Real m_fiberWidth = SimTK::NaN;
-    SimTK::Real m_squareFiberWidth = SimTK::NaN;
-    SimTK::Real m_maxContractionVelocityInMetersPerSecond = SimTK::NaN;
-    // Tendon stiffness parameter from De Groote et al., 2016. Instead of
-    // kT, users specify tendon strain at 1 norm force, which is more intuitive.
-    SimTK::Real m_kT = SimTK::NaN;
     bool m_isTendonDynamicsExplicit = true;
 
     // Indices for MuscleDynamicsInfo::userDefinedDynamicsExtras.
