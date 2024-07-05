@@ -12,6 +12,7 @@ v4.6
   `appendSocketConnectee_*` can be used to connect `Object`s to a list `Socket`. In addition, `Component` and Socket have
   new `getConnectee` overloads that take an index to a desired object in the list `Socket` (#3652).
 - Added `ComponentPath::root()`, which returns a `ComponentPath` equivalent to "/"
+- Added `ComponentPath::separator()`, which returns the separator that's placed between elements of the path (i.e. `'/'`)
 - `ComponentPath` is now less-than (`<`) comparable, making it usable in (e.g.) `std::map`
 - `ComponentPath` now has a `std::hash<T>` implementation, making it usable in (e.g.) `std::unordered_map`
 - Added `.clear()` and `.empty()` to `ComponentPath` for more parity with `std::string`'s semantics
@@ -67,6 +68,8 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Fixed bugs in `MocoCasOCProblem` and `CasOC::Problem` with incorrect string formatting. (#3828)
 - Fixed `MocoOrientationTrackingGoal::initializeOnModelImpl` to check for missing kinematic states, but allow other missing columns. (#3830)
 - Improved exception handling for internal errors in `MocoCasADiSolver`. Problems will now abort and print a descriptive error message (rather than fail due to an empty trajectory). (#3834)
+- The performance of `getStateVariableValue`, `getStateVariableDerivativeValue`, and `getModelingOption` was improved in
+  the case where provided string is just the name of the value, rather than a path to it (#3782)
 
 
 
