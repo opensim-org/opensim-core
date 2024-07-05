@@ -153,10 +153,6 @@ TEMPLATE_TEST_CASE(
     MocoBounds normTendonBounds(0.1, 2);
 
     Model model = createHangingMuscleModelMeyerFregly(optimalFiberLength,
-            tendonSlackLength, ignoreActivationDynamics, true,
-            isTendonDynamicsExplicit);
-
-    Model model = createHangingMuscleModel(optimalFiberLength,
             tendonSlackLength, ignoreActivationDynamics, ignoreTendonCompliance,
             isTendonDynamicsExplicit);
 
