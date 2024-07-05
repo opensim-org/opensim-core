@@ -36,14 +36,12 @@
 //     Add tests here as new constraint types are added to OpenSim
 //
 //==============================================================================
-#include <catch2/catch_all.hpp>
 
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/PointKinematics.h>
 #include <OpenSim/Analyses/ForceReporter.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/osimCommon.h>
-
 #include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -58,7 +56,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
-
 #include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
@@ -67,7 +64,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKsimbody.h"
-
+#include <catch2/catch_all.hpp>
 
 
 using namespace OpenSim;
