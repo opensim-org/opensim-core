@@ -354,6 +354,7 @@ public:
 private:
     void constructProperties();
     void extendFinalizeFromProperties() override;
+    void extendConnectToModel(Model& model) override;
     void extendRealizeTopology(SimTK::State&) const override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void calcMetabolicRateForCache(const SimTK::State& s) const;
