@@ -170,7 +170,7 @@ public:
     // Set the values of the discrete variables.
     // The actual force calculation is done in SimTK::TwoPointLinearSpring.
     // This method just provides a means of setting the added discrete
-    // variables so that they change during the course a simulation.
+    // variables so that they change during the course of a simulation.
     virtual void computeForce(const SimTK::State& state,
         SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
         SimTK::Vector& generalizedForces) const override
@@ -611,13 +611,18 @@ TEST_CASE("Serialization and Deserialization")
     // Serialize (A)
     int precision = 6;
     SimTK::String filename = "BlockOnASpring.ostates";
-    StatesDocument docA(*model, trajA, precision);
+    SimTK::String note = "Output from `testStatesDocument.cpp` to validate state serialization and deserialization.";
+    StatesDocument docA(*model, trajA, note, precision);
     docA.serialize(filename);
 
     // Deserialize (B)
     StatesDocument docB(filename);
     Array_<State> trajB;
     docB.deserialize(*model, trajB);
+
+    // Check the note and the precision.
+    CHECK(docB.getNote() == docA.getNote());
+    CHECK(docB.getPrecision() == docB.getPrecision());
 
     // Check size
     REQUIRE(trajA.size() == trajB.size());
@@ -628,7 +633,7 @@ TEST_CASE("Serialization and Deserialization")
         model->getSystem().realize(trajB[i], Stage::Report);
     }
 
-    // Does A == B?
+    // Are state trajectories A and B the same?
     testEquality(*model, trajA, trajB, precision);
 
     REQUIRE(1 == 1);

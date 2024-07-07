@@ -499,10 +499,12 @@ public:
     validity of the XML file is not tested until StatesDocument::deserialize()
     is called.
 
-    @param filename The name of the file, which may include the file system
+    @param filename The name of the file, which may be prepended by the system
     path at which the file resides (e.g., "C:/Documents/block.ostates"). */
     StatesDocument(const SimTK::String& filename) {
         doc.readFromFile(filename);
+        initializeNote();
+        initializePrecision();
     }
 
     /** Construct a StatesDocument instance from a states trajectory in
@@ -516,13 +518,24 @@ public:
     @param model The OpenSim::Model to which the states belong.
     @param trajectory An array containing the time-ordered sequence of
     SimTK::State objects.
+    @param note Annotation note for this states document. By default, the note
+    is an empty string.
     @param precision The number of significant figures with which numerical
     values are converted to strings. The default value is
-    SimTK:LosslessNumDigitsReal (about 20), which allows for near lossless
+    SimTK:LosslessNumDigitsReal (about 20), which allows for lossless
     reproduction of state. */
     StatesDocument(const OpenSim::Model& model,
         const SimTK::Array_<SimTK::State>& trajectory,
+        const SimTK::String& note = "",
         int precision = SimTK::LosslessNumDigitsReal);
+
+    //-------------------------------------------------------------------------
+    // Accessors
+    //-------------------------------------------------------------------------
+    /** Get the annotation note for this states document. */
+    const SimTK::String& getNote() const { return note; }
+    /** Get the precision for this states document. */
+    int getPrecision() const { return precision; }
 
     //-------------------------------------------------------------------------
     // Serialization
@@ -532,9 +545,7 @@ public:
 
     @param filename The name of the file, which may include the file system
     path at which to write the file (e.g., "C:/Documents/block.ostates"). */
-    void serialize(const SimTK::String& filename) {
-        doc.writeToFile(filename);
-    }
+    void serialize(const SimTK::String& filename);
 
     //-------------------------------------------------------------------------
     // Deserialization
@@ -563,6 +574,8 @@ protected:
         const SimTK::Array_<SimTK::State>& traj);
     void formRootElement(const Model& model,
         const SimTK::Array_<SimTK::State>& traj);
+    void formNoteElement(const Model& model,
+        const SimTK::Array_<SimTK::State>& traj);
     void formTimeElement(const Model& model,
         const SimTK::Array_<SimTK::State>& traj);
     void formContinuousElement(const Model& model,
@@ -577,6 +590,8 @@ protected:
     void checkDocConsistencyWithModel(const Model& model) const;
     void prepareStatesTrajectory(const Model& model,
         SimTK::Array_<SimTK::State> &traj);
+    void initializeNote();
+    void initializePrecision();
     void initializeTime(SimTK::Array_<SimTK::State> &traj);
     void initializeContinuousVariables(const Model& model,
         SimTK::Array_<SimTK::State> &traj);
@@ -592,6 +607,8 @@ private:
     // Member Variables
     int precision{SimTK::LosslessNumDigitsReal};
     SimTK::Xml::Document doc;
+    SimTK::String note{""};
+
 
 }; // END of class StatesDocument
 

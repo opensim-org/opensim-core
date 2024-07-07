@@ -332,9 +332,10 @@ public:
     */
     OpenSim::StatesDocument
     exportToStatesDocument(const OpenSim::Model& model,
+        const SimTK::String& note = "",
         int precision = SimTK::LosslessNumDigitsReal) const
     {
-        return OpenSim::StatesDocument(model, m_states, precision);
+        return OpenSim::StatesDocument(model, m_states, note, precision);
     }
 
     /** Get a read-only reference to the underlying state array. */

@@ -136,8 +136,11 @@ struct SDocUtil {
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 StatesDocument::
-StatesDocument(const Model& model, const Array_<State>& trajectory, int p) {
-    precision = clamp(1, p, SimTK::LosslessNumDigitsReal);
+StatesDocument(const Model& model, const Array_<State>& trajectory,
+    const String& note, int p)
+{
+    this->note = note;
+    this->precision = clamp(1, p, SimTK::LosslessNumDigitsReal);
     formDoc(model, trajectory);
 }
 
@@ -147,8 +150,15 @@ StatesDocument(const Model& model, const Array_<State>& trajectory, int p) {
 //_____________________________________________________________________________
 void
 StatesDocument::
+serialize(const SimTK::String& filename) {
+    doc.writeToFile(filename);
+}
+//_____________________________________________________________________________
+void
+StatesDocument::
 formDoc(const Model& model, const Array_<State>& traj) {
     formRootElement(model, traj);
+    formNoteElement(model, traj);
     formTimeElement(model, traj);
     formContinuousElement(model, traj);
     formDiscreteElement(model, traj);
@@ -163,7 +173,7 @@ formRootElement(const Model& model, const Array_<State>& traj) {
     Element rootElt = doc.getRootElement();
 
     // Insert a comment at the top level, just before the root node.
-    string info = "OpenSim States Document (Version ";
+    string info = "OpenSim States Document (Version: ";
     info += std::to_string(model.getDocumentFileVersion());
     info += ")";
     Xml::Comment comment(info);
@@ -175,15 +185,22 @@ formRootElement(const Model& model, const Array_<State>& traj) {
     const char *localeName = "C";
     std::locale::global(std::locale(localeName));
     char buf[64];
-    strftime(buf, sizeof buf, "%a %b %e %Y %H:%M:%S", std::localtime(&now));
-    //SimTK::String datetime = buf;
-    //cout << "ostates datetime = " << datetime << endl;
+    strftime(buf, sizeof buf, "%a %b %e %Y %H:%M:%S %Z", std::localtime(&now));
 
     // Add attributes to the root node
     rootElt.setAttributeValue("model", model.getName());
     rootElt.setAttributeValue("nTime", std::to_string(traj.size()));
     rootElt.setAttributeValue("precision", std::to_string(precision));
     rootElt.setAttributeValue("date", buf);
+}
+//_____________________________________________________________________________
+void
+StatesDocument::
+formNoteElement(const Model& model, const Array_<State>& traj) {
+    Element noteElt = Element("note");
+    Element rootElt = doc.getRootElement();
+    rootElt.appendNode(noteElt);
+    noteElt.setValue(note);
 }
 //_____________________________________________________________________________
 void
@@ -391,6 +408,39 @@ prepareStatesTrajectory(const Model& model, Array_<State>& traj) {
 
     // Append State objects
     for (int i=0; i < nTime; ++i) traj.emplace_back(state);
+}
+//_____________________________________________________________________________
+void
+StatesDocument::
+initializeNote() {
+    // Find the element
+    Element rootElt = doc.getRootElement();
+    Array_<Element> noteElts = rootElt.getAllElements("note");
+
+    // Check the number of note elements found. Should be 1.
+    if (noteElts.size() == 0) {
+        this->note = "";
+    }
+    else if (noteElts.size() > 1) {
+        cout << "StatesDocument: More than 1 `note` element found; ";
+        cout << "using just the 1st one." << endl;
+    }
+
+    // Get the value
+    this->note = noteElts[0].getValue();
+}
+//_____________________________________________________________________________
+void
+StatesDocument::
+initializePrecision() {
+    // Find the element
+    Element rootElt = doc.getRootElement();
+    Attribute precisionAttr = rootElt.getOptionalAttribute("precision");
+    int p;
+    bool success = precisionAttr.getValue().tryConvertTo<int>(p);
+    SimTK_ASSERT_ALWAYS(success,
+        "Unable to acquire the precision from the root element.");
+    this->precision = clamp(1, p, SimTK::LosslessNumDigitsReal);
 }
 //_____________________________________________________________________________
 void
