@@ -156,6 +156,7 @@ public:
 
     DeGrooteFregly2016Muscle() { constructProperties(); }
 
+
 protected:
     //--------------------------------------------------------------------------
     // COMPONENT INTERFACE
@@ -493,14 +494,14 @@ public:
     // TODO: In explicit mode, do not allow negative tendon forces?
     SimTK::Real calcTendonForceMultiplier(
             const SimTK::Real& normTendonLength) const {
-        return c1 * exp(getkT() * (normTendonLength - c2)) - c3;
+        return c1 * exp(getTendonStiffnessParameter() * (normTendonLength - c2)) - c3;
     }
 
     /// This is the derivative of the tendon-force length curve with respect to
     /// normalized tendon length.
     SimTK::Real calcTendonForceMultiplierDerivative(
             const SimTK::Real& normTendonLength) const {
-        return c1 * getkT() * exp(getkT() * (normTendonLength - c2));
+        return c1 * getTendonStiffnessParameter() * exp(getTendonStiffnessParameter() * (normTendonLength - c2));
     }
 
     /// This is the integral of the tendon-force length curve with respect to
@@ -513,8 +514,10 @@ public:
         const double minNormTendonLength =
                 calcTendonForceLengthInverseCurve(m_minNormTendonForce);
         const double temp1 =
-                exp(getkT() * normTendonLength) - exp(getkT() * minNormTendonLength);
-        const double temp2 = c1 * exp(-c2 * getkT()) / getkT();
+                exp(getTendonStiffnessParameter() * normTendonLength)
+                - exp(getTendonStiffnessParameter() * minNormTendonLength);
+        const double temp2 = c1 * exp(-c2 * getTendonStiffnessParameter())
+                                / getTendonStiffnessParameter();
         const double temp3 = c3 * (normTendonLength - minNormTendonLength);
         return temp1 * temp2 - temp3;
     }
@@ -523,7 +526,8 @@ public:
     /// normalized tendon length as a function of the normalized tendon force.
     SimTK::Real calcTendonForceLengthInverseCurve(
             const SimTK::Real& normTendonForce) const {
-        return log((1.0 / c1) * (normTendonForce + c3)) / getkT() + c2;
+        return log((1.0 / c1) * (normTendonForce + c3))
+                / getTendonStiffnessParameter() + c2;
     }
 
     /// This returns normalized tendon velocity given the derivative of 
@@ -534,8 +538,8 @@ public:
     SimTK::Real calcTendonForceLengthInverseCurveDerivative(
             const SimTK::Real& derivNormTendonForce,
             const SimTK::Real& normTendonLength) const {
-        return derivNormTendonForce /
-               (c1 * getkT() * exp(getkT() * (normTendonLength - c2)));
+        return derivNormTendonForce / (c1 * getTendonStiffnessParameter()
+            * exp(getTendonStiffnessParameter() * (normTendonLength - c2)));
     }
 
     /// This computes both the total fiber force and the individual components
@@ -848,9 +852,9 @@ private:
     SimTK::Real getMaxContractionVelocityInMetersPerSecond() const {
         return get_max_contraction_velocity() * get_optimal_fiber_length();
     }
-    /// Tendon stiffness parameter from De Groote et al., 2016. Instead of
+    /// Tendon stiffness parameter kT from De Groote et al., 2016. Instead of
     /// kT, users specify tendon strain at 1 norm force, which is more intuitive.
-    SimTK::Real getkT() const {
+    SimTK::Real getTendonStiffnessParameter() const {
         return log((1.0 + c3) / c1) /
            (1.0 + get_tendon_strain_at_one_norm_force() - c2);
     }
