@@ -228,22 +228,22 @@ void MocoStepTimeAsymmetryGoal::calcGoalImpl(const GoalInput& input,
 }
 
 void MocoStepTimeAsymmetryGoal::printDescriptionImpl() const {
-    log_cout("            target asymmetry: ", get_target_asymmetry());
+    log_cout("            target asymmetry: {}", get_target_asymmetry());
     const auto& leftGroup = get_left_contact_group();
     log_cout("            left forces:");
     for (int ic = 0; ic < leftGroup.getProperty_contact_force_paths().size();
          ++ic) {
         log_cout("                {}", leftGroup.get_contact_force_paths(ic));
     }
-    log_cout("            left contact sphere for position: ",
+    log_cout("            left contact sphere for position: {}",
              leftGroup.get_foot_position_contact_force_path());
 
-    const auto& rightGroup = get_left_contact_group();
+    const auto& rightGroup = get_right_contact_group();
     log_cout("            right forces:");
     for (int ic = 0; ic < leftGroup.getProperty_contact_force_paths().size();
          ++ic) {
         log_cout("                {}", rightGroup.get_contact_force_paths(ic));
     }
-    log_cout("            right contact sphere for position: ",
+    log_cout("            right contact sphere for position: {}",
              rightGroup.get_foot_position_contact_force_path());
 }
