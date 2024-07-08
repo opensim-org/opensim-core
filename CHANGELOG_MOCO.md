@@ -3,6 +3,10 @@ Moco Change Log
 
 1.3.1
 -----
+- 2024-07-08: Fixed a bug where deserialization of an OpenSim model with the `Bhargava2004SmoothedMuscleMetabolics`
+              component would not properly set the muscle masses listed, resulting in incorrect
+              metabolics values being computed.
+
 - 2024-04-29: Added support for optimizing "Input controls" associated with 
               `InputController`s in a model. Support includes updates to the 
               MocoProblem interface (e.g., setInputControlInfo()) and MocoTrajectory 
