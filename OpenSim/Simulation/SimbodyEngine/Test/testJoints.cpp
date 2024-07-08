@@ -69,8 +69,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Simulation/Test/SimulationComponentsForTesting.h>
-
 #include <memory>
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace std;
@@ -141,265 +141,6 @@ public:
         return new FunctionAdapter(*this);
     }
 }; // End of MultidimensionalFunction
-
-void testCustomVsUniversalPin();
-void testCustomJointVsFunctionBased();
-void testEllipsoidJoint();
-void testWeldJoint(bool randomizeBodyOrder);
-void testPinJoint();
-void testSliderJoint();
-void testPlanarJoint();
-void testBallJoint();
-void testFreeJoint();
-void testScapulothoracicJoint();
-void testCustomWithMultidimFunction();
-void testCustomVsCompoundJoint();
-void testEquivalentBodyForceFromGeneralizedForce();
-void testEquivalentBodyForceForGenForces(Model& model);
-void testCustomJointAccessors();
-void testGimbalJointAccessors();
-void testUniversalJointAccessors();
-void testMotionTypesForCustomJointCoordinates();
-void testNonzeroInterceptCustomJointVsPin();
-void testJointWithInvalidCoordinatesThrowsOnFinalization();
-
-// Multibody tree constructions tests
-void testAddedFreeJointForBodyWithoutJoint();
-void testAutomaticJointReversal();
-void testUserJointReversal();
-void testAutomaticLoopJointBreaker();
-
-int main() {
-    int itc = 0;
-
-    SimTK::Array_<std::string> failures;
-    // Register new Joint types for testing
-    Object::registerType(CompoundJoint());
-
-    // model connect should create a FreeJoint for bodies that are not
-    // connected by a Joint.
-    try {
-        ++itc;
-        testAddedFreeJointForBodyWithoutJoint();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testAddedFreeJointForBodyWithoutJoint");
-    }
-
-    // model creation should automatically reverse joints to build a tree
-    // but preserve the sense of the joint as specified by the user.
-    try {
-        ++itc;
-        testAutomaticJointReversal();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testAutomaticJointReversal");
-    }
-
-    // The parent and child frames should be swapped if the "reverse" element
-    // has been set to "true" in an old model file.
-    try {
-        ++itc;
-        testUserJointReversal();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testUserJointReversal");
-    }
-
-    // test that kinematic loops are broken to form a tree with constraints
-    try {
-        ++itc;
-        testAutomaticLoopJointBreaker();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testAutomaticLoopJointBreaker");
-    }
-
-    // Compare behavior of a double pendulum with OpenSim pin hip and pin knee
-    try {
-        ++itc;
-        testPinJoint();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testPinJoint");
-    }
-    // Compare behavior of a two body pendulum with OpenSim pin hip and slider
-    // knee
-    try {
-        ++itc;
-        testSliderJoint();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testSliderJoint");
-    }
-    // Compare behavior of a two body model connected via planar joints
-    try {
-        ++itc;
-        testPlanarJoint();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testPlanarJoint");
-    }
-    // First compare behavior of a double pendulum with Universal hip and
-    // Pin-like knee
-    try {
-        ++itc;
-        testCustomVsUniversalPin();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testCustomVsUniversalPin");
-    }
-    // Compare behavior of a double pendulum with pin hip and function-based
-    // translating tibia knee
-    try {
-        ++itc;
-        testCustomJointVsFunctionBased();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testCustomJointVsFunctionBased");
-    }
-    // Compare behavior of a double pendulum with an Ellipsoid hip and pin knee
-    try {
-        ++itc;
-        testEllipsoidJoint();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testEllipsoidJoint");
-    }
-    // Compare behavior of a double pendulum (1) with welded foot and toes
-    try {
-        ++itc;
-        testWeldJoint(false);
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testWeldJoint");
-    }
-    // Compare previous OpenSim model but with randomized body order in BodySet
-    // to test connectBodies
-    try {
-        ++itc;
-        testWeldJoint(true);
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testWeldJoint (random order)");
-    }
-
-    // Compare behavior of a double pendulum with an OpenSim Ball hip and custom
-    // pin knee OpenSim, system restricted to using Euler angles exclusively to
-    // support EllipsoidJoint and the fact that coordinates cannot map to/from
-    // quaternions
-    try {
-        ++itc;
-        testBallJoint();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testBallJoint");
-    }
-    // Compare behavior of a Free hip and pin knee
-    // OpenSim, system restricted to using Euler angles exclusively to support
-    // EllipsoidJoint and the fact that coordinates cannot map to/from
-    // quaternions
-    try {
-        ++itc;
-        testFreeJoint();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testFreeJoint");
-    }
-    try {
-        ++itc;
-        testScapulothoracicJoint();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testScapulothoracicJoint");
-    }
-    // Compare behavior of a Free hip and pin knee
-    try {
-        ++itc;
-        testCustomWithMultidimFunction();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testCustomWithMultidimFunction");
-    }
-    // Compare custom implementation of Gimbal to a Compound (multi-mobilizer)
-    // Joint version
-    try {
-        ++itc;
-        testCustomVsCompoundJoint();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testCustomVsCompoundJoint");
-    }
-
-    try {
-        ++itc;
-        testEquivalentBodyForceFromGeneralizedForce();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testEquivalentBodyForceFromGeneralizedForce");
-    }
-
-    // Test that MotionTypes for Joint Coordinates are correctly defined
-    try {
-        ++itc;
-        testMotionTypesForCustomJointCoordinates();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testMotionTypesForCustomJointCoordinates");
-    }
-
-    // Test the assumption that a nonzero intercept of a linear function
-    // for a transform axis of a CustomJoint acts as a simple offset of
-    // the Coordinate value with otherwise identical dynamics
-    try {
-        ++itc;
-        testNonzeroInterceptCustomJointVsPin();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testNonzeroInterceptCustomJointVsPin");
-    }
-
-    // Test accessors.
-    try {
-        ++itc;
-        testCustomJointAccessors();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testCustomJointAccessors");
-    }
-    try {
-        ++itc;
-        testGimbalJointAccessors();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testGimbalJointAccessors");
-    }
-    try {
-        ++itc;
-        testUniversalJointAccessors();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testUniversalJointAccessors");
-    }
-
-    try {
-        ++itc;
-        testJointWithInvalidCoordinatesThrowsOnFinalization();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testJointWithInvalidCoordinatesThrowsOnFinalization");
-    }
-
-    if (!failures.empty()) {
-        cout << "Done, with " << failures.size() << " failure(s) out of ";
-        cout << itc << " test cases." << endl;
-        cout << "Failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done. All cases passed." << endl;
-    return 0;
-}
 
 //==========================================================================================================
 // Common Functions
@@ -571,393 +312,91 @@ void compareSimulations(SimTK::MultibodySystem& system, SimTK::State& state,
 }
 //==========================================================================================================
 
-//==========================================================================================================
-// Test Cases
-//==========================================================================================================
-void testCustomVsUniversalPin() {
+void testEquivalentBodyForceForGenForces(Model& model) {
     using namespace SimTK;
 
-    cout << endl;
-    cout << "=========================================================="
-         << endl;
-    cout << " OpenSim CustomJoint vs. Simbody Universal and Pin Joints "
-         << endl;
-    cout << "=========================================================="
-         << endl;
+    State& state = model.initSystem();
+    Vector& qi = state.updQ();
+    Vector& ui = state.updU();
+    // Randomly select the initial state of this model
+    /*int nq = */ initTestStates(qi, ui);
 
-    // Define the Simbody system
-    MultibodySystem system;
-    SimbodyMatterSubsystem matter(system);
-    GeneralForceSubsystem forces(system);
-    SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
+    const SimbodyMatterSubsystem& matter = model.getMatterSubsystem();
 
-    // Thigh connected by hip
-    MobilizedBody::Universal thigh(matter.Ground(),
-            SimTK::Transform(hipInPelvis), SimTK::Body::Rigid(femurMass),
-            SimTK::Transform(hipInFemur));
-    // Function-based knee connects shank
-    MobilizedBody::Pin shank(thigh, SimTK::Transform(kneeInFemur),
-            SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia));
+    // The number of mobilities for the entire system.
+    int nm = matter.getNumMobilities();
 
-    // Simbody model state setup
-    system.realizeTopology();
-    State state = system.getDefaultState();
-    matter.setUseEulerAngles(state, true);
-    system.realizeModel(state);
+    Vector genForces(nm, 0.0);
+    Random::Uniform genForceRandom(-1000, 1000);
+    for (int i = 0; i < nm; ++i) { genForces[i] = genForceRandom.getValue(); }
 
-    //==========================================================================================================
-    // Setup OpenSim model
-    Model osimModel;
+    int nb = matter.getNumBodies();
+    Vector_<SpatialVec> bodyForces(nb, SpatialVec(Vec3(0), Vec3(0)));
 
-    // OpenSim bodies
-    const Ground& ground = osimModel.getGround();
-    // OpenSim thigh
-    OpenSim::Body osim_thigh("thigh", femurMass.getMass(),
-            femurMass.getMassCenter(), femurMass.getInertia());
+    Vector udot1(nm);
+    Vector_<SpatialVec> bodyAccs(nb);
 
-    // Define hip transform in terms of coordinates and axes for custom joint
-    SpatialTransform hipTransform;
-    hipTransform[0].setCoordinateNames(
-            OpenSim::Array<std::string>("hip_q0", 1, 1));
-    hipTransform[0].setFunction(new LinearFunction());
-    hipTransform[1].setCoordinateNames(
-            OpenSim::Array<std::string>("hip_q1", 1, 1));
-    hipTransform[1].setFunction(new LinearFunction());
+    model.getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
+    matter.calcAcceleration(state, genForces, bodyForces, udot1, bodyAccs);
 
-    // create custom hip joint
-    CustomJoint hip("hip", ground, hipInPelvis, Vec3(0), osim_thigh, hipInFemur,
-            Vec3(0), hipTransform);
+    // Construct the system vector of body forces from a Joint's equivalence to
+    // generalized force calculations
+    for (int j = 0; j < model.getJointSet().getSize(); ++j) {
+        Joint& joint = model.getJointSet()[j];
+        const PhysicalFrame& B = joint.getChildFrame();
+        MobilizedBodyIndex mbx = B.getMobilizedBodyIndex();
+        const Frame& Bo = B.findBaseFrame();
 
-    // Add the thigh body which now also contains the hip joint to the model
-    osimModel.addBody(&osim_thigh);
-    osimModel.addJoint(&hip);
+        const PhysicalFrame& P = joint.getParentFrame();
+        MobilizedBodyIndex mpx = P.getMobilizedBodyIndex();
+        const Frame& Po = P.findBaseFrame();
 
-    // Add OpenSim shank via a knee joint
-    OpenSim::Body osim_shank("shank", tibiaMass.getMass(),
-            tibiaMass.getMassCenter(), tibiaMass.getInertia());
+        Vec3 rB_Bo(0), rB_Po(0);
+        rB_Bo = joint.getChildFrame().findTransformInBaseFrame().p();
 
-    // Define knee coordinates and axes for custom joint spatial transform
-    SpatialTransform kneeTransform;
-    string knee_rot = "knee_ext";
-    // Only knee flexion/extension
-    kneeTransform[2].setCoordinateNames(
-            OpenSim::Array<std::string>(knee_rot, 1, 1));
-    kneeTransform[2].setFunction(new LinearFunction());
+        // Get Joint frame B location in parent, Po, to apply to parent Body
+        rB_Po = Bo.findStationLocationInAnotherFrame(state, rB_Bo, Po);
 
-    // create custom knee joint
-    CustomJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), osim_shank,
-            kneeInTibia, Vec3(0), kneeTransform);
+        // get the equivalent spatial force on the joint frame of the (child)
+        // body expressed in ground
+        SpatialVec FB_G = joint.calcEquivalentSpatialForce(state, genForces);
 
-    // Add the shank body which now also contains the knee joint to the model
-    osimModel.addBody(&osim_shank);
-    osimModel.addJoint(&knee);
+        cout << joint.getName() << " equivalent FB_G = " << FB_G << endl;
 
-    // Set gravity
-    osimModel.setGravity(gravity_vec);
+        // Apply spatial forces at joint to the body
+        matter.addInStationForce(state, mbx, rB_Bo, FB_G[1], bodyForces);
+        matter.addInBodyTorque(state, mbx, FB_G[0], bodyForces);
 
-    osimModel.disownAllComponents();
-
-    std::cout << osimModel.getCoordinateSet().getSize() << std::endl;
-
-    osimModel.finalizeConnections();
-    osimModel.print("testCustomVsUniversalPin.osim");
-
-    testEquivalentBodyForceForGenForces(osimModel);
-
-    Model testModel("testCustomVsUniversalPin.osim");
-
-    SimTK::State osim_state = testModel.initSystem();
-
-    //==========================================================================================================
-    // Compare Simbody system and OpenSim model simulations
-    compareSimulations(system, state, &osimModel, osim_state,
-            "testCustomVsUniversalPin FAILED\n");
-
-} // end of testCustomVsUniversalPin
-
-void testCustomJointVsFunctionBased() {
-    using namespace SimTK;
-
-    cout << endl;
-    cout << "=========================================================="
-         << endl;
-    cout << " OpenSim CustomJoint vs. Simbody FunctionBased Mobilizer  "
-         << endl;
-    cout << "=========================================================="
-         << endl;
-
-    // Define spline data for the custom knee joint
-    int npx = 12;
-    double angX[] = {-2.094395102393, -1.745329251994, -1.396263401595,
-            -1.047197551197, -0.698131700798, -0.349065850399, -0.174532925199,
-            0.197344221443, 0.337394955864, 0.490177570472, 1.521460267071,
-            2.094395102393};
-    double kneeX[] = {-0.003200000000, 0.001790000000, 0.004110000000,
-            0.004100000000, 0.002120000000, -0.001000000000, -0.003100000000,
-            -0.005227000000, -0.005435000000, -0.005574000000, -0.005435000000,
-            -0.005250000000};
-    int npy = 7;
-    double angY[] = {-2.094395102393, -1.221730476396, -0.523598775598,
-            -0.349065850399, -0.174532925199, 0.159148563428, 2.094395102393};
-    double kneeY[] = {-0.422600000000, -0.408200000000, -0.399000000000,
-            -0.397600000000, -0.396600000000, -0.395264000000, -0.396000000000};
-
-    for (int i = 0; i < npy; ++i) {
-        // Spline data points from experiment w.r.t. hip location. Change to
-        // make it w.r.t knee location
-        kneeY[i] += (-kneeInFemur[1] + hipInFemur[1]);
+        // Apply equal and opposite spatial forces at joint to the parent body
+        matter.addInStationForce(state, mpx, rB_Po, -FB_G[1], bodyForces);
+        matter.addInBodyTorque(state, mpx, -FB_G[0], bodyForces);
     }
 
-    SimmSpline tx(npx, angX, kneeX);
-    SimmSpline ty(npy, angY, kneeY);
-    ;
+    Vector udot2(nm);
+    matter.calcAcceleration(
+            state, 0.0 * genForces, bodyForces, udot2, bodyAccs);
 
-    // Define the functions that specify the FunctionBased Mobilized Body.
-    std::vector<std::vector<int>> coordIndices;
-    std::vector<const SimTK::Function*> functions;
-    std::vector<bool> isdof(6, false);
+    // If calcEquivalentSpatialForce is correct then the two methods of applying
+    // forces to the model should be equivalent and the accelerations should be
+    // identical
+    Vector error = udot2 - udot1;
+    double norm_rel_error = error.norm() / udot1.norm();
 
-    // Set the 1 spatial rotation about Z-axis
-    isdof[2] = true; // rot Z
-    int nm = 0;
-    for (int i = 0; i < 6; i++) {
-        if (isdof[i]) {
-            Vector coeff(2);
-            coeff[0] = 1;
-            coeff[1] = 0;
-            std::vector<int> findex(1);
-            findex[0] = nm++;
-            functions.push_back(new SimTK::Function::Linear(coeff));
-            coordIndices.push_back(findex);
-        } else if (i == 3 || i == 4) {
-            std::vector<int> findex(1, 0);
-            if (i == 3)
-                functions.push_back(tx.createSimTKFunction());
-            else
-                functions.push_back(ty.createSimTKFunction());
-
-            coordIndices.push_back(findex);
-        } else {
-            std::vector<int> findex(0);
-            functions.push_back(new SimTK::Function::Constant(0, 0));
-            coordIndices.push_back(findex);
-        }
-    }
-
-    // Define the Simbody system
-    MultibodySystem system;
-    SimbodyMatterSubsystem matter(system);
-    GeneralForceSubsystem forces(system);
-    SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
-    // system.updDefaultSubsystem().addEventReporter(new
-    // VTKEventReporter(system, 0.01));
-
-    // Thigh connected by hip
-    MobilizedBody::Pin thigh(matter.Ground(), SimTK::Transform(hipInPelvis),
-            SimTK::Body::Rigid(femurMass), SimTK::Transform(hipInFemur));
-    // Function-based knee connects shank
-    MobilizedBody::FunctionBased shank(thigh, SimTK::Transform(kneeInFemur),
-            SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia), nm,
-            functions, coordIndices);
-
-    // Simbody model state setup
-    system.realizeTopology();
-    State state = system.getDefaultState();
-    system.realizeModel(state);
-
-    //==========================================================================================================
-    // Setup OpenSim model
-    Model* osimModel = new Model;
-    // OpenSim bodies
-    const Ground& ground = osimModel->getGround();
-    ;
-
-    OpenSim::Body osim_thigh("thigh", femurMass.getMass(),
-            femurMass.getMassCenter(), femurMass.getInertia());
-
-    // Define hip coordinates and axes for custom joint
-    SpatialTransform hipTransform;
-    hipTransform[2].setCoordinateNames(Array<std::string>("hip_q0", 1, 1));
-    hipTransform[2].setFunction(new LinearFunction());
-
-    // create custom hip joint
-    CustomJoint hip("hip", ground, hipInPelvis, Vec3(0), osim_thigh, hipInFemur,
-            Vec3(0), hipTransform);
-
-    // Add the thigh body which now also contains the hip joint to the model
-    osimModel->addBody(&osim_thigh);
-    osimModel->addJoint(&hip);
-
-    // Add another body via a knee joint
-    OpenSim::Body osim_shank("shank", tibiaMass.getMass(),
-            tibiaMass.getMassCenter(), tibiaMass.getInertia());
-
-    // Define knee coordinates and axes for custom joint spatial transform
-    SpatialTransform kneeTransform;
-    string coord_name = "knee_q";
-    //  knee flexion/extension
-    kneeTransform[2].setCoordinateNames(
-            OpenSim::Array<std::string>(coord_name, 1, 1));
-    kneeTransform[2].setFunction(new LinearFunction());
-    // translation X
-    kneeTransform[3].setCoordinateNames(
-            OpenSim::Array<std::string>(coord_name, 1, 1));
-    kneeTransform[3].setFunction(tx);
-    // translation Y
-    kneeTransform[4].setCoordinateNames(
-            OpenSim::Array<std::string>(coord_name, 1, 1));
-    kneeTransform[4].setFunction(ty);
-
-    // create custom knee joint
-    CustomJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), osim_shank,
-            kneeInTibia, Vec3(0), kneeTransform);
-
-    // Add the shank body which now also contains the knee joint to the model
-    osimModel->addBody(&osim_shank);
-    osimModel->addJoint(&knee);
-
-    // BAD: have to set memoryOwner to false or program will crash when this
-    // test is complete.
-    osimModel->disownAllComponents();
-
-    // Set gravity
-    osimModel->setGravity(gravity_vec);
-
-    // write out the model to file
-    osimModel->print("testCustomJoint.osim");
-
-    testEquivalentBodyForceForGenForces(*osimModel);
-
-    SimTK::State osim_state = osimModel->initSystem();
-
-    //==========================================================================================================
-    // Compare Simbody system and OpenSim model simulations
-    compareSimulations(system, state, osimModel, osim_state,
-            "testCustomJointVsFunctionBased FAILED\n");
-
-} // end of testCustomJointVsFunctionBased
-
-void testEllipsoidJoint() {
-    using namespace SimTK;
-
-    cout << endl;
-    cout << "============================================================="
+    cout << "******************************************************************"
+            "**********"
          << endl;
-    cout << " OpenSim EllipsoidJoint vs. Simbody MobilizedBody::Ellipsoid "
-         << endl;
-    cout << "============================================================="
+    cout << "uDot Error = " << norm_rel_error
+         << ": from body forces vs. mobility forces." << endl;
+    cout << "******************************************************************"
+            "**********"
          << endl;
 
-    // Ellipsoid radii
-    Vec3 ellipsoidRadii(0.5, 0.33, 0.25);
-
-    // Define the Simbody system
-    MultibodySystem system;
-    SimbodyMatterSubsystem matter(system);
-    GeneralForceSubsystem forces(system);
-    SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
-
-    // Thigh connected by hip
-    MobilizedBody::Ellipsoid thigh(matter.Ground(),
-            SimTK::Transform(hipInPelvis), SimTK::Body::Rigid(femurMass),
-            SimTK::Transform(hipInFemur));
-    // Pin knee connects shank
-    MobilizedBody::Pin shank(thigh, SimTK::Transform(kneeInFemur),
-            SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia));
-
-    thigh.setDefaultRadii(ellipsoidRadii);
-    // Simbody model state setup
-    system.realizeTopology();
-    State state = system.getDefaultState();
-    matter.setUseEulerAngles(state, true);
-    system.realizeModel(state);
-
-    //==========================================================================================================
-    // Setup OpenSim model
-    Model* osimModel = new Model;
-    // OpenSim bodies
-    const Ground& ground = osimModel->getGround();
-    ;
-
-    // OpenSim thigh
-    OpenSim::Body osim_thigh("thigh", femurMass.getMass(),
-            femurMass.getMassCenter(), femurMass.getInertia());
-
-    // create hip as an ellipsoid joint
-    EllipsoidJoint hip("hip", ground, hipInPelvis, Vec3(0), osim_thigh,
-            hipInFemur, Vec3(0), ellipsoidRadii);
-
-    // Rename hip coordinates for an ellipsoid joint
-    for (int i = 0; i < hip.numCoordinates(); i++) {
-        std::stringstream coord_name;
-        coord_name << "hip_q" << i;
-        hip.upd_coordinates(i).setName(coord_name.str());
-    }
-
-    // Add the thigh body which now also contains the hip joint to the model
-    osimModel->addBody(&osim_thigh);
-    osimModel->addJoint(&hip);
-
-    // Add OpenSim shank via a knee joint
-    OpenSim::Body osim_shank("shank", tibiaMass.getMass(),
-            tibiaMass.getMassCenter(), tibiaMass.getInertia());
-
-    // create pin knee joint
-    PinJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), osim_shank,
-            kneeInTibia, Vec3(0));
-
-    // Add the shank body which now also contains the knee joint to the model
-    osimModel->addBody(&osim_shank);
-    osimModel->addJoint(&knee);
-
-    // BAD: have to set memoryOwner to false or program will crash when this
-    // test is complete.
-    osimModel->disownAllComponents();
-
-    osimModel->setGravity(gravity_vec);
-
-    // Write model to file
-    osimModel->print("testEllipsoidJoint.osim");
-
-    cout << "EllipsoidJoint: testEquivalentBodyForceForGenForces" << endl;
-    testEquivalentBodyForceForGenForces(*osimModel);
-
-    // Wipe out model
-    // delete osimModel;
-
-    // Load model from file
-    // osimModel = new Model("testEllipsoidJoint.osim");
-
-    osimModel->setUseVisualizer(false);
-    SimTK::State osim_state = osimModel->initSystem();
-
-    //==========================================================================================================
-    // Compare Simbody system and OpenSim model simulations
-    compareSimulations(system, state, osimModel, osim_state,
-            "testEllipsoidJoint FAILED\n");
-
-    // Test accessors.
-    {
-        EllipsoidJoint myEllipsoidJt;
-
-        ASSERT(myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation1X) ==
-                        myEllipsoidJt.get_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
-        ASSERT(myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation2Y) ==
-                        myEllipsoidJt.get_coordinates(1),
-                __FILE__, __LINE__, "Coordinate accessor failed");
-        ASSERT(myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation3Z) ==
-                        myEllipsoidJt.get_coordinates(2),
-                __FILE__, __LINE__, "Coordinate accessor failed");
-        ASSERT_THROW(OpenSim::InvalidCall, myEllipsoidJt.getCoordinate());
-
-        ASSERT(myEllipsoidJt.updCoordinate(EllipsoidJoint::Coord::Rotation1X) ==
-                        myEllipsoidJt.upd_coordinates(0),
-                __FILE__, __LINE__, "Coordinate accessor failed");
-        ASSERT_THROW(OpenSim::InvalidCall, myEllipsoidJt.updCoordinate());
-    }
-
-} // end testEllipsoidJoint
+    ASSERT(!SimTK::isNaN(norm_rel_error), __FILE__, __LINE__,
+            "testEquivalentBodyForceForGenForces FAILED, udot_error = NaN");
+    ASSERT(norm_rel_error <= SimTK::SignificantReal, __FILE__, __LINE__,
+            "testEquivalentBodyForceForGenForces FAILED, udot_error > "
+            "SimTK::SignificantReal");
+}
 
 void testWeldJoint(bool randomizeBodyOrder) {
     using namespace SimTK;
@@ -1156,7 +595,415 @@ void testWeldJoint(bool randomizeBodyOrder) {
     }
 }
 
-void testFreeJoint() {
+//==========================================================================================================
+// Test Cases
+//==========================================================================================================
+/// First compare behavior of a double pendulum with Universal hip and
+/// Pin-like knee
+TEST_CASE("testCustomVsUniversalPin") {
+    using namespace SimTK;
+
+    cout << endl;
+    cout << "=========================================================="
+         << endl;
+    cout << " OpenSim CustomJoint vs. Simbody Universal and Pin Joints "
+         << endl;
+    cout << "=========================================================="
+         << endl;
+
+    // Define the Simbody system
+    MultibodySystem system;
+    SimbodyMatterSubsystem matter(system);
+    GeneralForceSubsystem forces(system);
+    SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
+
+    // Thigh connected by hip
+    MobilizedBody::Universal thigh(matter.Ground(),
+            SimTK::Transform(hipInPelvis), SimTK::Body::Rigid(femurMass),
+            SimTK::Transform(hipInFemur));
+    // Function-based knee connects shank
+    MobilizedBody::Pin shank(thigh, SimTK::Transform(kneeInFemur),
+            SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia));
+
+    // Simbody model state setup
+    system.realizeTopology();
+    State state = system.getDefaultState();
+    matter.setUseEulerAngles(state, true);
+    system.realizeModel(state);
+
+    //==========================================================================================================
+    // Setup OpenSim model
+    Model osimModel;
+
+    // OpenSim bodies
+    const Ground& ground = osimModel.getGround();
+    // OpenSim thigh
+    OpenSim::Body osim_thigh("thigh", femurMass.getMass(),
+            femurMass.getMassCenter(), femurMass.getInertia());
+
+    // Define hip transform in terms of coordinates and axes for custom joint
+    SpatialTransform hipTransform;
+    hipTransform[0].setCoordinateNames(
+            OpenSim::Array<std::string>("hip_q0", 1, 1));
+    hipTransform[0].setFunction(new LinearFunction());
+    hipTransform[1].setCoordinateNames(
+            OpenSim::Array<std::string>("hip_q1", 1, 1));
+    hipTransform[1].setFunction(new LinearFunction());
+
+    // create custom hip joint
+    CustomJoint hip("hip", ground, hipInPelvis, Vec3(0), osim_thigh, hipInFemur,
+            Vec3(0), hipTransform);
+
+    // Add the thigh body which now also contains the hip joint to the model
+    osimModel.addBody(&osim_thigh);
+    osimModel.addJoint(&hip);
+
+    // Add OpenSim shank via a knee joint
+    OpenSim::Body osim_shank("shank", tibiaMass.getMass(),
+            tibiaMass.getMassCenter(), tibiaMass.getInertia());
+
+    // Define knee coordinates and axes for custom joint spatial transform
+    SpatialTransform kneeTransform;
+    string knee_rot = "knee_ext";
+    // Only knee flexion/extension
+    kneeTransform[2].setCoordinateNames(
+            OpenSim::Array<std::string>(knee_rot, 1, 1));
+    kneeTransform[2].setFunction(new LinearFunction());
+
+    // create custom knee joint
+    CustomJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), osim_shank,
+            kneeInTibia, Vec3(0), kneeTransform);
+
+    // Add the shank body which now also contains the knee joint to the model
+    osimModel.addBody(&osim_shank);
+    osimModel.addJoint(&knee);
+
+    // Set gravity
+    osimModel.setGravity(gravity_vec);
+
+    osimModel.disownAllComponents();
+
+    std::cout << osimModel.getCoordinateSet().getSize() << std::endl;
+
+    osimModel.finalizeConnections();
+    osimModel.print("testCustomVsUniversalPin.osim");
+
+    testEquivalentBodyForceForGenForces(osimModel);
+
+    Model testModel("testCustomVsUniversalPin.osim");
+
+    SimTK::State osim_state = testModel.initSystem();
+
+    //==========================================================================================================
+    // Compare Simbody system and OpenSim model simulations
+    compareSimulations(system, state, &osimModel, osim_state,
+            "testCustomVsUniversalPin FAILED\n");
+
+} // end of testCustomVsUniversalPin
+
+/// Compare behavior of a double pendulum with pin hip and function-based
+/// translating tibia knee
+TEST_CASE("testCustomJointVsFunctionBased") {
+    using namespace SimTK;
+
+    cout << endl;
+    cout << "=========================================================="
+         << endl;
+    cout << " OpenSim CustomJoint vs. Simbody FunctionBased Mobilizer  "
+         << endl;
+    cout << "=========================================================="
+         << endl;
+
+    // Define spline data for the custom knee joint
+    int npx = 12;
+    double angX[] = {-2.094395102393, -1.745329251994, -1.396263401595,
+            -1.047197551197, -0.698131700798, -0.349065850399, -0.174532925199,
+            0.197344221443, 0.337394955864, 0.490177570472, 1.521460267071,
+            2.094395102393};
+    double kneeX[] = {-0.003200000000, 0.001790000000, 0.004110000000,
+            0.004100000000, 0.002120000000, -0.001000000000, -0.003100000000,
+            -0.005227000000, -0.005435000000, -0.005574000000, -0.005435000000,
+            -0.005250000000};
+    int npy = 7;
+    double angY[] = {-2.094395102393, -1.221730476396, -0.523598775598,
+            -0.349065850399, -0.174532925199, 0.159148563428, 2.094395102393};
+    double kneeY[] = {-0.422600000000, -0.408200000000, -0.399000000000,
+            -0.397600000000, -0.396600000000, -0.395264000000, -0.396000000000};
+
+    for (int i = 0; i < npy; ++i) {
+        // Spline data points from experiment w.r.t. hip location. Change to
+        // make it w.r.t knee location
+        kneeY[i] += (-kneeInFemur[1] + hipInFemur[1]);
+    }
+
+    SimmSpline tx(npx, angX, kneeX);
+    SimmSpline ty(npy, angY, kneeY);
+    ;
+
+    // Define the functions that specify the FunctionBased Mobilized Body.
+    std::vector<std::vector<int>> coordIndices;
+    std::vector<const SimTK::Function*> functions;
+    std::vector<bool> isdof(6, false);
+
+    // Set the 1 spatial rotation about Z-axis
+    isdof[2] = true; // rot Z
+    int nm = 0;
+    for (int i = 0; i < 6; i++) {
+        if (isdof[i]) {
+            Vector coeff(2);
+            coeff[0] = 1;
+            coeff[1] = 0;
+            std::vector<int> findex(1);
+            findex[0] = nm++;
+            functions.push_back(new SimTK::Function::Linear(coeff));
+            coordIndices.push_back(findex);
+        } else if (i == 3 || i == 4) {
+            std::vector<int> findex(1, 0);
+            if (i == 3)
+                functions.push_back(tx.createSimTKFunction());
+            else
+                functions.push_back(ty.createSimTKFunction());
+
+            coordIndices.push_back(findex);
+        } else {
+            std::vector<int> findex(0);
+            functions.push_back(new SimTK::Function::Constant(0, 0));
+            coordIndices.push_back(findex);
+        }
+    }
+
+    // Define the Simbody system
+    MultibodySystem system;
+    SimbodyMatterSubsystem matter(system);
+    GeneralForceSubsystem forces(system);
+    SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
+    // system.updDefaultSubsystem().addEventReporter(new
+    // VTKEventReporter(system, 0.01));
+
+    // Thigh connected by hip
+    MobilizedBody::Pin thigh(matter.Ground(), SimTK::Transform(hipInPelvis),
+            SimTK::Body::Rigid(femurMass), SimTK::Transform(hipInFemur));
+    // Function-based knee connects shank
+    MobilizedBody::FunctionBased shank(thigh, SimTK::Transform(kneeInFemur),
+            SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia), nm,
+            functions, coordIndices);
+
+    // Simbody model state setup
+    system.realizeTopology();
+    State state = system.getDefaultState();
+    system.realizeModel(state);
+
+    //==========================================================================================================
+    // Setup OpenSim model
+    Model* osimModel = new Model;
+    // OpenSim bodies
+    const Ground& ground = osimModel->getGround();
+    ;
+
+    OpenSim::Body osim_thigh("thigh", femurMass.getMass(),
+            femurMass.getMassCenter(), femurMass.getInertia());
+
+    // Define hip coordinates and axes for custom joint
+    SpatialTransform hipTransform;
+    hipTransform[2].setCoordinateNames(Array<std::string>("hip_q0", 1, 1));
+    hipTransform[2].setFunction(new LinearFunction());
+
+    // create custom hip joint
+    CustomJoint hip("hip", ground, hipInPelvis, Vec3(0), osim_thigh, hipInFemur,
+            Vec3(0), hipTransform);
+
+    // Add the thigh body which now also contains the hip joint to the model
+    osimModel->addBody(&osim_thigh);
+    osimModel->addJoint(&hip);
+
+    // Add another body via a knee joint
+    OpenSim::Body osim_shank("shank", tibiaMass.getMass(),
+            tibiaMass.getMassCenter(), tibiaMass.getInertia());
+
+    // Define knee coordinates and axes for custom joint spatial transform
+    SpatialTransform kneeTransform;
+    string coord_name = "knee_q";
+    //  knee flexion/extension
+    kneeTransform[2].setCoordinateNames(
+            OpenSim::Array<std::string>(coord_name, 1, 1));
+    kneeTransform[2].setFunction(new LinearFunction());
+    // translation X
+    kneeTransform[3].setCoordinateNames(
+            OpenSim::Array<std::string>(coord_name, 1, 1));
+    kneeTransform[3].setFunction(tx);
+    // translation Y
+    kneeTransform[4].setCoordinateNames(
+            OpenSim::Array<std::string>(coord_name, 1, 1));
+    kneeTransform[4].setFunction(ty);
+
+    // create custom knee joint
+    CustomJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), osim_shank,
+            kneeInTibia, Vec3(0), kneeTransform);
+
+    // Add the shank body which now also contains the knee joint to the model
+    osimModel->addBody(&osim_shank);
+    osimModel->addJoint(&knee);
+
+    // BAD: have to set memoryOwner to false or program will crash when this
+    // test is complete.
+    osimModel->disownAllComponents();
+
+    // Set gravity
+    osimModel->setGravity(gravity_vec);
+
+    // write out the model to file
+    osimModel->print("testCustomJoint.osim");
+
+    testEquivalentBodyForceForGenForces(*osimModel);
+
+    SimTK::State osim_state = osimModel->initSystem();
+
+    //==========================================================================================================
+    // Compare Simbody system and OpenSim model simulations
+    compareSimulations(system, state, osimModel, osim_state,
+            "testCustomJointVsFunctionBased FAILED\n");
+
+} // end of testCustomJointVsFunctionBased
+
+/// Compare behavior of a double pendulum with an Ellipsoid hip and pin knee
+TEST_CASE("testEllipsoidJoint") {
+    using namespace SimTK;
+
+    cout << endl;
+    cout << "============================================================="
+         << endl;
+    cout << " OpenSim EllipsoidJoint vs. Simbody MobilizedBody::Ellipsoid "
+         << endl;
+    cout << "============================================================="
+         << endl;
+
+    // Ellipsoid radii
+    Vec3 ellipsoidRadii(0.5, 0.33, 0.25);
+
+    // Define the Simbody system
+    MultibodySystem system;
+    SimbodyMatterSubsystem matter(system);
+    GeneralForceSubsystem forces(system);
+    SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
+
+    // Thigh connected by hip
+    MobilizedBody::Ellipsoid thigh(matter.Ground(),
+            SimTK::Transform(hipInPelvis), SimTK::Body::Rigid(femurMass),
+            SimTK::Transform(hipInFemur));
+    // Pin knee connects shank
+    MobilizedBody::Pin shank(thigh, SimTK::Transform(kneeInFemur),
+            SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia));
+
+    thigh.setDefaultRadii(ellipsoidRadii);
+    // Simbody model state setup
+    system.realizeTopology();
+    State state = system.getDefaultState();
+    matter.setUseEulerAngles(state, true);
+    system.realizeModel(state);
+
+    //==========================================================================================================
+    // Setup OpenSim model
+    Model* osimModel = new Model;
+    // OpenSim bodies
+    const Ground& ground = osimModel->getGround();
+    ;
+
+    // OpenSim thigh
+    OpenSim::Body osim_thigh("thigh", femurMass.getMass(),
+            femurMass.getMassCenter(), femurMass.getInertia());
+
+    // create hip as an ellipsoid joint
+    EllipsoidJoint hip("hip", ground, hipInPelvis, Vec3(0), osim_thigh,
+            hipInFemur, Vec3(0), ellipsoidRadii);
+
+    // Rename hip coordinates for an ellipsoid joint
+    for (int i = 0; i < hip.numCoordinates(); i++) {
+        std::stringstream coord_name;
+        coord_name << "hip_q" << i;
+        hip.upd_coordinates(i).setName(coord_name.str());
+    }
+
+    // Add the thigh body which now also contains the hip joint to the model
+    osimModel->addBody(&osim_thigh);
+    osimModel->addJoint(&hip);
+
+    // Add OpenSim shank via a knee joint
+    OpenSim::Body osim_shank("shank", tibiaMass.getMass(),
+            tibiaMass.getMassCenter(), tibiaMass.getInertia());
+
+    // create pin knee joint
+    PinJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), osim_shank,
+            kneeInTibia, Vec3(0));
+
+    // Add the shank body which now also contains the knee joint to the model
+    osimModel->addBody(&osim_shank);
+    osimModel->addJoint(&knee);
+
+    // BAD: have to set memoryOwner to false or program will crash when this
+    // test is complete.
+    osimModel->disownAllComponents();
+
+    osimModel->setGravity(gravity_vec);
+
+    // Write model to file
+    osimModel->print("testEllipsoidJoint.osim");
+
+    cout << "EllipsoidJoint: testEquivalentBodyForceForGenForces" << endl;
+    testEquivalentBodyForceForGenForces(*osimModel);
+
+    // Wipe out model
+    // delete osimModel;
+
+    // Load model from file
+    // osimModel = new Model("testEllipsoidJoint.osim");
+
+    osimModel->setUseVisualizer(false);
+    SimTK::State osim_state = osimModel->initSystem();
+
+    //==========================================================================================================
+    // Compare Simbody system and OpenSim model simulations
+    compareSimulations(system, state, osimModel, osim_state,
+            "testEllipsoidJoint FAILED\n");
+
+    // Test accessors.
+    {
+        EllipsoidJoint myEllipsoidJt;
+
+        ASSERT(myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation1X) ==
+                        myEllipsoidJt.get_coordinates(0),
+                __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation2Y) ==
+                        myEllipsoidJt.get_coordinates(1),
+                __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT(myEllipsoidJt.getCoordinate(EllipsoidJoint::Coord::Rotation3Z) ==
+                        myEllipsoidJt.get_coordinates(2),
+                __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myEllipsoidJt.getCoordinate());
+
+        ASSERT(myEllipsoidJt.updCoordinate(EllipsoidJoint::Coord::Rotation1X) ==
+                        myEllipsoidJt.upd_coordinates(0),
+                __FILE__, __LINE__, "Coordinate accessor failed");
+        ASSERT_THROW(OpenSim::InvalidCall, myEllipsoidJt.updCoordinate());
+    }
+
+} // end testEllipsoidJoint
+
+// Compare behavior of a double pendulum (1) with welded foot and toes
+TEST_CASE("testWeldJoint unrandomized") {
+    testWeldJoint(false);
+}
+
+// Compare previous OpenSim model but with randomized body order in BodySet
+// to test connectBodies
+TEST_CASE("testWeldJoint randomized") {
+    testWeldJoint(true);
+}
+
+/// Compare behavior of a Free hip and pin knee
+/// OpenSim, system restricted to using Euler angles exclusively to support
+/// EllipsoidJoint and the fact that coordinates cannot map to/from
+/// quaternions
+TEST_CASE("testFreeJoint") {
     using namespace SimTK;
 
     cout << endl;
@@ -1284,7 +1131,7 @@ void testFreeJoint() {
 
 } // end testFreeJoint
 
-void testScapulothoracicJoint() {
+TEST_CASE("testScapulothoracicJoint") {
     cout << endl;
     cout << "============================================================="
          << endl;
@@ -1367,7 +1214,11 @@ void testScapulothoracicJoint() {
     }
 }
 
-void testBallJoint() {
+/// Compare behavior of a double pendulum with an OpenSim Ball hip and custom
+/// pin knee OpenSim, system restricted to using Euler angles exclusively to
+/// support EllipsoidJoint and the fact that coordinates cannot map to/from
+/// quaternions
+TEST_CASE("testBallJoint") {
     using namespace SimTK;
 
     cout << endl;
@@ -1477,7 +1328,8 @@ void testBallJoint() {
 
 } // end testBallJoint
 
-void testPinJoint() {
+/// Compare behavior of a double pendulum with OpenSim pin hip and pin knee
+TEST_CASE("testPinJoint") {
     using namespace SimTK;
 
     cout << endl;
@@ -1637,7 +1489,8 @@ void testPinJoint() {
 
 } // end testPinJoint
 
-void testSliderJoint() {
+/// Compare behavior of a two body pendulum with OpenSim pin hip and slider knee
+TEST_CASE("testSliderJoint") {
     using namespace SimTK;
 
     cout << endl;
@@ -1758,7 +1611,8 @@ void testSliderJoint() {
 
 } // end testSliderJoint
 
-void testPlanarJoint() {
+/// Compare behavior of a two body model connected via planar joints
+TEST_CASE("testPlanarJoint") {
     using namespace SimTK;
 
     cout << endl;
@@ -1881,7 +1735,8 @@ void testPlanarJoint() {
 
 } // end testPlanarJoint
 
-void testCustomWithMultidimFunction() {
+/// Compare behavior of a Free hip and pin knee
+TEST_CASE("testCustomWithMultidimFunction") {
     using namespace SimTK;
 
     cout << endl;
@@ -2014,7 +1869,9 @@ void testCustomWithMultidimFunction() {
 
 } // end of testCustomWithMultidimFunction
 
-void testCustomVsCompoundJoint() {
+/// Compare custom implementation of Gimbal to a Compound (multi-mobilizer)
+/// Joint version
+TEST_CASE("testCustomVsCompoundJoint") {
     using namespace SimTK;
 
     cout << endl;
@@ -2027,6 +1884,9 @@ void testCustomVsCompoundJoint() {
     //============================================================================================
     // Setup CustomJoint model
     //============================================================================================
+    // Register new Joint types for testing
+    Object::registerType(CompoundJoint());
+
     Model customModel;
 
     // OpenSim bodies
@@ -2162,7 +2022,7 @@ void testCustomVsCompoundJoint() {
 
 } // end of testCustomVsCompoundJoint
 
-void testEquivalentBodyForceFromGeneralizedForce() {
+TEST_CASE("testEquivalentBodyForceFromGeneralizedForce") {
     using namespace SimTK;
 
     cout << endl;
@@ -2189,93 +2049,9 @@ void testEquivalentBodyForceFromGeneralizedForce() {
 
 } // end testEquivalentBodyForceFromGeneralizedForce
 
-void testEquivalentBodyForceForGenForces(Model& model) {
-    using namespace SimTK;
-
-    State& state = model.initSystem();
-    Vector& qi = state.updQ();
-    Vector& ui = state.updU();
-    // Randomly select the initial state of this model
-    /*int nq = */ initTestStates(qi, ui);
-
-    const SimbodyMatterSubsystem& matter = model.getMatterSubsystem();
-
-    // The number of mobilities for the entire system.
-    int nm = matter.getNumMobilities();
-
-    Vector genForces(nm, 0.0);
-    Random::Uniform genForceRandom(-1000, 1000);
-    for (int i = 0; i < nm; ++i) { genForces[i] = genForceRandom.getValue(); }
-
-    int nb = matter.getNumBodies();
-    Vector_<SpatialVec> bodyForces(nb, SpatialVec(Vec3(0), Vec3(0)));
-
-    Vector udot1(nm);
-    Vector_<SpatialVec> bodyAccs(nb);
-
-    model.getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
-    matter.calcAcceleration(state, genForces, bodyForces, udot1, bodyAccs);
-
-    // Construct the system vector of body forces from a Joint's equivalence to
-    // generalized force calculations
-    for (int j = 0; j < model.getJointSet().getSize(); ++j) {
-        Joint& joint = model.getJointSet()[j];
-        const PhysicalFrame& B = joint.getChildFrame();
-        MobilizedBodyIndex mbx = B.getMobilizedBodyIndex();
-        const Frame& Bo = B.findBaseFrame();
-
-        const PhysicalFrame& P = joint.getParentFrame();
-        MobilizedBodyIndex mpx = P.getMobilizedBodyIndex();
-        const Frame& Po = P.findBaseFrame();
-
-        Vec3 rB_Bo(0), rB_Po(0);
-        rB_Bo = joint.getChildFrame().findTransformInBaseFrame().p();
-
-        // Get Joint frame B location in parent, Po, to apply to parent Body
-        rB_Po = Bo.findStationLocationInAnotherFrame(state, rB_Bo, Po);
-
-        // get the equivalent spatial force on the joint frame of the (child)
-        // body expressed in ground
-        SpatialVec FB_G = joint.calcEquivalentSpatialForce(state, genForces);
-
-        cout << joint.getName() << " equivalent FB_G = " << FB_G << endl;
-
-        // Apply spatial forces at joint to the body
-        matter.addInStationForce(state, mbx, rB_Bo, FB_G[1], bodyForces);
-        matter.addInBodyTorque(state, mbx, FB_G[0], bodyForces);
-
-        // Apply equal and opposite spatial forces at joint to the parent body
-        matter.addInStationForce(state, mpx, rB_Po, -FB_G[1], bodyForces);
-        matter.addInBodyTorque(state, mpx, -FB_G[0], bodyForces);
-    }
-
-    Vector udot2(nm);
-    matter.calcAcceleration(
-            state, 0.0 * genForces, bodyForces, udot2, bodyAccs);
-
-    // If calcEquivalentSpatialForce is correct then the two methods of applying
-    // forces to the model should be equivalent and the accelerations should be
-    // identical
-    Vector error = udot2 - udot1;
-    double norm_rel_error = error.norm() / udot1.norm();
-
-    cout << "******************************************************************"
-            "**********"
-         << endl;
-    cout << "uDot Error = " << norm_rel_error
-         << ": from body forces vs. mobility forces." << endl;
-    cout << "******************************************************************"
-            "**********"
-         << endl;
-
-    ASSERT(!SimTK::isNaN(norm_rel_error), __FILE__, __LINE__,
-            "testEquivalentBodyForceForGenForces FAILED, udot_error = NaN");
-    ASSERT(norm_rel_error <= SimTK::SignificantReal, __FILE__, __LINE__,
-            "testEquivalentBodyForceForGenForces FAILED, udot_error > "
-            "SimTK::SignificantReal");
-}
-
-void testAddedFreeJointForBodyWithoutJoint() {
+/// model connect should create a FreeJoint for bodies that are not
+/// connected by a Joint.
+TEST_CASE("testAddedFreeJointForBodyWithoutJoint") {
     using namespace OpenSim;
 
     cout << endl;
@@ -2297,7 +2073,9 @@ void testAddedFreeJointForBodyWithoutJoint() {
     model.printBasicInfo();
 }
 
-void testAutomaticJointReversal() {
+/// model creation should automatically reverse joints to build a tree
+/// but preserve the sense of the joint as specified by the user.
+TEST_CASE("testAutomaticJointReversal") {
     using namespace OpenSim;
 
     cout << endl;
@@ -2486,7 +2264,9 @@ void testAutomaticJointReversal() {
     ASSERT_EQUAL(accErr, 0.0, sqrt(integ_accuracy));
 }
 
-void testUserJointReversal() {
+/// The parent and child frames should be swapped if the "reverse" element
+/// has been set to "true" in an old model file.
+TEST_CASE("testUserJointReversal") {
     using namespace OpenSim;
 
     cout << "\n==========================================================="
@@ -2522,7 +2302,8 @@ void testUserJointReversal() {
             "Incorrect child frame when 'reverse' element is set to 'true'");
 }
 
-void testAutomaticLoopJointBreaker() {
+/// test that kinematic loops are broken to form a tree with constraints
+TEST_CASE("testAutomaticLoopJointBreaker") {
     cout << endl;
     cout << "==========================================================="
          << endl;
@@ -2633,7 +2414,9 @@ void testAutomaticLoopJointBreaker() {
     ASSERT_EQUAL(acc2, acc, SimTK::Vec3(SimTK::Eps));
 }
 
-void testCustomJointAccessors() {
+// Test accessors.
+
+TEST_CASE("testCustomJointAccessors") {
     {
         Model myModel;
         SpatialTransform myTransform0; // 0 Coordinates
@@ -2712,7 +2495,7 @@ void testCustomJointAccessors() {
     }
 }
 
-void testGimbalJointAccessors() {
+TEST_CASE("testGimbalJointAccessors") {
     GimbalJoint myGimbalJoint;
 
     ASSERT(myGimbalJoint.getCoordinate(GimbalJoint::Coord::Rotation1X) ==
@@ -2732,7 +2515,7 @@ void testGimbalJointAccessors() {
     ASSERT_THROW(OpenSim::InvalidCall, myGimbalJoint.updCoordinate());
 }
 
-void testUniversalJointAccessors() {
+TEST_CASE("testUniversalJointAccessors") {
     UniversalJoint myUniversalJoint;
 
     ASSERT(myUniversalJoint.getCoordinate(UniversalJoint::Coord::Rotation1X) ==
@@ -2749,7 +2532,8 @@ void testUniversalJointAccessors() {
     ASSERT_THROW(OpenSim::InvalidCall, myUniversalJoint.updCoordinate());
 }
 
-void testMotionTypesForCustomJointCoordinates() {
+/// Test that MotionTypes for Joint Coordinates are correctly defined
+TEST_CASE("testMotionTypesForCustomJointCoordinates") {
     {
         Model osimModel;
 
@@ -2870,7 +2654,10 @@ void testMotionTypesForCustomJointCoordinates() {
     }
 }
 
-void testNonzeroInterceptCustomJointVsPin() {
+/// Test the assumption that a nonzero intercept of a linear function
+/// for a transform axis of a CustomJoint acts as a simple offset of
+/// the Coordinate value with otherwise identical dynamics
+TEST_CASE("testNonzeroInterceptCustomJointVsPin") {
     using namespace SimTK;
 
     cout << endl;
@@ -2973,7 +2760,7 @@ void testNonzeroInterceptCustomJointVsPin() {
 // the bug is that user code is permitted to delete/clear `OpenSim::Coordinate`s, such
 // that the coordinate then does not have a minimum/maximum range, and that error state
 // isn't detected until downstream code (e.g. calls `getMaxRange()` or similar)
-void testJointWithInvalidCoordinatesThrowsOnFinalization()
+TEST_CASE("testJointWithInvalidCoordinatesThrowsOnFinalization")
 {
     OpenSim::Model model;
 
