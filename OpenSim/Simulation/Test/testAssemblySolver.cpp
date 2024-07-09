@@ -32,43 +32,11 @@
 #include <OpenSim/Common/MultivariatePolynomialFunction.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
-// Measure how long it takes to perform model.setStateVariableValues() on a 
-// model with constraints to evaluate the effect of assembly in the process.
-void instrumentSetStateValues(const string& modelFile);
-void testAssembleModelWithConstraints(string modelFile);
-void testAssemblySatisfiesConstraints(string modelFile);
-double calcLigamentLengthError(const SimTK::State &s, const Model &model);
-void testCoordinateCouplerCompoundFunction();
-
-int main()
-{
-    try {
-        LoadOpenSimLibrary("osimActuators");
-
-        //~3.5s for CoordinateStateVariable::setValue() enforcing constraints
-        //~0.18s for CoordinateStateVariable::setValue() NOT enforcing constraints
-        //       plus explicit Model::assemble() after model.setStateVariableValues()
-        instrumentSetStateValues("PushUpToesOnGroundLessPreciseConstraints.osim");
-        testAssemblySatisfiesConstraints("knee_patella_ligament.osim");
-        testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
-        testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
-        testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
-        testCoordinateCouplerCompoundFunction();
-    }
-    catch (const std::exception& e) {
-        cout << "\ntestAssemblySolver FAILED " << e.what() <<endl;
-        return 1;
-    }
-    cout << "\ntestAssemblySolver PASSED" << endl;
-    return 0;
-}
-
-//==========================================================================================================
-// Test Cases
-//==========================================================================================================
 void instrumentSetStateValues(const string& modelFile)
 {
     // Setup OpenSim model
@@ -95,7 +63,6 @@ void instrumentSetStateValues(const string& modelFile)
     cout << "model.setStateVariableValues elapsed time = "
         << elapsed / CLOCKS_PER_SEC << "s" << endl;
 }
-
 
 void testAssembleModelWithConstraints(string modelFile)
 {
@@ -288,6 +255,31 @@ void testAssembleModelWithConstraints(string modelFile)
     ASSERT(max(abs(q1_1 - q0_1)) > 1e-2, __FILE__, __LINE__, "Check that state changed after simulation FAILED");
 }
 
+double calcLigamentLengthError(const SimTK::State &s, const Model &model)
+{
+    using namespace SimTK;
+    double error = 0;
+
+    ConstantDistanceConstraint* constraint =
+        dynamic_cast<ConstantDistanceConstraint*>(&model.getConstraintSet()[0]);
+
+    if(constraint){
+        Vec3 p1inB1, p2inB2, p1inG, p2inG;
+        p1inB1 = constraint->get_location_body_1();
+        p2inB2 = constraint->get_location_body_2();
+
+        const PhysicalFrame& b1 = constraint->getBody1();
+        const PhysicalFrame& b2 = constraint->getBody2();
+
+        p1inG = b1.getTransformInGround(s)*p1inB1;
+        p2inG = b2.getTransformInGround(s)*p2inB2;
+
+        double length = (p2inG-p1inG).norm();
+        error = length - constraint->get_constant_distance();
+    }
+
+    return error;
+}
 
 void testAssemblySatisfiesConstraints(string modelFile)
 {
@@ -346,32 +338,6 @@ void testAssemblySatisfiesConstraints(string modelFile)
         ASSERT_EQUAL(0.0, cerr, model.get_assembly_accuracy(),
             __FILE__, __LINE__, "Constraints NOT satisfied to within assembly accuracy");
     }
-}
-
-double calcLigamentLengthError(const SimTK::State &s, const Model &model)
-{
-    using namespace SimTK;
-    double error = 0;
-
-    ConstantDistanceConstraint* constraint =
-        dynamic_cast<ConstantDistanceConstraint*>(&model.getConstraintSet()[0]);
-    
-    if(constraint){
-        Vec3 p1inB1, p2inB2, p1inG, p2inG;
-        p1inB1 = constraint->get_location_body_1();
-        p2inB2 = constraint->get_location_body_2();
-
-        const PhysicalFrame& b1 = constraint->getBody1();
-        const PhysicalFrame& b2 = constraint->getBody2();
-
-        p1inG = b1.getTransformInGround(s)*p1inB1;
-        p2inG = b2.getTransformInGround(s)*p2inB2;
-
-        double length = (p2inG-p1inG).norm();
-        error = length - constraint->get_constant_distance();
-    }
-
-    return error;
 }
 
 void testCoordinateCouplerCompoundFunction() {
@@ -445,4 +411,37 @@ void testCoordinateCouplerCompoundFunction() {
                 "CoordinateCouplerConstraint failed to constrain the dependent "
                 "coordinate based on a MultivariatePolynomialFunction.");
     }
+}
+
+//==========================================================================================================
+// Test Cases
+//==========================================================================================================
+
+// Measure how long it takes to perform model.setStateVariableValues() on a
+// model with constraints to evaluate the effect of assembly in the process.
+//~3.5s for CoordinateStateVariable::setValue() enforcing constraints
+//~0.18s for CoordinateStateVariable::setValue() NOT enforcing constraints
+//       plus explicit Model::assemble() after model.setStateVariableValues()
+TEST_CASE("SetStateValues") {
+    instrumentSetStateValues("PushUpToesOnGroundLessPreciseConstraints.osim");
+}
+
+TEST_CASE("AssemblySatifiesConstraints") {
+    testAssemblySatisfiesConstraints("knee_patella_ligament.osim");
+}
+
+TEST_CASE("AssembleModelWithConstraints") {
+    SECTION("PushUpToesOnGroundExactConstraints") {
+        testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
+    }
+    SECTION("PushUpToesOnGroundLessPreciseConstraints") {
+        testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
+    }
+    SECTION("PushUpToesOnGroundWithMuscles") {
+        testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
+    }
+}
+
+TEST_CASE("CoordinateCouplerCompoundFunction") {
+    testCoordinateCouplerCompoundFunction();
 }
