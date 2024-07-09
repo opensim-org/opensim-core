@@ -31,7 +31,6 @@
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Common/MultivariatePolynomialFunction.h>
 #include <OpenSim/Simulation/osimSimulation.h>
-
 #include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
