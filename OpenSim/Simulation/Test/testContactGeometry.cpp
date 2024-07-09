@@ -32,12 +32,10 @@
 #include <iostream>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Exception.h>
-
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/ForceReporter.h>
-
 #include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>
 #include <OpenSim/Simulation/Model/ContactMesh.h>
@@ -51,6 +49,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKsimbody.h"
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -72,44 +71,7 @@ const static string mesh_files[] = {"sphere_10cm_radius.obj",
 
 //==============================================================================
 
-int testBouncingBall(bool useMesh, const std::string mesh_filename="");
-int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh2);
-void compareHertzAndMeshContactResults();
-template <typename ContactType> // e.g., HuntCrossley.
-void testIntermediateFrames();
-
-int main()
-{
-    try
-    {
-        testBouncingBall(false);
-        cout << "Testing mesh .obj format" << endl;
-        testBouncingBall(true, mesh_files[0]);
-        cout << "Testing mesh .stl format" << endl;
-        testBouncingBall(true, mesh_files[1]);
-        cout << "Testing mesh .vtp format" << endl;
-        testBouncingBall(true, mesh_files[2]);
-        testBallToBallContact(false, false, false);
-        testBallToBallContact(true, true, false);
-        testBallToBallContact(true, false, true);
-        testBallToBallContact(true, true, true); 
-        compareHertzAndMeshContactResults();
-
-        testIntermediateFrames<OpenSim::HuntCrossleyForce>();
-        testIntermediateFrames<OpenSim::ElasticFoundationForce>();
-    }
-    catch (const OpenSim::Exception& e) {
-        e.print(cerr);
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
-}
-
-//==============================================================================
-// Test Cases
-//==============================================================================
-int testBouncingBall(bool useMesh, const std::string mesh_filename)
+int testBouncingBall(bool useMesh, const std::string mesh_filename="")
 {
     // Setup OpenSim model
     Model *osimModel = new Model;
@@ -339,37 +301,7 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
     return 0;
 }
 
-void compareHertzAndMeshContactResults()
-{
-    Storage hertz("Hertz_ForceReporter_forces.sto");
-    Storage meshToMesh("EF_Mesh_to_Mesh_ForceReporter_forces.sto");
-    Storage noMeshToMesh("EF_noMesh_to_Mesh_ForceReporter_forces.sto");
-    Storage meshToNoMesh("EF_Mesh_to_noMesh_ForceReporter_forces.sto");
 
-    int nforces = hertz.getColumnLabels().getSize()-1;
-
-    // Hertz theory and ElasticFoundation will not be the same, but they should
-    // yield similar results, to withing
-    std::vector<double> rms_tols_1(nforces, 12);
-    CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, hertz, rms_tols_1,
-            __FILE__, __LINE__,
-            "ElasticFoundation FAILED to Match Hertz Contact ");
-
-    // ElasticFoundation on mesh to mesh and mesh to non-mesh should be
-    // virtually identical
-    std::vector<double> rms_tols_2(nforces, 0.5);
-    CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, meshToNoMesh, rms_tols_2,
-            __FILE__, __LINE__,
-            "ElasticFoundation Mesh-Mesh FAILED to match Mesh-noMesh Case ");
-
-    // ElasticFoundation on non-mesh to mesh and mesh to non-mesh should be
-    // identical
-    std::vector<double> rms_tols_3(nforces, integ_accuracy);
-    CHECK_STORAGE_AGAINST_STANDARD(noMeshToMesh, meshToNoMesh, rms_tols_3,
-            __FILE__, __LINE__,
-            "ElasticFoundation noMesh-Mesh FAILED to match Mesh-noMesh Case ");
-
-}
 
 
 // In version 4.0, we introduced intermediate PhysicalFrames to
@@ -595,14 +527,67 @@ void testIntermediateFrames() {
     SimTK_TEST_EQ_TOL(stateWeld.getY(), stateIntermedFrameXY.getY(), 1e-10);
 }
 
+//==============================================================================
+// Test Cases
+//==============================================================================
 
+TEST_CASE("Bouncing Ball") {
+    SECTION("no mesh") {
+        testBouncingBall(false);
+    }
+    SECTION("mesh .obj format") {
+        testBouncingBall(true, mesh_files[0]);
+    }
+    SECTION("mesh .stl format") {
+        testBouncingBall(true, mesh_files[1]);
+    }
+    SECTION("mesh .vtp format") {
+        testBouncingBall(true, mesh_files[2]);
+    }
+}
 
+TEST_CASE("Ball to Ball Contact") {
+    testBallToBallContact(false, false, false);
+    testBallToBallContact(true, true, false);
+    testBallToBallContact(true, false, true);
+    testBallToBallContact(true, true, true);
+}
 
+TEST_CASE("Compare Hertz and Mesh Contact Results") {
+    Storage hertz("Hertz_ForceReporter_forces.sto");
+    Storage meshToMesh("EF_Mesh_to_Mesh_ForceReporter_forces.sto");
+    Storage noMeshToMesh("EF_noMesh_to_Mesh_ForceReporter_forces.sto");
+    Storage meshToNoMesh("EF_Mesh_to_noMesh_ForceReporter_forces.sto");
 
+    int nforces = hertz.getColumnLabels().getSize()-1;
 
+    // Hertz theory and ElasticFoundation will not be the same, but they should
+    // yield similar results, to withing
+    std::vector<double> rms_tols_1(nforces, 12);
+    CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, hertz, rms_tols_1,
+            __FILE__, __LINE__,
+            "ElasticFoundation FAILED to Match Hertz Contact ");
 
+    // ElasticFoundation on mesh to mesh and mesh to non-mesh should be
+    // virtually identical
+    std::vector<double> rms_tols_2(nforces, 0.5);
+    CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, meshToNoMesh, rms_tols_2,
+            __FILE__, __LINE__,
+            "ElasticFoundation Mesh-Mesh FAILED to match Mesh-noMesh Case ");
 
+    // ElasticFoundation on non-mesh to mesh and mesh to non-mesh should be
+    // identical
+    std::vector<double> rms_tols_3(nforces, integ_accuracy);
+    CHECK_STORAGE_AGAINST_STANDARD(noMeshToMesh, meshToNoMesh, rms_tols_3,
+            __FILE__, __LINE__,
+            "ElasticFoundation noMesh-Mesh FAILED to match Mesh-noMesh Case ");
 
+}
+
+TEST_CASE("Intermediate Frames") {
+    testIntermediateFrames<OpenSim::HuntCrossleyForce>();
+    testIntermediateFrames<OpenSim::ElasticFoundationForce>();
+}
 
 
 
