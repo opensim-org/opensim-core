@@ -341,9 +341,6 @@ namespace {
     }
 }
 
-//==========================================================================================================
-// Test Cases
-//==========================================================================================================
 
 // Measure how long it takes to perform model.setStateVariableValues() on a
 // model with constraints to evaluate the effect of assembly in the process.
