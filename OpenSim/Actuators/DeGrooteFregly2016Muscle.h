@@ -92,15 +92,16 @@ These bounds are:
  - pennation_angle_at_optimal: [0, Pi/2)
  - default_activation: (0, inf]
  - default_normalized_tendon_force: [0, 5]
+
 @note The methods getMinNormalizedTendonForce() and
    getMaxNormalizedTendonForce() provide these bounds for use in custom solvers.
 
-@note Muscle properties can be optimized as a MocoParameter. The acceptable
+@note Muscle properties can be optimized using MocoParameter. The acceptable
 bounds for each property are **not** enforced during parameter optimization, so
 the user must supply these bounds to MocoParameter.
 
-@note Default properties cannot be optimized because they are applied during
-initialization only.
+@note The properties `default_activation` and `default_normalized_tendon_force`
+cannot be optimized because they are applied during model initialization only.
 
 @section departures Departures from the Muscle base class
 
