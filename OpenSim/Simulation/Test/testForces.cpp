@@ -41,6 +41,7 @@
 //==============================================================================
 #include "SimTKcommon/internal/Xml.h"
 #include <ctime> // clock(), clock_t, CLOCKS_PER_SEC
+
 #include <OpenSim/Analyses/osimAnalyses.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/osimSimulation.h>
@@ -49,47 +50,46 @@
 using namespace OpenSim;
 using namespace std;
 
-//==============================================================================
-// Common Parameters for the simulations are just global.
-const static double integ_accuracy = 1.0e-4;
-const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
-//==============================================================================
+namespace {
+    // Common Parameters for the simulations are just global.
+    const static double integ_accuracy = 1.0e-4;
+    const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 
-void testTranslationalDampingEffect(Model& osimModel, Coordinate& sliderCoord,
-        double start_h, Component& componentWithDamping) {
-    using namespace SimTK;
-    ASSERT(componentWithDamping.hasProperty("translational_damping"));
+    void testTranslationalDampingEffect(Model& osimModel, Coordinate& sliderCoord,
+            double start_h, Component& componentWithDamping) {
+        using namespace SimTK;
+        ASSERT(componentWithDamping.hasProperty("translational_damping"));
 
-    AbstractProperty& aProp =
-            componentWithDamping.updPropertyByName("translational_damping");
-    Property<SimTK::Vec3>& aPropVec3 =
-            dynamic_cast<Property<SimTK::Vec3>&>(aProp);
-    aPropVec3.setValue(Vec3(100.));
-    SimTK::State& osim_state2 = osimModel.initSystem();
+        AbstractProperty& aProp =
+                componentWithDamping.updPropertyByName("translational_damping");
+        Property<SimTK::Vec3>& aPropVec3 =
+                dynamic_cast<Property<SimTK::Vec3>&>(aProp);
+        aPropVec3.setValue(Vec3(100.));
+        SimTK::State& osim_state2 = osimModel.initSystem();
 
-    // set the initial height of the ball on slider
-    sliderCoord.setValue(osim_state2, start_h);
-    osimModel.getMultibodySystem().realize(osim_state2, Stage::Position);
+        // set the initial height of the ball on slider
+        sliderCoord.setValue(osim_state2, start_h);
+        osimModel.getMultibodySystem().realize(osim_state2, Stage::Position);
 
-    //==========================================================================
-    // Compute the Energy to make sure it goes down due to damping
-    Manager manager2(osimModel);
-    manager2.setIntegratorAccuracy(1e-6);
-    osim_state2.setTime(0.0);
-    manager2.initialize(osim_state2);
+        //==========================================================================
+        // Compute the Energy to make sure it goes down due to damping
+        Manager manager2(osimModel);
+        manager2.setIntegratorAccuracy(1e-6);
+        osim_state2.setTime(0.0);
+        manager2.initialize(osim_state2);
 
-    double lastEnergy = 1E20; // Large
-    for (int i = 1; i <= 10; ++i) {
-        osim_state2 = manager2.integrate(0.2 * i);
-        osimModel.getMultibodySystem().realize(
-                osim_state2, Stage::Acceleration);
-        double newEnergy = osimModel.calcKineticEnergy(osim_state2) +
-                           osimModel.calcPotentialEnergy(osim_state2);
-        ASSERT(newEnergy < lastEnergy);
-        lastEnergy = newEnergy;
+        double lastEnergy = 1E20; // Large
+        for (int i = 1; i <= 10; ++i) {
+            osim_state2 = manager2.integrate(0.2 * i);
+            osimModel.getMultibodySystem().realize(
+                    osim_state2, Stage::Acceleration);
+            double newEnergy = osimModel.calcKineticEnergy(osim_state2) +
+                               osimModel.calcPotentialEnergy(osim_state2);
+            ASSERT(newEnergy < lastEnergy);
+            lastEnergy = newEnergy;
+        }
     }
 }
-
 
 //==============================================================================
 // Test Cases
@@ -1089,9 +1089,8 @@ TEST_CASE("testExpressionBasedBushingForceRotational") {
     ASSERT(*copyOfSpring == spring);
 }
 
-// Test our wrapping of elastic foundation in OpenSim
-// Simple simulation of bouncing ball with dissipation should generate contact
-// forces that settle to ball weight.
+// Test our wrapping of elastic foundation in OpenSim. Simple simulation of bouncing
+// ball with dissipation should generate contact forces that settle to ball weight.
 TEST_CASE("testElasticFoundation") {
     using namespace SimTK;
 
