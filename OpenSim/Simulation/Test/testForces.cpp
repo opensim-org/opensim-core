@@ -1172,7 +1172,6 @@ TEST_CASE("testElasticFoundation") {
 // Test our wrapping of Hunt-Crossley force in OpenSim
 // Simple simulation of bouncing ball with dissipation should generate contact
 // forces that settle to ball weight.
-
 TEST_CASE("testHuntCrossleyForce") {
     using namespace SimTK;
 
