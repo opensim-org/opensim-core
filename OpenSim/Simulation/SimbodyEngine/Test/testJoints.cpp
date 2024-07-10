@@ -69,6 +69,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Simulation/Test/SimulationComponentsForTesting.h>
+
 #include <memory>
 #include <catch2/catch_all.hpp>
 
