@@ -80,27 +80,24 @@ that support implicit dynamics (i.e. Moco) and cannot be used to perform a
 time-stepping forward simulation with Manager; use explicit mode for 
 time-stepping.
 
-@section property Property Optimization
-To include properties in optimization, add them as a MocoParameter. The
-acceptable bounds for each property will be automatically enforced at
-initialization but NOT during parameter optimization, so the user must supply
-these bounds to MocoParameter. The acceptable bounds for each property are:
-
-activation_time_constant > 0
-deactivation_time_constant > 0
-active_force_width_scale >= 1
-fiber_damping >= 0
-passive_fiber_strain_at_one_norm_force > 0
-tendon_strain_at_one_norm_force > 0
-pennation_angle_at_optimal: [0, Pi/2)
-
-The following properties cannot be optimized because they are applied during
-model initialization only. Their acceptable bounds are:
-
-default_activation > 0
-default_normalized_tendon_force: [0, 5]
+@section property Property Bounds
+The acceptable bounds for each property are enforced at model initialization.
+These bounds are:
+ - activation_time_constant: (0, inf]
+ - deactivation_time_constant: (0, inf]
+ - active_force_width_scale: [1, inf]
+ - fiber_damping: [0, inf]
+ - passive_fiber_strain_at_one_norm_force: (0, inf]
+ - tendon_strain_at_one_norm_force: (0, inf]
+ - pennation_angle_at_optimal: [0, Pi/2)
+ - default_activation: (0, inf]
+ - default_normalized_tendon_force: [0, 5]
 @note The methods getMinNormalizedTendonForce() and
    getMaxNormalizedTendonForce() provide these bounds for use in custom solvers.
+
+@note Muscle properties can be optimized as a MocoParameter. The acceptable
+bounds for each property are **not** enforced during parameter optimization, so
+the user must supply these bounds to MocoParameter.
 
 @section departures Departures from the Muscle base class
 
@@ -125,32 +122,32 @@ class OSIMACTUATORS_API DeGrooteFregly2016Muscle : public Muscle {
 public:
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
             "Smaller value means activation can increase more rapidly. "
-            "Default: 0.015 seconds. Bounds: > 0.");
+            "Default: 0.015 seconds. Bounds: (0, inf]");
     OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
             "Smaller value means activation can decrease more rapidly. "
-            "Default: 0.060 seconds. Bounds: > 0.");
+            "Default: 0.060 seconds. Bounds: (0, inf]");
     OpenSim_DECLARE_PROPERTY(default_activation, double,
             "Value of activation in the default state returned by "
-            "initSystem(). Default: 0.5. Bounds: > 0.");
+            "initSystem(). Default: 0.5. Bounds: (0, inf]");
     OpenSim_DECLARE_PROPERTY(default_normalized_tendon_force, double,
             "Value of normalized tendon force in the default state returned by "
             "initSystem(). Default: 0.5. Bounds: [0, 5].");
     OpenSim_DECLARE_PROPERTY(active_force_width_scale, double,
             "Scale factor for the width of the active force-length curve. "
-            "Larger values make the curve wider. Default: 1.0. Bounds: >= 1.");
+            "Larger values make the curve wider. Default: 1.0. Bounds: [1, inf]");
     OpenSim_DECLARE_PROPERTY(fiber_damping, double,
             "Use this property to define the linear damping force that is "
             "added to the total muscle fiber force. It is computed by "
             "multiplying this damping parameter by the normalized fiber "
-            "velocity and the max isometric force. Default: 0. Bounds: >= 0.");
+            "velocity and the max isometric force. Default: 0. Bounds: [0, inf]");
     OpenSim_DECLARE_PROPERTY(ignore_passive_fiber_force, bool,
             "Make the passive fiber force 0. Default: false.");
     OpenSim_DECLARE_PROPERTY(passive_fiber_strain_at_one_norm_force, double,
             "Fiber strain when the passive fiber force is 1 normalized force. "
-            "Default: 0.6. Bounds: > 0.");
+            "Default: 0.6. Bounds: (0, inf]");
     OpenSim_DECLARE_PROPERTY(tendon_strain_at_one_norm_force, double,
             "Tendon strain at a tension of 1 normalized force. "
-            "Default: 0.049. Bounds: > 0.");
+            "Default: 0.049. Bounds: (0, inf]");
     OpenSim_DECLARE_PROPERTY(tendon_compliance_dynamics_mode, std::string,
             "The dynamics method used to enforce tendon compliance dynamics. "
             "Options: 'explicit' or 'implicit'. Default: 'explicit'. ");
