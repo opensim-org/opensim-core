@@ -9,9 +9,9 @@ Moco Change Log
               affect certain model calculations, and as a result were not changing during
               optimization.
 
-- Fixed `DeGrooteFregly2016Muscle` so that its properties are recalculated 
-              every time they are used, instead of only updating inside 
-              `extendFinalizeFromProperties`.
+- 2024-07-08: Fixed a bug where deserialization of an OpenSim model with the `Bhargava2004SmoothedMuscleMetabolics`
+              component would not properly set the muscle masses listed, resulting in incorrect
+              metabolics values being computed.
 
 - 2024-04-29: Added support for optimizing "Input controls" associated with 
               `InputController`s in a model. Support includes updates to the 
