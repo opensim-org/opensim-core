@@ -99,6 +99,9 @@ These bounds are:
 bounds for each property are **not** enforced during parameter optimization, so
 the user must supply these bounds to MocoParameter.
 
+@note Default properties cannot be optimized because they are applied during
+initialization only.
+
 @section departures Departures from the Muscle base class
 
 The documentation for Muscle::MuscleLengthInfo states that the
