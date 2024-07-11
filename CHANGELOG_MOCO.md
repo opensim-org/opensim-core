@@ -3,6 +3,12 @@ Moco Change Log
 
 1.3.1
 -----
+- 2024-07-08: Fixed a bug in `DeGrooteFregly2016Muscle` where updates to properties 
+              `pennation_angle_at_optimal`, `optimal_fiber_length`, `max_contraction_velocity`, 
+              and `tendon_strain_at_one_norm_force` during parameter optimization did not 
+              affect certain model calculations, and as a result were not changing during
+              optimization.
+
 - 2024-07-08: Fixed a bug where deserialization of an OpenSim model with the `Bhargava2004SmoothedMuscleMetabolics`
               component would not properly set the muscle masses listed, resulting in incorrect
               metabolics values being computed.
