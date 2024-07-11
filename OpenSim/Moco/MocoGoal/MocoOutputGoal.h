@@ -178,6 +178,99 @@ protected:
     }
 };
 
+/** This goal allows you to use two model Outputs of type double, SimTK::Vec3, and
+SimTK::SpatialVec in the integrand of a goal. The two outputs can be combined by
+addition, subtraction, multiplication, or divison.
+@ingroup mocogoal */
+class OSIMMOCO_API MocoCompositeOutputGoal : public MocoOutputBase {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoCompositeOutputGoal, MocoOutputBase);
+
+public:
+    MocoCompositeOutputGoal() { constructProperties(); }
+    MocoCompositeOutputGoal(std::string name) : MocoOutputBase(std::move(name)) {
+        constructProperties();
+    }
+    MocoCompositeOutputGoal(std::string name, double weight)
+            : MocoOutputBase(std::move(name), weight) {
+        constructProperties();
+    }
+
+    // set the path to the outputs
+    void setOutput1Path(std::string path) { set_output1_path(std::move(path)); }
+    const std::string& getOutput1Path() const { return get_output1_path(); }
+    void setOutput2Path(std::string path) { set_output2_path(std::move(path)); }
+    const std::string& getOutput2Path() const { return get_output2_path(); }
+
+    // set the operand to combine the outputs
+    void setOperator(std::string operator) { set_operator(std::move(operator)); }
+
+    // Unspecified outputs
+    void setOutputPath(std::string path) { OPENSIM_THROW_FRMOBJ(Exception,
+            "Specify which output to get the path of (1 or 2).");}
+    const std::string& getOutputPath() const { return getOutput1Path(); }
+
+protected:
+    double calcOutputValue(const SimTK::State&) const override;
+    void initializeOnModelImpl(const Model&) const override;
+    void calcIntegrandImpl(
+            const IntegrandInput& state, double& integrand) const override;
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& values) const override;
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    Mode getDefaultModeImpl() const override {
+        return Mode::Cost;
+    }
+
+private:
+    enum DataType {
+        Type_double,
+        Type_Vec3,
+        Type_SpatialVec,
+    };
+    mutable DataType m_data_type;
+    ////////////////////////////////////////////////////////////////////////////mutable std::function<double(double, double)> operation;
+    mutable SimTK::ReferencePtr<const AbstractOutput> m_output1;
+    mutable SimTK::ReferencePtr<const AbstractOutput> m_output2;
+    mutable std::function<double(const double&)> m_power_function;
+    mutable int m_index1_output1;
+    mutable int m_index2_output1;
+    mutable int m_index1_output2;
+    mutable int m_index2_output2;
+    mutable bool m_minimizeVectorNorm;
+    mutable SimTK::Stage m_dependsOnStage = SimTK::Stage::Acceleration;
+
+    OpenSim_DECLARE_PROPERTY(output1_path, std::string,
+            "The absolute path to the first output in the model to use as the "
+            "integrand for this goal.");
+    OpenSim_DECLARE_PROPERTY(output2_path, std::string,
+            "The absolute path to the second output in the model to use as the "
+            "integrand for this goal.");
+    OpenSim_DECLARE_PROPERTY(output1_index, int,
+            "The index to the value to be minimized when a vector type "
+            "Output is specified. For SpatialVec Outputs, indices 0, 1, "
+            "and 2 refer to the rotational components and indices 3, 4, "
+            "and 5 refer to the translational components. A value of -1 "
+            "indicates to minimize the vector norm (default: -1).");
+    OpenSim_DECLARE_PROPERTY(output2_index, int,
+            "The index to the value to be minimized when a vector type "
+            "Output is specified. For SpatialVec Outputs, indices 0, 1, "
+            "and 2 refer to the rotational components and indices 3, 4, "
+            "and 5 refer to the translational components. A value of -1 "
+            "indicates to minimize the vector norm (default: -1).");
+    OpenSim_DECLARE_PROPERTY(exponent, int,
+            "The exponent applied to the output value in the integrand. "
+            "The output can take on negative values in the integrand when the "
+            "exponent is set to 1 (the default value). When the exponent is "
+            "set to a value greater than 1, the absolute value function is "
+            "applied to the output (before the exponent is applied), meaning "
+            "that odd numbered exponents (greater than 1) do not take on "
+            "negative values.");
+    OpenSim_DECLARE_PROPERTY(operator, std::string, "The operator to combine "
+                                                    "the two outputs: +-/*.");
+
+    void constructProperties();
+};
+
 /** This goal permits the integration of only positive or negative values from a
 model Output. This goal allows you to use model Outputs of type double, or a 
 single specified element from an Output of type SimTK::Vec3 or 
