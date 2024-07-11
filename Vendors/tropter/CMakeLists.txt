@@ -102,8 +102,6 @@ if(TROPTER_WITH_OPENMP)
     find_package(OpenMP REQUIRED)
 endif()
 
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-
 # Subdirectories.
 # ---------------
 add_subdirectory(doc)
