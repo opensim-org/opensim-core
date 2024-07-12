@@ -162,8 +162,6 @@ void MocoOutputGoal::initializeOnModelImpl(const Model& output) const {
     setRequirements(1, 1, getDependsOnStage());
 }
 
-double calcOutputValue(const SimTK::State&) const;
-
 void MocoOutputGoal::calcIntegrandImpl(
         const IntegrandInput& input, double& integrand) const {
     integrand = setValueToExponent(calcOutputValue(input.state));
@@ -181,22 +179,23 @@ void MocoOutputGoal::calcGoalImpl(
 void MocoCompositeOutputGoal::constructProperties() {
     constructProperty_output1_path("");
     constructProperty_output2_path("");
-    constructProperty_exponent(1);
+    constructProperty_end_exponent(1);
     constructProperty_output1_index(-1);
     constructProperty_output2_index(-1);
-    constructProperty_operator("");
+    constructProperty_combo("");
 }
 
-void MocoCompositeOutputGoal::initializeOnModelImpl(const Model& output) const {
+void MocoCompositeOutputGoal::initializeOnModelImpl(const Model& model) const {
     OPENSIM_THROW_IF_FRMOBJ(get_output1_path().empty(), Exception,
-    "No output_path provided.");
+    "No output1_path provided.");
     OPENSIM_THROW_IF_FRMOBJ(get_output2_path().empty(), Exception,
-    "No output_path provided.");
-    OPENSIM_THROW_IF_FRMOBJ(get_operator().empty(), Exception,
+    "No output2_path provided.");
+    OPENSIM_THROW_IF_FRMOBJ(get_combo().empty(), Exception,
             "No operator provided.");
 
-    OPENSIM_THROW_IF_FRMOBJ(get_operator().size() > 1 || "+-\*".find(get_operator()) == std::string::npos, Exception,
-            fmt::format("Invalid operator provided: {}.", get_operator()));
+    std::string ops = "+-*/";
+    OPENSIM_THROW_IF_FRMOBJ(get_combo().size() > 1 || ops.find(get_combo()) == std::string::npos, Exception,
+            fmt::format("Invalid operator provided: {}.", get_combo()));
 
     std::string component1Path, output1Name, channel1Name, alias1;
     AbstractInput::parseConnecteePath(
@@ -232,36 +231,36 @@ void MocoCompositeOutputGoal::initializeOnModelImpl(const Model& output) const {
         OPENSIM_THROW_IF_FRMOBJ(!dynamic_cast<const Output<SimTK::Vec3>*>(abstractOutput2),
                 Exception, "Output types do not match. Output 1 is of "
                            "type SimTK::Vec3 while Output 2 is not.");
-        OPENSIM_THROW_IF_FRMOBJ(get_output_index() > 2, Exception,
+        OPENSIM_THROW_IF_FRMOBJ(get_output1_index() > 2, Exception,
                 "The Output is of type 'SimTK::Vec3', but an Output index "
                 "greater than 2 was provided.");
-        m_index1 = get_output_index();
+        m_index1_output1 = get_output1_index();
 
     } else if (dynamic_cast<const Output<SimTK::SpatialVec>*>(abstractOutput1)) {
         m_data_type = Type_SpatialVec;
         OPENSIM_THROW_IF_FRMOBJ(!dynamic_cast<const Output<SimTK::SpatialVec>*>(abstractOutput2),
                 Exception, "Output types do not match. Output 1 is of "
                            "type SimTK::SpatialVec while Output 2 is not.");
-        OPENSIM_THROW_IF_FRMOBJ(get_output_index() > 5, Exception,
+        OPENSIM_THROW_IF_FRMOBJ(get_output1_index() > 5, Exception,
                 "The Output is of type 'SimTK::SpatialVec', but an Output index "
                 "greater than 5 was provided.");
-        if (get_output_index() < 3) {
-            m_index1 = 0;
-            m_index2 = get_output_index();
+        if (get_output1_index() < 3) {
+            m_index1_output1 = 0;
+            m_index2_output1 = get_output1_index();
         } else {
-            m_index1 = 1;
-            m_index2 = get_output_index() - 3;
+            m_index1_output1 = 1;
+            m_index2_output1 = get_output1_index() - 3;
         }
 
     } else {
         OPENSIM_THROW_FRMOBJ(Exception,
                 "Data type of specified model output not supported.");
     }
-    m_output.reset(abstractOutput1);
+    m_output1.reset(abstractOutput1);
 
-    OPENSIM_THROW_IF_FRMOBJ(get_exponent() < 1, Exception,
+    OPENSIM_THROW_IF_FRMOBJ(get_end_exponent() < 1, Exception,
             "Exponent must be 1 or greater.");
-    int exponent = get_exponent();
+    int exponent = get_end_exponent();
 
     // The pow() function gives slightly different results than x * x. On Mac,
     // using x * x requires fewer solver iterations.
@@ -277,14 +276,51 @@ void MocoCompositeOutputGoal::initializeOnModelImpl(const Model& output) const {
 
     // Set the "depends-on stage", the SimTK::Stage we must realize to
     // in order to calculate values from this output.
-    m_dependsOnStage = m_output->getDependsOnStage();
+    m_dependsOnStage = m_output1->getDependsOnStage();
 
     setRequirements(1, 1, getDependsOnStage());
 }
 
+double MocoCompositeOutputGoal::helpCalc(const SimTK::State& state) const {
+    // combine the outputs, depending on their type and the chosen operator
+
+    getModel().getSystem().realize(state, getDependsOnStage());
+
+    auto value1;
+    auto value2;
+    double value = 0;
+    if (m_data_type == Type_double) {
+        double value1 = static_cast<const Output<double>*>(m_output1.get())
+                        ->getValue(state);
+        double value2 = static_cast<const Output<double>*>(m_output1.get())
+                        ->getValue(state);
+
+    } else if (m_data_type == Type_Vec3) {
+        if (m_minimizeVectorNorm) {
+            value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
+                        ->getValue(state).norm();
+        } else {
+            value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
+                        ->getValue(state)[m_index1];
+        }
+
+    } else if (m_data_type == Type_SpatialVec) {
+        if (m_minimizeVectorNorm) {
+            value = static_cast<const Output<SimTK::SpatialVec>*>(m_output.get())
+                        ->getValue(state).norm();
+        } else {
+            value = static_cast<const Output<SimTK::SpatialVec>*>(m_output.get())
+                        ->getValue(state)[m_index1][m_index2];
+        }
+    }
+
+    value = combine(value1, value2);
+    return value;
+}
+
 void MocoCompositeOutputGoal::calcIntegrandImpl(
         const IntegrandInput& input, double& integrand) const {
-    integrand = setValueToExponent(calcOutputValue(input.state));
+    integrand = setValueToExponent(helpCalc(input.state));
 }
 
 void MocoCompositeOutputGoal::calcGoalImpl(

@@ -202,7 +202,11 @@ public:
     const std::string& getOutput2Path() const { return get_output2_path(); }
 
     // set the operand to combine the outputs
-    void setOperator(std::string operator) { set_operator(std::move(operator)); }
+    void setOperator(std::string combo) { set_combo(std::move(combo)); }
+
+
+    void setExponent(int exponent) { set_end_exponent(exponent); }
+    int getExponent() const { return get_end_exponent(); }
 
     // Unspecified outputs
     void setOutputPath(std::string path) { OPENSIM_THROW_FRMOBJ(Exception,
@@ -210,7 +214,6 @@ public:
     const std::string& getOutputPath() const { return getOutput1Path(); }
 
 protected:
-    double calcOutputValue(const SimTK::State&) const override;
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
             const IntegrandInput& state, double& integrand) const override;
@@ -257,7 +260,7 @@ private:
             "and 2 refer to the rotational components and indices 3, 4, "
             "and 5 refer to the translational components. A value of -1 "
             "indicates to minimize the vector norm (default: -1).");
-    OpenSim_DECLARE_PROPERTY(exponent, int,
+    OpenSim_DECLARE_PROPERTY(end_exponent, int,
             "The exponent applied to the output value in the integrand. "
             "The output can take on negative values in the integrand when the "
             "exponent is set to 1 (the default value). When the exponent is "
@@ -265,10 +268,13 @@ private:
             "applied to the output (before the exponent is applied), meaning "
             "that odd numbered exponents (greater than 1) do not take on "
             "negative values.");
-    OpenSim_DECLARE_PROPERTY(operator, std::string, "The operator to combine "
+    OpenSim_DECLARE_PROPERTY(combo, std::string, "The operator to combine "
                                                     "the two outputs: +-/*.");
 
     void constructProperties();
+    double helpCalc(const SimTK::State&) const; //const
+    double combine(double, double) const;
+    double combine(SimTK::Vec3, SimTK::Vec3) const; ////////////////////////////////////////////////////
 };
 
 /** This goal permits the integration of only positive or negative values from a
