@@ -54,6 +54,44 @@ std::unique_ptr<Model> createSlidingMassModel() {
     return model;
 }
 
+// create two sliding mass models in the same place
+Model createDoubleSlidingMassModel() {
+    Model model;
+    model.setName("sliding_masses");
+    model.set_gravity(SimTK::Vec3(0, 0, 0));
+
+    auto* body1 = new Body("body1", 1.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    model.addComponent(body1);
+    // Allows translation along x.
+    auto* joint1 = new SliderJoint("slider1", model.getGround(), *body1);
+    auto& coord = joint1->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("position");
+    model.addComponent(joint1);
+    auto* actu = new CoordinateActuator();
+    actu->setCoordinate(&coord);
+    actu->setName("actuator1");
+    actu->setOptimalForce(1);
+    model.addComponent(actu);
+    body1->attachGeometry(new Sphere(0.05));
+
+    auto* body2 = new Body("body2", 1.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    model.addComponent(body2);
+    // Allows translation along x.
+    auto* joint2 = new SliderJoint("slider2", model.getGround(), *body2);
+    auto& coord2 = joint2->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord2.setName("position");
+    model.addComponent(joint2);
+    auto* actu2 = new CoordinateActuator();
+    actu2->setCoordinate(&coord2);
+    actu2->setName("actuator2");
+    actu2->setOptimalForce(1);
+    model.addComponent(actu2);
+    body2->attachGeometry(new Sphere(0.05));
+
+    model.finalizeConnections();
+    return model;
+}
+
 /// Test the result of a sliding mass minimum effort problem.
 TEMPLATE_TEST_CASE("Test MocoControlGoal", "",
         MocoCasADiSolver, MocoTropterSolver) {
@@ -870,6 +908,71 @@ auto createStudy = [](
     problem.setControlInfo("/actuator", MocoBounds(-10, 10));
     return study;
 };
+
+TEMPLATE_TEST_CASE("MocoCompositeOutputGoal", "", MocoCasADiSolver,
+        MocoTropterSolver) {
+    MocoSolution solutionControl;
+
+    SECTION("Subtraction of Vec3") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        auto model = createDoubleSlidingMassModel();
+        model.initSystem();
+
+        problem.setModelAsCopy(model);
+        problem.setTimeBounds(0, 5);
+        problem.setStateInfo("/slider1/position/speed", {-10, 10}, 0, 0); //, 0, {-100, 100});
+        problem.setControlInfo("/actuator1", {-100, 100});
+        problem.setStateInfo("/slider2/position/speed", {-10, 10}, 0, 0); //, 0, {-100, 100});
+        problem.setControlInfo("/actuator2", {-100, 100});
+
+        // set up sliders to have a distance from each other
+        problem.setStateInfo("/slider1/position/value", MocoBounds(-5, 5),
+            MocoInitialBounds(-2), MocoFinalBounds(-5, 5));
+        problem.setStateInfo("/slider2/position/value", MocoBounds(-5, 5),
+            MocoInitialBounds(2), MocoFinalBounds(-5, 5));
+
+        // add goal of smallest distance
+        auto* goal = problem.template addGoal<MocoCompositeOutputGoal>();
+        goal->setName("distance2");
+        goal->setOutputPath("/body1|position");
+        goal->setSecondOutputPath("/body2|position");
+        goal->setOperator("subtraction");
+        goal->setExponent(2);
+
+        auto* goal2 = problem.addGoal<MocoControlGoal>();
+        goal2->setName("effort");
+        goal2->setWeight(0.01);
+
+        auto& solver = study.initCasADiSolver();
+        solver.set_num_mesh_intervals(50);
+        //solver.set_parallel(0);
+        MocoSolution solution = study.solve().unseal();
+
+        // analyze result for ending distance
+        StatesTrajectory states = solution.exportToStatesTrajectory(model);
+        SimTK::State finalState = states.back();
+        model.realizePosition(finalState);
+
+        SimTK::Vec3 endPosition1 = model.getComponent<Body>("/body1").getPositionInGround(finalState);
+        SimTK::Vec3 endPosition2 = model.getComponent<Body>("/body2").getPositionInGround(finalState);
+        log_cout("distance {}", (endPosition1 - endPosition2).norm());
+        CHECK((endPosition1 - endPosition2).norm() == Approx(0).margin(1e-4));
+    }
+
+    SECTION("Multiplication of SpatialVec with index") {
+
+    }
+
+    SECTION("Invalid operator request") {
+
+    }
+
+    SECTION("Mismatch type") {
+
+    }
+}
+
 
 TEMPLATE_TEST_CASE("MocoOutputGoal", "", MocoCasADiSolver,
         MocoTropterSolver) {

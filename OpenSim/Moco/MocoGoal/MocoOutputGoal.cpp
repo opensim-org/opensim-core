@@ -101,25 +101,18 @@ double MocoOutputBase::calcOutputValue(const SimTK::State& state) const {
 
     double value = 0;
     if (m_data_type == Type_double) {
-        value = static_cast<const Output<double>*>(m_output.get())
-                        ->getValue(state);
-
+        value = getOutput<double>().getValue(state);
     } else if (m_data_type == Type_Vec3) {
         if (m_minimizeVectorNorm) {
-            value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
-                        ->getValue(state).norm();
+            value = getOutput<SimTK::Vec3>().getValue(state).norm();
         } else {
-            value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
-                        ->getValue(state)[m_index1];
+            value = getOutput<SimTK::Vec3>().getValue(state)[m_index1];
         }
-
     } else if (m_data_type == Type_SpatialVec) {
         if (m_minimizeVectorNorm) {
-            value = static_cast<const Output<SimTK::SpatialVec>*>(m_output.get())
-                        ->getValue(state).norm();
+            value = getOutput<SimTK::SpatialVec>().getValue(state).norm();
         } else {
-            value = static_cast<const Output<SimTK::SpatialVec>*>(m_output.get())
-                        ->getValue(state)[m_index1][m_index2];
+            value = getOutput<SimTK::SpatialVec>().getValue(state)[m_index1][m_index2];
         }
     }
 
@@ -177,145 +170,139 @@ void MocoOutputGoal::calcGoalImpl(
 // ============================================================================
 
 void MocoCompositeOutputGoal::constructProperties() {
-    constructProperty_output1_path("");
-    constructProperty_output2_path("");
-    constructProperty_end_exponent(1);
-    constructProperty_output1_index(-1);
-    constructProperty_output2_index(-1);
+    constructProperty_second_output_path("");
     constructProperty_combo("");
 }
 
 void MocoCompositeOutputGoal::initializeOnModelImpl(const Model& model) const {
-    OPENSIM_THROW_IF_FRMOBJ(get_output1_path().empty(), Exception,
-    "No output1_path provided.");
-    OPENSIM_THROW_IF_FRMOBJ(get_output2_path().empty(), Exception,
-    "No output2_path provided.");
-    OPENSIM_THROW_IF_FRMOBJ(get_combo().empty(), Exception,
-            "No operator provided.");
+    initializeOnModelBase();
+    // do the same things as initializeOnModelBase but only for ssecond output
 
-    std::string ops = "+-*/";
-    OPENSIM_THROW_IF_FRMOBJ(get_combo().size() > 1 || ops.find(get_combo()) == std::string::npos, Exception,
-            fmt::format("Invalid operator provided: {}.", get_combo()));
-
-    std::string component1Path, output1Name, channel1Name, alias1;
+    OPENSIM_THROW_IF_FRMOBJ(get_second_output_path().empty(), Exception,
+            "No second_output_path provided.");
+    std::string componentPath, outputName, channelName, alias;
     AbstractInput::parseConnecteePath(
-            get_output1_path(), component1Path, output1Name, channel1Name, alias1);
-    const auto& component1 = getModel().getComponent(component1Path);
-    const auto* abstractOutput1 = &component1.getOutput(output1Name);
+            get_second_output_path(), componentPath, outputName, channelName, alias);
+    const auto& component = getModel().getComponent(componentPath);
+    const auto* abstractOutput = &component.getOutput(outputName);
 
-    std::string component2Path, output2Name, channel2Name, alias2;
-    AbstractInput::parseConnecteePath(
-            get_output2_path(), component2Path, output2Name, channel2Name, alias2);
-    const auto& component2 = getModel().getComponent(component2Path);
-    const auto* abstractOutput2 = &component2.getOutput(output1Name);
-
-    OPENSIM_THROW_IF_FRMOBJ(get_output1_index() < -1, Exception,
-            "Invalid Output index provided.");
-    m_minimizeVectorNorm = (get_output1_index() == -1);
-    OPENSIM_THROW_IF_FRMOBJ(get_output2_index() < -1, Exception,
-            "Invalid Output index provided.");
-    m_minimizeVectorNorm = (get_output2_index() == -1);
-
-    // make sure both outputs are same type
-    if (dynamic_cast<const Output<double>*>(abstractOutput1)) {
-        m_data_type = Type_double;
-        OPENSIM_THROW_IF_FRMOBJ(get_output1_index() != -1, Exception,
-                "An Output index was provided, but the Output is of type "
+    if (dynamic_cast<const Output<double>*>(abstractOutput)) {
+        OPENSIM_THROW_IF_FRMOBJ(getOutputIndex() != -1, Exception,
+                "An Output index was provided, but the second Output is of type "
                 "'double'.")
-        OPENSIM_THROW_IF_FRMOBJ(!dynamic_cast<const Output<double>*>(abstractOutput2),
-                Exception, "Output types do not match. Output 1 is of "
-                           "type double while Output 2 is not.");
-
-    } else if (dynamic_cast<const Output<SimTK::Vec3>*>(abstractOutput1)) {
-        m_data_type = Type_Vec3;
-        OPENSIM_THROW_IF_FRMOBJ(!dynamic_cast<const Output<SimTK::Vec3>*>(abstractOutput2),
-                Exception, "Output types do not match. Output 1 is of "
-                           "type SimTK::Vec3 while Output 2 is not.");
-        OPENSIM_THROW_IF_FRMOBJ(get_output1_index() > 2, Exception,
-                "The Output is of type 'SimTK::Vec3', but an Output index "
-                "greater than 2 was provided.");
-        m_index1_output1 = get_output1_index();
-
-    } else if (dynamic_cast<const Output<SimTK::SpatialVec>*>(abstractOutput1)) {
-        m_data_type = Type_SpatialVec;
-        OPENSIM_THROW_IF_FRMOBJ(!dynamic_cast<const Output<SimTK::SpatialVec>*>(abstractOutput2),
-                Exception, "Output types do not match. Output 1 is of "
-                           "type SimTK::SpatialVec while Output 2 is not.");
-        OPENSIM_THROW_IF_FRMOBJ(get_output1_index() > 5, Exception,
-                "The Output is of type 'SimTK::SpatialVec', but an Output index "
-                "greater than 5 was provided.");
-        if (get_output1_index() < 3) {
-            m_index1_output1 = 0;
-            m_index2_output1 = get_output1_index();
-        } else {
-            m_index1_output1 = 1;
-            m_index2_output1 = get_output1_index() - 3;
-        }
-
+        OPENSIM_THROW_IF_FRMOBJ(getDataType() != Type_double, Exception,
+                "Output types do not match. The second Output is of type double but the first is not.");
+    } else if (dynamic_cast<const Output<SimTK::Vec3>*>(abstractOutput)) {
+        OPENSIM_THROW_IF_FRMOBJ(getDataType() != Type_Vec3, Exception,
+                "Output types do not match. The second Output is of type SimTK::Vec3 but the first is not.");
+    } else if (dynamic_cast<const Output<SimTK::SpatialVec>*>(abstractOutput)) {
+        OPENSIM_THROW_IF_FRMOBJ(getDataType() != Type_SpatialVec, Exception,
+                "Output types do not match. The second Output is of type SimTK::SpatialVec but the first is not.");
     } else {
         OPENSIM_THROW_FRMOBJ(Exception,
-                "Data type of specified model output not supported.");
+                "Data type of specified second Output not supported.");
     }
-    m_output1.reset(abstractOutput1);
+    m_output2.reset(abstractOutput);
 
-    OPENSIM_THROW_IF_FRMOBJ(get_end_exponent() < 1, Exception,
-            "Exponent must be 1 or greater.");
-    int exponent = get_end_exponent();
-
-    // The pow() function gives slightly different results than x * x. On Mac,
-    // using x * x requires fewer solver iterations.
-    if (exponent == 1) {
-        m_power_function = [](const double& x) { return x; };
-    } else if (exponent == 2) {
-        m_power_function = [](const double& x) { return x * x; };
-    } else {
-        m_power_function = [exponent](const double& x) {
-            return pow(std::abs(x), exponent);
-        };
+    if (getDependsOnStage() > m_output2->getDependsOnStage()) {
+        setDependsOnStage(m_output2->getDependsOnStage());
     }
-
-    // Set the "depends-on stage", the SimTK::Stage we must realize to
-    // in order to calculate values from this output.
-    m_dependsOnStage = m_output1->getDependsOnStage();
 
     setRequirements(1, 1, getDependsOnStage());
+}
+
+double MocoCompositeOutputGoal::combine(double value1, double value2) const {
+    if (get_combo().compare("addition") == 0) {
+        return value1 + value2;
+    } if (get_combo().compare("subtraction") == 0) {
+        return value1 - value2;
+    } if (get_combo().compare("multiplication") == 0) {
+        return value1 * value2;
+    } if (get_combo().compare("division") == 0) {
+        return value1 / value2;
+    }
+    OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Invalid operator {}, must be + - * or /.", get_combo()));
 }
 
 double MocoCompositeOutputGoal::helpCalc(const SimTK::State& state) const {
     // combine the outputs, depending on their type and the chosen operator
 
+    //const SimTK::ReferencePtr<const AbstractOutput>& y = getOutput();
     getModel().getSystem().realize(state, getDependsOnStage());
 
-    auto value1;
-    auto value2;
+    double value = 0;
+    if (getDataType() == Type_double) {
+        //SimTK::ReferencePtr<const AbstractOutput> x = getOutput(); // x is null here :(
+        //log_cout("x is {}", x);
+        double value1 = getOutput<double>().getValue(state);
+        double value2 = static_cast<const Output<double>*>(m_output2.get())->getValue(state);
+        value = combine(value1, value2);
+    } else if (getDataType() == Type_Vec3) {
+        if (getMinimizeVectorNorm()) {
+            SimTK::Vec3 value1 = getOutput<SimTK::Vec3>().getValue(state);
+            SimTK::Vec3 value2 = static_cast<const Output<SimTK::Vec3>*>(m_output2.get())->getValue(state);
+            value = combine(value1, value2);
+        } else {
+            double value1 = getOutput<SimTK::Vec3>().getValue(state)[getIndex1()];
+            double value2 = static_cast<const Output<SimTK::Vec3>*>(m_output2.get())->getValue(state)[getIndex1()];
+            value = combine(value1, value2);
+        }
+    } else if (getDataType() == Type_SpatialVec) {
+        if (getMinimizeVectorNorm()) {
+            SimTK::SpatialVec value1 = getOutput<SimTK::SpatialVec>().getValue(state);
+            SimTK::SpatialVec value2 = static_cast<const Output<SimTK::SpatialVec>*>(m_output2.get())->getValue(state);
+            value = combine(value1, value2);
+        } else {
+            double value1 = getOutput<SimTK::SpatialVec>().getValue(state)[getIndex1()][getIndex2()];
+            double value2 = static_cast<const Output<SimTK::SpatialVec>*>(m_output2.get())->getValue(state)[getIndex1()][getIndex2()];
+            value = combine(value1, value2);
+        }
+    }
+
+    return value;
+    /*
+    getModel().getSystem().realize(state, getDependsOnStage());
+
     double value = 0;
     if (m_data_type == Type_double) {
         double value1 = static_cast<const Output<double>*>(m_output1.get())
                         ->getValue(state);
         double value2 = static_cast<const Output<double>*>(m_output1.get())
                         ->getValue(state);
-
+        value = combine(value1, value2);
     } else if (m_data_type == Type_Vec3) {
         if (m_minimizeVectorNorm) {
-            value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
-                        ->getValue(state).norm();
+            SimTK::Vec3 value1 = static_cast<const Output<SimTK::Vec3>*>(m_output1.get())
+                        ->getValue(state);
+            SimTK::Vec3 value2 = static_cast<const Output<SimTK::Vec3>*>(m_output2.get())
+                        ->getValue(state);
+            value = combine<SimTK::Vec3>(value1, value2);
         } else {
-            value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
-                        ->getValue(state)[m_index1];
+            double value1 = static_cast<const Output<SimTK::Vec3>*>(m_output1.get())
+                        ->getValue(state)[m_index1_output1];
+            double value2 = static_cast<const Output<SimTK::Vec3>*>(m_output2.get())
+                        ->getValue(state)[m_index1_output2];
+            value = combine(value1, value2);
         }
 
     } else if (m_data_type == Type_SpatialVec) {
         if (m_minimizeVectorNorm) {
-            value = static_cast<const Output<SimTK::SpatialVec>*>(m_output.get())
-                        ->getValue(state).norm();
+            SimTK::SpatialVec value1 = static_cast<const Output<SimTK::SpatialVec>*>(m_output1.get())
+                        ->getValue(state);
+            SimTK::SpatialVec value2 = static_cast<const Output<SimTK::SpatialVec>*>(m_output2.get())
+                        ->getValue(state);
+            value = combine(value1, value2);
         } else {
-            value = static_cast<const Output<SimTK::SpatialVec>*>(m_output.get())
-                        ->getValue(state)[m_index1][m_index2];
+            double value1 = static_cast<const Output<SimTK::SpatialVec>*>(m_output1.get())
+                        ->getValue(state)[m_index1_output1][m_index2_output1];
+            double value2 = static_cast<const Output<SimTK::SpatialVec>*>(m_output2.get())
+                        ->getValue(state)[m_index1_output2][m_index2_output2];
+            value = combine(value1, value2);
         }
     }
 
-    value = combine(value1, value2);
-    return value;
+    //value = combine(value1, value2); // includes .norm() for Vec3s
+    return value;*/
 }
 
 void MocoCompositeOutputGoal::calcIntegrandImpl(
