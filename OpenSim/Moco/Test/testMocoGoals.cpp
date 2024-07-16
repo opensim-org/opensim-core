@@ -1003,6 +1003,12 @@ TEMPLATE_TEST_CASE("MocoCompositeOutputGoal", "", MocoCasADiSolver,
         SimTK::SpatialVec endVel2 = model.getComponent<Body>("/body2").getVelocityInGround(finalState);
 
         CHECK((endVel1[1][0] * endVel2[1][0]) == Approx(0).margin(1e-5));
+
+        /*CHECK(solution.getState(
+            "/slider1/position/value")[solution.getNumTimes() - 1]
+            - solution.getState(
+            "/slider2/position/value")[solution.getNumTimes() - 1] ==
+            Approx(0).margin(1e-5));*/
     }
 
     SECTION("Invalid Outputs") {

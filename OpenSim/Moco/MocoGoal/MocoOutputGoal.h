@@ -254,12 +254,8 @@ protected:
      *  the three types and the chosen operator */
     double calcOutputValue(const SimTK::State&) const;
 
-    enum Operator { addition, subtraction, multiplication, division };
 
 private:
-    mutable SimTK::ReferencePtr<const AbstractOutput> m_output2;
-    mutable Operator m_operatorType;
-
     OpenSim_DECLARE_PROPERTY(second_output_path, std::string,
             "The absolute path to the second output in the model to use as the "
             "integrand for this goal.");
@@ -291,6 +287,10 @@ private:
             default             : return value1.norm() / value2.norm();
         }
     }
+
+    mutable SimTK::ReferencePtr<const AbstractOutput> m_output2;
+    enum Operator { addition, subtraction, multiplication, division };
+    mutable Operator m_operatorType;
 };
 
 /** This goal permits the integration of only positive or negative values from a
