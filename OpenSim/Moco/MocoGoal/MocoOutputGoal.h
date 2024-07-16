@@ -91,16 +91,6 @@ protected:
     'initializeOnModelImpl()' in each derived class. */
     void initializeOnModelBase() const;
 
-    /*template <typename T>
-    T getOutputValue(SimTK::ReferencePtr<const AbstractOutput> output, const SimTK::State& state) const {
-        return static_cast<const Output<T>*>(output.get())->getValue(state);
-    }
-
-    template <typename T>
-    T getOutputValue(const SimTK::State& state) const {
-        return static_cast<const Output<T>*>(m_output.get())->getValue(state);
-    }*/
-
     /** Calculate the Output value for the provided SimTK::State. If using a
     vector Output, either the vector norm or vector element will be returned,
     depending on whether an index was provided via 'setOutputIndex()'. Do not
@@ -122,17 +112,18 @@ protected:
         m_dependsOnStage = stage;
     }
 
-    // more getters for private vars
     template <typename T>
     const Output<T>& getOutput() const {
         return static_cast<const Output<T>&>(m_output.getRef());
     }
+
     int getIndex1() const {
         return m_index1;
     }
     int getIndex2() const {
         return m_index2;
     }
+
     bool getMinimizeVectorNorm() const {
         return m_minimizeVectorNorm;
     }
@@ -211,10 +202,18 @@ protected:
 };
 
 /** This goal allows you to use two model Outputs of type double, SimTK::Vec3, and
-SimTK::SpatialVec in the integrand of a goal. The two outputs can be combined by
-addition, subtraction, multiplication, or divison.
-NOTE FOR DIVISION that if anything in the divisor is 0, the solver will fail due
-to a divide by 0 error
+SimTK::SpatialVec in the integrand of a goal. The first Output path is set using
+`setOutputPath()` and the second with `setSecondOutputPath()`. The two outputs can
+be combined by addition, subtraction, multiplication, or divison operators. The
+first Output always on the left side of the operator and the second Output on
+the right side.
+@Note The user should avoid using division when the second Output could be zero
+because this will cause divide by zero errors.
+
+The two Outputs must be the same type. If the Outputs are SimTK::Vec3 or
+SimTK::Spatialvecan and an index is provided, the index will be applied to both
+Outputs before applying the operator. Otherwise, it will take the norm after the
+operator has been applied.
 @ingroup mocogoal */
 class OSIMMOCO_API MocoCompositeOutputGoal : public MocoOutputBase {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoCompositeOutputGoal, MocoOutputBase);
@@ -229,11 +228,14 @@ public:
         constructProperties();
     }
 
-    // set the path to the outputs
+    /** Set the absolute path to the second Output in the model. The format is
+     * "/path/to/component|output_name". This Output should have the same type
+     * as the first Output. */
     void setSecondOutputPath(std::string path) { set_second_output_path(std::move(path)); }
     const std::string& getSecondOutputPath() const { return get_second_output_path(); }
 
-    // set the operand to combine the outputs
+    /** Set the operand to combine the outputs. It can be "addition",
+     * "subtraction", "multiplication", or "division". */
     void setOperator(std::string combo) { set_combo(combo); }
 
 protected:
@@ -246,9 +248,17 @@ protected:
     Mode getDefaultModeImpl() const override {
         return Mode::Cost;
     }
+    void printDescriptionImpl() const override;
+
+    /** overrides base class calc method to combine the two outputs for any of
+     *  the three types and the chosen operator */
+    double calcOutputValue(const SimTK::State&) const;
+
+    enum Operator { addition, subtraction, multiplication, division };
 
 private:
     mutable SimTK::ReferencePtr<const AbstractOutput> m_output2;
+    mutable Operator m_operatorType;
 
     OpenSim_DECLARE_PROPERTY(second_output_path, std::string,
             "The absolute path to the second output in the model to use as the "
@@ -258,23 +268,28 @@ private:
             "'divison'.");
 
     void constructProperties();
-    double helpCalc(const SimTK::State&) const;
-    double combine(double, double) const;
+    //double helpCalc(const SimTK::State&) const;
 
+    /** combine the two output values using the operator **/
+    double combine(double value1, double value2) const {
+        switch (m_operatorType) {
+            case addition       : return value1 + value2;
+            case subtraction    : return value1 - value2;
+            case multiplication : return value1 * value2;
+            default             : return value1 / value2;
+        }
+    }
+
+    /** combine the two vec type output values by taking the norm of the
+     * element-wise operation **/
     template <typename T>
     double combine(T value1, T value2) const {
-        if (get_combo().compare("addition") == 0) {
-            return (value1 + value2).norm();
-        } if (get_combo().compare("subtraction") == 0) {
-            return (value1 - value2).norm();
-        } if (get_combo().compare("multiplication") == 0) {
-            return value1.norm() * value2.norm();
-        } if (get_combo().compare("division") == 0) {
-            return value1.norm() / value2.norm();
+        switch (m_operatorType) {
+            case addition       : return (value1 + value2).norm();
+            case subtraction    : return (value1 - value2).norm();
+            case multiplication : return value1.norm() * value2.norm();
+            default             : return value1.norm() / value2.norm();
         }
-        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Invalid operator {}, must "
-                "be 'addition', 'subtraction', 'multiplication', or 'division'.",
-                get_combo()));
     }
 };
 
