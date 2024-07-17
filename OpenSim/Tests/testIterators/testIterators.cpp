@@ -33,11 +33,10 @@
 using namespace OpenSim;
 using namespace std;
 
-// `LegacyInputIterator` compatibility for `ComponentListIterator`
-static_assert(std::is_copy_constructible<ComponentListIterator<Component>>::value);
-static_assert(std::is_copy_assignable<ComponentListIterator<Component>>::value);
-static_assert(std::is_destructible<ComponentListIterator<Component>>::value);
-static_assert(std::is_same<std::iterator_traits<ComponentListIterator<Component>>::value_type, Component>::value);
+static_assert(std::is_copy_constructible<ComponentListIterator<Component>>::value, "required by standard library's LegacyInputIterator");
+static_assert(std::is_copy_assignable<ComponentListIterator<Component>>::value, "required by standard library's LegacyInputIterator");
+static_assert(std::is_destructible<ComponentListIterator<Component>>::value, "required by standard library's LegacyInputIterator");
+static_assert(std::is_same<std::iterator_traits<ComponentListIterator<Component>>::value_type, Component>::value, "required by standard library's LegacyInputIterator");
 // static_assert(std::is_swappable<ComponentListIterator<Component>>::value);  // C++17
 
 // Example filter that allows for iterating only through Components that have
