@@ -4294,8 +4294,9 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
     // Advance _node to next valid (of type T) if needed
     // Similar logic to operator++ but applies _filter->isMatch()
     while (_node != nullptr && (dynamic_cast<const T*>(_node) == nullptr ||
-                                !_filter.isMatch(*_node) ||
-                                (_node == _root))){
+                                !(!_filter || _filter->isMatch(*_node)) ||
+                                (_node == _root))) {
+
         if (_node->_memberSubcomponents.size() > 0) {
             _node = _node->_memberSubcomponents[0].get();
         }

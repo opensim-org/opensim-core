@@ -118,18 +118,31 @@ public:
     // This typedef is used to avoid "duplicate const" errors with SWIG,
     // caused when "T" is "const Component," leading to
     // "const const Component."
-    typedef typename std::add_const<T>::type ConstT;
+    using ConstT = typename std::add_const<T>::type;
+
+    // these typedefs are to make `ComponentList<T>`'s API have similar typedefs
+    // to standard library containers (e.g. `std::vector<T>`)
+    using value_type = T;
+    using difference_type = std::ptrdiff_t;
+    using reference = T&;
+    using const_reference = const T&;
+    using pointer = T*;
+    using const_pointer = const T*;
+
+    /** If T is const (e.g., ComponentList<const Body>), then this is
+    the same as const_iterator, and does not allow modifying the elements.
+    If T is not const, then this iterator allows modifying the elements. */
+    using iterator = ComponentListIterator<T>;
     
     /** A const forward iterator for iterating through ComponentList<T>.
     The const indicates that the iterator provides only 
     const references/pointers, and that components can't be modified 
     through this iterator. */
-    typedef ComponentListIterator<ConstT> const_iterator;
-    
-    /** If T is const (e.g., ComponentList<const Body>), then this is
-    the same as const_iterator, and does not allow modifying the elements.
-    If T is not const, then this iterator allows modifying the elements. */
-    typedef ComponentListIterator<T> iterator;
+    using const_iterator = ComponentListIterator<ConstT>;
+
+    // these definitions are to make `ComponentList` similar to `std::`
+    // container types (e.g. `std::vector<T>`)
+    using iterator_category = std::forward_iterator_tag;
     
     /** Constructor that takes a Component to iterate over (itself and its
     descendants) and a ComponentFilter. You can change the filter later
@@ -143,33 +156,35 @@ public:
     descendants). ComponentFilterMatchAll is used internally. You can
     change the filter using setFilter() method. 
     */
-    ComponentList(const Component& root) : _root(root) {
-        setDefaultFilter();
+    ComponentList(const Component& root) :
+        _root(root) {
     }
+
     /// Destructor of ComponentList.
-    virtual ~ComponentList() {}
+    virtual ~ComponentList() noexcept = default;
+
     /** Return an iterator pointing to the first component in the tree 
     traversal of components under and including the root component passed 
     to the ComponentList constructor. If T is non-const, then this iterator
     allows you to modify the elements of this list. */
     iterator begin() {
-        return iterator(&_root, _filter.getRef());
+        return iterator(&_root, _filter.get());
     }
     /** Same as cbegin(). */
     const_iterator begin() const {
-        return const_iterator(&_root, _filter.getRef());
+        return const_iterator(&_root, _filter.get());
     }
     /** Similar to begin(), except it does not permit
     modifying the elements of the list, even if T is non-const (e.g., 
     ComponentList<Body>). */
     const_iterator cbegin() const {
-        return const_iterator(&_root, _filter.getRef());
+        return const_iterator(&_root, _filter.get());
     }
     /** Use this method to check if you have reached the end of the list.
     This points past the end of the list, *not* to the last item in the
     list. */
     iterator end() {
-        return iterator(nullptr, _filter.getRef());
+        return iterator(nullptr, _filter.get());
     }
     /** Same as cend(). */
     const_iterator end() const { return cend(); }
@@ -177,7 +192,7 @@ public:
     This points past the end of the list, *not* to the last item in the
     list. Use this if you used cbegin(). */
     const_iterator cend() const {
-        return const_iterator(nullptr, _filter.getRef());
+        return const_iterator(nullptr, _filter.get());
     }
     /** Allow users to specify a custom ComponentFilter. This object makes a
     clone of the passed in filter. */
@@ -185,11 +200,11 @@ public:
           _filter = filter;
     }
 private:
-    const Component& _root; // root of subtree to be iterated over
-    SimTK::ClonePtr<ComponentFilter> _filter; // filter to choose components 
-    // Internal method to setFilter to ComponentFilterMatchAll if no user specified
-    // filter is provided.
-    void setDefaultFilter() { setFilter(ComponentFilterMatchAll()); }
+    // root of subtree to be iterated over
+    const Component& _root;
+
+    // filter to choose components (or `nullptr`, meaning "don't filter")
+    SimTK::ClonePtr<ComponentFilter> _filter = nullptr;
 };
 
 //==============================================================================
@@ -230,24 +245,34 @@ for (GeometryPath& gpath : geomPathList) {
 @endcode
 */
 template <typename T>
-class ComponentListIterator :
-    public std::iterator<std::forward_iterator_tag, Component>
+class ComponentListIterator
 {
     // This typedef is used to avoid "duplicate const" errors with SWIG,
     // caused when "T" is "const Component," leading to
     // "const const Component."
-    typedef typename std::add_const<T>::type ConstT;
+    using ConstT = typename std::add_const<T>::type;
+
     // The template argument T may be const or non-const; this typedef is
     // always the non-const variant of T. The typedef is useful for friend
     // declarations and casting.
-    typedef typename std::remove_const<T>::type NonConstT;
+    using NonConstT = typename std::remove_const<T>::type;
+
     /** @internal Allow ComponentList to use the private constructor of this
     class. */
     friend class ComponentList<T>;
+
     /** @internal This is required to allow ComponentList<non-const T>::%begin()
     to construct a `ComponentListIterator<const T>` (that is, const_iterator). */
     friend class ComponentList<NonConstT>;
+
 public:
+
+    // compatibility with `std::iterator_traits<ComponentListIterator<T>>`
+    using difference_type = std::ptrdiff_t;
+    using value_type = T;
+    using pointer = T*;
+    using reference = T&;
+    using iterator_category = std::forward_iterator_tag;
     
     /// Check that the component under the current iterator is the same
     /// (has same address) as the right-hand iterator.
@@ -355,17 +380,18 @@ private:
     const Component* _root = nullptr;
     /** Optional filter to further select Components under _root, defaults to
     Filter by type. */
-    const ComponentFilter& _filter;
+    const ComponentFilter* _filter = nullptr;
     
     /** Constructor that takes a Component and ComponentFilter.
      The iterator contains a const ref to filter and doesn't take ownership
      of it. A pointer is used since iterator at end() doesn't have a valid
      Component underneath it. */
     ComponentListIterator(const Component* node,
-                          const ComponentFilter& filter) :
+                          const ComponentFilter* filter) :
         _node(node),
         _root(node),
         _filter(filter) {
+
         advanceToNextValidComponent(); // in case node is not a match.
     }
 }; // end of ComponentListIterator

@@ -21,14 +21,24 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
 #include "OpenSim/Simulation/SimbodyEngine/PinJoint.h"
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <iterator>
+#include <iostream>
+#include <type_traits>
+
 using namespace OpenSim;
 using namespace std;
+
+// `LegacyInputIterator` compatibility for `ComponentListIterator`
+static_assert(std::is_copy_constructible<ComponentListIterator<Component>>::value);
+static_assert(std::is_copy_assignable<ComponentListIterator<Component>>::value);
+static_assert(std::is_destructible<ComponentListIterator<Component>>::value);
+static_assert(std::is_same<std::iterator_traits<ComponentListIterator<Component>>::value_type, Component>::value);
+// static_assert(std::is_swappable<ComponentListIterator<Component>>::value);  // C++17
 
 // Example filter that allows for iterating only through Components that have
 // state variables, used for demonstration purposes.
@@ -242,7 +252,7 @@ void testComponentListConst() {
     cout << "numModelComponentsWithStateVariables ="
         << numModelComponentsWithStateVariables << endl;
 
-    //Now test a std::iterator method
+    // ensure the iterator is compatible with stdlib iterator methods (e.g. `std::advance`)
     ComponentList<const Frame> allFrames = model.getComponentList<Frame>();
     ComponentList<Frame>::const_iterator skipIter = allFrames.begin();
     int countSkipFrames = 0;
@@ -371,7 +381,7 @@ void testComponentListNonConstWithConstIterator() {
         cout << comp.getConcreteClassName() << ":" << comp.getAbsolutePathString() << endl;
         numModelComponentsWithStateVariables++;
     }
-    //Now test a std::iterator method
+    // ensure the iterator is compatible with stdlib iterator methods (e.g. `std::advance`)
     ComponentList<Frame> allFrames = model.updComponentList<Frame>();
     // This line uses implicit conversion from iterator to const_iterator.
     ComponentList<Frame>::const_iterator skipIter = allFrames.begin();
@@ -487,7 +497,7 @@ void testComponentListNonConstWithNonConstIterator() {
         numModelComponentsWithStateVariables++;
         comp.setName(comp.getName());
     }
-    //Now test a std::iterator method
+    // ensure the iterator is compatible with stdlib iterator methods (e.g. `std::advance`)
     ComponentList<Frame> allFrames = model.updComponentList<Frame>();
     ComponentList<Frame>::iterator skipIter = allFrames.begin();
     int countSkipFrames = 0;
