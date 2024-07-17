@@ -70,7 +70,7 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Improved exception handling for internal errors in `MocoCasADiSolver`. Problems will now abort and print a descriptive error message (rather than fail due to an empty trajectory). (#3834)
 - The performance of `getStateVariableValue`, `getStateVariableDerivativeValue`, and `getModelingOption` was improved in
   the case where provided string is just the name of the value, rather than a path to it (#3782)
-
+- Fixed bugs in `MocoStepTimeAsymmetryGoal::printDescriptionImpl()` where there were missing or incorrect values printed. (#3842)
 
 
 v4.5
