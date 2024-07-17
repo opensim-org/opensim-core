@@ -54,10 +54,33 @@ std::unique_ptr<Model> createSlidingMassModel() {
     return model;
 }
 
-// create two sliding mass models in the same place
+/// create a model with two sliding masses
+/*std::unique_ptr<Model> createDoubleSlidingMassModel() {
+std::unique_ptr<Model> model = createSlidingMassModel();
+    model->setName("double_sliding_mass");
+
+    // add second mass
+    auto* body2 = new Body("body2", 1.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    model->addComponent(body2);
+    // Allows translation along x.
+    auto* joint2 = new SliderJoint("slider2", model->getGround(), *body2);
+    auto& coord2 = joint2->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord2.setName("position");
+    model->addComponent(joint2);
+    auto* actu2 = new CoordinateActuator();
+    actu2->setCoordinate(&coord2);
+    actu2->setName("actuator2");
+    actu2->setOptimalForce(1);
+    model->addComponent(actu2);
+    body2->attachGeometry(new Sphere(0.05));
+
+    model->finalizeConnections();
+    return model;
+}*/
+
 Model createDoubleSlidingMassModel() {
     Model model;
-    model.setName("sliding_masses");
+    model.setName("double_sliding_mass");
     model.set_gravity(SimTK::Vec3(0, 0, 0));
 
     auto* body1 = new Body("body1", 1.0, SimTK::Vec3(0), SimTK::Inertia(0));
@@ -920,11 +943,6 @@ TEMPLATE_TEST_CASE("MocoCompositeOutputGoal", "", MocoCasADiSolver,
         model.initSystem();
 
         problem.setModelAsCopy(model);
-        problem.setTimeBounds(0, 5);
-        problem.setStateInfo("/slider1/position/speed", {-10, 10}, 0, 0);
-        problem.setControlInfo("/actuator1", {-100, 100});
-        problem.setStateInfo("/slider2/position/speed", {-10, 10}, 0, 0);
-        problem.setControlInfo("/actuator2", {-100, 100});
 
         // set up sliders to have a distance from each other at the beginning
         problem.setStateInfo("/slider1/position/value", MocoBounds(-5, 5),
@@ -932,12 +950,18 @@ TEMPLATE_TEST_CASE("MocoCompositeOutputGoal", "", MocoCasADiSolver,
         problem.setStateInfo("/slider2/position/value", MocoBounds(-5, 5),
             MocoInitialBounds(2), MocoFinalBounds(-5, 5));
 
+        problem.setTimeBounds(0, 5);
+        problem.setStateInfo("/slider1/position/speed", {-10, 10}, 0, 0);
+        problem.setStateInfo("/slider2/position/speed", {-10, 10}, 0, 0);
+        problem.setControlInfo("/actuator1", {-100, 100});
+        problem.setControlInfo("/actuator2", {-100, 100});
+
         // add goal of smallest distance
         auto* goal = problem.template addGoal<MocoCompositeOutputGoal>();
         goal->setName("distance2");
         goal->setOutputPath("/body1|position");
         goal->setSecondOutputPath("/body2|position");
-        goal->setOperator("subtraction");
+        goal->setOperation("subtraction");
         goal->setExponent(2);
 
         auto* effort = problem.addGoal<MocoControlGoal>();
@@ -949,11 +973,13 @@ TEMPLATE_TEST_CASE("MocoCompositeOutputGoal", "", MocoCasADiSolver,
         MocoSolution solution = study.solve();
 
         // analyze result for ending distance between spheres
-        StatesTrajectory states = solution.exportToStatesTrajectory(model);
-        SimTK::State finalState = states.back();
+        StatesTrajectory trajectory = solution.exportToStatesTrajectory(model);
+        const SimTK::State& finalState = trajectory.back();
         model.realizePosition(finalState);
-        SimTK::Vec3 endPosition1 = model.getComponent<Body>("/body1").getPositionInGround(finalState);
-        SimTK::Vec3 endPosition2 = model.getComponent<Body>("/body2").getPositionInGround(finalState);
+        SimTK::Vec3 endPosition1 = model.getComponent<Body>("/body1")
+                                        .getPositionInGround(finalState);
+        SimTK::Vec3 endPosition2 = model.getComponent<Body>("/body2")
+                                        .getPositionInGround(finalState);
 
         CHECK((endPosition1 - endPosition2).norm() == Approx(0).margin(1e-4));
     }
@@ -965,25 +991,24 @@ TEMPLATE_TEST_CASE("MocoCompositeOutputGoal", "", MocoCasADiSolver,
         model.initSystem();
 
         problem.setModelAsCopy(model);
-        problem.setTimeBounds(0, 1);
-
-        // sliders have a starting velocity
-        problem.setStateInfo("/slider1/position/speed", {-50, 50}, 3);
-        problem.setControlInfo("/actuator1", {-100, 100});
-        problem.setStateInfo("/slider2/position/speed", {-50, 50}, -1);
-        problem.setControlInfo("/actuator2", {-100, 100});
-
         problem.setStateInfo("/slider1/position/value", MocoBounds(-5, 5),
             MocoInitialBounds(1), MocoFinalBounds(-5, 5));
         problem.setStateInfo("/slider2/position/value", MocoBounds(-5, 5),
             MocoInitialBounds(-1), MocoFinalBounds(-5, 5));
+        problem.setTimeBounds(0, 1);
+
+        // sliders have a starting velocity
+        problem.setStateInfo("/slider1/position/speed", {-50, 50}, 3);
+        problem.setStateInfo("/slider2/position/speed", {-50, 50}, -1);
+        problem.setControlInfo("/actuator1", {-100, 100});
+        problem.setControlInfo("/actuator2", {-100, 100});
 
         // add goal of smallest multiplied velocities
         auto* goal = problem.template addGoal<MocoCompositeOutputGoal>();
-        goal->setName("velocitiesCombo");
+        goal->setName("multiply_velocities");
         goal->setOutputPath("/body1|velocity");
         goal->setSecondOutputPath("/body2|velocity");
-        goal->setOperator("multiplication");
+        goal->setOperation("multiplication");
         goal->setOutputIndex(3);
         goal->setExponent(2);
 
@@ -996,19 +1021,15 @@ TEMPLATE_TEST_CASE("MocoCompositeOutputGoal", "", MocoCasADiSolver,
         MocoSolution solution = study.solve();
 
         // analyze result for ending velocities
-        StatesTrajectory t = solution.exportToStatesTrajectory(model);
-        SimTK::State finalState = t.back();
+        StatesTrajectory trajectory = solution.exportToStatesTrajectory(model);
+        const SimTK::State& finalState = trajectory.back();
         model.realizeAcceleration(finalState);
-        SimTK::SpatialVec endVel1 = model.getComponent<Body>("/body1").getVelocityInGround(finalState);
-        SimTK::SpatialVec endVel2 = model.getComponent<Body>("/body2").getVelocityInGround(finalState);
+        const SimTK::SpatialVec& endVel1 = model.getComponent<Body>("/body1")
+                                            .getVelocityInGround(finalState);
+        const SimTK::SpatialVec& endVel2 = model.getComponent<Body>("/body2")
+                                            .getVelocityInGround(finalState);
 
         CHECK((endVel1[1][0] * endVel2[1][0]) == Approx(0).margin(1e-5));
-
-        /*CHECK(solution.getState(
-            "/slider1/position/value")[solution.getNumTimes() - 1]
-            - solution.getState(
-            "/slider2/position/value")[solution.getNumTimes() - 1] ==
-            Approx(0).margin(1e-5));*/
     }
 
     SECTION("Invalid Outputs") {
@@ -1023,7 +1044,7 @@ TEMPLATE_TEST_CASE("MocoCompositeOutputGoal", "", MocoCasADiSolver,
             goal->setName("notDistance");
             goal->setOutputPath("/body1|position");
             goal->setSecondOutputPath("/body2|position");
-            goal->setOperator("Subtraction");   // instead of subtraction
+            goal->setOperation("Subtraction");   // instead of subtraction
 
             REQUIRE_THROWS(study.template initSolver<TestType>());
         }
@@ -1033,7 +1054,7 @@ TEMPLATE_TEST_CASE("MocoCompositeOutputGoal", "", MocoCasADiSolver,
             goal->setName("badCombo");
             goal->setOutputPath("/body1|velocity");
             goal->setSecondOutputPath("/body2|position");
-            goal->setOperator("subtraction");
+            goal->setOperation("subtraction");
 
             REQUIRE_THROWS(study.template initSolver<TestType>());
         }

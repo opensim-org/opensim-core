@@ -59,8 +59,8 @@ void MocoOutputBase::initializeOnModelBase() const {
     } else if (dynamic_cast<const Output<SimTK::SpatialVec>*>(abstractOutput)) {
         m_data_type = Type_SpatialVec;
         OPENSIM_THROW_IF_FRMOBJ(get_output_index() > 5, Exception,
-                "The Output is of type 'SimTK::SpatialVec', but an Output index "
-                "greater than 5 was provided.");
+                "The Output is of type 'SimTK::SpatialVec', but an Output index"
+                " greater than 5 was provided.");
         if (get_output_index() < 3) {
             m_index1 = 0;
             m_index2 = get_output_index();
@@ -171,87 +171,94 @@ void MocoOutputGoal::calcGoalImpl(
 
 void MocoCompositeOutputGoal::constructProperties() {
     constructProperty_second_output_path("");
-    constructProperty_combo("");
+    constructProperty_operation("");
 }
 
 void MocoCompositeOutputGoal::initializeOnModelImpl(const Model& model) const {
     initializeOnModelBase();
 
-    // set operator from string
-    if (get_combo() == "addition") {
-        m_operatorType = addition;
-    } else if (get_combo().compare("subtraction") == 0) {
-        m_operatorType = subtraction;
-    } else if (get_combo().compare("multiplication") == 0) {
-        m_operatorType = multiplication;
-    } else if (get_combo().compare("division") == 0) {
-        m_operatorType = division;
+    if (get_operation() == "addition") {
+        m_operation = Addition;
+    } else if (get_operation() == "subtraction") {
+        m_operation = Subtraction;
+    } else if (get_operation() == "multiplication") {
+        m_operation = Multiplication;
+    } else if (get_operation() == "division") {
+        m_operation = Division;
     } else {
-        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Invalid operator {}, must "
+        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Invalid operator: {}, must "
                 "be 'addition', 'subtraction', 'multiplication', or 'division'.",
-                get_combo()));
+                get_operation()));
     }
 
-    // check that the second output has the same type as the first
     OPENSIM_THROW_IF_FRMOBJ(get_second_output_path().empty(), Exception,
             "No second_output_path provided.");
     std::string componentPath, outputName, channelName, alias;
-    AbstractInput::parseConnecteePath(
-            get_second_output_path(), componentPath, outputName, channelName, alias);
+    AbstractInput::parseConnecteePath(get_second_output_path(), componentPath,
+                                        outputName, channelName, alias);
     const auto& component = getModel().getComponent(componentPath);
     const auto* abstractOutput = &component.getOutput(outputName);
 
     if (dynamic_cast<const Output<double>*>(abstractOutput)) {
         OPENSIM_THROW_IF_FRMOBJ(getOutputIndex() != -1, Exception,
-                "An Output index was provided, but the second Output is of type "
-                "'double'.")
+                "An Output index was provided, but the second Output is of type"
+                " 'double'.")
         OPENSIM_THROW_IF_FRMOBJ(getDataType() != Type_double, Exception,
-                "Output types do not match. The second Output is of type double but the first is not.");
+                "Output types do not match. The second Output is of type double"
+                " but the first is not.");
     } else if (dynamic_cast<const Output<SimTK::Vec3>*>(abstractOutput)) {
         OPENSIM_THROW_IF_FRMOBJ(getDataType() != Type_Vec3, Exception,
-                "Output types do not match. The second Output is of type SimTK::Vec3 but the first is not.");
+                "Output types do not match. The second Output is of type "
+                "SimTK::Vec3 but the first is not.");
     } else if (dynamic_cast<const Output<SimTK::SpatialVec>*>(abstractOutput)) {
         OPENSIM_THROW_IF_FRMOBJ(getDataType() != Type_SpatialVec, Exception,
-                "Output types do not match. The second Output is of type SimTK::SpatialVec but the first is not.");
+                "Output types do not match. The second Output is of type "
+                "SimTK::SpatialVec but the first is not.");
     } else {
         OPENSIM_THROW_FRMOBJ(Exception,
                 "Data type of specified second Output not supported.");
     }
-    m_output2.reset(abstractOutput);
+    m_second_output.reset(abstractOutput);
 
-    if (getDependsOnStage() > m_output2->getDependsOnStage()) {
-        setDependsOnStage(m_output2->getDependsOnStage());
+    if (getDependsOnStage() < m_second_output->getDependsOnStage()) {
+        setDependsOnStage(m_second_output->getDependsOnStage());
     }
     setRequirements(1, 1, getDependsOnStage());
 }
 
-double MocoCompositeOutputGoal::calcOutputValue(const SimTK::State& state) const {
+double MocoCompositeOutputGoal::calcOperationValue(const SimTK::State& state) const {
     getModel().getSystem().realize(state, getDependsOnStage());
 
     double value = 0;
     if (getDataType() == Type_double) {
         double value1 = getOutput<double>().getValue(state);
-        double value2 = static_cast<const Output<double>*>(m_output2.get())->getValue(state);
-        value = combine(value1, value2);
+        double value2 = static_cast<const Output<double>*>(m_second_output.get())
+                                ->getValue(state);
+        value = applyOperation(value1, value2);
     } else if (getDataType() == Type_Vec3) {
         if (getMinimizeVectorNorm()) {
             SimTK::Vec3 value1 = getOutput<SimTK::Vec3>().getValue(state);
-            SimTK::Vec3 value2 = static_cast<const Output<SimTK::Vec3>*>(m_output2.get())->getValue(state);
-            value = combine(value1, value2);
+            SimTK::Vec3 value2 = static_cast<const Output<SimTK::Vec3>*>
+                                    (m_second_output.get())->getValue(state);
+            value = applyOperation(value1, value2);
         } else {
             double value1 = getOutput<SimTK::Vec3>().getValue(state)[getIndex1()];
-            double value2 = static_cast<const Output<SimTK::Vec3>*>(m_output2.get())->getValue(state)[getIndex1()];
-            value = combine(value1, value2);
+            double value2 = static_cast<const Output<SimTK::Vec3>*>
+                            (m_second_output.get())->getValue(state)[getIndex1()];
+            value = applyOperation(value1, value2);
         }
     } else if (getDataType() == Type_SpatialVec) {
         if (getMinimizeVectorNorm()) {
             SimTK::SpatialVec value1 = getOutput<SimTK::SpatialVec>().getValue(state);
-            SimTK::SpatialVec value2 = static_cast<const Output<SimTK::SpatialVec>*>(m_output2.get())->getValue(state);
-            value = combine(value1, value2);
+            SimTK::SpatialVec value2 = static_cast<const Output<SimTK::SpatialVec>*>
+                                        (m_second_output.get())->getValue(state);
+            value = applyOperation(value1, value2);
         } else {
-            double value1 = getOutput<SimTK::SpatialVec>().getValue(state)[getIndex1()][getIndex2()];
-            double value2 = static_cast<const Output<SimTK::SpatialVec>*>(m_output2.get())->getValue(state)[getIndex1()][getIndex2()];
-            value = combine(value1, value2);
+            double value1 = getOutput<SimTK::SpatialVec>().getValue(state)
+                                                [getIndex1()][getIndex2()];
+            double value2 = static_cast<const Output<SimTK::SpatialVec>*>
+                (m_second_output.get())->getValue(state)[getIndex1()][getIndex2()];
+            value = applyOperation(value1, value2);
         }
     }
 
@@ -260,11 +267,11 @@ double MocoCompositeOutputGoal::calcOutputValue(const SimTK::State& state) const
 
 void MocoCompositeOutputGoal::printDescriptionImpl() const {
     // Output path.
-    std::string str = fmt::format("        output 1: {}", getOutputPath());
-    str += fmt::format("\n        output 2: {}", getSecondOutputPath());
+    std::string str = fmt::format("        first output: {}", getOutputPath());
+    str += fmt::format("\n        second output: {}", getSecondOutputPath());
 
     // Operator.
-    str += fmt::format("\n        operator: {}", get_combo());
+    str += fmt::format("\n        operator: {}", get_operation());
 
     // Output type.
     std::string type;
@@ -291,7 +298,7 @@ void MocoCompositeOutputGoal::printDescriptionImpl() const {
 
 void MocoCompositeOutputGoal::calcIntegrandImpl(
         const IntegrandInput& input, double& integrand) const {
-    integrand = setValueToExponent(calcOutputValue(input.state));
+    integrand = setValueToExponent(calcOperationValue(input.state));
 }
 
 void MocoCompositeOutputGoal::calcGoalImpl(
