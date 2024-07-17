@@ -309,6 +309,31 @@ private:
     mutable OperationType m_operation;
 };
 
+/** class to minimize combination of two outputs at the end of the trajectory */
+class OSIMMOCO_API MocoFinalCompositeOutputGoal : public MocoCompositeOutputGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalCompositeOutputGoal, MocoCompositeOutputGoal);
+
+public:
+    MocoFinalCompositeOutputGoal() {}
+    MocoFinalCompositeOutputGoal(std::string name) : MocoCompositeOutputGoal(std::move(name)) {}
+    MocoFinalCompositeOutputGoal(std::string name, double weight)
+            : MocoCompositeOutputGoal(std::move(name), weight) {}
+
+protected:
+    void initializeOnModelImpl(const Model& model) const override {
+        MocoCompositeOutputGoal::initializeOnModelImpl(model);
+        setRequirements(0, 1, getDependsOnStage());
+    }
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& values) const override {
+        values[0] = setValueToExponent(calcOperationValue(input.final_state));
+    }
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    Mode getDefaultModeImpl() const override {
+        return Mode::Cost;
+    }
+};
+
 /** This goal permits the integration of only positive or negative values from a
 model Output. This goal allows you to use model Outputs of type double, or a 
 single specified element from an Output of type SimTK::Vec3 or 
