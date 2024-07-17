@@ -32,85 +32,39 @@ using Catch::Matchers::ContainsSubstring;
 
 using namespace OpenSim;
 
-std::unique_ptr<Model> createSlidingMassModel() {
-    auto model = make_unique<Model>();
-    model->setName("sliding_mass");
-    model->set_gravity(SimTK::Vec3(0, 0, 0));
-    auto* body = new Body("body", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
-    model->addComponent(body);
-
+/// creates a mass on a slider and adds it to the model
+void addSlidingMass(Model& model, std::string name, double mass) {
+    auto* body = new Body("body"+name, mass, SimTK::Vec3(0), SimTK::Inertia(0));
+    model.addComponent(body);
     // Allows translation along x.
-    auto* joint = new SliderJoint("slider", model->getGround(), *body);
-    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
-    coord.setName("position");
-    model->addComponent(joint);
-
-    auto* actu = new CoordinateActuator();
-    actu->setCoordinate(&coord);
-    actu->setName("actuator");
-    actu->setOptimalForce(1);
-    model->addComponent(actu);
-
-    return model;
-}
-
-/// create a model with two sliding masses
-/*std::unique_ptr<Model> createDoubleSlidingMassModel() {
-std::unique_ptr<Model> model = createSlidingMassModel();
-    model->setName("double_sliding_mass");
-
-    // add second mass
-    auto* body2 = new Body("body2", 1.0, SimTK::Vec3(0), SimTK::Inertia(0));
-    model->addComponent(body2);
-    // Allows translation along x.
-    auto* joint2 = new SliderJoint("slider2", model->getGround(), *body2);
-    auto& coord2 = joint2->updCoordinate(SliderJoint::Coord::TranslationX);
-    coord2.setName("position");
-    model->addComponent(joint2);
-    auto* actu2 = new CoordinateActuator();
-    actu2->setCoordinate(&coord2);
-    actu2->setName("actuator2");
-    actu2->setOptimalForce(1);
-    model->addComponent(actu2);
-    body2->attachGeometry(new Sphere(0.05));
-
-    model->finalizeConnections();
-    return model;
-}*/
-
-Model createDoubleSlidingMassModel() {
-    Model model;
-    model.setName("double_sliding_mass");
-    model.set_gravity(SimTK::Vec3(0, 0, 0));
-
-    auto* body1 = new Body("body1", 1.0, SimTK::Vec3(0), SimTK::Inertia(0));
-    model.addComponent(body1);
-    // Allows translation along x.
-    auto* joint1 = new SliderJoint("slider1", model.getGround(), *body1);
-    auto& coord = joint1->updCoordinate(SliderJoint::Coord::TranslationX);
-    coord.setName("position");
-    model.addComponent(joint1);
-    auto* actu = new CoordinateActuator();
-    actu->setCoordinate(&coord);
-    actu->setName("actuator1");
-    actu->setOptimalForce(1);
-    model.addComponent(actu);
-    body1->attachGeometry(new Sphere(0.05));
-
-    auto* body2 = new Body("body2", 1.0, SimTK::Vec3(0), SimTK::Inertia(0));
-    model.addComponent(body2);
-    // Allows translation along x.
-    auto* joint2 = new SliderJoint("slider2", model.getGround(), *body2);
+    auto* joint2 = new SliderJoint("slider"+name, model.getGround(), *body);
     auto& coord2 = joint2->updCoordinate(SliderJoint::Coord::TranslationX);
     coord2.setName("position");
     model.addComponent(joint2);
     auto* actu2 = new CoordinateActuator();
     actu2->setCoordinate(&coord2);
-    actu2->setName("actuator2");
+    actu2->setName("actuator"+name);
     actu2->setOptimalForce(1);
     model.addComponent(actu2);
-    body2->attachGeometry(new Sphere(0.05));
+    body->attachGeometry(new Sphere(0.05));
+}
 
+/// creates a model with one sliding mass of mass 10
+std::unique_ptr<Model> createSlidingMassModel() {
+    auto model = make_unique<Model>();
+    model->setName("sliding_mass");
+    model->set_gravity(SimTK::Vec3(0, 0, 0));
+    addSlidingMass(*model, "", 10.0);
+    return model;
+}
+
+/// create a model with two sliding masses of mass 1
+Model createDoubleSlidingMassModel() {
+    Model model;
+    model.setName("double_sliding_mass");
+    model.set_gravity(SimTK::Vec3(0, 0, 0));
+    addSlidingMass(model, "1", 1.0);
+    addSlidingMass(model, "2", 1.0);
     model.finalizeConnections();
     return model;
 }
