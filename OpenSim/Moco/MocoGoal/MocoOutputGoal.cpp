@@ -195,7 +195,7 @@ void MocoCompositeOutputGoal::initializeOnModelImpl(const Model& model) const {
             "No second_output_path provided.");
     std::string componentPath, outputName, channelName, alias;
     AbstractInput::parseConnecteePath(get_second_output_path(), componentPath,
-                                        outputName, channelName, alias);
+                                      outputName, channelName, alias);
     const auto& component = getModel().getComponent(componentPath);
     const auto* abstractOutput = &component.getOutput(outputName);
 
@@ -232,32 +232,28 @@ double MocoCompositeOutputGoal::calcOperationValue(const SimTK::State& state) co
     double value = 0;
     if (getDataType() == Type_double) {
         double value1 = getOutput<double>().getValue(state);
-        double value2 = static_cast<const Output<double>*>(m_second_output.get())
-                                ->getValue(state);
+        double value2 = getSecondOutput<double>().getValue(state);
         value = applyOperation(value1, value2);
     } else if (getDataType() == Type_Vec3) {
         if (getMinimizeVectorNorm()) {
             SimTK::Vec3 value1 = getOutput<SimTK::Vec3>().getValue(state);
-            SimTK::Vec3 value2 = static_cast<const Output<SimTK::Vec3>*>
-                                    (m_second_output.get())->getValue(state);
+            SimTK::Vec3 value2 = getSecondOutput<SimTK::Vec3>().getValue(state);
             value = applyOperation(value1, value2);
         } else {
             double value1 = getOutput<SimTK::Vec3>().getValue(state)[getIndex1()];
-            double value2 = static_cast<const Output<SimTK::Vec3>*>
-                            (m_second_output.get())->getValue(state)[getIndex1()];
+            double value2 = getSecondOutput<SimTK::Vec3>().getValue(state)[getIndex1()];
             value = applyOperation(value1, value2);
         }
     } else if (getDataType() == Type_SpatialVec) {
         if (getMinimizeVectorNorm()) {
             SimTK::SpatialVec value1 = getOutput<SimTK::SpatialVec>().getValue(state);
-            SimTK::SpatialVec value2 = static_cast<const Output<SimTK::SpatialVec>*>
-                                        (m_second_output.get())->getValue(state);
+            SimTK::SpatialVec value2 = getSecondOutput<SimTK::SpatialVec>().getValue(state);
             value = applyOperation(value1, value2);
         } else {
             double value1 = getOutput<SimTK::SpatialVec>().getValue(state)
-                                                [getIndex1()][getIndex2()];
-            double value2 = static_cast<const Output<SimTK::SpatialVec>*>
-                (m_second_output.get())->getValue(state)[getIndex1()][getIndex2()];
+                            [getIndex1()][getIndex2()];
+            double value2 = getSecondOutput<SimTK::SpatialVec>().getValue(state)
+                            [getIndex1()][getIndex2()];
             value = applyOperation(value1, value2);
         }
     }

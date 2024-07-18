@@ -218,9 +218,9 @@ second Output on the right side.
 @Note The user should avoid using division when the second Output could be zero
 because this will cause divide by zero errors.
 
-The two Outputs must be the same type. If the Outputs are SimTK::Vec3 or
-SimTK::SpatialVec and an index is provided, the index will be applied to both
-Outputs before applying the operation.
+The two Outputs can be different quantities, but they must be the same type. If
+the Outputs are SimTK::Vec3 or SimTK::SpatialVec and an index is provided, the
+index will be applied to both Outputs before applying the operation.
 @ingroup mocogoal */
 class OSIMMOCO_API MocoCompositeOutputGoal : public MocoOutputBase {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoCompositeOutputGoal, MocoOutputBase);
@@ -261,22 +261,27 @@ protected:
     }
     void printDescriptionImpl() const override;
 
-    /** Gets the values of the two outputs at the given state and applies the
+    /** Gets a reference to the second Output for this goal. */
+    template <typename T>
+    const Output<T>& getSecondOutput() const {
+        return static_cast<const Output<T>&>(m_second_output.getRef());
+    }
+
+    /** Calculates the values of the two outputs at the given state and applies the
     operation. */
     double calcOperationValue(const SimTK::State&) const;
-
 
 private:
     OpenSim_DECLARE_PROPERTY(second_output_path, std::string,
             "The absolute path to the second output in the model to use as the "
             "integrand for this goal.");
     OpenSim_DECLARE_PROPERTY(operation, std::string, "The operation to combine "
-            "the two outputs: 'additon', 'subtraction', 'multiplication', or "
+            "the two outputs: 'addition', 'subtraction', 'multiplication', or "
             "'divison'.");
 
     void constructProperties();
 
-    /** Applies the operation to two double values. **/
+    /** Apply the operation to two double values. **/
     double applyOperation(double value1, double value2) const {
         switch (m_operation) {
             case Addition       : return value1 + value2;
@@ -288,7 +293,7 @@ private:
         }
     }
 
-    /** Applies the operation to two Vec valuee. If the operation is addition or
+    /** Apply the operation to two Vec valuee. If the operation is addition or
     subtraction, it will take the norm after the operator has been applied, and
     if the operation is multiplication or division, the norm of both values will
     be taken before applying the operation. */
