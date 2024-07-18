@@ -932,7 +932,7 @@ TEMPLATE_TEST_CASE("MocoCompositeOutputGoal", "", MocoCasADiSolver,
         problem.setControlInfo("/actuator2", {-100, 100});
 
         // add goal of smallest distance
-        auto* goal = problem.template addGoal<MocoCompositeOutputGoal>();
+        auto* goal = problem.template addGoal<MocoOutputGoal>();
         goal->setName("distance2");
         goal->setOutputPath("/body|position");
         goal->setSecondOutputPath("/body2|position");
@@ -979,7 +979,7 @@ TEMPLATE_TEST_CASE("MocoCompositeOutputGoal", "", MocoCasADiSolver,
         problem.setControlInfo("/actuator2", {-100, 100});
 
         // add goal of smallest multiplied velocities
-        auto* goal = problem.template addGoal<MocoCompositeOutputGoal>();
+        auto* goal = problem.template addGoal<MocoOutputGoal>();
         goal->setName("multiply_velocities");
         goal->setOutputPath("/body|velocity");
         goal->setSecondOutputPath("/body2|velocity");
@@ -1015,7 +1015,7 @@ TEMPLATE_TEST_CASE("MocoCompositeOutputGoal", "", MocoCasADiSolver,
         problem.setModelAsCopy(*model);
 
         SECTION("Invalid Operator") {
-            auto* goal = problem.template addGoal<MocoCompositeOutputGoal>();
+            auto* goal = problem.template addGoal<MocoOutputGoal>();
             goal->setName("notDistance");
             goal->setOutputPath("/body|position");
             goal->setSecondOutputPath("/body2|position");
@@ -1025,7 +1025,7 @@ TEMPLATE_TEST_CASE("MocoCompositeOutputGoal", "", MocoCasADiSolver,
         }
 
         SECTION("Mismatch Type") {
-            auto* goal = problem.template addGoal<MocoCompositeOutputGoal>();
+            auto* goal = problem.template addGoal<MocoOutputGoal>();
             goal->setName("badCombo");
             goal->setOutputPath("/body|velocity");
             goal->setSecondOutputPath("/body2|position");

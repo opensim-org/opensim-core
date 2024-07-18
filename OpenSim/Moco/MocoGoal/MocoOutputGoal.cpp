@@ -26,6 +26,8 @@ using namespace OpenSim;
 
 void MocoOutputBase::constructProperties() {
     constructProperty_output_path("");
+    constructProperty_second_output_path("");
+    constructProperty_operation("");
     constructProperty_exponent(1);
     constructProperty_output_index(-1);
 }
@@ -94,90 +96,15 @@ void MocoOutputBase::initializeOnModelBase() const {
     // Set the "depends-on stage", the SimTK::Stage we must realize to
     // in order to calculate values from this output.
     m_dependsOnStage = m_output->getDependsOnStage();
-}
 
-double MocoOutputBase::calcOutputValue(const SimTK::State& state) const {
-    getModel().getSystem().realize(state, m_output->getDependsOnStage());
-
-    double value = 0;
-    if (m_data_type == Type_double) {
-        value = getOutput<double>().getValue(state);
-    } else if (m_data_type == Type_Vec3) {
-        if (m_minimizeVectorNorm) {
-            value = getOutput<SimTK::Vec3>().getValue(state).norm();
-        } else {
-            value = getOutput<SimTK::Vec3>().getValue(state)[m_index1];
-        }
-    } else if (m_data_type == Type_SpatialVec) {
-        if (m_minimizeVectorNorm) {
-            value = getOutput<SimTK::SpatialVec>().getValue(state).norm();
-        } else {
-            value = getOutput<SimTK::SpatialVec>().getValue(state)[m_index1][m_index2];
-        }
+    // if there's a second output, initialize that
+    if (get_second_output_path() != "") {
+        initializeComposite();
     }
-
-    return value;
 }
 
-void MocoOutputBase::printDescriptionImpl() const {
-    // Output path.
-    std::string str = fmt::format("        output: {}", getOutputPath());
-
-    // Output type.
-    std::string type;
-    if (m_data_type == Type_double) { type = "double"; }
-    else if (m_data_type == Type_Vec3) { type = "SimTK::Vec3"; }
-    else if (m_data_type == Type_SpatialVec) { type = "SimTK::SpatialVec"; }
-    str += fmt::format(", type: {}", type);
-
-    // Output index (if relevant).
-    if (getOutputIndex() != -1) {
-        str += fmt::format(", index: {}", getOutputIndex());
-    }
-
-    // Exponent.
-    str += fmt::format(", exponent: {}", getExponent());
-
-    // Bounds (if endpoint constraint).
-    if (getModeIsEndpointConstraint()) {
-        str += fmt::format(", bounds: {}", getConstraintInfo().getBounds()[0]);
-    }
-
-    log_cout(str);
-}
-
-// ============================================================================
-// MocoOutputGoal
-// ============================================================================
-
-void MocoOutputGoal::initializeOnModelImpl(const Model& output) const {
-    initializeOnModelBase();
-    setRequirements(1, 1, getDependsOnStage());
-}
-
-void MocoOutputGoal::calcIntegrandImpl(
-        const IntegrandInput& input, double& integrand) const {
-    integrand = setValueToExponent(calcOutputValue(input.state));
-}
-
-void MocoOutputGoal::calcGoalImpl(
-        const MocoGoal::GoalInput& input, SimTK::Vector& values) const {
-    values[0] = input.integral;
-}
-
-// ============================================================================
-// MocoCompositeOutputGoal
-// ============================================================================
-
-void MocoCompositeOutputGoal::constructProperties() {
-    constructProperty_second_output_path("");
-    constructProperty_operation("");
-}
-
-void MocoCompositeOutputGoal::initializeOnModelImpl(const Model& model) const {
-    initializeOnModelBase();
-
-    if (get_operation() == "addition") {
+void MocoOutputBase::initializeComposite() const {
+        if (get_operation() == "addition") {
         m_operation = Addition;
     } else if (get_operation() == "subtraction") {
         m_operation = Subtraction;
@@ -223,10 +150,39 @@ void MocoCompositeOutputGoal::initializeOnModelImpl(const Model& model) const {
     if (getDependsOnStage() < m_second_output->getDependsOnStage()) {
         setDependsOnStage(m_second_output->getDependsOnStage());
     }
-    setRequirements(1, 1, getDependsOnStage());
 }
 
-double MocoCompositeOutputGoal::calcOperationValue(const SimTK::State& state) const {
+double MocoOutputBase::calcOutputValue(const SimTK::State& state) const {
+    if (get_second_output_path() != "") {
+        return calcCompositeOutputValue(state);
+    }
+    return calcSingleOutputValue(state);
+}
+
+double MocoOutputBase::calcSingleOutputValue(const SimTK::State& state) const {
+    getModel().getSystem().realize(state, m_output->getDependsOnStage());
+
+    double value = 0;
+    if (m_data_type == Type_double) {
+        value = getOutput<double>().getValue(state);
+    } else if (m_data_type == Type_Vec3) {
+        if (m_minimizeVectorNorm) {
+            value = getOutput<SimTK::Vec3>().getValue(state).norm();
+        } else {
+            value = getOutput<SimTK::Vec3>().getValue(state)[m_index1];
+        }
+    } else if (m_data_type == Type_SpatialVec) {
+        if (m_minimizeVectorNorm) {
+            value = getOutput<SimTK::SpatialVec>().getValue(state).norm();
+        } else {
+            value = getOutput<SimTK::SpatialVec>().getValue(state)[m_index1][m_index2];
+        }
+    }
+
+    return value;
+}
+
+double MocoOutputBase::calcCompositeOutputValue(const SimTK::State& state) const {
     getModel().getSystem().realize(state, getDependsOnStage());
 
     double value = 0;
@@ -261,19 +217,21 @@ double MocoCompositeOutputGoal::calcOperationValue(const SimTK::State& state) co
     return value;
 }
 
-void MocoCompositeOutputGoal::printDescriptionImpl() const {
+void MocoOutputBase::printDescriptionImpl() const {
     // Output path.
-    std::string str = fmt::format("        first output: {}", getOutputPath());
-    str += fmt::format("\n        second output: {}", getSecondOutputPath());
+    std::string str = fmt::format("        output: {}", getOutputPath());
 
-    // Operator.
-    str += fmt::format("\n        operator: {}", get_operation());
+    if (getSecondOutputPath() != "") {
+        str += fmt::format("\n        second output: {}", getSecondOutputPath());
+        // Operator.
+        str += fmt::format("\n        operator: {}", get_operation());
+    }
 
     // Output type.
     std::string type;
-    if (getDataType() == Type_double) { type = "double"; }
-    else if (getDataType() == Type_Vec3) { type = "SimTK::Vec3"; }
-    else if (getDataType() == Type_SpatialVec) { type = "SimTK::SpatialVec"; }
+    if (m_data_type == Type_double) { type = "double"; }
+    else if (m_data_type == Type_Vec3) { type = "SimTK::Vec3"; }
+    else if (m_data_type == Type_SpatialVec) { type = "SimTK::SpatialVec"; }
     str += fmt::format(", type: {}", type);
 
     // Output index (if relevant).
@@ -292,12 +250,21 @@ void MocoCompositeOutputGoal::printDescriptionImpl() const {
     log_cout(str);
 }
 
-void MocoCompositeOutputGoal::calcIntegrandImpl(
-        const IntegrandInput& input, double& integrand) const {
-    integrand = setValueToExponent(calcOperationValue(input.state));
+// ============================================================================
+// MocoOutputGoal
+// ============================================================================
+
+void MocoOutputGoal::initializeOnModelImpl(const Model& output) const {
+    initializeOnModelBase();
+    setRequirements(1, 1, getDependsOnStage());
 }
 
-void MocoCompositeOutputGoal::calcGoalImpl(
+void MocoOutputGoal::calcIntegrandImpl(
+        const IntegrandInput& input, double& integrand) const {
+    integrand = setValueToExponent(calcOutputValue(input.state));
+}
+
+void MocoOutputGoal::calcGoalImpl(
         const MocoGoal::GoalInput& input, SimTK::Vector& values) const {
     values[0] = input.integral;
 }

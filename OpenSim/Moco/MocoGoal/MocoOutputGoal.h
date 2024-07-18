@@ -62,6 +62,19 @@ public:
     void setOutputPath(std::string path) { set_output_path(std::move(path)); }
     const std::string& getOutputPath() const { return get_output_path(); }
 
+    /** Set the absolute path to the second Output in the model. The format is
+    "/path/to/component|output_name". This Output should have the same type as
+    the first Output. */
+    void setSecondOutputPath(std::string path) {
+        set_second_output_path(std::move(path));
+    }
+    const std::string& getSecondOutputPath() const {
+        return get_second_output_path();
+    }
+    /** Set the operation to combine the outputs. It can be "addition",
+   "subtraction", "multiplication", or "division". */
+    void setOperation(std::string operation) { set_operation(operation); }
+
     /** Set the exponent applied to the output value in the integrand. This
     exponent is applied when minimizing the norm of a vector type output. The
     default exponent is set to 1, meaning that the output can take on negative
@@ -97,6 +110,9 @@ protected:
     call this function until 'initializeOnModelBase()' has been called. */
     double calcOutputValue(const SimTK::State&) const;
 
+    double calcSingleOutputValue(const SimTK::State&) const;
+    double calcCompositeOutputValue(const SimTK::State&) const;
+
     /** Raise a value to the exponent set via 'setExponent()'. Do not call this
     function until 'initializeOnModelBase()' has been called. */
     double setValueToExponent(double value) const {
@@ -116,6 +132,11 @@ protected:
     template <typename T>
     const Output<T>& getOutput() const {
         return static_cast<const Output<T>&>(m_output.getRef());
+    }
+    /** Gets a reference to the second Output for this goal. */
+    template <typename T>
+    const Output<T>& getSecondOutput() const {
+        return static_cast<const Output<T>&>(m_second_output.getRef());
     }
 
     /** Gets the first index to use on the output value: (0-1) if the output
@@ -152,6 +173,12 @@ private:
     OpenSim_DECLARE_PROPERTY(output_path, std::string,
             "The absolute path to the output in the model to use as the "
             "integrand for this goal.");
+    OpenSim_DECLARE_PROPERTY(second_output_path, std::string,
+            "The absolute path to the second output in the model to use as the "
+            "integrand for this goal.");
+    OpenSim_DECLARE_PROPERTY(operation, std::string, "The operation to combine "
+            "the two outputs: 'addition', 'subtraction', 'multiplication', or "
+            "'divison'.");
     OpenSim_DECLARE_PROPERTY(exponent, int,
             "The exponent applied to the output value in the integrand. "
             "The output can take on negative values in the integrand when the "
@@ -167,9 +194,43 @@ private:
             "and 5 refer to the translational components. A value of -1 "
             "indicates to minimize the vector norm (default: -1).");
     void constructProperties();
+    void initializeComposite() const;
+
+    /** Apply the operation to two double values. **/
+    double applyOperation(double value1, double value2) const {
+        switch (m_operation) {
+        case Addition       : return value1 + value2;
+        case Subtraction    : return value1 - value2;
+        case Multiplication : return value1 * value2;
+        case Division       : return value1 / value2;
+        default             : OPENSIM_THROW_FRMOBJ(Exception,
+                                "Internal error: invalid operation type");
+        }
+    }
+
+    /** Apply the operation to two Vec valuee. If the operation is addition or
+    subtraction, it will take the norm after the operator has been applied, and
+    if the operation is multiplication or division, the norm of both values will
+    be taken before applying the operation. */
+    template <typename T>
+    double applyOperation(T value1, T value2) const {
+        switch (m_operation) {
+        case Addition       : return (value1 + value2).norm();
+        case Subtraction    : return (value1 - value2).norm();
+        case Multiplication : return value1.norm() * value2.norm();
+        case Division       : return value1.norm() / value2.norm();
+        default             : OPENSIM_THROW_FRMOBJ(Exception,
+                                "Internal error: invalid operation type");
+        }
+    }
 
     mutable DataType m_data_type;
     mutable SimTK::ReferencePtr<const AbstractOutput> m_output;
+    mutable SimTK::ReferencePtr<const AbstractOutput> m_second_output;
+
+    enum OperationType { Addition, Subtraction, Multiplication, Division };
+    mutable OperationType m_operation;
+
     mutable std::function<double(const double&)> m_power_function;
     mutable int m_index1;
     mutable int m_index2;
@@ -222,122 +283,7 @@ The two Outputs can be different quantities, but they must be the same type. If
 the Outputs are SimTK::Vec3 or SimTK::SpatialVec and an index is provided, the
 index will be applied to both Outputs before applying the operation.
 @ingroup mocogoal */
-class OSIMMOCO_API MocoCompositeOutputGoal : public MocoOutputBase {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoCompositeOutputGoal, MocoOutputBase);
 
-public:
-    MocoCompositeOutputGoal() { constructProperties(); }
-    MocoCompositeOutputGoal(std::string name) : MocoOutputBase(std::move(name)) {
-        constructProperties();
-    }
-    MocoCompositeOutputGoal(std::string name, double weight)
-            : MocoOutputBase(std::move(name), weight) {
-        constructProperties();
-    }
-
-    /** Set the absolute path to the second Output in the model. The format is
-    "/path/to/component|output_name". This Output should have the same type as
-    the first Output. */
-    void setSecondOutputPath(std::string path) {
-        set_second_output_path(std::move(path));
-    }
-    const std::string& getSecondOutputPath() const {
-        return get_second_output_path();
-    }
-
-    /** Set the operation to combine the outputs. It can be "addition",
-    "subtraction", "multiplication", or "division". */
-    void setOperation(std::string operation) { set_operation(operation); }
-
-protected:
-    void initializeOnModelImpl(const Model&) const override;
-    void calcIntegrandImpl(
-            const IntegrandInput& state, double& integrand) const override;
-    void calcGoalImpl(
-            const GoalInput& input, SimTK::Vector& values) const override;
-    bool getSupportsEndpointConstraintImpl() const override { return true; }
-    Mode getDefaultModeImpl() const override {
-        return Mode::Cost;
-    }
-    void printDescriptionImpl() const override;
-
-    /** Gets a reference to the second Output for this goal. */
-    template <typename T>
-    const Output<T>& getSecondOutput() const {
-        return static_cast<const Output<T>&>(m_second_output.getRef());
-    }
-
-    /** Calculates the values of the two outputs at the given state and applies the
-    operation. */
-    double calcOperationValue(const SimTK::State&) const;
-
-private:
-    OpenSim_DECLARE_PROPERTY(second_output_path, std::string,
-            "The absolute path to the second output in the model to use as the "
-            "integrand for this goal.");
-    OpenSim_DECLARE_PROPERTY(operation, std::string, "The operation to combine "
-            "the two outputs: 'addition', 'subtraction', 'multiplication', or "
-            "'divison'.");
-
-    void constructProperties();
-
-    /** Apply the operation to two double values. **/
-    double applyOperation(double value1, double value2) const {
-        switch (m_operation) {
-            case Addition       : return value1 + value2;
-            case Subtraction    : return value1 - value2;
-            case Multiplication : return value1 * value2;
-            case Division       : return value1 / value2;
-            default             : OPENSIM_THROW_FRMOBJ(Exception,
-                                    "Internal error: invalid operation type");
-        }
-    }
-
-    /** Apply the operation to two Vec valuee. If the operation is addition or
-    subtraction, it will take the norm after the operator has been applied, and
-    if the operation is multiplication or division, the norm of both values will
-    be taken before applying the operation. */
-    template <typename T>
-    double applyOperation(T value1, T value2) const {
-        switch (m_operation) {
-            case Addition       : return (value1 + value2).norm();
-            case Subtraction    : return (value1 - value2).norm();
-            case Multiplication : return value1.norm() * value2.norm();
-            case Division       : return value1.norm() / value2.norm();
-            default             : OPENSIM_THROW_FRMOBJ(Exception,
-                                    "Internal error: invalid operation type");
-        }
-    }
-
-    mutable SimTK::ReferencePtr<const AbstractOutput> m_second_output;
-    enum OperationType { Addition, Subtraction, Multiplication, Division };
-    mutable OperationType m_operation;
-};
-
-/** class to minimize combination of two outputs at the end of the trajectory */
-class OSIMMOCO_API MocoFinalCompositeOutputGoal : public MocoCompositeOutputGoal {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalCompositeOutputGoal, MocoCompositeOutputGoal);
-
-public:
-    MocoFinalCompositeOutputGoal() {}
-    MocoFinalCompositeOutputGoal(std::string name) : MocoCompositeOutputGoal(std::move(name)) {}
-    MocoFinalCompositeOutputGoal(std::string name, double weight)
-            : MocoCompositeOutputGoal(std::move(name), weight) {}
-
-protected:
-    void initializeOnModelImpl(const Model& model) const override {
-        MocoCompositeOutputGoal::initializeOnModelImpl(model);
-        setRequirements(0, 1, getDependsOnStage());
-    }
-    void calcGoalImpl(
-            const GoalInput& input, SimTK::Vector& values) const override {
-        values[0] = setValueToExponent(calcOperationValue(input.final_state));
-    }
-    bool getSupportsEndpointConstraintImpl() const override { return true; }
-    Mode getDefaultModeImpl() const override {
-        return Mode::Cost;
-    }
-};
 
 /** This goal permits the integration of only positive or negative values from a
 model Output. This goal allows you to use model Outputs of type double, or a 
