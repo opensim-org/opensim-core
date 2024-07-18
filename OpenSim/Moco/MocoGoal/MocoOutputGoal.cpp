@@ -100,11 +100,14 @@ void MocoOutputBase::initializeOnModelBase() const {
     // if there's a second output, initialize that
     if (get_second_output_path() != "") {
         initializeComposite();
+    } else if (get_operation() != "") {
+        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("An operation was given "
+                "without second_output_path. Use setSecondOutputPath()."));
     }
 }
 
 void MocoOutputBase::initializeComposite() const {
-        if (get_operation() == "addition") {
+    if (get_operation() == "addition") {
         m_operation = Addition;
     } else if (get_operation() == "subtraction") {
         m_operation = Subtraction;
@@ -112,8 +115,11 @@ void MocoOutputBase::initializeComposite() const {
         m_operation = Multiplication;
     } else if (get_operation() == "division") {
         m_operation = Division;
+    } else if (get_operation() == "") {
+        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("A second output path was "
+                "given without an operation. Use setOperation()."));
     } else {
-        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Invalid operator: {}, must "
+        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Invalid operator: '{}', must "
                 "be 'addition', 'subtraction', 'multiplication', or 'division'.",
                 get_operation()));
     }
@@ -130,15 +136,15 @@ void MocoOutputBase::initializeComposite() const {
         OPENSIM_THROW_IF_FRMOBJ(getOutputIndex() != -1, Exception,
                 "An Output index was provided, but the second Output is of type"
                 " 'double'.")
-        OPENSIM_THROW_IF_FRMOBJ(getDataType() != Type_double, Exception,
+        OPENSIM_THROW_IF_FRMOBJ(m_data_type != Type_double, Exception,
                 "Output types do not match. The second Output is of type double"
                 " but the first is not.");
     } else if (dynamic_cast<const Output<SimTK::Vec3>*>(abstractOutput)) {
-        OPENSIM_THROW_IF_FRMOBJ(getDataType() != Type_Vec3, Exception,
+        OPENSIM_THROW_IF_FRMOBJ(m_data_type != Type_Vec3, Exception,
                 "Output types do not match. The second Output is of type "
                 "SimTK::Vec3 but the first is not.");
     } else if (dynamic_cast<const Output<SimTK::SpatialVec>*>(abstractOutput)) {
-        OPENSIM_THROW_IF_FRMOBJ(getDataType() != Type_SpatialVec, Exception,
+        OPENSIM_THROW_IF_FRMOBJ(m_data_type != Type_SpatialVec, Exception,
                 "Output types do not match. The second Output is of type "
                 "SimTK::SpatialVec but the first is not.");
     } else {
@@ -148,7 +154,7 @@ void MocoOutputBase::initializeComposite() const {
     m_second_output.reset(abstractOutput);
 
     if (getDependsOnStage() < m_second_output->getDependsOnStage()) {
-        setDependsOnStage(m_second_output->getDependsOnStage());
+        m_dependsOnStage = m_second_output->getDependsOnStage();
     }
 }
 
@@ -160,7 +166,7 @@ double MocoOutputBase::calcOutputValue(const SimTK::State& state) const {
 }
 
 double MocoOutputBase::calcSingleOutputValue(const SimTK::State& state) const {
-    getModel().getSystem().realize(state, m_output->getDependsOnStage());
+    getModel().getSystem().realize(state, getDependsOnStage());
 
     double value = 0;
     if (m_data_type == Type_double) {
@@ -186,30 +192,30 @@ double MocoOutputBase::calcCompositeOutputValue(const SimTK::State& state) const
     getModel().getSystem().realize(state, getDependsOnStage());
 
     double value = 0;
-    if (getDataType() == Type_double) {
+    if (m_data_type == Type_double) {
         double value1 = getOutput<double>().getValue(state);
         double value2 = getSecondOutput<double>().getValue(state);
         value = applyOperation(value1, value2);
-    } else if (getDataType() == Type_Vec3) {
-        if (getMinimizeVectorNorm()) {
+    } else if (m_data_type == Type_Vec3) {
+        if (m_minimizeVectorNorm) {
             SimTK::Vec3 value1 = getOutput<SimTK::Vec3>().getValue(state);
             SimTK::Vec3 value2 = getSecondOutput<SimTK::Vec3>().getValue(state);
             value = applyOperation(value1, value2);
         } else {
-            double value1 = getOutput<SimTK::Vec3>().getValue(state)[getIndex1()];
-            double value2 = getSecondOutput<SimTK::Vec3>().getValue(state)[getIndex1()];
+            double value1 = getOutput<SimTK::Vec3>().getValue(state)[m_index1];
+            double value2 = getSecondOutput<SimTK::Vec3>().getValue(state)[m_index1];
             value = applyOperation(value1, value2);
         }
-    } else if (getDataType() == Type_SpatialVec) {
-        if (getMinimizeVectorNorm()) {
+    } else if (m_data_type == Type_SpatialVec) {
+        if (m_minimizeVectorNorm) {
             SimTK::SpatialVec value1 = getOutput<SimTK::SpatialVec>().getValue(state);
             SimTK::SpatialVec value2 = getSecondOutput<SimTK::SpatialVec>().getValue(state);
             value = applyOperation(value1, value2);
         } else {
             double value1 = getOutput<SimTK::SpatialVec>().getValue(state)
-                            [getIndex1()][getIndex2()];
+                            [m_index1][m_index2];
             double value2 = getSecondOutput<SimTK::SpatialVec>().getValue(state)
-                            [getIndex1()][getIndex2()];
+                            [m_index1][m_index2];
             value = applyOperation(value1, value2);
         }
     }

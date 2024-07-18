@@ -24,15 +24,22 @@ namespace OpenSim {
 
 /** This abstract base class provides convenience methods and common interfaces
 for all Output-related MocoGoal's. All MocoGoal's deriving from this class
-include the 'setOutputPath()', 'setOutputIndex()', and 'setExponent()' methods
-and their corresponding Object properties. The convenience method
-'initializeOnModelBase()' should be called at the top of
-'initializeOnModelImpl()' within each derived class. Similarly,
+include the 'setOutputPath()', 'setSecondOutputPath()', 'setOperator()',
+'setOutputIndex()', and 'setExponent()' methods and their corresponding Object
+properties. The convenience method 'initializeOnModelBase()' should be called at
+the top of 'initializeOnModelImpl()' within each derived class. Similarly,
 'calcOutputValue()' can be used to retrieve the Output value with
 'calcGoalImpl()' and/or 'calcIntegrandImpl()', as needed for each derived class.
 The method 'getDependsOnStage()' returns the SimTK::Stage that should be realized
 to to calculate Output values. The method 'setValueToExponent()' can be used to
 raise a value to the exponent provided via 'setExponent()'.
+
+Goals can be composed of one or two Outputs. The optional second Output is included
+by using the methods 'setSecondOutputPath()' and 'setOperator()'. The Outputs
+can be combined by addition, subtraction, multiplication, or division. The first
+Output is always on the left side of the operation and the second Output on the
+right side. The two Outputs can be different quantities, but they must be the
+same type.
 
 We support the following Output types:
 - double
@@ -40,8 +47,9 @@ We support the following Output types:
 - SimTK::SpatialVec
 
 When using vector types, 'setOutputIndex()' may be used to select a specific
-element of the Output vector. If not specified, the norm of the vector is
-returned when calling 'calcOutputValue()'.
+element of the Output vector. If using two Outputs, the same index will be
+applied to both before the operation. If no index is specified specified, the
+norm of the vector(s) will be used when calling 'calcOutputValue()'.
 
 @ingroup mocogoal */
 class OSIMMOCO_API MocoOutputBase : public MocoGoal {
@@ -62,17 +70,20 @@ public:
     void setOutputPath(std::string path) { set_output_path(std::move(path)); }
     const std::string& getOutputPath() const { return get_output_path(); }
 
-    /** Set the absolute path to the second Output in the model. The format is
-    "/path/to/component|output_name". This Output should have the same type as
-    the first Output. */
+    /** Set the absolute path to the optional second Output in the model. The
+    format is "/path/to/component|output_name". This Output should have the same
+    type as the first Output. If providing a second Output, the user should also
+    set an operation. */
     void setSecondOutputPath(std::string path) {
         set_second_output_path(std::move(path));
     }
     const std::string& getSecondOutputPath() const {
         return get_second_output_path();
     }
+
     /** Set the operation to combine the outputs. It can be "addition",
-   "subtraction", "multiplication", or "division". */
+    "subtraction", "multiplication", or "division". If providing an operation,
+    the user should also set a second output path. */
     void setOperation(std::string operation) { set_operation(operation); }
 
     /** Set the exponent applied to the output value in the integrand. This
@@ -95,7 +106,6 @@ public:
     int getOutputIndex() const { return get_output_index(); }
 
 protected:
-
     /** Get a reference to the Output at the specified Output path and store its
     data type. This also creates a function based on the exponent set via
     'setExponent()', which can be accessed with 'setValueToExponent()'. Finally,
@@ -104,14 +114,9 @@ protected:
     'initializeOnModelImpl()' in each derived class. */
     void initializeOnModelBase() const;
 
-    /** Calculate the Output value for the provided SimTK::State. If using a
-    vector Output, either the vector norm or vector element will be returned,
-    depending on whether an index was provided via 'setOutputIndex()'. Do not
+    /** Calculate the Output value for the provided SimTK::State. Do not
     call this function until 'initializeOnModelBase()' has been called. */
     double calcOutputValue(const SimTK::State&) const;
-
-    double calcSingleOutputValue(const SimTK::State&) const;
-    double calcCompositeOutputValue(const SimTK::State&) const;
 
     /** Raise a value to the exponent set via 'setExponent()'. Do not call this
     function until 'initializeOnModelBase()' has been called. */
@@ -124,50 +129,8 @@ protected:
     const SimTK::Stage& getDependsOnStage() const {
         return m_dependsOnStage;
     }
-    void setDependsOnStage(const SimTK::Stage& stage) const {
-        m_dependsOnStage = stage;
-    }
-
-    /** Gets a reference to the Output for this goal. */
-    template <typename T>
-    const Output<T>& getOutput() const {
-        return static_cast<const Output<T>&>(m_output.getRef());
-    }
-    /** Gets a reference to the second Output for this goal. */
-    template <typename T>
-    const Output<T>& getSecondOutput() const {
-        return static_cast<const Output<T>&>(m_second_output.getRef());
-    }
-
-    /** Gets the first index to use on the output value: (0-1) if the output
-    type is SpatialVec and (0-2) if the type is Vec3 */
-    int getIndex1() const {
-        return m_index1;
-    }
-    /** Gets the second index to use when the output is a SpatialVec: (0-2) */
-    int getIndex2() const {
-        return m_index2;
-    }
-
-    /** Returns whether or not to use the norm of the output value as the value
-    to minimize if the output is a Vec type. This will be true if no index is
-    given. */
-    bool getMinimizeVectorNorm() const {
-        return m_minimizeVectorNorm;
-    }
-
-    enum DataType {
-        Type_double,
-        Type_Vec3,
-        Type_SpatialVec,
-    };
-    /** Gets the type of the Output value: double, Vec3, or SpatialVec */
-    DataType getDataType() const {
-        return m_data_type;
-    }
 
     void printDescriptionImpl() const override;
-
 
 private:
     OpenSim_DECLARE_PROPERTY(output_path, std::string,
@@ -194,7 +157,26 @@ private:
             "and 5 refer to the translational components. A value of -1 "
             "indicates to minimize the vector norm (default: -1).");
     void constructProperties();
+
+    /** Initializes additional info for the case that there are two Outputs:
+     * the second Output, the operation, and the dependsOnStage. */
     void initializeComposite() const;
+
+    /** Calculate the Output value of one Output. */
+    double calcSingleOutputValue(const SimTK::State&) const;
+    /** Calculate the two Output values and apply the operation. */
+    double calcCompositeOutputValue(const SimTK::State&) const;
+
+    /** Gets a reference to the Output for this goal. */
+    template <typename T>
+    const Output<T>& getOutput() const {
+        return static_cast<const Output<T>&>(m_output.getRef());
+    }
+    /** Gets a reference to the second Output for this goal. */
+    template <typename T>
+    const Output<T>& getSecondOutput() const {
+        return static_cast<const Output<T>&>(m_second_output.getRef());
+    }
 
     /** Apply the operation to two double values. **/
     double applyOperation(double value1, double value2) const {
@@ -224,13 +206,16 @@ private:
         }
     }
 
+    enum DataType {
+        Type_double,
+        Type_Vec3,
+        Type_SpatialVec,
+    };
     mutable DataType m_data_type;
     mutable SimTK::ReferencePtr<const AbstractOutput> m_output;
     mutable SimTK::ReferencePtr<const AbstractOutput> m_second_output;
-
     enum OperationType { Addition, Subtraction, Multiplication, Division };
     mutable OperationType m_operation;
-
     mutable std::function<double(const double&)> m_power_function;
     mutable int m_index1;
     mutable int m_index2;
@@ -269,21 +254,6 @@ protected:
         return Mode::Cost;
     }
 };
-
-/** This goal allows you to use two model Outputs of type double, SimTK::Vec3,
-and SimTK::SpatialVec in the integrand of a goal. The first Output path is set
-using `setOutputPath()` and the second with `setSecondOutputPath()`. The two
-outputs can be combined by addition, subtraction, multiplication, or division
-operations. The first Output always on the left side of the operation and the
-second Output on the right side.
-@Note The user should avoid using division when the second Output could be zero
-because this will cause divide by zero errors.
-
-The two Outputs can be different quantities, but they must be the same type. If
-the Outputs are SimTK::Vec3 or SimTK::SpatialVec and an index is provided, the
-index will be applied to both Outputs before applying the operation.
-@ingroup mocogoal */
-
 
 /** This goal permits the integration of only positive or negative values from a
 model Output. This goal allows you to use model Outputs of type double, or a 
