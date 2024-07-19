@@ -34,10 +34,10 @@ public:
     void setOutputPath(std::string path) { set_output_path(std::move(path)); }
     const std::string& getOutputPath() const { return get_output_path(); }
 
-    /** Set the absolute path to the optional second output in the model to be
-    used in this path constraint. The format is "/path/to/component|output_name".
-    This Output should have the same type as the first Output. If providing a
-    second Output, the user should also set an operation. */
+    /** Set the absolute path to the optional second Output in the model. The
+    format is "/path/to/component|output_name". This Output should have the same
+    type as the first Output. If providing a second Output, the user must also
+    provide an operation via `setOperation()`. */
     void setSecondOutputPath(std::string path) {
         set_second_output_path(std::move(path));
     }
@@ -45,10 +45,13 @@ public:
         return get_second_output_path();
     }
 
-    /** Set the operation to combine the outputs. It can be "addition",
-    "subtraction", "multiplication", or "division". If providing an operation,
-    the user should also set a second output path. */
-    void setOperation(std::string operation) { set_operation(operation); }
+    /** Set the operation that combines Output values where two Outputs are
+    provided. The supported operations include "addition", "subtraction",
+    "multiplication", or "division". If providing an operation, the user
+    must also provide a second Output path. */
+    void setOperation(std::string operation) {
+        set_operation(std::move(operation));
+    }
 
     /** Set the exponent applied to the output value in the constraint. This
     exponent is applied when minimizing the norm of a vector type output. */
@@ -71,9 +74,7 @@ protected:
             const SimTK::State& state, SimTK::Vector& errors) const override;
     void printDescriptionImpl() const override;
 
-    /** Calculate the Output value for the provided SimTK::State. If using a
-    vector Output, either the vector norm or vector element will be returned,
-    depending on whether an index was provided via 'setOutputIndex()'. Do not
+    /** Calculate the Output value for the provided SimTK::State. Do not
     call this function until 'initializeOnModelBase()' has been called. */
     double calcOutputValue(const SimTK::State&) const;
 
@@ -91,12 +92,12 @@ protected:
 
 private:
     OpenSim_DECLARE_PROPERTY(output_path, std::string,
-            "The absolute path to the output in the model to be used in this "
-            "path constraint.");
-    OpenSim_DECLARE_PROPERTY(second_output_path, std::string,
-            "The absolute path to the second output in the model to be used in"
-            " this path constraint");
-    OpenSim_DECLARE_PROPERTY(operation, std::string, "The operation to combine "
+            "The absolute path to the Output in the model (i.e.,"
+            "'/path/to/component|output_name'");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(second_output_path, std::string,
+            "The absolute path to the optional second Output in the model (i.e.,"
+            "'/path/to/component|output_name'");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(operation, std::string, "The operation to combine "
             "the two outputs: 'addition', 'subtraction', 'multiplication', or "
             "'divison'.");
     OpenSim_DECLARE_PROPERTY(exponent, int,
@@ -110,7 +111,7 @@ private:
             "indicates to constrain the vector norm (default: -1).");
     void constructProperties();
 
-    /** Initializes additional info for the case that there are two Outputs:
+    /** Initialize additional information when there are two Outputs:
      * the second Output, the operation, and the dependsOnStage. */
     void initializeComposite() const;
 
@@ -119,18 +120,18 @@ private:
     /** Calculate the two Output values and apply the operation. */
     double calcCompositeOutputValue(const SimTK::State&) const;
 
-    /** Gets a reference to the Output for this goal. */
+    /** Get a reference to the Output for this goal. */
     template <typename T>
     const Output<T>& getOutput() const {
         return static_cast<const Output<T>&>(m_output.getRef());
     }
-    /** Gets a reference to the second Output for this goal. */
+    /** Get a reference to the second Output for this goal. */
     template <typename T>
     const Output<T>& getSecondOutput() const {
         return static_cast<const Output<T>&>(m_second_output.getRef());
     }
 
-    /** Apply the operation to two double values. **/
+    /** Apply the operation to two double values. */
     double applyOperation(double value1, double value2) const {
         switch (m_operation) {
         case Addition       : return value1 + value2;
@@ -138,22 +139,32 @@ private:
         case Multiplication : return value1 * value2;
         case Division       : return value1 / value2;
         default             : OPENSIM_THROW_FRMOBJ(Exception,
-                                "Internal error: invalid operation type");
+                                "Internal error: invalid operation type for "
+                                "double type Outputs.");
         }
     }
-    /** Apply the operation to two Vec valuee. If the operation is addition or
-    subtraction, it will take the norm after the operator has been applied, and
-    if the operation is multiplication or division, the norm of both values will
-    be taken before applying the operation. */
-    template <typename T>
-    double applyOperation(T value1, T value2) const {
+    /** Apply the elementwise operation to two SimTK::Vec3 values. */
+    double applyOperation(const SimTK::Vec3& value1, const SimTK::Vec3& value2) const {
         switch (m_operation) {
         case Addition       : return (value1 + value2).norm();
         case Subtraction    : return (value1 - value2).norm();
-        case Multiplication : return value1.norm() * value2.norm();
-        case Division       : return value1.norm() / value2.norm();
+        case Multiplication : return value1.elementwiseMultiply(value2).norm();
+        case Division       : return value1.elementwiseDivide(value2).norm();
         default             : OPENSIM_THROW_FRMOBJ(Exception,
-                                "Internal error: invalid operation type");
+                                "Internal error: invalid operation type for "
+                                "SimTK::Vec3 type Outputs.");
+        }
+    }
+    /** Apply the elementwise operation to two SimTK::SpatialVec values.
+    Multiplication and divison operators are not supported for SpatialVec Outputs
+    without an index. */
+    double applyOperation(const SimTK::SpatialVec& value1, const SimTK::SpatialVec& value2) const {
+        switch (m_operation) {
+        case Addition       : return (value1 + value2).norm();
+        case Subtraction    : return (value1 - value2).norm();
+        default             : OPENSIM_THROW_FRMOBJ(Exception,
+                                "Internal error: invalid operation type for "
+                                "SimTK::SpatialVec type Outputs.");
         }
     }
 
@@ -162,11 +173,22 @@ private:
         Type_Vec3,
         Type_SpatialVec,
     };
+    /** Get the string of the data type (for error messages) */
+    std::string getDataTypeStr(DataType type) const {
+        switch (type) {
+        case Type_double     : return "double";
+        case Type_Vec3       : return "SimTK::Vec3";
+        case Type_SpatialVec : return "SimTK::SpatialVec";
+        default              : return "empty Datatype";
+        }
+    }
+
     mutable DataType m_data_type;
     mutable SimTK::ReferencePtr<const AbstractOutput> m_output;
     mutable SimTK::ReferencePtr<const AbstractOutput> m_second_output;
     enum OperationType { Addition, Subtraction, Multiplication, Division };
     mutable OperationType m_operation;
+    mutable bool m_useCompositeOutputValue;
     mutable std::function<double(const double&)> m_power_function;
     mutable int m_index1;
     mutable int m_index2;
