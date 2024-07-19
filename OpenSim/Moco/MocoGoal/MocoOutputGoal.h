@@ -47,13 +47,14 @@ We support the following Output types:
 - SimTK::SpatialVec
 
 When using vector types, 'setOutputIndex()' may be used to select a specific
-element of the Output vector. If using two Outputs, the same index will be
-applied to both before the operation. If no index is specified specified, the
+element of the Output vector. If no index is specified specified, the
 norm of the vector will be used when calling 'calcOutputValue()'.
-@Note For two Outputs of Vec type without an index, the norm will be applied *after*
-the element-wise operation. However, for multiplication and division of SpatialVec
-Outputs, an index *must* be supplied.
 
+If using two Outputs, the same index will be applied to both before the operation.
+If two Outputs of vector type are provided and no index is specified, the
+operation will be applied elementwise before computing the norm. Elementwise
+multiplication and division operations are not supported when using two
+SimTK::SpatialVec Outputs (i.e., an index must be provided).
 @ingroup mocogoal */
 class OSIMMOCO_API MocoOutputBase : public MocoGoal {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoOutputBase, MocoGoal);
@@ -196,7 +197,7 @@ private:
                                 "double type Outputs.");
         }
     }
-    /** Apply the element-wise operation to two SimTK::Vec3 values. */
+    /** Apply the elementwise operation to two SimTK::Vec3 values. */
     double applyOperation(const SimTK::Vec3& value1, const SimTK::Vec3& value2) const {
         switch (m_operation) {
         case Addition       : return (value1 + value2).norm();
@@ -208,8 +209,8 @@ private:
                                 "SimTK::Vec3 type Outputs.");
         }
     }
-    /** Apply the element-wise operation to two SimTK::SpatialVec values.
-    Multiplication and divison operators are not allowed for SpatialVec Outputs
+    /** Apply the elementwise operation to two SimTK::SpatialVec values.
+    Multiplication and divison operators are not supported for SpatialVec Outputs
     without an index. */
     double applyOperation(const SimTK::SpatialVec& value1, const SimTK::SpatialVec& value2) const {
         switch (m_operation) {

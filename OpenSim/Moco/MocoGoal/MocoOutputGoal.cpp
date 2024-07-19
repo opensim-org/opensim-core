@@ -155,7 +155,7 @@ void MocoOutputBase::initializeComposite() const {
         OPENSIM_THROW_IF_FRMOBJ(m_minimizeVectorNorm &&
                 (m_operation == Multiplication || m_operation == Division),
                 Exception, "Multiplication and division operations are not "
-                "allowed with Output type SimTK::SpatialVec without an index.")
+                "supported with Output type SimTK::SpatialVec without an index.")
     } else {
         OPENSIM_THROW_FRMOBJ(Exception,
                 "Data type of specified second Output not supported.");
