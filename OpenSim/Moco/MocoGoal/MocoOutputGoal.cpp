@@ -26,8 +26,8 @@ using namespace OpenSim;
 
 void MocoOutputBase::constructProperties() {
     constructProperty_output_path("");
-    constructProperty_second_output_path("");
-    constructProperty_operation("");
+    constructProperty_second_output_path();
+    constructProperty_operation();
     constructProperty_exponent(1);
     constructProperty_output_index(-1);
 }
@@ -97,12 +97,16 @@ void MocoOutputBase::initializeOnModelBase() const {
     // in order to calculate values from this output.
     m_dependsOnStage = m_output->getDependsOnStage();
 
-    // if there's a second output, initialize that
-    if (get_second_output_path() != "") {
+    m_useCompositeOutputValue = false;
+    // if there's a second output, initialize it
+    if (!getProperty_second_output_path().empty()) {
+        m_useCompositeOutputValue = true;
         initializeComposite();
-    } else if (get_operation() != "") {
-        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("An operation was given "
-                "without second_output_path. Use setSecondOutputPath()."));
+    } else if (!getProperty_operation().empty()) {
+        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("An operation was provided "
+                "but a second Output path was not provided. Either provide no "
+                "operation with a single Output, or provide a value to both "
+                "setOperation() and setSecondOutputPath()."));
     }
 }
 
@@ -116,16 +120,15 @@ void MocoOutputBase::initializeComposite() const {
     } else if (get_operation() == "division") {
         m_operation = Division;
     } else if (get_operation() == "") {
-        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("A second output path was "
-                "given without an operation. Use setOperation()."));
+        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("A second Output path was "
+                "provided, but no operation was provided. Use setOperation() to"
+                "provide an operation"));
     } else {
         OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Invalid operator: '{}', must "
                 "be 'addition', 'subtraction', 'multiplication', or 'division'.",
                 get_operation()));
     }
 
-    OPENSIM_THROW_IF_FRMOBJ(get_second_output_path().empty(), Exception,
-            "No second_output_path provided.");
     std::string componentPath, outputName, channelName, alias;
     AbstractInput::parseConnecteePath(get_second_output_path(), componentPath,
                                       outputName, channelName, alias);
@@ -138,15 +141,21 @@ void MocoOutputBase::initializeComposite() const {
                 " 'double'.")
         OPENSIM_THROW_IF_FRMOBJ(m_data_type != Type_double, Exception,
                 "Output types do not match. The second Output is of type double"
-                " but the first is not.");
+                " but the first is of type {}.", getDataTypeStr(m_data_type));
     } else if (dynamic_cast<const Output<SimTK::Vec3>*>(abstractOutput)) {
         OPENSIM_THROW_IF_FRMOBJ(m_data_type != Type_Vec3, Exception,
                 "Output types do not match. The second Output is of type "
-                "SimTK::Vec3 but the first is not.");
+                "SimTK::Vec3 but the first is of type {}.",
+                getDataTypeStr(m_data_type));
     } else if (dynamic_cast<const Output<SimTK::SpatialVec>*>(abstractOutput)) {
         OPENSIM_THROW_IF_FRMOBJ(m_data_type != Type_SpatialVec, Exception,
                 "Output types do not match. The second Output is of type "
-                "SimTK::SpatialVec but the first is not.");
+                "SimTK::SpatialVec but the first is of type {}.",
+                getDataTypeStr(m_data_type));
+        OPENSIM_THROW_IF_FRMOBJ(m_minimizeVectorNorm &&
+                (m_operation == Multiplication || m_operation == Division),
+                Exception, "Multiplication and division operations are not "
+                "allowed with Output type SimTK::SpatialVec without an index.")
     } else {
         OPENSIM_THROW_FRMOBJ(Exception,
                 "Data type of specified second Output not supported.");
@@ -159,7 +168,7 @@ void MocoOutputBase::initializeComposite() const {
 }
 
 double MocoOutputBase::calcOutputValue(const SimTK::State& state) const {
-    if (get_second_output_path() != "") {
+    if (m_useCompositeOutputValue) {
         return calcCompositeOutputValue(state);
     }
     return calcSingleOutputValue(state);
@@ -198,8 +207,8 @@ double MocoOutputBase::calcCompositeOutputValue(const SimTK::State& state) const
         value = applyOperation(value1, value2);
     } else if (m_data_type == Type_Vec3) {
         if (m_minimizeVectorNorm) {
-            SimTK::Vec3 value1 = getOutput<SimTK::Vec3>().getValue(state);
-            SimTK::Vec3 value2 = getSecondOutput<SimTK::Vec3>().getValue(state);
+            const SimTK::Vec3& value1 = getOutput<SimTK::Vec3>().getValue(state);
+            const SimTK::Vec3& value2 = getSecondOutput<SimTK::Vec3>().getValue(state);
             value = applyOperation(value1, value2);
         } else {
             double value1 = getOutput<SimTK::Vec3>().getValue(state)[m_index1];
@@ -208,8 +217,10 @@ double MocoOutputBase::calcCompositeOutputValue(const SimTK::State& state) const
         }
     } else if (m_data_type == Type_SpatialVec) {
         if (m_minimizeVectorNorm) {
-            SimTK::SpatialVec value1 = getOutput<SimTK::SpatialVec>().getValue(state);
-            SimTK::SpatialVec value2 = getSecondOutput<SimTK::SpatialVec>().getValue(state);
+            const SimTK::SpatialVec& value1 = getOutput<SimTK::SpatialVec>()
+                                              .getValue(state);
+            const SimTK::SpatialVec& value2 = getSecondOutput<SimTK::SpatialVec>()
+                                              .getValue(state);
             value = applyOperation(value1, value2);
         } else {
             double value1 = getOutput<SimTK::SpatialVec>().getValue(state)
@@ -227,7 +238,7 @@ void MocoOutputBase::printDescriptionImpl() const {
     // Output path.
     std::string str = fmt::format("        output: {}", getOutputPath());
 
-    if (getSecondOutputPath() != "") {
+    if (m_useCompositeOutputValue) {
         str += fmt::format("\n        second output: {}", getSecondOutputPath());
         // Operator.
         str += fmt::format("\n        operator: {}", get_operation());

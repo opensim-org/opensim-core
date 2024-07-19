@@ -78,17 +78,6 @@ std::unique_ptr<Model> createDoubleSlidingMassModel() {
     model->finalizeConnections();
     return model;
 }
-///
-///
-/*Model createDoubleSlidingMassModel() {
-    Model model;
-    model.setName("double_sliding_mass");
-    model.set_gravity(SimTK::Vec3(0, 0, 0));
-    addSlidingMass(model, "1", 1.0);
-    addSlidingMass(model, "2", 1.0);
-    model.finalizeConnections();
-    return model;
-}*/
 
 /// Test the result of a sliding mass minimum effort problem.
 TEMPLATE_TEST_CASE("Test MocoControlGoal", "",
@@ -999,6 +988,7 @@ TEMPLATE_TEST_CASE("MocoOutputGoal with second output", "", MocoCasADiSolver,
         model->initSystem();
 
         problem.setModelAsCopy(*model);
+        problem.setTimeBounds(0, 5);
 
         // set up sliders to have a distance from each other at the beginning
         problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
@@ -1006,7 +996,6 @@ TEMPLATE_TEST_CASE("MocoOutputGoal with second output", "", MocoCasADiSolver,
         problem.setStateInfo("/slider2/position/value", MocoBounds(-5, 5),
             MocoInitialBounds(2), MocoFinalBounds(-5, 5));
 
-        problem.setTimeBounds(0, 5);
         problem.setStateInfo("/slider/position/speed", {-10, 10}, 0, 0);
         problem.setStateInfo("/slider2/position/speed", {-10, 10}, 0, 0);
         problem.setControlInfo("/actuator", {-100, 100});
@@ -1033,9 +1022,9 @@ TEMPLATE_TEST_CASE("MocoOutputGoal with second output", "", MocoCasADiSolver,
             StatesTrajectory trajectory = solution.exportToStatesTrajectory(*model);
             const SimTK::State& finalState = trajectory.back();
             model->realizePosition(finalState);
-            SimTK::Vec3 endPosition1 = model->getComponent<Body>("/body")
+            const SimTK::Vec3& endPosition1 = model->getComponent<Body>("/body")
                                             .getPositionInGround(finalState);
-            SimTK::Vec3 endPosition2 = model->getComponent<Body>("/body2")
+            const SimTK::Vec3& endPosition2 = model->getComponent<Body>("/body2")
                                             .getPositionInGround(finalState);
 
             CHECK((endPosition1 - endPosition2).norm() == Approx(0).margin(1e-2));
@@ -1058,9 +1047,9 @@ TEMPLATE_TEST_CASE("MocoOutputGoal with second output", "", MocoCasADiSolver,
             StatesTrajectory trajectory = solution.exportToStatesTrajectory(*model);
             const SimTK::State& finalState = trajectory.back();
             model->realizePosition(finalState);
-            SimTK::Vec3 endPosition1 = model->getComponent<Body>("/body")
+            const SimTK::Vec3& endPosition1 = model->getComponent<Body>("/body")
                                             .getPositionInGround(finalState);
-            SimTK::Vec3 endPosition2 = model->getComponent<Body>("/body2")
+            const SimTK::Vec3& endPosition2 = model->getComponent<Body>("/body2")
                                             .getPositionInGround(finalState);
 
             CHECK((endPosition1 - endPosition2).norm() == Approx(0).margin(5e-2));
@@ -1122,6 +1111,7 @@ TEMPLATE_TEST_CASE("MocoOutputGoal with second output", "", MocoCasADiSolver,
         model->initSystem();
 
         problem.setModelAsCopy(*model);
+        problem.setTimeBounds(0, 3);
 
         // set up sliders to have a distance from each other at the end
         problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
@@ -1129,7 +1119,6 @@ TEMPLATE_TEST_CASE("MocoOutputGoal with second output", "", MocoCasADiSolver,
         problem.setStateInfo("/slider2/position/value", MocoBounds(-5, 5),
             MocoInitialBounds(-5, 5), MocoFinalBounds(3, 5));
 
-        problem.setTimeBounds(0, 3);
         problem.setStateInfo("/slider/position/speed", {-10, 10}, 0, 0);
         problem.setStateInfo("/slider2/position/speed", {-10, 10}, 0, 0);
         problem.setControlInfo("/actuator", {-100, 100});
@@ -1155,9 +1144,9 @@ TEMPLATE_TEST_CASE("MocoOutputGoal with second output", "", MocoCasADiSolver,
         StatesTrajectory trajectory = solution.exportToStatesTrajectory(*model);
         const SimTK::State& initialState = trajectory.front();
         model->realizePosition(initialState);
-        SimTK::Vec3 startPosition1 = model->getComponent<Body>("/body")
+        const SimTK::Vec3& startPosition1 = model->getComponent<Body>("/body")
                                         .getPositionInGround(initialState);
-        SimTK::Vec3 startPosition2 = model->getComponent<Body>("/body2")
+        const SimTK::Vec3& startPosition2 = model->getComponent<Body>("/body2")
                                         .getPositionInGround(initialState);
 
         CHECK(startPosition1 - startPosition2 == Approx(0).margin(5e-2));
