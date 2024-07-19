@@ -4,8 +4,8 @@ Moco Change Log
 1.3.1
 -----
 - 2024-07-19: Added support for `MocoOutputGoal`s that are composed of two `Output`s. This applies
-              to all types of Output goals (initial, final, etc.). The two `Output`s can be 
-              combined by addition, subtraction, multiplication, or division.
+              to all types of Output goals (`MocoInitialOutputGoal`, `MocoFinalOutputGoal`, etc.). 
+              The two `Output`s can be combined by addition, subtraction, multiplication, or division.
 
 - 2024-07-08: Fixed a bug where deserialization of an OpenSim model with the `Bhargava2004SmoothedMuscleMetabolics`
               component would not properly set the muscle masses listed, resulting in incorrect

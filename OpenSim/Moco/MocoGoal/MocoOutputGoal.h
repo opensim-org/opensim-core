@@ -50,9 +50,10 @@ When using vector types, 'setOutputIndex()' may be used to select a specific
 element of the Output vector. If no index is specified specified, the
 norm of the vector will be used when calling 'calcOutputValue()'.
 
-If using two Outputs, the same index will be applied to both before the operation.
-If two Outputs of vector type are provided and no index is specified, the
-operation will be applied elementwise before computing the norm. Elementwise
+If using two Outputs, the Output index will be used to select the same element
+from both Outputs before the operation. If two Outputs of type SimTK::Vec3 or
+SimTK::SpatialVec are provided and no index is specified, the operation will be
+applied elementwise before computing the norm. Elementwise
 multiplication and division operations are not supported when using two
 SimTK::SpatialVec Outputs (i.e., an index must be provided).
 @ingroup mocogoal */
