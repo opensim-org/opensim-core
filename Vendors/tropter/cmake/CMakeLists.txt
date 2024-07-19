@@ -38,7 +38,7 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
     install(SCRIPT "${script}")
 
 elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
-    message(STATUS "Finding dependencies")
+    message(STATUS "Finding tropter dependencies")
     message(STATUS "getting dir for ${pkgcfg_lib_IPOPT_gfortran}" )
     message(STATUS "ADOLC_DIR dir ${ADOLC_DIR}" )
     message(STATUS "ColPack_ROOT_DIR dir ${ColPack_ROOT_DIR}" )
