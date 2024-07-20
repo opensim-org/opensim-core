@@ -60,7 +60,7 @@ target_link_libraries(tropter PUBLIC optional-lite)
 target_link_libraries(tropter PUBLIC Eigen3::Eigen)
 # This takes care of includes.
 
-target_link_libraries(tropter PRIVATE ColPack_static)
+target_link_libraries(tropter PUBLIC ColPack_static)
 
 target_include_directories(tropter SYSTEM PUBLIC ${ADOLC_INCLUDES})
 target_link_libraries(tropter PUBLIC ${ADOLC_LIBRARIES})
@@ -77,7 +77,8 @@ if(OPENMP_FOUND)
 endif()
 
 if(UNIX)
-    target_link_libraries(tropter PRIVATE PkgConfig::IPOPT)
+    message(STATUS "adding link libs plgconfig-ipopt")
+    target_link_libraries(tropter PUBLIC PkgConfig::IPOPT)
 else()
     # message("Adding ipopt dependency in link line for tropter ${Ipopt_LIBRARIES}")
     target_link_directories(tropter PRIVATE ${Ipopt_ROOT_DIR}/lib)
