@@ -1008,6 +1008,11 @@ TEMPLATE_TEST_CASE("MocoOutputGoal with second output", "", MocoCasADiSolver,
         SECTION("MocoOutputGoal") {
             // add goal of smallest distance
             auto* goal = problem.template addGoal<MocoOutputGoal>();
+
+            // check getting the properties before setting them
+            CHECK_NOTHROW(goal->getOutputPath());
+            CHECK_NOTHROW(goal->getOperation());
+
             goal->setName("distance2");
             goal->setOutputPath("/body|position");
             goal->setSecondOutputPath("/body2|position");

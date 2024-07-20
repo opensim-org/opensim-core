@@ -46,9 +46,9 @@ We support the following Output types:
 - SimTK::Vec3
 - SimTK::SpatialVec
 
-When using vector types, 'setOutputIndex()' may be used to select a specific
-element of the Output vector. If no index is specified specified, the
-norm of the vector will be used when calling 'calcOutputValue()'.
+When using SimTK::Vec3 or SimTK::SpatialVec types, 'setOutputIndex()' may be
+used to select a specific element of the Output vector. If no index is specified
+specified, the norm of the vector will be used when calling 'calcOutputValue()'.
 
 If using two Outputs, the Output index will be used to select the same element
 from both Outputs before the operation. If two Outputs of type SimTK::Vec3 or
@@ -83,6 +83,9 @@ public:
         set_second_output_path(std::move(path));
     }
     const std::string& getSecondOutputPath() const {
+        if (getProperty_second_output_path().empty()) {
+            return "";
+        }
         return get_second_output_path();
     }
 
@@ -92,6 +95,12 @@ public:
     must also provide a second Output path. */
     void setOperation(std::string operation) {
         set_operation(std::move(operation));
+    }
+    const std::string& getOperation() const {
+        if(getProperty_second_output_path().empty()) {
+            return "";
+        }
+        return get_operation();
     }
 
     /** Set the exponent applied to the output value in the integrand. This
