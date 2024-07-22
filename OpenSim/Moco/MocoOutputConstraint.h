@@ -22,6 +22,25 @@
 
 namespace OpenSim {
 
+/** This constraint allows you to constrain a Model Output value throughout the
+trajectory. You can also combine two Outputs in a constraint by supplying a
+second output path and an operation to combine them. The operators are addition,
+subtraction, multiplication, and division. The first Output is always on the
+left hand side of the operation and the second Output on the right hand side.
+The two Outputs can be different quantities, but they must be the same type.
+
+Outputs of type double, SimTK::Vec3, and SimTK::SpatialVec are supported.
+When using SimTK::Vec3 or SimTK::SpatialVec types, 'setOutputIndex()'
+may be used to select a specific element of the Output vector. If no index is
+specified, the norm of the vector will be used when calling 'calcOutputValue()'.
+
+If using two Outputs, the Output index will be used to select the same element
+from both Outputs before the operation. If two Outputs of type SimTK::Vec3 or
+SimTK::SpatialVec are provided and no index is specified, the operation will be
+applied elementwise before computing the norm. Elementwise
+multiplication and division operations are not supported when using two
+SimTK::SpatialVec Outputs (i.e., an index must be provided).
+@ingroup mocopathcon */
 class OSIMMOCO_API MocoOutputConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputConstraint, MocoPathConstraint);
 
@@ -52,6 +71,7 @@ public:
     void setOperation(std::string operation) {
         set_operation(std::move(operation));
     }
+    const std::string& getOperation() const { return get_operation(); }
 
     /** Set the exponent applied to the output value in the constraint. This
     exponent is applied when minimizing the norm of a vector type output. */
