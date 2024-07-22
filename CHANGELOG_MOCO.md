@@ -3,6 +3,8 @@ Moco Change Log
 
 1.3.1
 -----
+- addition to OutputGoal log for OutputConstraint
+
 - 2024-07-08: Fixed a bug where deserialization of an OpenSim model with the `Bhargava2004SmoothedMuscleMetabolics`
               component would not properly set the muscle masses listed, resulting in incorrect
               metabolics values being computed.
