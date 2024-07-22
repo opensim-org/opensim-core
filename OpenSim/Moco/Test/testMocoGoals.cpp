@@ -32,12 +32,14 @@ using Catch::Matchers::ContainsSubstring;
 
 using namespace OpenSim;
 
+/// creates a model with one sliding mass
 std::unique_ptr<Model> createSlidingMassModel() {
     auto model = make_unique<Model>();
     model->setName("sliding_mass");
     model->set_gravity(SimTK::Vec3(0, 0, 0));
     auto* body = new Body("body", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
     model->addComponent(body);
+    body->attachGeometry(new Sphere(0.05));
 
     // Allows translation along x.
     auto* joint = new SliderJoint("slider", model->getGround(), *body);
@@ -51,6 +53,29 @@ std::unique_ptr<Model> createSlidingMassModel() {
     actu->setOptimalForce(1);
     model->addComponent(actu);
 
+    return model;
+}
+
+/// create a model with two sliding masses
+std::unique_ptr<Model> createDoubleSlidingMassModel() {
+    std::unique_ptr<Model> model = createSlidingMassModel();
+    auto* body = new Body("body2", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    model->addComponent(body);
+    body->attachGeometry(new Sphere(0.05));
+
+    // Allows translation along x.
+    auto* joint = new SliderJoint("slider2", model->getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("position");
+    model->addComponent(joint);
+
+    auto* actu = new CoordinateActuator();
+    actu->setCoordinate(&coord);
+    actu->setName("actuator2");
+    actu->setOptimalForce(1);
+    model->addComponent(actu);
+
+    model->finalizeConnections();
     return model;
 }
 
@@ -949,6 +974,54 @@ TEMPLATE_TEST_CASE("MocoOutputGoal", "", MocoCasADiSolver,
         for (int i = 0; i < solution.getNumTimes(); ++i) {
             CHECK(solutionSpeed[i] >= Approx(0));
         }
+    }
+}
+
+TEMPLATE_TEST_CASE("MocoOutputConstraint with two outputs", "", MocoCasADiSolver,
+    MocoTropterSolver) {
+    double bound = 2.0;
+    MocoSolution solutionControl;
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    auto model = createDoubleSlidingMassModel();
+    model->initSystem();
+    problem.setModelAsCopy(*model);
+    problem.setTimeBounds(0, 3);
+
+    // one slider must move, the other doesn't need to
+    problem.setStateInfo("/slider/position/value", MocoBounds(-50, 50),
+       MocoInitialBounds(-5,-5), MocoFinalBounds(5, 5.5));
+    problem.setStateInfo("/slider2/position/value", MocoBounds(-50, 50),
+       MocoInitialBounds(-50, 50), MocoFinalBounds(-50, 50));
+    problem.setStateInfo("/slider/position/speed", {-10, 10}, {-10, 10}, {-10, 10});
+    problem.setStateInfo("/slider2/position/speed", {-10, 10}, {-10, 10}, {-10, 10});
+    problem.setControlInfo("/actuator", {-100, 100});
+    problem.setControlInfo("/actuator2", {-100, 100});
+
+    // add constraint: second mass stays near moving mass
+    auto* pathCon = problem.template addPathConstraint<MocoOutputConstraint>();
+    pathCon->setName("velocities_goal");
+    pathCon->setOutputPath("/body|position");
+    pathCon->setSecondOutputPath("/body2|position");
+    pathCon->setOperation("subtraction");
+    pathCon->setOutputIndex(0);
+    pathCon->setExponent(2);
+    pathCon->updConstraintInfo().setBounds({{0, bound}});
+
+    auto* effort = problem.template addGoal<MocoControlGoal>();
+    effort->setName("effort");
+    effort->setWeight(0.001);
+
+    auto& solver = study.template initSolver<TestType>();
+    solver.set_num_mesh_intervals(30);
+    MocoSolution solution = study.solve();
+
+    auto solutionPositionMoving = solution.getState("/slider/position/value");
+    auto solutionPositionFollowing = solution.getState("/slider2/position/value");
+    for (int i = 0; i < solution.getNumTimes(); ++i) {
+        double diff = (static_cast<SimTK::Vec3>(solutionPositionMoving[i])[0]
+            - static_cast<SimTK::Vec3>(solutionPositionFollowing[i])[0]);
+        CHECK(diff * diff <= bound);
     }
 }
 

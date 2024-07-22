@@ -22,8 +22,8 @@ using namespace OpenSim;
 
 void MocoOutputConstraint::constructProperties() {
     constructProperty_output_path("");
-    constructProperty_second_output_path();
-    constructProperty_operation();
+    constructProperty_second_output_path("");
+    constructProperty_operation("");
     constructProperty_exponent(1);
     constructProperty_output_index(-1);
 }
@@ -98,10 +98,10 @@ void MocoOutputConstraint::initializeOnModelImpl(const Model&,
 
     m_useCompositeOutputValue = false;
     // if there's a second output, initialize it
-    if (!getProperty_second_output_path().empty()) {
+    if (get_second_output_path() != "") {
         m_useCompositeOutputValue = true;
         initializeComposite();
-    } else if (!getProperty_operation().empty()) {
+    } else if (get_operation() != "") {
         OPENSIM_THROW_FRMOBJ(Exception, fmt::format("An operation was provided "
                 "but a second Output path was not provided. Either provide no "
                 "operation with a single Output, or provide a value to both "
