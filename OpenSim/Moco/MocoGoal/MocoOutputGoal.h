@@ -200,7 +200,8 @@ private:
         }
     }
     /** Apply the elementwise operation to two SimTK::Vec3 values. */
-    double applyOperation(const SimTK::Vec3& value1, const SimTK::Vec3& value2) const {
+    double applyOperation(const SimTK::Vec3& value1,
+                          const SimTK::Vec3& value2) const {
         switch (m_operation) {
         case Addition       : return (value1 + value2).norm();
         case Subtraction    : return (value1 - value2).norm();
@@ -214,7 +215,8 @@ private:
     /** Apply the elementwise operation to two SimTK::SpatialVec values.
     Multiplication and divison operators are not supported for SpatialVec Outputs
     without an index. */
-    double applyOperation(const SimTK::SpatialVec& value1, const SimTK::SpatialVec& value2) const {
+    double applyOperation(const SimTK::SpatialVec& value1,
+                          const SimTK::SpatialVec& value2) const {
         switch (m_operation) {
         case Addition       : return (value1 + value2).norm();
         case Subtraction    : return (value1 - value2).norm();
