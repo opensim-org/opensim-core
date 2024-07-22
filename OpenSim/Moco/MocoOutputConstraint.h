@@ -24,7 +24,7 @@ namespace OpenSim {
 
 /** This constraint allows you to constrain a Model Output value throughout the
 trajectory. You can also combine two Outputs in a constraint by supplying a
-second output path and an operation to combine them. The operators are addition,
+second output path and an operation to combine them. The operations are addition,
 subtraction, multiplication, and division. The first Output is always on the
 left hand side of the operation and the second Output on the right hand side.
 The two Outputs can be different quantities, but they must be the same type.
@@ -177,7 +177,7 @@ private:
         }
     }
     /** Apply the elementwise operation to two SimTK::SpatialVec values.
-    Multiplication and divison operators are not supported for SpatialVec Outputs
+    Multiplication and divison operations are not supported for SpatialVec Outputs
     without an index. */
     double applyOperation(const SimTK::SpatialVec& value1,
                           const SimTK::SpatialVec& value2) const {
