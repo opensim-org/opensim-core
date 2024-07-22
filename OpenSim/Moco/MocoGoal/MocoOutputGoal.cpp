@@ -141,17 +141,17 @@ void MocoOutputBase::initializeComposite() const {
                 " 'double'.")
         OPENSIM_THROW_IF_FRMOBJ(m_data_type != Type_double, Exception,
                 "Output types do not match. The second Output is of type double"
-                " but the first is of type {}.", getDataTypeStr(m_data_type));
+                " but the first is of type {}.", getDataTypeString(m_data_type));
     } else if (dynamic_cast<const Output<SimTK::Vec3>*>(abstractOutput)) {
         OPENSIM_THROW_IF_FRMOBJ(m_data_type != Type_Vec3, Exception,
                 "Output types do not match. The second Output is of type "
                 "SimTK::Vec3 but the first is of type {}.",
-                getDataTypeStr(m_data_type));
+                getDataTypeString(m_data_type));
     } else if (dynamic_cast<const Output<SimTK::SpatialVec>*>(abstractOutput)) {
         OPENSIM_THROW_IF_FRMOBJ(m_data_type != Type_SpatialVec, Exception,
                 "Output types do not match. The second Output is of type "
                 "SimTK::SpatialVec but the first is of type {}.",
-                getDataTypeStr(m_data_type));
+                getDataTypeString(m_data_type));
         OPENSIM_THROW_IF_FRMOBJ(m_minimizeVectorNorm &&
                 (m_operation == Multiplication || m_operation == Division),
                 Exception, "Multiplication and division operations are not "
@@ -245,11 +245,7 @@ void MocoOutputBase::printDescriptionImpl() const {
     }
 
     // Output type.
-    std::string type;
-    if (m_data_type == Type_double) { type = "double"; }
-    else if (m_data_type == Type_Vec3) { type = "SimTK::Vec3"; }
-    else if (m_data_type == Type_SpatialVec) { type = "SimTK::SpatialVec"; }
-    str += fmt::format(", type: {}", type);
+    str += fmt::format(", type: {}", getDataTypeString(m_data_type));
 
     // Output index (if relevant).
     if (getOutputIndex() != -1) {

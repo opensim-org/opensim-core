@@ -143,11 +143,11 @@ protected:
 
 private:
     OpenSim_DECLARE_PROPERTY(output_path, std::string,
-            "The absolute path to the Output in the model (i.e.,"
-            "'/path/to/component|output_name'");
+            "The absolute path to the Output in the model (i.e., "
+            "'/path/to/component|output_name').");
     OpenSim_DECLARE_PROPERTY(second_output_path, std::string,
             "The absolute path to the optional second Output in the model (i.e.,"
-            "'/path/to/component|output_name'");
+            " '/path/to/component|output_name').");
     OpenSim_DECLARE_PROPERTY(operation, std::string, "The operation to combine "
             "the two outputs: 'addition', 'subtraction', 'multiplication', or "
             "'divison'.");
@@ -168,7 +168,7 @@ private:
     void constructProperties();
 
     /** Initialize additional information when there are two Outputs:
-     * the second Output, the operation, and the dependsOnStage. */
+    the second Output, the operation, and the dependsOnStage. */
     void initializeComposite() const;
 
     /** Calculate the Output value of one Output. */
@@ -231,8 +231,8 @@ private:
         Type_Vec3,
         Type_SpatialVec,
     };
-    /** Get the string of the data type (for error messages) */
-    std::string getDataTypeStr(DataType type) const {
+    /** Get the string of the data type, for prints and error messages. */
+    std::string getDataTypeString(DataType type) const {
         switch (type) {
         case Type_double: return "double";
         case Type_Vec3: return "SimTK::Vec3";
