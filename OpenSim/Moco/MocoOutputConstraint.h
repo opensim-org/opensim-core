@@ -22,7 +22,7 @@
 
 namespace OpenSim {
 
-/** This constraint allows you to constrain a Model Output value throughout the
+/** This path constraint allows you to constrain a Model Output value throughout the
 trajectory. You can also combine two Outputs in a constraint by supplying a
 second output path and an operation to combine them. The operations are addition,
 subtraction, multiplication, and division. The first Output is always on the
@@ -53,10 +53,11 @@ public:
     void setOutputPath(std::string path) { set_output_path(std::move(path)); }
     const std::string& getOutputPath() const { return get_output_path(); }
 
-    /** Set the absolute path to the optional second Output in the model. The
-    format is "/path/to/component|output_name". This Output should have the same
-    type as the first Output. If providing a second Output, the user must also
-    provide an operation via `setOperation()`. */
+    /** Set the absolute path to the optional second Output in the model to be
+    used in this path constraint. The format is "/path/to/component|output_name".
+    This Output should have the same  type as the first Output. If providing a
+    second Output, the user must also provide an operation via `setOperation()`.
+    */
     void setSecondOutputPath(std::string path) {
         set_second_output_path(std::move(path));
     }
@@ -112,11 +113,11 @@ protected:
 
 private:
     OpenSim_DECLARE_PROPERTY(output_path, std::string,
-            "The absolute path to the Output in the model (i.e.,"
-            "'/path/to/component|output_name'");
+            "The absolute path to the Output in the model to be used in this "
+            "path constraint (i.e., '/path/to/component|output_name').");
     OpenSim_DECLARE_PROPERTY(second_output_path, std::string,
-            "The absolute path to the optional second Output in the model (i.e.,"
-            "'/path/to/component|output_name'");
+            "The absolute path to the optional second Output in the model to be used"
+            " in this path constraint (i.e., '/path/to/component|output_name')");
     OpenSim_DECLARE_PROPERTY(operation, std::string, "The operation to combine "
             "the two outputs: 'addition', 'subtraction', 'multiplication', or "
             "'divison'.");
@@ -132,7 +133,7 @@ private:
     void constructProperties();
 
     /** Initialize additional information when there are two Outputs:
-     * the second Output, the operation, and the dependsOnStage. */
+    the second Output, the operation, and the dependsOnStage. */
     void initializeComposite() const;
 
     /** Calculate the Output value of one Output. */
@@ -140,12 +141,12 @@ private:
     /** Calculate the two Output values and apply the operation. */
     double calcCompositeOutputValue(const SimTK::State&) const;
 
-    /** Get a reference to the Output for this goal. */
+    /** Get a reference to the Output for this path constraint. */
     template <typename T>
     const Output<T>& getOutput() const {
         return static_cast<const Output<T>&>(m_output.getRef());
     }
-    /** Get a reference to the second Output for this goal. */
+    /** Get a reference to the second Output for this path constraint. */
     template <typename T>
     const Output<T>& getSecondOutput() const {
         return static_cast<const Output<T>&>(m_second_output.getRef());
@@ -195,8 +196,8 @@ private:
         Type_Vec3,
         Type_SpatialVec,
     };
-    /** Get the string of the data type (for error messages) */
-    std::string getDataTypeStr(DataType type) const {
+    /** Get the string of the data type, for prints and error messages. */
+    std::string getDataTypeString(DataType type) const {
         switch (type) {
         case Type_double     : return "double";
         case Type_Vec3       : return "SimTK::Vec3";

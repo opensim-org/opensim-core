@@ -140,17 +140,17 @@ void MocoOutputConstraint::initializeComposite() const {
                 " 'double'.")
         OPENSIM_THROW_IF_FRMOBJ(m_data_type != Type_double, Exception,
                 "Output types do not match. The second Output is of type double"
-                " but the first is of type {}.", getDataTypeStr(m_data_type));
+                " but the first is of type {}.", getDataTypeString(m_data_type));
     } else if (dynamic_cast<const Output<SimTK::Vec3>*>(abstractOutput)) {
         OPENSIM_THROW_IF_FRMOBJ(m_data_type != Type_Vec3, Exception,
                 "Output types do not match. The second Output is of type "
                 "SimTK::Vec3 but the first is of type {}.",
-                getDataTypeStr(m_data_type));
+                getDataTypeString(m_data_type));
     } else if (dynamic_cast<const Output<SimTK::SpatialVec>*>(abstractOutput)) {
         OPENSIM_THROW_IF_FRMOBJ(m_data_type != Type_SpatialVec, Exception,
                 "Output types do not match. The second Output is of type "
                 "SimTK::SpatialVec but the first is of type {}.",
-                getDataTypeStr(m_data_type));
+                getDataTypeString(m_data_type));
         OPENSIM_THROW_IF_FRMOBJ(m_minimizeVectorNorm &&
                 (m_operation == Multiplication || m_operation == Division),
                 Exception, "Multiplication and division operations are not "
@@ -216,8 +216,8 @@ double MocoOutputConstraint::calcCompositeOutputValue(const SimTK::State& state)
         value = applyOperation(value1, value2);
     } else if (m_data_type == Type_Vec3) {
         if (m_minimizeVectorNorm) {
-            SimTK::Vec3 value1 = getOutput<SimTK::Vec3>().getValue(state);
-            SimTK::Vec3 value2 = getSecondOutput<SimTK::Vec3>().getValue(state);
+            const SimTK::Vec3& value1 = getOutput<SimTK::Vec3>().getValue(state);
+            const SimTK::Vec3& value2 = getSecondOutput<SimTK::Vec3>().getValue(state);
             value = applyOperation(value1, value2);
         } else {
             double value1 = getOutput<SimTK::Vec3>().getValue(state)[m_index1];
@@ -226,8 +226,10 @@ double MocoOutputConstraint::calcCompositeOutputValue(const SimTK::State& state)
         }
     } else if (m_data_type == Type_SpatialVec) {
         if (m_minimizeVectorNorm) {
-            SimTK::SpatialVec value1 = getOutput<SimTK::SpatialVec>().getValue(state);
-            SimTK::SpatialVec value2 = getSecondOutput<SimTK::SpatialVec>().getValue(state);
+            const SimTK::SpatialVec& value1 = getOutput<SimTK::SpatialVec>()
+                                              .getValue(state);
+            const SimTK::SpatialVec& value2 = getSecondOutput<SimTK::SpatialVec>()
+                                              .getValue(state);
             value = applyOperation(value1, value2);
         } else {
             double value1 = getOutput<SimTK::SpatialVec>().getValue(state)
@@ -241,6 +243,7 @@ double MocoOutputConstraint::calcCompositeOutputValue(const SimTK::State& state)
     return value;
 }
 
+
 void MocoOutputConstraint::printDescriptionImpl() const {
     // Output path.
     std::string str = fmt::format("        output: {}", getOutputPath());
@@ -252,11 +255,7 @@ void MocoOutputConstraint::printDescriptionImpl() const {
     }
 
     // Output type.
-    std::string type;
-    if (m_data_type == Type_double) { type = "double"; }
-    else if (m_data_type == Type_Vec3) { type = "SimTK::Vec3"; }
-    else if (m_data_type == Type_SpatialVec) { type = "SimTK::SpatialVec"; }
-    str += fmt::format(", type: {}", type);
+    str += fmt::format(", type: {}", getDataTypeString(m_data_type));
 
     // Output index (if relevant).
     if (getOutputIndex() != -1) {
