@@ -47,7 +47,7 @@ We support the following Output types:
 - SimTK::SpatialVec
 
 When using SimTK::Vec3 or SimTK::SpatialVec types, 'setOutputIndex()' may be
-used to select a specific element of the Output vector. If no index is
+used to select a specific element of the Output vector. If no index is specified
 specified, the norm of the vector will be used when calling 'calcOutputValue()'.
 
 If using two Outputs, the Output index will be used to select the same element
