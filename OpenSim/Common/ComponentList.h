@@ -153,8 +153,7 @@ public:
         _root(root), _filter(f) {
     }
     /** Constructor that takes only a Component to iterate over (itself and its
-    descendants). ComponentFilterMatchAll is used internally. You can
-    change the filter using setFilter() method. 
+    descendants). You can change the filter using setFilter() method.
     */
     ComponentList(const Component& root) :
         _root(root) {
