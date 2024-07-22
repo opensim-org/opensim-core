@@ -327,10 +327,10 @@ else()
         ExternalProject_Add(metis
             # URL    http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
             URL    https://sourceforge.net/projects/myosin/files/metis-5.1.0.tar.gz/download
-            CONFIGURE_COMMAND cd <SOURCE_DIR> && ${CMAKE_MAKE_PROGRAM} config prefix=${CMAKE_INSTALL_PREFIX}/metis
-            BUILD_COMMAND cd <SOURCE_DIR> && ${CMAKE_MAKE_PROGRAM} install
+            CONFIGURE_COMMAND ${CMAKE_MAKE_PROGRAM} -C ../metis config "prefix=${CMAKE_INSTALL_PREFIX}/metis"
+            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -C ../metis all
             #INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/metis"
-            INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
+            INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} -C ../metis install
             )
 
         # GCC 10 generates a warning when compling MUMPS that we must suppress using
