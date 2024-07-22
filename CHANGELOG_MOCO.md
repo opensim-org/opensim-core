@@ -3,6 +3,10 @@ Moco Change Log
 
 1.3.1
 -----
+- 2024-07-22: Added support for `MocoOutputGoal`s that are composed of two `Output`s. This applies
+              to all types of Output goals (`MocoInitialOutputGoal`, `MocoFinalOutputGoal`, etc.). 
+              The two `Output`s can be combined by addition, subtraction, multiplication, or division.
+
 - 2024-07-08: Fixed a bug in `DeGrooteFregly2016Muscle` where updates to properties 
               `pennation_angle_at_optimal`, `optimal_fiber_length`, `max_contraction_velocity`, 
               and `tendon_strain_at_one_norm_force` during parameter optimization did not 
