@@ -117,7 +117,7 @@ private:
             "path constraint (i.e., '/path/to/component|output_name').");
     OpenSim_DECLARE_PROPERTY(second_output_path, std::string,
             "The absolute path to the optional second Output in the model to be used"
-            " in this path constraint (i.e., '/path/to/component|output_name')");
+            " in this path constraint (i.e., '/path/to/component|output_name').");
     OpenSim_DECLARE_PROPERTY(operation, std::string, "The operation to combine "
             "the two outputs: 'addition', 'subtraction', 'multiplication', or "
             "'divison'.");
