@@ -24,7 +24,7 @@ namespace OpenSim {
 
 /** This abstract base class provides convenience methods and common interfaces
 for all Output-related MocoGoal's. All MocoGoal's deriving from this class
-include the 'setOutputPath()', 'setSecondOutputPath()', 'setOperator()',
+include the 'setOutputPath()', 'setSecondOutputPath()', 'setOperation()',
 'setOutputIndex()', and 'setExponent()' methods and their corresponding Object
 properties. The convenience method 'initializeOnModelBase()' should be called at
 the top of 'initializeOnModelImpl()' within each derived class. Similarly,
@@ -35,7 +35,7 @@ to to calculate Output values. The method 'setValueToExponent()' can be used to
 raise a value to the exponent provided via 'setExponent()'.
 
 Goals can be composed of one or two Outputs. The optional second Output can be
-included by using the methods 'setSecondOutputPath()' and 'setOperator()'. The
+included by using the methods 'setSecondOutputPath()' and 'setOperation()'. The
 Output values can be combined by addition, subtraction, multiplication, or
 division. The first Output is always on the left hand side of the operation and
 the second Output on the right hand side. The two Outputs can be different
@@ -213,7 +213,7 @@ private:
         }
     }
     /** Apply the elementwise operation to two SimTK::SpatialVec values.
-    Multiplication and divison operators are not supported for SpatialVec Outputs
+    Multiplication and divison operations are not supported for SpatialVec Outputs
     without an index. */
     double applyOperation(const SimTK::SpatialVec& value1,
                           const SimTK::SpatialVec& value2) const {

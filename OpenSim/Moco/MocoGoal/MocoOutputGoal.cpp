@@ -124,7 +124,7 @@ void MocoOutputBase::initializeComposite() const {
                 "provided, but no operation was provided. Use setOperation() to"
                 "provide an operation"));
     } else {
-        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Invalid operator: '{}', must "
+        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Invalid operation: '{}', must "
                 "be 'addition', 'subtraction', 'multiplication', or 'division'.",
                 get_operation()));
     }
@@ -240,8 +240,8 @@ void MocoOutputBase::printDescriptionImpl() const {
 
     if (m_useCompositeOutputValue) {
         str += fmt::format("\n        second output: {}", getSecondOutputPath());
-        // Operator.
-        str += fmt::format("\n        operator: {}", get_operation());
+        // Operation.
+        str += fmt::format("\n        operation: {}", get_operation());
     }
 
     // Output type.
