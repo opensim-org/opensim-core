@@ -80,9 +80,28 @@ that support implicit dynamics (i.e. Moco) and cannot be used to perform a
 time-stepping forward simulation with Manager; use explicit mode for 
 time-stepping.
 
-@note Normalized tendon force is bounded in the range [0, 5] in this class.
-   The methods getMinNormalizedTendonForce() and 
+@section property Property Bounds
+The acceptable bounds for each property are enforced at model initialization.
+These bounds are:
+ - activation_time_constant: (0, inf]
+ - deactivation_time_constant: (0, inf]
+ - active_force_width_scale: [1, inf]
+ - fiber_damping: [0, inf]
+ - passive_fiber_strain_at_one_norm_force: (0, inf]
+ - tendon_strain_at_one_norm_force: (0, inf]
+ - pennation_angle_at_optimal: [0, Pi/2)
+ - default_activation: (0, inf]
+ - default_normalized_tendon_force: [0, 5]
+
+@note The methods getMinNormalizedTendonForce() and
    getMaxNormalizedTendonForce() provide these bounds for use in custom solvers.
+
+@note Muscle properties can be optimized using MocoParameter. The acceptable
+bounds for each property are **not** enforced during parameter optimization, so
+the user must supply these bounds to MocoParameter.
+
+@note The properties `default_activation` and `default_normalized_tendon_force`
+cannot be optimized because they are applied during model initialization only.
 
 @section departures Departures from the Muscle base class
 
@@ -107,32 +126,32 @@ class OSIMACTUATORS_API DeGrooteFregly2016Muscle : public Muscle {
 public:
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
             "Smaller value means activation can increase more rapidly. "
-            "Default: 0.015 seconds.");
+            "Default: 0.015 seconds. Bounds: (0, inf]");
     OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
             "Smaller value means activation can decrease more rapidly. "
-            "Default: 0.060 seconds.");
+            "Default: 0.060 seconds. Bounds: (0, inf]");
     OpenSim_DECLARE_PROPERTY(default_activation, double,
             "Value of activation in the default state returned by "
-            "initSystem(). Default: 0.5.");
+            "initSystem(). Default: 0.5. Bounds: (0, inf]");
     OpenSim_DECLARE_PROPERTY(default_normalized_tendon_force, double,
             "Value of normalized tendon force in the default state returned by "
-            "initSystem(). Default: 0.5.");
+            "initSystem(). Default: 0.5. Bounds: [0, 5].");
     OpenSim_DECLARE_PROPERTY(active_force_width_scale, double,
             "Scale factor for the width of the active force-length curve. "
-            "Larger values make the curve wider. Default: 1.0.");
+            "Larger values make the curve wider. Default: 1.0. Bounds: [1, inf]");
     OpenSim_DECLARE_PROPERTY(fiber_damping, double,
             "Use this property to define the linear damping force that is "
             "added to the total muscle fiber force. It is computed by "
             "multiplying this damping parameter by the normalized fiber "
-            "velocity and the max isometric force. Default: 0.");
+            "velocity and the max isometric force. Default: 0. Bounds: [0, inf]");
     OpenSim_DECLARE_PROPERTY(ignore_passive_fiber_force, bool,
             "Make the passive fiber force 0. Default: false.");
     OpenSim_DECLARE_PROPERTY(passive_fiber_strain_at_one_norm_force, double,
             "Fiber strain when the passive fiber force is 1 normalized force. "
-            "Default: 0.6.");
+            "Default: 0.6. Bounds: (0, inf]");
     OpenSim_DECLARE_PROPERTY(tendon_strain_at_one_norm_force, double,
             "Tendon strain at a tension of 1 normalized force. "
-            "Default: 0.049.");
+            "Default: 0.049. Bounds: (0, inf]");
     OpenSim_DECLARE_PROPERTY(tendon_compliance_dynamics_mode, std::string,
             "The dynamics method used to enforce tendon compliance dynamics. "
             "Options: 'explicit' or 'implicit'. Default: 'explicit'. ");
@@ -155,6 +174,7 @@ public:
             getBoundsNormalizedTendonForce, SimTK::Stage::Model);
 
     DeGrooteFregly2016Muscle() { constructProperties(); }
+
 
 protected:
     //--------------------------------------------------------------------------
@@ -493,14 +513,14 @@ public:
     // TODO: In explicit mode, do not allow negative tendon forces?
     SimTK::Real calcTendonForceMultiplier(
             const SimTK::Real& normTendonLength) const {
-        return c1 * exp(m_kT * (normTendonLength - c2)) - c3;
+        return c1 * exp(getTendonStiffnessParameter() * (normTendonLength - c2)) - c3;
     }
 
     /// This is the derivative of the tendon-force length curve with respect to
     /// normalized tendon length.
     SimTK::Real calcTendonForceMultiplierDerivative(
             const SimTK::Real& normTendonLength) const {
-        return c1 * m_kT * exp(m_kT * (normTendonLength - c2));
+        return c1 * getTendonStiffnessParameter() * exp(getTendonStiffnessParameter() * (normTendonLength - c2));
     }
 
     /// This is the integral of the tendon-force length curve with respect to
@@ -513,8 +533,10 @@ public:
         const double minNormTendonLength =
                 calcTendonForceLengthInverseCurve(m_minNormTendonForce);
         const double temp1 =
-                exp(m_kT * normTendonLength) - exp(m_kT * minNormTendonLength);
-        const double temp2 = c1 * exp(-c2 * m_kT) / m_kT;
+                exp(getTendonStiffnessParameter() * normTendonLength)
+                - exp(getTendonStiffnessParameter() * minNormTendonLength);
+        const double temp2 = c1 * exp(-c2 * getTendonStiffnessParameter())
+                                / getTendonStiffnessParameter();
         const double temp3 = c3 * (normTendonLength - minNormTendonLength);
         return temp1 * temp2 - temp3;
     }
@@ -523,7 +545,8 @@ public:
     /// normalized tendon length as a function of the normalized tendon force.
     SimTK::Real calcTendonForceLengthInverseCurve(
             const SimTK::Real& normTendonForce) const {
-        return log((1.0 / c1) * (normTendonForce + c3)) / m_kT + c2;
+        return log((1.0 / c1) * (normTendonForce + c3))
+                / getTendonStiffnessParameter() + c2;
     }
 
     /// This returns normalized tendon velocity given the derivative of 
@@ -534,8 +557,8 @@ public:
     SimTK::Real calcTendonForceLengthInverseCurveDerivative(
             const SimTK::Real& derivNormTendonForce,
             const SimTK::Real& normTendonLength) const {
-        return derivNormTendonForce /
-               (c1 * m_kT * exp(m_kT * (normTendonLength - c2)));
+        return derivNormTendonForce / (c1 * getTendonStiffnessParameter()
+            * exp(getTendonStiffnessParameter() * (normTendonLength - c2)));
     }
 
     /// This computes both the total fiber force and the individual components
@@ -632,8 +655,8 @@ public:
         // pennationAngle = asin(fiberWidth/fiberLength)
         // d_pennationAngle/d_fiberLength =
         //          d/d_fiberLength (asin(fiberWidth/fiberLength))
-        return (-m_fiberWidth / square(fiberLength)) /
-               sqrt(1.0 - square(m_fiberWidth / fiberLength));
+        return (-getFiberWidth() / square(fiberLength)) /
+               sqrt(1.0 - square(getFiberWidth() / fiberLength));
     }
 
     /// The derivative of the fiber force along the tendon with respect to fiber
@@ -838,6 +861,23 @@ private:
     void calcMusclePotentialEnergyInfoHelper(const bool& ignoreTendonCompliance,
             const MuscleLengthInfo& mli, MusclePotentialEnergyInfo& mpei) const;
 
+    SimTK::Real getFiberWidth() const {
+        const auto normFiberWidth = sin(get_pennation_angle_at_optimal());
+        return get_optimal_fiber_length() * normFiberWidth;
+    }
+    SimTK::Real getSquareFiberWidth() const {
+        return SimTK::square(getFiberWidth());
+    }
+    SimTK::Real getMaxContractionVelocityInMetersPerSecond() const {
+        return get_max_contraction_velocity() * get_optimal_fiber_length();
+    }
+    /// Tendon stiffness parameter kT from De Groote et al., 2016. Instead of
+    /// kT, users specify tendon strain at 1 norm force, which is more intuitive.
+    SimTK::Real getTendonStiffnessParameter() const {
+        return log((1.0 + c3) / c1) /
+           (1.0 + get_tendon_strain_at_one_norm_force() - c2);
+    }
+
     /// This is a Gaussian-like function used in the active force-length curve.
     /// A proper Gaussian function does not have the variable in the denominator
     /// of the exponent.
@@ -949,14 +989,6 @@ private:
 
     // Computed from properties.
     // -------------------------
-
-    // The square of (fiber_width / optimal_fiber_length).
-    SimTK::Real m_fiberWidth = SimTK::NaN;
-    SimTK::Real m_squareFiberWidth = SimTK::NaN;
-    SimTK::Real m_maxContractionVelocityInMetersPerSecond = SimTK::NaN;
-    // Tendon stiffness parameter from De Groote et al., 2016. Instead of
-    // kT, users specify tendon strain at 1 norm force, which is more intuitive.
-    SimTK::Real m_kT = SimTK::NaN;
     bool m_isTendonDynamicsExplicit = true;
 
     // Indices for MuscleDynamicsInfo::userDefinedDynamicsExtras.

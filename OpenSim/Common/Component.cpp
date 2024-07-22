@@ -649,12 +649,37 @@ getModelingOptionNamesAddedByComponent() const {
 int Component::
 getModelingOption(const SimTK::State& s, const std::string& path) const
 {
-    std::string moName{""};
-    const Component* owner =
-        resolveVariableNameAndOwner(path, moName);
-    std::map<std::string, ModelingOptionInfo>::const_iterator it;
-    it = owner->_namedModelingOptionInfo.find(moName);
+    if (path.find(ComponentPath::separator()) == std::string::npos) {
+        // `path` is just the name of a modeling option on this component, so
+        // directly look it up
 
+        const auto it = _namedModelingOptionInfo.find(path);
+        if (it != _namedModelingOptionInfo.end()) {
+            return SimTK::Value<int>::downcast(
+                s.getDiscreteVariable(it->second.ssIndex,
+                    it->second.moIndex)).get();
+        }
+        else {
+            OPENSIM_THROW(VariableNotFound, getName(), path);
+        }
+    }
+    else {
+        // `path` might be a path to some other component, so parse the
+        // string as a path and defer to the path-based implementation (slower)
+        return getModelingOption(s, ComponentPath{path});
+    }
+}
+
+int Component::
+getModelingOption(const SimTK::State& s, const ComponentPath& path) const
+{
+    // traverse to the component that owns the modeling option and return its
+    // value
+
+    std::string moName;
+    const Component* owner = resolveVariableNameAndOwner(path, moName);
+
+    const auto it = owner->_namedModelingOptionInfo.find(moName);
     if(it != owner->_namedModelingOptionInfo.end()) {
         return SimTK::Value<int>::downcast(
             s.getDiscreteVariable(it->second.ssIndex,
@@ -668,11 +693,19 @@ getModelingOption(const SimTK::State& s, const std::string& path) const
 void Component::
 setModelingOption(SimTK::State& s, const std::string& path, int flag) const
 {
-    std::string moName{""};
-    const Component* owner =
-        resolveVariableNameAndOwner(path, moName);
-    std::map<std::string, ModelingOptionInfo>::const_iterator it;
-    it = owner->_namedModelingOptionInfo.find(moName);
+    // unlike `getModelingOption`, there's no need to check if it's path-y or
+    // not, because this function isn't called as often during a simulation
+    setModelingOption(s, ComponentPath{path}, flag);
+}
+
+void Component::
+setModelingOption(SimTK::State& s, const ComponentPath& path, int flag) const
+{
+    // traverse to the component that owns the modeling option and set its value
+
+    std::string moName;
+    const Component* owner = resolveVariableNameAndOwner(path, moName);
+    const auto it = owner->_namedModelingOptionInfo.find(moName);
 
     if(it != owner->_namedModelingOptionInfo.end()) {
         if(flag > it->second.maxOptionValue){
@@ -868,7 +901,26 @@ Array<std::string> Component::getStateVariableNames() const
 double Component::
     getStateVariableValue(const SimTK::State& s, const std::string& name) const
 {
-    return getStateVariableValue(s, ComponentPath{name});
+    if (name.find(ComponentPath::separator()) == std::string::npos) {
+        // `name` is just the name of a state variable on this component, so
+        // directly look it up
+
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
+        auto it = _namedStateVariableInfo.find(name);
+        if (it != _namedStateVariableInfo.end()) {
+            return it->second.stateVariable->getValue(s);
+        }
+
+        std::stringstream msg;
+        msg << "Component::getStateVariableValue: ERR- state named '" << name << "' not found in " << getName() << " of type " << getConcreteClassName();
+        OPENSIM_THROW_FRMOBJ(Exception, std::move(msg).str());
+    }
+    else {
+        // `name` might be a path to some other component, so parse the
+        // string as a path and defer to the path-based implementation (slower)
+        return getStateVariableValue(s, ComponentPath{name});
+    }
 }
 
 // Get the value of a state variable allocated by this Component.
@@ -897,27 +949,46 @@ double Component::
     getStateVariableDerivativeValue(const SimTK::State& state,
                                 const std::string& name) const
 {
+    if (name.find(ComponentPath::separator()) == std::string::npos) {
+        // `name` is just the name of a state variable on this component, so
+        // directly look it up
+
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
+        computeStateVariableDerivatives(state);
+
+        auto it = _namedStateVariableInfo.find(name);
+        if (it != _namedStateVariableInfo.end()) {
+            return it->second.stateVariable->getDerivative(state);
+        }
+
+        std::stringstream msg;
+        msg << "Component::getStateVariableDerivativeValue: ERR- variable name '" << name << "' not found.\n ";
+        msg << getName() << " of type " << getConcreteClassName() << " has " << getNumStateVariables() << " states.";
+        OPENSIM_THROW_FRMOBJ(Exception, std::move(msg).str());
+    }
+    else {
+        // `name` might be a path to some other component, so parse the
+        // string as a path and defer to the path-based implementation (slower)
+        return getStateVariableDerivativeValue(state, ComponentPath{name});
+    }
+}
+
+double Component::
+        getStateVariableDerivativeValue(const SimTK::State& state, const ComponentPath& path) const
+{
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     computeStateVariableDerivatives(state);
 
-    std::map<std::string, StateVariableInfo>::const_iterator it;
-    it = _namedStateVariableInfo.find(name);
-
-    if(it != _namedStateVariableInfo.end()) {
-        return it->second.stateVariable->getDerivative(state);
-    }
-    else{
-        // otherwise find the component that variable belongs to
-        const StateVariable* rsv = traverseToStateVariable(name);
-        if (rsv) {
-            return rsv->getDerivative(state);
-        }
+    const StateVariable* rsv = traverseToStateVariable(path);
+    if (rsv) {
+        return rsv->getDerivative(state);
     }
 
     std::stringstream msg;
-    msg << "Component::getStateVariableDerivative: ERR- variable name '" << name
+    msg << "Component::getStateVariableDerivative: ERR- variable name '" << path
         << "' not found.\n "
         << getName() << " of type " << getConcreteClassName()
         << " has " << getNumStateVariables() << " states.";
