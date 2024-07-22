@@ -83,9 +83,6 @@ public:
         set_second_output_path(std::move(path));
     }
     const std::string& getSecondOutputPath() const {
-        if (getProperty_second_output_path().empty()) {
-            return "";
-        }
         return get_second_output_path();
     }
 
@@ -96,12 +93,7 @@ public:
     void setOperation(std::string operation) {
         set_operation(std::move(operation));
     }
-    const std::string& getOperation() const {
-        if(getProperty_second_output_path().empty()) {
-            return "";
-        }
-        return get_operation();
-    }
+    const std::string& getOperation() const { return get_operation(); }
 
     /** Set the exponent applied to the output value in the integrand. This
     exponent is applied when minimizing the norm of a vector type output. The
@@ -153,10 +145,10 @@ private:
     OpenSim_DECLARE_PROPERTY(output_path, std::string,
             "The absolute path to the Output in the model (i.e.,"
             "'/path/to/component|output_name'");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(second_output_path, std::string,
+    OpenSim_DECLARE_PROPERTY(second_output_path, std::string,
             "The absolute path to the optional second Output in the model (i.e.,"
             "'/path/to/component|output_name'");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(operation, std::string, "The operation to combine "
+    OpenSim_DECLARE_PROPERTY(operation, std::string, "The operation to combine "
             "the two outputs: 'addition', 'subtraction', 'multiplication', or "
             "'divison'.");
     OpenSim_DECLARE_PROPERTY(exponent, int,
