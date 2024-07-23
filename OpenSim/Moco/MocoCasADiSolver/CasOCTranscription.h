@@ -37,10 +37,10 @@ public:
     /// should produce numbers with [-1, 1].
     Iterate createRandomIterateWithinBounds(
             const SimTK::Random* = nullptr) const;
-    template <typename T>
-    T createTimes(const T& initialTime, const T& finalTime) const {
-        return (finalTime - initialTime) * m_grid + initialTime;
-    }
+    // template <typename T>
+    // T createTimes(const T& initialTime, const T& finalTime) const {
+    //     return (finalTime - initialTime) * m_grid + initialTime;
+    // }
     casadi::DM createQuadratureCoefficients() const {
         return createQuadratureCoefficientsImpl();
     }
@@ -124,6 +124,7 @@ protected:
 
     template <typename T>
     struct Constraints {
+        T times;
         T defects;
         T multibody_residuals;
         T auxiliary_residuals;
@@ -157,7 +158,7 @@ protected:
     int m_numProjectionStates = -1;
     casadi::DM m_grid;
     casadi::DM m_pointsForInterpControls;
-    casadi::MX m_times;
+    // casadi::MX m_times;
     casadi::MX m_duration;
 
 private:
