@@ -1195,8 +1195,7 @@ TEMPLATE_TEST_CASE("MocoOutputGoal with two outputs", "", MocoCasADiSolver,
 
         // analyze result for starting distance between spheres
         StatesTrajectory trajectory = solution.exportToStatesTrajectory(*model);
-        const SimTK::State& 
-          ialState = trajectory.front();
+        const SimTK::State& initialState = trajectory.front();
         model->realizePosition(initialState);
         const SimTK::Vec3& startPosition1 = model->getComponent<Body>("/body")
                                         .getPositionInGround(initialState);
