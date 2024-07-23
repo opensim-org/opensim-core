@@ -44,8 +44,6 @@ void MocoStateBoundConstraint::initializeOnModelImpl(
         }
     }
 
-    // stop here
-
     OPENSIM_THROW_IF_FRMOBJ(get_equality_with_lower() && m_hasUpper, Exception,
             "If equality_with_lower==true, upper bound function must not be "
             "set.");
@@ -78,12 +76,12 @@ void MocoStateBoundConstraint::initializeOnModelImpl(
         numEqsPerControl = (int)m_hasLower + (int)m_hasUpper;
     }
 
-    setNumEquations(numEqsPerControl * (int)m_controlIndices.size());
+    setNumEquations(numEqsPerControl * (int)m_stateIndices.size());
 
     // TODO: setConstraintInfo() is not really intended for use here.
     MocoConstraintInfo info;
     std::vector<MocoBounds> bounds;
-    for (int i = 0; i < (int)m_controlIndices.size(); ++i) {
+    for (int i = 0; i < (int)m_stateIndices.size(); ++i) {
         if (get_equality_with_lower()) {
             bounds.emplace_back(0, 0);
         } else {
@@ -106,5 +104,28 @@ void MocoStateBoundConstraint::initializeOnModelImpl(
         }
     }
     info.setBounds(bounds);
-    const_cast<MocoControlBoundConstraint*>(this)->setConstraintInfo(info);
+    const_cast<MocoStateBoundConstraint*>(this)->setConstraintInfo(info);
 }
+
+void MocoStateBoundConstraint::calcPathConstraintErrorsImpl(
+        const SimTK::State& state, SimTK::Vector& errors) const {
+    getModel().realizeAcceleration(state);      // change to largest getDependsOnState later
+    const auto& svValues = getModel().getStateVariableValues(state);
+    int iconstr = 0; // idk what this is an abbreviation of
+    int istate = 0;
+    SimTK::Vector time(1);
+    for (const auto& stateIndex : m_stateIndices) {
+        const auto& stateValue = svValues[stateIndex];
+        time[0] = state.getTime();
+        // These if-statements work correctly for either value of
+        // equality_with_lower.
+        if (m_hasLower) {
+            errors[iconstr++] = stateValue - get_lower_bound().calcValue(time);
+        }
+        if (m_hasUpper) {
+            errors[iconstr++] = stateValue - get_upper_bound().calcValue(time);
+        }
+        ++istate;
+    }
+}
+

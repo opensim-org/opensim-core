@@ -147,7 +147,7 @@ void MocoControlBoundConstraint::calcPathConstraintErrorsImpl(
     int icontrol = 0;
     SimTK::Vector time(1);
     for (const auto& controlIndex : m_controlIndices) {
-        const auto& control = m_isInputControl[icontrol] ? 
+        const auto& control = m_isInputControl[icontrol] ?
                 input_controls[controlIndex] : controls[controlIndex];
         time[0] = state.getTime();
         // These if-statements work correctly for either value of
