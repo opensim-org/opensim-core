@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
-* OpenSim Moco: MocoControlBoundConstraint.cpp                               *
+* OpenSim Moco: MocoStateBoundConstraint.cpp                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
@@ -81,14 +81,14 @@ void MocoStateBoundConstraint::initializeOnModelImpl(
     if (m_hasLower) checkTimeRange(get_lower_bound());
     if (m_hasUpper) checkTimeRange(get_upper_bound());
 
-    int numEqsPerControl;
+    int numEqsPerState;
     if (get_equality_with_lower()) {
-        numEqsPerControl = 1;
+        numEqsPerState = 1;
     } else {
-        numEqsPerControl = (int)m_hasLower + (int)m_hasUpper;
+        numEqsPerState = (int)m_hasLower + (int)m_hasUpper;
     }
 
-    setNumEquations(numEqsPerControl * (int)m_stateIndices.size());
+    setNumEquations(numEqsPerState * (int)m_stateIndices.size());
 
     // TODO: setConstraintInfo() is not really intended for use here.
     MocoConstraintInfo info;

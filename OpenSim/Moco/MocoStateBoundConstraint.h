@@ -22,7 +22,7 @@
 #include "osimMocoDLL.h"
 
 /** This path contraint allows you to bound any number of state variables
-between two time-based functions. It is possible to constrain the control signal
+between two time-based functions. It is possible to constrain the state variable
 to match the value from a provided function; see the equality_with_lower property.
 
 If a function is a GCVSpline, we ensure that the spline covers the entire
@@ -30,7 +30,7 @@ possible time range in the problem (using the problem's time bounds). We do
 not perform such a check for other types of functions.
 
 @note If you omit the lower and upper bounds, then this class will not
-constrain any control signals, even if you have provided control paths.
+constrain any state variable, even if you have provided state paths.
 
 @ingroup mocopathcon */
 namespace OpenSim {
@@ -51,8 +51,8 @@ public:
         updProperty_state_paths().clear();
         for (const auto& path : statePaths) { append_state_paths(path); }
     }
-    void clearControlPaths() { updProperty_state_paths().clear(); }
-    std::vector<std::string> getControlPaths() const {
+    void clearStatePaths() { updProperty_state_paths().clear(); }
+    std::vector<std::string> getStatePaths() const {
         std::vector<std::string> paths;
         for (int i = 0; i < getProperty_state_paths().size(); ++i) {
             paths.push_back(get_state_paths(i));
