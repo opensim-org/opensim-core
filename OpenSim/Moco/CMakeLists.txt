@@ -109,7 +109,9 @@ set(MOCO_SOURCES
         MocoStudyFactory.cpp
         MocoScaleFactor.h
         MocoScaleFactor.cpp
-        )
+        MocoOutputBoundConstraint.cpp
+        MocoOutputBoundConstraint.h
+)
 if(OPENSIM_WITH_CASADI)
     list(APPEND MOCO_SOURCES
             MocoCasADiSolver/CasOCProblem.h
