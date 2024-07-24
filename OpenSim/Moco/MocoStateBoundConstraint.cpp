@@ -31,7 +31,6 @@ void MocoStateBoundConstraint::initializeOnModelImpl(
                  "specified but no bounds are provided.", getName());
     }
     // Make sure there are no nonexistent states.
-    // ignore input control
     if (m_hasLower || m_hasUpper) {
         for (int i = 0; i < getProperty_state_paths().size(); ++i) {
             const auto& thisName = get_state_paths(i);
@@ -109,9 +108,9 @@ void MocoStateBoundConstraint::initializeOnModelImpl(
 
 void MocoStateBoundConstraint::calcPathConstraintErrorsImpl(
         const SimTK::State& state, SimTK::Vector& errors) const {
-    getModel().realizeAcceleration(state);      // change to largest getDependsOnState later
+    getModel().realizeAcceleration(state);      // change to largest getDependsOnState
     const auto& svValues = getModel().getStateVariableValues(state);
-    int iconstr = 0; // idk what this is an abbreviation of
+    int iconstr = 0;
     int istate = 0;
     SimTK::Vector time(1);
     for (const auto& stateIndex : m_stateIndices) {
