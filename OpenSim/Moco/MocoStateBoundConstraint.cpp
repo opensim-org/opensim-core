@@ -1,11 +1,24 @@
-//
-// Created by Allison John on 7/23/24.
-//
+/* -------------------------------------------------------------------------- *
+* OpenSim Moco: MocoControlBoundConstraint.cpp                               *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
+ *                                                                            *
+ * Author(s): Christopher Dembia, Allison John                                *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
 
 #include "MocoStateBoundConstraint.h"
 
 #include "MocoProblemInfo.h"
-#include "Components/ControlDistributor.h"
 
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
@@ -21,13 +34,13 @@ void MocoStateBoundConstraint::constructProperties() {
 
 void MocoStateBoundConstraint::initializeOnModelImpl(
         const Model& model, const MocoProblemInfo& problemInfo) const {
-
+    // Get the state variable index map.
     auto systemStateIndexMap = createSystemYIndexMap(model);
 
     m_hasLower = !getProperty_lower_bound().empty();
     m_hasUpper = !getProperty_upper_bound().empty();
     if (!getProperty_state_paths().empty() && !m_hasLower && !m_hasUpper) {
-        log_warn("In MocoControlBoundConstraint '{}', control paths are "
+        log_warn("In MocoStateBoundConstraint '{}', state paths are "
                  "specified but no bounds are provided.", getName());
     }
     // Make sure there are no nonexistent states.
@@ -91,14 +104,14 @@ void MocoStateBoundConstraint::initializeOnModelImpl(
             // functions and the lower/upper bounds for the path constraints are
             // -inf, 0, and/or inf.
             // If a lower bound function is provided, we enforce
-            //      lower_bound_function <= control
+            //      lower_bound_function <= state
             // by creating the constraint
-            //      0 <= control - lower_bound_function <= inf
+            //      0 <= state - lower_bound_function <= inf
             if (m_hasLower) { bounds.emplace_back(0, SimTK::Infinity); }
             // If an upper bound function is provided, we enforce
-            //      control <= upper_bound_function
+            //      state <= upper_bound_function
             // by creating the constraint
-            //      -inf <= control - upper_bound_function <= 0
+            //      -inf <= state - upper_bound_function <= 0
             if (m_hasUpper) { bounds.emplace_back(-SimTK::Infinity, 0); }
         }
     }
@@ -108,8 +121,7 @@ void MocoStateBoundConstraint::initializeOnModelImpl(
 
 void MocoStateBoundConstraint::calcPathConstraintErrorsImpl(
         const SimTK::State& state, SimTK::Vector& errors) const {
-    getModel().realizeAcceleration(state);      // change to largest getDependsOnState
-    const auto& svValues = getModel().getStateVariableValues(state);
+    const auto& svValues = state.getY();
     int iconstr = 0;
     int istate = 0;
     SimTK::Vector time(1);

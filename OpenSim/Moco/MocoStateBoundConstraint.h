@@ -1,18 +1,38 @@
 #ifndef MOCOSTATEBOUNDCONSTRAINT_H
 #define MOCOSTATEBOUNDCONSTRAINT_H
-//
-// Created by Allison John on 7/23/24.
-//
+/* -------------------------------------------------------------------------- *
+ * OpenSim Moco: MocoStateBoundConstraint.cpp                               *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
+ *                                                                            *
+ * Author(s): Christopher Dembia, Allsion John                                *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
 
 #include "MocoConstraint.h"
 #include "osimMocoDLL.h"
 
-/** A bound constraint for states of the model
- * the state can be between two bounds or equal to the lower bound
- *
- * use Simulation Utilities createSystemYIndexMap
- * realize at level acceleration
- */
+/** This path contraint allows you to bound any number of state variables
+between two time-based functions. It is possible to constrain the control signal
+to match the value from a provided function; see the equality_with_lower property.
+
+If a function is a GCVSpline, we ensure that the spline covers the entire
+possible time range in the problem (using the problem's time bounds). We do
+not perform such a check for other types of functions.
+
+@note If you omit the lower and upper bounds, then this class will not
+constrain any control signals, even if you have provided control paths.
+
+@ingroup mocopathcon */
 namespace OpenSim {
 
 class OSIMMOCO_API MocoStateBoundConstraint : public MocoPathConstraint {
@@ -22,6 +42,8 @@ class OSIMMOCO_API MocoStateBoundConstraint : public MocoPathConstraint {
 public:
     MocoStateBoundConstraint() { constructProperties(); }
 
+    /** Add a state path (absolute path to state varaibles in the model)
+    to be constrained by this class  (e.g., "/slider/position/speed"). */
     void addStatePath(std::string statePath) {
         append_state_paths(std::move(statePath));
     }
@@ -48,9 +70,9 @@ public:
     bool hasUpperBound() const { return !getProperty_upper_bound().empty(); }
     const Function& getUpperBound() const { return get_upper_bound(); }
 
-    /// Should the state be constrained to be equal to the lower bound (rather
-    /// than an inequality constraint)? In this case, the upper bound must be
-    /// unspecified.
+    /** Set whether the state should be constrained to be equal to the lower
+    bound (rather than an inequality constraint). In this case, the upper bound
+    must be unspecified. */
     void setEqualityWithLower(bool v) { set_equality_with_lower(v); }
     //// @copydoc setEqualityWithLower()
     bool getEqualityWithLower() const { return get_equality_with_lower(); }
@@ -71,7 +93,7 @@ private:
     OpenSim_DECLARE_OPTIONAL_PROPERTY(
             upper_bound, Function, "Upper bound as a function of time.");
     OpenSim_DECLARE_PROPERTY(equality_with_lower, bool,
-            "The control must be equal to the lower bound; "
+            "The state must be equal to the lower bound; "
             "upper must be unspecified (default: false).");
 
     void constructProperties();
