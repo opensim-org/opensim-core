@@ -1,5 +1,5 @@
-#ifndef MOCOSTATEBOUNDCONSTRAINT_H
-#define MOCOSTATEBOUNDCONSTRAINT_H
+#ifndef OPENSIM_MOCOSTATEBOUNDCONSTRAINT_H
+#define OPENSIM_MOCOSTATEBOUNDCONSTRAINT_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoStateBoundConstraint.cpp                               *
  * -------------------------------------------------------------------------- *
@@ -23,7 +23,8 @@
 
 /** This path contraint allows you to bound any number of state variables
 between two time-based functions. It is possible to constrain the state variable
-to match the value from a provided function; see the equality_with_lower property.
+to match the value from a provided function; see the equality_with_lower
+property.
 
 If a function is a GCVSpline, we ensure that the spline covers the entire
 possible time range in the problem (using the problem's time bounds). We do
@@ -103,6 +104,6 @@ private:
     mutable std::vector<int> m_stateIndices;
 };
 
-} // OpenSim
+} // namespace OpenSim
 
-#endif //MOCOSTATEBOUNDCONSTRAINT_H
+#endif //OPENSIM_MOCOSTATEBOUNDCONSTRAINT_H

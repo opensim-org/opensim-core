@@ -16,10 +16,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Moco/MocoStateBoundConstraint.h"
-#include "Testing.h"
-#include <catch2/catch_all.hpp>
-
 #include <simbody/internal/Constraint.h>
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
@@ -33,6 +29,9 @@
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/osimSimulation.h>
+
+#include "Testing.h"
+#include <catch2/catch_all.hpp>
 
 using Catch::Matchers::ContainsSubstring;
 using Catch::Approx;
@@ -1662,7 +1661,7 @@ TEMPLATE_TEST_CASE("MocoStateBoundConstraint", "",
         auto* constr = problem.addPathConstraint<MocoStateBoundConstraint>();
         constr->addStatePath("/slider/position/speed");
         constr->setEqualityWithLower(true);
-        PiecewiseLinearFunction lowerBound;
+        /*PiecewiseLinearFunction lowerBound;
         lowerBound.addPoint(0, 0);
         lowerBound.addPoint(1, 1);
         lowerBound.addPoint(2, 0);
@@ -1671,7 +1670,8 @@ TEMPLATE_TEST_CASE("MocoStateBoundConstraint", "",
         lowerBound.addPoint(5, 1);
         lowerBound.addPoint(6, 0);
         lowerBound.addPoint(7, -1);
-        lowerBound.addPoint(8, 0);
+        lowerBound.addPoint(8, 0);*/
+        Sine lowerBound;
         constr->setLowerBound(lowerBound);
         // can't have upper bound when set to equal lower bound
         constr->setUpperBound(Constant(1));
@@ -1688,8 +1688,7 @@ TEMPLATE_TEST_CASE("MocoStateBoundConstraint", "",
             double speed = solutionSpeed[i];
             time[0] = times[i];
             double max = lowerBound.calcValue(time);
-            CHECK(speed < max + 0.1);
-            CHECK(speed > max - 0.1);
+            REQUIRE_THAT(speed, Catch::Matchers::WithinAbs(max, 1e-4));
         }
     }
 
