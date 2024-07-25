@@ -52,6 +52,53 @@ static const double ConstraintTol = 1e-10;
 /// (borrowed from Simbody's 'testConstraints.cpp').
 #define MACHINE_TEST(a, b) SimTK_TEST_EQ_SIZE(a, b, 10 * state.getNU())
 
+/// creates a model with one sliding mass
+std::unique_ptr<Model> createSlidingMassModel() {
+    auto model = make_unique<Model>();
+    model->setName("sliding_mass");
+    model->set_gravity(SimTK::Vec3(0, 0, 0));
+    auto* body = new Body("body", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    model->addComponent(body);
+    body->attachGeometry(new Sphere(0.05));
+
+    // Allows translation along x.
+    auto* joint = new SliderJoint("slider", model->getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("position");
+    model->addComponent(joint);
+
+    auto* actu = new CoordinateActuator();
+    actu->setCoordinate(&coord);
+    actu->setName("actuator");
+    actu->setOptimalForce(1);
+    model->addComponent(actu);
+
+    return model;
+}
+
+/// create a model with two sliding masses
+std::unique_ptr<Model> createDoubleSlidingMassModel() {
+    std::unique_ptr<Model> model = createSlidingMassModel();
+    auto* body = new Body("body2", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    model->addComponent(body);
+    body->attachGeometry(new Sphere(0.05));
+
+    // Allows translation along x.
+    auto* joint = new SliderJoint("slider2", model->getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("position");
+    model->addComponent(joint);
+
+    auto* actu = new CoordinateActuator();
+    actu->setCoordinate(&coord);
+    actu->setName("actuator2");
+    actu->setOptimalForce(1);
+    model->addComponent(actu);
+
+    model->finalizeConnections();
+    return model;
+}
+
 TEST_CASE("(Dummy test to support discovery in Resharper)") { REQUIRE(true); }
 
 /// Create a model consisting of a chain of bodies. This model is nearly
@@ -1619,34 +1666,50 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
 TEMPLATE_TEST_CASE("MocoOutputBoundConstraint", "",
         MocoCasADiSolver, MocoTropterSolver) {
     SECTION("Single Output equality bound: changing velocty") {
+        MocoSolution solutionControl;
         MocoStudy study;
         auto& problem = study.updProblem();
-        auto model = ModelFactory::createSlidingPointMass();
-        model.initSystem();
+        auto model = createDoubleSlidingMassModel();
+        model->initSystem();
 
-        problem.setModelAsCopy(model);
-        problem.setTimeBounds(0, 5);
+        problem.setModelAsCopy(*model);
+        problem.setTimeBounds(0, 6.283);
 
         problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
-            MocoInitialBounds(-5, 5));
-        problem.setStateInfo("/slider/position/speed", {-10, 10});
+            MocoInitialBounds(-1, 1));
+        problem.setStateInfo("/slider/position/speed", {-1, 1});
+        problem.setStateInfo("/slider2/position/value", MocoBounds(-5, 5),
+            MocoInitialBounds(-1, 1));
+        problem.setStateInfo("/slider2/position/speed", {-1, 1});
 
         auto* effort = problem.addGoal<MocoControlGoal>();
         effort->setName("effort");
-        effort->setWeight(0.001);
+        effort->setWeight(-1);
 
         auto* constr = problem.addPathConstraint<MocoOutputBoundConstraint>();
-        //Sine lower;
-        PiecewiseLinearFunction lower;
-        lower.addPoint(0, -1);
-        lower.addPoint(6, 5);
+        Sine lower;
         constr->setLowerBound(lower);
-        //constr->setEqualityWithLower(true);
+        constr->setEqualityWithLower(true);
+        constr->setOutputIndex(0);
         constr->setOutputPath("/body|position");
+        constr->setSecondOutputPath("/body2|position");
+        constr->setOperation("subtraction");
 
         auto& solver = study.template initSolver<TestType>();
         solver.set_num_mesh_intervals(30);
         MocoSolution solution = study.solve();
+
+        auto solutionPosition1 = solution.getState("/slider/position/value");
+        auto solutionPosition2 = solution.getState("/slider2/position/value");
+        auto times = solution.getTime();
+        SimTK::Vector time(1);
+        for (int i = 0; i < solution.getNumTimes(); ++i) {
+            double diff = (static_cast<SimTK::Vec3>(solutionPosition1[i])[0]
+                - static_cast<SimTK::Vec3>(solutionPosition2[i])[0]);
+            time[0] = times[i];
+            REQUIRE_THAT(diff, Catch::Matchers::WithinAbs(
+                               lower.calcValue(time), 1e-3));
+        }
     }
 }
 

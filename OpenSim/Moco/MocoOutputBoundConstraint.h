@@ -34,6 +34,15 @@ public:
         return get_second_output_path();
     }
 
+    /** Set the operation that combines Output values where two Outputs are
+    provided. The supported operations include "addition", "subtraction",
+    "multiplication", or "division". If providing an operation, the user
+    must also provide a second Output path. */
+    void setOperation(std::string operation) {
+        set_operation(std::move(operation));
+    }
+    const std::string& getOperation() const { return get_operation(); }
+
     /** Set the exponent applied to the output value in the constraint. This
     exponent is applied when minimizing the norm of a vector type output. */
     void setExponent(int exponent) { set_exponent(exponent); }
@@ -68,10 +77,10 @@ public:
 
 protected:
     void initializeOnModelImpl(
-            const Model& model, const MocoProblemInfo&) const override;
+            const Model&, const MocoProblemInfo&) const override;
 
     void calcPathConstraintErrorsImpl(
-            const SimTK::State& state, SimTK::Vector& errors) const override;
+            const SimTK::State&, SimTK::Vector&) const override;
     // these could be private
     /** Calculate the Output value for the provided SimTK::State. Do not
     call this function until 'initializeOnModelBase()' has been called. */
@@ -109,7 +118,7 @@ private:
             "and 5 refer to the translational components. A value of -1 "
             "indicates to constrain the vector norm (default: -1).");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(
-        lower_bound, Function, "Lower bound as a function of time.");
+            lower_bound, Function, "Lower bound as a function of time.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(
             upper_bound, Function, "Upper bound as a function of time.");
     OpenSim_DECLARE_PROPERTY(equality_with_lower, bool,

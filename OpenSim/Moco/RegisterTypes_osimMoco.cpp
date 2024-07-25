@@ -112,6 +112,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoTropterSolver());
 
         Object::registerType(MocoControlBoundConstraint());
+        Object::registerType(MocoOutputBoundConstraint());
         Object::registerType(MocoFrameDistanceConstraint());
         Object::registerType(MocoFrameDistanceConstraintPair());
 
