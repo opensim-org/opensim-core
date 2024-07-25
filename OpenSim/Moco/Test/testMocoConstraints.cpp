@@ -1617,6 +1617,7 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
     }
 }
 
+
 TEMPLATE_TEST_CASE("MocoStateBoundConstraint", "",
         MocoCasADiSolver, MocoTropterSolver) {
     SECTION("Upper bounded speed") {
@@ -1726,6 +1727,59 @@ TEMPLATE_TEST_CASE("MocoStateBoundConstraint", "",
             double min = lowerBound.calcValue(time);
             CHECK(speed > min - 1e-6);
         }
+    }
+
+    SECTION("Time range of bounds function is too small.") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        problem.setModelAsCopy(ModelFactory::createPendulum());
+        problem.setTimeBounds({-31, 0}, {1, 50});
+        problem.addGoal<MocoControlGoal>();
+        GCVSpline violateLower;
+        violateLower.setDegree(5);
+        violateLower.addPoint(-30.9999, 0);
+        violateLower.addPoint(0, 0);
+        violateLower.addPoint(0.5, 0);
+        violateLower.addPoint(0.7, 0);
+        violateLower.addPoint(0.8, 0);
+        violateLower.addPoint(0.9, 0);
+        violateLower.addPoint(50, 0.319);
+        auto* constr = problem.addPathConstraint<MocoStateBoundConstraint>();
+        constr->addStatePath("/jointset/j0/q0/value");
+        constr->setLowerBound(violateLower);
+        CHECK_THROWS_WITH(study.solve(),
+                ContainsSubstring("must be less than or equal to the minimum"));
+
+        constr->clearLowerBound();
+        GCVSpline violateUpper;
+        violateUpper.setDegree(5);
+        violateUpper.addPoint(-31, 0);
+        violateUpper.addPoint(0, 0);
+        violateUpper.addPoint(0.5, 0);
+        violateUpper.addPoint(0.7, 0);
+        violateUpper.addPoint(0.8, 0);
+        violateUpper.addPoint(0.9, 0);
+        violateUpper.addPoint(49.99999, .0319);
+        constr->setUpperBound(violateUpper);
+        CHECK_THROWS_WITH(study.solve(),
+                ContainsSubstring(
+                    "must be greater than or equal to the maximum"));
+    }
+
+    SECTION("Can omit both bounds.") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        problem.setModelAsCopy(ModelFactory::createPendulum());
+        problem.setTimeBounds(0, 1);
+        problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
+        problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0);
+        problem.setControlInfo("/tau0", {-5, 5});
+        problem.addGoal<MocoControlGoal>();
+        auto* constr = problem.addPathConstraint<MocoStateBoundConstraint>();
+        study.initSolver<TestType>();
+        study.solve();
+        constr->addStatePath("/jointset/j0/q0/speed");
+        study.solve();
     }
 }
 
