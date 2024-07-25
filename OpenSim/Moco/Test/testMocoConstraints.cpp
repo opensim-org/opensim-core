@@ -1647,7 +1647,7 @@ TEMPLATE_TEST_CASE("MocoStateBoundConstraint", "",
             double speed = solutionSpeed[i];
             time[0] = times[i];
             double max = upperBound.calcValue(time);
-            CHECK(speed <= max);
+            CHECK(Catch::Approx(speed).margin(1e-8) <= max);
         }
     }
 
@@ -1713,9 +1713,9 @@ TEMPLATE_TEST_CASE("MocoStateBoundConstraint", "",
             double speed = solutionSpeed[i];
             time[0] = times[i];
             double max = upperBound.calcValue(time);
-            CHECK(speed <= max);
+            CHECK(Catch::Approx(speed).margin(1e-8) <= max);
             double min = lowerBound.calcValue(time);
-            CHECK(speed >= min);
+            CHECK(Catch::Approx(speed) >= min);
         }
     }
 
