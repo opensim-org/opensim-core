@@ -1616,6 +1616,40 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
     }
 }
 
+TEMPLATE_TEST_CASE("MocoOutputBoundConstraint", "",
+        MocoCasADiSolver, MocoTropterSolver) {
+    SECTION("Single Output equality bound: changing velocty") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        auto model = ModelFactory::createSlidingPointMass();
+        model.initSystem();
+
+        problem.setModelAsCopy(model);
+        problem.setTimeBounds(0, 5);
+
+        problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
+            MocoInitialBounds(-5, 5));
+        problem.setStateInfo("/slider/position/speed", {-10, 10});
+
+        auto* effort = problem.addGoal<MocoControlGoal>();
+        effort->setName("effort");
+        effort->setWeight(0.001);
+
+        auto* constr = problem.addPathConstraint<MocoOutputBoundConstraint>();
+        //Sine lower;
+        PiecewiseLinearFunction lower;
+        lower.addPoint(0, -1);
+        lower.addPoint(6, 5);
+        constr->setLowerBound(lower);
+        //constr->setEqualityWithLower(true);
+        constr->setOutputPath("/body|position");
+
+        auto& solver = study.template initSolver<TestType>();
+        solver.set_num_mesh_intervals(30);
+        MocoSolution solution = study.solve();
+    }
+}
+
 TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "",
         MocoCasADiSolver, MocoTropterSolver) {
     using SimTK::Pi;

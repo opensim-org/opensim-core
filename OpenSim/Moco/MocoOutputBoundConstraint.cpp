@@ -123,6 +123,32 @@ void MocoOutputBoundConstraint::initializeOnModelImpl(
         setNumEquations((int)m_hasLower + (int)m_hasUpper);
     }
 
+    // TODO: setConstraintInfo() is not really intended for use here.
+    MocoConstraintInfo info;
+    std::vector<MocoBounds> bounds;
+    if (get_equality_with_lower()) {
+        bounds.emplace_back(0, 0);
+    } else {
+        // The lower and upper bounds on the path constraint must be
+        // constants, so we cannot use the lower and upper bound functions
+        // directly. Therefore, we use a pair of constraints where the
+        // lower/upper bound functions are part of the path constraint
+        // functions and the lower/upper bounds for the path constraints are
+        // -inf, 0, and/or inf.
+        // If a lower bound function is provided, we enforce
+        //      lower_bound_function <= control
+        // by creating the constraint
+        //      0 <= control - lower_bound_function <= inf
+        if (m_hasLower) { bounds.emplace_back(0, SimTK::Infinity); }
+        // If an upper bound function is provided, we enforce
+        //      control <= upper_bound_function
+        // by creating the constraint
+        //      -inf <= control - upper_bound_function <= 0
+        if (m_hasUpper) { bounds.emplace_back(-SimTK::Infinity, 0); }
+    }
+    info.setBounds(bounds);
+    const_cast<MocoOutputBoundConstraint*>(this)->setConstraintInfo(info);
+
     m_useCompositeOutputValue = false;
     // if there's a second output, initialize it
     if (get_second_output_path() != "") {
@@ -134,4 +160,147 @@ void MocoOutputBoundConstraint::initializeOnModelImpl(
                 "operation with a single Output, or provide a value to both "
                 "setOperation() and setSecondOutputPath()."));
     }
+}
+
+void MocoOutputBoundConstraint::initializeComposite() const {
+    if (get_operation() == "addition") {
+        m_operation = Addition;
+    } else if (get_operation() == "subtraction") {
+        m_operation = Subtraction;
+    } else if (get_operation() == "multiplication") {
+        m_operation = Multiplication;
+    } else if (get_operation() == "division") {
+        m_operation = Division;
+    } else if (get_operation() == "") {
+        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("A second Output path was "
+                "provided, but no operation was provided. Use setOperation() to"
+                "provide an operation"));
+    } else {
+        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Invalid operation: '{}', must "
+                "be 'addition', 'subtraction', 'multiplication', or 'division'.",
+                get_operation()));
+    }
+
+    std::string componentPath, outputName, channelName, alias;
+    AbstractInput::parseConnecteePath(get_second_output_path(), componentPath,
+                                      outputName, channelName, alias);
+    const auto& component = getModel().getComponent(componentPath);
+    const auto* abstractOutput = &component.getOutput(outputName);
+
+    if (dynamic_cast<const Output<double>*>(abstractOutput)) {
+        OPENSIM_THROW_IF_FRMOBJ(getOutputIndex() != -1, Exception,
+                "An Output index was provided, but the second Output is of type"
+                " 'double'.")
+        OPENSIM_THROW_IF_FRMOBJ(m_data_type != Type_double, Exception,
+                "Output types do not match. The second Output is of type double"
+                " but the first is of type {}.", getDataTypeString(m_data_type));
+    } else if (dynamic_cast<const Output<SimTK::Vec3>*>(abstractOutput)) {
+        OPENSIM_THROW_IF_FRMOBJ(m_data_type != Type_Vec3, Exception,
+                "Output types do not match. The second Output is of type "
+                "SimTK::Vec3 but the first is of type {}.",
+                getDataTypeString(m_data_type));
+    } else if (dynamic_cast<const Output<SimTK::SpatialVec>*>(abstractOutput)) {
+        OPENSIM_THROW_IF_FRMOBJ(m_data_type != Type_SpatialVec, Exception,
+                "Output types do not match. The second Output is of type "
+                "SimTK::SpatialVec but the first is of type {}.",
+                getDataTypeString(m_data_type));
+        OPENSIM_THROW_IF_FRMOBJ(m_boundVectorNorm &&
+                (m_operation == Multiplication || m_operation == Division),
+                Exception, "Multiplication and division operations are not "
+                "supported with Output type SimTK::SpatialVec without an index.")
+    } else {
+        OPENSIM_THROW_FRMOBJ(Exception,
+                "Data type of specified second Output not supported.");
+    }
+    m_second_output.reset(abstractOutput);
+
+    if (getDependsOnStage() < m_second_output->getDependsOnStage()) {
+        m_dependsOnStage = m_second_output->getDependsOnStage();
+    }
+}
+
+void MocoOutputBoundConstraint::calcPathConstraintErrorsImpl(
+        const SimTK::State& state, SimTK::Vector& errors) const {
+    int iconstr = 0;
+    SimTK::Vector time(1);
+    time[0] = state.getTime();
+    double output_value = setValueToExponent(calcOutputValue(state));
+    if (m_hasLower) {
+        errors[iconstr++] = output_value - get_lower_bound().calcValue(time);
+    }
+    if (m_hasUpper) {
+        errors[iconstr++] = output_value - get_upper_bound().calcValue(time);
+    }
+}
+
+double MocoOutputBoundConstraint::calcOutputValue(const SimTK::State& state) const {
+    if (m_useCompositeOutputValue) {
+        return calcCompositeOutputValue(state);
+    }
+    return calcSingleOutputValue(state);
+}
+
+double MocoOutputBoundConstraint::calcSingleOutputValue(const SimTK::State& state) const {
+    getModel().getSystem().realize(state, m_output->getDependsOnStage());
+
+    double value = 0;
+    if (m_data_type == Type_double) {
+        value = static_cast<const Output<double>*>(m_output.get())
+                        ->getValue(state);
+    } else if (m_data_type == Type_Vec3) {
+        if (m_boundVectorNorm) {
+            value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
+                        ->getValue(state).norm();
+        } else {
+            value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
+                        ->getValue(state)[m_index1];
+        }
+    } else if (m_data_type == Type_SpatialVec) {
+        if (m_boundVectorNorm) {
+            value = static_cast<const Output<SimTK::SpatialVec>*>(m_output.get())
+                        ->getValue(state).norm();
+        } else {
+            value = static_cast<const Output<SimTK::SpatialVec>*>(m_output.get())
+                        ->getValue(state)[m_index1][m_index2];
+        }
+    }
+
+    return value;
+}
+
+double MocoOutputBoundConstraint::calcCompositeOutputValue(const SimTK::State& state) const {
+    getModel().getSystem().realize(state, getDependsOnStage());
+
+    double value = 0;
+    if (m_data_type == Type_double) {
+        double value1 = getOutput<double>().getValue(state);
+        double value2 = getSecondOutput<double>().getValue(state);
+        value = applyOperation(value1, value2);
+    } else if (m_data_type == Type_Vec3) {
+        if (m_boundVectorNorm) {
+            const SimTK::Vec3& value1 = getOutput<SimTK::Vec3>().getValue(state);
+            const SimTK::Vec3& value2 = getSecondOutput<SimTK::Vec3>().getValue(state);
+            value = applyOperation(value1, value2);
+        } else {
+            double value1 = getOutput<SimTK::Vec3>().getValue(state)[m_index1];
+            double value2 = getSecondOutput<SimTK::Vec3>().getValue(state)[m_index1];
+            value = applyOperation(value1, value2);
+        }
+    } else if (m_data_type == Type_SpatialVec) {
+        if (m_boundVectorNorm) {
+            const SimTK::SpatialVec& value1 = getOutput<SimTK::SpatialVec>()
+                                              .getValue(state);
+            const SimTK::SpatialVec& value2 = getSecondOutput<SimTK::SpatialVec>()
+                                              .getValue(state);
+            value = applyOperation(value1, value2);
+        } else {
+            double value1 = getOutput<SimTK::SpatialVec>().getValue(state)
+                            [m_index1][m_index2];
+            double value2 = getSecondOutput<SimTK::SpatialVec>().getValue(state)
+                            [m_index1][m_index2];
+            value = applyOperation(value1, value2);
+        }
+    }
+
+    return value;
 }

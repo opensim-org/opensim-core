@@ -10,7 +10,7 @@
 
 namespace OpenSim {
 
-class MocoOutputBoundConstraint : MocoPathConstraint {
+class MocoOutputBoundConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             MocoOutputBoundConstraint, MocoPathConstraint);
 
