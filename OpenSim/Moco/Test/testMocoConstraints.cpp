@@ -1665,7 +1665,7 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
 
 TEMPLATE_TEST_CASE("MocoOutputBoundConstraint", "",
         MocoCasADiSolver, MocoTropterSolver) {
-    SECTION("Single Output equality bound: changing velocty") {
+    SECTION("Two outputs with equality bound") {
         MocoSolution solutionControl;
         MocoStudy study;
         auto& problem = study.updProblem();
@@ -1681,10 +1681,6 @@ TEMPLATE_TEST_CASE("MocoOutputBoundConstraint", "",
         problem.setStateInfo("/slider2/position/value", MocoBounds(-5, 5),
             MocoInitialBounds(-1, 1));
         problem.setStateInfo("/slider2/position/speed", {-1, 1});
-
-        auto* effort = problem.addGoal<MocoControlGoal>();
-        effort->setName("effort");
-        effort->setWeight(-1);
 
         auto* constr = problem.addPathConstraint<MocoOutputBoundConstraint>();
         Sine lower;
@@ -1709,6 +1705,53 @@ TEMPLATE_TEST_CASE("MocoOutputBoundConstraint", "",
             time[0] = times[i];
             REQUIRE_THAT(diff, Catch::Matchers::WithinAbs(
                                lower.calcValue(time), 1e-3));
+        }
+    }
+
+    SECTION("One output with upper bound") {
+        MocoSolution solutionControl;
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        auto model = ModelFactory::createSlidingPointMass();
+        model.initSystem();
+
+        problem.setModelAsCopy(model);
+        problem.setTimeBounds(0, 3);
+
+        problem.setStateInfo("/slider/position/value", MocoBounds(-3, 3));
+        problem.setStateInfo("/slider/position/speed", {-3, 3});
+
+        auto* constr = problem.addPathConstraint<MocoOutputBoundConstraint>();
+        PiecewiseLinearFunction upper;
+        upper.addPoint(0, 0);
+        upper.addPoint(1, -1);
+        upper.addPoint(2, -0.4);
+        upper.addPoint(3, 1);
+        constr->setUpperBound(upper);
+        constr->setOutputIndex(0);
+        constr->setOutputPath("/body|position");
+
+        // want to minimize position magnitude, but can't reach 0 due to constraint
+        auto* goal = problem.addGoal<MocoOutputGoal>();
+        goal->setOutputPath("/body|position");
+        goal->setExponent(2);
+
+        auto* effort = problem.addGoal<MocoControlGoal>();
+        effort->setWeight(0.1);
+        effort->setName("effort");
+
+        auto& solver = study.template initSolver<TestType>();
+        solver.set_num_mesh_intervals(30);
+        MocoSolution solution = study.solve();
+
+        auto solutionPosition = solution.getState("/slider/position/value");
+        auto times = solution.getTime();
+        SimTK::Vector time(1);
+        for (int i = 0; i < solution.getNumTimes(); ++i) {
+            double position = static_cast<SimTK::Vec3>(solutionPosition[i])[0];
+            time[0] = times[i];
+            double bound = upper.calcValue(time);
+            CHECK(Catch::Approx(position).margin(1e-4) <= bound);
         }
     }
 }

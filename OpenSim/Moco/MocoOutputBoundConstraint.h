@@ -1,12 +1,25 @@
 #ifndef OPENSIM_MOCOOUTPUTBOUNDCONSTRAINT_H
 #define OPENSIM_MOCOOUTPUTBOUNDCONSTRAINT_H
-//
-// Created by Allison John on 7/24/24.
-// Make an output bound constraint that can bound one or an arithmetic
-// combination of two outputs between two functions
-//
+/* -------------------------------------------------------------------------- *
+* OpenSim: MocoOutputBoundConstraint.h                                        *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
+ *                                                                            *
+ * Author(s): Allison John                                                    *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
 
 #include "MocoConstraint.h"
+#include "osimMocoDLL.h"
 
 namespace OpenSim {
 
@@ -68,7 +81,7 @@ public:
     bool hasUpperBound() const { return !getProperty_upper_bound().empty(); }
     const Function& getUpperBound() const { return get_upper_bound(); }
 
-    /// Should the control be constrained to be equal to the lower bound (rather
+    /// Should the output be constrained to be equal to the lower bound (rather
     /// than an inequality constraint)? In this case, the upper bound must be
     /// unspecified.
     void setEqualityWithLower(bool v) { set_equality_with_lower(v); }
@@ -81,22 +94,6 @@ protected:
 
     void calcPathConstraintErrorsImpl(
             const SimTK::State&, SimTK::Vector&) const override;
-    // these could be private
-    /** Calculate the Output value for the provided SimTK::State. Do not
-    call this function until 'initializeOnModelBase()' has been called. */
-    double calcOutputValue(const SimTK::State&) const;
-
-    /** Raise a value to the exponent set via 'setExponent()'. Do not call this
-    function until 'initializeOnModelBase()' has been called. */
-    double setValueToExponent(double value) const {
-        return m_power_function(value);
-    }
-
-    /** Get the "depends-on stage", or the SimTK::Stage we need to realize the
-    system to in order to calculate the Output value. */
-    const SimTK::Stage& getDependsOnStage() const {
-        return m_dependsOnStage;
-    }
 
 private:
     OpenSim_DECLARE_PROPERTY(output_path, std::string,
@@ -122,7 +119,7 @@ private:
     OpenSim_DECLARE_OPTIONAL_PROPERTY(
             upper_bound, Function, "Upper bound as a function of time.");
     OpenSim_DECLARE_PROPERTY(equality_with_lower, bool,
-            "The control must be equal to the lower bound; "
+            "The output must be equal to the lower bound; "
             "upper must be unspecified (default: false).");
 
     void constructProperties();
@@ -135,6 +132,22 @@ private:
     double calcSingleOutputValue(const SimTK::State&) const;
     /** Calculate the two Output values and apply the operation. */
     double calcCompositeOutputValue(const SimTK::State&) const;
+
+    /** Calculate the Output value for the provided SimTK::State. Do not
+    call this function until 'initializeOnModelBase()' has been called. */
+    double calcOutputValue(const SimTK::State&) const;
+
+    /** Raise a value to the exponent set via 'setExponent()'. Do not call this
+    function until 'initializeOnModelBase()' has been called. */
+    double setValueToExponent(double value) const {
+        return m_power_function(value);
+    }
+
+    /** Get the "depends-on stage", or the SimTK::Stage we need to realize the
+    system to in order to calculate the Output value. */
+    const SimTK::Stage& getDependsOnStage() const {
+        return m_dependsOnStage;
+    }
 
     /** Get a reference to the Output for this path constraint. */
     template <typename T>

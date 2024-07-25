@@ -1,6 +1,20 @@
-//
-// Created by Allison John on 7/24/24.
-//
+/* -------------------------------------------------------------------------- *
+* OpenSim: MocoOutputBoundConstraint.h                                        *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
+ *                                                                            *
+ * Author(s): Allison John                                                    *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
 
 #include "MocoOutputBoundConstraint.h"
 #include "MocoProblemInfo.h"
@@ -136,14 +150,14 @@ void MocoOutputBoundConstraint::initializeOnModelImpl(
         // functions and the lower/upper bounds for the path constraints are
         // -inf, 0, and/or inf.
         // If a lower bound function is provided, we enforce
-        //      lower_bound_function <= control
+        //      lower_bound_function <= output
         // by creating the constraint
-        //      0 <= control - lower_bound_function <= inf
+        //      0 <= output - lower_bound_function <= inf
         if (m_hasLower) { bounds.emplace_back(0, SimTK::Infinity); }
         // If an upper bound function is provided, we enforce
-        //      control <= upper_bound_function
+        //      output <= upper_bound_function
         // by creating the constraint
-        //      -inf <= control - upper_bound_function <= 0
+        //      -inf <= output - upper_bound_function <= 0
         if (m_hasUpper) { bounds.emplace_back(-SimTK::Infinity, 0); }
     }
     info.setBounds(bounds);
