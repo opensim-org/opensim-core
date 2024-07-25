@@ -3,6 +3,9 @@ Moco Change Log
 
 1.3.1
 -----
+- 2024-07-25: Added `MocoStateBoundConstraint` to enable bounding state variables by one or two
+              `Function`s, similar to `MocoControlBoundConstraint`.
+
 - 2024-07-22: Added support for `MocoOutputGoal`s that are composed of two `Output`s. This applies
               to all types of Output goals (`MocoInitialOutputGoal`, `MocoFinalOutputGoal`, etc.). 
               The two `Output`s can be combined by addition, subtraction, multiplication, or division.
