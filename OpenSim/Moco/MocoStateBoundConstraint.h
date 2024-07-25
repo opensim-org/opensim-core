@@ -106,4 +106,4 @@ private:
 
 } // namespace OpenSim
 
-#endif //OPENSIM_MOCOSTATEBOUNDCONSTRAINT_H
+#endif // OPENSIM_MOCOSTATEBOUNDCONSTRAINT_H

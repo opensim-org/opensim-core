@@ -1647,7 +1647,7 @@ TEMPLATE_TEST_CASE("MocoStateBoundConstraint", "",
             double speed = solutionSpeed[i];
             time[0] = times[i];
             double max = upperBound.calcValue(time);
-            CHECK(speed < max + 1e-6);
+            CHECK(speed <= max);
         }
     }
 
@@ -1662,16 +1662,6 @@ TEMPLATE_TEST_CASE("MocoStateBoundConstraint", "",
         auto* constr = problem.addPathConstraint<MocoStateBoundConstraint>();
         constr->addStatePath("/slider/position/speed");
         constr->setEqualityWithLower(true);
-        /*PiecewiseLinearFunction lowerBound;
-        lowerBound.addPoint(0, 0);
-        lowerBound.addPoint(1, 1);
-        lowerBound.addPoint(2, 0);
-        lowerBound.addPoint(3, -1);
-        lowerBound.addPoint(4, 0);
-        lowerBound.addPoint(5, 1);
-        lowerBound.addPoint(6, 0);
-        lowerBound.addPoint(7, -1);
-        lowerBound.addPoint(8, 0);*/
         Sine lowerBound;
         constr->setLowerBound(lowerBound);
         // can't have upper bound when set to equal lower bound
@@ -1723,9 +1713,9 @@ TEMPLATE_TEST_CASE("MocoStateBoundConstraint", "",
             double speed = solutionSpeed[i];
             time[0] = times[i];
             double max = upperBound.calcValue(time);
-            CHECK(speed < max + 1e-6);
+            CHECK(speed <= max);
             double min = lowerBound.calcValue(time);
-            CHECK(speed > min - 1e-6);
+            CHECK(speed >= min);
         }
     }
 
