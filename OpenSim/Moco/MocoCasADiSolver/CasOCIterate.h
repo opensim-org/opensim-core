@@ -25,8 +25,10 @@ namespace CasOC {
 /// This enum describes the different types of optimization variables, and
 /// are the keys for the Variables map.
 enum Var {
-    initial_time,
-    final_time,
+    // initial_time,
+    // final_time,
+    // Time Variables.
+    times,
     /// Differential variables.
     states,
     /// Algebraic variables.
@@ -54,7 +56,6 @@ using VariablesMX = Variables<casadi::MX>;
 /// This struct is used to obtain initial guesses.
 struct Iterate {
     VariablesDM variables;
-    casadi::DM times;
     std::vector<std::string> state_names;
     std::vector<std::string> control_names;
     std::vector<std::string> multiplier_names;

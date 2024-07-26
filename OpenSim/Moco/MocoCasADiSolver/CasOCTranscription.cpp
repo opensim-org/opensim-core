@@ -60,9 +60,6 @@ public:
         if (m_callbackInterval > 0 && evalCount % m_callbackInterval == 0) {
             Iterate iterate = m_problem.createIterate<Iterate>();
             iterate.variables = m_transcription.expandVariables(args.at(0));
-            iterate.times =
-                    m_transcription.createTimes(iterate.variables[initial_time],
-                            iterate.variables[final_time]);
             iterate.iteration = evalCount;
             m_problem.intermediateCallbackWithIterate(iterate);
         }
@@ -82,6 +79,7 @@ private:
 
 void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         int numDefectsPerMeshInterval,
+        int numPointsPerMeshInterval,
         const casadi::DM& pointsForInterpControls) {
     // Set the grid.
     // -------------
@@ -94,6 +92,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numMeshIntervals = m_numMeshPoints - 1;
     m_numMeshInteriorPoints = m_numGridPoints - m_numMeshPoints;
     m_numDefectsPerMeshInterval = numDefectsPerMeshInterval;
+    m_numPointsPerMeshInterval = numPointsPerMeshInterval;
     m_pointsForInterpControls = pointsForInterpControls;
     m_numMultibodyResiduals = m_problem.isDynamicsModeImplicit()
                              ? m_problem.getNumMultibodyDynamicsEquations()
@@ -123,8 +122,9 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
 
     // Create variables.
     // -----------------
-    m_scaledVars[initial_time] = MX::sym("initial_time");
-    m_scaledVars[final_time] = MX::sym("final_time");
+    // m_scaledVars[initial_time] = MX::sym("initial_time");
+    // m_scaledVars[final_time] = MX::sym("final_time");
+    m_scaledVars[times] = MX::sym("times", 1, m_numGridPoints);
     m_scaledVars[states] =
             MX::sym("states", m_problem.getNumStates(), m_numGridPoints);
     m_scaledVars[controls] =
@@ -189,11 +189,21 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     initializeScalingDM(m_shift);
     initializeScalingDM(m_scale);
 
-    setVariableBounds(initial_time, 0, 0, m_problem.getTimeInitialBounds());
-    setVariableBounds(final_time, 0, 0, m_problem.getTimeFinalBounds());
+    // setVariableBounds(initial_time, 0, 0, m_problem.getTimeInitialBounds());
+    // setVariableBounds(final_time, 0, 0, m_problem.getTimeFinalBounds());
 
-    setVariableScaling(initial_time, 0, 0, m_problem.getTimeInitialBounds());
-    setVariableScaling(final_time, 0, 0, m_problem.getTimeFinalBounds());
+    // setVariableScaling(initial_time, 0, 0, m_problem.getTimeInitialBounds());
+    // setVariableScaling(final_time, 0, 0, m_problem.getTimeFinalBounds());
+
+    setVariableBounds(times, 0, 0, m_problem.getTimeInitialBounds());
+    setVariableBounds(times, 0, -1, m_problem.getTimeFinalBounds());
+    setVariableBounds(times, 0, Slice(1, m_numGridPoints - 1),
+            {m_problem.getTimeInitialBounds().lower,
+             m_problem.getTimeFinalBounds().upper});
+
+    setVariableScaling(times, Slice(), Slice(),
+            {m_problem.getTimeInitialBounds().lower,
+             m_problem.getTimeFinalBounds().upper});
 
     {
         const auto& stateInfos = m_problem.getStateInfos();
@@ -274,14 +284,14 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     }
     m_unscaledVars = unscaleVariables(m_scaledVars);
 
-    m_duration = m_unscaledVars[final_time] - m_unscaledVars[initial_time];
-    m_times = createTimes(
-            m_unscaledVars[initial_time], m_unscaledVars[final_time]);
+    m_duration = m_unscaledVars[times](-1) - m_unscaledVars[times](0);
+    // m_times = createTimes(
+    //         m_unscaledVars[initial_time], m_unscaledVars[final_time]);
     m_paramsTrajGrid =
             MX::repmat(m_unscaledVars[parameters], 1, m_numGridPoints);
     m_paramsTrajMesh =
             MX::repmat(m_unscaledVars[parameters], 1, m_numMeshPoints);
-    m_paramsTrajMeshInterior = MX::repmat(m_unscaledVars[parameters], 1, 
+    m_paramsTrajMeshInterior = MX::repmat(m_unscaledVars[parameters], 1,
         m_numMeshInteriorPoints);
     m_paramsTrajPathCon =
             MX::repmat(m_unscaledVars[parameters], 1,
@@ -305,6 +315,12 @@ void Transcription::transcribe() {
 
     // TODO: Does creating all this memory have efficiency implications
     //        in CasADi?
+    // Initialize memory for time constraints.
+    // ---------------------------------------
+    m_constraints.times = MX(casadi::Sparsity::dense(1, m_numGridPoints-2));
+    m_constraintsLowerBounds.times = DM::zeros(1, m_numGridPoints-2);
+    m_constraintsUpperBounds.times = DM::zeros(1, m_numGridPoints-2);
+
     // Initialize memory for state derivatives and defects.
     // ----------------------------------------------------
     m_xdot = MX(NS, m_numGridPoints);
@@ -345,6 +361,16 @@ void Transcription::transcribe() {
             kcBounds.lower, numKinematicConstraints, m_numMeshPoints);
     m_constraintsUpperBounds.kinematic = casadi::DM::repmat(
             kcBounds.upper, numKinematicConstraints, m_numMeshPoints);
+
+    // time
+    // ----
+    const auto& initialTime = m_unscaledVars[times](0);
+    const auto& finalTime = m_unscaledVars[times](-1);
+    for (int itime = 1; itime < m_numGridPoints - 1; ++itime) {
+        m_constraints.times(0, itime - 1) =
+                (finalTime - initialTime) * m_grid(itime) + initialTime
+                - m_unscaledVars[times](itime);
+    }
 
     // qdot
     // ----
@@ -537,17 +563,17 @@ void Transcription::setObjectiveAndEndpointConstraints() {
 
         MXVector costOut;
         info.endpoint_function->call(
-                {m_unscaledVars[initial_time],
+                {m_unscaledVars[times](0),
                         m_unscaledVars[states](Slice(), 0),
                         m_unscaledVars[controls](Slice(), 0),
                         m_unscaledVars[multipliers](Slice(), 0),
                         m_unscaledVars[derivatives](Slice(), 0),
-                        m_unscaledVars[final_time],
+                        m_unscaledVars[times](-1),
                         m_unscaledVars[states](Slice(), -1),
                         m_unscaledVars[controls](Slice(), -1),
                         m_unscaledVars[multipliers](Slice(), -1),
                         m_unscaledVars[derivatives](Slice(), -1),
-                        m_unscaledVars[parameters], 
+                        m_unscaledVars[parameters],
                         integral},
                 costOut);
         m_objectiveTerms(iterm++) = casadi::MX::sum1(costOut.at(0));
@@ -611,12 +637,12 @@ void Transcription::setObjectiveAndEndpointConstraints() {
 
         MXVector endpointOut;
         info.endpoint_function->call(
-                {m_unscaledVars[initial_time],
+                {m_unscaledVars[times](0),
                         m_unscaledVars[states](Slice(), 0),
                         m_unscaledVars[controls](Slice(), 0),
                         m_unscaledVars[multipliers](Slice(), 0),
                         m_unscaledVars[derivatives](Slice(), 0),
-                        m_unscaledVars[final_time],
+                        m_unscaledVars[times](-1),
                         m_unscaledVars[states](Slice(), -1),
                         m_unscaledVars[controls](Slice(), -1),
                         m_unscaledVars[multipliers](Slice(), -1),
@@ -638,9 +664,9 @@ Solution Transcription::solve(const Iterate& guessOrig) {
 
     // Resample the guess.
     // -------------------
-    const auto guessTimes = createTimes(guessOrig.variables.at(initial_time),
-            guessOrig.variables.at(final_time));
-    auto guess = guessOrig.resample(guessTimes);
+    // const auto guessTimes = createTimes(guessOrig.variables.at(initial_time),
+    //         guessOrig.variables.at(final_time));
+    auto guess = guessOrig.resample(guessOrig.variables.at(times));
 
     // Adjust guesses for the slack variables to ensure they are the correct
     // length (i.e. slacks.size2() == m_numPointsIgnoringConstraints).
@@ -746,9 +772,6 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     casadi::DMVector objectiveOut;
     objectiveFunc.call(finalVarsDMV, objectiveOut);
     solution.objective_breakdown = expandObjectiveTerms(objectiveOut[0]);
-
-    solution.times = createTimes(
-            solution.variables[initial_time], solution.variables[final_time]);
     solution.stats = nlpFunc.stats();
 
     // Print breakdown of objective.
@@ -876,13 +899,13 @@ void Transcription::printConstraintValues(const Iterate& it,
     const auto& vars = it.variables;
     const auto& lower = m_lowerBounds;
     const auto& upper = m_upperBounds;
-    print_bounds("State bounds", it.state_names, it.times, vars.at(states),
-            lower.at(states), upper.at(states));
-    print_bounds("Control bounds", it.control_names, it.times, vars.at(controls),
-            lower.at(controls), upper.at(controls));
-    print_bounds("Multiplier bounds", it.multiplier_names, it.times,
+    print_bounds("State bounds", it.state_names, vars.at(times),
+            vars.at(states), lower.at(states), upper.at(states));
+    print_bounds("Control bounds", it.control_names, vars.at(times),
+            vars.at(controls), lower.at(controls), upper.at(controls));
+    print_bounds("Multiplier bounds", it.multiplier_names, vars.at(times),
             vars.at(multipliers), lower.at(multipliers), upper.at(multipliers));
-    print_bounds("Derivative bounds", it.derivative_names, it.times,
+    print_bounds("Derivative bounds", it.derivative_names, vars.at(times),
             vars.at(derivatives), lower.at(derivatives), upper.at(derivatives));
     // Need to update times for the slacks:
     // print_bounds("Slack bounds", it.slack_names, it.times, vars.at(slacks),
@@ -969,16 +992,16 @@ void Transcription::printConstraintValues(const Iterate& it,
         }
     };
     casadi::DM timeValues(2, 1);
-    timeValues(0) = vars.at(initial_time);
-    timeValues(1) = vars.at(final_time);
+    timeValues(0) = vars.at(times)(0);
+    timeValues(1) = vars.at(times)(-1);
 
     casadi::DM timeLower(2, 1);
-    timeLower(0) = lower.at(initial_time);
-    timeLower(1) = lower.at(final_time);
+    timeLower(0) = lower.at(times)(0);
+    timeLower(1) = lower.at(times)(-1);
 
     casadi::DM timeUpper(2, 1);
-    timeUpper(0) = upper.at(initial_time);
-    timeUpper(1) = upper.at(final_time);
+    timeUpper(0) = upper.at(times)(0);
+    timeUpper(1) = upper.at(times)(-1);
 
     printParameterBounds(
             "Time bounds", time_names, timeValues, timeLower, timeUpper);
@@ -1017,7 +1040,7 @@ void Transcription::printConstraintValues(const Iterate& it,
         int argmax;
         double max = calcL1Norm(row, argmax);
         const double L1 = max;
-        const double time_of_max = it.times(argmax).scalar();
+        const double time_of_max = vars.at(times)(argmax).scalar();
 
         ss << std::setw(maxNameLength) << it.state_names[istate] << spacer
                << std::setprecision(2) << std::scientific << std::setw(9) << L2
@@ -1047,7 +1070,7 @@ void Transcription::printConstraintValues(const Iterate& it,
                 int argmax;
                 double max = calcL1Norm(row, argmax);
                 const double L1 = max;
-                const double time_of_max = it.times(argmax).scalar();
+                const double time_of_max = vars.at(times)(argmax).scalar();
 
                 std::string label = kinconNames.at(ikc);
                 ss << std::setfill('0') << std::setw(2) << ikc << ":"
@@ -1068,7 +1091,7 @@ void Transcription::printConstraintValues(const Iterate& it,
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
             ss << std::setfill('0') << std::setw(3) << imesh << "  ";
             ss.fill(' ');
-            ss << std::setw(9) << it.times(imesh).scalar() << "  ";
+            ss << std::setw(9) << vars.at(times)(imesh).scalar() << "  ";
             for (int ikc = 0; ikc < (int)kinconNames.size(); ++ikc) {
                 const auto& value = constraints.kinematic(ikc, imesh).scalar();
                 ss << std::setprecision(2) << std::scientific
@@ -1108,7 +1131,7 @@ void Transcription::printConstraintValues(const Iterate& it,
                     int argmax;
                     double max = calcL1Norm(row, argmax);
                     const double L1 = max;
-                    const double time_of_max = it.times(argmax).scalar();
+                    const double time_of_max = vars.at(times)(argmax).scalar();
 
                     std::string label = fmt::format("{}_{}", pc.name, ieq);
                     ss << std::setfill('0') << std::setw(2) << ipc << ":"
@@ -1130,7 +1153,7 @@ void Transcription::printConstraintValues(const Iterate& it,
         for (int ipcp = 0; ipcp < m_numPathConstraintPoints; ++ipcp) {
             ss << std::setfill('0') << std::setw(3) << ipcp << "  ";
             ss.fill(' ');
-            ss << std::setw(9) << it.times(ipcp).scalar() << "  ";
+            ss << std::setw(9) << vars.at(times)(ipcp).scalar() << "  ";
             for (int ipc = 0; ipc < (int)pathconNames.size(); ++ipc) {
                 const auto& value = constraints.path[ipc](ipcp).scalar();
                 ss << std::setprecision(2) << std::scientific
@@ -1193,8 +1216,8 @@ Iterate Transcription::createInitialGuessFromBounds() const {
         setToMidpoint(kv.second, m_lowerBounds.at(kv.first),
                 m_upperBounds.at(kv.first));
     }
-    casGuess.times = createTimes(
-            casGuess.variables[initial_time], casGuess.variables[final_time]);
+    casGuess.variables[times] = createTimes(
+            casGuess.variables[times]);
     return casGuess;
 }
 
@@ -1221,8 +1244,9 @@ Iterate Transcription::createRandomIterateWithinBounds(
         setRandom(kv.second, m_lowerBounds.at(kv.first),
                 m_upperBounds.at(kv.first));
     }
-    casIterate.times = createTimes(casIterate.variables[initial_time],
-            casIterate.variables[final_time]);
+    casIterate.variables[times] = createTimes(
+            casIterate.variables[times](0),
+            casIterate.variables[times](1));
     return casIterate;
 }
 
@@ -1236,12 +1260,13 @@ casadi::MXVector Transcription::evalOnTrajectory(
     // Assemble input.
     // Add 1 for time input and 1 for parameters input.
     MXVector mxIn(inputs.size() + 2);
-    mxIn[0] = m_times(timeIndices);
+    // mxIn[0] = m_times(timeIndices);
+    mxIn[0] = m_unscaledVars.at(times)(timeIndices);
     for (int i = 0; i < (int)inputs.size(); ++i) {
         if (inputs[i] == multibody_states) {
             const auto NQ = m_problem.getNumCoordinates();
             const auto NU = m_problem.getNumSpeeds();
-            mxIn[i + 1] = 
+            mxIn[i + 1] =
                 m_unscaledVars.at(states)(Slice(0, NQ + NU), timeIndices);
         } else if (inputs[i] == slacks) {
             mxIn[i + 1] = m_unscaledVars.at(inputs[i]);

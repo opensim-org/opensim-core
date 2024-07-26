@@ -73,7 +73,7 @@ casadi::Sparsity calcJacobianSparsityWithPerturbation(const VectorDM& x0s,
     return combinedSparsity;
 }
 
-casadi::Sparsity Function::get_jac_sparsity(casadi_int oind, casadi_int iind, 
+casadi::Sparsity Function::get_jac_sparsity(casadi_int oind, casadi_int iind,
         bool symmetric) const {
     using casadi::DM;
     using casadi::Slice;
@@ -193,11 +193,11 @@ casadi::Sparsity Endpoint::get_sparsity_in(casadi_int i) {
         return casadi::Sparsity(0, 0);
     }
 }
-casadi::DM Endpoint::getSubsetPoint(const VariablesDM& fullPoint, 
+casadi::DM Endpoint::getSubsetPoint(const VariablesDM& fullPoint,
         casadi_int i) const {
     using casadi::Slice;
     if (i == 0) {
-        return fullPoint.at(initial_time);
+        return fullPoint.at(times)(0);
     } else if (i == 1) {
         return fullPoint.at(states)(Slice(), 0);
     } else if (i == 2) {
@@ -207,7 +207,7 @@ casadi::DM Endpoint::getSubsetPoint(const VariablesDM& fullPoint,
     } else if (i == 4) {
         return fullPoint.at(derivatives)(Slice(), 0);
     } else if (i == 5) {
-        return fullPoint.at(final_time);
+        return fullPoint.at(times)(-1);
     } else if (i == 6) {
         return fullPoint.at(states)(Slice(), -1);
     } else if (i == 7) {
@@ -317,7 +317,7 @@ casadi::DM VelocityCorrection::getSubsetPoint(
     const int NMBS = m_casProblem->getNumStates() -
                      m_casProblem->getNumAuxiliaryStates();
     if (i == 0) {
-        return fullPoint.at(initial_time);
+        return fullPoint.at(times)(0);
     } else if (i == 1) {
         return fullPoint.at(states)(Slice(0, NMBS), itime);
     } else if (i == 2) {
@@ -370,7 +370,7 @@ VectorDM MultibodySystemImplicit<CalcKCErrors>::eval(
         out[i] = casadi::DM(sparsity_out(i));
     }
 
-    Problem::MultibodySystemImplicitOutput output{out[0], out[1], out[2], 
+    Problem::MultibodySystemImplicitOutput output{out[0], out[1], out[2],
             out[3]};
     m_casProblem->calcMultibodySystemImplicit(input, CalcKCErrors, output);
     return out;

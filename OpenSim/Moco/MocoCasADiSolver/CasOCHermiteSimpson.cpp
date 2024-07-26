@@ -50,8 +50,9 @@ DM HermiteSimpson::createMeshIndicesImpl() const {
     return indices;
 }
 
-void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
-        const casadi::MX& xdot, casadi::MX& defects) const {
+void HermiteSimpson::calcDefectsImpl(const casadi::MX& times,
+        const casadi::MX& x, const casadi::MX& xdot,
+        casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
     const int NS = m_problem.getNumStates();
@@ -67,7 +68,7 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
         time_mid = 2 * imesh + 1;
         time_ip1 = 2 * imesh + 2;
 
-        const auto h = m_times(time_ip1) - m_times(time_i);
+        const auto h = times(time_ip1) - times(time_i);
         const auto x_i = x(Slice(), time_i);
         const auto x_mid = x(Slice(), time_mid);
         const auto x_ip1 = x(Slice(), time_ip1);

@@ -79,11 +79,11 @@ MocoTrajectory MocoCasADiSolver::createGuess(const std::string& type) const {
     auto casProblem = createCasOCProblem();
     auto casSolver = createCasOCSolver(*casProblem);
 
-    std::vector<int> inputControlIndexes = 
+    std::vector<int> inputControlIndexes =
             getProblemRep().getInputControlIndexes();
     if (type == "bounds") {
         return convertToMocoTrajectory(
-                casSolver->createInitialGuessFromBounds(), 
+                casSolver->createInitialGuessFromBounds(),
                 inputControlIndexes);
     } else if (type == "random") {
         return convertToMocoTrajectory(
@@ -368,7 +368,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         log_info("Number of threads: {}", casProblem->getJarSize());
     }
 
-    std::vector<int> inputControlIndexes = 
+    std::vector<int> inputControlIndexes =
             getProblemRep().getInputControlIndexes();
     MocoTrajectory guess = getGuess();
     CasOC::Iterate casGuess;
@@ -383,19 +383,19 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     Logger::Level origLoggerLevel = Logger::getLevel();
     Logger::setLevel(Logger::Level::Warn);
     CasOC::Solution casSolution;
-    try {
-        casSolution = casSolver->solve(casGuess);
-    } catch(const Exception& ex) {
-        OPENSIM_THROW_FRMOBJ(Exception,
-            fmt::format("MocoCasADiSolver failed internally with message: {}",
-                ex.getMessage()));
-    } catch(const casadi::CasadiException& ex) {
-        OPENSIM_THROW_FRMOBJ(Exception,
-            fmt::format("MocoCasADiSolver failed internally with message: {}",
-                ex.what()));
-    } catch (...) {
-        OPENSIM_THROW_FRMOBJ(Exception, "MocoCasADiSolver failed internally.");
-    }
+    // try {
+    casSolution = casSolver->solve(casGuess);
+    // } catch(const Exception& ex) {
+    //     OPENSIM_THROW_FRMOBJ(Exception,
+    //         fmt::format("MocoCasADiSolver failed internally with message: {}",
+    //             ex.getMessage()));
+    // } catch(const casadi::CasadiException& ex) {
+    //     OPENSIM_THROW_FRMOBJ(Exception,
+    //         fmt::format("MocoCasADiSolver failed internally with message: {}",
+    //             ex.what()));
+    // } catch (...) {
+    //     OPENSIM_THROW_FRMOBJ(Exception, "MocoCasADiSolver failed internally.");
+    // }
     OpenSim::Logger::setLevel(origLoggerLevel);
 
     MocoSolution mocoSolution = convertToMocoTrajectory<MocoSolution>(

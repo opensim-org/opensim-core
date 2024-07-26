@@ -35,15 +35,15 @@ public:
                 "Enforcing kinematic constraint derivatives "
                 "not supported with trapezoidal transcription.");
         createVariablesAndSetBounds(m_solver.getMesh(),
-                m_problem.getNumStates());
+                m_problem.getNumStates(), 2);
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
 
-    void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
-            casadi::MX& defects) const override;
+    void calcDefectsImpl(const casadi::MX& times, const casadi::MX& x,
+            const casadi::MX& xdot, casadi::MX& defects) const override;
 };
 
 } // namespace CasOC

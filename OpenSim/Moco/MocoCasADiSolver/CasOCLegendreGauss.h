@@ -105,14 +105,15 @@ public:
         grid(numGridPoints - 1) = mesh[numMeshIntervals];
         createVariablesAndSetBounds(grid,
                 (m_degree + 1) * m_problem.getNumStates(),
+                m_degree + 2,
                 pointsForInterpControls);
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
-    void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
-            casadi::MX& defects) const override;
+    void calcDefectsImpl(const casadi::MX& times, const casadi::MX& x,
+            const casadi::MX& xdot, casadi::MX& defects) const override;
     void calcInterpolatingControlsImpl(const casadi::MX& controls,
             casadi::MX& interpControls) const override;
 

@@ -73,29 +73,30 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt,
     CasOC::Iterate casIt;
     CasOC::VariablesDM& casVars = casIt.variables;
     using CasOC::Var;
-    casVars[Var::initial_time] = mocoIt.getInitialTime();
-    casVars[Var::final_time] = mocoIt.getFinalTime();
+    // casVars[Var::initial_time] = mocoIt.getInitialTime();
+    // casVars[Var::final_time] = mocoIt.getFinalTime();
+    casVars[Var::times] = convertToCasADiDMTranspose(mocoIt.getTime());
     casVars[Var::states] =
             convertToCasADiDMTranspose(mocoIt.getStatesTrajectory());
 
-    casadi::DM controls = 
+    casadi::DM controls =
             convertToCasADiDMTranspose(mocoIt.getControlsTrajectory());
-    casadi::DM input_controls = 
+    casadi::DM input_controls =
             convertToCasADiDMTranspose(mocoIt.getInputControlsTrajectory());
     std::vector<std::string> controlNames = mocoIt.getControlNames();
     std::vector<std::string> inputControlNames = mocoIt.getInputControlNames();
     std::vector<std::string> casControlNames;
-    int numTotalControls = static_cast<int>(controls.rows()) + 
+    int numTotalControls = static_cast<int>(controls.rows()) +
             static_cast<int>(input_controls.rows());
     casadi::DM casControls(numTotalControls, controls.columns());
-    
+
     int ic = 0;
     int iic = 0;
     std::sort(inputControlIndexes.begin(), inputControlIndexes.end());
     int numInputControls = static_cast<int>(inputControlIndexes.size());
     for (int i = 0; i < numTotalControls; ++i) {
         if (iic < numInputControls && inputControlIndexes[iic] == i) {
-            casControls(i, casadi::Slice()) = 
+            casControls(i, casadi::Slice()) =
                     input_controls(iic, casadi::Slice());
             casControlNames.push_back(inputControlNames[iic]);
             ++iic;
@@ -119,7 +120,6 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt,
     }
     casVars[Var::parameters] =
             convertToCasADiDMTranspose(mocoIt.getParameters());
-    casIt.times = convertToCasADiDMTranspose(mocoIt.getTime());
     casIt.state_names = mocoIt.getStateNames();
     casIt.control_names = casControlNames;
     casIt.multiplier_names = mocoIt.getMultiplierNames();
@@ -155,7 +155,7 @@ inline SimTK::Matrix convertToSimTKMatrix(const casadi::DM& casMatrix) {
 }
 
 template <typename TOut = MocoTrajectory>
-TOut convertToMocoTrajectory(const CasOC::Iterate& casIt, 
+TOut convertToMocoTrajectory(const CasOC::Iterate& casIt,
         std::vector<int> inputControlIndexes = {}) {
     SimTK::Matrix simtkStates;
     const auto& casVars = casIt.variables;
@@ -172,7 +172,7 @@ TOut convertToMocoTrajectory(const CasOC::Iterate& casIt,
     std::vector<std::string> controlNames;
     std::vector<std::string> inputControlNames;
     if (numTotalControls) {
-        SimTK::Matrix allControls = 
+        SimTK::Matrix allControls =
                 convertToSimTKMatrix(casVars.at(Var::controls));
         simtkControls.resize(allControls.nrow(), numControls);
         simtkInputControls.resize(allControls.nrow(), numInputControls);
@@ -215,12 +215,12 @@ TOut convertToMocoTrajectory(const CasOC::Iterate& casIt,
         const auto paramsValue = casVars.at(Var::parameters);
         simtkParameters = convertToSimTKVector<SimTK::RowVector>(paramsValue);
     }
-    SimTK::Vector simtkTimes = convertToSimTKVector(casIt.times);
+    SimTK::Vector simtkTimes = convertToSimTKVector(casVars.at(Var::times));
 
-    TOut mocoTraj(simtkTimes, casIt.state_names, controlNames, 
-            inputControlNames, casIt.multiplier_names, derivativeNames, 
-            casIt.parameter_names, simtkStates, simtkControls, 
-            simtkInputControls, simtkMultipliers, simtkDerivatives, 
+    TOut mocoTraj(simtkTimes, casIt.state_names, controlNames,
+            inputControlNames, casIt.multiplier_names, derivativeNames,
+            casIt.parameter_names, simtkStates, simtkControls,
+            simtkInputControls, simtkMultipliers, simtkDerivatives,
             simtkParameters);
 
     // Append slack variables. MocoTrajectory requires the slack variables to be
@@ -610,8 +610,8 @@ private:
             for (int ic = 0; ic < getNumControls(); ++ic) {
                 simtkControls[ic] = *(controls.ptr() + ic);
             }
-            // Updating the Inputs to InputControllers via the 
-            // ControlDistributor does not mark the model controls cache as 
+            // Updating the Inputs to InputControllers via the
+            // ControlDistributor does not mark the model controls cache as
             // invalid, so we must do it manually here.
             model.markControlsAsInvalid(simtkState);
         }
