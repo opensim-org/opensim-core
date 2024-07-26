@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
-* OpenSim: MocoOutputBoundConstraint.h                                        *
+* OpenSim: MocoOutputBoundConstraint.cpp                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
