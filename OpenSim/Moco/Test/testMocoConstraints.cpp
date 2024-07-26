@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <simbody/internal/Constraint.h>
+
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/ModelOperators.h>
@@ -29,8 +30,8 @@
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 
-#include <catch2/catch_all.hpp>
 #include "Testing.h"
+#include <catch2/catch_all.hpp>
 
 using Catch::Matchers::ContainsSubstring;
 using Catch::Approx;
@@ -1612,6 +1613,162 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
         study.initSolver<TestType>();
         study.solve();
         constr->addControlPath("/tau0");
+        study.solve();
+    }
+}
+
+
+TEMPLATE_TEST_CASE("MocoStateBoundConstraint", "",
+        MocoCasADiSolver, MocoTropterSolver) {
+    SECTION("Upper bounded speed") {
+        MocoSolution solutionControl;
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        problem.setModelAsCopy(ModelFactory::createSlidingPointMass());
+        problem.setTimeBounds(0, 3);
+        problem.setStateInfo("/slider/position/speed", {-10, 10}, 0);
+        auto* effort = problem.addGoal<MocoControlGoal>();
+        effort->setName("effort");
+        effort->setWeight(0.001);
+        // decreasing speed constraint
+        auto* constr = problem.addPathConstraint<MocoStateBoundConstraint>();
+        constr->addStatePath("/slider/position/speed");
+        PiecewiseLinearFunction upperBound;
+        upperBound.addPoint(0, 2);
+        upperBound.addPoint(3, -3);
+        constr->setUpperBound(upperBound);
+        study.initSolver<TestType>();
+        MocoSolution solution = study.solve();
+        // ensure that at every state, the speed is under the bound
+        auto solutionSpeed = solution.getState("/slider/position/speed");
+        auto times = solution.getTime();
+        SimTK::Vector time(1);
+        for (int i = 0; i < solution.getNumTimes(); ++i) {
+            double speed = solutionSpeed[i];
+            time[0] = times[i];
+            double max = upperBound.calcValue(time);
+            CHECK(Catch::Approx(speed).margin(1e-8) <= max);
+        }
+    }
+
+    SECTION("Equality bounded speed") {
+        MocoSolution solutionControl;
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        problem.setModelAsCopy(ModelFactory::createSlidingPointMass());
+        problem.setTimeBounds(0, 10);
+        problem.setStateInfo("/slider/position/speed", {-10, 10}, 0);
+        // add constraint of changing speed
+        auto* constr = problem.addPathConstraint<MocoStateBoundConstraint>();
+        constr->addStatePath("/slider/position/speed");
+        constr->setEqualityWithLower(true);
+        Sine lowerBound;
+        constr->setLowerBound(lowerBound);
+        // can't have upper bound when set to equal lower bound
+        constr->setUpperBound(Constant(1));
+        CHECK_THROWS(study.initSolver<TestType>());
+        // undo upper bound and solve
+        constr->clearUpperBound();
+        study.initSolver<TestType>();
+        MocoSolution solution = study.solve();
+        // check that the speed is always close to the lower bound
+        auto solutionSpeed = solution.getState("/slider/position/speed");
+        auto times = solution.getTime();
+        SimTK::Vector time(1);
+        for (int i = 0; i < solution.getNumTimes(); ++i) {
+            double speed = solutionSpeed[i];
+            time[0] = times[i];
+            double max = lowerBound.calcValue(time);
+            REQUIRE_THAT(speed, Catch::Matchers::WithinAbs(max, 1e-4));
+        }
+    }
+
+    SECTION("Double bounded speed") {
+        MocoSolution solutionControl;
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        problem.setModelAsCopy(ModelFactory::createSlidingPointMass());
+        problem.setTimeBounds(0, 4);
+        problem.setStateInfo("/slider/position/speed", {-10, 10});
+        // add speed constraint with changing upper and lower bounds
+        auto* constr = problem.addPathConstraint<MocoStateBoundConstraint>();
+        constr->addStatePath("/slider/position/speed");
+        PiecewiseLinearFunction lowerBound;
+        lowerBound.addPoint(0, -2);
+        lowerBound.addPoint(2, 1);
+        lowerBound.addPoint(4, -3);
+        constr->setLowerBound(lowerBound);
+        PiecewiseLinearFunction upperBound;
+        upperBound.addPoint(0, -1);
+        upperBound.addPoint(2, 4);
+        upperBound.addPoint(4, 0);
+        constr->setUpperBound(upperBound);
+        study.initSolver<TestType>();
+        MocoSolution solution = study.solve();
+        // check that the speed is between the bounds
+        auto solutionSpeed = solution.getState("/slider/position/speed");
+        auto times = solution.getTime();
+        SimTK::Vector time(1);
+        for (int i = 0; i < solution.getNumTimes(); ++i) {
+            double speed = solutionSpeed[i];
+            time[0] = times[i];
+            double max = upperBound.calcValue(time);
+            CHECK(Catch::Approx(speed).margin(1e-8) <= max);
+            double min = lowerBound.calcValue(time);
+            CHECK(Catch::Approx(speed).margin(1e-8) >= min);
+        }
+    }
+
+    SECTION("Time range of bounds function is too small.") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        problem.setModelAsCopy(ModelFactory::createPendulum());
+        problem.setTimeBounds({-31, 0}, {1, 50});
+        problem.addGoal<MocoControlGoal>();
+        GCVSpline violateLower;
+        violateLower.setDegree(5);
+        violateLower.addPoint(-30.9999, 0);
+        violateLower.addPoint(0, 0);
+        violateLower.addPoint(0.5, 0);
+        violateLower.addPoint(0.7, 0);
+        violateLower.addPoint(0.8, 0);
+        violateLower.addPoint(0.9, 0);
+        violateLower.addPoint(50, 0.319);
+        auto* constr = problem.addPathConstraint<MocoStateBoundConstraint>();
+        constr->addStatePath("/jointset/j0/q0/value");
+        constr->setLowerBound(violateLower);
+        CHECK_THROWS_WITH(study.solve(),
+                ContainsSubstring("must be less than or equal to the minimum"));
+
+        constr->clearLowerBound();
+        GCVSpline violateUpper;
+        violateUpper.setDegree(5);
+        violateUpper.addPoint(-31, 0);
+        violateUpper.addPoint(0, 0);
+        violateUpper.addPoint(0.5, 0);
+        violateUpper.addPoint(0.7, 0);
+        violateUpper.addPoint(0.8, 0);
+        violateUpper.addPoint(0.9, 0);
+        violateUpper.addPoint(49.99999, .0319);
+        constr->setUpperBound(violateUpper);
+        CHECK_THROWS_WITH(study.solve(),
+                ContainsSubstring(
+                    "must be greater than or equal to the maximum"));
+    }
+
+    SECTION("Can omit both bounds.") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        problem.setModelAsCopy(ModelFactory::createPendulum());
+        problem.setTimeBounds(0, 1);
+        problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
+        problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0);
+        problem.setControlInfo("/tau0", {-5, 5});
+        problem.addGoal<MocoControlGoal>();
+        auto* constr = problem.addPathConstraint<MocoStateBoundConstraint>();
+        study.initSolver<TestType>();
+        study.solve();
+        constr->addStatePath("/jointset/j0/q0/speed");
         study.solve();
     }
 }

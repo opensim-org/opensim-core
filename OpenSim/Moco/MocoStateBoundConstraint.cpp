@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoControlBoundConstraint.cpp                               *
+ * OpenSim: MocoStateBoundConstraint.cpp                                      *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2019 Stanford University and the Authors                     *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Allison John                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -16,62 +16,43 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoControlBoundConstraint.h"
+#include "MocoStateBoundConstraint.h"
 
 #include "MocoProblemInfo.h"
-#include "Components/ControlDistributor.h"
 
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 
 using namespace OpenSim;
 
-MocoControlBoundConstraint::MocoControlBoundConstraint() {
-    constructProperties();
-}
-
-void MocoControlBoundConstraint::constructProperties() {
-    constructProperty_control_paths();
+void MocoStateBoundConstraint::constructProperties() {
+    constructProperty_state_paths();
     constructProperty_lower_bound();
     constructProperty_upper_bound();
     constructProperty_equality_with_lower(false);
 }
 
-void MocoControlBoundConstraint::initializeOnModelImpl(
+void MocoStateBoundConstraint::initializeOnModelImpl(
         const Model& model, const MocoProblemInfo& problemInfo) const {
-
-    // Check that the model controls are in the correct order.
-    checkOrderSystemControls(model);
-    auto systemControlIndexMap = createSystemControlIndexMap(model);
-
-    // Get the Input control index map.
-    auto inputControlIndexMap = getInputControlIndexMap();
+    // Get the state variable index map.
+    auto systemStateIndexMap = createSystemYIndexMap(model);
 
     m_hasLower = !getProperty_lower_bound().empty();
     m_hasUpper = !getProperty_upper_bound().empty();
-    if (!getProperty_control_paths().empty() && !m_hasLower && !m_hasUpper) {
-        log_warn("In MocoControlBoundConstraint '{}', control paths are "
+    if (!getProperty_state_paths().empty() && !m_hasLower && !m_hasUpper) {
+        log_warn("In MocoStateBoundConstraint '{}', state paths are "
                  "specified but no bounds are provided.", getName());
     }
-    // Make sure there are no nonexistent controls.
+    // Make sure there are no nonexistent states.
     if (m_hasLower || m_hasUpper) {
-        for (int i = 0; i < getProperty_control_paths().size(); ++i) {
-            const auto& thisName = get_control_paths(i);
-            bool foundControl = systemControlIndexMap.count(thisName);
-            bool foundInputControl = inputControlIndexMap.count(thisName);
-            OPENSIM_THROW_IF_FRMOBJ(!foundControl && !foundInputControl,
+        for (int i = 0; i < getProperty_state_paths().size(); ++i) {
+            const auto& thisName = get_state_paths(i);
+            OPENSIM_THROW_IF_FRMOBJ(!systemStateIndexMap.count(thisName),
                     Exception,
-                    "Control path '{}' was provided but no such "
-                    "control or Input control exists in the model.",
+                    "State path '{}' was provided but no such "
+                    "state exists in the model.",
                     thisName)
-
-            if (foundControl) {
-                m_controlIndices.push_back(systemControlIndexMap[thisName]);
-                m_isInputControl.push_back(false);
-            } else {
-                m_controlIndices.push_back(inputControlIndexMap.at(thisName));
-                m_isInputControl.push_back(true);
-            }   
+            m_stateIndices.push_back(systemStateIndexMap[thisName]);
         }
     }
 
@@ -100,19 +81,19 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
     if (m_hasLower) checkTimeRange(get_lower_bound());
     if (m_hasUpper) checkTimeRange(get_upper_bound());
 
-    int numEqsPerControl;
+    int numEqsPerState;
     if (get_equality_with_lower()) {
-        numEqsPerControl = 1;
+        numEqsPerState = 1;
     } else {
-        numEqsPerControl = (int)m_hasLower + (int)m_hasUpper;
+        numEqsPerState = (int)m_hasLower + (int)m_hasUpper;
     }
 
-    setNumEquations(numEqsPerControl * (int)m_controlIndices.size());
+    setNumEquations(numEqsPerState * (int)m_stateIndices.size());
 
     // TODO: setConstraintInfo() is not really intended for use here.
     MocoConstraintInfo info;
     std::vector<MocoBounds> bounds;
-    for (int i = 0; i < (int)m_controlIndices.size(); ++i) {
+    for (int i = 0; i < (int)m_stateIndices.size(); ++i) {
         if (get_equality_with_lower()) {
             bounds.emplace_back(0, 0);
         } else {
@@ -123,41 +104,39 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
             // functions and the lower/upper bounds for the path constraints are
             // -inf, 0, and/or inf.
             // If a lower bound function is provided, we enforce
-            //      lower_bound_function <= control
+            //      lower_bound_function <= state
             // by creating the constraint
-            //      0 <= control - lower_bound_function <= inf
+            //      0 <= state - lower_bound_function <= inf
             if (m_hasLower) { bounds.emplace_back(0, SimTK::Infinity); }
             // If an upper bound function is provided, we enforce
-            //      control <= upper_bound_function
+            //      state <= upper_bound_function
             // by creating the constraint
-            //      -inf <= control - upper_bound_function <= 0
+            //      -inf <= state - upper_bound_function <= 0
             if (m_hasUpper) { bounds.emplace_back(-SimTK::Infinity, 0); }
         }
     }
     info.setBounds(bounds);
-    const_cast<MocoControlBoundConstraint*>(this)->setConstraintInfo(info);
+    const_cast<MocoStateBoundConstraint*>(this)->setConstraintInfo(info);
 }
 
-void MocoControlBoundConstraint::calcPathConstraintErrorsImpl(
+void MocoStateBoundConstraint::calcPathConstraintErrorsImpl(
         const SimTK::State& state, SimTK::Vector& errors) const {
-    getModel().realizeVelocity(state);
-    const auto& controls = getModel().getControls(state);
-    const auto& input_controls = getInputControls(state);
+    const auto& svValues = state.getY();
     int iconstr = 0;
-    int icontrol = 0;
+    int istate = 0;
     SimTK::Vector time(1);
-    for (const auto& controlIndex : m_controlIndices) {
-        const auto& control = m_isInputControl[icontrol] ?
-                input_controls[controlIndex] : controls[controlIndex];
+    for (const auto& stateIndex : m_stateIndices) {
+        const auto& stateValue = svValues[stateIndex];
         time[0] = state.getTime();
         // These if-statements work correctly for either value of
         // equality_with_lower.
         if (m_hasLower) {
-            errors[iconstr++] = control - get_lower_bound().calcValue(time);
+            errors[iconstr++] = stateValue - get_lower_bound().calcValue(time);
         }
         if (m_hasUpper) {
-            errors[iconstr++] = control - get_upper_bound().calcValue(time);
+            errors[iconstr++] = stateValue - get_upper_bound().calcValue(time);
         }
-        ++icontrol;
+        ++istate;
     }
 }
+
