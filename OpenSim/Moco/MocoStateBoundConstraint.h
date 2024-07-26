@@ -1,11 +1,11 @@
 #ifndef OPENSIM_MOCOSTATEBOUNDCONSTRAINT_H
 #define OPENSIM_MOCOSTATEBOUNDCONSTRAINT_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoStateBoundConstraint.cpp                               *
+ * OpenSim: MocoStateBoundConstraint.h                                        *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia, Allsion John                                *
+ * Author(s): Allison John                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
