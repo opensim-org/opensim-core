@@ -111,6 +111,8 @@ set(MOCO_SOURCES
         MocoScaleFactor.cpp
         MocoOutputBoundConstraint.cpp
         MocoOutputBoundConstraint.h
+        MocoStateBoundConstraint.cpp
+        MocoStateBoundConstraint.h
         )
 if(OPENSIM_WITH_CASADI)
     list(APPEND MOCO_SOURCES
