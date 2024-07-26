@@ -977,7 +977,55 @@ TEMPLATE_TEST_CASE("MocoOutputGoal", "", MocoCasADiSolver,
     }
 }
 
-TEMPLATE_TEST_CASE("MocoOutputGoal with second output", "", MocoCasADiSolver,
+TEMPLATE_TEST_CASE("MocoOutputConstraint with two outputs", "", MocoCasADiSolver,
+        MocoTropterSolver) {
+    double bound = 2.0;
+    MocoSolution solutionControl;
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    auto model = createDoubleSlidingMassModel();
+    model->initSystem();
+    problem.setModelAsCopy(*model);
+    problem.setTimeBounds(0, 3);
+
+    // one slider must move, the other doesn't need to
+    problem.setStateInfo("/slider/position/value", MocoBounds(-50, 50),
+       MocoInitialBounds(-5,-5), MocoFinalBounds(5, 5.5));
+    problem.setStateInfo("/slider2/position/value", MocoBounds(-50, 50),
+       MocoInitialBounds(-50, 50), MocoFinalBounds(-50, 50));
+    problem.setStateInfo("/slider/position/speed", {-10, 10}, {-10, 10}, {-10, 10});
+    problem.setStateInfo("/slider2/position/speed", {-10, 10}, {-10, 10}, {-10, 10});
+    problem.setControlInfo("/actuator", {-100, 100});
+    problem.setControlInfo("/actuator2", {-100, 100});
+
+    // add constraint: second mass stays near moving mass
+    auto* pathCon = problem.template addPathConstraint<MocoOutputConstraint>();
+    pathCon->setName("velocities_goal");
+    pathCon->setOutputPath("/body|position");
+    pathCon->setSecondOutputPath("/body2|position");
+    pathCon->setOperation("subtraction");
+    pathCon->setOutputIndex(0);
+    pathCon->setExponent(2);
+    pathCon->updConstraintInfo().setBounds({{0, bound}});
+
+    auto* effort = problem.template addGoal<MocoControlGoal>();
+    effort->setName("effort");
+    effort->setWeight(0.001);
+
+    auto& solver = study.template initSolver<TestType>();
+    solver.set_num_mesh_intervals(30);
+    MocoSolution solution = study.solve();
+
+    auto solutionPositionMoving = solution.getState("/slider/position/value");
+    auto solutionPositionFollowing = solution.getState("/slider2/position/value");
+    for (int i = 0; i < solution.getNumTimes(); ++i) {
+        double diff = (static_cast<SimTK::Vec3>(solutionPositionMoving[i])[0]
+            - static_cast<SimTK::Vec3>(solutionPositionFollowing[i])[0]);
+        CHECK(diff * diff <= bound);
+    }
+}
+
+TEMPLATE_TEST_CASE("MocoOutputGoal with two outputs", "", MocoCasADiSolver,
         MocoTropterSolver) {
     MocoSolution solutionControl;
 
@@ -1089,7 +1137,7 @@ TEMPLATE_TEST_CASE("MocoOutputGoal with second output", "", MocoCasADiSolver,
         goal->setOutputIndex(3);
         goal->setExponent(2);
 
-        auto* effort = problem.addGoal<MocoControlGoal>();
+        auto* effort = problem.template addGoal<MocoControlGoal>();
         effort->setName("effort");
         effort->setWeight(0.001);
 
@@ -1137,11 +1185,11 @@ TEMPLATE_TEST_CASE("MocoOutputGoal with second output", "", MocoCasADiSolver,
         goal->setOperation("subtraction");
         goal->setExponent(2);
 
-        auto* effort = problem.addGoal<MocoControlGoal>();
+        auto* effort = problem.template addGoal<MocoControlGoal>();
         effort->setName("effort");
         effort->setWeight(0.001);
 
-        auto& solver = study.initCasADiSolver();
+        auto& solver = study.template initSolver<TestType>();
         solver.set_num_mesh_intervals(30);
         MocoSolution solution = study.solve();
 
