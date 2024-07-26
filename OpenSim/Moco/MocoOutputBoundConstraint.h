@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- *
 * OpenSim: MocoOutputBoundConstraint.h                                        *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2019 Stanford University and the Authors                     *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Allison John                                                    *
  *                                                                            *
@@ -33,7 +33,7 @@ in a constraint by supplying a second output path and an operation to combine
 them. The operations are addition, subtraction, multiplication, and division.
 The first Output is always on the left hand side of the operation and the second
 Output on the right hand side. The two Outputs can be different quantities, but
-they must be the same type.
+they must have the same type.
 
 Outputs of type double, SimTK::Vec3, and SimTK::SpatialVec are supported.
 When using SimTK::Vec3 or SimTK::SpatialVec types, 'setOutputIndex()'
@@ -61,14 +61,14 @@ class OSIMMOCO_API MocoOutputBoundConstraint : public MocoPathConstraint {
 public:
     MocoOutputBoundConstraint() { constructProperties(); }
 
-    /** Set the absolute path to the output in the model to be used in this path
+    /** Set the absolute path to the Output in the model to be used in this path
     constraint. The format is "/path/to/component|output_name". */
     void setOutputPath(std::string path) { set_output_path(std::move(path)); }
     const std::string& getOutputPath() const { return get_output_path(); }
 
     /** Set the absolute path to the optional second Output in the model to be
     used in this path constraint. The format is "/path/to/component|output_name".
-    This Output should have the same  type as the first Output. If providing a
+    This Output should have the same type as the first Output. If providing a
     second Output, the user must also provide an operation via `setOperation()`.
     */
     void setSecondOutputPath(std::string path) {
@@ -112,7 +112,7 @@ public:
     bool hasUpperBound() const { return !getProperty_upper_bound().empty(); }
     const Function& getUpperBound() const { return get_upper_bound(); }
 
-    /// Should the output be constrained to be equal to the lower bound (rather
+    /// Should the Output be constrained to be equal to the lower bound (rather
     /// than an inequality constraint)? In this case, the upper bound must be
     /// unspecified.
     void setEqualityWithLower(bool v) { set_equality_with_lower(v); }
@@ -122,7 +122,6 @@ public:
 protected:
     void initializeOnModelImpl(
             const Model&, const MocoProblemInfo&) const override;
-
     void calcPathConstraintErrorsImpl(
             const SimTK::State&, SimTK::Vector&) const override;
 

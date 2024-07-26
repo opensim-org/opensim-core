@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------- *
 * OpenSim: MocoOutputBoundConstraint.cpp                                      *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2019 Stanford University and the Authors                     *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Allison John                                                    *
  *                                                                            *
@@ -255,27 +255,22 @@ double MocoOutputBoundConstraint::calcOutputValue(const SimTK::State& state) con
 }
 
 double MocoOutputBoundConstraint::calcSingleOutputValue(const SimTK::State& state) const {
-    getModel().getSystem().realize(state, m_output->getDependsOnStage());
+    getModel().getSystem().realize(state, getDependsOnStage());
 
     double value = 0;
     if (m_data_type == Type_double) {
-        value = static_cast<const Output<double>*>(m_output.get())
-                        ->getValue(state);
+        value = getOutput<double>().getValue(state);
     } else if (m_data_type == Type_Vec3) {
         if (m_boundVectorNorm) {
-            value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
-                        ->getValue(state).norm();
+            value = getOutput<SimTK::Vec3>().getValue(state).norm();
         } else {
-            value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
-                        ->getValue(state)[m_index1];
+            value = getOutput<SimTK::Vec3>().getValue(state)[m_index1];
         }
     } else if (m_data_type == Type_SpatialVec) {
         if (m_boundVectorNorm) {
-            value = static_cast<const Output<SimTK::SpatialVec>*>(m_output.get())
-                        ->getValue(state).norm();
+            value = getOutput<SimTK::SpatialVec>().getValue(state).norm();
         } else {
-            value = static_cast<const Output<SimTK::SpatialVec>*>(m_output.get())
-                        ->getValue(state)[m_index1][m_index2];
+            value = getOutput<SimTK::SpatialVec>().getValue(state)[m_index1][m_index2];
         }
     }
 
@@ -308,10 +303,10 @@ double MocoOutputBoundConstraint::calcCompositeOutputValue(const SimTK::State& s
                                               .getValue(state);
             value = applyOperation(value1, value2);
         } else {
-            double value1 = getOutput<SimTK::SpatialVec>().getValue(state)
-                            [m_index1][m_index2];
-            double value2 = getSecondOutput<SimTK::SpatialVec>().getValue(state)
-                            [m_index1][m_index2];
+            double value1 = getOutput<SimTK::SpatialVec>()
+                            .getValue(state)[m_index1][m_index2];
+            double value2 = getSecondOutput<SimTK::SpatialVec>()
+                            .getValue(state)[m_index1][m_index2];
             value = applyOperation(value1, value2);
         }
     }
