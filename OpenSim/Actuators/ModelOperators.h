@@ -22,6 +22,7 @@
 
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
+#include <OpenSim/Common/GCVSplineSet.h>
 
 namespace OpenSim {
 
@@ -205,6 +206,45 @@ public:
         model.finalizeConnections();
         ModelFactory::replacePathsWithFunctionBasedPaths(model,
                 Set<FunctionBasedPath>(get_paths_file()));
+    }
+};
+
+class OSIMACTUATORS_API ModOpConstrainCoordinatesFromFile : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+        ModOpConstrainCoordinatesFromFile, ModelOperator);
+    OpenSim_DECLARE_PROPERTY(table, TimeSeriesTable,
+            "Table with data on coordinate from provided file.");
+    OpenSim_DECLARE_PROPERTY(joint_names, std::vector<std::string>,
+            "joint names e.g. 'j0'.");
+    OpenSim_DECLARE_PROPERTY(coordinate_paths, std::vector<std::string>,
+            "coordinate paths e.g. '/jointset/j0/q0/value'.");
+
+public:
+    ModOpConstrainCoordinatesFromFile() { constructProperty_table(""); }
+    ModOpConstrainCoordinatesFromFile(std::string filePath,
+                                      std::vector<std::string>& jointNames,
+                                      std::vector<std::string>& coordinatePaths)
+            : ModOpConstrainCoordinatesFromFile() {
+        TimeSeriesTable tempTable(filePath);
+        set_table(tempTable);
+        set_joint_names(jointNames);
+        set_coordinate_paths(coordinatePaths);
+    }
+    void operate(Model& model, const std::string&) const override {
+        // what is the difference between initsystem, finalize?
+        model.finalizeConnections();
+        model.initSystem();
+        // create gvc spline functions from table of coords
+        GCVSplineSet statesSpline(get_table());
+        // prescribe the joints
+        for (int i = 0; i < get_joint_names().size(); ++i) {
+            if !get_table().hasColumn(get_coordinate_paths[i]) {
+                OPENSIM_THROW("coordinate is not in the given motion file");
+            }
+            Coordinate& q = model.updJointSet().get(j_names[i]). updCoordinate();
+            q.setPrescribedFunction(statesSpline.get(j_paths[i]));
+            q.setDefaultIsPrescribed(true);
+        }
     }
 };
 
