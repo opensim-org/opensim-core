@@ -112,7 +112,7 @@ int main() {
     // ==================
     MocoSolution solution = study.solve();
 
-    //solution.write("sliding_mass_solution.sto");
+    solution.write("sliding_mass_solution.sto");
 
     // Visualize.
     // ==========

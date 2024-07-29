@@ -370,7 +370,7 @@ private:
 
             // Time constraints.
             for (int i = 0; i < N; ++i) {
-                if (igrid != 0 && igrid != m_numGridPoints - 1) {
+                if (igrid + i != 0 && igrid + i != m_numGridPoints - 1) {
                     copyColumn(constraints.times, itime++);
                 }
             }
@@ -481,7 +481,7 @@ private:
 
             // Time constraints.
             for (int i = 0; i < N; ++i) {
-                if (igrid != 0 && igrid != m_numGridPoints - 1) {
+                if (igrid + i != 0 && igrid + i != m_numGridPoints - 1) {
                     copyColumn(out.times, itime++);
                 }
             }
