@@ -664,9 +664,8 @@ Solution Transcription::solve(const Iterate& guessOrig) {
 
     // Resample the guess.
     // -------------------
-    // const auto guessTimes = createTimes(guessOrig.variables.at(initial_time),
-    //         guessOrig.variables.at(final_time));
-    auto guess = guessOrig.resample(guessOrig.variables.at(times));
+    const auto guessTimes = createTimes(guessOrig.variables.at(times));
+    auto guess = guessOrig.resample(guessTimes);
 
     // Adjust guesses for the slack variables to ensure they are the correct
     // length (i.e. slacks.size2() == m_numPointsIgnoringConstraints).
@@ -1245,8 +1244,7 @@ Iterate Transcription::createRandomIterateWithinBounds(
                 m_upperBounds.at(kv.first));
     }
     casIterate.variables[times] = createTimes(
-            casIterate.variables[times](0),
-            casIterate.variables[times](1));
+            casIterate.variables[times]);
     return casIterate;
 }
 
