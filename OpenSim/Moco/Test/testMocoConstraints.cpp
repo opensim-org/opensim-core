@@ -1876,30 +1876,6 @@ TEMPLATE_TEST_CASE("Multiple MocoPathConstraints", "", MocoCasADiSolver,
     study.solve();
 }
 
-/// creates a model with one sliding mass
-std::unique_ptr<Model> createSlidingMassModel() {
-    auto model = make_unique<Model>();
-    model->setName("sliding_mass");
-    model->set_gravity(SimTK::Vec3(0, 0, 0));
-    auto* body = new Body("body", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
-    model->addComponent(body);
-    body->attachGeometry(new Sphere(0.05));
-
-    // Allows translation along x.
-    auto* joint = new SliderJoint("slider", model->getGround(), *body);
-    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
-    coord.setName("position");
-    model->addJoint(joint);
-
-    auto* actu = new CoordinateActuator();
-    actu->setCoordinate(&coord);
-    actu->setName("actuator");
-    actu->setOptimalForce(1);
-    model->addComponent(actu);
-
-    return model;
-}
-
 TEMPLATE_TEST_CASE("ModOpPrescribeMotion", "", MocoCasADiSolver, MocoTropterSolver) {
     // make a problem witha moving ball to save the solution to a file
     MocoSolution solutionControl;
