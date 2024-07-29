@@ -100,7 +100,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numAuxiliaryResiduals = m_problem.getNumAuxiliaryResidualEquations();
 
     m_numConstraints =
-            m_numGridPoints-2 + // time constraints
+            m_numGridPoints - 2 + // time constraints
             m_numDefectsPerMeshInterval * m_numMeshIntervals +
             m_numMultibodyResiduals * m_numGridPoints +
             m_numAuxiliaryResiduals * m_numGridPoints +
@@ -123,8 +123,6 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
 
     // Create variables.
     // -----------------
-    // m_scaledVars[initial_time] = MX::sym("initial_time");
-    // m_scaledVars[final_time] = MX::sym("final_time");
     m_scaledVars[times] = MX::sym("times", 1, m_numGridPoints);
     m_scaledVars[states] =
             MX::sym("states", m_problem.getNumStates(), m_numGridPoints);
@@ -190,18 +188,13 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     initializeScalingDM(m_shift);
     initializeScalingDM(m_scale);
 
-    // setVariableBounds(initial_time, 0, 0, m_problem.getTimeInitialBounds());
-    // setVariableBounds(final_time, 0, 0, m_problem.getTimeFinalBounds());
-
-    // setVariableScaling(initial_time, 0, 0, m_problem.getTimeInitialBounds());
-    // setVariableScaling(final_time, 0, 0, m_problem.getTimeFinalBounds());
-
     setVariableBounds(times, 0, 0, m_problem.getTimeInitialBounds());
     setVariableBounds(times, 0, -1, m_problem.getTimeFinalBounds());
     setVariableBounds(times, 0, Slice(1, m_numGridPoints - 1),
             {m_problem.getTimeInitialBounds().lower,
              m_problem.getTimeFinalBounds().upper});
 
+    // TODO scale initial and final time by their individual bounds?
     setVariableScaling(times, Slice(), Slice(),
             {m_problem.getTimeInitialBounds().lower,
              m_problem.getTimeFinalBounds().upper});
@@ -286,8 +279,6 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_unscaledVars = unscaleVariables(m_scaledVars);
 
     m_duration = m_unscaledVars[times](-1) - m_unscaledVars[times](0);
-    // m_times = createTimes(
-    //         m_unscaledVars[initial_time], m_unscaledVars[final_time]);
     m_paramsTrajGrid =
             MX::repmat(m_unscaledVars[parameters], 1, m_numGridPoints);
     m_paramsTrajMesh =
