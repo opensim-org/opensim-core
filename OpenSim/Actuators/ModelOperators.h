@@ -210,11 +210,12 @@ public:
 };
 
 // only works on joints, must provide complete path to joint
+// the path name in the data must be the same as the path name in the model
 class OSIMACTUATORS_API ModOpPrescribedMotion : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             ModOpPrescribedMotion, ModelOperator);
-    OpenSim_DECLARE_LIST_PROPERTY(coordinate_paths, std::string,
-            "coordinate paths to joint values, e.g. '/jointset/j0/q0/value'.");
+    OpenSim_DECLARE_LIST_PROPERTY(coordinate_paths, std::string, "coordinate "
+            "paths to joint values, e.g. '/jointset/slider/position/value'.");
 
 public:
     ModOpPrescribedMotion(std::string filePath,
