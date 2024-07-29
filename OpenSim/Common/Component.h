@@ -1449,6 +1449,8 @@ public:
      */
     int getModelingOption(const SimTK::State& state,
         const std::string& path) const;
+    int getModelingOption(const SimTK::State& state,
+        const ComponentPath& path) const;
 
     /**
      * Based on a specified path, set the value of a modeling option.
@@ -1476,6 +1478,8 @@ public:
      * @see Component::resolveVariableNameAndOwner()
      */
     void setModelingOption(SimTK::State& state, const std::string& path,
+        int flag) const;
+    void setModelingOption(SimTK::State& state, const ComponentPath& path,
         int flag) const;
 
     /**
@@ -1550,7 +1554,7 @@ public:
      *  @endcode
      *
      * @param state   the State for which to get the value
-     * @param name    path to the state variable of interest
+     * @param path    path to the state variable of interest
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
@@ -1610,6 +1614,17 @@ public:
      */
     double getStateVariableDerivativeValue(const SimTK::State& state,
         const std::string& name) const;
+
+    /**
+     * Get the value of a state variable derivative computed by this Component.
+     *
+     * @param state   the State for which to get the derivative value
+     * @param path    path to the state variable of interest
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
+     */
+    double getStateVariableDerivativeValue(const SimTK::State& state,
+        const ComponentPath& path) const;
 
     /**
     * Based on a specified path, resolve the name of a state variable,
@@ -4088,10 +4103,10 @@ private:
         int                             maxOptionValue;
 
         // Index of the SimTK::Subsystem to which this modeling option belongs
-        SimTK::SubsystemIndex           ssIndex{-1};
+        SimTK::SubsystemIndex           ssIndex;
 
         // Index of this modeling option within its SimTK::Subsystem
-        SimTK::DiscreteVariableIndex    moIndex{-1};
+        SimTK::DiscreteVariableIndex    moIndex;
 
         // Allocate Flag
         // If true, the modeling option will be allocated normally in the
@@ -4177,10 +4192,10 @@ private:
 
         // Index of the SimTK::Subsystem to which this discrete variable
         // belongs
-        SimTK::SubsystemIndex           ssIndex{-1};
+        SimTK::SubsystemIndex           ssIndex;
 
         // Index of this discrete variable within its SimTK::Subsystem
-        SimTK::DiscreteVariableIndex    dvIndex{-1};
+        SimTK::DiscreteVariableIndex    dvIndex;
 
         // Allocate Flag
         // If true, the discrete variable will be allocated normally in the
@@ -4294,8 +4309,9 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
     // Advance _node to next valid (of type T) if needed
     // Similar logic to operator++ but applies _filter->isMatch()
     while (_node != nullptr && (dynamic_cast<const T*>(_node) == nullptr ||
-                                !_filter.isMatch(*_node) ||
-                                (_node == _root))){
+                                !(!_filter || _filter->isMatch(*_node)) ||
+                                (_node == _root))) {
+
         if (_node->_memberSubcomponents.size() > 0) {
             _node = _node->_memberSubcomponents[0].get();
         }

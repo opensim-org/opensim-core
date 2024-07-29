@@ -396,8 +396,16 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     CasOC::Solution casSolution;
     try {
         casSolution = casSolver->solve(casGuess);
+    } catch(const Exception& ex) {
+        OPENSIM_THROW_FRMOBJ(Exception,
+            fmt::format("MocoCasADiSolver failed internally with message: {}",
+                ex.getMessage()));
+    } catch(const casadi::CasadiException& ex) {
+        OPENSIM_THROW_FRMOBJ(Exception,
+            fmt::format("MocoCasADiSolver failed internally with message: {}",
+                ex.what()));
     } catch (...) {
-        OpenSim::Logger::setLevel(origLoggerLevel);
+        OPENSIM_THROW_FRMOBJ(Exception, "MocoCasADiSolver failed internally.");
     }
     OpenSim::Logger::setLevel(origLoggerLevel);
 

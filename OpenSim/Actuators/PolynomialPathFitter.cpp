@@ -220,7 +220,7 @@ void PolynomialPathFitter::run() {
             get_moment_arm_tolerance(), 1);
 
     // Stepwise regression
-    log_info("Use stepwise regression = {}", 
+    log_info("Use stepwise regression = {}",
             get_use_stepwise_regression() ? "true" : "false");
 
     // Output directory.
@@ -432,10 +432,10 @@ void PolynomialPathFitter::run() {
     log_info("");
     log_info("Printing the sampled path lengths to '{}'...",
             pathLengthsSampledFileName);
-    STOFileAdapter::write(pathLengths, pathLengthsSampledFileName);
+    STOFileAdapter::write(pathLengthsSampled, pathLengthsSampledFileName);
     log_info("Printing the sampled moment arms to '{}'...",
             momentArmsSampledFileName);
-    STOFileAdapter::write(momentArms, momentArmsSampledFileName);
+    STOFileAdapter::write(momentArmsSampled, momentArmsSampledFileName);
 
     // Print the fitted path lengths and moment arms using the original
     // coordinate data to file.
@@ -565,12 +565,12 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
     // every time point.
     Logger::Level origLoggerLevel = Logger::getLevel();
     Logger::setLevel(Logger::Level::Warn);
-    
+
     // Create a Latin hypercube design to sample the coordinate values.
     LatinHypercubeDesign lhs;
     lhs.setNumSamples(get_num_samples_per_frame());
     lhs.setNumVariables((int)values.getNumColumns());
-    
+
     // Helper function for sampling the coordinate values between two time
     // indexes.
     auto sampleCoordinateValuesSubset = [this, lhs](
@@ -578,7 +578,7 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
             std::vector<int>::iterator end_iter,
             const TimeSeriesTable& values)
                 -> SimTK::Matrix {
-        
+
         SimTK::Matrix results(
                 lhs.getNumSamples()*(int)std::distance(begin_iter, end_iter),
                 (int)values.getNumColumns());
@@ -593,20 +593,20 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
             }
             design.elementwiseSubtractFromScalarInPlace(0.5);
             design *= 2;
-            
+
             int icol = 0;
             for (const std::string& label : values.getColumnLabels()) {
-                const SimTK::VectorView column = 
+                const SimTK::VectorView column =
                         values.getDependentColumn(label);
                 const auto& bounds = m_coordinateBoundsMap.at(label);
                 const auto& range = m_coordinateRangeMap.at(label);
-                
-                // Linearly transform the design to the specified bounds for 
+
+                // Linearly transform the design to the specified bounds for
                 // each coordinate.
                 double slope = 0.5*(bounds[1] - bounds[0]);
                 SimTK::Vector candidateCol = slope*(design.col(icol) + 1.0) +
                         bounds[0] + column[*it];
-                
+
                 // Check that all elements in the column are within the range of
                 // motion. If not, move the element inside the range of motion
                 // that is closest to the original value.
@@ -620,9 +620,9 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
                 design.updCol(icol) = candidateCol;
                 ++icol;
             }
-            
+
             // Store the results.
-            results.updBlock(thisTimeIndex*lhs.getNumSamples(), 0, 
+            results.updBlock(thisTimeIndex*lhs.getNumSamples(), 0,
                     lhs.getNumSamples(), (int)values.getNumColumns()) = design;
             ++thisTimeIndex;
         }
@@ -654,7 +654,7 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
     for (int i = 0; i < get_num_parallel_threads(); ++i) {
         outputs.push_back(futures[i].get());
     }
-    
+
     // Reset the logger.
     OpenSim::Logger::setLevel(origLoggerLevel);
 
@@ -667,13 +667,13 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
         int numTimeIndexes = outputs[i].nrow() / get_num_samples_per_frame();
         for (int j = 0; j < numTimeIndexes; ++j) {
             // Append the original values.
-            valuesSampled.appendRow(times[timeIdx], 
+            valuesSampled.appendRow(times[timeIdx],
                     values.getRowAtIndex(timeIdx));
 
             // Update the time step, if possible. Otherwise, use the last time
             // step.
             if (timeIdx+1 < static_cast<int>(values.getNumRows())) {
-                dt = (times[timeIdx+1] - times[timeIdx]) / 
+                dt = (times[timeIdx+1] - times[timeIdx]) /
                      (get_num_samples_per_frame() + 2);
             }
 
@@ -1015,11 +1015,11 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
             int order;
             if (get_use_stepwise_regression()) {
                 order = get_maximum_polynomial_order();
-                fitCoefficientsStepwiseRegression(coordinatesThisForce, b, 
+                fitCoefficientsStepwiseRegression(coordinatesThisForce, b,
                         order, coefficients);
             } else {
-                order = fitAllCoefficients(coordinatesThisForce, b, 
-                        get_minimum_polynomial_order(), 
+                order = fitAllCoefficients(coordinatesThisForce, b,
+                        get_minimum_polynomial_order(),
                         get_maximum_polynomial_order(),
                         coefficients);
             }
@@ -1042,7 +1042,7 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
                 }
             }
             if (getIncludeLengtheningSpeedFunction()) {
-                MultivariatePolynomialFunction lengtheningSpeedFunction = 
+                MultivariatePolynomialFunction lengtheningSpeedFunction =
                         lengthFunction.generatePartialVelocityFunction();
                 functionBasedPath->setLengtheningSpeedFunction(
                         lengtheningSpeedFunction);
@@ -1276,7 +1276,7 @@ void PolynomialPathFitter::removeMomentArmColumns(TimeSeriesTable& momentArms,
 }
 
 int PolynomialPathFitter::fitAllCoefficients(
-        const SimTK::Matrix& coordinates, const SimTK::Vector& b, int minOrder, 
+        const SimTK::Matrix& coordinates, const SimTK::Vector& b, int minOrder,
         int maxOrder, SimTK::Vector& coefficients) const {
 
     int numTimes = coordinates.nrow();
@@ -1377,9 +1377,9 @@ void PolynomialPathFitter::fitCoefficientsStepwiseRegression(
         }
     }
 
-    // Manage the coefficient indexes that will be included in the final 
+    // Manage the coefficient indexes that will be included in the final
     // polynomial. The "out" indexes are the indexes that are not included in
-    // the final polynomial, which is initialized to all indexes. The "keep" 
+    // the final polynomial, which is initialized to all indexes. The "keep"
     // indexes are the indexes that are included in the final polynomial, which
     // is initialized to an empty vector.
     std::vector<int> outIndexes;
@@ -1391,9 +1391,9 @@ void PolynomialPathFitter::fitCoefficientsStepwiseRegression(
     SimTK::Vector x_sol;
     while (true) {
 
-        // Initialize the 'A' matrix. 
-        // The number of terms in the polynomial is the number of "kept" 
-        // coefficients plus one. 
+        // Initialize the 'A' matrix.
+        // The number of terms in the polynomial is the number of "kept"
+        // coefficients plus one.
         int numTerms = static_cast<int>(keepIndexes.size()) + 1;
         SimTK::Matrix A(numTimes * (numCoordinates + 1), numTerms, 0.0);
         SimTK::Vector x(numTerms, 0.0);
@@ -1404,7 +1404,7 @@ void PolynomialPathFitter::fitCoefficientsStepwiseRegression(
             A.updCol(icol++) = Afull.col(ki);
         }
 
-        // Next, loop through all of the remaining "out" coefficients and fit 
+        // Next, loop through all of the remaining "out" coefficients and fit
         // the polynomial. We will keep the coefficient that results in the
         // smallest RMS error.
         SimTK::Real bestError = SimTK::Infinity;
@@ -1463,7 +1463,7 @@ void PolynomialPathFitter::fitCoefficientsStepwiseRegression(
                 break;
             }
         }
-        
+
         int numOutIndexes = static_cast<int>(outIndexes.size());
         if ((pathLengthMet && momentArmMet) || !numOutIndexes) {
             x_sol = x;
@@ -1471,7 +1471,7 @@ void PolynomialPathFitter::fitCoefficientsStepwiseRegression(
         }
     }
 
-    // Update the coefficients vector 
+    // Update the coefficients vector
     coefficients.resize(numCoefficients);
     coefficients.setToZero();
     int icoeff = 0;
@@ -1602,7 +1602,7 @@ void PolynomialPathFitter::constructProperties() {
     constructProperty_minimum_polynomial_order(2);
     constructProperty_maximum_polynomial_order(6);
     constructProperty_num_parallel_threads(
-            (int)std::thread::hardware_concurrency()-2);
+            (int)std::thread::hardware_concurrency());
     constructProperty_global_coordinate_sampling_bounds({-10.0, 10.0});
     constructProperty_coordinate_sampling_bounds();
     constructProperty_num_samples_per_frame(25);

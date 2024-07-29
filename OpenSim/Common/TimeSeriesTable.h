@@ -129,6 +129,23 @@ public:
     }
 };
 
+class InvalidIndices : public Exception {
+public:
+    InvalidIndices(const std::string& file,
+                   size_t line,
+                   const std::string& func,
+                   const size_t index,
+                   const size_t min,
+                   const size_t max) :
+        Exception(file, line, func) {
+        std::string msg = "Index " + std::to_string(index)
+            + " is out of bounds [" + std::to_string(min)
+            + ", " + std::to_string(max) + "].";
+
+        addMessage(msg);
+    }
+};
+
 /** TimeSeriesTable_ is a DataTable_ where the independent column is time of 
 type double. The time column is enforced to be strictly increasing.           */
 template<typename ETY = SimTK::Real>
@@ -434,10 +451,11 @@ public:
         return row;
     }
     /**
-     * Trim TimeSeriesTable to rows that have times that lies between 
-     * newStartTime, newFinalTime. The trimming is done in place, no copy is made. 
+     * Trim TimeSeriesTable to rows that have times that lies between newStartTime
+     * and newFinalTime (inclusive). The trimming is done in place, no copy is made.
      * Uses getRowIndexAfterTime to locate first row and
-     * getNearestRowIndexForTime method to locate last row.
+     *      getRowIndexBeforeTime to locate last row.
+     * \throws EmptyTable if the trim would make the table empty.
      */
     void trim(const double& newStartTime, const double& newFinalTime) {
         OPENSIM_THROW_IF(newFinalTime < newStartTime, EmptyTable);
@@ -448,8 +466,6 @@ public:
         // or newFinalTime is greater than last value in table
         start_index = this->getRowIndexAfterTime(newStartTime);
         last_index = this->getRowIndexBeforeTime(newFinalTime);
-        // Make sure last_index >= start_index before attempting to trim
-        OPENSIM_THROW_IF(last_index < start_index, EmptyTable);
         // do the actual trimming based on index instead of time.
         trimToIndices(start_index, last_index);
         // If resulting table is empty, throw
@@ -467,6 +483,32 @@ public:
      */
     void trimTo(const double& newFinalTime) {
         this->trim(this->getIndependentColumn().front(), newFinalTime);
+    }
+    /**
+     * Trim table to rows between start_index and last_index (inclusive).
+     * \throws InvalidIndices if the last index is out of range.
+     * \throws EmptyTable if the trim would make the table empty.
+     */
+    void trimToIndices(const size_t& start_index, const size_t& last_index) {
+        // Error if last_index is out of bounds
+        OPENSIM_THROW_IF(last_index > this->getNumRows() - 1, InvalidIndices,
+            last_index, 0, this->getNumRows()-1);
+        // Make sure last_index >= start_index before attempting to trim
+        OPENSIM_THROW_IF(last_index < start_index, EmptyTable);
+
+        // This uses the rather invasive but efficient mechanism to copy a
+        // block of the underlying Matrix.
+        // Side effect may include that headers/metaData may be left stale.
+        // Alternatively we can create a new TimeSeriesTable and copy contents
+        // one row at a time but that's rather overkill
+        SimTK::Matrix_<ETY> matrixBlock = this->updMatrix()((int)start_index, 0,
+                (int)(last_index - start_index + 1),
+                (int)this->getNumColumns());
+        this->updMatrix() = matrixBlock;
+        std::vector<double> newIndependentVector = std::vector<double>(
+                this->getIndependentColumn().begin() + start_index,
+                this->getIndependentColumn().begin() + last_index + 1);
+        this->_indData = newIndependentVector;
     }
 protected:
     /** Validate the given row. 
@@ -492,23 +534,6 @@ protected:
                              TimestampGreaterThanEqualToNext, rowIndex, time, 
                              DT::_indData[rowIndex + 1]);
         }
-    }
-    /** trim table to rows between start_index and last_index inclusively
-     */
-    void trimToIndices(const size_t& start_index, const size_t& last_index) {
-        // This uses the rather invasive but efficient mechanism to copy a
-        // block of the underlying Matrix.
-        // Side effect may include that headers/metaData may be left stale.
-        // Alternatively we can create a new TimeSeriesTable and copy contents
-        // one row at a time but that's rather overkill
-        SimTK::Matrix_<ETY> matrixBlock = this->updMatrix()((int)start_index, 0,
-                (int)(last_index - start_index + 1),
-                (int)this->getNumColumns());
-        this->updMatrix() = matrixBlock;
-        std::vector<double> newIndependentVector = std::vector<double>(
-                this->getIndependentColumn().begin() + start_index,
-                this->getIndependentColumn().begin() + last_index + 1);
-        this->_indData = newIndependentVector;
     }
 
     friend class TableUtilities;

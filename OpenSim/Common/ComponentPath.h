@@ -50,6 +50,11 @@ namespace OpenSim {
 class OSIMCOMMON_API ComponentPath {
 public:
     /**
+     * Returns the separator used to delimit path elements in the path
+     */
+    static constexpr char separator() { return '/'; }
+
+    /**
      * Returns the root component path (i.e. "/")
      */
     static ComponentPath root();
@@ -84,13 +89,21 @@ public:
     }
 
     /**
+     * Writes the `ComponentPath` to the output stream as a string
+     */
+    friend std::ostream& operator<<(std::ostream& lhs, const ComponentPath& rhs)
+    {
+        return lhs << rhs.toString();
+    }
+
+    /**
      * Clears the content of the ComponentPath
      */
     void clear() {
         _path.clear();
     }
 
-    char getSeparator() const;
+    char getSeparator() const { return separator(); }
 
     /**
      * Returns a string containing a sequence of all invalid characters.

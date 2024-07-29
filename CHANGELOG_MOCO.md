@@ -3,7 +3,7 @@ Moco Change Log
 
 1.3.1
 -----
-- 2024-05-21: Added support for the 'projection' method for enforcing kinematic
+- 2024-07-29: Added support for the 'projection' method for enforcing kinematic
               constraints from Bordalba et al. (2023) to `MocoCasADiSolver`. 
               This method allows enforcing kinematic constraints with any
               transcription scheme and can be enabled using by setting the
@@ -11,7 +11,7 @@ Moco Change Log
               existing default method from Posa et al. (2016) can also be
               specified using `'Posa2016'`.
 
-- 2024-05-21: The `MocoSolver` properties `interpolate_control_midpoints` and
+- 2024-07-29: The `MocoSolver` properties `interpolate_control_midpoints` and
               `enforce_path_constraint_midpoints` have been renamed to 
               `interpolate_control_mesh_interior_points` and 
               `enforce_path_constraint_mesh_interior_points`, respectively. This
@@ -21,7 +21,26 @@ Moco Change Log
               necessarily coincide with the mesh interval midpoints (unlike 
               Hermite-Simpson transcription).
 
-- 2024-05-21: Added support for optimizing "Input controls" associated with 
+- 2024-07-26: Added `MocoStateBoundConstraint` and `MocoOutputBoundConstraint` to enable bounding 
+              state variables or output values by one or two `Function`s, similar to 
+              `MocoControlBoundConstraint`.
+
+- 2024-07-22: Added support for `MocoOutputGoal`s and `MocoOutputConstraint`s that are 
+              composed of two `Output`s. This applies to all types of Output goals 
+              (`MocoInitialOutputGoal`, `MocoFinalOutputGoal`, etc.). The two `Output`s 
+              can be combined by addition, subtraction, multiplication, or division.
+
+- 2024-07-08: Fixed a bug in `DeGrooteFregly2016Muscle` where updates to properties 
+              `pennation_angle_at_optimal`, `optimal_fiber_length`, `max_contraction_velocity`, 
+              and `tendon_strain_at_one_norm_force` during parameter optimization did not 
+              affect certain model calculations, and as a result were not changing during
+              optimization.
+
+- 2024-07-08: Fixed a bug where deserialization of an OpenSim model with the `Bhargava2004SmoothedMuscleMetabolics`
+              component would not properly set the muscle masses listed, resulting in incorrect
+              metabolics values being computed.
+
+- 2024-04-29: Added support for optimizing "Input controls" associated with 
               `InputController`s in a model. Support includes updates to the 
               MocoProblem interface (e.g., setInputControlInfo()) and MocoTrajectory 
               (e.g., getInputControlsTrajectory(), generateControlsFromModelControllers()).
