@@ -209,43 +209,50 @@ public:
     }
 };
 
-class OSIMACTUATORS_API ModOpConstrainCoordinatesFromFile : public ModelOperator {
+// only works on joints, must provide complete path to joint
+class OSIMACTUATORS_API ModOpPrescribedMotion : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-        ModOpConstrainCoordinatesFromFile, ModelOperator);
-    OpenSim_DECLARE_PROPERTY(table, TimeSeriesTable,
-            "Table with data on coordinate from provided file.");
-    OpenSim_DECLARE_PROPERTY(joint_names, std::vector<std::string>,
-            "joint names e.g. 'j0'.");
-    OpenSim_DECLARE_PROPERTY(coordinate_paths, std::vector<std::string>,
-            "coordinate paths e.g. '/jointset/j0/q0/value'.");
+            ModOpPrescribedMotion, ModelOperator);
+    OpenSim_DECLARE_LIST_PROPERTY(coordinate_paths, std::string,
+            "coordinate paths to joint values, e.g. '/jointset/j0/q0/value'.");
 
 public:
-    ModOpConstrainCoordinatesFromFile() { constructProperty_table(""); }
-    ModOpConstrainCoordinatesFromFile(std::string filePath,
-                                      std::vector<std::string>& jointNames,
-                                      std::vector<std::string>& coordinatePaths)
-            : ModOpConstrainCoordinatesFromFile() {
-        TimeSeriesTable tempTable(filePath);
-        set_table(tempTable);
-        set_joint_names(jointNames);
-        set_coordinate_paths(coordinatePaths);
+    ModOpPrescribedMotion(std::string filePath,
+                          std::vector<std::string>& coordinatePaths) {
+        table = TimeSeriesTable(filePath);
+        constructProperty_coordinate_paths();
+        for (int i = 0; i < coordinatePaths.size(); ++i) {
+            updProperty_coordinate_paths().appendValue(coordinatePaths[i]);
+        }
     }
     void operate(Model& model, const std::string&) const override {
-        // what is the difference between initsystem, finalize?
-        model.finalizeConnections();
-        model.initSystem();
-        // create gvc spline functions from table of coords
-        GCVSplineSet statesSpline(get_table());
-        // prescribe the joints
-        for (int i = 0; i < get_joint_names().size(); ++i) {
-            if !get_table().hasColumn(get_coordinate_paths[i]) {
-                OPENSIM_THROW("coordinate is not in the given motion file");
+        model.finalizeFromProperties();
+        GCVSplineSet statesSpline(table);
+        for (std::size_t i = 0; i < getProperty_coordinate_paths().size(); ++i) {
+            OPENSIM_THROW_IF_FRMOBJ(
+                    !table.hasColumn(getProperty_coordinate_paths()[i]),
+                    Exception, "coordinate '{}' is not in the given motion file",
+                    getProperty_coordinate_paths()[i]);
+            ComponentPath path = ComponentPath(getProperty_coordinate_paths()[i]);
+            OPENSIM_THROW_IF_FRMOBJ(path.getComponentName() != "value", Exception,
+                    fmt::format("Coordinate path {} does not end in value.",
+                    path.getComponentName()));
+            // look for the joint name
+            std::string jointName = "";
+            int i_find = path.getNumPathLevels() - 1;
+            while (jointName == "" && i_find > 0) {
+                i_find--;
+                if (path.getSubcomponentNameAtLevel(i_find) == "jointset") {
+                    jointName = path.getSubcomponentNameAtLevel(i_find + 1);
+                }
             }
-            Coordinate& q = model.updJointSet().get(j_names[i]). updCoordinate();
-            q.setPrescribedFunction(statesSpline.get(j_paths[i]));
+            Coordinate& q = model.updJointSet().get(jointName).updCoordinate();
+            q.setPrescribedFunction(statesSpline.get(getProperty_coordinate_paths()[i]));
             q.setDefaultIsPrescribed(true);
         }
     }
+private:
+    TimeSeriesTable table;
 };
 
 } // namespace OpenSim

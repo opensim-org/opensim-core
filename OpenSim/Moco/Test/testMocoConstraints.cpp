@@ -42,6 +42,8 @@ using SimTK::UnitVec3;
 using SimTK::Vec3;
 using SimTK::Vector;
 
+
+
 const int NUM_BODIES = 10;
 const double BOND_LENGTH = 0.5;
 
@@ -1872,4 +1874,80 @@ TEMPLATE_TEST_CASE("Multiple MocoPathConstraints", "", MocoCasADiSolver,
                                       SimTK::Infinity});
     study.initSolver<TestType>();
     study.solve();
+}
+
+/// creates a model with one sliding mass
+std::unique_ptr<Model> createSlidingMassModel() {
+    auto model = make_unique<Model>();
+    model->setName("sliding_mass");
+    model->set_gravity(SimTK::Vec3(0, 0, 0));
+    auto* body = new Body("body", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    model->addComponent(body);
+    body->attachGeometry(new Sphere(0.05));
+
+    // Allows translation along x.
+    auto* joint = new SliderJoint("slider", model->getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("position");
+    model->addJoint(joint);
+
+    auto* actu = new CoordinateActuator();
+    actu->setCoordinate(&coord);
+    actu->setName("actuator");
+    actu->setOptimalForce(1);
+    model->addComponent(actu);
+
+    return model;
+}
+
+TEMPLATE_TEST_CASE("ModOpPrescribeMotion", "", MocoCasADiSolver, MocoTropterSolver) {
+    // make a problem witha moving ball to save the solution to a file
+    MocoSolution solutionControl;
+    MocoStudy study1;
+    auto& problem1 = study1.updProblem();
+    auto model1 = createSlidingMassModel();
+    model1->initSystem();
+    problem1.setModelAsCopy(*model1);
+    problem1.setTimeBounds(0, 3);
+    // ball must move
+    problem1.setStateInfo("/jointset/slider/position/value", MocoBounds(-500, 500), -1, 1);
+    problem1.setStateInfo("/jointset/slider/position/speed", {-10, 10}, 0, 0);
+    problem1.setControlInfo("/actuator", {-100, 100});
+    auto* effort = problem1.addGoal<MocoControlGoal>();
+    effort->setWeight(0.1);
+    auto& solver = study1.initSolver<TestType>();
+    solver.set_num_mesh_intervals(30);
+    MocoSolution solution1 = study1.solve();
+    solution1.write("linear_move.sto");
+
+    // make a problem where the ball has to match
+    MocoStudy study2;
+    auto& problem2 = study2.updProblem();
+    auto model2 = createSlidingMassModel();
+    model2->initSystem();
+    // require sliding ball to match the position of the ball in study1
+    std::vector<std::string> coordinatePaths = {"/jointset/slider/position/value"};
+    ModelProcessor proc(*model2);
+    proc.append(ModOpPrescribedMotion("linear_move.sto", coordinatePaths));
+    Model processedModel = proc.process();
+    processedModel.finalizeFromProperties();
+    processedModel.initSystem();
+    problem2.setModelAsCopy(processedModel);
+    problem2.setTimeBounds(0, 3);
+    // state info doesn't require ball to move
+    problem2.setStateInfo("/jointset/slider/position/value", MocoBounds(-500, 500));
+    problem2.setStateInfo("/jointset/slider/position/speed", {-10, 10});
+    problem2.setControlInfo("/actuator", {-100, 100});
+    auto& solver2 = study2.initSolver<TestType>();
+    solver2.set_num_mesh_intervals(30);
+    MocoSolution solution2 = study2.solve();
+
+    // Compare the two solutions to see if the slider positions are the same.
+    auto solutionPosition1 = solution1.getState("/jointset/slider/position/value");
+    auto solutionPosition2 = solution2.getState("/jointset/slider/position/value");
+    for (int i = 0; i < solution1.getNumTimes(); ++i) {
+        double pos1 = static_cast<SimTK::Vec3>(solutionPosition1[i])[0];
+        double pos2 = static_cast<SimTK::Vec3>(solutionPosition2[i])[0];
+        REQUIRE_THAT(pos1, Catch::Matchers::WithinAbs(pos2, 1e-4));
+    }
 }
