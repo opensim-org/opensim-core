@@ -55,7 +55,6 @@ static const double ConstraintTol = 1e-10;
 /// (borrowed from Simbody's 'testConstraints.cpp').
 #define MACHINE_TEST(a, b) SimTK_TEST_EQ_SIZE(a, b, 10 * state.getNU())
 
-
 /// creates a model with one sliding mass
 std::unique_ptr<Model> createSlidingMassModel() {
     auto model = make_unique<Model>();
@@ -2092,7 +2091,7 @@ TEMPLATE_TEST_CASE("Multiple MocoPathConstraints", "", MocoCasADiSolver,
 }
 
 TEMPLATE_TEST_CASE("ModOpPrescribeMotion", "", MocoCasADiSolver, MocoTropterSolver) {
-    // make a problem witha moving ball to save the solution to a file
+    // Make a problem with a moving ball to save the motion to a file
     MocoSolution solutionControl;
     MocoStudy study1;
     auto& problem1 = study1.updProblem();
@@ -2100,7 +2099,7 @@ TEMPLATE_TEST_CASE("ModOpPrescribeMotion", "", MocoCasADiSolver, MocoTropterSolv
     model1->initSystem();
     problem1.setModelAsCopy(*model1);
     problem1.setTimeBounds(0, 3);
-    // ball must move
+    // Move from -1 to 1
     problem1.setStateInfo("/jointset/slider/position/value", MocoBounds(-500, 500), -1, 1);
     problem1.setStateInfo("/jointset/slider/position/speed", {-10, 10}, 0, 0);
     problem1.setControlInfo("/actuator", {-100, 100});
@@ -2111,12 +2110,11 @@ TEMPLATE_TEST_CASE("ModOpPrescribeMotion", "", MocoCasADiSolver, MocoTropterSolv
     MocoSolution solution1 = study1.solve();
     solution1.write("linear_move.sto");
 
-    // make a problem where the ball has to match
+    // Second problem has to match motion
     MocoStudy study2;
     auto& problem2 = study2.updProblem();
     auto model2 = createSlidingMassModel();
     model2->initSystem();
-    // require sliding ball to match the position of the ball in study1
     std::vector<std::string> coordinatePaths = {"/jointset/slider/position/value"};
     ModelProcessor proc(*model2);
     proc.append(ModOpPrescribedMotion("linear_move.sto", coordinatePaths));
@@ -2133,7 +2131,7 @@ TEMPLATE_TEST_CASE("ModOpPrescribeMotion", "", MocoCasADiSolver, MocoTropterSolv
     solver2.set_num_mesh_intervals(30);
     MocoSolution solution2 = study2.solve();
 
-    // Compare the two solutions to see if the slider positions are the same.
+    // Compare the two solutions to check that the positions are the same.
     auto solutionPosition1 = solution1.getState("/jointset/slider/position/value");
     auto solutionPosition2 = solution2.getState("/jointset/slider/position/value");
     for (int i = 0; i < solution1.getNumTimes(); ++i) {

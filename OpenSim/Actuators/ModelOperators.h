@@ -216,7 +216,7 @@ public:
 class OSIMACTUATORS_API ModOpPrescribedMotion : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpPrescribedMotion, ModelOperator);
     OpenSim_DECLARE_LIST_PROPERTY(coordinate_paths, std::string,
-            "Coordinate paths to joint values in the model and table, e.g. "
+            "Paths to joint values in the model and table, e.g. "
             "'/jointset/slider/position/value'.");
 
 public:
@@ -236,15 +236,15 @@ public:
             ComponentPath path = ComponentPath(pathString);
             std::string jointName = path.getSubcomponentNameAtLevel(1);
             OPENSIM_THROW_IF_FRMOBJ(model.hasComponent<Joint>(jointName),
-                    Exception, fmt::format("Joint '{}' is not in the model, make "
-                                           "sure it is added as a joint.",
+                    Exception, fmt::format("Path '{}' is not a joint in the model,"
+                                           " make sure it is added as a joint.",
                                            jointName));
             OPENSIM_THROW_IF_FRMOBJ(path.getComponentName() != "value", Exception,
                     fmt::format("Coordinate path '{}' does not end in 'value'.",
                                 pathString));
             OPENSIM_THROW_IF_FRMOBJ(!table.hasColumn(pathString), Exception,
-                    fmt::format("Coordinate '{}' is not a column in the given "
-                                "motion file.", getProperty_coordinate_paths()[i]));
+                    fmt::format("Path '{}' is not a column in the given motion "
+                                " file.", getProperty_coordinate_paths()[i]));
 
             Coordinate& q = model.updJointSet().get(jointName).updCoordinate();
             q.setPrescribedFunction(statesSpline.get(pathString));
