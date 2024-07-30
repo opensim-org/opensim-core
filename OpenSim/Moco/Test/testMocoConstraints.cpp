@@ -55,6 +55,53 @@ static const double ConstraintTol = 1e-10;
 /// (borrowed from Simbody's 'testConstraints.cpp').
 #define MACHINE_TEST(a, b) SimTK_TEST_EQ_SIZE(a, b, 10 * state.getNU())
 
+/// creates a model with one sliding mass
+std::unique_ptr<Model> createSlidingMassModel() {
+    auto model = make_unique<Model>();
+    model->setName("sliding_mass");
+    model->set_gravity(SimTK::Vec3(0, 0, 0));
+    auto* body = new Body("body", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    model->addComponent(body);
+    body->attachGeometry(new Sphere(0.05));
+
+    // Allows translation along x.
+    auto* joint = new SliderJoint("slider", model->getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("position");
+    model->addComponent(joint);
+
+    auto* actu = new CoordinateActuator();
+    actu->setCoordinate(&coord);
+    actu->setName("actuator");
+    actu->setOptimalForce(1);
+    model->addComponent(actu);
+
+    return model;
+}
+
+/// create a model with two sliding masses
+std::unique_ptr<Model> createDoubleSlidingMassModel() {
+    std::unique_ptr<Model> model = createSlidingMassModel();
+    auto* body = new Body("body2", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    model->addComponent(body);
+    body->attachGeometry(new Sphere(0.05));
+
+    // Allows translation along x.
+    auto* joint = new SliderJoint("slider2", model->getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("position");
+    model->addComponent(joint);
+
+    auto* actu = new CoordinateActuator();
+    actu->setCoordinate(&coord);
+    actu->setName("actuator2");
+    actu->setOptimalForce(1);
+    model->addComponent(actu);
+
+    model->finalizeConnections();
+    return model;
+}
+
 TEST_CASE("(Dummy test to support discovery in Resharper)") { REQUIRE(true); }
 
 /// creates a model with one sliding mass
@@ -1643,6 +1690,149 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
     }
 }
 
+TEMPLATE_TEST_CASE("MocoOutputBoundConstraint", "",
+        MocoCasADiSolver, MocoTropterSolver) {
+    SECTION("Two outputs with equality bound") {
+        MocoSolution solutionControl;
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        auto model = createDoubleSlidingMassModel();
+        model->initSystem();
+
+        problem.setModelAsCopy(*model);
+        problem.setTimeBounds(0, 6.283);
+
+        problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
+            MocoInitialBounds(-1, 1));
+        problem.setStateInfo("/slider/position/speed", {-1, 1});
+        problem.setStateInfo("/slider2/position/value", MocoBounds(-5, 5),
+            MocoInitialBounds(-1, 1));
+        problem.setStateInfo("/slider2/position/speed", {-1, 1});
+
+        auto* constr = problem.addPathConstraint<MocoOutputBoundConstraint>();
+        Sine lower;
+        constr->setLowerBound(lower);
+        constr->setEqualityWithLower(true);
+        constr->setOutputIndex(0);
+        constr->setOutputPath("/body|position");
+        constr->setSecondOutputPath("/body2|position");
+        constr->setOperation("subtraction");
+
+        auto& solver = study.template initSolver<TestType>();
+        solver.set_num_mesh_intervals(30);
+        MocoSolution solution = study.solve();
+
+        auto solutionPosition1 = solution.getState("/slider/position/value");
+        auto solutionPosition2 = solution.getState("/slider2/position/value");
+        auto times = solution.getTime();
+        SimTK::Vector time(1);
+        for (int i = 0; i < solution.getNumTimes(); ++i) {
+            double diff = (static_cast<SimTK::Vec3>(solutionPosition1[i])[0]
+                - static_cast<SimTK::Vec3>(solutionPosition2[i])[0]);
+            time[0] = times[i];
+            REQUIRE_THAT(diff, Catch::Matchers::WithinAbs(
+                               lower.calcValue(time), 1e-3));
+        }
+    }
+
+    SECTION("One output with upper bound") {
+        MocoSolution solutionControl;
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        auto model = ModelFactory::createSlidingPointMass();
+        model.initSystem();
+
+        problem.setModelAsCopy(model);
+        problem.setTimeBounds(0, 3);
+
+        problem.setStateInfo("/slider/position/value", MocoBounds(-3, 3));
+        problem.setStateInfo("/slider/position/speed", {-3, 3});
+
+        auto* constr = problem.addPathConstraint<MocoOutputBoundConstraint>();
+        PiecewiseLinearFunction upper;
+        upper.addPoint(0, 0);
+        upper.addPoint(1, -1);
+        upper.addPoint(2, -0.4);
+        upper.addPoint(3, 1);
+        constr->setUpperBound(upper);
+        constr->setOutputIndex(0);
+        constr->setOutputPath("/body|position");
+
+        // want to minimize position magnitude, but can't reach 0 due to constraint
+        auto* goal = problem.addGoal<MocoOutputGoal>();
+        goal->setOutputPath("/body|position");
+        goal->setExponent(2);
+
+        auto* effort = problem.addGoal<MocoControlGoal>();
+        effort->setWeight(0.1);
+        effort->setName("effort");
+
+        auto& solver = study.template initSolver<TestType>();
+        solver.set_num_mesh_intervals(30);
+        MocoSolution solution = study.solve();
+
+        auto solutionPosition = solution.getState("/slider/position/value");
+        auto times = solution.getTime();
+        SimTK::Vector time(1);
+        for (int i = 0; i < solution.getNumTimes(); ++i) {
+            double position = static_cast<SimTK::Vec3>(solutionPosition[i])[0];
+            time[0] = times[i];
+            double bound = upper.calcValue(time);
+            CHECK(Catch::Approx(position).margin(1e-4) <= bound);
+        }
+    }
+
+    SECTION("Time range of bounds function is too small.") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        problem.setModelAsCopy(ModelFactory::createPendulum());
+        problem.setTimeBounds({-31, 0}, {1, 50});
+        problem.addGoal<MocoControlGoal>();
+        GCVSpline violateLower;
+        violateLower.setDegree(5);
+        violateLower.addPoint(-30.9999, 0);
+        violateLower.addPoint(0, 0);
+        violateLower.addPoint(0.5, 0);
+        violateLower.addPoint(0.7, 0);
+        violateLower.addPoint(0.8, 0);
+        violateLower.addPoint(0.9, 0);
+        violateLower.addPoint(50, 0.319);
+        auto* constr = problem.addPathConstraint<MocoOutputBoundConstraint>();
+        constr->setOutputPath("|kinetic_energy");
+        constr->setLowerBound(violateLower);
+        CHECK_THROWS_WITH(study.solve(),
+                ContainsSubstring("must be less than or equal to the minimum"));
+        constr->clearLowerBound();
+        GCVSpline violateUpper;
+        violateUpper.setDegree(5);
+        violateUpper.addPoint(-31, 0);
+        violateUpper.addPoint(0, 0);
+        violateUpper.addPoint(0.5, 0);
+        violateUpper.addPoint(0.7, 0);
+        violateUpper.addPoint(0.8, 0);
+        violateUpper.addPoint(0.9, 0);
+        violateUpper.addPoint(49.99999, .0319);
+        constr->setUpperBound(violateUpper);
+        CHECK_THROWS_WITH(study.solve(),
+                ContainsSubstring(
+                    "must be greater than or equal to the maximum"));
+    }
+
+    SECTION("Can omit both bounds.") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        problem.setModelAsCopy(ModelFactory::createPendulum());
+        problem.setTimeBounds(0, 1);
+        problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
+        problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0);
+        problem.setControlInfo("/tau0", {-5, 5});
+        problem.addGoal<MocoControlGoal>();
+        auto* constr = problem.addPathConstraint<MocoOutputBoundConstraint>();
+        constr->setOutputPath("|kinetic_energy");
+        study.initSolver<TestType>();
+        study.solve();
+    }
+}
 
 TEMPLATE_TEST_CASE("MocoStateBoundConstraint", "",
         MocoCasADiSolver, MocoTropterSolver) {
