@@ -209,13 +209,15 @@ public:
     }
 };
 
-// only works on joints, must provide complete path to joint
-// the path name in the data must be the same as the path name in the model
+/// Prescribe motion to joints in a model by providing a file containing the
+/// motion data. Paths to joints must be the same in the file and the model.
+/// Each path must begin with "/jointset" and end with "/value", so ensure that
+/// joints are added as Joints and not Components.
 class OSIMACTUATORS_API ModOpPrescribedMotion : public ModelOperator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(
-            ModOpPrescribedMotion, ModelOperator);
-    OpenSim_DECLARE_LIST_PROPERTY(coordinate_paths, std::string, "coordinate "
-            "paths to joint values, e.g. '/jointset/slider/position/value'.");
+    OpenSim_DECLARE_CONCRETE_OBJECT(ModOpPrescribedMotion, ModelOperator);
+    OpenSim_DECLARE_LIST_PROPERTY(coordinate_paths, std::string,
+            "Coordinate paths to joint values in the model and table, e.g. "
+            "'/jointset/slider/position/value'.");
 
 public:
     ModOpPrescribedMotion(std::string filePath,
@@ -230,25 +232,22 @@ public:
         model.finalizeFromProperties();
         GCVSplineSet statesSpline(table);
         for (std::size_t i = 0; i < getProperty_coordinate_paths().size(); ++i) {
-            OPENSIM_THROW_IF_FRMOBJ(
-                    !table.hasColumn(getProperty_coordinate_paths()[i]),
-                    Exception, "coordinate '{}' is not in the given motion file",
-                    getProperty_coordinate_paths()[i]);
-            ComponentPath path = ComponentPath(getProperty_coordinate_paths()[i]);
+            std::string pathString = getProperty_coordinate_paths()[i];
+            ComponentPath path = ComponentPath(pathString);
+            std::string jointName = path.getSubcomponentNameAtLevel(1);
+            OPENSIM_THROW_IF_FRMOBJ(model.hasComponent<Joint>(jointName),
+                    Exception, fmt::format("Joint '{}' is not in the model, make "
+                                           "sure it is added as a joint.",
+                                           jointName));
             OPENSIM_THROW_IF_FRMOBJ(path.getComponentName() != "value", Exception,
-                    fmt::format("Coordinate path {} does not end in value.",
-                    path.getComponentName()));
-            // look for the joint name
-            std::string jointName = "";
-            int i_find = path.getNumPathLevels() - 1;
-            while (jointName == "" && i_find > 0) {
-                i_find--;
-                if (path.getSubcomponentNameAtLevel(i_find) == "jointset") {
-                    jointName = path.getSubcomponentNameAtLevel(i_find + 1);
-                }
-            }
+                    fmt::format("Coordinate path '{}' does not end in 'value'.",
+                                pathString));
+            OPENSIM_THROW_IF_FRMOBJ(!table.hasColumn(pathString), Exception,
+                    fmt::format("Coordinate '{}' is not a column in the given "
+                                "motion file.", getProperty_coordinate_paths()[i]));
+
             Coordinate& q = model.updJointSet().get(jointName).updCoordinate();
-            q.setPrescribedFunction(statesSpline.get(getProperty_coordinate_paths()[i]));
+            q.setPrescribedFunction(statesSpline.get(pathString));
             q.setDefaultIsPrescribed(true);
         }
     }
