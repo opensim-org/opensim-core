@@ -55,6 +55,7 @@ static const double ConstraintTol = 1e-10;
 /// (borrowed from Simbody's 'testConstraints.cpp').
 #define MACHINE_TEST(a, b) SimTK_TEST_EQ_SIZE(a, b, 10 * state.getNU())
 
+
 /// creates a model with one sliding mass
 std::unique_ptr<Model> createSlidingMassModel() {
     auto model = make_unique<Model>();
