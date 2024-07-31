@@ -39,20 +39,11 @@ Tests Include:
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace std;
 using SimTK::Transform;
-
-void testBody();
-void testPhysicalOffsetFrameOnBody();
-void testPhysicalOffsetFrameOnBodySerialize();
-void testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointParent();
-void testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointChild();
-void testPhysicalOffsetFrameOnPhysicalOffsetFrame();
-void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder();
-void testFilterByFrameType();
-void testVelocityAndAccelerationMethods();
 
 class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
     OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
@@ -64,79 +55,7 @@ public:
         OffsetFrame(parent, offset) {}
 };
 
-
-int main()
-{
-    SimTK::Array_<std::string> failures;
-
-    try { testBody(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl; failures.push_back("testBody");
-    }
-        
-    try { testPhysicalOffsetFrameOnBody(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl; 
-        failures.push_back("testPhysicalOffsetFrameOnBody");
-    }
-
-    try { testPhysicalOffsetFrameOnBodySerialize(); }
-    catch (const std::exception& e){
-        cout << e.what() << endl; 
-        failures.push_back("testPhysicalOffsetFrameOnBodySerialize");
-    }
-
-    try { testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointParent(); }
-    catch (const std::exception& e){
-        cout << e.what() << endl;
-        failures.push_back("testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointParent");
-    }
-
-    try { testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointChild(); }
-    catch (const std::exception& e){
-        cout << e.what() << endl;
-        failures.push_back("testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointChild");
-    }
-    
-    try { testPhysicalOffsetFrameOnPhysicalOffsetFrame(); }
-    catch (const std::exception& e){
-        cout << e.what() << endl;
-        failures.push_back("testPhysicalOffsetFrameOnPhysicalOffsetFrame");
-    }
-
-    try { testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder");
-    }
-
-    try { testFilterByFrameType(); }
-    catch (const std::exception& e){
-        cout << e.what() << endl;
-        failures.push_back("testFilterByFrameType");
-    }
-
-    try { testVelocityAndAccelerationMethods(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testVelocityAndAccelerationMethods");
-    }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done. All cases passed." << endl;
-
-    return 0;
-}
-
-//==============================================================================
-// Test Cases
-//==============================================================================
-
-void testBody()
+TEST_CASE("Body")
 {
     cout << "\nRunning testBody" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
@@ -181,7 +100,7 @@ void testBody()
     cout << "get transform access time = " << 1e3*lookup_time << "ms" << endl;
 }
 
-void testPhysicalOffsetFrameOnBody()
+TEST_CASE("PhysicalOffsetFrameOnBody")
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
@@ -256,7 +175,7 @@ void testPhysicalOffsetFrameOnBody()
         "testPhysicalOffsetFrameOnBody(): incorrect point location in ground.");
 }
 
-void testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointParent()
+TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrameAsJointParent")
 {
     // tests whether this topology can be built without any body index issues etc:
     //
@@ -279,7 +198,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointParent()
     model.buildSystem();  // shouldn't throw
 }
 
-void testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointChild()
+TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrameAsJointChild")
 {
     // tests whether this topology can be built without any body index issues etc:
     //
@@ -302,7 +221,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrameAsJointChild()
     model.buildSystem();  // shouldn't throw
 }
 
-void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
+TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrame")
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
@@ -367,7 +286,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
         "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): incorrect base frames for PhysicalOffsetFrame");
 }
 
-void testPhysicalOffsetFrameOnBodySerialize()
+TEST_CASE("PhysicalOffsetFrameOnBodySerialize")
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
@@ -409,7 +328,7 @@ void testPhysicalOffsetFrameOnBodySerialize()
         "testPhysicalOffsetFrameOnBodySerialize(): incorrect MobilizedBodyIndex");
 }
 
-void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
+TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrameOrder")
 {
     cout << "\nRunning testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder" << endl;
     // The order of the offset frames in the Model's "components" property list
@@ -478,7 +397,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
     ASSERT_THROW(PhysicalOffsetFramesFormLoop, pendulum.initSystem());
 }
 
-void testFilterByFrameType()
+TEST_CASE("FilterByFrameType")
 {
     cout << "\nRunning testFilterByFrameType" << endl;
     // Previous model with a PhysicalOffsetFrame attached to rod1
@@ -536,7 +455,7 @@ void testFilterByFrameType()
         "testFilterByFrameType failed to find the 7 PhyscicalOffsetFrame in the model.");
 }
 
-void testVelocityAndAccelerationMethods()
+TEST_CASE("VelocityAndAccelerationMethods")
 {
     cout << "\nRunning testVelocityAndAccelerationMethods" << endl;
 
