@@ -224,14 +224,14 @@ public:
                           std::vector<std::string>& coordinatePaths) {
         table = TimeSeriesTable(filePath);
         constructProperty_coordinate_paths();
-        for (int i = 0; i < coordinatePaths.size(); ++i) {
+        for (size_t i = 0; i < coordinatePaths.size(); ++i) {
             updProperty_coordinate_paths().appendValue(coordinatePaths[i]);
         }
     }
     void operate(Model& model, const std::string&) const override {
         model.finalizeFromProperties();
         GCVSplineSet statesSpline(table);
-        for (std::size_t i = 0; i < getProperty_coordinate_paths().size(); ++i) {
+        for (int i = 0; i < getProperty_coordinate_paths().size(); ++i) {
             std::string pathString = getProperty_coordinate_paths()[i];
             ComponentPath path = ComponentPath(pathString);
             std::string jointName = path.getSubcomponentNameAtLevel(1);
