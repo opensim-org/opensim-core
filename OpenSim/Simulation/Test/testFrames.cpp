@@ -45,15 +45,17 @@ using namespace OpenSim;
 using namespace std;
 using SimTK::Transform;
 
-class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
-    OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
-public:
-    OrdinaryOffsetFrame() : OffsetFrame() {}
-    virtual ~OrdinaryOffsetFrame() {}
+namespace {
+    class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
+        OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
+    public:
+        OrdinaryOffsetFrame() : OffsetFrame() {}
+        virtual ~OrdinaryOffsetFrame() {}
 
-    OrdinaryOffsetFrame(const Frame& parent, const SimTK::Transform& offset) :
-        OffsetFrame(parent, offset) {}
-};
+        OrdinaryOffsetFrame(const Frame& parent, const SimTK::Transform& offset) :
+            OffsetFrame(parent, offset) {}
+    };
+}
 
 TEST_CASE("Body")
 {
