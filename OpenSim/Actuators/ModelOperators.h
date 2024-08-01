@@ -210,49 +210,40 @@ public:
 };
 
 /// Prescribe motion to joints in a model by providing a file containing the
-/// motion data. Paths to joints must be the same in the file and the model.
+/// motion data. All joints that have value columns in
+///
+/// Paths to joints must be the same in the file and the model.
 /// Each path must begin with "/jointset" and end with "/value", so ensure that
 /// joints are added as Joints and not Components.
-class OSIMACTUATORS_API ModOpPrescribedMotion : public ModelOperator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ModOpPrescribedMotion, ModelOperator);
-    OpenSim_DECLARE_LIST_PROPERTY(coordinate_paths, std::string,
-            "Paths to joint values in the model and table, e.g. "
-            "'/jointset/slider/position/value'.");
+class OSIMACTUATORS_API ModOpPrescribeCoordinateValues : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            ModOpPrescribeCoordinateValues, ModelOperator);
+    OpenSim_DECLARE_PROPERTY(motion_file, std::string, "File path to table with"
+                                                       " motion to prescribe.")
 
 public:
-    ModOpPrescribedMotion(std::string filePath,
-                          std::vector<std::string>& coordinatePaths) {
-        table = TimeSeriesTable(filePath);
-        constructProperty_coordinate_paths();
-        for (size_t i = 0; i < coordinatePaths.size(); ++i) {
-            updProperty_coordinate_paths().appendValue(coordinatePaths[i]);
-        }
+    ModOpPrescribeCoordinateValues(std::string filePath) {
+        constructProperty_motion_file(filePath);
     }
     void operate(Model& model, const std::string&) const override {
         model.finalizeFromProperties();
+        TimeSeriesTable table = TimeSeriesTable(get_motion_file());
         GCVSplineSet statesSpline(table);
-        for (int i = 0; i < getProperty_coordinate_paths().size(); ++i) {
-            std::string pathString = getProperty_coordinate_paths()[i];
+        for (std::string pathString: table.getColumnLabels()) {
             ComponentPath path = ComponentPath(pathString);
+            if (path.getNumPathLevels() < 2 || path.getComponentName() != "value") {
+                continue;
+            }
             std::string jointName = path.getSubcomponentNameAtLevel(1);
-            OPENSIM_THROW_IF_FRMOBJ(model.hasComponent<Joint>(jointName),
-                    Exception, fmt::format("Path '{}' is not a joint in the model,"
-                                           " make sure it is added as a joint.",
-                                           jointName));
-            OPENSIM_THROW_IF_FRMOBJ(path.getComponentName() != "value", Exception,
-                    fmt::format("Coordinate path '{}' does not end in 'value'.",
-                                pathString));
-            OPENSIM_THROW_IF_FRMOBJ(!table.hasColumn(pathString), Exception,
-                    fmt::format("Path '{}' is not a column in the given motion "
-                                " file.", getProperty_coordinate_paths()[i]));
+            if (!model.hasComponent<Joint>("jointset/"+jointName)) {
+                continue;
+            }
 
             Coordinate& q = model.updJointSet().get(jointName).updCoordinate();
             q.setPrescribedFunction(statesSpline.get(pathString));
             q.setDefaultIsPrescribed(true);
         }
     }
-private:
-    TimeSeriesTable table;
 };
 
 } // namespace OpenSim

@@ -19,6 +19,7 @@
 
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/ModelOperators.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
@@ -122,4 +123,65 @@ TEST_CASE("ModOpReplaceMusclesWithPathActuators") {
     CHECK(processedModel.countNumComponents<Millard2012EquilibriumMuscle>() ==
             0);
     CHECK(processedModel.countNumComponents<PathActuator>() == 1);
+}
+
+/// creates a model with one sliding mass
+std::unique_ptr<Model> createSlidingMassModel() {
+    auto model = make_unique<Model>();
+    model->setName("sliding_mass");
+    model->set_gravity(SimTK::Vec3(0, 0, 0));
+    auto* body = new Body("body", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    model->addComponent(body);
+    body->attachGeometry(new Sphere(0.05));
+
+    // Allows translation along x.
+    auto* joint = new SliderJoint("slider", model->getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("position");
+    model->addJoint(joint);
+
+    auto* actu = new CoordinateActuator();
+    actu->setCoordinate(&coord);
+    actu->setName("actuator");
+    actu->setOptimalForce(1);
+    model->addComponent(actu);
+
+    return model;
+}
+
+TEST_CASE("ModOpPrescribeMotion") {
+    auto model = createSlidingMassModel();
+    model->finalizeConnections();
+
+    ModelProcessor proc(*model);
+    proc.append(ModOpPrescribeCoordinateValues("linear_move.sto"));
+    Model processedModel = proc.process();
+    SimTK::State& si = processedModel.initSystem();
+    processedModel.realizePosition(si);
+
+    double final_t = 3.0;
+    double nsteps = 30;
+    double dt = final_t / nsteps;
+
+    Manager manager(processedModel);
+    manager.setIntegratorAccuracy(1e-7);
+    si.setTime(0.0);
+    manager.initialize(si);
+
+    // read file for comparison
+    TimeSeriesTable table = TimeSeriesTable("linear_move.sto");
+
+    for (int i = 1; i <= nsteps; i++) {
+        double time = dt*i;
+        // get position of slider joint
+        si = manager.integrate(time);
+        processedModel.realizePosition(si);
+        auto& coord = processedModel.getComponent<Coordinate>("/jointset/slider/position");
+        double posActual = coord.getValue(si);
+        // get value from file
+        SimTK::RowVectorView row = table.getNearestRow(time);
+        double posExpected = row[table.getColumnIndex("/jointset/slider/position/value")];
+        // compare
+        REQUIRE(posActual == Catch::Approx(posExpected).margin(1e-8));
+    }
 }
