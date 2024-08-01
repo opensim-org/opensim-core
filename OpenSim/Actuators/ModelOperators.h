@@ -210,11 +210,8 @@ public:
 };
 
 /// Prescribe motion to joints in a model by providing a file containing the
-/// motion data. All joints that have value columns in
-///
-/// Paths to joints must be the same in the file and the model.
-/// Each path must begin with "/jointset" and end with "/value", so ensure that
-/// joints are added as Joints and not Components.
+/// motion data. All joints in the jointset that have value columns in the file
+/// and are also in the model with get a prescribed motion function.
 class OSIMACTUATORS_API ModOpPrescribeCoordinateValues : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             ModOpPrescribeCoordinateValues, ModelOperator);
