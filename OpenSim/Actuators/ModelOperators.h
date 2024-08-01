@@ -19,10 +19,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "ModelProcessor.h"
-
+#include "OpenSim/Simulation/TableProcessor.h"
 #include <OpenSim/Actuators/ModelFactory.h>
-#include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Simulation/Model/ExternalLoads.h>
 
 namespace OpenSim {
 
@@ -209,24 +209,30 @@ public:
     }
 };
 
-/// Prescribe motion to joints in a model by providing a file containing the
-/// motion data. All joints in the jointset that have value columns in the file
-/// and are also in the model with get a prescribed motion function.
+/// Prescribe motion to Coordinate%s in a model by providing a table containing
+/// time series data of Coordinate values. Any columns in the provided tbale
+/// that do not match a valid path to a Joint Coordinate value in the model (e.g.,
+/// "/jointset/ankle_r/ankle_angle_r/value") will be ignored. A GCVSpline
+/// function is created for each column of Coordinate values and this function
+/// is assigned to the `prescribed_function` property for the matching Coordinate.
+/// In addition, the `prescribed` property for each matching Coordinate is set
+/// to "true".
 class OSIMACTUATORS_API ModOpPrescribeCoordinateValues : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             ModOpPrescribeCoordinateValues, ModelOperator);
-    OpenSim_DECLARE_PROPERTY(motion_file, std::string, "File path to table with"
+    OpenSim_DECLARE_PROPERTY(table, TableProcessor, "File path to table with"
                                                        " motion to prescribe.")
 
 public:
-    ModOpPrescribeCoordinateValues(std::string filePath) {
-        constructProperty_motion_file(filePath);
+    ModOpPrescribeCoordinateValues(TableProcessor table) {
+        constructProperty_table(table);
     }
     void operate(Model& model, const std::string&) const override {
         model.finalizeFromProperties();
-        TimeSeriesTable table = TimeSeriesTable(get_motion_file());
+        TimeSeriesTable table = get_table().process();
         GCVSplineSet statesSpline(table);
-        for (std::string pathString: table.getColumnLabels()) {
+        for (const std::string& pathString: table.getColumnLabels()) {
+            OPENSIM_THROW_IF_FRMOBJ(!model.hasComponent("actuator"), Exception, fmt::format("no{}", pathString));
             ComponentPath path = ComponentPath(pathString);
             if (path.getNumPathLevels() < 2 || path.getComponentName() != "value") {
                 continue;

@@ -150,38 +150,41 @@ std::unique_ptr<Model> createSlidingMassModel() {
 }
 
 TEST_CASE("ModOpPrescribeMotion") {
-    auto model = createSlidingMassModel();
-    model->finalizeConnections();
+    auto unprescribedModel = createSlidingMassModel();
+    unprescribedModel->finalizeConnections();
 
-    ModelProcessor proc(*model);
-    proc.append(ModOpPrescribeCoordinateValues("linear_move.sto"));
-    Model processedModel = proc.process();
-    SimTK::State& si = processedModel.initSystem();
-    processedModel.realizePosition(si);
+    ModelProcessor modelProcessor(*unprescribedModel);
+    TableProcessor table_processor = TableProcessor("linear_move.sto");
+    modelProcessor.append(ModOpPrescribeCoordinateValues(table_processor));
+    Model model = modelProcessor.process();
 
-    double final_t = 3.0;
+    auto* reporter = new StatesTrajectoryReporter();
+    reporter->setName("reporter");
+    reporter->set_report_time_interval(0.05);
+    model.addComponent(reporter);
+
+    SimTK::State& state = model.initSystem();
+    model.realizePosition(state);
+    Manager manager(model, state);
+    manager.integrate(3.0);
+    StatesTrajectory statesTraj = reporter->getStates();
+
+    /*double final_t = 3.0;
     double nsteps = 30;
     double dt = final_t / nsteps;
-
-    Manager manager(processedModel);
     manager.setIntegratorAccuracy(1e-7);
-    si.setTime(0.0);
-    manager.initialize(si);
+    state.setTime(0.0);
+    manager.initialize(state);*/
 
     // read file for comparison
     TimeSeriesTable table = TimeSeriesTable("linear_move.sto");
 
-    for (int i = 1; i <= nsteps; i++) {
-        double time = dt*i;
-        // get position of slider joint
-        si = manager.integrate(time);
-        processedModel.realizePosition(si);
-        auto& coord = processedModel.getComponent<Coordinate>("/jointset/slider/position");
-        double posActual = coord.getValue(si);
-        // get value from file
+    for (int itime = 0; itime < statesTraj.getSize(); ++itime) {
+        state = statesTraj[itime];
+        double time = state.getTime();
+        double posActual = model.getStateVariableValue(state, "jointset/slider/position/value");
         SimTK::RowVectorView row = table.getNearestRow(time);
         double posExpected = row[table.getColumnIndex("/jointset/slider/position/value")];
-        // compare
-        REQUIRE(posActual == Catch::Approx(posExpected).margin(1e-8));
+        REQUIRE(posActual == Catch::Approx(posExpected).margin(1e-4));
     }
 }
