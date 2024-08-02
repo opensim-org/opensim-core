@@ -34,8 +34,15 @@ public:
                 OpenSim::Exception,
                 "Enforcing kinematic constraint derivatives "
                 "not supported with trapezoidal transcription.");
-        createVariablesAndSetBounds(m_solver.getMesh(),
-                m_problem.getNumStates(), 2);
+
+        const auto& mesh = m_solver.getMesh();
+        casadi::Matrix<casadi_int> controlPoints;
+        for (int i = 0; i < static_cast<int>(mesh.size()); ++i) {
+            controlPoints->push_back(i);
+        }
+
+        createVariablesAndSetBounds(mesh,
+                m_problem.getNumStates(), 2, controlPoints);
     }
 
 private:

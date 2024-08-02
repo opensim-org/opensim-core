@@ -74,6 +74,7 @@ protected:
     void createVariablesAndSetBounds(const casadi::DM& grid,
             int numDefectsPerMeshInterval,
             int numPointsPerMeshInterval,
+            const casadi::Matrix<casadi_int>& controlPoints,
             const casadi::DM& pointsForInterpControls = casadi::DM());
 
     /// We assume all functions depend on time and parameters.
@@ -154,10 +155,10 @@ protected:
     int m_numPathConstraintPoints = -1;
     casadi::DM m_grid;
     casadi::DM m_pointsForInterpControls;
-    // casadi::MX m_times;
     casadi::MX m_duration;
 
 private:
+    VariablesMXVector m_scaledVectorVars;
     VariablesMX m_scaledVars;
     VariablesMX m_unscaledVars;
     casadi::MX m_paramsTrajGrid;

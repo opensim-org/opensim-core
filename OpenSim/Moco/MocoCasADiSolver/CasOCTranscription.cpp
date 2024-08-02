@@ -80,7 +80,9 @@ private:
 void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         int numDefectsPerMeshInterval,
         int numPointsPerMeshInterval,
+        const casadi::Matrix<casadi_int>& controlPoints,
         const casadi::DM& pointsForInterpControls) {
+            
     // Set the grid.
     // -------------
     // The grid for a transcription scheme includes both mesh points (i.e.
@@ -123,22 +125,43 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
 
     // Create variables.
     // -----------------
-    m_scaledVars[times] = MX::sym("times", 1, m_numGridPoints);
-    m_scaledVars[states] =
-            MX::sym("states", m_problem.getNumStates(), m_numGridPoints);
-    m_scaledVars[controls] =
-            MX::sym("controls", m_problem.getNumControls(), m_numGridPoints);
-    m_scaledVars[multipliers] = MX::sym(
-            "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
-    m_scaledVars[derivatives] = MX::sym(
-            "derivatives", m_problem.getNumDerivatives(), m_numGridPoints);
+    for (int igrid = 0; igrid < m_numGridPoints; ++igrid) {
+        m_scaledVectorVars[times].push_back(
+                MX::sym("time_" + std::to_string(igrid), 1, 1));
+        m_scaledVectorVars[states].push_back(
+                MX::sym("states_" + std::to_string(igrid),
+                        m_problem.getNumStates(), 1));
+        m_scaledVectorVars[controls].push_back(
+                MX::sym("controls_" + std::to_string(igrid),
+                        m_problem.getNumControls(), 1));
+        m_scaledVectorVars[multipliers].push_back(
+                MX::sym("multipliers_" + std::to_string(igrid),
+                        m_problem.getNumMultipliers(), 1));
+        m_scaledVectorVars[derivatives].push_back(
+                MX::sym("derivatives_" + std::to_string(igrid),
+                        m_problem.getNumDerivatives(), 1));
+    }
 
-    // TODO: This assumes that slack variables are applied at all
-    // collocation points on the mesh interval interior.
-    m_scaledVars[slacks] = MX::sym(
-            "slacks", m_problem.getNumSlacks(), m_numMeshInteriorPoints);
-    m_scaledVars[parameters] =
-            MX::sym("parameters", m_problem.getNumParameters(), 1);
+    m_scaledVectorVars[parameters].push_back(
+            MX::sym("parameters", m_problem.getNumParameters(), 1));
+
+    // In the Posa et al. 2016 method for enforcing kinematic constraints,
+    // the mesh interior points will be the mesh interval midpoints in the
+    // Hermite-Simpson collocation scheme.
+    for (int imesh = 0; imesh < m_numMeshInteriorPoints; ++imesh) {
+        m_scaledVectorVars[slacks].push_back(
+                MX::sym("slacks_" + std::to_string(imesh),
+                        m_problem.getNumSlacks(), 1));
+    }
+
+    // Concatenate variables.
+    m_scaledVars[times] = MX::horzcat(m_scaledVectorVars[times]);
+    m_scaledVars[states] = MX::horzcat(m_scaledVectorVars[states]);
+    m_scaledVars[controls] = MX::horzcat(m_scaledVectorVars[controls]);
+    m_scaledVars[multipliers] = MX::horzcat(m_scaledVectorVars[multipliers]);
+    m_scaledVars[derivatives] = MX::horzcat(m_scaledVectorVars[derivatives]);
+    m_scaledVars[slacks] = MX::horzcat(m_scaledVectorVars[slacks]);
+    m_scaledVars[parameters] = m_scaledVectorVars[parameters][0];
 
     m_meshIndicesMap = createMeshIndices();
     std::vector<int> meshIndicesVector;
