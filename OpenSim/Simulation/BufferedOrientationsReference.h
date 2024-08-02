@@ -52,14 +52,20 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
     BufferedOrientationsReference();
+    // Constructor with orientation file name and model units
+    BufferedOrientationsReference(const std::string& orientationFileName,
+                                  Units modelUnits=Units(Units::Radians))
+        : OrientationsReference(orientationFileName, modelUnits) {}
+    // Constructor with TimeSeriesTable and optional OrientationWeightSet
+    BufferedOrientationsReference(const TimeSeriesTable_<SimTK::Rotation_<double>>& orientationData,
+                                  const Set<OrientationWeight>* orientationWeightSet=nullptr)
+        : OrientationsReference(orientationData, orientationWeightSet) {}
     BufferedOrientationsReference(
             const BufferedOrientationsReference&) = default;
     BufferedOrientationsReference(BufferedOrientationsReference&&) = default;
     BufferedOrientationsReference& operator=(
             const BufferedOrientationsReference&) = default;
 
-    // Use OrientationsReference convenience costructor from TimeSeriesTable
-    using OrientationsReference::OrientationsReference;
 
     virtual ~BufferedOrientationsReference() {}
 
