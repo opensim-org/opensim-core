@@ -56,6 +56,7 @@ delete_this_to_stop_optimization*.txt
 .idea/codeStyles/codeStyleConfig.xml
 .idea/codeStyles/Project.xml
 .idea/editor.xml
+.idea/copilot/**
 .cache/clangd/**
 **/.vscode/
 
@@ -71,6 +72,8 @@ delete_this_to_stop_optimization*.txt
 
 .idea/deployment.xml
 .idea/other.xml
+.idea/encodings.xml
+.idea/inspectionProfiles/Project_Default.xml
 
 # Clang-Tidy
 .clang-tidy
@@ -80,4 +83,3 @@ cmake-build-*
 
 ## File-based project format:
 *.iws
-.vscode/settings.json

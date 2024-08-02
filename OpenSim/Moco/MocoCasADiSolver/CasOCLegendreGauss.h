@@ -47,9 +47,10 @@ namespace CasOC {
 ///
 /// Kinematic constraints and path constraints.
 /// -------------------------------------------
-/// Kinematic constraint and path constraint errors are enforced only at the
-/// mesh points. Errors at collocation points within the mesh interval midpoint
-/// are ignored.
+/// Position- and velocity-level kinematic constraint errors and path constraint 
+/// errors are enforced only at the mesh points. In the kinematic constraint 
+/// method by Bordalba et al. [3], the acceleration-level constraints are also
+/// enforced at the collocation points.
 ///
 /// References
 /// ----------
@@ -71,7 +72,8 @@ public:
         const int numMeshIntervals = (int)mesh.size() - 1;
         const int numGridPoints = (int)mesh.size() + numMeshIntervals * m_degree;
         casadi::DM grid = casadi::DM::zeros(1, numGridPoints);
-        const bool interpControls = m_solver.getInterpolateControlMidpoints();
+        const bool interpControls =
+                m_solver.getInterpolateControlMeshInteriorPoints();
         casadi::DM pointsForInterpControls;
         if (interpControls) {
             pointsForInterpControls = casadi::DM::zeros(1,
@@ -105,14 +107,15 @@ public:
         grid(numGridPoints - 1) = mesh[numMeshIntervals];
         createVariablesAndSetBounds(grid,
                 (m_degree + 1) * m_problem.getNumStates(),
+                m_degree + 2,
                 pointsForInterpControls);
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
-    void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
-            casadi::MX& defects) const override;
+    void calcDefectsImpl(const casadi::MXVector& x, 
+            const casadi::MXVector& xdot, casadi::MX& defects) const override;
     void calcInterpolatingControlsImpl(const casadi::MX& controls,
             casadi::MX& interpControls) const override;
 
