@@ -185,11 +185,11 @@ public:
         return m_states.back();
     }
     /// @}
-    
+   
     /** Iterator type that does not allow modifying the trajectory.
      * Most users do not need to understand what this is. */
     typedef std::vector<SimTK::State>::const_iterator const_iterator;
-
+#ifndef SWIG 
     /** A helper type to allow using range for loops over a subset of the
      * trajectory. */
     typedef SimTK::IteratorRange<const_iterator> IteratorRange;
@@ -204,7 +204,7 @@ public:
      * class in a range for loop. */
     const_iterator end() const { return m_states.cend(); }
     /// @}
-
+#endif
     /// @name Modify the contents of the trajectory
     /// @{
     /** Clear all the states in the trajectory. */
