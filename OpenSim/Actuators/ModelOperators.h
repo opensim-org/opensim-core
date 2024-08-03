@@ -210,7 +210,7 @@ public:
 };
 
 /// Prescribe motion to Coordinate%s in a model by providing a table containing
-/// time series data of Coordinate values. Any columns in the provided tbale
+/// time series data of Coordinate values. Any columns in the provided table
 /// that do not match a valid path to a Joint Coordinate value in the model (e.g.,
 /// "/jointset/ankle_r/ankle_angle_r/value") will be ignored. A GCVSpline
 /// function is created for each column of Coordinate values and this function
@@ -220,8 +220,8 @@ public:
 class OSIMACTUATORS_API ModOpPrescribeCoordinateValues : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             ModOpPrescribeCoordinateValues, ModelOperator);
-    OpenSim_DECLARE_PROPERTY(table, TableProcessor, "File path to table with"
-                                                       " motion to prescribe.")
+    OpenSim_DECLARE_PROPERTY(table, TableProcessor,
+            "TableProcessor of a TimeSeriesTable with motion to prescribe.")
 
 public:
     ModOpPrescribeCoordinateValues(TableProcessor table) {
@@ -231,14 +231,19 @@ public:
         model.finalizeFromProperties();
         TimeSeriesTable table = get_table().process();
         GCVSplineSet statesSpline(table);
+
         for (const std::string& pathString: table.getColumnLabels()) {
             OPENSIM_THROW_IF_FRMOBJ(!model.hasComponent("actuator"), Exception, fmt::format("no{}", pathString));
             ComponentPath path = ComponentPath(pathString);
-            if (path.getNumPathLevels() < 2 || path.getComponentName() != "value") {
+            if (path.getNumPathLevels() < 2
+                    || path.getSubcomponentNameAtLevel(0) != "jointset"
+                    || path.getComponentName() != "value") {
                 continue;
             }
             std::string jointName = path.getSubcomponentNameAtLevel(1);
             if (!model.hasComponent<Joint>("jointset/"+jointName)) {
+                log_warn("Path '{}' is a joint value column of the table,"
+                         " but it is not in the model.");
                 continue;
             }
 

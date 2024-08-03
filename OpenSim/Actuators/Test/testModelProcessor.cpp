@@ -16,15 +16,15 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "OpenSim/Common/Sine.h"
+#include <catch2/catch_all.hpp>
 
+#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/ModelOperators.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
-
-#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 
@@ -149,42 +149,54 @@ std::unique_ptr<Model> createSlidingMassModel() {
     return model;
 }
 
+/// create a TimeSeriesTable with one column of data which is the sine function.
+TimeSeriesTable createSineData(std::string label, double interval, double duration) {
+    std::vector<double> times;
+    int numEntries = duration / interval + 1;
+    for (int i = 0; i < numEntries; ++i) {
+        times.push_back(i * interval);
+    }
+    SimTK::Matrix positions = SimTK::Vector(numEntries);
+    SimTK::Vector x = SimTK::Vector(1);
+    for (int i = 0; i < numEntries; ++i) {
+        x[0] = i * interval;
+        positions.set(i, 0, Sine().calcValue(x));
+    }
+    std::vector<std::string> labels = {label};
+    return TimeSeriesTable(times, positions, labels);
+}
+
 TEST_CASE("ModOpPrescribeMotion") {
     auto unprescribedModel = createSlidingMassModel();
     unprescribedModel->finalizeConnections();
 
+    std::string jointPath = "/jointset/slider/position/value";
+    double interval = 0.05;
+    double duration = 3.0;
+
+    TimeSeriesTable table = createSineData(jointPath, interval, duration);
+    TableProcessor table_processor = TableProcessor(table);
     ModelProcessor modelProcessor(*unprescribedModel);
-    TableProcessor table_processor = TableProcessor("linear_move.sto");
     modelProcessor.append(ModOpPrescribeCoordinateValues(table_processor));
     Model model = modelProcessor.process();
 
     auto* reporter = new StatesTrajectoryReporter();
     reporter->setName("reporter");
-    reporter->set_report_time_interval(0.05);
+    reporter->set_report_time_interval(interval);
     model.addComponent(reporter);
 
     SimTK::State& state = model.initSystem();
     model.realizePosition(state);
     Manager manager(model, state);
-    manager.integrate(3.0);
+    manager.integrate(duration);
     StatesTrajectory statesTraj = reporter->getStates();
-
-    /*double final_t = 3.0;
-    double nsteps = 30;
-    double dt = final_t / nsteps;
-    manager.setIntegratorAccuracy(1e-7);
-    state.setTime(0.0);
-    manager.initialize(state);*/
-
-    // read file for comparison
-    TimeSeriesTable table = TimeSeriesTable("linear_move.sto");
 
     for (int itime = 0; itime < statesTraj.getSize(); ++itime) {
         state = statesTraj[itime];
         double time = state.getTime();
-        double posActual = model.getStateVariableValue(state, "jointset/slider/position/value");
+        double posActual = model.getStateVariableValue(state, jointPath);
         SimTK::RowVectorView row = table.getNearestRow(time);
-        double posExpected = row[table.getColumnIndex("/jointset/slider/position/value")];
+        double posExpected = row[table.getColumnIndex(jointPath)];
         REQUIRE(posActual == Catch::Approx(posExpected).margin(1e-4));
     }
 }
