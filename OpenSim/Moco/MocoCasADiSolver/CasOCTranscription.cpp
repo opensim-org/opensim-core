@@ -80,8 +80,8 @@ private:
 void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         int numDefectsPerMeshInterval,
         int numPointsPerMeshInterval,
-        const casadi::Matrix<casadi_int>& controlPoints,
         const casadi::DM& pointsForInterpControls) {
+        // const std::vector<bool>& controlPoints) {
 
     // Set the grid.
     // -------------
@@ -97,6 +97,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numDefectsPerMeshInterval = numDefectsPerMeshInterval;
     m_numPointsPerMeshInterval = numPointsPerMeshInterval;
     m_pointsForInterpControls = pointsForInterpControls;
+    // m_controlPoints = controlPoints;
     m_numMultibodyResiduals = m_problem.isDynamicsModeImplicit()
                              ? m_problem.getNumMultibodyDynamicsEquations()
                              : 0;
@@ -127,6 +128,11 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
 
     // Create variables.
     // -----------------
+    // OPENSIM_THROW_IF(
+    //         static_cast<int>(m_controlPoints.size()) != m_numGridPoints,
+    //         OpenSim::Exception,
+    //         "The number of control points must match the number of grid "
+    //         "points.");
     for (int igrid = 0; igrid < m_numGridPoints; ++igrid) {
         m_scaledVectorVars[times].push_back(
                 MX::sym("time_" + std::to_string(igrid), 1, 1));
@@ -139,6 +145,15 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         m_scaledVectorVars[controls].push_back(
                 MX::sym("controls_" + std::to_string(igrid),
                         m_problem.getNumControls(), 1));
+        // if (m_controlPoints[igrid]) {
+        //     m_scaledVectorVars[controls].push_back(
+        //             MX::sym("controls_" + std::to_string(igrid),
+        //                     m_problem.getNumControls(), 1));
+        // } else {
+        //     m_scaledVectorVars[controls].push_back(
+        //             MX(m_problem.getNumControls(), 1));
+        // }
+        // TODO should multipliers and derivatives also follow controlPoints?
         m_scaledVectorVars[multipliers].push_back(
                 MX::sym("multipliers_" + std::to_string(igrid),
                         m_problem.getNumMultipliers(), 1));
@@ -302,6 +317,8 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_unscaledVars = unscaleVariables(m_scaledVars);
 
     m_duration = m_unscaledVars[times](-1) - m_unscaledVars[times](0);
+
+    // calcExtrapolatedControls();
 }
 
 void Transcription::transcribe() {
@@ -729,7 +746,7 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         options[m_solver.getOptimSolver()] = m_solver.getSolverOptions();
     }
 
-    auto x = flattenVariables(m_scaledVars);
+    auto x = flattenVariablesMX(m_scaledVectorVars);
     casadi_int numVariables = x.numel();
 
     // The m_constraints symbolic vector holds all of the expressions for
@@ -769,6 +786,15 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         jacobian.sparsity().to_file(
                 prefix + "constraint_Jacobian_sparsity.mtx");
     }
+    if (m_solver.getOptimSolver() == "fatrop") {
+        options["structure_detection"] = "auto";
+        std::vector<bool> equality;
+        for (int i = 0; i < 7*m_numMeshIntervals - 1; ++i) {
+            equality.push_back(true);
+        }
+        options["equality"] = equality;
+        options["debug"] = true;
+    }
     const casadi::Function nlpFunc =
             casadi::nlpsol("nlp", m_solver.getOptimSolver(), nlp, options);
 
@@ -776,9 +802,9 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     // --------------------------------------------------------
     // The inputs and outputs of nlpFunc are numeric (casadi::DM).
     const casadi::DMDict nlpResult = nlpFunc(casadi::DMDict{
-                    {"x0", flattenVariables(scaleVariables(guess.variables))},
-                    {"lbx", flattenVariables(scaleVariables(m_lowerBounds))},
-                    {"ubx", flattenVariables(scaleVariables(m_upperBounds))},
+                    {"x0", flattenVariablesDM(scaleVariables(guess.variables))},
+                    {"lbx", flattenVariablesDM(scaleVariables(m_lowerBounds))},
+                    {"ubx", flattenVariablesDM(scaleVariables(m_upperBounds))},
                     {"lbg", flattenConstraints(m_constraintsLowerBounds)},
                     {"ubg", flattenConstraints(m_constraintsUpperBounds)}});
 

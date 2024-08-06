@@ -89,13 +89,16 @@ public:
                 m_quadratureCoefficients);
 
         // Create the grid points.
+        // std::vector<bool> controlPoints;
         for (int imesh = 0; imesh < numMeshIntervals; ++imesh) {
             const double t_i = mesh[imesh];
             const double t_ip1 = mesh[imesh + 1];
             int igrid = imesh * (m_degree + 1);
             grid(igrid) = t_i;
+            // controlPoints.push_back(false);
             for (int d = 0; d < m_degree; ++d) {
                 grid(igrid + d + 1) = t_i + (t_ip1 - t_i) * m_legendreRoots[d];
+                // controlPoints.push_back(true);
                 if (interpControls) {
                     pointsForInterpControls(imesh * m_degree + d) =
                             grid(igrid + d + 1);
@@ -103,9 +106,9 @@ public:
             }
         }
         grid(numGridPoints - 1) = mesh[numMeshIntervals];
+        // controlPoints.push_back(false);
         createVariablesAndSetBounds(grid,
-                (m_degree + 1) * m_problem.getNumStates(),
-                m_degree + 2,
+                (m_degree + 1) * m_problem.getNumStates(), m_degree + 2,
                 pointsForInterpControls);
     }
 
@@ -116,6 +119,7 @@ private:
             const casadi::MX& xdot, casadi::MX& defects) const override;
     void calcInterpolatingControlsImpl(const casadi::MX& controls,
             casadi::MX& interpControls) const override;
+    // void calcExtrapolatedControlsImpl(casadi::MX& controls) const override;
 
     int m_degree;
     std::vector<double> m_legendreRoots;

@@ -97,4 +97,20 @@ void LegendreGauss::calcInterpolatingControlsImpl(
     }
 }
 
+// void LegendreGauss::calcExtrapolatedControlsImpl(casadi::MX& controls) const {
+//     if (m_problem.getNumControls()) {
+//         // TODO
+//         // for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+//         //     const int igrid = imesh * (m_degree + 1);
+//         //     const auto c_i = controls(Slice(), igrid);
+//         //     const auto c_ip1 = controls(Slice(), igrid + m_degree + 1);
+//         //     for (int d = 0; d < m_degree; ++d) {
+//         //         const auto c_t = controls(Slice(), igrid + d + 1);
+//         //         interpControls(Slice(), imesh * m_degree + d) =
+//         //                 c_t - (m_legendreRoots[d] * (c_ip1 - c_i) + c_i);
+//         //     }
+//         // }
+//     }
+// }
+
 } // namespace CasOC

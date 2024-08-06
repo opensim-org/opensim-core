@@ -69,13 +69,12 @@ protected:
     /// overridden virtual methods are accessible to the base class. This
     /// implementation allows initialization to occur during construction,
     /// avoiding an extra call on the instantiated object.
-    /// pointsForInterpControls are grid points at which the transcription
-    /// scheme applies constraints between control points.
+    /// TODO control points
     void createVariablesAndSetBounds(const casadi::DM& grid,
             int numDefectsPerMeshInterval,
             int numPointsPerMeshInterval,
-            const casadi::Matrix<casadi_int>& controlPoints,
             const casadi::DM& pointsForInterpControls = casadi::DM());
+            // const std::vector<bool>& controlPoints);
 
     /// We assume all functions depend on time and parameters.
     /// "inputs" is prepended by time and postpended (?) by parameters.
@@ -158,15 +157,12 @@ protected:
     casadi::DM m_grid;
     casadi::DM m_pointsForInterpControls;
     casadi::MX m_duration;
+    // std::vector<bool> m_controlPoints;
 
 private:
     VariablesMXVector m_scaledVectorVars;
     VariablesMX m_scaledVars;
     VariablesMX m_unscaledVars;
-    // casadi::MX m_paramsTrajGrid;
-    // casadi::MX m_paramsTrajMesh;
-    // casadi::MX m_paramsTrajMeshInterior;
-    // casadi::MX m_paramsTrajPathCon;
     VariablesDM m_lowerBounds;
     VariablesDM m_upperBounds;
     VariablesDM m_shift;
@@ -206,6 +202,13 @@ private:
         OPENSIM_THROW_IF(m_pointsForInterpControls.numel(), OpenSim::Exception,
                 "Must provide constraints for interpolating controls.")
     }
+    // virtual void calcExtrapolatedControlsImpl(casadi::MX& /*controls*/) const {
+    //     bool hasExtrapolatedControls = std::any_of(
+    //             m_controlPoints.begin(), m_controlPoints.end(),
+    //             [](bool b) { return !b; });
+    //     OPENSIM_THROW_IF(hasExtrapolatedControls, OpenSim::Exception,
+    //             "Must provide scheme for extrapolated controls.")
+    // }
 
     void transcribe();
     void setObjectiveAndEndpointConstraints();
@@ -217,25 +220,77 @@ private:
         calcInterpolatingControlsImpl(
                 m_unscaledVars.at(controls), m_constraints.interp_controls);
     }
+    // void calcExtrapolatedControls() {
+    //     calcExtrapolatedControlsImpl(m_scaledVars.at(controls));
+    // }
 
     /// Use this function to ensure you iterate through variables in the same
     /// order.
     template <typename T>
     static std::vector<Var> getSortedVarKeys(const Variables<T>& vars) {
         std::vector<Var> keys;
-        for (const auto& kv : vars) { keys.push_back(kv.first); }
-        std::sort(keys.begin(), keys.end());
+        keys.push_back(times);
+        keys.push_back(parameters);
+        keys.push_back(states);
+        keys.push_back(controls);
+        keys.push_back(multipliers);
+        keys.push_back(derivatives);
+        // for (const auto& kv : vars) { keys.push_back(kv.first); }
+        // std::sort(keys.begin(), keys.end());
         return keys;
     }
     /// Convert the map of variables into a column vector, for passing onto
     /// nlpsol(), etc.
-    template <typename T>
-    static T flattenVariables(const CasOC::Variables<T>& vars) {
-        std::vector<T> stdvec;
-        for (const auto& key : getSortedVarKeys(vars)) {
-            stdvec.push_back(vars.at(key));
+    // template <typename T>
+    // static T flattenVariables(const CasOC::Variables<T>& vars) {
+    //     std::vector<T> stdvec;
+    //     for (const auto& key : getSortedVarKeys(vars)) {
+    //         stdvec.push_back(vars.at(key));
+    //     }
+    //     return T::veccat(stdvec);
+    // }
+    casadi::MX flattenVariablesMX(const CasOC::VariablesMXVector& vars) const {
+        std::vector<casadi::MX> stdvec;
+        int N = m_numPointsPerMeshInterval - 1;
+        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+            int igrid = imesh * N;
+            for (int i = 0; i < N; ++i) {
+                stdvec.push_back(vars.at(times)[igrid + i]);
+            }
+            for (int i = 0; i < N; ++i) {
+                stdvec.push_back(vars.at(states)[igrid + i]);
+            }
+            for (int i = 0; i < N; ++i) {
+                stdvec.push_back(vars.at(controls)[igrid + i]);
+            }
         }
-        return T::veccat(stdvec);
+        stdvec.push_back(vars.at(times)[m_numGridPoints - 1]);
+        stdvec.push_back(vars.at(states)[m_numGridPoints - 1]);
+        stdvec.push_back(vars.at(controls)[m_numGridPoints - 1]);
+
+        return casadi::MX::veccat(stdvec);
+    }
+
+    casadi::DM flattenVariablesDM(const CasOC::VariablesDM& vars) const {
+        std::vector<casadi::DM> stdvec;
+        int N = m_numPointsPerMeshInterval - 1;
+        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+            int igrid = imesh * N;
+            for (int i = 0; i < N; ++i) {
+                stdvec.push_back(vars.at(times)(casadi::Slice(), igrid + i));
+            }
+            for (int i = 0; i < N; ++i) {
+                stdvec.push_back(vars.at(states)(casadi::Slice(), igrid + i));
+            }
+            for (int i = 0; i < N; ++i) {
+                stdvec.push_back(vars.at(controls)(casadi::Slice(), igrid + i));
+            }
+        }
+        stdvec.push_back(vars.at(times)(casadi::Slice(), m_numGridPoints - 1));
+        stdvec.push_back(vars.at(states)(casadi::Slice(), m_numGridPoints - 1));
+        stdvec.push_back(vars.at(controls)(casadi::Slice(), m_numGridPoints - 1));
+
+        return casadi::DM::veccat(stdvec);
     }
     /// Convert the 'x' column vector into separate variables.
     CasOC::VariablesDM expandVariables(const casadi::DM& x) const {

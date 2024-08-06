@@ -105,4 +105,20 @@ void HermiteSimpson::calcInterpolatingControlsImpl(
     }
 }
 
+// void HermiteSimpson::calcExtrapolatedControlsImpl(casadi::MX& controls) const {
+//     if (m_problem.getNumControls()) {
+//         int time_i;
+//         int time_mid;
+//         int time_ip1;
+//         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+//             time_i = 2 * imesh;
+//             time_mid = 2 * imesh + 1;
+//             time_ip1 = 2 * imesh + 2;
+//             const auto c_i = controls(Slice(), time_i);
+//             const auto c_ip1 = controls(Slice(), time_ip1);
+//             controls(Slice(), time_mid) = 0.5 * (c_ip1 + c_i);
+//         }
+//     }
+// }
+
 } // namespace CasOC

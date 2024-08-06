@@ -36,13 +36,12 @@ public:
                 "not supported with trapezoidal transcription.");
 
         const auto& mesh = m_solver.getMesh();
-        casadi::Matrix<casadi_int> controlPoints;
-        for (int i = 0; i < static_cast<int>(mesh.size()); ++i) {
-            controlPoints->push_back(i);
-        }
-
+        // std::vector<bool> controlPoints;
+        // for (int i = 0; i < static_cast<int>(mesh.size()); ++i) {
+        //     controlPoints.push_back(true);
+        // }
         createVariablesAndSetBounds(mesh,
-                m_problem.getNumStates(), 2, controlPoints);
+                m_problem.getNumStates(), 2);
     }
 
 private:
