@@ -126,6 +126,7 @@ protected:
     template <typename T>
     struct Constraints {
         T times;
+        T parameters;
         T defects;
         T multibody_residuals;
         T auxiliary_residuals;
@@ -151,6 +152,7 @@ protected:
     int m_numPointsPerMeshInterval = -1;
     int m_numMultibodyResiduals = -1;
     int m_numAuxiliaryResiduals = -1;
+    int m_numTimeConstraints = -1;
     int m_numConstraints = -1;
     int m_numPathConstraintPoints = -1;
     casadi::DM m_grid;
@@ -161,10 +163,10 @@ private:
     VariablesMXVector m_scaledVectorVars;
     VariablesMX m_scaledVars;
     VariablesMX m_unscaledVars;
-    casadi::MX m_paramsTrajGrid;
-    casadi::MX m_paramsTrajMesh;
-    casadi::MX m_paramsTrajMeshInterior;
-    casadi::MX m_paramsTrajPathCon;
+    // casadi::MX m_paramsTrajGrid;
+    // casadi::MX m_paramsTrajMesh;
+    // casadi::MX m_paramsTrajMeshInterior;
+    // casadi::MX m_paramsTrajPathCon;
     VariablesDM m_lowerBounds;
     VariablesDM m_upperBounds;
     VariablesDM m_shift;
@@ -366,6 +368,7 @@ private:
         int N = m_numPointsPerMeshInterval - 1;
         int icon = 0;
         int itime = 0;
+        int iparam = 0;
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
 
@@ -374,6 +377,11 @@ private:
                 if (igrid + i != 0 && igrid + i != m_numGridPoints - 1) {
                     copyColumn(constraints.times, itime++);
                 }
+            }
+
+            // Parameter constraints.
+            for (int i = 0; i < N; ++i) {
+                copyColumn(constraints.parameters, iparam++);
             }
 
             // Defect constraints.
@@ -477,6 +485,7 @@ private:
         int N = m_numPointsPerMeshInterval - 1;
         int icon = 0;
         int itime = 0;
+        int iparam = 0;
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
 
@@ -485,6 +494,11 @@ private:
                 if (igrid + i != 0 && igrid + i != m_numGridPoints - 1) {
                     copyColumn(out.times, itime++);
                 }
+            }
+
+            // Parameter constraints.
+            for (int i = 0; i < N; ++i) {
+                copyColumn(out.parameters, iparam++);
             }
 
             // Defect constraints.

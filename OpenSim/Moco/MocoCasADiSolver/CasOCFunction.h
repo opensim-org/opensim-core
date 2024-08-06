@@ -98,7 +98,7 @@ private:
         } else if (i == 4) {
             return fullPoint.at(derivatives)(Slice(), itime);
         } else if (i == 5) {
-            return fullPoint.at(parameters);
+            return fullPoint.at(parameters)(Slice(), itime);
         } else {
             return casadi::DM();
         }

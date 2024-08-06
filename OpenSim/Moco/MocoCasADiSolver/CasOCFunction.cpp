@@ -217,7 +217,7 @@ casadi::DM Endpoint::getSubsetPoint(const VariablesDM& fullPoint,
     } else if (i == 9) {
         return fullPoint.at(derivatives)(Slice(), -1);
     } else if (i == 10) {
-        return fullPoint.at(parameters);
+        return fullPoint.at(parameters)(Slice(), -1);
     } else if (i == 11) {
         // TODO: We should find a way to actually compute the integral
         // from fullPoint. Or, make the integral an optimization variable.
@@ -323,7 +323,7 @@ casadi::DM VelocityCorrection::getSubsetPoint(
     } else if (i == 2) {
         return fullPoint.at(slacks)(Slice(), itime);
     } else if (i == 3) {
-        return fullPoint.at(parameters);
+        return fullPoint.at(parameters)(Slice(), itime);
     } else {
         return casadi::DM();
     }

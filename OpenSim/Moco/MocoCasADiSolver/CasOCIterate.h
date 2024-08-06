@@ -25,7 +25,7 @@ namespace CasOC {
 /// This enum describes the different types of optimization variables, and
 /// are the keys for the Variables map.
 enum Var {
-    // Time Variables.
+    // Time variables.
     times,
     /// Differential variables.
     states,
@@ -36,7 +36,7 @@ enum Var {
     /// Used for certain methods of solving kinematic constraints.
     slacks,
     /// Used in implicit dynamics mode.
-    derivatives, // TODO: Rename to accelerations?
+    derivatives,
     /// Constant in time.
     parameters,
     /// For internal use (never actually a key for Variables).

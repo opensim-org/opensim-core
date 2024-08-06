@@ -82,7 +82,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         int numPointsPerMeshInterval,
         const casadi::Matrix<casadi_int>& controlPoints,
         const casadi::DM& pointsForInterpControls) {
-            
+
     // Set the grid.
     // -------------
     // The grid for a transcription scheme includes both mesh points (i.e.
@@ -92,6 +92,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numMeshPoints = (int)m_solver.getMesh().size();
     m_numGridPoints = (int)grid.numel();
     m_numMeshIntervals = m_numMeshPoints - 1;
+    m_numTimeConstraints = m_numGridPoints - 2;
     m_numMeshInteriorPoints = m_numGridPoints - m_numMeshPoints;
     m_numDefectsPerMeshInterval = numDefectsPerMeshInterval;
     m_numPointsPerMeshInterval = numPointsPerMeshInterval;
@@ -102,7 +103,8 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numAuxiliaryResiduals = m_problem.getNumAuxiliaryResidualEquations();
 
     m_numConstraints =
-            m_numGridPoints - 2 + // time constraints
+            m_numTimeConstraints +
+            m_problem.getNumParameters() * (m_numGridPoints - 1) +
             m_numDefectsPerMeshInterval * m_numMeshIntervals +
             m_numMultibodyResiduals * m_numGridPoints +
             m_numAuxiliaryResiduals * m_numGridPoints +
@@ -128,6 +130,9 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     for (int igrid = 0; igrid < m_numGridPoints; ++igrid) {
         m_scaledVectorVars[times].push_back(
                 MX::sym("time_" + std::to_string(igrid), 1, 1));
+        m_scaledVectorVars[parameters].push_back(
+                MX::sym("parameters_" + std::to_string(igrid),
+                        m_problem.getNumParameters(), 1));
         m_scaledVectorVars[states].push_back(
                 MX::sym("states_" + std::to_string(igrid),
                         m_problem.getNumStates(), 1));
@@ -142,9 +147,6 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                         m_problem.getNumDerivatives(), 1));
     }
 
-    m_scaledVectorVars[parameters].push_back(
-            MX::sym("parameters", m_problem.getNumParameters(), 1));
-
     // In the Posa et al. 2016 method for enforcing kinematic constraints,
     // the mesh interior points will be the mesh interval midpoints in the
     // Hermite-Simpson collocation scheme.
@@ -156,12 +158,12 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
 
     // Concatenate variables.
     m_scaledVars[times] = MX::horzcat(m_scaledVectorVars[times]);
+    m_scaledVars[parameters] = MX::horzcat(m_scaledVectorVars[parameters]);
     m_scaledVars[states] = MX::horzcat(m_scaledVectorVars[states]);
     m_scaledVars[controls] = MX::horzcat(m_scaledVectorVars[controls]);
     m_scaledVars[multipliers] = MX::horzcat(m_scaledVectorVars[multipliers]);
     m_scaledVars[derivatives] = MX::horzcat(m_scaledVectorVars[derivatives]);
     m_scaledVars[slacks] = MX::horzcat(m_scaledVectorVars[slacks]);
-    m_scaledVars[parameters] = m_scaledVectorVars[parameters][0];
 
     m_meshIndicesMap = createMeshIndices();
     std::vector<int> meshIndicesVector;
@@ -183,7 +185,6 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     std::vector<int> gridIndicesVector(m_numGridPoints);
     std::iota(gridIndicesVector.begin(), gridIndicesVector.end(), 0);
     m_gridIndices = makeTimeIndices(gridIndicesVector);
-
     m_meshIndices = makeTimeIndices(meshIndicesVector);
     m_meshInteriorIndices =
             makeTimeIndices(meshInteriorIndicesVector);
@@ -216,7 +217,6 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     setVariableBounds(times, 0, Slice(1, m_numGridPoints - 1),
             {m_problem.getTimeInitialBounds().lower,
              m_problem.getTimeFinalBounds().upper});
-
     // TODO scale initial and final time by their individual bounds?
     setVariableScaling(times, Slice(), Slice(),
             {m_problem.getTimeInitialBounds().lower,
@@ -294,23 +294,14 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         const auto& paramInfos = m_problem.getParameterInfos();
         int ip = 0;
         for (const auto& info : paramInfos) {
-            setVariableBounds(parameters, ip, 0, info.bounds);
-            setVariableScaling(parameters, ip, 0, info.bounds);
+            setVariableBounds(parameters, ip, Slice(), info.bounds);
+            setVariableScaling(parameters, ip, Slice(), info.bounds);
             ++ip;
         }
     }
     m_unscaledVars = unscaleVariables(m_scaledVars);
 
     m_duration = m_unscaledVars[times](-1) - m_unscaledVars[times](0);
-    m_paramsTrajGrid =
-            MX::repmat(m_unscaledVars[parameters], 1, m_numGridPoints);
-    m_paramsTrajMesh =
-            MX::repmat(m_unscaledVars[parameters], 1, m_numMeshPoints);
-    m_paramsTrajMeshInterior = MX::repmat(m_unscaledVars[parameters], 1,
-        m_numMeshInteriorPoints);
-    m_paramsTrajPathCon =
-            MX::repmat(m_unscaledVars[parameters], 1,
-                       m_numPathConstraintPoints);
 }
 
 void Transcription::transcribe() {
@@ -332,9 +323,18 @@ void Transcription::transcribe() {
     //        in CasADi?
     // Initialize memory for time constraints.
     // ---------------------------------------
-    m_constraints.times = MX(casadi::Sparsity::dense(1, m_numGridPoints-2));
-    m_constraintsLowerBounds.times = DM::zeros(1, m_numGridPoints-2);
-    m_constraintsUpperBounds.times = DM::zeros(1, m_numGridPoints-2);
+    m_constraints.times = MX(casadi::Sparsity::dense(1, m_numTimeConstraints));
+    m_constraintsLowerBounds.times = DM::zeros(1, m_numTimeConstraints);
+    m_constraintsUpperBounds.times = DM::zeros(1, m_numTimeConstraints);
+
+    // Initialize memory for parameter constraints.
+    // --------------------------------------------
+    m_constraints.parameters = MX(casadi::Sparsity::dense(
+            m_problem.getNumParameters(), m_numGridPoints - 1));
+    m_constraintsLowerBounds.parameters =
+            DM::zeros(m_problem.getNumParameters(), m_numGridPoints - 1);
+    m_constraintsUpperBounds.parameters =
+            DM::zeros(m_problem.getNumParameters(), m_numGridPoints - 1);
 
     // Initialize memory for state derivatives and defects.
     // ----------------------------------------------------
@@ -379,12 +379,20 @@ void Transcription::transcribe() {
 
     // time
     // ----
-    const auto& initialTime = m_unscaledVars[times](0);
-    const auto& finalTime = m_unscaledVars[times](-1);
+    const auto& initialTime = m_scaledVars[times](0);
+    const auto& finalTime = m_scaledVars[times](-1);
     for (int itime = 1; itime < m_numGridPoints - 1; ++itime) {
         m_constraints.times(0, itime - 1) =
                 (finalTime - initialTime) * m_grid(itime) + initialTime
-                - m_unscaledVars[times](itime);
+                - m_scaledVars[times](itime);
+    }
+
+    // parameters
+    // ----------
+    for (int itime = 0; itime < m_numGridPoints - 1; ++itime) {
+        m_constraints.parameters(Slice(), itime) =
+                m_scaledVars[parameters](Slice(), itime + 1) -
+                m_scaledVars[parameters](Slice(), itime);
     }
 
     // qdot
@@ -588,7 +596,7 @@ void Transcription::setObjectiveAndEndpointConstraints() {
                         m_unscaledVars[controls](Slice(), -1),
                         m_unscaledVars[multipliers](Slice(), -1),
                         m_unscaledVars[derivatives](Slice(), -1),
-                        m_unscaledVars[parameters],
+                        m_unscaledVars[parameters](Slice(), -1),
                         integral},
                 costOut);
         m_objectiveTerms(iterm++) = casadi::MX::sum1(costOut.at(0));
@@ -662,7 +670,7 @@ void Transcription::setObjectiveAndEndpointConstraints() {
                         m_unscaledVars[controls](Slice(), -1),
                         m_unscaledVars[multipliers](Slice(), -1),
                         m_unscaledVars[derivatives](Slice(), -1),
-                        m_unscaledVars[parameters],
+                        m_unscaledVars[parameters](Slice(), -1),
                         integral},
                 endpointOut);
         m_constraints.endpoint[iec] = endpointOut.at(0);
@@ -1020,7 +1028,8 @@ void Transcription::printConstraintValues(const Iterate& it,
     printParameterBounds(
             "Time bounds", time_names, timeValues, timeLower, timeUpper);
     printParameterBounds("Parameter bounds", it.parameter_names,
-            vars.at(parameters), lower.at(parameters), upper.at(parameters));
+            vars.at(parameters)(0), lower.at(parameters)(0),
+            upper.at(parameters)(0));
 
     // Constraints.
     // ============
@@ -1273,7 +1282,6 @@ casadi::MXVector Transcription::evalOnTrajectory(
     // Assemble input.
     // Add 1 for time input and 1 for parameters input.
     MXVector mxIn(inputs.size() + 2);
-    // mxIn[0] = m_times(timeIndices);
     mxIn[0] = m_unscaledVars.at(times)(timeIndices);
     for (int i = 0; i < (int)inputs.size(); ++i) {
         if (inputs[i] == multibody_states) {
@@ -1287,17 +1295,8 @@ casadi::MXVector Transcription::evalOnTrajectory(
             mxIn[i + 1] = m_unscaledVars.at(inputs[i])(Slice(), timeIndices);
         }
     }
-    if (&timeIndices == &m_gridIndices) {
-        mxIn[mxIn.size() - 1] = m_paramsTrajGrid;
-    } else if (&timeIndices == &m_meshIndices) {
-        mxIn[mxIn.size() - 1] = m_paramsTrajMesh;
-    } else if (&timeIndices == &m_meshInteriorIndices) {
-        mxIn[mxIn.size() - 1] = m_paramsTrajMeshInterior;
-    } else if (&timeIndices == &m_pathConstraintIndices) {
-        mxIn[mxIn.size() - 1] = m_paramsTrajPathCon;
-    } else {
-        OPENSIM_THROW(OpenSim::Exception, "Internal error.");
-    }
+    mxIn[mxIn.size() - 1] = m_unscaledVars.at(parameters)(Slice(), timeIndices);
+
     MXVector mxOut;
     trajFunc.call(mxIn, mxOut);
     return mxOut;
