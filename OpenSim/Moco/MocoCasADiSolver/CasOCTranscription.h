@@ -124,9 +124,6 @@ protected:
 
     template <typename T>
     struct Constraints {
-        // T initial_time;
-        // T final_time;
-        // T parameters;
         T defects;
         T multibody_residuals;
         T auxiliary_residuals;
@@ -161,7 +158,8 @@ protected:
     casadi::MX m_parameters;
     casadi::MX m_delta_t;
     casadi::MX m_duration;
-    // std::vector<bool> m_controlPoints;
+    std::vector<bool> m_controlPoints;
+    casadi::MX m_controls;
 
 private:
     VariablesMXVector m_scaledVectorVars;
@@ -431,19 +429,11 @@ private:
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
         int icon = 0;
-        int iparam = 0;
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
 
             // Defect constraints.
             copyColumn(constraints.defects, imesh);
-
-            // // Time constraints.
-            // copyColumn(constraints.initial_time, imesh);
-            // copyColumn(constraints.final_time, imesh);
-
-            // // Parameter constraints.
-            // copyColumn(constraints.parameters, imesh);
 
             // Multibody and auxiliary residuals.
             for (int i = 0; i < N; ++i) {
@@ -505,10 +495,6 @@ private:
             return T(casadi::Sparsity::dense(numRows, numColumns));
         };
         Constraints<T> out;
-        // out.initial_time = init(1, m_numParameterConstraints);
-        // out.final_time = init(1, m_numParameterConstraints);
-        // out.parameters = init(m_problem.getNumParameters(),
-        //         m_numParameterConstraints);
         out.defects = init(m_numDefectsPerMeshInterval, m_numMeshPoints - 1);
         out.multibody_residuals = init(m_numMultibodyResiduals,
                 m_numGridPoints);
@@ -546,19 +532,11 @@ private:
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
         int icon = 0;
-        int iparam = 0;
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
 
             // Defect constraints.
             copyColumn(out.defects, imesh);
-
-            // // Time constraints.
-            // copyColumn(out.initial_time, imesh);
-            // copyColumn(out.final_time, imesh);
-
-            // // Parameter constraints.
-            // copyColumn(out.parameters, imesh);
 
             // Multibody and auxiliary residuals.
             for (int i = 0; i < N; ++i) {

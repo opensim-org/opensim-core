@@ -378,31 +378,6 @@ void Transcription::transcribe() {
 
     // TODO: Does creating all this memory have efficiency implications
     //        in CasADi?
-    // // Initialize memory for time constraints.
-    // // ---------------------------------------
-    // m_constraints.initial_time =
-    //         MX(casadi::Sparsity::dense(1, m_numParameterConstraints));
-    // m_constraintsLowerBounds.initial_time =
-    //         DM::zeros(1, m_numParameterConstraints);
-    // m_constraintsUpperBounds.initial_time =
-    //         DM::zeros(1, m_numParameterConstraints);
-
-    // m_constraints.final_time =
-    //         MX(casadi::Sparsity::dense(1, m_numParameterConstraints));
-    // m_constraintsLowerBounds.final_time =
-    //         DM::zeros(1, m_numParameterConstraints);
-    // m_constraintsUpperBounds.final_time =
-    //         DM::zeros(1, m_numParameterConstraints);
-
-    // // Initialize memory for parameter constraints.
-    // // --------------------------------------------
-    // m_constraints.parameters = MX(casadi::Sparsity::dense(
-    //         m_problem.getNumParameters(), m_numParameterConstraints));
-    // m_constraintsLowerBounds.parameters =
-    //         DM::zeros(m_problem.getNumParameters(), m_numParameterConstraints);
-    // m_constraintsUpperBounds.parameters =
-    //         DM::zeros(m_problem.getNumParameters(), m_numParameterConstraints);
-
     // Initialize memory for state derivatives and defects.
     // ----------------------------------------------------
     m_xdot = MX(NS, m_numGridPoints);
@@ -443,25 +418,6 @@ void Transcription::transcribe() {
             kcBounds.lower, numKinematicConstraints, m_numMeshPoints);
     m_constraintsUpperBounds.kinematic = casadi::DM::repmat(
             kcBounds.upper, numKinematicConstraints, m_numMeshPoints);
-
-    // // time
-    // // ----
-    // for (int itime = 0; itime < m_numParameterConstraints; ++itime) {
-    //     m_constraints.initial_time(Slice(), itime) =
-    //             m_scaledVars[initial_time](itime + 1) -
-    //             m_scaledVars[initial_time](itime);
-    //     m_constraints.final_time(Slice(), itime) =
-    //             m_scaledVars[final_time](itime + 1) -
-    //             m_scaledVars[final_time](itime);
-    // }
-
-    // // parameters
-    // // ----------
-    // for (int itime = 0; itime < m_numParameterConstraints; ++itime) {
-    //     m_constraints.parameters(Slice(), itime) =
-    //             m_scaledVars[parameters](Slice(), itime + 1) -
-    //             m_scaledVars[parameters](Slice(), itime);
-    // }
 
     // qdot
     // ----
