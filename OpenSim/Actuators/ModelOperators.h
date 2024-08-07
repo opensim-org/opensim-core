@@ -19,10 +19,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "ModelProcessor.h"
-#include "OpenSim/Simulation/TableProcessor.h"
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
+#include "OpenSim/Simulation/TableProcessor.h"
 
 namespace OpenSim {
 
@@ -220,34 +220,34 @@ public:
 class OSIMACTUATORS_API ModOpPrescribeCoordinateValues : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             ModOpPrescribeCoordinateValues, ModelOperator);
-    OpenSim_DECLARE_PROPERTY(table, TableProcessor,
+    OpenSim_DECLARE_PROPERTY(coordinate_values, TableProcessor,
             "TableProcessor of a TimeSeriesTable with motion to prescribe.")
 
 public:
     ModOpPrescribeCoordinateValues(TableProcessor table) {
-        constructProperty_table(table);
+        constructProperty_coordinate_values(table);
     }
     void operate(Model& model, const std::string&) const override {
         model.finalizeFromProperties();
-        TimeSeriesTable table = get_table().process();
+        TimeSeriesTable table = get_coordinate_values().process();
         GCVSplineSet statesSpline(table);
 
         for (const std::string& pathString: table.getColumnLabels()) {
-            OPENSIM_THROW_IF_FRMOBJ(!model.hasComponent("actuator"), Exception, fmt::format("no{}", pathString));
             ComponentPath path = ComponentPath(pathString);
-            if (path.getNumPathLevels() < 2
-                    || path.getSubcomponentNameAtLevel(0) != "jointset"
-                    || path.getComponentName() != "value") {
+            if (path.getNumPathLevels() < 3) {
                 continue;
             }
-            std::string jointName = path.getSubcomponentNameAtLevel(1);
-            if (!model.hasComponent<Joint>("jointset/"+jointName)) {
-                log_warn("Path '{}' is a joint value column of the table,"
-                         " but it is not in the model.");
+            std::string jointPath = path.getParentPath().getParentPath().toString();
+            if (!model.hasComponent<Joint>(jointPath)) {
+                if (path.getSubcomponentNameAtLevel(0) == "jointset"
+                        && path.getComponentName() == "value") {
+                    log_warn("Path '{}' is a joint value column of the table,"
+                             " but it is not in the model.", pathString);
+                }
                 continue;
             }
 
-            Coordinate& q = model.updJointSet().get(jointName).updCoordinate();
+            Coordinate& q = model.updComponent<Joint>(jointPath).updCoordinate();
             q.setPrescribedFunction(statesSpline.get(pathString));
             q.setDefaultIsPrescribed(true);
         }
