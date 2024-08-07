@@ -115,9 +115,7 @@ SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
             (int)x_no_nans.size(), &x_no_nans[0], &y_no_nans[0]);
     SimTK::Vector newY(newX.size(), SimTK::NaN);
     for (int i = 0; i < newX.size(); ++i) {
-        const auto& newXi = newX[i];
-        if (x_no_nans[0] <= newXi && newXi <= x_no_nans[x_no_nans.size() - 1])
-            newY[i] = function.calcValue(SimTK::Vector(1, newXi));
+        newY[i] = function.calcValue(SimTK::Vector(1, newX[i]));
     }
     return newY;
 }

@@ -92,7 +92,9 @@ SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
 /// argument will ignore any NaN values contained in the input vectors and
 /// create the interpolant from the non-NaN values only. Note that this option
 /// does not necessarily prevent NaN values from being returned in 'newX', which
-/// will have NaN for any values of newX outside of the range of x.
+/// will have NaN for any values of newX outside of the range of x. If 'newX'
+/// contains values outside the range of 'x', the 'newY' values will be
+/// extrapolated based on a piecewise function.
 /// @throws Exception if x and y are different sizes, or x or y is empty.
 /// @ingroup commonutil
 OSIMCOMMON_API
