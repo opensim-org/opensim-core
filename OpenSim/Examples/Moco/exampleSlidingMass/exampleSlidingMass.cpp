@@ -102,10 +102,10 @@ int main() {
     // Configure the solver.
     // =====================
     MocoCasADiSolver& solver = study.initCasADiSolver();
-    solver.set_num_mesh_intervals(5);
+    solver.set_num_mesh_intervals(50);
     solver.set_parallel(0);
-    solver.set_optim_solver("fatrop");
-    solver.set_transcription_scheme("legendre-gauss-1");
+    solver.set_optim_solver("ipopt");
+    // solver.set_transcription_scheme("legendre-gauss-1");
 
     // Now that we've finished setting up the tool, print it to a file.
     study.print("sliding_mass.omoco");

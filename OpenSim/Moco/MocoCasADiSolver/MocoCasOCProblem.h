@@ -73,7 +73,22 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt,
     CasOC::Iterate casIt;
     CasOC::VariablesDM& casVars = casIt.variables;
     using CasOC::Var;
-    casVars[Var::times] = convertToCasADiDMTranspose(mocoIt.getTime());
+
+    const auto& initialTime = mocoIt.getInitialTime();
+    SimTK::Matrix initialTimeTrajectory(mocoIt.getNumTimes(), 1);
+    for (int i = 0; i < mocoIt.getNumTimes(); ++i) {
+        initialTimeTrajectory.updRow(i) = initialTime;
+    }
+    casVars[Var::initial_time] =
+            convertToCasADiDMTranspose(initialTimeTrajectory);
+
+    const auto& finalTime = mocoIt.getFinalTime();
+    SimTK::Matrix finalTimeTrajectory(mocoIt.getNumTimes(), 1);
+    for (int i = 0; i < mocoIt.getNumTimes(); ++i) {
+        finalTimeTrajectory.updRow(i) = finalTime;
+    }
+    casVars[Var::final_time] = convertToCasADiDMTranspose(finalTimeTrajectory);
+
     casVars[Var::states] =
             convertToCasADiDMTranspose(mocoIt.getStatesTrajectory());
 
@@ -221,7 +236,7 @@ TOut convertToMocoTrajectory(const CasOC::Iterate& casIt,
                 casVars.at(Var::parameters)(casadi::Slice(), 0);
         simtkParameters = convertToSimTKVector<SimTK::RowVector>(paramsValue);
     }
-    SimTK::Vector simtkTimes = convertToSimTKVector(casVars.at(Var::times));
+    SimTK::Vector simtkTimes = convertToSimTKVector(casIt.times);
 
     TOut mocoTraj(simtkTimes, casIt.state_names, controlNames,
             inputControlNames, casIt.multiplier_names, derivativeNames,

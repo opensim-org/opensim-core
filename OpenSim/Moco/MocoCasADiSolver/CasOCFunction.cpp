@@ -197,7 +197,7 @@ casadi::DM Endpoint::getSubsetPoint(const VariablesDM& fullPoint,
         casadi_int i) const {
     using casadi::Slice;
     if (i == 0) {
-        return fullPoint.at(times)(0);
+        return fullPoint.at(initial_time)(0);
     } else if (i == 1) {
         return fullPoint.at(states)(Slice(), 0);
     } else if (i == 2) {
@@ -207,7 +207,7 @@ casadi::DM Endpoint::getSubsetPoint(const VariablesDM& fullPoint,
     } else if (i == 4) {
         return fullPoint.at(derivatives)(Slice(), 0);
     } else if (i == 5) {
-        return fullPoint.at(times)(-1);
+        return fullPoint.at(final_time)(0);
     } else if (i == 6) {
         return fullPoint.at(states)(Slice(), -1);
     } else if (i == 7) {
@@ -317,7 +317,7 @@ casadi::DM VelocityCorrection::getSubsetPoint(
     const int NMBS = m_casProblem->getNumStates() -
                      m_casProblem->getNumAuxiliaryStates();
     if (i == 0) {
-        return fullPoint.at(times)(0);
+        return fullPoint.at(initial_time)(0);
     } else if (i == 1) {
         return fullPoint.at(states)(Slice(0, NMBS), itime);
     } else if (i == 2) {

@@ -48,7 +48,7 @@ private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
 
-    void calcDefectsImpl(const casadi::MX& times, const casadi::MX& x,
+    void calcDefectsImpl(const casadi::MX& x,
             const casadi::MX& xdot, casadi::MX& defects) const override;
 };
 

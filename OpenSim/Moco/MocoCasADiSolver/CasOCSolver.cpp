@@ -122,8 +122,9 @@ Solution Solver::solve(const Iterate& guess) const {
     if (m_sparsity_detection == "initial-guess") {
         // Interpolate the guess.
         Iterate guessCopy(guess);
-        const auto guessTimes =
-                transcription->createTimes(guessCopy.variables.at(times));
+        const auto guessTimes = transcription->createTimes(
+                guessCopy.variables.at(initial_time),
+                guessCopy.variables.at(final_time));
         guessCopy = guessCopy.resample(guessTimes);
         pointsForSparsityDetection->push_back(guessCopy.variables);
     } else if (m_sparsity_detection == "random") {

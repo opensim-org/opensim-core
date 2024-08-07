@@ -38,8 +38,8 @@ public:
     Iterate createRandomIterateWithinBounds(
             const SimTK::Random* = nullptr) const;
     template <typename T>
-    T createTimes(const T& times) const {
-        return (times(-1) - times(0)) * m_grid + times(0);
+    T createTimes(const T& initial_time, const T& final_time) const {
+        return (final_time(0) - initial_time(0)) * m_grid + initial_time(0);
     }
     casadi::DM createQuadratureCoefficients() const {
         return createQuadratureCoefficientsImpl();
@@ -124,7 +124,8 @@ protected:
 
     template <typename T>
     struct Constraints {
-        T times;
+        T initial_time;
+        T final_time;
         T parameters;
         T defects;
         T multibody_residuals;
@@ -151,11 +152,12 @@ protected:
     int m_numPointsPerMeshInterval = -1;
     int m_numMultibodyResiduals = -1;
     int m_numAuxiliaryResiduals = -1;
-    int m_numTimeConstraints = -1;
+    int m_numParameterConstraints = -1;
     int m_numConstraints = -1;
     int m_numPathConstraintPoints = -1;
     casadi::DM m_grid;
     casadi::DM m_pointsForInterpControls;
+    casadi::MX m_times;
     casadi::MX m_duration;
     // std::vector<bool> m_controlPoints;
 
@@ -195,8 +197,8 @@ private:
     virtual casadi::DM createMeshIndicesImpl() const = 0;
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
-    virtual void calcDefectsImpl(const casadi::MX& times, const casadi::MX& x,
-            const casadi::MX& xdot, casadi::MX& defects) const = 0;
+    virtual void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
+            casadi::MX& defects) const = 0;
     virtual void calcInterpolatingControlsImpl(const casadi::MX& /*controls*/,
             casadi::MX& /*interpControls*/) const {
         OPENSIM_THROW_IF(m_pointsForInterpControls.numel(), OpenSim::Exception,
@@ -213,8 +215,8 @@ private:
     void transcribe();
     void setObjectiveAndEndpointConstraints();
     void calcDefects() {
-        calcDefectsImpl(m_unscaledVars.at(times), m_unscaledVars.at(states),
-                m_xdot, m_constraints.defects);
+        calcDefectsImpl(m_unscaledVars.at(states), m_xdot,
+                m_constraints.defects);
     }
     void calcInterpolatingControls() {
         calcInterpolatingControlsImpl(
@@ -229,7 +231,8 @@ private:
     template <typename T>
     static std::vector<Var> getSortedVarKeys(const Variables<T>& vars) {
         std::vector<Var> keys;
-        keys.push_back(times);
+        keys.push_back(initial_time);
+        keys.push_back(final_time);
         keys.push_back(parameters);
         keys.push_back(states);
         keys.push_back(controls);
@@ -255,7 +258,10 @@ private:
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
             for (int i = 0; i < N; ++i) {
-                stdvec.push_back(vars.at(times)[igrid + i]);
+                stdvec.push_back(vars.at(initial_time)[igrid + i]);
+            }
+            for (int i = 0; i < N; ++i) {
+                stdvec.push_back(vars.at(final_time)[igrid + i]);
             }
             for (int i = 0; i < N; ++i) {
                 stdvec.push_back(vars.at(states)[igrid + i]);
@@ -264,7 +270,8 @@ private:
                 stdvec.push_back(vars.at(controls)[igrid + i]);
             }
         }
-        stdvec.push_back(vars.at(times)[m_numGridPoints - 1]);
+        stdvec.push_back(vars.at(initial_time)[m_numGridPoints - 1]);
+        stdvec.push_back(vars.at(final_time)[m_numGridPoints - 1]);
         stdvec.push_back(vars.at(states)[m_numGridPoints - 1]);
         stdvec.push_back(vars.at(controls)[m_numGridPoints - 1]);
 
@@ -277,7 +284,10 @@ private:
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
             for (int i = 0; i < N; ++i) {
-                stdvec.push_back(vars.at(times)(casadi::Slice(), igrid + i));
+                stdvec.push_back(vars.at(initial_time)(casadi::Slice(), igrid + i));
+            }
+            for (int i = 0; i < N; ++i) {
+                stdvec.push_back(vars.at(final_time)(casadi::Slice(), igrid + i));
             }
             for (int i = 0; i < N; ++i) {
                 stdvec.push_back(vars.at(states)(casadi::Slice(), igrid + i));
@@ -286,7 +296,8 @@ private:
                 stdvec.push_back(vars.at(controls)(casadi::Slice(), igrid + i));
             }
         }
-        stdvec.push_back(vars.at(times)(casadi::Slice(), m_numGridPoints - 1));
+        stdvec.push_back(vars.at(initial_time)(casadi::Slice(), m_numGridPoints - 1));
+        stdvec.push_back(vars.at(final_time)(casadi::Slice(), m_numGridPoints - 1));
         stdvec.push_back(vars.at(states)(casadi::Slice(), m_numGridPoints - 1));
         stdvec.push_back(vars.at(controls)(casadi::Slice(), m_numGridPoints - 1));
 
@@ -422,16 +433,18 @@ private:
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
         int icon = 0;
-        int itime = 0;
+        int itime_i = 0;
+        int itime_f = 0;
         int iparam = 0;
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
 
             // Time constraints.
             for (int i = 0; i < N; ++i) {
-                if (igrid + i != 0 && igrid + i != m_numGridPoints - 1) {
-                    copyColumn(constraints.times, itime++);
-                }
+                copyColumn(constraints.initial_time, itime_i++);
+            }
+            for (int i = 0; i < N; ++i) {
+                copyColumn(constraints.final_time, itime_f++);
             }
 
             // Parameter constraints.
@@ -502,6 +515,9 @@ private:
             return T(casadi::Sparsity::dense(numRows, numColumns));
         };
         Constraints<T> out;
+        out.initial_time = init(1, m_numParameterConstraints);
+        out.final_time = init(1, m_numParameterConstraints);
+        out.parameters = init(m_numParameterConstraints, m_numMeshPoints - 1);
         out.defects = init(m_numDefectsPerMeshInterval, m_numMeshPoints - 1);
         out.multibody_residuals = init(m_numMultibodyResiduals,
                 m_numGridPoints);
@@ -539,16 +555,18 @@ private:
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
         int icon = 0;
-        int itime = 0;
+        int itime_i = 0;
+        int itime_f = 0;
         int iparam = 0;
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
 
             // Time constraints.
             for (int i = 0; i < N; ++i) {
-                if (igrid + i != 0 && igrid + i != m_numGridPoints - 1) {
-                    copyColumn(out.times, itime++);
-                }
+                copyColumn(out.initial_time, itime_i++);
+            }
+            for (int i = 0; i < N; ++i) {
+                copyColumn(out.final_time, itime_f++);
             }
 
             // Parameter constraints.

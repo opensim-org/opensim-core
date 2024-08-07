@@ -52,15 +52,14 @@ DM LegendreGaussRadau::createMeshIndicesImpl() const {
     return indices;
 }
 
-void LegendreGaussRadau::calcDefectsImpl(const casadi::MX& times,
-        const casadi::MX& x, const casadi::MX& xdot,
-        casadi::MX& defects) const {
+void LegendreGaussRadau::calcDefectsImpl(const casadi::MX& x,
+        const casadi::MX& xdot, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
     const int NS = m_problem.getNumStates();
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         const int igrid = imesh * m_degree;
-        const auto h = times(igrid + m_degree) - times(igrid);
+        const auto h = m_times(igrid + m_degree) - m_times(igrid);
         const auto x_i = x(Slice(), Slice(igrid, igrid + m_degree + 1));
         const auto xdot_i = xdot(Slice(),
                 Slice(igrid + 1, igrid + m_degree + 1));
