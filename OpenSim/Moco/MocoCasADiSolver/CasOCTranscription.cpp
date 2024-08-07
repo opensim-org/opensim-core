@@ -95,9 +95,10 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numMeshPoints = (int)m_solver.getMesh().size();
     m_numGridPoints = (int)grid.numel();
     m_numMeshIntervals = m_numMeshPoints - 1;
-    m_numParameterConstraints = m_numGridPoints - 1;
+    m_numParameterConstraints = m_numMeshIntervals;
     m_numMeshInteriorPoints = m_numGridPoints - m_numMeshPoints;
-    m_numDefectsPerMeshInterval = numDefectsPerMeshInterval;
+    m_numDefectsPerMeshInterval = numDefectsPerMeshInterval +
+            m_problem.getNumParameters() + 2;
     m_numPointsPerMeshInterval = numPointsPerMeshInterval;
     m_pointsForInterpControls = pointsForInterpControls;
     // m_controlPoints = controlPoints;
@@ -107,7 +108,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numAuxiliaryResiduals = m_problem.getNumAuxiliaryResidualEquations();
 
     m_numConstraints =
-            (m_problem.getNumParameters() + 2) * m_numParameterConstraints +
+            // (m_problem.getNumParameters() + 2) * m_numMeshIntervals +
             m_numDefectsPerMeshInterval * m_numMeshIntervals +
             m_numMultibodyResiduals * m_numGridPoints +
             m_numAuxiliaryResiduals * m_numGridPoints +
@@ -135,14 +136,18 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     //         OpenSim::Exception,
     //         "The number of control points must match the number of grid "
     //         "points.");
-    for (int igrid = 0; igrid < m_numGridPoints; ++igrid) {
+
+    for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
         m_scaledVectorVars[initial_time].push_back(
-                MX::sym("initial_time_" + std::to_string(igrid), 1, 1));
+                MX::sym("initial_time_" + std::to_string(imesh), 1, 1));
         m_scaledVectorVars[final_time].push_back(
-                MX::sym("final_time_" + std::to_string(igrid), 1, 1));
+                MX::sym("final_time_" + std::to_string(imesh), 1, 1));
         m_scaledVectorVars[parameters].push_back(
-                MX::sym("parameters_" + std::to_string(igrid),
+                MX::sym("parameters_" + std::to_string(imesh),
                         m_problem.getNumParameters(), 1));
+    }
+
+    for (int igrid = 0; igrid < m_numGridPoints; ++igrid) {
         m_scaledVectorVars[states].push_back(
                 MX::sym("states_" + std::to_string(igrid),
                         m_problem.getNumStates(), 1));
@@ -235,8 +240,8 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     setVariableBounds(initial_time, 0, 0, m_problem.getTimeInitialBounds());
     setVariableBounds(final_time, 0, 0, m_problem.getTimeFinalBounds());
     // TODO use inf bounds
-    setVariableBounds(initial_time, 0, Slice(1, m_numGridPoints), {-100, 100});
-    setVariableBounds(final_time, 0, Slice(1, m_numGridPoints), {-100, 100});
+    setVariableBounds(initial_time, 0, Slice(1, m_numMeshPoints), {-100, 100});
+    setVariableBounds(final_time, 0, Slice(1, m_numMeshPoints), {-100, 100});
 
     setVariableScaling(initial_time, 0, Slice(),
             m_problem.getTimeInitialBounds());
@@ -321,10 +326,37 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         }
     }
     m_unscaledVars = unscaleVariables(m_scaledVars);
-    m_times = createTimes(
-            m_unscaledVars[initial_time], m_unscaledVars[final_time]);
-    m_duration = m_unscaledVars[final_time](0) -
-                 m_unscaledVars[initial_time](0);
+    //
+    // for (int itime = 0; itime < m_numGridPoints; ++itime) {
+    //     m_times(itime) = (m_unscaledVars[final_time](itime) -
+    //                       m_unscaledVars[initial_time](itime)) * m_grid(itime) +
+    //                       m_unscaledVars[initial_time](itime);
+    // }
+
+    m_times = MX(casadi::Sparsity::dense(1, m_numGridPoints));
+    m_parameters = MX(casadi::Sparsity::dense(
+            m_problem.getNumParameters(), m_numGridPoints));
+    int N = m_numPointsPerMeshInterval - 1;
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        int igrid = imesh * N;
+        for (int i = 0; i < N; ++i) {
+            m_parameters(Slice(), igrid + i) =
+                    m_unscaledVars[parameters](Slice(), imesh);
+            m_times(igrid + i) = (m_unscaledVars[final_time](imesh) -
+                                  m_unscaledVars[initial_time](imesh)) *
+                                        m_grid(igrid + i) +
+                                  m_unscaledVars[initial_time](imesh);
+        }
+    }
+    m_parameters(Slice(), -1) = m_unscaledVars[parameters](Slice(), -1);
+    m_times(-1) = (m_unscaledVars[final_time](-1) -
+                   m_unscaledVars[initial_time](-1)) *
+                        m_grid(-1) +
+                   m_unscaledVars[initial_time](-1);
+
+    // m_times = createTimes(m_unscaledVars[initial_time], m_unscaledVars[final_time]);
+    m_duration = m_unscaledVars[final_time] - m_unscaledVars[initial_time];
+    m_delta_t = m_duration / m_numMeshIntervals;
 
     // calcExtrapolatedControls();
 }
@@ -346,30 +378,30 @@ void Transcription::transcribe() {
 
     // TODO: Does creating all this memory have efficiency implications
     //        in CasADi?
-    // Initialize memory for time constraints.
-    // ---------------------------------------
-    m_constraints.initial_time =
-            MX(casadi::Sparsity::dense(1, m_numParameterConstraints));
-    m_constraintsLowerBounds.initial_time =
-            DM::zeros(1, m_numParameterConstraints);
-    m_constraintsUpperBounds.initial_time =
-            DM::zeros(1, m_numParameterConstraints);
+    // // Initialize memory for time constraints.
+    // // ---------------------------------------
+    // m_constraints.initial_time =
+    //         MX(casadi::Sparsity::dense(1, m_numParameterConstraints));
+    // m_constraintsLowerBounds.initial_time =
+    //         DM::zeros(1, m_numParameterConstraints);
+    // m_constraintsUpperBounds.initial_time =
+    //         DM::zeros(1, m_numParameterConstraints);
 
-    m_constraints.final_time =
-            MX(casadi::Sparsity::dense(1, m_numParameterConstraints));
-    m_constraintsLowerBounds.final_time =
-            DM::zeros(1, m_numParameterConstraints);
-    m_constraintsUpperBounds.final_time =
-            DM::zeros(1, m_numParameterConstraints);
+    // m_constraints.final_time =
+    //         MX(casadi::Sparsity::dense(1, m_numParameterConstraints));
+    // m_constraintsLowerBounds.final_time =
+    //         DM::zeros(1, m_numParameterConstraints);
+    // m_constraintsUpperBounds.final_time =
+    //         DM::zeros(1, m_numParameterConstraints);
 
-    // Initialize memory for parameter constraints.
-    // --------------------------------------------
-    m_constraints.parameters = MX(casadi::Sparsity::dense(
-            m_problem.getNumParameters(), m_numGridPoints - 1));
-    m_constraintsLowerBounds.parameters =
-            DM::zeros(m_problem.getNumParameters(), m_numGridPoints - 1);
-    m_constraintsUpperBounds.parameters =
-            DM::zeros(m_problem.getNumParameters(), m_numGridPoints - 1);
+    // // Initialize memory for parameter constraints.
+    // // --------------------------------------------
+    // m_constraints.parameters = MX(casadi::Sparsity::dense(
+    //         m_problem.getNumParameters(), m_numParameterConstraints));
+    // m_constraintsLowerBounds.parameters =
+    //         DM::zeros(m_problem.getNumParameters(), m_numParameterConstraints);
+    // m_constraintsUpperBounds.parameters =
+    //         DM::zeros(m_problem.getNumParameters(), m_numParameterConstraints);
 
     // Initialize memory for state derivatives and defects.
     // ----------------------------------------------------
@@ -412,24 +444,24 @@ void Transcription::transcribe() {
     m_constraintsUpperBounds.kinematic = casadi::DM::repmat(
             kcBounds.upper, numKinematicConstraints, m_numMeshPoints);
 
-    // time
-    // ----
-    for (int itime = 0; itime < m_numGridPoints - 1; ++itime) {
-        m_constraints.initial_time(Slice(), itime) =
-                m_scaledVars[initial_time](itime + 1) -
-                m_scaledVars[initial_time](itime);
-        m_constraints.final_time(Slice(), itime) =
-                m_scaledVars[final_time](itime + 1) -
-                m_scaledVars[final_time](itime);
-    }
+    // // time
+    // // ----
+    // for (int itime = 0; itime < m_numParameterConstraints; ++itime) {
+    //     m_constraints.initial_time(Slice(), itime) =
+    //             m_scaledVars[initial_time](itime + 1) -
+    //             m_scaledVars[initial_time](itime);
+    //     m_constraints.final_time(Slice(), itime) =
+    //             m_scaledVars[final_time](itime + 1) -
+    //             m_scaledVars[final_time](itime);
+    // }
 
-    // parameters
-    // ----------
-    for (int itime = 0; itime < m_numGridPoints - 1; ++itime) {
-        m_constraints.parameters(Slice(), itime) =
-                m_scaledVars[parameters](Slice(), itime + 1) -
-                m_scaledVars[parameters](Slice(), itime);
-    }
+    // // parameters
+    // // ----------
+    // for (int itime = 0; itime < m_numParameterConstraints; ++itime) {
+    //     m_constraints.parameters(Slice(), itime) =
+    //             m_scaledVars[parameters](Slice(), itime + 1) -
+    //             m_scaledVars[parameters](Slice(), itime);
+    // }
 
     // qdot
     // ----
@@ -615,7 +647,7 @@ void Transcription::setObjectiveAndEndpointConstraints() {
                     {states, controls, multipliers, derivatives}, m_gridIndices)
                     .at(0);
 
-            integral = m_duration * dot(quadCoeffs.T(), integrandTraj);
+            integral = m_duration(0) * dot(quadCoeffs.T(), integrandTraj);
         } else {
             integral = MX::nan(1, 1);
         }
@@ -644,7 +676,7 @@ void Transcription::setObjectiveAndEndpointConstraints() {
         const double multiplierWeight = m_solver.getLagrangeMultiplierWeight();
         // Sum across constraints of each multiplier element squared.
         MX integrandTraj = MX::sum1(MX::sq(mults));
-        m_objectiveTerms(iterm++) = multiplierWeight * m_duration *
+        m_objectiveTerms(iterm++) = multiplierWeight * m_duration(0) *
                        dot(quadCoeffs.T(), integrandTraj);
     }
 
@@ -655,7 +687,7 @@ void Transcription::setObjectiveAndEndpointConstraints() {
         const double accelWeight =
                 m_solver.getImplicitMultibodyAccelerationsWeight();
         MX integrandTraj = MX::sum1(MX::sq(accels));
-        m_objectiveTerms(iterm++) = accelWeight * m_duration *
+        m_objectiveTerms(iterm++) = accelWeight * m_duration(0) *
                        dot(quadCoeffs.T(), integrandTraj);
     }
 
@@ -668,7 +700,7 @@ void Transcription::setObjectiveAndEndpointConstraints() {
         const double auxDerivWeight =
                 m_solver.getImplicitAuxiliaryDerivativesWeight();
         MX integrandTraj = MX::sum1(MX::sq(auxDerivs));
-        m_objectiveTerms(iterm++) = auxDerivWeight * m_duration *
+        m_objectiveTerms(iterm++) = auxDerivWeight * m_duration(0) *
                        dot(quadCoeffs.T(), integrandTraj);
     }
 
@@ -689,7 +721,7 @@ void Transcription::setObjectiveAndEndpointConstraints() {
                     {states, controls, multipliers, derivatives}, m_gridIndices)
                                        .at(0);
 
-            integral = m_duration * dot(quadCoeffs.T(), integrandTraj);
+            integral = m_duration(-1) * dot(quadCoeffs.T(), integrandTraj);
         } else {
             integral = MX::nan(1, 1);
         }
@@ -806,11 +838,14 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         jacobian.sparsity().to_file(
                 prefix + "constraint_Jacobian_sparsity.mtx");
     }
+
+    const auto lbg = flattenConstraints(m_constraintsLowerBounds);
+    const auto ubg = flattenConstraints(m_constraintsUpperBounds);
     if (m_solver.getOptimSolver() == "fatrop") {
         options["structure_detection"] = "auto";
         std::vector<bool> equality;
-        for (int i = 0; i < 9*m_numMeshIntervals; ++i) {
-            equality.push_back(true);
+        for (int i = 0; i < m_numConstraints; ++i) {
+            equality.push_back(lbg(i).scalar() == ubg(i).scalar());
         }
         options["equality"] = equality;
         options["debug"] = true;
@@ -825,8 +860,8 @@ Solution Transcription::solve(const Iterate& guessOrig) {
                     {"x0", flattenVariablesDM(scaleVariables(guess.variables))},
                     {"lbx", flattenVariablesDM(scaleVariables(m_lowerBounds))},
                     {"ubx", flattenVariablesDM(scaleVariables(m_upperBounds))},
-                    {"lbg", flattenConstraints(m_constraintsLowerBounds)},
-                    {"ubg", flattenConstraints(m_constraintsUpperBounds)}});
+                    {"lbg", lbg},
+                    {"ubg", ubg}});
 
     // Create a CasOC::Solution.
     // -------------------------
@@ -1341,7 +1376,7 @@ casadi::MXVector Transcription::evalOnTrajectory(
             mxIn[i + 1] = m_unscaledVars.at(inputs[i])(Slice(), timeIndices);
         }
     }
-    mxIn[mxIn.size() - 1] = m_unscaledVars.at(parameters)(Slice(), timeIndices);
+    mxIn[mxIn.size() - 1] = m_parameters(Slice(), timeIndices);
 
     MXVector mxOut;
     trajFunc.call(mxIn, mxOut);

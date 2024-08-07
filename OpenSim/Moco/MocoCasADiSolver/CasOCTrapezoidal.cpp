@@ -40,8 +40,9 @@ DM Trapezoidal::createMeshIndicesImpl() const {
     return DM::ones(1, m_numGridPoints);
 }
 
-void Trapezoidal::calcDefectsImpl(const casadi::MX& x,
-        const casadi::MX& xdot, casadi::MX& defects) const {
+void Trapezoidal::calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
+        const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
+        casadi::MX& defects) const {
 
     // We have arranged the code this way so that all constraints at a given
     // mesh point are grouped together (organizing the sparsity of the Jacobian

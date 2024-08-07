@@ -88,7 +88,7 @@ private:
         int itime = 0;
         using casadi::Slice;
         if (i == 0) {
-            return fullPoint.at(initial_time)(0);
+            return fullPoint.at(initial_time)(itime);
         } else if (i == 1) {
             return fullPoint.at(states)(Slice(), itime);
         } else if (i == 2) {

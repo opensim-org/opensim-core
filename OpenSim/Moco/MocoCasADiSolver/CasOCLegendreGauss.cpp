@@ -54,28 +54,45 @@ DM LegendreGauss::createMeshIndicesImpl() const {
     return indices;
 }
 
-void LegendreGauss::calcDefectsImpl(const casadi::MX& x,
-        const casadi::MX& xdot, casadi::MX& defects) const {
+void LegendreGauss::calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
+        const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
+        casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
+    const int NP = m_problem.getNumParameters();
     const int NS = m_problem.getNumStates();
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-        const int igrid = imesh * (m_degree + 1);
-        const auto h = m_times(igrid + m_degree + 1) - m_times(igrid);
-        const auto x_i = x(Slice(), Slice(igrid, igrid + m_degree + 1));
-        const auto xdot_i = xdot(Slice(),
-                Slice(igrid + 1, igrid + m_degree + 1));
-        const auto x_ip1 = x(Slice(), igrid + m_degree + 1);
+        const int i = imesh * (m_degree + 1);
+        const int ip1 = i + m_degree + 1;
+        const auto h = m_delta_t(imesh);
+        const auto x_i = x(Slice(), Slice(i, ip1));
+        const auto xdot_i = xdot(Slice(), Slice(i + 1, ip1));
+        const auto x_ip1 = x(Slice(), ip1);
+
+        // End state interpolation.
+        defects(Slice(0, NS), imesh) =
+                x_ip1 - MX::mtimes(x_i, m_interpolationCoefficients);
+
+        // Initial time.
+        defects(Slice(NS, NS + 1), imesh) = ti(imesh + 1) - ti(imesh);
+
+        // Final time.
+        defects(Slice(NS + 1, NS + 2), imesh) = tf(imesh + 1) - tf(imesh);
+
+        // Parameters.
+        if (NP) {
+            const auto p_i = p(Slice(), imesh);
+            const auto p_ip1 = p(Slice(), imesh + 1);
+            defects(Slice(NS + 2, NS + 2 + NP), imesh) = p_ip1 - p_i;
+        }
 
         // Residual function defects.
         MX residual = h * xdot_i - MX::mtimes(x_i, m_differentiationMatrix);
         for (int d = 0; d < m_degree; ++d) {
-            defects(Slice(d * NS, (d + 1) * NS), imesh) = residual(Slice(), d);
+            const int istart = (d + 1) * NS + 2 + NP;
+            const int iend = (d + 2) * NS + 2 + NP;
+            defects(Slice(istart, iend), imesh) = residual(Slice(), d);
         }
-
-        // End state interpolation.
-        defects(Slice(m_degree * NS, (m_degree + 1) * NS), imesh) =
-                x_ip1 - MX::mtimes(x_i, m_interpolationCoefficients);
     }
 }
 
