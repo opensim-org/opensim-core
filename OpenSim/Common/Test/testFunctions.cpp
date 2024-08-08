@@ -107,12 +107,36 @@ TEST_CASE("Interpolate using PiecewiseLinearFunction") {
     }
     SECTION("First and last Y are NaN, extrapolate") {
         SimTK::Vector x = createVector({0, 1, 2, 3, 4, 5});
-        SimTK::Vector y = createVector({std::nan("0"), 0, 3, 4, std::nan("1"), std::nan("2")});
+        SimTK::Vector y = createVector({SimTK::NaN, 0, 3, 4, SimTK::NaN, SimTK::NaN});
         SimTK::Vector newY = OpenSim::interpolate(x, y, x, true, true);
 
         for (int i = 0; i < newY.size(); ++i) {
             SimTK_TEST(!SimTK::isNaN(newY[i]));
         }
+    }
+
+    SimTK::Vector x = createVector({0, 1, 2, 3});
+    SimTK::Vector y = createVector({SimTK::NaN, 1, 2, SimTK::NaN});
+    SECTION("Ignore NaNs, extrapolate") {
+        SimTK::Vector newY = OpenSim::interpolate(x, y, x, true, true);
+        SimTK_TEST_EQ(newY[0], 0);
+        SimTK_TEST_EQ(newY[1], 1);
+        SimTK_TEST_EQ(newY[2], 2);
+        SimTK_TEST_EQ(newY[3], 3);
+    }
+    SECTION("Don't ignore NaNs, extrapolate") {
+        SimTK::Vector newY = OpenSim::interpolate(x, y, x, false, true);
+        SimTK_TEST(SimTK::isNaN(newY[0]));
+        SimTK_TEST_EQ(newY[1], 1);
+        SimTK_TEST(SimTK::isNaN(newY[2]));
+        SimTK_TEST(SimTK::isNaN(newY[3]));
+    }
+    SECTION("Ignore NaNs, don't extrapolate") {
+        SimTK::Vector newY = OpenSim::interpolate(x, y, x, true, false);
+        SimTK_TEST(SimTK::isNaN(newY[0]));
+        SimTK_TEST_EQ(newY[1], 1);
+        SimTK_TEST_EQ(newY[2], 2);
+        SimTK_TEST(SimTK::isNaN(newY[3]));
     }
 }
 

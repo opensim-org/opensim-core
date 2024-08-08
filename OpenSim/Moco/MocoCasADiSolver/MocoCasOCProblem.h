@@ -235,7 +235,7 @@ TOut convertToMocoTrajectory(const CasOC::Iterate& casIt,
             if (simtkSlacksLength != simtkTimes.size()) {
                 mocoTraj.appendSlack(casIt.slack_names[i],
                         interpolate(slackTime, simtkSlacks.col(i), simtkTimes,
-                                    false, true));
+                                    true, true));
             } else {
                 mocoTraj.appendSlack(casIt.slack_names[i], simtkSlacks.col(i));
             }
