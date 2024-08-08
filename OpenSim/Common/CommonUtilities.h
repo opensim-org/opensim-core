@@ -92,14 +92,17 @@ SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
 /// argument will ignore any NaN values contained in the input vectors and
 /// create the interpolant from the non-NaN values only. Note that this option
 /// does not necessarily prevent NaN values from being returned in 'newX', which
-/// will have NaN for any values of newX outside of the range of x. If 'newX'
-/// contains values outside the range of 'x', the 'newY' values will be
-/// extrapolated based on a piecewise function.
+/// will have NaN for any values of newX outside of the range of x. If the
+/// optional 'extrapolate' argument is true, then if 'newX' contains values
+/// outside the range of 'x', the interpolant values will be extrapolated based
+/// on a piecewise function. Setting 'extrapolate' to true also prevents NaN
+/// values for occuring in the interpolant.
 /// @throws Exception if x and y are different sizes, or x or y is empty.
 /// @ingroup commonutil
 OSIMCOMMON_API
 SimTK::Vector interpolate(const SimTK::Vector& x, const SimTK::Vector& y,
-        const SimTK::Vector& newX, const bool ignoreNaNs = false);
+        const SimTK::Vector& newX, const bool ignoreNaNs = false,
+        const bool extrapolate = false);
 
 /// An OpenSim XML file may contain file paths that are relative to the
 /// directory containing the XML file; use this function to convert that

@@ -1733,10 +1733,10 @@ TEST_CASE("Interpolate", "") {
 
     SimTK::Vector newY = interpolate(x, y, newX);
 
-    SimTK_TEST(!SimTK::isNaN(newY[0]));
+    SimTK_TEST(SimTK::isNaN(newY[0]));
     SimTK_TEST_EQ(newY[1], 0.75);
     SimTK_TEST_EQ(newY[2], 0.25);
-    SimTK_TEST(!SimTK::isNaN(newY[3]));
+    SimTK_TEST(SimTK::isNaN(newY[3]));
 }
 
 template <typename SolverType>

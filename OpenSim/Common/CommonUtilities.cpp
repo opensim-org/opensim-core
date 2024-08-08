@@ -85,7 +85,7 @@ SimTK::Vector OpenSim::createVector(
 
 SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
         const SimTK::Vector& y, const SimTK::Vector& newX,
-        const bool ignoreNaNs) {
+        const bool ignoreNaNs, const bool extrapolate) {
 
     OPENSIM_THROW_IF(x.size() != y.size(), Exception,
             "Expected size of x to equal size of y, but size of x "
@@ -115,7 +115,12 @@ SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
             (int)x_no_nans.size(), &x_no_nans[0], &y_no_nans[0]);
     SimTK::Vector newY(newX.size(), SimTK::NaN);
     for (int i = 0; i < newX.size(); ++i) {
-        newY[i] = function.calcValue(SimTK::Vector(1, newX[i]));
+        const auto& newXi = newX[i];
+        bool inBounds = (x_no_nans[0] <= newXi) &&
+                        (newXi <= x_no_nans[x_no_nans.size() - 1]);
+        if (extrapolate || inBounds) {
+            newY[i] = function.calcValue(SimTK::Vector(1, newXi));
+        }
     }
     return newY;
 }

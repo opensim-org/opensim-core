@@ -876,7 +876,7 @@ void MocoTrajectory::resample(SimTK::Vector time) {
     // does not resize the slacks trajectory.
     for (int icol = 0; icol < m_slacks.ncol(); ++icol) {
         m_slacks.updCol(icol) =
-                interpolate(m_time, m_slacks.col(icol), m_time, true);
+                interpolate(m_time, m_slacks.col(icol), m_time, false, true);
     }
 
     const TimeSeriesTable table = convertToTable();

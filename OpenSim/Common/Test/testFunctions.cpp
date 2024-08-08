@@ -82,22 +82,33 @@ TEST_CASE("SignalGenerator") {
     }
 }
 
-TEST_CASE("Interpolate using PiecewiseLinearFunction extrapolation") {
+TEST_CASE("Interpolate using PiecewiseLinearFunction") {
     SECTION("New X out of original range") {
         SimTK::Vector x = createVector({0, 1});
         SimTK::Vector y = createVector({1, 0});
         SimTK::Vector newX = createVector({-1, 0.25, 0.75, 1.5});
         SimTK::Vector newY = OpenSim::interpolate(x, y, newX);
 
+        SimTK_TEST(SimTK::isNaN(newY[0]));
+        SimTK_TEST_EQ(newY[1], 0.75);
+        SimTK_TEST_EQ(newY[2], 0.25);
+        SimTK_TEST(SimTK::isNaN(newY[3]));
+    }
+    SECTION("New X out of original range, extrapolate") {
+        SimTK::Vector x = createVector({0, 1});
+        SimTK::Vector y = createVector({1, 0});
+        SimTK::Vector newX = createVector({-1, 0.25, 0.75, 1.5});
+        SimTK::Vector newY = OpenSim::interpolate(x, y, newX, false, true);
+
         SimTK_TEST(!SimTK::isNaN(newY[0]));
         SimTK_TEST_EQ(newY[1], 0.75);
         SimTK_TEST_EQ(newY[2], 0.25);
         SimTK_TEST(!SimTK::isNaN(newY[3]));
     }
-    SECTION("First and last Y are NaN") {
+    SECTION("First and last Y are NaN, extrapolate") {
         SimTK::Vector x = createVector({0, 1, 2, 3, 4, 5});
         SimTK::Vector y = createVector({std::nan("0"), 0, 3, 4, std::nan("1"), std::nan("2")});
-        SimTK::Vector newY = OpenSim::interpolate(x, y, x, true);
+        SimTK::Vector newY = OpenSim::interpolate(x, y, x, true, true);
 
         for (int i = 0; i < newY.size(); ++i) {
             SimTK_TEST(!SimTK::isNaN(newY[i]));
