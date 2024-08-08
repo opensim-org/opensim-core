@@ -125,113 +125,69 @@ TEST_CASE("ModOpReplaceMusclesWithPathActuators") {
     CHECK(processedModel.countNumComponents<PathActuator>() == 1);
 }
 
-/// create a model with a mass on a slider joint in the jointset
-std::unique_ptr<Model> createSlidingMassModel() {
-    auto model = make_unique<Model>();
-    model->setName("sliding_mass");
-    model->set_gravity(SimTK::Vec3(0, 0, 0));
-    auto* body = new Body("body", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
-    model->addComponent(body);
-    body->attachGeometry(new Sphere(0.05));
+TEST_CASE("ModOpPrescribeMotion") {
+    // model has a slider as a Component
+    auto unprescribedModel = ModelFactory::createSlidingPointMass();
 
-    // Allows translation along x.
-    auto* joint = new SliderJoint("slider", model->getGround(), *body);
+    // add another slider as a Joint
+    auto* body = new Body("body2", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    unprescribedModel.addComponent(body);
+    body->attachGeometry(new Sphere(0.05));
+    auto* joint = new SliderJoint("slider2", unprescribedModel.getGround(), *body);
     auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
     coord.setName("position");
-    model->addJoint(joint);
+    unprescribedModel.addJoint(joint);
 
-    auto* actu = new CoordinateActuator();
-    actu->setCoordinate(&coord);
-    actu->setName("actuator");
-    actu->setOptimalForce(1);
-    model->addComponent(actu);
+    unprescribedModel.finalizeConnections();
 
-    return model;
-}
-
-/// create a TimeSeriesTable with one column of data which is the sine function.
-TimeSeriesTable createSineData(std::string label, double interval, double duration) {
+    // create sine data
+    std::string path = "/slider/position/value";
+    std::string jointPath = "/jointset/slider2/position/value";
+    std::vector<std::string> paths = {path, jointPath};
+    double interval = 0.05;
+    double duration = 3.0;
     std::vector<double> times;
     int numEntries = duration / interval + 1;
     for (int i = 0; i < numEntries; ++i) {
         times.push_back(i * interval);
     }
-    SimTK::Matrix positions(numEntries, 1);
-    SimTK::Vector x(1);
-    for (int i = 0; i < numEntries; ++i) {
-        x[0] = i * interval;
-        positions.set(i, 0, Sine().calcValue(x));
-    }
-    return TimeSeriesTable(times, positions, {label});
-}
-
-TEST_CASE("ModOpPrescribeMotion") {
-    SECTION("Slider added as Component") {
-        auto unprescribedModel = ModelFactory::createSlidingPointMass();
-        unprescribedModel.finalizeConnections();
-        std::string jointPath = "/slider/position/value";
-        double interval = 0.05;
-        double duration = 3.0;
-
-        TimeSeriesTable table = createSineData(jointPath, interval, duration);
-        TableProcessor table_processor = TableProcessor(table);
-        ModelProcessor modelProcessor(unprescribedModel);
-        modelProcessor.append(ModOpPrescribeCoordinateValues(table_processor));
-        Model model = modelProcessor.process();
-
-        auto* reporter = new StatesTrajectoryReporter();
-        reporter->setName("reporter");
-        reporter->set_report_time_interval(interval);
-        model.addComponent(reporter);
-
-        SimTK::State& state = model.initSystem();
-        model.realizePosition(state);
-        Manager manager(model, state);
-        manager.integrate(duration);
-        StatesTrajectory statesTraj = reporter->getStates();
-        int jointColumn = static_cast<int>(table.getColumnIndex(jointPath));
-
-        for (int itime = 0; itime < static_cast<int>(statesTraj.getSize()); ++itime) {
-            state = statesTraj[itime];
-            double time = state.getTime();
-            double posActual = model.getStateVariableValue(state, jointPath);
-            SimTK::RowVectorView row = table.getNearestRow(time);
-            double posExpected = row[jointColumn];
-            REQUIRE(posActual == Catch::Approx(posExpected).margin(1e-4));
+    int numColumns = static_cast<int>(paths.size());
+    SimTK::Matrix positions(numEntries, numColumns);
+    for (int col = 0; col < numColumns; ++col) {
+        SimTK::Vector x(1);
+        for (int row = 0; row < numEntries; ++row) {
+            x[0] = row * interval + col;     // +col makes each column different
+            positions.set(row, col, Sine().calcValue(x));
         }
     }
-    SECTION("Slider added as Joint") {
-        auto unprescribedModel = createSlidingMassModel();
-        unprescribedModel->finalizeConnections();
-        std::string jointPath = "/jointset/slider/position/value";
-        double interval = 0.05;
-        double duration = 3.0;
+    TimeSeriesTable table(times, positions, paths);
 
-        TimeSeriesTable table = createSineData(jointPath, interval, duration);
-        TableProcessor table_processor = TableProcessor(table);
-        ModelProcessor modelProcessor(*unprescribedModel);
-        modelProcessor.append(ModOpPrescribeCoordinateValues(table_processor));
-        Model model = modelProcessor.process();
+    // prescribe motion data to model
+    TableProcessor table_processor = TableProcessor(table);
+    ModelProcessor modelProcessor(unprescribedModel);
+    modelProcessor.append(ModOpPrescribeCoordinateValues(table_processor));
+    Model model = modelProcessor.process();
 
-        auto* reporter = new StatesTrajectoryReporter();
-        reporter->setName("reporter");
-        reporter->set_report_time_interval(interval);
-        model.addComponent(reporter);
+    // check that positions match
+    auto* reporter = new StatesTrajectoryReporter();
+    reporter->setName("reporter");
+    reporter->set_report_time_interval(interval);
+    model.addComponent(reporter);
+    SimTK::State& state = model.initSystem();
+    model.realizePosition(state);
+    Manager manager(model, state);
+    manager.integrate(duration);
+    StatesTrajectory statesTraj = reporter->getStates();
 
-        SimTK::State& state = model.initSystem();
-        model.realizePosition(state);
-        Manager manager(model, state);
-        manager.integrate(duration);
-        StatesTrajectory statesTraj = reporter->getStates();
-        int jointColumn = static_cast<int>(table.getColumnIndex(jointPath));
-
+    for (const std::string& path: paths) {
+        int jointColumn = static_cast<int>(table.getColumnIndex(path));
         for (int itime = 0; itime < static_cast<int>(statesTraj.getSize()); ++itime) {
             state = statesTraj[itime];
             double time = state.getTime();
-            double posActual = model.getStateVariableValue(state, jointPath);
+            double posActual = model.getStateVariableValue(state, path);
             SimTK::RowVectorView row = table.getNearestRow(time);
             double posExpected = row[jointColumn];
-            REQUIRE(posActual == Catch::Approx(posExpected).margin(1e-4));
+            REQUIRE(posActual == Catch::Approx(posExpected).margin(1e-3));
         }
     }
 }

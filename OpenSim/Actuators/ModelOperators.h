@@ -211,8 +211,8 @@ public:
 
 /// Prescribe motion to Coordinate%s in a model by providing a table containing
 /// time series data of Coordinate values. Any columns in the provided table
-/// that do not match a valid path to a Joint Coordinate value in the model (e.g.,
-/// "/jointset/ankle_r/ankle_angle_r/value") will be ignored. A GCVSpline
+/// (e.g., "/jointset/ankle_r/ankle_angle_r/value") that do not match a valid
+/// path to a Joint Coordinate value in the model will be ignored. A GCVSpline
 /// function is created for each column of Coordinate values and this function
 /// is assigned to the `prescribed_function` property for the matching Coordinate.
 /// In addition, the `prescribed` property for each matching Coordinate is set
@@ -221,7 +221,8 @@ class OSIMACTUATORS_API ModOpPrescribeCoordinateValues : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             ModOpPrescribeCoordinateValues, ModelOperator);
     OpenSim_DECLARE_PROPERTY(coordinate_values, TableProcessor,
-            "TableProcessor of a TimeSeriesTable with motion to prescribe.")
+            "TableProcessor of a TimeSeriesTable with coordinate value data to "
+            "prescribe ot he model.")
 
 public:
     ModOpPrescribeCoordinateValues(TableProcessor table) {
@@ -241,8 +242,8 @@ public:
             if (!model.hasComponent<Joint>(jointPath)) {
                 if (path.getSubcomponentNameAtLevel(0) == "jointset"
                         && path.getComponentName() == "value") {
-                    log_warn("Path '{}' is a joint value column of the table,"
-                             " but it is not in the model.", pathString);
+                    log_warn("Found column label '{}', but it does not match a "
+                             "joint coordinate value in the model.", pathString);
                 }
                 continue;
             }
