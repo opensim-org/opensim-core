@@ -16,7 +16,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
+#include "OpenSim/Common/Sine.h"
+#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
@@ -122,4 +123,71 @@ TEST_CASE("ModOpReplaceMusclesWithPathActuators") {
     CHECK(processedModel.countNumComponents<Millard2012EquilibriumMuscle>() ==
             0);
     CHECK(processedModel.countNumComponents<PathActuator>() == 1);
+}
+
+TEST_CASE("ModOpPrescribeMotion") {
+    // model has a slider as a Component
+    auto unprescribedModel = ModelFactory::createSlidingPointMass();
+
+    // add another slider as a Joint
+    auto* body = new Body("body2", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    unprescribedModel.addComponent(body);
+    body->attachGeometry(new Sphere(0.05));
+    auto* joint = new SliderJoint("slider2", unprescribedModel.getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("position");
+    unprescribedModel.addJoint(joint);
+
+    unprescribedModel.finalizeConnections();
+
+    // create sine data
+    std::string componentPath = "/slider/position/value";
+    std::string jointPath = "/jointset/slider2/position/value";
+    std::vector<std::string> paths = {componentPath, jointPath};
+    double interval = 0.05;
+    double duration = 3.0;
+    std::vector<double> times;
+    int numEntries = duration / interval + 1;
+    for (int i = 0; i < numEntries; ++i) {
+        times.push_back(i * interval);
+    }
+    int numColumns = static_cast<int>(paths.size());
+    SimTK::Matrix positions(numEntries, numColumns);
+    for (int col = 0; col < numColumns; ++col) {
+        SimTK::Vector x(1);
+        for (int row = 0; row < numEntries; ++row) {
+            x[0] = row * interval + col;     // +col makes each column different
+            positions.set(row, col, Sine().calcValue(x));
+        }
+    }
+    TimeSeriesTable table(times, positions, paths);
+
+    // prescribe motion data to model
+    TableProcessor table_processor = TableProcessor(table);
+    ModelProcessor modelProcessor(unprescribedModel);
+    modelProcessor.append(ModOpPrescribeCoordinateValues(table_processor));
+    Model model = modelProcessor.process();
+
+    // check that positions match
+    auto* reporter = new StatesTrajectoryReporter();
+    reporter->setName("reporter");
+    reporter->set_report_time_interval(interval);
+    model.addComponent(reporter);
+    SimTK::State& state = model.initSystem();
+    model.realizePosition(state);
+    Manager manager(model, state);
+    manager.integrate(duration);
+    StatesTrajectory statesTraj = reporter->getStates();
+
+    for (const std::string& path : paths) {
+        int jointColumn = static_cast<int>(table.getColumnIndex(path));
+        for (int itime = 0; itime < static_cast<int>(statesTraj.getSize()); ++itime) {
+            state = statesTraj[itime];
+            double time = state.getTime();
+            double posActual = model.getStateVariableValue(state, path);
+            SimTK::RowVectorView row = table.getNearestRow(time);
+            double posExpected = row[jointColumn];
+            REQUIRE(posActual == Catch::Approx(posExpected).margin(1e-3));
+        }
+    }
 }
