@@ -73,6 +73,10 @@ void MocoParameter::constructProperties() {
     constructProperty_property_element();
 }
 
+double getPropertyValue(const SimTK::State& state) const {
+    state.get
+}
+
 void MocoParameter::initializeOnModel(Model& model) const {
     
     OPENSIM_THROW_IF_FRMOBJ(getProperty_component_paths().empty(), Exception,

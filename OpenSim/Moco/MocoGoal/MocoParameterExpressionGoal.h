@@ -11,7 +11,7 @@
 namespace OpenSim {
 
 class OSIMMOCO_API MocoParameterExpressionGoal : public MocoGoal {
-    OpenSim_DECLARE_ABSTRACT_OBJECT(MocoParameterExpressionGoal, MocoGoal);
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoParameterExpressionGoal, MocoGoal);
 
 public:
     MocoParameterExpressionGoal() { constructProperties(); }
@@ -42,6 +42,9 @@ protected:
 
 private:
     void constructProperties();
+    /** Calculate the Output value for the provided SimTK::State. Do not
+    call this function until 'initializeOnModelBase()' has been called. */
+    double calcOutputValue(const SimTK::State&) const;
     OpenSim_DECLARE_PROPERTY(expression, std::string,
             "The expression string with variables q0-q9.");
     // consider a mapping from variable names to parameters instead

@@ -1413,3 +1413,8 @@ TEST_CASE("MocoFrameDistanceConstraint de/serialization") {
                 "testMocoGoals_MocoFrameDistanceConstraint_study.omoco");
     }
 }
+
+TEST_CASE("MocoParameterExpressionGoal", "", MocoCasADiSolver,
+        MocoTropterSolver) {
+
+}

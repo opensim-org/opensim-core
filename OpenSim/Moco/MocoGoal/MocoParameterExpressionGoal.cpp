@@ -19,6 +19,10 @@ void MocoParameterExpressionGoal::initializeOnModelImpl(const Model&) const {
 
 void MocoParameterExpressionGoal::calcIntegrandImpl(
         const IntegrandInput& input, double& integrand) const {
+    integrand = calcOutputValue(input.state);
+}
+
+double MocoParameterExpressionGoal::calcOutputValue(const SimTK::State& state) const {
 
     std::map<std::string, double> parameterVars;
     for (int i=0; i<getProperty_variable_names().size(); ++i) {
@@ -26,7 +30,7 @@ void MocoParameterExpressionGoal::calcIntegrandImpl(
         double parameterValue = getProperty_parameters()[i].getValue();
         parameterVars[variableName] = parameterValue;
     }
-    integrand = _parameterProg.evaluate(parameterVars);
+    return _parameterProg.evaluate(parameterVars);
 }
 
 void MocoParameterExpressionGoal::calcGoalImpl(

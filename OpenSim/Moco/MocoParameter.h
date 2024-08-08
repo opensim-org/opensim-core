@@ -142,6 +142,10 @@ public:
     void appendComponentPath(const std::string& componentPath)
     {   append_component_paths(componentPath); }
 
+    /** Get the value of the property at the given state.
+     * @throws if the value is not the same at all paths. */
+    double getPropertyValue(const SimTK::State& state) const;
+
     /** For use by solvers. This performs error checks and caches information
     about the model that is useful during the optimization.
     This method takes a non-const reference to the model because parameters
