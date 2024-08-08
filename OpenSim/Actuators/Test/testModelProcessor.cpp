@@ -141,9 +141,9 @@ TEST_CASE("ModOpPrescribeMotion") {
     unprescribedModel.finalizeConnections();
 
     // create sine data
-    std::string path = "/slider/position/value";
+    std::string componentPath = "/slider/position/value";
     std::string jointPath = "/jointset/slider2/position/value";
-    std::vector<std::string> paths = {path, jointPath};
+    std::vector<std::string> paths = {componentPath, jointPath};
     double interval = 0.05;
     double duration = 3.0;
     std::vector<double> times;
@@ -179,7 +179,7 @@ TEST_CASE("ModOpPrescribeMotion") {
     manager.integrate(duration);
     StatesTrajectory statesTraj = reporter->getStates();
 
-    for (const std::string& path: paths) {
+    for (const std::string& path : paths) {
         int jointColumn = static_cast<int>(table.getColumnIndex(path));
         for (int itime = 0; itime < static_cast<int>(statesTraj.getSize()); ++itime) {
             state = statesTraj[itime];

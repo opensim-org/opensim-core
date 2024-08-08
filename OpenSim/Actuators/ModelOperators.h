@@ -221,8 +221,7 @@ class OSIMACTUATORS_API ModOpPrescribeCoordinateValues : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             ModOpPrescribeCoordinateValues, ModelOperator);
     OpenSim_DECLARE_PROPERTY(coordinate_values, TableProcessor,
-            "TableProcessor of a TimeSeriesTable with coordinate value data to "
-            "prescribe ot he model.")
+            "The table of coordinate value data to prescribe to the model")
 
 public:
     ModOpPrescribeCoordinateValues(TableProcessor table) {
@@ -240,14 +239,10 @@ public:
             }
             std::string jointPath = path.getParentPath().getParentPath().toString();
             if (!model.hasComponent<Joint>(jointPath)) {
-                if (path.getSubcomponentNameAtLevel(0) == "jointset"
-                        && path.getComponentName() == "value") {
-                    log_warn("Found column label '{}', but it does not match a "
-                             "joint coordinate value in the model.", pathString);
-                }
+                log_warn("Found column label '{}', but it does not match a "
+                         "joint coordinate value in the model.", pathString);
                 continue;
             }
-
             Coordinate& q = model.updComponent<Joint>(jointPath).updCoordinate();
             q.setPrescribedFunction(statesSpline.get(pathString));
             q.setDefaultIsPrescribed(true);
