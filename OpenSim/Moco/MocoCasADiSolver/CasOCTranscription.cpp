@@ -16,6 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "CasOCTranscription.h"
+#include <casadi/core/calculus.hpp>
 
 using casadi::DM;
 using casadi::MX;
@@ -239,9 +240,10 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
 
     setVariableBounds(initial_time, 0, 0, m_problem.getTimeInitialBounds());
     setVariableBounds(final_time, 0, 0, m_problem.getTimeFinalBounds());
-    // TODO use inf bounds
-    setVariableBounds(initial_time, 0, Slice(1, m_numMeshPoints), {-100, 100});
-    setVariableBounds(final_time, 0, Slice(1, m_numMeshPoints), {-100, 100});
+    setVariableBounds(initial_time, 0, Slice(1, m_numMeshPoints), 
+            {-casadi::inf, casadi::inf});
+    setVariableBounds(final_time, 0, Slice(1, m_numMeshPoints), 
+            {-casadi::inf, casadi::inf});
 
     setVariableScaling(initial_time, 0, Slice(),
             m_problem.getTimeInitialBounds());
@@ -707,7 +709,7 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     const auto guessTimes = createTimes(guessOrig.variables.at(initial_time),
             guessOrig.variables.at(final_time));
     auto guess = guessOrig.resample(guessTimes);
-    guess.populateParameters(m_numMeshPoints);
+    guess = guess.repmatParameters(m_numMeshPoints);
 
     // Adjust guesses for the slack variables to ensure they are the correct
     // length (i.e. slacks.size2() == m_numPointsIgnoringConstraints).

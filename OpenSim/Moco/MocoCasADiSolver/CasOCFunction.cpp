@@ -82,7 +82,6 @@ casadi::Sparsity Function::get_jac_sparsity(casadi_int oind, casadi_int iind,
         // Split input into separate DMs.
         std::vector<casadi::DM> in(this->n_in());
         {
-            int offset = 0;
             for (int iin = 0; iin < this->n_in(); ++iin) {
                 OPENSIM_THROW_IF(this->size2_in(iin) != 1, OpenSim::Exception,
                         "Internal error.");
@@ -92,7 +91,6 @@ casadi::Sparsity Function::get_jac_sparsity(casadi_int oind, casadi_int iind,
                 } else {
                     in[iin] = casadi::DM::zeros(size, 1);
                 }
-                offset += size;
             }
         }
 

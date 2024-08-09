@@ -69,9 +69,9 @@ struct Iterate {
     /// Return a new iterate in which the data is resampled at the times in
     /// newTimes.
     Iterate resample(const casadi::DM& newTimes) const;
-    // Populate the iterate with values at each mesh point for all parameters
-    // (including initial and final times).
-    void populateParameters(int numMeshPoints);
+    /// Make repeat copies of parameter variables (including initial and final
+    /// time) using the same value for each time point.
+    Iterate repmatParameters(int numPoints);
 };
 
 /// This struct is used to return a solution to a problem. Use `stats`

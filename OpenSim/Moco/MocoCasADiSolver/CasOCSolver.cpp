@@ -21,6 +21,7 @@
 #include "CasOCHermiteSimpson.h"
 #include "CasOCLegendreGauss.h"
 #include "CasOCLegendreGaussRadau.h"
+#include "OpenSim/Moco/MocoCasADiSolver/CasOCIterate.h"
 
 #include <OpenSim/Moco/MocoUtilities.h>
 
@@ -119,6 +120,7 @@ Solution Solver::solve(const Iterate& guess) const {
     auto transcription = createTranscription();
     auto pointsForSparsityDetection =
             std::make_shared<std::vector<VariablesDM>>();
+    std::cout << "m_sparsity_detection: " << m_sparsity_detection << std::endl;
     if (m_sparsity_detection == "initial-guess") {
         // Interpolate the guess.
         Iterate guessCopy(guess);
@@ -126,7 +128,7 @@ Solution Solver::solve(const Iterate& guess) const {
                 guessCopy.variables.at(initial_time),
                 guessCopy.variables.at(final_time));
         guessCopy = guessCopy.resample(guessTimes);
-        guessCopy.populateParameters(static_cast<int>(m_mesh.size()));
+        guessCopy = guessCopy.repmatParameters(static_cast<int>(m_mesh.size()));
         pointsForSparsityDetection->push_back(guessCopy.variables);
     } else if (m_sparsity_detection == "random") {
         // Make sure the exact same sparsity pattern is used every time.

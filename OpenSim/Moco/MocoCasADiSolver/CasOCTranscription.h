@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "CasOCSolver.h"
+#include <casadi/core/dm_fwd.hpp>
 
 namespace CasOC {
 
@@ -60,6 +61,9 @@ public:
                 "mesh points.");
 
         return meshIndices;
+    }
+    casadi::DM repeatCopyParameter(const casadi::DM &parameter) const {
+        return casadi::DM::repmat(parameter, 1, m_numMeshIntervals);
     }
 
     Solution solve(const Iterate& guessOrig);
