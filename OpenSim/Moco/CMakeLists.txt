@@ -58,6 +58,7 @@ set(MOCO_SOURCES
         MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.cpp
         MocoGoal/MocoInitialForceEquilibriumDGFGoal.h
         MocoGoal/MocoInitialForceEquilibriumDGFGoal.cpp
+        MocoGoal/MocoParameterExpressionGoal.cpp
         MocoGoal/MocoPeriodicityGoal.h
         MocoGoal/MocoPeriodicityGoal.cpp
         MocoGoal/MocoStepTimeAsymmetryGoal.h
@@ -113,7 +114,6 @@ set(MOCO_SOURCES
         MocoOutputBoundConstraint.h
         MocoStateBoundConstraint.cpp
         MocoStateBoundConstraint.h
-        MocoGoal/MocoParameterExpressionGoal.cpp
 )
 if(OPENSIM_WITH_CASADI)
     list(APPEND MOCO_SOURCES

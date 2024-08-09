@@ -20,9 +20,10 @@
 
 #include "MocoBounds.h"
 
-#include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Property.h>
 #include <SimTKcommon/internal/ReferencePtr.h>
+#include <SimTKcommon/internal/State.h>
 
 namespace OpenSim {
 
@@ -144,7 +145,7 @@ public:
 
     /** Get the value of the property at the given state.
      * @throws if the value is not the same at all paths. */
-    double getPropertyValue(const SimTK::State& state) const;
+    double getPropertyValue() const;
 
     /** For use by solvers. This performs error checks and caches information
     about the model that is useful during the optimization.

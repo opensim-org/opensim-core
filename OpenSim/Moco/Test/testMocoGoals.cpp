@@ -16,16 +16,17 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "Testing.h"
+#include <catch2/catch_all.hpp>
+
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/PointActuator.h>
-#include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Moco/MocoGoal/MocoParameterExpressionGoal.h>
 #include <OpenSim/Moco/MocoOutputConstraint.h>
+#include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-
-#include <catch2/catch_all.hpp>
-#include "Testing.h"
 
 using Catch::Approx;
 using Catch::Matchers::ContainsSubstring;
@@ -1414,7 +1415,31 @@ TEST_CASE("MocoFrameDistanceConstraint de/serialization") {
     }
 }
 
-TEST_CASE("MocoParameterExpressionGoal", "", MocoCasADiSolver,
+TEMPLATE_TEST_CASE("MocoParameterExpressionGoal", "", MocoCasADiSolver,
         MocoTropterSolver) {
+    MocoStudy study;
+    study.setName("oscillator_mass");
+    Model model = ModelFactory::createSlidingPointMass();
+    MocoProblem& mp = study.updProblem();
+    mp.setModelAsCopy(model);
+    mp.setTimeBounds(0, 3);
+    mp.setStateInfo("/slider/position/value", {-5.0, 5.0}, -0.5, {0.25, 0.75});
+    mp.setStateInfo("/slider/position/speed", {-20, 20}, 0, 0);
 
+    auto* parameter = mp.addParameter("sphere_mass", "body", "mass", MocoBounds(0, 10));
+
+    auto* goal = mp.addGoal<MocoParameterExpressionGoal>();
+    goal->setExpression("50-10*q");
+    goal->addParameter(*parameter, "q");
+    parameter->initializeOnModel(model); // should not have to do this here
+
+
+    auto& ms = study.initSolver<TestType>();
+    ms.set_num_mesh_intervals(25);
+
+    MocoSolution sol = study.solve();
+    //sol.write("testMocoParameters_testOscillatorMass_sol.sto");
+
+    CHECK(sol.getParameter("oscillator_mass") ==
+            Catch::Approx(5).epsilon(0.003));
 }

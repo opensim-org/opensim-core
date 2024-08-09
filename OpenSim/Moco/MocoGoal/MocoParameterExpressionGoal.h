@@ -1,11 +1,25 @@
-//
-// Created by Allison John on 8/1/24.
-//
-
 #ifndef OPENSIM_MOCOPARAMETEREXPRESSIONGOAL_H
 #define OPENSIM_MOCOPARAMETEREXPRESSIONGOAL_H
+/* -------------------------------------------------------------------------- *
+ * OpenSim: MocoParameterExpressionGoal.h                                     *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
+ *                                                                            *
+ * Author(s): Allison John                                                    *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
 
 #include "MocoGoal.h"
+#include "OpenSim/Moco/MocoParameter.h"
 #include <lepton/ExpressionProgram.h>
 
 namespace OpenSim {
@@ -23,7 +37,7 @@ public:
         constructProperties();
     }
 
-    void setExpression(std::string& expression) {
+    void setExpression(std::string expression) {
         set_expression(expression);
     }
 
@@ -42,9 +56,6 @@ protected:
 
 private:
     void constructProperties();
-    /** Calculate the Output value for the provided SimTK::State. Do not
-    call this function until 'initializeOnModelBase()' has been called. */
-    double calcOutputValue(const SimTK::State&) const;
     OpenSim_DECLARE_PROPERTY(expression, std::string,
             "The expression string with variables q0-q9.");
     // consider a mapping from variable names to parameters instead
@@ -53,7 +64,7 @@ private:
     OpenSim_DECLARE_LIST_PROPERTY(variable_names, std::string,
             "Variable names of the MocoParameters to use in the expression.");
 
-    mutable Lepton::ExpressionProgram _parameterProg;
+    mutable Lepton::ExpressionProgram m_parameterProg;
 };
 
 } // namespace OpenSim
