@@ -250,6 +250,22 @@ private:
 
         return order;
     }
+
+    void transcribe();
+    void setObjectiveAndEndpointConstraints();
+    void calcDefects() {
+        calcDefectsImpl(m_unscaledVars.at(states), m_xdot,
+                m_unscaledVars.at(initial_time), m_unscaledVars.at(final_time),
+                m_unscaledVars.at(parameters), m_constraints.defects);
+    }
+    void calcInterpolatingControls() {
+        calcInterpolatingControlsImpl(
+                m_unscaledVars.at(controls), m_constraints.interp_controls);
+    }
+    // void calcExtrapolatedControls() {
+    //     calcExtrapolatedControlsImpl(m_scaledVars.at(controls));
+    // }
+
     /// Convert the map of variables into a column vector, for passing onto
     /// nlpsol(), etc.
     casadi::MX flattenVariables(const VectorVariablesMX& vars) const {
@@ -298,22 +314,6 @@ private:
 
         return out;
     }
-
-    void transcribe();
-    void setObjectiveAndEndpointConstraints();
-    void calcDefects() {
-        calcDefectsImpl(m_unscaledVars.at(states), m_xdot,
-                m_unscaledVars.at(initial_time), m_unscaledVars.at(final_time),
-                m_unscaledVars.at(parameters), m_constraints.defects);
-    }
-    void calcInterpolatingControls() {
-        calcInterpolatingControlsImpl(
-                m_unscaledVars.at(controls), m_constraints.interp_controls);
-    }
-    // void calcExtrapolatedControls() {
-    //     calcExtrapolatedControlsImpl(m_scaledVars.at(controls));
-    // }
-
 
     /// unscaled = (upper - lower) * scaled - 0.5 * (upper + lower);
     template <typename T>

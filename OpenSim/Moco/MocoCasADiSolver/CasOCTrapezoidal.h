@@ -51,6 +51,7 @@ private:
     void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
             const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
             casadi::MX& defects) const override;
+    std::vector<std::pair<Var, int>> getVariableOrder() const override;
 };
 
 } // namespace CasOC
