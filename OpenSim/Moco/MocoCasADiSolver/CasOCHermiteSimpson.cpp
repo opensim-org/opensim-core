@@ -55,12 +55,11 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
         const casadi::MX& p, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
-    const int NS = m_problem.getNumStates();
-    const int NP = m_problem.getNumParameters();
-
     int time_i;
     int time_mid;
     int time_ip1;
+    const int NS = m_problem.getNumStates();
+    const int NP = m_problem.getNumParameters();
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         time_i = 2 * imesh; // Needed for defects and path constraints.
 

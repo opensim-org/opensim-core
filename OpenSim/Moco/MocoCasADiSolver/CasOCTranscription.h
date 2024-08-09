@@ -214,8 +214,10 @@ private:
     // }
 
     /// Use this function to ensure you iterate through variables in the same
-    /// order. This may be overridden in derived classes to provide
-    /// scheme-specific sparsity patterns.
+    /// order. Returns a vector whose elements are pairs of variable keys and
+    /// trajectory indexes. The vector should have length equal to the length of
+    /// the flattened variable vector passed to nlpsol(). This may be overridden
+    /// in derived classes to provide scheme-specific sparsity patterns.
     virtual std::vector<std::pair<Var, int>> getVariableOrder() const {
         std::vector<std::pair<Var, int>> order;
         int N = m_numPointsPerMeshInterval - 1;
@@ -252,13 +254,9 @@ private:
     /// nlpsol(), etc.
     casadi::MX flattenVariables(const VectorVariablesMX& vars) const {
         std::vector<casadi::MX> stdvec;
-        auto flatten = [&stdvec, vars](Var var, int index) {
-            stdvec.push_back(vars.at(var)[index]);
-        };
-
         auto varOrder = getVariableOrder();
         for (const auto& kv : varOrder) {
-            flatten(kv.first, kv.second);
+            stdvec.push_back(vars.at(kv.first)[kv.second]);
         }
 
         return casadi::MX::vertcat(stdvec);
@@ -267,15 +265,11 @@ private:
     /// nlpsol(), etc.
     casadi::DM flattenVariables(const VariablesDM& vars) const {
         std::vector<casadi::DM> stdvec;
-        auto flatten = [this, &stdvec, vars](Var var, int index) {
-            if (m_scaledVars.at(var).rows()) {
-                stdvec.push_back(vars.at(var)(casadi::Slice(), index));
-            }
-        };
-
         auto varOrder = getVariableOrder();
         for (const auto& kv : varOrder) {
-            flatten(kv.first, kv.second);
+            if (m_scaledVars.at(kv.first).rows()) {
+                stdvec.push_back(vars.at(kv.first)(casadi::Slice(), kv.second));
+            }
         }
 
         return casadi::DM::vertcat(stdvec);
@@ -290,18 +284,16 @@ private:
                     kv.second.columns());
         }
 
-        auto expand = [this, &out, &offset, x](Var var, int index) {
+        auto varOrder = getVariableOrder();
+        for (const auto& kv : varOrder) {
+            const auto& var = kv.first;
+            const auto& index = kv.second;
             casadi_int size = m_scaledVars.at(var).rows();
             if (size) {
                 out[var](Slice(), index) = casadi::DM::reshape(
                         x(Slice(offset, offset + size)), size, 1);
                 offset += size;
             }
-        };
-
-        auto varOrder = getVariableOrder();
-        for (const auto& kv : varOrder) {
-            expand(kv.first, kv.second);
         }
 
         return out;

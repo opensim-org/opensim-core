@@ -47,15 +47,26 @@ void Trapezoidal::calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
     // We have arranged the code this way so that all constraints at a given
     // mesh point are grouped together (organizing the sparsity of the Jacobian
     // this way might have benefits for sparse linear algebra).
-    for (int itime = 0; itime < m_numMeshIntervals; ++itime) {
-        const auto h = m_times(itime + 1) - m_times(itime);
-        const auto x_i = x(Slice(), itime);
-        const auto x_ip1 = x(Slice(), itime + 1);
-        const auto xdot_i = xdot(Slice(), itime);
-        const auto xdot_ip1 = xdot(Slice(), itime + 1);
+    const int NS = m_problem.getNumStates();
+    const int NP = m_problem.getNumParameters();
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        const auto h = m_intervals(imesh);
+        const auto x_i = x(Slice(), imesh);
+        const auto x_ip1 = x(Slice(), imesh + 1);
+        const auto xdot_i = xdot(Slice(), imesh);
+        const auto xdot_ip1 = xdot(Slice(), imesh + 1);
+
+        // Time variables.
+        defects(Slice(0, 1), imesh) = ti(imesh + 1) - ti(imesh);
+        defects(Slice(1, 2), imesh) = tf(imesh + 1) - tf(imesh);
+
+        // Parameters.
+        defects(Slice(2, 2 + NP), imesh) =
+                p(Slice(), imesh + 1) - p(Slice(), imesh);
 
         // Trapezoidal defects.
-        defects(Slice(), itime) = x_ip1 - (x_i + 0.5 * h * (xdot_ip1 + xdot_i));
+        defects(Slice(2 + NP, 2 + NP + NS), imesh) =
+                x_ip1 - (x_i + 0.5 * h * (xdot_ip1 + xdot_i));
     }
 }
 

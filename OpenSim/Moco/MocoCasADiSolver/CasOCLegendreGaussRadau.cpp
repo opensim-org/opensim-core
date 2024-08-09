@@ -58,6 +58,7 @@ void LegendreGaussRadau::calcDefectsImpl(const casadi::MX& x,
     // For more information, see doxygen documentation for the class.
 
     const int NS = m_problem.getNumStates();
+    const int NP = m_problem.getNumParameters();
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         const int igrid = imesh * m_degree;
         const auto h = m_times(igrid + m_degree) - m_times(igrid);
@@ -65,10 +66,20 @@ void LegendreGaussRadau::calcDefectsImpl(const casadi::MX& x,
         const auto xdot_i = xdot(Slice(),
                 Slice(igrid + 1, igrid + m_degree + 1));
 
+        // Time variables.
+        defects(Slice(0, 1), imesh) = ti(imesh + 1) - ti(imesh);
+        defects(Slice(1, 2), imesh) = tf(imesh + 1) - tf(imesh);
+
+        // Parameters.
+        defects(Slice(2, 2 + NP), imesh) =
+                p(Slice(), imesh + 1) - p(Slice(), imesh);
+
         // Residual function defects.
         MX residual = h * xdot_i - MX::mtimes(x_i, m_differentiationMatrix);
         for (int d = 0; d < m_degree; ++d) {
-            defects(Slice(d * NS, (d + 1) * NS), imesh) = residual(Slice(), d);
+            const int istart = d * NS + 2 + NP;
+            const int iend = (d + 1) * NS + 2 + NP;
+            defects(Slice(istart, iend), imesh) = residual(Slice(), d);
         }
     }
 }
