@@ -51,11 +51,12 @@ DM HermiteSimpson::createMeshIndicesImpl() const {
 }
 
 void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
-        const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
-        const casadi::MX& xdot, casadi::MX& defects) const {
+        const casadi::MX& xdot, const casadi::MX& ti, const casadi::MX& tf,
+        const casadi::MX& p, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
     const int NS = m_problem.getNumStates();
+    const int NP = m_problem.getNumParameters();
 
     int time_i;
     int time_mid;
@@ -68,7 +69,7 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
         time_mid = 2 * imesh + 1;
         time_ip1 = 2 * imesh + 2;
 
-        const auto h = m_times(time_ip1) - m_times(time_i);
+        const auto h = m_intervals(imesh);
         const auto x_i = x(Slice(), time_i);
         const auto x_mid = x(Slice(), time_mid);
         const auto x_ip1 = x(Slice(), time_ip1);
@@ -76,12 +77,20 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
         const auto xdot_mid = xdot(Slice(), time_mid);
         const auto xdot_ip1 = xdot(Slice(), time_ip1);
 
+        // Time variables.
+        defects(Slice(0, 1), imesh) = ti(imesh + 1) - ti(imesh);
+        defects(Slice(1, 2), imesh) = tf(imesh + 1) - tf(imesh);
+
+        // Parameters.
+        defects(Slice(2, 2 + NP), imesh) =
+                p(Slice(), imesh + 1) - p(Slice(), imesh);
+
         // Hermite interpolant defects.
-        defects(Slice(0, NS), imesh) =
+        defects(Slice(2 + NP, 2 + NP + NS), imesh) =
                 x_mid - 0.5 * (x_ip1 + x_i) - (h / 8.0) * (xdot_i - xdot_ip1);
 
         // Simpson integration defects.
-        defects(Slice(NS, 2 * NS), imesh) =
+        defects(Slice(2 + NP + NS, 2 + NP + 2*NS), imesh) =
                 x_ip1 - x_i - (h / 6.0) * (xdot_ip1 + 4.0 * xdot_mid + xdot_i);
     }
 }

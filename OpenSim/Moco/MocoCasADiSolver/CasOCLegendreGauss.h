@@ -120,6 +120,7 @@ private:
             casadi::MX& defects) const override;
     void calcInterpolatingControlsImpl(const casadi::MX& controls,
             casadi::MX& interpControls) const override;
+    std::vector<std::pair<Var, int>> getVariableOrder() const override;
     // void calcExtrapolatedControlsImpl(casadi::MX& controls) const override;
 
     int m_degree;

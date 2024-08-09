@@ -74,21 +74,8 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt,
     CasOC::VariablesDM& casVars = casIt.variables;
     using CasOC::Var;
 
-    const auto& initialTime = mocoIt.getInitialTime();
-    SimTK::Matrix initialTimeTrajectory(mocoIt.getNumTimes(), 1);
-    for (int i = 0; i < mocoIt.getNumTimes(); ++i) {
-        initialTimeTrajectory.updRow(i) = initialTime;
-    }
-    casVars[Var::initial_time] =
-            convertToCasADiDMTranspose(initialTimeTrajectory);
-
-    const auto& finalTime = mocoIt.getFinalTime();
-    SimTK::Matrix finalTimeTrajectory(mocoIt.getNumTimes(), 1);
-    for (int i = 0; i < mocoIt.getNumTimes(); ++i) {
-        finalTimeTrajectory.updRow(i) = finalTime;
-    }
-    casVars[Var::final_time] = convertToCasADiDMTranspose(finalTimeTrajectory);
-
+    casVars[Var::initial_time] = mocoIt.getInitialTime();
+    casVars[Var::final_time] = mocoIt.getFinalTime();
     casVars[Var::states] =
             convertToCasADiDMTranspose(mocoIt.getStatesTrajectory());
 

@@ -53,11 +53,11 @@ std::unique_ptr<Model> createSlidingMassModel() {
     coord.setName("position");
     model->addComponent(joint);
 
-    auto* actu = new CoordinateActuator();
-    actu->setCoordinate(&coord);
-    actu->setName("actuator");
-    actu->setOptimalForce(1);
-    model->addComponent(actu);
+    // auto* actu = new CoordinateActuator();
+    // actu->setCoordinate(&coord);
+    // actu->setName("actuator");
+    // actu->setOptimalForce(1);
+    // model->addComponent(actu);
 
     body->attachGeometry(new Sphere(0.05));
 
@@ -93,7 +93,7 @@ int main() {
     problem.setStateInfo("/slider/position/speed", {-50, 50});
 
     // Applied force must be between -50 and 50.
-    problem.setControlInfo("/actuator", MocoBounds(-50, 50));
+    // problem.setControlInfo("/actuator", MocoBounds(-50, 50));
 
     // Cost.
     // -----
@@ -103,10 +103,10 @@ int main() {
     // =====================
     MocoCasADiSolver& solver = study.initCasADiSolver();
     solver.set_num_mesh_intervals(50);
-    // solver.set_parallel(0);
+    solver.set_parallel(0);
     solver.set_optim_solver("fatrop");
-    solver.set_optim_hessian_approximation("exact");
-    solver.set_transcription_scheme("legendre-gauss-2");
+    // solver.set_optim_hessian_approximation("exact");
+    solver.set_transcription_scheme("legendre-gauss-3");
 
     // Now that we've finished setting up the tool, print it to a file.
     study.print("sliding_mass.omoco");

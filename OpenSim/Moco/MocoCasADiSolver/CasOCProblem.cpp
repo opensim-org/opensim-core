@@ -32,13 +32,40 @@ using OpenSim::Exception;
 namespace CasOC {
 
 Iterate Iterate::resample(const casadi::DM& newTimes) const {
-    // Since we are converting to a MocoTrajectory and immediately converting 
-    // back to a CasOC::Iterate after resampling, we do not need to provide 
+    // Since we are converting to a MocoTrajectory and immediately converting
+    // back to a CasOC::Iterate after resampling, we do not need to provide
     // Input control indexes, even if they are present in the MocoProblem.
     auto mocoTraj = OpenSim::convertToMocoTrajectory(*this);
     auto simtkNewTimes = OpenSim::convertToSimTKVector(newTimes);
     mocoTraj.resample(simtkNewTimes);
     return OpenSim::convertToCasOCIterate(mocoTraj);
+}
+
+void Iterate::populateParameters(int numMeshPoints) {
+    if (variables.at(Var::initial_time).size2() != numMeshPoints) {
+        const auto& initial_time = variables.at(Var::initial_time)(0);
+        variables[Var::initial_time] = casadi::DM::zeros(1, numMeshPoints);
+        variables[Var::initial_time](0, casadi::Slice()) = initial_time;
+    }
+
+    if (variables.at(Var::final_time).size2() != numMeshPoints) {
+        const auto& final_time = variables.at(Var::final_time)(0);
+        variables[Var::final_time] = casadi::DM::zeros(1, numMeshPoints);
+        variables[Var::final_time](0, casadi::Slice()) = final_time;
+    }
+
+    int numParameters = variables.at(Var::parameters).size1();
+    if (numParameters) {
+        if (variables.at(Var::parameters).size2() != numMeshPoints) {
+            const auto& parameters =
+                    variables.at(Var::parameters)(casadi::Slice(), 0);
+            variables[Var::parameters] =
+                    casadi::DM::zeros(numParameters, numMeshPoints);
+            for (int i = 0; i < numMeshPoints; ++i) {
+                variables[Var::parameters](casadi::Slice(), i) = parameters;
+            }
+        }
+    }
 }
 
 std::vector<std::string>

@@ -326,12 +326,6 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         }
     }
     m_unscaledVars = unscaleVariables(m_scaledVars);
-    //
-    // for (int itime = 0; itime < m_numGridPoints; ++itime) {
-    //     m_times(itime) = (m_unscaledVars[final_time](itime) -
-    //                       m_unscaledVars[initial_time](itime)) * m_grid(itime) +
-    //                       m_unscaledVars[initial_time](itime);
-    // }
 
     m_times = MX(casadi::Sparsity::dense(1, m_numGridPoints));
     m_parameters = MX(casadi::Sparsity::dense(
@@ -354,9 +348,8 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                         m_grid(-1) +
                    m_unscaledVars[initial_time](-1);
 
-    // m_times = createTimes(m_unscaledVars[initial_time], m_unscaledVars[final_time]);
     m_duration = m_unscaledVars[final_time] - m_unscaledVars[initial_time];
-    m_delta_t = m_duration / m_numMeshIntervals;
+    m_intervals = m_duration / m_numMeshIntervals;
 
     // calcExtrapolatedControls();
 }
@@ -714,6 +707,7 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     const auto guessTimes = createTimes(guessOrig.variables.at(initial_time),
             guessOrig.variables.at(final_time));
     auto guess = guessOrig.resample(guessTimes);
+    guess.populateParameters(m_numMeshPoints);
 
     // Adjust guesses for the slack variables to ensure they are the correct
     // length (i.e. slacks.size2() == m_numPointsIgnoringConstraints).
@@ -754,7 +748,7 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         options[m_solver.getOptimSolver()] = m_solver.getSolverOptions();
     }
 
-    auto x = flattenVariablesMX(m_scaledVectorVars);
+    auto x = flattenVariables(m_scaledVectorVars);
     casadi_int numVariables = x.numel();
 
     // The m_constraints symbolic vector holds all of the expressions for
@@ -813,9 +807,9 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     // --------------------------------------------------------
     // The inputs and outputs of nlpFunc are numeric (casadi::DM).
     const casadi::DMDict nlpResult = nlpFunc(casadi::DMDict{
-                    {"x0", flattenVariablesDM(scaleVariables(guess.variables))},
-                    {"lbx", flattenVariablesDM(scaleVariables(m_lowerBounds))},
-                    {"ubx", flattenVariablesDM(scaleVariables(m_upperBounds))},
+                    {"x0", flattenVariables(scaleVariables(guess.variables))},
+                    {"lbx", flattenVariables(scaleVariables(m_lowerBounds))},
+                    {"ubx", flattenVariables(scaleVariables(m_upperBounds))},
                     {"lbg", lbg},
                     {"ubg", ubg}});
 
@@ -831,6 +825,9 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     casadi::DMVector objectiveOut;
     objectiveFunc.call(finalVarsDMV, objectiveOut);
     solution.objective_breakdown = expandObjectiveTerms(objectiveOut[0]);
+
+    solution.times = createTimes(
+            solution.variables[initial_time], solution.variables[final_time]);
     solution.stats = nlpFunc.stats();
 
     // Print breakdown of objective.

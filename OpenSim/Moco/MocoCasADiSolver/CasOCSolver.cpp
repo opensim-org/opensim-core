@@ -126,6 +126,7 @@ Solution Solver::solve(const Iterate& guess) const {
                 guessCopy.variables.at(initial_time),
                 guessCopy.variables.at(final_time));
         guessCopy = guessCopy.resample(guessTimes);
+        guessCopy.populateParameters(static_cast<int>(m_mesh.size()));
         pointsForSparsityDetection->push_back(guessCopy.variables);
     } else if (m_sparsity_detection == "random") {
         // Make sure the exact same sparsity pattern is used every time.

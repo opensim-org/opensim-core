@@ -46,11 +46,13 @@ enum Var {
 
 template <typename T>
 using Variables = std::unordered_map<Var, T, std::hash<int>>;
+template <typename T>
+using VectorVariables = std::unordered_map<Var, std::vector<T>, std::hash<int>>;
 
 /// Numeric variables for initial guesses and solutions.
 using VariablesDM = Variables<casadi::DM>;
 /// Symbolic variables, used to define the problem.
-using VariablesMXVector = Variables<casadi::MXVector>;
+using VectorVariablesMX = VectorVariables<casadi::MX>;
 using VariablesMX = Variables<casadi::MX>;
 
 /// This struct is used to obtain initial guesses.
@@ -67,6 +69,9 @@ struct Iterate {
     /// Return a new iterate in which the data is resampled at the times in
     /// newTimes.
     Iterate resample(const casadi::DM& newTimes) const;
+    // Populate the iterate with values at each mesh point for all parameters
+    // (including initial and final times).
+    void populateParameters(int numMeshPoints);
 };
 
 /// This struct is used to return a solution to a problem. Use `stats`

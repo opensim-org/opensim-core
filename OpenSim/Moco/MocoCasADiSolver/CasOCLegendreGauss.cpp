@@ -59,12 +59,12 @@ void LegendreGauss::calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
         casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
-    const int NP = m_problem.getNumParameters();
     const int NS = m_problem.getNumStates();
+    const int NP = m_problem.getNumParameters();
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         const int i = imesh * (m_degree + 1);
         const int ip1 = i + m_degree + 1;
-        const auto h = m_delta_t(imesh);
+        const auto h = m_intervals(imesh);
         const auto x_i = x(Slice(), Slice(i, ip1));
         const auto xdot_i = xdot(Slice(), Slice(i + 1, ip1));
         const auto x_ip1 = x(Slice(), ip1);
@@ -73,18 +73,13 @@ void LegendreGauss::calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
         defects(Slice(0, NS), imesh) =
                 x_ip1 - MX::mtimes(x_i, m_interpolationCoefficients);
 
-        // Initial time.
+        // Time variables.
         defects(Slice(NS, NS + 1), imesh) = ti(imesh + 1) - ti(imesh);
-
-        // Final time.
         defects(Slice(NS + 1, NS + 2), imesh) = tf(imesh + 1) - tf(imesh);
 
         // Parameters.
-        if (NP) {
-            const auto p_i = p(Slice(), imesh);
-            const auto p_ip1 = p(Slice(), imesh + 1);
-            defects(Slice(NS + 2, NS + 2 + NP), imesh) = p_ip1 - p_i;
-        }
+        defects(Slice(NS + 2, NS + 2 + NP), imesh) =
+                p(Slice(), imesh + 1) - p(Slice(), imesh);
 
         // Residual function defects.
         MX residual = h * xdot_i - MX::mtimes(x_i, m_differentiationMatrix);
@@ -111,6 +106,40 @@ void LegendreGauss::calcInterpolatingControlsImpl(
             }
         }
     }
+}
+
+std::vector<std::pair<Var, int>> LegendreGauss::getVariableOrder() const {
+    std::vector<std::pair<Var, int>> order;
+    int N = m_numPointsPerMeshInterval - 1;
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        int igrid = imesh * N;
+        order.push_back({states, igrid});
+        order.push_back({initial_time, imesh});
+        order.push_back({final_time, imesh});
+        order.push_back({parameters, imesh});
+        for (int i = 1; i < N; ++i) {
+            order.push_back({states, igrid + i});
+        }
+        for (int i = 0; i < N; ++i) {
+            order.push_back({controls, igrid + i});
+        }
+        for (int i = 0; i < N; ++i) {
+            order.push_back({multipliers, igrid + i});
+        }
+        for (int i = 0; i < N; ++i) {
+            order.push_back({derivatives, igrid + i});
+        }
+        order.push_back({slacks, imesh});
+    }
+    order.push_back({states, m_numGridPoints - 1});
+    order.push_back({initial_time, m_numMeshIntervals});
+    order.push_back({final_time, m_numMeshIntervals});
+    order.push_back({parameters, m_numMeshIntervals});
+    order.push_back({controls, m_numGridPoints - 1});
+    order.push_back({multipliers, m_numGridPoints - 1});
+    order.push_back({derivatives, m_numGridPoints - 1});
+
+    return order;
 }
 
 // void LegendreGauss::calcExtrapolatedControlsImpl(casadi::MX& controls) const {

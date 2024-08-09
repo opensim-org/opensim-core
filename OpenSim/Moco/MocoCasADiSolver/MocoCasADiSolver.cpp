@@ -411,9 +411,12 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         checkConstraintJacobianRank(mocoSolution);
     }
 
+    std::string return_status = (get_optim_solver() == "ipopt") ?
+            "return_status" : "unified_return_status";
+
     const long long elapsed = stopwatch.getElapsedTimeInNs();
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
-            casSolution.objective, casSolution.stats.at("return_status"),
+            casSolution.objective, casSolution.stats.at(return_status),
             casSolution.stats.at("iter_count"), SimTK::nsToSec(elapsed),
             casSolution.objective_breakdown);
 

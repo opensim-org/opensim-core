@@ -156,13 +156,13 @@ protected:
     casadi::DM m_pointsForInterpControls;
     casadi::MX m_times;
     casadi::MX m_parameters;
-    casadi::MX m_delta_t;
+    casadi::MX m_intervals;
     casadi::MX m_duration;
     std::vector<bool> m_controlPoints;
     casadi::MX m_controls;
 
 private:
-    VariablesMXVector m_scaledVectorVars;
+    VectorVariablesMX m_scaledVectorVars;
     VariablesMX m_scaledVars;
     VariablesMX m_unscaledVars;
     VariablesDM m_lowerBounds;
@@ -213,6 +213,100 @@ private:
     //             "Must provide scheme for extrapolated controls.")
     // }
 
+    /// Use this function to ensure you iterate through variables in the same
+    /// order. This may be overridden in derived classes to provide
+    /// scheme-specific sparsity patterns.
+    virtual std::vector<std::pair<Var, int>> getVariableOrder() const {
+        std::vector<std::pair<Var, int>> order;
+        int N = m_numPointsPerMeshInterval - 1;
+        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+            int igrid = imesh * N;
+            order.push_back({initial_time, imesh});
+            order.push_back({final_time, imesh});
+            order.push_back({parameters, imesh});
+            for (int i = 0; i < N; ++i) {
+                order.push_back({states, igrid + i});
+            }
+            for (int i = 0; i < N; ++i) {
+                order.push_back({controls, igrid + i});
+            }
+            for (int i = 0; i < N; ++i) {
+                order.push_back({multipliers, igrid + i});
+            }
+            for (int i = 0; i < N; ++i) {
+                order.push_back({derivatives, igrid + i});
+            }
+            order.push_back({slacks, imesh});
+        }
+        order.push_back({initial_time, m_numMeshIntervals});
+        order.push_back({final_time, m_numMeshIntervals});
+        order.push_back({parameters, m_numMeshIntervals});
+        order.push_back({states, m_numGridPoints - 1});
+        order.push_back({controls, m_numGridPoints - 1});
+        order.push_back({multipliers, m_numGridPoints - 1});
+        order.push_back({derivatives, m_numGridPoints - 1});
+
+        return order;
+    }
+    /// Convert the map of variables into a column vector, for passing onto
+    /// nlpsol(), etc.
+    casadi::MX flattenVariables(const VectorVariablesMX& vars) const {
+        std::vector<casadi::MX> stdvec;
+        auto flatten = [&stdvec, vars](Var var, int index) {
+            stdvec.push_back(vars.at(var)[index]);
+        };
+
+        auto varOrder = getVariableOrder();
+        for (const auto& kv : varOrder) {
+            flatten(kv.first, kv.second);
+        }
+
+        return casadi::MX::vertcat(stdvec);
+    }
+    /// Convert the map of variables into a column vector, for passing onto
+    /// nlpsol(), etc.
+    casadi::DM flattenVariables(const VariablesDM& vars) const {
+        std::vector<casadi::DM> stdvec;
+        auto flatten = [this, &stdvec, vars](Var var, int index) {
+            if (m_scaledVars.at(var).rows()) {
+                stdvec.push_back(vars.at(var)(casadi::Slice(), index));
+            }
+        };
+
+        auto varOrder = getVariableOrder();
+        for (const auto& kv : varOrder) {
+            flatten(kv.first, kv.second);
+        }
+
+        return casadi::DM::vertcat(stdvec);
+    }
+    /// Convert the 'x' column vector into separate variables.
+    VariablesDM expandVariables(const casadi::DM& x) const {
+        VariablesDM out;
+        using casadi::Slice;
+        casadi_int offset = 0;
+        for (const auto& kv : m_scaledVars) {
+            out[kv.first] = casadi::DM::zeros(kv.second.rows(),
+                    kv.second.columns());
+        }
+
+        auto expand = [this, &out, &offset, x](Var var, int index) {
+            casadi_int size = m_scaledVars.at(var).rows();
+            if (size) {
+                out[var](Slice(), index) = casadi::DM::reshape(
+                        x(Slice(offset, offset + size)), size, 1);
+                offset += size;
+            }
+        };
+
+        auto varOrder = getVariableOrder();
+        for (const auto& kv : varOrder) {
+            expand(kv.first, kv.second);
+        }
+
+        return out;
+    }
+
     void transcribe();
     void setObjectiveAndEndpointConstraints();
     void calcDefects() {
@@ -228,92 +322,6 @@ private:
     //     calcExtrapolatedControlsImpl(m_scaledVars.at(controls));
     // }
 
-    /// Use this function to ensure you iterate through variables in the same
-    /// order.
-    template <typename T>
-    static std::vector<Var> getSortedVarKeys(const Variables<T>& vars) {
-        std::vector<Var> keys;
-        keys.push_back(initial_time);
-        keys.push_back(final_time);
-        keys.push_back(parameters);
-        keys.push_back(states);
-        keys.push_back(controls);
-        keys.push_back(multipliers);
-        keys.push_back(derivatives);
-        // for (const auto& kv : vars) { keys.push_back(kv.first); }
-        // std::sort(keys.begin(), keys.end());
-        return keys;
-    }
-    /// Convert the map of variables into a column vector, for passing onto
-    /// nlpsol(), etc.
-    // template <typename T>
-    // static T flattenVariables(const CasOC::Variables<T>& vars) {
-    //     std::vector<T> stdvec;
-    //     for (const auto& key : getSortedVarKeys(vars)) {
-    //         stdvec.push_back(vars.at(key));
-    //     }
-    //     return T::veccat(stdvec);
-    // }
-    casadi::MX flattenVariablesMX(const CasOC::VariablesMXVector& vars) const {
-        std::vector<casadi::MX> stdvec;
-        int N = m_numPointsPerMeshInterval - 1;
-        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-            int igrid = imesh * N;
-            stdvec.push_back(vars.at(states)[igrid]);
-            stdvec.push_back(vars.at(initial_time)[imesh]);
-            stdvec.push_back(vars.at(final_time)[imesh]);
-            for (int i = 1; i < N; ++i) {
-                stdvec.push_back(vars.at(states)[igrid + i]);
-            }
-            for (int i = 0; i < N; ++i) {
-                stdvec.push_back(vars.at(controls)[igrid + i]);
-            }
-        }
-        stdvec.push_back(vars.at(states)[m_numGridPoints - 1]);
-        stdvec.push_back(vars.at(initial_time)[m_numMeshIntervals]);
-        stdvec.push_back(vars.at(final_time)[m_numMeshIntervals]);
-        stdvec.push_back(vars.at(controls)[m_numGridPoints - 1]);
-
-        return casadi::MX::veccat(stdvec);
-    }
-
-    casadi::DM flattenVariablesDM(const CasOC::VariablesDM& vars) const {
-        std::vector<casadi::DM> stdvec;
-        int N = m_numPointsPerMeshInterval - 1;
-        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-            int igrid = imesh * N;
-            stdvec.push_back(vars.at(states)(casadi::Slice(), igrid));
-            stdvec.push_back(vars.at(initial_time)(casadi::Slice(), imesh));
-            stdvec.push_back(vars.at(final_time)(casadi::Slice(), imesh));
-            for (int i = 1; i < N; ++i) {
-                stdvec.push_back(vars.at(states)(casadi::Slice(), igrid + i));
-            }
-            for (int i = 0; i < N; ++i) {
-                stdvec.push_back(vars.at(controls)(casadi::Slice(), igrid + i));
-            }
-        }
-        stdvec.push_back(vars.at(states)(casadi::Slice(), m_numGridPoints - 1));
-        stdvec.push_back(vars.at(initial_time)(casadi::Slice(), m_numMeshIntervals));
-        stdvec.push_back(vars.at(final_time)(casadi::Slice(), m_numMeshIntervals));
-        stdvec.push_back(vars.at(controls)(casadi::Slice(), m_numGridPoints - 1));
-
-        return casadi::DM::veccat(stdvec);
-    }
-    /// Convert the 'x' column vector into separate variables.
-    CasOC::VariablesDM expandVariables(const casadi::DM& x) const {
-        CasOC::VariablesDM out;
-        using casadi::Slice;
-        casadi_int offset = 0;
-        for (const auto& key : getSortedVarKeys(m_scaledVars)) {
-            const auto& value = m_scaledVars.at(key);
-            // Convert a portion of the column vector into a matrix.
-            out[key] = casadi::DM::reshape(
-                    x(Slice(offset, offset + value.numel())), value.rows(),
-                    value.columns());
-            offset += value.numel();
-        }
-        return out;
-    }
 
     /// unscaled = (upper - lower) * scaled - 0.5 * (upper + lower);
     template <typename T>

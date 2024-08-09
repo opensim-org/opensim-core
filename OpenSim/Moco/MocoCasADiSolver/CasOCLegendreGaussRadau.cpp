@@ -53,8 +53,8 @@ DM LegendreGaussRadau::createMeshIndicesImpl() const {
 }
 
 void LegendreGaussRadau::calcDefectsImpl(const casadi::MX& x,
-        const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
-        const casadi::MX& xdot, casadi::MX& defects) const {
+        const casadi::MX& xdot, const casadi::MX& ti, const casadi::MX& tf,
+        const casadi::MX& p, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
     const int NS = m_problem.getNumStates();
