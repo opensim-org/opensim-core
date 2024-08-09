@@ -95,8 +95,8 @@ SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
 /// have NaN for any values of newX outside of the range of x. This is done with
 /// the 'extrapolate' option. If the 'extrapolate' argument is true, then the
 /// interpolant values will be extrapolated based on a piecewise function.
-/// Setting 'extrapolate' to true prevents NaN values for occuring in the
-/// interpolant.
+/// Setting both 'ignoreNaNs' and 'extrapolate' to true prevents NaN values from
+/// occuring in the interpolant.
 /// @throws Exception if x and y are different sizes, or x or y is empty.
 /// @ingroup commonutil
 OSIMCOMMON_API
