@@ -70,6 +70,13 @@ void Trapezoidal::calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
     }
 }
 
+void Trapezoidal::calcInterpolatingControlsImpl(const casadi::MX& controlVars,
+        casadi::MX& controls) const {
+    // For trapezoidal transcription, the control variables require no 
+    // interpolation.
+    controls = controlVars;
+}
+
 std::vector<std::pair<Var, int>> Trapezoidal::getVariableOrder() const {
     std::vector<std::pair<Var, int>> order;
     for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {

@@ -16,6 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "CasOCLegendreGauss.h"
+#include <casadi/core/interpolant.hpp>
 
 using casadi::DM;
 using casadi::MX;
@@ -92,20 +93,40 @@ void LegendreGauss::calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
 }
 
 void LegendreGauss::calcInterpolatingControlsImpl(
-        const casadi::MX& controls, casadi::MX& interpControls) const {
-    if (m_problem.getNumControls() &&
-            m_solver.getInterpolateControlMidpoints()) {
-        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        const casadi::MX& controlVars, casadi::MX& controls) const {
+    // if (m_problem.getNumControls() &&
+    //         m_solver.getInterpolateControlMidpoints()) {
+    //     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+    //         const int igrid = imesh * (m_degree + 1);
+    //         const auto c_i = controls(Slice(), igrid);
+    //         const auto c_ip1 = controls(Slice(), igrid + m_degree + 1);
+    //         for (int d = 0; d < m_degree; ++d) {
+    //             const auto c_t = controls(Slice(), igrid + d + 1);
+    //             interpControls(Slice(), imesh * m_degree + d) =
+    //                     c_t - (m_legendreRoots[d] * (c_ip1 - c_i) + c_i);
+    //         }
+    //     }
+    // }
+
+    // Define the first control using backwards interpolation.
+    const auto c0 = controlVars(Slice(), 0);
+    const auto c1 = controlVars(Slice(), 1);
+    const double l0 = m_legendreRoots[0];
+    const double l1 = m_legendreRoots[1];
+    const casadi::MX m = (c1 - c0) / (l1 - l0);
+    const casadi::MX b = c0 - m * l0;
+    controls(Slice(), 0) = c0 - m * l0;
+
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        for (int d = 0; d < m_degree; ++d) {
             const int igrid = imesh * (m_degree + 1);
-            const auto c_i = controls(Slice(), igrid);
-            const auto c_ip1 = controls(Slice(), igrid + m_degree + 1);
-            for (int d = 0; d < m_degree; ++d) {
-                const auto c_t = controls(Slice(), igrid + d + 1);
-                interpControls(Slice(), imesh * m_degree + d) =
-                        c_t - (m_legendreRoots[d] * (c_ip1 - c_i) + c_i);
-            }
+            controls(Slice(), igrid + d + 1) = 
+                    controlVars(Slice(), m_degree * imesh + d);
         }
     }
+    
+
+    
 }
 
 std::vector<std::pair<Var, int>> LegendreGauss::getVariableOrder() const {
@@ -120,8 +141,14 @@ std::vector<std::pair<Var, int>> LegendreGauss::getVariableOrder() const {
         for (int i = 1; i < N; ++i) {
             order.push_back({states, igrid + i});
         }
-        for (int i = 0; i < N; ++i) {
-            order.push_back({controls, igrid + i});
+        if (m_solver.getInterpolateControlMidpoints()) {
+            for (int d = 0; d < m_degree; ++d) {
+                order.push_back({controls, m_degree * imesh + d});
+            }
+        } else {
+            for (int i = 0; i < N; ++i) {
+                order.push_back({controls, igrid + i});
+            }
         }
         for (int i = 0; i < N; ++i) {
             order.push_back({multipliers, igrid + i});
@@ -135,27 +162,13 @@ std::vector<std::pair<Var, int>> LegendreGauss::getVariableOrder() const {
     order.push_back({initial_time, m_numMeshIntervals});
     order.push_back({final_time, m_numMeshIntervals});
     order.push_back({parameters, m_numMeshIntervals});
-    order.push_back({controls, m_numGridPoints - 1});
+    if (!m_solver.getInterpolateControlMidpoints()) {
+        order.push_back({controls, m_numGridPoints - 1});
+    }
     order.push_back({multipliers, m_numGridPoints - 1});
     order.push_back({derivatives, m_numGridPoints - 1});
 
     return order;
 }
-
-// void LegendreGauss::calcExtrapolatedControlsImpl(casadi::MX& controls) const {
-//     if (m_problem.getNumControls()) {
-//         // TODO
-//         // for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-//         //     const int igrid = imesh * (m_degree + 1);
-//         //     const auto c_i = controls(Slice(), igrid);
-//         //     const auto c_ip1 = controls(Slice(), igrid + m_degree + 1);
-//         //     for (int d = 0; d < m_degree; ++d) {
-//         //         const auto c_t = controls(Slice(), igrid + d + 1);
-//         //         interpControls(Slice(), imesh * m_degree + d) =
-//         //                 c_t - (m_legendreRoots[d] * (c_ip1 - c_i) + c_i);
-//         //     }
-//         // }
-//     }
-// }
 
 } // namespace CasOC

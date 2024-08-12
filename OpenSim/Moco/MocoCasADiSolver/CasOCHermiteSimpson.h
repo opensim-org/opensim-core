@@ -47,27 +47,18 @@ public:
         casadi::DM grid =
                 casadi::DM::zeros(1, (2 * m_solver.getMesh().size()) - 1);
         const auto& mesh = m_solver.getMesh();
-        const bool interpControls = m_solver.getInterpolateControlMidpoints();
-        casadi::DM pointsForInterpControls;
-        if (interpControls) {
-            pointsForInterpControls =
-                    casadi::DM::zeros(1, m_solver.getMesh().size() - 1);
-        }
-        // std::vector<bool> controlPoints;
+        std::vector<bool> controlPoints;
         for (int i = 0; i < grid.numel(); ++i) {
             if (i % 2 == 0) {
                 grid(i) = mesh[i / 2];
-                // controlPoints.push_back(true);
+                controlPoints.push_back(true);
             } else {
                 grid(i) = .5 * (mesh[i / 2] + mesh[i / 2 + 1]);
-                // controlPoints.push_back(false);
-                if (interpControls) {
-                    pointsForInterpControls(i / 2) = grid(i);
-                }
+                controlPoints.push_back(false);
             }
         }
         createVariablesAndSetBounds(grid, 2 * m_problem.getNumStates(), 3,
-                pointsForInterpControls);
+                controlPoints);
     }
 
 private:
@@ -76,9 +67,9 @@ private:
     void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
             const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
             casadi::MX& defects) const override;
-    void calcInterpolatingControlsImpl(const casadi::MX& controls,
-            casadi::MX& interpControls) const override;
-    // void calcExtrapolatedControlsImpl(casadi::MX& controls) const override;
+    void calcInterpolatingControlsImpl(const casadi::MX& controlsVars,
+            casadi::MX& controls) const override;
+    std::vector<std::pair<Var, int>> getVariableOrder() const override;
 };
 
 } // namespace CasOC

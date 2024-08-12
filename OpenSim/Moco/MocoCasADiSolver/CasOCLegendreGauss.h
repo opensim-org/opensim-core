@@ -71,12 +71,6 @@ public:
         const int numMeshIntervals = (int)mesh.size() - 1;
         const int numGridPoints = (int)mesh.size() + numMeshIntervals * m_degree;
         casadi::DM grid = casadi::DM::zeros(1, numGridPoints);
-        const bool interpControls = m_solver.getInterpolateControlMidpoints();
-        casadi::DM pointsForInterpControls;
-        if (interpControls) {
-            pointsForInterpControls = casadi::DM::zeros(1,
-                    numMeshIntervals * m_degree);
-        }
 
         // Get the collocation points (roots of Legendre polynomials). The roots
         // are returned on the interval (0, 1), not (-1, 1) as in the theses of
@@ -88,28 +82,24 @@ public:
                 m_interpolationCoefficients,
                 m_quadratureCoefficients);
 
-        // Create the grid points.
-        // std::vector<bool> controlPoints;
+        // Create the grid and control points.
+        std::vector<bool> controlPoints;
         for (int imesh = 0; imesh < numMeshIntervals; ++imesh) {
             const double t_i = mesh[imesh];
             const double t_ip1 = mesh[imesh + 1];
             int igrid = imesh * (m_degree + 1);
             grid(igrid) = t_i;
-            // controlPoints.push_back(false);
+            controlPoints.push_back(false);
             for (int d = 0; d < m_degree; ++d) {
                 grid(igrid + d + 1) = t_i + (t_ip1 - t_i) * m_legendreRoots[d];
-                // controlPoints.push_back(true);
-                if (interpControls) {
-                    pointsForInterpControls(imesh * m_degree + d) =
-                            grid(igrid + d + 1);
-                }
+                controlPoints.push_back(true);
             }
         }
         grid(numGridPoints - 1) = mesh[numMeshIntervals];
-        // controlPoints.push_back(false);
-        createVariablesAndSetBounds(grid,
+        controlPoints.push_back(false);
+        createVariablesAndSetBounds(grid, 
                 (m_degree + 1) * m_problem.getNumStates(), m_degree + 2,
-                pointsForInterpControls);
+                controlPoints);
     }
 
 private:
@@ -118,10 +108,9 @@ private:
     void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
             const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
             casadi::MX& defects) const override;
-    void calcInterpolatingControlsImpl(const casadi::MX& controls,
-            casadi::MX& interpControls) const override;
+    void calcInterpolatingControlsImpl(const casadi::MX& controlsVars,
+            casadi::MX& controls) const override;
     std::vector<std::pair<Var, int>> getVariableOrder() const override;
-    // void calcExtrapolatedControlsImpl(casadi::MX& controls) const override;
 
     int m_degree;
     std::vector<double> m_legendreRoots;

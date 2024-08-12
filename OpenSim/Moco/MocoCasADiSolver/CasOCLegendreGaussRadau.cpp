@@ -101,21 +101,46 @@ void LegendreGaussRadau::calcInterpolatingControlsImpl(
     }
 }
 
-// void LegendreGaussRadau::calcExtrapolatedControlsImpl(
-//         casadi::MX& controls) const {
-//     if (m_problem.getNumControls()) {
-//         // TODO
-//         // for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-//         //     const int igrid = imesh * m_degree;
-//         //     const auto c_i = controls(Slice(), igrid);
-//         //     const auto c_ip1 = controls(Slice(), igrid + m_degree);
-//         //     for (int d = 0; d < m_degree-1; ++d) {
-//         //         const auto c_t = controls(Slice(), igrid + d + 1);
-//         //         interpControls(Slice(), imesh * (m_degree - 1) + d) =
-//         //                 c_t - (m_legendreRoots[d] * (c_ip1 - c_i) + c_i);
-//         //     }
-//         // }
-//     }
-// }
+std::vector<std::pair<Var, int>> LegendreGaussRadau::getVariableOrder() const {
+    std::vector<std::pair<Var, int>> order;
+    int N = m_numPointsPerMeshInterval - 1;
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        int igrid = imesh * N;
+        order.push_back({states, igrid});
+        order.push_back({initial_time, imesh});
+        order.push_back({final_time, imesh});
+        order.push_back({parameters, imesh});
+        for (int i = 1; i < N; ++i) {
+            order.push_back({states, igrid + i});
+        }
+        if (m_solver.getInterpolateControlMidpoints()) {
+            for (int d = 0; d < m_degree; ++d) {
+                order.push_back({controls, m_degree * imesh + d});
+            }
+        } else {
+            for (int i = 0; i < N; ++i) {
+                order.push_back({controls, igrid + i});
+            }
+        }
+        for (int i = 0; i < N; ++i) {
+            order.push_back({multipliers, igrid + i});
+        }
+        for (int i = 0; i < N; ++i) {
+            order.push_back({derivatives, igrid + i});
+        }
+        order.push_back({slacks, imesh});
+    }
+    order.push_back({states, m_numGridPoints - 1});
+    order.push_back({initial_time, m_numMeshIntervals});
+    order.push_back({final_time, m_numMeshIntervals});
+    order.push_back({parameters, m_numMeshIntervals});
+    if (!m_solver.getInterpolateControlMidpoints()) {
+        order.push_back({controls, m_numGridPoints - 1});
+    }
+    order.push_back({multipliers, m_numGridPoints - 1});
+    order.push_back({derivatives, m_numGridPoints - 1});
+
+    return order;
+}
 
 } // namespace CasOC

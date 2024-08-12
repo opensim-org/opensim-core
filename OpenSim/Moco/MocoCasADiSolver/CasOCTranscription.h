@@ -62,9 +62,6 @@ public:
 
         return meshIndices;
     }
-    casadi::DM repeatCopyParameter(const casadi::DM &parameter) const {
-        return casadi::DM::repmat(parameter, 1, m_numMeshIntervals);
-    }
 
     Solution solve(const Iterate& guessOrig);
 
@@ -77,8 +74,7 @@ protected:
     void createVariablesAndSetBounds(const casadi::DM& grid,
             int numDefectsPerMeshInterval,
             int numPointsPerMeshInterval,
-            const casadi::DM& pointsForInterpControls = casadi::DM());
-            // const std::vector<bool>& controlPoints);
+            const std::vector<bool>& controlPoints);
 
     /// We assume all functions depend on time and parameters.
     /// "inputs" is prepended by time and postpended (?) by parameters.
@@ -134,7 +130,6 @@ protected:
         T kinematic;
         std::vector<T> endpoint;
         std::vector<T> path;
-        T interp_controls;
     };
     void printConstraintValues(const Iterate& it,
             const Constraints<casadi::DM>& constraints,
@@ -151,19 +146,19 @@ protected:
     int m_numMeshInteriorPoints = -1;
     int m_numDefectsPerMeshInterval = -1;
     int m_numPointsPerMeshInterval = -1;
+    int m_numControlPoints = -1;
     int m_numMultibodyResiduals = -1;
     int m_numAuxiliaryResiduals = -1;
     int m_numParameterConstraints = -1;
     int m_numConstraints = -1;
     int m_numPathConstraintPoints = -1;
     casadi::DM m_grid;
-    casadi::DM m_pointsForInterpControls;
     casadi::MX m_times;
     casadi::MX m_parameters;
     casadi::MX m_intervals;
     casadi::MX m_duration;
-    std::vector<bool> m_controlPoints;
     casadi::MX m_controls;
+    std::vector<bool> m_controlPoints;
 
 private:
     VectorVariablesMX m_scaledVectorVars;
@@ -204,56 +199,14 @@ private:
     virtual void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
             const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
             casadi::MX& defects) const = 0;
-    virtual void calcInterpolatingControlsImpl(const casadi::MX& /*controls*/,
-            casadi::MX& /*interpControls*/) const {
-        OPENSIM_THROW_IF(m_pointsForInterpControls.numel(), OpenSim::Exception,
-                "Must provide constraints for interpolating controls.")
-    }
-    // virtual void calcExtrapolatedControlsImpl(casadi::MX& /*controls*/) const {
-    //     bool hasExtrapolatedControls = std::any_of(
-    //             m_controlPoints.begin(), m_controlPoints.end(),
-    //             [](bool b) { return !b; });
-    //     OPENSIM_THROW_IF(hasExtrapolatedControls, OpenSim::Exception,
-    //             "Must provide scheme for extrapolated controls.")
-    // }
-
-    /// Use this function to ensure you iterate through variables in the same
-    /// order. Returns a vector whose elements are pairs of variable keys and
-    /// trajectory indexes. The vector should have length equal to the length of
-    /// the flattened variable vector passed to nlpsol(). This may be overridden
-    /// in derived classes to provide scheme-specific sparsity patterns.
-    virtual std::vector<std::pair<Var, int>> getVariableOrder() const {
-        std::vector<std::pair<Var, int>> order;
-        int N = m_numPointsPerMeshInterval - 1;
-        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-            int igrid = imesh * N;
-            order.push_back({initial_time, imesh});
-            order.push_back({final_time, imesh});
-            order.push_back({parameters, imesh});
-            for (int i = 0; i < N; ++i) {
-                order.push_back({states, igrid + i});
-            }
-            for (int i = 0; i < N; ++i) {
-                order.push_back({controls, igrid + i});
-            }
-            for (int i = 0; i < N; ++i) {
-                order.push_back({multipliers, igrid + i});
-            }
-            for (int i = 0; i < N; ++i) {
-                order.push_back({derivatives, igrid + i});
-            }
-            order.push_back({slacks, imesh});
-        }
-        order.push_back({initial_time, m_numMeshIntervals});
-        order.push_back({final_time, m_numMeshIntervals});
-        order.push_back({parameters, m_numMeshIntervals});
-        order.push_back({states, m_numGridPoints - 1});
-        order.push_back({controls, m_numGridPoints - 1});
-        order.push_back({multipliers, m_numGridPoints - 1});
-        order.push_back({derivatives, m_numGridPoints - 1});
-
-        return order;
-    }
+    /// Override this function in your derived class to interpolate controls 
+    /// for time points where control variables are not defined.
+    virtual void calcInterpolatingControlsImpl(const casadi::MX& controlVars, 
+            casadi::MX& controls) const = 0;
+    /// Override this function to define the order of variables in the flattened
+    /// variable vector passed to nlpsol(). Returns a vector whose elements are 
+    /// pairs of variable keys and trajectory indexes.
+    virtual std::vector<std::pair<Var, int>> getVariableOrder() const = 0;
 
     void transcribe();
     void setObjectiveAndEndpointConstraints();
@@ -263,12 +216,13 @@ private:
                 m_unscaledVars.at(parameters), m_constraints.defects);
     }
     void calcInterpolatingControls() {
-        calcInterpolatingControlsImpl(
-                m_unscaledVars.at(controls), m_constraints.interp_controls);
+        if (m_solver.getInterpolateControlMidpoints()) {
+            calcInterpolatingControlsImpl(
+                    m_unscaledVars.at(controls), m_controls);
+        } else {
+            m_controls = m_unscaledVars.at(controls);
+        }
     }
-    // void calcExtrapolatedControls() {
-    //     calcExtrapolatedControlsImpl(m_scaledVars.at(controls));
-    // }
 
     /// Convert the map of variables into a column vector, for passing onto
     /// nlpsol(), etc.
@@ -460,13 +414,6 @@ private:
                     copyColumn(path, imesh);
                 }
             }
-
-            // Interpolating controls.
-            if (m_pointsForInterpControls.numel()) {
-                for (int i = 0; i < N-1; ++i) {
-                    copyColumn(constraints.interp_controls, icon++);
-                }
-            }
         }
 
         // Final grid point.
@@ -516,8 +463,6 @@ private:
             const auto& info = m_problem.getPathConstraintInfos()[ipc];
             out.path[ipc] = init(info.size(), m_numPathConstraintPoints);
         }
-        out.interp_controls = init(m_problem.getNumControls(),
-                (int)m_pointsForInterpControls.numel());
 
         int iflat = 0;
         auto copyColumn = [&flat, &iflat](T& matrix, int columnIndex) {
@@ -561,13 +506,6 @@ private:
             } else {
                 for (auto& path : out.path) {
                     copyColumn(path, imesh);
-                }
-            }
-
-            // Interpolating controls.
-            if (m_pointsForInterpControls.numel()) {
-                for (int i = 0; i < N-1; ++i) {
-                    copyColumn(out.interp_controls, icon++);
                 }
             }
         }

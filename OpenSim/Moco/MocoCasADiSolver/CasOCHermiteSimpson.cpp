@@ -95,38 +95,53 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
 }
 
 void HermiteSimpson::calcInterpolatingControlsImpl(
-        const casadi::MX& controls, casadi::MX& interpControls) const {
-    if (m_problem.getNumControls() &&
-            m_solver.getInterpolateControlMidpoints()) {
-        int time_i;
-        int time_mid;
-        int time_ip1;
-        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-            time_i = 2 * imesh;
-            time_mid = 2 * imesh + 1;
-            time_ip1 = 2 * imesh + 2;
-            const auto c_i = controls(Slice(), time_i);
-            const auto c_mid = controls(Slice(), time_mid);
-            const auto c_ip1 = controls(Slice(), time_ip1);
-            interpControls(Slice(), imesh) = c_mid - 0.5 * (c_ip1 + c_i);
-        }
+        const casadi::MX& controlVars, casadi::MX& controls) const {
+
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        controls(Slice(), 2 * imesh) = controlVars(Slice(), imesh);
+        controls(Slice(), 2 * imesh + 1) = 0.5 * (
+                controlVars(Slice(), imesh + 1) + controlVars(Slice(), imesh));
     }
+    controls(Slice(), -1) = controlVars(Slice(), -1);
 }
 
-// void HermiteSimpson::calcExtrapolatedControlsImpl(casadi::MX& controls) const {
-//     if (m_problem.getNumControls()) {
-//         int time_i;
-//         int time_mid;
-//         int time_ip1;
-//         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-//             time_i = 2 * imesh;
-//             time_mid = 2 * imesh + 1;
-//             time_ip1 = 2 * imesh + 2;
-//             const auto c_i = controls(Slice(), time_i);
-//             const auto c_ip1 = controls(Slice(), time_ip1);
-//             controls(Slice(), time_mid) = 0.5 * (c_ip1 + c_i);
-//         }
-//     }
-// }
+std::vector<std::pair<Var, int>> HermiteSimpson::getVariableOrder() const {
+    std::vector<std::pair<Var, int>> order;
+    int N = m_numPointsPerMeshInterval - 1;
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        int igrid = imesh * N;
+        order.push_back({initial_time, imesh});
+        order.push_back({final_time, imesh});
+        order.push_back({parameters, imesh});
+        order.push_back({states, igrid});
+        order.push_back({states, igrid + 1});
+        if (m_solver.getInterpolateControlMidpoints()) {
+            order.push_back({controls, imesh});
+        } else {
+            order.push_back({controls, igrid});
+            order.push_back({controls, igrid + 1});
+        }
+        
+        for (int i = 0; i < N; ++i) {
+            order.push_back({controls, igrid + i});
+        }
+        for (int i = 0; i < N; ++i) {
+            order.push_back({multipliers, igrid + i});
+        }
+        for (int i = 0; i < N; ++i) {
+            order.push_back({derivatives, igrid + i});
+        }
+        order.push_back({slacks, imesh});
+    }
+    order.push_back({initial_time, m_numMeshIntervals});
+    order.push_back({final_time, m_numMeshIntervals});
+    order.push_back({parameters, m_numMeshIntervals});
+    order.push_back({states, m_numGridPoints - 1});
+    order.push_back({controls, m_numControlPoints - 1});
+    order.push_back({multipliers, m_numGridPoints - 1});
+    order.push_back({derivatives, m_numGridPoints - 1});
+
+    return order;
+}
 
 } // namespace CasOC

@@ -84,8 +84,7 @@ private:
 void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         int numDefectsPerMeshInterval,
         int numPointsPerMeshInterval,
-        const casadi::DM& pointsForInterpControls) {
-        // const std::vector<bool>& controlPoints) {
+        const std::vector<bool>& controlPoints) {
 
     // Set the grid.
     // -------------
@@ -101,20 +100,19 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numDefectsPerMeshInterval = numDefectsPerMeshInterval +
             m_problem.getNumParameters() + 2;
     m_numPointsPerMeshInterval = numPointsPerMeshInterval;
-    m_pointsForInterpControls = pointsForInterpControls;
-    // m_controlPoints = controlPoints;
+    m_controlPoints = controlPoints;
+    m_numControlPoints = static_cast<int>(
+            std::count(m_controlPoints.begin(), m_controlPoints.end(), true));
     m_numMultibodyResiduals = m_problem.isDynamicsModeImplicit()
                              ? m_problem.getNumMultibodyDynamicsEquations()
                              : 0;
     m_numAuxiliaryResiduals = m_problem.getNumAuxiliaryResidualEquations();
 
     m_numConstraints =
-            // (m_problem.getNumParameters() + 2) * m_numMeshIntervals +
             m_numDefectsPerMeshInterval * m_numMeshIntervals +
             m_numMultibodyResiduals * m_numGridPoints +
             m_numAuxiliaryResiduals * m_numGridPoints +
-            m_problem.getNumKinematicConstraintEquations() * m_numMeshPoints +
-            m_problem.getNumControls() * (int)pointsForInterpControls.numel();
+            m_problem.getNumKinematicConstraintEquations() * m_numMeshPoints; 
     m_constraints.endpoint.resize(
             m_problem.getEndpointConstraintInfos().size());
     for (int iec = 0; iec < (int)m_constraints.endpoint.size(); ++iec) {
@@ -132,12 +130,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
 
     // Create variables.
     // -----------------
-    // OPENSIM_THROW_IF(
-    //         static_cast<int>(m_controlPoints.size()) != m_numGridPoints,
-    //         OpenSim::Exception,
-    //         "The number of control points must match the number of grid "
-    //         "points.");
-
+    // Parameter variables.
     for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
         m_scaledVectorVars[initial_time].push_back(
                 MX::sym("initial_time_" + std::to_string(imesh), 1, 1));
@@ -147,23 +140,23 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                 MX::sym("parameters_" + std::to_string(imesh),
                         m_problem.getNumParameters(), 1));
     }
-
+    // Trajectory variables.  
     for (int igrid = 0; igrid < m_numGridPoints; ++igrid) {
         m_scaledVectorVars[states].push_back(
                 MX::sym("states_" + std::to_string(igrid),
                         m_problem.getNumStates(), 1));
-        m_scaledVectorVars[controls].push_back(
+
+        if (m_solver.getInterpolateControlMidpoints() && 
+                m_controlPoints[igrid]) {
+            m_scaledVectorVars[controls].push_back(
+                    MX::sym("controls_" + std::to_string(igrid),
+                            m_problem.getNumControls(), 1));
+        } else {
+            m_scaledVectorVars[controls].push_back(
                 MX::sym("controls_" + std::to_string(igrid),
                         m_problem.getNumControls(), 1));
-        // if (m_controlPoints[igrid]) {
-        //     m_scaledVectorVars[controls].push_back(
-        //             MX::sym("controls_" + std::to_string(igrid),
-        //                     m_problem.getNumControls(), 1));
-        // } else {
-        //     m_scaledVectorVars[controls].push_back(
-        //             MX(m_problem.getNumControls(), 1));
-        // }
-        // TODO should multipliers and derivatives also follow controlPoints?
+        }
+        
         m_scaledVectorVars[multipliers].push_back(
                 MX::sym("multipliers_" + std::to_string(igrid),
                         m_problem.getNumMultipliers(), 1));
@@ -268,8 +261,8 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         const auto& controlInfos = m_problem.getControlInfos();
         int ic = 0;
         for (const auto& info : controlInfos) {
-            setVariableBounds(
-                    controls, ic, Slice(1, m_numGridPoints - 1), info.bounds);
+            setVariableBounds(controls, ic, Slice(1, m_numControlPoints - 1), 
+                    info.bounds);
             setVariableBounds(controls, ic, 0, info.initialBounds);
             setVariableBounds(controls, ic, -1, info.finalBounds);
             setVariableScaling(controls, Slice(), Slice(), info.bounds);
@@ -329,6 +322,10 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     }
     m_unscaledVars = unscaleVariables(m_scaledVars);
 
+    m_controls = MX(casadi::Sparsity::dense(
+            m_problem.getNumControls(), m_numGridPoints));
+    calcInterpolatingControls();
+
     m_times = MX(casadi::Sparsity::dense(1, m_numGridPoints));
     m_parameters = MX(casadi::Sparsity::dense(
             m_problem.getNumParameters(), m_numGridPoints));
@@ -352,8 +349,6 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
 
     m_duration = m_unscaledVars[final_time] - m_unscaledVars[initial_time];
     m_intervals = m_duration / m_numMeshIntervals;
-
-    // calcExtrapolatedControls();
 }
 
 void Transcription::transcribe() {
@@ -539,18 +534,6 @@ void Transcription::transcribe() {
                 casadi::DM::repmat(info.upperBounds, 1,
                                    m_numPathConstraintPoints);
     }
-
-    // Interpolating controls.
-    // -----------------------
-    m_constraints.interp_controls =
-            casadi::DM(casadi::Sparsity::dense(m_problem.getNumControls(),
-                    (int)m_pointsForInterpControls.numel()));
-    const auto boundsOnInterpControls = casadi::DM::zeros(
-            m_problem.getNumControls(), (int)m_pointsForInterpControls.numel());
-    m_constraintsLowerBounds.interp_controls = boundsOnInterpControls;
-    m_constraintsUpperBounds.interp_controls = boundsOnInterpControls;
-
-    calcInterpolatingControls();
 }
 
 void Transcription::setObjectiveAndEndpointConstraints() {
@@ -607,12 +590,12 @@ void Transcription::setObjectiveAndEndpointConstraints() {
         info.endpoint_function->call(
                 {m_unscaledVars[initial_time](0),
                         m_unscaledVars[states](Slice(), 0),
-                        m_unscaledVars[controls](Slice(), 0),
+                        m_controls(Slice(), 0),
                         m_unscaledVars[multipliers](Slice(), 0),
                         m_unscaledVars[derivatives](Slice(), 0),
                         m_unscaledVars[final_time](0),
                         m_unscaledVars[states](Slice(), -1),
-                        m_unscaledVars[controls](Slice(), -1),
+                        m_controls(Slice(), -1),
                         m_unscaledVars[multipliers](Slice(), -1),
                         m_unscaledVars[derivatives](Slice(), -1),
                         m_unscaledVars[parameters](Slice(), -1),
@@ -681,12 +664,12 @@ void Transcription::setObjectiveAndEndpointConstraints() {
         info.endpoint_function->call(
                 {m_unscaledVars[initial_time](0),
                         m_unscaledVars[states](Slice(), 0),
-                        m_unscaledVars[controls](Slice(), 0),
+                        m_controls(Slice(), 0),
                         m_unscaledVars[multipliers](Slice(), 0),
                         m_unscaledVars[derivatives](Slice(), 0),
                         m_unscaledVars[final_time](0),
                         m_unscaledVars[states](Slice(), -1),
-                        m_unscaledVars[controls](Slice(), -1),
+                        m_controls(Slice(), -1),
                         m_unscaledVars[multipliers](Slice(), -1),
                         m_unscaledVars[derivatives](Slice(), -1),
                         m_unscaledVars[parameters](Slice(), -1),
@@ -959,6 +942,7 @@ void Transcription::printConstraintValues(const Iterate& it,
     const auto& upper = m_upperBounds;
     print_bounds("State bounds", it.state_names, it.times,
             vars.at(states), lower.at(states), upper.at(states));
+    // TODO how to print bounds when controls are extrapolated?
     print_bounds("Control bounds", it.control_names, it.times,
             vars.at(controls), lower.at(controls), upper.at(controls));
     print_bounds("Multiplier bounds", it.multiplier_names, it.times,
