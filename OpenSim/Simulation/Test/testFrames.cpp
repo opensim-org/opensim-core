@@ -35,93 +35,29 @@ Tests Include:
      Add tests here as Frames are added to OpenSim
 
 //=============================================================================*/
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace std;
 using SimTK::Transform;
 
-void testBody();
-void testPhysicalOffsetFrameOnBody();
-void testPhysicalOffsetFrameOnBodySerialize();
-void testPhysicalOffsetFrameOnPhysicalOffsetFrame();
-void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder();
-void testFilterByFrameType();
-void testVelocityAndAccelerationMethods();
+namespace {
+    class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
+        OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
+    public:
+        OrdinaryOffsetFrame() : OffsetFrame() {}
+        virtual ~OrdinaryOffsetFrame() {}
 
-class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
-    OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
-public:
-    OrdinaryOffsetFrame() : OffsetFrame() {}
-    virtual ~OrdinaryOffsetFrame() {}
-
-    OrdinaryOffsetFrame(const Frame& parent, const SimTK::Transform& offset) :
-        OffsetFrame(parent, offset) {}
-};
-
-
-int main()
-{
-    SimTK::Array_<std::string> failures;
-
-    try { testBody(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl; failures.push_back("testBody");
-    }
-        
-    try { testPhysicalOffsetFrameOnBody(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl; 
-        failures.push_back("testPhysicalOffsetFrameOnBody");
-    }
-
-    try { testPhysicalOffsetFrameOnBodySerialize(); }
-    catch (const std::exception& e){
-        cout << e.what() << endl; 
-        failures.push_back("testPhysicalOffsetFrameOnBodySerialize");
-    }
-    
-    try { testPhysicalOffsetFrameOnPhysicalOffsetFrame(); }
-    catch (const std::exception& e){
-        cout << e.what() << endl;
-        failures.push_back("testPhysicalOffsetFrameOnPhysicalOffsetFrame");
-    }
-
-    try { testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder");
-    }
-
-    try { testFilterByFrameType(); }
-    catch (const std::exception& e){
-        cout << e.what() << endl;
-        failures.push_back("testFilterByFrameType");
-    }
-
-    try { testVelocityAndAccelerationMethods(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testVelocityAndAccelerationMethods");
-    }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done. All cases passed." << endl;
-
-    return 0;
+        OrdinaryOffsetFrame(const Frame& parent, const SimTK::Transform& offset) :
+            OffsetFrame(parent, offset) {}
+    };
 }
 
-//==============================================================================
-// Test Cases
-//==============================================================================
-
-void testBody()
+TEST_CASE("Body")
 {
     cout << "\nRunning testBody" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
@@ -166,7 +102,7 @@ void testBody()
     cout << "get transform access time = " << 1e3*lookup_time << "ms" << endl;
 }
 
-void testPhysicalOffsetFrameOnBody()
+TEST_CASE("PhysicalOffsetFrameOnBody")
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
@@ -241,7 +177,53 @@ void testPhysicalOffsetFrameOnBody()
         "testPhysicalOffsetFrameOnBody(): incorrect point location in ground.");
 }
 
-void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
+TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrameAsJointParent")
+{
+    // tests whether this topology can be built without any body index issues etc:
+    //
+    //     ground <-- pof1 <-- pof2 <-- joint --> body
+    //
+    // the reason to check this is because the engine has to assign system indices etc.
+    // in the correct order, and earlier versions of OpenSim didn't handle this
+
+    Model model;
+
+    auto* pof1  = new OpenSim::PhysicalOffsetFrame("pof1", model.getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    model.addComponent(pof1);
+    auto* pof2  = new OpenSim::PhysicalOffsetFrame("pof2", *pof1, SimTK::Vec3{0.0, 1.0, 0.0});
+    model.addComponent(pof2);
+    auto* body  = new OpenSim::Body{"body", 1.0, {}, SimTK::Inertia(1.0)};
+    model.addBody(body);
+    auto* joint = new OpenSim::FreeJoint("joint", *pof2, *body);
+    model.addJoint(joint);
+
+    model.buildSystem();  // shouldn't throw
+}
+
+TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrameAsJointChild")
+{
+    // tests whether this topology can be built without any body index issues etc:
+    //
+    //     ground <-- joint --> pof2 --> pof1 --> body
+    //
+    // the reason to check this is because the engine has to assign system indices etc.
+    // in the correct order, and earlier versions of OpenSim didn't handle this
+
+    Model model;
+
+    auto* body  = new OpenSim::Body{"body", 1.0, {}, SimTK::Inertia(1.0)};
+    model.addBody(body);
+    auto* pof1  = new OpenSim::PhysicalOffsetFrame("pof1", *body, SimTK::Vec3{1.0, 0.0, 0.0});
+    model.addComponent(pof1);
+    auto* pof2  = new OpenSim::PhysicalOffsetFrame("pof2", *pof1, SimTK::Vec3{0.0, 1.0, 0.0});
+    model.addComponent(pof2);
+    auto* joint = new OpenSim::FreeJoint("joint", model.getGround(), *pof2);
+    model.addJoint(joint);
+
+    model.buildSystem();  // shouldn't throw
+}
+
+TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrame")
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
@@ -306,7 +288,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
         "testPhysicalOffsetFrameOnPhysicalOffsetFrame(): incorrect base frames for PhysicalOffsetFrame");
 }
 
-void testPhysicalOffsetFrameOnBodySerialize()
+TEST_CASE("PhysicalOffsetFrameOnBodySerialize")
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
@@ -348,7 +330,7 @@ void testPhysicalOffsetFrameOnBodySerialize()
         "testPhysicalOffsetFrameOnBodySerialize(): incorrect MobilizedBodyIndex");
 }
 
-void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
+TEST_CASE("PhysicalOffsetFrameOnPhysicalOffsetFrameOrder")
 {
     cout << "\nRunning testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder" << endl;
     // The order of the offset frames in the Model's "components" property list
@@ -417,7 +399,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
     ASSERT_THROW(PhysicalOffsetFramesFormLoop, pendulum.initSystem());
 }
 
-void testFilterByFrameType()
+TEST_CASE("FilterByFrameType")
 {
     cout << "\nRunning testFilterByFrameType" << endl;
     // Previous model with a PhysicalOffsetFrame attached to rod1
@@ -475,7 +457,7 @@ void testFilterByFrameType()
         "testFilterByFrameType failed to find the 7 PhyscicalOffsetFrame in the model.");
 }
 
-void testVelocityAndAccelerationMethods()
+TEST_CASE("VelocityAndAccelerationMethods")
 {
     cout << "\nRunning testVelocityAndAccelerationMethods" << endl;
 

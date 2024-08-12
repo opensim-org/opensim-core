@@ -7,6 +7,8 @@
 #include <OpenSim/Moco/MocoBounds.h>
 #include <OpenSim/Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 #include <OpenSim/Moco/MocoControlBoundConstraint.h>
+#include <OpenSim/Moco/MocoOutputBoundConstraint.h>
+#include <OpenSim/Moco/MocoStateBoundConstraint.h>
 #include <OpenSim/Moco/MocoFrameDistanceConstraint.h>
 #include <OpenSim/Moco/MocoOutputConstraint.h>
 #include <OpenSim/Moco/MocoGoal/MocoAccelerationTrackingGoal.h>
@@ -30,6 +32,7 @@
 #include <OpenSim/Moco/MocoGoal/MocoTranslationTrackingGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoStepTimeAsymmetryGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoStepLengthAsymmetryGoal.h>
+#include <OpenSim/Moco/MocoGoal/MocoGeneralizedForceTrackingGoal.h>
 #include <OpenSim/Moco/MocoInverse.h>
 #include <OpenSim/Moco/MocoParameter.h>
 #include <OpenSim/Moco/MocoProblem.h>

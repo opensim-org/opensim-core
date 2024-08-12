@@ -98,6 +98,8 @@ private:
     void extendAddToSystem(MultibodySystem &system) const override {
         Super::extendAddToSystem(system);
         addStateVariable("subState", Stage::Dynamics);
+        addDiscreteVariable("dvX", Stage::Dynamics);
+        addModelingOption("moX", 2);
     }
     void computeStateVariableDerivatives(const SimTK::State& s) const override {
         double deriv = exp(-2.0*s.getTime());
@@ -112,7 +114,7 @@ public:
 
     TheWorld(const std::string& fileName, bool updFromXMLNode = false)
         : Component(fileName, updFromXMLNode) {
-        // Propagate XML file values to properties 
+        // Propagate XML file values to properties
         updateFromXMLDocument();
         // add components listed as properties as sub components.
         finalizeFromProperties();
@@ -120,7 +122,7 @@ public:
 
     void add(Component* comp) {
         addComponent(comp);
-        // Edit Sub 
+        // Edit Sub
         /*Sub& subc = */updMemberSubcomponent<Sub>(intSubix);
     }
 
@@ -128,7 +130,7 @@ public:
     void connect() {
         Super::finalizeConnections(*this);
     }
-    void buildUpSystem(MultibodySystem& system) { 
+    void buildUpSystem(MultibodySystem& system) {
         connect();
         addToSystem(system);
     }
@@ -164,7 +166,7 @@ protected:
     }
 
 private:
-    // Keep track of pointers to the underlying computational subsystems. 
+    // Keep track of pointers to the underlying computational subsystems.
     mutable ReferencePtr<SimbodyMatterSubsystem> matter;
     mutable ReferencePtr<GeneralForceSubsystem> forces;
 
@@ -299,12 +301,12 @@ private:
 class Bar : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(Bar, Component);
 public:
-    
+
     OpenSim_DECLARE_SOCKET(parentFoo, Foo, "");
     OpenSim_DECLARE_SOCKET(childFoo, Foo, "");
     OpenSim_DECLARE_LIST_SOCKET(listFoo, Foo, "");
 
-    // This is used to test output copying and returns the address of the 
+    // This is used to test output copying and returns the address of the
     // component.
     OpenSim_DECLARE_OUTPUT(copytesting, size_t, myself, SimTK::Stage::Model);
     // Use this member variable to ensure that output functions get copied
@@ -323,14 +325,14 @@ public:
         const GeneralForceSubsystem& forces = world->getForceSubsystem();
         const SimTK::Force& force = forces.getForce(fix);
         const auto& spring = SimTK::Force::TwoPointLinearSpring::downcast(force);
-    
+
         return spring.calcPotentialEnergyContribution(state);
     }
-    
-    /** Returns the `this` pointer. Used to ensure that the std::function 
+
+    /** Returns the `this` pointer. Used to ensure that the std::function
      within Outputs is properly copied when copying components. */
     size_t myself(const SimTK::State& s) const { return size_t(this); }
-    
+
     double getCopytestingMemVar(const SimTK::State& s) const
     { return copytestingViaMemberVariable; }
 
@@ -366,7 +368,7 @@ protected:
             const MobilizedBody& b1 = matter.getMobilizedBody(MobilizedBodyIndex(1));
             const MobilizedBody& b2 = matter.getMobilizedBody(MobilizedBodyIndex(2));
 
-            SimTK::Force::TwoPointLinearSpring 
+            SimTK::Force::TwoPointLinearSpring
                 spring(forces, b1, Vec3(0.5,0,0), b2, Vec3(0.5,0,0), 10.0, 0.1);
             fix = spring.getForceIndex();
         }
@@ -380,12 +382,74 @@ protected:
         // variables do not have a corresponding Output.
         bool hidden = true;
         addStateVariable("hiddenStateVar", SimTK::Stage::Dynamics, hidden);
+
+        // Add a modeling option (mo) and a discrete variable (dv) as though
+        // they were allocated natively in Simbody.
+        // This will allow testing the ability to accomodate a mo and dv that
+        // were allocated from subsystem different than the default subsystem
+        // and to access a dv that is not type double.
+        // The following calls put the mo and dv into the maps used to contain
+        // all mo's and dv's exposed in OpenSim. When Stage::Topology is
+        // realized, they will allocated in class Bar's override of
+        // extendRealizeTopology(). See below.
+        bool allocate = false;
+        int maxFlagValue = 1;
+        addDiscreteVariable("point", Stage::Position, allocate);
+        addModelingOption("moY", maxFlagValue, allocate);
+    }
+
+    // Manually allocate and update the index and subsystem for
+    // a discrete variable and a modeling option as though they were
+    // natively allocated in Simbody and brought into OpenSim.
+    void extendRealizeTopology(SimTK::State& state) const override {
+        Super::extendRealizeTopology(state);
+
+        GeneralForceSubsystem& fsub = world->updForceSubsystem();
+
+        // Discrete Variable Initialization
+        std::string dvName = "point";
+        Vec3 point(0.0, 0.1, 0.2);
+        SimTK::DiscreteVariableIndex dvIndex =
+            fsub.allocateDiscreteVariable(state, Stage::Dynamics,
+                new Value<Vec3>(point));
+        initializeDiscreteVariableIndexes(dvName,
+            fsub.getMySubsystemIndex(), dvIndex);
+
+        // Check the discrete variable indexes
+        SimTK::SubsystemIndex ssIndexTestDV;
+        SimTK::DiscreteVariableIndex dvIndexTest;
+        CHECK_THROWS_AS(
+            getDiscreteVariableIndexes("typo", ssIndexTestDV, dvIndexTest),
+            VariableNotFound);
+        double value;
+        getDiscreteVariableIndexes(dvName, ssIndexTestDV, dvIndexTest);
+        REQUIRE(ssIndexTestDV == fsub.getMySubsystemIndex());
+        REQUIRE(dvIndexTest == dvIndex);
+
+        // Modeling Option Initialization
+        std::string moName = "moY";
+        int moVal{0};
+        SimTK::DiscreteVariableIndex moIndex =
+            fsub.allocateDiscreteVariable(state, Stage::Dynamics,
+                new Value<int>(moVal));
+        initializeModelingOptionIndexes(moName,
+            fsub.getMySubsystemIndex(), moIndex);
+
+        // Check the modeling option indexes
+        SimTK::SubsystemIndex ssIndexTestMO;
+        SimTK::DiscreteVariableIndex moIndexTest;
+        getModelingOptionIndexes(moName, ssIndexTestMO, moIndexTest);
+        CHECK_THROWS_AS(
+            getModelingOptionIndexes("typo", ssIndexTestMO, moIndexTest),
+            VariableNotFound);
+        REQUIRE(ssIndexTestMO == fsub.getMySubsystemIndex());
+        REQUIRE(moIndexTest == moIndex);
     }
 
     void computeStateVariableDerivatives(const SimTK::State& state) const override {
         setStateVariableDerivativeValue(state, "fiberLength", 2.0);
         setStateVariableDerivativeValue(state, "activation", 3.0 * state.getTime());
-        setStateVariableDerivativeValue(state, "hiddenStateVar", 
+        setStateVariableDerivativeValue(state, "hiddenStateVar",
                                           exp(-0.5 * state.getTime()));
     }
 
@@ -447,7 +511,7 @@ private:
         constructProperty_scale1(1.0);
         constructProperty_scale2(2.0);
         constructProperty_scale3(3.0);
-    }   
+    }
 }; // End of Class CompoundFoo
 
 SimTK_NICETYPENAME_LITERAL(Foo);
@@ -517,7 +581,7 @@ TEST_CASE("Component Interface Misc.")
     // allocation (address) from original internal Sub
     ASSERT(&theSub != &cloneSub);
     ASSERT(&theSub != &copySub);
-    // But their contents/values should be identical 
+    // But their contents/values should be identical
     ASSERT(theSub == cloneSub);
     ASSERT(theSub == copySub);
 
@@ -558,13 +622,13 @@ TEST_CASE("Component Interface Misc.")
         std::cout << "Iterator is at: " << it->getAbsolutePathString() << std::endl;
     }
 
-        
+
     std::cout << "Using range-for loop: " << std::endl;
     for (const Component& component : worldTreeAsList) {
         std::cout << "Iterator is at: " << component.getAbsolutePathString() << std::endl;
     }
 
-        
+
     std::cout << "Iterate over only Foo's." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
         std::cout << "Iterator is at: " << component.getAbsolutePathString() << std::endl;
@@ -914,7 +978,7 @@ TEST_CASE("Component Interface List Inputs")
     MultibodySystem system;
     TheWorld theWorld;
     theWorld.setName("World");
-    
+
     Foo& foo = *new Foo();
     foo.setName("Foo");
     theWorld.add(&foo);
@@ -946,7 +1010,7 @@ TEST_CASE("Component Interface List Inputs")
     tabReporter->setName("TableReporterMixedOutputs");
     theWorld.add(tabReporter);
 
-    // wire up table reporter inputs (using convenience method) to desired 
+    // wire up table reporter inputs (using convenience method) to desired
     // model outputs
     tabReporter->addToReport(bar.getOutput("fiberLength"));
     tabReporter->addToReport(bar.getOutput("activation"));
@@ -955,9 +1019,9 @@ TEST_CASE("Component Interface List Inputs")
 
     theWorld.connect();
     theWorld.buildUpSystem(system);
-    
+
     State s = system.realizeTopology();
-    
+
     const Vector q = Vector(s.getNQ(), SimTK::Pi/2);
     for (int i = 0; i < 10; ++i){
         s.updTime() = i*0.01234;
@@ -977,7 +1041,7 @@ TEST_CASE("Component Interface Sockets")
     MultibodySystem system;
     TheWorld theWorld;
     theWorld.setName("world");
-    
+
     Foo& foo1 = *new Foo(); foo1.setName("foo1"); foo1.set_mass(2.0);
     theWorld.add(&foo1);
 
@@ -1140,9 +1204,9 @@ TEST_CASE("Component Interface Component Path Names")
     // verify that this illegal name throws when we try to finalize
     // the component from its property values
     ASSERT_THROW(InvalidComponentName, foo.finalizeFromProperties());
-  
-    // Build using real components and assemble them 
-    // into a tree and test the path names that are 
+
+    // Build using real components and assemble them
+    // into a tree and test the path names that are
     // generated on the fly.
     TheWorld top;
     TheWorld otherTop;
@@ -1160,7 +1224,7 @@ TEST_CASE("Component Interface Component Path Names")
     C->setName("C");
     D->setName("D");
     E->setName("E");
-    
+
     top.add(A);
     A->add(B);
     B->add(C);
@@ -1486,6 +1550,554 @@ TEST_CASE("Component Interface getStateVariableValue with Component Path")
             OpenSim::Exception);
 }
 
+
+TEST_CASE("Component Interface Component::resolveVariableNameAndOwner")
+{
+    TheWorld top;
+    top.setName("top");
+    Sub* a = new Sub();
+    a->setName("a");
+    Sub* b = new Sub();
+    b->setName("b");
+
+    top.add(a);
+    a->addComponent(b);
+
+    MultibodySystem system;
+    top.buildUpSystem(system);
+    State s = system.realizeTopology();
+
+    const Component& internSub = top.getComponent("/internalSub");
+    const Component* owner;
+
+    SECTION("State Variables") {
+        // Get the paths of all state variables under "top"
+        const Array<std::string>& svPaths = top.getStateVariableNames();
+        REQUIRE(svPaths.size() == 3);
+        REQUIRE(svPaths[0] == "/internalSub/subState");
+        REQUIRE(svPaths[1] == "/a/subState");
+        REQUIRE(svPaths[2] == "/a/b/subState");
+
+        // Verify correct execution
+        std::string svNameCorrect("subState");
+        std::string svName;
+
+        // caller is top
+        owner = top.resolveVariableNameAndOwner(
+            ComponentPath("/internalSub/subState"), svName);
+        CHECK(svName == svNameCorrect);
+        CHECK(owner == &internSub);
+        owner = top.resolveVariableNameAndOwner(
+            ComponentPath("/a/subState"), svName);
+        CHECK(svName == svNameCorrect);
+        CHECK(owner == a);
+        owner = top.resolveVariableNameAndOwner(
+            ComponentPath("/a/b/subState"), svName);
+        CHECK(svName == svNameCorrect);
+        CHECK(owner == b);
+        // caller is a
+        owner = a->resolveVariableNameAndOwner(
+            ComponentPath("/internalSub/subState"), svName);
+        CHECK(svName == svNameCorrect);
+        CHECK(owner == &internSub);
+        owner = a->resolveVariableNameAndOwner(
+            ComponentPath("/a/subState"), svName);
+        CHECK(svName == svNameCorrect);
+        CHECK(owner == a);
+        owner = a->resolveVariableNameAndOwner(
+            ComponentPath("/a/b/subState"), svName);
+        CHECK(svName == svNameCorrect);
+        CHECK(owner == b);
+        // caller is b
+        owner = b->resolveVariableNameAndOwner(
+            ComponentPath("/internalSub/subState"), svName);
+        CHECK(svName == svNameCorrect);
+        CHECK(owner == &internSub);
+        owner = b->resolveVariableNameAndOwner(
+            ComponentPath("/a/subState"), svName);
+        CHECK(svName == svNameCorrect);
+        CHECK(owner == a);
+        owner = b->resolveVariableNameAndOwner(
+            ComponentPath("/a/b/subState"), svName);
+        CHECK(svName == svNameCorrect);
+        CHECK(owner == b);
+        // ----- With relative paths, the caller matters.
+        // down from a
+        owner = a->resolveVariableNameAndOwner(
+            ComponentPath("subState"), svName);
+        CHECK(svName == svNameCorrect);
+        CHECK(owner == a);
+        owner = a->resolveVariableNameAndOwner(
+            ComponentPath("b/subState"), svName);
+        CHECK(svName == svNameCorrect);
+        CHECK(owner == b);
+        // down from b
+        owner = b->resolveVariableNameAndOwner(
+            ComponentPath("subState"), svName);
+        CHECK(svName == svNameCorrect);
+        CHECK(owner == b);
+        // up from b
+        owner = b->resolveVariableNameAndOwner(
+            ComponentPath("../subState"), svName);
+        CHECK(svName == svNameCorrect);
+        CHECK(owner == a);
+        owner = b->resolveVariableNameAndOwner(
+            ComponentPath("../../internalSub/subState"), svName);
+        CHECK(svName == svNameCorrect);
+        CHECK(owner == &internSub);
+    }
+
+    SECTION("Discrete Variables") {
+        // Get the paths of all discrete variables under "top"
+        const Array<std::string>& dvPaths = top.getDiscreteVariableNames();
+        REQUIRE(dvPaths.size() == 3);
+        REQUIRE(dvPaths[0] == "/internalSub/dvX");
+        REQUIRE(dvPaths[1] == "/a/dvX");
+        REQUIRE(dvPaths[2] == "/a/b/dvX");
+
+        // Check a VariableNotFound exception
+        CHECK_THROWS_AS(top.setModelingOption(s, "/a/should_not_be_found", 0),
+            VariableNotFound);
+
+        // Verify correct execution
+        std::string dvNameCorrect("dvX");
+        std::string dvName;
+        // ----- With an absolute path, the caller doesn't matter.
+        // caller is top
+        owner = top.resolveVariableNameAndOwner(
+            ComponentPath("/internalSub/dvX"), dvName);
+        CHECK(dvName == dvNameCorrect);
+        CHECK(owner == &internSub);
+        owner = top.resolveVariableNameAndOwner(ComponentPath("/a/dvX"),
+            dvName);
+        CHECK(dvName == dvNameCorrect);
+        CHECK(owner == a);
+        owner = top.resolveVariableNameAndOwner(ComponentPath("/a/b/dvX"),
+            dvName);
+        CHECK(dvName == dvNameCorrect);
+        CHECK(owner == b);
+        // caller is a
+        owner = a->resolveVariableNameAndOwner(
+            ComponentPath("/internalSub/dvX"), dvName);
+        CHECK(dvName == dvNameCorrect);
+        CHECK(owner == &internSub);
+        owner = a->resolveVariableNameAndOwner(ComponentPath("/a/dvX"),
+            dvName);
+        CHECK(dvName == dvNameCorrect);
+        CHECK(owner == a);
+        owner = a->resolveVariableNameAndOwner(ComponentPath("/a/b/dvX"),
+            dvName);
+        CHECK(dvName == dvNameCorrect);
+        CHECK(owner == b);
+        // caller is b
+        owner = b->resolveVariableNameAndOwner(
+            ComponentPath("/internalSub/dvX"), dvName);
+        CHECK(dvName == dvNameCorrect);
+        CHECK(owner == &internSub);
+        owner = b->resolveVariableNameAndOwner(ComponentPath("/a/dvX"),
+            dvName);
+        CHECK(dvName == dvNameCorrect);
+        CHECK(owner == a);
+        owner = b->resolveVariableNameAndOwner(ComponentPath("/a/b/dvX"),
+            dvName);
+        CHECK(dvName == dvNameCorrect);
+        CHECK(owner == b);
+        // ----- With relative paths, the caller matters.
+        // down from a
+        owner = a->resolveVariableNameAndOwner(ComponentPath("dvX"),
+            dvName);
+        CHECK(dvName == dvNameCorrect);
+        CHECK(owner == a);
+        owner = a->resolveVariableNameAndOwner(ComponentPath("b/dvX"),
+            dvName);
+        CHECK(dvName == dvNameCorrect);
+        CHECK(owner == b);
+        // down from b
+        owner = b->resolveVariableNameAndOwner(ComponentPath("dvX"),
+            dvName);
+        CHECK(dvName == dvNameCorrect);
+        CHECK(owner == b);
+        // up from b
+        owner = b->resolveVariableNameAndOwner(ComponentPath("../dvX"),
+            dvName);
+        CHECK(dvName == dvNameCorrect);
+        CHECK(owner == a);
+        owner = b->resolveVariableNameAndOwner(
+            ComponentPath("../../internalSub/dvX"), dvName);
+        CHECK(dvName == dvNameCorrect);
+        CHECK(owner == &internSub);
+    }
+
+    SECTION("Exceptions are thrown appropriately") {
+        std::string dvName;
+        CHECK_THROWS_AS(
+            owner = top.resolveVariableNameAndOwner(
+                ComponentPath(""), dvName),
+                EmptyComponentPath);
+        CHECK_THROWS_AS(
+            owner = top.resolveVariableNameAndOwner(
+                ComponentPath("/typoSub/dvX"), dvName),
+                VariableOwnerNotFoundOnSpecifiedPath);
+        owner = a->resolveVariableNameAndOwner(
+            ComponentPath("discVarTypo"), dvName);
+        CHECK_THROWS_AS(
+            owner->setDiscreteVariableValue(s, dvName, 3.1415),
+            VariableNotFound);
+        double value;
+        CHECK_THROWS_AS(
+            value = owner->getDiscreteVariableValue(s, dvName),
+            VariableNotFound);
+    }
+}
+
+TEST_CASE("Component Interface Modeling Options")
+{
+    TheWorld top;
+    top.setName("top");
+    Sub* a = new Sub();
+    a->setName("a");
+    Sub* b = new Sub();
+    b->setName("b");
+
+    top.add(a);
+    a->addComponent(b);
+
+    MultibodySystem system;
+    top.buildUpSystem(system);
+    State s = system.realizeTopology();
+
+    // Get the paths of all discrete variables under "top"
+    const Array<std::string>& moPaths = top.getModelingOptionNames();
+    SECTION("Paths are correct") {
+        REQUIRE(moPaths.size() == 3);
+        REQUIRE(moPaths[0] == "/internalSub/moX");
+        REQUIRE(moPaths[1] == "/a/moX");
+        REQUIRE(moPaths[2] == "/a/b/moX");
+    }
+
+    // Check a VariableNotFound exceptions
+    CHECK_THROWS_AS(top.setModelingOption(s, "/a/should_not_be_found", 0),
+        VariableNotFound);
+    CHECK_THROWS_AS(top.getModelingOption(s, "/a/should_not_be_found"),
+        VariableNotFound);
+
+    // Set different values for moX at the different paths
+    top.setModelingOption(s, moPaths[0], 0);
+    top.setModelingOption(s, moPaths[1], 1);
+    top.setModelingOption(s, moPaths[2], 2);
+    CHECK_THROWS_AS(top.setModelingOption(s, moPaths[2], 3),
+        ModelingOptionMaxExceeded);
+
+    SECTION("Getters") {
+        // ----- With an absolute path, the caller doesn't matter.
+        // caller is top
+        CHECK(top.getModelingOption(s,"/internalSub/moX") == 0);
+        CHECK(top.getModelingOption(s,"/a/moX") == 1);
+        CHECK(top.getModelingOption(s,"/a/b/moX") == 2);
+        // caller is a
+        CHECK(a->getModelingOption(s,"/internalSub/moX") == 0);
+        CHECK(a->getModelingOption(s,"/a/moX") == 1);
+        CHECK(a->getModelingOption(s,"/a/b/moX") == 2);
+        // caller is b
+        CHECK(b->getModelingOption(s,"/internalSub/moX") == 0);
+        CHECK(b->getModelingOption(s,"/a/moX") == 1);
+        CHECK(b->getModelingOption(s,"/a/b/moX") == 2);
+        // ----- With relative paths, the caller matters.
+        // down from a
+        CHECK(a->getModelingOption(s,"moX") == 1);
+        CHECK(a->getModelingOption(s,"b/moX") == 2);
+        // down from b
+        CHECK(b->getModelingOption(s,"/moX") == 2);
+        // up from b
+        CHECK(b->getModelingOption(s,"../moX") == 1);
+        CHECK(b->getModelingOption(s,"../../internalSub/moX") == 0);
+    }
+}
+
+TEST_CASE("Component Interface Discrete Variables")
+{
+    TheWorld top;
+    top.setName("top");
+    Sub* a = new Sub();
+    a->setName("a");
+    Sub* b = new Sub();
+    b->setName("b");
+
+    top.add(a);
+    a->addComponent(b);
+
+    MultibodySystem system;
+    top.buildUpSystem(system);
+    State s = system.realizeTopology();
+
+    // Get the paths of all discrete variables under "top"
+    const Array<std::string>& dvPaths = top.getDiscreteVariableNames();
+    SECTION("Paths are correct") {
+        REQUIRE(dvPaths.size() == 3);
+        REQUIRE(dvPaths[0] == "/internalSub/dvX");
+        REQUIRE(dvPaths[1] == "/a/dvX");
+        REQUIRE(dvPaths[2] == "/a/b/dvX");
+    }
+
+    // Set different values for dvX at the different paths
+    top.setDiscreteVariableValue(s, dvPaths[0], 0.0);
+    top.setDiscreteVariableValue(s, dvPaths[1], 10.0);
+    top.setDiscreteVariableValue(s, dvPaths[2], 20.0);
+
+    SECTION("Getters") {
+        // ----- With an absolute path, the caller doesn't matter.
+        // caller is top
+        CHECK(top.getDiscreteVariableValue(s,"/internalSub/dvX") == 0.0);
+        CHECK(top.getDiscreteVariableValue(s,"/a/dvX") == 10.0);
+        CHECK(top.getDiscreteVariableValue(s,"/a/b/dvX") == 20.0);
+        // caller is a
+        CHECK(a->getDiscreteVariableValue(s,"/internalSub/dvX") == 0.0);
+        CHECK(a->getDiscreteVariableValue(s,"/a/dvX") == 10.0);
+        CHECK(a->getDiscreteVariableValue(s,"/a/b/dvX") == 20.0);
+        // caller is b
+        CHECK(b->getDiscreteVariableValue(s,"/internalSub/dvX") == 0.0);
+        CHECK(b->getDiscreteVariableValue(s,"/a/dvX") == 10.0);
+        CHECK(b->getDiscreteVariableValue(s,"/a/b/dvX") == 20.0);
+        // ----- With relative paths, the caller matters.
+        // down from a
+        CHECK(a->getDiscreteVariableValue(s,"dvX") == 10.0);
+        CHECK(a->getDiscreteVariableValue(s,"b/dvX") == 20.0);
+        // down from b
+        CHECK(b->getDiscreteVariableValue(s,"/dvX") == 20.0);
+        // up from b
+        CHECK(b->getDiscreteVariableValue(s,"../dvX") == 10.0);
+        CHECK(b->getDiscreteVariableValue(s,"../../internalSub/dvX") == 0.0);
+    }
+}
+
+TEST_CASE("Component Interface Discrete Variables Vec3")
+{
+    // ------------------------------------------------------------------------
+    // Component Bar possesses a discrete variable called "point", which is
+    // a Vec3. Additionally, point was allocated as though it were a member
+    // of a pre-existing Simbody object (e.g., it was allocated from the
+    // GeneralForceSubsystem and not from the DefaultSybsystem like most, if
+    // not all, discrete variables allocated in OpenSim).
+    // This test case
+    // 1) checks the interface for handling discrete variables that are not
+    //    type double, and
+    // 2) verifies that OpenSim can properly wrap discrete state variables
+    //    when those variables are allocated externally (i.e., are not
+    //    allocated by calling Component::addDiscreteVariable()).
+    // ------------------------------------------------------------------------
+
+    MultibodySystem system;
+    TheWorld theWorld;
+    theWorld.setName("World");
+
+    Foo& foo = *new Foo();
+    foo.setName("Foo");
+    theWorld.add(&foo);
+    foo.set_mass(2.0);
+
+    Foo& foo2 = *new Foo();
+    foo2.setName("Foo2");
+    foo2.set_mass(3.0);
+    theWorld.add(&foo2);
+
+    Bar& bar = *new Bar();
+    bar.setName("Bar");
+    theWorld.add(&bar);
+
+    bar.connectSocket_parentFoo(foo);
+    bar.connectSocket_childFoo(foo2);
+
+    theWorld.connect();
+    theWorld.buildUpSystem(system);
+
+    State s = system.realizeTopology();
+
+    // Get the paths of all discrete variables under "theWorld"
+    const Array<std::string>& dvPaths = theWorld.getDiscreteVariableNames();
+    SECTION("Paths are correct") {
+        REQUIRE(dvPaths.size() == 2);
+        REQUIRE(dvPaths[0] == "/internalSub/dvX");
+        REQUIRE(dvPaths[1] == "/Bar/point");
+    }
+
+    // Get the starting value of point
+    // The starting value should be (0.0, 0.1, 0.2).
+    // See Bar::extendRealizeTopology().
+    Vec3 pointStart(0.0, 0.1, 0.2);
+    Vec3 point = theWorld.getDiscreteVariableValue<Vec3>(s, "/Bar/point");
+    REQUIRE(point == pointStart);
+
+    // Verify that changes to the local variable point do not change
+    // the value of the discrete variable. That is, verify that the local
+    // variable point holds a copy of the data.
+    point *= 10.0;
+    Vec3 point2 = theWorld.getDiscreteVariableValue<Vec3>(s, "/Bar/point");
+    REQUIRE(point2 != point);
+    REQUIRE(point2 == pointStart);
+
+    // Set a new value and check it.
+    theWorld.setDiscreteVariableValue<Vec3>(s, "/Bar/point", point);
+    Vec3 point3 = theWorld.getDiscreteVariableValue<Vec3>(s, "/Bar/point");
+    REQUIRE(point3 == point);
+}
+
+TEST_CASE("Component Interface State Trajectories")
+{
+    MultibodySystem system;
+    TheWorld wrld;
+    wrld.setName("World");
+
+    Foo& foo = *new Foo();
+    foo.setName("Foo");
+    wrld.add(&foo);
+    foo.set_mass(2.0);
+
+    Foo& foo2 = *new Foo();
+    foo2.setName("Foo2");
+    foo2.set_mass(3.0);
+    wrld.add(&foo2);
+
+    Bar& bar = *new Bar();
+    bar.setName("Bar");
+    wrld.add(&bar);
+
+    bar.connectSocket_parentFoo(foo);
+    bar.connectSocket_childFoo(foo2);
+
+    wrld.connect();
+    wrld.buildUpSystem(system);
+
+    State s = system.realizeTopology();
+
+    // Form the q and u vectors
+    const Array<std::string>& svPaths = wrld.getStateVariableNames();
+    REQUIRE(svPaths.size() == 4);
+    const Vector y = Vector(svPaths.size(), 0.1);
+
+    // Get the paths of all discrete variables under "wrld"
+    const OpenSim::Array<std::string>& dvPaths =
+        wrld.getDiscreteVariableNames();
+    REQUIRE(dvPaths.size() == 2);
+    REQUIRE(dvPaths[0] == "/internalSub/dvX");
+    REQUIRE(dvPaths[1] == "/Bar/point");
+
+    // Get the paths of all modeling moptions under "wrld"
+    const OpenSim::Array<std::string>& moPaths =
+        wrld.getModelingOptionNames();
+    REQUIRE(moPaths.size() == 2);
+    REQUIRE(moPaths[0] == "/internalSub/moX");
+    REQUIRE(moPaths[1] == "/Bar/moY");
+
+    // Get the starting value of point
+    // The starting value should be (0.0, 0.1, 1.0).
+    // See Bar::extendRealizeTopology().
+    Vec3 pointStart = wrld.getDiscreteVariableValue<Vec3>(s, "/Bar/point");
+
+    // Run an artificial simulation and record the state trajectory
+    SimTK::Array_<SimTK::State> simTraj;
+    int nsteps{11};
+    simTraj.reserve(nsteps);
+    int moX{0}, moY{0};
+    double dvX{0.0};
+    Vec3 point(0.0);
+    for (int i = 0; i < nsteps; ++i){
+        // Time
+        s.updTime() = i*0.01;
+        // State Variables
+        wrld.setStateVariableValue(s, svPaths[0], i*y[0] + 0);
+        wrld.setStateVariableValue(s, svPaths[1], i*y[1] + 1);
+        wrld.setStateVariableValue(s, svPaths[2], i*y[2] + 2);
+        wrld.setStateVariableValue(s, svPaths[3], i*y[3] + 3);
+        // Discrete Variables
+        dvX = i*0.5 ;
+        wrld.setDiscreteVariableValue(s, dvPaths[0], dvX);
+        point = i*pointStart;
+        wrld.setDiscreteVariableValue<Vec3>(s, dvPaths[1], point);
+        // Modeling Options
+        moX = i % 2;
+        wrld.setModelingOption(s, moPaths[0], moX);
+        moY = (i+1) % 2;
+        wrld.setModelingOption(s, moPaths[1], moY);
+        // Accumulate the simulated state trajectory
+        system.realize(s, Stage::Report);
+        simTraj.emplace_back(s);
+    }
+
+    // Extract individual variable trajectories (as though serializing)
+    // state variables
+    SimTK::Array_<double> y0Traj, y1Traj, y2Traj, y3Traj;
+    wrld.getStateVariableTrajectory<double>(svPaths[0], simTraj, y0Traj);
+    wrld.getStateVariableTrajectory<double>(svPaths[1], simTraj, y1Traj);
+    wrld.getStateVariableTrajectory<double>(svPaths[2], simTraj, y2Traj);
+    wrld.getStateVariableTrajectory<double>(svPaths[3], simTraj, y3Traj);
+    // discrete variables
+    SimTK::Array_<double> dv0Traj;
+    SimTK::Array_<Vec3> dv1Traj;
+    wrld.getDiscreteVariableTrajectory<double>(dvPaths[0], simTraj, dv0Traj);
+    wrld.getDiscreteVariableTrajectory<Vec3>(dvPaths[1], simTraj, dv1Traj);
+    // modeling options
+    SimTK::Array_<int> mo0Traj;
+    wrld.getModelingOptionTrajectory<int>(moPaths[0], simTraj, mo0Traj);
+    SimTK::Array_<int> mo1Traj;
+    wrld.getModelingOptionTrajectory<int>(moPaths[1], simTraj, mo1Traj);
+
+    // Check the individual variable trajectories
+    for (int i = 0; i < nsteps; ++i){
+        // state variables
+        CHECK(y0Traj[i] == i*y[0] + 0);
+        CHECK(y1Traj[i] == i*y[1] + 1);
+        CHECK(y2Traj[i] == i*y[2] + 2);
+        CHECK(y3Traj[i] == i*y[3] + 3);
+        // discrete variables
+        CHECK(dv0Traj[i] == i*0.5);
+        CHECK(dv1Traj[i] == i*pointStart);
+        // modeling options
+        CHECK(mo0Traj[i] == (i%2));
+        CHECK(mo1Traj[i] == ((i+1)%2));
+    }
+
+    // Create a new state trajectory (as though deserializing)
+    // newTraj must be must the expected size before any set calls.
+    SimTK::Array_<SimTK::State> newTraj;
+    for (int i = 0; i < nsteps; ++i) newTraj.emplace_back(s);
+    // state variables
+    wrld.setStateVariableTrajectory<double>(svPaths[0], y0Traj, newTraj);
+    wrld.setStateVariableTrajectory<double>(svPaths[1], y1Traj, newTraj);
+    wrld.setStateVariableTrajectory<double>(svPaths[2], y2Traj, newTraj);
+    wrld.setStateVariableTrajectory<double>(svPaths[3], y3Traj, newTraj);
+    // discrete variables
+    wrld.setDiscreteVariableTrajectory<double>(dvPaths[0], dv0Traj, newTraj);
+    wrld.setDiscreteVariableTrajectory<Vec3>(dvPaths[1], dv1Traj, newTraj);
+    // modeling option
+    wrld.setModelingOptionTrajectory<int>(moPaths[0], mo0Traj, newTraj);
+    wrld.setModelingOptionTrajectory<int>(moPaths[1], mo1Traj, newTraj);
+
+    // Check the new state trajectory
+    SimTK::Array_<double> nq0Traj, nq1Traj, nq2Traj, nq3Traj;
+    SimTK::Array_<double> ndv0Traj;
+    SimTK::Array_<Vec3> ndv1Traj;
+    SimTK::Array_<int> nmo0Traj;
+    SimTK::Array_<int> nmo1Traj;
+    wrld.getStateVariableTrajectory<double>(svPaths[0], newTraj, nq0Traj);
+    wrld.getStateVariableTrajectory<double>(svPaths[1], newTraj, nq1Traj);
+    wrld.getStateVariableTrajectory<double>(svPaths[2], newTraj, nq2Traj);
+    wrld.getStateVariableTrajectory<double>(svPaths[3], newTraj, nq3Traj);
+    wrld.getDiscreteVariableTrajectory<double>(dvPaths[0], newTraj, ndv0Traj);
+    wrld.getDiscreteVariableTrajectory<Vec3>(dvPaths[1], newTraj, ndv1Traj);
+    wrld.getModelingOptionTrajectory<int>(moPaths[0], newTraj, nmo0Traj);
+    wrld.getModelingOptionTrajectory<int>(moPaths[1], newTraj, nmo1Traj);
+    for (int i = 0; i < nsteps; ++i){
+        CHECK(nq0Traj[i] == i*y[0] + 0);
+        CHECK(nq1Traj[i] == i*y[1] + 1);
+        CHECK(nq2Traj[i] == i*y[2] + 2);
+        CHECK(nq3Traj[i] == i*y[3] + 3);
+        CHECK(ndv0Traj[i] == i*0.5);
+        CHECK(ndv1Traj[i] == i*pointStart);
+        CHECK(nmo0Traj[i] == (i%2));
+        CHECK(nmo1Traj[i] == ((i+1)%2));
+    }
+}
+
 TEST_CASE("Component Interface Input/Output Connections")
 {
     {
@@ -1499,7 +2111,7 @@ TEST_CASE("Component Interface Input/Output Connections")
         bar->setName("bar");
         bar->connectSocket_parentFoo(*foo1);
         bar->connectSocket_childFoo(*foo2);
-        
+
         world.add(foo1);
         world.add(foo2);
         world.add(bar);
@@ -1514,7 +2126,7 @@ TEST_CASE("Component Interface Input/Output Connections")
         // Test various exceptions for inputs, outputs, sockets
         ASSERT_THROW(InputNotFound, foo1->getInput("input0"));
         ASSERT_THROW(SocketNotFound, bar->updSocket<Foo>("parentFoo0"));
-        ASSERT_THROW(OutputNotFound, 
+        ASSERT_THROW(OutputNotFound,
             world.getComponent("./internalSub").getOutput("subState0"));
         // Ensure that getOutput does not perform a "find"
         ASSERT_THROW(OutputNotFound,
@@ -1583,7 +2195,7 @@ TEST_CASE("Component Interface Input/Output Connections")
         // The following will work, now that the connection is satisfied.
         b->getInput<double>("in1").getValue(s, 0);
         // Disconnect to get the "not connected"exception.
-        b->clearConnections(); 
+        b->clearConnections();
         SimTK_TEST_MUST_THROW_EXC(b->getInput<double>("in1").getValue(s, 0),
                 InputNotConnected);
     }
@@ -1668,7 +2280,7 @@ TEST_CASE("Component Interface Exceptions when Connectee Type Mismatches")
     public:
         OpenSim_DECLARE_SOCKET(socket1, A, "");
     };
-    
+
     // Test various type mismatches.
     // -----------------------------
     // First, check for exceptions when directly connecting inputs to outputs
@@ -1972,12 +2584,12 @@ TEST_CASE("Component Interface Table Source")
     {
     const std::string src_file{"TestTableSource.osim"};
     TheWorld model{src_file};
-    const auto& tablesource = 
+    const auto& tablesource =
         model.getComponent<TableSourceVec3>("tablesource");
     model.print("TestTableSourceResult.osim");
     // Read the model file again to verify serialization.
     TheWorld model_copy{"TestTableSourceResult.osim"};
-    const auto& tablesource_copy = 
+    const auto& tablesource_copy =
         model_copy.getComponent<TableSourceVec3>("tablesource");
     OPENSIM_THROW_IF(tablesource_copy.get_filename() !=
                      tablesource.get_filename(),
@@ -2060,10 +2672,10 @@ TEST_CASE("Component Interface TableReporter Usage")
         auto* reporter = new TableReporter();
         reporter->set_report_time_interval(0.1);
         model.addComponent(reporter);
-    
+
         MultibodySystem system;
         model.buildUpSystem(system);
-    
+
         {
             SimTK::State s = system.realizeTopology();
             RungeKuttaFeldbergIntegrator integ(system);
@@ -2086,7 +2698,7 @@ TEST_CASE("Component Interface TableReporter Usage")
         SimTK_TEST_MUST_THROW_EXC(
             reporter->getTable().getDependentColumnAtIndex(0),
             EmptyTable);
-    
+
         {
             SimTK::State s = system.realizeTopology();
             RungeKuttaFeldbergIntegrator integ(system);
@@ -2145,16 +2757,16 @@ TEST_CASE("Component Interface List Input Connectee Serialization Behavior")
         // Create the "model," which just contains a reporter.
         TheWorld world;
         world.setName("World");
-        
+
         // TableSource.
         auto* source = new TableSource();
         source->setName("producer");
         source->set_filename(dataFileNameForInputConnecteeSerialization);
-        
+
         // TableReporter.
         auto* reporter = new TableReporter();
         reporter->setName("consumer");
-        
+
         // Add to world.
         world.add(source);
         world.add(reporter);
@@ -2172,22 +2784,22 @@ TEST_CASE("Component Interface List Input Connectee Serialization Behavior")
         world.connect();
         MultibodySystem system;
         world.buildUpSystem(system);
-        
+
         // Grab the connectee paths.
         const auto& input = reporter->getInput("inputs");
         SimTK_TEST(getConnecteePaths(input) == expectedConnecteePaths);
-        
+
         // Get the value of the input at some given time.
         State s = system.realizeTopology();
         system.realize(s, Stage::Model);
         s.setTime(0.3);
         expectedInputValues = Input<double>::downcast(input).getVector(s);
         SimTK_TEST(expectedInputValues.size() == 3);
-        
+
         // Serialize.
         world.print(modelFileName);
     }
-    
+
     // Deserialize and test.
     {
         TheWorld world(modelFileName);
@@ -2203,7 +2815,7 @@ TEST_CASE("Component Interface List Input Connectee Serialization Behavior")
         SimTK_TEST(input.getAlias(0) == ""); // default.
         SimTK_TEST(input.getAlias(1) == ""); // default.
         SimTK_TEST(input.getAlias(2) == "berry"); // specified.
-        
+
         // Check that the value of the input is the same as before.
         MultibodySystem system;
         world.buildUpSystem(system);
@@ -2222,7 +2834,7 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
     // -------------------------------------------------------------
 
     writeTimeSeriesTableForInputConnecteeSerialization();
-    
+
     // Build a model and serialize it.
     std::string modelFileName = "testComponentInterface_"
             "testSingleValueInputConnecteeSerialization_world.xml";
@@ -2231,12 +2843,12 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
         // Create the "model," which just contains a reporter.
         TheWorld world;
         world.setName("World");
-        
+
         // TableSource.
         auto* source = new TableSource();
         source->setName("producer");
         source->set_filename(dataFileNameForInputConnecteeSerialization);
-        
+
         // TableReporter.
         auto* foo = new Foo();
         foo->setName("consumer");
@@ -2244,7 +2856,7 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
         // (future-proofing this test).
         SimTK_TEST(!foo->updInput("input1").isListSocket());
         SimTK_TEST(!foo->updInput("fiberLength").isListSocket());
-        
+
         // Add to world.
         world.add(source);
         world.add(foo);
@@ -2261,22 +2873,22 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
         world.connect();
         MultibodySystem system;
         world.buildUpSystem(system);
-        
+
         // Get the value of the input at some given time.
         State s = system.realizeTopology();
         system.realize(s, Stage::Model);
         s.setTime(0.3);
         const auto& input1 = foo->getInput("input1");
         expectedInput1Value = Input<double>::downcast(input1).getValue(s);
-        
+
         // We won't wire up this input, but its connectee path should still
         // (de)serialize.
         foo->updInput("activation").setConnecteePath("non/existent");
-        
+
         // Serialize.
         world.print(modelFileName);
     }
-    
+
     // Deserialize and test.
     {
         TheWorld world(modelFileName);
@@ -2284,13 +2896,13 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
         const auto& input1 = foo.getInput("input1");
         const auto& fiberLength = foo.getInput("fiberLength");
         auto& activation = foo.updInput("activation");
-        
+
         // Make sure these inputs are single-value after deserialization,
         // even before connecting.
         SimTK_TEST(!input1.isListSocket());
         SimTK_TEST(!fiberLength.isListSocket());
         SimTK_TEST(!activation.isListSocket());
-        
+
         // Check connectee paths before *and* after connecting, since
         // the connecting process edits the connectee_name property.
         SimTK_TEST(input1.getConnecteePath() == "/producer|column:b");
@@ -2301,34 +2913,34 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
         // Now we must clear this before trying to connect, since the connectee
         // doesn't exist.
         activation.setConnecteePath("");
-        
+
         // Connect.
         world.connect();
-        
+
         // Make sure these inputs are single-value even after connecting.
         SimTK_TEST(!input1.isListSocket());
         SimTK_TEST(!fiberLength.isListSocket());
         SimTK_TEST(!activation.isListSocket());
-        
+
         SimTK_TEST(input1.getConnecteePath() == "/producer|column:b");
         SimTK_TEST(fiberLength.getConnecteePath() ==
                    "/producer|column:d(desert)");
-        
+
         // Check aliases.
         SimTK_TEST(input1.getAlias(0) == "");
         SimTK_TEST(fiberLength.getAlias(0) == "desert");
-        
+
         // Check that the value of the input is the same as before.
         MultibodySystem system;
         world.buildUpSystem(system);
         State s = system.realizeTopology();
         system.realize(s, Stage::Model);
         s.setTime(0.3);
-        
+
         SimTK_TEST_EQ(Input<double>::downcast(input1).getValue(s),
                       expectedInput1Value);
     }
-    
+
     // Test error case: single-value input connectee_name has multiple values.
     // -----------------------------------------------------------------------
     // We'll first create an Input with multiple connectee_names (as is possible
@@ -2339,7 +2951,7 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
         TheWorld world;
         auto* foo = new Foo();
         world.add(foo);
-        
+
         // Hack into the Foo and modify its properties! The typical interface
         // for editing the input's connectee_name does not allow multiple
         // connectee paths for a single-value input.
@@ -2349,7 +2961,7 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
         connectee_name.appendValue("apple");
         connectee_name.appendValue("banana");
         connectee_name.appendValue("lemon");
-        
+
         world.print(modelFileNameMultipleValues);
     }
     // Deserialize.
@@ -2359,7 +2971,7 @@ TEST_CASE("Component Interface Single Value Input Connectee Serialization Behavi
              TheWorld world(modelFileNameMultipleValues),
              OpenSim::Exception);
     }
-    
+
     // Test error case: connectee_name has invalid characters.
     // -------------------------------------------------------
     // This test is structured similarly to the one above.

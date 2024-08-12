@@ -73,8 +73,7 @@ private:
  *       directory to which the results are written can be specified using the
  *      `setOutputDirectory` method.
  *
- * Settings
- * --------
+ * # Settings
  * Various settings can be adjusted to control the path fitting process. The
  * `setMomentArmsThreshold` method determines whether or not a path depends on a
  * model coordinate. In other words, the absolute value the moment arm of a with
@@ -91,10 +90,10 @@ private:
  * lengths computed from the original model paths and the fitted polynomial
  * paths. The `setNumSamplesPerFrame` method specifies the number of samples
  * taken per time frame in the coordinate values table used to fit each path.
- * The `setParallel` method specifies the number of threads used to parallelize
- * the path fitting process. The `setLatinHypercubeAlgorithm` method specifies
- * the Latin hypercube sampling algorithm used to sample coordinate values for
- * path fitting.
+ * The `setNumParallelThreads` method specifies the number of threads used to
+ * parallelize the path fitting process. The `setLatinHypercubeAlgorithm` method
+ * specifies the Latin hypercube sampling algorithm used to sample coordinate
+ * values for path fitting.
  *
  * The default settings are as follows:
  *
@@ -105,16 +104,16 @@ private:
  *    - Moment arm tolerance: 1e-4 meters
  *    - Path length tolerance: 1e-4 meters
  *    - Number of samples per frame: 25
- *    - Number of threads: (# of available hardware threads) - 2
+ *    - Number of threads: number of available hardware threads
  *    - Latin hypercube sampling algorithm: "random"
+ *    - Use stepwise regression: False
  *
  * @note The default settings were chosen based on testing with a human
  *       lower-extremity model. Different settings may be required for other
  *       models with larger or smaller anatomical measures (e.g., dinosaur
  *       models).
  *
- * Usage
- * -----
+ * # Usage
  * The most basic usage of `PolynomialPathFitter` requires the user to provide
  * a model and reference trajectory. The model should contain at least one path
  * object derived from `AbstractGeometryPath` and should not contain any
@@ -145,8 +144,7 @@ private:
  * fitter.run();
  * @endcode
  *
- * Recommendations
- * ---------------
+ * # Recommendations
  * Information from each step of the path fitting process is logged to the
  * console, provided that you have set the OpenSim::Logger to level "info" or
  * greater. Warnings are printed if the number of samples is likely insufficient
@@ -272,6 +270,24 @@ public:
      */
     void setOutputDirectory(std::string directory);
     std::string getOutputDirectory() const;
+
+    /**
+     * Whether or not to use stepwise regression to fit a minimal set of
+     * polynomial coefficients.
+     *
+     * Stepwise regression builds a vector of coefficients by individually
+     * adding polynomial terms that result in the smallest path length and
+     * moment arm error. When a new term is added, the fitting process is
+     * repeated to recompute the coefficients. Polynomial terms are added until
+     * the path length and moment arm tolerances are met, or the maximum number
+     * of terms is reached.
+     *
+     * @note By default, this setting is false.
+     * @note If enabled, stepwise regression will fit coefficients using the
+     *       maximum polynomial order based on `setMaximumPolynomialOrder()`.
+     */
+    void setUseStepwiseRegression(bool tf);
+    bool getUseStepwiseRegression() const;
 
     /**
      * The moment arm threshold value that determines whether or not a path
@@ -404,11 +420,10 @@ public:
      * moment arm computations, and path fitting across multiple threads. The
      * number of threads must be greater than zero.
      *
-     * @note The default number of threads is set to two fewer than the number
-     *       of available hardware threads.
+     * @note The default is the number of available hardware threads.
      */
     void setNumParallelThreads(int numThreads);
-    /// @copydoc setParallel()
+    /// @copydoc setNumParallelThreads(int numThreads)
     int getNumParallelThreads() const;
 
     /**
@@ -427,6 +442,47 @@ public:
     void setLatinHypercubeAlgorithm(std::string algorithm);
     /// @copydoc setLatinHypercubeAlgorithm()
     std::string getLatinHypercubeAlgorithm() const;
+
+    /**
+     * Whether or not to include moment arm functions in the fitted path
+     * (default: false).
+     *
+     * The moment arm functions are constructed by taking the derivative of the
+     * path length function with respect to the coordinate values using
+     * symbolic differentiation. The function coefficients are negated to match
+     * the moment arm convention in OpenSim.
+    */
+    void setIncludeMomentArmFunctions(bool tf) {
+        set_include_moment_arm_functions(tf);
+    }
+    /// @copydoc setIncludeMomentArmFunctions(bool tf)
+    bool getIncludeMomentArmFunctions() const {
+        return get_include_moment_arm_functions();
+    }
+
+    /**
+     * Whether or not to include the lengthening speed function in the fitted
+     * path (default: false).
+     *
+     * The lengthening speed function is computed by taking dot product of the
+     * moment arm functions by the vector of time derivatives of the coordinate
+     * values using symbolic math. The result is negated to offset the negation
+     * applied to the moment arm function expressions.
+     *
+     * @note Since FunctionBasedPath uses cached moment arm values to compute
+     *       lengthening speed, including this function in the path definition
+     *       may make lengthening speed evaluation slower compared to
+     *       only including the moment arm functions (the moment arm expressions
+     *       are effectively evaluated twice). Therefore, this setting is
+     *       disabled by default.
+     */
+    void setIncludeLengtheningSpeedFunction(bool tf) {
+        set_include_lengthening_speed_function(tf);
+    }
+    /// @copydoc setIncludeLengtheningSpeedFunction(bool tf)
+    bool getIncludeLengtheningSpeedFunction() const {
+        return get_include_lengthening_speed_function();
+    }
 
     // HELPER FUNCTIONS
     /**
@@ -458,6 +514,9 @@ private:
             "path fitting.");
     OpenSim_DECLARE_PROPERTY(output_directory, std::string,
             "The directory to which the path fitting results are written.");
+    OpenSim_DECLARE_PROPERTY(use_stepwise_regression, bool,
+            "Whether or not to use stepwise regression to fit a minimal set of "
+            "polynomial coefficients.");
     OpenSim_DECLARE_PROPERTY(moment_arm_threshold, double,
             "The moment arm threshold value that determines whether or not a "
             "path depends on a model coordinate. In other words, the moment "
@@ -495,12 +554,16 @@ private:
             "values table used to fit each path (default: 25).");
     OpenSim_DECLARE_PROPERTY(num_parallel_threads, int,
             "The number of threads used to parallelize the path fitting "
-            "process (default: two fewer than the number of available "
-            "hardware threads).");
-    OpenSim_DECLARE_PROPERTY(
-            latin_hypercube_algorithm, std::string,
+            "process (default: the number of available hardware threads).");
+    OpenSim_DECLARE_PROPERTY(latin_hypercube_algorithm, std::string,
             "The Latin hypercube sampling algorithm used to sample coordinate "
             "values for path fitting (default: 'random').");
+    OpenSim_DECLARE_PROPERTY(include_moment_arm_functions, bool,
+            "Whether or not to include the moment arm functions in the fitted "
+            "path (default: false).");
+    OpenSim_DECLARE_PROPERTY(include_lengthening_speed_function, bool,
+            "Whether or not to include the lengthening speed function in the "
+            "fitted path (default: false).");
 
     void constructProperties();
 
@@ -577,6 +640,15 @@ private:
 
     // HELPER FUNCTIONS
     /**
+     * Generate all possible combinations of `k` elements from a set of `n`
+     * total elements.
+     */
+    static int choose(int n, int k) {
+        if (k == 0) { return 1; }
+        return (n * choose(n - 1, k - 1)) / k;
+    }
+
+    /**
      * Get the (canonicalized) absolute directory containing the file from
      * which this tool was loaded. If the `FunctionBasedPathFitter` was not
      * loaded from a file, this returns an empty string.
@@ -589,6 +661,35 @@ private:
      */
     static void removeMomentArmColumns(TimeSeriesTable& momentArms,
             const MomentArmMap& momentArmMap);
+
+    /**
+     * Fit to the path length and moment arm samples using all possible
+     * polynomial coefficients. `coordinates` is the matrix of coordinate values
+     * for coordinates that the current path depends on. The vector `b` contains
+     * the path length and moment arm values for the current path.
+     *
+     * We solve for the coefficients of the polynomial using a least squares of
+     * fit, `Ax = b`. Each row of `A` contains polynomial terms evaluated using
+     * the coordinate values from a particular point in time. `x` is the vector
+     * polynomial coefficients. The first N elements of `b` contain the path
+     * length values, where N is the number of time points. The remaining N*Nc
+     * rows of `b` contain the moment arm values, where Nc is the number of
+     * coordinates the path depends on.
+     */
+    int fitAllCoefficients(const SimTK::Matrix& coordinates,
+            const SimTK::Vector& b, int minOrder, int maxOrder,
+            SimTK::Vector& coefficients) const;
+
+    /**
+     * Fit to the path length and moment arm samples using stepwise regression
+     * to find a minimal set of polynomial coefficients. `coordinates` is the
+     * matrix of coordinate values for coordinates that the current path depends
+     * on. The vector `b` contains the path length and moment arm values for the
+     * current path.
+     */
+    void fitCoefficientsStepwiseRegression(
+        const SimTK::Matrix& coordinates, const SimTK::Vector& b, int order,
+        SimTK::Vector& coefficients) const;
 
     /**
      * Get the RMS errors between two sets of path lengths and moment arms

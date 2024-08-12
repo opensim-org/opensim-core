@@ -25,10 +25,10 @@ namespace OpenSim {
 
 class MocoProblemInfo;
 
-/** This class constrains any number of control signals from ScalarActautor%s to
-be between two time-based functions. It is possible to constrain the control
-signal to be exactly to a provided function; see the equality_with_lower
-property.
+/** This class constrains any number of control signals from ScalarActuator%s 
+or Input%s to InputController%s to be between two time-based functions. It is 
+possible to constrain the control signal to match the value from a provided 
+function; see the equality_with_lower property.
 
 If a function is a GCVSpline, we ensure that the spline covers the entire
 possible time range in the problem (using the problem's time bounds). We do
@@ -37,7 +37,9 @@ not perform such a check for other types of functions.
 @note If you omit the lower and upper bounds, then this class will not
 constrain any control signals, even if you have provided control paths.
 
-@note This class can only constrain control signals for ScalarActuator%s.
+@note This class can only constrain control signals for ScalarActuator%s and 
+Input%s to InputController%s.
+
 @ingroup mocopathcon */
 class OSIMMOCO_API MocoControlBoundConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(
@@ -48,7 +50,9 @@ public:
 
     /// @name Control paths
     /// Set the control paths (absolute paths to actuators in the model)
-    /// constrained by this class.
+    /// constrained by this class. If constraining an Input control, the path
+    /// will be the path to the InputController appended with the Input control
+    /// label (e.g., "/controllerset/my_input_controller/input_control_0").
     /// @{
     void addControlPath(std::string controlPath) {
         append_control_paths(std::move(controlPath));
@@ -93,8 +97,8 @@ protected:
 
 private:
     OpenSim_DECLARE_LIST_PROPERTY(control_paths, std::string,
-            "Constrain the control signal of the actuators specified by these "
-            "paths.");
+            "Constrain the control signal of the actuators or Input controls "
+            "specified by these paths.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(
             lower_bound, Function, "Lower bound as a function of time.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(
@@ -108,6 +112,7 @@ private:
     mutable bool m_hasLower;
     mutable bool m_hasUpper;
     mutable std::vector<int> m_controlIndices;
+    mutable std::vector<bool> m_isInputControl;
 };
 
 } // namespace OpenSim

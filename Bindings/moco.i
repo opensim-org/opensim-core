@@ -1,7 +1,5 @@
 %newobject *::clone;
 
-/* To recognize SimTK::RowVector in header files (TODO: move to simbody.i) */
-
 %include <OpenSim/Moco/osimMocoDLL.h>
 
 %include <OpenSim/Moco/About.h>
@@ -39,6 +37,7 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoStepTimeAsymmetryGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoStepLengthAsymmetryGoal.h>
+%include <OpenSim/Moco/MocoGoal/MocoGeneralizedForceTrackingGoal.h>
 %include <OpenSim/Moco/MocoConstraintInfo.h>
 
 %template(StdVectorMocoBounds) std::vector<OpenSim::MocoBounds>;
@@ -49,6 +48,8 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoConstraint.h>
 
 %include <OpenSim/Moco/MocoControlBoundConstraint.h>
+%include <OpenSim/Moco/MocoOutputBoundConstraint.h>
+%include <OpenSim/Moco/MocoStateBoundConstraint.h>
 %include <OpenSim/Moco/MocoFrameDistanceConstraint.h>
 %include <OpenSim/Moco/MocoOutputConstraint.h>
 
@@ -114,6 +115,8 @@ EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MocoFinalBounds);
 // achieve similar syntax in MATLAB.
 %ignore OpenSim::MocoTrajectory::setTime(std::initializer_list<double>);
 %ignore OpenSim::MocoTrajectory::setState(const std::string&,
+        std::initializer_list<double>);
+%ignore OpenSim::MocoTrajectory::setInputControl(const std::string&,
         std::initializer_list<double>);
 %ignore OpenSim::MocoTrajectory::setControl(const std::string&,
         std::initializer_list<double>);

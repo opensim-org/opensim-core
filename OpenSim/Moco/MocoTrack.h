@@ -234,6 +234,10 @@ public:
             "The weight on the control effort minimization cost term, if it "
             "exists. Default: 0.001");
 
+    OpenSim_DECLARE_PROPERTY(controls_weight_set, MocoWeightSet,
+            "A set of tracking weights for individual control variables. The "
+            "weight names should match valid control names in the problem.");
+    
     MocoTrack() { constructProperties(); }
 
     /// Set the states reference TableProcessor.

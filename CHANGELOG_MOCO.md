@@ -1,6 +1,44 @@
 Moco Change Log
 ===============
 
+1.3.1
+-----
+- 2024-07-26: Added `MocoStateBoundConstraint` and `MocoOutputBoundConstraint` to enable bounding 
+              state variables or output values by one or two `Function`s, similar to 
+              `MocoControlBoundConstraint`.
+
+- 2024-07-22: Added support for `MocoOutputGoal`s and `MocoOutputConstraint`s that are 
+              composed of two `Output`s. This applies to all types of Output goals 
+              (`MocoInitialOutputGoal`, `MocoFinalOutputGoal`, etc.). The two `Output`s 
+              can be combined by addition, subtraction, multiplication, or division.
+
+- 2024-07-08: Fixed a bug in `DeGrooteFregly2016Muscle` where updates to properties 
+              `pennation_angle_at_optimal`, `optimal_fiber_length`, `max_contraction_velocity`, 
+              and `tendon_strain_at_one_norm_force` during parameter optimization did not 
+              affect certain model calculations, and as a result were not changing during
+              optimization.
+
+- 2024-07-08: Fixed a bug where deserialization of an OpenSim model with the `Bhargava2004SmoothedMuscleMetabolics`
+              component would not properly set the muscle masses listed, resulting in incorrect
+              metabolics values being computed.
+
+- 2024-04-29: Added support for optimizing "Input controls" associated with 
+              `InputController`s in a model. Support includes updates to the 
+              MocoProblem interface (e.g., setInputControlInfo()) and MocoTrajectory 
+              (e.g., getInputControlsTrajectory(), generateControlsFromModelControllers()).
+              `MocoGoal`s and `MocoPathConstraint`s have been updated to support
+              Input controls. See the Moco User Guide for details.
+
+- 2024-04-01: Added `MocoGeneralizedForceTrackingGoal` to enable joint moment tracking
+              in `MocoProblem`s, and added the utility `calcGeneralizeForces()` to 
+              `MocoStudy` for computing joint moments from a `MocoTrajectory`. 
+              Added a sub-example to exampleMocoTrack (C++, Python, and Matlab) to 
+              feature this new functionality.
+
+- 2024-02-13: Models with `PrescribedController`s are now supported by Moco. Controls 
+              for actuators controlled by `PrescribedController`s are now excluded from 
+              the optimization problem.
+
 1.3.0
 -----
 - 2023-11-22: `exampleMocoTrack` and `exampleMocoInverse` (C++ and scripting examples) 

@@ -46,11 +46,11 @@ int main()
         InverseDynamicsTool id1("arm26_Setup_InverseDynamics.xml");
         id1.run();
         Storage result1("Results/arm26_InverseDynamics.sto"), standard1("std_arm26_InverseDynamics.sto");
-        CHECK_STORAGE_AGAINST_STANDARD( result1, standard1, 
+        CHECK_STORAGE_AGAINST_STANDARD( result1, standard1,
             std::vector<double>(23, 1e-2), __FILE__, __LINE__,
             "testArm failed");
         cout << "testArm passed" << endl;
-        // setOutputGenForceFileName including folder name, test 
+        // setOutputGenForceFileName including folder name, test
         // that folder will be ignored and file is written to Results
         InverseDynamicsTool id12("arm26_Setup_InverseDynamics.xml");
         id12.setOutputGenForceFileName(
@@ -65,7 +65,7 @@ int main()
         InverseDynamicsTool id2("subject01_Setup_InverseDynamics.xml");
         id2.run();
         Storage result2("Results/subject01_InverseDynamics.sto"), standard2("std_subject01_InverseDynamics.sto");
-        CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, 
+        CHECK_STORAGE_AGAINST_STANDARD(result2, standard2,
             std::vector<double>(23, 2.0), __FILE__, __LINE__,
             "testGait failed");
         cout << "testGait passed" << endl;
@@ -92,7 +92,7 @@ void testThoracoscapularShoulderModel() {
     SimTK::State& s = model.initSystem();
     TimeSeriesTable motionTable("ThorascapularShoulderModel_static.mot");
     auto labels = motionTable.getColumnLabels();
-    
+
     for (size_t i = 0; i < labels.size(); ++i) {
         const Coordinate& thisCoord = model.getCoordinateSet().get(labels[i]);
         auto thisValue = motionTable.getDependentColumn(labels[i])[0];
@@ -101,7 +101,7 @@ void testThoracoscapularShoulderModel() {
         thisCoord.setValue(s, thisValue, false);
         thisCoord.setSpeedValue(s, 0);
     }
-    // IDTool and IDSolver specifically do not perform assembly since it 
+    // IDTool and IDSolver specifically do not perform assembly since it
     // updates the state directly, so don't assemble here either
     //model.assemble(s);
 
@@ -134,7 +134,7 @@ void testThoracoscapularShoulderModel() {
     }
 
     // Compare results
-    ASSERT_EQUAL(idSolverVec, idToolVec, 1e-6, __FILE__, __LINE__, 
+    ASSERT_EQUAL(idSolverVec, idToolVec, 1e-6, __FILE__, __LINE__,
         "testThoracoscapularShoulderModel failed");
 }
 
@@ -149,7 +149,7 @@ void testBallJoint() {
     jnt->upd_coordinates(2).setName("c2");
 
     SimTK::State& s = mdl.initSystem();
-    
+
     // only one joint, coord order is c0, c1, c2
     auto coords = mdl.getCoordinatesInMultibodyTreeOrder();
 
@@ -164,7 +164,7 @@ void testBallJoint() {
 
     Array<string> coordStorageLabels;
     coordStorageLabels.append("time");
-    for (const auto& c : coords) { 
+    for (const auto& c : coords) {
         coordStorageLabels.append(c->getName()); // order is c0, c1, c2
         log_cout("{}", c->getName());
     }
@@ -181,7 +181,7 @@ void testBallJoint() {
     coordStorage.getTimeColumn(timeVec);
     log_cout("{}", timeVec);
 
-    // Setup IDSolver 
+    // Setup IDSolver
     double analyzeTime = 0.5;
     SimTK::Vector udot(mdl.getNumCoordinates());
     GCVSplineSet coordSplines(5, &coordStorage);
@@ -227,6 +227,6 @@ void testBallJoint() {
 
     // Test should not pass when default udot = 0 is used instead
     ASSERT_THROW(Exception,
-            ASSERT_EQUAL(idSolverVecZeroUDot, idToolVec, 1e-6, 
+            ASSERT_EQUAL(idSolverVecZeroUDot, idToolVec, 1e-6,
             __FILE__, __LINE__, "testThoracoscapularShoulderModel failed"));
 }

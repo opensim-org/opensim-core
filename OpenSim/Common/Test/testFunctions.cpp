@@ -83,26 +83,67 @@ TEST_CASE("SignalGenerator") {
 }
 
 TEST_CASE("Interpolate using PiecewiseLinearFunction") {
-    SimTK::Vector x = createVector({0, 1});
-    SimTK::Vector y = createVector({1, 0});
-    SimTK::Vector newX = createVector({-1, 0.25, 0.75, 1.5});
-    SimTK::Vector newY = OpenSim::interpolate(x, y, newX);
+    SECTION("New X out of original range") {
+        SimTK::Vector x = createVector({0, 1});
+        SimTK::Vector y = createVector({1, 0});
+        SimTK::Vector newX = createVector({-1, 0.25, 0.75, 1.5});
+        SimTK::Vector newY = OpenSim::interpolate(x, y, newX);
 
-    SimTK_TEST(SimTK::isNaN(newY[0]));
-    SimTK_TEST_EQ(newY[1], 0.75);
-    SimTK_TEST_EQ(newY[2], 0.25);
-    SimTK_TEST(SimTK::isNaN(newY[3]));
+        SimTK_TEST(SimTK::isNaN(newY[0]));
+        SimTK_TEST_EQ(newY[1], 0.75);
+        SimTK_TEST_EQ(newY[2], 0.25);
+        SimTK_TEST(SimTK::isNaN(newY[3]));
+    }
+    SECTION("New X out of original range, extrapolate") {
+        SimTK::Vector x = createVector({0, 1});
+        SimTK::Vector y = createVector({1, 0});
+        SimTK::Vector newX = createVector({-1, 0.25, 0.75, 1.5});
+        SimTK::Vector newY = OpenSim::interpolate(x, y, newX, false, true);
+
+        SimTK_TEST(!SimTK::isNaN(newY[0]));
+        SimTK_TEST_EQ(newY[1], 0.75);
+        SimTK_TEST_EQ(newY[2], 0.25);
+        SimTK_TEST(!SimTK::isNaN(newY[3]));
+    }
+    SECTION("First and last Y are NaN, extrapolate") {
+        SimTK::Vector x = createVector({0, 1, 2, 3, 4, 5});
+        SimTK::Vector y = createVector({SimTK::NaN, 0, 3, 4, SimTK::NaN, SimTK::NaN});
+        SimTK::Vector newY = OpenSim::interpolate(x, y, x, true, true);
+
+        for (int i = 0; i < newY.size(); ++i) {
+            SimTK_TEST(!SimTK::isNaN(newY[i]));
+        }
+    }
+
+    SimTK::Vector x = createVector({0, 1, 2, 3});
+    SimTK::Vector y = createVector({SimTK::NaN, 1, 2, SimTK::NaN});
+    SECTION("Ignore NaNs, extrapolate") {
+        SimTK::Vector newY = OpenSim::interpolate(x, y, x, true, true);
+        SimTK_TEST_EQ(newY[0], 0);
+        SimTK_TEST_EQ(newY[1], 1);
+        SimTK_TEST_EQ(newY[2], 2);
+        SimTK_TEST_EQ(newY[3], 3);
+    }
+    SECTION("Don't ignore NaNs, extrapolate") {
+        SimTK::Vector newY = OpenSim::interpolate(x, y, x, false, true);
+        SimTK_TEST(SimTK::isNaN(newY[0]));
+        SimTK_TEST_EQ(newY[1], 1);
+        SimTK_TEST(SimTK::isNaN(newY[2]));
+        SimTK_TEST(SimTK::isNaN(newY[3]));
+    }
+    SECTION("Ignore NaNs, don't extrapolate") {
+        SimTK::Vector newY = OpenSim::interpolate(x, y, x, true, false);
+        SimTK_TEST(SimTK::isNaN(newY[0]));
+        SimTK_TEST_EQ(newY[1], 1);
+        SimTK_TEST_EQ(newY[2], 2);
+        SimTK_TEST(SimTK::isNaN(newY[3]));
+    }
 }
 
 TEST_CASE("MultivariatePolynomialFunction") {
     SECTION("Input errors") {
         {
             MultivariatePolynomialFunction f(createVector({1}), -1, 1);
-            CHECK_THROWS_WITH(f.calcValue(SimTK::Vector()),
-                    ContainsSubstring("Expected dimension"));
-        }
-        {
-            MultivariatePolynomialFunction f(createVector({1}), 7, 1);
             CHECK_THROWS_WITH(f.calcValue(SimTK::Vector()),
                     ContainsSubstring("Expected dimension"));
         }
@@ -129,8 +170,8 @@ TEST_CASE("MultivariatePolynomialFunction") {
         MultivariatePolynomialFunction multivariate(
                 createVector({3, 1, 2}), 1, 2);
         SimTK::Vector x = createVector({0.338});
-        CHECK(univariate.calcValue(x) == multivariate.calcValue(x));
-        CHECK(univariate.calcDerivative({0}, x) ==
+        SimTK_TEST_EQ(univariate.calcValue(x), multivariate.calcValue(x));
+        SimTK_TEST_EQ(univariate.calcDerivative({0}, x),
                 multivariate.calcDerivative({0}, x));
     }
     SECTION("Test 3-dimensional 3rd order polynomial") {
@@ -145,8 +186,9 @@ TEST_CASE("MultivariatePolynomialFunction") {
                           c[8]*y*y*z + c[9]*y*y*y + c[10]*x + c[11]*x*z +
                           c[12]*x*z*z + c[13]*x*y + c[14]*x*y*z + c[15]*x*y*y +
                           c[16]*x*x + c[17]*x*x*z + c[18]*x*x*y + c[19]*x*x*x;
-        CHECK(f.calcValue(input) == expected);
-        CHECK(f.calcDerivative({0}, input) == c[10] + c[11]*z + c[12]*z*z +
+        SimTK_TEST_EQ(f.calcValue(input), expected);
+        SimTK_TEST_EQ(f.calcDerivative({0}, input), 
+                c[10] + c[11]*z + c[12]*z*z +
                 c[13]*y + c[14]*y*z + c[15]*y*y + 2*c[16]*x + 2*c[17]*x*z +
                 2*c[18]*x*y + 3*c[19]*x*x);
     }
@@ -156,8 +198,8 @@ TEST_CASE("MultivariatePolynomialFunction") {
         SimTK::Vector input = createVector({0.3, 7.3, 0.8, 6.4});
         double expected = c[0] + c[1] * input[3] + c[2] * input[2] +
                           c[3] * input[1] + c[4] * input[0];
-        CHECK(f.calcValue(input) == expected);
-        CHECK(f.calcDerivative({0}, input) == c[4]);
+        SimTK_TEST_EQ(f.calcValue(input), expected);
+        SimTK_TEST_EQ(f.calcDerivative({0}, input), c[4]);
     }
     SECTION("Test 6-dimensional 1st order polynomial") {
         SimTK::Vector c = SimTK::Test::randVector(7);
@@ -166,8 +208,33 @@ TEST_CASE("MultivariatePolynomialFunction") {
         double expected = c[0] + c[1] * input[5] + c[2] * input[4] +
                           c[3] * input[3] + c[4] * input[2] + c[5] * input[1] +
                           c[6] * input[0];
-        CHECK(f.calcValue(input) == expected);
-        CHECK(f.calcDerivative({0}, input) == c[6]);
+        SimTK_TEST_EQ(f.calcValue(input), expected);
+        SimTK_TEST_EQ(f.calcDerivative({0}, input), c[6]);
+    }
+    SECTION("Test calcDerivativeCoefficients()") {
+        // 2-DOF polynomial function.
+        // f = 1 + 2*q_y + 3*q_y^2 + 4*q_x + 5*q_x*q_y + 6*q_x^2
+        MultivariatePolynomialFunction f(
+                createVector({1.0, 2.0, 3.0, 4.0, 5.0, 6.0}), 2, 2);
+
+        // Partial derivatives.
+        // f_x = dl/dq_x = 4 + 5*q_y + 12*q_x
+        // f_y = dl/dq_y = 2 + 6*q_y + 5*q_x
+        MultivariatePolynomialFunction f_x(
+                createVector({4.0, 5.0, 12.0}), 2, 1);
+        MultivariatePolynomialFunction f_y(
+                createVector({2.0, 6.0, 5.0}), 2, 1);
+
+        MultivariatePolynomialFunction f_x_test = 
+                f.generateDerivativeFunction(0);
+        MultivariatePolynomialFunction f_y_test = 
+                f.generateDerivativeFunction(1);
+
+        SimTK::Vector q = SimTK::Test::randVector(2);
+        SimTK_TEST_EQ(f.calcDerivative({0}, q), f_x.calcValue(q));
+        SimTK_TEST_EQ(f.calcDerivative({1}, q), f_y.calcValue(q));
+        SimTK_TEST_EQ(f_x.calcValue(q), f_x_test.calcValue(q));
+        SimTK_TEST_EQ(f_y.calcValue(q), f_y_test.calcValue(q));
     }
 }
 

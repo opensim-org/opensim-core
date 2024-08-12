@@ -29,7 +29,7 @@ include(FeatureSummary)
 # ----------------
 set(OPENSIM_MAJOR_VERSION 4)
 set(OPENSIM_MINOR_VERSION 5)
-set(OPENSIM_PATCH_VERSION 0)
+set(OPENSIM_PATCH_VERSION 1)
 
 # Don't include the patch version if it is 0.
 set(PATCH_VERSION_STRING)
@@ -610,7 +610,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ## RPATH 
 # If it is necessary to not put RPATHs in the installed binaries, set
 # CMAKE_SKIP_INSTALL_RPATH to ON.
-set(OPENSIM_USE_INSTALL_RPATH FALSE)
+#set(OPENSIM_USE_INSTALL_RPATH FALSE)
 if(UNIX) # Linux and macOS
     # CMake 2.8.12 introduced the ability to set RPATH for shared libraries
     # on OSX. This helps executables find the libraries they depend on
@@ -831,11 +831,9 @@ if (OPENSIM_WITH_CASADI OR OPENSIM_WITH_TROPTER)
     if(UNIX)
         pkg_check_modules(IPOPT REQUIRED ipopt IMPORTED_TARGET)
     else()
-        find_package(Ipopt REQUIRED CONFIG)
-        set_package_properties(IPOPT PROPERTIES
-                URL https://projects.coin-or.org/Ipopt
-                TYPE REQUIRED
-                PURPOSE "Nonlinear optimization")
+        set(Ipopt_ROOT_DIR ${OPENSIM_DEPENDENCIES_DIR}/ipopt)
+        message("Ipopt_ROOT_DIR ${Ipopt_ROOT_DIR}")
+        ##find_package(IPOPT REQUIRED CONFIG)
         # Flags to use when building a shared library.
         # TODO move these flags to a specific target.
         # TODO set(CMAKE_SHARED_LINKER_FLAGS

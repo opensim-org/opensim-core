@@ -49,7 +49,7 @@ int main()
     SimTK::Array_<std::string> failures;
 
     try { ++itc;
-        testInverseKinematicsSolverWithOrientations(); 
+        testInverseKinematicsSolverWithOrientations();
     }
     catch (const std::exception& e) {
         cout << e.what() << endl;
@@ -79,8 +79,8 @@ int main()
         InverseKinematicsTool ik1("subject01_Setup_InverseKinematics.xml");
         ik1.run();
         Storage result1(ik1.getOutputMotionFileName());
-        CHECK_STORAGE_AGAINST_STANDARD(result1, standard, 
-            std::vector<double>(24, 0.2), __FILE__, __LINE__, 
+        CHECK_STORAGE_AGAINST_STANDARD(result1, standard,
+            std::vector<double>(24, 0.2), __FILE__, __LINE__,
             "testInverseKinematicsGait2354 failed");
         cout << "testInverseKinematicsGait2354 passed" << endl;
     }
@@ -96,8 +96,8 @@ int main()
         ik2.setModel(mdl);
         ik2.run();
         Storage result2(ik2.getOutputMotionFileName());
-        CHECK_STORAGE_AGAINST_STANDARD(result2, standard, 
-            std::vector<double>(24, 0.2), __FILE__, __LINE__, 
+        CHECK_STORAGE_AGAINST_STANDARD(result2, standard,
+            std::vector<double>(24, 0.2), __FILE__, __LINE__,
             "testInverseKinematicsGait2354 GUI workflow failed");
         cout << "testInverseKinematicsGait2354 GUI workflow passed" << endl;
     }
@@ -122,7 +122,7 @@ int main()
         ik.run();
         Storage result(ik.getOutputMotionFileName());
         // Tolerance of 0.2 degs for rotational coordinates was selected from
-        // the other IK regression tests (above) 
+        // the other IK regression tests (above)
         CHECK_STORAGE_AGAINST_STANDARD(result, standard,
                 std::vector<double>(17, 0.2), __FILE__, __LINE__,
                 "testInverseKinematicsScapulothoracicAbduction failed");
@@ -285,7 +285,7 @@ TimeSeriesTable_<SimTK::Rotation> convertMotionFileToRotations(
     SimTK::Matrix_<SimTK::Rotation> rotations{ int(nt), nc };
 
     // Apply the read in coordinate values to the model.
-    // Then get the rotation of the Bodies in the model and 
+    // Then get the rotation of the Bodies in the model and
     // store them as Rotations and Euler angles in separate tables.
     for (int i = 0; i < nt; ++i) {
         const auto& values = anglesTable.getRowAtIndex(i);
@@ -331,7 +331,7 @@ TimeSeriesTableVec3 convertRotationsToEulerAngles(
 
     for (int i = 0; i < nt; ++i) {
         for (int j = 0; j < nc; ++j) {
-            eulerMatrix.updElt(i, j) = 
+            eulerMatrix.updElt(i, j) =
                 rotations(i, j).convertRotationToBodyFixedXYZ();
         }
     }
@@ -391,7 +391,7 @@ void testInverseKinematicsSolverWithOrientations()
     auto orientationsData = convertMotionFileToRotations(
          model, "std_subject01_walk1_ik.mot");
 
-    std::shared_ptr<OrientationsReference> 
+    std::shared_ptr<OrientationsReference>
         oRefs(new OrientationsReference(orientationsData));
     oRefs->set_default_weight(1.0);
 
@@ -420,7 +420,7 @@ void testInverseKinematicsSolverWithOrientations()
     auto timeRange = oRefs->getValidTimeRange();
     cout << "Time range from: " << timeRange[0] << " to " << timeRange[1]
         << "s."<< endl;
-    
+
     s0.updTime() = timeRange[0];
     ikSolver.assemble(s0);
 

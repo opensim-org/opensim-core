@@ -42,13 +42,14 @@
 
 using namespace OpenSim;
 using namespace std;
+using Catch::Matchers::ContainsSubstring;
 
 TEST_CASE("Test Controller interface") {
 
     Model model = ModelFactory::createNLinkPendulum(2);
     auto* controller = new PrescribedController();
-    controller->prescribeControlForActuator("/tau0", new Constant(1.0));
-    controller->prescribeControlForActuator("/tau1", new Constant(2.0));
+    controller->prescribeControlForActuator("/tau0", Constant(1.0));
+    controller->prescribeControlForActuator("/tau1", Constant(2.0));
 
     SECTION("No actuators connecteed") {
         model.addController(controller);
@@ -163,7 +164,6 @@ TEST_CASE("testControlSetControllerOnBlock") {
     osimModel.disownAllComponents();
 }
 
-
 TEST_CASE("testPrescribedControllerOnBlock") {
     using namespace SimTK;
 
@@ -215,7 +215,7 @@ TEST_CASE("testPrescribedControllerOnBlock") {
     actuatorController.setActuators(osimModel.updActuators());
     actuatorController.prescribeControlForActuator(
         osimModel.getActuators().get(0).getAbsolutePathString(),
-        new Constant(controlForce));
+        Constant(controlForce));
     actuatorController.setEnabled(enabled);
 
     // add the controller to the model
@@ -260,7 +260,6 @@ TEST_CASE("testPrescribedControllerOnBlock") {
     states.print("block_push.sto");
 
 }
-
 
 TEST_CASE("testCorrectionControllerOnBlock") {
     using namespace SimTK;
@@ -415,4 +414,101 @@ TEST_CASE("testPrescribedControllerFromFile") {
         "testPrescribedControllerFromFile '"+modelName+"'controls failed");
      
     osimModel.disownAllComponents();
+}
+
+TEST_CASE("PrescribedController control function ordering") {
+    Model model = ModelFactory::createNLinkPendulum(3);
+    auto* controller = new PrescribedController();
+    controller->addActuator(model.getComponent<Actuator>("/tau0"));
+    controller->addActuator(model.getComponent<Actuator>("/tau1"));
+    controller->addActuator(model.getComponent<Actuator>("/tau2"));
+
+    GIVEN("Controls prescribed out of order") {
+        controller->prescribeControlForActuator("/tau1", Constant(2.0));
+        controller->prescribeControlForActuator("/tau0", Constant(1.0));
+        controller->prescribeControlForActuator("/tau2", Constant(3.0));
+        // Control function reordering happens during 
+        // PrescribedController::extendConnectToModel().
+        model.addController(controller);
+        model.finalizeConnections();
+
+        THEN("Control functions are reordered based on connectee order") {
+            const auto& controlFunctions = controller->get_ControlFunctions();
+            SimTK::Vector time(1, 0.0);
+            CHECK(controlFunctions.get(0).calcValue(time) == 1.0);
+            CHECK(controlFunctions.get(1).calcValue(time) == 2.0);
+            CHECK(controlFunctions.get(2).calcValue(time) == 3.0);
+        }
+
+        THEN("Serialization and deserialization works as expected") {
+            model.print("testControllers_triplePendulum.osim");
+            Model modelDeserialized("testControllers_triplePendulum.osim");
+            modelDeserialized.initSystem();
+            const auto& controller = 
+                    modelDeserialized.getComponent<PrescribedController>(
+                            "/controllerset/prescribedcontroller");
+            const auto& controlFunctions = controller.get_ControlFunctions();
+            SimTK::Vector time(1, 0.0);
+            CHECK(controlFunctions.get(0).calcValue(time) == 1.0);
+            CHECK(controlFunctions.get(1).calcValue(time) == 2.0);
+            CHECK(controlFunctions.get(2).calcValue(time) == 3.0);
+        }
+    }    
+}
+
+TEST_CASE("PrescribedController behavior") {
+    Model model("testControllers_TugOfWar.osim");
+    model.initSystem();
+    auto& controller = model.updComponent<PrescribedController>(
+            "/controllerset/prescribedcontroller");
+
+    SECTION("Overwriting control function with same label") {
+        controller.prescribeControlForActuator(
+                "actu_slider", Constant(1.0));
+        CHECK_NOTHROW(model.initSystem());
+    }
+
+    SECTION("Different label for same actuator should throw") {
+        controller.prescribeControlForActuator(
+                "/forceset/actu_slider", Constant(1.0));
+        std::string msg = "The number of control functions (2) does not match"; 
+        CHECK_THROWS_WITH(model.initSystem(), ContainsSubstring(msg));
+    }
+
+    SECTION("Model serialization and deserialization works as expected") {
+        model.print("testControllers_TugOfWar_serialized.osim");
+        Model modelDeserialized("testControllers_TugOfWar_serialized.osim");
+        CHECK_NOTHROW(modelDeserialized.initSystem());
+    }
+}
+
+TEST_CASE("Marking controls as invalid") {
+    Model model = ModelFactory::createNLinkPendulum(2);
+    auto* controller = new PrescribedController();
+    controller->addActuator(model.getComponent<Actuator>("/tau0"));
+    controller->addActuator(model.getComponent<Actuator>("/tau1"));
+    SimTK::Real tau0 = SimTK::Test::randReal();
+    SimTK::Real tau1 = SimTK::Test::randReal();
+    controller->prescribeControlForActuator("/tau0", Constant(tau0));
+    controller->prescribeControlForActuator("/tau1", Constant(tau1));
+    model.addController(controller);
+    SimTK::State state = model.initSystem();
+
+    GIVEN("Controls vector set to random values") {
+        SimTK::Vector origControls = SimTK::Test::randVector(2);
+        model.realizeVelocity(state);
+        model.setControls(state, origControls);
+
+        THEN("Controls cache is marked valid") {
+            SimTK_TEST_EQ(model.getControls(state), origControls);
+        }
+
+        THEN("Marking controls invalid invokes Controller::computeControls()") {
+            model.markControlsAsInvalid(state);
+            const SimTK::Vector& newControls = model.getControls(state);
+            CHECK(newControls.size() == 2);
+            CHECK(newControls[0] == tau0);
+            CHECK(newControls[1] == tau1);
+        }
+    }
 }

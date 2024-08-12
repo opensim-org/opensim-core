@@ -30,7 +30,7 @@
 //      3. Force at a point
 //      4. Torque on a body
 //      4. Forces from a file.
-//     Add tests here 
+//     Add tests here
 //
 //==========================================================================================================
 #include <iostream>
@@ -174,7 +174,7 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     osim_state.setTime(0.0);
     Manager manager(*osimModel);
     manager.initialize(osim_state);
-    
+
     for (unsigned int i = 0; i < times.size(); ++i)
     {
         osim_state = manager.integrate(times[i]);

@@ -91,13 +91,18 @@ SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
 /// Linearly interpolate y(x) at new values of x. The optional 'ignoreNaNs'
 /// argument will ignore any NaN values contained in the input vectors and
 /// create the interpolant from the non-NaN values only. Note that this option
-/// does not necessarily prevent NaN values from being returned in 'newX', which
-/// will have NaN for any values of newX outside of the range of x.
+/// does not necessarily prevent NaN values from being returned, which will
+/// have NaN for any values of newX outside of the range of x. This is done with
+/// the 'extrapolate' option. If the 'extrapolate' argument is true, then the
+/// interpolant values will be extrapolated based on a piecewise function.
+/// Setting both 'ignoreNaNs' and 'extrapolate' to true prevents NaN values from
+/// occuring in the interpolant.
 /// @throws Exception if x and y are different sizes, or x or y is empty.
 /// @ingroup commonutil
 OSIMCOMMON_API
 SimTK::Vector interpolate(const SimTK::Vector& x, const SimTK::Vector& y,
-        const SimTK::Vector& newX, const bool ignoreNaNs = false);
+        const SimTK::Vector& newX, const bool ignoreNaNs = false,
+        const bool extrapolate = false);
 
 /// An OpenSim XML file may contain file paths that are relative to the
 /// directory containing the XML file; use this function to convert that
@@ -176,6 +181,27 @@ private:
 /// @ingroup commonutil
 OSIMCOMMON_API SimTK::Matrix computeKNearestNeighbors(const SimTK::Matrix& x,
         const SimTK::Matrix& y, int k = 1);
+
+/// Use non-negative matrix factorization to decompose an matrix A (NxM) for a 
+/// selected number of factors 'K' into two matrices W (NxK) and H (KxM) such 
+/// that A = W * H. The alternating least squares (ALS) algorithm is used to 
+/// solve for W and H by minimizing the Frobenius norm of the error between A 
+/// and W * H. The matrices W and H are scaled assuming that the rows of H
+/// have magnitudes as if all elements in H were equal to 0.5, which prevents
+/// individual factors from being very large or very small. The algorithm 
+/// terminates when the change in the error norm is less than the specified 
+/// tolerance or the maximum number of iterations is reached.
+///
+/// @returns The final Frobenius norm of the error between A and W * H.
+///
+/// Reference
+/// ---------
+/// Berry, M. W., et al. (2007). Algorithms and Applications for Approximate 
+/// Nonnegative Matrix Factorization. Computational Statistics & Data Analysis, 
+/// 52(1), 155-173. doi:10.1016/j.csda.2006.11.006.
+OSIMCOMMON_API double factorizeMatrixNonNegative(const SimTK::Matrix& A, 
+        int numFactors, int maxIterations, double tolerance, 
+        SimTK::Matrix& W, SimTK::Matrix& H);
 
 } // namespace OpenSim
 

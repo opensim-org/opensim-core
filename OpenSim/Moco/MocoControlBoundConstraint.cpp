@@ -19,6 +19,7 @@
 #include "MocoControlBoundConstraint.h"
 
 #include "MocoProblemInfo.h"
+#include "Components/ControlDistributor.h"
 
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
@@ -39,29 +40,38 @@ void MocoControlBoundConstraint::constructProperties() {
 void MocoControlBoundConstraint::initializeOnModelImpl(
         const Model& model, const MocoProblemInfo& problemInfo) const {
 
-    // Get all expected control names.
-    auto controlNames = createControlNamesFromModel(model);
-
     // Check that the model controls are in the correct order.
     checkOrderSystemControls(model);
+    auto systemControlIndexMap = createSystemControlIndexMap(model);
+
+    // Get the Input control index map.
+    auto inputControlIndexMap = getInputControlIndexMap();
 
     m_hasLower = !getProperty_lower_bound().empty();
     m_hasUpper = !getProperty_upper_bound().empty();
-    if (getProperty_control_paths().size() && !m_hasLower && !m_hasUpper) {
+    if (!getProperty_control_paths().empty() && !m_hasLower && !m_hasUpper) {
         log_warn("In MocoControlBoundConstraint '{}', control paths are "
                  "specified but no bounds are provided.", getName());
     }
     // Make sure there are no nonexistent controls.
     if (m_hasLower || m_hasUpper) {
-        auto systemControlIndexMap = createSystemControlIndexMap(model);
         for (int i = 0; i < getProperty_control_paths().size(); ++i) {
             const auto& thisName = get_control_paths(i);
-            OPENSIM_THROW_IF_FRMOBJ(systemControlIndexMap.count(thisName) == 0,
+            bool foundControl = systemControlIndexMap.count(thisName);
+            bool foundInputControl = inputControlIndexMap.count(thisName);
+            OPENSIM_THROW_IF_FRMOBJ(!foundControl && !foundInputControl,
                     Exception,
                     "Control path '{}' was provided but no such "
-                    "control exists in the model.",
-                    thisName);
-            m_controlIndices.push_back(systemControlIndexMap[thisName]);
+                    "control or Input control exists in the model.",
+                    thisName)
+
+            if (foundControl) {
+                m_controlIndices.push_back(systemControlIndexMap[thisName]);
+                m_isInputControl.push_back(false);
+            } else {
+                m_controlIndices.push_back(inputControlIndexMap.at(thisName));
+                m_isInputControl.push_back(true);
+            }   
         }
     }
 
@@ -132,10 +142,13 @@ void MocoControlBoundConstraint::calcPathConstraintErrorsImpl(
         const SimTK::State& state, SimTK::Vector& errors) const {
     getModel().realizeVelocity(state);
     const auto& controls = getModel().getControls(state);
+    const auto& input_controls = getInputControls(state);
     int iconstr = 0;
+    int icontrol = 0;
     SimTK::Vector time(1);
     for (const auto& controlIndex : m_controlIndices) {
-        const auto& control = controls[controlIndex];
+        const auto& control = m_isInputControl[icontrol] ?
+                input_controls[controlIndex] : controls[controlIndex];
         time[0] = state.getTime();
         // These if-statements work correctly for either value of
         // equality_with_lower.
@@ -145,5 +158,6 @@ void MocoControlBoundConstraint::calcPathConstraintErrorsImpl(
         if (m_hasUpper) {
             errors[iconstr++] = control - get_upper_bound().calcValue(time);
         }
+        ++icontrol;
     }
 }

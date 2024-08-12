@@ -30,28 +30,33 @@ namespace OpenSim {
 
 /**
  * A class for generating Latin hypercube designs.
+ * 
+ * # Latin hypercube design
  *
  * A Latin hypercube is an m-by-n matrix, where 'm' is the number of design
  * samples and 'n' is the number of variables in the design. Each sample point
  * (i.e., each row in the design) is the only sample point in its row and column
  * in the hypercube defined by the number of variables. 
- *
+ * 
+ * \cond 
  * For example, consider a design with 5 samples and 2 variables:
  *
- *            grid                       matrix
- *       __ __ __ __ __                __       __
- *      |    x         |              | 0.6  0.2 |
- *      |         x    |              | 1.0  0.4 |
- *   q2 | x            |          q = | 0.2  0.6 |
- *      |            x |              | 0.8  0.8 |
- *      |      x       |              | 0.4  1.0 |
- *       ‾‾ ‾‾ ‾‾ ‾‾ ‾‾               ‾‾       ‾‾
+ *             grid                         matrix
+ *        __ __ __ __ __                  __      __
+ *       |    x         |                | 0.6  0.2 |
+ *       |         x    |                | 1.0  0.4 |
+ *   q2  | x            |          q  =  | 0.2  0.6 |
+ *       |            x |                | 0.8  0.8 |
+ *       |      x       |                | 0.4  1.0 |
+ *        ‾‾ ‾‾ ‾‾ ‾‾ ‾‾                  ‾‾      ‾‾
  *             q1
- *
+ *  
  * On the left is the 5-by-5 square grid (i.e., 2-D hypercube) that is produced
  * if the samples are plotted in the variable space defined by q1 and q2. On the
  * right is the 5-by-2 design matrix that contains the 5 samples.
- *             
+ * \endcond
+ * 
+ *
  * Latin hypercube designs are useful for sampling large, multivariate parameter 
  * spaces. Optimal Latin hypercube designs are those that maximize the minimum 
  * distance between samples in the design. This class provides methods for 
@@ -60,8 +65,7 @@ namespace OpenSim {
  * algorithm from Viana et al. (2009) and the enhanced stochastic evolutionary
  * algorithm from Jin et al. (2005).
  *
- * How to create a Latin hypercube design
- * --------------------------------------
+ * # How to create a Latin hypercube design
  * To create a Latin hypercube design, you must first specify the number of
  * variables and samples in the design, and, optionally, the distance criterion
  * used to evaluate each design. The distance criterion can be either "maximin"
@@ -103,8 +107,7 @@ namespace OpenSim {
  * minimization criterion. While both criteria aim to achieve a similar goal,
  * the values returned by each are not directly comparable.
  *
- * Recommendations for different sized designs
- * -------------------------------------------
+ * # Recommendations for different sized designs
  * To rapidly create a random Latin hypercube design of any size,
  * generateRandomDesign() is recommended. This method is fast, but does not
  * guarantee that the design is optimal.
@@ -124,8 +127,7 @@ namespace OpenSim {
  * it is recommended to use the "phi_p" distance criterion, which approximates
  * "maximin", but is much faster.
  *
- * References
- * ----------
+ * # References
  * - [1] Viana, F.A.C., Venter, G. and Balabanov, V. (2010), An algorithm for
  *       fast optimal Latin hypercube design of experiments. Int. J. Numer. Meth.
  *       Engng., 82: 135-156. https://doi.org/10.1002/nme.2750

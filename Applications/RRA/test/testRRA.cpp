@@ -30,8 +30,8 @@
 using namespace OpenSim;
 using namespace std;
 
-void checkAdjustedModelCOM(string modelFile, string body, 
-                const SimTK::Vec3 &standardCOM, 
+void checkAdjustedModelCOM(string modelFile, string body,
+                const SimTK::Vec3 &standardCOM,
                 const Array<double> &tolerances);
 
 int main() {
@@ -39,12 +39,12 @@ int main() {
         RRATool rra("subject01_Setup_RRA.xml");
         if (rra.run()){
             checkAdjustedModelCOM( "subject01_RRA_adjusted.osim", "torso",
-                      SimTK::Vec3(0.00598028440188985017, 0.34551, 0.1), 
+                      SimTK::Vec3(0.00598028440188985017, 0.34551, 0.1),
                       Array<double>(1e-4, 3) );
-            Storage result("ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto"), 
+            Storage result("ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto"),
                     standard("subject01_walk1_RRA_Kinematics_q_standard.sto");
-            CHECK_STORAGE_AGAINST_STANDARD(result, standard, 
-                std::vector<double>(24, 0.5), 
+            CHECK_STORAGE_AGAINST_STANDARD(result, standard,
+                std::vector<double>(24, 0.5),
                 __FILE__, __LINE__, "testRRA: kinematics comparison failed");
         }
         else{

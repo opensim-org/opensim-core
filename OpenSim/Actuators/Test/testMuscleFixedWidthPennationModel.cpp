@@ -45,6 +45,8 @@
 #include <string>
 #include <stdio.h>
 
+#include <catch2/catch_all.hpp>
+
 
 using namespace std;
 using namespace OpenSim;
@@ -295,17 +297,13 @@ void testMonotonicity(SimTK::Matrix mcfSample)
 }
 
 //______________________________________________________________________________
+
 /**
  * Create a muscle bench marking system. The bench mark consists of a single muscle 
  * spans a distance. The distance the muscle spans can be controlled, as can the 
  * excitation of the muscle.
  */
-int main(int argc, char* argv[])
-{
-    
-
-    try {
-        SimTK_START_TEST("Testing MuscleFixedWidthPennationModel");
+TEST_CASE("All MuscleFixedWidthPennationModel tests") {
         cout << endl;
         cout << "**************************************************" << endl;
         cout << "Generating Test Data" << endl;
@@ -323,25 +321,25 @@ int main(int argc, char* argv[])
         double paraHeight= optFibLen*sin(optPenAng);
         double tendonSlackLen= optFibLen;
 
-        MuscleFixedWidthPennationModel fibKin(  optFibLen, 
+        MuscleFixedWidthPennationModel fibKin(  optFibLen,
                                                 optPenAng,
                                                 SimTK::Pi/2.0 - SimTK::SignificantReal);
         fibKin.finalizeFromProperties();
 
-        MuscleFixedWidthPennationModel fibKin2( optFibLen*2, 
+        MuscleFixedWidthPennationModel fibKin2( optFibLen*2,
                                                 optPenAng,
                                                 SimTK::Pi/2.0);
 
         cout << "**************************************************" << endl;
         cout << "Test: Serialization" << endl;
-        
+
         fibKin.print("default_MuscleFixedWidthPennationModel");
 
         Object* tmpObj = Object::
         makeObjectFromFile("default_MuscleFixedWidthPennationModel");
         fibKin2 = *dynamic_cast<MuscleFixedWidthPennationModel*>(tmpObj);
         delete tmpObj;
-       
+
             SimTK_TEST(fibKin == fibKin2);
             remove("default_MuscleFixedWidthPennationModel");
 
@@ -364,15 +362,15 @@ int main(int argc, char* argv[])
             SimTK::Vector penAngVel(numPts);
             SimTK::Vector penAngVel1(numPts);
             //Generate muscle tendon kinematics
-            for(int i=0; i<numPts; i++){      
+            for(int i=0; i<numPts; i++){
                 time(i) = ((double)i)/((double)numPts-(double)1);
 
                 //Artificial fiber kinematics
                 fibLen(i) = ( 2.01 + cos(time(i)*(2*SimTK::Pi)) )*paraHeight;
-                
-                fibVel(i) = -sin(time(i)*(2*SimTK::Pi)) 
+
+                fibVel(i) = -sin(time(i)*(2*SimTK::Pi))
                             * paraHeight*(2*SimTK::Pi);
-                fibVel1(i)= paraHeight;                
+                fibVel1(i)= paraHeight;
 
                 //Computed pennation kinematics
                 penAng(i) = fibKin.calcPennationAngle(fibLen(i));
@@ -389,40 +387,40 @@ int main(int argc, char* argv[])
 
                 //Artificial tendon kinematics
                 tdnLen(i) = mclLen(i) - fibLen(i)*cos(penAng(i));
-                tdnVel(i) = mclVel(i) - fibVel(i)*cos(penAng(i)) 
+                tdnVel(i) = mclVel(i) - fibVel(i)*cos(penAng(i))
                                       + fibLen(i)*sin(penAng(i))*penAngVel(i);
-               
+
                 fibLenAT(i) = fibKin.calcFiberLengthAlongTendon( fibLen(i),
                                                              cos(penAng(i)) );
 
                 fibVelAT(i) = fibKin.calcFiberVelocityAlongTendon(fibLen(i),
-                                fibVel(i),sin(penAng(i)), cos(penAng(i)), 
+                                fibVel(i),sin(penAng(i)), cos(penAng(i)),
                                 penAngVel(i));
 
 
                 fibVelAT1(i)=fibKin.calcFiberVelocityAlongTendon(fibLen(i),
-                               fibVel1(i),sin(penAng(i)), cos(penAng(i)), 
+                               fibVel1(i),sin(penAng(i)), cos(penAng(i)),
                                penAngVel1(i));
-            }            
+            }
 
         cout << endl;
         cout << "**************************************************" << endl;
         cout << "TEST: calcPennationAngle correctness" << endl;
-       
-            //Compute pennation angles, ensure that the height of the resulting 
+
+            //Compute pennation angles, ensure that the height of the resulting
             //parallelogram is correct.
             double maxErr = 0;
 
-            for(int i=0; i<numPts; i++){  
+            for(int i=0; i<numPts; i++){
                 if(abs(fibLen(i)*sin(penAng(i))-fibKin.getParallelogramHeight())
                     > maxErr)
                     maxErr = abs(fibLen(i)*sin(penAng(i))
                                  -fibKin.getParallelogramHeight());
 
-                SimTK_TEST_EQ_TOL(fibLen(i)*sin(penAng(i)), 
+                SimTK_TEST_EQ_TOL(fibLen(i)*sin(penAng(i)),
                                   fibKin.getParallelogramHeight(), smallTol);
             }
-            printf("    :passed with a max error < tol (%fe-16 < %fe-16) \n", 
+            printf("    :passed with a max error < tol (%fe-16 < %fe-16) \n",
                             maxErr,smallTol*1e16);
 
         cout << endl;
@@ -438,7 +436,7 @@ int main(int argc, char* argv[])
                 ((double)1000/(double)numPts)*((double)1000/(double)numPts);
 
             SimTK::Vector penAngNumDer =calcCentralDifference(time,penAng,true);
-        
+
             //End points have to be skipped because a central difference cannot
             //be computed on the end points
             SimTK::Vector penVelRelErr(numPts);
@@ -452,11 +450,11 @@ int main(int argc, char* argv[])
                 //Compute the relative error, only when the denominator is
                 //far different than zero.
                 if(abs(penAngVel(i)) < bigTol){
-                    penVelRelErr(i)=0;                
+                    penVelRelErr(i)=0;
                 }
                 if(abs(penVelRelErr(i)) > maxErr)
                     maxErr = abs(penVelRelErr(i));
-            }    
+            }
             //Test the tolerance
             for(int i=0; i<numPts; i++){
                SimTK_TEST_EQ_TOL(penVelRelErr(i), 0, relTol);
@@ -469,11 +467,11 @@ int main(int argc, char* argv[])
             maxErr = 0;
             SimTK::Vector heightVel(numPts);
             for(int i=0; i<numPts; i++){
-                heightVel(i) = fibVel(i)*sin(penAng(i)) + 
+                heightVel(i) = fibVel(i)*sin(penAng(i)) +
                                fibLen(i)*cos(penAng(i))*penAngVel(i);
                 if(abs(heightVel(i)) > maxErr)
                     maxErr = abs(heightVel(i));
-              
+
                 SimTK_TEST_EQ_TOL(heightVel(i), 0, bigTol);
             }
             printf("    :passed with a max. error < big. tol (%fe-8 < %fe-8) \n"
@@ -483,8 +481,8 @@ int main(int argc, char* argv[])
         cout << "TEST: calcFiberLengthAlongTendon correctness" << endl;
 
         for(int i=0; i<numPts; i++){
-            SimTK_TEST_EQ_TOL(fibLen(i)*penAng(i), 
-                fibKin.calcFiberLengthAlongTendon(fibLen(i),penAng(i)), 
+            SimTK_TEST_EQ_TOL(fibLen(i)*penAng(i),
+                fibKin.calcFiberLengthAlongTendon(fibLen(i),penAng(i)),
                 smallTol);
         }
         printf("    :passed with a max. error < small. tol (%fe-16) \n"
@@ -498,7 +496,7 @@ int main(int argc, char* argv[])
         //fibVelAT(i)
 
         SimTK::Vector fibLenATNumDer =calcCentralDifference(time,fibLenAT,true);
-        
+
         maxErr = 0;
         double err = 0;
         for(int i=0; i<numPts; i++){
@@ -521,11 +519,11 @@ int main(int argc, char* argv[])
             tendonLengthCalc(i) = fibKin.calcTendonLength(cos(penAng(i)),
                                                     fibLen(i),mclLen(i));
             if(abs(tendonLengthCalc(i)-tdnLen(i)) > maxErr)
-                maxErr = abs(tendonLengthCalc(i)-tdnLen(i)); 
+                maxErr = abs(tendonLengthCalc(i)-tdnLen(i));
 
             SimTK_TEST_EQ_TOL(tendonLengthCalc(i), tdnLen(i), smallTol);
         }
-        printf("    :passed with a max. error < small tol. (%fe-16 < %fe-16) \n", 
+        printf("    :passed with a max. error < small tol. (%fe-16 < %fe-16) \n",
                     maxErr*1e16,smallTol*1e16);
 
         cout << endl;
@@ -535,16 +533,16 @@ int main(int argc, char* argv[])
         maxErr = 0;
         SimTK::Vector tendonVelCalc(numPts);
         for(int i=0; i<numPts; i++){
-            tendonVelCalc(i) = fibKin.calcTendonVelocity(cos(penAng(i)), 
+            tendonVelCalc(i) = fibKin.calcTendonVelocity(cos(penAng(i)),
                                     sin(penAng(i)), penAngVel(i), fibLen(i),
                                     fibVel(i), mclVel(i));
 
             if(abs(tendonVelCalc(i)-tdnVel(i)) > maxErr)
-                maxErr = abs(tendonVelCalc(i)-tdnVel(i)); 
+                maxErr = abs(tendonVelCalc(i)-tdnVel(i));
 
             SimTK_TEST_EQ_TOL(tendonVelCalc(i), tdnVel(i), smallTol);
         }
-        printf("    :passed with a max. error < small tol. (%fe-16 < %fe-16) \n", 
+        printf("    :passed with a max. error < small tol. (%fe-16 < %fe-16) \n",
                     maxErr*1e16,smallTol*1e16);
 
         cout << endl;
@@ -563,28 +561,28 @@ int main(int argc, char* argv[])
             DpenAngDfibLen(i) = fibKin.calc_DPennationAngle_DfiberLength(
                                                             fibLen(i));
 
-            //The isNaN check needs to be in place because the numerical 
+            //The isNaN check needs to be in place because the numerical
             //derivative might be NAN - the denominator of the numerical
             //difference can and does go to zero.
             if(abs(DpenAngDfibLen(i)) > bigTol && !isNaN(DpenAngDfibLenNUM(i))){
                 DpenAngDfibLenERR(i) = abs( (DpenAngDfibLenNUM(i)-
                                              DpenAngDfibLen(i))
-                                             /DpenAngDfibLen(i));                
+                                             /DpenAngDfibLen(i));
             }else{
-                DpenAngDfibLenERR(i) = 0;            
+                DpenAngDfibLenERR(i) = 0;
             }
             if(abs(DpenAngDfibLenERR(i)) > maxErr)
                 maxErr = abs(DpenAngDfibLenERR(i));
-           
-           // cout << DpenAngDfibLenERR(i) <<" ?< "<<relTol  
-           //      << "  num:" << DpenAngDfibLenNUM(i) << " analytical: " 
+
+           // cout << DpenAngDfibLenERR(i) <<" ?< "<<relTol
+           //      << "  num:" << DpenAngDfibLenNUM(i) << " analytical: "
            //      << DpenAngDfibLen(i) << endl;
             SimTK_TEST_EQ_TOL(DpenAngDfibLenERR(i),0.0,relTol);
         }
 
         //cout << maxErr << endl;
 
-        printf("    :passed with a max. error < rel. tol. (%f < %f) \n", 
+        printf("    :passed with a max. error < rel. tol. (%f < %f) \n",
                     maxErr,relTol);
 
         cout << endl;
@@ -602,9 +600,9 @@ int main(int argc, char* argv[])
         //A central difference cannot be taken on the ends
         for(int i=1; i<numPts-1; i++){
             DtdnLenDfibLen(i) = fibKin.calc_DTendonLength_DfiberLength(
-                fibLen(i), sin(penAng(i)), cos(penAng(i)), 
+                fibLen(i), sin(penAng(i)), cos(penAng(i)),
                 DpenAngDfibLen(i));
-            //The isNaN check needs to be in place because the numerical 
+            //The isNaN check needs to be in place because the numerical
             //derivative might be NAN - the denominator of the numerical
             //difference can and does go to zero.
             if(abs(DtdnLenDfibLen(i)) > bigTol && !isNaN(DtdnLenDfibLenNUM(i))){
@@ -612,12 +610,12 @@ int main(int argc, char* argv[])
                                              DtdnLenDfibLen(i))
                                              /DtdnLenDfibLen(i) );
             }else{
-                DtdnLenDfibLenERR(i) = 0;            
+                DtdnLenDfibLenERR(i) = 0;
             }
 
-            //cout << DtdnLenDfibLenERR(i) <<" ?< "<<relTol 
-            //    << " symCal:" << DtdnLenDfibLen(i) 
-            //    << "  numCal:" << DtdnLenDfibLenNUM(i) 
+            //cout << DtdnLenDfibLenERR(i) <<" ?< "<<relTol
+            //    << " symCal:" << DtdnLenDfibLen(i)
+            //    << "  numCal:" << DtdnLenDfibLenNUM(i)
             //    << " fib:" << fibLen(i) << " tdn:" << tdnLen(i)
             //    << endl;
 
@@ -626,8 +624,8 @@ int main(int argc, char* argv[])
 
             SimTK_TEST_EQ_TOL(DtdnLenDfibLenERR(i),0,relTol);
         }
-        
-       printf("    :passed with a max. error < rel. tol. (%f < %f) \n", 
+
+       printf("    :passed with a max. error < rel. tol. (%f < %f) \n",
                     maxErr,relTol);
 
         cout << endl;
@@ -679,7 +677,7 @@ int main(int argc, char* argv[])
                 ,maxErr*1e16,smallTol*1e16);
 
         cout << "**************************************************" << endl;
-        cout << "TEST: calc_DFiberLengthAlongTendon_DfiberLength correctness" 
+        cout << "TEST: calc_DFiberLengthAlongTendon_DfiberLength correctness"
         << endl;
 
         maxErr = 0;
@@ -707,32 +705,32 @@ int main(int argc, char* argv[])
                                                                 sin(penAng(i)),
                                                                 cos(penAng(i)),
                                                                 tmp1);
-          
+
 
            resultsDlceAT_Dlce(i,0) = numDlceAT_Dlce(i);
            resultsDlceAT_Dlce(i,1) = tmp;
 
             //Get the relative error
-            err = abs(tmp-numDlceAT_Dlce(i)) / 
+            err = abs(tmp-numDlceAT_Dlce(i)) /
                 (smallTol + abs(numDlceAT_Dlce(i)));
-            
+
             if(err > maxErr){
                 maxErr=err;
                 // maxErrIdx = i;
             }
         }
-        
+
         //printMatrixToFile(resultsDdlceAT_Dlce,"D_dlceAT_Dlce.csv");
-       
+
         SimTK_TEST_EQ_TOL(maxErr,0,5e-4);
 
         printf("    :passed with a max. error < rel. tol. (%f < %f)\n"
                 ,maxErr,5e-4);
 
 
-        
+
         cout << "**************************************************" << endl;
-        cout << "TEST: calc_DFiberVelocityAlongTendon_DfiberLength correctness" 
+        cout << "TEST: calc_DFiberVelocityAlongTendon_DfiberLength correctness"
              << endl;
 
         maxErr = 0;
@@ -769,24 +767,24 @@ int main(int argc, char* argv[])
                                                                 penAngVel1(i),
                                                                 tmp1,
                                                                 tmp2);
-          
+
            resultsDdlceAT_Dlce(i,0) = numDdlceAT_Dlce(i);
            resultsDdlceAT_Dlce(i,1) = tmp;
            resultsDdlceAT_Dlce(i,2) = fibVelAT1(i);
            resultsDdlceAT_Dlce(i,3) = fibLen(i);
 
             //Get the relative error
-            err = abs(tmp-numDdlceAT_Dlce(i)) / 
+            err = abs(tmp-numDdlceAT_Dlce(i)) /
                 (smallTol + abs(numDdlceAT_Dlce(i)));
-            
+
             if(err > maxErr){
                 maxErr=err;
                 // maxErrIdx = i;
             }
         }
-        
+
         //printMatrixToFile(resultsDdlceAT_Dlce,"D_dlceAT_Dlce.csv");
-       
+
         SimTK_TEST_EQ_TOL(maxErr,0,2e-3);
 
         printf("    :passed with a max. error < rel. tol. (%f < %f)\n"
@@ -837,14 +835,14 @@ int main(int argc, char* argv[])
         //SimTK_TEST_MUST_THROW(fibKinEmpty.getOptimalFiberLength());
         //SimTK_TEST_MUST_THROW(fibKinEmpty.getOptimalPennationAngle());
         //SimTK_TEST_MUST_THROW(fibKinEmpty.getParallelogramHeight());
-        
+
         //This only happens in debug mode.
-        //SimTK_TEST_MUST_THROW(valTest = 
+        //SimTK_TEST_MUST_THROW(valTest =
         //    fibKinDirty.calcPennationAngle(0.1));
-        //SimTK_TEST_MUST_THROW(valTest = 
+        //SimTK_TEST_MUST_THROW(valTest =
         //    fibKinDirty.calcPennationAngularVelocity(tan(0.7),0.1,0.1,nameTest));
 
-        
+
 
         //calcPennationAngularVelocity
         SimTK_TEST_MUST_THROW(fibKin.calcPennationAngularVelocity(
@@ -896,32 +894,12 @@ int main(int argc, char* argv[])
         //    fibKin.calcPennationAngle(0,caller),
         //    maxPenAngle);
 
-        SimTK_TEST_EQ_TOL(fibKin.calcPennationAngle(0), 
+        SimTK_TEST_EQ_TOL(fibKin.calcPennationAngle(0),
                       maxPenAngle,1e-12);
 
         SimTK_TEST_EQ_TOL(fibKin.calcPennationAngle(paraHeight*0.99),
                       maxPenAngle,1e-12);
 
         cout << "**************************************************" << endl;
-        SimTK_END_TEST();
-
-    }
-    catch (const std::exception& ex)
-    {
-        cout << ex.what() << endl;
-        cin.get();      
-        return 1;
-    }
-    catch (...)
-    {
-        cout << "UNRECOGNIZED EXCEPTION" << endl;
-        cin.get();
-        return 1;
-    }
-
-    
-
-    cout << "\nDone. testMuscleFixedWidthPenationModel completed.\n";
-    return 0;
 }
 

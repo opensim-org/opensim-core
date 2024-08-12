@@ -18,6 +18,8 @@
 
 #include "MocoInitialActivationGoal.h"
 
+#include <OpenSim/Moco/Components/ControlDistributor.h>
+#include <OpenSim/Simulation/Control/InputController.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 
 using namespace OpenSim;
@@ -25,13 +27,16 @@ using namespace OpenSim;
 void MocoInitialActivationGoal::initializeOnModelImpl(
         const Model& model) const {
 
+    // Get a map of all the state indices in the system.
     auto allSysYIndices = createSystemYIndexMap(model);
-    auto systemControlIndexMap = createSystemControlIndexMap(model);
+
+    // Create a map from control names to their indices in the controls vector.
+    auto controlIndexMap = createSystemControlIndexMap(model);
 
     for (const auto& muscle : model.getComponentList<Muscle>()) {
         if (!muscle.get_ignore_activation_dynamics()) {
             const std::string path = muscle.getAbsolutePathString();
-            int excitationIndex = systemControlIndexMap[path];
+            int excitationIndex = controlIndexMap[path];
             int activationIndex = allSysYIndices[path + "/activation"];
             m_indices.emplace_back(excitationIndex, activationIndex);
         }
@@ -42,6 +47,7 @@ void MocoInitialActivationGoal::initializeOnModelImpl(
 
 void MocoInitialActivationGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& goal) const {
+
     const auto& controls = input.initial_controls;
     const auto& states = input.initial_state.getY();
     int i = 0;

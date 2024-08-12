@@ -46,12 +46,13 @@ returned by a solver.
 
 A MocoTrajectory can be written to and read from an STO (".sto") file. The file
 format is comprised of a file header followed by a row of column names and the
-stored data. The file header contains the number of states, controls, Lagrange
-multipliers (for kinematic constraints), derivatives (non-zero if the dynamics
-mode is implicit), slacks (for special solver implementations), and parameters
-(order does not matter). Order does matter for the column names and
-corresponding data columns. The columns *must* follow this order: time, states,
-controls, multipliers, derivatives, slacks, parameters.
+stored data. The file header contains the number of states, controls, Input 
+controls, Lagrange multipliers (for kinematic constraints), derivatives 
+(non-zero if the dynamics mode is implicit), slacks (for special solver 
+implementations), and parameters (order does not matter). Order does matter for 
+the column names and corresponding data columns. The columns *must* follow this 
+order: time, states, controls, Input controls, multipliers, derivatives, slacks, 
+parameters.
 @note Slack columns may contain real number or NaN values, depending on their
 use. For example, values for velocity correction variables used in problems
 with model kinematic constraints are defined only at the midpoint of a Hermite-
@@ -63,12 +64,14 @@ NaNs.
 @samplefile
 num_controls=<number-of-control-variables>
 num_derivatives=<number-of-derivative-variables>
+num_input_controls=<number-of-input-control-variables>
 num_multipliers=<number-of-multiplier-variables>
 num_parameters=<number-of-parameter-variables>
 num_slacks=<number-of-slack-variables>
 num_states=<number-of-state-variables>
-time,<state-0-name>,...,<control-0-name>,...,<multiplier-0-name>,..., \
-        <derivative-0-name>,...,<slack-0-name>,...,<parameter-0-name>,...
+time,<state-0-name>,...,<control-0-name>,...,<input-control-0-name>,..., \
+        <multiplier-0-name>,...,<derivative-0-name>,...,<slack-0-name>,..., \
+        <parameter-0-name>,...
 <#>,<#>,...,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<#>  ,...
 <#>,<#>,...,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<NaN>,...
  : , : ,..., : ,..., : ,..., : ,...,    :     ,...,  :  ,...
@@ -127,6 +130,12 @@ public:
             std::vector<std::string> multiplier_names,
             std::vector<std::string> derivative_names,
             std::vector<std::string> parameter_names);
+    MocoTrajectory(std::vector<std::string> state_names,
+            std::vector<std::string> control_names,
+            std::vector<std::string> input_control_names,
+            std::vector<std::string> multiplier_names,
+            std::vector<std::string> derivative_names,
+            std::vector<std::string> parameter_names);
     MocoTrajectory(const SimTK::Vector& time,
             std::vector<std::string> state_names,
             std::vector<std::string> control_names,
@@ -146,6 +155,19 @@ public:
             std::vector<std::string> parameter_names,
             const SimTK::Matrix& statesTrajectory,
             const SimTK::Matrix& controlsTrajectory,
+            const SimTK::Matrix& multipliersTrajectory,
+            const SimTK::Matrix& derivativesTrajectory,
+            const SimTK::RowVector& parameters);
+    MocoTrajectory(const SimTK::Vector& time,
+            std::vector<std::string> state_names,
+            std::vector<std::string> control_names,
+            std::vector<std::string> input_control_names,
+            std::vector<std::string> multiplier_names,
+            std::vector<std::string> derivative_names,
+            std::vector<std::string> parameter_names,
+            const SimTK::Matrix& statesTrajectory,
+            const SimTK::Matrix& controlsTrajectory,
+            const SimTK::Matrix& inputControlsTrajectory,
             const SimTK::Matrix& multipliersTrajectory,
             const SimTK::Matrix& derivativesTrajectory,
             const SimTK::RowVector& parameters);
@@ -207,6 +229,8 @@ public:
         m_states.setToNaN();
         m_controls.resize(numTimes, m_controls.ncol());
         m_controls.setToNaN();
+        m_input_controls.resize(numTimes, m_input_controls.ncol());
+        m_input_controls.setToNaN();
         m_multipliers.resize(numTimes, m_multipliers.ncol());
         m_multipliers.setToNaN();
         m_derivatives.resize(numTimes, m_derivatives.ncol());
@@ -272,6 +296,13 @@ public:
     /// overload below; it does *not* construct a 5-element vector with the
     /// value 10.
     void setControl(const std::string& name, const SimTK::Vector& trajectory);
+    /// Set the value of a single Input control variable across time. The 
+    /// provided vector must have length getNumTimes().
+    /// @note Using `setInputControl(name, {5, 10})` uses the initializer list
+    /// overload below; it does *not* construct a 5-element vector with the
+    /// value 10.
+    void setInputControl(
+            const std::string& name, const SimTK::Vector& trajectory);
     /// Set the value of a single Lagrange multiplier variable across time. The
     /// provided vector must have length getNumTimes().
     /// @note Using `setMultiplier(name, {5, 10})` uses the initializer list
@@ -334,6 +365,21 @@ public:
         for (auto it = trajectory.begin(); it != trajectory.end(); ++it, ++i)
             v[i] = *it;
         setControl(name, v);
+    }
+    /// Set the value of a single Input control variable across time. The 
+    /// provided vector must have length getNumTimes().
+    /// This variant supports use of an initializer list:
+    /// @code{.cpp}
+    /// trajectory.setInputControl("/my_controller/input", {0, 0.5, 1.0});
+    /// @endcode
+    void setInputControl(
+            const std::string& name, std::initializer_list<double> trajectory) {
+        ensureUnsealed();
+        SimTK::Vector v((int)trajectory.size());
+        int i = 0;
+        for (auto it = trajectory.begin(); it != trajectory.end(); ++it, ++i)
+            v[i] = *it;
+        setInputControl(name, v);
     }
     /// Set the value of a single Lagrange multiplier variable across time. The
     /// provided vector must have length getNumTimes().
@@ -407,7 +453,6 @@ public:
     /// can change this behavior with `overwrite`.
     void insertControlsTrajectory(
             const TimeSeriesTable& subsetOfControls, bool overwrite = false);
-
     /// Compute coordinate speeds based on coordinate position values and append
     /// to the trajectory. Coordinate values must exist in the original
     /// trajectory.
@@ -423,6 +468,13 @@ public:
     /// trajectory.
     /// @note Overrides any existing acceleration values in the trajectory.
     void generateAccelerationsFromSpeeds();
+    /// Compute model controls based on any Controller%s in the model and append
+    /// to the trajectory. The model must contain InputController%s with Input%s 
+    /// that match the Input control names in the trajectory, if they exist.
+    /// @note Use `overwrite` to replace existing control values in the
+    ///       trajectory, if desired. 
+    void generateControlsFromModelControllers(Model model, 
+            bool overwrite = false);
     /// Trim the trajectory to include the rows starting at newStartIndex and
     /// and ending at newFinalIndex.
     void trimToIndices(int newStartIndex, int newFinalIndex);
@@ -454,6 +506,11 @@ public:
     int getNumControls() const {
         ensureUnsealed();
         return (int)m_control_names.size();
+    }
+
+    int getNumInputControls() const {
+        ensureUnsealed();
+        return (int)m_input_control_names.size();
     }
 
     int getNumMultipliers() const {
@@ -508,6 +565,10 @@ public:
     const std::vector<std::string>& getControlNames() const {
         ensureUnsealed();
         return m_control_names;
+    }
+    const std::vector<std::string>& getInputControlNames() const {
+        ensureUnsealed();
+        return m_input_control_names;
     }
     const std::vector<std::string>& getMultiplierNames() const {
         ensureUnsealed();
@@ -590,6 +651,7 @@ public:
     }
     SimTK::VectorView_<double> getState(const std::string& name) const;
     SimTK::VectorView_<double> getControl(const std::string& name) const;
+    SimTK::VectorView_<double> getInputControl(const std::string& name) const;
     SimTK::VectorView_<double> getMultiplier(const std::string& name) const;
     SimTK::VectorView_<double> getDerivative(const std::string& name) const;
     const SimTK::Real& getParameter(const std::string& name) const;
@@ -600,6 +662,10 @@ public:
     const SimTK::Matrix& getControlsTrajectory() const {
         ensureUnsealed();
         return m_controls;
+    }
+    const SimTK::Matrix& getInputControlsTrajectory() const {
+        ensureUnsealed();
+        return m_input_controls;
     }
     const SimTK::Matrix& getMultipliersTrajectory() const {
         ensureUnsealed();
@@ -612,44 +678,58 @@ public:
     SimTK::Matrix getValuesTrajectory() const {
         ensureUnsealed();
         auto indices = getValueIndices();
-        if (indices.empty()) indices.push_back(0);
-        return {m_states.block(0, indices[0],
-                m_states.nrow(), getNumValues())};
+        SimTK::Matrix values(m_states.nrow(), getNumValues());
+        for (int i = 0; i < static_cast<int>(indices.size()); ++i) {
+            values.updCol(i) = m_states.col(indices[i]);
+        }
+        return values;
     }
     SimTK::Matrix getSpeedsTrajectory() const {
         ensureUnsealed();
         auto indices = getSpeedIndices();
-        if (indices.empty()) indices.push_back(0);
-        return {m_states.block(0, indices[0],
-                m_states.nrow(), getNumSpeeds())};
+        SimTK::Matrix speeds(m_states.nrow(), getNumSpeeds());
+        for (int i = 0; i < static_cast<int>(indices.size()); ++i) {
+            speeds.updCol(i) = m_states.col(indices[i]);
+        }
+        return speeds;
     }
     SimTK::Matrix getMultibodyStatesTrajectory() const {
         ensureUnsealed();
         auto indices = getMultibodyStateIndices();
-        if (indices.empty()) indices.push_back(0);
-        return {m_states.block(0, indices[0],
-                m_states.nrow(), getNumMultibodyStates())};
+        SimTK::Matrix multibodyStates(m_states.nrow(), getNumMultibodyStates());
+        for (int i = 0; i < static_cast<int>(indices.size()); ++i) {
+            multibodyStates.updCol(i) = m_states.col(indices[i]);
+        }
+        return multibodyStates;
     }
     SimTK::Matrix getAuxiliaryStatesTrajectory() const {
         ensureUnsealed();
         auto indices = getAuxiliaryStateIndices();
-        if (indices.empty()) indices.push_back(0);
-        return {m_states.block(0, indices[0],
-                m_states.nrow(), getNumAuxiliaryStates())};
+        SimTK::Matrix auxiliaryStates(m_states.nrow(), getNumAuxiliaryStates());
+        for (int i = 0; i < static_cast<int>(indices.size()); ++i) {
+            auxiliaryStates.updCol(i) = m_states.col(indices[i]);
+        }
+        return auxiliaryStates;
     }
     SimTK::Matrix getAccelerationsTrajectory() const {
         ensureUnsealed();
         auto indices = getAccelerationIndices();
-        if (indices.empty()) indices.push_back(0);
-        return {m_derivatives.block(0, indices[0],
-                m_derivatives.nrow(), getNumAccelerations())};
+        SimTK::Matrix accelerations(m_derivatives.nrow(), 
+                getNumAccelerations());
+        for (int i = 0; i < static_cast<int>(indices.size()); ++i) {
+            accelerations.updCol(i) = m_derivatives.col(indices[i]);
+        }
+        return accelerations;
     }
     SimTK::Matrix getDerivativesWithoutAccelerationsTrajectory() const {
         ensureUnsealed();
         auto indices = getDerivativeIndicesWithoutAccelerations();
-        if (indices.empty()) indices.push_back(0);
-        return {m_derivatives.block(0, indices[0], m_derivatives.nrow(),
-                getNumDerivativesWithoutAccelerations())};
+        SimTK::Matrix derivatives(m_derivatives.nrow(), 
+                getNumDerivativesWithoutAccelerations());
+        for (int i = 0; i < static_cast<int>(indices.size()); ++i) {
+            derivatives.updCol(i) = m_derivatives.col(indices[i]);
+        }
+        return derivatives;
     }
     const SimTK::RowVector& getParameters() const {
         ensureUnsealed();
@@ -685,6 +765,7 @@ public:
     /// integrating the sum of squared error across
     /// states,
     /// controls,
+    /// Input controls,
     /// Lagrange multipliers, and
     /// derivatives and dividing by the number of columns and the time duration.
     /// The calculation can be expressed as follows:
@@ -716,6 +797,7 @@ public:
     /// specific
     /// states,
     /// controls,
+    /// Input controls,
     /// multipliers, and
     /// derivatives to compare as keys for `columnsToUse`.
     /// Values are an empty vector to compare all columns for that key,
@@ -760,6 +842,8 @@ public:
     TimeSeriesTable exportToStatesTable() const;
     /// Export the controls trajectory to a TimeSeriesTable.
     TimeSeriesTable exportToControlsTable() const;
+    /// Export the Input controls trajectory to a TimeSeriesTable.
+    TimeSeriesTable exportToInputControlsTable() const;
     /// Export the multipliers trajectory to a TimeSeriesTable.
     TimeSeriesTable exportToMultipliersTable() const;
     /// Export the derivatives trajectory to a TimeSeriesTable.
@@ -869,6 +953,7 @@ private:
     double compareContinuousVariablesRMSInternal(const MocoTrajectory& other,
             std::vector<std::string> stateNames = {},
             std::vector<std::string> controlNames = {},
+            std::vector<std::string> inputControlNames = {},
             std::vector<std::string> multiplierNames = {},
             std::vector<std::string> derivativeNames = {}) const;
     static std::vector<std::string>::const_iterator find(
@@ -879,6 +964,7 @@ private:
     SimTK::Vector m_time;
     std::vector<std::string> m_state_names;
     std::vector<std::string> m_control_names;
+    std::vector<std::string> m_input_control_names;
     std::vector<std::string> m_multiplier_names;
     std::vector<std::string> m_derivative_names;
     std::vector<std::string> m_slack_names;
@@ -887,6 +973,8 @@ private:
     SimTK::Matrix m_states;
     // Dimensions: time x controls
     SimTK::Matrix m_controls;
+    // Dimensions: time x input_controls
+    SimTK::Matrix m_input_controls;
     // Dimensions: time x multipliers
     SimTK::Matrix m_multipliers;
     // Dimensions: time x derivatives
@@ -992,6 +1080,9 @@ private:
 /// In the file written by write(), the header contains solver success, the
 /// objective, the individual terms in the objective (including the weight),
 /// the breakdown of the objective, and other quantities.
+/// The controls in the solution correspond to the set of model controls, even
+/// if the optimal control problem contained a different set of controls due to
+/// the presence of user-added Controller%s in the model.
 class OSIMMOCO_API MocoSolution : public MocoTrajectory {
 public:
     /// Returns a dynamically-allocated copy of this solution. You must manage

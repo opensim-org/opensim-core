@@ -25,13 +25,14 @@
 
 #include "StatesTrajectory.h"
 #include "osimSimulationDLL.h"
-#include <regex>
 
 #include <SimTKcommon/internal/State.h>
-
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Model.h>
+
+#include <regex>
+#include <unordered_set>
 
 namespace OpenSim {
 
@@ -164,13 +165,58 @@ std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 OSIMSIMULATION_API
 std::vector<std::string> createControlNamesFromModel(
         const Model& model, std::vector<int>& modelControlIndices);
+
 /// Same as above, but when there is no mapping to the modelControlIndices.
 /// @ingroup simulationutil
 OSIMSIMULATION_API
 std::vector<std::string> createControlNamesFromModel(const Model& model);
+
+/// Create a vector of control names based on the actuators in the model
+/// associated with any controller of type `T` for which appliesForce == True.
+/// `T` must either be `Controller` or any type derived from `Controller`.
+/// For actuators with one control (e.g. ScalarActuator) the control name is
+/// simply the actuator name. For actuators with multiple controls, each control
+/// name is the actuator name appended by the control index (e.g. "/actuator_0").
+/// @ingroup simulationutil
+template <typename T>
+std::unordered_set<std::string> createControlNamesForControllerType(
+        const Model& model) {
+    std::unordered_set<std::string> controlNames;
+
+    // Check that T is a Controller.
+    static_assert(std::is_base_of<Controller, T>::value,
+            "Expected the template argument to derived from Controller.");
+
+    for (const auto& controller : model.getComponentList<T>()) {
+        const auto& socket =
+                controller.template getSocket<Actuator>("actuators");
+        // Loop through all actuators and create control names. For scalar
+        // actuators, use the actuator name for the control name. For non-scalar
+        // actuators, use the actuator name with a control index appended for
+        // the control name.
+        for (int i = 0; i < static_cast<int>(socket.getNumConnectees()); ++i) {
+            const auto& actu = socket.getConnectee(i);
+            if (!actu.get_appliesForce()) {
+                continue;
+            }
+            std::string actuPath = actu.getAbsolutePathString();
+            if (actu.numControls() == 1) {
+                controlNames.insert(actuPath);
+            } else {
+                for (int i = 0; i < actu.numControls(); ++i) {
+                    controlNames.insert(actuPath + "_" + std::to_string(i));
+                }
+            }
+        }
+    }
+
+    return controlNames;
+}
+
 /// The map provides the index of each control variable in the SimTK::Vector
 /// returned by Model::getControls(), using the control name as the
 /// key.
+///
 /// @throws Exception if the order of actuators in the model does not match
 ///     the order of controls in Model::getControls(). This is an internal
 ///     error, but you may be able to avoid the error by ensuring all Actuator%s
@@ -278,7 +324,10 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
             controlsTable.getColumnLabels();
     const std::unordered_map<std::string, int> controlMap =
             createSystemControlIndexMap(model);
-    SimTK::Vector controls((int)controlsTable.getNumColumns(), 0.0);
+    // This vector will be populated and passed to Model::setControls(), so we
+    // construct it with size equal to the model's control vector and initialize
+    // it with zeros.
+    SimTK::Vector controls((int)controlMap.size(), 0.0);
 
     OPENSIM_THROW_IF(statesTable.getNumRows() != controlsTable.getNumRows(),
             Exception,
@@ -325,10 +374,8 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
 
         // Create a SimTK::Vector of the control values for the current state.
         const auto& controlsRow = controlsTable.getRowAtIndex(itime);
-        for (int icontrol = 0; icontrol < (int)controlNames.size();
-                ++icontrol) {
-            controls[controlMap.at(controlNames[icontrol])] =
-                    controlsRow[icontrol];
+        for (int ic = 0; ic < (int)controlNames.size(); ++ic) {
+            controls[controlMap.at(controlNames[ic])] = controlsRow[ic];
         }
 
         // Set the controls on the state object.

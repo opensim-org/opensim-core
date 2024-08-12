@@ -222,6 +222,35 @@ using namespace SimTK;
         setControlInfoPattern(pattern, this.convertArrayToMB(b),
                 this.convertArrayToMIB(ib), this.convertArrayToMFB(fb));
     }
+    
+    public void setInputControlInfo(String name, double[] b) throws Exception {
+        setInputControlInfo(name, this.convertArrayToMB(b));
+    }
+    public void setInputControlInfo(String name, double[] b, double[] ib)
+        throws Exception {
+        setInputControlInfo(name, this.convertArrayToMB(b),
+                this.convertArrayToMIB(ib));
+    }
+    public void setInputControlInfo(String name, double[] b, double[] ib, double[] fb)
+        throws Exception {
+        setInputControlInfo(name, this.convertArrayToMB(b),
+                this.convertArrayToMIB(ib), this.convertArrayToMFB(fb));
+    }
+    public void setInputControlInfoPattern(String pattern, double[] b) 
+        throws Exception {
+        setInputControlInfoPattern(pattern, this.convertArrayToMB(b));
+    }
+    public void setInputControlInfoPattern(String pattern, double[] b, double[] ib)
+        throws Exception {
+        setInputControlInfoPattern(pattern, this.convertArrayToMB(b),
+                this.convertArrayToMIB(ib));
+    }
+    public void 
+    setInputControlInfoPattern(String pattern, double[] b, double[] ib, double[] fb) 
+        throws Exception {
+        setInputControlInfoPattern(pattern, this.convertArrayToMB(b),
+                this.convertArrayToMIB(ib), this.convertArrayToMFB(fb));
+    }
 %}
 
 %typemap(javacode) OpenSim::MocoProblem %{
@@ -309,6 +338,39 @@ using namespace SimTK;
                 MocoPhase.convertArrayToMIB(ib), 
                 MocoPhase.convertArrayToMFB(fb));
     }
+
+    public void setInputControlInfo(String name, double[] b)
+        throws Exception {
+        setInputControlInfo(name, MocoPhase.convertArrayToMB(b));
+    }
+    public void setInputControlInfo(String name, double[] b, double[] ib)
+        throws Exception {
+        setInputControlInfo(name, MocoPhase.convertArrayToMB(b),
+                MocoPhase.convertArrayToMIB(ib));
+    }
+    public void setInputControlInfo(String name, double[] b, double[] ib,
+            double[] fb)
+        throws Exception {
+        setInputControlInfo(name, MocoPhase.convertArrayToMB(b),
+                MocoPhase.convertArrayToMIB(ib), 
+                MocoPhase.convertArrayToMFB(fb));
+    }
+    public void setInputControlInfoPattern(String pattern, double[] b)
+        throws Exception {
+        setInputControlInfoPattern(pattern, MocoPhase.convertArrayToMB(b));
+    }
+    public void setInputControlInfoPattern(String pattern, double[] b, double[] ib)
+        throws Exception {
+        setInputControlInfoPattern(pattern, MocoPhase.convertArrayToMB(b),
+                MocoPhase.convertArrayToMIB(ib));
+    }
+    public void 
+    setInputControlInfoPattern(String pattern, double[] b, double[] ib, double[] fb)
+        throws Exception {
+        setInputControlInfoPattern(pattern, MocoPhase.convertArrayToMB(b),
+                MocoPhase.convertArrayToMIB(ib), 
+                MocoPhase.convertArrayToMFB(fb));
+    }
 %}
 
 %typemap(javacode) OpenSim::MocoControlTrackingGoal %{
@@ -362,6 +424,12 @@ using namespace SimTK;
         for (int i = 0; i < traj.length; ++i) { v.set(i, traj[i]); }
         setControl(name, v);
     }
+    public void setInputControl(String name, double[] traj) {
+        Vector v = new Vector();
+        v.resize(traj.length);
+        for (int i = 0; i < traj.length; ++i) { v.set(i, traj[i]); }
+        setInputControl(name, v);
+    }
     public void setMultiplier(String name, double[] traj) {
         Vector v = new Vector();
         v.resize(traj.length);
@@ -390,6 +458,12 @@ using namespace SimTK;
         VectorView control = getControl(name);
         double[] ret = new double[control.size()];
         for (int i = 0; i < control.size(); ++i) { ret[i] = control.get(i); };
+        return ret;
+    }
+    public double[] getInputControlMat(String name) {
+        VectorView input_control = getInputControl(name);
+        double[] ret = new double[input_control.size()];
+        for (int i = 0; i < input_control.size(); ++i) { ret[i] = input_control.get(i); };
         return ret;
     }
     public double[] getMultiplierMat(String name) {
@@ -430,6 +504,16 @@ using namespace SimTK;
         }
         return ret;
     }
+    public double[][] getInputControlsTrajectoryMat() {
+        Matrix matrix = getInputControlsTrajectory();
+        double[][] ret = new double[matrix.nrow()][matrix.ncol()];
+        for (int i = 0; i < matrix.nrow(); ++i) {
+            for (int j = 0; j < matrix.ncol(); ++j) {
+                ret[i][j] = matrix.getElt(i, j);
+            }
+        }
+        return ret;
+    }
     public double[][] getMultipliersTrajectoryMat() {
         Matrix matrix = getMultipliersTrajectory();
         double[][] ret = new double[matrix.nrow()][matrix.ncol()];
@@ -452,7 +536,7 @@ using namespace SimTK;
     }
 %}
 
-opensim_unique_ptr(OpenSim::MocoProblemRep);
+%unique_ptr(OpenSim::MocoProblemRep);
 
 %import "java_actuators.i"
 

@@ -613,3 +613,12 @@ TEST_CASE("Bhargava2004SmoothedMuscleMetabolics basics") {
 
     }
 }
+
+TEST_CASE("Bhargava2004SmoothedMuscleMetabolics deserialization") {
+    Model model = Model("testMocoMetabolics_hanging_muscle.osim");
+    model.initSystem();
+    const auto metabolics = model.getComponent<Bhargava2004SmoothedMuscleMetabolics>("/metabolic_cost");
+    auto muscleParameters = metabolics.get_muscle_parameters(0);
+    double mass = muscleParameters.getMuscleMass();
+    CHECK(mass == 1.123);    
+}

@@ -71,7 +71,9 @@ void PhysicalFrame::setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix)
 {
     OPENSIM_THROW_IF_FRMOBJ(!mbix.isValid(), Exception,
         "Attempting to assign an invalid SimTK::MobilizedBodyIndex");
+
     const_cast<Self*>(this)->_mbIndex = mbix;
+    extendSetMobilizedBodyIndex(mbix);
 }
 
 /*

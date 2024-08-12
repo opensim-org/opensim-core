@@ -24,6 +24,7 @@
 #include <OpenSim/Moco/MocoBounds.h>
 #include <OpenSim/Moco/MocoConstraintInfo.h>
 #include <OpenSim/Moco/MocoScaleFactor.h>
+#include <OpenSim/Moco/Components/ControlDistributor.h>
 #include <OpenSim/Moco/osimMocoDLL.h>
 
 namespace OpenSim {
@@ -289,8 +290,17 @@ public:
     /// quantities needed when computing the goal value.
     /// This function must be invoked before invoking calcIntegrand() or
     /// calcGoal().
+    /// @note If the ControlDistributor at path "/control_distributor" added by 
+    ///       MocoProblemRep is available in the model, this function will store
+    ///       a reference to it, after which getInputControlIndexMap() and
+    ///       getInputControls() are valid.
     void initializeOnModel(const Model& model) const {
         m_model.reset(&model);
+        if (model.hasComponent<ControlDistributor>("/control_distributor")) {
+            m_control_distributor.reset(
+                    &model.getComponent<ControlDistributor>(
+                            "/control_distributor"));
+        }
         if (!get_enabled()) { return; }
 
         // Set mode.
@@ -378,6 +388,21 @@ public:
         return get_divide_by_mass();
     }
 
+    /// Get a map between Input control names and their indexes in the Input 
+    /// controls vector. This map will only include Input controls associated 
+    /// with InputController%s added by the user (i.e., not 
+    /// ActuatorInputController).
+    /// @pre initializeOnModel() has been invoked and a ControlDistributor is
+    ///      available in the model.
+    std::unordered_map<std::string, int> getInputControlIndexMap() const;
+
+    /// Get the vector of all InputController controls. This includes both 
+    /// controls from InputController%s added by the user and controls from the 
+    /// ActuatorInputController added by MocoProblemRep.
+    /// @pre initializeOnModel() has been invoked and a ControlDistributor is
+    ///      available in the model.
+    const SimTK::Vector& getInputControls(const SimTK::State& state) const;
+
 protected:
     /// Perform any caching before the problem is solved.
     /// You must override this function and invoke setRequirements().
@@ -405,6 +430,12 @@ protected:
     /// integrand and goal functions. Setting the stageDependency to stage X
     /// does not mean that the SimTK::State is realized to stage X as a
     /// precondition of calcIntegrandImpl() and calcGoalImpl().
+    ///
+    /// If solving a MocoProblem with a model user-added Controller%s, the
+    /// solvers will internally realize the SimTK::State to
+    /// SimTK::Stage::Velocity in order to compute the control values from the
+    /// model. However, you do not need to raise the stageDependency to
+    /// SimTK::Stage::Velocity to access the control values in goal.
     void setRequirements(int numIntegrals, int numOutputs,
             SimTK::Stage stageDependency = SimTK::Stage::Acceleration) const {
         OPENSIM_THROW_IF(numIntegrals < 0 || numIntegrals > 1, Exception,
@@ -493,6 +524,7 @@ private:
     }
 
     mutable SimTK::ReferencePtr<const Model> m_model;
+    mutable SimTK::ReferencePtr<const ControlDistributor> m_control_distributor;
     mutable double m_weightToUse;
     mutable Mode m_modeToUse;
     mutable SimTK::Stage m_stageDependency = SimTK::Stage::Acceleration;

@@ -50,6 +50,7 @@ namespace {
         model->setName("sliding_mass");
         model->set_gravity(SimTK::Vec3(0, 0, 0));
         auto* body = new Body("body", mass, SimTK::Vec3(0), SimTK::Inertia(0));
+        body->attachGeometry(new Sphere(0.05));
         model->addComponent(body);
 
         // Allows translation along x.
@@ -200,12 +201,6 @@ std::unique_ptr<Model> createPendulumModel() {
     auto& q0 = j0->updCoordinate();
     q0.setName("q0");
     model->addJoint(j0);
-
-    auto* tau0 = new CoordinateActuator();
-    tau0->setCoordinate(&j0->updCoordinate());
-    tau0->setName("tau0");
-    tau0->setOptimalForce(1);
-    model->addForce(tau0);
 
     // Add display geometry.
     Ellipsoid bodyGeometry(0.1, 0.5, 0.1);
@@ -1274,7 +1269,6 @@ TEMPLATE_TEST_CASE("Guess time-stepping", "[tropter]",
     problem.setTimeBounds(0, 1);
     problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, initialAngle);
     problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, initialSpeed);
-    problem.setControlInfo("/forceset/tau0", 0);
     auto& solver = study.initSolver<TestType>();
     solver.set_num_mesh_intervals(20);
     solver.setGuess("random");
@@ -1300,15 +1294,14 @@ TEMPLATE_TEST_CASE("Guess time-stepping", "[tropter]",
         Manager manager(modelCopy, state);
         manager.integrate(1.0);
 
-        auto controlsTable = modelCopy.getControlsTable();
-        auto labels = controlsTable.getColumnLabels();
-        for (auto& label : labels) { label = "/forceset/" + label; }
-        controlsTable.setColumnLabels(labels);
+        auto statesTable = manager.getStatesTable();
+        // No controls, create an empty controls table.
+        auto controlsTable = TimeSeriesTable(
+                statesTable.getIndependentColumn());
         const auto trajectoryFromManager =
                 MocoTrajectory::createFromStatesControlsTables(
                         study.getProblem().createRep(),
-                        manager.getStatesTable(),
-                        controlsTable);
+                        statesTable, controlsTable);
         SimTK_TEST(solutionSim.compareContinuousVariablesRMS(
                            trajectoryFromManager) < 1e-2);
     }
@@ -2163,7 +2156,7 @@ TEST_CASE("generateSpeedsFromValues() does not overwrite auxiliary states.") {
 }
 
 TEST_CASE("generateAccelerationsFromXXX() does not overwrite existing "
-          "non-acceleration derivatives.") {
+          "derivatives.") {
     int N = 20;
     SimTK::Vector time = createVectorLinspace(20, 0.0, 1.0);
     std::vector<std::string> snames{"/jointset/joint/coord/value",
@@ -2232,27 +2225,3 @@ TEMPLATE_TEST_CASE("Locked coordinates ", "",
     CHECK_THROWS_WITH(problem.createRep(),
             ContainsSubstring("Coordinate '/slider/position' is locked"));
 }
-
-/*
-TEMPLATE_TEST_CASE("Controllers in the model", "",
-        MocoCasADiSolver, MocoTropterSolver) {
-    MocoStudy study;
-    auto& problem = study.updProblem();
-    auto model = createSlidingMassModel();
-    auto* controller = new PrescribedController();
-    controller->addActuator(model->getComponent<Actuator>("actuator"));
-    controller->prescribeControlForActuator("actuator", new Constant(0.4));
-    model->addController(controller);
-    problem.setModel(std::move(model));
-    problem.setTimeBounds(0, {0, 10});
-    problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
-    problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
-    problem.addGoal<MocoFinalTimeGoal>();
-
-    auto& solver = study.initSolver<TestType>();
-    solver.set_num_mesh_points(20);
-    MocoSolution solution = study.solve();
-    std::cout << "DEBUG " << solution.getControl("/actuator") << std::endl;
-
-}
-*/

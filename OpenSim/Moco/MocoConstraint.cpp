@@ -19,6 +19,8 @@
 #include "MocoConstraint.h"
 #include "MocoProblemInfo.h"
 
+#include <OpenSim/Moco/Components/ControlDistributor.h>
+
 using namespace OpenSim;
 
 // ============================================================================
@@ -132,11 +134,40 @@ void MocoPathConstraint::constructProperties() {
     constructProperty_MocoConstraintInfo(MocoConstraintInfo());
 }
 
+std::unordered_map<std::string, int> 
+MocoPathConstraint::getInputControlIndexMap() const {
+    OPENSIM_ASSERT(m_control_distributor != nullptr);
+
+    // Get the full Input control index map from the ControlDistributor.
+    auto map = m_control_distributor->getControlIndexMap();
+
+    // Get all possible control names from the model.
+    auto controlNames = createControlNamesFromModel(getModel());
+
+    // Remove the control names that are associated with the model's
+    // ActuatorInputController.
+    for (const auto& controlName : controlNames) {
+        map.erase(controlName);
+    }
+    return map;
+}
+
+const SimTK::Vector& MocoPathConstraint::getInputControls(
+        const SimTK::State& state) const {
+    OPENSIM_ASSERT(m_control_distributor != nullptr);
+    return m_control_distributor->getControls(state);
+}
+
 void MocoPathConstraint::initializeOnModel(const Model& model,
         const MocoProblemInfo& problemInfo,
         const int& pathConstraintIndex) const {
 
     m_model.reset(&model);
+    if (model.hasComponent<ControlDistributor>("/control_distributor")) {
+        m_control_distributor.reset(
+                &model.getComponent<ControlDistributor>(
+                        "/control_distributor"));
+    }
     initializeOnModelImpl(model, problemInfo);
 
     OPENSIM_THROW_IF_FRMOBJ(get_MocoConstraintInfo().getNumEquations() < 0,

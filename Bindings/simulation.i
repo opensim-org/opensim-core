@@ -138,6 +138,8 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Control/ControlLinear.h>
 %include <OpenSim/Simulation/Control/Controller.h>
 %include <OpenSim/Simulation/Control/PrescribedController.h>
+%include <OpenSim/Simulation/Control/InputController.h>
+%include <OpenSim/Simulation/Control/SynergyController.h>
 
 %include <OpenSim/Simulation/Manager/Manager.h>
 %include <OpenSim/Simulation/Model/AbstractTool.h>

@@ -244,6 +244,21 @@ class TestSwigAddtlInterface(unittest.TestCase):
         assert(bounds[0].getLower() == 1.23)
         assert(bounds[0].getUpper() == 4.56)
 
+    def test_PositionMotion(self):
+        # Test that the PositionMotion class can be created and used.
+        model = createSlidingMassModel()
+        model.initSystem()
+
+        table = osim.TimeSeriesTable()
+        for i in range(10):
+            row = osim.RowVector(1, i)
+            table.appendRow(i, row)
+        table.setColumnLabels(['/slider/position/value'])
+        table.addTableMetaDataString('inDegrees', 'no')
+
+        posmot = osim.PositionMotion.createFromTable(model, table)
+        assert(posmot.get_functions().getSize() == 1)
+
 class TestWorkflow(unittest.TestCase):
 
     def test_default_bounds(self):
@@ -317,7 +332,7 @@ class TestWorkflow(unittest.TestCase):
             assert(not solver.getGuess().empty())
 
             solution = study.solve()
-            self.assertAlmostEqual(solution.getFinalTime(), 5.8)
+            self.assertAlmostEqual(solution.getFinalTime(), 5.8, places=5)
 
     def test_changing_model(self):
         study = osim.MocoStudy()

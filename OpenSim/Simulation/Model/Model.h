@@ -802,6 +802,13 @@ public:
      */
     void markControlsAsValid(const SimTK::State& s) const;
 
+    /**
+     * Mark controls as invalid after an update at a given state.
+     * Indicates that controls are not valid for use at the dynamics stage.
+     * @param[in]   s         System state in which the controls are updated 
+     */
+    void markControlsAsInvalid(const SimTK::State& s) const;
+
     /** 
      * Alternatively, set the controls on the model at a given state.
      * Note, this method will invalidate the dynamics of the model,
@@ -911,6 +918,29 @@ public:
     /** Return the total Potential Energy for the underlying system.*/
     double calcPotentialEnergy(const SimTK::State &s) const {
         return getMultibodySystem().calcPotentialEnergy(s);
+    }
+
+    /** Calulate the sum of body and mobility forces in the system applied by
+     * the Force%s at the supplied indexes. 
+     * 
+     * @param[in]   state            The system SimTK::State at which to 
+     *                               calculate forces.
+     * @param[in]   forceIndexes     The indexes (SimTK::ForceIndex) of the 
+     *                               forces in the system for which to calculate 
+     *                               forces.
+     * @param[out]  bodyForces       The sum of the body forces applied by the
+     *                               forces at the supplied indexes.
+     * @param[out]  mobilityForces   The sum of the mobility forces applied by
+     *                               the forces at the supplied indexes.
+     * 
+     * @pre Requires that the system has been realized to Stage::Dynamics.
+     * */
+    void calcForceContributionsSum(const SimTK::State& state,
+            const SimTK::Array_<SimTK::ForceIndex>& forceIndexes,  
+            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+            SimTK::Vector& mobilityForces) const {
+        getForceSubsystem().calcForceContributionsSum(
+            state, forceIndexes, bodyForces, mobilityForces);
     }
 
     int getNumMuscleStates() const;

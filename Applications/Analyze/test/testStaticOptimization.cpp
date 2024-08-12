@@ -53,13 +53,13 @@ int main()
     muscleModelNames.append("Thelen2003Muscle");
     muscleModelNames.append("Millard2012EquilibriumMuscle");
     //muscleModelNames.append("Millard2012AccelerationMuscle");
-    
+
     // Tolerances for the differences between the current models
-    // and the 'standard' solution, which was closest to using 
+    // and the 'standard' solution, which was closest to using
     // Thelen2003Muscle_Deprecated muscle formulation.
     double actTols[4] = {0.005, 0.025, 0.04, 0.04};
     double forceTols[4] = {1, 4, 5, 6};
-    
+
     SimTK::Array_<std::string> failures;
 
     for(int i=0; i< muscleModelNames.getSize(); ++i){
@@ -68,7 +68,7 @@ int main()
             testArm26(muscleModelNames[i], actTols[i], forceTols[i]);
         }
         catch (const std::exception& e) {
-            cout << e.what() <<endl; 
+            cout << e.what() <<endl;
             failures.push_back("testArm26_"+muscleModelNames[i]);
         }
     }
@@ -154,18 +154,18 @@ void testArm26(const string& muscleModelClassName, double actTol, double forceTo
     // Uncomment to use muscle model specific standard
     //Storage stdForces1("std_arm26_"+muscName+"_SO_force.sto");
 
-    CHECK_STORAGE_AGAINST_STANDARD(activations1, stdActivations1, 
+    CHECK_STORAGE_AGAINST_STANDARD(activations1, stdActivations1,
                                    std::vector<double>(6, actTol),
-                                   __FILE__, __LINE__, 
+                                   __FILE__, __LINE__,
                                    "Arm26 activations "+muscName+" failed");
 
-    CHECK_STORAGE_AGAINST_STANDARD(forces1, stdForces1, 
+    CHECK_STORAGE_AGAINST_STANDARD(forces1, stdForces1,
                                    std::vector<double>(6, forceTol),
-                                   __FILE__, __LINE__, 
+                                   __FILE__, __LINE__,
                                    "Arm26 forces "+muscName+" failed.");
     cout << resultsDir <<": test Arm26 passed." << endl;
-  
-    
+
+
     cout << "=============================================================\n" << endl;
 
     AnalyzeTool analyze2("arm26_bounds_Setup_StaticOptimization.xml");
@@ -174,7 +174,7 @@ void testArm26(const string& muscleModelClassName, double actTol, double forceTo
 
     Storage activations2(
         resultsDir+"/arm26_bounds_StaticOptimization_activation.sto");
-    Storage stdActivations2(std_bounds_activation); 
+    Storage stdActivations2(std_bounds_activation);
     // Uncomment to use muscle model specific standard
     //Storage stdActivations2("std_arm26_bounds_"+muscName+"_SO_activation.sto");
 
@@ -185,14 +185,14 @@ void testArm26(const string& muscleModelClassName, double actTol, double forceTo
 
     CHECK_STORAGE_AGAINST_STANDARD(activations2, stdActivations2,
         std::vector<double>(6, actTol),
-        __FILE__, __LINE__, 
+        __FILE__, __LINE__,
         "Arm26 activation "+muscName+" with bounds failed.");
 
-    CHECK_STORAGE_AGAINST_STANDARD(forces2, stdForces2, 
+    CHECK_STORAGE_AGAINST_STANDARD(forces2, stdForces2,
         std::vector<double>(6, forceTol),
-        __FILE__,  __LINE__, 
+        __FILE__,  __LINE__,
         "Arm26 forces "+muscName+" with bounds failed.");
- 
+
     cout << resultsDir << ": testArm26 with bounds passed" << endl;
     cout << "=============================================================\n" << endl;
 }
@@ -221,16 +221,16 @@ void testModelWithPassiveForces() {
 }
 
 void testLapackErrorDLASD4() {
-    // With OpenSim 3.2 64bit, the 64 bit lapack library (in Simbody 3.3.1) 
-    // crashes with an error[1] if there are not enough actuators (or under 
+    // With OpenSim 3.2 64bit, the 64 bit lapack library (in Simbody 3.3.1)
+    // crashes with an error[1] if there are not enough actuators (or under
     // other similar circumstances). With Simbody 3.5.2, the 64 bit Windows lapack
     // libraries are updated and do not have this bug.
     // This test ensures that the bug is gone. We only expect this test to fail
     // on Windows 64 bit build using Simbody 3.3.1 or earlier.
-    // What this function should do is print SimTK exceptions about not being 
-    // able to satisfy constraints, but nothing should crash and 
+    // What this function should do is print SimTK exceptions about not being
+    // able to satisfy constraints, but nothing should crash and
     // no exceptions should reach this function.
-    // 
+    //
     // The error is caused by using unfiltered inverse kinematics as input.
     //
     // [1] The error was:
