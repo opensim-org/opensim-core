@@ -35,24 +35,18 @@ public:
                 "Enforcing kinematic constraint derivatives "
                 "not supported with trapezoidal transcription.");
 
-        const auto& mesh = m_solver.getMesh();
-        std::vector<bool> controlPoints;
-        for (int i = 0; i < static_cast<int>(mesh.size()); ++i) {
-            controlPoints.push_back(true);
-        }
-        createVariablesAndSetBounds(mesh, m_problem.getNumStates(), 2, 
-                controlPoints);
+        createVariablesAndSetBounds(m_solver.getMesh(),
+                m_problem.getNumStates(), 2);
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
-
+    casadi::DM createControlIndicesImpl() const override;
     void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
             const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
             casadi::MX& defects) const override;
-    void calcInterpolatingControlsImpl(const casadi::MX& controlVars,
-            casadi::MX& controls) const override;
+    void calcInterpolatingControlsImpl(casadi::MX& controls) const override;
     std::vector<std::pair<Var, int>> getVariableOrder() const override;
 };
 

@@ -47,28 +47,24 @@ public:
         casadi::DM grid =
                 casadi::DM::zeros(1, (2 * m_solver.getMesh().size()) - 1);
         const auto& mesh = m_solver.getMesh();
-        std::vector<bool> controlPoints;
         for (int i = 0; i < grid.numel(); ++i) {
             if (i % 2 == 0) {
                 grid(i) = mesh[i / 2];
-                controlPoints.push_back(true);
             } else {
                 grid(i) = .5 * (mesh[i / 2] + mesh[i / 2 + 1]);
-                controlPoints.push_back(false);
             }
         }
-        createVariablesAndSetBounds(grid, 2 * m_problem.getNumStates(), 3,
-                controlPoints);
+        createVariablesAndSetBounds(grid, 2 * m_problem.getNumStates(), 3);
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
+    casadi::DM createControlIndicesImpl() const override;
     void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
             const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
             casadi::MX& defects) const override;
-    void calcInterpolatingControlsImpl(const casadi::MX& controlsVars,
-            casadi::MX& controls) const override;
+    void calcInterpolatingControlsImpl(casadi::MX& controls) const override;
     std::vector<std::pair<Var, int>> getVariableOrder() const override;
 };
 

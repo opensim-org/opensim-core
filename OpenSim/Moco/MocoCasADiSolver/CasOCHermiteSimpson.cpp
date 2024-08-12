@@ -50,6 +50,12 @@ DM HermiteSimpson::createMeshIndicesImpl() const {
     return indices;
 }
 
+DM HermiteSimpson::createControlIndicesImpl() const {
+    DM indices = DM::zeros(1, m_numGridPoints);
+    for (int i = 0; i < m_numGridPoints; i += 2) { indices(i) = 1; }
+    return indices;
+}
+
 void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
         const casadi::MX& xdot, const casadi::MX& ti, const casadi::MX& tf,
         const casadi::MX& p, casadi::MX& defects) const {
@@ -94,15 +100,11 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
     }
 }
 
-void HermiteSimpson::calcInterpolatingControlsImpl(
-        const casadi::MX& controlVars, casadi::MX& controls) const {
-
+void HermiteSimpson::calcInterpolatingControlsImpl(casadi::MX& controls) const {
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-        controls(Slice(), 2 * imesh) = controlVars(Slice(), imesh);
-        controls(Slice(), 2 * imesh + 1) = 0.5 * (
-                controlVars(Slice(), imesh + 1) + controlVars(Slice(), imesh));
+        controls(Slice(), 2*imesh + 1) = 0.5 * (
+                controls(Slice(), 2*imesh) + controls(Slice(), 2*imesh + 2));
     }
-    controls(Slice(), -1) = controlVars(Slice(), -1);
 }
 
 std::vector<std::pair<Var, int>> HermiteSimpson::getVariableOrder() const {
@@ -116,14 +118,10 @@ std::vector<std::pair<Var, int>> HermiteSimpson::getVariableOrder() const {
         order.push_back({states, igrid});
         order.push_back({states, igrid + 1});
         if (m_solver.getInterpolateControlMidpoints()) {
-            order.push_back({controls, imesh});
+            order.push_back({controls, igrid});
         } else {
             order.push_back({controls, igrid});
             order.push_back({controls, igrid + 1});
-        }
-        
-        for (int i = 0; i < N; ++i) {
-            order.push_back({controls, igrid + i});
         }
         for (int i = 0; i < N; ++i) {
             order.push_back({multipliers, igrid + i});
@@ -137,7 +135,7 @@ std::vector<std::pair<Var, int>> HermiteSimpson::getVariableOrder() const {
     order.push_back({final_time, m_numMeshIntervals});
     order.push_back({parameters, m_numMeshIntervals});
     order.push_back({states, m_numGridPoints - 1});
-    order.push_back({controls, m_numControlPoints - 1});
+    order.push_back({controls, m_numGridPoints - 1});
     order.push_back({multipliers, m_numGridPoints - 1});
     order.push_back({derivatives, m_numGridPoints - 1});
 

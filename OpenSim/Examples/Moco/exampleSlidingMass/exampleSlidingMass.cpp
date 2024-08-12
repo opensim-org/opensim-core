@@ -53,11 +53,11 @@ std::unique_ptr<Model> createSlidingMassModel() {
     coord.setName("position");
     model->addComponent(joint);
 
-    // auto* actu = new CoordinateActuator();
-    // actu->setCoordinate(&coord);
-    // actu->setName("actuator");
-    // actu->setOptimalForce(1);
-    // model->addComponent(actu);
+    auto* actu = new CoordinateActuator();
+    actu->setCoordinate(&coord);
+    actu->setName("actuator");
+    actu->setOptimalForce(1);
+    model->addComponent(actu);
 
     body->attachGeometry(new Sphere(0.05));
 
@@ -90,23 +90,23 @@ int main() {
                          MocoInitialBounds(0), MocoFinalBounds(1));
     // Speed must be within [-50, 50] throughout the motion.
     // Initial and final speed must be 0. Use compact syntax.
-    problem.setStateInfo("/slider/position/speed", {-50, 50});
+    problem.setStateInfo("/slider/position/speed", {-50, 50}, 0, 0);
 
     // Applied force must be between -50 and 50.
-    // problem.setControlInfo("/actuator", MocoBounds(-50, 50));
+    problem.setControlInfo("/actuator", MocoBounds(-50, 50));
 
     // Cost.
     // -----
-    // problem.addGoal<MocoFinalTimeGoal>();
+    problem.addGoal<MocoFinalTimeGoal>();
 
     // Configure the solver.
     // =====================
     MocoCasADiSolver& solver = study.initCasADiSolver();
     solver.set_num_mesh_intervals(50);
-    // solver.set_parallel(0);
+    solver.set_parallel(0);
     solver.set_optim_solver("ipopt");
     solver.set_optim_hessian_approximation("exact");
-    solver.set_transcription_scheme("legendre-gauss-3");
+    solver.set_transcription_scheme("hermite-simpson");
 
     // Now that we've finished setting up the tool, print it to a file.
     study.print("sliding_mass.omoco");

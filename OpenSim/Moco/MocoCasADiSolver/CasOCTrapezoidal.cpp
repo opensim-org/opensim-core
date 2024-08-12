@@ -40,6 +40,10 @@ DM Trapezoidal::createMeshIndicesImpl() const {
     return DM::ones(1, m_numGridPoints);
 }
 
+DM Trapezoidal::createControlIndicesImpl() const {
+    return DM::ones(1, m_numGridPoints);
+}
+
 void Trapezoidal::calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
         const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
         casadi::MX& defects) const {
@@ -70,11 +74,9 @@ void Trapezoidal::calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
     }
 }
 
-void Trapezoidal::calcInterpolatingControlsImpl(const casadi::MX& controlVars,
-        casadi::MX& controls) const {
-    // For trapezoidal transcription, the control variables require no 
+void Trapezoidal::calcInterpolatingControlsImpl(casadi::MX& controls) const {
+    // For trapezoidal transcription, the control variables require no
     // interpolation.
-    controls = controlVars;
 }
 
 std::vector<std::pair<Var, int>> Trapezoidal::getVariableOrder() const {

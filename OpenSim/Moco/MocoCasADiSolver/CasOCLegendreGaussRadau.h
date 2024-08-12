@@ -106,25 +106,18 @@ public:
         }
         grid(numGridPoints - 1) = mesh[numMeshIntervals];
 
-        // Create the control points.
-        std::vector<bool> controlPoints;
-        controlPoints.push_back(false);
-        for (int i = 0; i < numGridPoints - 1; ++i) {
-            controlPoints.push_back(true);
-        }
-
         createVariablesAndSetBounds(grid, m_degree * m_problem.getNumStates(),
-                m_degree + 1, controlPoints);
+                m_degree + 1);
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
+    casadi::DM createControlIndicesImpl() const override;
     void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
             const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
             casadi::MX& defects) const override;
-    void calcInterpolatingControlsImpl(const casadi::MX& controlVars,
-            casadi::MX& controls) const override;
+    void calcInterpolatingControlsImpl(casadi::MX& controls) const override;
     std::vector<std::pair<Var, int>> getVariableOrder() const override;
 
     int m_degree;

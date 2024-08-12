@@ -62,6 +62,17 @@ public:
 
         return meshIndices;
     }
+    casadi::DM createControlIndices() const {
+        casadi::DM controlIndices = createControlIndicesImpl();
+        const auto shape = controlIndices.size();
+        OPENSIM_THROW_IF(shape.first != 1 || shape.second != m_numGridPoints,
+                OpenSim::Exception,
+                "createControlIndicesImpl() must return a row vector of shape "
+                "length [1, {}], but a matrix of shape [{}, {}] was returned.",
+                m_numGridPoints, shape.first, shape.second);
+
+        return controlIndices;
+    }
 
     Solution solve(const Iterate& guessOrig);
 
@@ -73,8 +84,7 @@ protected:
     /// TODO control points
     void createVariablesAndSetBounds(const casadi::DM& grid,
             int numDefectsPerMeshInterval,
-            int numPointsPerMeshInterval,
-            const std::vector<bool>& controlPoints);
+            int numPointsPerMeshInterval);
 
     /// We assume all functions depend on time and parameters.
     /// "inputs" is prepended by time and postpended (?) by parameters.
@@ -157,8 +167,6 @@ protected:
     casadi::MX m_parameters;
     casadi::MX m_intervals;
     casadi::MX m_duration;
-    casadi::MX m_controls;
-    std::vector<bool> m_controlPoints;
 
 private:
     VectorVariablesMX m_scaledVectorVars;
@@ -174,6 +182,7 @@ private:
     casadi::Matrix<casadi_int> m_meshIndices;
     casadi::Matrix<casadi_int> m_meshInteriorIndices;
     casadi::Matrix<casadi_int> m_pathConstraintIndices;
+    casadi::Matrix<casadi_int> m_controlIndices;
 
     casadi::MX m_xdot; // State derivatives.
 
@@ -194,17 +203,18 @@ private:
     /// @note The returned vector must be a row vector of length m_numGridPoints
     /// with nonzero values at the mesh indices.
     virtual casadi::DM createMeshIndicesImpl() const = 0;
+    // TODO
+    virtual casadi::DM createControlIndicesImpl() const = 0;
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
     virtual void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
             const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
             casadi::MX& defects) const = 0;
-    /// Override this function in your derived class to interpolate controls 
+    /// Override this function in your derived class to interpolate controls
     /// for time points where control variables are not defined.
-    virtual void calcInterpolatingControlsImpl(const casadi::MX& controlVars, 
-            casadi::MX& controls) const = 0;
+    virtual void calcInterpolatingControlsImpl(casadi::MX& controls) const = 0;
     /// Override this function to define the order of variables in the flattened
-    /// variable vector passed to nlpsol(). Returns a vector whose elements are 
+    /// variable vector passed to nlpsol(). Returns a vector whose elements are
     /// pairs of variable keys and trajectory indexes.
     virtual std::vector<std::pair<Var, int>> getVariableOrder() const = 0;
 
@@ -217,10 +227,7 @@ private:
     }
     void calcInterpolatingControls() {
         if (m_solver.getInterpolateControlMidpoints()) {
-            calcInterpolatingControlsImpl(
-                    m_unscaledVars.at(controls), m_controls);
-        } else {
-            m_controls = m_unscaledVars.at(controls);
+            calcInterpolatingControlsImpl(m_scaledVars.at(controls));
         }
     }
 
@@ -235,6 +242,7 @@ private:
 
         return casadi::MX::vertcat(stdvec);
     }
+
     /// Convert the map of variables into a column vector, for passing onto
     /// nlpsol(), etc.
     casadi::DM flattenVariables(const VariablesDM& vars) const {
@@ -248,6 +256,7 @@ private:
 
         return casadi::DM::vertcat(stdvec);
     }
+
     /// Convert the 'x' column vector into separate variables.
     VariablesDM expandVariables(const casadi::DM& x) const {
         VariablesDM out;

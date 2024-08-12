@@ -52,6 +52,12 @@ DM LegendreGaussRadau::createMeshIndicesImpl() const {
     return indices;
 }
 
+DM LegendreGaussRadau::createControlIndicesImpl() const {
+    DM indices = DM::ones(1, m_numGridPoints);
+    indices(0) = 0;
+    return indices;
+}
+
 void LegendreGaussRadau::calcDefectsImpl(const casadi::MX& x,
         const casadi::MX& xdot, const casadi::MX& ti, const casadi::MX& tf,
         const casadi::MX& p, casadi::MX& defects) const {
@@ -85,20 +91,20 @@ void LegendreGaussRadau::calcDefectsImpl(const casadi::MX& x,
 }
 
 void LegendreGaussRadau::calcInterpolatingControlsImpl(
-        const casadi::MX& controls, casadi::MX& interpControls) const {
-    if (m_problem.getNumControls() &&
-            m_solver.getInterpolateControlMidpoints()) {
-        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-            const int igrid = imesh * m_degree;
-            const auto c_i = controls(Slice(), igrid);
-            const auto c_ip1 = controls(Slice(), igrid + m_degree);
-            for (int d = 0; d < m_degree-1; ++d) {
-                const auto c_t = controls(Slice(), igrid + d + 1);
-                interpControls(Slice(), imesh * (m_degree - 1) + d) =
-                        c_t - (m_legendreRoots[d] * (c_ip1 - c_i) + c_i);
-            }
-        }
-    }
+            casadi::MX& controls) const {
+    // if (m_problem.getNumControls() &&
+    //         m_solver.getInterpolateControlMidpoints()) {
+    //     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+    //         const int igrid = imesh * m_degree;
+    //         const auto c_i = controls(Slice(), igrid);
+    //         const auto c_ip1 = controls(Slice(), igrid + m_degree);
+    //         for (int d = 0; d < m_degree-1; ++d) {
+    //             const auto c_t = controls(Slice(), igrid + d + 1);
+    //             interpControls(Slice(), imesh * (m_degree - 1) + d) =
+    //                     c_t - (m_legendreRoots[d] * (c_ip1 - c_i) + c_i);
+    //         }
+    //     }
+    // }
 }
 
 std::vector<std::pair<Var, int>> LegendreGaussRadau::getVariableOrder() const {
