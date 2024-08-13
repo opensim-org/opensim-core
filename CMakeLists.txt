@@ -1003,7 +1003,7 @@ set(OPENSIM_SHARED_TEST_FILES_DIR "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared")
 add_subdirectory(Vendors)
 
 add_subdirectory(OpenSim)
-if(NOT BUILD_API_ONLY)
+if(OPENSIM_BUILD_INDIVIDUAL_APPS)
     add_subdirectory(Applications)
 endif()
 add_subdirectory(Bindings)
