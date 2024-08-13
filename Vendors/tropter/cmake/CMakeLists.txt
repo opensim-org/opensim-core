@@ -1,5 +1,5 @@
 
-if(TROPTER_COPY_DEPENDENCIES AND APPLE)
+if(OPENSIM_COPY_DEPENDENCIES AND APPLE)
     get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
 
     file(GLOB gfortran "${gcc_libdir}/libgfortran*.dylib")
@@ -30,14 +30,14 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
     # This command must be invoked from the cmake subdirectory so that the
     # editing of libtropter's link libraries is done after libtropter.dylib
     # is installed (add_subdirectory(cmake) must be after
-    # add_subdirectory(tropter)).
+    # add_subdirectory(tropter))
     set(script
      ${CMAKE_CURRENT_BINARY_DIR}/tropter_install_mac_dependency_libraries.cmake)
     configure_file(tropter_install_mac_dependency_libraries.cmake.in
             "${script}" @ONLY)
     install(SCRIPT "${script}")
 
-elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
+elseif(OPENSIM_COPY_DEPENDENCIES AND UNIX)
     message(STATUS "Finding dependencies")
     message(STATUS "getting dir for ${pkgcfg_lib_IPOPT_gfortran}" )
     message(STATUS "ADOLC_DIR dir ${ADOLC_DIR}" )
