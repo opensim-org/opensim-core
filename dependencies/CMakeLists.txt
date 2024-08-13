@@ -320,14 +320,17 @@ else()
         # operators like && is not defined."
         # Patch the scripts that download Metis and MUMPS to use our
         # Sourceforge mirror. The original links are not reliable.
+        message(STATUS "Building metis")
+        message(STATUS "CMAKE_MAKE_PROGRAM:" ${CMAKE_MAKE_PROGRAM})
+        message(STATUS "BUILD_FLAGS Prefix:" ${BUILD_FLAGS} ${CMAKE_INSTALL_PREFIX})
+
         ExternalProject_Add(metis
-            GIT_REPOSITORY    https://github.com/coin-or-tools/ThirdParty-Metis.git
-            GIT_TAG           releases/1.3.10
-            PATCH_COMMAND cd <SOURCE_DIR> && ./get.Metis
-            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch ADD_CFLAGS=-Wno-error=implicit-function-declaration
-            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
+            # URL    http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
+            URL    https://sourceforge.net/projects/myosin/files/metis-5.1.0.tar.gz/download
+            CONFIGURE_COMMAND cd <SOURCE_DIR> && ${CMAKE_MAKE_PROGRAM} shared=1 config "prefix=${CMAKE_INSTALL_PREFIX}/metis" BUILDDIR=bdir
+            BUILD_COMMAND cd <SOURCE_DIR>/bdir && ${CMAKE_MAKE_PROGRAM}
             INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/metis"
-            INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
+            INSTALL_COMMAND cd <SOURCE_DIR>/bdir && ${CMAKE_MAKE_PROGRAM} install)
 
         # GCC 10 generates a warning when compling MUMPS that we must suppress using
         # -fallow-argument-mismatch.
