@@ -115,7 +115,7 @@ set(MOCO_SOURCES
         MocoOutputBoundConstraint.h
         MocoStateBoundConstraint.cpp
         MocoStateBoundConstraint.h
-)
+        )
 if(OPENSIM_WITH_CASADI)
     list(APPEND MOCO_SOURCES
             MocoCasADiSolver/CasOCProblem.h

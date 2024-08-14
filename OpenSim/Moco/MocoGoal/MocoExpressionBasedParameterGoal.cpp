@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
-* OpenSim: MocoParameterExpressionGoal.h                                     *
+* OpenSim: MocoExpressionBasedParameterGoal.h                                 *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
