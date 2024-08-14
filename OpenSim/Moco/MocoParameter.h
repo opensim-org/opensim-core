@@ -142,7 +142,6 @@ public:
     {   set_property_name(propertyName); }
     void appendComponentPath(const std::string& componentPath)
     {   append_component_paths(componentPath); }
-
     int getElement() const {
         return get_property_element();
     }

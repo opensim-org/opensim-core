@@ -68,7 +68,7 @@ void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model)
 }
 
 double MocoExpressionBasedParameterGoal::getPropertyValue(int i) const {
-    OPENSIM_THROW_IF_FRMOBJ(m_property_refs.size() < i+1, Exception,
+    OPENSIM_THROW_IF_FRMOBJ((int) m_property_refs.size() < i + 1, Exception,
             "Doesn't have that many parameters.")
     const auto& propRef = m_property_refs[i];
 

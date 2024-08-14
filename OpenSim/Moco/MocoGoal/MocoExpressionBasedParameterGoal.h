@@ -30,6 +30,11 @@
 namespace OpenSim {
 class Model;
 
+/** Minimize an arithmetic expression of parameters. This goal supports any
+number of MocoParameters that are combined into a single goal. The expression
+string should match the Lepton (lightweight expression parser) format.
+
+@ingroup mocogoal */
 class OSIMMOCO_API MocoExpressionBasedParameterGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoExpressionBasedParameterGoal, MocoGoal);
 
