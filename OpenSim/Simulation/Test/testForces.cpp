@@ -33,6 +33,7 @@
 //      7. RotationalCoordinateLimitForce
 //      8. ExternalForce
 //      9. PathSpring
+//     10. ExpressionBasedCoordinateForce
 //     10. ExpressionBasedPointToPointForce
 //     11. Blankevoort1991Ligament
 //
@@ -139,9 +140,10 @@ TEST_CASE("testExpressionBasedCoordinateForce") {
     osimModel.setGravity(gravity_vec);
 
     // ode for basic mass-spring-dampener system
-    ExpressionBasedCoordinateForce spring("ball_h", "-10*q-5*qdot");
+    ExpressionBasedCoordinateForce* spring = 
+            new ExpressionBasedCoordinateForce("ball_h", "-10*q-5*qdot");
 
-    osimModel.addForce(&spring);
+    osimModel.addForce(spring);
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(&osimModel);
@@ -182,12 +184,22 @@ TEST_CASE("testExpressionBasedCoordinateForce") {
                 dh;
 
         ASSERT_EQUAL(height, pos(1), 1e-6);
+
+        double ball_h = sliderCoord.getValue(osim_state);
+        double ball_h_dot = sliderCoord.getSpeedValue(osim_state);
+
+        double analytical_force = -10 * ball_h - 5 * ball_h_dot;
+        double model_force = spring->getForceMagnitude(osim_state);
+        double output_force = 
+                spring->getOutputValue<double>(osim_state, "force");
+        ASSERT_EQUAL(analytical_force, model_force, 1e-5);
+        ASSERT_EQUAL(analytical_force, output_force, 1e-5);
     }
 
     // Test copying
-    ExpressionBasedCoordinateForce* copyOfSpring = spring.clone();
+    ExpressionBasedCoordinateForce* copyOfSpring = spring->clone();
 
-    ASSERT(*copyOfSpring == spring);
+    ASSERT(*copyOfSpring == *spring);
 
     osimModel.print("ExpressionBasedCoordinateForceModel.osim");
 
@@ -264,6 +276,7 @@ TEST_CASE("testExpressionBasedPointToPointForce") {
 
     // Now check that the force reported by spring
     double model_force = p2pForce->getForceMagnitude(state);
+    double output_force = p2pForce->getOutputValue<double>(state, "force");
 
     // Save the forces
     // reporter->getForceStorage().print("path_spring_forces.mot");
@@ -280,6 +293,7 @@ TEST_CASE("testExpressionBasedPointToPointForce") {
 
     // something is wrong if the block does not reach equilibrium
     ASSERT_EQUAL(analytical_force, model_force, 1e-5);
+    ASSERT_EQUAL(analytical_force, output_force, 1e-5);
 
     // Before exiting lets see if copying the P2P force works
     ExpressionBasedPointToPointForce* copyOfP2pForce = p2pForce->clone();

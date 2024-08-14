@@ -71,6 +71,11 @@ public:
         "the distance (d) between the points and its time derivative (ddot). "
         "Note, expression cannot have any whitespace separating characters.");
 
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(force, double, getForceMagnitude,
+        SimTK::Stage::Dynamics);
 
 //==============================================================================
 // PUBLIC METHODS
@@ -132,7 +137,7 @@ public:
     * @param state    const state (reference) for the model
     * @return         const double ref to the force magnitude
     */
-    const double& getForceMagnitude(const SimTK::State& state);
+    const double& getForceMagnitude(const SimTK::State& state) const;
 
 
     //--------------------------------------------------------------------------

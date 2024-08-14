@@ -202,8 +202,7 @@ void ExpressionBasedPointToPointForce::computeForce(const SimTK::State& s,
 
 // get the force magnitude that has already been computed
 const double& ExpressionBasedPointToPointForce::
-    getForceMagnitude(const SimTK::State& s)
-{
+        getForceMagnitude(const SimTK::State& s) const {
     return getCacheVariableValue(s, _forceMagnitudeCV);
 }
 
