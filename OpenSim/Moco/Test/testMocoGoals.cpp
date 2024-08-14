@@ -1417,29 +1417,59 @@ TEST_CASE("MocoFrameDistanceConstraint de/serialization") {
 
 TEMPLATE_TEST_CASE("MocoExpressionBasedParameterGoal", "", MocoCasADiSolver,
         MocoTropterSolver) {
-    MocoStudy study;
-    study.setName("oscillator_mass");
-    Model model = ModelFactory::createSlidingPointMass();
-    MocoProblem& mp = study.updProblem();
-    mp.setModelAsCopy(model);
-    mp.setTimeBounds(0, 3);
-    mp.setStateInfo("/slider/position/value", {-5.0, 5.0}, -0.5, {0.25, 0.75});
-    mp.setStateInfo("/slider/position/speed", {-20, 20}, 0, 0);
+    /*SECTION("Linear sphere, mass goal") {
+        // takes 20 seconds :/
+        MocoStudy study;
+        Model model = ModelFactory::createSlidingPointMass();
+        MocoProblem& mp = study.updProblem();
+        mp.setModelAsCopy(model);
+        mp.setTimeBounds(0, 1);
+        mp.setStateInfo("/slider/position/value", {-5, 5}, 0, {0.2, 0.3});
+        mp.setStateInfo("/slider/position/speed", {-20, 20}, 0, 0);
 
-    auto* parameter = mp.addParameter("sphere_mass", "body", "mass", MocoBounds(0, 10));
+        auto* parameter = mp.addParameter("sphere_mass", "body", "mass", MocoBounds(0, 10));
+        auto* mass_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
+        mass_goal->setExpression("(q-4)^2");
+        mass_goal->addParameter(*parameter, "q");
+        auto* effort_goal = mp.addGoal<MocoControlGoal>();
+        effort_goal->setWeight(0.001);
+        effort_goal->setName("effort");
 
-    auto* goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
-    goal->setExpression("(q-5)^2");
-    goal->addParameter(*parameter, "q");
-    //parameter->initializeOnModel(model); // should not have to do this here
+        auto& ms = study.initSolver<TestType>();
+        ms.set_num_mesh_intervals(25);
+        MocoSolution sol = study.solve();
 
+        // 3.998
+        CHECK(sol.getParameter("sphere_mass") == Catch::Approx(4).epsilon(1e-2));
+    }*/
 
-    auto& ms = study.initSolver<TestType>();
-    ms.set_num_mesh_intervals(25);
+    SECTION("Double mass goal") {
+        // takes 22 seconds :/
+        MocoStudy study;
+        auto model = createDoubleSlidingMassModel();
+        model->initSystem();
+        MocoProblem& mp = study.updProblem();
+        mp.setModelAsCopy(*model);
+        mp.setTimeBounds(0, 1);
+        mp.setStateInfo("/slider/position/value", {-5, 5}, 0, {0.2, 0.3});
+        mp.setStateInfo("/slider/position/speed", {-20, 20});
+        mp.setStateInfo("/slider2/position/value", {-5, 5}, 1, {1.2, 1.3});
+        mp.setStateInfo("/slider2/position/speed", {-20, 20});
 
-    MocoSolution sol = study.solve();
-    //sol.write("testMocoParameters_testOscillatorMass_sol.sto");
+        auto* parameter = mp.addParameter("sphere_mass", "body", "mass", MocoBounds(0, 10));
+        auto* parameter2 = mp.addParameter("sphere2_mass", "body2", "mass", MocoBounds(0, 10));
+        int total_weight = 7;
+        auto* mass_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
+        mass_goal->setExpression(fmt::format("(p+q-{})^2", total_weight));
+        mass_goal->addParameter(*parameter, "p");
+        mass_goal->addParameter(*parameter2, "q");
 
-    CHECK(sol.getParameter("sphere_mass") ==
-            Catch::Approx(5).epsilon(0.003));
+        auto& ms = study.initSolver<TestType>();
+        ms.set_num_mesh_intervals(25);
+        MocoSolution sol = study.solve();
+
+        // 3.7 and 3.3
+        CHECK(sol.getParameter("sphere_mass") + sol.getParameter("sphere2_mass") ==
+                Catch::Approx(total_weight).epsilon(1e-9));
+    }
 }

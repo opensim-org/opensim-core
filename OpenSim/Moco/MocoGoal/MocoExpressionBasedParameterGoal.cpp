@@ -63,14 +63,13 @@ void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model)
                     "Data type of specified model property not supported.");
             }
         }
-
-        m_property_refs.emplace_back(ap);
     }
+    // warning if not all parameters are in the expression
 }
 
 double MocoExpressionBasedParameterGoal::getPropertyValue(int i) const {
-    OPENSIM_THROW_IF_FRMOBJ(m_property_refs.size() < 1, Exception,
-            "No properties to get value of.")
+    OPENSIM_THROW_IF_FRMOBJ(m_property_refs.size() < i+1, Exception,
+            "Doesn't have that many parameters.")
     const auto& propRef = m_property_refs[i];
 
     if (m_data_types[i] == Type_double) {
@@ -93,9 +92,8 @@ void MocoExpressionBasedParameterGoal::calcIntegrandImpl(
         const IntegrandInput& input, double& integrand) const {
 
     std::map<std::string, double> parameterVars;
-    for (int i=0; i<getProperty_variable_names().size(); ++i) {
-        std::string variableName = getProperty_variable_names()[i];
-        MocoParameter parameter = get_parameters(i);
+    for (int i = 0; i < getProperty_variable_names().size(); ++i) {
+        std::string variableName = get_variable_names(i);
         parameterVars[variableName] = getPropertyValue(i);
     }
     integrand = m_parameterProg.evaluate(parameterVars);

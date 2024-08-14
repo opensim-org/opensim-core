@@ -73,27 +73,6 @@ void MocoParameter::constructProperties() {
     constructProperty_property_element();
 }
 
-double MocoParameter::getPropertyValue() const{
-    OPENSIM_THROW_IF_FRMOBJ(m_property_refs.size() < 1, Exception,
-            "No properties to get value of.")
-    const auto& propRef = m_property_refs[0];
-
-    if (m_data_type == Type_double) {
-        return static_cast<Property<double>*>(propRef.get())->getValue();
-    }
-
-    int elt = get_property_element();
-    if (m_data_type == Type_Vec3) {
-        return static_cast<Property<SimTK::Vec3>*>(propRef.get())->getValue()[elt];
-    }
-
-    if (m_data_type == Type_Vec6) {
-        return static_cast<Property<SimTK::Vec6>*>(propRef.get())->getValue()[elt];
-    }
-
-    OPENSIM_THROW_FRMOBJ(Exception, "Properties not of a recognized type.");
-}
-
 void MocoParameter::initializeOnModel(Model& model) const {
     
     OPENSIM_THROW_IF_FRMOBJ(getProperty_component_paths().empty(), Exception,

@@ -143,10 +143,6 @@ public:
     void appendComponentPath(const std::string& componentPath)
     {   append_component_paths(componentPath); }
 
-    /** Get the value of the property at the given state.
-     * @throws if the value is not the same at all paths. */
-    double getPropertyValue() const;
-
     int getElement() const {
         return get_property_element();
     }
