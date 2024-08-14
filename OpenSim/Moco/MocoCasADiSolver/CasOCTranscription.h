@@ -240,7 +240,7 @@ private:
                 m_unscaledVars.at(parameters), m_constraints.defects);
     }
     template <typename T>
-    void calcInterpolatingControls(Variables<T>& vars) {
+    void calcInterpolatingControls(Variables<T>& vars) const {
         if (m_solver.getInterpolateControlMidpoints()) {
             calcInterpolatingControlsImpl(vars.at(controls));
         }
@@ -299,7 +299,7 @@ private:
 
     /// unscaled = (upper - lower) * scaled - 0.5 * (upper + lower);
     template <typename T>
-    Variables<T> unscaleVariables(const Variables<T>& scaledVars) {
+    Variables<T> unscaleVariables(const Variables<T>& scaledVars) const {
         using casadi::DM;
         Variables<T> out;
 

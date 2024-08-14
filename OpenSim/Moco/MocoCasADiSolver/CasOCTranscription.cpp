@@ -60,7 +60,9 @@ public:
     std::vector<DM> eval(const std::vector<DM>& args) const override {
         if (m_callbackInterval > 0 && evalCount % m_callbackInterval == 0) {
             Iterate iterate = m_problem.createIterate<Iterate>();
-            iterate.variables = m_transcription.expandVariables(args.at(0));
+            iterate.variables = m_transcription.unscaleVariables(
+                    m_transcription.expandVariables(args.at(0)));
+            m_transcription.calcInterpolatingControls(iterate.variables);
             iterate.iteration = evalCount;
             iterate.times =
                     m_transcription.createTimes(iterate.variables[initial_time],
