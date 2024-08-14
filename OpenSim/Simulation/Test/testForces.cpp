@@ -172,6 +172,7 @@ TEST_CASE("testExpressionBasedCoordinateForce") {
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
 
+        // Check ball height against analytical solution.
         double height =
                 exp(-1 * zeta * omega * osim_state.getTime()) *
                         ((start_h - dh) *
@@ -182,13 +183,12 @@ TEST_CASE("testExpressionBasedCoordinateForce") {
                                         sin(damp_freq *
                                                 osim_state.getTime()))) +
                 dh;
-
         ASSERT_EQUAL(height, pos(1), 1e-6);
 
+        // Check that the force reported by spring is correct.
         double ball_h = sliderCoord.getValue(osim_state);
         double ball_h_dot = sliderCoord.getSpeedValue(osim_state);
-
-        double analytical_force = -10 * ball_h - 5 * ball_h_dot;
+        double analytical_force = -10*ball_h - 5*ball_h_dot;
         double model_force = spring->getForceMagnitude(osim_state);
         double output_force = 
                 spring->getOutputValue<double>(osim_state, "force");
