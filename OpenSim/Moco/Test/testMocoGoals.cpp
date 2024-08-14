@@ -1418,7 +1418,6 @@ TEST_CASE("MocoFrameDistanceConstraint de/serialization") {
 
 TEST_CASE("MocoExpressionBasedParameterGoal - MocoTropterSolver") {
     SECTION("mass goal") {
-        // takes 20 seconds
         MocoStudy study;
         Model model = ModelFactory::createSlidingPointMass();
         MocoProblem& mp = study.updProblem();
@@ -1427,7 +1426,8 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoTropterSolver") {
         mp.setStateInfo("/slider/position/value", {-5, 5}, 0, {0.2, 0.3});
         mp.setStateInfo("/slider/position/speed", {-20, 20}, 0, 0);
 
-        auto* parameter = mp.addParameter("sphere_mass", "body", "mass", MocoBounds(0, 10));
+        auto* parameter = mp.addParameter("sphere_mass", "body", "mass",
+                MocoBounds(0, 10));
         auto* mass_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
         mass_goal->setExpression("(q-4)^2");
         mass_goal->addParameter(*parameter, "q");
@@ -1443,8 +1443,7 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoTropterSolver") {
         CHECK(sol.getParameter("sphere_mass") == Catch::Approx(4).epsilon(1e-2));
     }
 
-    SECTION("Double mass goal") {
-        // takes 22 seconds
+    SECTION("two parameter mass goal") {
         MocoStudy study;
         auto model = createDoubleSlidingMassModel();
         model->initSystem();
@@ -1456,8 +1455,10 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoTropterSolver") {
         mp.setStateInfo("/slider2/position/value", {-5, 5}, 1, {1.2, 1.3});
         mp.setStateInfo("/slider2/position/speed", {-20, 20});
 
-        auto* parameter = mp.addParameter("sphere_mass", "body", "mass", MocoBounds(0, 10));
-        auto* parameter2 = mp.addParameter("sphere2_mass", "body2", "mass", MocoBounds(0, 10));
+        auto* parameter = mp.addParameter("sphere_mass", "body", "mass",
+                MocoBounds(0, 10));
+        auto* parameter2 = mp.addParameter("sphere2_mass", "body2", "mass",
+                MocoBounds(0, 10));
         int total_weight = 7;
         auto* mass_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
         mass_goal->setExpression(fmt::format("(p+q-{})^2", total_weight));
@@ -1469,8 +1470,8 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoTropterSolver") {
         MocoSolution sol = study.solve();
 
         // 3.7 and 3.3
-        CHECK(sol.getParameter("sphere_mass") + sol.getParameter("sphere2_mass") ==
-                Catch::Approx(total_weight).epsilon(1e-9));
+        CHECK(sol.getParameter("sphere_mass") + sol.getParameter("sphere2_mass")
+                == Catch::Approx(total_weight).epsilon(1e-9));
     }
 }
 
@@ -1511,8 +1512,6 @@ std::unique_ptr<Model> createOscillatorTwoSpringsModel() {
 }
 
 TEST_CASE("MocoExpressionBasedParameterGoal - MocoCasADiSolver") {
-    int N = 25;
-
     MocoStudy study;
     study.setName("oscillator_spring_stiffnesses");
     MocoProblem& mp = study.updProblem();
@@ -1521,20 +1520,20 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoCasADiSolver") {
     mp.setStateInfo("/slider/position/value", {-5.0, 5.0}, -0.5, {0.25, 0.75});
     mp.setStateInfo("/slider/position/speed", {-20, 20}, 0, 0);
 
-    SECTION("single parameter") {
-        // Optimize a single stiffness value and apply to both springs.
+    SECTION("single parameter for two values") {
+        // create a parameter goal for the stiffness of both strings
         std::vector<std::string> components = {"spring1", "spring2"};
         auto* parameter = mp.addParameter("spring_stiffness", components,
                                           "stiffness", MocoBounds(0, 100));
-
         auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
+        // minimum is when p = 0.5*STIFFNESS
         spring_goal->setExpression(fmt::format("(p-{})^2", 0.5*STIFFNESS));
         spring_goal->addParameter(*parameter, "p");
 
         auto& ms = study.initCasADiSolver();
-        ms.set_num_mesh_intervals(N);
-        ms.set_parameters_require_initsystem(false); // faster, still works with spring stiffness
-
+        ms.set_num_mesh_intervals(25);
+        // not requiring initsystem is faster, still works with spring stiffness
+        ms.set_parameters_require_initsystem(false);
         MocoSolution sol = study.solve();
 
         CHECK(sol.getParameter("spring_stiffness") ==
@@ -1542,26 +1541,54 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoCasADiSolver") {
     }
 
     SECTION("two parameters") {
-        // Optimize a single stiffness value and apply to both springs.
+        // create two parameters to include in the goal
+        auto* parameter = mp.addParameter("spring_stiffness", "spring1",
+                                          "stiffness", MocoBounds(0, 100));
+        auto* parameter2 = mp.addParameter("spring2_stiffness", "spring2",
+                                          "stiffness", MocoBounds(0, 100));
+        auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
+        // minimum is when p + q = STIFFNESS
+        spring_goal->setExpression(fmt::format("square(p+q-{})", STIFFNESS));
+        spring_goal->addParameter(*parameter, "p");
+        spring_goal->addParameter(*parameter2, "q");
+
+        auto& ms = study.initCasADiSolver();
+        ms.set_num_mesh_intervals(25);
+        // not requiring initsystem is faster, still works with spring stiffness
+        ms.set_parameters_require_initsystem(false);
+        MocoSolution sol = study.solve();
+
+        CHECK(sol.getParameter("spring_stiffness") +
+              sol.getParameter("spring2_stiffness") ==
+              Catch::Approx(STIFFNESS).epsilon(1e-6));
+    }
+
+    SECTION("missing parameter") {
+        // create one parameter but have two variables
+        auto* parameter = mp.addParameter("spring_stiffness", "spring1",
+                                          "stiffness", MocoBounds(0, 100));
+
+        auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>(
+                "stiffness", 1, fmt::format("(p+q-{})^2", STIFFNESS));
+        spring_goal->addParameter(*parameter, "p");
+
+        CHECK_THROWS(study.initCasADiSolver()); // missing q
+    }
+
+    SECTION("missing parameter") {
+        // create two parameters for the goal, only one is used
         auto* parameter = mp.addParameter("spring_stiffness", "spring1",
                                           "stiffness", MocoBounds(0, 100));
         auto* parameter2 = mp.addParameter("spring2_stiffness", "spring2",
                                           "stiffness", MocoBounds(0, 100));
 
-        auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
-        spring_goal->setExpression(fmt::format("(p+q-{})^2", STIFFNESS));
+        auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>(
+                "stiffness", 1, fmt::format("(p-{})^2", STIFFNESS));
         spring_goal->addParameter(*parameter, "p");
-        spring_goal->addParameter(*parameter2, "q");
+        // second parameter is ignored
+        spring_goal->addParameter(*parameter2, "a");
 
-        auto& ms = study.initCasADiSolver();
-        ms.set_num_mesh_intervals(N);
-        ms.set_parameters_require_initsystem(false); // faster, still works with spring stiffness
-
-        MocoSolution sol = study.solve();
-
-        log_cout("{} {}", sol.getParameter("spring_stiffness") , sol.getParameter("spring2_stiffness"));
-
-        CHECK(sol.getParameter("spring_stiffness") + sol.getParameter("spring2_stiffness") ==
-                Catch::Approx(STIFFNESS).epsilon(1e-6));
+        // shouldn't throw an error
+        study.initCasADiSolver();
     }
 }

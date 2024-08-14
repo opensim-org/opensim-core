@@ -17,8 +17,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoExpressionBasedParameterGoal.h"
-#include <lepton/Parser.h>
+
+#include <lepton/Exception.h>
 #include <lepton/ParsedExpression.h>
+#include <lepton/Parser.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -30,7 +32,8 @@ void MocoExpressionBasedParameterGoal::constructProperties() {
     constructProperty_variable_names();
 }
 
-void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model) const {
+void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model)
+        const {
     m_parameterProg = Lepton::Parser::parse(get_expression()).optimize().createProgram();
     setRequirements(1, 1);
 
@@ -64,7 +67,28 @@ void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model)
             }
         }
     }
-    // warning if not all parameters are in the expression
+
+    std::map<std::string, double> parameterVars;
+    for (int i = 0; i < getProperty_variable_names().size(); ++i) {
+        std::string variableName = get_variable_names(i);
+        parameterVars[variableName] = getPropertyValue(i);
+    }
+
+    // test to make sure all variables are there
+    try
+    {
+        m_parameterProg.evaluate(parameterVars);
+    }
+    catch (Lepton::Exception ex)
+    {
+        std::string msg = ex.what();
+        std::string help = "";
+        if (msg.compare(0, 30, "No value specified for variable")) {
+            help = " Use addParameter() to add a parameter for this variable, or"
+                   " remove the variable from the expression for this goal.";
+        }
+        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Expression evaluate error: {}.{}", msg, help));
+    }
 }
 
 double MocoExpressionBasedParameterGoal::getPropertyValue(int i) const {
@@ -104,3 +128,11 @@ void MocoExpressionBasedParameterGoal::calcGoalImpl(
     values[0] = input.integral;
 }
 
+void MocoExpressionBasedParameterGoal::printDescriptionImpl() const {
+    std::string msg;
+    msg += "MocoExpressionBasedParameterGoal expression: {}" + get_expression();
+    for (int i = 0; i < getProperty_parameters().size(); ++i) {
+        msg += "\n\t" + get_variable_names(i) + ": " + get_parameters(i).getName();
+    }
+    log_cout("{}", msg);
+}

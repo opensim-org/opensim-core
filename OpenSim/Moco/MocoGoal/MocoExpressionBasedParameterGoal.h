@@ -34,6 +34,10 @@ class Model;
 number of MocoParameters that are combined into a single goal. The expression
 string should match the Lepton (lightweight expression parser) format.
 
+Expressions can be any string that represents a mathematical expression, e.g.,
+"x*sqrt(y-8)". See Parser::getFunctionOperation for a full list of avilable
+functions.
+
 @ingroup mocogoal */
 class OSIMMOCO_API MocoExpressionBasedParameterGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoExpressionBasedParameterGoal, MocoGoal);
@@ -47,11 +51,23 @@ public:
             : MocoGoal(std::move(name), weight) {
         constructProperties();
     }
+    MocoExpressionBasedParameterGoal(std::string name, double weight,
+            std::string expression) : MocoGoal(std::move(name), weight) {
+        constructProperties();
+        setExpression(expression);
+    }
 
+    /** Set the mathematical expression to minimize. Variable names should match
+    the names set with addParameter(). See header for explanation of
+    Expressions. */
     void setExpression(std::string expression) {
         set_expression(expression);
     }
 
+    /** Add parameters with variable names that match the variables in the
+    expression string. All variables in the expression must have a corresponding
+    parameter, but parameters with variables that are not in the expression are
+    ignored. */
     void addParameter(MocoParameter& parameter, std::string variableName) {
         updProperty_parameters().appendValue(parameter);
         updProperty_variable_names().appendValue(variableName);
@@ -63,13 +79,18 @@ protected:
             const IntegrandInput& input, SimTK::Real& integrand) const override;
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override;
-    //void printDescriptionImpl() const override;
+    void printDescriptionImpl() const override;
 
 private:
     void constructProperties();
+
+    /** Get the value of the property from its index in the property_refs vector.
+    This will use m_data_types to get the type, and if it is a Vec type, it uses
+    m_indices to get the element to return, both at the same index i.*/
+    double getPropertyValue(int i) const;
+
     OpenSim_DECLARE_PROPERTY(expression, std::string,
             "The expression string with variables q0-q9.");
-    // consider a mapping from variable names to parameters instead
     OpenSim_DECLARE_LIST_PROPERTY(parameters, MocoParameter,
             "MocoParameters to use in the expression.");
     OpenSim_DECLARE_LIST_PROPERTY(variable_names, std::string,
@@ -85,7 +106,6 @@ private:
     mutable std::vector<DataType> m_data_types;
     mutable std::vector<int> m_indices;
 
-    double getPropertyValue(int i) const;
 };
 
 } // namespace OpenSim
