@@ -40,6 +40,8 @@ set(MOCO_SOURCES
         MocoGoal/MocoControlGoal.cpp
         MocoGoal/MocoControlTrackingGoal.h
         MocoGoal/MocoControlTrackingGoal.cpp
+        MocoGoal/MocoExpressionBasedParameterGoal.h
+        MocoGoal/MocoExpressionBasedParameterGoal.cpp
         MocoGoal/MocoJointReactionGoal.h
         MocoGoal/MocoJointReactionGoal.cpp
         MocoGoal/MocoOrientationTrackingGoal.h
@@ -58,7 +60,6 @@ set(MOCO_SOURCES
         MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.cpp
         MocoGoal/MocoInitialForceEquilibriumDGFGoal.h
         MocoGoal/MocoInitialForceEquilibriumDGFGoal.cpp
-        MocoGoal/MocoParameterExpressionGoal.cpp
         MocoGoal/MocoPeriodicityGoal.h
         MocoGoal/MocoPeriodicityGoal.cpp
         MocoGoal/MocoStepTimeAsymmetryGoal.h

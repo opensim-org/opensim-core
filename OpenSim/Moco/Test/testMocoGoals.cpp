@@ -22,7 +22,7 @@
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/PointActuator.h>
-#include <OpenSim/Moco/MocoGoal/MocoParameterExpressionGoal.h>
+#include <OpenSim/Moco/MocoGoal/MocoExpressionBasedParameterGoal.h>
 #include <OpenSim/Moco/MocoOutputConstraint.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
@@ -1415,7 +1415,7 @@ TEST_CASE("MocoFrameDistanceConstraint de/serialization") {
     }
 }
 
-TEMPLATE_TEST_CASE("MocoParameterExpressionGoal", "", MocoCasADiSolver,
+TEMPLATE_TEST_CASE("MocoExpressionBasedParameterGoal", "", MocoCasADiSolver,
         MocoTropterSolver) {
     MocoStudy study;
     study.setName("oscillator_mass");
@@ -1428,10 +1428,10 @@ TEMPLATE_TEST_CASE("MocoParameterExpressionGoal", "", MocoCasADiSolver,
 
     auto* parameter = mp.addParameter("sphere_mass", "body", "mass", MocoBounds(0, 10));
 
-    auto* goal = mp.addGoal<MocoParameterExpressionGoal>();
-    goal->setExpression("50-10*q");
+    auto* goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
+    goal->setExpression("(q-5)^2");
     goal->addParameter(*parameter, "q");
-    parameter->initializeOnModel(model); // should not have to do this here
+    //parameter->initializeOnModel(model); // should not have to do this here
 
 
     auto& ms = study.initSolver<TestType>();
@@ -1440,6 +1440,6 @@ TEMPLATE_TEST_CASE("MocoParameterExpressionGoal", "", MocoCasADiSolver,
     MocoSolution sol = study.solve();
     //sol.write("testMocoParameters_testOscillatorMass_sol.sto");
 
-    CHECK(sol.getParameter("oscillator_mass") ==
+    CHECK(sol.getParameter("sphere_mass") ==
             Catch::Approx(5).epsilon(0.003));
 }

@@ -1,5 +1,5 @@
-#ifndef OPENSIM_MOCOPARAMETEREXPRESSIONGOAL_H
-#define OPENSIM_MOCOPARAMETEREXPRESSIONGOAL_H
+#ifndef OPENSIM_MOCOEXPRESSIONBASEDPARAMETERGOAL_H
+#define OPENSIM_MOCOEXPRESSIONBASEDPARAMETERGOAL_H
 /* -------------------------------------------------------------------------- *
  * OpenSim: MocoParameterExpressionGoal.h                                     *
  * -------------------------------------------------------------------------- *
@@ -22,17 +22,23 @@
 #include "OpenSim/Moco/MocoParameter.h"
 #include <lepton/ExpressionProgram.h>
 
-namespace OpenSim {
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Property.h>
+#include <SimTKcommon/internal/ReferencePtr.h>
+#include <SimTKcommon/internal/State.h>
 
-class OSIMMOCO_API MocoParameterExpressionGoal : public MocoGoal {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoParameterExpressionGoal, MocoGoal);
+namespace OpenSim {
+class Model;
+
+class OSIMMOCO_API MocoExpressionBasedParameterGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoExpressionBasedParameterGoal, MocoGoal);
 
 public:
-    MocoParameterExpressionGoal() { constructProperties(); }
-    MocoParameterExpressionGoal(std::string name) : MocoGoal(std::move(name)) {
+    MocoExpressionBasedParameterGoal() { constructProperties(); }
+    MocoExpressionBasedParameterGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
     }
-    MocoParameterExpressionGoal(std::string name, double weight)
+    MocoExpressionBasedParameterGoal(std::string name, double weight)
             : MocoGoal(std::move(name), weight) {
         constructProperties();
     }
@@ -47,7 +53,7 @@ public:
     }
 
 protected:
-    void initializeOnModelImpl(const Model&) const override;
+    void initializeOnModelImpl(const Model& model) const override;
     void calcIntegrandImpl(
             const IntegrandInput& input, SimTK::Real& integrand) const override;
     void calcGoalImpl(
@@ -65,6 +71,16 @@ private:
             "Variable names of the MocoParameters to use in the expression.");
 
     mutable Lepton::ExpressionProgram m_parameterProg;
+    mutable std::vector<SimTK::ReferencePtr<const AbstractProperty>> m_property_refs;
+    enum DataType {
+      Type_double,
+      Type_Vec3,
+      Type_Vec6
+    };
+    mutable std::vector<DataType> m_data_types;
+    mutable std::vector<int> m_indices;
+
+    double getPropertyValue(int i) const;
 };
 
 } // namespace OpenSim

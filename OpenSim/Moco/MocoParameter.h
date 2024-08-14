@@ -147,6 +147,10 @@ public:
      * @throws if the value is not the same at all paths. */
     double getPropertyValue() const;
 
+    int getElement() const {
+        return get_property_element();
+    }
+
     /** For use by solvers. This performs error checks and caches information
     about the model that is useful during the optimization.
     This method takes a non-const reference to the model because parameters
