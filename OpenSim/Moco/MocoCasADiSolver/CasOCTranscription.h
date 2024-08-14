@@ -203,7 +203,10 @@ private:
     /// @note The returned vector must be a row vector of length m_numGridPoints
     /// with nonzero values at the mesh indices.
     virtual casadi::DM createMeshIndicesImpl() const = 0;
-    // TODO
+    /// Override this function to specify the indicies in the grid where the
+    /// control points lie.
+    /// @note The returned vector must be a row vector of length m_numGridPoints
+    /// with nonzero values at the control indices.
     virtual casadi::DM createControlIndicesImpl() const = 0;
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
@@ -212,7 +215,18 @@ private:
             casadi::MX& defects) const = 0;
     /// Override this function in your derived class to interpolate controls
     /// for time points where control variables are not defined.
-    virtual void calcInterpolatingControlsImpl(casadi::MX& controls) const = 0;
+    virtual void calcInterpolatingControlsImpl(casadi::MX& controls) const {
+        OPENSIM_THROW_IF(casadi::DM::all(createControlIndices()).scalar() == 0,
+                OpenSim::Exception,
+                "Must provide scheme for interpolating controls.");
+    }
+    /// Override this function in your derived class to interpolate controls
+    /// for time points where control variables are not defined.
+    virtual void calcInterpolatingControlsImpl(casadi::DM& controls) const {
+        OPENSIM_THROW_IF(casadi::DM::all(createControlIndices()).scalar() == 0,
+                OpenSim::Exception,
+                "Must provide scheme for interpolating controls.");
+    }
     /// Override this function to define the order of variables in the flattened
     /// variable vector passed to nlpsol(). Returns a vector whose elements are
     /// pairs of variable keys and trajectory indexes.
@@ -225,9 +239,10 @@ private:
                 m_unscaledVars.at(initial_time), m_unscaledVars.at(final_time),
                 m_unscaledVars.at(parameters), m_constraints.defects);
     }
-    void calcInterpolatingControls() {
+    template <typename T>
+    void calcInterpolatingControls(Variables<T>& vars) {
         if (m_solver.getInterpolateControlMidpoints()) {
-            calcInterpolatingControlsImpl(m_scaledVars.at(controls));
+            calcInterpolatingControlsImpl(vars.at(controls));
         }
     }
 

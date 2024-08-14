@@ -101,10 +101,11 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
 }
 
 void HermiteSimpson::calcInterpolatingControlsImpl(casadi::MX& controls) const {
-    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-        controls(Slice(), 2*imesh + 1) = 0.5 * (
-                controls(Slice(), 2*imesh) + controls(Slice(), 2*imesh + 2));
-    }
+    calcInterpolatingControlsHelper(controls);
+}
+
+void HermiteSimpson::calcInterpolatingControlsImpl(casadi::DM& controls) const {
+    calcInterpolatingControlsHelper(controls);
 }
 
 std::vector<std::pair<Var, int>> HermiteSimpson::getVariableOrder() const {

@@ -105,6 +105,7 @@ private:
             const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
             casadi::MX& defects) const override;
     void calcInterpolatingControlsImpl(casadi::MX& controls) const override;
+    void calcInterpolatingControlsImpl(casadi::DM& controls) const override;
     std::vector<std::pair<Var, int>> getVariableOrder() const override;
 
     int m_degree;
@@ -112,6 +113,49 @@ private:
     casadi::DM m_differentiationMatrix;
     casadi::DM m_interpolationCoefficients;
     casadi::DM m_quadratureCoefficients;
+
+    template <typename T>
+    void calcInterpolatingControlsHelper(T& controls) const {
+        using casadi::Slice;
+
+        // This interpolation scheme is based on control approximation defined 
+        // by Eq. 6.21 in the thesis of Huntington [2]. We cannot linearly 
+        // interpolate the control values at the mesh points (as recommended by
+        // Bordalba et al. [3]) because this would violate the sparsity
+        // structure required by the FATROP solver.
+
+        // Evaluate the `i`th Lagrange polynomial at the point `tau`.
+        auto getLagrangePolynomial = [this](int i, double tau) -> double {
+            double polynomial = 1.0;
+            for (int d = 0; d < m_degree; ++d) {
+                if (i != d) {
+                    polynomial *= (tau - m_legendreRoots[d]) /
+                                (m_legendreRoots[i] - m_legendreRoots[d]);
+                }
+            }
+            return polynomial;
+        };
+
+        // Define controls for the initial mesh point for all mesh intervals.
+        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+            const int igrid = imesh * (m_degree + 1);
+            controls(Slice(), igrid) = 0;
+            for (int d = 0; d < m_degree; ++d) {
+                const auto c_t = controls(Slice(), igrid + d + 1);
+                controls(Slice(), igrid) += getLagrangePolynomial(d, 0) * c_t;
+            }
+        }
+
+        // Define the control at the final mesh point for the final mesh 
+        // interval.
+        controls(Slice(), m_numGridPoints - 1) = 0;
+        for (int d = 0; d < m_degree; ++d) {
+            const int igrid = (m_numMeshIntervals - 1) * (m_degree + 1);
+            const auto c_t = controls(Slice(), igrid);
+            controls(Slice(), m_numGridPoints - 1) +=
+                    getLagrangePolynomial(d, 1) * c_t;
+        }
+    }
 };
 
 } // namespace CasOC

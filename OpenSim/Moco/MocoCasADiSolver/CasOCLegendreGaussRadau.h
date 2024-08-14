@@ -71,12 +71,6 @@ public:
         const int numGridPoints =
                 (int)mesh.size() + numMeshIntervals * (m_degree - 1);
         casadi::DM grid = casadi::DM::zeros(1, numGridPoints);
-        const bool interpControls = m_solver.getInterpolateControlMidpoints();
-        casadi::DM pointsForInterpControls;
-        if (interpControls) {
-            pointsForInterpControls = casadi::DM::zeros(1,
-                    numMeshIntervals * (m_degree - 1));
-        }
 
         // Get the collocation points (roots of Legendre polynomials). The roots
         // are returned on the interval (0, 1], not (-1, 1] as in the theses of
@@ -98,10 +92,6 @@ public:
             grid(igrid + m_degree) = t_ip1;
             for (int d = 0; d < m_degree-1; ++d) {
                 grid(igrid + d + 1) = t_i + (t_ip1 - t_i) * m_legendreRoots[d];
-                if (interpControls) {
-                    pointsForInterpControls(imesh * (m_degree - 1) + d) =
-                            grid(igrid + d + 1);
-                }
             }
         }
         grid(numGridPoints - 1) = mesh[numMeshIntervals];
@@ -118,6 +108,7 @@ private:
             const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
             casadi::MX& defects) const override;
     void calcInterpolatingControlsImpl(casadi::MX& controls) const override;
+    void calcInterpolatingControlsImpl(casadi::DM& controls) const override;
     std::vector<std::pair<Var, int>> getVariableOrder() const override;
 
     int m_degree;
@@ -125,6 +116,35 @@ private:
     casadi::DM m_differentiationMatrix;
     casadi::DM m_interpolationCoefficients;
     casadi::DM m_quadratureCoefficients;
+
+    template <typename T>
+    void calcInterpolatingControlsHelper(T& controls) const {
+        using casadi::Slice;
+
+        // This interpolation scheme is based on control approximation defined 
+        // by Eq. 6.16 in the thesis of Huntington [2].
+
+        // Evaluate the `i`th Lagrange polynomial at the point `tau`.
+        auto getLagrangePolynomial = [this](int i, double tau) -> double {
+            double polynomial = 1.0;
+            for (int d = 0; d < m_degree; ++d) {
+                if (i != d) {
+                    polynomial *= (tau - m_legendreRoots[d]) /
+                                (m_legendreRoots[i] - m_legendreRoots[d]);
+                }
+            }
+            return polynomial;
+        };
+
+        // The Legendre-Gauss-Radau points include a collocation point at the 
+        // final mesh point for all mesh intervals. Therefore, we only need to
+        // interpolate the control at the first mesh point.
+        controls(Slice(), 0) = 0;
+        for (int d = 0; d < m_degree; ++d) {
+            const auto c_t = controls(Slice(), d + 1);
+            controls(Slice(), 0) += getLagrangePolynomial(d, 0) * c_t;
+        }
+    }
 };
 
 } // namespace CasOC

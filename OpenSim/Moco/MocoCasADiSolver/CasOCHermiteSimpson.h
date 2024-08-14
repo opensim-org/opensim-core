@@ -40,6 +40,16 @@ namespace CasOC {
 /// Kinematic constraint and path constraint errors are enforced only at the
 /// mesh points. Errors at collocation points at the mesh interval midpoint
 /// are ignored.
+///
+/// References
+/// ----------
+/// [1] Hargraves, C.R., Paris, S.W. "Direct Trajectory Optimization Using 
+///     Nonlinear Programming and Collocation." Journal of Guidance, Control, 
+///     and Dynamics (1987).
+/// [2] Bordalba, Ricard, Tobias Schoels, Lluís Ros, Josep M. Porta, and
+///     Moritz Diehl. "Direct collocation methods for trajectory optimization
+///     in constrained robotic systems." IEEE Transactions on Robotics (2023).
+///
 class HermiteSimpson : public Transcription {
 public:
     HermiteSimpson(const Solver& solver, const Problem& problem)
@@ -64,8 +74,23 @@ private:
     void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
             const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
             casadi::MX& defects) const override;
-    void calcInterpolatingControlsImpl(casadi::MX& controls) const override;
     std::vector<std::pair<Var, int>> getVariableOrder() const override;
+    void calcInterpolatingControlsImpl(casadi::MX& controls) const override;
+    void calcInterpolatingControlsImpl(casadi::DM& controls) const override;
+
+    template <typename T>
+    void calcInterpolatingControlsHelper(T& controls) const {
+        using casadi::Slice;
+
+        // This control approximation scheme is based on the control scheme 
+        // proposed by Hargraves and Paris (1987) [1]. Linear interpolation of 
+        // controls is also recommended by Bordalba et al. (2023) [2].
+        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+            controls(Slice(), 2*imesh + 1) = 0.5 * (
+                    controls(Slice(), 2*imesh) + 
+                    controls(Slice(), 2*imesh + 2));
+        }
+    }
 };
 
 } // namespace CasOC

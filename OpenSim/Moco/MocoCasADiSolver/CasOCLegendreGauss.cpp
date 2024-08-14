@@ -104,36 +104,11 @@ void LegendreGauss::calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
 }
 
 void LegendreGauss::calcInterpolatingControlsImpl(casadi::MX& controls) const {
+    calcInterpolatingControlsHelper(controls);
+}
 
-    auto getLagrangePolynomial = [this](int i, double tau) -> double {
-        double polynomial = 1.0;
-        for (int d = 0; d < m_degree; ++d) {
-            if (i != d) {
-                polynomial *= (tau - m_legendreRoots[d]) /
-                              (m_legendreRoots[i] - m_legendreRoots[d]);
-            }
-        }
-        return polynomial;
-    };
-
-
-    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-        const int igrid = imesh * (m_degree + 1);
-        controls(Slice(), igrid) = 0;
-        for (int d = 0; d < m_degree; ++d) {
-            const auto c_t = controls(Slice(), igrid + d + 1);
-            controls(Slice(), igrid) += getLagrangePolynomial(d, 0) * c_t;
-        }
-    }
-
-    // Final control interpolation.
-    controls(Slice(), m_numGridPoints - 1) = 0;
-    for (int d = 0; d < m_degree; ++d) {
-        const int igrid = (m_numMeshIntervals - 1) * (m_degree + 1);
-        const auto c_t = controls(Slice(), igrid);
-        controls(Slice(), m_numGridPoints - 1) +=
-                getLagrangePolynomial(d, 1) * c_t;
-    }
+void LegendreGauss::calcInterpolatingControlsImpl(casadi::DM& controls) const {
+    calcInterpolatingControlsHelper(controls);
 }
 
 std::vector<std::pair<Var, int>> LegendreGauss::getVariableOrder() const {
@@ -150,7 +125,7 @@ std::vector<std::pair<Var, int>> LegendreGauss::getVariableOrder() const {
         }
         if (m_solver.getInterpolateControlMidpoints()) {
             for (int d = 0; d < m_degree; ++d) {
-                order.push_back({controls, m_degree * imesh + d});
+                order.push_back({controls, igrid + d + 1});
             }
         } else {
             for (int i = 0; i < N; ++i) {

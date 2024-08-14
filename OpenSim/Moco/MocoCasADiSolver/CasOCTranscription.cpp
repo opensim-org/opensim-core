@@ -226,7 +226,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_scaledVars[slacks] = MX::horzcat(m_scaledVectorVars[slacks]);
 
     // Interplate controls.
-    calcInterpolatingControls();
+    calcInterpolatingControls(m_scaledVars);
 
     // Set variable bounds.
     // --------------------
@@ -749,7 +749,6 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     }
 
     auto x = flattenVariables(m_scaledVectorVars);
-    std::cout << "variables: " << x << std::endl;
     casadi_int numVariables = x.numel();
 
     // The m_constraints symbolic vector holds all of the expressions for
@@ -819,6 +818,7 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     Solution solution = m_problem.createIterate<Solution>();
     const auto finalVariables = nlpResult.at("x");
     solution.variables = unscaleVariables(expandVariables(finalVariables));
+    calcInterpolatingControls(solution.variables);
     solution.objective = nlpResult.at("f").scalar();
 
     casadi::DMVector finalVarsDMV{finalVariables};

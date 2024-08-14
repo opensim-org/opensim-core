@@ -106,7 +106,7 @@ int main() {
     solver.set_parallel(0);
     solver.set_optim_solver("ipopt");
     solver.set_optim_hessian_approximation("exact");
-    solver.set_transcription_scheme("hermite-simpson");
+    solver.set_transcription_scheme("legendre-gauss-radau-3");
 
     // Now that we've finished setting up the tool, print it to a file.
     study.print("sliding_mass.omoco");
