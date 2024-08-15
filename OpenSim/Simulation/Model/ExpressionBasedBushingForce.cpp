@@ -276,6 +276,12 @@ void ExpressionBasedBushingForce::setFzExpression(std::string expression)
     set_Fz_expression(expression);
     FzProg = Lepton::Parser::parse(expression).optimize().createProgram();
 }
+
+const SimTK::Vec6& ExpressionBasedBushingForce::getBushingForce(
+        const SimTK::State& s) const {
+    return getCacheVariableValue<SimTK::Vec6>(s, _bushingForceCV);
+}
+
 //=============================================================================
 // COMPUTATION
 //=============================================================================
@@ -316,20 +322,11 @@ SimTK::Vec6 ExpressionBasedBushingForce::
     return -_dampingMatrix * dqdot;
 }
 
-void ExpressionBasedBushingForce::calcBushingForce(
+SimTK::Vec6 ExpressionBasedBushingForce::calcBushingForce(
         const SimTK::State& s) const {
-    if (isCacheVariableValid(s, _bushingForceCV)) {
-        return;
-    }
-
-    setCacheVariableValue(s, _bushingForceCV, 
-            calcStiffnessForce(s) + calcDampingForce(s));
-}
-
-const SimTK::Vec6& ExpressionBasedBushingForce::getBushingForce(
-        const SimTK::State& s) const {
-    calcBushingForce(s);
-    return getCacheVariableValue<SimTK::Vec6>(s, _bushingForceCV);
+    Vec6 f = calcStiffnessForce(s) + calcDampingForce(s);
+    setCacheVariableValue(s, _bushingForceCV, f);
+    return f;
 }
 
 
@@ -341,7 +338,7 @@ void ExpressionBasedBushingForce::computeForce(const SimTK::State& s,
 {
     // convert internal forces to spatial and add then add to system
     // physical (body) forces
-    addInPhysicalForcesFromInternal(s, getBushingForce(s), bodyForces);
+    addInPhysicalForcesFromInternal(s, calcBushingForce(s), bodyForces);
 }
 
 //=============================================================================
@@ -382,7 +379,7 @@ OpenSim::Array<double> ExpressionBasedBushingForce::
     SpatialVec F_GF( Vec3(0.0),Vec3(0.0) );
     
     // total bushing force in the internal basis of the deflection (dq) 
-    const Vec6& f = getBushingForce(s);
+    Vec6 f = calcBushingForce(s);
 
     convertInternalForceToForcesOnFrames(s, f, F_GF, F_GM);
 
@@ -441,7 +438,7 @@ void ExpressionBasedBushingForce::generateDecorations
             SpatialVec F_GF(Vec3(0.0), Vec3(0.0));
 
             // total bushing force in the internal basis of the deflection (dq) 
-            const Vec6& f = getBushingForce(s);
+            Vec6 f = calcBushingForce(s);
 
             convertInternalForceToForcesOnFrames(s, f, F_GF, F_GM);
 

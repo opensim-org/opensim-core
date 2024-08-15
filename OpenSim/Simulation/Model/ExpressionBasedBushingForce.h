@@ -94,10 +94,10 @@ public:
         "Damping parameters resisting translational deflection (delta_dot) .");
 
 //==============================================================================
-// PROPERTIES
+// OUTPUTS
 //==============================================================================
     OpenSim_DECLARE_OUTPUT(bushing_force, SimTK::Vec6, getBushingForce,
-        SimTK::Stage::Velocity);
+            SimTK::Stage::Dynamics);
 
 //==============================================================================
 // PUBLIC METHODS
@@ -221,7 +221,8 @@ public:
     std::string getFzExpression() { return get_Fz_expression(); }
 
     /** Get the total bushing force. This is the sum of the stiffness and damping
-        force contributions. **/
+        force contributions. Note, computeForce must be evaluated first,
+        and this is done automatically if the system is realized to Dynamics. */
     const SimTK::Vec6& getBushingForce(const SimTK::State& state) const;
 
     //--------------------------------------------------------------------------
@@ -282,7 +283,7 @@ private:
 
     /** Calculate the total bushing force. This is the sum of the stiffness and
         damping force contributions. */
-    void calcBushingForce(const SimTK::State& state) const;
+    SimTK::Vec6 calcBushingForce(const SimTK::State& state) const;
 
     SimTK::Mat66 _dampingMatrix{ 0.0 };
 
