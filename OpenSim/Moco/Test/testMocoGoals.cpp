@@ -1552,6 +1552,7 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoCasADiSolver") {
         spring_goal->addParameter(*parameter, "p");
         spring_goal->addParameter(*parameter2, "q");
 
+
         auto& ms = study.initCasADiSolver();
         ms.set_num_mesh_intervals(25);
         // not requiring initsystem is faster, still works with spring stiffness

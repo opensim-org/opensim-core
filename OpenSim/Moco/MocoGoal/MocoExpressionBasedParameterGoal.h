@@ -96,7 +96,8 @@ private:
     OpenSim_DECLARE_LIST_PROPERTY(variable_names, std::string,
             "Variable names of the MocoParameters to use in the expression.");
 
-    mutable Lepton::ExpressionProgram m_parameterProg;
+    mutable Lepton::ExpressionProgram m_program;
+    // stores references to one property per parameter
     mutable std::vector<SimTK::ReferencePtr<const AbstractProperty>> m_property_refs;
     enum DataType {
       Type_double,
