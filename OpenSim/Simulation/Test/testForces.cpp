@@ -34,8 +34,9 @@
 //      8. ExternalForce
 //      9. PathSpring
 //     10. ExpressionBasedCoordinateForce
-//     10. ExpressionBasedPointToPointForce
-//     11. Blankevoort1991Ligament
+//     11. ExpressionBasedPointToPointForce
+//     12. ExpressionBasedBushingForce
+//     13. Blankevoort1991Ligament
 //
 //     Add tests here as Forces are added to OpenSim
 //
@@ -929,6 +930,11 @@ TEST_CASE("testExpressionBasedBushingForceTranslational") {
         // check analytical force corresponds to the force on the ball
         // in the Y direction, index = 7
         ASSERT_EQUAL(analytical_force, model_force[7], 2e-4);
+
+        // check that the force from the Output is correct
+        SimTK::Vec6 output_force = 
+                spring.getOutputValue<SimTK::Vec6>(osim_state, "bushing_force");
+        ASSERT_EQUAL(analytical_force, output_force[4], 2e-4);
     }
 
     manager.getStateStorage().print(
@@ -1060,6 +1066,11 @@ TEST_CASE("testExpressionBasedBushingForceRotational") {
         // check analytical moment corresponds to the moment on the ball
         // in the Y direction, index = 4
         ASSERT_EQUAL(analytical_moment, model_forces[4], 2e-4);
+
+        // check that the force from the Output is correct
+        SimTK::Vec6 output_force = 
+                spring.getOutputValue<SimTK::Vec6>(osim_state, "bushing_force");
+        ASSERT_EQUAL(analytical_moment, output_force[1], 2e-4);
     }
 
     manager.getStateStorage().print(

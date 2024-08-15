@@ -75,7 +75,7 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Fixed bugs in `convertToMocoTrajectory()` and `MocoTrajectory::resampleWithFrequency()` by updating `interpolate()` to 
   allow extrapolation using the `extrapolate` flag. Combined with the `ignoreNaNs` flag, this prevents NaNs from 
   occurring in the output. (#3867)
-- Added `Output`s to `ExpressionBasedCoordinateForce` and `ExpressionBasedPointToPointForce` for accessing force values. (#3872)
+- Added `Output`s to `ExpressionBasedCoordinateForce`, `ExpressionBasedPointToPointForce`, and `ExpressionBasedBushingForce` for accessing force values. (#3872)
 
 
 v4.5

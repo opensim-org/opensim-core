@@ -382,7 +382,7 @@ OpenSim::Array<double> ExpressionBasedBushingForce::
     SpatialVec F_GF( Vec3(0.0),Vec3(0.0) );
     
     // total bushing force in the internal basis of the deflection (dq) 
-    Vec6 f = calcStiffnessForce(s) + calcDampingForce(s);
+    const Vec6& f = getBushingForce(s);
 
     convertInternalForceToForcesOnFrames(s, f, F_GF, F_GM);
 
@@ -441,7 +441,7 @@ void ExpressionBasedBushingForce::generateDecorations
             SpatialVec F_GF(Vec3(0.0), Vec3(0.0));
 
             // total bushing force in the internal basis of the deflection (dq) 
-            Vec6 f = calcStiffnessForce(s) + calcDampingForce(s);
+            const Vec6& f = getBushingForce(s);
 
             convertInternalForceToForcesOnFrames(s, f, F_GF, F_GM);
 

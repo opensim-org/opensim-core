@@ -53,7 +53,7 @@ ExpressionBasedCoordinateForce::ExpressionBasedCoordinateForce(
     setExpression(expression);
 }
 
-// Set the expression for the force function and create it's lepton program
+// Set the expression for the force function and create its lepton program
 void ExpressionBasedCoordinateForce::setExpression(const string& expression)
 {
     set_expression(expression);
