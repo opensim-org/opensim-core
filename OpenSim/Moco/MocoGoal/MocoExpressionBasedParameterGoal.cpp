@@ -21,7 +21,6 @@
 #include <lepton/Exception.h>
 #include <lepton/ParsedExpression.h>
 #include <lepton/Parser.h>
-
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
@@ -34,22 +33,22 @@ void MocoExpressionBasedParameterGoal::constructProperties() {
 
 void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model)
         const {
-    m_program = Lepton::Parser::parse(get_expression()).optimize().createProgram();
+    m_program = Lepton::Parser::parse(get_expression()).optimize()
+                .createProgram();
     setRequirements(1, 1);
 
-    // store parameter property ref
     for (int i = 0; i < getProperty_parameters().size(); i++) {
-        std::string componentPath = get_parameters(i).getComponentPaths()[0];  // first one bc they should all be the same
+        // onylt taking the first one since they should all be the same value
+        std::string componentPath = get_parameters(i).getComponentPaths()[0];
         const auto& component = model.getComponent(componentPath);
-        // Get component property.
-        const auto* ap = &component.getPropertyByName(get_parameters(i).getPropertyName());
+        const auto* ap = &component.getPropertyByName(
+                                get_parameters(i).getPropertyName());
         m_property_refs.emplace_back(ap);
 
         // get the type of the property, and element
         OPENSIM_THROW_IF_FRMOBJ(ap->isListProperty(), Exception,
             "MocoParameter does not support list properties.");
 
-        // Type detection and property element value error checking.
         if (dynamic_cast<const Property<double>*>(ap)) {
             m_data_types.emplace_back(Type_double);
         } else {
@@ -68,15 +67,14 @@ void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model)
         }
     }
 
-    std::map<std::string, double> parameterVars;
-    for (int i = 0; i < getProperty_variable_names().size(); ++i) {
-        std::string variableName = get_variable_names(i);
-        parameterVars[variableName] = getPropertyValue(i);
-    }
-
     // test to make sure all variables are there
     try
     {
+        std::map<std::string, double> parameterVars;
+        for (int i = 0; i < getProperty_variable_names().size(); ++i) {
+            std::string variableName = get_variable_names(i);
+            parameterVars[variableName] = getPropertyValue(i);
+        }
         m_program.evaluate(parameterVars);
     }
     catch (Lepton::Exception& ex)
@@ -87,7 +85,8 @@ void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model)
             help = " Use addParameter() to add a parameter for this variable, "
                    "or remove the variable from the expression for this goal.";
         }
-        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Expression evaluate error: {}.{}", msg, help));
+        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Expression evaluate error:"
+                                                    " {}.{}", msg, help));
     }
 }
 
@@ -102,11 +101,13 @@ double MocoExpressionBasedParameterGoal::getPropertyValue(int i) const {
 
     int elt = m_indices[i];
     if (m_data_types[i] == Type_Vec3) {
-        return static_cast<const Property<SimTK::Vec3>*>(propRef.get())->getValue()[elt];
+        return static_cast<const Property<SimTK::Vec3>*>(propRef.get())
+                                                     ->getValue()[elt];
     }
 
     if (m_data_types[i] == Type_Vec6) {
-        return static_cast<const Property<SimTK::Vec6>*>(propRef.get())->getValue()[elt];
+        return static_cast<const Property<SimTK::Vec6>*>(propRef.get())
+                                                     ->getValue()[elt];
     }
 
     OPENSIM_THROW_FRMOBJ(Exception, "Properties not of a recognized type.");
@@ -131,6 +132,7 @@ void MocoExpressionBasedParameterGoal::calcGoalImpl(
 void MocoExpressionBasedParameterGoal::printDescriptionImpl() const {
     log_cout("        expression: {}", get_expression());
     for (int i = 0; i < getProperty_parameters().size(); ++i) {
-        log_cout("        var {}: {}", get_variable_names(i), get_parameters(i).getName());
+        log_cout("        var {}: {}", get_variable_names(i),
+                 get_parameters(i).getName());
     }
 }

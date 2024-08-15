@@ -20,10 +20,9 @@
 
 #include "MocoGoal.h"
 #include "OpenSim/Moco/MocoParameter.h"
-#include <lepton/ExpressionProgram.h>
-
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Property.h>
+#include <lepton/ExpressionProgram.h>
 #include <SimTKcommon/internal/ReferencePtr.h>
 #include <SimTKcommon/internal/State.h>
 
@@ -35,8 +34,12 @@ number of MocoParameters that are combined into a single goal. The expression
 string should match the Lepton (lightweight expression parser) format.
 
 Expressions can be any string that represents a mathematical expression, e.g.,
-"x*sqrt(y-8)". See Parser::getFunctionOperation for a full list of avilable
-functions.
+"x*sqrt(y-8)". Expressions can contain variables, constants, operations,
+parentheses, commas, spaces, and scientific e notation. The full list of
+operations (also in Lepton::Operation) is:
+sqrt, exp, log, sin, cos, sec, csc, tan, cot, asin, acos, atan, sinh, cosh,
+tanh, erf, erfc, step, delta, square, cube, recip, min, max, abs, as well as
++, -, *, /, and ^.
 
 @ingroup mocogoal */
 class OSIMMOCO_API MocoExpressionBasedParameterGoal : public MocoGoal {
@@ -44,7 +47,8 @@ class OSIMMOCO_API MocoExpressionBasedParameterGoal : public MocoGoal {
 
 public:
     MocoExpressionBasedParameterGoal() { constructProperties(); }
-    MocoExpressionBasedParameterGoal(std::string name) : MocoGoal(std::move(name)) {
+    MocoExpressionBasedParameterGoal(std::string name)
+            : MocoGoal(std::move(name)) {
         constructProperties();
     }
     MocoExpressionBasedParameterGoal(std::string name, double weight)

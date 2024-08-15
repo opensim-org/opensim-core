@@ -1548,7 +1548,7 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoCasADiSolver") {
                                           "stiffness", MocoBounds(0, 100));
         auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
         // minimum is when p + q = STIFFNESS
-        spring_goal->setExpression(fmt::format("square(p+q-{})", STIFFNESS));
+        spring_goal->setExpression(fmt::format("square( p+q-{} )", STIFFNESS));
         spring_goal->addParameter(*parameter, "p");
         spring_goal->addParameter(*parameter2, "q");
 
