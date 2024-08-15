@@ -215,6 +215,13 @@ void ExpressionBasedBushingForce::extendFinalizeFromProperties()
     }
 }
 
+void ExpressionBasedBushingForce::extendAddToSystem(
+        SimTK::MultibodySystem& system) const {
+    Super::extendAddToSystem(system); 
+    this->_bushingForceCV = addCacheVariable("bushing_force", SimTK::Vec6(0),
+            SimTK::Stage::Velocity);
+}
+
 /** Set the expression for the Mx function and create it's lepton program */
 void ExpressionBasedBushingForce::setMxExpression(std::string expression) 
 {
@@ -309,6 +316,22 @@ SimTK::Vec6 ExpressionBasedBushingForce::
     return -_dampingMatrix * dqdot;
 }
 
+void ExpressionBasedBushingForce::calcBushingForce(
+        const SimTK::State& s) const {
+    if (isCacheVariableValid(s, _bushingForceCV)) {
+        return;
+    }
+
+    setCacheVariableValue(s, _bushingForceCV, 
+            calcStiffnessForce(s) + calcDampingForce(s));
+}
+
+const SimTK::Vec6& ExpressionBasedBushingForce::getBushingForce(
+        const SimTK::State& s) const {
+    calcBushingForce(s);
+    return getCacheVariableValue<SimTK::Vec6>(s, _bushingForceCV);
+}
+
 
 /* Compute the force contribution to the system and add in to appropriate
 * bodyForce and/or system generalizedForce. */
@@ -316,17 +339,9 @@ void ExpressionBasedBushingForce::computeForce(const SimTK::State& s,
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
                               SimTK::Vector& generalizedForces) const
 {
-    // stiffness force
-    Vec6 fk = calcStiffnessForce(s);
-    // damping force
-    Vec6 fv = calcDampingForce(s);
-
-    // total bushing force in the internal basis of the deflection (dq) 
-    Vec6 f = fk + fv;
-
     // convert internal forces to spatial and add then add to system
     // physical (body) forces
-    addInPhysicalForcesFromInternal(s, f, bodyForces);
+    addInPhysicalForcesFromInternal(s, getBushingForce(s), bodyForces);
 }
 
 //=============================================================================

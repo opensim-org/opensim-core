@@ -75,7 +75,7 @@ public:
 // OUTPUTS
 //==============================================================================
     OpenSim_DECLARE_OUTPUT(force, double, getForceMagnitude,
-        SimTK::Stage::Dynamics);
+        SimTK::Stage::Velocity);
 
 //==============================================================================
 // PUBLIC METHODS
