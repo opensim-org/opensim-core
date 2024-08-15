@@ -19,7 +19,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "CasOCSolver.h"
-#include <casadi/core/dm_fwd.hpp>
 
 namespace CasOC {
 
@@ -388,17 +387,14 @@ private:
         //    residual_0     x     x
         //    kinematic_0    x
         //    path_0         x     *
-        //    interp_con_0   x     x     x
         //    defect_1                   x     x     x
         //    residual_1                 x     x
         //    kinematic_1                x
         //    path_1                     x     *
-        //    interp_con_1               x     x     x
         //    defect_2                               x     x     x
         //    residual_2                             x     x
         //    kinematic_2                            x
         //    path_2                                 x     *
-        //    interp_con_2                           x     x     x
         //    residual_3                                         x
         //    kinematic_3                                        x
         //    path_3                                             x

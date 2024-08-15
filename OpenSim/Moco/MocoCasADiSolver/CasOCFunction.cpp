@@ -215,7 +215,7 @@ casadi::DM Endpoint::getSubsetPoint(const VariablesDM& fullPoint,
     } else if (i == 9) {
         return fullPoint.at(derivatives)(Slice(), -1);
     } else if (i == 10) {
-        return fullPoint.at(parameters)(Slice(), -1);
+        return fullPoint.at(parameters)(Slice(), 0);
     } else if (i == 11) {
         // TODO: We should find a way to actually compute the integral
         // from fullPoint. Or, make the integral an optimization variable.

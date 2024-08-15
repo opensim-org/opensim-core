@@ -342,6 +342,12 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     }
     m_unscaledVars = unscaleVariables(m_scaledVars);
 
+    // Convert parameter variables to trajectories of length m_numGridPoints so
+    // we can easily index over them (e.g., in evalOnTrajectory()). We have
+    // parameter values for each mesh point, and they are enforced to be 
+    // time-invariant via constraints in calcDefects(). To maintain optimal 
+    // sparsity structure, parameter values in the trajectories will be assigned
+    // based on the parameter variable at the corresponding mesh interval. 
     m_times = MX(casadi::Sparsity::dense(1, m_numGridPoints));
     m_parameters = MX(casadi::Sparsity::dense(
             m_problem.getNumParameters(), m_numGridPoints));
@@ -364,6 +370,8 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                    m_unscaledVars[initial_time](-1);
 
     m_duration = m_unscaledVars[final_time] - m_unscaledVars[initial_time];
+
+    // TODO this is incorrect for a non-uniform mesh.
     m_intervals = m_duration / m_numMeshIntervals;
 }
 
@@ -1329,8 +1337,6 @@ casadi::MXVector Transcription::evalOnTrajectory(
                 m_unscaledVars.at(states)(Slice(0, NQ + NU), timeIndices);
         } else if (inputs[i] == slacks) {
             mxIn[i + 1] = m_unscaledVars.at(inputs[i]);
-        // } else if (inputs[i] == controls) {
-        //     mxIn[i + 1] = m_controls(Slice(), timeIndices);
         } else {
             mxIn[i + 1] = m_unscaledVars.at(inputs[i])(Slice(), timeIndices);
         }

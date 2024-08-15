@@ -16,7 +16,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "CasOCLegendreGauss.h"
-#include <casadi/core/interpolant.hpp>
 
 using casadi::DM;
 using casadi::MX;
