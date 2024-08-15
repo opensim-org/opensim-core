@@ -347,12 +347,18 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     // parameter values for each mesh point, and they are enforced to be 
     // time-invariant via constraints in calcDefects(). To maintain optimal 
     // sparsity structure, parameter values in the trajectories will be assigned
-    // based on the parameter variable at the corresponding mesh interval. 
+    // based on the parameter variable at the corresponding mesh interval.
+    const auto& mesh = m_solver.getMesh();
+    m_intervals = MX(casadi::Sparsity::dense(1, m_numMeshIntervals));
     m_times = MX(casadi::Sparsity::dense(1, m_numGridPoints));
     m_parameters = MX(casadi::Sparsity::dense(
             m_problem.getNumParameters(), m_numGridPoints));
     int N = m_numPointsPerMeshInterval - 1;
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        m_intervals(imesh) = (mesh[imesh + 1] - mesh[imesh]) * 
+                (m_unscaledVars[final_time](imesh) - 
+                 m_unscaledVars[initial_time](imesh)); 
+
         int igrid = imesh * N;
         for (int i = 0; i < N; ++i) {
             m_parameters(Slice(), igrid + i) =
@@ -370,9 +376,6 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                    m_unscaledVars[initial_time](-1);
 
     m_duration = m_unscaledVars[final_time] - m_unscaledVars[initial_time];
-
-    // TODO this is incorrect for a non-uniform mesh.
-    m_intervals = m_duration / m_numMeshIntervals;
 }
 
 void Transcription::transcribe() {
