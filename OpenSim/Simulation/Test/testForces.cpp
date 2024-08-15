@@ -192,7 +192,7 @@ TEST_CASE("testExpressionBasedCoordinateForce") {
         double analytical_force = -10*ball_h - 5*ball_h_dot;
         double model_force = spring->getForceMagnitude(osim_state);
         double output_force = 
-                spring->getOutputValue<double>(osim_state, "force");
+                spring->getOutputValue<double>(osim_state, "force_magnitude");
         ASSERT_EQUAL(analytical_force, model_force, 1e-5);
         ASSERT_EQUAL(analytical_force, output_force, 1e-5);
     }
@@ -277,7 +277,8 @@ TEST_CASE("testExpressionBasedPointToPointForce") {
 
     // Now check that the force reported by spring
     double model_force = p2pForce->getForceMagnitude(state);
-    double output_force = p2pForce->getOutputValue<double>(state, "force");
+    double output_force = 
+            p2pForce->getOutputValue<double>(state, "force_magnitude");
 
     // Save the forces
     // reporter->getForceStorage().print("path_spring_forces.mot");
