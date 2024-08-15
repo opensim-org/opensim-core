@@ -1071,7 +1071,7 @@ TEST_CASE("testExpressionBasedBushingForceRotational") {
         // check that the force from the Output is correct
         SimTK::Vec6 output_force = 
                 spring.getOutputValue<SimTK::Vec6>(osim_state, "bushing_force");
-        ASSERT_EQUAL(analytical_moment, output_force[1], 2e-4);
+        ASSERT_EQUAL(analytical_moment, -output_force[1], 2e-4);
     }
 
     manager.getStateStorage().print(
