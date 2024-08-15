@@ -187,10 +187,12 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             auto it = std::find(controlIndicesVector.begin(),
                     controlIndicesVector.end(), igrid);
             if (it != controlIndicesVector.end()) {
+                std::cout << "Control var: " << igrid << std::endl;
                 m_scaledVectorVars[controls].push_back(
                         MX::sym("controls_" + std::to_string(igrid),
                                 m_problem.getNumControls(), 1));
             } else {
+                std::cout << "Symbolic var: " << igrid << std::endl;
                 m_scaledVectorVars[controls].push_back(
                         MX(m_problem.getNumControls(), 1));
             }

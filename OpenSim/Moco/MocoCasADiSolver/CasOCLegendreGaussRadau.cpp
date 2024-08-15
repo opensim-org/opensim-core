@@ -114,7 +114,7 @@ std::vector<std::pair<Var, int>> LegendreGaussRadau::getVariableOrder() const {
         }
         if (m_solver.getInterpolateControlMidpoints()) {
             for (int d = 0; d < m_degree; ++d) {
-                order.push_back({controls, m_degree * imesh + d});
+                order.push_back({controls, igrid + d + 1});
             }
         } else {
             for (int i = 0; i < N; ++i) {
@@ -133,9 +133,7 @@ std::vector<std::pair<Var, int>> LegendreGaussRadau::getVariableOrder() const {
     order.push_back({initial_time, m_numMeshIntervals});
     order.push_back({final_time, m_numMeshIntervals});
     order.push_back({parameters, m_numMeshIntervals});
-    if (!m_solver.getInterpolateControlMidpoints()) {
-        order.push_back({controls, m_numGridPoints - 1});
-    }
+    order.push_back({controls, m_numGridPoints - 1});
     order.push_back({multipliers, m_numGridPoints - 1});
     order.push_back({derivatives, m_numGridPoints - 1});
 
