@@ -43,20 +43,16 @@ tanh, erf, erfc, step, delta, square, cube, recip, min, max, abs, as well as
 # Examples
 
 @code
-// create two parameters to include in the goal
-MocoStudy study;
-MocoProblem& mp = study.updProblem();
-mp.setModel(createOscillatorTwoSpringsModel());
-mp.setTimeBounds(0, FINAL_TIME);
-auto* parameter = mp.addParameter("spring_stiffness", "spring1",
-                                          "stiffness", MocoBounds(0, 100));
-auto* parameter2 = mp.addParameter("spring2_stiffness", "spring2",
-                                          "stiffness", MocoBounds(0, 100));
+auto* spring1_parameter = mp.addParameter("spring_stiffness", "spring1",
+                                       "stiffness", MocoBounds(0, 100));
+auto* spring2_parameter = mp.addParameter("spring2_stiffness", "spring2",
+                                       "stiffness", MocoBounds(0, 100));
 auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
+double STIFFNESS = 100.0;
 // minimum is when p + q = STIFFNESS
 spring_goal->setExpression(fmt::format("square( p+q-{} )", STIFFNESS));
-spring_goal->addParameter(*parameter, "p");
-spring_goal->addParameter(*parameter2, "q");
+spring_goal->addParameter(*spring1_parameter, "p");
+spring_goal->addParameter(*spring2_parameter, "q");
 @endcode
 
 @ingroup mocogoal */

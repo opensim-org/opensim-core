@@ -1591,4 +1591,27 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoCasADiSolver") {
 
         CHECK_NOTHROW(study.initCasADiSolver());
     }
+
+    SECTION("endpoint goal") {
+        auto* parameter = mp.addParameter("spring_stiffness", "spring1",
+                                          "stiffness", MocoBounds(0, 100));
+        auto* parameter2 = mp.addParameter("spring2_stiffness", "spring2",
+                                          "stiffness", MocoBounds(0, 100));
+        auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
+        spring_goal->setExpression(fmt::format("square( p+q-{} )", STIFFNESS));
+        spring_goal->addParameter(*parameter, "p");
+        spring_goal->addParameter(*parameter2, "q");
+        // set as endpoint constraint
+        spring_goal->setMode("endpoint_constraint");
+
+        auto& ms = study.initCasADiSolver();
+        ms.set_num_mesh_intervals(25);
+        // not requiring initsystem is faster, still works with spring stiffness
+        ms.set_parameters_require_initsystem(false);
+        MocoSolution sol = study.solve();
+
+        CHECK(sol.getParameter("spring_stiffness") +
+              sol.getParameter("spring2_stiffness") ==
+              Catch::Approx(STIFFNESS).epsilon(1e-6));
+    }
 }
