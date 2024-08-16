@@ -144,8 +144,7 @@ Meyer A. J., Eskinazi, I., Jackson, J. N., Rao, A. V., Patten, C., & Fregly,
 B. J. (2016). Muscle Synergies Facilitate Computational Prediction of
 Subject-Specific Walking Motions. Frontiers in Bioengineering and
 Biotechnology, 4, 1055–27. http://doi.org/10.3389/fbioe.2016.00077 
-    
-@underdevelopment */
+ */
 class OSIMMOCO_API MeyerFregly2016Force
         : public StationPlaneContactForce {
 OpenSim_DECLARE_CONCRETE_OBJECT(MeyerFregly2016Force,

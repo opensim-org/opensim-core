@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2020 Stanford University and the Authors                *
- * Author(s): Spencer Williams, Christopher Dembia, Nicholas Bianco           *
+ * Author(s): Christopher Dembia, Nicholas Bianco, Spencer Williams           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -35,17 +35,10 @@ namespace OpenSim {
 //       might be slow.
 // TODO prohibit fiber length from going below 0.2.
 
-/** This muscle model was published in De Groote et al. 2016. 
+/** This muscle model was published in Meyer et al. 2016. 
 
-The parameters of the active force-length and force-velocity curves have
-been slightly modified from what was published to ensure the curves go
-through key points:
-- Active force-length curve goes through (1, 1).
-- Force-velocity curve goes through (-1, 0) and (0, 1).
-The default tendon force curve parameters are modified from that in De
-Groote et al., 2016: the curve is parameterized by the strain at 1 norm
-force (rather than "kT"), and the default value for this parameter is
-0.049 (same as in TendonForceLengthCurve) rather than 0.0474.
+This muscle implementation is based on the previously implemented 
+DeGrooteFregly2016Muscle.
 
 This implementation introduces the property 'active_force_width_scale' as 
 an addition to the original model, which allows users to effectively make 
@@ -97,10 +90,10 @@ settings could theoretically be changed. However, for this class, the
 modeling option is ignored and the values of the ignore_tendon_compliance
 and ignore_activation_dynamics properties are used directly.
 
-De Groote, F., Kinney, A. L., Rao, A. V., & Fregly, B. J. (2016). Evaluation
-of Direct Collocation Optimal Control Problem Formulations for Solving the
-Muscle Redundancy Problem. Annals of Biomedical Engineering, 44(10), 1–15.
-http://doi.org/10.1007/s10439-016-1591-9 */
+Meyer A. J., Eskinazi, I., Jackson, J. N., Rao, A. V., Patten, C., & Fregly,
+B. J. (2016). Muscle Synergies Facilitate Computational Prediction of
+Subject-Specific Walking Motions. Frontiers in Bioengineering and
+Biotechnology, 4, 1055–27. http://doi.org/10.3389/fbioe.2016.00077 */
 class OSIMACTUATORS_API MeyerFregly2016Muscle : public Muscle {
     OpenSim_DECLARE_CONCRETE_OBJECT(MeyerFregly2016Muscle, Muscle);
 
@@ -428,15 +421,6 @@ public:
 
     /// This is the passive force-length curve. The curve becomes negative below
     /// the minNormFiberLength.
-    ///
-    /// We modified this equation from that in the supplementary materials of De
-    /// Groote et al., 2016, which is the same function used in
-    /// Thelen2003Muscle. The version in the supplementary materials passes
-    /// through y = 0 at x = 1.0 and allows for negative forces. We do not want
-    /// negative forces within the allowed range of fiber lengths, so we
-    /// modified the equation to pass through y = 0 at x = minNormFiberLength. 
-    /// (This is not an issue for Thelen2003Muscle because the curve is not 
-    /// smooth and returns 0 for lengths less than optimal fiber length.)
     SimTK::Real calcPassiveForceMultiplier(
             const SimTK::Real& normFiberLength) const {
         if (get_ignore_passive_fiber_force()) return 0;
@@ -458,19 +442,12 @@ public:
     /// the normalized fiber length over the domain
     /// [minNormFiberLength normFiberLength], where minNormFiberLength is the
     /// value return by getMinNormalizedFiberLength().
+    /// 
+    /// This placeholder implementation returns zero. 
+
     SimTK::Real calcPassiveForceMultiplierIntegral(
             const SimTK::Real& normFiberLength) const {
-        if (get_ignore_passive_fiber_force()) return 0;
-
-        const double& e0 = get_passive_fiber_strain_at_one_norm_force();
-
-        const double temp1 = 
-                e0 + kPE * normFiberLength - kPE * m_minNormFiberLength;
-        const double temp2 = exp(kPE * (normFiberLength - 1.0) / e0);
-        const double temp3 = exp(kPE * (m_minNormFiberLength - 1.0) / e0);
-        const double numer = exp(kPE) * temp1 - e0 * temp2;
-        const double denom = kPE * (temp3 - exp(kPE));
-        return (temp1 / kPE) + (numer / denom);
+        return 0;
     }
 
     /// The normalized tendon force as a function of normalized tendon length.
