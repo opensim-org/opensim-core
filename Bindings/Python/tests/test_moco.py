@@ -52,6 +52,7 @@ def createDoubleSlidingMassModel():
     model.addComponent(actu)
 
     model.finalizeConnections()
+    model.initSystem()
     return model
 
 
@@ -414,7 +415,6 @@ class TestWorkflow(unittest.TestCase):
 
     def test_expression_based_parameter_goal(self):
         study = osim.MocoStudy()
-        #model->initSystem();
         mp = study.updProblem()
         mp.setModel(createDoubleSlidingMassModel())
         mp.setTimeBounds(0, 1)
@@ -428,7 +428,7 @@ class TestWorkflow(unittest.TestCase):
         parameter2 = mp.addParameter("sphere2_mass", "body2", "mass",
                                      osim.MocoBounds(0, 10))
         total_weight = 7
-        mass_goal = mp.addGoal<osim.MocoExpressionBasedParameterGoal>()
+        mass_goal = mp.addGoal(osim.MocoExpressionBasedParameterGoal())
         mass_goal.setExpression(f"(p+q-{total_weight})^2")
         mass_goal.addParameter(parameter, "p")
         mass_goal.addParameter(parameter2, "q")
