@@ -418,17 +418,18 @@ class TestWorkflow(unittest.TestCase):
         mp = study.updProblem()
         mp.setModel(createDoubleSlidingMassModel())
         mp.setTimeBounds(0, 1)
-        mp.setStateInfo("/slider/position/value", {-5, 5}, 0, {0.2, 0.3})
-        mp.setStateInfo("/slider/position/speed", {-20, 20})
-        mp.setStateInfo("/slider2/position/value", {-5, 5}, 1, {1.2, 1.3})
-        mp.setStateInfo("/slider2/position/speed", {-20, 20})
+        mp.setStateInfo("/slider/position/value", [-5, 5], 0, [0.2, 0.3])
+        mp.setStateInfo("/slider/position/speed", [-20, 20])
+        mp.setStateInfo("/slider2/position/value", [-5, 5], 1, [1.2, 1.3])
+        mp.setStateInfo("/slider2/position/speed", [-20, 20])
 
         parameter = mp.addParameter("sphere_mass", "body", "mass",
                                     osim.MocoBounds(0, 10))
         parameter2 = mp.addParameter("sphere2_mass", "body2", "mass",
                                      osim.MocoBounds(0, 10))
         total_weight = 7
-        mass_goal = mp.addGoal(osim.MocoExpressionBasedParameterGoal())
+        mass_goal = osim.MocoExpressionBasedParameterGoal()
+        mp.addGoal(mass_goal)
         mass_goal.setExpression(f"(p+q-{total_weight})^2")
         mass_goal.addParameter(parameter, "p")
         mass_goal.addParameter(parameter2, "q")
