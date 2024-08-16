@@ -261,21 +261,23 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
             Property<SimTK::Vec3>& prop = Property<SimTK::Vec3>::updAs(ap);
             prop = SimTK::Vec3(abs(rand()), abs(rand()), abs(rand()));
         } else if (ts == "Vec6" && !isList) {
-            // Only property that uses a Vec6 is the inertia property
-            // Might as well select valid inertias for the purpose of testing
             Property<SimTK::Vec6>& prop = Property<SimTK::Vec6>::updAs(ap);
-            double Ixx = abs(rand());
-            double Ixy = 0.01*Ixx;
-            prop = SimTK::Vec6(Ixx, Ixx, Ixx, Ixy, Ixy, Ixy);
+            prop = SimTK::Vec6(abs(rand()), abs(rand()), abs(rand()), 
+                    abs(rand()), abs(rand()), abs(rand()));
         } else if (ts == "string") {
-            string base("ABCXYZ");
-            if (isList){
-                stringstream val;
-                val << base << "_" << ap.size();
-                ap.appendValue<string>(val.str());
-            }
-            else{
-                ap.updValue<string>() = base;
+            // The expressions in ExpressionBasedBushingForce cannot be truly
+            // randomized since they must contain specific variable names (e.g.,
+            // "theta_x", "delta_x", etc.).
+            if (obj->getConcreteClassName() != "ExpressionBasedBushingForce") {
+                string base("ABCXYZ");
+                if (isList){
+                    stringstream val;
+                    val << base << "_" << ap.size();
+                    ap.appendValue<string>(val.str());
+                }
+                else{
+                    ap.updValue<string>() = base;
+                }
             }
         } else if (ts == "double" && isList && ap.getMaxListSize() < 20) {
             for (int i=0; i< ap.getMaxListSize(); ++i)
