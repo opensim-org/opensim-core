@@ -423,10 +423,12 @@ class TestWorkflow(unittest.TestCase):
         mp.setStateInfo("/slider2/position/value", [-5, 5], 1, [1.2, 1.3])
         mp.setStateInfo("/slider2/position/speed", [-20, 20])
 
-        parameter = mp.addParameter("sphere_mass", "body", "mass",
+        parameter = osim.MocoParameter("sphere_mass", "body", "mass",
                                     osim.MocoBounds(0, 10))
-        parameter2 = mp.addParameter("sphere2_mass", "body2", "mass",
+        mp.addParameter(parameter)
+        parameter2 = osim.MocoParameter("sphere2_mass", "body2", "mass",
                                      osim.MocoBounds(0, 10))
+        mp.addParameter2(parameter)
         total_weight = 7
         mass_goal = osim.MocoExpressionBasedParameterGoal()
         mp.addGoal(mass_goal)
