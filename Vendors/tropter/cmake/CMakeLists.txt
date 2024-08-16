@@ -21,9 +21,7 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             ${IPOPT_LIBDIR}/libipopt.dylib
             ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.3.dylib
             ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.dylib
-            ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.1.3.10.dylib
-            ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.1.dylib
-            ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.dylib
+            ${IPOPT_LIBDIR}/../../metis/lib/libmetis.dylib
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
@@ -64,9 +62,7 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
             ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.so.3.0.5
             ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.so.3
             ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.so
-            ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.so.1.3.10
-            ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.so.1
-            ${IPOPT_LIBDIR}/../../metis/lib/libcoinmetis.so
+            ${IPOPT_LIBDIR}/../../metis/lib/libmetis.so
 
             ${gfortran}
             ${quadmath}

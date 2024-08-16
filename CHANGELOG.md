@@ -6,8 +6,8 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
-v4.6
-====
+v4.5.1
+======
 - Added support for list `Socket`s via the macro `OpenSim_DECLARE_LIST_SOCKET`. The macro-generated method
   `appendSocketConnectee_*` can be used to connect `Object`s to a list `Socket`. In addition, `Component` and Socket have
   new `getConnectee` overloads that take an index to a desired object in the list `Socket` (#3652).
@@ -67,8 +67,7 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Fixed bugs in `MocoCasOCProblem` and `CasOC::Problem` with incorrect string formatting. (#3828)
 - Fixed `MocoOrientationTrackingGoal::initializeOnModelImpl` to check for missing kinematic states, but allow other missing columns. (#3830)
 - Improved exception handling for internal errors in `MocoCasADiSolver`. Problems will now abort and print a descriptive error message (rather than fail due to an empty trajectory). (#3834)
-
-
+- Upgraded the Ipopt dependency Metis to version 5.1.0 on Unix and macOS to enable building on `osx-arm64` (#3874).
 
 v4.5
 ====
