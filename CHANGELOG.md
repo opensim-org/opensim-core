@@ -60,6 +60,7 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Upgrade Python and NumPy versions to 3.10 and 1.25, repectively, in ci workflow (#3794).
 - Fixed bug in `report.py` preventing plotting multiple MocoParameter values. (#3808)
 - Added SynergyController, a controller that computes controls for a model based on a linear combination of a set of Input control signals and a set of synergy vectors. (#3796)
+- Added `MeyerFregly2016Muscle` and completed the implementation of the `MeyerFregly2016Force` included in the `StationPlaneContactForce` class to support NMSM Pipeline-equivalent muscle and contant models in Moco. 
 
 
 v4.5
