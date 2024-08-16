@@ -33,9 +33,8 @@ void MocoExpressionBasedParameterGoal::constructProperties() {
 
 void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model)
         const {
-    if (get_expression() == "") {
-        log_warn("The expression has not been set.");
-    }
+    OPENSIM_THROW_IF_FRMOBJ(get_expression() == "", Exception,
+            "The expression has not been set. Use setExpression().")
     m_program = Lepton::Parser::parse(get_expression()).optimize()
                 .createProgram();
     setRequirements(0, 1, SimTK::Stage::Instance);
@@ -72,8 +71,7 @@ void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model)
     {
         std::map<std::string, double> parameterVars;
         for (int i = 0; i < getProperty_variable_names().size(); ++i) {
-            std::string variableName = get_variable_names(i);
-            parameterVars[variableName] = getPropertyValue(i);
+            parameterVars[get_variable_names(i)] = getPropertyValue(i);
         }
         m_program.evaluate(parameterVars);
     }
@@ -91,37 +89,29 @@ void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model)
 }
 
 double MocoExpressionBasedParameterGoal::getPropertyValue(int i) const {
-    OPENSIM_THROW_IF_FRMOBJ(static_cast<int>(m_property_refs.size()) <= i, Exception,
-            "Property index is out of bounds.")
-
+    OPENSIM_ASSERT_FRMOBJ(m_property_refs.size() > i);
     const auto& propRef = m_property_refs[i];
-
     if (m_data_types[i] == Type_double) {
         return static_cast<const Property<double>*>(propRef.get())->getValue();
     }
-
     int elt = m_indices[i];
     if (m_data_types[i] == Type_Vec3) {
         return static_cast<const Property<SimTK::Vec3>*>(propRef.get())
                                                      ->getValue()[elt];
     }
-
     if (m_data_types[i] == Type_Vec6) {
         return static_cast<const Property<SimTK::Vec6>*>(propRef.get())
                                                      ->getValue()[elt];
     }
-
     OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Property at index {} is not of"
                                                 " a recognized type."));
-
 }
 
 void MocoExpressionBasedParameterGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& values) const {
     std::map<std::string, double> parameterVars;
     for (int i = 0; i < getProperty_variable_names().size(); ++i) {
-        std::string variableName = get_variable_names(i);
-        parameterVars[variableName] = getPropertyValue(i);
+        parameterVars[get_variable_names(i)] = getPropertyValue(i);
     }
     values[0] = m_program.evaluate(parameterVars);
 }

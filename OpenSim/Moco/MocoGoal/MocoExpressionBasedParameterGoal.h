@@ -76,8 +76,9 @@ public:
     }
 
     /** Set the mathematical expression to minimize. Variable names should match
-    the names set with addParameter(). See Creating Expressions above for an
-    explanation of Expressions. */
+    the names set with addParameter(). See "Creating Expressions" in the class
+    documentation above for an explanation of how to create expressions.
+    */
     void setExpression(std::string expression) {
         set_expression(std::move(expression));
     }
