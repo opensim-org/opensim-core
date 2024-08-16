@@ -48,8 +48,8 @@ forces_rotated = c3d.getTable_forces();
 % col numbers.
 
 % Test Marker Rotations
-randomRows = randsample(markers.getNumRows(),10)-1;
-randomCols = randsample(markers.getNumColumns(),10)-1;
+randomRows = randi(markers.getNumRows(),10)-1;
+randomCols = randi(markers.getNumColumns(),10)-1;
 for i = 1 : 10
     % Get the values in the original and rotated marker tables
     loc = osimVec3ToArray(markers.getRowAtIndex(randomRows(i)).get(randomCols(i)));
@@ -68,8 +68,8 @@ for i = 1 : 10
 end
 
 % Test Force Rotations
-randomRows = randsample(forces.getNumRows(),6)-1;
-randomCols = randsample(forces.getNumColumns(),6)-1;
+randomRows = randi(forces.getNumRows(),6)-1;
+randomCols = randi(forces.getNumColumns(),6)-1;
 for i = 1 : 6
     % Get the values in the original and rotated marker tables
     val = osimVec3ToArray(forces.getRowAtIndex(randomRows(i)).get(randomCols(i)));
@@ -93,7 +93,7 @@ forces_m = c3d.getTable_forces();
 
 % Forces should remain unchanged, point and moments should be in meters
 % (divided by 1000)
-randomRows = randsample(forces.getNumRows(),101)-1;
+randomRows = randi(forces.getNumRows(),101)-1;
 for i =  0 : forces_m.getNumColumns() - 1
     
     col =  forces_rotated.getDependentColumnAtIndex(i);
