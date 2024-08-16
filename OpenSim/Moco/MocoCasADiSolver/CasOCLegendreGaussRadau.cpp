@@ -112,9 +112,9 @@ std::vector<std::pair<Var, int>> LegendreGaussRadau::getVariableOrder() const {
         for (int i = 1; i < N; ++i) {
             order.push_back({states, igrid + i});
         }
-        if (m_solver.getInterpolateControlMidpoints()) {
-            for (int d = 0; d < m_degree; ++d) {
-                order.push_back({controls, igrid + d + 1});
+        if (m_solver.getInterpolateControlMidpoints() && imesh == 0) {
+            for (int i = 1; i < N; ++i) {
+                order.push_back({controls, igrid + i});
             }
         } else {
             for (int i = 0; i < N; ++i) {
