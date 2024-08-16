@@ -23,7 +23,6 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Property.h>
 #include <SimTKcommon/internal/ReferencePtr.h>
-#include <SimTKcommon/internal/State.h>
 
 namespace OpenSim {
 
@@ -142,7 +141,7 @@ public:
     {   set_property_name(propertyName); }
     void appendComponentPath(const std::string& componentPath)
     {   append_component_paths(componentPath); }
-    int getElement() const {
+    int getPropertyElement() const {
         return get_property_element();
     }
 

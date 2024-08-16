@@ -20,11 +20,8 @@
 
 #include "MocoGoal.h"
 #include "OpenSim/Moco/MocoParameter.h"
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Property.h>
 #include <lepton/ExpressionProgram.h>
 #include <SimTKcommon/internal/ReferencePtr.h>
-#include <SimTKcommon/internal/State.h>
 
 namespace OpenSim {
 class Model;
@@ -33,6 +30,8 @@ class Model;
 number of MocoParameters that are combined into a single goal. The expression
 string should match the Lepton (lightweight expression parser) format.
 
+# Creating Expressions
+
 Expressions can be any string that represents a mathematical expression, e.g.,
 "x*sqrt(y-8)". Expressions can contain variables, constants, operations,
 parentheses, commas, spaces, and scientific e notation. The full list of
@@ -40,6 +39,25 @@ operations (also in Lepton::Operation) is:
 sqrt, exp, log, sin, cos, sec, csc, tan, cot, asin, acos, atan, sinh, cosh,
 tanh, erf, erfc, step, delta, square, cube, recip, min, max, abs, as well as
 +, -, *, /, and ^.
+
+# Examples
+
+@code
+// create two parameters to include in the goal
+MocoStudy study;
+MocoProblem& mp = study.updProblem();
+mp.setModel(createOscillatorTwoSpringsModel());
+mp.setTimeBounds(0, FINAL_TIME);
+auto* parameter = mp.addParameter("spring_stiffness", "spring1",
+                                          "stiffness", MocoBounds(0, 100));
+auto* parameter2 = mp.addParameter("spring2_stiffness", "spring2",
+                                          "stiffness", MocoBounds(0, 100));
+auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
+// minimum is when p + q = STIFFNESS
+spring_goal->setExpression(fmt::format("square( p+q-{} )", STIFFNESS));
+spring_goal->addParameter(*parameter, "p");
+spring_goal->addParameter(*parameter2, "q");
+@endcode
 
 @ingroup mocogoal */
 class OSIMMOCO_API MocoExpressionBasedParameterGoal : public MocoGoal {
@@ -58,31 +76,30 @@ public:
     MocoExpressionBasedParameterGoal(std::string name, double weight,
             std::string expression) : MocoGoal(std::move(name), weight) {
         constructProperties();
-        setExpression(expression);
+        set_expression(std::move(expression));
     }
 
     /** Set the mathematical expression to minimize. Variable names should match
-    the names set with addParameter(). See header for explanation of
-    Expressions. */
+    the names set with addParameter(). See Creating Expressions above for an
+    explanation of Expressions. */
     void setExpression(std::string expression) {
-        set_expression(expression);
+        set_expression(std::move(expression));
     }
 
     /** Add parameters with variable names that match the variables in the
     expression string. All variables in the expression must have a corresponding
     parameter, but parameters with variables that are not in the expression are
     ignored. */
-    void addParameter(MocoParameter& parameter, std::string variableName) {
-        updProperty_parameters().appendValue(parameter);
-        updProperty_variable_names().appendValue(variableName);
+    void addParameter(const MocoParameter& parameter, std::string variableName) {
+        append_parameters(parameter);
+        append_variable_names(std::move(variableName));
     }
 
 protected:
     void initializeOnModelImpl(const Model& model) const override;
-    void calcIntegrandImpl(
-            const IntegrandInput& input, SimTK::Real& integrand) const override;
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override;
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
     void printDescriptionImpl() const override;
 
 private:

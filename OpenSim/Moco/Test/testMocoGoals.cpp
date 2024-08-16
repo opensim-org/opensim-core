@@ -16,9 +16,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Testing.h"
-#include <catch2/catch_all.hpp>
-
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/PointActuator.h>
@@ -28,6 +25,9 @@
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+
+#include "Testing.h"
+#include <catch2/catch_all.hpp>
 
 using Catch::Approx;
 using Catch::Matchers::ContainsSubstring;
@@ -1576,7 +1576,7 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoCasADiSolver") {
         CHECK_THROWS(study.initCasADiSolver()); // missing q
     }
 
-    SECTION("missing parameter") {
+    SECTION("extra parameter") {
         // create two parameters for the goal, only one is used
         auto* parameter = mp.addParameter("spring_stiffness", "spring1",
                                           "stiffness", MocoBounds(0, 100));
@@ -1589,7 +1589,6 @@ TEST_CASE("MocoExpressionBasedParameterGoal - MocoCasADiSolver") {
         // second parameter is ignored
         spring_goal->addParameter(*parameter2, "a");
 
-        // shouldn't throw an error
-        study.initCasADiSolver();
+        CHECK_NOTHROW(study.initCasADiSolver());
     }
 }
