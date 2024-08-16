@@ -171,7 +171,9 @@ target_compile_definitions(osimMoco PRIVATE
 OpenSimAddInstallRPATHSelf(TARGET osimMoco LOADER)
 OpenSimAddInstallRPATHSimbody(TARGET osimMoco LOADER
         FROM "${CMAKE_INSTALL_LIBDIR}")
-
+if (OPENSIM_WITH_TROPTER)
+    OpenSimAddInstallRPATHSelf(TARGET tropter LOADER)
+endif()
 install(TARGETS osimMoco EXPORT OpenSimTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
