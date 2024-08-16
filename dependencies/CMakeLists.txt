@@ -320,9 +320,7 @@ else()
         # operators like && is not defined."
         # Patch the scripts that download Metis and MUMPS to use our
         # Sourceforge mirror. The original links are not reliable.
-        message(STATUS "Building metis")
-        message(STATUS "CMAKE_MAKE_PROGRAM:" ${CMAKE_MAKE_PROGRAM})
-        message(STATUS "BUILD_FLAGS Prefix:" ${BUILD_FLAGS} ${CMAKE_INSTALL_PREFIX})
+        message(STATUS "Building Metis...")
 
         ExternalProject_Add(metis
             # URL    http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
