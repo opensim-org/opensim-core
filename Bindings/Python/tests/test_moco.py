@@ -428,7 +428,7 @@ class TestWorkflow(unittest.TestCase):
         mp.addParameter(parameter)
         parameter2 = osim.MocoParameter("sphere2_mass", "body2", "mass",
                                      osim.MocoBounds(0, 10))
-        mp.addParameter2(parameter)
+        mp.addParameter(parameter2)
         total_weight = 7
         mass_goal = osim.MocoExpressionBasedParameterGoal()
         mp.addGoal(mass_goal)
