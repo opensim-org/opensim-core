@@ -1,7 +1,7 @@
 Moco Change Log
 ===============
 
-1.3.1
+1.4.0
 -----
 - 2024-07-29: Added support for the 'projection' method for enforcing kinematic
               constraints from Bordalba et al. (2023) to `MocoCasADiSolver`. 
@@ -36,6 +36,8 @@ Moco Change Log
               affect certain model calculations, and as a result were not changing during
               optimization.
 
+1.3.1
+-----
 - 2024-07-08: Fixed a bug where deserialization of an OpenSim model with the `Bhargava2004SmoothedMuscleMetabolics`
               component would not properly set the muscle masses listed, resulting in incorrect
               metabolics values being computed.
