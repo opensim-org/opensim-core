@@ -221,17 +221,17 @@ finite-dimensional nonlinear optimization problem (or nonlinear program, abbrevi
 \end{align}
 \f]
 
-Above, the multibody dynamics \f$ f_{\textrm{mb}} \f$ are expressed as explicit
+Above, the multibody dynamics \f$ f_{\dot{u}} \f$ are expressed as explicit
 differential equations:
 
 \f[
-    f_{\textrm{mb}}(t, y, x, \lambda, p) =
+    f_{\dot{u}}(t, y, x, \lambda, p) =
           M(q, p)^{-1}\big[(f_{\textrm{app}}(t, y, x, p) - f_{\textrm{inertial}}(q, u, p) - G(q, p)^T \lambda\big]
 \f]
 
 
 If the multibody dynamics are enforced as implicit differential equations, then
-the constraint involving \f$ f_\textrm{mb} \f$ is replaced with the following:
+the constraint involving \f$ f_\dot{u} \f$ is replaced with the following:
 
 \f[
     \begin{alignat*}{2}
@@ -333,7 +333,7 @@ The resulting finite-dimensional NLP is as follows:
 \end{align}
 \f]
 
-The explicit multibody dynamics function \f$ f_{\textrm{mb}} \f$ is the same as
+The explicit multibody dynamics function \f$ f_{\dot{u}} \f$ is the same as
 in Trapezoidal transcription.
 
 This formulation includes the equations needed to enforce kinematic constraints based
@@ -349,7 +349,7 @@ position-level, or holonomic, constraints, represented by the equations:
 \f[
     \begin{alignat*}{2}
          & 0 = \dot{\phi}(q, u, p) = P(q, p) u - c(t, q, p)\\
-         & 0 = \ddot{\phi}(q, u, x, \lambda, p) = P(q, p) f_{\textrm{mb}}(t, y, x, \lambda, p) - b_p(t, q, u, p) \\
+         & 0 = \ddot{\phi}(q, u, x, \lambda, p) = P(q, p) f_{\dot{u}}(t, y, x, \lambda, p) - b_p(t, q, u, p) \\
     \end{alignat*}
 \f]
 

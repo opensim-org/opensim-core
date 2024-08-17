@@ -50,7 +50,7 @@ Moco Change Log
               Input controls. See the Moco User Guide for details.
               
 - 2024-04-01: Added `MocoGeneralizedForceTrackingGoal` to enable joint moment tracking
-              in `MocoProblem`s, and added the utility `calcGeneralizeForces()` to 
+              in `MocoProblem`s, and added the utility `calcGeneralizedForces()` to 
               `MocoStudy` for computing joint moments from a `MocoTrajectory`. 
               Added a sub-example to exampleMocoTrack (C++, Python, and Matlab) to 
               feature this new functionality.
