@@ -8,10 +8,23 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.6
 ====
+- The performance of `getStateVariableValue`, `getStateVariableDerivativeValue`, and `getModelingOption` was improved in
+  the case where provided string is just the name of the value, rather than a path to it (#3782)
+- Fixed bugs in `MocoStepTimeAsymmetryGoal::printDescriptionImpl()` where there were missing or incorrect values printed. (#3842)
+- Added `ModOpPrescribeCoordinateValues` which can prescribe motion of joints in a model given a table of data. (#3862)
+- Fixed bugs in `convertToMocoTrajectory()` and `MocoTrajectory::resampleWithFrequency()` by updating `interpolate()` to 
+  allow extrapolation using the `extrapolate` flag. Combined with the `ignoreNaNs` flag, this prevents NaNs from 
+  occurring in the output. (#3867)
+- Added `MeyerFregly2016Muscle` and completed the implementation of the `MeyerFregly2016Force` included in the `StationPlaneContactForce` class to support NMSM Pipeline-equivalent muscle and contant models in Moco. (#3877)
+
+
+v4.5.1
+======
 - Added support for list `Socket`s via the macro `OpenSim_DECLARE_LIST_SOCKET`. The macro-generated method
   `appendSocketConnectee_*` can be used to connect `Object`s to a list `Socket`. In addition, `Component` and Socket have
   new `getConnectee` overloads that take an index to a desired object in the list `Socket` (#3652).
 - Added `ComponentPath::root()`, which returns a `ComponentPath` equivalent to "/"
+- Added `ComponentPath::separator()`, which returns the separator that's placed between elements of the path (i.e. `'/'`)
 - `ComponentPath` is now less-than (`<`) comparable, making it usable in (e.g.) `std::map`
 - `ComponentPath` now has a `std::hash<T>` implementation, making it usable in (e.g.) `std::unordered_map`
 - Added `.clear()` and `.empty()` to `ComponentPath` for more parity with `std::string`'s semantics
@@ -43,24 +56,30 @@ v4.6
 - `DiscreteVariable`s and `ModelingOption`s allocated natively in Simbody can now be added to an `OpenSim::Component` and accessed via its `Component` API. To support this capability, `getDiscreteVariableIndex()` has been replaced by `getDiscreteVariableIndexes()` which returns both the index of the discrete variable and the index of the `SimTK::Subsystem` to which the descrete variable belongs. (#3745)
 - Computationally efficient methods are now available for extracting the time histories of individual state variables, discrete states, and modeling options from a state trajectory (i.e., a `SimTK::Array_<SimTK::State>`). Collectively, these methods form the basis for performing a comprehensive serialzation of a state trajectory to file. (#3745)
 - Computationally efficient methods are now available for building a state trajectory (i.e., a `SimTK::Array_<SimTK::State>`) from the time histories of individual state variables, discrete states, and modeling options. Collectively, these methods form the basis for performing a comprehenvise deserialization of a states trajectory from file. (#3745)
-- Added `Model::calcForceContributionsSum()`, a wrapper method for `GeneralForceSubsystem` for efficiently 
-  calculating a subset of a model's body and mobility forces. (#3755) 
-- Added `Force::getForceIndex()` to allow accessing the `SimTK::ForceIndex` for force elements. (#3755) 
+- Added `Model::calcForceContributionsSum()`, a wrapper method for `GeneralForceSubsystem` for efficiently
+  calculating a subset of a model's body and mobility forces. (#3755)
+- Added `Force::getForceIndex()` to allow accessing the `SimTK::ForceIndex` for force elements. (#3755)
 - Improved performance in `MultivariatePolynomialFunction` and added convenience methods for automatically generating function derivatives (#3767).
 - Added options to `PolynomialPathFitter` for including moment arm and lengthening speed functions in generated `FunctionBasedPath`s (#3767).
 - The signature for `PrescribedController::prescribeControlForActuator()` was changed to take a `Function` via a const reference rather than a
 pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Added option to `PolynomialPathFitter` to use stepwise regression for fitting a minimal set of polynomial coefficients for a `FunctionBasedPath` (#3779).
-- Fixed a bug in SimulationUtilities::analyze<T> that would provide an incorrectly sized control vector to 
+- Fixed a bug in SimulationUtilities::analyze<T> that would provide an incorrectly sized control vector to
   the model if controls were missing from the input controls table. (#3769)
-- Added InputController, an intermediate abstract class of Controller that provides supports for controllers 
-  that map scalar control values from a list Input (connected to Outputs from one or more ModelComponents) 
+- Added InputController, an intermediate abstract class of Controller that provides supports for controllers
+  that map scalar control values from a list Input (connected to Outputs from one or more ModelComponents)
   to model actuator controls. (#3769)
 - Updated Moco stack to use Casadi 3.6.5, IPOPT 3.14.16, and compatible MUMPS and Metis. (#3693, #3807)
 - Upgrade Python and NumPy versions to 3.10 and 1.25, repectively, in ci workflow (#3794).
 - Fixed bug in `report.py` preventing plotting multiple MocoParameter values. (#3808)
 - Added SynergyController, a controller that computes controls for a model based on a linear combination of a set of Input control signals and a set of synergy vectors. (#3796)
-- Added `MeyerFregly2016Muscle` and completed the implementation of the `MeyerFregly2016Force` included in the `StationPlaneContactForce` class to support NMSM Pipeline-equivalent muscle and contant models in Moco. 
+- Fixed bug in `OpenSim::PiecewiseLinearFunction` that prevented proper initialization of the coefficient array when the number of function points is equal to 1. (#3817)
+- Updated `PolynomialPathFitter` to use all available hardware threads during parallelization. (#3818)
+- Exposed `TimeSeriesTable::trimToIndices` to public API. (#3824)
+- Fixed bug in `Logger::cout`, now it works at any logger level. (#3826)
+- Fixed bugs in `MocoCasOCProblem` and `CasOC::Problem` with incorrect string formatting. (#3828)
+- Fixed `MocoOrientationTrackingGoal::initializeOnModelImpl` to check for missing kinematic states, but allow other missing columns. (#3830)
+- Improved exception handling for internal errors in `MocoCasADiSolver`. Problems will now abort and print a descriptive error message (rather than fail due to an empty trajectory). (#3834)
 
 
 v4.5

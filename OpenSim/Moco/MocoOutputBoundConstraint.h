@@ -1,11 +1,11 @@
-#ifndef OPENSIM_MOCOOUTPUTCONSTRAINT_H
-#define OPENSIM_MOCOOUTPUTCONSTRAINT_H
+#ifndef OPENSIM_MOCOOUTPUTBOUNDCONSTRAINT_H
+#define OPENSIM_MOCOOUTPUTBOUNDCONSTRAINT_H
 /* -------------------------------------------------------------------------- *
- * OpenSim: MocoOutputConstraint.h                                            *
+* OpenSim: MocoOutputBoundConstraint.h                                        *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2022 Stanford University and the Authors                     *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Nicholas Bianco                                                 *
+ * Author(s): Allison John                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -19,15 +19,21 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoConstraint.h"
+#include "osimMocoDLL.h"
 
 namespace OpenSim {
 
-/** This path constraint allows you to constrain a Model Output value throughout the
-trajectory. You can also combine two Outputs in a constraint by supplying a
-second output path and an operation to combine them. The operations are addition,
-subtraction, multiplication, and division. The first Output is always on the
-left hand side of the operation and the second Output on the right hand side.
-The two Outputs can be different quantities, but they must be the same type.
+class MocoProblemInfo;
+
+/** This path constraint allows you to constrain a Model Output value to be
+between two time-based functions throughout the trajectory. It is
+possible to constrain the Output to match the value from a provided function;
+see the 'equality_with_lower' property. You can also combine two Outputs
+in a constraint by supplying a second output path and an operation to combine
+them. The operations are addition, subtraction, multiplication, and division.
+The first Output is always on the left hand side of the operation and the second
+Output on the right hand side. The two Outputs can be different quantities, but
+they must have the same type.
 
 Outputs of type double, SimTK::Vec3, and SimTK::SpatialVec are supported.
 When using SimTK::Vec3 or SimTK::SpatialVec types, 'setOutputIndex()'
@@ -40,22 +46,29 @@ SimTK::SpatialVec are provided and no index is specified, the operation will be
 applied elementwise before computing the norm. Elementwise
 multiplication and division operations are not supported when using two
 SimTK::SpatialVec Outputs (i.e., an index must be provided).
+
+If a bound function is a GCVSpline, we ensure that the spline covers the entire
+possible time range in the problem (using the problem's time bounds). We do
+not perform such a check for other types of functions.
+
+@note If you omit the lower and upper bounds, then this class will not
+constrain any Outputs, even if you have provided output paths.
 @ingroup mocopathcon */
-class OSIMMOCO_API MocoOutputConstraint : public MocoPathConstraint {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputConstraint, MocoPathConstraint);
+class OSIMMOCO_API MocoOutputBoundConstraint : public MocoPathConstraint {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            MocoOutputBoundConstraint, MocoPathConstraint);
 
 public:
+    MocoOutputBoundConstraint() { constructProperties(); }
 
-    MocoOutputConstraint() { constructProperties(); }
-
-    /** Set the absolute path to the output in the model to be used in this path
+    /** Set the absolute path to the Output in the model to be used in this path
     constraint. The format is "/path/to/component|output_name". */
     void setOutputPath(std::string path) { set_output_path(std::move(path)); }
     const std::string& getOutputPath() const { return get_output_path(); }
 
     /** Set the absolute path to the optional second Output in the model to be
     used in this path constraint. The format is "/path/to/component|output_name".
-    This Output should have the same  type as the first Output. If providing a
+    This Output should have the same type as the first Output. If providing a
     second Output, the user must also provide an operation via `setOperation()`.
     */
     void setSecondOutputPath(std::string path) {
@@ -79,8 +92,8 @@ public:
     void setExponent(int exponent) { set_exponent(exponent); }
     int getExponent() const { return get_exponent(); }
 
-    /** Set the index to the value to be constrained when a vector type Output is
-    specified. For SpatialVec Outputs, indices 0, 1, and 2 refer to the
+    /** Set the index to the value to be constrained when a vector type Output
+    is specified. For SpatialVec Outputs, indices 0, 1, and 2 refer to the
     rotational components and indices 3, 4, and 5 refer to the translational
     components. A value of -1 indicates to constrain the vector norm (which is
     the default setting). If an index for a type double Output is provided, an
@@ -88,28 +101,29 @@ public:
     void setOutputIndex(int index) { set_output_index(index); }
     int getOutputIndex() const { return get_output_index(); }
 
+
+    void setLowerBound(const Function& f) { set_lower_bound(f); }
+    void clearLowerBound() { updProperty_lower_bound().clear(); }
+    bool hasLowerBound() const { return !getProperty_lower_bound().empty(); }
+    const Function& getLowerBound() const { return get_lower_bound(); }
+
+    void setUpperBound(const Function& f) { set_upper_bound(f); }
+    void clearUpperBound() { updProperty_upper_bound().clear(); }
+    bool hasUpperBound() const { return !getProperty_upper_bound().empty(); }
+    const Function& getUpperBound() const { return get_upper_bound(); }
+
+    /// Should the Output be constrained to be equal to the lower bound (rather
+    /// than an inequality constraint)? In this case, the upper bound must be
+    /// unspecified.
+    void setEqualityWithLower(bool v) { set_equality_with_lower(v); }
+    //// @copydoc setEqualityWithLower()
+    bool getEqualityWithLower() const { return get_equality_with_lower(); }
+
 protected:
     void initializeOnModelImpl(
             const Model&, const MocoProblemInfo&) const override;
     void calcPathConstraintErrorsImpl(
-            const SimTK::State& state, SimTK::Vector& errors) const override;
-    void printDescriptionImpl() const override;
-
-    /** Calculate the Output value for the provided SimTK::State. Do not
-    call this function until 'initializeOnModelBase()' has been called. */
-    double calcOutputValue(const SimTK::State&) const;
-
-    /** Raise a value to the exponent set via 'setExponent()'. Do not call this
-    function until 'initializeOnModelBase()' has been called. */
-    double setValueToExponent(double value) const {
-        return m_power_function(value);
-    }
-
-    /** Get the "depends-on stage", or the SimTK::Stage we need to realize the
-    system to in order to calculate the Output value. */
-    const SimTK::Stage& getDependsOnStage() const {
-        return m_dependsOnStage;
-    }
+            const SimTK::State&, SimTK::Vector&) const override;
 
 private:
     OpenSim_DECLARE_PROPERTY(output_path, std::string,
@@ -130,6 +144,14 @@ private:
             "and 2 refer to the rotational components and indices 3, 4, "
             "and 5 refer to the translational components. A value of -1 "
             "indicates to constrain the vector norm (default: -1).");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(
+            lower_bound, Function, "Lower bound as a function of time.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(
+            upper_bound, Function, "Upper bound as a function of time.");
+    OpenSim_DECLARE_PROPERTY(equality_with_lower, bool,
+            "The output must be equal to the lower bound; "
+            "upper must be unspecified (default: false).");
+
     void constructProperties();
 
     /** Initialize additional information when there are two Outputs:
@@ -140,6 +162,22 @@ private:
     double calcSingleOutputValue(const SimTK::State&) const;
     /** Calculate the two Output values and apply the operation. */
     double calcCompositeOutputValue(const SimTK::State&) const;
+
+    /** Calculate the Output value for the provided SimTK::State. Do not
+    call this function until 'initializeOnModelBase()' has been called. */
+    double calcOutputValue(const SimTK::State&) const;
+
+    /** Raise a value to the exponent set via 'setExponent()'. Do not call this
+    function until 'initializeOnModelBase()' has been called. */
+    double setValueToExponent(double value) const {
+        return m_power_function(value);
+    }
+
+    /** Get the "depends-on stage", or the SimTK::Stage we need to realize the
+    system to in order to calculate the Output value. */
+    const SimTK::Stage& getDependsOnStage() const {
+        return m_dependsOnStage;
+    }
 
     /** Get a reference to the Output for this path constraint. */
     template <typename T>
@@ -178,8 +216,8 @@ private:
         }
     }
     /** Apply the elementwise operation to two SimTK::SpatialVec values.
-    Multiplication and divison operations are not supported for SpatialVec Outputs
-    without an index. */
+    Multiplication and divison operations are not supported for SpatialVec
+    Outputs without an index. */
     double applyOperation(const SimTK::SpatialVec& value1,
                           const SimTK::SpatialVec& value2) const {
         switch (m_operation) {
@@ -215,10 +253,14 @@ private:
     mutable std::function<double(const double&)> m_power_function;
     mutable int m_index1;
     mutable int m_index2;
-    mutable bool m_minimizeVectorNorm;
+    mutable bool m_boundVectorNorm;
     mutable SimTK::Stage m_dependsOnStage = SimTK::Stage::Acceleration;
+    mutable bool m_hasLower;
+    mutable bool m_hasUpper;
+
 };
 
 } // namespace OpenSim
 
-#endif //OPENSIM_MOCOOUTPUTCONSTRAINT_H
+#endif // OPENSIM_MOCOOUTPUTBOUNDCONSTRAINT_H
+
