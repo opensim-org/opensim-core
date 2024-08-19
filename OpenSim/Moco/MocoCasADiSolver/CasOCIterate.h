@@ -40,6 +40,8 @@ enum Var {
     derivatives,
     /// Constant in time.
     parameters,
+    /// Variables for endpoint constraints.
+    endpoints,
     /// For internal use (never actually a key for Variables).
     multibody_states = 100
 };

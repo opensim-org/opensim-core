@@ -159,6 +159,7 @@ protected:
     int m_numMultibodyResiduals = -1;
     int m_numAuxiliaryResiduals = -1;
     int m_numParameterConstraints = -1;
+    int m_numEndpointConstraintEquations = -1;
     int m_numConstraints = -1;
     int m_numPathConstraintPoints = -1;
     casadi::DM m_grid;

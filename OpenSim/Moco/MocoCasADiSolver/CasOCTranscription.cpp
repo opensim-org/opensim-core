@@ -113,10 +113,13 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             m_problem.getNumKinematicConstraintEquations() * m_numMeshPoints;
     m_constraints.endpoint.resize(
             m_problem.getEndpointConstraintInfos().size());
+    m_numEndpointConstraintEquations = 0;
     for (int iec = 0; iec < (int)m_constraints.endpoint.size(); ++iec) {
         const auto& info = m_problem.getEndpointConstraintInfos()[iec];
-        m_numConstraints += info.num_outputs;
+        m_numEndpointConstraintEquations += info.num_outputs;
     }
+    m_numConstraints += 
+            m_numEndpointConstraintEquations * (m_numMeshIntervals - 1);
     m_constraints.path.resize(m_problem.getPathConstraintInfos().size());
     m_numPathConstraintPoints = m_solver.getEnforcePathConstraintMidpoints()
                                ? m_numGridPoints : m_numMeshPoints;
@@ -176,6 +179,9 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         m_scaledVectorVars[parameters].push_back(
                 MX::sym("parameters_" + std::to_string(imesh),
                         m_problem.getNumParameters(), 1));
+        m_scaledVectorVars[endpoints].push_back(
+                MX::sym("endpoints_" + std::to_string(imesh),
+                        m_numEndpointConstraintEquations, 1));
     }
     // Trajectory variables.
     for (int igrid = 0; igrid < m_numGridPoints; ++igrid) {
@@ -187,12 +193,10 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             auto it = std::find(controlIndicesVector.begin(),
                     controlIndicesVector.end(), igrid);
             if (it != controlIndicesVector.end()) {
-                std::cout << "Control var: " << igrid << std::endl;
                 m_scaledVectorVars[controls].push_back(
                         MX::sym("controls_" + std::to_string(igrid),
                                 m_problem.getNumControls(), 1));
             } else {
-                std::cout << "Symbolic var: " << igrid << std::endl;
                 m_scaledVectorVars[controls].push_back(
                         MX(m_problem.getNumControls(), 1));
             }
@@ -223,6 +227,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_scaledVars[initial_time] = MX::horzcat(m_scaledVectorVars[initial_time]);
     m_scaledVars[final_time] = MX::horzcat(m_scaledVectorVars[final_time]);
     m_scaledVars[parameters] = MX::horzcat(m_scaledVectorVars[parameters]);
+    m_scaledVars[endpoints] = MX::horzcat(m_scaledVectorVars[endpoints]);
     m_scaledVars[states] = MX::horzcat(m_scaledVectorVars[states]);
     m_scaledVars[controls] = MX::horzcat(m_scaledVectorVars[controls]);
     m_scaledVars[multipliers] = MX::horzcat(m_scaledVectorVars[multipliers]);
@@ -678,6 +683,12 @@ void Transcription::setObjectiveAndEndpointConstraints() {
     m_constraintsUpperBounds.endpoint.resize(numEndpointConstraints);
     for (int iec = 0; iec < (int)m_constraints.endpoint.size(); ++iec) {
         const auto& info = m_problem.getEndpointConstraintInfos()[iec];
+        m_constraints.endpoint[iec] = MX(casadi::Sparsity::dense(
+                info.num_outputs, m_numMeshPoints));
+        m_constraintsLowerBounds.endpoint[iec] =
+                DM::zeros(info.num_outputs, m_numMeshPoints);
+        m_constraintsUpperBounds.endpoint[iec] =
+                DM::zeros(info.num_outputs, m_numMeshPoints);
 
         MX integral;
         if (info.integrand_function) {
@@ -705,9 +716,9 @@ void Transcription::setObjectiveAndEndpointConstraints() {
                         m_unscaledVars[parameters](Slice(), -1),
                         integral},
                 endpointOut);
-        m_constraints.endpoint[iec] = endpointOut.at(0);
-        m_constraintsLowerBounds.endpoint[iec] = info.lowerBounds;
-        m_constraintsUpperBounds.endpoint[iec] = info.upperBounds;
+        m_constraints.endpoint[iec](Slice(), -1) = endpointOut.at(0);
+        m_constraintsLowerBounds.endpoint[iec](Slice(), -1) = info.lowerBounds;
+        m_constraintsUpperBounds.endpoint[iec](Slice(), -1) = info.upperBounds;
     }
 }
 
