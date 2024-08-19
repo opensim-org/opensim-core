@@ -434,38 +434,33 @@ void Transcription::transcribe() {
 
     // Initialize memory for kinematic constraints.
     // --------------------------------------------
-    const auto& kcBounds = m_problem.getKinematicConstraintBounds();
+    int nqerr = m_problem.getNumQErr();
+    int nuerr = m_problem.getNumUErr();
+    int nudoterr = m_problem.getNumUDotErr();
+    int nkc = m_problem.getNumKinematicConstraintEquations();
 
+    const auto& kcBounds = m_problem.getKinematicConstraintBounds();
     if (m_problem.isKinematicConstraintMethodBordalba2023()) {
         m_constraints.kinematic = MX(casadi::Sparsity::dense(
-                m_problem.getNumQErr() + m_problem.getNumUErr(),
-                m_numMeshPoints));
+                nqerr + nuerr, m_numMeshPoints));
         m_constraintsLowerBounds.kinematic = casadi::DM::repmat(
-                kcBounds.lower, m_problem.getNumQErr() + m_problem.getNumUErr(),
-                m_numMeshPoints);
+                kcBounds.lower, nqerr + nuerr, m_numMeshPoints);
         m_constraintsUpperBounds.kinematic = casadi::DM::repmat(
-                kcBounds.upper, m_problem.getNumQErr() + m_problem.getNumUErr(),
-                m_numMeshPoints);
+                kcBounds.upper, nqerr + nuerr, m_numMeshPoints);
 
         m_constraints.kinematic_udoterr = MX(casadi::Sparsity::dense(
-                m_problem.getNumUDotErr(), m_numUDotErrorPoints));
+                nudoterr, m_numUDotErrorPoints));
         m_constraintsLowerBounds.kinematic_udoterr = casadi::DM::repmat(
-                kcBounds.lower, m_problem.getNumUDotErr(),
-                m_numUDotErrorPoints);
+                kcBounds.lower, nudoterr, m_numUDotErrorPoints);
         m_constraintsUpperBounds.kinematic_udoterr = casadi::DM::repmat(
-                kcBounds.upper, m_problem.getNumUDotErr(),
-                m_numUDotErrorPoints);
+                kcBounds.upper, nudoterr, m_numUDotErrorPoints);
     } else {
         m_constraints.kinematic = MX(casadi::Sparsity::dense(
-                m_problem.getNumKinematicConstraintEquations(),
-                m_numMeshPoints));
+                nkc, m_numMeshPoints));
         m_constraintsLowerBounds.kinematic = casadi::DM::repmat(
-                kcBounds.lower, m_problem.getNumKinematicConstraintEquations(),
-                m_numMeshPoints);
+                kcBounds.lower, nkc, m_numMeshPoints);
         m_constraintsUpperBounds.kinematic = casadi::DM::repmat(
-                kcBounds.upper, m_problem.getNumKinematicConstraintEquations(),
-                m_numMeshPoints);
-
+                kcBounds.upper, nkc, m_numMeshPoints);
     }
 
     // Initialize memory for projection constraints.
@@ -537,9 +532,6 @@ void Transcription::transcribe() {
 
     // udot, zdot, residual, kcerr
     // ---------------------------
-    int nqerr = m_problem.getNumQErr();
-    int nuerr = m_problem.getNumUErr();
-    int nudoterr = m_problem.getNumUDotErr();
     if (m_problem.isDynamicsModeImplicit()) {
         // udot.
         const MX w = m_unscaledVars[derivatives]
@@ -613,7 +605,8 @@ void Transcription::transcribe() {
         if (m_numProjectionStates) {
             const casadi::Function& implicitMultibodyFunction =
                     m_problem.getImplicitMultibodySystem();
-            const auto out = evalOnTrajectory(implicitMultibodyFunction, inputs,
+            const auto out = evalOnTrajectory(implicitMultibodyFunction, 
+                    {projection_states, controls, multipliers, derivatives},
                     m_projectionStateIndices);
             // This overrides the previous function evaluation assignments for
             // `kinematic_udoterr` and `multibody_residuals` at the mesh indices
@@ -655,6 +648,9 @@ void Transcription::transcribe() {
 
         // Points where we ignore algebraic constraints.
         if (m_numMeshInteriorPoints) {
+            // In the Bordalba et al. 2023 method, we need to enforce the 
+            // acceleration-level kinematic constraints at the mesh interval
+            // interior points.
             const casadi::Function& multibodyFunction =
                     m_problem.isKinematicConstraintMethodBordalba2023() ?
                     m_problem.getMultibodySystem() :
@@ -668,10 +664,6 @@ void Transcription::transcribe() {
             m_constraints.auxiliary_residuals(Slice(), m_meshInteriorIndices) =
                     out.at(2);
             if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                std::cout << "out.at(3).size(): " << out.at(3).size() << std::endl;
-                std::cout << "nqerr: " << nqerr << std::endl;
-                std::cout << "nuerr: " << nuerr << std::endl;
-                std::cout << "nudoterr: " << nudoterr << std::endl;
                 m_constraints.kinematic_udoterr(Slice(), m_meshInteriorIndices)
                         = out.at(3)(
                                 Slice(nqerr + nuerr, nqerr + nuerr + nudoterr),

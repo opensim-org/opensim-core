@@ -469,14 +469,14 @@ private:
                 modelBase.getMatterSubsystem();
 
         // Holonomic constraint errors.
-        SimTK::Vector mu_p(
+        const SimTK::Vector mu_p(
                 getNumHolonomicConstraintEquations(), slacks.ptr(), true);
         SimTK::Vector proj_p(getNumCoordinates(), projection.ptr(), true);
         matterBase.multiplyByPqTranspose(simtkStateBase, mu_p, proj_p);
 
         // Derivative of holonomic constraint errors and non-holonomic
         // constraint errors.
-        SimTK::Vector mu_v(
+        const SimTK::Vector mu_v(
                 getNumHolonomicConstraintEquations() +
                 getNumNonHolonomicConstraintEquations(),
                 slacks.ptr() + getNumHolonomicConstraintEquations(), true);

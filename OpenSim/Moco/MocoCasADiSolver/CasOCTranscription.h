@@ -174,14 +174,9 @@ private:
     VariablesDM m_scale;
     // These hold vectors of MX types, where each element of the vector
     // contains either the states or state derivatives needed to calculate the
-    // defect constraints for a single mesh interval. The Bordalba et al. (2023)
-    // kinematic constraint method requires that the point at the end of one
-    // mesh interval and the start of the next mesh interval have different
-    // decision variables representing the state, even though they share the
-    // same time point.
+    // defect constraints for a single mesh interval.
     casadi::MXVector m_statesByMeshInterval;
     casadi::MXVector m_stateDerivativesByMeshInterval;
-    casadi::MX m_projectionStateDistances;
 
     casadi::DM m_meshIndicesMap;
     casadi::Matrix<casadi_int> m_gridIndices;
@@ -196,6 +191,10 @@ private:
     // State derivatives reserved for the Bordalba et al. (2023) kinematic
     // constraint method based on coordinate projection.
     casadi::MX m_xdot_projection;
+    // The differences between the true states and the projection states when
+    // using the Bordalba et al. (2023) kinematic constraint method.
+    casadi::MX m_projectionStateDistances;
+
 
     casadi::MX m_objectiveTerms;
     std::vector<std::string> m_objectiveTermNames;
@@ -330,6 +329,7 @@ private:
         // Trapezoidal sparsity pattern (mapping between flattened and expanded
         // constraints) for mesh intervals 0, 1 and 2: Endpoint constraints
         // depend on all time points through their integral.
+        //
         //                   0    1    2    3
         //    endpoint       x    x    x    x
         //    path_0         x
@@ -353,35 +353,45 @@ private:
 
         // Hermite-Simpson sparsity pattern for mesh intervals 0, 1 and 2.
         // '*' indicates additional non-zero entry when path constraint
-        // mesh interior points are enforced. '^' indicates points where
-        // acceleration-level kinematic constraints are enforced when using
-        // the Bordalba et al. (2023) kinematic constraint method. This sparsity
-        // pattern also applies to the Legendre-Gauss and Legendre-Gauss-Radau
-        // transcription with polynomial degree equal to 1.
-        //                   0    0.5    1    1.5    2    2.5    3
-        //    endpoint       x     x     x     x     x     x     x
-        //    path_0         x     *
-        //    kinematic_0    x     ^
-        //    residual_0     x     x
-        //    defect_0       x     x     x
-        //    interp_con_0   x     x     x
-        //    projection_1               x
-        //    path_1                     x     *
-        //    kinematic_1                x     ^
-        //    residual_1                 x     x
-        //    defect_1                   x     x     x
-        //    interp_con_1               x     x     x
-        //    projection_2                           x
-        //    path_2                                 x     *
-        //    kinematic_2                            x     ^
-        //    residual_2                             x     x
-        //    defect_2                               x     x     x
-        //    interp_con_2                           x     x     x
-        //    projection_3                                       x
-        //    path_3                                             x
-        //    kinematic_3                                        x
-        //    residual_3                                         x
-        //                   0    0.5    1    1.5    2    2.5    3
+        // mesh interior points are enforced. Note that acceleration-level 
+        // kinematic constraints, "kinematic_udoterr_0", are only enforced at 
+        // mesh interior points (e.g., 0.5, 1.5, 2.5) when using the Bordalba
+        // et al. (2023) kinematic constraint method. This sparsity pattern also 
+        // applies to the Legendre-Gauss and Legendre-Gauss-Radau transcription 
+        // with polynomial degree equal to 1.
+        //
+        //                         0    0.5    1    1.5    2    2.5    3
+        //    endpoint             x     x     x     x     x     x     x
+        //    path_0               x     *
+        //    kinematic_perr_0     x     
+        //    kinematic_uerr_0     x     
+        //    kinematic_udoterr_0  x     x
+        //    residual_0           x     x
+        //    defect_0             x     x     x
+        //    interp_con_0         x     x     x
+        //    projection_1                     x
+        //    path_1                           x     *
+        //    kinematic_perr_1                 x     
+        //    kinematic_uerr_1                 x     
+        //    kinematic_udoterr_1              x     x
+        //    residual_1                       x     x
+        //    defect_1                         x     x     x
+        //    interp_con_1                     x     x     x
+        //    projection_2                                 x
+        //    path_2                                       x     *
+        //    kinematic_perr_2                             x     
+        //    kinematic_uerr_2                             x     
+        //    kinematic_udoterr_2                          x     x
+        //    residual_2                                   x     x
+        //    defect_2                                     x     x     x
+        //    interp_con_2                                 x     x     x
+        //    projection_3                                             x
+        //    path_3                                                   x
+        //    kinematic_perr_3                                         x     
+        //    kinematic_uerr_3                                         x     
+        //    kinematic_udoterr_3                                      x
+        //    residual_3                                               x
+        //                         0    0.5    1    1.5    2    2.5    3
 
         for (const auto& endpoint : constraints.endpoint) {
             copyColumn(endpoint, 0);
@@ -478,7 +488,9 @@ private:
         int numKC = m_problem.isKinematicConstraintMethodBordalba2023() ?
                 numQErr + numUErr : numQErr + numUErr + numUDotErr;
         out.kinematic = init(numKC,m_numMeshPoints);
-        out.kinematic_udoterr = init(numUDotErr, m_numUDotErrorPoints);
+        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+            out.kinematic_udoterr = init(numUDotErr, m_numUDotErrorPoints);
+        }
         out.projection = init(m_problem.getNumProjectionConstraintEquations(),
                 m_numMeshIntervals);
         out.endpoint.resize(m_problem.getEndpointConstraintInfos().size());

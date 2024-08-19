@@ -513,7 +513,8 @@ The resulting finite-dimensional NLP is as follows:
     \begin{aligned}
         \mbox{minimize} \quad
          & \sum_j w_j J_{j}(t_0, t_f, y_0, y_n, x_{0}, x_{n}, \lambda_0, \lambda_n, p, S_{c,j})
-          + w_{\lambda} \sum_{i=1}^{n} \textrm{quadrature}_i(\|\lambda\|_2^2)  \\
+          + w_{\lambda} \sum_{i=1}^{n} \textrm{quadrature}_i(\|\lambda\|_2^2)
+          + w_{proj} \sum_{i=1}^{n} (\|q_i^{\prime} - q_i\|_2^2 + \|u_i^{\prime} - u_i\|_2^2)  \\
          & \quad\quad S_{c,j} = \sum_{i=1}^{n} \textrm{quadrature}_i(s_{c,j}(t, y, x, \lambda, p)) \\
         \mbox{subject to} \quad
          & 0 = \textrm{legendre_gauss}^{\prime}_i(q, u) && i = 1, \ldots, n \\
@@ -558,7 +559,10 @@ note that this method supports holonomic, non-holonomic, and acceleration-only
 constraints, but non-holonomic and acceleration-only constraints currently have limited 
 testing and support in Moco. Second, note that all acceleration-level constraints 
 (including the derivatives of holonomic and non-holonomic constraints) are enforced at 
-all collocation points, not just the mesh points.
+all collocation points, not just the mesh points. Finally, the cost term preceeded by 
+\f$ w_{proj} \f$ is used to penalize the difference between the true state variables
+and the projection state variables at the end of each mesh interval to encourage the 
+closest possible projection to the constraint manifold.
 
 The function \f$ \textrm{legendre_gauss}^{\prime}(\eta, F(\eta, p)) \f$ used for the 
 multibody dynamics defect constraints is a slight modification of the function 
@@ -570,9 +574,9 @@ multibody dynamics defect constraints is a slight modification of the function
     \end{alignat*}
 \f]
 
-where \f$ \eta^{\prime}_{i+1} \f$ represents the auxiliary state variables used in the 
+where \f$ \eta^{\prime}_{i+1} \f$ represents the "projection" state variables used in the 
 method from Bordalba et al. (2023). The true state variables \f$ \eta_{i+1} \f$ are the 
-projection of the auxiliary state variables onto the constraint manifold. The matrices 
+projection of \f$ \eta^{\prime}_{i+1} \f$ onto the constraint manifold. The matrices 
 \f$ P_q(q_{i+1},p) \f$ and \f$ G_{pv}(q_{i+1},p) \f$ are used to perform the projection for 
 the coordinate values, \f$ q \f$, and coordinate speeds, \f$ u \f$, respectively.
 \f$ G_{pv} = [P; V] \f$ contains submatrices of the full kinematic constraint Jacobian 
@@ -621,7 +625,7 @@ Replacing \f$ \textrm{legendre_gauss}_i \f$ in @ref mocolegendregausstheory abov
 \f$ \textrm{legendre_gauss_radau}_i \f$ will yield the equations for Legendre-Gauss-Radau
 transcription. The modified equation needed to enforce the kinematic constraints,
 \f$ \textrm{legendre_gauss_radau}^{\prime}_i \f$, has the same form, but uses a modified 
-\f$ \eta^{\prime}_i \f$ matrix where the final row contains the auxiliary state variables:
+\f$ \eta^{\prime}_i \f$ matrix where the final row contains the projection state variables:
 
 \f[
     \begin{alignat*}{1}
