@@ -96,7 +96,7 @@ public:
 //==============================================================================
 // OUTPUTS
 //==============================================================================
-    OpenSim_DECLARE_OUTPUT(bushing_force, SimTK::Vec6, getBushingForce,
+    OpenSim_DECLARE_OUTPUT(bushing_force, SimTK::Vec6, calcBushingForce,
             SimTK::Stage::Dynamics);
 
 //==============================================================================
@@ -220,10 +220,6 @@ public:
         theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
     std::string getFzExpression() { return get_Fz_expression(); }
 
-    /** Get the total bushing force. This is the sum of the stiffness and damping
-        force contributions. */
-    const SimTK::Vec6& getBushingForce(const SimTK::State& state) const;
-
     //--------------------------------------------------------------------------
     // COMPUTATION
     //--------------------------------------------------------------------------
@@ -236,6 +232,10 @@ public:
         function of the deflection rate between the bushing frames. It is the 
         force on frame2 from frame1 in the basis of the deflection rate (dqdot).*/
     SimTK::Vec6 calcDampingForce(const SimTK::State& state) const;
+
+    /** Calculate the total bushing force. This is the sum of the stiffness and
+        damping force contributions. */
+    SimTK::Vec6 calcBushingForce(const SimTK::State& state) const;
 
     //--------------------------------------------------------------------------
     // Reporting
@@ -278,10 +278,6 @@ private:
 
     void setNull();
     void constructProperties();
-
-    /** Calculate the total bushing force. This is the sum of the stiffness and
-        damping force contributions. */
-    SimTK::Vec6 calcBushingForce(const SimTK::State& state) const;
 
     SimTK::Mat66 _dampingMatrix{ 0.0 };
 

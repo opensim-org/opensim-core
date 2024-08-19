@@ -270,12 +270,6 @@ void ExpressionBasedBushingForce::setFzExpression(std::string expression)
     FzProg = Lepton::Parser::parse(expression).optimize().createProgram();
 }
 
-const SimTK::Vec6& ExpressionBasedBushingForce::getBushingForce(
-        const SimTK::State& s) const {
-    // TODO return a cache variable instead.
-    return calcBushingForce(s);
-}
-
 //=============================================================================
 // COMPUTATION
 //=============================================================================
