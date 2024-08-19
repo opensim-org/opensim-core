@@ -221,8 +221,7 @@ public:
     std::string getFzExpression() { return get_Fz_expression(); }
 
     /** Get the total bushing force. This is the sum of the stiffness and damping
-        force contributions. Note, computeForce must be evaluated first,
-        and this is done automatically if the system is realized to Dynamics. */
+        force contributions. */
     const SimTK::Vec6& getBushingForce(const SimTK::State& state) const;
 
     //--------------------------------------------------------------------------
@@ -276,7 +275,6 @@ private:
     // Implement ModelComponent interface.
     //--------------------------------------------------------------------------
     void extendFinalizeFromProperties() override;
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     void setNull();
     void constructProperties();
@@ -289,8 +287,6 @@ private:
 
     // parser programs for efficiently evaluating the expressions
     Lepton::ExpressionProgram MxProg, MyProg, MzProg, FxProg, FyProg, FzProg;
-
-    mutable CacheVariable<SimTK::Vec6> _bushingForceCV;
 
 //==============================================================================
 };  // END of class ExpressionBasedBushingForce

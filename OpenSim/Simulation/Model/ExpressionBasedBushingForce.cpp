@@ -215,13 +215,6 @@ void ExpressionBasedBushingForce::extendFinalizeFromProperties()
     }
 }
 
-void ExpressionBasedBushingForce::extendAddToSystem(
-        SimTK::MultibodySystem& system) const {
-    Super::extendAddToSystem(system); 
-    this->_bushingForceCV = addCacheVariable("bushing_force", SimTK::Vec6(0),
-            SimTK::Stage::Velocity);
-}
-
 /** Set the expression for the Mx function and create it's lepton program */
 void ExpressionBasedBushingForce::setMxExpression(std::string expression) 
 {
@@ -279,7 +272,8 @@ void ExpressionBasedBushingForce::setFzExpression(std::string expression)
 
 const SimTK::Vec6& ExpressionBasedBushingForce::getBushingForce(
         const SimTK::State& s) const {
-    return getCacheVariableValue<SimTK::Vec6>(s, _bushingForceCV);
+    // TODO return a cache variable instead.
+    return calcBushingForce(s);
 }
 
 //=============================================================================
@@ -324,9 +318,7 @@ SimTK::Vec6 ExpressionBasedBushingForce::
 
 SimTK::Vec6 ExpressionBasedBushingForce::calcBushingForce(
         const SimTK::State& s) const {
-    Vec6 f = calcStiffnessForce(s) + calcDampingForce(s);
-    setCacheVariableValue(s, _bushingForceCV, f);
-    return f;
+    return calcStiffnessForce(s) + calcDampingForce(s);
 }
 
 
