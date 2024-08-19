@@ -193,8 +193,8 @@ TEST_CASE("testExpressionBasedCoordinateForce") {
         double model_force = spring->getForceMagnitude(osim_state);
         double output_force = 
                 spring->getOutputValue<double>(osim_state, "force_magnitude");
-        ASSERT_EQUAL(analytical_force, model_force, 1e-5);
-        ASSERT_EQUAL(analytical_force, output_force, 1e-5);
+        ASSERT_EQUAL(analytical_force, model_force, 1e-6);
+        ASSERT_EQUAL(analytical_force, output_force, 1e-6);
     }
 
     // Test copying
