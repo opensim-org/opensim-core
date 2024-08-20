@@ -88,11 +88,11 @@ public:
     already set for the requested measure, then the provided weight
     replaces the previous weight. An exception is thrown during
     initialization if a weight for an unknown measure is provided. */
-    void setWeight(const std::string& stateName, const double& weight) {
-        if (get_reaction_weights().contains(stateName)) {
-            upd_reaction_weights().get(stateName).setWeight(weight);
+    void setWeight(const std::string& measure, const double& weight) {
+        if (get_reaction_weights().contains(measure)) {
+            upd_reaction_weights().get(measure).setWeight(weight);
         } else {
-            upd_reaction_weights().cloneAndAppend({stateName, weight});
+            upd_reaction_weights().cloneAndAppend({measure, weight});
         }
     }
     /** Provide a MocoWeightSet to weight the reaction measures in the cost.

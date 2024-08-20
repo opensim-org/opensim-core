@@ -26,6 +26,8 @@
 
 #include <catch2/catch_all.hpp>
 
+#include <sstream>
+
 /* The purpose of this test is strictly to check that classes derived from
  * the Path class work outside of the objects/components they are meant to 
  * service (i.e. check that the path logic works).
@@ -376,4 +378,11 @@ TEST_CASE("std::hash<ComponentPath> returns equivalent results to hashing the un
 
     // ... but beware of normalization...
     REQUIRE(std::hash<ComponentPath>{}(OpenSim::ComponentPath{"normalizable/././path"}) != std::hash<std::string>{}("normalizable/././path"));
+}
+
+TEST_CASE("ComponentPath can be written to an ostream, which writes the equivalent of toString")
+{
+    std::stringstream ss;
+    ss << ComponentPath{"some//path/"};
+    REQUIRE(ss.str() == ComponentPath{"some//path/"}.toString());
 }

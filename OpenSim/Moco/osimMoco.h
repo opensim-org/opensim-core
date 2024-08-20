@@ -26,6 +26,8 @@
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoConstraint.h"
 #include "MocoControlBoundConstraint.h"
+#include "MocoOutputBoundConstraint.h"
+#include "MocoStateBoundConstraint.h"
 #include "MocoFrameDistanceConstraint.h"
 #include "MocoGoal/MocoAccelerationTrackingGoal.h"
 #include "MocoGoal/MocoAngularVelocityTrackingGoal.h"
