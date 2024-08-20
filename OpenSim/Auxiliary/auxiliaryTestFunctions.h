@@ -268,14 +268,18 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
             double Ixy = 0.01*Ixx;
             prop = SimTK::Vec6(Ixx, Ixx, Ixx, Ixy, Ixy, Ixy);
         } else if (ts == "string") {
-            string base("ABCXYZ");
-            if (isList){
-                stringstream val;
-                val << base << "_" << ap.size();
-                ap.appendValue<string>(val.str());
-            }
-            else{
-                ap.updValue<string>() = base;
+            // We cannot use an arbitrary string for ExpressionBasedBushingForce 
+            // properties since they must contain specific variable names (e.g.,
+            // "theta_x", "delta_x", etc.). 
+            if (obj->getConcreteClassName() != "ExpressionBasedBushingForce") {
+                string base("ABCXYZ");
+                if (isList) {
+                    stringstream val;
+                    val << base << "_" << ap.size();
+                    ap.appendValue<string>(val.str());
+                } else {
+                    ap.updValue<string>() = base;
+                }
             }
         } else if (ts == "double" && isList && ap.getMaxListSize() < 20) {
             for (int i=0; i< ap.getMaxListSize(); ++i)

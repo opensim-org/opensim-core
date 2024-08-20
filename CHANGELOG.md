@@ -15,6 +15,7 @@ v4.6
 - Fixed bugs in `convertToMocoTrajectory()` and `MocoTrajectory::resampleWithFrequency()` by updating `interpolate()` to 
   allow extrapolation using the `extrapolate` flag. Combined with the `ignoreNaNs` flag, this prevents NaNs from 
   occurring in the output. (#3867)
+- Added `Output`s to `ExpressionBasedCoordinateForce`, `ExpressionBasedPointToPointForce`, and `ExpressionBasedBushingForce` for accessing force values. (#3872)
 - Added `MeyerFregly2016Muscle` and completed the implementation of the `MeyerFregly2016Force` included in the `StationPlaneContactForce` class to support NMSM Pipeline-equivalent muscle and contant models in Moco. (#3877)
 
 
