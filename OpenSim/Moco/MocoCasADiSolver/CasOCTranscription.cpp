@@ -610,7 +610,12 @@ void Transcription::transcribe() {
                     m_projectionStateIndices);
             // This overrides the previous function evaluation assignments for
             // `kinematic_udoterr` and `multibody_residuals` at the mesh indices
-            // (i.e., for "points where we compute algebraic constraints").
+            // (i.e., for "points where we compute algebraic constraints"). We 
+            // still need the function evaluations above since we need state
+            // derivatives for auxiliary states on the mesh points (note that 
+            // the projection states overlap with all the mesh indices except 
+            // the first mesh point). This also keeps the implementation above
+            // general when we do not have projection states.
             m_constraints.multibody_residuals(
                     Slice(), m_projectionStateIndices) = out.at(0);
             m_constraints.kinematic_udoterr(Slice(), m_projectionStateIndices)
@@ -684,7 +689,12 @@ void Transcription::transcribe() {
             m_xdot_projection(Slice(NQ, NQ + NU), Slice()) = out.at(0);
             // This overrides the previous function evaluation assignments for
             // `kinematic_udoterr` at the mesh indices (i.e., for "points where
-            // we compute algebraic constraints").
+            // we compute algebraic constraints"). We still need the function 
+            // evaluations above since we need state derivatives for auxiliary 
+            // states on the mesh points (note that the projection states 
+            // overlap with all the mesh indices except the first mesh point). 
+            // This also keeps the implementation above general when we do not 
+            // have projection states.
             m_constraints.kinematic_udoterr(Slice(), m_projectionStateIndices)
                     = out.at(3)(Slice(nqerr + nuerr, nqerr + nuerr + nudoterr),
                             Slice());

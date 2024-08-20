@@ -179,7 +179,7 @@ We use the trapezoidal rule to remove integrals and derivatives from the
 original continuous time problem,
 
 \f[
-    \textrm{trap}_i(F(\eta, p)) = \frac{1}{2} h_i (F(\eta_{i-1}, p) + F(\eta_i, p))
+    \textrm{trap}_i(F(t, \eta, p)) = \frac{1}{2} h_i (F(t_{i-1}, \eta_{i-1}, p) + F(t_i, \eta_i, p))
 \f]
 
 where \f$ \eta \f$ is any continuous variable in the optimal control problem
@@ -277,8 +277,8 @@ with the Hermite interpolant and Simpson integration rule:
 
 \f[
 \begin{align}
-    \textrm{hermite}_i(\eta, F(\eta, p)) &= \frac{1}{2} (\eta_{i-1} + \eta_i) + \frac{h_i}{8} (F(\eta_{i-1}, p) - F(\eta_i, p)) \\
-    \textrm{simpson}_i(F(\eta, p)) &= \frac{h_i}{6} (F(\eta_{i-1}, p) + 4 F(\bar{\eta}_i, p) + F(\eta_i, p))
+    \textrm{hermite}_i(\eta, F(t, \eta, p)) &= \frac{1}{2} (\eta_{i-1} + \eta_i) + \frac{h_i}{8} (F(t_{i-1}, \eta_{i-1}, p) - F(t_i, \eta_i, p)) \\
+    \textrm{simpson}_i(F(t, \eta, p)) &= \frac{h_i}{6} (F(t_{i-1}, \eta_{i-1}, p) + 4 F(\bar{t}_i, \bar{\eta}_i, p) + F(t_i, \eta_i, p))
 \end{align}
 \f]
 
@@ -470,28 +470,28 @@ The collocation constraint equations and endpoint state equation above can be de
 
 \f[
     \begin{alignat*}{1}
-        \textrm{legendre_gauss}_i(\eta_i, F(\eta_i, p)) = \begin{bmatrix} h_i * F(\eta_{i,1:d}, p) - D_i \cdot \eta_{i,0:d} \\ \eta_{i, d+1} - C_i \cdot \eta_{i, 0:d} \end{bmatrix}
+        \textrm{legendre_gauss}_i(\eta_i, F(t_i, \eta_i, p)) = \begin{bmatrix} h_i * F(t_{i,1:d}, \eta_{i,1:d}, p) - D_i \cdot \eta_{i,0:d} \\ \eta_{i, d+1} - C_i \cdot \eta_{i, 0:d} \end{bmatrix}
     \end{alignat*}
 \f]
 
-where \f$ \eta \f$ is any continuous state variable in the optimal control problem
+where \f$ \eta \f$ is any continuous variable in the optimal control problem
 (e.g., \f$ y \f$), \f$ F \f$ is any function, \f$ D_i \f$ is the differentiation matrix
 described above, and \f$ C_i \f$ a matrix containing values to perform the polynomial 
 interpolation for \f$ \eta_{i, d+1} \f$. Note that the end state is coincident with time 
 point \f$ t_{i+1} \f$, but we use the the notation \f$ \eta_{i, d+1} \f$ to denote the end 
 state of the mesh interval.
 
-\f$ \eta_{i,0:d} \f$ and \f$ F(\eta_{i,1:d}, p) \f$ are matrix quantities 
+\f$ \eta_{i,0:d} \f$ and \f$ F(t_{i,1:d}, \eta_{i,1:d}, p) \f$ are matrix quantities 
 with row size based on the polynomial degree \f$ d \f$:
 
 \f[
     \begin{alignat*}{1}
         \eta_{i,0:d} &= \begin{bmatrix} \eta_{i,0} \\ \vdots \\ \eta_{i,d} \end{bmatrix} \quad
-        F(\eta_{i,1:d}, p) &= \begin{bmatrix} F(t_{i,1}, \eta_{i,1}, p) \\ \vdots \\ F(t_{i,d}, \eta_{i,d}, p) \end{bmatrix} \quad
+        F(t_{i,1:d}, \eta_{i,1:d}, p) &= \begin{bmatrix} F(t_{i,1}, \eta_{i,1}, p) \\ \vdots \\ F(t_{i,d}, \eta_{i,d}, p) \end{bmatrix} \quad
     \end{alignat*}
 \f]
 
-These are matrix quantities since \f$ \eta_{i,k} \f$ and \f$ F(\eta_{i,k}, p) \f$ are 
+These are matrix quantities since \f$ \eta_{i,k} \f$ and \f$ F(t_{i,k}, \eta_{i,k}, p) \f$ are 
 row vectors containing the state variable values and their derivatives, respectively.
 
 Similarly, integrals are replaced using Gauss quadrature at the Legendre polynomial roots 
@@ -564,13 +564,13 @@ all collocation points, not just the mesh points. Finally, the cost term preceed
 and the projection state variables at the end of each mesh interval to encourage the 
 closest possible projection to the constraint manifold.
 
-The function \f$ \textrm{legendre_gauss}^{\prime}(\eta, F(\eta, p)) \f$ used for the 
+The function \f$ \textrm{legendre_gauss}^{\prime}(\eta, F(t, \eta, p)) \f$ used for the 
 multibody dynamics defect constraints is a slight modification of the function 
 \f$ \textrm{legendre_gauss} \f$:
 
 \f[
     \begin{alignat*}{1}
-        \textrm{legendre_gauss}^{\prime}_i(\eta, F(\eta, p)) = \begin{bmatrix} h_i * F(\eta_i, p) - D_i \cdot \eta_i \\ \eta^{\prime}_{i+1} - C_i \cdot \eta_i \end{bmatrix}
+        \textrm{legendre_gauss}^{\prime}_i(\eta, F(t, \eta, p)) = \begin{bmatrix} h_i * F(t_i, \eta_i, p) - D_i \cdot \eta_i \\ \eta^{\prime}_{i+1} - C_i \cdot \eta_i \end{bmatrix}
     \end{alignat*}
 \f]
 
@@ -617,7 +617,7 @@ interpolation constraint for the final mesh interval state:
 
 \f[
     \begin{alignat*}{1}
-        \textrm{legendre_gauss_radau}_i(\eta_i, F(\eta_i, p)) = h_i * F(\eta_{i,1:d}, p) - D_i \cdot \eta_{i,0:d}
+        \textrm{legendre_gauss_radau}_i(\eta_i, F(t_i, \eta_i, p)) = h_i * F(t_{i,1:d}, \eta_{i,1:d}, p) - D_i \cdot \eta_{i,0:d}
     \end{alignat*}
 \f]
 
@@ -629,14 +629,14 @@ transcription. The modified equation needed to enforce the kinematic constraints
 
 \f[
     \begin{alignat*}{1}
-        \textrm{legendre_gauss_radau}^{\prime}_i(\eta^{\prime}_i, F(\eta^{\prime}_i, p)) = h_i * F(\eta^{\prime}_{i,1:d}, p) - D_i \cdot \eta^{\prime}_{i,0:d}
+        \textrm{legendre_gauss_radau}^{\prime}_i(\eta^{\prime}_i, F(t_i, \eta^{\prime}_i, p)) = h_i * F(t_{i,1:d}, \eta^{\prime}_{i,1:d}, p) - D_i \cdot \eta^{\prime}_{i,0:d}
     \end{alignat*}
 \f]
 
 \f[
     \begin{alignat*}{1}
         \eta^{\prime}_{i,0:d} &= \begin{bmatrix} \eta_{i,0} \\ \vdots \\ \eta^{\prime}_{i,d} \end{bmatrix} \quad
-        F(\eta^{\prime}_{i,1:d}, p) &= \begin{bmatrix} F(t_{i,1}, \eta_{i,1}, p) \\ \vdots \\ F(t_{i,d}, \eta^{\prime}_{i,d}, p) \end{bmatrix} \quad
+        F(t_{i,1:d}, \eta^{\prime}_{i,1:d}, p) &= \begin{bmatrix} F(t_{i,1}, \eta_{i,1}, p) \\ \vdots \\ F(t_{i,d}, \eta^{\prime}_{i,d}, p) \end{bmatrix} \quad
     \end{alignat*}
 \f]
 
