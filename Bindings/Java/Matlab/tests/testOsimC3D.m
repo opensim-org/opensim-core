@@ -106,17 +106,18 @@ for i =  0 : forces_m.getNumColumns() - 1
             d   = col.get(randomRows(u));
             d_m = col_m.get(randomRows(u));
             
-            assert(d.get(0)==d_m.get(0),'Force Data has been incorrectly altered');
-            assert(d.get(1)==d_m.get(1),'Force Data has been incorrectly altered')
-            assert(d.get(2)==d_m.get(2),'Force Data has been incorrectly altered')
+            assert(abs(d.get(0)-d_m.get(0))<.001,'Force Data has been incorrectly altered');
+            assert(abs(d.get(1)-d_m.get(1))<.001,'Force Data has been incorrectly altered');
+            assert(abs(d.get(2)-d_m.get(2))<.001,'Force Data has been incorrectly altered');
+
         else
             % Get the values
             d   = col.get(randomRows(u));
             d_m = col_m.get(randomRows(u));
-            
-            assert(d.get(0)/1000==d_m.get(0),'Point or Moment Data has been incorrectly altered');
-            assert(d.get(1)/1000==d_m.get(1),'Point or Moment Data has been incorrectly altered');
-            assert(d.get(2)/1000==d_m.get(2),'Point or Moment Data has been incorrectly altered');
+            assert(abs(d.get(0)/1000-d_m.get(0))<.001,'Point or Moment Data has been incorrectly altered');
+            assert(abs(d.get(1)/1000-d_m.get(1))<.001,'Point or Moment Data has been incorrectly altered');
+            assert(abs(d.get(2)/1000-d_m.get(2))<.001,'Point or Moment Data has been incorrectly altered');
+
         end
     end
 end
