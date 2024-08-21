@@ -372,6 +372,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
             !get_minimize_lagrange_multipliers()) {
         checkConstraintJacobianRank(mocoSolution);
     }
+    checkSlackVariables(mocoSolution);
 
     // TODO move this to convert():
     const long long elapsed = stopwatch.getElapsedTimeInNs();

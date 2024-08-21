@@ -581,7 +581,7 @@ MocoTrajectory runForwardSimulation(
 }
 
 // Check that the constraint errors from a MocoSolution are within a specified
-// tolerance.
+// tolerance. Also, check that the slack variables have a reasonable magnitude.
 void checkConstraintErrors(const MocoSolution& solution, const Model& model,
         bool enforce_constraint_derivatives, const std::string& method) {
     StatesTrajectory statesTraj = solution.exportToStatesTrajectory(model);
@@ -613,11 +613,15 @@ void checkConstraintErrors(const MocoSolution& solution, const Model& model,
         }
     }
 
+    // If problems have converged and all kinematic constraints are satisfied, 
+    // we expect the slack variables to be reasonably small.
     const auto& slacks = solution.getSlacksTrajectory();
-    CAPTURE(slacks);
-    REQUIRE_THAT(slacks.normRMS(), Catch::Matchers::WithinAbs(0, 1e-6));
+    for (int icol = 0; icol < slacks.ncol(); ++icol) {
+        CAPTURE(slacks.col(icol));
+        REQUIRE_THAT(SimTK::max(SimTK::abs(slacks.col(icol))), 
+                Catch::Matchers::WithinAbs(0, 1e-5));
+    }
 }
-
 
 /// Direct collocation subtests.
 /// ----------------------------
@@ -928,47 +932,25 @@ TEST_CASE("DoublePendulum tests, Bordalba2023 method", "[casadi]") {
     std::string section = fmt::format("scheme: {}, dynamics_mode: {}", 
             scheme, dynamics_mode);
 
+    // Trapezoidal rule requires more mesh intervals to keep slack variables 
+    // small.
+    int num_mesh_intervals = scheme == "trapezoidal" ? 50 : 25;
     DYNAMIC_SECTION(section) {
         SECTION("CoordinateCouplerConstraint") {
             testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(true, 
-                    dynamics_mode, "Bordalba2023", scheme);
+                    dynamics_mode, "Bordalba2023", scheme, num_mesh_intervals);
         }
         SECTION("PrescribedMotion") {
             testDoublePendulumPrescribedMotion<MocoCasADiSolver>(true, 
-                    dynamics_mode, "Bordalba2023", scheme);
+                    dynamics_mode, "Bordalba2023", scheme, num_mesh_intervals);
         }
         SECTION("PointOnLine") {
             testDoublePendulumPointOnLine<MocoCasADiSolver>(
-                    true, dynamics_mode, "Bordalba2023", scheme);
+                    true, dynamics_mode, "Bordalba2023", scheme, 
+                    num_mesh_intervals);
         }
     }
 }
-
-// TEST_CASE("DoublePendulum tests, Bordalba2023 method (implicit)",
-//         "[implicit]") {
-//     std::string scheme = GENERATE(as<std::string>{},
-//             "trapezoidal", "hermite-simpson", "legendre-gauss-3", 
-//             "legendre-gauss-radau-3");
-
-//     int num_mesh_intervals = 25;
-//     DYNAMIC_SECTION("scheme: " << scheme) {        
-//         SECTION("CoordinateCouplerConstraint") {
-//             testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
-//                     true, "implicit", "Bordalba2023", scheme,
-//                     num_mesh_intervals);
-//         }
-//         SECTION("PrescribedMotion") {
-//             testDoublePendulumPrescribedMotion<MocoCasADiSolver>(
-//                     true, "implicit", "Bordalba2023", scheme,
-//                     num_mesh_intervals);
-//         }
-//         SECTION("PointOnLine") {
-//             testDoublePendulumPointOnLine<MocoCasADiSolver>(
-//                     true, "implicit", "Bordalba2023", scheme,
-//                     num_mesh_intervals);
-//         }
-//     }
-// }
 
 TEST_CASE("Bad configurations with kinematic constraints") {
     MocoStudy study;

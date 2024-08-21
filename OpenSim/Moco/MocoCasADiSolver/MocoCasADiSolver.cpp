@@ -420,6 +420,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
             !get_minimize_lagrange_multipliers()) {
         checkConstraintJacobianRank(mocoSolution);
     }
+    checkSlackVariables(mocoSolution);
 
     const long long elapsed = stopwatch.getElapsedTimeInNs();
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),

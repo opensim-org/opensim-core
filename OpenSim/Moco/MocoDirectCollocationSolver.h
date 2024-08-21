@@ -183,8 +183,9 @@ protected:
             "Takes precedence over uniform mesh with num_mesh_intervals.");
     void constructProperties();
 
-    // Helper function for post-processing the solution.
+    // Helper functions for post-processing the solution.
     void checkConstraintJacobianRank(const MocoSolution& mocoSolution) const;
+    void checkSlackVariables(const MocoSolution& mocoSolution) const;
 };
 
 } // namespace OpenSim
