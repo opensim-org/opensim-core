@@ -53,8 +53,8 @@ ExpressionBasedCoordinateForce::ExpressionBasedCoordinateForce(
     setExpression(expression);
 }
 
-// Set the expression for the force function and create it's lepton program 
-void ExpressionBasedCoordinateForce::setExpression(const string& expression) 
+// Set the expression for the force function and create its lepton program
+void ExpressionBasedCoordinateForce::setExpression(const string& expression)
 {
     set_expression(expression);
 }
@@ -68,7 +68,7 @@ void ExpressionBasedCoordinateForce::setExpression(const string& expression)
  */
 void ExpressionBasedCoordinateForce::setNull()
 {
-    setAuthors("Nabeel Allana"); 
+    setAuthors("Nabeel Allana");
 }
 
 //_____________________________________________________________________________
@@ -94,9 +94,9 @@ void ExpressionBasedCoordinateForce::extendConnectToModel(Model& aModel)
 
     string& expression = upd_expression();
     expression.erase(
-            remove_if(expression.begin(), expression.end(), ::isspace), 
+            remove_if(expression.begin(), expression.end(), ::isspace),
                       expression.end() );
-    
+
     _forceProg = Lepton::Parser::parse(expression).optimize().createProgram();
 
     // Look up the coordinate
@@ -105,7 +105,7 @@ void ExpressionBasedCoordinateForce::extendConnectToModel(Model& aModel)
         throw (Exception(errorMessage.c_str()));
     }
     _coord = &_model->updCoordinateSet().get(coordName);
-    
+
     if(getName() == "")
         setName("expressionCoordForce_"+coordName);
 }
@@ -124,8 +124,8 @@ void ExpressionBasedCoordinateForce::
 // Computing
 //=============================================================================
 // Compute and apply the force
-void ExpressionBasedCoordinateForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+void ExpressionBasedCoordinateForce::computeForce(const SimTK::State& s,
+                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const
 {
     applyGeneralizedForce(s, *_coord, calcExpressionForce(s), generalizedForces);
@@ -147,8 +147,7 @@ double ExpressionBasedCoordinateForce::calcExpressionForce(const SimTK::State& s
 
 // get the force magnitude that has already been computed
 const double& ExpressionBasedCoordinateForce::
-    getForceMagnitude(const SimTK::State& s)
-{
+        getForceMagnitude(const SimTK::State& s) const {
     return getCacheVariableValue(s, _forceMagnitudeCV);
 }
 
@@ -156,7 +155,7 @@ const double& ExpressionBasedCoordinateForce::
 //=============================================================================
 // Reporting
 //=============================================================================
-// Provide names of the quantities (column labels) of the force value(s) 
+// Provide names of the quantities (column labels) of the force value(s)
 // reported.
 Array<std::string> ExpressionBasedCoordinateForce::getRecordLabels() const {
     OpenSim::Array<std::string> labels("");

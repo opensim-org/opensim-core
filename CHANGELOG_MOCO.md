@@ -3,7 +3,7 @@ Moco Change Log
 
 1.4.0
 -----
-- 2024-07-29: Added support for the 'projection' method for enforcing kinematic
+- 2024-08-21: Added support for the 'projection' method for enforcing kinematic
               constraints from Bordalba et al. (2023) to `MocoCasADiSolver`. 
               This method allows enforcing kinematic constraints with any
               transcription scheme and can be enabled using by setting the
@@ -11,7 +11,7 @@ Moco Change Log
               existing default method from Posa et al. (2016) can also be
               specified using `'Posa2016'`.
 
-- 2024-07-29: The `MocoSolver` properties `interpolate_control_midpoints` and
+- 2024-08-21: The `MocoSolver` properties `interpolate_control_midpoints` and
               `enforce_path_constraint_midpoints` have been renamed to 
               `interpolate_control_mesh_interior_points` and 
               `enforce_path_constraint_mesh_interior_points`, respectively. This
@@ -20,6 +20,9 @@ Moco Change Log
               have collocation points in the mesh interval interior that do not 
               necessarily coincide with the mesh interval midpoints (unlike 
               Hermite-Simpson transcription).
+
+- 2024-08-15: Added `MocoExpressionBasedParameterGoal` to enable minimizing any arithmetic expression
+              of parameter values.
 
 - 2024-07-26: Added `MocoStateBoundConstraint` and `MocoOutputBoundConstraint` to enable bounding 
               state variables or output values by one or two `Function`s, similar to 
