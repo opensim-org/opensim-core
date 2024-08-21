@@ -3,6 +3,9 @@ Moco Change Log
 
 1.4.0
 -----
+- 2024-08-15: Added `MocoExpressionBasedParameterGoal` to enable minimizing any arithmetic expression
+              of parameter values.
+
 - 2024-07-26: Added `MocoStateBoundConstraint` and `MocoOutputBoundConstraint` to enable bounding 
               state variables or output values by one or two `Function`s, similar to 
               `MocoControlBoundConstraint`.
