@@ -299,18 +299,15 @@ void muscleDrivenJointMomentTracking() {
     // Ignore coordinates that are locked, prescribed, or coupled to other
     // coordinates via CoordinateCouplerConstraints (true by default).
     jointMomentTracking->setIgnoreConstrainedCoordinates(true);
-    for (const auto& coordinate : model.getComponentList<Coordinate>()) {
-        const auto& coordName = coordinate.getName();
-        // Don't track generalized forces associated with pelvis residuals.
-        if (coordName.find("pelvis") != std::string::npos) {
-            jointMomentTracking->setWeightForGeneralizedForce(coordName, 0);
-        }
 
-        // Encourage better tracking of the ankle joint moments.
-        if (coordName.find("ankle") != std::string::npos) {
-            jointMomentTracking->setWeightForGeneralizedForce(coordName, 100);
-        }
-    }
+    // Do not track generalized forces associated with pelvis residuals.
+    jointMomentTracking->setWeightForGeneralizedForcePattern(".*pelvis.*", 0);
+
+    // Encourage better tracking of the ankle joint moments.
+    jointMomentTracking->setWeightForGeneralizedForce(
+            "ankle_angle_r_moment", 100);
+    jointMomentTracking->setWeightForGeneralizedForce(
+            "ankle_angle_l_moment", 100);
     
     // Update the solver problem and tolerances.
     auto& solver = study.updSolver<MocoCasADiSolver>();
@@ -342,10 +339,10 @@ void muscleDrivenJointMomentTracking() {
 int main() {
 
     // Solve the torque-driven marker tracking problem.
-    torqueDrivenMarkerTracking();
+    // torqueDrivenMarkerTracking();
 
     // Solve the muscle-driven state tracking problem.
-    muscleDrivenStateTracking();
+    // muscleDrivenStateTracking();
 
     // Solve the muscle-driven joint moment tracking problem.
     muscleDrivenJointMomentTracking();

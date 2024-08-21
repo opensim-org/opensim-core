@@ -93,13 +93,15 @@ public:
     /// then the provided weight replaces the previous weight. Weight names 
     /// should match the column labels in the reference table (e.g., 
     /// `ankle_angle_r_moment`, `pelvis_tx_force`, etc.).
-    void setWeightForGeneralizedForce(const std::string& name, double weight) {
-        if (get_generalized_force_weights().contains(name)) {
-            upd_generalized_force_weights().get(name).setWeight(weight);
-        } else {
-            upd_generalized_force_weights().cloneAndAppend({name, weight});
-        }
-    }
+    void setWeightForGeneralizedForce(const std::string& name, double weight);
+
+    /// Set the tracking weight for all generalized forces whose names match the
+    /// regular expression pattern. Multiple pairs of patterns and weights can 
+    /// be provided by calling this function multiple times. If a generalized
+    /// force matches multiple patterns, the weight associated with the last
+    /// pattern is used.
+    void setWeightForGeneralizedForcePattern(const std::string& pattern, 
+            double weight);
 
     /// Set the MocoWeightSet to weight the generalized coordinate forces in
     /// the cost. Replaces the weight set if it already exists.
@@ -122,9 +124,9 @@ public:
     /// @copydoc setNormalizeTrackingError(bool tf)
     bool getNormalizeTrackingError() { return get_normalize_tracking_error(); }
 
-    /// Whether or not to ignore coordinates that are locked, prescribed, or
-    /// coupled to other coordinates. This is based on the value returned from 
-    /// `Coordinate::isConstrained()` (default: true).
+    /// Whether or not to ignore generalized forces for coordinates that are 
+    /// locked, prescribed, or coupled to other coordinates. This is based on 
+    /// the value returned from `Coordinate::isConstrained()` (default: true).
     void setIgnoreConstrainedCoordinates(bool tf) {
         set_ignore_constrained_coordinates(tf);
     }
@@ -156,6 +158,9 @@ private:
     OpenSim_DECLARE_PROPERTY(generalized_force_weights, MocoWeightSet, 
             "Set of weight objects to weight the tracking of individual "
             "generalized coordinate forces in the cost.");
+    OpenSim_DECLARE_PROPERTY(generalized_force_weights_pattern, MocoWeightSet, 
+            "Set weights for all generalized forces matching a regular "
+            "expression.");
     OpenSim_DECLARE_PROPERTY(allow_unused_references, bool,
             "Flag to determine whether or not references contained in the "
             "reference table are allowed to be ignored by the cost.");
@@ -165,14 +170,14 @@ private:
             "If the peak magnitude of the reference generalized force data is "
             "close to zero, an exception is thrown (default: false).");
     OpenSim_DECLARE_PROPERTY(ignore_constrained_coordinates, bool,
-            "Flag to determine whether or not to ignore coordinates that are "
-            "locked, prescribed, or coupled to other coordinates "
-            "(default: true).");
+            "Flag to determine whether or not to ignore generalized forces for " 
+            "coordinates that are locked, prescribed, or coupled to other "
+            "coordinates (default: true).");
 
     mutable GCVSplineSet m_refsplines;
     mutable std::vector<double> m_generalizedForceWeights;
     mutable std::vector<std::string> m_generalizedForceNames;
-    mutable std::vector<int> m_coordinateIndexes;
+    mutable std::vector<int> m_generalizedForceIndexes;
     mutable std::vector<double> m_normalizationFactors;
     mutable SimTK::Array_<SimTK::ForceIndex> m_forceIndexes;
 };
