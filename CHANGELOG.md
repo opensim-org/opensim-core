@@ -6,17 +6,6 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
-v4.6
-====
-- The performance of `getStateVariableValue`, `getStateVariableDerivativeValue`, and `getModelingOption` was improved in
-  the case where provided string is just the name of the value, rather than a path to it (#3782)
-- Fixed bugs in `MocoStepTimeAsymmetryGoal::printDescriptionImpl()` where there were missing or incorrect values printed. (#3842)
-- Added `ModOpPrescribeCoordinateValues` which can prescribe motion of joints in a model given a table of data. (#3862)
-- Fixed bugs in `convertToMocoTrajectory()` and `MocoTrajectory::resampleWithFrequency()` by updating `interpolate()` to 
-  allow extrapolation using the `extrapolate` flag. Combined with the `ignoreNaNs` flag, this prevents NaNs from 
-  occurring in the output. (#3867)
-- Added `Output`s to `ExpressionBasedCoordinateForce`, `ExpressionBasedPointToPointForce`, and `ExpressionBasedBushingForce` for accessing force values. (#3872)
-
 v4.5.1
 ======
 - Added support for list `Socket`s via the macro `OpenSim_DECLARE_LIST_SOCKET`. The macro-generated method
