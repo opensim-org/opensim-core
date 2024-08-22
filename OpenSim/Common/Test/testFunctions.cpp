@@ -28,6 +28,7 @@
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/SignalGenerator.h>
 #include <OpenSim/Common/Sine.h>
+#include <OpenSim/Common/ExpressionBasedFunction.h>
 
 #include <catch2/catch_all.hpp>
 
@@ -258,5 +259,75 @@ TEST_CASE("solveBisection()") {
             return SimTK::square(x - 2.5);
         };
         REQUIRE_THROWS_AS(solveBisection(parabola, -5, 5), OpenSim::Exception);
+    }
+}
+
+TEST_CASE("ExpressionBasedFunction") {
+    const SimTK::Real x = SimTK::Test::randReal();
+    const SimTK::Real y = SimTK::Test::randReal();
+    const SimTK::Real z = SimTK::Test::randReal();
+
+    SECTION("Square-root function") {
+        ExpressionBasedFunction f("sqrt(x)", {"x"});
+        REQUIRE_THAT(f.calcValue(createVector({x})), 
+                Catch::Matchers::WithinAbs(std::sqrt(x), 1e-10));
+        REQUIRE_THAT(f.calcDerivative({0}, createVector({x})), 
+                Catch::Matchers::WithinAbs(0.5 / std::sqrt(x), 1e-10));
+    }
+
+    SECTION("Exponential function") {
+        ExpressionBasedFunction f("exp(x)", {"x"});
+        REQUIRE_THAT(f.calcValue(createVector({x})), 
+                Catch::Matchers::WithinAbs(std::exp(x), 1e-10));
+        REQUIRE_THAT(f.calcDerivative({0}, createVector({x})), 
+                Catch::Matchers::WithinAbs(std::exp(x), 1e-10));
+    }
+
+    SECTION("Multivariate function") {
+        ExpressionBasedFunction f("2*x^3 + 3*y*z^2", {"x", "y", "z"});
+        REQUIRE_THAT(f.calcValue(createVector({x, y, z})), 
+                Catch::Matchers::WithinAbs(2*x*x*x + 3*y*z*z, 1e-10));
+        REQUIRE_THAT(f.calcDerivative({0}, createVector({x, y, z})), 
+                Catch::Matchers::WithinAbs(6*x*x, 1e-10));
+        REQUIRE_THAT(f.calcDerivative({1}, createVector({x, y, z})), 
+                Catch::Matchers::WithinAbs(3*z*z, 1e-10));
+        REQUIRE_THAT(f.calcDerivative({2}, createVector({x, y, z})), 
+                Catch::Matchers::WithinAbs(6*y*z, 1e-10));
+    }
+
+
+    SECTION("Sinusoidal function") {
+        ExpressionBasedFunction f("x*sin(y*z^2)", {"x", "y", "z"});
+        REQUIRE_THAT(f.calcValue(createVector({x, y, z})), 
+                Catch::Matchers::WithinAbs(x * std::sin(y*z*z), 1e-10));
+        REQUIRE_THAT(f.calcDerivative({0}, createVector({x, y, z})), 
+                Catch::Matchers::WithinAbs(std::sin(y*z*z), 1e-10));
+        REQUIRE_THAT(f.calcDerivative({1}, createVector({x, y, z})), 
+                Catch::Matchers::WithinAbs(x*z*z*std::cos(y*z*z), 1e-10));  
+    }
+
+    SECTION("Missing variables") {
+        ExpressionBasedFunction f("x*y", {"x"});
+        REQUIRE_THROWS_AS(f.calcValue(createVector({x})), OpenSim::Exception);
+    }
+
+    SECTION("Extra variables") {
+        ExpressionBasedFunction f("x*y", {"x", "y", "z"});
+        REQUIRE_THAT(f.calcValue(createVector({x, y, z})), 
+                Catch::Matchers::WithinAbs(x*y, 1e-10));
+        REQUIRE_THAT(f.calcDerivative({0}, createVector({x, y, z})), 
+                Catch::Matchers::WithinAbs(y, 1e-10));
+        REQUIRE_THAT(f.calcDerivative({1}, createVector({x, y, z})), 
+                Catch::Matchers::WithinAbs(x, 1e-10));
+        REQUIRE_THAT(f.calcDerivative({2}, createVector({x, y, z})), 
+                Catch::Matchers::WithinAbs(0.0, 1e-10));
+    }
+
+    SECTION("Derivative of non-existant variable") {
+        // ExpressionBasedFunction f("x*y", {"x", "y"});
+        // f.calcDerivative({2}, createVector({x, y}));
+
+
+        
     }
 }

@@ -25,12 +25,6 @@
 
 #include "osimCommonDLL.h"
 #include "Function.h"
-#include "FunctionAdapter.h"
-
-#include <lepton/ExpressionProgram.h>
-#include <lepton/ParsedExpression.h>
-#include <lepton/Parser.h>
-
 namespace OpenSim {
 
 class OSIMCOMMON_API ExpressionBasedFunction : public Function {
@@ -47,58 +41,65 @@ public:
 // METHODS
 //==============================================================================
 
-    // CONSTRUCTION 
-    ExpressionBasedFunction(const std::string& expression, 
+    /** Default constructor. */
+    ExpressionBasedFunction() { constructProperties(); }
+
+    /** Convenience constructor.
+     *  
+     * @param expression The expression that defines this Function.
+     * @param variables The variables that the expression is a function of.
+     */
+    ExpressionBasedFunction(std::string expression, 
             const std::vector<std::string>& variables) {
         constructProperties();
-        set_expression(expression);
+        set_expression(std::move(expression));
+        setVariables(variables);
+    }
+
+    /**
+     * The expression that defines this Function. The expression should be a 
+     * mathematical expression that is a function of the variables defined via
+     * the 'variables' property.
+     * 
+     * @note The expression cannot contain any whitespace characters.
+     */
+    void setExpression(std::string expression) {
+        set_expression(std::move(expression));
+    }
+    /// @copydoc setExpression()
+    const std::string& getExpression() const {
+        return get_expression();
+    }
+
+    /**
+     * The variables that the expression is a function of. The variables should
+     * be defined as a list of strings.
+     */
+    void setVariables(const std::vector<std::string>& variables) {
         for (const auto& var : variables) {
             append_variables(var);
         }
-
-        Lepton::ParsedExpression parsedExpression = 
-                Lepton::Parser::parse(expression).optimize();
-
-        for (int i = 0; i < variables.size(); ++i) {
-            Lepton::ParsedExpression diffExpression = 
-                    parsedExpression.differentiate(variables[i]).optimize();
-            m_derivativePrograms.push_back(diffExpression.createProgram());
-        }
-
-        m_valueProgram = parsedExpression.createProgram();
     }
-
-    double calcValue(const SimTK::Vector& x) const override {
-        std::map<std::string, double> vars;
+    /// @copydoc setVariables()
+    std::vector<std::string> getVariables() const {
+        std::vector<std::string> variables;
         for (int i = 0; i < getProperty_variables().size(); ++i) {
-            vars[get_variables(i)] = x[i];
+            variables.push_back(get_variables(i));
         }
-        return m_valueProgram.evaluate(vars);
+        return variables;
     }
 
-    double calcDerivative(const std::vector<int>& derivComponents,
-            const SimTK::Vector& x) const override {
-        std::map<std::string, double> vars;
-        for (int i = 0; i < getProperty_variables().size(); ++i) {
-            vars[get_variables(i)] = x[i];
-        }
-
-        return m_derivativePrograms[derivComponents[0]].evaluate(vars);
-    }
-
-
-    SimTK::Function* createSimTKFunction() const override {
-        return new FunctionAdapter(*this);
-    }
+    /**
+     * Return a pointer to a SimTK::Function object that implements this
+     * function.
+     */
+    SimTK::Function* createSimTKFunction() const override;
 
 private:
     void constructProperties() {
         constructProperty_expression("");
         constructProperty_variables();
     }
-
-    Lepton::ExpressionProgram m_valueProgram;
-    std::vector<Lepton::ExpressionProgram> m_derivativePrograms;
 };
 
 

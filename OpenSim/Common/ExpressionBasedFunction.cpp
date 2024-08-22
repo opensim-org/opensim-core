@@ -23,6 +23,92 @@
 
 #include "ExpressionBasedFunction.h"
 
+#include <lepton/ExpressionProgram.h>
+#include <lepton/ParsedExpression.h>
+#include <lepton/Parser.h>
+#include <lepton/Exception.h>
+
 using namespace OpenSim;
 
+class SimTKExpressionBasedFunction : public SimTK::Function {
+public:
+    SimTKExpressionBasedFunction(const std::string& expression, 
+            const std::vector<std::string>& variables) :
+        m_expression(expression), m_variables(variables) {
 
+        // Create the expression programs for the value and its derivatives.
+        Lepton::ParsedExpression parsedExpression = 
+                Lepton::Parser::parse(m_expression).optimize();
+        m_valueProgram = parsedExpression.createProgram();
+
+        for (int i = 0; i < static_cast<int>(m_variables.size()); ++i) {
+            Lepton::ParsedExpression diffExpression = 
+                    parsedExpression.differentiate(m_variables[i]).optimize();
+            m_derivativePrograms.push_back(diffExpression.createProgram());
+        }
+
+        try {
+            std::map<std::string, double> vars;
+            for (int i = 0; i < static_cast<int>(m_variables.size()); ++i) {
+                vars[m_variables[i]] = 0;
+            }
+            m_valueProgram.evaluate(vars);
+
+            for (int i = 0; i < static_cast<int>(m_variables.size()); ++i) {
+                m_derivativePrograms[i].evaluate(vars);
+            }
+        } catch (Lepton::Exception& ex) {
+            std::string msg = ex.what();
+            std::string help = "";
+            if (msg.compare(0, 30, "No value specified for variable")) {
+                help = " Use addVariable() to explicitly define this variable, "
+                    "or remove the variable from the expression for this goal.";
+            }
+            OPENSIM_THROW(Exception, 
+                    fmt::format("Expression evaluate error: {}.{}", msg, help));
+        }
+    }
+
+    SimTK::Real calcValue(const SimTK::Vector& x) const override {
+        std::map<std::string, double> vars;
+        for (int i = 0; i < static_cast<int>(m_variables.size()); ++i) {
+            vars[m_variables[i]] = x[i];
+        }
+        return m_valueProgram.evaluate(vars);
+    }
+
+    SimTK::Real calcDerivative(const SimTK::Array_<int>& derivComponents, 
+            const SimTK::Vector& x) const override {
+        if (derivComponents[0] < static_cast<int>(m_variables.size())) {
+            std::map<std::string, double> vars;
+            for (int i = 0; i < static_cast<int>(m_variables.size()); ++i) {
+                vars[m_variables[i]] = x[i];
+            }
+            m_derivativePrograms[derivComponents[0]].evaluate(vars);
+        } else {
+            return 0;
+        }
+    }
+
+    int getArgumentSize() const override { 
+        return static_cast<int>(m_variables.size()); 
+    }
+    int getMaxDerivativeOrder() const override { return 1; }
+    SimTKExpressionBasedFunction* clone() const override {
+        return new SimTKExpressionBasedFunction(*this);
+    }
+
+private:
+    std::string m_expression;
+    std::vector<std::string> m_variables;
+    Lepton::ExpressionProgram m_valueProgram;
+    std::vector<Lepton::ExpressionProgram> m_derivativePrograms;
+};
+
+SimTK::Function* ExpressionBasedFunction::createSimTKFunction() const {
+    std::vector<std::string> variables;
+    for (int i = 0; i < getProperty_variables().size(); ++i) {
+        variables.push_back(get_variables(i));
+    }
+    return new SimTKExpressionBasedFunction(get_expression(), variables);
+}
