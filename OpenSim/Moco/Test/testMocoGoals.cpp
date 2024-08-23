@@ -292,7 +292,7 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
     MocoStudy study = setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
     auto solutionEffort = study.solve();
 
-    SECTION ("MocoControlTrackingGoal") {
+    SECTION("MocoControlTrackingGoal") {
         // Re-run problem, now setting effort cost function to zero and adding a
         // control tracking cost.
         auto& problem = study.updProblem();
@@ -324,7 +324,7 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
                 solutionTracking.getStatesTrajectory(), 1e-2);
     }
 
-    SECTION ("MocoOrientationTrackingGoal") {
+    SECTION("MocoOrientationTrackingGoal") {
         MocoStudy studyOrientationTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
 
@@ -345,21 +345,21 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
         }
     }
 
-    SECTION ("MocoTranslationTrackingGoal") {
+    SECTION("MocoTranslationTrackingGoal") {
         MocoStudy studyTranslationTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         testDoublePendulumTracking<TestType, MocoTranslationTrackingGoal>(
             studyTranslationTracking, solutionEffort);
     }
 
-    SECTION ("MocoAngularVelocityTrackingGoal") {
+    SECTION("MocoAngularVelocityTrackingGoal") {
         MocoStudy studyAngularVelocityTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         testDoublePendulumTracking<TestType, MocoAngularVelocityTrackingGoal>(
             studyAngularVelocityTracking, solutionEffort);
     }
 
-    SECTION ("MocoAccelerationTrackingGoal") {
+    SECTION("MocoAccelerationTrackingGoal") {
         MocoStudy studyAccelerationTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         // Re-run problem, now setting effort cost function to a low weight and
@@ -392,7 +392,7 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
                 solutionTracking.getStatesTrajectory(), 1e-2);
     }
 
-    SECTION ("MocoAccelerationTrackingGoal (IMU tracking)") {
+    SECTION("MocoAccelerationTrackingGoal (IMU tracking)") {
         MocoStudy studyAccelerationTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         // Re-run problem, now setting effort cost function to a low weight and
@@ -438,14 +438,42 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
         auto* genForceTracking =
                 problem.addGoal<MocoGeneralizedForceTrackingGoal>("tracking");
         genForceTracking->setReference(generalizedForces);
-        studyGenForceTracking.updSolver<TestType>().resetProblem(problem);
-        auto solutionTracking = studyGenForceTracking.solve();
 
-        // The tracking solution should match the effort solution.
-        SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
-                          solutionTracking.getControlsTrajectory(), 1e-3);
-        SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
-                          solutionTracking.getStatesTrajectory(), 1e-3);
+        SECTION("Setting weights") {
+            Model model = problem.createRep().getModelBase();
+            SimTK::State state = model.initSystem();
+            // Set acclelerations to zero, so the only model-generated forces 
+            // in the integrand are zero.
+            state.updUDot() = SimTK::Vector(state.getNU(), 0.0);
+            MocoGoal::IntegrandInput input{0, state, {}};
+
+            // Apply weights.
+            genForceTracking->setWeightForGeneralizedForcePattern("q.*", 5.0);
+            genForceTracking->setWeightForGeneralizedForce("q1_moment", 10.0);
+            genForceTracking->initializeOnModel(model);
+
+            // The integrand should be the sum of the squared generalized forces
+            // multiplied by the weights.
+            const SimTK::RowVectorView initialGenForces = 
+                    generalizedForces.getRowAtIndex(0);
+            double integrand = 
+                    5.0 * (initialGenForces[0] * initialGenForces[0]) +
+                    10.0 * (initialGenForces[1] * initialGenForces[1]);
+            CHECK_THAT(genForceTracking->calcIntegrand(input), 
+                    Catch::Matchers::WithinAbs(integrand, 1e-6));
+        }
+        
+        SECTION("Tracking performance") {
+            studyGenForceTracking.updSolver<TestType>().resetProblem(problem);
+            auto solutionTracking = studyGenForceTracking.solve();
+
+            // The tracking solution should match the effort solution.
+            SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
+                            solutionTracking.getControlsTrajectory(), 1e-3);
+            SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
+                            solutionTracking.getStatesTrajectory(), 1e-3);
+        }
+
     }
 }
 
@@ -621,8 +649,7 @@ TEST_CASE("Test MocoSumSquaredStateGoal") {
     std::string q1_str = q1.getAbsolutePathString() + "/value";
 
     SimTK::State state = model.initSystem();
-    SimTK::Vector inputControls;
-    MocoGoal::IntegrandInput input {0, state, {}};
+    MocoGoal::IntegrandInput input{0, state, {}};
     q0.setValue(state, 1.0);
     q1.setValue(state, 0.5);
 
