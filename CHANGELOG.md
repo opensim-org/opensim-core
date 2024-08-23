@@ -16,6 +16,7 @@ v4.6
   allow extrapolation using the `extrapolate` flag. Combined with the `ignoreNaNs` flag, this prevents NaNs from 
   occurring in the output. (#3867)
 - Added `Output`s to `ExpressionBasedCoordinateForce`, `ExpressionBasedPointToPointForce`, and `ExpressionBasedBushingForce` for accessing force values. (#3872)
+- Changed all `printDescription()` and `printDescriptionImpl()` methods to log at level info instead of cout. (#3888)
 
 v4.5.1
 ======
