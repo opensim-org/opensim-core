@@ -139,6 +139,8 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
     setRequirements(1, 1, SimTK::Stage::Time);
 }
 
+double computeDeadband(double y, double s, double r, double x);
+
 void MocoStateTrackingGoal::calcIntegrandImpl(
         const IntegrandInput& input, SimTK::Real& integrand) const {
     const auto& time = input.time;
@@ -161,14 +163,24 @@ void MocoStateTrackingGoal::calcIntegrandImpl(
         // Compute the tracking error.
         double error = modelValue - (scaleFactor * refValue);
 
+        // deadband error
+        double deadband_error = 1;
+        deadband_error = computeDeadband(2, 20, 0.1, error); //22 0.1 y=15
+
         // Compute the integrand.
-        integrand += m_state_weights[iref] * error * error;
+        integrand += m_state_weights[iref] * (error * error * deadband_error);
     }
+}
+
+double computeDeadband(double y, double s, double r, double error) {
+    double tanh_curve = (std::tanh(s * (-r - error)) + 1)
+                        + (std::tanh(s * (error - r)) + 1);
+    return 1 + tanh_curve * y;
 }
 
 void MocoStateTrackingGoal::printDescriptionImpl() const {
     for (int i = 0; i < (int) m_state_names.size(); i++) {
-        log_cout("        state: {}, weight: {}", m_state_names[i],
+        log_info("        state: {}, weight: {}", m_state_names[i],
                 m_state_weights[i]);
     }
 }

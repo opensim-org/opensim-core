@@ -222,10 +222,10 @@ void MocoOrientationTrackingGoal::calcIntegrandImpl(
 }
 
 void MocoOrientationTrackingGoal::printDescriptionImpl() const {
-    log_cout("        rotation reference file: {}",
+    log_info("        rotation reference file: {}",
             get_rotation_reference_file());
     for (int i = 0; i < (int)m_frame_paths.size(); i++) {
-        log_cout("        frame {}: {}, weight: {}",
+        log_info("        frame {}: {}, weight: {}",
                 i, m_frame_paths[i], m_rotation_weights[i]);
     }
 }
