@@ -76,7 +76,7 @@ public:
         set_expression(std::move(expression));
     }
 
-    /** Set the mathematical expression to minimize or constraint. Variable 
+    /** Set the arithmetic expression to minimize or constrain. Variable 
     names should match the names set with addParameter(). See "Creating 
     Expressions" in the class documentation above for an explanation of how to 
     create expressions. */
