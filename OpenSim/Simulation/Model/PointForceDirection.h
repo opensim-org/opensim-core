@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                       *
+ * Copyright (c) 2005-2024 Stanford University and the Authors                *
+ * Author(s): Ajay Seth, Adam Kewley                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,70 +23,74 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDES
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 
 namespace OpenSim {
 
 class Body;
 class PhysicalFrame;
-//=============================================================================
-//=============================================================================
-/** Convenience class for a generic representation of geometry of a complex
-    Force (or any other object) with multiple points of contact through
-    which forces are applied to bodies. This represents one such point and an
-    array of these objects defines a complete Force distribution (ie. path).
+
+/**
+ * Convenience class for a generic representation of geometry of a complex
+ * Force (or any other object) with multiple points of contact through
+ * which forces are applied to bodies. This represents one such point and an
+ * array of these objects defines a complete Force distribution (ie. path).
  *
  * @author Ajay Seth
  * @version 1.0
  */
-
-class OSIMSIMULATION_API PointForceDirection
-{
-
-//=============================================================================
-// MEMBER VARIABLES
-//=============================================================================
-private:
-    /** Point of "contact" with a body, defined in the body frame */
-    SimTK::Vec3 _point;
-    /** The frame in which the point is defined */
-    const PhysicalFrame &_frame;
-    /** Direction of the force at the point, defined in ground */
-    SimTK::Vec3 _direction;
-    /** Optional parameter to scale the force that results from a scalar 
-        (tension) multiplies the direction */
-    double _scale;
-//=============================================================================
-// METHODS
-//=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
+class OSIMSIMULATION_API PointForceDirection final {
 public:
-    virtual ~PointForceDirection() {};
-    /** Default constructor takes the point, body, direction and scale
-        as arguments */
-    PointForceDirection(SimTK::Vec3 point, const PhysicalFrame &frame, 
-        SimTK::Vec3 direction, double scale=1):
-            _point(point), _frame(frame), _direction(direction), _scale(scale)
+    PointForceDirection(
+        SimTK::Vec3 point,
+        const PhysicalFrame& frame,
+        SimTK::Vec3 direction) :
+
+        _point(point), _frame(&frame), _direction(direction)
+    {}
+
+    [[deprecated("the 'scale' functionality should not be used in new code: OpenSim already assumes 'direction' is non-unit-length")]]
+    PointForceDirection(
+        SimTK::Vec3 point,
+        const PhysicalFrame& frame,
+        SimTK::Vec3 direction,
+        double scale) :
+
+        _point(point), _frame(&frame), _direction(direction), _scale(scale)
     {}
 
     /** get point of "contact" with on a body defined in the body frame */
-    SimTK::Vec3 point() {return _point; }
+    SimTK::Vec3 point() { return _point; }
+
     /** get the body in which the point is defined */
-    const PhysicalFrame& frame() {return _frame; }
+    const PhysicalFrame& frame() { return *_frame; }
+
     /** get direction of the force at the point defined in ground */
-    SimTK::Vec3 direction() {return _direction; }
+    SimTK::Vec3 direction() { return _direction; }
+
     /** get the scale factor on the force */
-    double scale() {return _scale; }
+    [[deprecated("this functionality should not be used in new code: OpenSim already assumes 'direction' is non-unit-length")]]
+    double scale() { return _scale; }
 
     /** replace the current direction with the resultant with a new direction */
-    void addToDirection(SimTK::Vec3 newDirection) {_direction+=newDirection;}
+    void addToDirection(SimTK::Vec3 newDirection) { _direction += newDirection; }
 
-//=============================================================================
-};  // END of class PointForceDirection
-//=============================================================================
+private:
+    /** Point of "contact" with a body, defined in the body frame */
+    SimTK::Vec3 _point;
+
+    /** The frame in which the point is defined */
+    const PhysicalFrame* _frame;
+
+    /** Direction of the force at the point, defined in ground */
+    SimTK::Vec3 _direction;
+
+    /** Deprecated parameter to scale the force that results from a scalar
+    (tension) multiplies the direction */
+    double _scale = 1.0;
+};
+
 } // namespace
 
 #endif // __PointForceDirection_h__
