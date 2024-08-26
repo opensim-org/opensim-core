@@ -29,9 +29,29 @@ void MocoGeneralizedForceTrackingGoal::constructProperties() {
     constructProperty_reference(TableProcessor());
     constructProperty_force_paths();
     constructProperty_generalized_force_weights(MocoWeightSet());
+    constructProperty_generalized_force_weights_pattern(MocoWeightSet());
     constructProperty_allow_unused_references(false);
     constructProperty_normalize_tracking_error(false);
     constructProperty_ignore_constrained_coordinates(true);
+}
+
+void MocoGeneralizedForceTrackingGoal::setWeightForGeneralizedForce(
+        const std::string& name, double weight) {
+    if (get_generalized_force_weights().contains(name)) {
+        upd_generalized_force_weights().get(name).setWeight(weight);
+    } else {
+        upd_generalized_force_weights().cloneAndAppend({name, weight});
+    }
+}
+
+void MocoGeneralizedForceTrackingGoal::setWeightForGeneralizedForcePattern(
+        const std::string& pattern, double weight) {
+    if (get_generalized_force_weights_pattern().contains(pattern)) {
+        upd_generalized_force_weights_pattern().get(pattern).setWeight(weight);
+    } else {
+        upd_generalized_force_weights_pattern().cloneAndAppend(
+                {pattern, weight});
+    }
 }
 
 void MocoGeneralizedForceTrackingGoal::initializeOnModelImpl(
@@ -47,7 +67,7 @@ void MocoGeneralizedForceTrackingGoal::initializeOnModelImpl(
     // Create a map between coordinate paths and their indices in the system.
     SimTK::State state = model.getWorkingState();
     const auto& coordinates = model.getCoordinatesInMultibodyTreeOrder();
-    std::unordered_map<std::string, int> allCoordinateIndices;
+    std::unordered_map<std::string, int> allGeneralizedForceIndexes;
     for (int i = 0; i < static_cast<int>(coordinates.size()); ++i) {
         if (get_ignore_constrained_coordinates() && 
                 coordinates[i]->isConstrained(state)) {
@@ -72,7 +92,7 @@ void MocoGeneralizedForceTrackingGoal::initializeOnModelImpl(
                     coordinates[i]->getName());
         }
 
-        allCoordinateIndices[label] = i;
+        allGeneralizedForceIndexes[label] = i;
     }
 
     // Get the system indexes for specified forces.
@@ -100,27 +120,40 @@ void MocoGeneralizedForceTrackingGoal::initializeOnModelImpl(
     const SimTK::Force::Gravity& gravity = model.getGravityForce();
     m_forceIndexes.push_back(gravity.getForceIndex());
 
+    // Set the regex pattern weights first.
+    std::map<std::string, double> weightsFromPatterns;
+    for (int i = 0; i < get_generalized_force_weights_pattern().getSize(); ++i) {
+        const auto& mocoWeight = get_generalized_force_weights_pattern().get(i);
+        const auto& pattern = mocoWeight.getName();
+        const auto regex = std::regex(pattern);
+        for (const auto& kv : allGeneralizedForceIndexes) {
+            if (std::regex_match(kv.first, regex)) {
+                weightsFromPatterns[kv.first] = mocoWeight.getWeight();
+            }
+        }
+    }
+
     // Validate the coordinate weights.
     for (int i = 0; i < get_generalized_force_weights().getSize(); ++i) {
         const auto& weightName = 
             get_generalized_force_weights().get(i).getName();
-        if (allCoordinateIndices.count(weightName) == 0) {
+        if (allGeneralizedForceIndexes.count(weightName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
                     "Weight provided with name '{}' but this is "
-                    "not a recognized coordinate or it is a constrained "
-                    "coordinate and set to be ignored.",
+                    "not a recognized generalized force or it is associated "
+                    "with a constrained coordinate and set to be ignored.",
                     weightName);
         }
     }
 
     for (int iref = 0; iref < allSplines.getSize(); ++iref) {
         const auto& refName = allSplines[iref].getName();
-        if (allCoordinateIndices.count(refName) == 0) {
+        if (allGeneralizedForceIndexes.count(refName) == 0) {
             if (get_allow_unused_references()) { continue; }
             OPENSIM_THROW_FRMOBJ(Exception,
                     "Reference provided with name '{}' but this is "
-                    "not a recognized coordinate or it is a constrained "
-                    "coordinate and set to be ignored.",
+                    "not a recognized generalized force or it is associated "
+                    "with a constrained coordinate and set to be ignored.",
                     refName);
         }
 
@@ -132,12 +165,21 @@ void MocoGeneralizedForceTrackingGoal::initializeOnModelImpl(
                     "Expected coordinate weights to be non-negative, but "
                     "received a negative weight for coordinate '{}'.",
                     refName);
-            if (refWeight < SimTK::SignificantReal) { continue; }
+        } else if (weightsFromPatterns.count(refName)) {
+            refWeight = weightsFromPatterns[refName];
         }
-        m_coordinateIndexes.push_back(allCoordinateIndices.at(refName));
-        m_generalizedForceWeights.push_back(refWeight);
-        m_generalizedForceNames.push_back(refName);
-        m_refsplines.cloneAndAppend(allSplines[iref]);
+
+        if (refWeight > SimTK::SignificantReal) {
+            m_generalizedForceIndexes.push_back(
+                    allGeneralizedForceIndexes.at(refName));
+            m_generalizedForceWeights.push_back(refWeight);
+            m_generalizedForceNames.push_back(refName);
+            m_refsplines.cloneAndAppend(allSplines[iref]);
+        } else {
+            log_info("MocoGeneralizedForceTrackingGoal: Generalized force '{}' "
+                     "has weight 0 (or very close to 0) and will be ignored.", 
+                     refName);
+        }
 
         // Compute normalization factors.
         if (get_normalize_tracking_error()) {
@@ -185,7 +227,8 @@ void MocoGeneralizedForceTrackingGoal::calcIntegrandImpl(
     SimTK::Vector timeVec(1, time);
     integrand = 0;
     for (int iref = 0; iref < m_refsplines.getSize(); ++iref) {
-        const auto& modelValue = generalizedForces[m_coordinateIndexes[iref]];
+        const auto& modelValue =  
+                generalizedForces[m_generalizedForceIndexes[iref]];
         const auto& refValue = m_refsplines[iref].calcValue(timeVec);
 
         // Compute the tracking error.
