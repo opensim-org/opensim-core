@@ -27,6 +27,26 @@
 #include "Function.h"
 namespace OpenSim {
 
+/** 
+ * A function based on a user-defined mathematical expression.
+ * 
+ * This class allows users to define a function based on a mathematical
+ * expression (e.g., "x*sqrt(y-8)".). The expression can be a function of any 
+ * number of independent variables. The expression is parsed and evaluated using 
+ * the Lepton library.
+ * 
+ * Set the expression using setExpression(). Any variables used in the 
+ * expression must be explicitly defined using setVariables(). This 
+ * implementation allows computation of first-order derivatives only.
+ * 
+ * # Creating Expressions
+ * 
+ * Expressions can contain variables, constants, operations, parentheses, commas, 
+ * spaces, and scientific "e" notation. The full list of supported operations is: 
+ * sqrt, exp, log, sin, cos, sec, csc, tan, cot, asin, acos, atan, sinh, cosh, 
+ * tanh, erf, erfc, step, delta, square, cube, recip, min, max, abs, +, -, *, /, 
+ * and ^. 
+ */
 class OSIMCOMMON_API ExpressionBasedFunction : public Function {
     OpenSim_DECLARE_CONCRETE_OBJECT(ExpressionBasedFunction, Function);
 
@@ -34,8 +54,10 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(expression, std::string, "TODO");
-    OpenSim_DECLARE_LIST_PROPERTY(variables, std::string, "TODO");
+    OpenSim_DECLARE_PROPERTY(expression, std::string, 
+            "The mathematical expression defining this Function.");
+    OpenSim_DECLARE_LIST_PROPERTY(variables, std::string, 
+            "The independent variables used by this Function's expression.");
 
 //==============================================================================
 // METHODS
@@ -47,7 +69,7 @@ public:
     /** Convenience constructor.
      *  
      * @param expression The expression that defines this Function.
-     * @param variables The variables that the expression is a function of.
+     * @param variables The independent variable names of this expression.
      */
     ExpressionBasedFunction(std::string expression, 
             const std::vector<std::string>& variables) {
@@ -57,9 +79,8 @@ public:
     }
 
     /**
-     * The expression that defines this Function. The expression should be a 
-     * mathematical expression that is a function of the variables defined via
-     * the 'variables' property.
+     * The mathematical expression that defines this Function. The expression 
+     * should be a function of the variables defined via setVariables().
      * 
      * @note The expression cannot contain any whitespace characters.
      */
@@ -72,8 +93,10 @@ public:
     }
 
     /**
-     * The variables that the expression is a function of. The variables should
-     * be defined as a list of strings.
+     * The independent variable names of this expression. The variables names 
+     * should be unique. The input vector passed to calcValue() and 
+     * calcDerivative() should be in the same order as the variables defined
+     * here.
      */
     void setVariables(const std::vector<std::string>& variables) {
         for (const auto& var : variables) {
@@ -101,8 +124,6 @@ private:
         constructProperty_variables();
     }
 };
-
-
 
 } // namespace OpenSim
 

@@ -36,6 +36,16 @@ public:
             const std::vector<std::string>& variables) :
         m_expression(expression), m_variables(variables) {
 
+        // Check that the variable names are unique.
+        std::set<std::string> uniqueVariables;
+        for (const auto& variable : m_variables) {
+            if (!uniqueVariables.insert(variable).second) {
+                OPENSIM_THROW(Exception, 
+                        fmt::format("Variable '{}' is defined more than once.", 
+                        variable));
+            }
+        }
+
         // Create the expression programs for the value and its derivatives.
         Lepton::ParsedExpression parsedExpression = 
                 Lepton::Parser::parse(m_expression).optimize();
@@ -59,17 +69,16 @@ public:
             }
         } catch (Lepton::Exception& ex) {
             std::string msg = ex.what();
-            std::string help = "";
-            if (msg.compare(0, 30, "No value specified for variable")) {
-                help = " Use addVariable() to explicitly define this variable, "
-                    "or remove the variable from the expression for this goal.";
-            }
+            std::string undefinedVar = msg.substr(32, msg.size() - 32);
             OPENSIM_THROW(Exception, 
-                    fmt::format("Expression evaluate error: {}.{}", msg, help));
+                    fmt::format("Variable '{}' is not defined. Use "
+                    "setVariables() to explicitly define this variable. Or, "
+                    "remove it from the expression.", undefinedVar));
         }
     }
 
     SimTK::Real calcValue(const SimTK::Vector& x) const override {
+        OPENSIM_ASSERT(x.size() == static_cast<int>(m_variables.size()));
         std::map<std::string, double> vars;
         for (int i = 0; i < static_cast<int>(m_variables.size()); ++i) {
             vars[m_variables[i]] = x[i];
@@ -79,15 +88,16 @@ public:
 
     SimTK::Real calcDerivative(const SimTK::Array_<int>& derivComponents, 
             const SimTK::Vector& x) const override {
+        OPENSIM_ASSERT(x.size() == static_cast<int>(m_variables.size()));
+        OPENSIM_ASSERT(derivComponents.size() == 1);
         if (derivComponents[0] < static_cast<int>(m_variables.size())) {
             std::map<std::string, double> vars;
             for (int i = 0; i < static_cast<int>(m_variables.size()); ++i) {
                 vars[m_variables[i]] = x[i];
             }
-            m_derivativePrograms[derivComponents[0]].evaluate(vars);
-        } else {
-            return 0;
+            return m_derivativePrograms[derivComponents[0]].evaluate(vars);
         }
+        return 0.0;
     }
 
     int getArgumentSize() const override { 

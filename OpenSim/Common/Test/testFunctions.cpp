@@ -306,12 +306,14 @@ TEST_CASE("ExpressionBasedFunction") {
                 Catch::Matchers::WithinAbs(x*z*z*std::cos(y*z*z), 1e-10));  
     }
 
-    SECTION("Missing variables") {
+    SECTION("Undefined variable in expression") {
         ExpressionBasedFunction f("x*y", {"x"});
-        REQUIRE_THROWS_AS(f.calcValue(createVector({x})), OpenSim::Exception);
+        REQUIRE_THROWS_WITH(f.calcValue(createVector({x, y})), 
+                Catch::Matchers::ContainsSubstring(
+                        "Variable 'y' is not defined."));
     }
 
-    SECTION("Extra variables") {
+    SECTION("Extra variables should have zero derivative") {
         ExpressionBasedFunction f("x*y", {"x", "y", "z"});
         REQUIRE_THAT(f.calcValue(createVector({x, y, z})), 
                 Catch::Matchers::WithinAbs(x*y, 1e-10));
@@ -323,11 +325,16 @@ TEST_CASE("ExpressionBasedFunction") {
                 Catch::Matchers::WithinAbs(0.0, 1e-10));
     }
 
-    SECTION("Derivative of non-existant variable") {
-        // ExpressionBasedFunction f("x*y", {"x", "y"});
-        // f.calcDerivative({2}, createVector({x, y}));
+    SECTION("Derivative of nonexistent variable") {
+        ExpressionBasedFunction f("x*y", {"x", "y"});
+        REQUIRE_THAT(f.calcDerivative({2}, createVector({x, y})),
+                Catch::Matchers::WithinAbs(0.0, 1e-10));
+    }
 
-
-        
+    SECTION("Variable defined multiple times") {
+        ExpressionBasedFunction f("x", {"x", "x"});
+        REQUIRE_THROWS_WITH(f.calcValue(createVector({x})), 
+                Catch::Matchers::ContainsSubstring(
+                        "Variable 'x' is defined more than once."));
     }
 }
