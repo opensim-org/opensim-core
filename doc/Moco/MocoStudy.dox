@@ -261,8 +261,8 @@ For the slack variables in the Bordalba et al. 2023 method:
 
 @code{.cpp}
 const MocoCasADiSolver& solver = moco.initCasADiSolver();
-// Default bounds: [-0.1, 0.1]
-solver.set_projection_slack_variable_bounds({-0.25, 0.25});
+// Default bounds: [-1e-3, 1e-3]
+solver.set_projection_slack_variable_bounds({-0.05, 0.05});
 @endcode
 
 The slack variables in both methods are multiplied by model's kinematic 
