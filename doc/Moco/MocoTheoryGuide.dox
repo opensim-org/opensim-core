@@ -576,7 +576,7 @@ The Bordalba et al. (2023) method supports holonomic, non-holonomic, and acceler
 constraints, but non-holonomic and acceleration-only constraints currently have limited
 testing and support in Moco. All acceleration-level constraints (including the derivatives 
 of holonomic and non-holonomic constraints) are enforced at all collocation points, not 
-just the mesh points. The cost term preceeded by \f$ w_{proj} \f$ is used to penalize the 
+just the mesh points. The cost term preceded by \f$ w_{proj} \f$ is used to penalize the 
 difference between the true state variables and the projection state variables at the 
 end of each mesh interval to encourage the closest possible projection to the constraint 
 manifold.
