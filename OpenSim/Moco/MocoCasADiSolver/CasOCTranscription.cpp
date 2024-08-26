@@ -209,7 +209,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                 MX::sym("states_" + std::to_string(igrid),
                         m_problem.getNumStates(), 1));
 
-        if (m_solver.getInterpolateControlMidpoints()) {
+        if (m_solver.getInterpolateControlMeshInteriorPoints()) {
             auto it = std::find(controlIndicesVector.begin(),
                     controlIndicesVector.end(), igrid);
             if (it != controlIndicesVector.end()) {
@@ -240,8 +240,8 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         // slack variables are applied at the mesh points at the end of each
         // mesh interval.
         for (int iproj = 0; iproj < m_numMeshIntervals-1; ++iproj) {
-            m_scaledVarsVars[slacks].push_back(
-                    MX::sym("slacks_" + std::string(imesh), 
+            m_scaledVectorVars[slacks].push_back(
+                    MX::sym("slacks_" + std::string(iproj), 
                             m_problem.getNumSlacks(), 1));
         }
     } else {
