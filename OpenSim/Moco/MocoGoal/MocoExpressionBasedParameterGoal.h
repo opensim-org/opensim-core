@@ -26,18 +26,19 @@
 namespace OpenSim {
 class Model;
 
-/** Minimize an arithmetic expression of parameters. This goal supports any
-number of MocoParameters that are combined into a single goal. The expression
-string should match the Lepton (lightweight expression parser) format.
+/** Minimize or constrain an arithmetic expression of parameters. 
+
+This goal supports both "cost" and "endpoint constraint" modes and can be 
+defined using any number of MocoParameters. The expression string should match 
+the Lepton (lightweight expression parser) format.
 
 # Creating Expressions
 
 Expressions can be any string that represents a mathematical expression, e.g.,
 "x*sqrt(y-8)". Expressions can contain variables, constants, operations,
-parentheses, commas, spaces, and scientific e notation. The full list of
-operations (also in Lepton::Operation) is:
-sqrt, exp, log, sin, cos, sec, csc, tan, cot, asin, acos, atan, sinh, cosh,
-tanh, erf, erfc, step, delta, square, cube, recip, min, max, abs, as well as
+parentheses, commas, spaces, and scientific "e" notation. The full list of
+operations is: sqrt, exp, log, sin, cos, sec, csc, tan, cot, asin, acos, atan, 
+sinh, cosh, tanh, erf, erfc, step, delta, square, cube, recip, min, max, abs, 
 +, -, *, /, and ^.
 
 # Examples
@@ -50,7 +51,7 @@ auto* spring2_parameter = mp.addParameter("spring2_stiffness", "spring2",
 auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
 double STIFFNESS = 100.0;
 // minimum is when p + q = STIFFNESS
-spring_goal->setExpression(fmt::format("square( p+q-{} )", STIFFNESS));
+spring_goal->setExpression(fmt::format("square(p+q-{})", STIFFNESS));
 spring_goal->addParameter(*spring1_parameter, "p");
 spring_goal->addParameter(*spring2_parameter, "q");
 @endcode
@@ -75,10 +76,10 @@ public:
         set_expression(std::move(expression));
     }
 
-    /** Set the mathematical expression to minimize. Variable names should match
-    the names set with addParameter(). See "Creating Expressions" in the class
-    documentation above for an explanation of how to create expressions.
-    */
+    /** Set the mathematical expression to minimize or constraint. Variable 
+    names should match the names set with addParameter(). See "Creating 
+    Expressions" in the class documentation above for an explanation of how to 
+    create expressions. */
     void setExpression(std::string expression) {
         set_expression(std::move(expression));
     }
@@ -104,7 +105,7 @@ private:
 
     /** Get the value of the property from its index in the property_refs vector.
     This will use m_data_types to get the type, and if it is a Vec type, it uses
-    m_indices to get the element to return, both at the same index i.*/
+    m_indices to get the element to return, both at the same index i. */
     double getPropertyValue(int i) const;
 
     OpenSim_DECLARE_PROPERTY(expression, std::string,

@@ -67,16 +67,13 @@ void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model)
     }
 
     // test to make sure all variables are there
-    try
-    {
+    try {
         std::map<std::string, double> parameterVars;
         for (int i = 0; i < getProperty_variable_names().size(); ++i) {
             parameterVars[get_variable_names(i)] = getPropertyValue(i);
         }
         m_program.evaluate(parameterVars);
-    }
-    catch (Lepton::Exception& ex)
-    {
+    } catch (Lepton::Exception& ex) {
         std::string msg = ex.what();
         std::string help = "";
         if (msg.compare(0, 30, "No value specified for variable")) {
