@@ -40,6 +40,9 @@ enum Var {
     derivatives,
     /// Constant in time.
     parameters,
+    /// A "mirror" of the multibody states used in the projection method
+    /// for solving kinematic constraints.
+    projection_states,
     /// Variables for endpoint constraints.
     endpoints,
     /// For internal use (never actually a key for Variables).
@@ -67,12 +70,15 @@ struct Iterate {
     std::vector<std::string> slack_names;
     std::vector<std::string> derivative_names;
     std::vector<std::string> parameter_names;
+    std::vector<std::string> projection_state_names;
     int iteration = -1;
     /// Return a new iterate in which the data is resampled at the times in
     /// newTimes.
-    Iterate resample(const casadi::DM& newTimes) const;
+    Iterate resample(const casadi::DM& newTimes,
+                     bool appendProjectionStates) const;
     /// Make repeat copies of parameter variables (including initial and final
     /// time) using the same value for each time point.
+    /// TODO include projection variables
     Iterate repmatParameters(int numPoints);
 };
 

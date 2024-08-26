@@ -44,8 +44,9 @@ DM Trapezoidal::createControlIndicesImpl() const {
     return DM::ones(1, m_numGridPoints);
 }
 
-void Trapezoidal::calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
-        const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
+void Trapezoidal::calcDefectsImpl(const casadi::MXVector& x, 
+        const casadi::MXVector& xdot, const casadi::MX& ti, 
+        const casadi::MX& tf, const casadi::MX& p,
         casadi::MX& defects) const {
 
     // We have arranged the code this way so that all constraints at a given
@@ -53,12 +54,12 @@ void Trapezoidal::calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
     // this way might have benefits for sparse linear algebra).
     const int NS = m_problem.getNumStates();
     const int NP = m_problem.getNumParameters();
-    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-        const auto h = m_intervals(imesh);
-        const auto x_i = x(Slice(), imesh);
-        const auto x_ip1 = x(Slice(), imesh + 1);
-        const auto xdot_i = xdot(Slice(), imesh);
-        const auto xdot_ip1 = xdot(Slice(), imesh + 1);
+    for (int itime = 0; itime < m_numMeshIntervals; ++itime) {
+        const auto h = m_times(itime + 1) - m_times(itime);
+        const auto x_i = x[itime](Slice(), 0);
+        const auto x_ip1 = x[itime](Slice(), 1);
+        const auto xdot_i = xdot[itime](Slice(), 0);
+        const auto xdot_ip1 = xdot[itime](Slice(), 1);
 
         // Time variables.
         defects(Slice(0, 1), imesh) = ti(imesh + 1) - ti(imesh);

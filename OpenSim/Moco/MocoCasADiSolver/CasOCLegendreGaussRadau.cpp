@@ -58,8 +58,8 @@ DM LegendreGaussRadau::createControlIndicesImpl() const {
     return indices;
 }
 
-void LegendreGaussRadau::calcDefectsImpl(const casadi::MX& x,
-        const casadi::MX& xdot, const casadi::MX& ti, const casadi::MX& tf,
+void LegendreGaussRadau::calcDefectsImpl(const casadi::MXVector& x,
+        const casadi::MXVector& xdot, const casadi::MX& ti, const casadi::MX& tf,
         const casadi::MX& p, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
@@ -68,9 +68,8 @@ void LegendreGaussRadau::calcDefectsImpl(const casadi::MX& x,
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         const int igrid = imesh * m_degree;
         const auto h = m_times(igrid + m_degree) - m_times(igrid);
-        const auto x_i = x(Slice(), Slice(igrid, igrid + m_degree + 1));
-        const auto xdot_i = xdot(Slice(),
-                Slice(igrid + 1, igrid + m_degree + 1));
+        const auto x_i = x[imesh](Slice(), Slice(0, m_degree + 1));
+        const auto xdot_i = xdot[imesh](Slice(), Slice(1, m_degree + 1));
 
         // Time variables.
         defects(Slice(0, 1), imesh) = ti(imesh + 1) - ti(imesh);

@@ -120,14 +120,16 @@ Solution Solver::solve(const Iterate& guess) const {
     auto transcription = createTranscription();
     auto pointsForSparsityDetection =
             std::make_shared<std::vector<VariablesDM>>();
-    std::cout << "m_sparsity_detection: " << m_sparsity_detection << std::endl;
     if (m_sparsity_detection == "initial-guess") {
         // Interpolate the guess.
         Iterate guessCopy(guess);
         const auto guessTimes = transcription->createTimes(
                 guessCopy.variables.at(initial_time),
                 guessCopy.variables.at(final_time));
-        guessCopy = guessCopy.resample(guessTimes);
+        bool appendProjectionStates =
+                m_problem.getNumKinematicConstraintEquations() &&
+                m_problem.isKinematicConstraintMethodBordalba2023();
+        guessCopy = guessCopy.resample(guessTimes, appendProjectionStates);
         guessCopy = guessCopy.repmatParameters(static_cast<int>(m_mesh.size()));
         pointsForSparsityDetection->push_back(guessCopy.variables);
     } else if (m_sparsity_detection == "random") {

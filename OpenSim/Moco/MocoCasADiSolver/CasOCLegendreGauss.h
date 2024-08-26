@@ -47,9 +47,10 @@ namespace CasOC {
 ///
 /// Kinematic constraints and path constraints.
 /// -------------------------------------------
-/// Kinematic constraint and path constraint errors are enforced only at the
-/// mesh points. Errors at collocation points within the mesh interval midpoint
-/// are ignored.
+/// Position- and velocity-level kinematic constraint errors and path constraint 
+/// errors are enforced only at the mesh points. In the kinematic constraint 
+/// method by Bordalba et al. [3], the acceleration-level constraints are also
+/// enforced at the collocation points.
 ///
 /// References
 /// ----------
@@ -101,8 +102,9 @@ private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
     casadi::DM createControlIndicesImpl() const override;
-    void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
-            const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
+    void calcDefectsImpl(const casadi::MXVector& x, 
+            const casadi::MXVector& xdot, const casadi::MX& ti, 
+            const casadi::MX& tf, const casadi::MX& p,
             casadi::MX& defects) const override;
     void calcInterpolatingControlsImpl(casadi::MX& controls) const override;
     void calcInterpolatingControlsImpl(casadi::DM& controls) const override;

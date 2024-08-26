@@ -152,6 +152,15 @@ see the following excellent material:
     https://doi.org/10.1137/16M1062569
   - Textbook: Betts, J. T. (2010). Practical methods for optimal control and
     estimation using nonlinear programming (Vol. 19). Siam.
+  - Journal article: Bordalba, R., Schoels, T., Ros, L., Porta J. M., and 
+    Diehl, M. (2023). Direct collocation methods for trajectory optimization
+    in constrained robotic systems. IEEE Transations on Robotics, 39(1), 183-202.
+    https://doi.org/10.1109/TRO.2022.3193776
+  - Thesis: Benson, A. (2005). A Gauss pseudospectral transcription for optimal
+    control. PhD thesis, Massachusetts Institute of Technology.
+  - Thesis: Huntington, G.T. (2007). Advancement and analysis of a Gauss 
+    pseudospectral transcription for optimal control. PhD thesis, Massachusetts
+    Institute of Technology.
 
 @subsection mocotraptheory Trapezoidal transcription
 
@@ -170,7 +179,7 @@ We use the trapezoidal rule to remove integrals and derivatives from the
 original continuous time problem,
 
 \f[
-    \textrm{trap}_i(F(\eta, p)) = \frac{1}{2} h_i (F(\eta_{i-1}, p) + F(\eta_i, p))
+    \textrm{trap}_i(F(t, \eta, p)) = \frac{1}{2} h_i (F(t_{i-1}, \eta_{i-1}, p) + F(t_i, \eta_i, p))
 \f]
 
 where \f$ \eta \f$ is any continuous variable in the optimal control problem
@@ -197,29 +206,32 @@ finite-dimensional nonlinear optimization problem (or nonlinear program, abbrevi
          & \quad\quad S_{b,k} = \sum_{i=1}^{n} \textrm{trap}_i(s_{b,k}(t, y, x, \lambda, p)) && k = 1, \ldots, K \\
          & g_{L} \leq g(t_i, y_i, x_{i}, \lambda_i, p) \leq g_{U}  && i = 0, \ldots, n\\
          \mbox{with respect to} \quad
-         & t_0 \in [t_{0,L}, t_{0,U}] && t_n \in [t_{f,L}, t_{f,U}] \\
-         & y_0 \in [y_{0,L}, y_{0,U}] && y_n \in [y_{f,L}, y_{f,U}] \\
-         & y_i \in [y_{L}, y_{U}] && i = 1, \ldots, n - 1\\
+         & t_0 \in [t_{0,L}, t_{0,U}] \\
+         & t_n \in [t_{f,L}, t_{f,U}] \\
+         & y_0 \in [y_{0,L}, y_{0,U}] \\
+         & y_n \in [y_{f,L}, y_{f,U}] \\
+         & y_i \in [y_{L}, y_{U}] && i = 1, \ldots, n - 1 \\
          & \zeta_i \in [\zeta_{L}, \zeta_{U}] && i = 0, \ldots, n \\
-         & x_0 \in [x_{0,L}, x_{0,U}] && x_n \in [x_{f,L}, x_{f,U}] \\
-         & x_i \in [x_{L}, x_{U}] && i = 1, \ldots, n - 1\\
+         & x_0 \in [x_{0,L}, x_{0,U}] \\ 
+         & x_n \in [x_{f,L}, x_{f,U}] \\
+         & x_i \in [x_{L}, x_{U}] && i = 1, \ldots, n - 1 \\
          & \lambda_i \in [\lambda_L, \lambda_U] && i = 0, \ldots, n \\
          & p \in [p_{L}, p_{U}].
     \end{aligned}
 \end{align}
 \f]
 
-Above, the multibody dynamics \f$ f_{\textrm{mb}} \f$ are expressed as explicit
+Above, the multibody dynamics \f$ f_{\dot{u}} \f$ are expressed as explicit
 differential equations:
 
 \f[
-    f_{\textrm{mb}}(t, y, x, \lambda, p) =
+    f_{\dot{u}}(t, y, x, \lambda, p) =
           M(q, p)^{-1}\big[(f_{\textrm{app}}(t, y, x, p) - f_{\textrm{inertial}}(q, u, p) - G(q, p)^T \lambda\big]
 \f]
 
 
 If the multibody dynamics are enforced as implicit differential equations, then
-the constraint involving \f$ f_\textrm{mb} \f$ is replaced with the following:
+the constraint involving \f$ f_\dot{u} \f$ is replaced with the following:
 
 \f[
     \begin{alignat*}{2}
@@ -265,8 +277,8 @@ with the Hermite interpolant and Simpson integration rule:
 
 \f[
 \begin{align}
-    \textrm{hermite}_i(\eta, F(\eta, p)) &= \frac{1}{2} (\eta_{i-1} + \eta_i) + \frac{h_i}{8} (F(\eta_{i-1}, p) - F(\eta_i, p)) \\
-    \textrm{simpson}_i(F(\eta, p)) &= \frac{h_i}{6} (F(\eta_{i-1}, p) + 4 F(\bar{\eta}_i, p) + F(\eta_i, p))
+    \textrm{hermite}_i(\eta, F(t, \eta, p)) &= \frac{1}{2} (\eta_{i-1} + \eta_i) + \frac{h_i}{8} (F(t_{i-1}, \eta_{i-1}, p) - F(t_i, \eta_i, p)) \\
+    \textrm{simpson}_i(F(t, \eta, p)) &= \frac{h_i}{6} (F(t_{i-1}, \eta_{i-1}, p) + 4 F(\bar{t}_i, \bar{\eta}_i, p) + F(t_i, \eta_i, p))
 \end{align}
 \f]
 
@@ -284,7 +296,7 @@ The resulting finite-dimensional NLP is as follows:
          + w_{\lambda} \sum_{i=1}^{n} \textrm{simpson}_i(\|\lambda\|_2^2)  \\
          & \quad\quad S_{c,j} = \sum_{i=1}^{n} \textrm{simpson}_i(s_{c,j}(t, y, x, \lambda, p)) \\
         \mbox{subject to} \quad
-         & \bar{q}_i = \textrm{hermite}_i(q, u) + G(\bar{q}_i, p)^T \bar{\gamma}_i && i = 1, \ldots, n \\
+         & \bar{q}_i = \textrm{hermite}_i(q, u) + P(\bar{q}_i, p)^T \bar{\gamma}_i && i = 1, \ldots, n \\
          & q_i = q_{i-1} + \textrm{simpson}_i(u) && i = 1, \ldots, n \\
          & \bar{u}_i = \textrm{hermite}_i(u, f_{\dot{u}}(t, y, x, \lambda, p)) && i = 1, \ldots, n \\
          & u_i = u_{i-1} + \textrm{simpson}_i(f_{\dot{u}}(t, y, x, \lambda, p))  && i = 1, \ldots, n \\
@@ -296,18 +308,21 @@ The resulting finite-dimensional NLP is as follows:
          & \bar{x}_i = (x_{i-1} + x_i)/2 && i = 1, \ldots, n \\
          & 0 = \phi(q_i, p) && i = 0, \ldots, n\\
          & 0 = \dot{\phi}(q_i, u_i, p) && i = 0, \ldots, n\\
-         & 0 = \ddot{\phi}(t_i, y_i, x_i, \lambda_i, p)  && i = 0, \ldots, n\\
+         & 0 = \ddot{\phi}(q_i, u_i, x_i, \lambda_i, p)  && i = 0, \ldots, n\\
          & V_{L,k} \leq V_k(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{b,k}) \leq V_{U,k} \\
         & \quad\quad S_{b,k} = \sum_{i=1}^{n} \textrm{simpson}_i(s_{b,k}(t, y, x, \lambda, p)) && k = 1, \ldots, K \\
         & g_{L} \leq g(t_i, y_i, x_{i}, \lambda_i, p) \leq g_{U} && i = 0, \ldots, n\\
          \mbox{with respect to} \quad
-         & t_0 \in [t_{0,L}, t_{0,U}] && t_n \in [t_{f,L}, t_{f,U}] \\
-         & y_0 \in [y_{0,L}, y_{0,U}] && y_n \in [y_{f,L}, y_{f,U}] \\
+         & t_0 \in [t_{0,L}, t_{0,U}] \\ 
+         & t_n \in [t_{f,L}, t_{f,U}] \\
+         & y_0 \in [y_{0,L}, y_{0,U}] \\ 
+         & y_n \in [y_{f,L}, y_{f,U}] \\
          & y_i \in [y_{L}, y_{U}] && i = 1, \ldots, n - 1 \\
          & \bar{y}_i \in [y_{L}, y_{U}] && i = 1, \ldots, n \\
          & \zeta_i \in [\zeta_{L}, \zeta_{U}] && i = 0, \ldots, n \\
          & \bar{\zeta}_i \in [\zeta_{L}, \zeta_{U}] && i = 1, \ldots, n \\
-         & x_0 \in [x_{0,L}, x_{0,U}] && x_n \in [x_{f,L}, x_{f,U}] \\
+         & x_0 \in [x_{0,L}, x_{0,U}] \\ 
+         & x_n \in [x_{f,L}, x_{f,U}] \\
          & x_i \in [x_{L}, x_{U}] && i = 1, \ldots, n - 1 \\
          & \bar{x}_i \in [x_{L}, x_{U}] && i = 1, \ldots, n \\
          & \lambda_i \in [\lambda_L, \lambda_U] && i = 0, \ldots, n \\
@@ -318,33 +333,33 @@ The resulting finite-dimensional NLP is as follows:
 \end{align}
 \f]
 
-The explicit multibody dynamics function \f$ f_{\textrm{mb}} \f$ is the same as
+The explicit multibody dynamics function \f$ f_{\dot{u}} \f$ is the same as
 in Trapezoidal transcription.
 
-The \f$ G(\bar{q}_i, p)^T \bar{\gamma}_i \f$ term 
-represents a velocity correction that is necessary to impose when enforcing 
-derivatives of kinematic constraints in the NLP. The additional variables 
-\f$ \bar{\gamma}_i \f$ help avoid problems becoming overconstrained, and the 
-kinematic Jacobian transpose operator, \f$ G(\bar{q}_i, p)^T \f$, restricts the 
-velocity correction to the tangent plane of the constraint manifold (see Posa et 
-al. 2016 described in @ref kincon for more details). Currently, we only support 
-enforcing derivatives of position-level, or holonomic, constraints, represented 
-by the equations:
+This formulation includes the equations needed to enforce kinematic constraints based
+on the method from Posa et al. (2016) (see @ref kincon for more details). The 
+\f$ P(\bar{q}_i, p)^T \bar{\gamma}_i \f$ term represents a velocity correction that 
+is necessary to impose when enforcing derivatives of kinematic constraints in the NLP. 
+The additional variables \f$ \bar{\gamma}_i \f$ help avoid problems becoming 
+overconstrained, and the kinematic Jacobian transpose operator, \f$ P(\bar{q}_i, p)^T \f$, 
+restricts the velocity correction to the tangent plane of the constraint manifold. 
+When using the Posa et al. (2016) method, we only support enforcing derivatives of 
+position-level, or holonomic, constraints, represented by the equations:
 
 \f[
     \begin{alignat*}{2}
-         & 0 = \dot{\phi}(q, u, p) = G(q, p) u\\
-         & 0 = \ddot{\phi}(t, y, x, \lambda, p) = G(q, p) f_{\textrm{mb}}(t, y, x, \lambda, p) + \dot{G}(q, p) u \\
+         & 0 = \dot{\phi}(q, u, p) = P(q, p) u - c(t, q, p)\\
+         & 0 = \ddot{\phi}(q, u, x, \lambda, p) = P(q, p) f_{\dot{u}}(t, y, x, \lambda, p) - b_p(t, q, u, p) \\
     \end{alignat*}
 \f]
+
+Where \f$ P(q, p) \f$ is the Jacobian of the holonomic constraints, which is a submatrix
+of the kinematic constraint Jacobian \f$ G(q, p) \f$. When only holonomic constraints are
+present in the multibody system, \f$ G = P \f$.
 
 The explicit multibody dynamics function is used here where \f$ \dot{u} \f$ 
 would be if it were a continuous variable in the problem (as is in implicit mode,
 see below).
-
-Even though OpenSim supports non-holonomic constraints (that is,
-\f$ \nu(q, u, p) = 0 \f$), we only support holonomic constraints; that is,
-\f$ \phi(q) = 0 \f$.
 
 The implicit dynamics formulation is as follows:
 
@@ -362,6 +377,283 @@ The implicit dynamics formulation is as follows:
     \mbox{with respect to} \quad
          & \upsilon_i \in [-\upsilon_{B}, \upsilon_{B}] & i = 0, \ldots, n \\
          & \bar{\upsilon}_i \in [-\upsilon_{B}, \upsilon_{B}] & i = 1, \ldots, n
+    \end{alignat*}
+\f]
+
+@subsection mocolegendregausstheory Legendre-Gauss transcription
+
+Legendre-Gauss transcription works by approximating the states, \f$ y(t) \f$, within a 
+mesh interval range \f$ t \in [t_i, t_{i+1}] \f$ using a set of Lagrange interpolating 
+polynomials of degree \f$ d \f$:
+
+\f[
+    \begin{alignat*}{1}
+        \mathcal{L}(t, c_i) = y_{i,0} \cdot l_0(t - t_i) + \cdots + y_{i,d} \cdot l_d(t - t_i)
+    \end{alignat*}
+\f]
+
+where \f$ l_k \f$ are the Lagrange polynomial basis functions and \f$ c_i \f$ is 
+the vector of interpolated state values which represent the polynomial coefficients: 
+
+\f[
+    \begin{alignat*}{1}
+        c_i = (y_{i,0}, \ldots, y_{i,d})
+    \end{alignat*}
+\f]
+
+These polynomials only depend on the time points \f$ t_{i,0}, \ldots, t_{i,d} \f$ and 
+take on the following values:  
+
+\f[
+    \begin{alignat*}{1}
+        l_j(t_{i,k} - t_i) = \left\{
+        \begin{array}{ll}
+            1, & \quad \textrm{if } j = k \\
+            0, & \quad \textrm{otherwise}
+        \end{array}
+        \right.
+    \end{alignat*}
+\f]
+
+Therefore, the interpolating polynomial is equal to the discrete state values when 
+evaluated at the collocation points:
+
+\f[
+    \begin{alignat*}{1}
+        \mathcal{L}(t_{i,k}, c_i) = y_{i,k} \quad \textrm{for } k = 0, \ldots, d
+    \end{alignat*}
+\f]
+
+The polynomial at the initial time point of the mesh interval is simply the state variable
+at the initial mesh point, \f$ y_{i,0} = y_i \f$. The remaining polynomial coefficients can 
+be determined by enforcing the \f$ d \f$ collocation constraints at the collocation points 
+\f$ t_{i,1}, \ldots, t_{i,d} \f$:
+
+\f[
+    \begin{alignat*}{1}
+        \mathcal{\dot L}_i(t_{i,k}, c_i) = f(t_{i,k}, y_{i,k}, x_{i,k}, \lambda_{i,k}, p) \quad \textrm{for } k = 1, \ldots, d
+    \end{alignat*}
+\f]
+
+The left-hand side can be formulated using the constant differentiation matrix, \f$ D \f$:
+
+\f[
+    \begin{alignat*}{1}
+        \mathcal{\dot L}_i(t_{i,k}, c_i) = D(t_{i,0},\ldots,t_{i,d}) \cdot y_i
+    \end{alignat*}
+\f]
+
+Finally, the end state of the mesh interval, \f$ y_{i+1} \f$, is given by:
+
+\f[
+    \begin{alignat*}{1}
+        y_{i+1} = \mathcal{L}(t_{i+1}, c_i)
+    \end{alignat*}
+\f]
+
+As in the previous transcription methods, we have \f$ n + 1 \f$ mesh points and
+\f$ n \f$ mesh intervals. Legendre-Gauss transcription introduces \f$ d \f$ 
+collocation points in the mesh interval interior located at points based on the 
+roots of the \f$ d \f$-th order Legendre polynomial, \f$ \textrm{legendre_roots}(k) \f$. 
+
+\f[
+    \begin{alignat*}{1}
+        0 &= \tau_0 < \tau_1 < \tau_2 < \ldots < \tau_i < \ldots < \tau_{n - 1} < \tau_n = 1 \\
+        \tau_{i,k} &= \tau_i + (\tau_{i+1} - \tau_i) * \textrm{legendre_roots}(k) \quad \textrm{for } k = 1, \ldots, d \\
+        t_i &= (t_f - t_0) \tau_i + t_0 \\
+        t_{i,k} &= (t_f - t_0) \tau_{i,k} + t_0 \quad \textrm{for } k = 1, \ldots, d \\
+        h_i &= (t_f - t_0)(\tau_i - \tau_{i-1}) \\
+    \end{alignat*}
+\f]
+
+The collocation constraint equations and endpoint state equation above can be described using the following defect constraint function:
+
+\f[
+    \begin{alignat*}{1}
+        \textrm{legendre_gauss}_i(\eta_i, F(t_i, \eta_i, p)) = \begin{bmatrix} h_i * F(t_{i,1:d}, \eta_{i,1:d}, p) - D_i \cdot \eta_{i,0:d} \\ \eta_{i, d+1} - C_i \cdot \eta_{i, 0:d} \end{bmatrix}
+    \end{alignat*}
+\f]
+
+where \f$ \eta \f$ is any continuous variable in the optimal control problem
+(e.g., \f$ y \f$), \f$ F \f$ is any function, \f$ D_i \f$ is the differentiation matrix
+described above, and \f$ C_i \f$ a matrix containing values to perform the polynomial 
+interpolation for \f$ \eta_{i, d+1} \f$. Note that the end state is coincident with time 
+point \f$ t_{i+1} \f$, but we use the the notation \f$ \eta_{i, d+1} \f$ to denote the end 
+state of the mesh interval.
+
+\f$ \eta_{i,0:d} \f$ and \f$ F(t_{i,1:d}, \eta_{i,1:d}, p) \f$ are matrix quantities 
+with row size based on the polynomial degree \f$ d \f$:
+
+\f[
+    \begin{alignat*}{1}
+        \eta_{i,0:d} &= \begin{bmatrix} \eta_{i,0} \\ \vdots \\ \eta_{i,d} \end{bmatrix} \quad
+        F(t_{i,1:d}, \eta_{i,1:d}, p) &= \begin{bmatrix} F(t_{i,1}, \eta_{i,1}, p) \\ \vdots \\ F(t_{i,d}, \eta_{i,d}, p) \end{bmatrix} \quad
+    \end{alignat*}
+\f]
+
+These are matrix quantities since \f$ \eta_{i,k} \f$ and \f$ F(t_{i,k}, \eta_{i,k}, p) \f$ are 
+row vectors containing the state variable values and their derivatives, respectively.
+
+Similarly, integrals are replaced using Gauss quadrature at the Legendre polynomial roots 
+with coefficients \f$ \omega_k \f$:
+
+\f[
+    \begin{alignat*}{1}
+        \textrm{quadrature}_i(Q(\eta, p)) = \sum^d_{k=1} \omega_k * Q(\eta_{i,k}, p)
+    \end{alignat*}
+\f]
+
+For a full description of how the Gauss quadrature coefficients are determined, we refer
+the reader to the theses of Benson (2005) and Huntington (2007) mentioned above.
+
+The resulting finite-dimensional NLP is as follows:
+
+\f[
+\begin{align}
+    \begin{aligned}
+        \mbox{minimize} \quad
+         & \sum_j w_j J_{j}(t_0, t_f, y_0, y_n, x_{0}, x_{n}, \lambda_0, \lambda_n, p, S_{c,j})
+          + w_{\lambda} \sum_{i=1}^{n} \textrm{quadrature}_i(\|\lambda\|_2^2)
+          + w_{proj} \sum_{i=1}^{n} (\|q_i^{\prime} - q_i\|_2^2 + \|u_i^{\prime} - u_i\|_2^2)  \\
+         & \quad\quad S_{c,j} = \sum_{i=1}^{n} \textrm{quadrature}_i(s_{c,j}(t, y, x, \lambda, p)) \\
+        \mbox{subject to} \quad
+         & 0 = \textrm{legendre_gauss}^{\prime}_i(q, u) && i = 1, \ldots, n \\
+         & 0 = \textrm{legendre_gauss}^{\prime}_i(u, f_{\dot{u}}(t, y, x, \lambda, p))  && i = 1, \ldots, n \\
+         & 0 = \textrm{legendre_gauss}_i(z_\textrm{ex}, f_{\dot{z},\textrm{ex}}(t, y, x, \lambda, p)) && i = 1, \ldots, n \\
+         & 0 = \textrm{legendre_gauss}_i(z_\textrm{im}, \zeta) && i = 1, \ldots, n \\
+         & 0 = f_{\dot{z},\textrm{im}}(t_i, y_i, \zeta_i, x_i, \lambda_i, p) && i = 0, \ldots, n \\
+         & 0 = \phi(q_i, p)  && i = 0, \ldots, n \\
+         & 0 = \dot{\phi}(q_i, u_i, p) && i = 0, \ldots, n \\
+         & 0 = \nu(q_i, u_i, p) && i = 0, \ldots, n \\
+         & 0 = \ddot{\phi}(q_{i,k}, u_{i,k}, x_{i,k}, \lambda_{i,k}, p)  && i = 0, \ldots, n && k = 0, \ldots, d \\
+         & 0 = \dot{\nu}(q_{i,k}, u_{i,k}, x_{i,k}, \lambda_{i,k}, p) && i = 0, \ldots, n && k = 0, \ldots, d \\
+         & 0 = \alpha(q_{i,k}, u_{i,k}, x_{i,k}, \lambda_{i,k}, p)  && i = 0, \ldots, n && k = 0, \ldots, d \\
+         & q_{i+1} = q^{\prime}_{i+1} + P_q(q_{i+1},p)^T \mu^{q}_i && i = 0, \ldots, n-1 \\
+         & u_{i+1} = u^{\prime}_{i+1} + G_{pv}(q_{i+1},p)^T \mu^{u}_i && i = 0, \ldots, n-1 \\
+         & V_{L,k} \leq V_k(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{b,k}) \leq V_{U,k} \\
+         & \quad\quad S_{b,k} = \sum_{i=1}^{n} \textrm{quadrature}_i(s_{b,k}(t, y, x, \lambda, p)) && k = 1, \ldots, K \\
+         & g_{L} \leq g(t_i, y_i, x_{i}, \lambda_i, p) \leq g_{U}  && i = 0, \ldots, n\\
+         \mbox{with respect to} \quad
+         & t_0 \in [t_{0,L}, t_{0,U}] && \\ 
+         & t_n \in [t_{f,L}, t_{f,U}] && \\
+         & y_0 \in [y_{0,L}, y_{0,U}] && \\ 
+         & y_n \in [y_{f,L}, y_{f,U}] && \\
+         & y_{i,k} \in [y_{L}, y_{U}] && i = 1, \ldots, n - 1 && k = 0, \ldots, d \\
+         & \zeta_{i,k} \in [\zeta_{L}, \zeta_{U}] && i = 1, \ldots, n - 1 && k = 0, \ldots, d \\
+         & x_0 \in [x_{0,L}, x_{0,U}] && \\ 
+         & x_n \in [x_{f,L}, x_{f,U}] && \\
+         & x_{i,k} \in [x_{L}, x_{U}] && i = 1, \ldots, n - 1 && k = 0, \ldots, d \\
+         & \lambda_{i,k} \in [\lambda_L, \lambda_U] && i = 0, \ldots, n && k = 0, \ldots, d \\
+         & q^{\prime}_{i} \in [q^{\prime}_{L}, q^{\prime}_{U}] && i = 1, \ldots, n \\
+         & u^{\prime}_{i} \in [u^{\prime}_{L}, u^{\prime}_{U}] && i = 1, \ldots, n \\
+         & \mu^{q}_{i} \in [\mu^{q}_{L}, \mu^{q}_{U}] && i = 1, \ldots, n \\
+         & \mu^{u}_{i} \in [\mu^{u}_{L}, \mu^{u}_{U}] && i = 1, \ldots, n \\
+         & p \in [p_{L}, p_{U}].
+    \end{aligned}
+\end{align}
+\f]
+
+This formulation includes the equations needed to enforce kinematic constraints based
+on the method from Bordalba et al. (2023) (see @ref kincon for more details). Our 
+implementation of this method contains one major difference from the original method:
+the projection equation (Eq. 35 in the original publication) is separated into the 
+equations \f$ q_{i+1} = q^{\prime}_{i+1} + P_q(q_{i+1},p)^T \mu^{q}_i \f$ and
+\f$ u_{i+1} = u^{\prime}_{i+1} + G_{pv}(q_{i+1},p)^T \mu^{u}_i \f$. This separation is
+necessary because Simbody does not (yet) provide submatrices of the matrix \f$ F_x \f$ 
+from the original method corresponding to the change in velocity-level constraints 
+with respect to the generalized coordinates (i.e., \f$ \frac{\partial \dot{\phi}}{\partial q} \f$ 
+and \f$ \frac{\partial \nu}{\partial u} \f$). However, the projection equations
+implemented do restrict \f$ q_{i+1} \f$ to be the orthogonal projection of \f$ q^{\prime}_{i+1} \f$ 
+onto the manifold defined by \f$ \phi = 0 \f$, and restrict \f$ u_{i+1} \f$ to be the 
+orthogonal projection of \f$ u^{\prime}_{i+1} \f$ onto the manifold defined by 
+\f$ \dot{\phi} = 0 \f$ and \f$ \nu = 0 \f$. Furthermore, these projections are consistent 
+with how Simbody enforces constraints via coordinate projection in time-stepping simulations. 
+If the kinematic constraint equations are enforced and the slack variables \f$ \mu^{q}_i \f$ 
+and \f$ \mu^{u}_i \f$ are close to zero, then the difference between the true and projection 
+state variables will be small.
+ 
+The Bordalba et al. (2023) method supports holonomic, non-holonomic, and acceleration-only 
+constraints, but non-holonomic and acceleration-only constraints currently have limited
+testing and support in Moco. All acceleration-level constraints (including the derivatives 
+of holonomic and non-holonomic constraints) are enforced at all collocation points, not 
+just the mesh points. The cost term preceded by \f$ w_{proj} \f$ is used to penalize the 
+difference between the true state variables and the projection state variables at the 
+end of each mesh interval to encourage the closest possible projection to the constraint 
+manifold.
+
+The function \f$ \textrm{legendre_gauss}^{\prime}(\eta, F(t, \eta, p)) \f$ used for the 
+multibody dynamics defect constraints is a slight modification of the function 
+\f$ \textrm{legendre_gauss} \f$:
+
+\f[
+    \begin{alignat*}{1}
+        \textrm{legendre_gauss}^{\prime}_i(\eta, F(t, \eta, p)) = \begin{bmatrix} h_i * F(t_i, \eta_i, p) - D_i \cdot \eta_i \\ \eta^{\prime}_{i+1} - C_i \cdot \eta_i \end{bmatrix}
+    \end{alignat*}
+\f]
+
+where \f$ \eta^{\prime}_{i+1} \f$ represents the "projection" state variables used in the 
+method from Bordalba et al. (2023). The true state variables \f$ \eta_{i+1} \f$ are the 
+projection of \f$ \eta^{\prime}_{i+1} \f$ onto the constraint manifold. The matrices 
+\f$ P_q(q_{i+1},p) \f$ and \f$ G_{pv}(q_{i+1},p) \f$ are used to perform the projection for 
+the coordinate values, \f$ q \f$, and coordinate speeds, \f$ u \f$, respectively.
+\f$ G_{pv} = [P; V] \f$ contains submatrices of the full kinematic constraint Jacobian 
+(\f$ G = [P; V; A] \f$) for the holonomic, \f$ P \f$, and non-holonomic, \f$ V \f$, 
+constraints. \f$ Pq = P N^{-1} \f$, where \f$ N \f$ is a matrix relating the generalized 
+speeds to the generalized coordinate derivatives \f$ \dot q = N u \f$. Currently, Moco 
+requires that \f$ N = I \f$, but the Bordalba et al. (2023) method will be valid when 
+Moco supports joints where \f$ \dot q \neq u \f$, in the future. Finally, the vectors 
+\f$ \mu^{q}_i \f$ and \f$ \mu^{u}_i \f$ are arbitrary slack variables used by the 
+optimizer to scale the projection magnitude to reach the constraint manifold.
+
+The implicit dynamics formulation is as follows:
+
+\f[
+    \begin{alignat*}{2}
+    \mbox{subject to} \quad
+         & 0 = \textrm{legendre_gauss}^{\prime}_i(u, \upsilon) & i = 1, \ldots, n \\
+         & M(q_i, p)\upsilon_i + G(q_i, p)^T \lambda_i =
+          f_{\textrm{app}}(t_i, y_i, x_{i}, p) -
+            f_{\textrm{inertial}}(q_i, u_{i}, p) & \quad i = 0, \ldots, n \\
+    \mbox{with respect to} \quad
+         & \upsilon_i \in [-\upsilon_{B}, \upsilon_{B}] & i = 0, \ldots, n \\
+    \end{alignat*}
+\f]
+
+@subsection mocolegendregaussradautheory Legendre-Gauss-Radau transcription
+
+Legendre-Gauss-Radau transcription is very similar to Legendre-Gauss transcription,
+with the main difference being that the final collocation point lies at the mesh 
+interval endpoint rather than the interior of the mesh interval. Both methods have 
+have \f$ d \f$ collocation points corresponding to the degree of the interpolating
+polynomial, but Legendre-Gauss-Radau transcription has one fewer grid point per mesh
+interval compared to Legendre-Gauss transcription since the final collocation point
+is at the mesh interval endpoint.
+
+As a result, the defect constraint function no longer needs to explictly include the
+interpolation constraint for the final mesh interval state:
+
+\f[
+    \begin{alignat*}{1}
+        \textrm{legendre_gauss_radau}_i(\eta_i, F(t_i, \eta_i, p)) = h_i * F(t_{i,1:d}, \eta_{i,1:d}, p) - D_i \cdot \eta_{i,0:d}
+    \end{alignat*}
+\f]
+
+Replacing \f$ \textrm{legendre_gauss}_i \f$ in @ref mocolegendregausstheory above with 
+\f$ \textrm{legendre_gauss_radau}_i \f$ will yield the equations for Legendre-Gauss-Radau
+transcription. The modified equation needed to enforce the kinematic constraints,
+\f$ \textrm{legendre_gauss_radau}^{\prime}_i \f$, has the same form, but uses a modified 
+\f$ \eta^{\prime}_i \f$ matrix where the final row contains the projection state variables:
+
+\f[
+    \begin{alignat*}{1}
+        \textrm{legendre_gauss_radau}^{\prime}_i(\eta^{\prime}_i, F(t_i, \eta^{\prime}_i, p)) = h_i * F(t_{i,1:d}, \eta^{\prime}_{i,1:d}, p) - D_i \cdot \eta^{\prime}_{i,0:d}
+    \end{alignat*}
+\f]
+
+\f[
+    \begin{alignat*}{1}
+        \eta^{\prime}_{i,0:d} &= \begin{bmatrix} \eta_{i,0} \\ \vdots \\ \eta^{\prime}_{i,d} \end{bmatrix} \quad
+        F(t_{i,1:d}, \eta^{\prime}_{i,1:d}, p) &= \begin{bmatrix} F(t_{i,1}, \eta_{i,1}, p) \\ \vdots \\ F(t_{i,d}, \eta^{\prime}_{i,d}, p) \end{bmatrix} \quad
     \end{alignat*}
 \f]
 

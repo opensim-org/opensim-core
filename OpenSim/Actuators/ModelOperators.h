@@ -19,9 +19,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "ModelProcessor.h"
-
 #include <OpenSim/Actuators/ModelFactory.h>
+#include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
+#include "OpenSim/Simulation/TableProcessor.h"
 
 namespace OpenSim {
 
@@ -205,6 +206,47 @@ public:
         model.finalizeConnections();
         ModelFactory::replacePathsWithFunctionBasedPaths(model,
                 Set<FunctionBasedPath>(get_paths_file()));
+    }
+};
+
+/// Prescribe motion to Coordinate%s in a model by providing a table containing
+/// time series data of Coordinate values. Any columns in the provided table
+/// (e.g., "/jointset/ankle_r/ankle_angle_r/value") that do not match a valid
+/// path to a Joint Coordinate value in the model will be ignored. A GCVSpline
+/// function is created for each column of Coordinate values and this function
+/// is assigned to the `prescribed_function` property for the matching Coordinate.
+/// In addition, the `prescribed` property for each matching Coordinate is set
+/// to "true".
+class OSIMACTUATORS_API ModOpPrescribeCoordinateValues : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            ModOpPrescribeCoordinateValues, ModelOperator);
+    OpenSim_DECLARE_PROPERTY(coordinate_values, TableProcessor,
+            "The table of coordinate value data to prescribe to the model")
+
+public:
+    ModOpPrescribeCoordinateValues(TableProcessor table) {
+        constructProperty_coordinate_values(table);
+    }
+    void operate(Model& model, const std::string&) const override {
+        model.finalizeFromProperties();
+        TimeSeriesTable table = get_coordinate_values().process();
+        GCVSplineSet statesSpline(table);
+
+        for (const std::string& pathString: table.getColumnLabels()) {
+            ComponentPath path = ComponentPath(pathString);
+            if (path.getNumPathLevels() < 3) {
+                continue;
+            }
+            std::string jointPath = path.getParentPath().getParentPath().toString();
+            if (!model.hasComponent<Joint>(jointPath)) {
+                log_warn("Found column label '{}', but it does not match a "
+                         "joint coordinate value in the model.", pathString);
+                continue;
+            }
+            Coordinate& q = model.updComponent<Joint>(jointPath).updCoordinate();
+            q.setPrescribedFunction(statesSpline.get(pathString));
+            q.setDefaultIsPrescribed(true);
+        }
     }
 };
 

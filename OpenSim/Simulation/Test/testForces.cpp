@@ -33,8 +33,10 @@
 //      7. RotationalCoordinateLimitForce
 //      8. ExternalForce
 //      9. PathSpring
-//     10. ExpressionBasedPointToPointForce
-//     11. Blankevoort1991Ligament
+//     10. ExpressionBasedCoordinateForce
+//     11. ExpressionBasedPointToPointForce
+//     12. ExpressionBasedBushingForce
+//     13. Blankevoort1991Ligament
 //
 //     Add tests here as Forces are added to OpenSim
 //
@@ -139,9 +141,10 @@ TEST_CASE("testExpressionBasedCoordinateForce") {
     osimModel.setGravity(gravity_vec);
 
     // ode for basic mass-spring-dampener system
-    ExpressionBasedCoordinateForce spring("ball_h", "-10*q-5*qdot");
+    ExpressionBasedCoordinateForce* spring = 
+            new ExpressionBasedCoordinateForce("ball_h", "-10*q-5*qdot");
 
-    osimModel.addForce(&spring);
+    osimModel.addForce(spring);
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(&osimModel);
@@ -170,6 +173,7 @@ TEST_CASE("testExpressionBasedCoordinateForce") {
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
 
+        // Check ball height against analytical solution.
         double height =
                 exp(-1 * zeta * omega * osim_state.getTime()) *
                         ((start_h - dh) *
@@ -180,14 +184,23 @@ TEST_CASE("testExpressionBasedCoordinateForce") {
                                         sin(damp_freq *
                                                 osim_state.getTime()))) +
                 dh;
-
         ASSERT_EQUAL(height, pos(1), 1e-6);
+
+        // Check that the force reported by spring is correct.
+        double ball_h = sliderCoord.getValue(osim_state);
+        double ball_h_dot = sliderCoord.getSpeedValue(osim_state);
+        double analytical_force = -10*ball_h - 5*ball_h_dot;
+        double model_force = spring->getForceMagnitude(osim_state);
+        double output_force = 
+                spring->getOutputValue<double>(osim_state, "force_magnitude");
+        ASSERT_EQUAL(analytical_force, model_force, 1e-6);
+        ASSERT_EQUAL(analytical_force, output_force, 1e-6);
     }
 
     // Test copying
-    ExpressionBasedCoordinateForce* copyOfSpring = spring.clone();
+    ExpressionBasedCoordinateForce* copyOfSpring = spring->clone();
 
-    ASSERT(*copyOfSpring == spring);
+    ASSERT(*copyOfSpring == *spring);
 
     osimModel.print("ExpressionBasedCoordinateForceModel.osim");
 
@@ -264,6 +277,8 @@ TEST_CASE("testExpressionBasedPointToPointForce") {
 
     // Now check that the force reported by spring
     double model_force = p2pForce->getForceMagnitude(state);
+    double output_force = 
+            p2pForce->getOutputValue<double>(state, "force_magnitude");
 
     // Save the forces
     // reporter->getForceStorage().print("path_spring_forces.mot");
@@ -280,6 +295,7 @@ TEST_CASE("testExpressionBasedPointToPointForce") {
 
     // something is wrong if the block does not reach equilibrium
     ASSERT_EQUAL(analytical_force, model_force, 1e-5);
+    ASSERT_EQUAL(analytical_force, output_force, 1e-5);
 
     // Before exiting lets see if copying the P2P force works
     ExpressionBasedPointToPointForce* copyOfP2pForce = p2pForce->clone();
@@ -915,6 +931,11 @@ TEST_CASE("testExpressionBasedBushingForceTranslational") {
         // check analytical force corresponds to the force on the ball
         // in the Y direction, index = 7
         ASSERT_EQUAL(analytical_force, model_force[7], 2e-4);
+
+        // check that the force from the Output is correct
+        SimTK::Vec6 output_force = 
+                spring.getOutputValue<SimTK::Vec6>(osim_state, "bushing_force");
+        ASSERT_EQUAL(analytical_force, output_force[4], 2e-4);
     }
 
     manager.getStateStorage().print(
@@ -1046,6 +1067,11 @@ TEST_CASE("testExpressionBasedBushingForceRotational") {
         // check analytical moment corresponds to the moment on the ball
         // in the Y direction, index = 4
         ASSERT_EQUAL(analytical_moment, model_forces[4], 2e-4);
+
+        // check that the force from the Output is correct
+        SimTK::Vec6 output_force = 
+                spring.getOutputValue<SimTK::Vec6>(osim_state, "bushing_force");
+        ASSERT_EQUAL(analytical_moment, -output_force[1], 2e-4);
     }
 
     manager.getStateStorage().print(

@@ -56,31 +56,23 @@ DM HermiteSimpson::createControlIndicesImpl() const {
     return indices;
 }
 
-void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
-        const casadi::MX& xdot, const casadi::MX& ti, const casadi::MX& tf,
+void HermiteSimpson::calcDefectsImpl(const casadi::MXVector& x,
+        const casadi::MXVector& xdot, const casadi::MX& ti, const casadi::MX& tf,
         const casadi::MX& p, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
-    int time_i;
-    int time_mid;
-    int time_ip1;
     const int NS = m_problem.getNumStates();
     const int NP = m_problem.getNumParameters();
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-        time_i = 2 * imesh; // Needed for defects and path constraints.
-
         // We enforce defect constraints on a mesh interval basis, so add
         // constraints until the number of mesh intervals is reached.
-        time_mid = 2 * imesh + 1;
-        time_ip1 = 2 * imesh + 2;
-
-        const auto h = m_intervals(imesh);
-        const auto x_i = x(Slice(), time_i);
-        const auto x_mid = x(Slice(), time_mid);
-        const auto x_ip1 = x(Slice(), time_ip1);
-        const auto xdot_i = xdot(Slice(), time_i);
-        const auto xdot_mid = xdot(Slice(), time_mid);
-        const auto xdot_ip1 = xdot(Slice(), time_ip1);
+        const auto h = m_times(2 * imesh + 2) - m_times(2 * imesh);
+        const auto x_i = x[imesh](Slice(), 0);
+        const auto x_mid = x[imesh](Slice(), 1);
+        const auto x_ip1 = x[imesh](Slice(), 2);
+        const auto xdot_i = xdot[imesh](Slice(), 0);
+        const auto xdot_mid = xdot[imesh](Slice(), 1);
+        const auto xdot_ip1 = xdot[imesh](Slice(), 2);
 
         // Time variables.
         defects(Slice(0, 1), imesh) = ti(imesh + 1) - ti(imesh);

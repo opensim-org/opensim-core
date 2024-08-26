@@ -29,12 +29,6 @@ class Trapezoidal : public Transcription {
 public:
     Trapezoidal(const Solver& solver, const Problem& problem)
             : Transcription(solver, problem) {
-
-        OPENSIM_THROW_IF(problem.getEnforceConstraintDerivatives(),
-                OpenSim::Exception,
-                "Enforcing kinematic constraint derivatives "
-                "not supported with trapezoidal transcription.");
-
         createVariablesAndSetBounds(m_solver.getMesh(),
                 m_problem.getNumStates(), 2);
     }
@@ -43,8 +37,9 @@ private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
     casadi::DM createControlIndicesImpl() const override;
-    void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
-            const casadi::MX& ti, const casadi::MX& tf, const casadi::MX& p,
+    void calcDefectsImpl(const casadi::MXVector& x, 
+            const casadi::MXVector& xdot, const casadi::MX& ti, 
+            const casadi::MX& tf, const casadi::MX& p,
             casadi::MX& defects) const override;
     std::vector<std::pair<Var, int>> getVariableOrder() const override;
 };

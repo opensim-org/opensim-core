@@ -31,14 +31,16 @@ using OpenSim::Exception;
 
 namespace CasOC {
 
-Iterate Iterate::resample(const casadi::DM& newTimes) const {
-    // Since we are converting to a MocoTrajectory and immediately converting
-    // back to a CasOC::Iterate after resampling, we do not need to provide
+Iterate Iterate::resample(const casadi::DM& newTimes,
+                          bool appendProjectionStates = false) const {
+    // Since we are converting to a MocoTrajectory and immediately converting 
+    // back to a CasOC::Iterate after resampling, we do not need to provide 
     // Input control indexes, even if they are present in the MocoProblem.
     auto mocoTraj = OpenSim::convertToMocoTrajectory(*this);
     auto simtkNewTimes = OpenSim::convertToSimTKVector(newTimes);
     mocoTraj.resample(simtkNewTimes);
-    return OpenSim::convertToCasOCIterate(mocoTraj);
+    return OpenSim::convertToCasOCIterate(mocoTraj, mocoTraj.getSlackNames(),
+            appendProjectionStates);
 }
 
 Iterate Iterate::repmatParameters(int numPoints) {

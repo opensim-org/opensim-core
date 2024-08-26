@@ -37,9 +37,12 @@ namespace CasOC {
 ///
 /// Kinematic constraints and path constraints.
 /// -------------------------------------------
-/// Kinematic constraint and path constraint errors are enforced only at the
-/// mesh points. Errors at collocation points at the mesh interval midpoint
-/// are ignored.
+/// Position- and velocity-level kinematic constraint errors and path constraint 
+/// errors are enforced only at the mesh points. In the kinematic constraint 
+/// method by Bordalba et al. (2023) [2], the acceleration-level constraints are 
+/// also enforced at the collocation points. In the kinematic constraint method 
+/// by Posa et al. (2016) [3], the acceleration-level constraints are only enforced 
+/// at the mesh points.
 ///
 /// References
 /// ----------
@@ -49,7 +52,7 @@ namespace CasOC {
 /// [2] Bordalba, Ricard, Tobias Schoels, Lluís Ros, Josep M. Porta, and
 ///     Moritz Diehl. "Direct collocation methods for trajectory optimization
 ///     in constrained robotic systems." IEEE Transactions on Robotics (2023).
-///
+/// [3] TODO Posa et al. 2016
 class HermiteSimpson : public Transcription {
 public:
     HermiteSimpson(const Solver& solver, const Problem& problem)
