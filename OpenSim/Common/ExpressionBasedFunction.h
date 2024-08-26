@@ -31,7 +31,7 @@ namespace OpenSim {
  * A function based on a user-defined mathematical expression.
  * 
  * This class allows users to define a function based on a mathematical
- * expression (e.g., "x*sqrt(y-8)".). The expression can be a function of any 
+ * expression (e.g., "x*sqrt(y-8)"). The expression can be a function of any 
  * number of independent variables. The expression is parsed and evaluated using 
  * the Lepton library.
  * 
