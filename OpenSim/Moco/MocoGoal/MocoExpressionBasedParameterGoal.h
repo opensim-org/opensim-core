@@ -88,9 +88,9 @@ public:
     expression string. All variables in the expression must have a corresponding
     parameter, but parameters with variables that are not in the expression are
     ignored. */
-    void addParameter(const MocoParameter& parameter, std::string variableName) {
+    void addParameter(const MocoParameter& parameter, std::string variable) {
         append_parameters(parameter);
-        append_variable_names(std::move(variableName));
+        append_variables(std::move(variable));
     }
 
 protected:
@@ -109,11 +109,11 @@ private:
     double getPropertyValue(int i) const;
 
     OpenSim_DECLARE_PROPERTY(expression, std::string,
-            "The expression string with variables q0-q9.");
+            "The expression string defining this cost or endpoint constraint.");
     OpenSim_DECLARE_LIST_PROPERTY(parameters, MocoParameter,
-            "MocoParameters to use in the expression.");
-    OpenSim_DECLARE_LIST_PROPERTY(variable_names, std::string,
-            "Variable names of the MocoParameters to use in the expression.");
+            "Parameters included in the expression.");
+    OpenSim_DECLARE_LIST_PROPERTY(variables, std::string,
+            "Variables names corresponding to parameters in the expression.");
 
     mutable Lepton::ExpressionProgram m_program;
     // stores references to one property per parameter

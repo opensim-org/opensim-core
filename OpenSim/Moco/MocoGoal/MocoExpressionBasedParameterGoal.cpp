@@ -28,12 +28,12 @@ using namespace OpenSim;
 void MocoExpressionBasedParameterGoal::constructProperties() {
     constructProperty_expression("");
     constructProperty_parameters();
-    constructProperty_variable_names();
+    constructProperty_variables();
 }
 
 void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model)
         const {
-    OPENSIM_THROW_IF_FRMOBJ(get_expression() == "", Exception,
+    OPENSIM_THROW_IF_FRMOBJ(get_expression().empty(), Exception,
             "The expression has not been set. Use setExpression().")
     m_program = Lepton::Parser::parse(get_expression()).optimize()
                 .createProgram();
@@ -69,19 +69,17 @@ void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model)
     // test to make sure all variables are there
     try {
         std::map<std::string, double> parameterVars;
-        for (int i = 0; i < getProperty_variable_names().size(); ++i) {
-            parameterVars[get_variable_names(i)] = getPropertyValue(i);
+        for (int i = 0; i < getProperty_variables().size(); ++i) {
+            parameterVars[get_variables(i)] = getPropertyValue(i);
         }
         m_program.evaluate(parameterVars);
     } catch (Lepton::Exception& ex) {
-        std::string msg = ex.what();
-        std::string help = "";
-        if (msg.compare(0, 30, "No value specified for variable")) {
-            help = " Use addParameter() to add a parameter for this variable, "
-                   "or remove the variable from the expression for this goal.";
-        }
-        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Expression evaluate error:"
-                                                    " {}.{}", msg, help));
+        const std::string msg = ex.what();
+        std::string undefinedVar = msg.substr(32, msg.size() - 32);
+        OPENSIM_THROW_FRMOBJ(Exception, 
+                fmt::format("Parameter variable '{}' is not defined. Use "
+                "addParameter() to explicitly define this variable. Or, "
+                "remove it from the expression.", undefinedVar));
     }
 }
 
@@ -107,8 +105,8 @@ double MocoExpressionBasedParameterGoal::getPropertyValue(int i) const {
 void MocoExpressionBasedParameterGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& values) const {
     std::map<std::string, double> parameterVars;
-    for (int i = 0; i < getProperty_variable_names().size(); ++i) {
-        parameterVars[get_variable_names(i)] = getPropertyValue(i);
+    for (int i = 0; i < getProperty_variables().size(); ++i) {
+        parameterVars[get_variables(i)] = getPropertyValue(i);
     }
     values[0] = m_program.evaluate(parameterVars);
 }
@@ -116,7 +114,7 @@ void MocoExpressionBasedParameterGoal::calcGoalImpl(
 void MocoExpressionBasedParameterGoal::printDescriptionImpl() const {
     log_cout("        expression: {}", get_expression());
     for (int i = 0; i < getProperty_parameters().size(); ++i) {
-        log_cout("        variable {}: {}", get_variable_names(i),
+        log_cout("        variable {}: {}", get_variables(i),
                  get_parameters(i).getName());
     }
 }
