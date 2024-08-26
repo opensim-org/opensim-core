@@ -116,6 +116,9 @@ private:
 };
 
 SimTK::Function* ExpressionBasedFunction::createSimTKFunction() const {
+    OPENSIM_THROW_IF_FRMOBJ(get_expression().empty(), Exception,
+            "The expression has not been set. Use setExpression().")
+            
     std::vector<std::string> variables;
     for (int i = 0; i < getProperty_variables().size(); ++i) {
         variables.push_back(get_variables(i));
