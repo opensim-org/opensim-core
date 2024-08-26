@@ -61,7 +61,7 @@ public:
     bool has_jac_sparsity(casadi_int oind, casadi_int iind) const override {
         return !m_fullPointsForSparsityDetection->empty();
     }
-    casadi::Sparsity get_jac_sparsity(casadi_int oind, casadi_int iind, 
+    casadi::Sparsity get_jac_sparsity(casadi_int oind, casadi_int iind,
             bool symmetric) const override;
 
 protected:
@@ -69,7 +69,7 @@ protected:
 
 private:
     /// Here, "point" refers to a vector of all variables in the optimization
-    /// problem. This function returns a subset of the variables at a point for 
+    /// problem. This function returns a subset of the variables at a point for
     /// a given input index.
     VectorDM getSubsetPointsForSparsityDetection(casadi_int iind) const {
         VectorDM out(m_fullPointsForSparsityDetection->size());
@@ -81,9 +81,9 @@ private:
     }
 
     /// As of CasADi 3.6, callback functions need to return Jacobian sparsity
-    /// patterns for each pair of inputs and outputs. Therefore this function 
+    /// patterns for each pair of inputs and outputs. Therefore this function
     /// returns a subset point for a given input index.
-    virtual casadi::DM getSubsetPoint(const VariablesDM& fullPoint, 
+    virtual casadi::DM getSubsetPoint(const VariablesDM& fullPoint,
             casadi_int i) const {
         int itime = 0;
         using casadi::Slice;
@@ -233,7 +233,7 @@ public:
     /// provided point, but applying the integrand function and quadrature
     /// scheme here is complicated. For simplicity, we provide the integral as
     /// 0.
-    casadi::DM getSubsetPoint(const VariablesDM& fullPoint, 
+    casadi::DM getSubsetPoint(const VariablesDM& fullPoint,
             casadi_int i) const override;
 
 protected:
@@ -256,7 +256,7 @@ public:
 
 /// This function should compute forward dynamics (explicit multibody dynamics),
 /// auxiliary explicit dynamics, and the errors for the kinematic constraints.
-template <bool CalcKCErrors>
+template <bool calcKCErr>
 class MultibodySystemExplicit : public Function {
 public:
     casadi_int get_n_out() override final { return 4; }
@@ -297,11 +297,39 @@ public:
     casadi::Sparsity get_sparsity_in(casadi_int i) override final;
     casadi::Sparsity get_sparsity_out(casadi_int i) override final;
     VectorDM eval(const VectorDM& args) const override;
-    casadi::DM getSubsetPoint(const VariablesDM& fullPoint, 
+    casadi::DM getSubsetPoint(const VariablesDM& fullPoint,
             casadi_int i) const override;
 };
 
-template <bool CalcKCErrors>
+/// This function should compute a state projection term to make feasible
+/// problems that enforce kinematic constraints and their derivatives.
+class StateProjection : public Function {
+public:
+    casadi_int get_n_in() override final { return 4; }
+    casadi_int get_n_out() override final { return 1; }
+    std::string get_name_in(casadi_int i) override final {
+        switch (i) {
+        case 0: return "time";
+        case 1: return "multibody_states";
+        case 2: return "slacks";
+        case 3: return "parameters";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        }
+    }
+    std::string get_name_out(casadi_int i) override final {
+        switch (i) {
+        case 0: return "state_projection";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        }
+    }
+    casadi::Sparsity get_sparsity_in(casadi_int i) override final;
+    casadi::Sparsity get_sparsity_out(casadi_int i) override final;
+    VectorDM eval(const VectorDM& args) const override;
+    casadi::DM getSubsetPoint(
+            const VariablesDM& fullPoint, casadi_int i) const override;
+};
+
+template <bool calcKCErr>
 class MultibodySystemImplicit : public Function {
     casadi_int get_n_out() override final { return 4; }
     std::string get_name_out(casadi_int i) override final {
@@ -313,6 +341,7 @@ class MultibodySystemImplicit : public Function {
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
+
     casadi::Sparsity get_sparsity_out(casadi_int i) override final;
     VectorDM eval(const VectorDM& args) const override;
 };
