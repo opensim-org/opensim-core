@@ -45,7 +45,7 @@ void MocoGoal::printDescription() const {
     if (mode == "cost") {
         str += fmt::format(", weight: {}", get_weight());
     }
-    log_cout(str);
+    log_info(str);
     printDescriptionImpl();
 }
 

@@ -163,10 +163,10 @@ void MocoAngularVelocityTrackingGoal::calcIntegrandImpl(
 }
 
 void MocoAngularVelocityTrackingGoal::printDescriptionImpl() const {
-    log_cout("        angular velocity reference file: {}",
+    log_info("        angular velocity reference file: {}",
             get_angular_velocity_reference_file());
     for (int i = 0; i < (int)m_frame_paths.size(); i++) {
-        log_cout("        frame {}: {}, weight: {}", i, m_frame_paths[i],
+        log_info("        frame {}: {}, weight: {}", i, m_frame_paths[i],
                 m_angular_velocity_weights[i]);
     }
 }

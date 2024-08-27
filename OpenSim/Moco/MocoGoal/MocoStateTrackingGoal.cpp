@@ -168,8 +168,7 @@ void MocoStateTrackingGoal::calcIntegrandImpl(
 
 void MocoStateTrackingGoal::printDescriptionImpl() const {
     for (int i = 0; i < (int) m_state_names.size(); i++) {
-        log_cout("        state: {}, weight: {}", m_state_names[i],
+        log_info("        state: {}, weight: {}", m_state_names[i],
                 m_state_weights[i]);
     }
 }
-
