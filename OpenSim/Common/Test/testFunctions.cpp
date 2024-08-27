@@ -337,4 +337,16 @@ TEST_CASE("ExpressionBasedFunction") {
                 Catch::Matchers::ContainsSubstring(
                         "Variable 'x' is defined more than once."));
     }
+
+    SECTION("Non-alphabetic variable names") {
+        ExpressionBasedFunction f("@^2 + %*cos(&)", {"@", "%", "&"});
+        REQUIRE_THAT(f.calcValue(createVector({x, y, z})), 
+                Catch::Matchers::WithinAbs(x*x + y*std::cos(z), 1e-10));
+        REQUIRE_THAT(f.calcDerivative({0}, createVector({x, y, z})), 
+                Catch::Matchers::WithinAbs(2*x, 1e-10));
+        REQUIRE_THAT(f.calcDerivative({1}, createVector({x, y, z})), 
+                Catch::Matchers::WithinAbs(std::cos(z), 1e-10));
+        REQUIRE_THAT(f.calcDerivative({2}, createVector({x, y, z})), 
+                Catch::Matchers::WithinAbs(-y*std::sin(z), 1e-10));
+    }
 }

@@ -57,7 +57,8 @@ public:
     OpenSim_DECLARE_PROPERTY(expression, std::string, 
             "The mathematical expression defining this Function.");
     OpenSim_DECLARE_LIST_PROPERTY(variables, std::string, 
-            "The independent variables used by this Function's expression.");
+            "The independent variables used by this Function's expression. "
+            "In XML, variable names should be space-separated.");
 
 //==============================================================================
 // METHODS
@@ -94,7 +95,10 @@ public:
 
     /**
      * The independent variable names of this expression. The variables names 
-     * should be unique. The input vector passed to calcValue() and 
+     * should be unique and should be comprised of alphabetic characters or any 
+     * characters not reserved by Lepton (i.e., +, -, *, /, and ^). Variable
+     * names can contain numbers as long they do not come first in the name
+     * (e.g., "var0"). The input vector passed to calcValue() and 
      * calcDerivative() should be in the same order as the variables defined
      * here.
      */
