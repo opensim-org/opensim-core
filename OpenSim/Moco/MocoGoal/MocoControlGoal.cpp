@@ -194,11 +194,11 @@ void MocoControlGoal::calcGoalImpl(
 
 void MocoControlGoal::printDescriptionImpl() const {
     for (int i = 0; i < (int) m_controlNames.size(); i++) {
-        log_cout("        control: {}, weight: {}", m_controlNames[i],
+        log_info("        control: {}, weight: {}", m_controlNames[i],
                 m_weights[i]);
     }
     for (int i = 0; i < (int) m_inputControlNames.size(); i++) {
-        log_cout("        Input control: {}, weight: {}", 
+        log_info("        Input control: {}, weight: {}",
                 m_inputControlNames[i], m_inputControlWeights[i]);
     }
 }

@@ -162,10 +162,10 @@ void MocoTranslationTrackingGoal::calcIntegrandImpl(
 }
 
 void MocoTranslationTrackingGoal::printDescriptionImpl() const {
-    log_cout("        translation reference file: {}",
+    log_info("        translation reference file: {}",
              get_translation_reference_file());
     for (int i = 0; i < (int)m_frame_paths.size(); i++) {
-        log_cout("        frame {}: {}, weight: {}", i, m_frame_paths[i],
+        log_info("        frame {}: {}, weight: {}", i, m_frame_paths[i],
                 m_translation_weights[i]);
     }
 }

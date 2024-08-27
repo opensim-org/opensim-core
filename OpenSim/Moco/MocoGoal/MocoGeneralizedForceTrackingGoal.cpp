@@ -241,7 +241,7 @@ void MocoGeneralizedForceTrackingGoal::calcIntegrandImpl(
 
 void MocoGeneralizedForceTrackingGoal::printDescriptionImpl() const {
     for (int i = 0; i < static_cast<int>(m_generalizedForceNames.size()); i++) {
-        log_cout("        generalized force: {}, weight: {}", 
+        log_info("        generalized force: {}, weight: {}",
                 m_generalizedForceNames[i],
                 m_generalizedForceWeights[i]);
     }

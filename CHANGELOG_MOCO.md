@@ -3,6 +3,9 @@ Moco Change Log
 
 1.4.0
 -----
+- 2024-08-26: Changed all `printDescription()` and `printDescriptionImpl()` methods to log at level info 
+              instead of cout.
+
 - 2024-08-21: Added support for the 'projection' method for enforcing kinematic
               constraints from Bordalba et al. (2023) to `MocoCasADiSolver`. 
               This method allows enforcing kinematic constraints with any

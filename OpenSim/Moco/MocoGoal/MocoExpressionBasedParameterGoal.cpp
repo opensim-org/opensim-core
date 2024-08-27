@@ -117,9 +117,9 @@ void MocoExpressionBasedParameterGoal::calcGoalImpl(
 }
 
 void MocoExpressionBasedParameterGoal::printDescriptionImpl() const {
-    log_cout("        expression: {}", get_expression());
+    log_info("        expression: {}", get_expression());
     for (int i = 0; i < getProperty_parameters().size(); ++i) {
-        log_cout("        variable {}: {}", get_variable_names(i),
+        log_info("        variable {}: {}", get_variable_names(i),
                  get_parameters(i).getName());
     }
 }
