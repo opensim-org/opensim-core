@@ -265,5 +265,5 @@ void MocoOutputConstraint::printDescriptionImpl() const {
     // Exponent.
     str += fmt::format(", exponent: {}", getExponent());
 
-    log_cout(str);
+    log_info(str);
 }
