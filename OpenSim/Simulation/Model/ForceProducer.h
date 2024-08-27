@@ -40,7 +40,7 @@ namespace OpenSim {
  *
  * The benefit of this is that it enables arbitrary external code to directly
  * introspect each force before it gets resolved to the underlying body-/generalized-force
- * vector that `OpenSim::Force::computeForce` uses. This can be useful for
+ * vector that `OpenSim::Force::computeForce` manipulates. This can be useful for
  * visualizing/dumping user data (e.g. because user-written `OpenSim::ExternalForce`s
  * produce point-forces) or debugging (because it's easier to debug forces if they
  * come one-at-a-time rather than trying to figure out which parts of downstream code
@@ -50,45 +50,47 @@ namespace OpenSim {
 class OSIMSIMULATION_API ForceProducer : public Force {
     OpenSim_DECLARE_ABSTRACT_OBJECT(ForceProducer, Force);
 
+protected:
+    using Force::Force;  // forward `Force`'s constructor
+
 public:
 
     /**
-     * Requests that this `ForceProducer` emits the forces that it wants to apply
-     * to `state` into the provided `consumer`.
+     * If `appliesForce(state)` is `true`, uses `implProduceForces` to emit forces
+     * evaluated from `state` into the provided `consumer`.
+     *
+     * @param state       the state used to evaluate forces
+     * @param consumer    a `ForceConsumer` that shall receive each of the produced forces
      */
-    void produceForces(
-        const SimTK::State& state,
-        ForceConsumer& consumer) const
-    {
-        implProduceForces(state, consumer);
-    }
+    void produceForces(const SimTK::State& state, ForceConsumer& forceConsumer) const;
 
     /**
      * Inhereted from `OpenSim::Force`.
      *
      * `ForceProducer` overrides `OpenSim::Force::computeForce` with a default
-     * implementation that internally consumes the forces produced by `produceForces`
-     * to mutate the provided `bodyForces` as-required by the `OpenSim::Force` API.
+     * implementation that internally uses `produceForces` to mutate the
+     * provided `bodyForces` in a manner that's compatible with the `OpenSim::Force`
+     * API.
      */
     void computeForce(
         const SimTK::State& state,
         SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
         SimTK::Vector& generalizedForces
-    ) const override;
+    ) const final;
 
 private:
 
     /**
      * Subclasses of `ForceProducer` must implement this method.
      *
-     * Implementations should provide each force that this component wants to apply to `state`
-     * to the `consumer` by calling `consumer`'s highest-available consumption function
-     * (e.g. prefer `ForceConsumer::consumePointForce` over `ForceConsumer::consumeBodyForce`
-     *  where applicable - it enables code-reuse and introspection).
+     * Implementations should evaluate forces from `state` and pass them into
+     * `forceConsumer` by calling the most appropriate `consume*` function. The
+     * `ForceConsumer`'s API documentation outlines each available consumption
+     * function (+ preferred usage).
      */
     virtual void implProduceForces(
         const SimTK::State& state,
-        ForceConsumer& consumer
+        ForceConsumer& forceConsumer
     ) const = 0;
 };
 

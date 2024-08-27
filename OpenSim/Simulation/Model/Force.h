@@ -44,6 +44,7 @@ class Coordinate;
 class OSIMSIMULATION_API Force : public ModelComponent {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Force, ModelComponent);
 public:
+
 //==============================================================================
 // PROPERTIES
 //==============================================================================
@@ -110,6 +111,73 @@ public:
     /** Return the index to the SimTK::Force in the underlying system. */
     SimTK::ForceIndex getForceIndex() const { return _index; }
 
+    /**
+    * Apply a force at a particular point (a "station") on a given body. Note
+    * that the point Vec3(0) is the body origin, not necessarily the center
+    * of mass whose location is maintained relative to the body origin.
+    * Although this applies a pure force to the given point, that will also
+    * result in a torque acting on the body when looking at the resultant at
+    * some other point.
+    *
+    * This method may only be called from inside computeForce(). Invoking it
+    * at any other time will produce an exception.
+    *
+    * @param state      state used only to determine which element of
+    *                      \a bodyForces to modify
+    * @param body       the body to apply the force to
+    * @param point      the point at which to apply the force, specified in
+    *                      the body's frame
+    * @param force      the force to apply, specified in the inertial
+    *                      (ground) reference frame
+    * @param bodyForces the set of system bodyForces to which this force
+    *                      is added
+    */
+    void applyForceToPoint(
+        const SimTK::State&                state,
+        const PhysicalFrame&               body,
+        const SimTK::Vec3&                 point,
+        const SimTK::Vec3&                 force,
+        SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
+
+    /**
+    * Apply a torque to a particular body.
+    *
+    * This method may only be called from inside computeForce(). Invoking it
+    * at any other time will produce an exception.
+    *
+    * @param state      state used only to determine which element of
+    *                      \a bodyForces to modify
+    * @param body       the body to apply the force to
+    * @param torque     the torque to apply, specified in the inertial frame
+    * @param bodyForces the set of system bodyForces to which this force
+    *                      is added
+    */
+    void applyTorque(
+        const SimTK::State&                state,
+        const PhysicalFrame&               body,
+        const SimTK::Vec3&                 torque,
+        SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
+
+    /**
+    * Apply a generalized force.
+    *
+    * This method may only be called from inside computeForce(). Invoking it
+    * at any other time will produce an exception.
+    *
+    * @param state              state used only to determine which element of
+    *                              \a generalizedForces to modify
+    * @param coord              the generalized coordinate to which the
+    *                              force should be applied
+    * @param force              the (scalar) force to apply
+    * @param generalizedForces  the set of system generalizedForces to which
+    *                              the force is to be added
+    */
+    void applyGeneralizedForce(
+        const SimTK::State&  state,
+        const Coordinate&    coord,
+        double               force,
+        SimTK::Vector&       generalizedForces) const;
+
 protected:
     /** Default constructor sets up Force-level properties; can only be
     called from a derived class constructor. **/
@@ -157,67 +225,6 @@ protected:
      * that do not contribute to potential energy.
      */
     virtual double computePotentialEnergy(const SimTK::State& state) const;
-    /**
-     * Apply a force at a particular point (a "station") on a given body. Note
-     * that the point Vec3(0) is the body origin, not necessarily the center
-     * of mass whose location is maintained relative to the body origin.
-     * Although this applies a pure force to the given point, that will also
-     * result in a torque acting on the body when looking at the resultant at
-     * some other point.
-     *
-     * This method may only be called from inside computeForce(). Invoking it 
-     * at any other time will produce an exception.
-     *
-     * @param state      state used only to determine which element of 
-     *                      \a bodyForces to modify
-     * @param body       the body to apply the force to
-     * @param point      the point at which to apply the force, specified in 
-     *                      the body's frame
-     * @param force      the force to apply, specified in the inertial 
-     *                      (ground) reference frame
-     * @param bodyForces the set of system bodyForces to which this force 
-     *                      is added
-     */
-    void applyForceToPoint(const SimTK::State&                state, 
-                           const PhysicalFrame&               body, 
-                           const SimTK::Vec3&                 point,
-                           const SimTK::Vec3&                 force, 
-                           SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
-    /**
-     * Apply a torque to a particular body.
-     *
-     * This method may only be called from inside computeForce(). Invoking it 
-     * at any other time will produce an exception.
-     *
-     * @param state      state used only to determine which element of 
-     *                      \a bodyForces to modify
-     * @param body       the body to apply the force to
-     * @param torque     the torque to apply, specified in the inertial frame
-     * @param bodyForces the set of system bodyForces to which this force 
-     *                      is added
-     */
-    void applyTorque(const SimTK::State&                state, 
-                     const PhysicalFrame&               body,
-                     const SimTK::Vec3&                 torque, 
-                     SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
-    /**
-     * Apply a generalized force.
-     *
-     * This method may only be called from inside computeForce(). Invoking it 
-     * at any other time will produce an exception.
-     *
-     * @param state              state used only to determine which element of 
-     *                              \a generalizedForces to modify
-     * @param coord              the generalized coordinate to which the 
-     *                              force should be applied
-     * @param force              the (scalar) force to apply
-     * @param generalizedForces  the set of system generalizedForces to which
-     *                              the force is to be added
-     */
-    void applyGeneralizedForce(const SimTK::State&  state, 
-                               const Coordinate&    coord,
-                               double               force, 
-                               SimTK::Vector&       generalizedForces) const;
 
 protected:
     void updateFromXMLNode(SimTK::Xml::Element& node,

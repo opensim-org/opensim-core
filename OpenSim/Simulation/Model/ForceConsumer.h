@@ -24,7 +24,8 @@
 * limitations under the License.                                             *
 * -------------------------------------------------------------------------- */
 
-#include <SimTKcommon/SmallMatrix.h>  // `SimTK::Vec3`
+#include <SimTKcommon/SmallMatrix.h>              // for `SimTK::Vec3`
+#include <SimTKcommon/internal/MassProperties.h>  // for `SimTK::SpatialVec`
 
 namespace OpenSim { class Coordinate; }
 namespace OpenSim { class PhysicalFrame; }
@@ -35,14 +36,15 @@ namespace OpenSim
 
 /**
 * A `ForceConsumer` is an abstract class that can consume forces via its `consume*`
-* methods. It is typically used in conjunction with `ForceProducer`s, which take
-* a mutable reference to a `ForceConsumer` and emit their forces into it.
+* methods. It is typically used in conjunction with `ForceProducer`s, which produce
+* the forces that this API consumes.
 *
 * The `ForceConsumer` API does not dictate how concrete implementations should
-* handle the forces. This is to support (e.g.) implementations that actually
-* apply the forces (as in `ForceProducer::computeForce`), or implementations that
-* print force debugging information, or UIs that want to display the forces as 3D
-* decorations.
+* handle the forces. This is to support several use-cases (examples):
+*
+* - Implementations that actually apply the forces (see: `ForceProducer::computeForce`),
+* - Implementations that print force debugging information
+* - Implementations that want to render force vectors in 3D (e.g. UIs)
 */
 class ForceConsumer {
 protected:
@@ -58,66 +60,89 @@ public:
     /**
      * Consumes a generalized force.
      *
-     * @param state    the `SimTK::State` to which the force applies
+     * This is the `ForceConsumer`'s dual to `OpenSim::Force::applyGeneralizedForce`
+     *
+     * @param state    the state that was used to evaluate the force
      * @param coord    the generalized coordinate to which the force applies
      * @param force    the (scalar) force change in the generalized coordinate
      */
     void consumeGeneralizedForce(
         const SimTK::State& state,
         const Coordinate& coord,
-        double force
-    );
+        double force)
+    {
+        implConsumeGeneralizedForce(state, coord, force);
+    }
 
     /**
-     * Consumes a body force.
+     * Consumes a body torque (index 0) and force (index 1) as a `SimTK::SpatialVec`
      *
-     * Note: prefer using `consumePointForce` if the calling code has point-force
-     *       information. This is because it enables downstream code to introspect,
-     *       visualize, or debug point forces, which might be more useful than
-     *       visualizing fully-resolved body forces.
+     * If callers to this function are handling point-force-like data, then they should
+     * prefer calling `consumePointForce` and `consumeTorque` seperately instead of
+     * calling this. This so that concrete `ForceConsumer` implementations are able
+     * to introspect the point forces, rather than only receiving fully-resolved body
+     * forces.
      *
-     * @param state     the `SimTK::State` to which the force applies
-     * @param body      the body to which the force applies
-     * @param force     the force, expressed in the body frame
+     * @param state         the state that was used to evaluate the force
+     * @param body          the body (frame) to which the force applies (at its center)
+     * @param spatialVec    a `SimTK::SpatialVector` that contains the torque at index 0 and force at index 1
      */
-    void consumeBodyForce(
+    void consumeBodySpatialVec(
         const SimTK::State& state,
         const PhysicalFrame& body,
-        const SimTK::Vec3& force
-    );
+        const SimTK::SpatialVec& spatialVec)
+    {
+        implConsumeBodySpatialVec(state, body, spatialVec);
+    }
 
     /**
      * Consumes a body torque.
      *
-     * @param state     the `SimTK::State` to which the torque applies
+     * This is the `ForceConsumer`'s dual to `OpenSim::Force::applyTorque`.
+     *
+     * If a caller to this function has both a body torque and a body (not point) force
+     * available, then it should prefer calling `consumeBodySpatialVec`.
+     *
+     * @param state     the state that was used to evaluate the torque
      * @param body      the body to which the torque applies
      * @param torque    the torque, specified in the inertial frame, to apply
      */
-    void consumeBodyTorque(
+    void consumeTorque(
         const SimTK::State& state,
         const PhysicalFrame& body,
-        const SimTK::Vec3& torque
-    );
+        const SimTK::Vec3& torque)
+    {
+        consumeBodySpatialVec(state, body, SimTK::SpatialVec{torque, SimTK::Vec3{0.0, 0.0, 0.0}});
+    }
 
     /**
-     * Consumes a point force. That is, a force applied at a point within a frame.
+     * Consumes a point force. That is, a force applied at a point (a "station") within
+     * a frame.
      *
-     * @param state    the `SimTK::State` to which the force applies
+     * This is the `ForceConsumer`'s dual to `OpenSim::Force::applyForceToPoint`
+     *
+     * @param state    the state that was used to evaluate the force
      * @param frame    the frame in which `point` is defined
      * @param point    a point in `frame` where `force` applies
-     * @param force    a force that should be applied to `point`
+     * @param force    the force to apply, specified in the inertial (ground) frame
      */
     void consumePointForce(
         const SimTK::State& state,
         const PhysicalFrame& frame,
         const SimTK::Vec3& point,
-        const SimTK::Vec3& force
-    );
+        const SimTK::Vec3& force)
+    {
+        implConsumePointForce(state, frame, point, force);
+    }
 
 private:
     /**
      * Subclasses of `ForceConsumer` may implement this method. There are no expectations
      * on how an implementation should handle a call to this function.
+     *
+     * @param state    the state that was used to evaluate the force
+     * @param coord    the generalized coordinate to which the force applies
+     * @param force    the (scalar) force change in the generalized coordinate
      */
     virtual void implConsumeGeneralizedForce(
         const SimTK::State& state,
@@ -128,26 +153,25 @@ private:
     /**
     * Subclasses of `ForceConsumer` may implement this method. There are no expectations
     * on how an implementation should handle a call to this function.
+    *
+    * @param state         the state that was used to evaluate the force
+    * @param body          the body (frame) to which the force applies (at its center)
+    * @param spatialVec    a `SimTK::SpatialVector` that contains the torque at index 0 and force at index 1
     */
-    virtual void implConsumeBodyForce(
+    virtual void implConsumeBodySpatialVec(
         const SimTK::State& state,
         const PhysicalFrame& body,
-        const SimTK::Vec3& force)
+        const SimTK::SpatialVec& spatialVec)
     {}
 
     /**
      * Subclasses of `ForceConsumer` may implement this method. There are no expectations
      * on how an implementation should handle a call to this function.
-     */
-    virtual void implConsumeBodyTorque(
-        const SimTK::State& state,
-        const PhysicalFrame& body,
-        const SimTK::Vec3& torque)
-    {}
-
-    /**
-     * Subclasses of `ForceConsumer` may implement this method. There are no expectations
-     * on how an implementation should handle a call to this function.
+     *
+     * @param state    the state that was used to evaluate the force
+     * @param frame    the frame in which `point` is defined
+     * @param point    a point in `frame` where `force` applies
+     * @param force    the force to apply, specified in the inertial (ground) frame
      */
     virtual void implConsumePointForce(
         const SimTK::State& state,

@@ -23,9 +23,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Common/SimmSpline.h>
 #include "PrescribedForce.h"
+
+#include <OpenSim/Common/SimmSpline.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
 // STATICS
@@ -240,9 +242,9 @@ void PrescribedForce::setPointFunctionNames
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 
-void PrescribedForce::computeForce(const SimTK::State& state, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+void PrescribedForce::implProduceForces(
+    const SimTK::State& state,
+    ForceConsumer& forceConsumer) const
 {
     const bool pointIsGlobal = get_pointIsGlobal();
     const bool forceIsGlobal = get_forceIsGlobal();
@@ -277,7 +279,8 @@ void PrescribedForce::computeForce(const SimTK::State& state,
                 point = gnd.findStationLocationInAnotherFrame(state, point, frame);
 
         }
-        applyForceToPoint(state, frame, point, force, bodyForces);
+
+        forceConsumer.consumePointForce(state, frame, point, force);
     }
     if (hasTorqueFunctions){
         Vec3 torque(torqueFunctions[0].calcValue(timeAsVector), 
@@ -286,7 +289,7 @@ void PrescribedForce::computeForce(const SimTK::State& state,
         if (!forceIsGlobal)
             torque = frame.expressVectorInAnotherFrame(state, torque, gnd);
 
-         applyTorque(state, frame, torque, bodyForces);
+        forceConsumer.consumeTorque(state, frame, torque);
     }
 }
 
