@@ -35,7 +35,7 @@ class PhysicalFrame;
  * Convenience class for a generic representation of geometry of a complex
  * Force (or any other object) with multiple points of contact through
  * which forces are applied to bodies. This represents one such point and an
- * array of these objects defines a complete Force distribution (ie. path).
+ * array of these objects defines a complete Force distribution (i.e., path).
  *
  * @author Ajay Seth
  * @version 1.0
@@ -60,20 +60,20 @@ public:
         _point(point), _frame(&frame), _direction(direction), _scale(scale)
     {}
 
-    /** get point of "contact" with on a body defined in the body frame */
+    /** Returns the point of "contact", defined in `frame()` */
     SimTK::Vec3 point() { return _point; }
 
-    /** get the body in which the point is defined */
+    /** Returns the frame in which `point()` is defined */
     const PhysicalFrame& frame() { return *_frame; }
 
-    /** get direction of the force at the point defined in ground */
+    /** Returns the (potentially, non-unit-length) direction, defined in ground, of the force at `point()` */
     SimTK::Vec3 direction() { return _direction; }
 
-    /** get the scale factor on the force */
+    /** Returns the scale factor of the force */
     [[deprecated("this functionality should not be used in new code: OpenSim already assumes 'direction' is non-unit-length")]]
     double scale() { return _scale; }
 
-    /** replace the current direction with the resultant with a new direction */
+    /** Replaces the current direction with `direction + newDirection` */
     void addToDirection(SimTK::Vec3 newDirection) { _direction += newDirection; }
 
 private:
