@@ -75,11 +75,15 @@ void MocoExpressionBasedParameterGoal::initializeOnModelImpl(const Model& model)
         m_program.evaluate(parameterVars);
     } catch (Lepton::Exception& ex) {
         const std::string msg = ex.what();
-        std::string undefinedVar = msg.substr(32, msg.size() - 32);
-        OPENSIM_THROW_FRMOBJ(Exception, 
-                fmt::format("Parameter variable '{}' is not defined. Use "
-                "addParameter() to explicitly define this variable. Or, "
-                "remove it from the expression.", undefinedVar));
+        if (msg.compare(0, 30, "No value specified for variable")) {
+            std::string undefinedVar = msg.substr(32, msg.size() - 32);
+            OPENSIM_THROW_FRMOBJ(Exception, 
+                    fmt::format("Parameter variable '{}' is not defined. Use "
+                    "addParameter() to explicitly define this variable. Or, "
+                    "remove it from the expression.", undefinedVar));
+        } else {
+            OPENSIM_THROW_FRMOBJ(Exception, "Lepton parsing error: {}", msg);
+        }
     }
 }
 
