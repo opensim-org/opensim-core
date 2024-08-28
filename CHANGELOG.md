@@ -18,6 +18,7 @@ v4.6
 - Added `Output`s to `ExpressionBasedCoordinateForce`, `ExpressionBasedPointToPointForce`, and `ExpressionBasedBushingForce` for accessing force values. (#3872)
 - `PointForceDirection` no longer has a virtual destructor, is `final`, and its `scale` functionality
   has been marked as `[[deprecated]]` (#3890)
+- Added `ExpressionBasedFunction` for creating `Function`s based on user-defined mathematical expressions. (#3892)
 
 v4.5.1
 ======
