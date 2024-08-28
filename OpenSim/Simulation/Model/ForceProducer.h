@@ -51,7 +51,8 @@ class OSIMSIMULATION_API ForceProducer : public Force {
     OpenSim_DECLARE_ABSTRACT_OBJECT(ForceProducer, Force);
 
 protected:
-    using Force::Force;  // forward `Force`'s constructor
+    ForceProducer() : Force{} {}
+    ForceProducer(SimTK::Xml::Element& node) : Force{node} {}
 
 public:
 
@@ -76,7 +77,7 @@ public:
         const SimTK::State& state,
         SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
         SimTK::Vector& generalizedForces
-    ) const final;
+    ) const override;
 
 private:
 
