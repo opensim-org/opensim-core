@@ -266,7 +266,7 @@ public:
     }
 
     /// Print a description of this problem, including costs and variable
-    /// bounds. Printing is done using OpenSim::log_cout().
+    /// bounds. Printing is done using OpenSim::log_info().
     void printDescription() const;
 
     /// @name Interface for solvers

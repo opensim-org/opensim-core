@@ -35,6 +35,27 @@ def createSlidingMassModel():
 
     return model
 
+def createDoubleSlidingMassModel():
+    model = createSlidingMassModel()
+    body = osim.Body("body2", 10.0, osim.Vec3(0), osim.Inertia(0))
+    model.addComponent(body)
+
+    joint = osim.SliderJoint("slider2", model.getGround(), body)
+    coord = joint.updCoordinate(osim.SliderJoint.Coord_TranslationX)
+    coord.setName("position");
+    model.addComponent(joint);
+
+    actu = osim.CoordinateActuator()
+    actu.setCoordinate(coord)
+    actu.setName("actuator2")
+    actu.setOptimalForce(1)
+    model.addComponent(actu)
+
+    model.finalizeConnections()
+    model.initSystem()
+    return model
+
+
 class TestSwigAddtlInterface(unittest.TestCase):
     def test_bounds(self):
         model = osim.Model()
@@ -391,3 +412,33 @@ class TestWorkflow(unittest.TestCase):
             # Change the weights of the costs.
             effort.setWeight(0.1)
             assert(study.solve().getFinalTime() < 0.8 * finalTime0)
+
+    def test_expression_based_parameter_goal(self):
+        study = osim.MocoStudy()
+        mp = study.updProblem()
+        mp.setModel(createDoubleSlidingMassModel())
+        mp.setTimeBounds(0, 1)
+        mp.setStateInfo("/slider/position/value", [-5, 5], 0, [0.2, 0.3])
+        mp.setStateInfo("/slider/position/speed", [-20, 20])
+        mp.setStateInfo("/slider2/position/value", [-5, 5], 1, [1.2, 1.3])
+        mp.setStateInfo("/slider2/position/speed", [-20, 20])
+
+        parameter = osim.MocoParameter("sphere_mass", "body", "mass",
+                                    osim.MocoBounds(0, 10))
+        mp.addParameter(parameter)
+        parameter2 = osim.MocoParameter("sphere2_mass", "body2", "mass",
+                                     osim.MocoBounds(0, 10))
+        mp.addParameter(parameter2)
+        total_weight = 7
+        mass_goal = osim.MocoExpressionBasedParameterGoal()
+        mp.addGoal(mass_goal)
+        mass_goal.setExpression(f"(p+q-{total_weight})^2")
+        mass_goal.addParameter(parameter, "p")
+        mass_goal.addParameter(parameter2, "q")
+
+        ms = study.initTropterSolver()
+        ms.set_num_mesh_intervals(25)
+        sol = study.solve()
+
+        self.assertAlmostEqual(sol.getParameter("sphere_mass") + sol.getParameter("sphere2_mass"),
+                               total_weight)

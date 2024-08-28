@@ -214,6 +214,16 @@ void Bhargava2004SmoothedMuscleMetabolics::extendFinalizeFromProperties() {
     }
 }
 
+void Bhargava2004SmoothedMuscleMetabolics::extendConnectToModel(
+        Model& model) {
+    Super::extendConnectToModel(model);
+    const auto& muscleParameters = getProperty_muscle_parameters();
+    for (int i = 0; i < muscleParameters.size(); ++i) {
+        auto& mp = upd_muscle_parameters(i);
+        mp.setMuscleMass();
+    }
+}
+
 double Bhargava2004SmoothedMuscleMetabolics::getTotalMetabolicRate(
         const SimTK::State& s) const {
     // BASAL METABOLIC RATE (W) (based on whole body mass, not muscle mass).

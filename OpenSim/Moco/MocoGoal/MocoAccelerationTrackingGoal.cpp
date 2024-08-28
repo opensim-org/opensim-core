@@ -136,10 +136,10 @@ void MocoAccelerationTrackingGoal::calcIntegrandImpl(
 }
 
 void MocoAccelerationTrackingGoal::printDescriptionImpl() const {
-    log_cout("        acceleration reference file: {}",
+    log_info("        acceleration reference file: {}",
             get_acceleration_reference_file());
     for (int i = 0; i < (int)m_frame_paths.size(); i++) {
-        log_cout("        frame {}: {}, weight: {}", i, m_frame_paths[i],
+        log_info("        frame {}: {}, weight: {}", i, m_frame_paths[i],
                 m_acceleration_weights[i]);
     }
 }

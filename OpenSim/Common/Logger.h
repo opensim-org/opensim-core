@@ -153,7 +153,7 @@ public:
     /// give users control over what gets logged.
     template <typename... Args>
     static void cout(spdlog::string_view_t fmt, const Args&... args) {
-        getCoutLogger().log(spdlog::level::info, fmt, args...);
+        getCoutLogger().log(getCoutLogger().level(), fmt, args...);
     }
 
     /// @}

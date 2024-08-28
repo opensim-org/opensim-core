@@ -156,14 +156,14 @@ void MocoPeriodicityGoal::calcGoalImpl(
 }
 
 void MocoPeriodicityGoal::printDescriptionImpl() const {
-    log_cout("        state periodicity pairs:");
+    log_info("        state periodicity pairs:");
     for (const auto& pair : m_state_names) {
-        log_cout("                initial: {}, final: {}", pair.first,
+        log_info("                initial: {}, final: {}", pair.first,
                 pair.second);
     }
-    log_cout("        control periodicity pairs:");
+    log_info("        control periodicity pairs:");
     for (const auto& pair : m_control_names) {
-        log_cout("                initial: {}, final: {}", pair.first,
+        log_info("                initial: {}, final: {}", pair.first,
                 pair.second);
     }
 }
