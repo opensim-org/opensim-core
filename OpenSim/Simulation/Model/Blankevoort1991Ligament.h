@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
-#include <OpenSim/Simulation/Model/Force.h>
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 
 namespace OpenSim {
@@ -170,8 +170,8 @@ affected by scaling the model.
 
 */
 
-class OSIMSIMULATION_API Blankevoort1991Ligament : public Force  {
-OpenSim_DECLARE_CONCRETE_OBJECT(Blankevoort1991Ligament, Force)
+class OSIMSIMULATION_API Blankevoort1991Ligament : public ForceProducer {
+OpenSim_DECLARE_CONCRETE_OBJECT(Blankevoort1991Ligament, ForceProducer)
 
 public:
 //=============================================================================
@@ -329,10 +329,6 @@ public:
     double computeMomentArm(
         const SimTK::State& s, Coordinate& aCoord) const;
 
-    void computeForce(const SimTK::State& s, 
-        SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-        SimTK::Vector& generalizedForces) const override;
-
     double computePotentialEnergy(
         const SimTK::State& state) const override;
 
@@ -360,6 +356,8 @@ protected:
     double calcInverseForceStrainCurve(double force) const;
 
 private:
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
+
     void setNull();
     void constructProperties();
 //=============================================================================

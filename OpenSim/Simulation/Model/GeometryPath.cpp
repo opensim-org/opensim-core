@@ -386,6 +386,11 @@ void GeometryPath::produceForces(const SimTK::State& s,
     double tension,
     ForceConsumer& forceConsumer) const
 {
+    if (!(tension > 0.0)) {
+        // no forces are produced when `tension` is less than or equal to zero (or NaN)
+        return;
+    }
+
     const Array<AbstractPathPoint*>& currentPath = getCurrentPath(s);
 
     for (int i = 0; i < currentPath.getSize()-1; ++i) {

@@ -27,9 +27,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "AbstractGeometryPath.h"
-#include "Force.h"
-#include "GeometryPath.h"
+
+#include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
+#include <OpenSim/Simulation/Model/ForceProducer.h>
+#include <OpenSim/Simulation/Model/GeometryPath.h>
 
 #ifdef SWIG
     #ifdef OSIMACTUATORS_API
@@ -49,8 +50,8 @@ class ScaleSet;
  * A class implementing a ligament. The path of the ligament is
  * stored in an object derived from AbstractGeometryPath.
  */
-class OSIMSIMULATION_API Ligament : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(Ligament, Force);
+class OSIMSIMULATION_API Ligament : public ForceProducer {
+OpenSim_DECLARE_CONCRETE_OBJECT(Ligament, ForceProducer);
 public:
 //=============================================================================
 // PROPERTIES
@@ -123,13 +124,7 @@ public:
     // computed variables
     const double& getTension(const SimTK::State& s) const;
 
-    //--------------------------------------------------------------------------
-    // COMPUTATIONS
-    //--------------------------------------------------------------------------
     virtual double computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const;
-    void computeForce(const SimTK::State& s, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                      SimTK::Vector& generalizedForces) const override;
 
     //--------------------------------------------------------------------------
     // SCALE
@@ -191,10 +186,11 @@ protected:
     }
 
 private:
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const final;
+
     void constructProperties();
 
     mutable CacheVariable<double> _tensionCV;
-    mutable CacheVariable<double> _strainCV;
 
 //=============================================================================
 };  // END of class Ligament
