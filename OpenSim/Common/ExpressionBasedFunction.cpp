@@ -69,11 +69,15 @@ public:
             }
         } catch (Lepton::Exception& ex) {
             std::string msg = ex.what();
-            std::string undefinedVar = msg.substr(32, msg.size() - 32);
-            OPENSIM_THROW(Exception, 
-                    fmt::format("Variable '{}' is not defined. Use "
-                    "setVariables() to explicitly define this variable. Or, "
-                    "remove it from the expression.", undefinedVar));
+            if (msg.compare(0, 30, "No value specified for variable")) { 
+                std::string undefinedVar = msg.substr(32, msg.size() - 32);
+                OPENSIM_THROW(Exception, 
+                        fmt::format("Variable '{}' is not defined. Use "
+                        "setVariables() to explicitly define this variable. "
+                        "Or, remove it from the expression.", undefinedVar));
+            } else {
+                OPENSIM_THROW(Exception, "Lepton parsing error: {}", msg);
+            }
         }
     }
 
