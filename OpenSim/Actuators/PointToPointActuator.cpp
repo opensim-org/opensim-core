@@ -25,13 +25,11 @@
  * Author: Matt DeMers
  */
 
-//==============================================================================
-// INCLUDES
-//==============================================================================
+#include "PointToPointActuator.h"
+
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-
-#include "PointToPointActuator.h"
 
 using namespace OpenSim;
 using std::string;
@@ -226,10 +224,9 @@ double PointToPointActuator::calcSpeed(const SimTK::State& s) const
     return speed;
 }
 
-void PointToPointActuator::computeForce(
+void PointToPointActuator::implProduceForces(
     const SimTK::State& s,
-    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-    SimTK::Vector& generalizedForces) const
+    ForceConsumer& forceConsumer) const
 {
     if (!_model || !_bodyA || !_bodyB) {
         return;
@@ -260,8 +257,8 @@ void PointToPointActuator::computeForce(
     const SimTK::Vec3 force = forceMagnitude * getDirectionBAInGround(s);
 
     // Apply equal and opposite forces to the bodies.
-    applyForceToPoint(s, *_bodyA, pointA_inBodyA, force, bodyForces);
-    applyForceToPoint(s, *_bodyB, pointB_inBodyB, -force, bodyForces);
+    forceConsumer.consumePointForce(s, *_bodyA, pointA_inBodyA, force);
+    forceConsumer.consumePointForce(s, *_bodyB, pointB_inBodyB, -force);
 }
 //_____________________________________________________________________________
 /**

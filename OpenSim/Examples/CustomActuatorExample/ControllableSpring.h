@@ -25,6 +25,8 @@
 
 #include "PistonActuator.h"
 
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
+
 //=============================================================================
 //=============================================================================
 /**
@@ -79,18 +81,20 @@ public:
     void setRestLength(double aLength) { set_rest_length(aLength); };
     double getRestLength() const { return get_rest_length(); };
 
-    //--------------------------------------------------------------------------
-    // COMPUTATIONS
-    //--------------------------------------------------------------------------
-
-    /* The computeForce method is the meat of this simple actuator example. It
-     * computes the direction and distance between the two application points.
-     * It then uses the difference between its current length and rest length
-     * to determine the force magnitude, then applies the force at the
-     * application points, in the direction between them. */
-    void computeForce(const SimTK::State& s, 
-            SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-            SimTK::Vector& generalizedForces) const override
+private:
+    /**
+     * Implements the `ForceProducer` API, which is the "meat" of this example.
+     *
+     * The implementation:
+     *
+     * - Computes the direction and distance between the two application points.
+     * - Then uses the difference between its current length and rest length to
+     *   determine the force magnitude
+     * - Then emits (produces into the `ForceConsumer`) the force as a point
+     *   force at the application points that points in the direction between
+     *   the two points.
+     */
+    void implProduceForces(const SimTK::State& s, ForceConsumer& forceConsumer) const override
     {
         const PhysicalFrame& frameA = getFrameA();
         const PhysicalFrame& frameB = getFrameB();
@@ -131,9 +135,9 @@ public:
         setActuation(s, forceMagnitude);
         SimTK::Vec3 force = forceMagnitude*direction;
 
-        // Apply equal and opposite forces to the bodies.
-        applyForceToPoint(s, frameA, pointA, force, bodyForces);
-        applyForceToPoint(s, frameB, pointB, -force, bodyForces);
+        // Produce equal and opposite point forces
+        forceConsumer.consumePointForce(s, frameA, pointA, force);
+        forceConsumer.consumePointForce(s, frameB, pointB, -force);
     }
 
 //=============================================================================

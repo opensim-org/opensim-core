@@ -21,10 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//=============================================================================
-// INCLUDES
-//=============================================================================
 #include "PistonActuator.h"
+
 #include <OpenSim/OpenSim.h>
 
 using namespace OpenSim;
@@ -103,13 +101,9 @@ double PistonActuator::getStress( const SimTK::State& s) const
 }
 
 
-//=============================================================================
-// FORCE INTERFACE
-//=============================================================================
-void PistonActuator::computeForce(
+void PistonActuator::implProduceForces(
     const SimTK::State& s,
-    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-    SimTK::Vector& generalizedForces) const
+    ForceConsumer& forceConsumer) const
 {
     const PhysicalFrame& frameA = getFrameA();
     const PhysicalFrame& frameB = getFrameB();
@@ -129,8 +123,8 @@ void PistonActuator::computeForce(
     SimTK::Vec3 force = forceMagnitude * calcDirectionBAInGround(s);
 
     // Apply equal and opposite forces to the bodies.
-    applyForceToPoint(s, frameA, pointA, force, bodyForces);
-    applyForceToPoint(s, frameB, pointB, -force, bodyForces);
+    forceConsumer.consumePointForce(s, frameA, pointA,  force);
+    forceConsumer.consumePointForce(s, frameB, pointB, -force);
 }
 
 SimTK::UnitVec3 PistonActuator::calcDirectionBAInGround(

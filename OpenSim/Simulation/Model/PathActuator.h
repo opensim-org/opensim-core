@@ -133,13 +133,6 @@ public:
                          const SimTK::Vec3& aPositionOnBody);
 
     //--------------------------------------------------------------------------
-    // APPLICATION
-    //--------------------------------------------------------------------------
-    virtual void computeForce(const SimTK::State& state,
-                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                               SimTK::Vector& mobilityForces) const override;
-
-    //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
     double computeActuation(const SimTK::State& s) const override;
@@ -169,6 +162,12 @@ protected:
     void extendRealizeDynamics(const SimTK::State& state) const override;
 
 private:
+    /**
+     * Implements the `ForceProducer` API by applying the actuator force along
+     * the (potentially, wrapping) path connecting rigid bodies.
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
+
     void setNull();
     void constructProperties();
 

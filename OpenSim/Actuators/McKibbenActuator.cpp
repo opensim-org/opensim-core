@@ -91,24 +91,6 @@ double McKibbenActuator::computeActuation( const SimTK::State& s ) const
     return force;
 }
 
-//==============================================================================
-// APPLICATION
-//==============================================================================
-//_____________________________________________________________________________
-/**
- * Apply the actuator force to the path
- *
- * @param s current SimTK::State
- */
-void McKibbenActuator::computeForce(const SimTK::State& s, 
-                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                                SimTK::Vector& generalizedForces) const
-{
-
-    double actuation = computeActuation(s);
-
-    getPath().addInEquivalentForces(s, actuation, bodyForces, generalizedForces);
-}
 //_____________________________________________________________________________
 /**
  * Sets the actual Body references _bodyA and _bodyB

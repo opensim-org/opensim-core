@@ -159,35 +159,6 @@ double PathActuator::computeActuation(const SimTK::State& s) const
     return( getControl(s) * get_optimal_force() );
 }
 
-
-//=============================================================================
-// APPLICATION
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Apply the actuator force along path wrapping over and connecting rigid bodies
- */
-void PathActuator::computeForce(const SimTK::State& s,
-                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                               SimTK::Vector& mobilityForces) const
-{
-    if(!_model) return;
-
-    const auto &path = getPath();
-
-    double force =0;
-    if( isActuationOverridden(s) ) {
-        force = computeOverrideActuation(s);
-    } else {
-        force = computeActuation(s);
-    }
-
-    // the force of this actuator used to compute power
-    setActuation(s, force);
-
-    path.addInEquivalentForces(s, force, bodyForces, mobilityForces);
-}
-
 /**
  * Compute the moment-arm of this muscle about a coordinate.
  */
@@ -211,6 +182,23 @@ void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
         if (!color.isNaN())
             getPath().setColor(state, color);
     }
+}
+
+void PathActuator::implProduceForces(const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
+{
+    if (!_model) {
+        return;
+    }
+
+    const double force = isActuationOverridden(s) ?
+        computeOverrideActuation(s) :
+        computeActuation(s);
+
+    // the force of this actuator used to compute power
+    setActuation(s, force);
+
+    getPath().produceForces(s, force, forceConsumer);
 }
 
 //------------------------------------------------------------------------------
