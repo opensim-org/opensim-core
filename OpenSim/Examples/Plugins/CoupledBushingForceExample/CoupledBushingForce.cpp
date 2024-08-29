@@ -50,7 +50,7 @@ CoupledBushingForce::~CoupledBushingForce()
 /**
  * Default constructor.
  */
-CoupledBushingForce::CoupledBushingForce() : TwoFrameLinker<Force, PhysicalFrame>()
+CoupledBushingForce::CoupledBushingForce() : TwoFrameLinker<ForceProducer, PhysicalFrame>()
 {
     setAuthors("Ajay Seth");
     constructProperties();
@@ -62,7 +62,7 @@ CoupledBushingForce::CoupledBushingForce( const std::string& name,
                                           const std::string& frame2Name,
                                           SimTK::Mat66 stiffnessMat,
                                           SimTK::Mat66 dampingMat)
-    : TwoFrameLinker<Force, PhysicalFrame>(name, frame1Name, frame2Name)
+    : TwoFrameLinker<ForceProducer, PhysicalFrame>(name, frame1Name, frame2Name)
 {
     setAuthors("Ajay Seth");
     constructProperties();
@@ -104,13 +104,9 @@ void CoupledBushingForce::extendFinalizeFromProperties()
 //=============================================================================
 // COMPUTATION
 //=============================================================================
-/* Compute the force contribution to the system and add in to appropriate
- * bodyForce and/or system generalizedForce.
- * CoupledBushingForce implementation based SimTK::Force::LinearBushing
- * developed and implemented by Michael Sherman. */
-void CoupledBushingForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+void CoupledBushingForce::implProduceForces(
+    const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
     // Calculate stiffness generalized forces of bushing by first computing
     // the deviation of the two frames measured by dq
@@ -121,11 +117,11 @@ void CoupledBushingForce::computeForce(const SimTK::State& s,
     Vec6 fv = -_dampingMatrix * computeDeflectionRate(s);
 
     // total bushing force in the internal basis of the deflection (dq) 
-    Vec6 f = fk + fv; 
+    Vec6 f = fk + fv;
 
-    // convert internal forces to spatial and add then add to system
-    // physical (body) forces
-    addInPhysicalForcesFromInternal(s, f, bodyForces);
+    // convert the internal forces to into spatial forces and emit them
+    // into the consumer
+    producePhysicalForcesFromInternal(s, f, forceConsumer);
 }
 
 /** Potential energy stored in the bushing is purely a function of the deflection

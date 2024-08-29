@@ -24,9 +24,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include "BodyDragForce.h"
+
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
 // STATICS
@@ -42,7 +44,7 @@ using namespace OpenSim;
 /**
  * Default constructor
  */
-BodyDragForce::BodyDragForce() : Force()
+BodyDragForce::BodyDragForce()
 {
     setNull();
     constructProperties();
@@ -107,9 +109,9 @@ void BodyDragForce::connectToModel(Model& aModel)
 // COMPUTATION
 //=============================================================================
 
-void BodyDragForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+void BodyDragForce::implProduceForces(
+    const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
     if(!_model) return;     // some minor error checking
 
@@ -143,7 +145,7 @@ void BodyDragForce::computeForce(const SimTK::State& s,
     // ------------------------------
     // applyForceToPoint requires the force application point to be in the inertial (ground) frame
     // and the force vector itself to be in the body frame
-    applyForceToPoint(s, aBody, bodyCoMPosGround, dragForceBody, bodyForces);
+    forceConsumer.consumePointForce(s, aBody, bodyCoMPosGround, dragForceBody);
 
 
 
