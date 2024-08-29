@@ -96,10 +96,8 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numMeshPoints = (int)m_solver.getMesh().size();
     m_numGridPoints = (int)grid.numel();
     m_numMeshIntervals = m_numMeshPoints - 1;
-    m_numParameterConstraints = m_numMeshIntervals;
     m_numMeshInteriorPoints = m_numGridPoints - m_numMeshPoints;
-    m_numDefectsPerMeshInterval = numDefectsPerMeshInterval +
-            m_problem.getNumParameters() + 2;
+    m_numDefectsPerMeshInterval = numDefectsPerMeshInterval;    
     m_numPointsPerMeshInterval = numPointsPerMeshInterval;
     m_numMultibodyResiduals = m_problem.isDynamicsModeImplicit()
                              ? m_problem.getNumMultibodyDynamicsEquations()
@@ -110,6 +108,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numUDotErrorPoints = m_problem.isKinematicConstraintMethodBordalba2023()
             ? m_numGridPoints
             : m_numMeshPoints;
+    // Dynamics constraints.
     m_numConstraints =
             m_numDefectsPerMeshInterval * m_numMeshIntervals +
             m_numMultibodyResiduals * m_numGridPoints +
@@ -118,15 +117,23 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             m_problem.getNumUErr() * m_numMeshPoints +
             m_problem.getNumUDotErr() * m_numUDotErrorPoints +
             m_problem.getNumProjectionConstraintEquations() * m_numMeshIntervals;
+    // Time constraints.
+    m_numConstraints += 2 * m_numMeshIntervals;
+    // Parameter constraints.
+    m_numConstraints += m_problem.getNumParameters() * m_numMeshIntervals;
+    // Endpoint constraints.
     m_constraints.endpoint.resize(
             m_problem.getEndpointConstraintInfos().size());
-    m_numEndpointConstraintEquations = 0;
+    m_numIntegrals = 0;
     for (int iec = 0; iec < (int)m_constraints.endpoint.size(); ++iec) {
         const auto& info = m_problem.getEndpointConstraintInfos()[iec];
-        m_numEndpointConstraintEquations += info.num_outputs;
+        m_numConstraints += info.num_outputs;
+        if (info.integrand_function) {
+            m_numIntegrals += 1;
+        }
     }
-    m_numConstraints += 
-            m_numEndpointConstraintEquations * (m_numMeshIntervals - 1);
+    m_numConstraints += m_numIntegrals * (m_numMeshIntervals - 1);
+    // Path constraints.
     m_constraints.path.resize(m_problem.getPathConstraintInfos().size());
     m_numPathConstraintPoints =
             m_solver.getEnforcePathConstraintMeshInteriorPoints()
@@ -199,9 +206,11 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         m_scaledVectorVars[parameters].push_back(
                 MX::sym("parameters_" + std::to_string(imesh),
                         m_problem.getNumParameters(), 1));
-        m_scaledVectorVars[endpoints].push_back(
-                MX::sym("endpoints_" + std::to_string(imesh),
-                        m_numEndpointConstraintEquations, 1));
+    }
+    for (int imesh = 0; imesh < m_numMeshIntervals-1; ++imesh) {                     
+        m_scaledVectorVars[integrals].push_back(
+                MX::sym("integrals_" + std::to_string(imesh),
+                        m_numIntegrals, 1));
     }
     // Trajectory variables.
     for (int igrid = 0; igrid < m_numGridPoints; ++igrid) {
@@ -241,7 +250,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         // mesh interval.
         for (int iproj = 0; iproj < m_numMeshIntervals-1; ++iproj) {
             m_scaledVectorVars[slacks].push_back(
-                    MX::sym("slacks_" + std::string(iproj), 
+                    MX::sym("slacks_" + std::to_string(iproj), 
                             m_problem.getNumSlacks(), 1));
         }
     } else {
@@ -259,7 +268,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_scaledVars[initial_time] = MX::horzcat(m_scaledVectorVars[initial_time]);
     m_scaledVars[final_time] = MX::horzcat(m_scaledVectorVars[final_time]);
     m_scaledVars[parameters] = MX::horzcat(m_scaledVectorVars[parameters]);
-    m_scaledVars[endpoints] = MX::horzcat(m_scaledVectorVars[endpoints]);
+    m_scaledVars[integrals] = MX::horzcat(m_scaledVectorVars[integrals]);
     m_scaledVars[states] = MX::horzcat(m_scaledVectorVars[states]);
     m_scaledVars[controls] = MX::horzcat(m_scaledVectorVars[controls]);
     m_scaledVars[multipliers] = MX::horzcat(m_scaledVectorVars[multipliers]);
@@ -268,6 +277,19 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
 
     // Interplate controls.
     calcInterpolatingControls(m_scaledVars);
+
+    // Each vector contains MX matrix elements (states or state derivatives)
+    // needed to construct the defect constraints for an individual mesh
+    // interval.
+    m_statesByMeshInterval = MXVector(m_numMeshIntervals);
+    m_stateDerivativesByMeshInterval = MXVector(m_numMeshIntervals);
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        m_statesByMeshInterval[imesh] =
+                MX(m_problem.getNumStates(), m_numPointsPerMeshInterval);
+        m_stateDerivativesByMeshInterval[imesh] =
+                MX(m_problem.getNumStates(), m_numPointsPerMeshInterval);
+    }
+    m_projectionStateDistances = MX(m_numProjectionStates, m_numMeshIntervals);
 
     // Set variable bounds.
     // --------------------
@@ -393,6 +415,13 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             ++ip;
         }
     }
+    // TODO how to bound integrals?
+    {
+        for (int iintg = 0; iintg < m_numIntegrals; ++iintg) {
+            setVariableBounds(integrals, iintg, Slice(), {-casadi::inf, casadi::inf});
+            setVariableScaling(integrals, iintg, Slice(), {-casadi::inf, casadi::inf});
+        }
+    }
     m_unscaledVars = unscaleVariables(m_scaledVars);
 
     // Convert parameter variables to trajectories of length m_numGridPoints so
@@ -484,8 +513,21 @@ void Transcription::transcribe() {
             "Problems with differing numbers of coordinates and speeds are "
             "not supported (e.g., quaternions).");
 
-    // TODO: Does creating all this memory have efficiency implications
-    //        in CasADi?
+    // Initialize memory for time constraints.
+    // ---------------------------------------
+    m_constraints.time = MX(casadi::Sparsity::dense(2, m_numMeshIntervals));
+    m_constraintsLowerBounds.time = DM::zeros(2, m_numMeshIntervals);
+    m_constraintsUpperBounds.time = DM::zeros(2, m_numMeshIntervals);
+
+    // Initialize memory for parameter constraints.
+    // --------------------------------------------
+    m_constraints.parameters = MX(casadi::Sparsity::dense(
+            m_problem.getNumParameters(), m_numMeshIntervals));
+    m_constraintsLowerBounds.parameters = 
+            DM::zeros(m_problem.getNumParameters(), m_numMeshIntervals);
+    m_constraintsUpperBounds.parameters = 
+            DM::zeros(m_problem.getNumParameters(), m_numMeshIntervals);
+
     // Initialize memory for state derivatives and defects.
     // ----------------------------------------------------
     m_xdot = MX(NS, m_numGridPoints);
@@ -784,6 +826,8 @@ void Transcription::transcribe() {
         }
     }
 
+    // TODO remove duplicate code since this is similar to how the states 
+    // MXVector above
     casadi_int istart = 0;
     int numStates = m_problem.getNumStates();
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
@@ -819,6 +863,18 @@ void Transcription::transcribe() {
     // Calculate defects.
     // ------------------
     calcDefects();
+
+    // Time and parameter constraints.
+    // ------------------------------
+    const auto& ti = m_unscaledVars.at(initial_time);
+    const auto& tf = m_unscaledVars.at(final_time);
+    const auto& p = m_unscaledVars.at(parameters);
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        m_constraints.time(0, imesh) = ti(imesh + 1) - ti(imesh);
+        m_constraints.time(1, imesh) = tf(imesh + 1) - tf(imesh);
+        m_constraints.parameters(Slice(), imesh) = 
+                p(Slice(), imesh + 1) - p(Slice(), imesh);
+    }
 
     // Path constraints
     // ----------------
@@ -966,14 +1022,15 @@ void Transcription::setObjectiveAndEndpointConstraints() {
     m_constraints.endpoint.resize(numEndpointConstraints);
     m_constraintsLowerBounds.endpoint.resize(numEndpointConstraints);
     m_constraintsUpperBounds.endpoint.resize(numEndpointConstraints);
+    m_constraints.integral = MX(casadi::Sparsity::dense(
+            m_numIntegrals, m_numMeshIntervals-1));
+    m_constraintsLowerBounds.integral =
+            DM::zeros(m_numIntegrals, m_numMeshIntervals-1);
+    m_constraintsUpperBounds.integral =
+            DM::zeros(m_numIntegrals, m_numMeshIntervals-1);
+    int iintegral = 0;
     for (int iec = 0; iec < (int)m_constraints.endpoint.size(); ++iec) {
         const auto& info = m_problem.getEndpointConstraintInfos()[iec];
-        m_constraints.endpoint[iec] = MX(casadi::Sparsity::dense(
-                info.num_outputs, m_numMeshPoints));
-        m_constraintsLowerBounds.endpoint[iec] =
-                DM::zeros(info.num_outputs, m_numMeshPoints);
-        m_constraintsUpperBounds.endpoint[iec] =
-                DM::zeros(info.num_outputs, m_numMeshPoints);
 
         MX integral;
         if (info.integrand_function) {
@@ -981,7 +1038,34 @@ void Transcription::setObjectiveAndEndpointConstraints() {
                     {states, controls, multipliers, derivatives}, m_gridIndices)
                                        .at(0);
 
-            integral = m_duration(-1) * dot(quadCoeffs.T(), integrandTraj);
+            std::cout << "integrandTraj: " << integrandTraj.size() << std::endl;
+            std::cout << "quadCoeffs: " << quadCoeffs.size() << std::endl;
+            std::cout << "m_duration: " << m_duration.size() << std::endl;
+
+            int N = m_numPointsPerMeshInterval - 1;
+            std::cout << "m_scaledVars[integrals]: " << m_scaledVars[integrals].size() << std::endl;
+            for (int imesh = 0; imesh < m_numMeshIntervals-1; ++imesh) {
+                int igrid = imesh * N;
+
+                const auto integ_sum_i = m_duration(imesh) * dot(quadCoeffs.T()(Slice(), Slice(igrid, igrid+N)), integrandTraj(Slice(), Slice(igrid, igrid+N)));
+                if (imesh > 0) {
+                    const auto& integ_var_im1 = m_scaledVars[integrals](iintegral, imesh-1);
+                    const auto& integ_var_i = m_scaledVars[integrals](iintegral, imesh);
+                    m_constraints.integral(iintegral, imesh) = integ_var_im1 + integ_sum_i - integ_var_i;
+                } else {
+                    const auto& integ_var_i = m_scaledVars[integrals](iintegral, imesh);
+                    m_constraints.integral(iintegral, imesh) = integ_sum_i - integ_var_i;
+                }                
+            }
+
+
+            int igrid = (m_numMeshIntervals-1) * N;
+            const auto integ_sum_i = m_duration(-1) * dot(quadCoeffs.T()(Slice(), Slice(igrid, igrid+m_numPointsPerMeshInterval)), integrandTraj(Slice(), Slice(igrid, igrid+m_numPointsPerMeshInterval)));
+            integral = m_scaledVars[integrals](iintegral, -1) + integ_sum_i;
+
+            ++iintegral;
+
+            // integral = m_duration(0) * dot(quadCoeffs.T(), integrandTraj);
         } else {
             integral = MX::nan(1, 1);
         }
@@ -1001,9 +1085,9 @@ void Transcription::setObjectiveAndEndpointConstraints() {
                         m_unscaledVars[parameters](Slice(), -1),
                         integral},
                 endpointOut);
-        m_constraints.endpoint[iec](Slice(), -1) = endpointOut.at(0);
-        m_constraintsLowerBounds.endpoint[iec](Slice(), -1) = info.lowerBounds;
-        m_constraintsUpperBounds.endpoint[iec](Slice(), -1) = info.upperBounds;
+        m_constraints.endpoint[iec] = endpointOut.at(0);
+        m_constraintsLowerBounds.endpoint[iec] = info.lowerBounds;
+        m_constraintsUpperBounds.endpoint[iec] = info.upperBounds;
     }
 }
 
@@ -1021,6 +1105,9 @@ Solution Transcription::solve(const Iterate& guessOrig) {
             m_problem.getNumProjectionConstraintEquations();
     auto guess = guessOrig.resample(guessTimes, appendProjectionStates);
     guess = guess.repmatParameters(m_numMeshPoints);
+
+    // TODO formalize
+    guess.variables[Var::integrals] = casadi::DM::zeros(m_numIntegrals, m_numMeshIntervals-1);
 
     // Adjust guesses for the slack variables to ensure they are the correct
     // length (i.e. slacks.size2() == m_numPointsIgnoringConstraints).

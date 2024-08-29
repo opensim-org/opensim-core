@@ -117,10 +117,10 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoTraj,
                 convertToCasADiDMTranspose(mocoTraj.getDerivativesTrajectory());
     }
 
-    const SimTK::RowVector& parameters = mocoIt.getParameters();
-    SimTK::Matrix parametersTrajectory(mocoIt.getNumTimes(),
-            mocoIt.getNumParameters());
-    for (int i = 0; i < mocoIt.getNumTimes(); ++i) {
+    const SimTK::RowVector& parameters = mocoTraj.getParameters();
+    SimTK::Matrix parametersTrajectory(mocoTraj.getNumTimes(),
+            mocoTraj.getNumParameters());
+    for (int i = 0; i < mocoTraj.getNumTimes(); ++i) {
         parametersTrajectory.updRow(i) = parameters;
     }
     casVars[Var::parameters] = convertToCasADiDMTranspose(parametersTrajectory);

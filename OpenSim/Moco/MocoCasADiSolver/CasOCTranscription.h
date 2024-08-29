@@ -133,11 +133,14 @@ protected:
 
     template <typename T>
     struct Constraints {
+        T time;
+        T parameters;
         T defects;
         T multibody_residuals;
         T auxiliary_residuals;
         T kinematic;
         T kinematic_udoterr;
+        T integral;
         std::vector<T> endpoint;
         std::vector<T> path;
         T projection;
@@ -161,8 +164,7 @@ protected:
     int m_numControlPoints = -1;
     int m_numMultibodyResiduals = -1;
     int m_numAuxiliaryResiduals = -1;
-    int m_numParameterConstraints = -1;
-    int m_numEndpointConstraintEquations = -1;
+    int m_numIntegrals = -1;
     int m_numConstraints = -1;
     int m_numPathConstraintPoints = -1;
     int m_numProjectionStates = -1;
@@ -230,9 +232,7 @@ private:
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
     virtual void calcDefectsImpl(const casadi::MXVector& x, 
-            const casadi::MXVector& xdot, const casadi::MX& ti, 
-            const casadi::MX& tf, const casadi::MX& p,
-            casadi::MX& defects) const = 0;
+            const casadi::MXVector& xdot, casadi::MX& defects) const = 0;
     /// Override this function in your derived class to interpolate controls
     /// for time points where control variables are not defined.
     virtual void calcInterpolatingControlsImpl(casadi::MX& controls) const {
@@ -255,13 +255,12 @@ private:
     void transcribe();
     void setObjectiveAndEndpointConstraints();
     void calcDefects() {
-        calcDefectsImpl(m_statesByMeshInterval, m_stateDerivativesByMeshInterval,
-                m_unscaledVars.at(initial_time), m_unscaledVars.at(final_time),
-                m_unscaledVars.at(parameters), m_constraints.defects);
+        calcDefectsImpl(m_statesByMeshInterval, 
+                m_stateDerivativesByMeshInterval, m_constraints.defects);
     }
     template <typename T>
     void calcInterpolatingControls(Variables<T>& vars) const {
-        if (m_solver.getInterpolateControlMidpoints()) {
+        if (m_solver.getInterpolateControlMeshInteriorPoints()) {
             calcInterpolatingControlsImpl(vars.at(controls));
         }
     }
@@ -438,15 +437,19 @@ private:
         //    residual_3                                               x
         //                         0    0.5    1    1.5    2    2.5    3
 
-        for (const auto& endpoint : constraints.endpoint) {
-            copyColumn(endpoint, 0);
-        }
+        
 
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
         int icon = 0;
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
+
+            // Time constraints.
+            copyColumn(constraints.time, imesh);
+
+            // Parameter constraints.
+            copyColumn(constraints.parameters, imesh);
 
             // Defect constraints.
             copyColumn(constraints.defects, imesh);
@@ -480,6 +483,11 @@ private:
 
             // Projection constraints.
             copyColumn(constraints.projection, imesh);
+
+            // Integral constraints.
+            if (imesh < m_numMeshIntervals - 1) {
+                copyColumn(constraints.integral, imesh);
+            }
         }
 
         // Final grid point.
@@ -499,6 +507,10 @@ private:
             }
         }
 
+        for (const auto& endpoint : constraints.endpoint) {
+            copyColumn(endpoint, 0);
+        }
+
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
                 "Internal error: final value of the index into the flattened "
                 "constraints should be equal to the number of constraints.");
@@ -515,7 +527,9 @@ private:
             return T(casadi::Sparsity::dense(numRows, numColumns));
         };
         Constraints<T> out;
-        out.defects = init(m_numDefectsPerMeshInterval, m_numMeshPoints - 1);
+        out.time = init(2, m_numMeshIntervals);
+        out.parameters = init(m_problem.getNumParameters(), m_numMeshIntervals);
+        out.defects = init(m_numDefectsPerMeshInterval, m_numMeshIntervals);
         out.multibody_residuals = init(m_numMultibodyResiduals,
                 m_numGridPoints);
         out.auxiliary_residuals = init(m_numAuxiliaryResiduals,
@@ -531,6 +545,7 @@ private:
         }
         out.projection = init(m_problem.getNumProjectionConstraintEquations(),
                 m_numMeshIntervals);
+        out.integral = init(m_numIntegrals, m_numMeshIntervals-1);
         out.endpoint.resize(m_problem.getEndpointConstraintInfos().size());
         for (int iec = 0; iec < (int)m_constraints.endpoint.size(); ++iec) {
             const auto& info = m_problem.getEndpointConstraintInfos()[iec];
@@ -552,15 +567,17 @@ private:
             }
         };
 
-        for (auto& endpoint : out.endpoint) {
-            copyColumn(endpoint, 0);
-        }
-
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
         int icon = 0;
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
+
+            // Time constraints.
+            copyColumn(out.time, imesh);
+
+            // Parameter constraints.
+            copyColumn(out.parameters, imesh);
 
             // Defect constraints.
             copyColumn(out.defects, imesh);
@@ -580,7 +597,7 @@ private:
             }
 
             // Path constraints.
-            if (m_solver.getEnforcePathConstraintMidpoints()) {
+            if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
                 for (int i = 0; i < N; ++i) {
                     for (auto& path : out.path) {
                         copyColumn(path, igrid + i);
@@ -590,6 +607,14 @@ private:
                 for (auto& path : out.path) {
                     copyColumn(path, imesh);
                 }
+            }
+
+            // Projection constraints.
+            copyColumn(out.projection, imesh);
+
+            // Integral constraints.
+            if (imesh < m_numMeshIntervals - 1) {
+                copyColumn(out.integral, imesh);
             }
         }
 
@@ -608,6 +633,10 @@ private:
             for (auto& path : out.path) {
                 copyColumn(path, m_numMeshPoints - 1);
             }
+        }
+
+        for (auto& endpoint : out.endpoint) {
+            copyColumn(endpoint, 0);
         }
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,

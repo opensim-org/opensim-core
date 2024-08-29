@@ -99,15 +99,17 @@ int main() {
     // -----
     problem.addGoal<MocoFinalTimeGoal>();
 
-    auto* endpoint = problem.addGoal<MocoOutputGoal>("endpoint");
-    endpoint->setOutputPath("/body|linear_velocity");
-    endpoint->setMode("endpoint_constraint");
+    // auto* vel = problem.addGoal<MocoOutputGoal>("velocity_integral_bound");
+    // vel->setOutputPath("/body|linear_velocity");
+    // vel->setMode("endpoint_constraint");
+    // vel->setEndpointConstraintBounds({{-250, 250}});
 
     // Configure the solver.
     // =====================
     MocoCasADiSolver& solver = study.initCasADiSolver();
-    solver.set_num_mesh_intervals(50);
-    solver.set_parallel(0);
+    solver.set_num_mesh_intervals(20);
+    solver.set_optim_finite_difference_scheme("forward");
+    // solver.set_parallel(0);
     solver.set_optim_solver("fatrop");
     solver.set_optim_hessian_approximation("exact");
     solver.set_transcription_scheme("legendre-gauss-3");

@@ -59,25 +59,16 @@ DM LegendreGaussRadau::createControlIndicesImpl() const {
 }
 
 void LegendreGaussRadau::calcDefectsImpl(const casadi::MXVector& x,
-        const casadi::MXVector& xdot, const casadi::MX& ti, const casadi::MX& tf,
-        const casadi::MX& p, casadi::MX& defects) const {
+        const casadi::MXVector& xdot, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
     const int NS = m_problem.getNumStates();
     const int NP = m_problem.getNumParameters();
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         const int igrid = imesh * m_degree;
-        const auto h = m_times(igrid + m_degree) - m_times(igrid);
+        const auto h = m_intervals(imesh);
         const auto x_i = x[imesh](Slice(), Slice(0, m_degree + 1));
         const auto xdot_i = xdot[imesh](Slice(), Slice(1, m_degree + 1));
-
-        // Time variables.
-        defects(Slice(0, 1), imesh) = ti(imesh + 1) - ti(imesh);
-        defects(Slice(1, 2), imesh) = tf(imesh + 1) - tf(imesh);
-
-        // Parameters.
-        defects(Slice(2, 2 + NP), imesh) =
-                p(Slice(), imesh + 1) - p(Slice(), imesh);
 
         // Residual function defects.
         MX residual = h * xdot_i - MX::mtimes(x_i, m_differentiationMatrix);
@@ -104,14 +95,13 @@ std::vector<std::pair<Var, int>> LegendreGaussRadau::getVariableOrder() const {
     int N = m_numPointsPerMeshInterval - 1;
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         int igrid = imesh * N;
-        order.push_back({states, igrid});
         order.push_back({initial_time, imesh});
         order.push_back({final_time, imesh});
         order.push_back({parameters, imesh});
-        for (int i = 1; i < N; ++i) {
+        for (int i = 0; i < N; ++i) {
             order.push_back({states, igrid + i});
         }
-        if (m_solver.getInterpolateControlMidpoints() && imesh == 0) {
+        if (m_solver.getInterpolateControlMeshInteriorPoints() && imesh == 0) {
             for (int i = 1; i < N; ++i) {
                 order.push_back({controls, igrid + i});
             }

@@ -66,16 +66,14 @@ DM LegendreGauss::createControlIndicesImpl() const {
 }
 
 void LegendreGauss::calcDefectsImpl(const casadi::MXVector& x, 
-        const casadi::MXVector& xdot, const casadi::MX& ti, 
-        const casadi::MX& tf, const casadi::MX& p,
-        casadi::MX& defects) const {
+        const casadi::MXVector& xdot, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
     const int NS = m_problem.getNumStates();
     const int NP = m_problem.getNumParameters();
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         const int igrid = imesh * (m_degree + 1);
-        const auto h = m_times(igrid + m_degree + 1) - m_times(igrid);
+        const auto h = m_intervals(imesh);
         const auto x_i = x[imesh](Slice(), Slice(0, m_degree + 1));
         const auto xdot_i = xdot[imesh](Slice(), Slice(1, m_degree + 1));
         const auto x_ip1 = x[imesh](Slice(), m_degree + 1);
@@ -84,19 +82,11 @@ void LegendreGauss::calcDefectsImpl(const casadi::MXVector& x,
         defects(Slice(0, NS), imesh) =
                 x_ip1 - MX::mtimes(x_i, m_interpolationCoefficients);
 
-        // Time variables.
-        defects(Slice(NS, NS + 1), imesh) = ti(imesh + 1) - ti(imesh);
-        defects(Slice(NS + 1, NS + 2), imesh) = tf(imesh + 1) - tf(imesh);
-
-        // Parameters.
-        defects(Slice(NS + 2, NS + 2 + NP), imesh) =
-                p(Slice(), imesh + 1) - p(Slice(), imesh);
-
         // Residual function defects.
         MX residual = h * xdot_i - MX::mtimes(x_i, m_differentiationMatrix);
         for (int d = 0; d < m_degree; ++d) {
-            const int istart = (d + 1) * NS + 2 + NP;
-            const int iend = (d + 2) * NS + 2 + NP;
+            const int istart = (d + 1) * NS;
+            const int iend = (d + 2) * NS;
             defects(Slice(istart, iend), imesh) = residual(Slice(), d);
         }
     }
@@ -115,14 +105,13 @@ std::vector<std::pair<Var, int>> LegendreGauss::getVariableOrder() const {
     int N = m_numPointsPerMeshInterval - 1;
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         int igrid = imesh * N;
-        order.push_back({states, igrid});
         order.push_back({initial_time, imesh});
         order.push_back({final_time, imesh});
         order.push_back({parameters, imesh});
-        for (int i = 1; i < N; ++i) {
+        for (int i = 0; i < N; ++i) {
             order.push_back({states, igrid + i});
         }
-        if (m_solver.getInterpolateControlMidpoints()) {
+        if (m_solver.getInterpolateControlMeshInteriorPoints()) {
             for (int d = 0; d < m_degree; ++d) {
                 order.push_back({controls, igrid + d + 1});
             }
@@ -138,12 +127,15 @@ std::vector<std::pair<Var, int>> LegendreGauss::getVariableOrder() const {
             order.push_back({derivatives, igrid + i});
         }
         order.push_back({slacks, imesh});
+        if (imesh < m_numMeshIntervals - 1) {
+            order.push_back({integrals, imesh});
+        }
     }
     order.push_back({states, m_numGridPoints - 1});
     order.push_back({initial_time, m_numMeshIntervals});
     order.push_back({final_time, m_numMeshIntervals});
     order.push_back({parameters, m_numMeshIntervals});
-    if (!m_solver.getInterpolateControlMidpoints()) {
+    if (!m_solver.getInterpolateControlMeshInteriorPoints()) {
         order.push_back({controls, m_numGridPoints - 1});
     }
     order.push_back({multipliers, m_numGridPoints - 1});

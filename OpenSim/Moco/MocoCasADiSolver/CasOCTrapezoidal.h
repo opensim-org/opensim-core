@@ -38,9 +38,7 @@ private:
     casadi::DM createMeshIndicesImpl() const override;
     casadi::DM createControlIndicesImpl() const override;
     void calcDefectsImpl(const casadi::MXVector& x, 
-            const casadi::MXVector& xdot, const casadi::MX& ti, 
-            const casadi::MX& tf, const casadi::MX& p,
-            casadi::MX& defects) const override;
+            const casadi::MXVector& xdot, casadi::MX& defects) const override;
     std::vector<std::pair<Var, int>> getVariableOrder() const override;
 };
 

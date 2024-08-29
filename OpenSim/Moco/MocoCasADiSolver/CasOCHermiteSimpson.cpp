@@ -57,8 +57,7 @@ DM HermiteSimpson::createControlIndicesImpl() const {
 }
 
 void HermiteSimpson::calcDefectsImpl(const casadi::MXVector& x,
-        const casadi::MXVector& xdot, const casadi::MX& ti, const casadi::MX& tf,
-        const casadi::MX& p, casadi::MX& defects) const {
+        const casadi::MXVector& xdot, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
     const int NS = m_problem.getNumStates();
@@ -66,21 +65,13 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MXVector& x,
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         // We enforce defect constraints on a mesh interval basis, so add
         // constraints until the number of mesh intervals is reached.
-        const auto h = m_times(2 * imesh + 2) - m_times(2 * imesh);
+        const auto h = m_intervals(imesh);
         const auto x_i = x[imesh](Slice(), 0);
         const auto x_mid = x[imesh](Slice(), 1);
         const auto x_ip1 = x[imesh](Slice(), 2);
         const auto xdot_i = xdot[imesh](Slice(), 0);
         const auto xdot_mid = xdot[imesh](Slice(), 1);
         const auto xdot_ip1 = xdot[imesh](Slice(), 2);
-
-        // Time variables.
-        defects(Slice(0, 1), imesh) = ti(imesh + 1) - ti(imesh);
-        defects(Slice(1, 2), imesh) = tf(imesh + 1) - tf(imesh);
-
-        // Parameters.
-        defects(Slice(2, 2 + NP), imesh) =
-                p(Slice(), imesh + 1) - p(Slice(), imesh);
 
         // Hermite interpolant defects.
         defects(Slice(2 + NP, 2 + NP + NS), imesh) =
@@ -110,7 +101,7 @@ std::vector<std::pair<Var, int>> HermiteSimpson::getVariableOrder() const {
         order.push_back({parameters, imesh});
         order.push_back({states, igrid});
         order.push_back({states, igrid + 1});
-        if (m_solver.getInterpolateControlMidpoints()) {
+        if (m_solver.getInterpolateControlMeshInteriorPoints()) {
             order.push_back({controls, igrid});
         } else {
             order.push_back({controls, igrid});
