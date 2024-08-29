@@ -1,64 +1,32 @@
+/* -------------------------------------------------------------------------- *
+ *                       OpenSim: ForceProducer.cpp                           *
+ * -------------------------------------------------------------------------- *
+ * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
+ * See http://opensim.stanford.edu and the NOTICE file for more information.  *
+ * OpenSim is developed at Stanford University and supported by the US        *
+ * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
+ * through the Warrior Web program.                                           *
+ *                                                                            *
+ * Copyright (c) 2005-2024 Stanford University and the Authors                *
+ * Author(s): Adam Kewley                                                     *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
+
 #include "ForceProducer.h"
 
-#include <OpenSim/Common/Assertion.h>
-#include <OpenSim/Simulation/Model/ForceConsumer.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/Model/ForceApplier.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
-
-namespace
-{
-    // this is an internal `ForceConsumer` that is used by `ForceProducer`'s default
-    // `computeForce` implementation
-    //
-    // it takes each consumed force and adapts it to the underlying `OpenSim::Force::computeForce`
-    // API, which makes the default implementation of `ForceProducer::computeForce` entirely
-    // compatible with that API.
-    class ForceComputingConsumer final : public ForceConsumer {
-    public:
-        ForceComputingConsumer(
-            const OpenSim::Force& force,
-            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-            SimTK::Vector& generalizedForces) :
-
-            _force{&force},
-            _bodyForces{&bodyForces},
-            _generalizedForces{&generalizedForces}
-        {}
-    private:
-        void implConsumeGeneralizedForce(
-            const SimTK::State& state,
-            const Coordinate& coord,
-            double force) final
-        {
-            _force->applyGeneralizedForce(state, coord, force, *_generalizedForces);
-        }
-
-        void implConsumeBodySpatialVec(
-            const SimTK::State& state,
-            const PhysicalFrame& body,
-            const SimTK::SpatialVec& spatialVec) final
-        {
-            const auto mobilizedBodyIndex = body.getMobilizedBodyIndex();
-            OPENSIM_ASSERT_ALWAYS(0 <= mobilizedBodyIndex && mobilizedBodyIndex < _bodyForces->size() && "the provided mobilized body index is out-of-bounds");
-            (*_bodyForces)[mobilizedBodyIndex] += spatialVec;
-        }
-
-        void implConsumePointForce(
-            const SimTK::State& state,
-            const PhysicalFrame& frame,
-            const SimTK::Vec3& point,
-            const SimTK::Vec3& force) final
-        {
-
-            _force->applyForceToPoint(state, frame, point, force, *_bodyForces);
-        }
-
-        const OpenSim::Force* _force;
-        SimTK::Vector_<SimTK::SpatialVec>* _bodyForces;
-        SimTK::Vector* _generalizedForces;
-    };
-}
 
 void OpenSim::ForceProducer::produceForces(
     const SimTK::State& state,
@@ -76,8 +44,8 @@ void OpenSim::ForceProducer::computeForce(
 {
     // create a consumer that uses each produced force to compute the
     // underlying body- and generalized-forces
-    ForceComputingConsumer consumer{*this, bodyForces, generalizedForces};
+    ForceApplier forceApplier{_model->getMatterSubsystem(), bodyForces, generalizedForces};
 
     // produce forces and feed them into the consumer, satisfying the `computeForce` API
-    produceForces(state, consumer);
+    produceForces(state, forceApplier);
 }

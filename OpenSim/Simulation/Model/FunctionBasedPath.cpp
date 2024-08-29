@@ -25,6 +25,7 @@
 #include "Model.h"
 
 #include <OpenSim/Common/Assertion.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 
 using namespace OpenSim;
 
@@ -137,34 +138,26 @@ double FunctionBasedPath::computeMomentArm(const SimTK::State& s,
     }
 }
 
-double FunctionBasedPath::getLengtheningSpeed(const SimTK::State& s) const
-{
-    computeLengtheningSpeed(s);
-    return getCacheVariableValue<double>(s, _lengtheningSpeedCV);
-}
-
-void FunctionBasedPath::addInEquivalentForces(const SimTK::State& state,
-        const double& tension,
-        SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-        SimTK::Vector& mobilityForces) const
+void FunctionBasedPath::produceForces(const SimTK::State& state,
+    double tension,
+    ForceConsumer& forceConsumer) const
 {
     // Get the moment arms.
     computeMomentArms(state);
     const auto& momentArms =
-            getCacheVariableValue<SimTK::Vector>(state, _momentArmsCV);
+        getCacheVariableValue<SimTK::Vector>(state, _momentArmsCV);
     OPENSIM_ASSERT_ALWAYS(momentArms.size() == (int)_coordinates.size());
 
-    // Apply the mobility forces.
-    const SimTK::SimbodyMatterSubsystem& matter =
-            getModel().getMatterSubsystem();
+    // Produce mobility forces
     for (int i = 0; i < (int)_coordinates.size(); ++i) {
-        const SimTK::MobilizedBody& mobod =
-                matter.getMobilizedBody(_coordinates[i]->getBodyIndex());
-        mobod.applyOneMobilityForce(state,
-                _coordinates[i]->getMobilizerQIndex(),
-                momentArms[i] * tension,
-                mobilityForces);
+        forceConsumer.consumeGeneralizedForce(state, *_coordinates[i], momentArms[i] * tension);
     }
+}
+
+double FunctionBasedPath::getLengtheningSpeed(const SimTK::State& s) const
+{
+    computeLengtheningSpeed(s);
+    return getCacheVariableValue<double>(s, _lengtheningSpeedCV);
 }
 
 //=============================================================================

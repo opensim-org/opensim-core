@@ -147,17 +147,17 @@ public:
     void getPointForceDirections(const SimTK::State& s, 
         OpenSim::Array<PointForceDirection*> *rPFDs) const;
 
-    /** add in the equivalent body and generalized forces to be applied to the 
-        multibody system resulting from a tension along the GeometryPath 
-    @param state    state used to evaluate forces
-    @param[in]  tension      scalar (double) of the applied (+ve) tensile force 
-    @param[in,out] bodyForces   Vector of SpatialVec's (torque, force) on bodies
-    @param[in,out] mobilityForces  Vector of generalized forces, one per mobility   
-    */
-    void addInEquivalentForces(const SimTK::State& state,
-                               const double& tension, 
-                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                               SimTK::Vector& mobilityForces) const override;
+    /**
+     * Requests forces resulting from applying a tension along its path and
+     * emits them into the supplied `ForceConsumer`.
+     *
+     * @param state         the state used to evaluate forces
+     * @param tension       scalar of the applied (+ve) tensile force
+     * @param forceConsumer a `ForceConsumer` shall receive each produced force
+     */
+    void produceForces(const SimTK::State& state,
+        double tension,
+        ForceConsumer& forceConsumer) const override;
     
     bool isVisualPath() const override { return true; }
     
