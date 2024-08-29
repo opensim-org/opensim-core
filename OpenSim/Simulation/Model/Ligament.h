@@ -122,7 +122,7 @@ public:
     virtual bool setForceLengthCurve(const Function& aForceLengthCurve);
 
     // computed variables
-    const double& getTension(const SimTK::State& s) const;
+    double getTension(const SimTK::State& s) const;
 
     virtual double computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const;
 

@@ -202,7 +202,7 @@ void Ligament::extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
     }
 }
 
-const double& Ligament::getTension(const SimTK::State& s) const
+double Ligament::getTension(const SimTK::State& s) const
 {
     if (isCacheVariableValid(s, _tensionCV)) {
         return getCacheVariableValue(s, _tensionCV);
