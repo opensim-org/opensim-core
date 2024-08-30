@@ -27,6 +27,7 @@
 #include <random>
 #include <cstdio>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -41,19 +42,227 @@ using namespace SimTK;
 // TODO test modeling options (locked coordinates, etc.)
 // TODO store a model within a StatesTrajectory.
 
-const std::string statesStoFname = "testStatesTrajectory_readStorage_states.sto";
-const std::string pre40StoFname = "std_subject01_walk1_states.sto";
+namespace {
+    const std::string statesStoFname = "testStatesTrajectory_readStorage_states.sto";
+    const std::string pre40StoFname = "std_subject01_walk1_states.sto";
 
-// Helper function to get a state variable value from a storage file.
-Real getStorageEntry(const Storage& sto,
-        const int timeIndex, const std::string& columnName) {
-    Real value;
-    const int columnIndex = sto.getStateIndex(columnName);
-    sto.getData(timeIndex, columnIndex, value);
-    return value;
+    // Helper function to get a state variable value from a storage file.
+    Real getStorageEntry(const Storage& sto,
+            const int timeIndex, const std::string& columnName) {
+        Real value;
+        const int columnIndex = sto.getStateIndex(columnName);
+        sto.getData(timeIndex, columnIndex, value);
+        return value;
+    }
+
+    // Create states storage file to for states storage tests.
+    void createStateStorageFile() {
+
+        Model model("gait2354_simbody.osim");
+
+        // To assist with creating interesting (non-zero) coordinate values:
+        model.updCoordinateSet().get("pelvis_ty").setDefaultLocked(true);
+
+        // Randomly assign muscle excitations to create interesting activation
+        // histories.
+        auto* controller = new PrescribedController();
+        // For consistent results, use same seed each time.
+        std::default_random_engine generator(0);
+        // Uniform distribution between 0.1 and 0.9.
+        std::uniform_real_distribution<double> distribution(0.1, 0.8);
+
+        for (int im = 0; im < model.getMuscles().getSize(); ++im) {
+            controller->addActuator(model.getMuscles()[im]);
+            controller->prescribeControlForActuator(
+                model.getMuscles()[im].getName(),
+                Constant(distribution(generator))
+                );
+        }
+
+        model.addController(controller);
+
+        auto& initState = model.initSystem();
+        Manager manager(model);
+        initState.setTime(0.0);
+        manager.initialize(initState);
+        manager.integrate(0.15);
+        manager.getStateStorage().print(statesStoFname);
+    }
+
+    Storage newStorageWithRemovedRows(const Storage& origSto,
+            const std::set<int>& rowsToRemove) {
+        Storage sto(1000);
+        auto labels = origSto.getColumnLabels();
+        auto numOrigColumns = origSto.getColumnLabels().getSize() - 1;
+
+        // Remove in reverse order so it's easier to keep track of indices.
+         for (auto it = rowsToRemove.rbegin(); it != rowsToRemove.rend(); ++it) {
+             labels.remove(*it);
+         }
+        sto.setColumnLabels(labels);
+
+        double time;
+        for (int itime = 0; itime < origSto.getSize(); ++itime) {
+            SimTK::Vector rowData(numOrigColumns);
+            origSto.getData(itime, numOrigColumns, rowData);
+
+            SimTK::Vector newRowData(numOrigColumns - (int)rowsToRemove.size());
+            int iNew = 0;
+            for (int iOrig = 0; iOrig < numOrigColumns; ++iOrig) {
+                if (rowsToRemove.count(iOrig) == 0) {
+                    newRowData[iNew] = rowData[iOrig];
+                    ++iNew;
+                }
+            }
+
+            origSto.getTime(itime, time);
+            sto.append(time, newRowData);
+        }
+        return sto;
+    }
+
+    void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
+
+        // States are missing from the Storage.
+        // ------------------------------------
+        {
+            Model model("gait2354_simbody.osim");
+            model.initSystem();
+
+            const auto stateNames = model.getStateVariableNames();
+            Storage sto(stoFilepath);
+            // So the test doesn't take so long.
+            sto.resampleLinear((sto.getLastTime() - sto.getFirstTime()) / 10);
+
+            // Create new Storage with fewer columns.
+            auto labels = sto.getColumnLabels();
+
+            auto origLabel10 = stateNames[10];
+            auto origLabel15 = stateNames[15];
+            Storage stoMissingCols = newStorageWithRemovedRows(sto, {
+                    // gymnastics to be compatible with pre-v4.0 column names:
+                    sto.getStateIndex(origLabel10) + 1,
+                    sto.getStateIndex(origLabel15) + 1});
+
+            // Test that an exception is thrown.
+            SimTK_TEST_MUST_THROW_EXC(
+                    StatesTrajectory::createFromStatesStorage(model, stoMissingCols),
+                    StatesTrajectory::MissingColumns
+                    );
+            // Check some other similar calls.
+            SimTK_TEST_MUST_THROW_EXC(
+                    StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
+                        false, true),
+                    StatesTrajectory::MissingColumns
+                    );
+            SimTK_TEST_MUST_THROW_EXC(
+                    StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
+                        false, false),
+                    StatesTrajectory::MissingColumns
+                    );
+
+            // No exception if allowing missing columns.
+            // The unspecified states are set to NaN (for at least two random
+            // states).
+            auto states = StatesTrajectory::createFromStatesStorage(
+                    model, stoMissingCols, true);
+            SimTK_TEST(SimTK::isNaN(
+                        model.getStateVariableValue(states[0], origLabel10)));
+            SimTK_TEST(SimTK::isNaN(
+                        model.getStateVariableValue(states[4], origLabel15)));
+            // Behavior is independent of value for allowMissingColumns.
+            StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
+                    true, true);
+            StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
+                    true, false);
+        }
+
+        // States are missing from the Model.
+        // ----------------------------------
+        {
+            Model model("gait2354_simbody.osim");
+            Storage sto(stoFilepath);
+            // So the test doesn't take so long.
+            sto.resampleLinear((sto.getLastTime() - sto.getFirstTime()) / 10);
+
+            // Remove a few of the muscles.
+            model.updForceSet().remove(0);
+            model.updForceSet().remove(10);
+            model.updForceSet().remove(30);
+
+            // Test that an exception is thrown.
+            // Must call initSystem() here; otherwise the _propertySubcomponents
+            // would be stale and would still include the forces we removed above.
+            model.initSystem();
+            SimTK_TEST_MUST_THROW_EXC(
+                    StatesTrajectory::createFromStatesStorage(model, sto),
+                    StatesTrajectory::ExtraColumns
+                    );
+            SimTK_TEST_MUST_THROW_EXC(
+                    StatesTrajectory::createFromStatesStorage(model, sto,
+                        true, false),
+                    StatesTrajectory::ExtraColumns
+                    );
+            SimTK_TEST_MUST_THROW_EXC(
+                    StatesTrajectory::createFromStatesStorage(model, sto,
+                        false, false),
+                    StatesTrajectory::ExtraColumns
+                    );
+
+            // No exception if allowing extra columns, and behavior is
+            // independent of value for allowMissingColumns.
+            StatesTrajectory::createFromStatesStorage(model, sto, true, true);
+            StatesTrajectory::createFromStatesStorage(model, sto, false, true);
+        }
+    }
+
+    void tableAndTrajectoryMatch(const Model& model,
+                                 const TimeSeriesTable& table,
+                                 const StatesTrajectory& states,
+                                 std::vector<std::string> columns = {}) {
+
+        const auto stateNames = model.getStateVariableNames();
+
+        size_t numColumns{};
+        if (columns.empty()) {
+            numColumns = stateNames.getSize();
+        } else {
+            numColumns = columns.size();
+        }
+        SimTK_TEST(table.getNumColumns() == numColumns);
+        SimTK_TEST(table.getNumRows() == states.getSize());
+
+        const auto& colNames = table.getColumnLabels();
+
+        std::vector<int> stateValueIndices(colNames.size());
+        for (size_t icol = 0; icol < colNames.size(); ++icol) {
+            stateValueIndices[icol] = stateNames.findIndex(colNames[icol]);
+        }
+
+        SimTK::Vector stateValues; // working memory
+
+        // Test that the data table has exactly the same numbers.
+        for (size_t itime = 0; itime < states.getSize(); ++itime) {
+            // Test time.
+            SimTK_TEST(table.getIndependentColumn()[itime] ==
+                       states[itime].getTime());
+
+            stateValues = model.getStateVariableValues(states[itime]);
+
+            // Test state values.
+            for (size_t icol = 0; icol < table.getNumColumns(); ++icol) {
+                const auto& valueInStates = stateValues[stateValueIndices[icol]];
+
+                const auto& column = table.getDependentColumnAtIndex(icol);
+                const auto& valueInTable = column[static_cast<int>(itime)];
+
+                SimTK_TEST(valueInStates == valueInTable);
+            }
+        }
+    }
 }
 
-void testPopulateTrajectoryAndStatesTrajectoryReporter() {
+TEST_CASE("testPopulateTrajectoryAndStatesTrajectoryReporter") {
     Model model("gait2354_simbody.osim");
 
     // To assist with creating interesting (non-zero) coordinate values:
@@ -67,13 +276,13 @@ void testPopulateTrajectoryAndStatesTrajectoryReporter() {
         const double finalTime = 0.05;
     {
         auto& state = model.initSystem();
-    
+
         SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
         SimTK::TimeStepper ts(model.getSystem(), integrator);
         ts.initialize(state);
         ts.setReportAllSignificantStates(true);
         integrator.setReturnEveryInternalStep(true);
-    
+
         StatesTrajectory states;
         std::vector<double> times;
         while (ts.getState().getTime() < finalTime) {
@@ -84,7 +293,7 @@ void testPopulateTrajectoryAndStatesTrajectoryReporter() {
             // For the StatesTrajectoryReporter:
             model.getMultibodySystem().realize(ts.getState(), SimTK::Stage::Report);
         }
-    
+
         // Make sure we have all the states
         SimTK_TEST_EQ((int)states.getSize(), (int)times.size());
         SimTK_TEST_EQ((int)statesCol->getStates().getSize(), (int)times.size());
@@ -125,7 +334,7 @@ void testPopulateTrajectoryAndStatesTrajectoryReporter() {
     }
 }
 
-void testFrontBack() {
+TEST_CASE("testFrontBack") {
     Model model("arm26.osim");
     const auto& state = model.initSystem();
     StatesTrajectory states;
@@ -137,46 +346,15 @@ void testFrontBack() {
     SimTK_TEST(&states.back() == &states[2]);
 }
 
-// Create states storage file to for states storage tests.
-void createStateStorageFile() {
 
-    Model model("gait2354_simbody.osim");
-
-    // To assist with creating interesting (non-zero) coordinate values:
-    model.updCoordinateSet().get("pelvis_ty").setDefaultLocked(true);
-
-    // Randomly assign muscle excitations to create interesting activation
-    // histories.
-    auto* controller = new PrescribedController();
-    // For consistent results, use same seed each time.
-    std::default_random_engine generator(0); 
-    // Uniform distribution between 0.1 and 0.9.
-    std::uniform_real_distribution<double> distribution(0.1, 0.8);
-
-    for (int im = 0; im < model.getMuscles().getSize(); ++im) {
-        controller->addActuator(model.getMuscles()[im]);
-        controller->prescribeControlForActuator(
-            model.getMuscles()[im].getName(),
-            Constant(distribution(generator))
-            );
-    }
-
-    model.addController(controller);
-
-    auto& initState = model.initSystem();
-    Manager manager(model);
-    initState.setTime(0.0);
-    manager.initialize(initState);
-    manager.integrate(0.15);
-    manager.getStateStorage().print(statesStoFname);
-}
-
-void testFromStatesStorageGivesCorrectStates() {
+TEST_CASE("testFromStatesStorageGivesCorrectStates") {
 
     // Read in trajectory.
     // -------------------
     Model model("gait2354_simbody.osim");
 
+    remove(statesStoFname.c_str());
+    createStateStorageFile();
     Storage sto(statesStoFname);
 
     // Note: we are verifying that we can load a trajectory without
@@ -268,138 +446,13 @@ void testFromStatesStorageGivesCorrectStates() {
     }
 }
 
-Storage newStorageWithRemovedRows(const Storage& origSto,
-        const std::set<int>& rowsToRemove) {
-    Storage sto(1000);
-    auto labels = origSto.getColumnLabels();
-    auto numOrigColumns = origSto.getColumnLabels().getSize() - 1;
-
-    // Remove in reverse order so it's easier to keep track of indices.
-     for (auto it = rowsToRemove.rbegin(); it != rowsToRemove.rend(); ++it) {
-         labels.remove(*it);
-     }
-    sto.setColumnLabels(labels);
-
-    double time;
-    for (int itime = 0; itime < origSto.getSize(); ++itime) {
-        SimTK::Vector rowData(numOrigColumns);
-        origSto.getData(itime, numOrigColumns, rowData);
-
-        SimTK::Vector newRowData(numOrigColumns - (int)rowsToRemove.size());
-        int iNew = 0;
-        for (int iOrig = 0; iOrig < numOrigColumns; ++iOrig) {
-            if (rowsToRemove.count(iOrig) == 0) {
-                newRowData[iNew] = rowData[iOrig];
-                ++iNew;
-            }
-        }
-
-        origSto.getTime(itime, time);
-        sto.append(time, newRowData);
-    }
-    return sto;
-}
-
-void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
-
-    // States are missing from the Storage.
-    // ------------------------------------
-    {
-        Model model("gait2354_simbody.osim");
-        model.initSystem();
-
-        const auto stateNames = model.getStateVariableNames();
-        Storage sto(stoFilepath);
-        // So the test doesn't take so long.
-        sto.resampleLinear((sto.getLastTime() - sto.getFirstTime()) / 10);
-
-        // Create new Storage with fewer columns.
-        auto labels = sto.getColumnLabels();
-
-        auto origLabel10 = stateNames[10];
-        auto origLabel15 = stateNames[15];
-        Storage stoMissingCols = newStorageWithRemovedRows(sto, {
-                // gymnastics to be compatible with pre-v4.0 column names:
-                sto.getStateIndex(origLabel10) + 1,
-                sto.getStateIndex(origLabel15) + 1});
-
-        // Test that an exception is thrown.
-        SimTK_TEST_MUST_THROW_EXC(
-                StatesTrajectory::createFromStatesStorage(model, stoMissingCols),
-                StatesTrajectory::MissingColumns
-                );
-        // Check some other similar calls.
-        SimTK_TEST_MUST_THROW_EXC(
-                StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
-                    false, true),
-                StatesTrajectory::MissingColumns
-                );
-        SimTK_TEST_MUST_THROW_EXC(
-                StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
-                    false, false),
-                StatesTrajectory::MissingColumns
-                );
-
-        // No exception if allowing missing columns.
-        // The unspecified states are set to NaN (for at least two random
-        // states).
-        auto states = StatesTrajectory::createFromStatesStorage(
-                model, stoMissingCols, true);
-        SimTK_TEST(SimTK::isNaN(
-                    model.getStateVariableValue(states[0], origLabel10)));
-        SimTK_TEST(SimTK::isNaN(
-                    model.getStateVariableValue(states[4], origLabel15)));
-        // Behavior is independent of value for allowMissingColumns.
-        StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
-                true, true);
-        StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
-                true, false);
-    }
-
-    // States are missing from the Model.
-    // ----------------------------------
-    {
-        Model model("gait2354_simbody.osim");
-        Storage sto(stoFilepath);
-        // So the test doesn't take so long.
-        sto.resampleLinear((sto.getLastTime() - sto.getFirstTime()) / 10);
-
-        // Remove a few of the muscles.
-        model.updForceSet().remove(0);
-        model.updForceSet().remove(10);
-        model.updForceSet().remove(30);
-
-        // Test that an exception is thrown.
-        // Must call initSystem() here; otherwise the _propertySubcomponents
-        // would be stale and would still include the forces we removed above.
-        model.initSystem();
-        SimTK_TEST_MUST_THROW_EXC(
-                StatesTrajectory::createFromStatesStorage(model, sto),
-                StatesTrajectory::ExtraColumns
-                );
-        SimTK_TEST_MUST_THROW_EXC(
-                StatesTrajectory::createFromStatesStorage(model, sto,
-                    true, false),
-                StatesTrajectory::ExtraColumns
-                );
-        SimTK_TEST_MUST_THROW_EXC(
-                StatesTrajectory::createFromStatesStorage(model, sto,
-                    false, false),
-                StatesTrajectory::ExtraColumns
-                );
-
-        // No exception if allowing extra columns, and behavior is
-        // independent of value for allowMissingColumns.
-        StatesTrajectory::createFromStatesStorage(model, sto, true, true);
-        StatesTrajectory::createFromStatesStorage(model, sto, false, true);
-    }
-}
-
-void testFromStatesStorageUniqueColumnLabels() {
+TEST_CASE("testFromStatesStorageUniqueColumnLabels") {
+    remove(statesStoFname.c_str());
+    createStateStorageFile();
 
     Model model("gait2354_simbody.osim");
     Storage sto(statesStoFname);
-    
+
     // Edit column labels so that they are not unique.
     auto labels = sto.getColumnLabels();
     labels[10] = labels[7];
@@ -425,7 +478,7 @@ void testFromStatesStorageUniqueColumnLabels() {
     // names (/value and /speed) in the same file.
 }
 
-void testFromStatesStoragePre40CorrectStates() {
+TEST_CASE("testFromStatesStoragePre40CorrectStates") {
     // This test is very similar to testFromStatesStorageGivesCorrectStates
     // TODO could avoid the duplicate function since getStateIndex handles
     // pre-4.0 names.
@@ -478,7 +531,7 @@ void testFromStatesStoragePre40CorrectStates() {
 
             // Fiber length.
             SimTK_TEST_EQ(
-                    getStorageEntry(sto, itime, muscleName + ".fiber_length"), 
+                    getStorageEntry(sto, itime, muscleName + ".fiber_length"),
                     muscle.getFiberLength(state));
 
             // More complicated computation based on state.
@@ -512,7 +565,7 @@ void testFromStatesStoragePre40CorrectStates() {
 }
 
 
-void testCopying() {
+TEST_CASE("testCopying") {
     Model model("gait2354_simbody.osim");
     auto& state = model.initSystem();
 
@@ -546,7 +599,7 @@ void testCopying() {
     }
 }
 
-void testAppendTimesAreNonDecreasing() {
+TEST_CASE("testAppendTimesAreNonDecreasing") {
     Model model("gait2354_simbody.osim");
     auto& state = model.initSystem();
     state.setTime(1.0);
@@ -562,7 +615,7 @@ void testAppendTimesAreNonDecreasing() {
             SimTK::Exception::APIArgcheckFailed);
 }
 
-void testBoundsCheck() {
+TEST_CASE("testBoundsCheck") {
     Model model("gait2354_simbody.osim");
     const auto& state = model.initSystem();
     StatesTrajectory states;
@@ -570,7 +623,7 @@ void testBoundsCheck() {
     states.append(state);
     states.append(state);
     states.append(state);
-    
+
     #ifdef NDEBUG
         // In DEBUG, Visual Studio puts asserts into the index operator.
         states[states.getSize() + 100];
@@ -582,7 +635,7 @@ void testBoundsCheck() {
                               IndexOutOfRange);
 }
 
-void testIntegrityChecks() {
+TEST_CASE("testIntegrityChecks") {
     Model arm26("arm26.osim");
     const auto& s26 = arm26.initSystem();
 
@@ -676,60 +729,17 @@ void testIntegrityChecks() {
     }
 
     // TODO Show weakness of the test: two models with the same number of Q's, U's,
-    // and Z's both pass the check. 
+    // and Z's both pass the check.
 }
 
-void tableAndTrajectoryMatch(const Model& model,
-                             const TimeSeriesTable& table,
-                             const StatesTrajectory& states,
-                             std::vector<std::string> columns = {}) {
-
-    const auto stateNames = model.getStateVariableNames();
-
-    size_t numColumns{};
-    if (columns.empty()) {
-        numColumns = stateNames.getSize();
-    } else {
-        numColumns = columns.size();
-    }
-    SimTK_TEST(table.getNumColumns() == numColumns);
-    SimTK_TEST(table.getNumRows() == states.getSize());
-
-    const auto& colNames = table.getColumnLabels();
-
-    std::vector<int> stateValueIndices(colNames.size());
-    for (size_t icol = 0; icol < colNames.size(); ++icol) {
-        stateValueIndices[icol] = stateNames.findIndex(colNames[icol]);
-    }
-
-    SimTK::Vector stateValues; // working memory
-
-    // Test that the data table has exactly the same numbers.
-    for (size_t itime = 0; itime < states.getSize(); ++itime) {
-        // Test time.
-        SimTK_TEST(table.getIndependentColumn()[itime] ==
-                   states[itime].getTime());
-
-        stateValues = model.getStateVariableValues(states[itime]);
-
-        // Test state values.
-        for (size_t icol = 0; icol < table.getNumColumns(); ++icol) {
-            const auto& valueInStates = stateValues[stateValueIndices[icol]];
-
-            const auto& column = table.getDependentColumnAtIndex(icol);
-            const auto& valueInTable = column[static_cast<int>(itime)];
-
-            SimTK_TEST(valueInStates == valueInTable);
-        }
-    }
-}
-
-void testExport() {
+TEST_CASE("testExport") {
     Model gait("gait2354_simbody.osim");
     gait.initSystem();
 
     // Exported data exactly matches data in the trajectory.
     const auto stateNames = gait.getStateVariableNames();
+    remove(statesStoFname.c_str());
+    createStateStorageFile();
     Storage sto(statesStoFname);
     auto states = StatesTrajectory::createFromStatesStorage(gait, sto);
 
@@ -770,38 +780,9 @@ void testExport() {
             OpenSim::Exception);
 }
 
-int main() {
-    SimTK_START_TEST("testStatesTrajectory");
-        // actuators library is not loaded automatically (unless using clang).
-        #if !defined(__clang__)
-            LoadOpenSimLibrary("osimActuators");
-        #endif
-
-        // Make sure the states Storage file doesn't already exist; we'll
-        // generate it later and we don't want to use a stale one by accident.
-        remove(statesStoFname.c_str());
-
-        SimTK_SUBTEST(testPopulateTrajectoryAndStatesTrajectoryReporter);
-        SimTK_SUBTEST(testFrontBack);
-        SimTK_SUBTEST(testBoundsCheck);
-        SimTK_SUBTEST(testIntegrityChecks);
-        SimTK_SUBTEST(testAppendTimesAreNonDecreasing);
-        SimTK_SUBTEST(testCopying);
-
-        // Test creation of trajectory from a states storage.
-        // -------------------------------------------------
-        // Using a pre-4.0 states storage file with old column names.
-        SimTK_SUBTEST(testFromStatesStoragePre40CorrectStates);
-        SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, pre40StoFname);
-
-        // v4.0 states storage
-        createStateStorageFile();
-        SimTK_SUBTEST(testFromStatesStorageGivesCorrectStates);
-        SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, statesStoFname);
-        SimTK_SUBTEST(testFromStatesStorageUniqueColumnLabels);
-
-        // Export to data table.
-        SimTK_SUBTEST(testExport);
-
-    SimTK_END_TEST();
+TEST_CASE("testFromStatesStorageInconsistentModel") {
+    remove(statesStoFname.c_str());
+    testFromStatesStorageInconsistentModel(pre40StoFname);
+    createStateStorageFile();
+    testFromStatesStorageInconsistentModel(statesStoFname);
 }
