@@ -221,6 +221,12 @@ function(OpenSimAddLibrary)
     # This target links to the libraries provided as arguments to this func.
     target_link_libraries(${OSIMADDLIB_LIBRARY_NAME} ${OSIMADDLIB_LINKLIBS})
 
+    target_compile_options(${OSIMADDLIB_LIBRARY_NAME} PUBLIC
+        # disable warning 4996 on Windows: `spdlog` transitively 
+        # uses a deprecated `stdext::checked_array_iterator`
+        $<$<CXX_COMPILER_ID:MSVC>:/wd4996>
+    )
+
     # This is for exporting classes on Windows.
     if(OSIMADDLIB_VENDORLIB)
         set(OSIMADDLIB_FOLDER "Vendor Libraries")
