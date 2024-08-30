@@ -240,8 +240,6 @@ namespace {
             noiseLevel*double(noise(gen)), SimTK::YAxis,
             noiseLevel*double(noise(gen)), SimTK::ZAxis );
 
-        cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
-
         if (noiseLevel >= SimTK::Eps) {
             for (size_t i = 0; i < results.getNumRows(); ++i) {
                 auto row = results.updRowAtIndex(i);

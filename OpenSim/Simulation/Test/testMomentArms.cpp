@@ -108,8 +108,8 @@ namespace {
         // (mobilities) on the coordinate of interest due to constraints
 
         s_ma.updU() = 0;
-        // Light-up speed of coordinate of interest and see how other coordinates
-        // affected by constraints respond
+        // Light-up speed of coordinate of interest and see how other
+        // coordinates affected by constraints respond
         coord.setSpeedValue(s_ma, 1);
 
         // Satisfy velocity constraints. Note that the speed we just set may
@@ -337,72 +337,124 @@ namespace {
     }
 }
 
-TEST_CASE("testMomentArmDefinitionForModel")
-{
+TEST_CASE("testMomentArmDefinitionForModel") {
     LoadOpenSimLibrary("osimActuators");
     Object::registerType(CompoundJoint());
 
-    testMomentArmDefinitionForModel("BothLegs22.osim", "r_knee_angle", "VASINT",
-        SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), 0.0,
-        "VASINT of BothLegs with no mass: FAILED");
-    cout << "VASINT of BothLegs with no mass: PASSED\n" << endl;
+    SECTION("VASINT of BothLegs with no mass") {
+        testMomentArmDefinitionForModel("BothLegs22.osim", "r_knee_angle", "VASINT",
+            SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), 0.0,
+            "VASINT of BothLegs with no mass: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("testMomentArmsConstraintB.osim",
-        "hip_flexion_r", "rect_fem_r", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3),
-        -1.0, "Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur: FAILED");
-    cout << "Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur: PASSED\n" << endl;
+    SECTION("Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur") {
+        testMomentArmDefinitionForModel("testMomentArmsConstraintB.osim",
+            "hip_flexion_r", "rect_fem_r", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3),
+            -1.0, "Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("testMomentArmsConstraintB.osim", "knee_angle_r", "rect_fem_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Rectus Femoris with muscle attachment on patella defined w.r.t Femur: FAILED");
-    cout << "Rectus Femoris with muscle attachment on patella defined w.r.t Femur: PASSED\n" << endl;
+    SECTION("Rectus Femoris with muscle attachment on patella defined w.r.t Femur") {
+        testMomentArmDefinitionForModel("testMomentArmsConstraintB.osim", "knee_angle_r",
+            "rect_fem_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0,
+            "Rectus Femoris with muscle attachment on patella defined w.r.t Femur: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("testMomentArmsConstraintB.osim", "knee_angle_r", "vas_int_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Knee with Vasti attachment on patella defined w.r.t Femur: FAILED");
-    cout << "Knee with Vasti attachment on patella defined w.r.t Femur: PASSED\n" << endl;
+    SECTION("Knee with Vasti attachment on patella defined w.r.t Femur") {
+        testMomentArmDefinitionForModel("testMomentArmsConstraintB.osim", "knee_angle_r",
+            "vas_int_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0,
+            "Knee with Vasti attachment on patella defined w.r.t Femur: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("testMomentArmsConstraintA.osim", "knee_angle_r", "vas_int_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Knee with Vasti attachment on patella w.r.t Tibia: FAILED");
-    cout << "Knee with Vasti attachment on patella w.r.t Tibia: PASSED\n" << endl;
+    SECTION("Knee with Vasti attachment on patella w.r.t Tibia") {
+        testMomentArmDefinitionForModel("testMomentArmsConstraintA.osim", "knee_angle_r",
+            "vas_int_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0,
+            "Knee with Vasti attachment on patella w.r.t Tibia: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("MovingPathPointMomentArmTest.osim", "", "", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Moving path point across PinJoint: FAILED");
-    cout << "Moving path point across PinJoint: PASSED\n" << endl;
+    SECTION("Moving path point across PinJoint") {
+        testMomentArmDefinitionForModel("MovingPathPointMomentArmTest.osim", "",
+            "", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0,
+            "Moving path point across PinJoint: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("gait2354_simbody.osim", "knee_angle_r", "vas_int_r", SimTK::Vec2(-119*SimTK::Pi/180, 9*SimTK::Pi/180), -1.0, "Knee with moving muscle point (no patella): FAILED");
-    cout << "Knee with moving muscle point (no patella): PASSED\n" << endl;
+    SECTION("Knee with moving muscle point (no patella)") {
+        testMomentArmDefinitionForModel("gait2354_simbody.osim", "knee_angle_r",
+            "vas_int_r", SimTK::Vec2(-119*SimTK::Pi/180, 9*SimTK::Pi/180), -1.0,
+            "Knee with moving muscle point (no patella): FAILED");
+    }
 
     //massless should not break moment-arm solver
-    testMomentArmDefinitionForModel("wrist_mass.osim", "flexion", "ECU_post-surgery", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3), 0.0, "WRIST ECU TEST with MASSLESS BODIES: FAILED");
-    cout << "WRIST ECU TEST with MASSLESS BODIES: PASSED\n" << endl;
+    SECTION("WRIST ECU TEST with MASSLESS BODIES") {
+        testMomentArmDefinitionForModel("wrist_mass.osim", "flexion",
+            "ECU_post-surgery", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3), 0.0,
+            "WRIST ECU TEST with MASSLESS BODIES: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("wrist_mass.osim", "flexion", "ECU_post-surgery", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3), 1.0, "WRIST ECU TEST with MASS  = 1.0 : FAILED");
-    cout << "WRIST ECU TEST with MASS  = 1.0 : PASSED\n" << endl;
+    SECTION("WRIST ECU TEST with MASS = 1.0") {
+        testMomentArmDefinitionForModel("wrist_mass.osim", "flexion",
+            "ECU_post-surgery", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3), 1.0,
+            "WRIST ECU TEST with MASS = 1.0: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("wrist_mass.osim", "flexion", "ECU_post-surgery", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3), 100.0, "WRIST ECU TEST with MASS  = 100.0 : FAILED");
-    cout << "WRIST ECU TEST with MASS  = 100.0 : PASSED\n" << endl;
+    SECTION("WRIST ECU TEST with MASS = 100.0") {
+        testMomentArmDefinitionForModel("wrist_mass.osim", "flexion",
+            "ECU_post-surgery", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3), 100.0,
+            "WRIST ECU TEST with MASS = 100.0: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("P2PBallJointMomentArmTest.osim", "", "", SimTK::Vec2(-SimTK::Pi/2,0), -1.0, "Point to point muscle across BallJoint: FAILED");
-    cout << "Point to point muscle across BallJoint: PASSED\n" << endl;
+    SECTION("Point to point muscle across BallJoint") {
+        testMomentArmDefinitionForModel("P2PBallJointMomentArmTest.osim", "",
+            "", SimTK::Vec2(-SimTK::Pi/2, 0), -1.0,
+            "Point to point muscle across BallJoint: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("P2PBallCustomJointMomentArmTest.osim", "", "", SimTK::Vec2(-SimTK::Pi/2,0), -1.0, "Point to point muscle across a ball implemented by CustomJoint: FAILED");
-    cout << "Point to point muscle across a ball implemented by CustomJoint: PASSED\n" << endl;
+    SECTION("Point to point muscle across a ball implemented by CustomJoint") {
+        testMomentArmDefinitionForModel("P2PBallCustomJointMomentArmTest.osim",
+            "", "", SimTK::Vec2(-SimTK::Pi/2, 0), -1.0,
+            "Point to point muscle across a ball implemented by CustomJoint: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("P2PCustomJointMomentArmTest.osim", "", "", SimTK::Vec2(-SimTK::Pi/2,0), -1.0, "Point to point muscle across CustomJoint: FAILED");
-    cout << "Point to point muscle across CustomJoint: PASSED\n" << endl;
+    SECTION("Moving path point across CustomJoint") {
+        testMomentArmDefinitionForModel("MovingPointCustomJointMomentArmTest.osim",
+            "", "", SimTK::Vec2(-SimTK::Pi/2, 0), -1.0,
+            "Moving path point across CustomJoint: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("MovingPointCustomJointMomentArmTest.osim", "", "", SimTK::Vec2(-SimTK::Pi/2,0), -1.0, "Moving path point across CustomJoint: FAILED");
-    cout << "Moving path point across CustomJoint: PASSED\n" << endl;
+    SECTION("Path with wrapping across CustomJoint") {
+        testMomentArmDefinitionForModel("WrapPathCustomJointMomentArmTest.osim",
+            "", "", SimTK::Vec2(-SimTK::Pi/2, 0), -1.0,
+            "Path with wrapping across CustomJoint: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("WrapPathCustomJointMomentArmTest.osim", "", "", SimTK::Vec2(-SimTK::Pi/2,0), -1.0, "Path with wrapping across CustomJoint: FAILED");
-    cout << "Path with wrapping across CustomJoint: PASSED\n" << endl;
+    SECTION("Path on constrained body across CustomJoint") {
+        testMomentArmDefinitionForModel("PathOnConstrainedBodyMomentArmTest.osim",
+            "", "", SimTK::Vec2(-SimTK::Pi/2, 0), -1.0,
+            "Path on constrained body across CustomJoint: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("PathOnConstrainedBodyMomentArmTest.osim", "", "", SimTK::Vec2(-SimTK::Pi/2,0), -1.0, "Path on constrained body across CustomJoint: FAILED");
-    cout << "Path on constrained body across CustomJoint: PASSED\n" << endl;
+    SECTION("Path on constrained body across CustomJoint") {
+        testMomentArmDefinitionForModel("PathOnConstrainedBodyMomentArmTest.osim",
+            "", "", SimTK::Vec2(-SimTK::Pi/2, 0), -1.0,
+            "Path on constrained body across CustomJoint: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("MultipleMPPsMomentArmTest.osim", "knee_angle_1", "vas_int_r", SimTK::Vec2(-1.99*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Multiple moving path points: FAILED");
-    cout << "Multiple moving path points test 1: PASSED\n" << endl;
+    SECTION("Multiple moving path points test 1") {
+        testMomentArmDefinitionForModel("MultipleMPPsMomentArmTest.osim", "knee_angle_1",
+            "vas_int_r", SimTK::Vec2(-1.99 * SimTK::Pi/3, SimTK::Pi/18), -1.0,
+            "Multiple moving path points: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("MultipleMPPsMomentArmTest.osim", "knee_angle_2", "vas_int_r", SimTK::Vec2(-1.99*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Multiple moving path points: FAILED");
-    cout << "Multiple moving path points test 2: PASSED\n" << endl;
+    SECTION("Multiple moving path points test 2") {
+        testMomentArmDefinitionForModel("MultipleMPPsMomentArmTest.osim", "knee_angle_2",
+            "vas_int_r", SimTK::Vec2(-1.99 * SimTK::Pi/3, SimTK::Pi/18), -1.0,
+            "Multiple moving path points: FAILED");
+    }
 
-    testMomentArmDefinitionForModel("CoupledCoordinatesMPPsMomentArmTest.osim", "foot_angle", "vas_int_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Multiple moving path points: FAILED");
-    cout << "Multiple moving path points coupled coordinates test: PASSED\n" << endl;
+    SECTION("Multiple moving path points coupled coordinates test") {
+        testMomentArmDefinitionForModel("CoupledCoordinatesMPPsMomentArmTest.osim",
+            "foot_angle", "vas_int_r", SimTK::Vec2(-2 * SimTK::Pi/3, SimTK::Pi/18),
+            -1.0, "Multiple moving path points coupled coordinates test: FAILED");
+    }
 }
 
 TEST_CASE("testMomentArmsAcrossCompoundJoint")
