@@ -28,26 +28,12 @@
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 #include <memory>
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace std;
 
-void testModelFinalizePropertiesAndConnections();
-void testModelTopologyErrors();
-void testDoesNotSegfaultWithUnusualConnections();
-
-int main() {
-    LoadOpenSimLibrary("osimActuators");
-
-    SimTK_START_TEST("testModelInterface");
-        SimTK_SUBTEST(testModelFinalizePropertiesAndConnections);
-        SimTK_SUBTEST(testModelTopologyErrors);
-        SimTK_SUBTEST(testDoesNotSegfaultWithUnusualConnections);
-    SimTK_END_TEST();
-}
-
-
-void testModelFinalizePropertiesAndConnections() 
+TEST_CASE("testModelFinalizePropertiesAndConnections")
 {
         Model model("arm26.osim");
 
@@ -146,7 +132,7 @@ void testModelFinalizePropertiesAndConnections()
             .getParentFrame().getName() == "elbow_in_humerus");
 }
 
-void testModelTopologyErrors()
+TEST_CASE("testModelTopologyErrors")
 {
     Model model("arm26.osim");
     model.initSystem();
@@ -232,7 +218,7 @@ void testModelTopologyErrors()
     ASSERT_THROW(JointFramesHaveSameBaseFrame, degenerate.initSystem());
 }
 
-void testDoesNotSegfaultWithUnusualConnections()
+TEST_CASE("testDoesNotSegfaultWithUnusualConnections")
 {
     // automated reproduction for bug reported in #3299
     //
