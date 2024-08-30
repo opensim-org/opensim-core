@@ -78,7 +78,7 @@ TEST_CASE("testUpdatePre40KinematicsFor40MotionType") {
     
     // The model and motion files for this test are from the opensim-models
     // repository. This PR is related to issues #2240 and #2088.
-    
+    LoadOpenSimLibrary("osimActuators");
     Model model("testSimulationUtilities_leg6dof9musc_20303.osim");
     
     // Ensure the model file has an inconsistent motion type

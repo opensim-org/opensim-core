@@ -35,105 +35,107 @@ using namespace std;
 
 TEST_CASE("testModelFinalizePropertiesAndConnections")
 {
-        Model model("arm26.osim");
+    LoadOpenSimLibrary("osimActuators");
+    Model model("arm26.osim");
 
-        model.printSubcomponentInfo();
+    model.printSubcomponentInfo();
 
-        // all subcomponents are accounted for since Model constructor invokes
-        // finalizeFromProperties().
-        ASSERT(model.countNumComponents() > 0);
+    // all subcomponents are accounted for since Model constructor invokes
+    // finalizeFromProperties().
+    ASSERT(model.countNumComponents() > 0);
 
-        // model must be up-to-date with its properties
-        ASSERT(model.isObjectUpToDateWithProperties());
+    // model must be up-to-date with its properties
+    ASSERT(model.isObjectUpToDateWithProperties());
 
-        // get writable access to Components contained in the model's Set
-        auto& muscles = model.updMuscles();
-        // to make edits, for example, muscles[0].upd_min_control() = 0.02;
-        ASSERT(!model.isObjectUpToDateWithProperties());
+    // get writable access to Components contained in the model's Set
+    auto& muscles = model.updMuscles();
+    // to make edits, for example, muscles[0].upd_min_control() = 0.02;
+    ASSERT(!model.isObjectUpToDateWithProperties());
 
-        model.finalizeFromProperties();
-        ASSERT(model.isObjectUpToDateWithProperties());
+    model.finalizeFromProperties();
+    ASSERT(model.isObjectUpToDateWithProperties());
 
-        // get writable access to another Set for the purpose of editing
-        auto& bodies = model.updBodySet();
-        // for example, bodies[1].upd_mass() = 0.05;
-        ASSERT(!model.isObjectUpToDateWithProperties());
+    // get writable access to another Set for the purpose of editing
+    auto& bodies = model.updBodySet();
+    // for example, bodies[1].upd_mass() = 0.05;
+    ASSERT(!model.isObjectUpToDateWithProperties());
 
-        model.finalizeFromProperties();
-        ASSERT(model.isObjectUpToDateWithProperties());
+    model.finalizeFromProperties();
+    ASSERT(model.isObjectUpToDateWithProperties());
 
-        // make an edit through model's ComponentList access
-        for (auto& body : model.updComponentList<Body>()) {
-            body.upd_mass_center() = SimTK::Vec3(0);
-            break;
-        }
-        ASSERT(!model.isObjectUpToDateWithProperties());
+    // make an edit through model's ComponentList access
+    for (auto& body : model.updComponentList<Body>()) {
+        body.upd_mass_center() = SimTK::Vec3(0);
+        break;
+    }
+    ASSERT(!model.isObjectUpToDateWithProperties());
 
-        SimTK::State dummy_state;
+    SimTK::State dummy_state;
 
-        ASSERT_THROW(ComponentHasNoSystem, model.getSystem());
-        ASSERT_THROW(ComponentHasNoSystem, model.realizeDynamics(dummy_state));
-        ASSERT_THROW(ComponentHasNoSystem, 
-                     model.computeStateVariableDerivatives(dummy_state));
-        // should not be able to create a Manager either
-        ASSERT_THROW(ComponentHasNoSystem,
-                     Manager manager(model));
+    ASSERT_THROW(ComponentHasNoSystem, model.getSystem());
+    ASSERT_THROW(ComponentHasNoSystem, model.realizeDynamics(dummy_state));
+    ASSERT_THROW(ComponentHasNoSystem,
+                 model.computeStateVariableDerivatives(dummy_state));
+    // should not be able to create a Manager either
+    ASSERT_THROW(ComponentHasNoSystem,
+                 Manager manager(model));
 
-        // get a valid System and corresponding state
-        SimTK::State state = model.initSystem();
-        Manager manager(model);
-        state.setTime(0.0);
+    // get a valid System and corresponding state
+    SimTK::State state = model.initSystem();
+    Manager manager(model);
+    state.setTime(0.0);
 
-        // this should invalidate the System
-        model.finalizeFromProperties();
+    // this should invalidate the System
+    model.finalizeFromProperties();
 
-        // verify that finalizeFromProperties() wipes out the underlying System
-        ASSERT_THROW(ComponentHasNoSystem, model.getSystem());
+    // verify that finalizeFromProperties() wipes out the underlying System
+    ASSERT_THROW(ComponentHasNoSystem, model.getSystem());
 
-        // should not be able to "trick" the manager into integrating a model
-        // given a stale but compatible state
-        ASSERT_THROW(ComponentHasNoSystem, manager.initialize(state));
+    // should not be able to "trick" the manager into integrating a model
+    // given a stale but compatible state
+    ASSERT_THROW(ComponentHasNoSystem, manager.initialize(state));
 
-        // once again, get a valid System and corresponding state
-        state = model.initSystem();
-        
-        // Test for the effects of calling finalizeConnections() on the model
-        // after initSystem() has been called.
-        // In this case, there are no changes to the connections to be finalized.
-        model.finalizeConnections();
+    // once again, get a valid System and corresponding state
+    state = model.initSystem();
 
-        // verify that finalizeConnections() does not wipe out the underlying 
-        // System when there are no changes to the connections
-        auto& sys = model.getSystem();
+    // Test for the effects of calling finalizeConnections() on the model
+    // after initSystem() has been called.
+    // In this case, there are no changes to the connections to be finalized.
+    model.finalizeConnections();
 
-        auto elbowInHumerus = new PhysicalOffsetFrame("elbow_in_humerus",
-            model.getComponent<Body>("./bodyset/r_humerus"),
-            SimTK::Transform(SimTK::Vec3(0, -0.33, 0)) );
+    // verify that finalizeConnections() does not wipe out the underlying
+    // System when there are no changes to the connections
+    auto& sys = model.getSystem();
 
-        model.addComponent(elbowInHumerus);
+    auto elbowInHumerus = new PhysicalOffsetFrame("elbow_in_humerus",
+        model.getComponent<Body>("./bodyset/r_humerus"),
+        SimTK::Transform(SimTK::Vec3(0, -0.33, 0)) );
 
-        // establish the new offset frame as part of the model but not
-        // used by any joints, constraints or forces
-        state = model.initSystem();
+    model.addComponent(elbowInHumerus);
 
-        // update the elbow Joint and connect its socket to the new frame
-        Joint& elbow = model.updComponent<Joint>("./jointset/r_elbow");
-        elbow.connectSocket_parent_frame(*elbowInHumerus);
+    // establish the new offset frame as part of the model but not
+    // used by any joints, constraints or forces
+    state = model.initSystem();
 
-        // satisfy the new connections in the model
-        model.finalizeConnections();
+    // update the elbow Joint and connect its socket to the new frame
+    Joint& elbow = model.updComponent<Joint>("./jointset/r_elbow");
+    elbow.connectSocket_parent_frame(*elbowInHumerus);
 
-        // now finalizing the connections will invalidate the System because
-        // a Component (the elbow Joint and its connection) was updated
-        ASSERT_THROW(ComponentHasNoSystem, model.getSystem());
+    // satisfy the new connections in the model
+    model.finalizeConnections();
 
-        // verify the new connection was made
-        ASSERT(model.getComponent<Joint>("./jointset/r_elbow")
-            .getParentFrame().getName() == "elbow_in_humerus");
+    // now finalizing the connections will invalidate the System because
+    // a Component (the elbow Joint and its connection) was updated
+    ASSERT_THROW(ComponentHasNoSystem, model.getSystem());
+
+    // verify the new connection was made
+    ASSERT(model.getComponent<Joint>("./jointset/r_elbow")
+        .getParentFrame().getName() == "elbow_in_humerus");
 }
 
 TEST_CASE("testModelTopologyErrors")
 {
+    LoadOpenSimLibrary("osimActuators");
     Model model("arm26.osim");
     model.initSystem();
 
@@ -228,6 +230,7 @@ TEST_CASE("testDoesNotSegfaultWithUnusualConnections")
 
     try
     {
+        LoadOpenSimLibrary("osimActuators");
         OpenSim::Model m;
         OpenSim::PhysicalFrame const& groundFrame = m.getGround();
 

@@ -263,6 +263,7 @@ namespace {
 }
 
 TEST_CASE("testPopulateTrajectoryAndStatesTrajectoryReporter") {
+    LoadOpenSimLibrary("osimActuators");
     Model model("gait2354_simbody.osim");
 
     // To assist with creating interesting (non-zero) coordinate values:
@@ -335,6 +336,7 @@ TEST_CASE("testPopulateTrajectoryAndStatesTrajectoryReporter") {
 }
 
 TEST_CASE("testFrontBack") {
+    LoadOpenSimLibrary("osimActuators");
     Model model("arm26.osim");
     const auto& state = model.initSystem();
     StatesTrajectory states;
@@ -348,6 +350,7 @@ TEST_CASE("testFrontBack") {
 
 
 TEST_CASE("testFromStatesStorageGivesCorrectStates") {
+    LoadOpenSimLibrary("osimActuators");
 
     // Read in trajectory.
     // -------------------
@@ -447,6 +450,7 @@ TEST_CASE("testFromStatesStorageGivesCorrectStates") {
 }
 
 TEST_CASE("testFromStatesStorageUniqueColumnLabels") {
+    LoadOpenSimLibrary("osimActuators");
     remove(statesStoFname.c_str());
     createStateStorageFile();
 
@@ -479,6 +483,7 @@ TEST_CASE("testFromStatesStorageUniqueColumnLabels") {
 }
 
 TEST_CASE("testFromStatesStoragePre40CorrectStates") {
+    LoadOpenSimLibrary("osimActuators");
     // This test is very similar to testFromStatesStorageGivesCorrectStates
     // TODO could avoid the duplicate function since getStateIndex handles
     // pre-4.0 names.
@@ -566,6 +571,7 @@ TEST_CASE("testFromStatesStoragePre40CorrectStates") {
 
 
 TEST_CASE("testCopying") {
+    LoadOpenSimLibrary("osimActuators");
     Model model("gait2354_simbody.osim");
     auto& state = model.initSystem();
 
@@ -600,6 +606,7 @@ TEST_CASE("testCopying") {
 }
 
 TEST_CASE("testAppendTimesAreNonDecreasing") {
+    LoadOpenSimLibrary("osimActuators");
     Model model("gait2354_simbody.osim");
     auto& state = model.initSystem();
     state.setTime(1.0);
@@ -616,6 +623,7 @@ TEST_CASE("testAppendTimesAreNonDecreasing") {
 }
 
 TEST_CASE("testBoundsCheck") {
+    LoadOpenSimLibrary("osimActuators");
     Model model("gait2354_simbody.osim");
     const auto& state = model.initSystem();
     StatesTrajectory states;
@@ -636,6 +644,7 @@ TEST_CASE("testBoundsCheck") {
 }
 
 TEST_CASE("testIntegrityChecks") {
+    LoadOpenSimLibrary("osimActuators");
     Model arm26("arm26.osim");
     const auto& s26 = arm26.initSystem();
 
@@ -733,6 +742,7 @@ TEST_CASE("testIntegrityChecks") {
 }
 
 TEST_CASE("testExport") {
+    LoadOpenSimLibrary("osimActuators");
     Model gait("gait2354_simbody.osim");
     gait.initSystem();
 
@@ -781,6 +791,7 @@ TEST_CASE("testExport") {
 }
 
 TEST_CASE("testFromStatesStorageInconsistentModel") {
+    LoadOpenSimLibrary("osimActuators");
     remove(statesStoFname.c_str());
     testFromStatesStorageInconsistentModel(pre40StoFname);
     createStateStorageFile();
