@@ -48,7 +48,7 @@ const double padFactor = 1.0 + SimTK::SignificantReal;
 
 //-----------------------------------------------------------------------------
 // Create a force component derived from PointToPointSpring that adds on a
-// discrete variables of each supported type (bool, int, double, Vec2, Vec3,
+// discrete variable of each supported type (bool, int, double, Vec2, Vec3,
 // Vec4, Vec5, Vec6).
 class ExtendedPointToPointSpring : public OpenSim::PointToPointSpring
 {
@@ -82,9 +82,37 @@ public:
     // Constructor
     ExtendedPointToPointSpring(const PhysicalFrame& body1, SimTK::Vec3 point1,
         const PhysicalFrame& body2, SimTK::Vec3 point2,
-        double stiffness, double restlength) :
+        double stiffness, double restlength, int which, const string& suffix) :
         PointToPointSpring(body1, point1, body2, point2, stiffness, restlength)
-    { }
+    {
+        switch (which) {
+        case(0) :
+            nameBool += suffix;
+            break;
+        case(1) :
+            nameInt += suffix;
+            break;
+        case(2) :
+            nameDbl += suffix;
+            break;
+        case(3) :
+            nameVec2 += suffix;
+            break;
+        case(4) :
+            nameVec3 += suffix;
+            break;
+        case(5) :
+            nameVec4 += suffix;
+            break;
+        case(6) :
+            nameVec5 += suffix;
+            break;
+        case(7) :
+            nameVec6 += suffix;
+            break;
+        }
+
+    }
 
     void
     extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) const override
@@ -171,6 +199,7 @@ public:
     // The actual force calculation is done in SimTK::TwoPointLinearSpring.
     // This method just provides a means of setting the added discrete
     // variables so that they change during the course of a simulation.
+    // The discrete variables are just set to the generalized speeds.
     virtual void computeForce(const SimTK::State& state,
         SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
         SimTK::Vector& generalizedForces) const override
@@ -512,7 +541,7 @@ testEquality(const Model& model,
 //_____________________________________________________________________________
 // Build the model
 Model*
-buildModel() {
+buildModel(int whichDiscreteState, const string& discreteStateSuffix) {
 
     // Create an empty model
     Model* model = new Model();
@@ -548,7 +577,8 @@ buildModel() {
     Vec3 origin(0.0);
     Vec3 insertion(0.1, 0.1, 0.025);
     ExtendedPointToPointSpring* spring = new ExtendedPointToPointSpring(
-        ground, origin, *block, insertion, kp, restlength);
+        ground, origin, *block, insertion, kp, restlength,
+        whichDiscreteState, discreteStateSuffix);
     model->addForce(spring);
 
     return model;
@@ -600,12 +630,71 @@ TEST_CASE("Getting Started")
 
 TEST_CASE("Serialization and Deserialization")
 {
-    // Build the model and run a simulation
+    // Specify which discrete state gets a suffix. The suffix is used
+    // to change the name of a discrete variable so that it will not be found.
+    // When whichDiscreteState == 1, the suffix is not appended to any state.
+    int whichDiscreteState{-1};
+    string suffix{"_ShouldNotBeFound"};
+
+    // Build the model and run a simulation.
     // The output of simulate() is the state trajectory.
     // Note that a copy of the state trajectory is returned, so we don't have
     // to worry about the reporter (or any other object) going out of scope
     // or being deleted.
-    Model *model = buildModel();
+    Model *model = buildModel(whichDiscreteState, suffix);
+    Array_<State> trajA = simulate(model);
+
+    // Serialize (A)
+    int p;
+    for (p = 2; p < 22; ++p) {
+        cout << "Testing for precision = " << p << endl;
+
+        SimTK::String filename = "BlockOnASpring.ostates";
+        SimTK::String note = "Output from `testStatesDocument.cpp` to validate state serialization and deserialization.";
+        StatesDocument docA(*model, trajA, note, p);
+        docA.serialize(filename);
+
+        // Deserialize (B)
+        StatesDocument docB(filename);
+        Array_<State> trajB;
+        docB.deserialize(*model, trajB);
+
+        // Check the note and the precision.
+        CHECK(docB.getNote() == docA.getNote());
+        CHECK(docB.getPrecision() == docB.getPrecision());
+
+        // Check size
+        REQUIRE(trajA.size() == trajB.size());
+
+        // Realize both state trajectories to Stage::Report
+        for (int i = 0; i < trajA.size(); ++i) {
+            model->getSystem().realize(trajA[i], Stage::Report);
+            model->getSystem().realize(trajB[i], Stage::Report);
+        }
+
+        // Are state trajectories A and B the same?
+        testEquality(*model, trajA, trajB, p);
+    }
+
+    delete model;
+}
+
+TEST_CASE("Exception: Discrete State Not Found")
+{
+    // Specify which discrete state gets a suffix. The suffix is used
+    // to change the name of a discrete variable so that it will not be found.
+    // When whichDiscreteState == 1, the suffix is not appended to any state.
+    // When whichDiscreteState is between 0 and 7, the suffix will be
+    // appended to that discrete state.
+    int whichDiscreteState{-1};
+    string suffix{"_ShouldNotBeFound"};
+
+    // Build a model and run a simulation
+    // The output of simulate() is the state trajectory.
+    // Note that a copy of the state trajectory is returned, so we don't have
+    // to worry about the reporter (or any other object) going out of scope
+    // or being deleted.
+    Model *model = buildModel(whichDiscreteState, suffix);
     Array_<State> trajA = simulate(model);
 
     // Serialize (A)
@@ -635,8 +724,6 @@ TEST_CASE("Serialization and Deserialization")
 
     // Are state trajectories A and B the same?
     testEquality(*model, trajA, trajB, precision);
-
-    REQUIRE(1 == 1);
 
     delete model;
 }
