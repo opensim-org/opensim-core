@@ -36,55 +36,25 @@ Tests Include:
 #include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace std;
 using SimTK::Transform;
 
-void testStationOnBody();
-void testStationOnOffsetFrame();
+namespace {
+    class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
+        OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
+    public:
+        OrdinaryOffsetFrame() : OffsetFrame() {}
+        virtual ~OrdinaryOffsetFrame() {}
 
-class OrdinaryOffsetFrame : public OffsetFrame < Frame > {
-    OpenSim_DECLARE_CONCRETE_OBJECT(OrdinaryOffsetFrame, OffsetFrame<Frame>);
-public:
-    OrdinaryOffsetFrame() : OffsetFrame() {}
-    virtual ~OrdinaryOffsetFrame() {}
-
-    OrdinaryOffsetFrame(const Frame& parent, const SimTK::Transform& offset) :
-        OffsetFrame(parent, offset) {}
-};
-
-
-int main()
-{
-    SimTK::Array_<std::string> failures;
-
-    try { testStationOnBody(); }
-    catch (const std::exception& e){
-        cout << e.what() << endl; failures.push_back("testStationOnBody");
-    }
-
-    try { testStationOnOffsetFrame(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testStationOnOffsetFrame");
-    }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done. All cases passed." << endl;
-
-    return 0;
+        OrdinaryOffsetFrame(const Frame& parent, const SimTK::Transform& offset) :
+            OffsetFrame(parent, offset) {}
+    };
 }
 
-//==============================================================================
-// Test Cases
-//==============================================================================
-
-void testStationOnBody()
+TEST_CASE("testStationOnBody")
 {
     SimTK::Vec3 tolerance(SimTK::Eps);
 
@@ -127,7 +97,7 @@ void testStationOnBody()
     }
 }
 
-void testStationOnOffsetFrame()
+TEST_CASE("testStationOnOffsetFrame")
 {
     using SimTK::Vec3;
     SimTK::Vec3 tolerance(SimTK::Eps);
