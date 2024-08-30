@@ -47,71 +47,12 @@ Manager Tests:
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Common/Constant.h>
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace std;
-void testStationCalcWithManager();
-void testStateChangesBetweenIntegration();
-void testExcitationUpdatesWithManager();
-void testConstructors();
-void testIntegratorInterface();
-void testExceptions();
 
-int main()
-{
-    SimTK::Array_<std::string> failures;
-
-    try { testStationCalcWithManager(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testStationCalcWithManager");
-    }
-
-    try { testStateChangesBetweenIntegration(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testStateChangesBetweenIntegration");
-    }
-
-    try { testExcitationUpdatesWithManager(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testExcitationUpdatesWithManager");
-    }
-
-    try { testConstructors(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testConstructors");
-    }
-
-    try { testIntegratorInterface(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testIntegratorInterface");
-    }
-
-    try { testExceptions(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testExceptions");
-    }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done. All cases passed." << endl;
-
-    return 0;
-}
-
-//==============================================================================
-// Test Cases
-//==============================================================================
-
-void testStationCalcWithManager()
+TEST_CASE("testStationCalcWithManager")
 {
     using SimTK::Vec3;
 
@@ -185,7 +126,7 @@ void testStationCalcWithManager()
     }
 }
 
-void testStateChangesBetweenIntegration()
+TEST_CASE("testStateChangesBetweenIntegration")
 {
     cout << "Running testStateChangesBetweenIntegration" << endl;
 
@@ -275,7 +216,7 @@ void testStateChangesBetweenIntegration()
 
 }
 
-void testExcitationUpdatesWithManager()
+TEST_CASE("testExcitationUpdatesWithManager")
 {
     cout << "Running testExcitationUpdatesWithManager" << endl;
     LoadOpenSimLibrary("osimActuators");
@@ -324,7 +265,7 @@ void testExcitationUpdatesWithManager()
     }
 }
 
-void testConstructors()
+TEST_CASE("testConstructors")
 {
     cout << "Running testConstructors" << endl;
 
@@ -382,7 +323,7 @@ void testConstructors()
     SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState4), finalSpeed);
 }
 
-void testIntegratorInterface()
+TEST_CASE("testIntegratorInterface")
 {
     cout << "Running testIntegratorInterface" << endl;
 
@@ -450,7 +391,7 @@ void testIntegratorInterface()
     manager.setIntegratorInternalStepLimit(nSteps);
 }
 
-void testExceptions()
+TEST_CASE("testExceptions")
 {
     cout << "Running testExceptions" << endl;
     LoadOpenSimLibrary("osimActuators");
