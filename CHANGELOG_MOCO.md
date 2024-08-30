@@ -3,6 +3,9 @@ Moco Change Log
 
 1.4.0
 -----
+- 2024-08-30: Added `MocoInverse::initializeKinematics()` to allow users to retrieve kinematics after
+              converting the `MocoInverse` to a `MocoStudy`. 
+
 - 2024-08-26: Changed all `printDescription()` and `printDescriptionImpl()` methods to log at level info 
               instead of cout.
 
