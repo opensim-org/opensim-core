@@ -259,7 +259,7 @@ void MocoControlTrackingGoal::calcIntegrandImpl(
 void MocoControlTrackingGoal::printDescriptionImpl() const {
     for (int i = 0; i < (int)m_control_names.size(); i++) {
         std::string type = m_isInputControl[i] ? "Input control" : "control";
-        log_cout("        {}: {}, reference label: {}, weight: {}", 
+        log_info("        {}: {}, reference label: {}, weight: {}",
                 type, m_control_names[i], m_ref_labels[i], 
                 m_control_weights[i]);
     }

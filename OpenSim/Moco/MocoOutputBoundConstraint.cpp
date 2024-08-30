@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim: MocoOutputConstraint.h                                            *
+* OpenSim: MocoOutputBoundConstraint.cpp                                      *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2022 Stanford University and the Authors                     *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Nicholas Bianco                                                 *
+ * Author(s): Allison John                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -16,20 +16,26 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoOutputConstraint.h"
+#include "MocoOutputBoundConstraint.h"
+#include "MocoProblemInfo.h"
+#include <OpenSim/Common/GCVSpline.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 using namespace OpenSim;
 
-void MocoOutputConstraint::constructProperties() {
+void MocoOutputBoundConstraint::constructProperties() {
     constructProperty_output_path("");
     constructProperty_second_output_path("");
     constructProperty_operation("");
     constructProperty_exponent(1);
     constructProperty_output_index(-1);
+    constructProperty_lower_bound();
+    constructProperty_upper_bound();
+    constructProperty_equality_with_lower(false);
 }
 
-void MocoOutputConstraint::initializeOnModelImpl(const Model&,
-                                                 const MocoProblemInfo&) const {
+void MocoOutputBoundConstraint::initializeOnModelImpl(
+        const Model& model, const MocoProblemInfo& problemInfo) const {
     OPENSIM_THROW_IF_FRMOBJ(get_output_path().empty(), Exception,
             "No output_path provided.");
     std::string componentPath, outputName, channelName, alias;
@@ -40,7 +46,7 @@ void MocoOutputConstraint::initializeOnModelImpl(const Model&,
 
     OPENSIM_THROW_IF_FRMOBJ(get_output_index() < -1, Exception,
             "Invalid Output index provided.");
-    m_minimizeVectorNorm = (get_output_index() == -1);
+    m_boundVectorNorm = (get_output_index() == -1);
 
     if (dynamic_cast<const Output<double>*>(abstractOutput)) {
         m_data_type = Type_double;
@@ -93,8 +99,69 @@ void MocoOutputConstraint::initializeOnModelImpl(const Model&,
     // in order to calculate values from this output.
     m_dependsOnStage = m_output->getDependsOnStage();
 
-    // There is only one scalar constraint per Output.
-    setNumEquations(1);
+    // initialize bounds
+    m_hasLower = !getProperty_lower_bound().empty();
+    m_hasUpper = !getProperty_upper_bound().empty();
+    if (!m_hasLower && !m_hasUpper) {
+        log_warn("In MocoOutputBoundConstraint '{}', output path(s) are "
+                 "specified but no bounds are provided.", getName());
+    }
+    OPENSIM_THROW_IF_FRMOBJ(get_equality_with_lower() && m_hasUpper, Exception,
+        "If equality_with_lower==true, upper bound function must not be "
+        "set.");
+    OPENSIM_THROW_IF_FRMOBJ(get_equality_with_lower() && !m_hasLower, Exception,
+            "If equality_with_lower==true, lower bound function must be set.");
+
+    auto checkTimeRange = [&](const Function& f) {
+        if (auto* spline = dynamic_cast<const GCVSpline*>(&f)) {
+            OPENSIM_THROW_IF_FRMOBJ(
+                    spline->getMinX() > problemInfo.minInitialTime, Exception,
+                    "The function's minimum domain value ({}) must "
+                    "be less than or equal to the minimum possible "
+                    "initial time ({}).",
+                    spline->getMinX(), problemInfo.minInitialTime);
+            OPENSIM_THROW_IF_FRMOBJ(
+                    spline->getMaxX() < problemInfo.maxFinalTime, Exception,
+                    "The function's maximum domain value ({}) must "
+                    "be greater than or equal to the maximum possible "
+                    "final time ({}).",
+                    spline->getMaxX(), problemInfo.maxFinalTime);
+        }
+    };
+    if (m_hasLower) checkTimeRange(get_lower_bound());
+    if (m_hasUpper) checkTimeRange(get_upper_bound());
+
+    if (get_equality_with_lower()) {
+        setNumEquations(1);
+    } else {
+        setNumEquations((int)m_hasLower + (int)m_hasUpper);
+    }
+
+    // TODO: setConstraintInfo() is not really intended for use here.
+    MocoConstraintInfo info;
+    std::vector<MocoBounds> bounds;
+    if (get_equality_with_lower()) {
+        bounds.emplace_back(0, 0);
+    } else {
+        // The lower and upper bounds on the path constraint must be
+        // constants, so we cannot use the lower and upper bound functions
+        // directly. Therefore, we use a pair of constraints where the
+        // lower/upper bound functions are part of the path constraint
+        // functions and the lower/upper bounds for the path constraints are
+        // -inf, 0, and/or inf.
+        // If a lower bound function is provided, we enforce
+        //      lower_bound_function <= output
+        // by creating the constraint
+        //      0 <= output - lower_bound_function <= inf
+        if (m_hasLower) { bounds.emplace_back(0, SimTK::Infinity); }
+        // If an upper bound function is provided, we enforce
+        //      output <= upper_bound_function
+        // by creating the constraint
+        //      -inf <= output - upper_bound_function <= 0
+        if (m_hasUpper) { bounds.emplace_back(-SimTK::Infinity, 0); }
+    }
+    info.setBounds(bounds);
+    const_cast<MocoOutputBoundConstraint*>(this)->setConstraintInfo(info);
 
     m_useCompositeOutputValue = false;
     // if there's a second output, initialize it
@@ -109,7 +176,7 @@ void MocoOutputConstraint::initializeOnModelImpl(const Model&,
     }
 }
 
-void MocoOutputConstraint::initializeComposite() const {
+void MocoOutputBoundConstraint::initializeComposite() const {
     if (get_operation() == "addition") {
         m_operation = Addition;
     } else if (get_operation() == "subtraction") {
@@ -151,7 +218,7 @@ void MocoOutputConstraint::initializeComposite() const {
                 "Output types do not match. The second Output is of type "
                 "SimTK::SpatialVec but the first is of type {}.",
                 getDataTypeString(m_data_type));
-        OPENSIM_THROW_IF_FRMOBJ(m_minimizeVectorNorm &&
+        OPENSIM_THROW_IF_FRMOBJ(m_boundVectorNorm &&
                 (m_operation == Multiplication || m_operation == Division),
                 Exception, "Multiplication and division operations are not "
                 "supported with Output type SimTK::SpatialVec without an index.")
@@ -166,47 +233,51 @@ void MocoOutputConstraint::initializeComposite() const {
     }
 }
 
-void MocoOutputConstraint::calcPathConstraintErrorsImpl(
+void MocoOutputBoundConstraint::calcPathConstraintErrorsImpl(
         const SimTK::State& state, SimTK::Vector& errors) const {
-    errors[0] = setValueToExponent(calcOutputValue(state));
+    int iconstr = 0;
+    SimTK::Vector time(1);
+    time[0] = state.getTime();
+    double output_value = setValueToExponent(calcOutputValue(state));
+    if (m_hasLower) {
+        errors[iconstr++] = output_value - get_lower_bound().calcValue(time);
+    }
+    if (m_hasUpper) {
+        errors[iconstr++] = output_value - get_upper_bound().calcValue(time);
+    }
 }
 
-double MocoOutputConstraint::calcOutputValue(const SimTK::State& state) const {
+double MocoOutputBoundConstraint::calcOutputValue(const SimTK::State& state) const {
     if (m_useCompositeOutputValue) {
         return calcCompositeOutputValue(state);
     }
     return calcSingleOutputValue(state);
 }
 
-double MocoOutputConstraint::calcSingleOutputValue(const SimTK::State& state) const {
-    getModel().getSystem().realize(state, m_output->getDependsOnStage());
+double MocoOutputBoundConstraint::calcSingleOutputValue(const SimTK::State& state) const {
+    getModel().getSystem().realize(state, getDependsOnStage());
 
     double value = 0;
     if (m_data_type == Type_double) {
-        value = static_cast<const Output<double>*>(m_output.get())
-                        ->getValue(state);
+        value = getOutput<double>().getValue(state);
     } else if (m_data_type == Type_Vec3) {
-        if (m_minimizeVectorNorm) {
-            value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
-                        ->getValue(state).norm();
+        if (m_boundVectorNorm) {
+            value = getOutput<SimTK::Vec3>().getValue(state).norm();
         } else {
-            value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
-                        ->getValue(state)[m_index1];
+            value = getOutput<SimTK::Vec3>().getValue(state)[m_index1];
         }
     } else if (m_data_type == Type_SpatialVec) {
-        if (m_minimizeVectorNorm) {
-            value = static_cast<const Output<SimTK::SpatialVec>*>(m_output.get())
-                        ->getValue(state).norm();
+        if (m_boundVectorNorm) {
+            value = getOutput<SimTK::SpatialVec>().getValue(state).norm();
         } else {
-            value = static_cast<const Output<SimTK::SpatialVec>*>(m_output.get())
-                        ->getValue(state)[m_index1][m_index2];
+            value = getOutput<SimTK::SpatialVec>().getValue(state)[m_index1][m_index2];
         }
     }
 
     return value;
 }
 
-double MocoOutputConstraint::calcCompositeOutputValue(const SimTK::State& state) const {
+double MocoOutputBoundConstraint::calcCompositeOutputValue(const SimTK::State& state) const {
     getModel().getSystem().realize(state, getDependsOnStage());
 
     double value = 0;
@@ -215,7 +286,7 @@ double MocoOutputConstraint::calcCompositeOutputValue(const SimTK::State& state)
         double value2 = getSecondOutput<double>().getValue(state);
         value = applyOperation(value1, value2);
     } else if (m_data_type == Type_Vec3) {
-        if (m_minimizeVectorNorm) {
+        if (m_boundVectorNorm) {
             const SimTK::Vec3& value1 = getOutput<SimTK::Vec3>().getValue(state);
             const SimTK::Vec3& value2 = getSecondOutput<SimTK::Vec3>().getValue(state);
             value = applyOperation(value1, value2);
@@ -225,45 +296,20 @@ double MocoOutputConstraint::calcCompositeOutputValue(const SimTK::State& state)
             value = applyOperation(value1, value2);
         }
     } else if (m_data_type == Type_SpatialVec) {
-        if (m_minimizeVectorNorm) {
+        if (m_boundVectorNorm) {
             const SimTK::SpatialVec& value1 = getOutput<SimTK::SpatialVec>()
                                               .getValue(state);
             const SimTK::SpatialVec& value2 = getSecondOutput<SimTK::SpatialVec>()
                                               .getValue(state);
             value = applyOperation(value1, value2);
         } else {
-            double value1 = getOutput<SimTK::SpatialVec>().getValue(state)
-                            [m_index1][m_index2];
-            double value2 = getSecondOutput<SimTK::SpatialVec>().getValue(state)
-                            [m_index1][m_index2];
+            double value1 = getOutput<SimTK::SpatialVec>()
+                            .getValue(state)[m_index1][m_index2];
+            double value2 = getSecondOutput<SimTK::SpatialVec>()
+                            .getValue(state)[m_index1][m_index2];
             value = applyOperation(value1, value2);
         }
     }
 
     return value;
-}
-
-
-void MocoOutputConstraint::printDescriptionImpl() const {
-    // Output path.
-    std::string str = fmt::format("        output: {}", getOutputPath());
-
-    if (m_useCompositeOutputValue) {
-        str += fmt::format("\n        second output: {}", getSecondOutputPath());
-        // Operation.
-        str += fmt::format("\n        operation: {}", get_operation());
-    }
-
-    // Output type.
-    str += fmt::format(", type: {}", getDataTypeString(m_data_type));
-
-    // Output index (if relevant).
-    if (getOutputIndex() != -1) {
-        str += fmt::format(", index: {}", getOutputIndex());
-    }
-
-    // Exponent.
-    str += fmt::format(", exponent: {}", getExponent());
-
-    log_info(str);
 }

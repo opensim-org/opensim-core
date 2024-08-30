@@ -49,7 +49,7 @@ void MocoConstraintInfo::printDescription() const {
         boundsStr.push_back(ss.str());
     }
     str += fmt::format(". bounds: {}", fmt::join(boundsStr, ", "));
-    log_cout(str);
+    log_info(str);
 }
 
 void MocoConstraintInfo::constructProperties() {

@@ -143,9 +143,11 @@ convertIterateTropterToMoco(const tropIterateType& tropSol,
                         input_control_names, multiplier_names,
                         derivative_names, parameter_names, states, controls,
                         input_controls, multipliers, derivatives, parameters);
-    // Append slack variables.
+
+    // Append slack variables. Interpolate slack variables to remove NaNs.
     for (int i = 0; i < numSlacks; ++i) {
-        mocoIter.appendSlack(slack_names[i], slacks.col(i));
+        mocoIter.appendSlack(slack_names[i], 
+                interpolate(time, slacks.col(i), time, true, true));
     }
     return mocoIter;
 }

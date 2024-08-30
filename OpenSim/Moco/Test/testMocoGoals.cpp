@@ -19,25 +19,29 @@
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/PointActuator.h>
-#include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Actuators/SpringGeneralizedForce.h>
+#include <OpenSim/Moco/MocoGoal/MocoExpressionBasedParameterGoal.h>
 #include <OpenSim/Moco/MocoOutputConstraint.h>
+#include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
-#include <catch2/catch_all.hpp>
 #include "Testing.h"
+#include <catch2/catch_all.hpp>
 
 using Catch::Approx;
 using Catch::Matchers::ContainsSubstring;
 
 using namespace OpenSim;
 
+/// creates a model with one sliding mass
 std::unique_ptr<Model> createSlidingMassModel() {
     auto model = make_unique<Model>();
     model->setName("sliding_mass");
     model->set_gravity(SimTK::Vec3(0, 0, 0));
     auto* body = new Body("body", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
     model->addComponent(body);
+    body->attachGeometry(new Sphere(0.05));
 
     // Allows translation along x.
     auto* joint = new SliderJoint("slider", model->getGround(), *body);
@@ -51,6 +55,29 @@ std::unique_ptr<Model> createSlidingMassModel() {
     actu->setOptimalForce(1);
     model->addComponent(actu);
 
+    return model;
+}
+
+/// create a model with two sliding masses
+std::unique_ptr<Model> createDoubleSlidingMassModel() {
+    std::unique_ptr<Model> model = createSlidingMassModel();
+    auto* body = new Body("body2", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    model->addComponent(body);
+    body->attachGeometry(new Sphere(0.05));
+
+    // Allows translation along x.
+    auto* joint = new SliderJoint("slider2", model->getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("position");
+    model->addComponent(joint);
+
+    auto* actu = new CoordinateActuator();
+    actu->setCoordinate(&coord);
+    actu->setName("actuator2");
+    actu->setOptimalForce(1);
+    model->addComponent(actu);
+
+    model->finalizeConnections();
     return model;
 }
 
@@ -265,7 +292,7 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
     MocoStudy study = setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
     auto solutionEffort = study.solve();
 
-    SECTION ("MocoControlTrackingGoal") {
+    SECTION("MocoControlTrackingGoal") {
         // Re-run problem, now setting effort cost function to zero and adding a
         // control tracking cost.
         auto& problem = study.updProblem();
@@ -297,7 +324,7 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
                 solutionTracking.getStatesTrajectory(), 1e-2);
     }
 
-    SECTION ("MocoOrientationTrackingGoal") {
+    SECTION("MocoOrientationTrackingGoal") {
         MocoStudy studyOrientationTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
 
@@ -318,21 +345,21 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
         }
     }
 
-    SECTION ("MocoTranslationTrackingGoal") {
+    SECTION("MocoTranslationTrackingGoal") {
         MocoStudy studyTranslationTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         testDoublePendulumTracking<TestType, MocoTranslationTrackingGoal>(
             studyTranslationTracking, solutionEffort);
     }
 
-    SECTION ("MocoAngularVelocityTrackingGoal") {
+    SECTION("MocoAngularVelocityTrackingGoal") {
         MocoStudy studyAngularVelocityTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         testDoublePendulumTracking<TestType, MocoAngularVelocityTrackingGoal>(
             studyAngularVelocityTracking, solutionEffort);
     }
 
-    SECTION ("MocoAccelerationTrackingGoal") {
+    SECTION("MocoAccelerationTrackingGoal") {
         MocoStudy studyAccelerationTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         // Re-run problem, now setting effort cost function to a low weight and
@@ -365,7 +392,7 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
                 solutionTracking.getStatesTrajectory(), 1e-2);
     }
 
-    SECTION ("MocoAccelerationTrackingGoal (IMU tracking)") {
+    SECTION("MocoAccelerationTrackingGoal (IMU tracking)") {
         MocoStudy studyAccelerationTracking =
                 setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         // Re-run problem, now setting effort cost function to a low weight and
@@ -411,14 +438,42 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
         auto* genForceTracking =
                 problem.addGoal<MocoGeneralizedForceTrackingGoal>("tracking");
         genForceTracking->setReference(generalizedForces);
-        studyGenForceTracking.updSolver<TestType>().resetProblem(problem);
-        auto solutionTracking = studyGenForceTracking.solve();
 
-        // The tracking solution should match the effort solution.
-        SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
-                          solutionTracking.getControlsTrajectory(), 1e-3);
-        SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
-                          solutionTracking.getStatesTrajectory(), 1e-3);
+        SECTION("Setting weights") {
+            Model model = problem.createRep().getModelBase();
+            SimTK::State state = model.initSystem();
+            // Set acclelerations to zero, so the only model-generated forces 
+            // in the integrand are zero.
+            state.updUDot() = SimTK::Vector(state.getNU(), 0.0);
+            MocoGoal::IntegrandInput input{0, state, {}};
+
+            // Apply weights.
+            genForceTracking->setWeightForGeneralizedForcePattern("q.*", 5.0);
+            genForceTracking->setWeightForGeneralizedForce("q1_moment", 10.0);
+            genForceTracking->initializeOnModel(model);
+
+            // The integrand should be the sum of the squared generalized forces
+            // multiplied by the weights.
+            const SimTK::RowVectorView initialGenForces = 
+                    generalizedForces.getRowAtIndex(0);
+            double integrand = 
+                    5.0 * (initialGenForces[0] * initialGenForces[0]) +
+                    10.0 * (initialGenForces[1] * initialGenForces[1]);
+            CHECK_THAT(genForceTracking->calcIntegrand(input), 
+                    Catch::Matchers::WithinAbs(integrand, 1e-6));
+        }
+        
+        SECTION("Tracking performance") {
+            studyGenForceTracking.updSolver<TestType>().resetProblem(problem);
+            auto solutionTracking = studyGenForceTracking.solve();
+
+            // The tracking solution should match the effort solution.
+            SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
+                            solutionTracking.getControlsTrajectory(), 1e-3);
+            SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
+                            solutionTracking.getStatesTrajectory(), 1e-3);
+        }
+
     }
 }
 
@@ -594,8 +649,7 @@ TEST_CASE("Test MocoSumSquaredStateGoal") {
     std::string q1_str = q1.getAbsolutePathString() + "/value";
 
     SimTK::State state = model.initSystem();
-    SimTK::Vector inputControls;
-    MocoGoal::IntegrandInput input {0, state, {}};
+    MocoGoal::IntegrandInput input{0, state, {}};
     q0.setValue(state, 1.0);
     q1.setValue(state, 0.5);
 
@@ -952,6 +1006,263 @@ TEMPLATE_TEST_CASE("MocoOutputGoal", "", MocoCasADiSolver,
     }
 }
 
+TEMPLATE_TEST_CASE("MocoOutputConstraint with two outputs", "", MocoCasADiSolver,
+        MocoTropterSolver) {
+    double bound = 2.0;
+    MocoSolution solutionControl;
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    auto model = createDoubleSlidingMassModel();
+    model->initSystem();
+    problem.setModelAsCopy(*model);
+    problem.setTimeBounds(0, 3);
+
+    // one slider must move, the other doesn't need to
+    problem.setStateInfo("/slider/position/value", MocoBounds(-50, 50),
+       MocoInitialBounds(-5,-5), MocoFinalBounds(5, 5.5));
+    problem.setStateInfo("/slider2/position/value", MocoBounds(-50, 50),
+       MocoInitialBounds(-50, 50), MocoFinalBounds(-50, 50));
+    problem.setStateInfo("/slider/position/speed", {-10, 10}, {-10, 10}, {-10, 10});
+    problem.setStateInfo("/slider2/position/speed", {-10, 10}, {-10, 10}, {-10, 10});
+    problem.setControlInfo("/actuator", {-100, 100});
+    problem.setControlInfo("/actuator2", {-100, 100});
+
+    // add constraint: second mass stays near moving mass
+    auto* pathCon = problem.template addPathConstraint<MocoOutputConstraint>();
+    pathCon->setName("velocities_goal");
+    pathCon->setOutputPath("/body|position");
+    pathCon->setSecondOutputPath("/body2|position");
+    pathCon->setOperation("subtraction");
+    pathCon->setOutputIndex(0);
+    pathCon->setExponent(2);
+    pathCon->updConstraintInfo().setBounds({{0, bound}});
+
+    auto* effort = problem.template addGoal<MocoControlGoal>();
+    effort->setName("effort");
+    effort->setWeight(0.001);
+
+    auto& solver = study.template initSolver<TestType>();
+    solver.set_num_mesh_intervals(30);
+    MocoSolution solution = study.solve();
+
+    auto solutionPositionMoving = solution.getState("/slider/position/value");
+    auto solutionPositionFollowing = solution.getState("/slider2/position/value");
+    for (int i = 0; i < solution.getNumTimes(); ++i) {
+        double diff = (static_cast<SimTK::Vec3>(solutionPositionMoving[i])[0]
+            - static_cast<SimTK::Vec3>(solutionPositionFollowing[i])[0]);
+        CHECK(diff * diff <= bound);
+    }
+}
+
+TEMPLATE_TEST_CASE("MocoOutputGoal with two outputs", "", MocoCasADiSolver,
+        MocoTropterSolver) {
+    MocoSolution solutionControl;
+
+    SECTION("Subtraction of Vec3 (norm)") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        auto model = createDoubleSlidingMassModel();
+        model->initSystem();
+
+        problem.setModelAsCopy(*model);
+        problem.setTimeBounds(0, 5);
+
+        // set up sliders to have a distance from each other at the beginning
+        problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
+            MocoInitialBounds(-2), MocoFinalBounds(-5, 5));
+        problem.setStateInfo("/slider2/position/value", MocoBounds(-5, 5),
+            MocoInitialBounds(2), MocoFinalBounds(-5, 5));
+
+        problem.setStateInfo("/slider/position/speed", {-10, 10}, 0, 0);
+        problem.setStateInfo("/slider2/position/speed", {-10, 10}, 0, 0);
+        problem.setControlInfo("/actuator", {-100, 100});
+        problem.setControlInfo("/actuator2", {-100, 100});
+
+        auto* effort = problem.addGoal<MocoControlGoal>();
+        effort->setName("effort");
+        effort->setWeight(0.001);
+
+        SECTION("MocoOutputGoal") {
+            // add goal of smallest distance
+            auto* goal = problem.template addGoal<MocoOutputGoal>();
+
+            // check getting the properties before setting them
+            CHECK_NOTHROW(goal->getOutputPath());
+            CHECK_NOTHROW(goal->getOperation());
+
+            goal->setName("distance2");
+            goal->setOutputPath("/body|position");
+            goal->setSecondOutputPath("/body2|position");
+            goal->setOperation("subtraction");
+            goal->setExponent(2);
+
+            auto& solver = study.template initSolver<TestType>();
+            solver.set_num_mesh_intervals(30);
+            MocoSolution solution = study.solve();
+
+            // analyze result for ending distance between spheres
+            StatesTrajectory trajectory = solution.exportToStatesTrajectory(*model);
+            const SimTK::State& finalState = trajectory.back();
+            model->realizePosition(finalState);
+            const SimTK::Vec3& endPosition1 = model->getComponent<Body>("/body")
+                                            .getPositionInGround(finalState);
+            const SimTK::Vec3& endPosition2 = model->getComponent<Body>("/body2")
+                                            .getPositionInGround(finalState);
+
+            CHECK((endPosition1 - endPosition2).norm() == Approx(0).margin(1e-2));
+        }
+
+        SECTION("MocoFinalOutputGoal") {
+            // add goal of smallest distance
+            auto* goal = problem.template addGoal<MocoFinalOutputGoal>();
+            goal->setName("distance2");
+            goal->setOutputPath("/body|position");
+            goal->setSecondOutputPath("/body2|position");
+            goal->setOperation("subtraction");
+            goal->setExponent(2);
+
+            auto& solver = study.template initSolver<TestType>();
+            solver.set_num_mesh_intervals(30);
+            MocoSolution solution = study.solve();
+
+            // analyze result for ending distance between spheres
+            StatesTrajectory trajectory = solution.exportToStatesTrajectory(*model);
+            const SimTK::State& finalState = trajectory.back();
+            model->realizePosition(finalState);
+            const SimTK::Vec3& endPosition1 = model->getComponent<Body>("/body")
+                                            .getPositionInGround(finalState);
+            const SimTK::Vec3& endPosition2 = model->getComponent<Body>("/body2")
+                                            .getPositionInGround(finalState);
+
+            CHECK((endPosition1 - endPosition2).norm() == Approx(0).margin(5e-2));
+        }
+    }
+
+    SECTION("Multiplication of SpatialVec (with index)") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        auto model = createDoubleSlidingMassModel();
+        model->initSystem();
+
+        problem.setModelAsCopy(*model);
+        problem.setTimeBounds(0, 1);
+        problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
+            MocoInitialBounds(1), MocoFinalBounds(-5, 5));
+        problem.setStateInfo("/slider2/position/value", MocoBounds(-5, 5),
+            MocoInitialBounds(-1), MocoFinalBounds(-5, 5));
+
+        // sliders have a starting velocity
+        problem.setStateInfo("/slider/position/speed", {-50, 50}, 3);
+        problem.setStateInfo("/slider2/position/speed", {-50, 50}, -1);
+        problem.setControlInfo("/actuator", {-100, 100});
+        problem.setControlInfo("/actuator2", {-100, 100});
+
+        // add goal of smallest multiplied velocities
+        auto* goal = problem.template addGoal<MocoOutputGoal>();
+        goal->setName("multiply_velocities");
+        goal->setOutputPath("/body|velocity");
+        goal->setSecondOutputPath("/body2|velocity");
+        goal->setOperation("multiplication");
+        goal->setOutputIndex(3);
+        goal->setExponent(2);
+
+        auto* effort = problem.template addGoal<MocoControlGoal>();
+        effort->setName("effort");
+        effort->setWeight(0.001);
+
+        auto& solver = study.template initSolver<TestType>();
+        solver.set_num_mesh_intervals(10);
+        MocoSolution solution = study.solve();
+
+        // analyze result for ending velocities
+        StatesTrajectory trajectory = solution.exportToStatesTrajectory(*model);
+        const SimTK::State& finalState = trajectory.back();
+        model->realizeAcceleration(finalState);
+        const SimTK::SpatialVec& endVel1 = model->getComponent<Body>("/body")
+                                            .getVelocityInGround(finalState);
+        const SimTK::SpatialVec& endVel2 = model->getComponent<Body>("/body2")
+                                            .getVelocityInGround(finalState);
+
+        CHECK((endVel1[1][0] * endVel2[1][0]) == Approx(0).margin(1e-1));
+    }
+
+    SECTION("MocoInitialOutputGoal") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        auto model = createDoubleSlidingMassModel();
+        model->initSystem();
+
+        problem.setModelAsCopy(*model);
+        problem.setTimeBounds(0, 3);
+
+        // set up sliders to have a distance from each other at the end
+        problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
+            MocoInitialBounds(-5, 5), MocoFinalBounds(-1, 2));
+        problem.setStateInfo("/slider2/position/value", MocoBounds(-5, 5),
+            MocoInitialBounds(-5, 5), MocoFinalBounds(3, 5));
+
+        problem.setStateInfo("/slider/position/speed", {-10, 10}, 0, 0);
+        problem.setStateInfo("/slider2/position/speed", {-10, 10}, 0, 0);
+        problem.setControlInfo("/actuator", {-100, 100});
+        problem.setControlInfo("/actuator2", {-100, 100});
+
+        // add goal of smallest distance at the beginning
+        auto* goal = problem.template addGoal<MocoInitialOutputGoal>();
+        goal->setName("distance2");
+        goal->setOutputPath("/body|position");
+        goal->setSecondOutputPath("/body2|position");
+        goal->setOperation("subtraction");
+        goal->setExponent(2);
+
+        auto* effort = problem.template addGoal<MocoControlGoal>();
+        effort->setName("effort");
+        effort->setWeight(0.001);
+
+        auto& solver = study.template initSolver<TestType>();
+        solver.set_num_mesh_intervals(30);
+        MocoSolution solution = study.solve();
+
+        // analyze result for starting distance between spheres
+        StatesTrajectory trajectory = solution.exportToStatesTrajectory(*model);
+        const SimTK::State& initialState = trajectory.front();
+        model->realizePosition(initialState);
+        const SimTK::Vec3& startPosition1 = model->getComponent<Body>("/body")
+                                        .getPositionInGround(initialState);
+        const SimTK::Vec3& startPosition2 = model->getComponent<Body>("/body2")
+                                        .getPositionInGround(initialState);
+
+        CHECK(startPosition1 - startPosition2 == Approx(0).margin(5e-2));
+    }
+
+    SECTION("Invalid Outputs") {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        auto model = createDoubleSlidingMassModel();
+        model->initSystem();
+        problem.setModelAsCopy(*model);
+
+        SECTION("Invalid Operator") {
+            auto* goal = problem.template addGoal<MocoOutputGoal>();
+            goal->setName("notDistance");
+            goal->setOutputPath("/body|position");
+            goal->setSecondOutputPath("/body2|position");
+            goal->setOperation("Subtraction");   // instead of subtraction
+
+            REQUIRE_THROWS(study.template initSolver<TestType>());
+        }
+
+        SECTION("Mismatch Type") {
+            auto* goal = problem.template addGoal<MocoOutputGoal>();
+            goal->setName("badCombo");
+            goal->setOutputPath("/body|velocity");
+            goal->setSecondOutputPath("/body2|position");
+            goal->setOperation("subtraction");
+
+            REQUIRE_THROWS(study.template initSolver<TestType>());
+        }
+    }
+}
+
 TEST_CASE("MocoOutputPeriodicityGoal", "[casadi]") {
     // TODO Tropter does not support endpoint constraints.
 
@@ -1129,5 +1440,205 @@ TEST_CASE("MocoFrameDistanceConstraint de/serialization") {
     {
         MocoStudy study(
                 "testMocoGoals_MocoFrameDistanceConstraint_study.omoco");
+    }
+}
+
+TEST_CASE("MocoExpressionBasedParameterGoal - MocoTropterSolver") {
+    SECTION("mass goal") {
+        MocoStudy study;
+        Model model = ModelFactory::createSlidingPointMass();
+        MocoProblem& mp = study.updProblem();
+        mp.setModelAsCopy(model);
+        mp.setTimeBounds(0, 1);
+        mp.setStateInfo("/slider/position/value", {-5, 5}, 0, {0.2, 0.3});
+        mp.setStateInfo("/slider/position/speed", {-20, 20}, 0, 0);
+
+        auto* parameter = mp.addParameter("sphere_mass", "body", "mass",
+                MocoBounds(0, 10));
+        auto* mass_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
+        mass_goal->setExpression("(q-4)^2");
+        mass_goal->addParameter(*parameter, "q");
+        auto* effort_goal = mp.addGoal<MocoControlGoal>();
+        effort_goal->setWeight(0.001);
+        effort_goal->setName("effort");
+
+        auto& ms = study.initTropterSolver();
+        ms.set_num_mesh_intervals(25);
+        MocoSolution sol = study.solve();
+
+        // 3.998
+        CHECK(sol.getParameter("sphere_mass") == Catch::Approx(4).epsilon(1e-2));
+    }
+
+    SECTION("two parameter mass goal") {
+        MocoStudy study;
+        auto model = createDoubleSlidingMassModel();
+        model->initSystem();
+        MocoProblem& mp = study.updProblem();
+        mp.setModelAsCopy(*model);
+        mp.setTimeBounds(0, 1);
+        mp.setStateInfo("/slider/position/value", {-5, 5}, 0, {0.2, 0.3});
+        mp.setStateInfo("/slider/position/speed", {-20, 20});
+        mp.setStateInfo("/slider2/position/value", {-5, 5}, 1, {1.2, 1.3});
+        mp.setStateInfo("/slider2/position/speed", {-20, 20});
+
+        auto* parameter = mp.addParameter("sphere_mass", "body", "mass",
+                MocoBounds(0, 10));
+        auto* parameter2 = mp.addParameter("sphere2_mass", "body2", "mass",
+                MocoBounds(0, 10));
+        int total_weight = 7;
+        auto* mass_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
+        mass_goal->setExpression(fmt::format("(p+q-{})^2", total_weight));
+        mass_goal->addParameter(*parameter, "p");
+        mass_goal->addParameter(*parameter2, "q");
+
+        auto& ms = study.initTropterSolver();
+        ms.set_num_mesh_intervals(25);
+        MocoSolution sol = study.solve();
+
+        // 3.7 and 3.3
+        CHECK(sol.getParameter("sphere_mass") + sol.getParameter("sphere2_mass")
+                == Catch::Approx(total_weight).epsilon(1e-9));
+    }
+}
+
+// from testMocoParameters
+const double STIFFNESS = 100.0; // N/m
+const double MASS = 5.0; // kg
+const double FINAL_TIME = SimTK::Pi * sqrt(MASS / STIFFNESS);
+std::unique_ptr<Model> createOscillatorTwoSpringsModel() {
+    auto model = make_unique<Model>();
+    model->setName("oscillator_two_springs");
+    model->set_gravity(SimTK::Vec3(0, 0, 0));
+    auto* body = new Body("body", MASS, SimTK::Vec3(0), SimTK::Inertia(0));
+    model->addComponent(body);
+
+    // Allows translation along x.
+    auto* joint = new SliderJoint("slider", model->getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("position");
+    model->addComponent(joint);
+
+    auto* spring1 = new SpringGeneralizedForce();
+    spring1->setName("spring1");
+    spring1->set_coordinate("position");
+    spring1->setRestLength(0.0);
+    spring1->setStiffness(0.25*STIFFNESS);
+    spring1->setViscosity(0.0);
+    model->addComponent(spring1);
+
+    auto* spring2 = new SpringGeneralizedForce();
+    spring2->setName("spring2");
+    spring2->set_coordinate("position");
+    spring2->setRestLength(0.0);
+    spring2->setStiffness(0.25*STIFFNESS);
+    spring2->setViscosity(0.0);
+    model->addComponent(spring2);
+
+    return model;
+}
+
+TEST_CASE("MocoExpressionBasedParameterGoal - MocoCasADiSolver") {
+    MocoStudy study;
+    study.setName("oscillator_spring_stiffnesses");
+    MocoProblem& mp = study.updProblem();
+    mp.setModel(createOscillatorTwoSpringsModel());
+    mp.setTimeBounds(0, FINAL_TIME);
+    mp.setStateInfo("/slider/position/value", {-5.0, 5.0}, -0.5, {0.25, 0.75});
+    mp.setStateInfo("/slider/position/speed", {-20, 20}, 0, 0);
+
+    SECTION("single parameter for two values") {
+        // create a parameter goal for the stiffness of both strings
+        std::vector<std::string> components = {"spring1", "spring2"};
+        auto* parameter = mp.addParameter("spring_stiffness", components,
+                                          "stiffness", MocoBounds(0, 100));
+        auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
+        // minimum is when p = 0.5*STIFFNESS
+        spring_goal->setExpression(fmt::format("(p-{})^2", 0.5*STIFFNESS));
+        spring_goal->addParameter(*parameter, "p");
+
+        auto& ms = study.initCasADiSolver();
+        ms.set_num_mesh_intervals(25);
+        // not requiring initsystem is faster, still works with spring stiffness
+        ms.set_parameters_require_initsystem(false);
+        MocoSolution sol = study.solve();
+
+        CHECK(sol.getParameter("spring_stiffness") ==
+                Catch::Approx(0.5*STIFFNESS).epsilon(1e-6));
+    }
+
+    SECTION("two parameters") {
+        // create two parameters to include in the goal
+        auto* parameter = mp.addParameter("spring_stiffness", "spring1",
+                                          "stiffness", MocoBounds(0, 100));
+        auto* parameter2 = mp.addParameter("spring2_stiffness", "spring2",
+                                          "stiffness", MocoBounds(0, 100));
+        auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
+        // minimum is when p + q = STIFFNESS
+        spring_goal->setExpression(fmt::format("square( p+q-{} )", STIFFNESS));
+        spring_goal->addParameter(*parameter, "p");
+        spring_goal->addParameter(*parameter2, "q");
+
+
+        auto& ms = study.initCasADiSolver();
+        ms.set_num_mesh_intervals(25);
+        // not requiring initsystem is faster, still works with spring stiffness
+        ms.set_parameters_require_initsystem(false);
+        MocoSolution sol = study.solve();
+
+        CHECK(sol.getParameter("spring_stiffness") +
+              sol.getParameter("spring2_stiffness") ==
+              Catch::Approx(STIFFNESS).epsilon(1e-6));
+    }
+
+    SECTION("missing parameter") {
+        // create one parameter but have two variables
+        auto* parameter = mp.addParameter("spring_stiffness", "spring1",
+                                          "stiffness", MocoBounds(0, 100));
+
+        auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>(
+                "stiffness", 1, fmt::format("(p+q-{})^2", STIFFNESS));
+        spring_goal->addParameter(*parameter, "p");
+
+        CHECK_THROWS(study.initCasADiSolver()); // missing q
+    }
+
+    SECTION("extra parameter") {
+        // create two parameters for the goal, only one is used
+        auto* parameter = mp.addParameter("spring_stiffness", "spring1",
+                                          "stiffness", MocoBounds(0, 100));
+        auto* parameter2 = mp.addParameter("spring2_stiffness", "spring2",
+                                          "stiffness", MocoBounds(0, 100));
+
+        auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>(
+                "stiffness", 1, fmt::format("(p-{})^2", STIFFNESS));
+        spring_goal->addParameter(*parameter, "p");
+        // second parameter is ignored
+        spring_goal->addParameter(*parameter2, "a");
+
+        CHECK_NOTHROW(study.initCasADiSolver());
+    }
+
+    SECTION("endpoint goal") {
+        auto* parameter = mp.addParameter("spring_stiffness", "spring1",
+                                          "stiffness", MocoBounds(0, 100));
+        auto* parameter2 = mp.addParameter("spring2_stiffness", "spring2",
+                                          "stiffness", MocoBounds(0, 100));
+        auto* spring_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
+        spring_goal->setExpression(fmt::format("square( p+q-{} )", STIFFNESS));
+        spring_goal->addParameter(*parameter, "p");
+        spring_goal->addParameter(*parameter2, "q");
+        // set as endpoint constraint
+        spring_goal->setMode("endpoint_constraint");
+
+        auto& ms = study.initCasADiSolver();
+        ms.set_num_mesh_intervals(25);
+        // not requiring initsystem is faster, still works with spring stiffness
+        ms.set_parameters_require_initsystem(false);
+        MocoSolution sol = study.solve();
+
+        CHECK(sol.getParameter("spring_stiffness") +
+              sol.getParameter("spring2_stiffness") ==
+              Catch::Approx(STIFFNESS).epsilon(1e-6));
     }
 }

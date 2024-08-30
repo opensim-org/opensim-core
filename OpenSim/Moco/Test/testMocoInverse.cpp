@@ -194,7 +194,7 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
 
         auto& solver = study.updSolver<MocoCasADiSolver>();
         solver.resetProblem(problem);
-        solver.set_enforce_path_constraint_midpoints(true);
+        solver.set_enforce_path_constraint_mesh_interior_points(true);
 
         MocoSolution solution = study.solve();
 
