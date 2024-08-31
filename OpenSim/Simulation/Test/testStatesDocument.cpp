@@ -530,7 +530,7 @@ testEqualityForModelingOptions(const Model& model,
 // variable has not been added to OpenSim's Component heirarchy and therefore
 // has not been serialized.
 void
-testEquality(const Model& model,
+testStateEquality(const Model& model,
     const Array_<State>& trajA, const Array_<State>& trajB, int precision)
 {
     testEqualityForContinuousVariables(model, trajA, trajB, precision);
@@ -541,7 +541,8 @@ testEquality(const Model& model,
 //_____________________________________________________________________________
 // Build the model
 Model*
-buildModel(int whichDiscreteState, const string& discreteStateSuffix) {
+buildModel(int whichDiscreteState = -1,
+    const string& discreteStateSuffix = "") {
 
     // Create an empty model
     Model* model = new Model();
@@ -630,27 +631,21 @@ TEST_CASE("Getting Started")
 
 TEST_CASE("Serialization and Deserialization")
 {
-    // Specify which discrete state gets a suffix. The suffix is used
-    // to change the name of a discrete variable so that it will not be found.
-    // When whichDiscreteState == 1, the suffix is not appended to any state.
-    int whichDiscreteState{-1};
-    string suffix{"_ShouldNotBeFound"};
-
     // Build the model and run a simulation.
     // The output of simulate() is the state trajectory.
     // Note that a copy of the state trajectory is returned, so we don't have
     // to worry about the reporter (or any other object) going out of scope
     // or being deleted.
-    Model *model = buildModel(whichDiscreteState, suffix);
+    Model *model = buildModel();
     Array_<State> trajA = simulate(model);
 
     // Serialize (A)
-    int p;
-    for (p = 2; p < 22; ++p) {
+    SimTK::String filename = "BlockOnASpring.ostates";
+    SimTK::String note = "Output from `testStatesDocument.cpp` ";
+    note += "to validate state de/serialization.";
+    for (int p = 1; p < 22; ++p) {
         cout << "Testing for precision = " << p << endl;
 
-        SimTK::String filename = "BlockOnASpring.ostates";
-        SimTK::String note = "Output from `testStatesDocument.cpp` to validate state serialization and deserialization.";
         StatesDocument docA(*model, trajA, note, p);
         docA.serialize(filename);
 
@@ -673,7 +668,7 @@ TEST_CASE("Serialization and Deserialization")
         }
 
         // Are state trajectories A and B the same?
-        testEquality(*model, trajA, trajB, p);
+        testStateEquality(*model, trajA, trajB, p);
     }
 
     delete model;
@@ -681,49 +676,59 @@ TEST_CASE("Serialization and Deserialization")
 
 TEST_CASE("Exception: Discrete State Not Found")
 {
-    // Specify which discrete state gets a suffix. The suffix is used
-    // to change the name of a discrete variable so that it will not be found.
-    // When whichDiscreteState == 1, the suffix is not appended to any state.
-    // When whichDiscreteState is between 0 and 7, the suffix will be
-    // appended to that discrete state.
-    int whichDiscreteState{-1};
-    string suffix{"_ShouldNotBeFound"};
-
-    // Build a model and run a simulation
-    // The output of simulate() is the state trajectory.
-    // Note that a copy of the state trajectory is returned, so we don't have
-    // to worry about the reporter (or any other object) going out of scope
-    // or being deleted.
-    Model *model = buildModel(whichDiscreteState, suffix);
-    Array_<State> trajA = simulate(model);
+    // (A) Build the default model and run a simulation
+    Model *modelA = buildModel();
+    Array_<State> trajA = simulate(modelA);
 
     // Serialize (A)
-    int precision = 6;
     SimTK::String filename = "BlockOnASpring.ostates";
-    SimTK::String note = "Output from `testStatesDocument.cpp` to validate state serialization and deserialization.";
-    StatesDocument docA(*model, trajA, note, precision);
+    SimTK::String note = "Output from `testStatesDocument.cpp` ";
+    note += "to validate state de/serialization.";
+    int precision = 6;
+    StatesDocument docA(*modelA, trajA, note, precision);
     docA.serialize(filename);
 
-    // Deserialize (B)
-    StatesDocument docB(filename);
-    Array_<State> trajB;
-    docB.deserialize(*model, trajB);
 
-    // Check the note and the precision.
-    CHECK(docB.getNote() == docA.getNote());
-    CHECK(docB.getPrecision() == docB.getPrecision());
+    // Deserialize using a series of models (B)
+    // In each modelB, the name of one discrete state is changed.
+    string suffix{"_ShouldNotBeFound"};
+    for (int which = 0; which < 8; ++which) {
 
-    // Check size
-    REQUIRE(trajA.size() == trajB.size());
+        // (B) Build a model that is different only with respect to one name of a
+        // specified discrete state.
+        // Specify which discrete state gets the suffix. The suffix is used to
+        // change the name of a discrete state so that it will not be found.
+        // When whichDiscreteState == 1, the suffix is not appended.
+        // When whichDiscreteState is between 0 and 7, the suffix will be
+        // appended to that discrete state.
+        Model *modelB = buildModel(which, suffix);
+        Array_<State> trajDoNotNeed = simulate(modelB);
 
-    // Realize both state trajectories to Stage::Report
-    for (int i = 0; i < trajA.size(); ++i) {
-        model->getSystem().realize(trajA[i], Stage::Report);
-        model->getSystem().realize(trajB[i], Stage::Report);
+        // Deserialize using modelB
+        // This should fail if the name of a discrete state has been changed.
+        StatesDocument docB(filename);
+        Array_<State> trajB;
+        //CHECK_THROWS(, "discrete state should not be found");
+        docB.deserialize(*modelB, trajB);
+
+        // Check the note and the precision.
+        CHECK(docB.getNote() == docA.getNote());
+        CHECK(docB.getPrecision() == docB.getPrecision());
+
+        // Check size
+        REQUIRE(trajA.size() == trajB.size());
+
+        // Realize both state trajectories to Stage::Report
+        for (int i = 0; i < trajA.size(); ++i) {
+            modelB->getSystem().realize(trajA[i], Stage::Report);
+            modelB->getSystem().realize(trajB[i], Stage::Report);
+        }
+
+        // Are state trajectories A and B the same?
+        testStateEquality(*modelB, trajA, trajB, precision);
+
+        delete modelB;
     }
 
-    // Are state trajectories A and B the same?
-    testEquality(*model, trajA, trajB, precision);
-
-    delete model;
+    delete modelA;
 }
