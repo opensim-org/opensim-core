@@ -501,7 +501,7 @@ public:
 
     @param filename The name of the file, which may be prepended by the system
     path at which the file resides (e.g., "C:/Documents/block.ostates"). */
-    StatesDocument(const SimTK::String& filename) {
+    StatesDocument(const SimTK::String& filename) : filename(filename) {
         doc.readFromFile(filename);
         initializeNote();
         initializePrecision();
@@ -587,7 +587,7 @@ protected:
 
     // Deserialization Helpers.
     void parseDoc(const Model& m, SimTK::Array_<SimTK::State>& t);
-    void checkDocConsistencyWithModel(const Model& model) const;
+    void checkDocConsistencyWithModel(const Model& model);
     void prepareStatesTrajectory(const Model& model,
         SimTK::Array_<SimTK::State> &traj);
     void initializeNote();
@@ -607,8 +607,8 @@ private:
     // Member Variables
     int precision{SimTK::LosslessNumDigitsReal};
     SimTK::Xml::Document doc;
+    SimTK::String filename{""};
     SimTK::String note{""};
-
 
 }; // END of class StatesDocument
 

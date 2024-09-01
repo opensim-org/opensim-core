@@ -382,7 +382,25 @@ parseDoc(const Model& model, Array_<State>& traj) {
 //_____________________________________________________________________________
 void
 StatesDocument::
-checkDocConsistencyWithModel(const Model& model) const {
+checkDocConsistencyWithModel(const Model& model) {
+    // At this point, only the model name is checked here.
+    // Many other aspects are checked for consistency than just the model
+    // name. Those are more easily checked as the doc is parced.
+
+    // Check that name of the model in the doc matches the name of the model'.
+    Element rootElt = doc.getRootElement();
+    Attribute modelNameAttr = rootElt.getOptionalAttribute("model");
+    SimTK_ASSERT1(modelNameAttr.isValid(),
+        "The 'model' attribute of the root element was not found in file %s.",
+        filename);
+    const SimTK::String& modelName = modelNameAttr.getValue();
+    if (modelName != model.getName()) {
+        SimTK::String msg = "The model name (" + modelName + ")";
+        msg += " in states document " + filename + " does not match";
+        msg += " the name of the OpenSim model (" + model.getName() + ")";
+        msg += " for which the states are being deserialized.";
+        SimTK_ASSERT_ALWAYS(false, msg);
+    }
 
 }
 //_____________________________________________________________________________
@@ -423,7 +441,7 @@ initializeNote() {
     }
     else if (noteElts.size() > 1) {
         cout << "StatesDocument: More than 1 `note` element found; ";
-        cout << "using just the 1st one." << endl;
+        cout << "using just the first one." << endl;
     }
 
     // Get the value
@@ -452,7 +470,7 @@ initializeTime(Array_<State>& traj) {
 
     // Check the number of time elements found. Should be 1.
     SimTK_ASSERT1_ALWAYS(timeElts.size() == 1,
-        "%d time elements found. Should only be 1.", timeElts.size());
+        "%d time elements found. Only 1 should be found.", timeElts.size());
 
     // Get the values
     Array_<double> timeArr;
@@ -489,7 +507,7 @@ initializeContinuousVariables(const Model& model, SimTK::Array_<State>& traj) {
     int n = varElts.size();
     int m = varNames.size();
     SimTK_ASSERT2_ALWAYS(n == m,
-        "Found %d variable elements. Should be %d.", n, m);
+        "Found %d continuous variable elements. Should be %d.", n, m);
 
     // Loop over the variable elements
     SimTK::Array_<double> varArr;
@@ -521,7 +539,7 @@ initializeDiscreteVariables(const Model& model, SimTK::Array_<State>& traj) {
     Element rootElt = doc.getRootElement();
     Array_<Element> discElts = rootElt.getAllElements("discrete");
     SimTK_ASSERT1_ALWAYS(discElts.size() == 1,
-        "Found %d elements with tag 'discrete'. Should only be 1.",
+        "Found %d elements with tag 'discrete'. Only 1 should be found.",
         discElts.size());
 
     // Find all the child 'variable' elements
@@ -533,7 +551,7 @@ initializeDiscreteVariables(const Model& model, SimTK::Array_<State>& traj) {
     int n = varElts.size();
     int m = varNames.size();
     SimTK_ASSERT2_ALWAYS(n == m,
-        "Found %d variable elements. Should be %d.", n, m);
+        "Found %d discrete variable elements. Should be %d.", n, m);
 
     // Loop over the variable elements
     for (int i = 0; i < n; ++i) {
@@ -597,7 +615,8 @@ initializeModelingOptions(const Model& model, SimTK::Array_<State>& traj) {
     Element rootElt = doc.getRootElement();
     Array_<Element> modlElts = rootElt.getAllElements("modeling");
     SimTK_ASSERT1_ALWAYS(modlElts.size() == 1,
-        "%d modeling elements found. Should only be 1.", modlElts.size());
+        "%d modeling elements found. Only 1 should be found.",
+        modlElts.size());
     Element modlElt = modlElts[0];
 
     // Find all the child 'variable' elements.
@@ -610,7 +629,7 @@ initializeModelingOptions(const Model& model, SimTK::Array_<State>& traj) {
     int n = varElts.size();
     int m = varNames.size();
     SimTK_ASSERT2_ALWAYS(n == m,
-        "Found %d variable elements. Should be %d.", n, m);
+        "Found %d modeling option elements. Should be %d.", n, m);
 
     // Loop over the modeling options
     SimTK::Array_<double> varArr;
