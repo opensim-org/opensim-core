@@ -23,7 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/Model/ForceApplier.h>
 #include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
@@ -587,12 +586,26 @@ void TwoFrameLinker<C, F>::addInPhysicalForcesFromInternal(
         const SimTK::State& s,
         SimTK::Vec6 f, SimTK::Vector_<SimTK::SpatialVec>& physicalForces) const
 {
-    // This uses `ForceApplier` to adapt this API to the `ForceConsumer` API, so that
-    // we don't end up with two almost-identical implementations of this function.
+    // A `ForceConsumer` that applies body spatial vectors from `producePhysicalForcesFromInternal`
+    class Adaptor final : public ForceConsumer {
+    public:
+        explicit Adaptor(SimTK::Vector_<SimTK::SpatialVec>& physicalForces) :
+            _physicalForces{&physicalForces}
+        {}
 
-    SimTK::Vector generalizedForces;  // unused: this is just here to satisfy the `ForceApplier` API
-    ForceApplier forceApplier{getSystem().getMatterSubsystem(), physicalForces, generalizedForces};
-    producePhysicalForcesFromInternal(s, f, forceApplier);
+    private:
+        void implConsumeBodySpatialVec(
+            const SimTK::State& state,
+            const PhysicalFrame& body,
+            const SimTK::SpatialVec& spatialVec) final
+        {
+            (*_physicalForces)[body.getMobilizedBodyIndex()] += spatialVec;
+        }
+
+        SimTK::Vector_<SimTK::SpatialVec>* _physicalForces;
+    };
+
+    producePhysicalForcesFromInternal(s, f, Adaptor{physicalForces});
 }
 
 template<class C, class F>
