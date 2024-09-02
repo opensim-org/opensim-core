@@ -386,74 +386,103 @@ void GeometryPath::produceForces(const SimTK::State& s,
     double tension,
     ForceConsumer& forceConsumer) const
 {
-    if (!(tension > 0.0)) {
-        // No forces are produced when `tension` is less than zero, equal
-        // to zero, or NaN.
-        return;
-    }
-
+    AbstractPathPoint* start = NULL;
+    AbstractPathPoint* end = NULL;
+    const SimTK::MobilizedBody* bo = NULL;
+    const SimTK::MobilizedBody* bf = NULL;
     const Array<AbstractPathPoint*>& currentPath = getCurrentPath(s);
+    int np = currentPath.getSize();
 
-    for (int i = 0; i < currentPath.getSize()-1; ++i) {
-        const AbstractPathPoint& start = *currentPath[i];
-        const AbstractPathPoint& end = *currentPath[i+1];
+    const SimTK::SimbodyMatterSubsystem& matter = 
+        getModel().getMatterSubsystem();
 
-        const PhysicalFrame& startFrame = start.getParentFrame();
-        const PhysicalFrame& endFrame = end.getParentFrame();
+    // start point, end point,  direction, and force vectors in ground
+    Vec3 po(0), pf(0), dir(0), force(0);
+    // partial velocity of point in body expressed in ground 
+    Vec3 dPodq_G(0), dPfdq_G(0);
 
-        if (&startFrame.getMobilizedBody() == &endFrame.getMobilizedBody()) {
-            // Forces are only produced when two adjacent points are attached
-            // to different mobilized bodies.
-            continue;
-        }
+    // gen force (torque) due to moving point under tension
+    double fo, ff;
 
-        // Form a unit vector from start to end, in the inertial frame.
-        //
-        // Check that the two points are not coincident. This can happen
-        // due to infeasible wrapping of the path, when the origin or
-        // insertion enters the wrapping surface. This is a temporary
-        // fix, since the wrap algorithm should return NaN for the
-        // points and/or throw an Exception- aseth
-        Vec3 startToEndDir = end.getLocationInGround(s) - start.getLocationInGround(s);
-        {
-            const auto normSquared = startToEndDir.normSqr();
-            if (normSquared >= SimTK::SignificantReal) {
-                startToEndDir /= std::sqrt(normSquared);
+    for (int i = 0; i < np-1; ++i) {
+        start = currentPath[i];
+        end = currentPath[i+1];
+
+        bo = &start->getParentFrame().getMobilizedBody();
+        bf = &end->getParentFrame().getMobilizedBody();
+
+        if (bo != bf) {
+            // Find the positions of start and end in the inertial frame.
+            po = start->getLocationInGround(s);
+            pf = end->getLocationInGround(s);
+
+            // Form a vector from start to end, in the inertial frame.
+            dir = (pf - po);
+
+            // Check that the two points are not coincident.
+            // This can happen due to infeasible wrapping of the path,
+            // when the origin or insertion enters the wrapping surface.
+            // This is a temporary fix, since the wrap algorithm should
+            // return NaN for the points and/or throw an Exception- aseth
+            if (dir.norm() < SimTK::SignificantReal){
+                dir = dir*SimTK::NaN;
+            }
+            else{
+                dir = dir.normalize();
+            }
+
+            force = tension*dir;
+
+            const MovingPathPoint* mppo =
+                dynamic_cast<MovingPathPoint *>(start);
+
+            // do the same for the end point of this segment of the path
+            const MovingPathPoint* mppf =
+                dynamic_cast<MovingPathPoint *>(end);
+
+            // add in the tension point forces to body forces
+            if (mppo) {// moving path point location is a function of the state
+                forceConsumer.consumePointForce(s, start->getParentFrame(), mppo->getLocation(s), force);
             }
             else {
-                startToEndDir *= SimTK::NaN;
+                forceConsumer.consumePointForce(s, start->getParentFrame(), start->getLocation(s), force);
             }
-        }
 
-        const Vec3 force = tension * startToEndDir;
+            if (mppf) {// moving path point location is a function of the state
+                forceConsumer.consumePointForce(s, end->getParentFrame(), mppf->getLocation(s), -force);
+            }
+            else {
+                // transform of the frame of the point to the base mobilized body
+                forceConsumer.consumePointForce(s, end->getParentFrame(), end->getLocation(s), -force);
+            }
 
-        // Add in the tension point forces to body forces
-        forceConsumer.consumePointForce(s, startFrame, start.getLocation(s), force);
-        forceConsumer.consumePointForce(s, endFrame,   end.getLocation(s),  -force);
+            // Now account for the work being done by virtue of the moving
+            // path point motion relative to the body it is on
+            if(mppo){
+                // torque (genforce) contribution due to relative movement 
+                // of a via point w.r.t. the body it is connected to.
+                dPodq_G = bo->expressVectorInGroundFrame(s, start->getdPointdQ(s));
+                fo = ~dPodq_G*force;            
 
-        // Edge-cases: if either of the start or end points are `MovingPathPoint`s, then
-        // we also need to account for the work being done by virtue of the moving the
-        // path point relative to the body it's on. I.e. the torque (genforce) contribution
-        // due to relative movement of a via point w.r.t. the body it is connected to.
-        if (const auto* mppo = dynamic_cast<const MovingPathPoint*>(&start)) {
-            // partial velocity of point in body expressed in ground
-            const Vec3 dPodq_G = startFrame.expressVectorInGround(s, start.getdPointdQ(s));
+                // get the mobilized body the coordinate is couple to.
+                const SimTK::MobilizedBody& mpbod =
+                    matter.getMobilizedBody(mppo->getXCoordinate().getBodyIndex());
 
-            // gen force (torque) due to moving point under tension
-            const double fo = ~dPodq_G*force;
+                // apply the generalized (mobility) force to the coordinate's body
+                forceConsumer.consumeGeneralizedForce(s, mppo->getXCoordinate(), fo);
+            }
 
-            forceConsumer.consumeGeneralizedForce(s, mppo->getXCoordinate(), fo);
-        }
-        if (const auto* mppf = dynamic_cast<const MovingPathPoint*>(&end)) {
+            if(mppf){
+                dPfdq_G = bf->expressVectorInGroundFrame(s, end->getdPointdQ(s));
+                ff = ~dPfdq_G*(-force);
 
-            // partial velocity of point in body expressed in ground
-            const Vec3 dPfdq_G = endFrame.expressVectorInGround(s, end.getdPointdQ(s));
+                // get the mobilized body the coordinate is couple to.
+                const SimTK::MobilizedBody& mpbod =
+                    matter.getMobilizedBody(mppf->getXCoordinate().getBodyIndex());
 
-            // gen force (torque) due to moving point under tension
-            const double ff = ~dPfdq_G*(-force);
-
-            forceConsumer.consumeGeneralizedForce(s, mppf->getXCoordinate(), ff);
-        }
+                forceConsumer.consumeGeneralizedForce(s, mppf->getXCoordinate(), ff);
+            }
+        }       
     }
 }
 
