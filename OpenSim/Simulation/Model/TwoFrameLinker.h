@@ -23,7 +23,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDE
+#include <OpenSim/Simulation/Model/ForceApplier.h>
 #include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
@@ -587,28 +587,12 @@ void TwoFrameLinker<C, F>::addInPhysicalForcesFromInternal(
         const SimTK::State& s,
         SimTK::Vec6 f, SimTK::Vector_<SimTK::SpatialVec>& physicalForces) const
 {
-    SimTK::SpatialVec F_GF;
-    SimTK::SpatialVec F_GM;
-    // convert the internal force to spatial forces on the two frames
-    convertInternalForceToForcesOnFrames(s, f, F_GF, F_GM);
+    // This uses `ForceApplier` to adapt this API to the `ForceConsumer` API, so that
+    // we don't end up with two almost-identical implementations of this function.
 
-    // get connected frames
-    const F& frame1 = getFrame1();
-    const F& frame2 = getFrame2();
-
-    const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
-    const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
-
-    SimTK::Vec3 p_B1F_G = X_GB1.R() * frame1.findTransformInBaseFrame().p();
-    SimTK::Vec3 p_B2M_G = X_GB2.R() * frame2.findTransformInBaseFrame().p();
-
-    // Shift forces to body origins.
-    SimTK::SpatialVec F_GB2(F_GM[0] + p_B2M_G % F_GM[1], F_GM[1]);
-    SimTK::SpatialVec F_GB1(F_GF[0] + p_B1F_G % F_GF[1], F_GF[1]);
-
-    // Apply (add-in) the body forces to the system set of body forces
-    physicalForces[frame2.getMobilizedBodyIndex()] += F_GB2;
-    physicalForces[frame1.getMobilizedBodyIndex()] += F_GB1;
+    SimTK::Vector generalizedForces;  // unused: this is just here to satisfy the `ForceApplier` API
+    ForceApplier forceApplier{getSystem().getMatterSubsystem(), physicalForces, generalizedForces};
+    producePhysicalForcesFromInternal(s, f, forceApplier);
 }
 
 template<class C, class F>
