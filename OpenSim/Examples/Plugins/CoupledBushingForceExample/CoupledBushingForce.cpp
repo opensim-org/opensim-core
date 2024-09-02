@@ -120,7 +120,7 @@ void CoupledBushingForce::implProduceForces(
     Vec6 f = fk + fv;
 
     // convert the internal forces to into spatial forces and emit them
-    // into the consumer
+    // into the `ForceConsumer`
     producePhysicalForcesFromInternal(s, f, forceConsumer);
 }
 

@@ -122,7 +122,7 @@ void PistonActuator::implProduceForces(
     setActuation(s, forceMagnitude);
     SimTK::Vec3 force = forceMagnitude * calcDirectionBAInGround(s);
 
-    // Apply equal and opposite forces to the bodies.
+    // Produce equal and opposite forces.
     forceConsumer.consumePointForce(s, frameA, pointA,  force);
     forceConsumer.consumePointForce(s, frameB, pointB, -force);
 }

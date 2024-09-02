@@ -161,8 +161,7 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
 //=============================================================================
 // Computing
 //=============================================================================
-// Compute and apply the force
-
+// compute and produce forces
 void ExpressionBasedPointToPointForce::implProduceForces(
     const SimTK::State& s,
     ForceConsumer& forceConsumer) const

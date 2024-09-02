@@ -179,7 +179,7 @@ CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel
 //==============================================================================
 //_____________________________________________________________________________
 /**
- * Apply the actuator force to BodyA and BodyB.
+ * Produces the actuator force for BodyA and BodyB.
  */
 void CoordinateActuator::implProduceForces(const SimTK::State& s,
         ForceConsumer& forceConsumer) const

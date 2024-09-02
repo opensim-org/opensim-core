@@ -633,7 +633,7 @@ void TwoFrameLinker<C, F>::producePhysicalForcesFromInternal(
     SimTK::SpatialVec F_GB2(F_GM[0] + p_B2M_G % F_GM[1], F_GM[1]);
     SimTK::SpatialVec F_GB1(F_GF[0] + p_B1F_G % F_GF[1], F_GF[1]);
 
-    // Apply (add-in) the body forces to the system set of body forces
+    // Produce the body forces as body spatial vectors.
     forceConsumer.consumeBodySpatialVec(s, frame2, F_GB2);
     forceConsumer.consumeBodySpatialVec(s, frame1, F_GB1);
 }

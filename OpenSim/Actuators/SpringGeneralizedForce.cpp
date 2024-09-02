@@ -174,8 +174,8 @@ getStiffness() const
 //==============================================================================
 //_____________________________________________________________________________
 /**
- * Compute all quantities necessary for applying the spring force to the
- * model.
+ * Compute all quantities necessary for producing the spring force.
+ *
  * Force applied = -stiffness * (_coordinateValue - restLength) 
  *                   - viscosity * _coordinateSpeed
  */

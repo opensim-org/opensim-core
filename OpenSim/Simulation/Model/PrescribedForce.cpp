@@ -271,7 +271,7 @@ void PrescribedForce::implProduceForces(
 
         Vec3 point(0); // Default is body origin.
         if (hasPointFunctions) {
-            // Apply force to a specified point on the body.
+            // Calculate point force at a specified point on the body.
             point = Vec3(pointFunctions[0].calcValue(timeAsVector), 
                          pointFunctions[1].calcValue(timeAsVector), 
                          pointFunctions[2].calcValue(timeAsVector));

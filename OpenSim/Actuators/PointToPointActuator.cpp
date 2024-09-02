@@ -256,7 +256,7 @@ void PointToPointActuator::implProduceForces(
 
     const SimTK::Vec3 force = forceMagnitude * getDirectionBAInGround(s);
 
-    // Apply equal and opposite forces to the bodies.
+    // Produce equal and opposite forces on the body frames.
     forceConsumer.consumePointForce(s, *_bodyA, pointA_inBodyA, force);
     forceConsumer.consumePointForce(s, *_bodyB, pointB_inBodyB, -force);
 }

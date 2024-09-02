@@ -146,7 +146,7 @@ double TorqueActuator::computeActuation(const State& s) const
 //==============================================================================
 //_____________________________________________________________________________
 /**
- * Apply the actuator force to BodyA and BodyB.
+ * Produce the actuator forces for BodyA and BodyB.
  */
 void TorqueActuator::implProduceForces(
     const SimTK::State& s,

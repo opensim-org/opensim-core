@@ -42,7 +42,7 @@ namespace OpenSim
 * The `ForceConsumer` API does not dictate how concrete implementations should
 * handle the forces. This is to support several use-cases (examples):
 *
-* - Implementations that actually apply the forces (see: `ForceProducer::computeForce`),
+* - Implementations that actually apply the forces (see: `ForceProducer::computeForce`, `ForceApplier`),
 * - Implementations that print force debugging information
 * - Implementations that want to render force vectors in 3D (e.g. UIs)
 */
@@ -105,7 +105,7 @@ public:
      *
      * @param state     the state that was used to evaluate the torque
      * @param body      the body to which the torque applies
-     * @param torque    the torque, specified in the inertial frame, to apply
+     * @param torque    the torque vector, specified in the inertial frame
      */
     void consumeTorque(
         const SimTK::State& state,
@@ -124,7 +124,7 @@ public:
      * @param state    the state that was used to evaluate the force
      * @param frame    the frame in which `point` is defined
      * @param point    a point in `frame` where `force` applies
-     * @param force    the force to apply, specified in the inertial (ground) frame
+     * @param force    the force vector, specified in the inertial (ground) frame
      */
     void consumePointForce(
         const SimTK::State& state,
@@ -171,7 +171,7 @@ private:
      * @param state    the state that was used to evaluate the force
      * @param frame    the frame in which `point` is defined
      * @param point    a point in `frame` where `force` applies
-     * @param force    the force to apply, specified in the inertial (ground) frame
+     * @param force    the force vector, specified in the inertial (ground) frame
      */
     virtual void implConsumePointForce(
         const SimTK::State& state,
