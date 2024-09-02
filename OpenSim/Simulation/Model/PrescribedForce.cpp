@@ -393,7 +393,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
     const bool pointSpecified = pointFunctions.getSize()==3;
     const bool appliesTorque  = torqueFunctions.getSize()==3;
 
-    // This is bad as it duplicates the code in computeForce we'll cleanup after it works!
+    // This is bad as it duplicates the code in `implProduceForces` we'll cleanup after it works!
     const double time = state.getTime();
     const SimTK::Vector timeAsVector(1, time);
     const PhysicalFrame& frame =

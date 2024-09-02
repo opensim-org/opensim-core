@@ -43,11 +43,10 @@ namespace OpenSim
  * - Applies body forces to a `SimTK::Vector_<SimTK::SpatialVec>`
  * - Applies generalized (mobility) forces to a `SimTK::Vector`
  *
- * The `ForceApplier` is mostly useful as an internal class for adapting
- * the `ForceProducer`/`ForceConsumer` APIs to the `simbody` / `OpenSim::Force`
- * API. In effect, a `ForceApplier` class concretely implements "undefined
- * virtual consumption" (`OpenSim::ForceConsumer`) as "applies forces to a
- * multibody system" (`OpenSim::Force`).
+ * The `ForceApplier` is primarily used as an internal class for adapting
+ * the `OpenSim::ForceConsumer`'s API contract ("undefined virtual
+ * consumption") to the `OpenSim::Force`'s API contract ("applies forces
+ * to a multibody system").
  */
 class OSIMSIMULATION_API ForceApplier final : public ForceConsumer {
 public:
