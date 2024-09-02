@@ -47,8 +47,8 @@ const double padFactor = 1.0 + SimTK::SignificantReal;
 
 
 //-----------------------------------------------------------------------------
-// Create a force component derived from PointToPointSpring that adds on a
-// discrete variable of each supported type (bool, int, double, Vec2, Vec3,
+// Create a force component derived from PointToPointSpring that adds a
+// discrete state of each supported type (bool, int, double, Vec2, Vec3,
 // Vec4, Vec5, Vec6).
 class ExtendedPointToPointSpring : public OpenSim::PointToPointSpring
 {
@@ -76,13 +76,20 @@ private:
     string nameVec4{"dvVec4"};
     string nameVec5{"dvVec5"};
     string nameVec6{"dvVec6"};
+    // Omit a discrete state altogether
+    int omit;
 
 public:
 
     // Constructor
+    // @param which Specify which discrete state name (0 to 7) to append the
+    // suffix to.
+    // @param suffix String to append to the discrete state name.
+    // @param omit Specify the discrete state to omit.
     ExtendedPointToPointSpring(const PhysicalFrame& body1, SimTK::Vec3 point1,
         const PhysicalFrame& body2, SimTK::Vec3 point2,
-        double stiffness, double restlength, int which, const string& suffix) :
+        double stiffness, double restlength,
+        int which = -1, const string& suffix = "", int omit = -1) : omit(omit),
         PointToPointSpring(body1, point1, body2, point2, stiffness, restlength)
     {
         switch (which) {
@@ -111,7 +118,6 @@ public:
             nameVec6 += suffix;
             break;
         }
-
     }
 
     void
@@ -119,16 +125,18 @@ public:
     {
         Super::extendAddToSystemAfterSubcomponents(system);
 
-        // Add the discrete variables to the list of OpenSim Components
+        // Add the discrete state to the list of OpenSim Components
+        // For exception testing purposes, the member variable 'omit' is used
+        // to omit one state.
         bool allocate = false;
-        addDiscreteVariable(nameBool, Stage::Position, allocate);
-        addDiscreteVariable(nameInt, Stage::Position, allocate);
-        addDiscreteVariable(nameDbl, Stage::Position, allocate);
-        addDiscreteVariable(nameVec2, Stage::Position, allocate);
-        addDiscreteVariable(nameVec3, Stage::Position, allocate);
-        addDiscreteVariable(nameVec4, Stage::Position, allocate);
-        addDiscreteVariable(nameVec5, Stage::Position, allocate);
-        addDiscreteVariable(nameVec6, Stage::Position, allocate);
+        if(omit!=0) addDiscreteVariable(nameBool, Stage::Position, allocate);
+        if(omit!=1) addDiscreteVariable(nameInt, Stage::Position, allocate);
+        if(omit!=2) addDiscreteVariable(nameDbl, Stage::Position, allocate);
+        if(omit!=3) addDiscreteVariable(nameVec2, Stage::Position, allocate);
+        if(omit!=4) addDiscreteVariable(nameVec3, Stage::Position, allocate);
+        if(omit!=5) addDiscreteVariable(nameVec4, Stage::Position, allocate);
+        if(omit!=6) addDiscreteVariable(nameVec5, Stage::Position, allocate);
+        if(omit!=7) addDiscreteVariable(nameVec6, Stage::Position, allocate);
     }
 
     void
@@ -144,55 +152,77 @@ public:
         const DefaultSystemSubsystem& fsub = getModel().getDefaultSubsystem();
         mutableThis->indexSS = fsub.getMySubsystemIndex();
 
-        // Bool
-        bool dvBool{false};
-        mutableThis->indexBool = s.allocateAutoUpdateDiscreteVariable(indexSS,
-            Stage::Velocity, new Value<bool>(dvBool), Stage::Dynamics);
+        // 0 Bool
+        if(omit != 0) {
+            bool dvBool{false};
+            mutableThis->indexBool =
+                s.allocateAutoUpdateDiscreteVariable(indexSS,
+                Stage::Velocity, new Value<bool>(dvBool), Stage::Dynamics);
+            initializeDiscreteVariableIndexes(nameBool, indexSS, indexBool);
+        }
 
-        // Int
-        int dvInt{0};
-        mutableThis->indexInt = s.allocateAutoUpdateDiscreteVariable(
-            indexSS, Stage::Velocity, new Value<int>(dvInt), Stage::Dynamics);
+        // 1 Int
+        if(omit != 1) {
+            int dvInt{0};
+            mutableThis->indexInt =
+                s.allocateAutoUpdateDiscreteVariable(indexSS,
+                    Stage::Velocity, new Value<int>(dvInt), Stage::Dynamics);
+            initializeDiscreteVariableIndexes(nameInt, indexSS, indexInt);
+        }
 
-        // Dbl
-        double dvDbl{0.0};
-        mutableThis->indexDbl = s.allocateAutoUpdateDiscreteVariable(indexSS,
-            Stage::Velocity, new Value<double>(dvDbl), Stage::Dynamics);
+        // 2 Dbl
+        if(omit != 2) {
+            double dvDbl{0.0};
+            mutableThis->indexDbl =
+                s.allocateAutoUpdateDiscreteVariable(indexSS,
+                Stage::Velocity, new Value<double>(dvDbl), Stage::Dynamics);
+            initializeDiscreteVariableIndexes(nameDbl, indexSS, indexDbl);
+        }
 
-        // Vec2
-        Vec2 dvVec2(0.1, 0.2);
-        mutableThis->indexVec2 = s.allocateAutoUpdateDiscreteVariable(indexSS,
-            Stage::Velocity, new Value<Vec2>(dvVec2), Stage::Dynamics);
+        // 3 Vec2
+        if(omit != 3) {
+            Vec2 dvVec2(0.1, 0.2);
+            mutableThis->indexVec2 =
+                s.allocateAutoUpdateDiscreteVariable(indexSS,
+                Stage::Velocity, new Value<Vec2>(dvVec2), Stage::Dynamics);
+            initializeDiscreteVariableIndexes(nameVec2, indexSS, indexVec2);
+        }
 
-        // Vec3
-        Vec3 dvVec3(0.1, 0.2, 0.3);
-        mutableThis->indexVec3 = s.allocateAutoUpdateDiscreteVariable(indexSS,
-            Stage::Velocity, new Value<Vec3>(dvVec3), Stage::Dynamics);
+        // 4 Vec3
+        if(omit != 4) {
+            Vec3 dvVec3(0.1, 0.2, 0.3);
+            mutableThis->indexVec3 =
+                s.allocateAutoUpdateDiscreteVariable(indexSS,
+                Stage::Velocity, new Value<Vec3>(dvVec3), Stage::Dynamics);
+            initializeDiscreteVariableIndexes(nameVec3, indexSS, indexVec3);
+        }
 
-        // Vec4
-        Vec4 dvVec4(0.1, 0.2, 0.3, 0.4);
-        mutableThis->indexVec4 = s.allocateAutoUpdateDiscreteVariable(indexSS,
-            Stage::Velocity, new Value<Vec4>(dvVec4), Stage::Dynamics);
+        // 5 Vec4
+        if(omit != 5) {
+            Vec4 dvVec4(0.1, 0.2, 0.3, 0.4);
+            mutableThis->indexVec4 =
+                s.allocateAutoUpdateDiscreteVariable(indexSS,
+                Stage::Velocity, new Value<Vec4>(dvVec4), Stage::Dynamics);
+            initializeDiscreteVariableIndexes(nameVec4, indexSS, indexVec4);
+        }
 
-        // Vec5
-        Vec5 dvVec5(0.1, 0.2, 0.3, 0.4, 0.5);
-        mutableThis->indexVec5 = s.allocateAutoUpdateDiscreteVariable(indexSS,
-            Stage::Velocity, new Value<Vec5>(dvVec5), Stage::Dynamics);
+        // 6 Vec5
+        if(omit != 6) {
+            Vec5 dvVec5(0.1, 0.2, 0.3, 0.4, 0.5);
+            mutableThis->indexVec5 =
+                s.allocateAutoUpdateDiscreteVariable(indexSS,
+                Stage::Velocity, new Value<Vec5>(dvVec5), Stage::Dynamics);
+            initializeDiscreteVariableIndexes(nameVec5, indexSS, indexVec5);
+        }
 
-        // Vec6
-        Vec6 dvVec6(0.1, 0.2, 0.3, 0.4, 0.5, 0.6);
-        mutableThis->indexVec6 = s.allocateAutoUpdateDiscreteVariable(indexSS,
-            Stage::Velocity, new Value<Vec6>(dvVec6), Stage::Dynamics);
-
-        // Initialize discrete variable indexes
-        initializeDiscreteVariableIndexes(nameBool, indexSS, indexBool);
-        initializeDiscreteVariableIndexes(nameInt, indexSS, indexInt);
-        initializeDiscreteVariableIndexes(nameDbl, indexSS, indexDbl);
-        initializeDiscreteVariableIndexes(nameVec2, indexSS, indexVec2);
-        initializeDiscreteVariableIndexes(nameVec3, indexSS, indexVec3);
-        initializeDiscreteVariableIndexes(nameVec4, indexSS, indexVec4);
-        initializeDiscreteVariableIndexes(nameVec5, indexSS, indexVec5);
-        initializeDiscreteVariableIndexes(nameVec6, indexSS, indexVec6);
+        // 7 Vec6
+        if(omit != 7) {
+            Vec6 dvVec6(0.1, 0.2, 0.3, 0.4, 0.5, 0.6);
+            mutableThis->indexVec6 =
+                s.allocateAutoUpdateDiscreteVariable(indexSS,
+                Stage::Velocity, new Value<Vec6>(dvVec6), Stage::Dynamics);
+            initializeDiscreteVariableIndexes(nameVec6, indexSS, indexVec6);
+        }
     }
 
     // Set the values of the discrete variables.
@@ -208,66 +238,82 @@ public:
 
         const SimTK::Vector& u = state.getU();
 
-        // Bool
-        bool& vBool = SimTK::Value<bool>::downcast(
-            state.updDiscreteVarUpdateValue(indexSS, indexBool));
-        vBool = u[0];
-        state.markDiscreteVarUpdateValueRealized(indexSS, indexBool);
+        // 0 Bool
+        if (omit != 0) {
+            bool& vBool = SimTK::Value<bool>::downcast(
+                state.updDiscreteVarUpdateValue(indexSS, indexBool));
+            vBool = u[0];
+            state.markDiscreteVarUpdateValueRealized(indexSS, indexBool);
+        }
 
-        // Int
-        SimTK::Value<int>::downcast(
-            state.updDiscreteVarUpdateValue(indexSS, indexInt)) = u[0];
-        state.markDiscreteVarUpdateValueRealized(indexSS, indexInt);
+        // 1 Int
+        if (omit != 1) {
+            SimTK::Value<int>::downcast(
+                state.updDiscreteVarUpdateValue(indexSS, indexInt)) = u[0];
+            state.markDiscreteVarUpdateValueRealized(indexSS, indexInt);
+        }
 
-        // Dbl
-        SimTK::Value<double>::downcast(
-            state.updDiscreteVarUpdateValue(indexSS, indexDbl)) = u[0];
-        state.markDiscreteVarUpdateValueRealized(indexSS, indexDbl);
+        // 2 Dbl
+        if (omit != 2) {
+            SimTK::Value<double>::downcast(
+                state.updDiscreteVarUpdateValue(indexSS, indexDbl)) = u[0];
+            state.markDiscreteVarUpdateValueRealized(indexSS, indexDbl);
+        }
 
-        // Vec2
-        Vec2& v2 = SimTK::Value<Vec2>::downcast(
-            state.updDiscreteVarUpdateValue(indexSS, indexVec2));
-        v2[0] = u[0];
-        v2[1] = u[1];
-        state.markDiscreteVarUpdateValueRealized(indexSS, indexVec2);
+        // 3 Vec2
+        if (omit != 3) {
+            Vec2& v2 = SimTK::Value<Vec2>::downcast(
+                state.updDiscreteVarUpdateValue(indexSS, indexVec2));
+            v2[0] = u[0];
+            v2[1] = u[1];
+            state.markDiscreteVarUpdateValueRealized(indexSS, indexVec2);
+        }
 
-        // Vec3
-        Vec3& v3 = SimTK::Value<Vec3>::downcast(
-            state.updDiscreteVarUpdateValue(indexSS, indexVec3));
-        v3[0] = u[0];
-        v3[1] = u[1];
-        v3[2] = u[2];
-        state.markDiscreteVarUpdateValueRealized(indexSS, indexVec3);
+        // 4 Vec3
+        if (omit != 4) {
+            Vec3& v3 = SimTK::Value<Vec3>::downcast(
+                state.updDiscreteVarUpdateValue(indexSS, indexVec3));
+            v3[0] = u[0];
+            v3[1] = u[1];
+            v3[2] = u[2];
+            state.markDiscreteVarUpdateValueRealized(indexSS, indexVec3);
+        }
 
-        // Vec4
-        Vec4& v4 = SimTK::Value<Vec4>::downcast(
-            state.updDiscreteVarUpdateValue(indexSS, indexVec4));
-        v4[0] = u[0];
-        v4[1] = u[1];
-        v4[2] = u[2];
-        v4[3] = u[3];
-        state.markDiscreteVarUpdateValueRealized(indexSS, indexVec4);
+        // 5 Vec4
+        if (omit != 5) {
+            Vec4& v4 = SimTK::Value<Vec4>::downcast(
+                state.updDiscreteVarUpdateValue(indexSS, indexVec4));
+            v4[0] = u[0];
+            v4[1] = u[1];
+            v4[2] = u[2];
+            v4[3] = u[3];
+            state.markDiscreteVarUpdateValueRealized(indexSS, indexVec4);
+        }
 
-        // Vec5
-        Vec5& v5 = SimTK::Value<Vec5>::downcast(
-            state.updDiscreteVarUpdateValue(indexSS, indexVec5));
-        v5[0] = u[0];
-        v5[1] = u[1];
-        v5[2] = u[2];
-        v5[3] = u[3];
-        v5[4] = u[4];
-        state.markDiscreteVarUpdateValueRealized(indexSS, indexVec5);
+        // 6 Vec5
+        if (omit != 6) {
+            Vec5& v5 = SimTK::Value<Vec5>::downcast(
+                state.updDiscreteVarUpdateValue(indexSS, indexVec5));
+            v5[0] = u[0];
+            v5[1] = u[1];
+            v5[2] = u[2];
+            v5[3] = u[3];
+            v5[4] = u[4];
+            state.markDiscreteVarUpdateValueRealized(indexSS, indexVec5);
+        }
 
-        // Vec6
-        Vec6& v6 = SimTK::Value<Vec6>::downcast(
-            state.updDiscreteVarUpdateValue(indexSS, indexVec6));
-        v6[0] = u[0];
-        v6[1] = u[1];
-        v6[2] = u[2];
-        v6[3] = u[3];
-        v6[4] = u[4];
-        v6[5] = u[5];
-        state.markDiscreteVarUpdateValueRealized(indexSS, indexVec6);
+        // 7 Vec6
+        if (omit != 7) {
+            Vec6& v6 = SimTK::Value<Vec6>::downcast(
+                state.updDiscreteVarUpdateValue(indexSS, indexVec6));
+            v6[0] = u[0];
+            v6[1] = u[1];
+            v6[2] = u[2];
+            v6[3] = u[3];
+            v6[4] = u[4];
+            v6[5] = u[5];
+            state.markDiscreteVarUpdateValueRealized(indexSS, indexVec6);
+        }
     }
 
 }; // End of class ExtendedPointToPointSpring
@@ -276,14 +322,6 @@ public:
 //-----------------------------------------------------------------------------
 // Other Local Static Methods
 //-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-// Sample internal method
-double
-customSquare(double x)
-{
-    return(x*x);
-}
-
 //_____________________________________________________________________________
 /**
 Compute the maximum error that can result from rounding a value at a
@@ -511,8 +549,6 @@ void
 testEqualityForModelingOptions(const Model& model,
     const Array_<State>& trajA, const Array_<State>& trajB, int precision)
 {
-    double tol;
-
     // Loop over the named variables
     OpenSim::Array<std::string> paths = model.getModelingOptionNames();
     int nPaths = paths.getSize();
@@ -541,14 +577,14 @@ testStateEquality(const Model& model,
 //_____________________________________________________________________________
 // Build the model
 Model*
-buildModel(int whichDiscreteState = -1,
-    const string& discreteStateSuffix = "") {
+buildModelFree(int whichDiscreteState = -1,
+    const string& discreteStateSuffix = "", int omit = -1) {
 
     // Create an empty model
     Model* model = new Model();
     Vec3 gravity(0.0, -10.0, 0.0);
     model->setGravity(gravity);
-    model->setName("BlockOnASpring");
+    model->setName("BlockOnASpringFreeJoint");
 
     // Add bodies and joints
     OpenSim::Ground& ground = model->updGround();
@@ -621,14 +657,6 @@ simulate(Model* model) {
 } // End anonymous namespace
 
 
-TEST_CASE("Getting Started")
-{
-    double x = 2.0;
-    double square = customSquare(x);
-    REQUIRE(square == x*x);
-}
-
-
 TEST_CASE("Serialization and Deserialization")
 {
     // Build the model and run a simulation.
@@ -636,7 +664,7 @@ TEST_CASE("Serialization and Deserialization")
     // Note that a copy of the state trajectory is returned, so we don't have
     // to worry about the reporter (or any other object) going out of scope
     // or being deleted.
-    Model *model = buildModel();
+    Model *model = buildModelFree();
     Array_<State> traj = simulate(model);
 
     // Serialize
@@ -676,7 +704,7 @@ TEST_CASE("Serialization and Deserialization")
 TEST_CASE("Exceptions")
 {
     // Build the default model and run a simulation
-    Model *model = buildModel();
+    Model *model = buildModelFree();
     Array_<State> traj = simulate(model);
 
     // Serialize the default model
@@ -695,14 +723,15 @@ TEST_CASE("Exceptions")
         "Model names should not match.");
     model->setName(name); // return the original name
 
-    // (B) A discrete state is not found
+    // (B) A discrete state is not found because no name matches
     // In each model, the name of one discrete state is changed.
     string suffix{"_ShouldNotBeFound"};
     for (int which = 0; which < 8; ++which) {
+        cout << "Changing the name of discrete state " << which << endl;
 
         // Build a model that is different only with respect to one name of a
         // specified discrete state.
-        Model* modelB = buildModel(which, suffix);
+        Model* modelB = buildModelFree(which, suffix);
         Array_<State> trajDoNotNeed = simulate(modelB);
 
         // Deserialize using modelB
@@ -713,6 +742,26 @@ TEST_CASE("Exceptions")
             "Discrete state should not be found");
 
         delete modelB;
+    }
+
+    // (C) A discrete state is not found because the state doesn't exist.
+    // A exception should be thrown because the number of states don't match.
+    for (int which = -1, omit = 0; omit < 8; ++omit) {
+        cout << "Omitting discrete state " << omit << endl;
+
+        // Build a model that is different only in that one discrete state
+        // is omitted.
+        Model* modelC = buildModelFree(which, suffix, omit);
+        Array_<State> trajDoNotNeed = simulate(modelC);
+
+        // Deserialize using modelC
+        StatesDocument docC(filename);
+        Array_<State> trajC;
+        //CHECK_THROWS(docC.deserialize(*modelC, trajC),
+        //    "Expected number of discrete states should be wrong");
+        docC.deserialize(*modelC, trajC);
+
+        delete modelC;
     }
 
     delete model;
