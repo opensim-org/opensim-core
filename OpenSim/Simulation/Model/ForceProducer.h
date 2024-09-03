@@ -55,21 +55,28 @@ protected:
 public:
 
     /**
-     * If `appliesForce(state)` is `true`, uses `implProduceForces` to emit forces
-     * evaluated from `state` into the provided `consumer`.
+     * Uses `implProduceForces` to produce (emit) forces evaluated from `state` into the
+     * provided `ForceConsumer`.
+     *
+     * Note: this function only produces the forces and does not apply them to anything. It's
+     *       up to the `ForceConsumer` implementation to handle the forces. Therefore,
+     *       `Force::appliesForces` is ignored by this method.
      *
      * @param state       the state used to evaluate forces
      * @param consumer    a `ForceConsumer` that shall receive each of the produced forces
      */
-    void produceForces(const SimTK::State& state, ForceConsumer& forceConsumer) const;
+    void produceForces(const SimTK::State& state, ForceConsumer& forceConsumer) const
+    {
+        implProduceForces(state, forceConsumer);
+    }
 
     /**
      * Inhereted from `OpenSim::Force`.
      *
      * `ForceProducer` overrides `OpenSim::Force::computeForce` with a default
-     * implementation that internally uses `produceForces` to mutate the
-     * provided `bodyForces` in a manner that's compatible with the `OpenSim::Force`
-     * API.
+     * implementation that, provided `OpenSim::Force::appliesForces` is `true`,
+     * internally uses `produceForces` to mutate the provided `bodyForces` in a
+     * manner that's compatible with the `OpenSim::Force` API.
      */
     void computeForce(
         const SimTK::State& state,

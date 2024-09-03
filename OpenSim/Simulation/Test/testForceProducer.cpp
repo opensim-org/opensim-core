@@ -230,6 +230,19 @@ namespace
             mobilityForces{matter.getNumMobilities(), double{}}
         {}
 
+        friend bool operator==(const SimbodyEngineForceVectors& lhs, const SimbodyEngineForceVectors& rhs)
+        {
+            return
+                equals(lhs.bodyForces, rhs.bodyForces) &&
+                equals(lhs.particleForces, rhs.particleForces) &&
+                equals(lhs.mobilityForces, rhs.mobilityForces);
+        }
+
+        friend bool operator!=(const SimbodyEngineForceVectors& lhs, const SimbodyEngineForceVectors& rhs)
+        {
+            return !(lhs == rhs);
+        }
+
         SimTK::Vector_<SimTK::SpatialVec> bodyForces;
         SimTK::Vector_<SimTK::Vec3> particleForces;  // unused by OpenSim
         SimTK::Vector mobilityForces;
@@ -313,11 +326,12 @@ TEST_CASE("ForceProducer (ExampleForceProducer)")
         REQUIRE(consumer.getNumPointForcesConsumed() == numPointForcesToProduce);
     }
 
-    SECTION("Setting `produceForces` to `false` Causes `ExampleForceProducer` to Produce No Forces")
+    SECTION("Setting `produceForces` to `false` Causes `ExampleForceProducer` to Still Produce Forces")
     {
-        // This test is ensuring that `appliesForce`, which `ForceProducer` inherits from the
-        // `Force` base class, is obeyed by the `ForceProducer` API without each downstream
-        // class having to check `appliesForce` (`ExampleForceProducer` doesn't check it).
+        // This test is checking that `appliesForce`, which `ForceProducer` inherits from the
+        // `Force` base class, is ignored by the `ForceProducer` API. The wording,
+        // "APPLIES force" implies that the flag should only be checked during force
+        // application, not production.
 
         ExampleForceProducer producer{1, 2, 3};  // produce nonzero number of forces
         producer.set_appliesForce(false);  // from `OpenSim::Force`
@@ -327,9 +341,9 @@ TEST_CASE("ForceProducer (ExampleForceProducer)")
         const SimTK::State state;  // untouched by example classes
         producer.produceForces(state, consumer);
 
-        REQUIRE(consumer.getNumGeneralizedForcesConsumed() == 0);
-        REQUIRE(consumer.getNumBodySpatialVectorsConsumed() == 0);
-        REQUIRE(consumer.getNumPointForcesConsumed() == 0);
+        REQUIRE(consumer.getNumGeneralizedForcesConsumed() == 1);
+        REQUIRE(consumer.getNumBodySpatialVectorsConsumed() == 2);
+        REQUIRE(consumer.getNumPointForcesConsumed() == 3);
     }
 
     SECTION("The `ForceProducer` class's default `computeForce` Implementation Works as Expected")
@@ -379,8 +393,31 @@ TEST_CASE("ForceProducer (ExampleForceProducer)")
 
         // step 4) compare the vector sets, which should be equal if `ForceProducer` behaves the same
         //         as `Force` for typical use-cases
-        REQUIRE((!equals(forceVectors.bodyForces, blankForceVectors.bodyForces) && equals(forceVectors.bodyForces, forceProducerVectors.bodyForces)));
-        REQUIRE(equals(forceVectors.particleForces, forceProducerVectors.particleForces));  // should be blank (untouched by OpenSim)
-        REQUIRE((!equals(forceVectors.bodyForces, blankForceVectors.bodyForces) && equals(forceVectors.mobilityForces, forceProducerVectors.mobilityForces)));
+        REQUIRE((forceVectors != blankForceVectors && forceVectors == forceProducerVectors));
+    }
+
+    SECTION("Setting `appliesForces` to `false` Causes `ForceProducer::computeForce` to Not Apply Forces")
+    {
+        // The base `OpenSim::Force` class has an `appliesForces` flag, which `ForceProducer`
+        // should check when it wants to APPLY forces to the multibody system (i.e. during
+        // `ForceProducer::computeForce` override to satisfy the `OpenSim::Force` API)
+        Model model;
+        auto* body          = new Body{"body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0}};
+        auto* joint         = new FreeJoint{"joint", model.getGround(), *body};
+        auto* forceProducer = new MockForceProducer{*body, joint->get_coordinates(0)};
+        forceProducer->set_appliesForce(false);  // should disable force application
+        model.addBody(body);
+        model.addJoint(joint);
+        model.addForce(forceProducer);
+        model.buildSystem();
+        model.initializeState();
+
+        SimbodyEngineForceVectors blankForceVectors{model.getMatterSubsystem()};
+        SimbodyEngineForceVectors forceProducerVectors{model.getMatterSubsystem()};
+
+        ForceAdapter adapter{*forceProducer};
+        adapter.calcForce(model.getWorkingState(), forceProducerVectors.bodyForces, forceProducerVectors.particleForces, forceProducerVectors.mobilityForces);
+
+        REQUIRE(forceProducerVectors == blankForceVectors);
     }
 }

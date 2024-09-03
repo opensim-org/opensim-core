@@ -28,20 +28,17 @@
 
 using namespace OpenSim;
 
-void OpenSim::ForceProducer::produceForces(
-    const SimTK::State& state,
-    ForceConsumer& forceConsumer) const
-{
-    if (appliesForce(state)) {
-        implProduceForces(state, forceConsumer);
-    }
-}
-
 void OpenSim::ForceProducer::computeForce(
     const SimTK::State& state,
     SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
     SimTK::Vector& generalizedForces) const
 {
+    if (!appliesForce(state)) {
+        // This `Force` has explicitly stated that it doesn't want to apply
+        // the forces.
+        return;
+    }
+
     // create a consumer that uses each produced force to compute the
     // underlying body- and generalized-forces
     ForceApplier forceApplier{_model->getMatterSubsystem(), bodyForces, generalizedForces};
