@@ -3,15 +3,20 @@
 #include <catch2/catch_all.hpp>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Simulation/Model/ForceAdapter.h>
 #include <OpenSim/Simulation/Model/ForceConsumer.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
+#include <algorithm>
 #include <cstddef>
 
 using namespace OpenSim;
 
 namespace
 {
-    // a trivial example of a `ForceProducer` for the purposes of testing
+    // A trivial example of a `ForceProducer` for the purposes of testing.
     class ExampleForceProducer final : public ForceProducer {
         OpenSim_DECLARE_CONCRETE_OBJECT(ExampleForceProducer, ForceProducer);
     public:
@@ -53,7 +58,7 @@ namespace
         size_t _numPointForcesToProduce = 0;
     };
 
-    // a trivial example of a `ForceConsumer` for the purposes of testing
+    // A trivial example of a `ForceConsumer` for the purposes of testing.
     class ExampleForceConsumer final : public ForceConsumer {
     public:
         size_t getNumGeneralizedForcesConsumed() const { return _numGeneralizedForcesConsumed; }
@@ -80,6 +85,154 @@ namespace
         size_t _numGeneralizedForcesConsumed = 0;
         size_t _numBodySpatialVectorsConsumed = 0;
         size_t _numPointForcesConsumed = 0;
+    };
+
+    // A trivial implementation of a `ForceProducer` that can be added to a `Model`
+    // for the purposes of comparing side-effects to the `Force` API (see `MockForce`
+    // below).
+    class MockForceProducer final : public ForceProducer {
+        OpenSim_DECLARE_CONCRETE_OBJECT(MockForceProducer, ForceProducer);
+    public:
+        OpenSim_DECLARE_SOCKET(force_target, OpenSim::PhysicalFrame, "the physical frame that forces should be produced for");
+        OpenSim_DECLARE_SOCKET(generalized_force_target, OpenSim::Coordinate, "the coordinate that generalized forces should be produced for");
+
+        explicit MockForceProducer(
+            const OpenSim::PhysicalFrame& forceTarget,
+            const OpenSim::Coordinate& generalizedForceTarget)
+        {
+            connectSocket_force_target(forceTarget);
+            connectSocket_generalized_force_target(generalizedForceTarget);
+        }
+
+    private:
+        void implProduceForces(const SimTK::State& state, ForceConsumer& consumer) const final
+        {
+            // Note: this should be logically equivalent to `MockForce::computeForce` (below), so
+            // that the `ForceProducer`'s default `computeForce` implementations can be compared
+            // in an end-to-end way.
+
+            consumer.consumeBodySpatialVec(
+                state,
+                getConnectee<OpenSim::PhysicalFrame>("force_target"),
+                SimTK::SpatialVec{SimTK::Vec3{1.0}, SimTK::Vec3{2.0}}
+            );
+
+            consumer.consumeBodySpatialVec(
+                state,
+                getConnectee<OpenSim::PhysicalFrame>("force_target"),
+                SimTK::SpatialVec{SimTK::Vec3{-0.5}, SimTK::Vec3{-0.25}}
+            );
+
+            consumer.consumeTorque(
+                state,
+                getConnectee<OpenSim::PhysicalFrame>("force_target"),
+                SimTK::Vec3{0.1, 0.25, 0.5}
+            );
+
+            consumer.consumeGeneralizedForce(
+                state,
+                getConnectee<OpenSim::Coordinate>("generalized_force_target"),
+                2.0
+            );
+
+            consumer.consumePointForce(
+                state,
+                getConnectee<OpenSim::PhysicalFrame>("force_target"),
+                SimTK::Vec3{1.0, 2.0, 3.0},
+                SimTK::Vec3{-1.0, -3.0, -9.0}
+            );
+        }
+    };
+
+    // A trivial implementation of a `Force` that can be added to a `Model`
+    // for the purposes of comparing side-effects to the `ForceProducer` API
+    // (see `MockForceProducer` above).
+    class MockForce final : public Force {
+        OpenSim_DECLARE_CONCRETE_OBJECT(MockForce, Force);
+    public:
+        OpenSim_DECLARE_SOCKET(force_target, OpenSim::PhysicalFrame, "the physical frame that forces should be produced for");
+        OpenSim_DECLARE_SOCKET(generalized_force_target, OpenSim::Coordinate, "the coordinate that generalized forces should be produced for");
+
+        explicit MockForce(
+            const OpenSim::PhysicalFrame& forceTarget,
+            const OpenSim::Coordinate& generalizedForceTarget)
+        {
+            connectSocket_force_target(forceTarget);
+            connectSocket_generalized_force_target(generalizedForceTarget);
+        }
+
+        void computeForce(
+            const SimTK::State& state,
+            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+            SimTK::Vector& generalizedForces) const override
+        {
+            // Note: this should be logically equivalent to `MockForceProducer::implProduceForces`
+            // (above), so that the `ForceProducer`'s default `computeForce` implementations can
+            // be compared in an end-to-end way.
+
+            // (this is usually how legacy `Force` code adds `SimTK::SpatialVec`s to the body forces)
+            bodyForces[getConnectee<OpenSim::PhysicalFrame>("force_target").getMobilizedBodyIndex()] +=
+                SimTK::SpatialVec{SimTK::Vec3{1.0}, SimTK::Vec3{2.0}};
+            bodyForces[getConnectee<OpenSim::PhysicalFrame>("force_target").getMobilizedBodyIndex()] +=
+                SimTK::SpatialVec{SimTK::Vec3{-0.5}, SimTK::Vec3{-0.25}};
+
+            applyTorque(
+                state,
+                getConnectee<OpenSim::PhysicalFrame>("force_target"),
+                SimTK::Vec3{0.1, 0.25, 0.5},
+                bodyForces
+            );
+
+            applyGeneralizedForce(
+                state,
+                getConnectee<OpenSim::Coordinate>("generalized_force_target"),
+                2.0,
+                generalizedForces
+            );
+
+            applyForceToPoint(
+                state,
+                getConnectee<OpenSim::PhysicalFrame>("force_target"),
+                SimTK::Vec3{1.0, 2.0, 3.0},
+                SimTK::Vec3{-1.0, -3.0, -9.0},
+                bodyForces
+            );
+        }
+    };
+
+    // Returns true if the contents of `a` and `b` are equal, that is, they have the same
+    // number of elements, and each element in `a` compares equal with the element in `b`
+    // at the same position.
+    template<typename T>
+    bool equals(const SimTK::Vector_<T>& a, const SimTK::Vector_<T>& b)
+    {
+        if (a.size() != b.size()) {
+            return false;
+        }
+        for (int i = 0; i < a.size(); ++i) {
+            if (a[i] != b[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Represents the vectors of forces the simbody physics engine lets downstream
+    // code (e.g. `OpenSim::Force`s) manipulate
+    //
+    // They're bundled together in this struct for ease of use, initialization, and comparison.
+    struct SimbodyEngineForceVectors {
+
+        // Constructs a zero-initialized set of vectors.
+        explicit SimbodyEngineForceVectors(const SimTK::SimbodyMatterSubsystem& matter) :
+            bodyForces{matter.getNumBodies(), SimTK::SpatialVec{SimTK::Vec3{0.0}, SimTK::Vec3{0.0}}},
+            particleForces{matter.getNumParticles(), SimTK::Vec3{0.0}},
+            mobilityForces{matter.getNumMobilities(), double{}}
+        {}
+
+        SimTK::Vector_<SimTK::SpatialVec> bodyForces;
+        SimTK::Vector_<SimTK::Vec3> particleForces;  // unused by OpenSim
+        SimTK::Vector mobilityForces;
     };
 }
 
@@ -195,8 +348,38 @@ TEST_CASE("ForceProducer (ExampleForceProducer)")
         //      `Force::computeForce` API. It's just that the `ForceProducer` API allows for
         //      switching consumers' behavior.
 
-        // TODO: requires creating `ForceProducer` and `Force` implementations that are "idential"
-        //       and ensuring they have the same effect on the `bodyForces` and `mobilityForces`
-        //       vectors after calling `Force::computeForce` on either of them.
+        // step 1) build a model with "equivalent" `ForceProducer` and `Force` implementations
+        Model model;
+        auto* body          = new Body{"body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0}};
+        auto* joint         = new FreeJoint{"joint", model.getGround(), *body};
+        auto* force         = new MockForce{*body, joint->get_coordinates(0)};
+        auto* forceProducer = new MockForceProducer{*body, joint->get_coordinates(0)};
+        model.addBody(body);
+        model.addJoint(joint);
+        model.addForce(force);
+        model.addForce(forceProducer);
+        model.buildSystem();
+        model.initializeState();
+
+        // step 2) create zero-initialized force vectors "as if" pretending to be the physics engine
+        SimbodyEngineForceVectors forceVectors{model.getMatterSubsystem()};
+        SimbodyEngineForceVectors forceProducerVectors{model.getMatterSubsystem()};
+
+        // step 3a) pump one set of the vectors through the `Force` implementation
+        {
+            ForceAdapter adapter{*force};
+            adapter.calcForce(model.getWorkingState(), forceVectors.bodyForces, forceVectors.particleForces, forceVectors.mobilityForces);
+        }
+        // step 3b) pump the other set of vectors through the `ForceProducer` implementation
+        {
+            ForceAdapter adapter{*forceProducer};
+            adapter.calcForce(model.getWorkingState(), forceProducerVectors.bodyForces, forceProducerVectors.particleForces, forceProducerVectors.mobilityForces);
+        }
+
+        // step 4) compare the vector sets, which should be equal if `ForceProducer` behaves the same
+        //         as `Force` for typical use-cases
+        REQUIRE(equals(forceVectors.bodyForces, forceProducerVectors.bodyForces));
+        REQUIRE(equals(forceVectors.particleForces, forceProducerVectors.particleForces));
+        REQUIRE(equals(forceVectors.mobilityForces, forceProducerVectors.mobilityForces));
     }
 }
