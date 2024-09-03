@@ -362,6 +362,7 @@ TEST_CASE("ForceProducer (ExampleForceProducer)")
         model.initializeState();
 
         // step 2) create zero-initialized force vectors "as if" pretending to be the physics engine
+        SimbodyEngineForceVectors blankForceVectors{model.getMatterSubsystem()};
         SimbodyEngineForceVectors forceVectors{model.getMatterSubsystem()};
         SimbodyEngineForceVectors forceProducerVectors{model.getMatterSubsystem()};
 
@@ -378,8 +379,8 @@ TEST_CASE("ForceProducer (ExampleForceProducer)")
 
         // step 4) compare the vector sets, which should be equal if `ForceProducer` behaves the same
         //         as `Force` for typical use-cases
-        REQUIRE(equals(forceVectors.bodyForces, forceProducerVectors.bodyForces));
-        REQUIRE(equals(forceVectors.particleForces, forceProducerVectors.particleForces));
-        REQUIRE(equals(forceVectors.mobilityForces, forceProducerVectors.mobilityForces));
+        REQUIRE((!equals(forceVectors.bodyForces, blankForceVectors.bodyForces) && equals(forceVectors.bodyForces, forceProducerVectors.bodyForces)));
+        REQUIRE(equals(forceVectors.particleForces, forceProducerVectors.particleForces));  // should be blank (untouched by OpenSim)
+        REQUIRE((!equals(forceVectors.bodyForces, blankForceVectors.bodyForces) && equals(forceVectors.mobilityForces, forceProducerVectors.mobilityForces)));
     }
 }
