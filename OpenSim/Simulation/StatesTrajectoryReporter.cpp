@@ -34,6 +34,11 @@ const StatesTrajectory& StatesTrajectoryReporter::getStates() const {
     return m_states;
 }
 
+const SimTK::Array_<SimTK::State>&
+StatesTrajectoryReporter::getStateArray() const {
+    return m_states.getStateArray();
+}
+
 /*
 TODO we have to discuss if the trajectory should be cleared.
 void StatesTrajectoryReporter::extendRealizeInstance(const SimTK::State& state) const {
