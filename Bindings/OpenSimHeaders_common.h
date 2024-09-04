@@ -22,6 +22,7 @@
 #include <OpenSim/Common/Event.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/ExperimentalSensor.h>
+#include <OpenSim/Common/ExpressionBasedFunction.h>
 #include <OpenSim/Common/FileAdapter.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/FunctionSet.h>

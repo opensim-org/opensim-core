@@ -41,6 +41,7 @@
 #include "MultiplierFunction.h"
 #include "PolynomialFunction.h"
 #include "MultivariatePolynomialFunction.h"
+#include "ExpressionBasedFunction.h"
 
 #include "SignalGenerator.h"
 
@@ -88,6 +89,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType( MultiplierFunction() );
     Object::registerType( PolynomialFunction() );
     Object::registerType( MultivariatePolynomialFunction() );
+    Object::registerType( ExpressionBasedFunction() );
 
     Object::registerType( SignalGenerator() );
 

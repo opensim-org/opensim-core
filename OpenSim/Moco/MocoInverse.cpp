@@ -42,6 +42,10 @@ void MocoInverse::constructProperties() {
 
 MocoStudy MocoInverse::initialize() const { return initializeInternal().first; }
 
+TimeSeriesTable MocoInverse::initializeKinematics() const {
+    return initializeInternal().second;
+}
+
 std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
 
     // Process inputs.

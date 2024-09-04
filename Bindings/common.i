@@ -60,6 +60,7 @@
 %include <OpenSim/Common/Sine.h>
 %include <OpenSim/Common/PolynomialFunction.h>
 %include <OpenSim/Common/MultivariatePolynomialFunction.h>
+%include <OpenSim/Common/ExpressionBasedFunction.h>
 
 %include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 %include <OpenSim/Common/SmoothSegmentedFunction.h>
