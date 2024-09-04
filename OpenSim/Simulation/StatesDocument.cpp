@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2022-20232 Stanford University and the Authors               *
+ * Copyright (c) 2022-2024 Stanford University and the Authors               *
  * Author(s):  F. C. Anderson                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -52,7 +52,6 @@ struct SDocUtil {
 
         // Append the variable element
         varElt.setValueAs<Array_<T>>(valArr, precision);
-        //varElt.setValueAs<Array_<T>>(valArr);
         parent.appendNode(varElt);
     }
     //_________________________________________________________________________
@@ -219,7 +218,6 @@ formTimeElement(const Model& model, const Array_<State>& traj) {
     }
 
     // Set the text value on the element
-    //timeElt.setValueAs<Array_<double>>(time);
     timeElt.setValueAs<Array_<double>>(time, precision);
 }
 //_____________________________________________________________________________
