@@ -546,7 +546,7 @@ initializeDiscreteVariables(const Model& model, SimTK::Array_<State>& traj) {
     SimTK::String childTag = "variable";
     Array_<Element> varElts = discElts[0].getAllElements(childTag);
 
-    // Check that the number matches the number of discrete variables.
+    // Check that # children matches the number of discrete variables.
     OpenSim::Array<std::string> varNames = model.getDiscreteVariableNames();
     int n = varElts.size();
     int m = varNames.size();

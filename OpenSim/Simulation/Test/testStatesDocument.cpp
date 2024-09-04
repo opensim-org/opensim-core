@@ -577,7 +577,7 @@ testStateEquality(const Model& model,
 //_____________________________________________________________________________
 // Build the model
 Model*
-buildModelFree(int whichDiscreteState = -1,
+buildModel(int whichDiscreteState = -1,
     const string& discreteStateSuffix = "", int omit = -1) {
 
     // Create an empty model
@@ -615,7 +615,7 @@ buildModelFree(int whichDiscreteState = -1,
     Vec3 insertion(0.1, 0.1, 0.025);
     ExtendedPointToPointSpring* spring = new ExtendedPointToPointSpring(
         ground, origin, *block, insertion, kp, restlength,
-        whichDiscreteState, discreteStateSuffix);
+        whichDiscreteState, discreteStateSuffix, omit);
     model->addForce(spring);
 
     return model;
@@ -664,7 +664,7 @@ TEST_CASE("Serialization and Deserialization")
     // Note that a copy of the state trajectory is returned, so we don't have
     // to worry about the reporter (or any other object) going out of scope
     // or being deleted.
-    Model *model = buildModelFree();
+    Model *model = buildModel();
     Array_<State> traj = simulate(model);
 
     // Serialize
@@ -704,7 +704,7 @@ TEST_CASE("Serialization and Deserialization")
 TEST_CASE("Exceptions")
 {
     // Build the default model and run a simulation
-    Model *model = buildModelFree();
+    Model *model = buildModel();
     Array_<State> traj = simulate(model);
 
     // Serialize the default model
@@ -731,7 +731,7 @@ TEST_CASE("Exceptions")
 
         // Build a model that is different only with respect to one name of a
         // specified discrete state.
-        Model* modelB = buildModelFree(which, suffix);
+        Model* modelB = buildModel(which, suffix);
         Array_<State> trajDoNotNeed = simulate(modelB);
 
         // Deserialize using modelB
@@ -745,21 +745,21 @@ TEST_CASE("Exceptions")
     }
 
     // (C) A discrete state is not found because the state doesn't exist.
-    // A exception should be thrown because the number of states don't match.
+    // An exception should be thrown because the number of states don't match.
     for (int which = -1, omit = 0; omit < 8; ++omit) {
         cout << "Omitting discrete state " << omit << endl;
 
         // Build a model that is different only in that one discrete state
         // is omitted.
-        Model* modelC = buildModelFree(which, suffix, omit);
+        Model* modelC = buildModel(which, suffix, omit);
         Array_<State> trajDoNotNeed = simulate(modelC);
 
         // Deserialize using modelC
         StatesDocument docC(filename);
         Array_<State> trajC;
-        //CHECK_THROWS(docC.deserialize(*modelC, trajC),
-        //    "Expected number of discrete states should be wrong");
-        docC.deserialize(*modelC, trajC);
+        CHECK_THROWS(docC.deserialize(*modelC, trajC),
+            "Expected number of discrete states should be wrong");
+        //docC.deserialize(*modelC, trajC);
 
         delete modelC;
     }
