@@ -366,12 +366,6 @@ formModelingElement(const Model& model, const Array_<State>& traj) {
 void
 StatesDocument::
 deserialize(const Model& model, Array_<State>& traj) {
-    parseDoc(model, traj);
-}
-//_____________________________________________________________________________
-void
-StatesDocument::
-parseDoc(const Model& model, Array_<State>& traj) {
     checkDocConsistencyWithModel(model);
     prepareStatesTrajectory(model, traj);
     initializeTime(traj);

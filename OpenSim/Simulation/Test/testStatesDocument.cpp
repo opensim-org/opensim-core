@@ -650,8 +650,8 @@ simulate(Model* model) {
     manager.initialize(state);
     state = manager.integrate(tf);
 
-    // Return a copy of the state trajectory
-    return reporter->getStates().getUnderlyingStateArray();
+    // Return a copy of the underlying state array
+    return reporter->getStateArray();
 }
 
 } // End anonymous namespace

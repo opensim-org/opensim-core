@@ -339,7 +339,7 @@ public:
     }
 
     /** Get a read-only reference to the underlying state array. */
-    const SimTK::Array_<SimTK::State>& getUnderlyingStateArray() const {
+    const SimTK::Array_<SimTK::State>& getStateArray() const {
         return m_states;
     }
 

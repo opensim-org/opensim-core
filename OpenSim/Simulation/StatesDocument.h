@@ -66,20 +66,20 @@ static or kinetic frictional conditions. Such output discrete variables are
 updated at each time step during numerical integration. Unlike continuous
 states, however, they are updated based on closed-form algebraic expressions
 rather than based on their derivatives. In the underlying SimTK infrastructure,
-these output variables are implemented as a specialized kind of discrete
-variable called an Auto-Update Discrete Variable.
+an output discrete variable is implemented as a specialized kind of
+discrete variable called an Auto-Update Discrete Variable.
 
 Modeling Options are flags, usually of type int, that are used to choose
-between viable ways to model the System or whether or not to apply a
+between viable ways to model a SimTK::System or whether or not to apply a
 constraint. Examples include a flag that specifies whether Euler angles or
 quaternions are used to represent rotation or a flag that specifies whether a
-particular joint coordinate is locked or unlocked. When a Modeling Options is
-changed, low-level aspects of the System must be reconstituted or, in SimTK
+particular joint coordinate is locked. When a Modeling Option is changed,
+low-level aspects of the System must be reconstituted or, in SimTK
 terminology, re-realized through SimTK::Stage::Model.
 
-Prior to the introduction of this class StatesDocument, only Continuous
-Variables (i.e., OpenSim::StateVariable%s) were routinely and systematically
-serialized, most commonly via the OpenSim::Manager as an OpenSim::Storage file
+Prior to the introduction of this class, only Continuous Variables (i.e.,
+OpenSim::StateVariable%s) were routinely and systematically serialized,
+most commonly via the OpenSim::Manager as an OpenSim::Storage file
 or via class OpenSim::StatesTrajectory as an OpenSim::TimeSeriesTable.
 Discrete Variables and Modeling Options, if serialized, had to be stored in
 separate files or handled as OpenSim::Property objects. In addition, prior to
@@ -134,8 +134,8 @@ which are informally referred to as state trajectories (see directly below).
 
 ### Trajectories
 In many methods of this class, as well as in related classes, you will
-frequently encounter the term 'trajectory'. In these contexts, the term
-connotes a time-ordered sequence, or a time-history, of values.
+encounter the term 'trajectory'. In these contexts, the term connotes a
+time-ordered sequence, or a time-history, of values.
 
 An array of knee angles (-10.0, -2.3, 4.5, 6.2, 7.1) would be termed a knee
 angle trajectory if those knee angles were recorded sequentially during a
@@ -157,21 +157,21 @@ the OpenSim::Component class. A few examples follow.
 ```
         template<class T>
         Component::getDiscreteVariableTrajectory(
-                        const std::string& pathName,
+                        const std::string& path,
                         const SimTK::Array_<SimTK::State>& input,
                         SimTK::Array_<T>& output) const
 ```
-A call to the above method first finds a Discrete Variable in the model
-hierarchy based on the specifed path (`pathName`). Then, from the
-input states trajectory (`input`), the method extracts the values of the
-specified Discrete Variable and returns its trajectory as the output
-(`output`). Notice that the type of the Discrete Variable can be specified
-by the caller (i.e., T = int, double, Vec3, Vec4, etc.).
+A call to the above method first finds a Discrete Variable in the component
+hierarchy based on the specifed path (`path`). Then, from the input states
+trajectory (`input`), the method extracts the values of the specified
+Discrete Variable and returns its trajectory as the output (`output`).
+Notice that the type of the Discrete Variable can be specified by the caller
+(i.e., T = int, double, Vec3, Vec4, etc.).
 
 ```
         template<class T>
         void setDiscreteVariableTrajectory(
-                        const std::string& pathName,
+                        const std::string& path,
                         const SimTK::Array_<T>& input,
                         SimTK::Array_<SimTK::State>& output) const
 ```
@@ -261,15 +261,19 @@ states trajectory for an OpenSim::Model requires the following:
     1) The name of the `OpenSim::Model` must match the value of the
     `model` attribute of the top-level `ostates` element.
 
-    2) The number of values recorded for each `variable` and each
+    2) The number of continuous variables, discrete variables, and modeling
+    options in the .ostates file must match the corresponding numbers in the
+    OpenSim::Model.
+
+    3) The number of values recorded for each `variable` and each
     `option` in the `.ostates` file must be equal to the value of the
     `nTime` attribute of the top-level `ostates` element.
 
-    3) All `variable` and `option` paths must be found in the model
+    4) All `variable` and `option` paths must be found in the model
     OpenSim::Component heirarchy.
 
-    4) The type must be supported. As of January 2024, the following types are
-    supported:
+    5) The type must be supported. As of September 2024, the following types
+    are supported:
 
             SimTK::State Category    | Supported Type(s)
             ------------------------ | -----------------------
@@ -340,18 +344,16 @@ deserialize those same states and use them to accomplish a few basic things.
     // The reporter that was added to the system collects the states in an
     // OpenSim::StatesTrajectory object. Underneath the covers, the states are
     // accumulated in a private array of state objects (i.e., Array_<State>).
-    // The StatesTrajectory class does not provide direct access to this
-    // private array, but it does know how to export a StatesDocument based on
-    // those states. This "export" functionality is what is used below.
+    // The StatesTrajectory class knows how to export a StatesDocument based
+    // on those states. This "export" functionality is what is used below.
     const StatesTrajectory& trajectory = reporter->getStates();
     StatesDocument doc = trajectory.exportToStatesDocument(model);
 
-    // Alternatively, if the reporter did provide direct access to the
-    // underlying array of states (i.e., the Array_<State>) instead of the
-    // StatesTrajectory object, the StatesDocument would be created by doing
-    // the following:
-    const SimTK::Array_<SimTK::State>& trajectory = reporter->getStates();
-    StatesDocument doc(model, trajectory);
+    // Alternatively, a read-only reference to the underlying state array
+    // can be obtained from the reporter and used to construct a
+    // StatesDocument directly:
+    const SimTK::Array_<SimTK::State>& traj = reporter->getStateArray();
+    StatesDocument doc(model, traj);
 
     // ----------------------------
     // Serialize the States to File
@@ -396,7 +398,7 @@ deserialize those same states and use them to accomplish a few basic things.
     // Note that model and document must be entirely consistent with each
     // other for the deserialization to be successful.
     // See StatesDocument::deserialize() for details.
-    SimTK::Array_<SimTK::State> traj;  // "traj" is short for "trajectory"
+    SimTK::Array_<SimTK::State> traj;
     doc.deserialize(model, traj);
 
     // Below are some things that can be done once a deserialized state
@@ -466,7 +468,7 @@ deserialize those same states and use them to accomplish a few basic things.
 ```
 
 ### A Final Note
-Because Storage files (*.sto) and TimeSeriesTable files (*.??) typically
+Because Storage files (*.sto) and TimeSeriesTable files (*.tst) typically
 capture only the continuous states of a system, using these files as the basis
 for deserialization runs the risk of leaving discrete variables and modeling
 options in the SimTK::State uninitialized. In such an approach, additional
@@ -562,12 +564,6 @@ public:
     void deserialize(const OpenSim::Model& model,
         SimTK::Array_<SimTK::State>& trajectory);
 
-    //-------------------------------------------------------------------------
-    // Testing
-    //-------------------------------------------------------------------------
-    /** An entry point for running basic tests on this class. */
-    void test();
-
 protected:
     // Serialization Helpers.
     void formDoc(const Model& model,
@@ -586,7 +582,6 @@ protected:
         const SimTK::Array_<SimTK::State>& traj);
 
     // Deserialization Helpers.
-    void parseDoc(const Model& m, SimTK::Array_<SimTK::State>& t);
     void checkDocConsistencyWithModel(const Model& model);
     void prepareStatesTrajectory(const Model& model,
         SimTK::Array_<SimTK::State> &traj);
