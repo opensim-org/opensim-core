@@ -58,7 +58,7 @@ void AbstractGeometryPath::addInEquivalentForces(const SimTK::State& state,
     SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
     SimTK::Vector& mobilityForces) const
 {
-    ForceApplier forceApplier{getModel().getMatterSubsystem(), bodyForces, mobilityForces};
+    ForceApplier forceApplier{&getModel().getMatterSubsystem(), &bodyForces, &mobilityForces};
     produceForces(state, tension, forceApplier);
 }
 

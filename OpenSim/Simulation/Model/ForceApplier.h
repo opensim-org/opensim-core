@@ -26,6 +26,7 @@
 
 #include <OpenSim/Simulation/Model/ForceConsumer.h>
 
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 
 #include <SimTKcommon/internal/MassProperties.h>  // for `SimTK::SpatialVec`
@@ -50,15 +51,26 @@ namespace OpenSim
  */
 class OSIMSIMULATION_API ForceApplier final : public ForceConsumer {
 public:
+    /**
+     * Constructs a `ForceApplier` that applies forces generated for `matter` to
+     * the `bodyForces` and `generalizedForces` vectors, if provided.
+     *
+     * Throws if any of `matter`, `bodyForces`, or `generalizedForces` are null.
+     */
     explicit ForceApplier(
-        const SimTK::SimbodyMatterSubsystem& matter,
-        SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-        SimTK::Vector& generalizedForces) :
+        const SimTK::SimbodyMatterSubsystem* matter,
+        SimTK::Vector_<SimTK::SpatialVec>* bodyForces,
+        SimTK::Vector* generalizedForces) :
 
-        _matter{&matter},
-        _bodyForces{&bodyForces},
-        _generalizedForces{&generalizedForces}
-    {}
+        _matter{matter},
+        _bodyForces{bodyForces},
+        _generalizedForces{generalizedForces}
+    {
+        OPENSIM_ASSERT_ALWAYS(matter != nullptr && "the matter argument cannot be null");
+        OPENSIM_ASSERT_ALWAYS(bodyForces != nullptr && "the body forces argument cannot be null");
+        OPENSIM_ASSERT_ALWAYS(generalizedForces != nullptr && "the generalized forces vector cannot be null");
+    }
+
 private:
 
     void implConsumeGeneralizedForce(const SimTK::State&, const Coordinate&, double) final;

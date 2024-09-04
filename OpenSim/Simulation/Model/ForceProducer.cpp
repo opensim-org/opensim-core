@@ -41,7 +41,7 @@ void OpenSim::ForceProducer::computeForce(
 
     // create a consumer that uses each produced force to compute the
     // underlying body- and generalized-forces
-    ForceApplier forceApplier{_model->getMatterSubsystem(), bodyForces, generalizedForces};
+    ForceApplier forceApplier{&_model->getMatterSubsystem(), &bodyForces, &generalizedForces};
 
     // produce forces and feed them into the consumer, satisfying the `computeForce` API
     produceForces(state, forceApplier);
