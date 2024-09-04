@@ -759,7 +759,6 @@ TEST_CASE("Exceptions")
         Array_<State> trajC;
         CHECK_THROWS(docC.deserialize(*modelC, trajC),
             "Expected number of discrete states should be wrong");
-        //docC.deserialize(*modelC, trajC);
 
         delete modelC;
     }

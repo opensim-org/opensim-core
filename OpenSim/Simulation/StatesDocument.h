@@ -600,9 +600,6 @@ protected:
     void initializeModelingOptions(const Model& model,
         SimTK::Array_<SimTK::State> &traj);
 
-    // Testing
-    void prototype();
-
 private:
     // Member Variables
     int precision{SimTK::LosslessNumDigitsReal};
