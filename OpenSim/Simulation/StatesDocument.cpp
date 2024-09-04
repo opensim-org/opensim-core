@@ -59,14 +59,14 @@ struct SDocUtil {
     inline
     static
     void
-    getEltValue(const string& path, int expectedSize,
+    getEltValue(const string& path, size_t expectedSize,
         Element& varElt, Array_<T>& vArr)
     {
         // Interpret the element value
         varElt.getValueAs<Array_<T>>(vArr);
 
         // Check the size
-        int n = vArr.size();
+        size_t n = vArr.size();
         SimTK_ASSERT3_ALWAYS(n == expectedSize,
             "Found %d values in the element for %s, but there should be %d",
             n, path, expectedSize);
@@ -114,7 +114,7 @@ struct SDocUtil {
         varElt.getValueAs<Array_<T>>(vArr);
 
         // Check the sizes.
-        int n = vArr.size();
+        size_t n = vArr.size();
         SimTK_ASSERT2_ALWAYS(n == traj.size(),
             "Found %d values. Should match nTime = %d values.",
             n, traj.size());
@@ -469,7 +469,7 @@ initializeTime(Array_<State>& traj) {
     timeElts[0].getValueAs<Array_<double>>(timeArr);
 
     // Check the size of the time array.
-    int n = traj.size();
+    size_t n = traj.size();
     SimTK_ASSERT2_ALWAYS(n == traj.size(),
         "Found %d time values. Should match numStateObjects = %d",
         n, traj.size());
