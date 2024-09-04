@@ -134,14 +134,14 @@ public:
     double getSpeed(const SimTK::State& s) const override;
 
     private:
-        /**
-        * Implements the `ForceProducer` interface by emitting point forces on
-        * frameA and frameB.
-        */
-        void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
+    /**
+    * Implements the `ForceProducer` interface by emitting point forces on
+    * frameA and frameB.
+    */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
 
-        /** Compute the direction of the actuator force in ground frame. */
-        SimTK::UnitVec3 calcDirectionBAInGround(const SimTK::State& s) const;
+    /** Compute the direction of the actuator force in ground frame. */
+    SimTK::UnitVec3 calcDirectionBAInGround(const SimTK::State& s) const;
 
 //=============================================================================
 }; // END of class PistonActuator
