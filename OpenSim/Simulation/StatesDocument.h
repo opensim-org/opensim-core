@@ -489,6 +489,9 @@ public:
     //-------------------------------------------------------------------------
     // Construction
     //-------------------------------------------------------------------------
+    /** No valid default constructor. */
+    StatesDocument() = delete;
+
     /** Construct a StatesDocument instance from an XML file in preparation
     for deserialzing the states into a states trajectory. Once constructed,
     the document is not designed to be modified; it is a fixed snapshot of the
