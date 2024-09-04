@@ -69,7 +69,7 @@ struct SDocUtil {
         size_t n = vArr.size();
         SimTK_ASSERT3_ALWAYS(n == expectedSize,
             "Found %d values in the element for %s, but there should be %d",
-            n, path, expectedSize);
+            n, path.c_str(), expectedSize);
     }
     //_________________________________________________________________________
     template<class T>
@@ -384,14 +384,14 @@ checkDocConsistencyWithModel(const Model& model) {
     Attribute modelNameAttr = rootElt.getOptionalAttribute("model");
     SimTK_ASSERT1(modelNameAttr.isValid(),
         "The 'model' attribute of the root element was not found in file %s.",
-        filename);
+        filename.c_str());
     const SimTK::String& modelName = modelNameAttr.getValue();
     if (modelName != model.getName()) {
         SimTK::String msg = "The model name (" + modelName + ")";
         msg += " in states document " + filename + " does not match";
         msg += " the name of the OpenSim model (" + model.getName() + ")";
         msg += " for which the states are being deserialized.";
-        SimTK_ASSERT_ALWAYS(false, msg);
+        SimTK_ASSERT_ALWAYS(false, msg.c_str());
     }
 
 }
@@ -475,7 +475,7 @@ initializeTime(Array_<State>& traj) {
         n, traj.size());
 
     // Initialize the State objects
-    for (int i = 0; i < n; ++i) traj[i].setTime(timeArr[i]);
+    for (size_t i = 0; i < n; ++i) traj[i].setTime(timeArr[i]);
 }
 //_____________________________________________________________________________
 void
