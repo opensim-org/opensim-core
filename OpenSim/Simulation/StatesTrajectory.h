@@ -294,25 +294,22 @@ public:
     * all continuous, discrete, and modeling states) to an
     * OpenSim::StatesDocument. That StatesDocument instance can then be
     * used to serialize the states to an OSTATES file or document string by
-    * calling the following:
-    *
-    *       StatesDocument::serializeToFile()
-    *       StatesDocument::serializeToSring()
+    * calling `StatesDocument::serialize()`.
     *
     * Once the states have been serialized, they can be deserialized by
-    * constructing a new StatesDocument from a file or document string:
-    *
-    *       StatesDocument(const SimTK::String& filename)
-    *       StatesDocument(const char* xmlDocument)
-    *
-    * and then calling the following:
-    *
+    * constructing a new StatesDocument by calling
+    * ```
+    *   StatesDocument(const SimTK::String& filename)
+    * ```
+    * and then calling:
+    * ```
     *       StatesDocument::deserialize(const OpenSim::Model& model,
     *                           SimTK::Array_<SimTK::State>& trajectory)
-    *    *
-    * The OSTATES format is plain-text XML (see SimTK::Xml) with precision
-    * sufficient to restore a time-history of SimTK::State%s with virtually
-    * no trunction or rounding error.
+    * ```
+    *
+    * The .ostates format is plain-text XML (see SimTK::Xml) with a
+    * specifiable precision between 1 and 20 significant figures. A precision
+    * of 20 digits results in losselss de/serialization.
     *
     * A note of CAUTION:
     * Using either
@@ -323,11 +320,11 @@ public:
     * to construct a StatesTrajectory instance will likely leave discrete
     * states (i.e., OpenSim::DiscreteVariable%s) and modeling states
     * (i.e., OpenSim::ModelingOptions%s) uninitialized. The reason is that
-    * Storage and TimeSeriesTable objects generally include only the
-    * continuous states (i.e., OpenSim::StateVariable%s).
+    * Storage and TimeSeriesTable objects include only the continuous states
+    * (i.e., OpenSim::StateVariable%s).
     *
     * Thus, when relying on serialization and deserialization to reproduce a
-    * complete StatesTrajectory, a StatesDocument is the preferred source as
+    * complete StatesTrajectory, a StatesDocument is the preferred means as
     * it will include continuous, discrete, and modeling states.
     */
     OpenSim::StatesDocument
