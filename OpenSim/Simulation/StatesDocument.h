@@ -606,4 +606,4 @@ private:
 
 } // end of namespace OpenSim
 
-#endif OPENSIM_STATES_DOCUMENT_H_
+#endif // OPENSIM_STATES_DOCUMENT_H_
