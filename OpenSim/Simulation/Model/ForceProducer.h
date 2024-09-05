@@ -58,7 +58,7 @@ public:
      * Uses `implProduceForces` to produce (emit) forces evaluated from `state` into the
      * provided `ForceConsumer`.
      *
-     * Note: this function only produces the forces and does not apply them to anything. It's
+     * @note this function only produces the forces and does not apply them to anything. It's
      *       up to the `ForceConsumer` implementation to handle the forces. Therefore,
      *       `Force::appliesForces` is ignored by this method.
      *
