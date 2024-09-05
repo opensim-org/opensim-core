@@ -388,16 +388,15 @@ void GeometryPath::produceForces(const SimTK::State& s,
 {
     const Array<AbstractPathPoint*>& currentPath = getCurrentPath(s);
     for (int i = 0; i < currentPath.getSize()-1; ++i) {
-        const AbstractPathPoint* start = currentPath[i];
-        const AbstractPathPoint* end = currentPath[i+1];
+        const AbstractPathPoint& start = *currentPath[i];
+        const AbstractPathPoint& end   = *currentPath[i+1];
+        const SimTK::MobilizedBody& bo = start.getParentFrame().getMobilizedBody();
+        const SimTK::MobilizedBody& bf = end.getParentFrame().getMobilizedBody();
 
-        const SimTK::MobilizedBody* bo = &start->getParentFrame().getMobilizedBody();
-        const SimTK::MobilizedBody* bf = &end->getParentFrame().getMobilizedBody();
-
-        if (bo != bf) {
+        if (&bo != &bf) {
             // Find the positions of start and end in the inertial frame.
-            const Vec3 po = start->getLocationInGround(s);
-            const Vec3 pf = end->getLocationInGround(s);
+            const Vec3 po = start.getLocationInGround(s);
+            const Vec3 pf = end.getLocationInGround(s);
 
             // Form a vector from start to end, in the inertial frame.
             Vec3 dir = (pf - po);
@@ -416,43 +415,22 @@ void GeometryPath::produceForces(const SimTK::State& s,
 
             const Vec3 force = tension*dir;
 
-            const auto* mppo = dynamic_cast<const MovingPathPoint*>(start);
-
             // do the same for the end point of this segment of the path
-            const auto* mppf = dynamic_cast<const MovingPathPoint *>(end);
 
             // add in the tension point forces to body forces
-            if (mppo) {// moving path point location is a function of the state
-                forceConsumer.consumePointForce(s, start->getParentFrame(), mppo->getLocation(s), force);
-            }
-            else {
-                forceConsumer.consumePointForce(s, start->getParentFrame(), start->getLocation(s), force);
-            }
+            forceConsumer.consumePointForce(s, start.getParentFrame(), start.getLocation(s), force);
+            forceConsumer.consumePointForce(s, end.getParentFrame(), end.getLocation(s), -force);
 
-            if (mppf) {// moving path point location is a function of the state
-                forceConsumer.consumePointForce(s, end->getParentFrame(), mppf->getLocation(s), -force);
-            }
-            else {
-                // transform of the frame of the point to the base mobilized body
-                forceConsumer.consumePointForce(s, end->getParentFrame(), end->getLocation(s), -force);
-            }
-
-            // Now account for the work being done by virtue of the moving
-            // path point motion relative to the body it is on
-            if (mppo) {
-                // torque (genforce) contribution due to relative movement 
-                // of a via point w.r.t. the body it is connected to.
-                const Vec3 dPodq_G = bo->expressVectorInGroundFrame(s, start->getdPointdQ(s));
+            // Now account for the work being done by virtue of a `MovingPathPoint`'s
+            // motion relative to the body it is on.
+            if (const auto* mppo = dynamic_cast<const MovingPathPoint*>(&start)) {
+                const Vec3 dPodq_G = bo.expressVectorInGroundFrame(s, start.getdPointdQ(s));
                 const double fo = ~dPodq_G*force;
-
-                // apply the generalized (mobility) force to the coordinate's body
                 forceConsumer.consumeGeneralizedForce(s, mppo->getXCoordinate(), fo);
             }
-
-            if (mppf) {
-                const Vec3 dPfdq_G = bf->expressVectorInGroundFrame(s, end->getdPointdQ(s));
+            if (const auto* mppf = dynamic_cast<const MovingPathPoint*>(&end)) {
+                const Vec3 dPfdq_G = bf.expressVectorInGroundFrame(s, end.getdPointdQ(s));
                 const double ff = ~dPfdq_G*(-force);
-
                 forceConsumer.consumeGeneralizedForce(s, mppf->getXCoordinate(), ff);
             }
         }
