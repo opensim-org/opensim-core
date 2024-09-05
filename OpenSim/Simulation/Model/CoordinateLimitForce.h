@@ -27,7 +27,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/Model/Force.h>
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 
 
 //=============================================================================
@@ -55,8 +55,8 @@ namespace OpenSim {
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API CoordinateLimitForce : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateLimitForce, Force);
+class OSIMSIMULATION_API CoordinateLimitForce : public ForceProducer {
+OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateLimitForce, ForceProducer);
 public:
 //==============================================================================
 // PROPERTIES
@@ -217,14 +217,12 @@ protected:
     /** Create the underlying Force that is part of the multibody system. */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-    //--------------------------------------------------------------------------
-    // Force Interface
-    //--------------------------------------------------------------------------
-    void computeForce(const SimTK::State& s, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                      SimTK::Vector& mobilityForces) const override;
-
 private:
+    /**
+     * Implements the `ForceProducer` interface.
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
+
     // Object helpers
     void setNull();
     void constructProperties();

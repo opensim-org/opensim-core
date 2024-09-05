@@ -24,12 +24,9 @@
  * -------------------------------------------------------------------------- */
 
 
-//=============================================================================
-// INCLUDES
-//=============================================================================
-#include "AbstractGeometryPath.h"
-#include "Force.h"
-#include "GeometryPath.h"
+#include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
+#include <OpenSim/Simulation/Model/ForceProducer.h>
+#include <OpenSim/Simulation/Model/GeometryPath.h>
 
 namespace OpenSim {
 
@@ -51,8 +48,8 @@ class ScaleSet;
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API PathSpring : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathSpring, Force);
+class OSIMSIMULATION_API PathSpring : public ForceProducer {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathSpring, ForceProducer);
 public:
 //=============================================================================
 // PROPERTIES
@@ -180,11 +177,6 @@ public:
                          const ScaleSet& scaleSet) override;
 
 protected:
-    /** Implementation of Force component virtual method */
-    void computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const override; 
-
     /** Implement ModelComponent interface. */
     void extendFinalizeFromProperties() override;
 
@@ -210,6 +202,11 @@ protected:
     }
 
 private:
+    /**
+     * Implements the `ForceProducer` API
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
+
     void constructProperties();
 
 //=============================================================================

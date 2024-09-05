@@ -25,7 +25,10 @@
 // INCLUDES
 //=============================================================================
 #include "ExpressionBasedPointToPointForce.h"
+
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
+
 #include <lepton/Parser.h>
 #include <lepton/ParsedExpression.h>
 
@@ -153,24 +156,20 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
     // Beyond the const Component get access to underlying SimTK elements
     ExpressionBasedPointToPointForce* mutableThis =
         const_cast<ExpressionBasedPointToPointForce *>(this);
-
-    // Get underlying mobilized bodies
-    mutableThis->_b1 = _body1->getMobilizedBody();
-    mutableThis->_b2 = _body2->getMobilizedBody();
 }
 
 //=============================================================================
 // Computing
 //=============================================================================
-// Compute and apply the force
-void ExpressionBasedPointToPointForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+// compute and produce forces
+void ExpressionBasedPointToPointForce::implProduceForces(
+    const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
     using namespace SimTK;
 
-    const Transform& X_GB1 = _b1->getBodyTransform(s);
-    const Transform& X_GB2 = _b2->getBodyTransform(s);
+    const Transform& X_GB1 = _body1->getMobilizedBody().getBodyTransform(s);
+    const Transform& X_GB2 = _body2->getMobilizedBody().getBodyTransform(s);
 
     const Vec3 s1_G = X_GB1.R() * getPoint1();
     const Vec3 s2_G = X_GB2.R() * getPoint2();
@@ -180,8 +179,8 @@ void ExpressionBasedPointToPointForce::computeForce(const SimTK::State& s,
     const Vec3 r_G = p2_G - p1_G; // vector from point1 to point2
     const double d = r_G.norm();  // distance between the points
 
-    const Vec3 v1_G = _b1->findStationVelocityInGround(s, getPoint1());
-    const Vec3 v2_G = _b2->findStationVelocityInGround(s, getPoint2());
+    const Vec3 v1_G = _body1->getMobilizedBody().findStationVelocityInGround(s, getPoint1());
+    const Vec3 v2_G = _body2->getMobilizedBody().findStationVelocityInGround(s, getPoint2());
     const Vec3 vRel = v2_G - v1_G; // relative velocity
 
     //speed along the line connecting the two bodies
@@ -196,8 +195,8 @@ void ExpressionBasedPointToPointForce::computeForce(const SimTK::State& s,
 
     const Vec3 f1_G = (forceMag/d) * r_G;
 
-    bodyForces[_b1->getMobilizedBodyIndex()] +=  SpatialVec(s1_G % f1_G, f1_G);
-    bodyForces[_b2->getMobilizedBodyIndex()] -=  SpatialVec(s2_G % f1_G, f1_G);
+    forceConsumer.consumeBodySpatialVec(s, *_body1,  SpatialVec(s1_G % f1_G, f1_G));
+    forceConsumer.consumeBodySpatialVec(s, *_body2, -SpatialVec(s2_G % f1_G, f1_G));
 }
 
 // get the force magnitude that has already been computed

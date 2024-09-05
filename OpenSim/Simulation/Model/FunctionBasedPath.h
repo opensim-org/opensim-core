@@ -186,10 +186,11 @@ public:
     /// SimTK::State, use `getMomentArms()` instead.
     double computeMomentArm(const SimTK::State& s,
             const Coordinate& coord) const override;
-    void addInEquivalentForces(const SimTK::State& state,
-            const double& tension,
-            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-            SimTK::Vector& mobilityForces) const override;
+
+    void produceForces(const SimTK::State&,
+            double tension,
+            ForceConsumer&) const override;
+
     bool isVisualPath() const override { return false; }
 
 private:
