@@ -388,51 +388,48 @@ void GeometryPath::produceForces(const SimTK::State& s,
 {
     const Array<AbstractPathPoint*>& currentPath = getCurrentPath(s);
     for (int i = 0; i < currentPath.getSize()-1; ++i) {
+
         const AbstractPathPoint& start = *currentPath[i];
         const AbstractPathPoint& end   = *currentPath[i+1];
-        const SimTK::MobilizedBody& bo = start.getParentFrame().getMobilizedBody();
-        const SimTK::MobilizedBody& bf = end.getParentFrame().getMobilizedBody();
 
-        if (&bo != &bf) {
-            // Find the positions of start and end in the inertial frame.
-            const Vec3 po = start.getLocationInGround(s);
-            const Vec3 pf = end.getLocationInGround(s);
+        if (start.getParentFrame().getMobilizedBodyIndex() == end.getParentFrame().getMobilizedBodyIndex()) {
+            // The two points are attached to the same mobilized body, so forces should
+            // not be produced between them.
+            continue;
+        }
 
-            // Form a vector from start to end, in the inertial frame.
-            Vec3 dir = (pf - po);
+        // Form a vector from start to end, in the inertial frame.
+        Vec3 dir = end.getLocationInGround(s) - start.getLocationInGround(s);
 
-            // Check that the two points are not coincident.
-            // This can happen due to infeasible wrapping of the path,
-            // when the origin or insertion enters the wrapping surface.
-            // This is a temporary fix, since the wrap algorithm should
-            // return NaN for the points and/or throw an Exception- aseth
-            if (dir.norm() < SimTK::SignificantReal) {
-                dir = dir*SimTK::NaN;
-            }
-            else {
-                dir = dir.normalize();
-            }
+        // Check that the two points are not coincident.
+        // This can happen due to infeasible wrapping of the path,
+        // when the origin or insertion enters the wrapping surface.
+        // This is a temporary fix, since the wrap algorithm should
+        // return NaN for the points and/or throw an Exception- aseth
+        if (dir.norm() < SimTK::SignificantReal) {
+            dir = dir*SimTK::NaN;
+        }
+        else {
+            dir = dir.normalize();
+        }
 
-            const Vec3 force = tension*dir;
+        const Vec3 force = tension*dir;
 
-            // do the same for the end point of this segment of the path
+        // add in the tension point forces to body forces
+        forceConsumer.consumePointForce(s, start.getParentFrame(), start.getLocation(s), force);
+        forceConsumer.consumePointForce(s, end.getParentFrame(), end.getLocation(s), -force);
 
-            // add in the tension point forces to body forces
-            forceConsumer.consumePointForce(s, start.getParentFrame(), start.getLocation(s), force);
-            forceConsumer.consumePointForce(s, end.getParentFrame(), end.getLocation(s), -force);
-
-            // Now account for the work being done by virtue of a `MovingPathPoint`'s
-            // motion relative to the body it is on.
-            if (const auto* mppo = dynamic_cast<const MovingPathPoint*>(&start)) {
-                const Vec3 dPodq_G = bo.expressVectorInGroundFrame(s, start.getdPointdQ(s));
-                const double fo = ~dPodq_G*force;
-                forceConsumer.consumeGeneralizedForce(s, mppo->getXCoordinate(), fo);
-            }
-            if (const auto* mppf = dynamic_cast<const MovingPathPoint*>(&end)) {
-                const Vec3 dPfdq_G = bf.expressVectorInGroundFrame(s, end.getdPointdQ(s));
-                const double ff = ~dPfdq_G*(-force);
-                forceConsumer.consumeGeneralizedForce(s, mppf->getXCoordinate(), ff);
-            }
+        // Now account for the work being done by virtue of a `MovingPathPoint`'s
+        // motion relative to the body it is on.
+        if (const auto* mppo = dynamic_cast<const MovingPathPoint*>(&start)) {
+            const Vec3 dPodq_G = start.getParentFrame().expressVectorInGround(s, start.getdPointdQ(s));
+            const double fo = ~dPodq_G*force;
+            forceConsumer.consumeGeneralizedForce(s, mppo->getXCoordinate(), fo);
+        }
+        if (const auto* mppf = dynamic_cast<const MovingPathPoint*>(&end)) {
+            const Vec3 dPfdq_G = end.getParentFrame().expressVectorInGround(s, end.getdPointdQ(s));
+            const double ff = ~dPfdq_G*(-force);
+            forceConsumer.consumeGeneralizedForce(s, mppf->getXCoordinate(), ff);
         }
     }
 }
