@@ -1043,7 +1043,7 @@ void MocoProblemRep::printDescription() const {
         } else {
             ss << "(total: " << size << ")";
         }
-        log_cout(ss.str());
+        log_info(ss.str());
     };
 
     printHeaderLine("Costs", m_costs.size());

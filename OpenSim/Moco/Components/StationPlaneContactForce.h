@@ -19,6 +19,8 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Moco/osimMocoDLL.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 
 namespace OpenSim {
@@ -26,25 +28,14 @@ namespace OpenSim {
 /** This class models compliant point contact with a ground plane y=0.
 
 @underdevelopment */
-class OSIMMOCO_API StationPlaneContactForce : public Force {
-OpenSim_DECLARE_ABSTRACT_OBJECT(StationPlaneContactForce, Force);
+class OSIMMOCO_API StationPlaneContactForce : public ForceProducer {
+OpenSim_DECLARE_ABSTRACT_OBJECT(StationPlaneContactForce, ForceProducer);
 public:
     OpenSim_DECLARE_OUTPUT(force_on_station, SimTK::Vec3,
             calcContactForceOnStation, SimTK::Stage::Velocity);
 
     OpenSim_DECLARE_SOCKET(station, Station,
             "The body-fixed point that can contact the plane.");
-
-    void computeForce(const SimTK::State& s,
-            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-            SimTK::Vector& /*generalizedForces*/) const override {
-        const SimTK::Vec3 force = calcContactForceOnStation(s);
-        const auto& pt = getConnectee<Station>("station");
-        const auto& pos = pt.getLocationInGround(s);
-        const auto& frame = pt.getParentFrame();
-        applyForceToPoint(s, frame, pt.get_location(), force, bodyForces);
-        applyForceToPoint(s, getModel().getGround(), pos, -force, bodyForces);
-    }
 
     OpenSim::Array<std::string> getRecordLabels() const override {
         OpenSim::Array<std::string> labels;
@@ -71,6 +62,20 @@ public:
     // TODO rename to computeContactForceOnStation
     virtual SimTK::Vec3 calcContactForceOnStation(
             const SimTK::State& s) const = 0;
+
+private:
+    void implProduceForces(
+        const SimTK::State& s,
+        ForceConsumer& forceConsumer) const override {
+
+        const SimTK::Vec3 force = calcContactForceOnStation(s);
+        const auto& pt = getConnectee<Station>("station");
+        const auto& pos = pt.getLocationInGround(s);
+        const auto& frame = pt.getParentFrame();
+
+        forceConsumer.consumePointForce(s, frame, pt.get_location(), force);
+        forceConsumer.consumePointForce(s, getModel().getGround(), pos, -force);
+    }
 };
 
 /** This class is still under development. */

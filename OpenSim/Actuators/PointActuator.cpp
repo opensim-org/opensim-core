@@ -25,15 +25,12 @@
  * Author: Ajay Seth
  */
 
+#include "PointActuator.h"
 
-//=============================================================================
-// INCLUDES
-//=============================================================================
 #include <OpenSim/Common/XMLDocument.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-
-#include "PointActuator.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -180,38 +177,32 @@ double PointActuator::computeActuation(const SimTK::State& s) const
     return getControl(s) * getOptimalForce();
 }
 
-//=============================================================================
-// APPLICATION
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Apply the actuator force to BodyA and BodyB.
- */
-void PointActuator::computeForce(
+void PointActuator::implProduceForces(
     const SimTK::State& s,
-    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-    SimTK::Vector& generalizedForces) const
+    ForceConsumer& forceConsumer) const
 {
     if (!_model || !_body) {
         return;
     }
 
-    double force = isActuationOverridden(s) ? computeOverrideActuation(s)
-                                            : computeActuation(s);
+    const double force = isActuationOverridden(s) ? computeOverrideActuation(s)
+                                                  : computeActuation(s);
     setActuation(s, force);
 
     Vec3 forceVec = force * SimTK::UnitVec3(get_direction());
-    Vec3 lpoint   = get_point();
     if (!get_force_is_global()) {
         forceVec = _body->expressVectorInGround(s, forceVec);
     }
+
+    Vec3 lpoint = get_point();
     if (get_point_is_global()) {
         lpoint = getModel().getGround().findStationLocationInAnotherFrame(
             s,
             lpoint,
             *_body);
     }
-    applyForceToPoint(s, *_body, lpoint, forceVec, bodyForces);
+
+    forceConsumer.consumePointForce(s, *_body, lpoint, forceVec);
 }
 //_____________________________________________________________________________
 /**

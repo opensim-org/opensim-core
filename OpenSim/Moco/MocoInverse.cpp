@@ -42,6 +42,10 @@ void MocoInverse::constructProperties() {
 
 MocoStudy MocoInverse::initialize() const { return initializeInternal().first; }
 
+TimeSeriesTable MocoInverse::initializeKinematics() const {
+    return initializeInternal().second;
+}
+
 std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
 
     // Process inputs.
@@ -100,7 +104,7 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     // -------------------------
     auto& solver = study.initCasADiSolver();
     solver.set_multibody_dynamics_mode("implicit");
-    solver.set_interpolate_control_midpoints(false);
+    solver.set_interpolate_control_mesh_interior_points(false);
     solver.set_minimize_implicit_auxiliary_derivatives(true);
     solver.set_implicit_auxiliary_derivatives_weight(0.01);
     solver.set_optim_convergence_tolerance(get_convergence_tolerance());

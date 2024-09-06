@@ -158,12 +158,12 @@ void MocoMarkerTrackingGoal::calcIntegrandImpl(
 }
 
 void MocoMarkerTrackingGoal::printDescriptionImpl() const {
-    log_cout(
+    log_info(
             "        allow unused references: ", get_allow_unused_references());
-    log_cout("        tracked marker(s):");
+    log_info("        tracked marker(s):");
     int weightIndex = 0;
     for (const auto& name : m_marker_names) {
-        log_cout("            {}, weight: {}", name,
+        log_info("            {}, weight: {}", name,
                 m_marker_weights[weightIndex]);
         weightIndex++;
     }

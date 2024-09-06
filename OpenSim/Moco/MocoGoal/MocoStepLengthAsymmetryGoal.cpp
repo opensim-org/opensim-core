@@ -120,7 +120,7 @@ void MocoStepLengthAsymmetryGoal::calcGoalImpl(const GoalInput& input,
 }
 
 void MocoStepLengthAsymmetryGoal::printDescriptionImpl() const {
-    log_cout("            target asymmetry: ", get_target_asymmetry());
-    log_cout("            left foot frame: ", get_left_foot_frame());
-    log_cout("            right foot frame: ", get_right_foot_frame());
+    log_info("            target asymmetry: ", get_target_asymmetry());
+    log_info("            left foot frame: ", get_left_foot_frame());
+    log_info("            right foot frame: ", get_right_foot_frame());
 }

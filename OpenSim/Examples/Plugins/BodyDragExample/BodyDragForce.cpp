@@ -24,9 +24,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include "BodyDragForce.h"
+
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
 // STATICS
@@ -42,7 +44,7 @@ using namespace OpenSim;
 /**
  * Default constructor
  */
-BodyDragForce::BodyDragForce() : Force()
+BodyDragForce::BodyDragForce()
 {
     setNull();
     constructProperties();
@@ -107,9 +109,9 @@ void BodyDragForce::connectToModel(Model& aModel)
 // COMPUTATION
 //=============================================================================
 
-void BodyDragForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+void BodyDragForce::implProduceForces(
+    const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
     if(!_model) return;     // some minor error checking
 
@@ -139,11 +141,11 @@ void BodyDragForce::computeForce(const SimTK::State& s,
                                                        dragForceGround,
                                                        aBody);
 
-    // Apply drag force to the body
-    // ------------------------------
-    // applyForceToPoint requires the force application point to be in the inertial (ground) frame
+    // Produce drag force as a point force on the body
+    // -----------------------------------------------
+    // `consumePointForce` requires the force application point to be in the inertial (ground) frame
     // and the force vector itself to be in the body frame
-    applyForceToPoint(s, aBody, bodyCoMPosGround, dragForceBody, bodyForces);
+    forceConsumer.consumePointForce(s, aBody, bodyCoMPosGround, dragForceBody);
 
 
 
@@ -200,7 +202,7 @@ OpenSim::Array<double> BodyDragForce::getRecordValues(const SimTK::State& s) con
     SimTK::Vec3 bodyCoMPosBody, bodyCoMPosGround, bodyCoMVelGround, bodyCoMVelGroundRaisedPower, dragForceGround, dragForceBody, oppVelSign;
     BodySet &bs = _model->updBodySet();                                     // get body set
     const Ground &ground = _model->getGround();              // get ground body
-    Body &aBody = bs.get(get_body_name());                                      // get the body to apply the force to
+    Body &aBody = bs.get(get_body_name());                                      // get the body in which the force is applied
 
     // get CoM position of body in the BODY coordinate system
     bodyCoMPosBody = aBody.getMassCenter();

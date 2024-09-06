@@ -21,6 +21,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 //#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Analyses/ForceReporter.h>
@@ -42,13 +44,15 @@
 using namespace OpenSim;
 using SimTK::Vec3;
 
-class CustomContactForce : public Force {
-    OpenSim_DECLARE_CONCRETE_OBJECT(CustomContactForce, Force);
+class CustomContactForce : public ForceProducer {
+    OpenSim_DECLARE_CONCRETE_OBJECT(CustomContactForce, ForceProducer);
 public:
     OpenSim_DECLARE_SOCKET(station, Station, "TODO");
-    void computeForce(const SimTK::State& s,
-            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-            SimTK::Vector& /*generalizedForces*/) const override {
+
+private:
+    void implProduceForces(const SimTK::State& s,
+            ForceConsumer& forceConsumer) const override {
+
         const auto& pt = getConnectee<Station>("station");
         const auto& pos = pt.getLocationInGround(s);
         const auto& vel = pt.getVelocityInGround(s);
@@ -65,10 +69,9 @@ public:
         }
         const SimTK::Real voidStiffness = 1.0; // N/m
         force[1] += voidStiffness * depth;
-        //applyGeneralizedForce(s, getModel().getCoordinateSet().get(0),
-        //        force, generalizedForces);
-        applyForceToPoint(s, pt.getParentFrame(), pt.get_location(), force,
-                bodyForces);
+        // forceConsumer.consumeGeneralizedForce(s, getModel().getCoordinateSet().get(0), force);
+
+        forceConsumer.consumePointForce(s, pt.getParentFrame(), pt.get_location(), force);
         // TODO equal and opposite force on ground.
     }
 };

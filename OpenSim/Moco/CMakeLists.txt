@@ -40,6 +40,8 @@ set(MOCO_SOURCES
         MocoGoal/MocoControlGoal.cpp
         MocoGoal/MocoControlTrackingGoal.h
         MocoGoal/MocoControlTrackingGoal.cpp
+        MocoGoal/MocoExpressionBasedParameterGoal.h
+        MocoGoal/MocoExpressionBasedParameterGoal.cpp
         MocoGoal/MocoJointReactionGoal.h
         MocoGoal/MocoJointReactionGoal.cpp
         MocoGoal/MocoOrientationTrackingGoal.h
@@ -175,7 +177,9 @@ target_compile_definitions(osimMoco PRIVATE
 OpenSimAddInstallRPATHSelf(TARGET osimMoco LOADER)
 OpenSimAddInstallRPATHSimbody(TARGET osimMoco LOADER
         FROM "${CMAKE_INSTALL_LIBDIR}")
-
+if (OPENSIM_WITH_TROPTER)
+    OpenSimAddInstallRPATHSelf(TARGET tropter LOADER)
+endif()
 install(TARGETS osimMoco EXPORT OpenSimTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

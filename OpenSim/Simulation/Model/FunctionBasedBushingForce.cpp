@@ -199,11 +199,9 @@ SimTK::Vec6 FunctionBasedBushingForce::
     return -_dampingMatrix * dqdot;
 }
 
-/* Compute the force contribution to the system and add in to appropriate
- * bodyForce and/or system generalizedForce. */
-void FunctionBasedBushingForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+void FunctionBasedBushingForce::implProduceForces(
+    const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
     // stiffness force
     Vec6 fk = calcStiffnessForce(s);
@@ -215,7 +213,7 @@ void FunctionBasedBushingForce::computeForce(const SimTK::State& s,
 
     // convert internal forces to spatial and add then add to system
     // physical (body) forces
-    addInPhysicalForcesFromInternal(s, f, bodyForces);
+    producePhysicalForcesFromInternal(s, f, forceConsumer);
 }
 
 //=============================================================================

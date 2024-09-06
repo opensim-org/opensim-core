@@ -16,8 +16,14 @@ v4.6
   allow extrapolation using the `extrapolate` flag. Combined with the `ignoreNaNs` flag, this prevents NaNs from 
   occurring in the output. (#3867)
 - Added `Output`s to `ExpressionBasedCoordinateForce`, `ExpressionBasedPointToPointForce`, and `ExpressionBasedBushingForce` for accessing force values. (#3872)
+- `PointForceDirection` no longer has a virtual destructor, is `final`, and its `scale` functionality
+  has been marked as `[[deprecated]]` (#3890)
+- Added `ExpressionBasedFunction` for creating `Function`s based on user-defined mathematical expressions. (#3892)
+- Added `ForceProducer`, `ForceConsumer`, and `ForceApplier`, which are fundamental APIs for force-producing
+  components. The `ForceProducer` API was also rolled out to a variety of existing `Force` components, which
+  means that API users can now now ask many `Force` components what forces they produce (see #3891 for a
+  comprehensive overview).
 - Added `MeyerFregly2016Muscle` and completed the implementation of the `MeyerFregly2016Force` included in the `StationPlaneContactForce` class to support NMSM Pipeline-equivalent muscle and contant models in Moco. (#3877)
-
 
 v4.5.1
 ======
@@ -81,6 +87,7 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Fixed bugs in `MocoCasOCProblem` and `CasOC::Problem` with incorrect string formatting. (#3828)
 - Fixed `MocoOrientationTrackingGoal::initializeOnModelImpl` to check for missing kinematic states, but allow other missing columns. (#3830)
 - Improved exception handling for internal errors in `MocoCasADiSolver`. Problems will now abort and print a descriptive error message (rather than fail due to an empty trajectory). (#3834)
+- Upgraded the Ipopt dependency Metis to version 5.1.0 on Unix and macOS to enable building on `osx-arm64` (#3874).
 
 
 v4.5

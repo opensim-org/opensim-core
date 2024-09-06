@@ -194,7 +194,7 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
 
         auto& solver = study.updSolver<MocoCasADiSolver>();
         solver.resetProblem(problem);
-        solver.set_enforce_path_constraint_midpoints(true);
+        solver.set_enforce_path_constraint_mesh_interior_points(true);
 
         MocoSolution solution = study.solve();
 
@@ -207,7 +207,19 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
             CHECK(med_gas_l_excitation[i] <=
                     Approx(0.1).margin(1e-6));
         }
+    }
 
+    SECTION("initializeKinematics") {
+        auto kinematics = inverse.initializeKinematics();
+        // check that some of the expected columns are there
+        CHECK_NOTHROW(kinematics.getColumnIndex(
+                "/jointset/hip_r/hip_rotation_r/value"));
+        CHECK_NOTHROW(kinematics.getColumnIndex(
+                "/jointset/ground_pelvis/pelvis_tilt/value"));
+        CHECK_NOTHROW(kinematics.getColumnIndex(
+                "/jointset/walker_knee_r/knee_angle_r/speed"));
+        CHECK_NOTHROW(kinematics.getColumnIndex(
+                "/jointset/back/lumbar_extension/speed"));
     }
 }
 // Next test_case fails on linux while parsing .sto file, disabling for now 
