@@ -60,7 +60,7 @@ void Trapezoidal::calcDefectsImpl(const casadi::MXVector& x,
         const auto xdot_ip1 = xdot[imesh](Slice(), 1);
 
         // Trapezoidal defects.
-        defects(Slice(2 + NP, 2 + NP + NS), imesh) =
+        defects(Slice(0, NS), imesh) =
                 x_ip1 - (x_i + 0.5 * h * (xdot_ip1 + xdot_i));
     }
 }

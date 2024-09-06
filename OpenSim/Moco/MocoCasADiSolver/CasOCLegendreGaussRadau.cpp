@@ -73,8 +73,8 @@ void LegendreGaussRadau::calcDefectsImpl(const casadi::MXVector& x,
         // Residual function defects.
         MX residual = h * xdot_i - MX::mtimes(x_i, m_differentiationMatrix);
         for (int d = 0; d < m_degree; ++d) {
-            const int istart = d * NS + 2 + NP;
-            const int iend = (d + 1) * NS + 2 + NP;
+            const int istart = d * NS;
+            const int iend = (d + 1) * NS;
             defects(Slice(istart, iend), imesh) = residual(Slice(), d);
         }
     }

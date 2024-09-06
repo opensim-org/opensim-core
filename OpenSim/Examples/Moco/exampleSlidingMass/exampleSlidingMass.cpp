@@ -37,6 +37,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Common/LinearFunction.h>
 
 using namespace OpenSim;
 
@@ -51,6 +52,8 @@ std::unique_ptr<Model> createSlidingMassModel() {
     auto* joint = new SliderJoint("slider", model->getGround(), *body);
     auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
     coord.setName("position");
+    coord.setPrescribedFunction(LinearFunction(1, -1));
+    coord.setDefaultIsPrescribed(true);
     model->addComponent(joint);
 
     auto* actu = new CoordinateActuator();
@@ -86,8 +89,7 @@ int main() {
 
     // Position must be within [-5, 5] throughout the motion.
     // Initial position must be 0, final position must be 1.
-    problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
-                         MocoInitialBounds(0), MocoFinalBounds(1));
+    problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5));
     // Speed must be within [-50, 50] throughout the motion.
     // Initial and final speed must be 0. Use compact syntax.
     problem.setStateInfo("/slider/position/speed", {-50, 50}, 0, 0);
@@ -99,20 +101,16 @@ int main() {
     // -----
     problem.addGoal<MocoFinalTimeGoal>();
 
-    // auto* vel = problem.addGoal<MocoOutputGoal>("velocity_integral_bound");
-    // vel->setOutputPath("/body|linear_velocity");
-    // vel->setMode("endpoint_constraint");
-    // vel->setEndpointConstraintBounds({{-250, 250}});
-
     // Configure the solver.
     // =====================
     MocoCasADiSolver& solver = study.initCasADiSolver();
-    solver.set_num_mesh_intervals(20);
-    solver.set_optim_finite_difference_scheme("forward");
+    solver.set_num_mesh_intervals(50);
     // solver.set_parallel(0);
     solver.set_optim_solver("fatrop");
+    // solver.set_optim_sparsity_detection("random");
     solver.set_optim_hessian_approximation("exact");
-    solver.set_transcription_scheme("legendre-gauss-3");
+    solver.set_transcription_scheme("legendre-gauss-1");
+    solver.set_kinematic_constraint_method("Bordalba2023");
 
     // Now that we've finished setting up the tool, print it to a file.
     study.print("sliding_mass.omoco");

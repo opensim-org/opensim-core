@@ -43,8 +43,6 @@ enum Var {
     /// A "mirror" of the multibody states used in the projection method
     /// for solving kinematic constraints.
     projection_states,
-    /// Variables for integral constraints.
-    integrals,
     /// For internal use (never actually a key for Variables).
     multibody_states = 100
 };

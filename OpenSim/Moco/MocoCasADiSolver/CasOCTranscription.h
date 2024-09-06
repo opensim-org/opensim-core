@@ -80,7 +80,6 @@ protected:
     /// overridden virtual methods are accessible to the base class. This
     /// implementation allows initialization to occur during construction,
     /// avoiding an extra call on the instantiated object.
-    /// TODO control points
     void createVariablesAndSetBounds(const casadi::DM& grid,
             int numDefectsPerMeshInterval,
             int numPointsPerMeshInterval);
@@ -140,7 +139,6 @@ protected:
         T auxiliary_residuals;
         T kinematic;
         T kinematic_udoterr;
-        T integral;
         std::vector<T> endpoint;
         std::vector<T> path;
         T projection;
@@ -164,7 +162,6 @@ protected:
     int m_numControlPoints = -1;
     int m_numMultibodyResiduals = -1;
     int m_numAuxiliaryResiduals = -1;
-    int m_numIntegrals = -1;
     int m_numConstraints = -1;
     int m_numPathConstraintPoints = -1;
     int m_numProjectionStates = -1;
@@ -437,7 +434,9 @@ private:
         //    residual_3                                               x
         //                         0    0.5    1    1.5    2    2.5    3
 
-        
+        for (const auto& endpoint : constraints.endpoint) {
+            copyColumn(endpoint, 0);
+        }
 
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
@@ -482,17 +481,15 @@ private:
             }
 
             // Projection constraints.
-            copyColumn(constraints.projection, imesh);
-
-            // Integral constraints.
-            if (imesh < m_numMeshIntervals - 1) {
-                copyColumn(constraints.integral, imesh);
+            if (imesh > 0) {
+                copyColumn(constraints.projection, imesh-1);
             }
         }
 
         // Final grid point.
         copyColumn(constraints.multibody_residuals, m_numGridPoints - 1);
         copyColumn(constraints.auxiliary_residuals, m_numGridPoints - 1);
+        copyColumn(constraints.projection, m_numMeshIntervals-1);
         copyColumn(constraints.kinematic, m_numMeshPoints - 1);
         if (m_problem.isKinematicConstraintMethodBordalba2023()) {
             copyColumn(constraints.kinematic_udoterr, m_numGridPoints - 1);
@@ -505,10 +502,6 @@ private:
             for (const auto& path : constraints.path) {
                 copyColumn(path, m_numMeshPoints - 1);
             }
-        }
-
-        for (const auto& endpoint : constraints.endpoint) {
-            copyColumn(endpoint, 0);
         }
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
@@ -545,7 +538,6 @@ private:
         }
         out.projection = init(m_problem.getNumProjectionConstraintEquations(),
                 m_numMeshIntervals);
-        out.integral = init(m_numIntegrals, m_numMeshIntervals-1);
         out.endpoint.resize(m_problem.getEndpointConstraintInfos().size());
         for (int iec = 0; iec < (int)m_constraints.endpoint.size(); ++iec) {
             const auto& info = m_problem.getEndpointConstraintInfos()[iec];
@@ -566,6 +558,10 @@ private:
                 iflat += matrix.rows();
             }
         };
+        
+        for (auto& endpoint : out.endpoint) {
+            copyColumn(endpoint, 0);
+        }
 
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
@@ -610,11 +606,8 @@ private:
             }
 
             // Projection constraints.
-            copyColumn(out.projection, imesh);
-
-            // Integral constraints.
-            if (imesh < m_numMeshIntervals - 1) {
-                copyColumn(out.integral, imesh);
+            if (imesh > 0) {
+                copyColumn(out.projection, imesh-1);
             }
         }
 
@@ -634,10 +627,7 @@ private:
                 copyColumn(path, m_numMeshPoints - 1);
             }
         }
-
-        for (auto& endpoint : out.endpoint) {
-            copyColumn(endpoint, 0);
-        }
+        copyColumn(out.projection, m_numMeshIntervals-1);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
                 "Internal error: final value of the index into the flattened "

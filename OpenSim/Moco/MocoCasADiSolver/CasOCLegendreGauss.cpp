@@ -108,6 +108,10 @@ std::vector<std::pair<Var, int>> LegendreGauss::getVariableOrder() const {
         order.push_back({initial_time, imesh});
         order.push_back({final_time, imesh});
         order.push_back({parameters, imesh});
+        if (imesh > 0) {
+            order.push_back({projection_states, imesh-1});
+            order.push_back({slacks, imesh-1});
+        }
         for (int i = 0; i < N; ++i) {
             order.push_back({states, igrid + i});
         }
@@ -126,15 +130,13 @@ std::vector<std::pair<Var, int>> LegendreGauss::getVariableOrder() const {
         for (int i = 0; i < N; ++i) {
             order.push_back({derivatives, igrid + i});
         }
-        order.push_back({slacks, imesh});
-        if (imesh < m_numMeshIntervals - 1) {
-            order.push_back({integrals, imesh});
-        }
     }
-    order.push_back({states, m_numGridPoints - 1});
     order.push_back({initial_time, m_numMeshIntervals});
     order.push_back({final_time, m_numMeshIntervals});
     order.push_back({parameters, m_numMeshIntervals});
+    order.push_back({projection_states, m_numMeshIntervals-1});
+    order.push_back({slacks, m_numMeshIntervals-1});
+    order.push_back({states, m_numGridPoints - 1});
     if (!m_solver.getInterpolateControlMeshInteriorPoints()) {
         order.push_back({controls, m_numGridPoints - 1});
     }

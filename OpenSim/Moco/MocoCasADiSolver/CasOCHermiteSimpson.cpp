@@ -74,11 +74,11 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MXVector& x,
         const auto xdot_ip1 = xdot[imesh](Slice(), 2);
 
         // Hermite interpolant defects.
-        defects(Slice(2 + NP, 2 + NP + NS), imesh) =
+        defects(Slice(0, NS), imesh) =
                 x_mid - 0.5 * (x_ip1 + x_i) - (h / 8.0) * (xdot_i - xdot_ip1);
 
         // Simpson integration defects.
-        defects(Slice(2 + NP + NS, 2 + NP + 2*NS), imesh) =
+        defects(Slice(NS, 2*NS), imesh) =
                 x_ip1 - x_i - (h / 6.0) * (xdot_ip1 + 4.0 * xdot_mid + xdot_i);
     }
 }
