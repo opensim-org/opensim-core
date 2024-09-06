@@ -129,6 +129,36 @@ static void PopulatePathElementLookup(
     }
 }
 
+// Returns `true` if `a` is attached to the same mobilized body as `b`
+static bool areAttachedToSameMobilizedBody(const OpenSim::AbstractPathPoint& a, const OpenSim::AbstractPathPoint& b)
+{
+    return a.getParentFrame().getMobilizedBodyIndex() == b.getParentFrame().getMobilizedBodyIndex();
+}
+
+// Returns a normalized direction vector from `a` to `b` in ground, or a vector containing `NaN`s
+// if `a` and `b` are at the same location.
+//
+// Two points can be conincient due to infeasible wrapping of the path. E.g. when the origin or
+// insertion enters the wrapping surface. This is a temporary fix, since the wrap algorithm
+// should return NaN for the points and/or throw an Exception- aseth
+static SimTK::Vec3 directionBetweenPointsInGroundOrNaNIfCoincident(const SimTK::State& s, const OpenSim::AbstractPathPoint& a, const OpenSim::AbstractPathPoint& b)
+{
+    Vec3 dir = b.getLocationInGround(s) - a.getLocationInGround(s);
+    if (dir.norm() < SimTK::SignificantReal) {
+        dir = dir*SimTK::NaN;
+    }
+    else {
+        dir = dir.normalize();
+    }
+    return dir;
+}
+
+// Calls `forceConsumer.consumePointForce` for the given `(point, force)` pair
+static void consumeForceOnPoint(const SimTK::State& s, ForceConsumer& forceConsumer, const OpenSim::AbstractPathPoint& point, const SimTK::Vec3& force)
+{
+    forceConsumer.consumePointForce(s, point.getParentFrame(), point.getLocation(s), force);
+}
+
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -386,51 +416,57 @@ void GeometryPath::produceForces(const SimTK::State& s,
     double tension,
     ForceConsumer& forceConsumer) const
 {
+    // Retains the tension force, if any, between the current path point and
+    // the previous one - used to ensure that only one point force is produced
+    // per path point (#3903, #3891).
+    SimTK::Vec3 currentToPreviousForce(0.0);
+
     const Array<AbstractPathPoint*>& currentPath = getCurrentPath(s);
     for (int i = 0; i < currentPath.getSize()-1; ++i) {
 
-        const AbstractPathPoint& start = *currentPath[i];
-        const AbstractPathPoint& end   = *currentPath[i+1];
+        const AbstractPathPoint& currentPoint = *currentPath[i];
+        const AbstractPathPoint& nextPoint    = *currentPath[i+1];
 
-        if (start.getParentFrame().getMobilizedBodyIndex() == end.getParentFrame().getMobilizedBodyIndex()) {
-            // The two points are attached to the same mobilized body, so forces should
-            // not be produced between them.
+        if (areAttachedToSameMobilizedBody(currentPoint, nextPoint)) {
+            // Forces are not produced between two points attached to the same mobilized
+            // body, skip the current point.
+
+            if (currentToPreviousForce != SimTK::Vec3(0.0)) {
+                // Produce retained force before skipping.
+                consumeForceOnPoint(s, forceConsumer, currentPoint, currentToPreviousForce);
+                currentToPreviousForce = SimTK::Vec3(0.0);
+            }
             continue;
         }
 
-        // Form a vector from start to end, in the inertial frame.
-        Vec3 dir = end.getLocationInGround(s) - start.getLocationInGround(s);
+        // Form a direction vector from start to end in the inertial frame.
+        const Vec3 currentToNextDirection = directionBetweenPointsInGroundOrNaNIfCoincident(s, currentPoint, nextPoint);
+        const Vec3 currentToNextForce = tension * currentToNextDirection;
 
-        // Check that the two points are not coincident.
-        // This can happen due to infeasible wrapping of the path,
-        // when the origin or insertion enters the wrapping surface.
-        // This is a temporary fix, since the wrap algorithm should
-        // return NaN for the points and/or throw an Exception- aseth
-        if (dir.norm() < SimTK::SignificantReal) {
-            dir = dir*SimTK::NaN;
-        }
-        else {
-            dir = dir.normalize();
-        }
+        // Produce tension point force. Merge it with the retained force to ensure that
+        // only one point force is produced per applicable path point.
+        consumeForceOnPoint(s, forceConsumer, currentPoint, currentToPreviousForce + currentToNextForce);
+        currentToPreviousForce = -currentToNextForce;  // for the next iteration
 
-        const Vec3 force = tension*dir;
-
-        // add in the tension point forces to body forces
-        forceConsumer.consumePointForce(s, start.getParentFrame(), start.getLocation(s), force);
-        forceConsumer.consumePointForce(s, end.getParentFrame(), end.getLocation(s), -force);
-
-        // Now account for the work being done by virtue of a `MovingPathPoint`'s
-        // motion relative to the body it is on.
-        if (const auto* mppo = dynamic_cast<const MovingPathPoint*>(&start)) {
-            const Vec3 dPodq_G = start.getParentFrame().expressVectorInGround(s, start.getdPointdQ(s));
-            const double fo = ~dPodq_G*force;
-            forceConsumer.consumeGeneralizedForce(s, mppo->getXCoordinate(), fo);
+        // Additionally, account for the work done due to the movement of a `MovingPathPoint`
+        // relative to the body it is on.
+        if (const auto* movingCurrentPoint = dynamic_cast<const MovingPathPoint*>(&currentPoint)) {
+            const Vec3 dPodq_G = currentPoint.getParentFrame().expressVectorInGround(s, currentPoint.getdPointdQ(s));
+            const double fo = ~dPodq_G*currentToNextForce;
+            forceConsumer.consumeGeneralizedForce(s, movingCurrentPoint->getXCoordinate(), fo);
         }
-        if (const auto* mppf = dynamic_cast<const MovingPathPoint*>(&end)) {
-            const Vec3 dPfdq_G = end.getParentFrame().expressVectorInGround(s, end.getdPointdQ(s));
-            const double ff = ~dPfdq_G*(-force);
-            forceConsumer.consumeGeneralizedForce(s, mppf->getXCoordinate(), ff);
+        if (const auto* nextMovingPoint = dynamic_cast<const MovingPathPoint*>(&nextPoint)) {
+            const Vec3 dPfdq_G = nextPoint.getParentFrame().expressVectorInGround(s, nextPoint.getdPointdQ(s));
+            const double ff = ~dPfdq_G*(-currentToNextForce);
+            forceConsumer.consumeGeneralizedForce(s, nextMovingPoint->getXCoordinate(), ff);
         }
+    }
+
+    // Produce retained current-to-previous force for the last path point.
+    if (currentToPreviousForce != SimTK::Vec3(0.0)) {
+        OPENSIM_ASSERT(currentPath.getSize() >= 2 && "developer error - `currentToPreviousForce` can only be nonzero if this is `true`");
+        OPENSIM_ASSERT(!areAttachedToSameMobilizedBody(*currentPath[currentPath.getSize()-1], *currentPath[currentPath.getSize()-2]) && "developer error - `currentToPreviousForce` can only be nonzero if this is `true`");
+        consumeForceOnPoint(s, forceConsumer, *currentPath[currentPath.getSize()-1], currentToPreviousForce);
     }
 }
 
