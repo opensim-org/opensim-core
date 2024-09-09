@@ -644,6 +644,39 @@ private:
         return out;
     }
 
+    void convertStatesOrStateDerivativesToMXVector(const casadi::MX& in, 
+            const casadi::MX& in_proj, casadi::MXVector& out) const {
+        casadi_int istart = 0;
+        int numStates = m_problem.getNumStates();
+        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+            casadi_int numPts = m_numPointsPerMeshInterval;
+            casadi_int iend = istart + numPts - 1;
+            if (m_numProjectionStates) {
+                // The states and state derivatives at all points in the mesh 
+                // interval except the last point are the regular state 
+                // variables.
+                out[imesh](casadi::Slice(), casadi::Slice(0, numPts-1)) =
+                        in(casadi::Slice(), casadi::Slice(istart, iend));
+
+                // The multibody states and state derivatives at the last point 
+                // in the mesh interval are the projection states.
+                out[imesh](casadi::Slice(0, m_numProjectionStates), numPts-1) =
+                        in_proj(casadi::Slice(), imesh);
+
+                // The non-multibody states and state derivatives at the last 
+                // point (i.e., auxiliary state variables for muscles) are also 
+                // the same as the regular state variables (there are no 
+                // projection states for these variables).
+                auto sliceAuxStates = 
+                        casadi::Slice(m_numProjectionStates, numStates);
+                out[imesh](sliceAuxStates, numPts-1) = in(sliceAuxStates, iend);
+            } else {
+                out[imesh](casadi::Slice(), casadi::Slice()) = 
+                        in(casadi::Slice(), casadi::Slice(istart, iend+1));
+            }
+            istart = iend;
+        }
+    }
 
     friend class NlpsolCallback;
 };

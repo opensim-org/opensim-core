@@ -447,42 +447,8 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_duration = m_unscaledVars[final_time] - m_unscaledVars[initial_time];
 
     // Create MXVector containing states for calcDefects().
-    casadi_int istart = 0;
-    int numStates = m_problem.getNumStates();
-    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-        casadi_int numPts = m_numPointsPerMeshInterval;
-        casadi_int iend = istart + numPts - 1;
-        if (m_numProjectionStates) {
-            // The states at all points in the mesh interval except the last
-            // point are the regular state variables.
-            m_statesByMeshInterval[imesh](Slice(), Slice(0, numPts-1)) =
-                    m_unscaledVars[states](Slice(), Slice(istart, iend));
-
-            // The multibody states at the last point in the mesh interval are
-            // the projection states.
-            m_statesByMeshInterval[imesh]
-                    (Slice(0, m_numProjectionStates), numPts-1) =
-                            m_unscaledVars[projection_states](Slice(), imesh);
-
-            // The non-multibody states at the last point (i.e., auxiliary state
-            // variables for muscles) are also the same as the regular state
-            // variables (there are no projection states for these variables).
-            m_statesByMeshInterval[imesh](
-                    Slice(m_numProjectionStates, numStates), numPts-1) =
-                    m_unscaledVars[states](
-                            Slice(m_numProjectionStates, numStates), iend);
-
-            // Calculate the distance between the regular multibody states and
-            // the projection multibody states.
-            m_projectionStateDistances(Slice(), imesh) =
-                m_unscaledVars[projection_states](Slice(), imesh) -
-                m_unscaledVars[states](Slice(0, m_numProjectionStates), iend);
-        } else {
-            m_statesByMeshInterval[imesh](Slice(), Slice()) =
-                    m_unscaledVars[states](Slice(), Slice(istart, iend+1));
-        }
-        istart = iend;
-    }
+    convertStatesOrStateDerivativesToMXVector(m_unscaledVars[states],
+            m_unscaledVars[projection_states], m_statesByMeshInterval);
 }
 
 void Transcription::transcribe() {
@@ -813,39 +779,9 @@ void Transcription::transcribe() {
         }
     }
 
-    // TODO remove duplicate code since this is similar to how the states 
-    // MXVector above
-    casadi_int istart = 0;
-    int numStates = m_problem.getNumStates();
-    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-        casadi_int numPts = m_numPointsPerMeshInterval;
-        casadi_int iend = istart + numPts - 1;
-        if (m_numProjectionStates) {
-            // The state derivatives at all points in the mesh interval except
-            // the last point are the regular state derivatives.
-            m_stateDerivativesByMeshInterval[imesh]
-                    (Slice(), Slice(0, numPts-1)) =
-                            m_xdot(Slice(), Slice(istart, iend));
-
-            // The multibody state derivatives at the last point in the mesh
-            // interval are the projection state derivatives.
-            m_stateDerivativesByMeshInterval[imesh]
-                    (Slice(0, m_numProjectionStates), numPts-1) =
-                            m_xdot_projection(Slice(), imesh);
-
-            // The non-multibody state derivatives at the last point (i.e.,
-            // auxiliary state derivatives for muscles) are also the same as the
-            // regular state derivatives (there are no projection derivatives
-            // for these variables).
-            m_stateDerivativesByMeshInterval[imesh](
-                    Slice(m_numProjectionStates, numStates), numPts-1) =
-                    m_xdot(Slice(m_numProjectionStates, numStates), iend);
-        } else {
-            m_stateDerivativesByMeshInterval[imesh](Slice(), Slice()) =
-                    m_xdot(Slice(), Slice(istart, iend+1));
-        }
-        istart = iend;
-    }
+    // Fill MXVector with state derivatives for calcDefects().
+    convertStatesOrStateDerivativesToMXVector(m_xdot, m_xdot_projection, 
+            m_stateDerivativesByMeshInterval);
 
     // Calculate defects.
     // ------------------
@@ -998,6 +934,13 @@ void Transcription::setObjectiveAndEndpointConstraints() {
 
     // Minimize state projection distance.
     if (minimizeStateProjection && m_numProjectionStates) {
+        for (int imesh = 0, istart = 0; imesh < m_numMeshIntervals; ++imesh) {
+            casadi_int iend = istart + m_numPointsPerMeshInterval - 1;
+            m_projectionStateDistances(Slice(), imesh) =
+                m_unscaledVars[projection_states](Slice(), imesh) -
+                m_unscaledVars[states](Slice(0, m_numProjectionStates), iend);
+            istart = iend;
+        }
         m_objectiveTerms(iterm++) = m_solver.getStateProjectionWeight() *
                        MX::sum2(MX::sum1(MX::sq(m_projectionStateDistances)));
     }
