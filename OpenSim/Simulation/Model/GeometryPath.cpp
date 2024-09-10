@@ -405,7 +405,7 @@ void GeometryPath::produceForces(const SimTK::State& s,
     ForceConsumer& forceConsumer) const
 {
     // Retains the body index from the previous iteration of the main loop
-    // and the previous force between the previous point and the current
+    // and the previous direction between the previous point and the current
     // one (if applicable). This is used to ensure that only one point force
     // is produced per path point (#3903, #3891).
     MobilizedBodyIndex previousBodyIndex = MobilizedBodyIndex::Invalid();
@@ -425,14 +425,20 @@ void GeometryPath::produceForces(const SimTK::State& s,
         const AbstractPathPoint* nextPoint = i < currentPath.getSize()-1 ? currentPath[i+1] : nullptr;
         if (nextPoint && nextPoint->getParentFrame().getMobilizedBodyIndex() != currentBodyIndex) {
             const SimTK::Vec3 currentDirection = directionBetweenPointsInGroundOrNaNIfCoincident(s, currentPoint, *nextPoint);
-            force += tension * currentDirection;
+            const SimTK::Vec3 currentToNextForce = tension * currentDirection;
+            force += currentToNextForce;
 
             // Additionally, account for the work done due to the movement of a `MovingPathPoint`
             // relative to the body it is on.
             if (const auto* movingCurrentPoint = dynamic_cast<const MovingPathPoint*>(&currentPoint)) {
                 const Vec3 dPodq_G = currentPoint.getParentFrame().expressVectorInGround(s, currentPoint.getdPointdQ(s));
-                const double fo = ~dPodq_G*force;
+                const double fo = ~dPodq_G*currentToNextForce;
                 forceConsumer.consumeGeneralizedForce(s, movingCurrentPoint->getXCoordinate(), fo);
+            }
+            if (const auto* nextMovingPoint = dynamic_cast<const MovingPathPoint*>(nextPoint)) {
+                const Vec3 dPfdq_G = nextPoint->getParentFrame().expressVectorInGround(s, nextPoint->getdPointdQ(s));
+                const double ff = ~dPfdq_G*(-currentToNextForce);
+                forceConsumer.consumeGeneralizedForce(s, nextMovingPoint->getXCoordinate(), ff);
             }
 
             previousBodyIndex = currentBodyIndex;
