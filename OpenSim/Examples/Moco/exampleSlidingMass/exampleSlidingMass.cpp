@@ -37,7 +37,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Moco/osimMoco.h>
-#include <OpenSim/Common/LinearFunction.h>
 
 using namespace OpenSim;
 
@@ -88,7 +87,7 @@ int main() {
     // Position must be within [-5, 5] throughout the motion.
     // Initial position must be 0, final position must be 1.
     problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5), 
-            MocoInitialBounds(0), MocoFinalBounds(1));
+                         MocoInitialBounds(0), MocoFinalBounds(1));
     // Speed must be within [-50, 50] throughout the motion.
     // Initial and final speed must be 0. Use compact syntax.
     problem.setStateInfo("/slider/position/speed", {-50, 50}, 0, 0);
@@ -112,11 +111,11 @@ int main() {
     // ==================
     MocoSolution solution = study.solve();
 
-    solution.write("sliding_mass_solution.sto");
+    //solution.write("sliding_mass_solution.sto");
 
     // Visualize.
     // ==========
-    // study.visualize(solution);
+    study.visualize(solution);
 
     return EXIT_SUCCESS;
 }
