@@ -16,6 +16,13 @@ v4.6
   allow extrapolation using the `extrapolate` flag. Combined with the `ignoreNaNs` flag, this prevents NaNs from 
   occurring in the output. (#3867)
 - Added `Output`s to `ExpressionBasedCoordinateForce`, `ExpressionBasedPointToPointForce`, and `ExpressionBasedBushingForce` for accessing force values. (#3872)
+- `PointForceDirection` no longer has a virtual destructor, is `final`, and its `scale` functionality
+  has been marked as `[[deprecated]]` (#3890)
+- Added `ExpressionBasedFunction` for creating `Function`s based on user-defined mathematical expressions. (#3892)
+- Added `ForceProducer`, `ForceConsumer`, and `ForceApplier`, which are fundamental APIs for force-producing
+  components. The `ForceProducer` API was also rolled out to a variety of existing `Force` components, which
+  means that API users can now now ask many `Force` components what forces they produce (see #3891 for a
+  comprehensive overview).
 
 v4.5.1
 ======

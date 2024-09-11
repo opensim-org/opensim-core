@@ -27,7 +27,8 @@
 // INCLUDES
 //==============================================================================
 #include "osimActuatorsDLL.h"
-#include <OpenSim/Simulation/Model/Force.h>
+
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 
 //==============================================================================
 //==============================================================================
@@ -42,8 +43,8 @@ class Coordinate;
  * @author Frank C. Anderson, Ajay Seth
  * @version 2.0
  */
-class OSIMACTUATORS_API SpringGeneralizedForce : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(SpringGeneralizedForce, Force);
+class OSIMACTUATORS_API SpringGeneralizedForce : public ForceProducer {
+OpenSim_DECLARE_CONCRETE_OBJECT(SpringGeneralizedForce, ForceProducer);
 public:
 //==============================================================================
 // PROPERTIES
@@ -96,10 +97,6 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATIONS
 protected:
-    // Force interface.
-    void computeForce(  const SimTK::State& state, 
-                        SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                        SimTK::Vector& mobilityForces) const override;
     
     // ModelComponent interface.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
@@ -108,6 +105,14 @@ protected:
     void extendConnectToModel(Model& model) override;
 
 private:
+    /**
+     * Implements the `ForceProducer` interface.
+     */
+    void implProduceForces(
+        const SimTK::State& state,
+        ForceConsumer& forceConsumer
+    ) const override;
+
     void setNull();
     void constructProperties();
     double computeForceMagnitude(const SimTK::State& s) const;

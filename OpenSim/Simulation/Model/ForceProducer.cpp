@@ -1,7 +1,5 @@
-#ifndef OPENSIM_OSIMCOMMON_H_
-#define OPENSIM_OSIMCOMMON_H_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  osimCommon.h                           *
+ *                       OpenSim: ForceProducer.cpp                           *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Copyright (c) 2005-2024 Stanford University and the Authors                *
+ * Author(s): Adam Kewley                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,42 +21,28 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "About.h"
-#include "Adapters.h"
-#include "Assertion.h"
-#include "CommonUtilities.h"
-#include "Constant.h"
-#include "DataTable.h"
-#include "ExpressionBasedFunction.h"
-#include "FunctionSet.h"
-#include "GCVSpline.h"
-#include "GCVSplineSet.h"
-#include "IO.h"
-#include "LatinHypercubeDesign.h"
-#include "LinearFunction.h"
-#include "LoadOpenSimLibrary.h"
-#include "Logger.h"
-#include "ModelDisplayHints.h"
-#include "MultiplierFunction.h"
-#include "MultivariatePolynomialFunction.h"
-#include "Object.h"
-#include "ObjectGroup.h"
-#include "PiecewiseConstantFunction.h"
-#include "PiecewiseLinearFunction.h"
-#include "PolynomialFunction.h"
-#include "RegisterTypes_osimCommon.h" // to expose RegisterTypes_osimCommon
-#include "Reporter.h"
-#include "Scale.h"
-#include "ScaleSet.h"
-#include "SignalGenerator.h"
-#include "SimmSpline.h"
-#include "Sine.h"
-#include "SmoothSegmentedFunctionFactory.h"
-#include "StepFunction.h"
-#include "Stopwatch.h"
-#include "StorageInterface.h"
-#include "TableSource.h"
-#include "TableUtilities.h"
-#include "TimeSeriesTable.h"
+#include "ForceProducer.h"
 
-#endif // OPENSIM_OSIMCOMMON_H_
+#include <OpenSim/Simulation/Model/ForceApplier.h>
+#include <OpenSim/Simulation/Model/Model.h>
+
+using namespace OpenSim;
+
+void OpenSim::ForceProducer::computeForce(
+    const SimTK::State& state,
+    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+    SimTK::Vector& generalizedForces) const
+{
+    if (!appliesForce(state)) {
+        // This `Force` has explicitly stated that it doesn't want to apply
+        // the forces.
+        return;
+    }
+
+    // create a consumer that uses each produced force to compute the
+    // underlying body- and generalized-forces
+    ForceApplier forceApplier{&_model->getMatterSubsystem(), &bodyForces, &generalizedForces};
+
+    // produce forces and feed them into the consumer, satisfying the `computeForce` API
+    produceForces(state, forceApplier);
+}

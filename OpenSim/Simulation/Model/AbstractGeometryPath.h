@@ -34,9 +34,10 @@
     #endif
 #endif
 
-namespace OpenSim {
+namespace OpenSim { class Coordinate; }
+namespace OpenSim { class ForceConsumer; }
 
-class Coordinate;
+namespace OpenSim {
 
 //=============================================================================
 //                         ABSTRACT GEOMETRY PATH
@@ -113,18 +114,33 @@ public:
     virtual double getLengtheningSpeed(const SimTK::State& s) const = 0;
 
     /**
+     * Requests that the concrete implementation produces forces resulting from
+     * applying a tension along its path, emitting them into the supplied
+     * `ForceConsumer`.
+     *
+     * @param state         the state used to evaluate forces
+     * @param tension       scalar of the applied (+ve) tensile force
+     * @param forceConsumer a `ForceConsumer` shall receive each produced force
+     */
+    virtual void produceForces(const SimTK::State& state,
+            double tension,
+            ForceConsumer& forceConsumer) const = 0;
+
+    /**
      *  Add in the equivalent body and generalized forces to be applied to the
      *  multibody system resulting from a tension along the AbstractGeometryPath.
+     *
+     * Note: this internally uses `produceForces`
      *
      *  @param         state           state used to evaluate forces
      *  @param[in]     tension         scalar of the applied (+ve) tensile force
      *  @param[in,out] bodyForces      Vector of forces (SpatialVec's) on bodies
      *  @param[in,out] mobilityForces  Vector of generalized forces
      */
-    virtual void addInEquivalentForces(const SimTK::State& state,
+    void addInEquivalentForces(const SimTK::State& state,
             const double& tension,
             SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-            SimTK::Vector& mobilityForces) const = 0;
+            SimTK::Vector& mobilityForces) const;
 
     /**
      * Returns the moment arm of the path in the given state with respect to

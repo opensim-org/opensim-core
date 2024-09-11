@@ -74,7 +74,7 @@ void MocoVariableInfo::printDescription() const {
     if (final.isSet()) {
         str += fmt::format(" final: {}", final);
     }
-    log_cout(str);
+    log_info(str);
 }
 
 void MocoVariableInfo::constructProperties() {

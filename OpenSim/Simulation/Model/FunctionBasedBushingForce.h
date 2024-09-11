@@ -25,7 +25,7 @@
 
 
 // INCLUDE
-#include "Force.h"
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 #include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 
 namespace OpenSim {
@@ -50,7 +50,7 @@ class Function;
  * @author Matt DeMers
  */
 class OSIMSIMULATION_API FunctionBasedBushingForce
-    : public TwoFrameLinker<Force, PhysicalFrame> {
+    : public TwoFrameLinker<ForceProducer, PhysicalFrame> {
 OpenSim_DECLARE_CONCRETE_OBJECT(FunctionBasedBushingForce, TwoFrameLinker);
 public:
 //==============================================================================
@@ -165,13 +165,6 @@ public:
     force on frame2 from frame1 in the basis of the deflection rate (dqdot).*/
     SimTK::Vec6 calcDampingForce(const SimTK::State& state) const;
 
-    /** Compute the bushing force contribution to the system and add in to appropriate
-      * bodyForce and/or system generalizedForce. 
-      */
-    void computeForce (const SimTK::State& s, 
-                        SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                        SimTK::Vector& generalizedForces) const override;
-
     //--------------------------------------------------------------------------
     // Reporting
     //--------------------------------------------------------------------------
@@ -194,7 +187,13 @@ protected:
         const ModelDisplayHints&                  hints,
         const SimTK::State&                       state,
         SimTK::Array_<SimTK::DecorativeGeometry>& geometryArray) const override;
+
 private:
+    /**
+     * Implements `ForceProducer` by computing the bushing force contribution and
+     * sending it to the supplied `ForceConsumer`
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
 
     void setNull();
     void constructProperties();

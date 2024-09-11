@@ -25,12 +25,13 @@
 // INCLUDES
 //=============================================================================
 #include "GeometryPath.h"
-#include "ConditionalPathPoint.h"
-#include "MovingPathPoint.h"
-#include "PointForceDirection.h"
-#include "Model.h"
 
 #include <OpenSim/Common/Assertion.h>
+#include <OpenSim/Simulation/Model/ConditionalPathPoint.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/MovingPathPoint.h>
+#include <OpenSim/Simulation/Model/PointForceDirection.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
 
 //=============================================================================
@@ -381,12 +382,9 @@ getPointForceDirections(const SimTK::State& s,
     }
 }
 
-/* add in the equivalent spatial forces on bodies for an applied tension 
-    along the GeometryPath to a set of bodyForces */
-void GeometryPath::addInEquivalentForces(const SimTK::State& s,
-    const double& tension, 
-    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-    SimTK::Vector& mobilityForces) const
+void GeometryPath::produceForces(const SimTK::State& s,
+    double tension,
+    ForceConsumer& forceConsumer) const
 {
     AbstractPathPoint* start = NULL;
     AbstractPathPoint* end = NULL;
@@ -396,7 +394,7 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
     int np = currentPath.getSize();
 
     const SimTK::SimbodyMatterSubsystem& matter = 
-                                        getModel().getMatterSubsystem();
+        getModel().getMatterSubsystem();
 
     // start point, end point,  direction, and force vectors in ground
     Vec3 po(0), pf(0), dir(0), force(0);
@@ -444,29 +442,18 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
 
             // add in the tension point forces to body forces
             if (mppo) {// moving path point location is a function of the state
-                // transform of the frame of the point to the base mobilized body
-                auto X_BF = mppo->getParentFrame().findTransformInBaseFrame();
-                bo->applyForceToBodyPoint(s, X_BF*mppo->getLocation(s), force,
-                    bodyForces);
+                forceConsumer.consumePointForce(s, start->getParentFrame(), mppo->getLocation(s), force);
             }
             else {
-                // transform of the frame of the point to the base mobilized body
-                auto X_BF = start->getParentFrame().findTransformInBaseFrame();
-                bo->applyForceToBodyPoint(s, X_BF*start->getLocation(s), force,
-                    bodyForces);
+                forceConsumer.consumePointForce(s, start->getParentFrame(), start->getLocation(s), force);
             }
 
             if (mppf) {// moving path point location is a function of the state
-                // transform of the frame of the point to the base mobilized body
-                auto X_BF = mppf->getParentFrame().findTransformInBaseFrame();
-                bf->applyForceToBodyPoint(s, X_BF*mppf->getLocation(s), -force,
-                    bodyForces);
+                forceConsumer.consumePointForce(s, end->getParentFrame(), mppf->getLocation(s), -force);
             }
             else {
                 // transform of the frame of the point to the base mobilized body
-                auto X_BF = end->getParentFrame().findTransformInBaseFrame();
-                bf->applyForceToBodyPoint(s, X_BF*end->getLocation(s), -force,
-                    bodyForces);
+                forceConsumer.consumePointForce(s, end->getParentFrame(), end->getLocation(s), -force);
             }
 
             // Now account for the work being done by virtue of the moving
@@ -482,9 +469,7 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
                     matter.getMobilizedBody(mppo->getXCoordinate().getBodyIndex());
 
                 // apply the generalized (mobility) force to the coordinate's body
-                mpbod.applyOneMobilityForce(s, 
-                    mppo->getXCoordinate().getMobilizerQIndex(), 
-                    fo, mobilityForces);
+                forceConsumer.consumeGeneralizedForce(s, mppo->getXCoordinate(), fo);
             }
 
             if(mppf){
@@ -495,9 +480,7 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
                 const SimTK::MobilizedBody& mpbod =
                     matter.getMobilizedBody(mppf->getXCoordinate().getBodyIndex());
 
-                mpbod.applyOneMobilityForce(s, 
-                    mppf->getXCoordinate().getMobilizerQIndex(), 
-                    ff, mobilityForces);
+                forceConsumer.consumeGeneralizedForce(s, mppf->getXCoordinate(), ff);
             }
         }       
     }

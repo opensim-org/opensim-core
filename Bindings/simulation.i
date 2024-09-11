@@ -77,8 +77,10 @@ OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %template(SetExternalForces) OpenSim::Set<OpenSim::ExternalForce, OpenSim::ModelComponent>;
 %template(ModelComponentSetExternalForces) OpenSim::ModelComponentSet<OpenSim::ExternalForce>;
 
+%include <OpenSim/Simulation/Model/ForceProducer.h>
 %include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 %template(TwoFrameLinkerForce) OpenSim::TwoFrameLinker<OpenSim::Force, OpenSim::PhysicalFrame>;
+%template(TwoFrameLinkerForceProducer) OpenSim::TwoFrameLinker<OpenSim::ForceProducer, OpenSim::PhysicalFrame>;
 %template(TwoFrameLinkerConstraint) OpenSim::TwoFrameLinker<OpenSim::Constraint, OpenSim::PhysicalFrame>;
 
 %include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>

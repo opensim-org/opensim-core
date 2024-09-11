@@ -30,7 +30,8 @@ using namespace OpenSim;
 // CONSTRUCTORS
 //=============================================================================
 
-Blankevoort1991Ligament::Blankevoort1991Ligament() : Force() {
+Blankevoort1991Ligament::Blankevoort1991Ligament()
+{
     constructProperties();
     setNull();
 }
@@ -331,18 +332,9 @@ double Blankevoort1991Ligament::calcTotalForce(const SimTK::State& s) const {
     return force_total;
 }
 
-void Blankevoort1991Ligament::computeForce(const SimTK::State& s,
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                              SimTK::Vector& generalizedForces) const {
-    if (get_appliesForce()) {
-        // total force
-        double force_total = getTotalForce(s);
-
-        const AbstractGeometryPath&path = getPath();
-
-        path.addInEquivalentForces(
-                s, force_total, bodyForces, generalizedForces);
-    }
+void Blankevoort1991Ligament::implProduceForces(const SimTK::State& s, ForceConsumer& forceConsumer) const
+{
+    getPath().produceForces(s, getTotalForce(s), forceConsumer);
 }
 
 double Blankevoort1991Ligament::computePotentialEnergy(
