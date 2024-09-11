@@ -76,7 +76,6 @@ struct Iterate {
                      bool appendProjectionStates) const;
     /// Make repeat copies of parameter variables (including initial and final
     /// time) using the same value for each time point.
-    /// TODO include projection variables
     Iterate repmatParameters(int numPoints);
 };
 

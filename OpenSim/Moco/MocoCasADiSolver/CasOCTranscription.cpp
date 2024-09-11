@@ -119,17 +119,18 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         }
     }
     m_numControlPoints = static_cast<int>(controlIndicesVector.size());
-    m_numDynamicsPoints = m_solver.getInterpolateControlMeshInteriorPoints() ? 
-            m_numControlPoints : m_numGridPoints;
+    m_numUDotErrorPoints = m_problem.isKinematicConstraintMethodBordalba2023()
+            ? m_numControlPoints
+            : m_numMeshPoints;
 
     // Dynamics constraints.
     m_numConstraints =
             m_numDefectsPerMeshInterval * m_numMeshIntervals +
-            m_numMultibodyResiduals * m_numDynamicsPoints +
-            m_numAuxiliaryResiduals * m_numDynamicsPoints +
+            m_numMultibodyResiduals * m_numControlPoints +
+            m_numAuxiliaryResiduals * m_numControlPoints +
             m_problem.getNumQErr() * m_numMeshPoints +
             m_problem.getNumUErr() * m_numMeshPoints +
-            m_problem.getNumUDotErr() * m_numDynamicsPoints +
+            m_problem.getNumUDotErr() * m_numUDotErrorPoints +
             m_problem.getNumProjectionConstraintEquations() * m_numMeshIntervals;
 
     // Time constraints.
@@ -145,9 +146,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     }
     // Path constraints.
     m_constraints.path.resize(m_problem.getPathConstraintInfos().size());
-    m_numPathConstraintPoints =
-            m_solver.getEnforcePathConstraintMeshInteriorPoints()
-            ? m_numGridPoints : m_numMeshPoints;
+    m_numPathConstraintPoints = m_numControlPoints;
     for (int ipc = 0; ipc < (int)m_constraints.path.size(); ++ipc) {
         const auto& info = m_problem.getPathConstraintInfos()[ipc];
         m_numConstraints += info.size() * m_numPathConstraintPoints;
@@ -187,13 +186,14 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_meshIndices = makeTimeIndices(meshIndicesVector);
     m_meshInteriorIndices =
             makeTimeIndices(meshInteriorIndicesVector);
-    m_pathConstraintIndices =
-            m_solver.getEnforcePathConstraintMeshInteriorPoints()
-            ? makeTimeIndices(gridIndicesVector)
-            : makeTimeIndices(meshIndicesVector);
     m_controlIndices = makeTimeIndices(controlIndicesVector);
-    m_dynamicsIndices = m_solver.getInterpolateControlMeshInteriorPoints() ? 
-            m_controlIndices : m_gridIndices;
+    m_pathConstraintIndices = m_controlIndices;
+            // m_solver.getEnforcePathConstraintMeshInteriorPoints()
+            // ? makeTimeIndices(gridIndicesVector)
+            // : makeTimeIndices(meshIndicesVector);
+    m_udotErrIndices = m_problem.isKinematicConstraintMethodBordalba2023()
+            ? m_controlIndices
+            : m_meshIndices;
     m_projectionStateIndices = makeTimeIndices(projectionStateIndicesVector);
     m_notProjectionStateIndices =
             makeTimeIndices(notProjectionStateIndicesVector);
@@ -228,38 +228,26 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                 MX::sym(fmt::format("states_{}", igrid),
                         m_problem.getNumStates(), 1));
 
-        if (m_solver.getInterpolateControlMeshInteriorPoints()) {
-            auto it = std::find(controlIndicesVector.begin(),
-                    controlIndicesVector.end(), igrid);
-            if (it != controlIndicesVector.end()) {
-                m_scaledVectorVars[controls].push_back(
-                        MX::sym(fmt::format("controls_{}", igrid),
-                                m_problem.getNumControls(), 1));
-                m_scaledVectorVars[multipliers].push_back(
-                        MX::sym(fmt::format("multipliers_{}", igrid),
-                                m_problem.getNumMultipliers(), 1));
-                m_scaledVectorVars[derivatives].push_back(
-                        MX::sym(fmt::format("derivatives_{}", igrid),
-                                m_problem.getNumDerivatives(), 1));
-                
-            } else {
-                m_scaledVectorVars[controls].push_back(
-                        MX(m_problem.getNumControls(), 1));
-                m_scaledVectorVars[multipliers].push_back(
-                        MX(m_problem.getNumMultipliers(), 1));
-                m_scaledVectorVars[derivatives].push_back(
-                        MX(m_problem.getNumDerivatives(), 1));  
-            }
+        auto it = std::find(controlIndicesVector.begin(),
+                controlIndicesVector.end(), igrid);
+        if (it != controlIndicesVector.end()) {
+            m_scaledVectorVars[controls].push_back(
+                    MX::sym(fmt::format("controls_{}", igrid),
+                            m_problem.getNumControls(), 1));
+            m_scaledVectorVars[multipliers].push_back(
+                    MX::sym(fmt::format("multipliers_{}", igrid),
+                            m_problem.getNumMultipliers(), 1));
+            m_scaledVectorVars[derivatives].push_back(
+                    MX::sym(fmt::format("derivatives_{}", igrid),
+                            m_problem.getNumDerivatives(), 1));
+            
         } else {
             m_scaledVectorVars[controls].push_back(
-                MX::sym(fmt::format("controls_{}", igrid),
-                        m_problem.getNumControls(), 1));
+                    MX(m_problem.getNumControls(), 1));
             m_scaledVectorVars[multipliers].push_back(
-                MX::sym(fmt::format("multipliers_{}", igrid),
-                        m_problem.getNumMultipliers(), 1));
+                    MX(m_problem.getNumMultipliers(), 1));
             m_scaledVectorVars[derivatives].push_back(
-                MX::sym(fmt::format("derivatives_{}", igrid),
-                        m_problem.getNumDerivatives(), 1));
+                    MX(m_problem.getNumDerivatives(), 1));  
         }
     }
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
@@ -268,24 +256,15 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                 m_numProjectionStates, 1));
     }
 
-    if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-        // In the projection method for enforcing kinematic constraints, the
-        // slack variables are applied at the mesh points at the end of each
-        // mesh interval.
-        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-            m_scaledVectorVars[slacks].push_back(
-                    MX::sym(fmt::format("slacks_{}", imesh), 
-                            m_problem.getNumSlacks(), 1));
-        }
-    } else {
-        // In the Posa et al. 2016 method for enforcing kinematic constraints,
-        // the mesh interior points will be the mesh interval midpoints in the
-        // Hermite-Simpson collocation scheme.
-        for (int imesh = 0; imesh < m_numMeshInteriorPoints; ++imesh) {
-            m_scaledVectorVars[slacks].push_back(
-                    MX::sym(fmt::format("slacks_{}", imesh),
-                            m_problem.getNumSlacks(), 1));
-        }
+    // In the Bordalba et al. 2023 method for enforcing kinematic constraints, 
+    // the slack variables are applied at the mesh points at the end of each
+    // mesh interval. In the Posa et al. 2016 method for enforcing kinematic 
+    // constraints, the mesh interior points will be the mesh interval midpoints 
+    // in the Hermite-Simpson collocation scheme.
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        m_scaledVectorVars[slacks].push_back(
+                MX::sym(fmt::format("slacks_{}", imesh), 
+                        m_problem.getNumSlacks(), 1));
     }
 
     // Concatenate variables.
@@ -420,13 +399,13 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         // Use the bounds from the "true" multibody states to set the bounds for
         // the projection states.
         const auto& stateInfos = m_problem.getStateInfos();
-        for (int ips = 0; ips < m_numProjectionStates; ++ips) {
-            const auto& info = stateInfos[ips];
+        for (int iproj = 0; iproj < m_numProjectionStates; ++iproj) {
+            const auto& info = stateInfos[iproj];
             setVariableBounds(
-                    projection_states, ips, Slice(0, m_numMeshIntervals - 1),
+                    projection_states, iproj, Slice(0, m_numMeshIntervals - 1),
                     info.bounds);
-            setVariableBounds(projection_states, ips, -1, info.finalBounds);
-            setVariableScaling(projection_states, ips, Slice(), info.bounds);
+            setVariableBounds(projection_states, iproj, -1, info.finalBounds);
+            setVariableScaling(projection_states, iproj, Slice(), info.bounds);
         }
     }
     {
@@ -524,27 +503,26 @@ void Transcription::transcribe() {
     // Initialize memory for implicit multibody residuals.
     // ---------------------------------------------------
     m_constraints.multibody_residuals = MX(casadi::Sparsity::dense(
-            m_numMultibodyResiduals, m_numDynamicsPoints));
+            m_numMultibodyResiduals, m_numControlPoints));
     m_constraintsLowerBounds.multibody_residuals =
-            DM::zeros(m_numMultibodyResiduals, m_numDynamicsPoints);
+            DM::zeros(m_numMultibodyResiduals, m_numControlPoints);
     m_constraintsUpperBounds.multibody_residuals =
-            DM::zeros(m_numMultibodyResiduals, m_numDynamicsPoints);
+            DM::zeros(m_numMultibodyResiduals, m_numControlPoints);
 
     // Initialize memory for implicit auxiliary residuals.
     // ---------------------------------------------------
     m_constraints.auxiliary_residuals = MX(casadi::Sparsity::dense(
-            m_numAuxiliaryResiduals, m_numDynamicsPoints));
+            m_numAuxiliaryResiduals, m_numControlPoints));
     m_constraintsLowerBounds.auxiliary_residuals =
-            DM::zeros(m_numAuxiliaryResiduals, m_numDynamicsPoints);
+            DM::zeros(m_numAuxiliaryResiduals, m_numControlPoints);
     m_constraintsUpperBounds.auxiliary_residuals =
-            DM::zeros(m_numAuxiliaryResiduals, m_numDynamicsPoints);
+            DM::zeros(m_numAuxiliaryResiduals, m_numControlPoints);
 
     // Initialize memory for kinematic constraints.
     // --------------------------------------------
     int nqerr = m_problem.getNumQErr();
     int nuerr = m_problem.getNumUErr();
     int nudoterr = m_problem.getNumUDotErr();
-    int nkc = m_problem.getNumKinematicConstraintEquations();
 
     const auto& kcBounds = m_problem.getKinematicConstraintBounds();
     m_constraints.kinematic = MX(casadi::Sparsity::dense(
@@ -555,11 +533,11 @@ void Transcription::transcribe() {
             kcBounds.upper, nqerr + nuerr, m_numMeshPoints);
 
     m_constraints.kinematic_udoterr = MX(casadi::Sparsity::dense(
-            nudoterr, m_numDynamicsPoints));
+            nudoterr, m_numUDotErrorPoints));
     m_constraintsLowerBounds.kinematic_udoterr = casadi::DM::repmat(
-            kcBounds.lower, nudoterr, m_numDynamicsPoints);
+            kcBounds.lower, nudoterr, m_numUDotErrorPoints);
     m_constraintsUpperBounds.kinematic_udoterr = casadi::DM::repmat(
-            kcBounds.upper, nudoterr, m_numDynamicsPoints);
+            kcBounds.upper, nudoterr, m_numUDotErrorPoints);
 
     // Initialize memory for projection constraints.
     // ---------------------------------------------
@@ -585,8 +563,7 @@ void Transcription::transcribe() {
     // kinematic constraints
     // ---------------------
     if (m_problem.getNumKinematicConstraintEquations() &&
-            !m_problem.isPrescribedKinematics() &&
-            m_problem.getEnforceConstraintDerivatives()) {
+            !m_problem.isPrescribedKinematics()) {
 
         OPENSIM_THROW_IF(!m_problem.isKinematicConstraintMethodBordalba2023() &&
                          m_solver.getTranscriptionScheme() != "hermite-simpson",
@@ -602,10 +579,11 @@ void Transcription::transcribe() {
                 {multibody_states}, m_meshIndices);
         m_constraints.kinematic = out.at(0);
 
-        // projection constraints
-        // ----------------------
+        // velocity correction
+        // -------------------
         if (m_solver.getTranscriptionScheme() == "hermite-simpson" &&
-                !m_problem.isKinematicConstraintMethodBordalba2023()) {
+                !m_problem.isKinematicConstraintMethodBordalba2023() &&
+                 m_problem.getEnforceConstraintDerivatives()) {
             // In Hermite-Simpson, we must compute a velocity correction at all
             // mesh interval midpoints and update qdot.
             // See MocoCasADiVelocityCorrection for more details. This function
@@ -619,6 +597,8 @@ void Transcription::transcribe() {
             m_xdot(Slice(0, NQ), m_meshInteriorIndices) += u_correction;
         }
 
+        // projection constraints
+        // ----------------------
         if (m_numProjectionStates) {
             const auto projectionOut = evalOnTrajectory(
                     m_problem.getStateProjection(),
@@ -654,16 +634,13 @@ void Transcription::transcribe() {
         std::vector<Var> inputs{states, controls, multipliers, derivatives};
         const auto out = evalOnTrajectory(m_problem.getImplicitMultibodySystem(),
                 inputs, m_gridIndices);
-        m_constraints.multibody_residuals = 
-                out.at(0)(Slice(), m_dynamicsIndices);
+        m_constraints.multibody_residuals = out.at(0)(Slice(), m_controlIndices);
         // zdot.
         m_xdot(Slice(NQ + NU, NS), Slice()) = out.at(1);
-        m_constraints.auxiliary_residuals = 
-                out.at(2)(Slice(), m_dynamicsIndices);
-        m_constraints.kinematic_udoterr = 
-                out.at(3)(Slice(), m_dynamicsIndices);
+        m_constraints.auxiliary_residuals = out.at(2)(Slice(), m_controlIndices);
+        m_constraints.kinematic_udoterr = out.at(3)(Slice(), m_udotErrIndices);
 
-        // Points where the multibody residuals and udoterro depend on the 
+        // Points where the multibody residuals and udoterr depend on the 
         // projection states.
         if (m_numProjectionStates && 
                 !m_projectionStateIndicesForControlIndices.is_empty()) {
@@ -698,9 +675,8 @@ void Transcription::transcribe() {
                 inputs, m_gridIndices);
         m_xdot(Slice(NQ, NQ + NU), Slice()) = out.at(0);
         m_xdot(Slice(NQ + NU, NS), Slice()) = out.at(1);
-        m_constraints.auxiliary_residuals = 
-                out.at(2)(Slice(), m_dynamicsIndices);
-        m_constraints.kinematic_udoterr = out.at(3)(Slice(), m_dynamicsIndices);
+        m_constraints.auxiliary_residuals = out.at(2)(Slice(), m_controlIndices);
+        m_constraints.kinematic_udoterr = out.at(3)(Slice(), m_udotErrIndices);
 
         // Points where the state derivatives and udoterr depend on the 
         // projection states.
@@ -1129,13 +1105,7 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     printObjectiveBreakdown(solution, objectiveOut[0]);
 
     if (!solution.stats.at("success")) {
-
-        // For some reason, nlpResult.at("g") is all 0. So we calculate the
-        // constraints ourselves.
-        casadi::Function constraintFunc("constraints", {x}, {flat.constraints});
-        casadi::DMVector constraintsOut;
-        constraintFunc.call(finalVarsDMV, constraintsOut);
-        printConstraintValues(solution, expandConstraints(constraintsOut[0]));
+        printConstraintValues(solution, expandConstraints(nlpResult.at("g")));
     }
     return solution;
 }
@@ -1357,9 +1327,12 @@ void Transcription::printConstraintValues(const Iterate& it,
 
     printParameterBounds(
             "Time bounds", time_names, timeValues, timeLower, timeUpper);
-    printParameterBounds("Parameter bounds", it.parameter_names,
-            vars.at(parameters)(0), lower.at(parameters)(0),
-            upper.at(parameters)(0));
+    if (!it.parameter_names.empty()) {
+        printParameterBounds("Parameter bounds", it.parameter_names,
+                vars.at(parameters)(Slice(), 0), 
+                lower.at(parameters)(Slice(), 0),
+                upper.at(parameters)(Slice(), 0));
+    }
 
     // Constraints.
     // ============
@@ -1409,8 +1382,6 @@ void Transcription::printConstraintValues(const Iterate& it,
     int numQErr = m_problem.getNumQErr();
     int numUErr = m_problem.getNumUErr();
     int numUDotErr = m_problem.getNumUDotErr();
-    int numKC = m_problem.isKinematicConstraintMethodBordalba2023() ?
-            numQErr + numUErr : numQErr + numUErr + numUDotErr;
     if (kinconNames.empty()) {
         ss << " none" << std::endl;
     } else {
@@ -1423,7 +1394,7 @@ void Transcription::printConstraintValues(const Iterate& it,
         row.resize(1, m_numMeshPoints);
         {
             int ikc = 0;
-            for (int i = 0; i < numKC; ++i) {
+            for (int i = 0; i < numQErr + numUErr; ++i) {
                 row = constraints.kinematic(i, Slice());
                 const double L2 = casadi::DM::norm_2(row).scalar();
                 int argmax;
@@ -1440,24 +1411,22 @@ void Transcription::printConstraintValues(const Iterate& it,
                    << std::endl;
                 ++ikc;
             }
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                for (int iudot = 0; iudot < numUDotErr; ++iudot) {
-                    row = constraints.kinematic_udoterr(iudot, Slice());
-                    const double L2 = casadi::DM::norm_2(row).scalar();
-                    int argmax;
-                    double max = calcL1Norm(row, argmax);
-                    const double L1 = max;
-                    const double time_of_max = it.times(argmax).scalar();
+            for (int iudot = 0; iudot < numUDotErr; ++iudot) {
+                row = constraints.kinematic_udoterr(iudot, Slice());
+                const double L2 = casadi::DM::norm_2(row).scalar();
+                int argmax;
+                double max = calcL1Norm(row, argmax);
+                const double L1 = max;
+                const double time_of_max = it.times(argmax).scalar();
 
-                    std::string label = kinconNames.at(ikc);
-                    ss << std::setfill('0') << std::setw(2) << ikc << ":"
-                    << std::setfill(' ') << std::setw(maxNameLength) << label
-                    << spacer << std::setprecision(2) << std::scientific
-                    << std::setw(9) << L2 << spacer << L1 << spacer
-                    << std::setprecision(6) << std::fixed << time_of_max
-                    << std::endl;
-                    ++ikc;
-                }
+                std::string label = kinconNames.at(ikc);
+                ss << std::setfill('0') << std::setw(2) << ikc << ":"
+                << std::setfill(' ') << std::setw(maxNameLength) << label
+                << spacer << std::setprecision(2) << std::scientific
+                << std::setw(9) << L2 << spacer << L1 << spacer
+                << std::setprecision(6) << std::fixed << time_of_max
+                << std::endl;
+                ++ikc;
             }
         }
         ss << "Kinematic constraint values at each mesh point:"
@@ -1471,20 +1440,19 @@ void Transcription::printConstraintValues(const Iterate& it,
             ss << std::setfill('0') << std::setw(3) << imesh << "  ";
             ss.fill(' ');
             ss << std::setw(9) << it.times(imesh).scalar() << "  ";
-            for (int i = 0; i < numKC; ++i) {
+            for (int i = 0; i < numQErr + numUErr; ++i) {
                 const auto& value =
                         constraints.kinematic(i, imesh).scalar();
                 ss << std::setprecision(2) << std::scientific
                    << std::setw(9) << value << "  ";
             }
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                for (int iudot = 0; iudot < numUDotErr; ++iudot) {
-                    const auto& value =
-                            constraints.kinematic_udoterr(iudot, imesh).scalar();
-                    ss << std::setprecision(2) << std::scientific
-                    << std::setw(9) << value << "  ";
-                }
-            }
+            // TODO fix this to print udoterr values correctly
+            for (int iudot = 0; iudot < numUDotErr; ++iudot) {
+                const auto& value =
+                        constraints.kinematic_udoterr(iudot, imesh).scalar();
+                ss << std::setprecision(2) << std::scientific
+                << std::setw(9) << value << "  ";
+            }  
             ss << std::endl;
         }
     }

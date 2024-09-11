@@ -136,32 +136,17 @@ LegendreGauss::getFlattenedVariableInfo() const {
             }
         }
 
-        if (m_solver.getInterpolateControlMeshInteriorPoints()) {
-            for (int d = 0; d < m_degree; ++d) {
-                info.order.push_back({controls, igrid + d + 1});
-                nu += m_problem.getNumControls();
-            }
-            for (int d = 0; d < m_degree; ++d) {
-                info.order.push_back({multipliers, igrid + d + 1});
-                nu += m_problem.getNumMultipliers();
-            }
-            for (int d = 0; d < m_degree; ++d) {
-                info.order.push_back({derivatives, igrid + d + 1});
-                nu += m_problem.getNumDerivatives();
-            }
-        } else {
-            for (int i = 0; i < N; ++i) {
-                info.order.push_back({controls, igrid + i});
-                nu += m_problem.getNumControls();
-            }
-            for (int i = 0; i < N; ++i) {
-                info.order.push_back({multipliers, igrid + i});
-                nu += m_problem.getNumMultipliers();
-            }
-            for (int i = 0; i < N; ++i) {
-                info.order.push_back({derivatives, igrid + i});
-                nu += m_problem.getNumDerivatives();
-            }
+        for (int d = 0; d < m_degree; ++d) {
+            info.order.push_back({controls, igrid + d + 1});
+            nu += m_problem.getNumControls();
+        }
+        for (int d = 0; d < m_degree; ++d) {
+            info.order.push_back({multipliers, igrid + d + 1});
+            nu += m_problem.getNumMultipliers();
+        }
+        for (int d = 0; d < m_degree; ++d) {
+            info.order.push_back({derivatives, igrid + d + 1});
+            nu += m_problem.getNumDerivatives();
         }
 
         info.nx.push_back(nx);
@@ -190,15 +175,6 @@ LegendreGauss::getFlattenedVariableInfo() const {
         nu += m_problem.getNumStates();
     } else {
         nx += m_problem.getNumStates();
-    }
-
-    if (!m_solver.getInterpolateControlMeshInteriorPoints()) {
-        info.order.push_back({controls, m_numGridPoints - 1});
-        nu += m_problem.getNumControls();
-        info.order.push_back({multipliers, m_numGridPoints - 1});
-        nu += m_problem.getNumMultipliers();
-        info.order.push_back({derivatives, m_numGridPoints - 1});
-        nu += m_problem.getNumDerivatives();
     }
 
     info.nx.push_back(nx);

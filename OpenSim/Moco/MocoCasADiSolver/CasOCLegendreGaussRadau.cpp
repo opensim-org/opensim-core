@@ -106,7 +106,7 @@ LegendreGaussRadau::getFlattenedVariableInfo() const {
         for (int i = 0; i < N; ++i) {
             info.order.push_back({states, igrid + i});
         }
-        if (m_solver.getInterpolateControlMeshInteriorPoints() && imesh == 0) {
+        if (imesh == 0) {
             for (int i = 1; i < N; ++i) {
                 info.order.push_back({controls, igrid + i});
             }

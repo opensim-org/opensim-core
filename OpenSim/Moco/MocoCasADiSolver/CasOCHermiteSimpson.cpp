@@ -51,9 +51,7 @@ DM HermiteSimpson::createMeshIndicesImpl() const {
 }
 
 DM HermiteSimpson::createControlIndicesImpl() const {
-    DM indices = DM::zeros(1, m_numGridPoints);
-    for (int i = 0; i < m_numGridPoints; i += 2) { indices(i) = 1; }
-    return indices;
+    return DM::ones(1, m_numGridPoints);
 }
 
 void HermiteSimpson::calcDefectsImpl(const casadi::MXVector& x,
@@ -83,14 +81,6 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MXVector& x,
     }
 }
 
-void HermiteSimpson::calcInterpolatingControlsImpl(casadi::MX& controls) const {
-    calcInterpolatingControlsHelper(controls);
-}
-
-void HermiteSimpson::calcInterpolatingControlsImpl(casadi::DM& controls) const {
-    calcInterpolatingControlsHelper(controls);
-}
-
 Transcription::FlattenedVariableInfo 
 HermiteSimpson::getFlattenedVariableInfo() const {
     FlattenedVariableInfo info;
@@ -104,18 +94,12 @@ HermiteSimpson::getFlattenedVariableInfo() const {
         info.order.push_back({parameters, imesh});
         info.order.push_back({states, igrid});
         info.order.push_back({states, igrid + 1});
-        if (m_solver.getInterpolateControlMeshInteriorPoints()) {
-            info.order.push_back({controls, igrid});
-            info.order.push_back({multipliers, igrid});
-            info.order.push_back({derivatives, igrid});
-        } else {
-            info.order.push_back({controls, igrid});
-            info.order.push_back({controls, igrid + 1});
-            info.order.push_back({multipliers, igrid});
-            info.order.push_back({multipliers, igrid + 1});
-            info.order.push_back({derivatives, igrid});
-            info.order.push_back({derivatives, igrid + 1});
-        }
+        info.order.push_back({controls, igrid});
+        info.order.push_back({controls, igrid + 1});
+        info.order.push_back({multipliers, igrid});
+        info.order.push_back({multipliers, igrid + 1});
+        info.order.push_back({derivatives, igrid});
+        info.order.push_back({derivatives, igrid + 1});
         info.order.push_back({projection_states, imesh});
         info.order.push_back({slacks, imesh});
     }

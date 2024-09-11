@@ -340,10 +340,6 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     casSolver->setStateProjectionWeight(get_state_projection_distance_weight());
 
     casSolver->setOptimSolver(get_optim_solver());
-    casSolver->setInterpolateControlMeshInteriorPoints(
-            get_interpolate_control_mesh_interior_points());
-    casSolver->setEnforcePathConstraintMeshInteriorPoints(
-            get_enforce_path_constraint_mesh_interior_points());
     if (casProblem.getJarSize() > 1) {
         casSolver->setParallelism("thread", casProblem.getJarSize());
     }

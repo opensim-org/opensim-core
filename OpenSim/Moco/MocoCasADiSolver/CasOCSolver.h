@@ -117,37 +117,6 @@ public:
         m_stateProjectionWeight = weight;
     }
 
-    /// Whether or not to constrain control values interior to the mesh interval
-    /// by linearly interpolating control values from mesh interval endpoints.
-    ///
-    /// @note For Hermite-Simpson collocation, this applies to the time point
-    ///       at the midpoint of the mesh interval. For Legendre-Gauss and
-    ///       Legendre-Gauss-Radau collocation, this applies to all time points
-    ///       in the interior of the mesh interval.
-    void setInterpolateControlMeshInteriorPoints(bool tf) {
-        m_interpolateControlMeshInteriorPoints = tf;
-    }
-    /// @copydoc setInterpolateControlMidpoints()
-    bool getInterpolateControlMeshInteriorPoints() const {
-        return m_interpolateControlMeshInteriorPoints;
-    }
-
-    /// Whether or not to enforce path constraints at points interior to the
-    /// mesh interval.
-    ///
-    /// @note For Hermite-Simpson collocation, this applies to the time point
-    ///       at the midpoint of the mesh interval. For Legendre-Gauss and
-    ///       Legendre-Gauss-Radau collocation, this applies to all time points
-    ///       in the interior of the mesh interval.
-    /// @note Does not apply to implicit dynamics residuals, as these are
-    ///       always enforced at mesh interval midpoints.
-    void setEnforcePathConstraintMeshInteriorPoints(bool tf) {
-        m_enforcePathConstraintMeshInteriorPoints = tf;
-    }
-    bool getEnforcePathConstraintMeshInteriorPoints() const {
-        return m_enforcePathConstraintMeshInteriorPoints;
-    }
-
     void setOptimSolver(std::string optimSolver) {
         m_optimSolver = std::move(optimSolver);
     }
@@ -225,8 +194,7 @@ private:
     double m_implicitAuxiliaryDerivativesWeight = 1.0;
     bool m_minimizeStateProjection = true;
     double m_stateProjectionWeight = 1e-6;
-    bool m_interpolateControlMeshInteriorPoints = true;
-    bool m_enforcePathConstraintMeshInteriorPoints = false;
+    // bool m_enforcePathConstraintMeshInteriorPoints = false;
     Bounds m_implicitMultibodyAccelerationBounds;
     Bounds m_implicitAuxiliaryDerivativeBounds;
     std::string m_finite_difference_scheme = "central";

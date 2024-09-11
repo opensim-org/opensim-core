@@ -39,20 +39,17 @@ namespace CasOC {
 /// -------------------------------------------
 /// Position- and velocity-level kinematic constraint errors and path constraint 
 /// errors are enforced only at the mesh points. In the kinematic constraint 
-/// method by Bordalba et al. (2023) [2], the acceleration-level constraints are 
+/// method by Bordalba et al. (2023) [1], the acceleration-level constraints are 
 /// also enforced at the collocation points. In the kinematic constraint method 
-/// by Posa et al. (2016) [3], the acceleration-level constraints are only 
+/// by Posa et al. (2016) [2], the acceleration-level constraints are only 
 /// enforced at the mesh points.
 ///
 /// References
 /// ----------
-/// [1] Hargraves, C.R., Paris, S.W. "Direct Trajectory Optimization Using 
-///     Nonlinear Programming and Collocation." Journal of Guidance, Control, 
-///     and Dynamics (1987).
-/// [2] Bordalba, Ricard, Tobias Schoels, Lluís Ros, Josep M. Porta, and
+/// [1] Bordalba, Ricard, Tobias Schoels, Lluís Ros, Josep M. Porta, and
 ///     Moritz Diehl. "Direct collocation methods for trajectory optimization
 ///     in constrained robotic systems." IEEE Transactions on Robotics (2023).
-/// [3] Posa, M., Kuindersma, S., Tedrake, R. "Optimization and stabilization of 
+/// [2] Posa, M., Kuindersma, S., Tedrake, R. "Optimization and stabilization of 
 ///     trajectories for constrained dynamical systems." IEEE International 
 ///     Conference on Robotics and Automation (2016).
 class HermiteSimpson : public Transcription {
@@ -80,22 +77,6 @@ private:
     void calcDefectsImpl(const casadi::MXVector& x, 
             const casadi::MXVector& xdot, casadi::MX& defects) const override;
     FlattenedVariableInfo getFlattenedVariableInfo() const override;
-    void calcInterpolatingControlsImpl(casadi::MX& controls) const override;
-    void calcInterpolatingControlsImpl(casadi::DM& controls) const override;
-
-    template <typename T>
-    void calcInterpolatingControlsHelper(T& controls) const {
-        using casadi::Slice;
-
-        // This control approximation scheme is based on the control scheme 
-        // proposed by Hargraves and Paris (1987) [1]. Linear interpolation of 
-        // controls is also recommended by Bordalba et al. (2023) [2].
-        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-            controls(Slice(), 2*imesh + 1) = 0.5 * (
-                    controls(Slice(), 2*imesh) + 
-                    controls(Slice(), 2*imesh + 2));
-        }
-    }
 };
 
 } // namespace CasOC

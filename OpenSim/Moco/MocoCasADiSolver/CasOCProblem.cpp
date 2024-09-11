@@ -50,8 +50,7 @@ Iterate Iterate::repmatParameters(int numPoints) {
     it.variables.at(Var::final_time) = casadi::DM::repmat(
             it.variables.at(Var::final_time)(0), 1, numPoints);
     it.variables.at(Var::parameters) = casadi::DM::repmat(
-            it.variables.at(Var::parameters)(casadi::Slice(), 0), 
-            it.variables.at(Var::parameters).size1(), numPoints);
+            it.variables.at(Var::parameters)(casadi::Slice(), 0), 1, numPoints);
 
     return it;
 }

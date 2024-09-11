@@ -142,15 +142,15 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
     inverse.set_final_time(1.0);
     inverse.set_kinematics_allow_extra_columns(true);
     inverse.set_mesh_interval(0.025);
-    inverse.set_constraint_tolerance(1e-4);
-    inverse.set_convergence_tolerance(1e-4);
+    inverse.set_constraint_tolerance(1e-5);
+    inverse.set_convergence_tolerance(1e-5);
     inverse.set_output_paths(0, ".*tendon_force.*");
     inverse.set_output_paths(1, ".*fiber_force_along_tendon.*");
 
     SECTION("Base problem") {
         MocoInverseSolution inverseSolution = inverse.solve();
         MocoSolution solution = inverseSolution.getMocoSolution();
-        //solution.write("testMocoInverse_subject_18musc_solution.sto");
+        solution.write("testMocoInverse_subject_18musc_solution.sto");
 
         MocoTrajectory std("std_testMocoInverse_subject_18musc_solution.sto");
         const auto expected = std.getControlsTrajectory();

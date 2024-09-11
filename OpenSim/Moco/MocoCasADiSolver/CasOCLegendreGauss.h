@@ -153,7 +153,7 @@ private:
         controls(Slice(), m_numGridPoints - 1) = 0;
         for (int d = 0; d < m_degree; ++d) {
             const int igrid = (m_numMeshIntervals - 1) * (m_degree + 1);
-            const auto c_t = controls(Slice(), igrid);
+            const auto c_t = controls(Slice(), igrid + d + 1);
             controls(Slice(), m_numGridPoints - 1) +=
                     getLagrangePolynomial(d, 1) * c_t;
         }

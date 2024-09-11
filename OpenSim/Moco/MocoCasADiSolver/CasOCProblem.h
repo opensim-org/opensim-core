@@ -478,25 +478,27 @@ public:
                     pointsForSparsityDetection);
         }
 
-        if (getEnforceConstraintDerivatives() &&
-                getNumKinematicConstraintEquations()) {
+        if (getNumKinematicConstraintEquations()) {
             mutThis->m_kinematicConstraintsFunc =
                     OpenSim::make_unique<KinematicConstraints>();
             mutThis->m_kinematicConstraintsFunc->constructFunction(this,
-                    "kinematic_constraints", finiteDiffScheme,
-                    pointsForSparsityDetection);
-            if (isKinematicConstraintMethodBordalba2023()) {
-                mutThis->m_stateProjectionFunc =
-                    OpenSim::make_unique<StateProjection>();
-                mutThis->m_stateProjectionFunc->constructFunction(this,
-                    "state_projection", finiteDiffScheme,
-                    pointsForSparsityDetection);
-            } else {
-                mutThis->m_velocityCorrectionFunc =
-                    OpenSim::make_unique<VelocityCorrection>();
-                mutThis->m_velocityCorrectionFunc->constructFunction(this,
-                    "velocity_correction", finiteDiffScheme,
-                    pointsForSparsityDetection);
+                "kinematic_constraints", finiteDiffScheme,
+                pointsForSparsityDetection);
+        
+            if (getEnforceConstraintDerivatives()) {
+                if (isKinematicConstraintMethodBordalba2023()) {
+                    mutThis->m_stateProjectionFunc =
+                        OpenSim::make_unique<StateProjection>();
+                    mutThis->m_stateProjectionFunc->constructFunction(this,
+                        "state_projection", finiteDiffScheme,
+                        pointsForSparsityDetection);
+                } else {
+                    mutThis->m_velocityCorrectionFunc =
+                        OpenSim::make_unique<VelocityCorrection>();
+                    mutThis->m_velocityCorrectionFunc->constructFunction(this,
+                        "velocity_correction", finiteDiffScheme,
+                        pointsForSparsityDetection);
+                }
             }
         }
     }

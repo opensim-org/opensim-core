@@ -174,7 +174,7 @@ protected:
     int m_numGapClosingDefectsPerMeshInterval = -1;
     int m_numPointsPerMeshInterval = -1;
     int m_numControlPoints = -1;
-    int m_numDynamicsPoints = -1;
+    int m_numUDotErrorPoints = -1;
     int m_numMultibodyResiduals = -1;
     int m_numAuxiliaryResiduals = -1;
     int m_numConstraints = -1;
@@ -206,7 +206,7 @@ private:
     casadi::Matrix<casadi_int> m_meshInteriorIndices;
     casadi::Matrix<casadi_int> m_pathConstraintIndices;
     casadi::Matrix<casadi_int> m_controlIndices;
-    casadi::Matrix<casadi_int> m_dynamicsIndices;
+    casadi::Matrix<casadi_int> m_udotErrIndices;
     casadi::Matrix<casadi_int> m_projectionStateIndices;
     casadi::Matrix<casadi_int> m_notProjectionStateIndices;
     casadi::Matrix<casadi_int> m_projectionStateIndicesForControlIndices;
@@ -276,11 +276,9 @@ private:
     }
     template <typename T>
     void calcInterpolatingControls(Variables<T>& vars) const {
-        if (m_solver.getInterpolateControlMeshInteriorPoints()) {
-            calcInterpolatingControlsImpl(vars.at(controls));
-            calcInterpolatingControlsImpl(vars.at(multipliers));
-            calcInterpolatingControlsImpl(vars.at(derivatives));
-        }
+        calcInterpolatingControlsImpl(vars.at(controls));
+        calcInterpolatingControlsImpl(vars.at(multipliers));
+        calcInterpolatingControlsImpl(vars.at(derivatives));  
     }
 
     /// Convert the map of variables into a column vector, for passing onto
@@ -464,9 +462,7 @@ private:
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
         int idyn = 0;
-        auto dynamicsIndices = 
-                m_solver.getInterpolateControlMeshInteriorPoints() ?
-                createControlIndices() : casadi::DM::ones(1, m_numGridPoints);
+        auto dynamicsIndices = createControlIndices();
         int ng = 0;
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
@@ -482,38 +478,47 @@ private:
             ng += m_numDefectsPerMeshInterval -
                   m_numGapClosingDefectsPerMeshInterval;
 
-            // Kinematic constraints (qerr and uerr).
+            // Kinematic constraints.
             copyColumn(constraints.kinematic, imesh);
             ng += constraints.kinematic.rows();
+            if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
+                copyColumn(constraints.kinematic_udoterr, imesh);
+                ng += constraints.kinematic_udoterr.rows();
+            }
 
-            // Multibody residuals, auxiliary residuals, and acceleration-level 
-            // kinematic constraints (udoterr).
+            // Multibody and auxiliary residuals.
             for (int i = 0; i < N; ++i) {
                 if (dynamicsIndices(igrid + i).scalar() == 1) {
-                    copyColumn(constraints.kinematic_udoterr, idyn);
-                    ng += constraints.kinematic_udoterr.rows();
+                    if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                        copyColumn(constraints.kinematic_udoterr, idyn);
+                        ng += constraints.kinematic_udoterr.rows();
+                    }
                     copyColumn(constraints.multibody_residuals, idyn);
                     ng += constraints.multibody_residuals.rows();
                     copyColumn(constraints.auxiliary_residuals, idyn);
                     ng += constraints.auxiliary_residuals.rows();
+                    for (const auto& path : constraints.path) {
+                        copyColumn(path, idyn);
+                        ng += path.rows();
+                    }
                     ++idyn;
                 }
             }
 
             // Path constraints.
-            if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
-                for (int i = 0; i < N; ++i) {
-                    for (const auto& path : constraints.path) {
-                        copyColumn(path, igrid + i);
-                        ng += path.rows();
-                    }
-                }
-            } else {
-                for (const auto& path : constraints.path) {
-                    copyColumn(path, imesh);
-                    ng += path.rows();
-                }
-            }
+            // if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
+            //     for (int i = 0; i < N; ++i) {
+            //         for (const auto& path : constraints.path) {
+            //             copyColumn(path, igrid + i);
+            //             ng += path.rows();
+            //         }
+            //     }
+            // } else {
+            //     for (const auto& path : constraints.path) {
+            //         copyColumn(path, imesh);
+            //         ng += path.rows();
+            //     }
+            // }
 
             // Projection constraints.
             if (imesh > 0) {
@@ -528,25 +533,35 @@ private:
         // Final grid point.
         copyColumn(constraints.kinematic, m_numMeshPoints - 1);
         ng += constraints.kinematic.rows();
-        if (dynamicsIndices(m_numGridPoints - 1).scalar() == 1) {
-            copyColumn(constraints.kinematic_udoterr, idyn);
+        if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
+            copyColumn(constraints.kinematic_udoterr, m_numMeshPoints - 1);
             ng += constraints.kinematic_udoterr.rows();
+        }
+        if (dynamicsIndices(m_numGridPoints - 1).scalar() == 1) {
+            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                copyColumn(constraints.kinematic_udoterr, idyn);
+                ng += constraints.kinematic_udoterr.rows();
+            }
             copyColumn(constraints.multibody_residuals, idyn);
             ng += constraints.multibody_residuals.rows();
             copyColumn(constraints.auxiliary_residuals, idyn);
             ng += constraints.auxiliary_residuals.rows();
-        }
-        if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
             for (const auto& path : constraints.path) {
-                copyColumn(path, m_numGridPoints - 1);
-                ng += path.rows();
-            }
-        } else {
-            for (const auto& path : constraints.path) {
-                copyColumn(path, m_numMeshPoints - 1);
+                copyColumn(path, idyn);
                 ng += path.rows();
             }
         }
+        // if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
+        //     for (const auto& path : constraints.path) {
+        //         copyColumn(path, m_numGridPoints - 1);
+        //         ng += path.rows();
+        //     }
+        // } else {
+        //     for (const auto& path : constraints.path) {
+        //         copyColumn(path, m_numMeshPoints - 1);
+        //         ng += path.rows();
+        //     }
+        // }
         copyColumn(constraints.projection, m_numMeshIntervals - 1);
         ng += constraints.projection.rows();
         flat.ng.push_back(ng);
@@ -577,10 +592,8 @@ private:
         int numQErr = m_problem.getNumQErr();
         int numUErr = m_problem.getNumUErr();
         int numUDotErr = m_problem.getNumUDotErr();
-        int numKC = m_problem.isKinematicConstraintMethodBordalba2023() ?
-                numQErr + numUErr : numQErr + numUErr + numUDotErr;
         out.kinematic = init(numQErr + numUErr, m_numMeshPoints);
-        out.kinematic_udoterr = init(numUDotErr, m_numDynamicsPoints);
+        out.kinematic_udoterr = init(numUDotErr, m_numUDotErrorPoints);
         out.projection = init(m_problem.getNumProjectionConstraintEquations(),
                 m_numMeshIntervals);
         out.endpoint.resize(m_problem.getEndpointConstraintInfos().size());
@@ -611,9 +624,7 @@ private:
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
         int idyn = 0;
-        auto dynamicsIndices = 
-                m_solver.getInterpolateControlMeshInteriorPoints() ?
-                createControlIndices() : casadi::DM::ones(1, m_numGridPoints);
+        auto dynamicsIndices = createControlIndices();
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
 
@@ -626,32 +637,39 @@ private:
             // Defect constraints.
             copyColumn(out.defects, imesh);
 
-            // Kinematic constraints (qerr and uerr).
+            // Kinematic constraints.
             copyColumn(out.kinematic, imesh);
+            if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
+                copyColumn(out.kinematic_udoterr, imesh);
+            }
 
-            // Multibody residuals, auxiliary residuals, and acceleration-level 
-            // kinematic constraints (udoterr).
+            // Multibody and auxiliary residuals.
             for (int i = 0; i < N; ++i) {
                 if (dynamicsIndices(igrid + i).scalar() == 1) {
-                    copyColumn(out.kinematic_udoterr, igrid + i);
-                    copyColumn(out.multibody_residuals, igrid + i);
-                    copyColumn(out.auxiliary_residuals, igrid + i);
+                    if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                        copyColumn(out.kinematic_udoterr, idyn);
+                    }
+                    copyColumn(out.multibody_residuals, idyn);
+                    copyColumn(out.auxiliary_residuals, idyn);
+                    for (auto& path : out.path) {
+                        copyColumn(path, idyn);
+                    }
                     ++idyn;
                 }
             }
 
             // Path constraints.
-            if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
-                for (int i = 0; i < N; ++i) {
-                    for (auto& path : out.path) {
-                        copyColumn(path, igrid + i);
-                    }
-                }
-            } else {
-                for (auto& path : out.path) {
-                    copyColumn(path, imesh);
-                }
-            }
+            // if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
+            //     for (int i = 0; i < N; ++i) {
+            //         for (auto& path : out.path) {
+            //             copyColumn(path, igrid + i);
+            //         }
+            //     }
+            // } else {
+            //     for (auto& path : out.path) {
+            //         copyColumn(path, imesh);
+            //     }
+            // }
 
             // Projection constraints.
             if (imesh > 0) {
@@ -661,20 +679,28 @@ private:
         
         // Final grid point.
         copyColumn(out.kinematic, m_numMeshPoints - 1);
+        if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
+            copyColumn(out.kinematic_udoterr, m_numMeshPoints - 1);
+        }
         if (dynamicsIndices(m_numGridPoints - 1).scalar() == 1) {
-            copyColumn(out.kinematic_udoterr, idyn);
+            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                copyColumn(out.kinematic_udoterr, idyn);
+            }
             copyColumn(out.multibody_residuals, idyn);
             copyColumn(out.auxiliary_residuals, idyn);
-        }
-        if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
             for (auto& path : out.path) {
-                copyColumn(path, m_numGridPoints - 1);
-            }
-        } else {
-            for (auto& path : out.path) {
-                copyColumn(path, m_numMeshPoints - 1);
+                copyColumn(path, idyn);
             }
         }
+        // if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
+        //     for (auto& path : out.path) {
+        //         copyColumn(path, m_numGridPoints - 1);
+        //     }
+        // } else {
+        //     for (auto& path : out.path) {
+        //         copyColumn(path, m_numMeshPoints - 1);
+        //     }
+        // }
         copyColumn(out.projection, m_numMeshIntervals - 1);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
