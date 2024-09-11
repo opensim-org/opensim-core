@@ -65,19 +65,24 @@ void Trapezoidal::calcDefectsImpl(const casadi::MXVector& x,
     }
 }
 
-std::vector<std::pair<Var, int>> Trapezoidal::getVariableOrder() const {
-    std::vector<std::pair<Var, int>> order;
+Transcription::FlattenedVariableInfo 
+Trapezoidal::getFlattenedVariableInfo() const {
+    FlattenedVariableInfo info;
     for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
-        order.push_back({initial_time, imesh});
-        order.push_back({final_time, imesh});
-        order.push_back({parameters, imesh});
-        order.push_back({states, imesh});
-        order.push_back({controls, imesh});
-        order.push_back({multipliers, imesh});
-        order.push_back({derivatives, imesh});
+        info.order.push_back({initial_time, imesh});
+        info.order.push_back({final_time, imesh});
+        info.order.push_back({parameters, imesh});
+        info.order.push_back({states, imesh});
+        info.order.push_back({controls, imesh});
+        info.order.push_back({multipliers, imesh});
+        info.order.push_back({derivatives, imesh});
+        if (imesh) {
+            info.order.push_back({projection_states, imesh - 1});
+            info.order.push_back({slacks, imesh - 1});
+        }
     }
 
-    return order;
+    return info;
 }
 
 } // namespace CasOC

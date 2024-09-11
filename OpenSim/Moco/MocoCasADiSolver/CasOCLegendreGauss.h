@@ -95,7 +95,9 @@ public:
         }
         grid(numGridPoints - 1) = mesh[numMeshIntervals];
         createVariablesAndSetBounds(grid,
-                (m_degree + 1) * m_problem.getNumStates(), m_degree + 2);
+                (m_degree + 1) * m_problem.getNumStates(), 
+                m_problem.getNumStates(), 
+                m_degree + 2);
     }
 
 private:
@@ -106,7 +108,7 @@ private:
             const casadi::MXVector& xdot, casadi::MX& defects) const override;
     void calcInterpolatingControlsImpl(casadi::MX& controls) const override;
     void calcInterpolatingControlsImpl(casadi::DM& controls) const override;
-    std::vector<std::pair<Var, int>> getVariableOrder() const override;
+    FlattenedVariableInfo getFlattenedVariableInfo() const override;
 
     int m_degree;
     std::vector<double> m_legendreRoots;

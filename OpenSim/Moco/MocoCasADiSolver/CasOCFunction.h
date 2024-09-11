@@ -255,8 +255,8 @@ public:
 };
 
 /// This function should compute forward dynamics (explicit multibody dynamics),
-/// auxiliary explicit dynamics, and the errors for the kinematic constraints.
-template <bool calcKCErr>
+/// auxiliary dynamics (explicit and implicit), and the errors for the
+/// acceleration-level kinematic constraints.
 class MultibodySystemExplicit : public Function {
 public:
     casadi_int get_n_out() override final { return 4; }
@@ -265,12 +265,59 @@ public:
         case 0: return "multibody_derivatives";
         case 1: return "auxiliary_derivatives";
         case 2: return "auxiliary_residuals";
-        case 3: return "kinematic_constraint_errors";
+        case 3: return "kinematic_constraint_udot_errors";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
     casadi::Sparsity get_sparsity_out(casadi_int i) override final;
     VectorDM eval(const VectorDM& args) const override;
+};
+
+
+/// This function should compute implicit multibody dynamics, auxiliary dynamics
+/// (explicit and implicit), and the errors for the acceleration-level kinematic 
+/// constraints.
+class MultibodySystemImplicit : public Function {
+    casadi_int get_n_out() override final { return 4; }
+    std::string get_name_out(casadi_int i) override final {
+        switch (i) {
+        case 0: return "multibody_residuals";
+        case 1: return "auxiliary_derivatives";
+        case 2: return "auxiliary_residuals";
+        case 3: return "kinematic_constraint_udot_errors";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        }
+    }
+
+    casadi::Sparsity get_sparsity_out(casadi_int i) override final;
+    VectorDM eval(const VectorDM& args) const override;
+};
+
+/// This function should compute the errors for the position- and velocity-level
+/// kinematic constraints.
+class KinematicConstraints : public Function {
+public:
+    casadi_int get_n_in() override final { return 3; }
+    casadi_int get_n_out() override final { return 1; }
+    std::string get_name_in(casadi_int i) override final {
+        switch (i) {
+        case 0: return "time";
+        case 1: return "multibody_states";
+        case 2: return "parameters";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        }
+    }
+    std::string get_name_out(casadi_int i) override final {
+        switch (i) {
+        case 0: return "kinematic_constraint_errors";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        }
+    }
+    casadi::Sparsity get_sparsity_in(casadi_int i) override final;
+    casadi::Sparsity get_sparsity_out(casadi_int i) override final;
+    VectorDM eval(const VectorDM& args) const override;
+    casadi::DM getSubsetPoint(const VariablesDM& fullPoint,
+            casadi_int i) const override;
 };
 
 /// This function should compute a velocity correction term to make feasible
@@ -327,23 +374,6 @@ public:
     VectorDM eval(const VectorDM& args) const override;
     casadi::DM getSubsetPoint(
             const VariablesDM& fullPoint, casadi_int i) const override;
-};
-
-template <bool calcKCErr>
-class MultibodySystemImplicit : public Function {
-    casadi_int get_n_out() override final { return 4; }
-    std::string get_name_out(casadi_int i) override final {
-        switch (i) {
-        case 0: return "multibody_residuals";
-        case 1: return "auxiliary_derivatives";
-        case 2: return "auxiliary_residuals";
-        case 3: return "kinematic_constraint_errors";
-        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
-        }
-    }
-
-    casadi::Sparsity get_sparsity_out(casadi_int i) override final;
-    VectorDM eval(const VectorDM& args) const override;
 };
 
 } // namespace CasOC

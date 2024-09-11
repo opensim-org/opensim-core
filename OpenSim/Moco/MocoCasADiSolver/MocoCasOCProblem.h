@@ -324,7 +324,6 @@ public:
 
 private:
     void calcMultibodySystemExplicit(const ContinuousInput& input,
-            bool calcKCErrors,
             MultibodySystemExplicitOutput& output) const override {
         auto mocoProblemRep = m_jar->take();
 
@@ -345,11 +344,23 @@ private:
                 simtkStateDisabledConstraints);
 
         // Compute kinematic constraint errors.
-        if (getNumMultipliers() && calcKCErrors) {
-            calcKinematicConstraintErrors(
-                    modelBase, simtkStateBase,
-                    simtkStateDisabledConstraints,
-                    output.kinematic_constraint_errors);
+        if (getNumMultipliers()) {
+            // Calculate udoterr. We cannot use State::getUDotErr()
+            // because that uses Simbody's multipliers and UDot,
+            // whereas we have our own multipliers and UDot. Here, we use
+            // the udot computed from the model with disabled constraints
+            // since we cannot use (nor do we have available) udot computed
+            // from the original model.
+            if (getEnforceConstraintDerivatives() ||
+                    getNumAccelerationConstraintEquations()) {
+                const auto& matter = modelBase.getMatterSubsystem();
+                matter.calcConstraintAccelerationErrors(simtkStateBase,
+                        simtkStateDisabledConstraints.getUDot(), m_pvaerr);
+            } else {
+                m_pvaerr = SimTK::NaN;
+            }
+            std::copy_n(m_pvaerr.getContiguousScalarData() + m_udoterrOffset,
+                m_udoterrSize, output.kinematic_constraint_udot_errors.ptr());
         }
 
         // Copy state derivative values to output.
@@ -367,7 +378,6 @@ private:
         m_jar->leave(std::move(mocoProblemRep));
     }
     void calcMultibodySystemImplicit(const ContinuousInput& input,
-            bool calcKCErrors,
             MultibodySystemImplicitOutput& output) const override {
         auto mocoProblemRep = m_jar->take();
 
@@ -391,11 +401,23 @@ private:
                 simtkStateDisabledConstraints);
 
         // Compute kinematic constraint errors.
-        if (getNumMultipliers() && calcKCErrors) {
-            calcKinematicConstraintErrors(
-                    modelBase, simtkStateBase,
-                    simtkStateDisabledConstraints,
-                    output.kinematic_constraint_errors);
+        if (getNumMultipliers()) {
+            // Calculate udoterr. We cannot use State::getUDotErr()
+            // because that uses Simbody's multipliers and UDot,
+            // whereas we have our own multipliers and UDot. Here, we use
+            // the udot computed from the model with disabled constraints
+            // since we cannot use (nor do we have available) udot computed
+            // from the original model.
+            if (getEnforceConstraintDerivatives() ||
+                    getNumAccelerationConstraintEquations()) {
+                const auto& matter = modelBase.getMatterSubsystem();
+                matter.calcConstraintAccelerationErrors(simtkStateBase,
+                        simtkStateDisabledConstraints.getUDot(), m_pvaerr);
+            } else {
+                m_pvaerr = SimTK::NaN;
+            }
+            std::copy_n(m_pvaerr.getContiguousScalarData() + m_udoterrOffset,
+                m_udoterrSize, output.kinematic_constraint_udot_errors.ptr());
         }
 
         const SimTK::SimbodyMatterSubsystem& matterDisabledConstraints =
@@ -413,6 +435,37 @@ private:
         // Copy auxiliary residuals to output.
         copyImplicitResidualsToOutput(*mocoProblemRep,
                 simtkStateDisabledConstraints, output.auxiliary_residuals);
+
+        m_jar->leave(std::move(mocoProblemRep));
+    }
+    void calcKinematicConstraintErrors(const double& time,
+            const casadi::DM& multibody_states, const casadi::DM& parameters,
+            casadi::DM& kinematic_constraint_errors) const override {
+
+        if (isPrescribedKinematics()) return;
+        auto mocoProblemRep = m_jar->take();
+
+        const auto& modelBase = mocoProblemRep->getModelBase();
+        auto& simtkStateBase = mocoProblemRep->updStateBase();
+
+        // Update the model and state.
+        applyParametersToModelProperties(parameters, *mocoProblemRep);
+        convertStatesToSimTKState(
+                SimTK::Stage::Velocity, time, multibody_states,
+                modelBase, simtkStateBase, false);
+        modelBase.realizeVelocity(simtkStateBase);
+
+        // Position-level errors.
+        const auto& qerr = simtkStateBase.getQErr();
+        // Velocity-level errors.
+        const auto& uerr = simtkStateBase.getUErr();
+
+        // This way of copying the data avoids a threadsafety issue in
+        // CasADi related to cached Sparsity objects.
+        std::copy_n(qerr.getContiguousScalarData(), qerr.size(),
+                kinematic_constraint_errors.ptr());
+        std::copy_n(uerr.getContiguousScalarData() + m_uerrOffset, m_uerrSize,
+                kinematic_constraint_errors.ptr() + qerr.size());
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -820,51 +873,6 @@ private:
         // Apply the constraint forces on the model with disabled constraints.
         constraintForces.setAllForces(stateDisabledConstraints,
                 m_constraintMobilityForces, m_constraintBodyForces);
-    }
-
-    void calcKinematicConstraintErrors(
-            const Model& modelBase,
-            const SimTK::State& stateBase,
-            const SimTK::State& simtkStateDisabledConstraints,
-            casadi::DM& kinematic_constraint_errors) const {
-
-        // If all kinematics are prescribed, we assume that the prescribed
-        // kinematics obey any kinematic constraints. Therefore, the kinematic
-        // constraints would be redundant, and we need not enforce them.
-        if (isPrescribedKinematics()) return;
-
-        // Calculate udoterr. We cannot use State::getUDotErr()
-        // because that uses Simbody's multipliers and UDot,
-        // whereas we have our own multipliers and UDot. Here, we use
-        // the udot computed from the model with disabled constraints
-        // since we cannot use (nor do we have available) udot computed
-        // from the original model.
-        if (getEnforceConstraintDerivatives() ||
-                getNumAccelerationConstraintEquations()) {
-            const auto& matter = modelBase.getMatterSubsystem();
-            matter.calcConstraintAccelerationErrors(stateBase,
-                    simtkStateDisabledConstraints.getUDot(), m_pvaerr);
-        } else {
-            m_pvaerr = SimTK::NaN;
-        }
-
-        // Position-level errors.
-        const auto& qerr = stateBase.getQErr();
-        // Velocity-level errors.
-        const auto& uerr = stateBase.getUErr();
-        // Acceleration-level errors.
-        const auto& udoterr = m_pvaerr;
-
-        // This way of copying the data avoids a threadsafety issue in
-        // CasADi related to cached Sparsity objects.
-        std::copy_n(qerr.getContiguousScalarData(), qerr.size(),
-                kinematic_constraint_errors.ptr());
-        std::copy_n(uerr.getContiguousScalarData() + m_uerrOffset, m_uerrSize,
-                kinematic_constraint_errors.ptr() + qerr.size());
-        std::copy_n(udoterr.getContiguousScalarData() + m_udoterrOffset,
-                m_udoterrSize,
-                kinematic_constraint_errors.ptr() + qerr.size() + m_uerrSize);
-
     }
 
     void copyImplicitResidualsToOutput(const MocoProblemRep& mocoProblemRep,

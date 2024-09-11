@@ -82,6 +82,7 @@ protected:
     /// avoiding an extra call on the instantiated object.
     void createVariablesAndSetBounds(const casadi::DM& grid,
             int numDefectsPerMeshInterval,
+            int numGapClosingDefectsPerMeshInterval,
             int numPointsPerMeshInterval);
 
     /// We assume all functions depend on time and parameters.
@@ -130,6 +131,12 @@ protected:
         }
     }
 
+    struct FlattenedVariableInfo {
+        std::vector<std::pair<Var, int>> order;
+        std::vector<casadi_int> nx;
+        std::vector<casadi_int> nu;
+    };
+
     template <typename T>
     struct Constraints {
         T time;
@@ -143,6 +150,13 @@ protected:
         std::vector<T> path;
         T projection;
     };
+
+    template <typename T>
+    struct FlattenedConstraints {
+        T constraints;
+        std::vector<casadi_int> ng;
+    };
+
     void printConstraintValues(const Iterate& it,
             const Constraints<casadi::DM>& constraints,
             std::ostream& stream = std::cout) const;
@@ -157,9 +171,10 @@ protected:
     int m_numMeshIntervals = -1;
     int m_numMeshInteriorPoints = -1;
     int m_numDefectsPerMeshInterval = -1;
+    int m_numGapClosingDefectsPerMeshInterval = -1;
     int m_numPointsPerMeshInterval = -1;
-    int m_numUDotErrorPoints = -1;
     int m_numControlPoints = -1;
+    int m_numDynamicsPoints = -1;
     int m_numMultibodyResiduals = -1;
     int m_numAuxiliaryResiduals = -1;
     int m_numConstraints = -1;
@@ -191,8 +206,10 @@ private:
     casadi::Matrix<casadi_int> m_meshInteriorIndices;
     casadi::Matrix<casadi_int> m_pathConstraintIndices;
     casadi::Matrix<casadi_int> m_controlIndices;
+    casadi::Matrix<casadi_int> m_dynamicsIndices;
     casadi::Matrix<casadi_int> m_projectionStateIndices;
     casadi::Matrix<casadi_int> m_notProjectionStateIndices;
+    casadi::Matrix<casadi_int> m_projectionStateIndicesForControlIndices;
 
     // State derivatives.
     casadi::MX m_xdot;
@@ -246,8 +263,10 @@ private:
     }
     /// Override this function to define the order of variables in the flattened
     /// variable vector passed to nlpsol(). Returns a vector whose elements are
-    /// pairs of variable keys and trajectory indexes.
-    virtual std::vector<std::pair<Var, int>> getVariableOrder() const = 0;
+    /// pairs of variable keys and trajectory indexes. Optionally, define the
+    /// number of states and controls for each mesh interval, which is needed by
+    /// the FATROP solver.
+    virtual FlattenedVariableInfo getFlattenedVariableInfo() const = 0;
 
     void transcribe();
     void setObjectiveAndEndpointConstraints();
@@ -259,6 +278,8 @@ private:
     void calcInterpolatingControls(Variables<T>& vars) const {
         if (m_solver.getInterpolateControlMeshInteriorPoints()) {
             calcInterpolatingControlsImpl(vars.at(controls));
+            calcInterpolatingControlsImpl(vars.at(multipliers));
+            calcInterpolatingControlsImpl(vars.at(derivatives));
         }
     }
 
@@ -266,8 +287,8 @@ private:
     /// nlpsol(), etc.
     casadi::MX flattenVariables(const VectorVariablesMX& vars) const {
         std::vector<casadi::MX> stdvec;
-        auto varOrder = getVariableOrder();
-        for (const auto& kv : varOrder) {
+        auto info = getFlattenedVariableInfo();
+        for (const auto& kv : info.order) {
             stdvec.push_back(vars.at(kv.first)[kv.second]);
         }
 
@@ -278,8 +299,8 @@ private:
     /// nlpsol(), etc.
     casadi::DM flattenVariables(const VariablesDM& vars) const {
         std::vector<casadi::DM> stdvec;
-        auto varOrder = getVariableOrder();
-        for (const auto& kv : varOrder) {
+        auto info = getFlattenedVariableInfo();
+        for (const auto& kv : info.order) {
             if (m_scaledVars.at(kv.first).rows()) {
                 stdvec.push_back(vars.at(kv.first)(casadi::Slice(), kv.second));
             }
@@ -298,8 +319,8 @@ private:
                     kv.second.columns());
         }
 
-        auto varOrder = getVariableOrder();
-        for (const auto& kv : varOrder) {
+        auto info = getFlattenedVariableInfo();
+        for (const auto& kv : info.order) {
             const auto& var = kv.first;
             const auto& index = kv.second;
             casadi_int size = m_scaledVars.at(var).rows();
@@ -357,14 +378,16 @@ private:
     /// grouped together by time. Organizing the sparsity of the Jacobian
     /// this way might have benefits for sparse linear algebra.
     template <typename T>
-    T flattenConstraints(const Constraints<T>& constraints) const {
-        T flat = T(casadi::Sparsity::dense(m_numConstraints, 1));
+    FlattenedConstraints<T> flattenConstraints(
+            const Constraints<T>& constraints) const {
+        FlattenedConstraints<T> flat;
+        flat.constraints = T(casadi::Sparsity::dense(m_numConstraints, 1));
 
         int iflat = 0;
         auto copyColumn = [&flat, &iflat](const T& matrix, int columnIndex) {
             using casadi::Slice;
             if (matrix.rows()) {
-                flat(Slice(iflat, iflat + matrix.rows())) =
+                flat.constraints(Slice(iflat, iflat + matrix.rows())) =
                         matrix(Slice(), columnIndex);
                 iflat += matrix.rows();
             }
@@ -440,7 +463,11 @@ private:
 
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
-        int icon = 0;
+        int idyn = 0;
+        auto dynamicsIndices = 
+                m_solver.getInterpolateControlMeshInteriorPoints() ?
+                createControlIndices() : casadi::DM::ones(1, m_numGridPoints);
+        int ng = 0;
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
 
@@ -452,18 +479,24 @@ private:
 
             // Defect constraints.
             copyColumn(constraints.defects, imesh);
+            ng += m_numDefectsPerMeshInterval -
+                  m_numGapClosingDefectsPerMeshInterval;
 
-            // Multibody and auxiliary residuals.
-            for (int i = 0; i < N; ++i) {
-                copyColumn(constraints.multibody_residuals, igrid + i);
-                copyColumn(constraints.auxiliary_residuals, igrid + i);
-            }
-
-            // Kinematic constraints.
+            // Kinematic constraints (qerr and uerr).
             copyColumn(constraints.kinematic, imesh);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                for (int i = 0; i < N; ++i) {
-                    copyColumn(constraints.kinematic_udoterr, igrid + i);
+            ng += constraints.kinematic.rows();
+
+            // Multibody residuals, auxiliary residuals, and acceleration-level 
+            // kinematic constraints (udoterr).
+            for (int i = 0; i < N; ++i) {
+                if (dynamicsIndices(igrid + i).scalar() == 1) {
+                    copyColumn(constraints.kinematic_udoterr, idyn);
+                    ng += constraints.kinematic_udoterr.rows();
+                    copyColumn(constraints.multibody_residuals, idyn);
+                    ng += constraints.multibody_residuals.rows();
+                    copyColumn(constraints.auxiliary_residuals, idyn);
+                    ng += constraints.auxiliary_residuals.rows();
+                    ++idyn;
                 }
             }
 
@@ -472,37 +505,51 @@ private:
                 for (int i = 0; i < N; ++i) {
                     for (const auto& path : constraints.path) {
                         copyColumn(path, igrid + i);
+                        ng += path.rows();
                     }
                 }
             } else {
                 for (const auto& path : constraints.path) {
                     copyColumn(path, imesh);
+                    ng += path.rows();
                 }
             }
 
             // Projection constraints.
             if (imesh > 0) {
-                copyColumn(constraints.projection, imesh-1);
+                copyColumn(constraints.projection, imesh - 1);
+                ng += constraints.projection.rows();
             }
+
+            flat.ng.push_back(ng);
+            ng = 0;
         }
 
         // Final grid point.
-        copyColumn(constraints.multibody_residuals, m_numGridPoints - 1);
-        copyColumn(constraints.auxiliary_residuals, m_numGridPoints - 1);
-        copyColumn(constraints.projection, m_numMeshIntervals-1);
         copyColumn(constraints.kinematic, m_numMeshPoints - 1);
-        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-            copyColumn(constraints.kinematic_udoterr, m_numGridPoints - 1);
+        ng += constraints.kinematic.rows();
+        if (dynamicsIndices(m_numGridPoints - 1).scalar() == 1) {
+            copyColumn(constraints.kinematic_udoterr, idyn);
+            ng += constraints.kinematic_udoterr.rows();
+            copyColumn(constraints.multibody_residuals, idyn);
+            ng += constraints.multibody_residuals.rows();
+            copyColumn(constraints.auxiliary_residuals, idyn);
+            ng += constraints.auxiliary_residuals.rows();
         }
         if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
             for (const auto& path : constraints.path) {
                 copyColumn(path, m_numGridPoints - 1);
+                ng += path.rows();
             }
         } else {
             for (const auto& path : constraints.path) {
                 copyColumn(path, m_numMeshPoints - 1);
+                ng += path.rows();
             }
         }
+        copyColumn(constraints.projection, m_numMeshIntervals - 1);
+        ng += constraints.projection.rows();
+        flat.ng.push_back(ng);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
                 "Internal error: final value of the index into the flattened "
@@ -532,10 +579,8 @@ private:
         int numUDotErr = m_problem.getNumUDotErr();
         int numKC = m_problem.isKinematicConstraintMethodBordalba2023() ?
                 numQErr + numUErr : numQErr + numUErr + numUDotErr;
-        out.kinematic = init(numKC,m_numMeshPoints);
-        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-            out.kinematic_udoterr = init(numUDotErr, m_numUDotErrorPoints);
-        }
+        out.kinematic = init(numQErr + numUErr, m_numMeshPoints);
+        out.kinematic_udoterr = init(numUDotErr, m_numDynamicsPoints);
         out.projection = init(m_problem.getNumProjectionConstraintEquations(),
                 m_numMeshIntervals);
         out.endpoint.resize(m_problem.getEndpointConstraintInfos().size());
@@ -565,7 +610,10 @@ private:
 
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
-        int icon = 0;
+        int idyn = 0;
+        auto dynamicsIndices = 
+                m_solver.getInterpolateControlMeshInteriorPoints() ?
+                createControlIndices() : casadi::DM::ones(1, m_numGridPoints);
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
 
@@ -578,17 +626,17 @@ private:
             // Defect constraints.
             copyColumn(out.defects, imesh);
 
-            // Multibody and auxiliary residuals.
-            for (int i = 0; i < N; ++i) {
-                copyColumn(out.multibody_residuals, igrid + i);
-                copyColumn(out.auxiliary_residuals, igrid + i);
-            }
-
-            // Kinematic constraints.
+            // Kinematic constraints (qerr and uerr).
             copyColumn(out.kinematic, imesh);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                for (int i = 0; i < N; ++i) {
+
+            // Multibody residuals, auxiliary residuals, and acceleration-level 
+            // kinematic constraints (udoterr).
+            for (int i = 0; i < N; ++i) {
+                if (dynamicsIndices(igrid + i).scalar() == 1) {
                     copyColumn(out.kinematic_udoterr, igrid + i);
+                    copyColumn(out.multibody_residuals, igrid + i);
+                    copyColumn(out.auxiliary_residuals, igrid + i);
+                    ++idyn;
                 }
             }
 
@@ -607,16 +655,16 @@ private:
 
             // Projection constraints.
             if (imesh > 0) {
-                copyColumn(out.projection, imesh-1);
+                copyColumn(out.projection, imesh - 1);
             }
         }
-
+        
         // Final grid point.
-        copyColumn(out.multibody_residuals, m_numGridPoints - 1);
-        copyColumn(out.auxiliary_residuals, m_numGridPoints - 1);
         copyColumn(out.kinematic, m_numMeshPoints - 1);
-        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-            copyColumn(out.kinematic_udoterr, m_numGridPoints - 1);
+        if (dynamicsIndices(m_numGridPoints - 1).scalar() == 1) {
+            copyColumn(out.kinematic_udoterr, idyn);
+            copyColumn(out.multibody_residuals, idyn);
+            copyColumn(out.auxiliary_residuals, idyn);
         }
         if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
             for (auto& path : out.path) {
@@ -627,7 +675,7 @@ private:
                 copyColumn(path, m_numMeshPoints - 1);
             }
         }
-        copyColumn(out.projection, m_numMeshIntervals-1);
+        copyColumn(out.projection, m_numMeshIntervals - 1);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
                 "Internal error: final value of the index into the flattened "

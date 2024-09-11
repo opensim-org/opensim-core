@@ -100,50 +100,111 @@ void LegendreGauss::calcInterpolatingControlsImpl(casadi::DM& controls) const {
     calcInterpolatingControlsHelper(controls);
 }
 
-std::vector<std::pair<Var, int>> LegendreGauss::getVariableOrder() const {
-    std::vector<std::pair<Var, int>> order;
+Transcription::FlattenedVariableInfo 
+LegendreGauss::getFlattenedVariableInfo() const {
+    FlattenedVariableInfo info;
     int N = m_numPointsPerMeshInterval - 1;
+    int nx = 0;
+    int nu = 0;
+    bool lastState = false;
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         int igrid = imesh * N;
-        order.push_back({initial_time, imesh});
-        order.push_back({final_time, imesh});
-        order.push_back({parameters, imesh});
-        if (imesh > 0) {
-            order.push_back({projection_states, imesh-1});
-            order.push_back({slacks, imesh-1});
+
+        info.order.push_back({initial_time, imesh});
+        info.order.push_back({final_time, imesh});
+        nx += 2;
+        
+        info.order.push_back({parameters, imesh});
+        nx += m_problem.getNumParameters();
+
+        if (imesh && m_numProjectionStates) {
+            info.order.push_back({projection_states, imesh - 1});
+            nx += m_numProjectionStates;
+            lastState = true;
+
+            info.order.push_back({slacks, imesh - 1});
+            nu += m_problem.getNumSlacks();
         }
+
         for (int i = 0; i < N; ++i) {
-            order.push_back({states, igrid + i});
+            info.order.push_back({states, igrid + i});
+            if (lastState) {
+                nu += m_problem.getNumStates();
+            } else {
+                nx += m_problem.getNumStates();
+                lastState = true;
+            }
         }
+
         if (m_solver.getInterpolateControlMeshInteriorPoints()) {
             for (int d = 0; d < m_degree; ++d) {
-                order.push_back({controls, igrid + d + 1});
+                info.order.push_back({controls, igrid + d + 1});
+                nu += m_problem.getNumControls();
+            }
+            for (int d = 0; d < m_degree; ++d) {
+                info.order.push_back({multipliers, igrid + d + 1});
+                nu += m_problem.getNumMultipliers();
+            }
+            for (int d = 0; d < m_degree; ++d) {
+                info.order.push_back({derivatives, igrid + d + 1});
+                nu += m_problem.getNumDerivatives();
             }
         } else {
             for (int i = 0; i < N; ++i) {
-                order.push_back({controls, igrid + i});
+                info.order.push_back({controls, igrid + i});
+                nu += m_problem.getNumControls();
+            }
+            for (int i = 0; i < N; ++i) {
+                info.order.push_back({multipliers, igrid + i});
+                nu += m_problem.getNumMultipliers();
+            }
+            for (int i = 0; i < N; ++i) {
+                info.order.push_back({derivatives, igrid + i});
+                nu += m_problem.getNumDerivatives();
             }
         }
-        for (int i = 0; i < N; ++i) {
-            order.push_back({multipliers, igrid + i});
-        }
-        for (int i = 0; i < N; ++i) {
-            order.push_back({derivatives, igrid + i});
-        }
-    }
-    order.push_back({initial_time, m_numMeshIntervals});
-    order.push_back({final_time, m_numMeshIntervals});
-    order.push_back({parameters, m_numMeshIntervals});
-    order.push_back({projection_states, m_numMeshIntervals-1});
-    order.push_back({slacks, m_numMeshIntervals-1});
-    order.push_back({states, m_numGridPoints - 1});
-    if (!m_solver.getInterpolateControlMeshInteriorPoints()) {
-        order.push_back({controls, m_numGridPoints - 1});
-    }
-    order.push_back({multipliers, m_numGridPoints - 1});
-    order.push_back({derivatives, m_numGridPoints - 1});
 
-    return order;
+        info.nx.push_back(nx);
+        info.nu.push_back(nu);
+        nx = 0;
+        nu = 0;
+        lastState = false;
+    }
+    info.order.push_back({initial_time, m_numMeshIntervals});
+    info.order.push_back({final_time, m_numMeshIntervals});
+    nx += 2;
+
+    info.order.push_back({parameters, m_numMeshIntervals});
+    nx += m_problem.getNumParameters();
+
+    if (m_numProjectionStates) {
+        info.order.push_back({projection_states, m_numMeshIntervals - 1});
+        nx += m_numProjectionStates;
+
+        info.order.push_back({slacks, m_numMeshIntervals - 1});
+        nu += m_problem.getNumSlacks();
+    }
+
+    info.order.push_back({states, m_numGridPoints - 1});
+    if (m_numProjectionStates) {
+        nu += m_problem.getNumStates();
+    } else {
+        nx += m_problem.getNumStates();
+    }
+
+    if (!m_solver.getInterpolateControlMeshInteriorPoints()) {
+        info.order.push_back({controls, m_numGridPoints - 1});
+        nu += m_problem.getNumControls();
+        info.order.push_back({multipliers, m_numGridPoints - 1});
+        nu += m_problem.getNumMultipliers();
+        info.order.push_back({derivatives, m_numGridPoints - 1});
+        nu += m_problem.getNumDerivatives();
+    }
+
+    info.nx.push_back(nx);
+    info.nu.push_back(nu);
+
+    return info;
 }
 
 } // namespace CasOC

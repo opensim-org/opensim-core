@@ -85,6 +85,7 @@ private:
 
 void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         int numDefectsPerMeshInterval,
+        int numGapClosingDefectsPerMeshInterval,
         int numPointsPerMeshInterval) {
 
     // Set the grid.
@@ -97,26 +98,40 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numGridPoints = (int)grid.numel();
     m_numMeshIntervals = m_numMeshPoints - 1;
     m_numMeshInteriorPoints = m_numGridPoints - m_numMeshPoints;
-    m_numDefectsPerMeshInterval = numDefectsPerMeshInterval;    
+    m_numDefectsPerMeshInterval = numDefectsPerMeshInterval;
+    m_numGapClosingDefectsPerMeshInterval = numGapClosingDefectsPerMeshInterval;    
     m_numPointsPerMeshInterval = numPointsPerMeshInterval;
     m_numMultibodyResiduals = m_problem.isDynamicsModeImplicit()
                              ? m_problem.getNumMultibodyDynamicsEquations()
                              : 0;
     m_numAuxiliaryResiduals = m_problem.getNumAuxiliaryResidualEquations();
-    m_numProjectionStates = m_problem.getNumProjectionConstraintEquations();
+    m_numProjectionStates = m_problem.getNumProjectionStates();
 
-    m_numUDotErrorPoints = m_problem.isKinematicConstraintMethodBordalba2023()
-            ? m_numGridPoints
-            : m_numMeshPoints;
+    // Create the vector of points where control variables are defined
+    // (including Lagrange multipliers and derivative variables). These points
+    // also influence where path constraints associated with the model dynamics
+    // (e.g., multibody residuals) are enforced.
+    auto controlIndicesMap = createControlIndices();
+    std::vector<int> controlIndicesVector;
+    for (int i = 0; i < controlIndicesMap.size2(); ++i) {
+        if (controlIndicesMap(i).scalar() == 1) {
+            controlIndicesVector.push_back(i);
+        }
+    }
+    m_numControlPoints = static_cast<int>(controlIndicesVector.size());
+    m_numDynamicsPoints = m_solver.getInterpolateControlMeshInteriorPoints() ? 
+            m_numControlPoints : m_numGridPoints;
+
     // Dynamics constraints.
     m_numConstraints =
             m_numDefectsPerMeshInterval * m_numMeshIntervals +
-            m_numMultibodyResiduals * m_numGridPoints +
-            m_numAuxiliaryResiduals * m_numGridPoints +
+            m_numMultibodyResiduals * m_numDynamicsPoints +
+            m_numAuxiliaryResiduals * m_numDynamicsPoints +
             m_problem.getNumQErr() * m_numMeshPoints +
             m_problem.getNumUErr() * m_numMeshPoints +
-            m_problem.getNumUDotErr() * m_numUDotErrorPoints +
+            m_problem.getNumUDotErr() * m_numDynamicsPoints +
             m_problem.getNumProjectionConstraintEquations() * m_numMeshIntervals;
+
     // Time constraints.
     m_numConstraints += 2 * m_numMeshIntervals;
     // Parameter constraints.
@@ -160,15 +175,6 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         }
     }
 
-    auto controlIndicesMap = createControlIndices();
-    std::vector<int> controlIndicesVector;
-    for (int i = 0; i < controlIndicesMap.size2(); ++i) {
-        if (controlIndicesMap(i).scalar() == 1) {
-            controlIndicesVector.push_back(i);
-        }
-    }
-    m_numControlPoints = static_cast<int>(controlIndicesVector.size());
-
     auto makeTimeIndices = [](const std::vector<int>& in) {
         casadi::Matrix<casadi_int> out(1, in.size());
         for (int i = 0; i < (int)in.size(); ++i) { out(i) = in[i]; }
@@ -186,9 +192,23 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             ? makeTimeIndices(gridIndicesVector)
             : makeTimeIndices(meshIndicesVector);
     m_controlIndices = makeTimeIndices(controlIndicesVector);
+    m_dynamicsIndices = m_solver.getInterpolateControlMeshInteriorPoints() ? 
+            m_controlIndices : m_gridIndices;
     m_projectionStateIndices = makeTimeIndices(projectionStateIndicesVector);
     m_notProjectionStateIndices =
             makeTimeIndices(notProjectionStateIndicesVector);
+
+    std::vector<int> projectionStateIndicesForControlIndicesVector;
+    for (int i = 0; i < static_cast<int>(controlIndicesVector.size()); ++i) {
+        int controlIndex = controlIndicesVector[i];
+        if (std::find(projectionStateIndicesVector.begin(),
+                projectionStateIndicesVector.end(), controlIndex) !=
+                projectionStateIndicesVector.end()) {
+            projectionStateIndicesForControlIndicesVector.push_back(i);
+        }
+    }     
+    m_projectionStateIndicesForControlIndices =
+            makeTimeIndices(projectionStateIndicesForControlIndicesVector);
 
     // Create variables.
     // -----------------
@@ -215,22 +235,32 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                 m_scaledVectorVars[controls].push_back(
                         MX::sym(fmt::format("controls_{}", igrid),
                                 m_problem.getNumControls(), 1));
+                m_scaledVectorVars[multipliers].push_back(
+                        MX::sym(fmt::format("multipliers_{}", igrid),
+                                m_problem.getNumMultipliers(), 1));
+                m_scaledVectorVars[derivatives].push_back(
+                        MX::sym(fmt::format("derivatives_{}", igrid),
+                                m_problem.getNumDerivatives(), 1));
+                
             } else {
                 m_scaledVectorVars[controls].push_back(
                         MX(m_problem.getNumControls(), 1));
+                m_scaledVectorVars[multipliers].push_back(
+                        MX(m_problem.getNumMultipliers(), 1));
+                m_scaledVectorVars[derivatives].push_back(
+                        MX(m_problem.getNumDerivatives(), 1));  
             }
         } else {
             m_scaledVectorVars[controls].push_back(
                 MX::sym(fmt::format("controls_{}", igrid),
                         m_problem.getNumControls(), 1));
-        }
-
-        m_scaledVectorVars[multipliers].push_back(
+            m_scaledVectorVars[multipliers].push_back(
                 MX::sym(fmt::format("multipliers_{}", igrid),
                         m_problem.getNumMultipliers(), 1));
-        m_scaledVectorVars[derivatives].push_back(
+            m_scaledVectorVars[derivatives].push_back(
                 MX::sym(fmt::format("derivatives_{}", igrid),
                         m_problem.getNumDerivatives(), 1));
+        }
     }
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         m_scaledVectorVars[projection_states].push_back(MX::sym(
@@ -238,7 +268,6 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                 m_numProjectionStates, 1));
     }
 
-    
     if (m_problem.isKinematicConstraintMethodBordalba2023()) {
         // In the projection method for enforcing kinematic constraints, the
         // slack variables are applied at the mesh points at the end of each
@@ -495,20 +524,20 @@ void Transcription::transcribe() {
     // Initialize memory for implicit multibody residuals.
     // ---------------------------------------------------
     m_constraints.multibody_residuals = MX(casadi::Sparsity::dense(
-            m_numMultibodyResiduals, m_numGridPoints));
+            m_numMultibodyResiduals, m_numDynamicsPoints));
     m_constraintsLowerBounds.multibody_residuals =
-            DM::zeros(m_numMultibodyResiduals, m_numGridPoints);
+            DM::zeros(m_numMultibodyResiduals, m_numDynamicsPoints);
     m_constraintsUpperBounds.multibody_residuals =
-            DM::zeros(m_numMultibodyResiduals, m_numGridPoints);
+            DM::zeros(m_numMultibodyResiduals, m_numDynamicsPoints);
 
     // Initialize memory for implicit auxiliary residuals.
     // ---------------------------------------------------
     m_constraints.auxiliary_residuals = MX(casadi::Sparsity::dense(
-            m_numAuxiliaryResiduals, m_numGridPoints));
+            m_numAuxiliaryResiduals, m_numDynamicsPoints));
     m_constraintsLowerBounds.auxiliary_residuals =
-            DM::zeros(m_numAuxiliaryResiduals, m_numGridPoints);
+            DM::zeros(m_numAuxiliaryResiduals, m_numDynamicsPoints);
     m_constraintsUpperBounds.auxiliary_residuals =
-            DM::zeros(m_numAuxiliaryResiduals, m_numGridPoints);
+            DM::zeros(m_numAuxiliaryResiduals, m_numDynamicsPoints);
 
     // Initialize memory for kinematic constraints.
     // --------------------------------------------
@@ -518,36 +547,26 @@ void Transcription::transcribe() {
     int nkc = m_problem.getNumKinematicConstraintEquations();
 
     const auto& kcBounds = m_problem.getKinematicConstraintBounds();
-    if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-        m_constraints.kinematic = MX(casadi::Sparsity::dense(
-                nqerr + nuerr, m_numMeshPoints));
-        m_constraintsLowerBounds.kinematic = casadi::DM::repmat(
-                kcBounds.lower, nqerr + nuerr, m_numMeshPoints);
-        m_constraintsUpperBounds.kinematic = casadi::DM::repmat(
-                kcBounds.upper, nqerr + nuerr, m_numMeshPoints);
+    m_constraints.kinematic = MX(casadi::Sparsity::dense(
+            nqerr + nuerr, m_numMeshPoints));
+    m_constraintsLowerBounds.kinematic = casadi::DM::repmat(
+            kcBounds.lower, nqerr + nuerr, m_numMeshPoints);
+    m_constraintsUpperBounds.kinematic = casadi::DM::repmat(
+            kcBounds.upper, nqerr + nuerr, m_numMeshPoints);
 
-        m_constraints.kinematic_udoterr = MX(casadi::Sparsity::dense(
-                nudoterr, m_numUDotErrorPoints));
-        m_constraintsLowerBounds.kinematic_udoterr = casadi::DM::repmat(
-                kcBounds.lower, nudoterr, m_numUDotErrorPoints);
-        m_constraintsUpperBounds.kinematic_udoterr = casadi::DM::repmat(
-                kcBounds.upper, nudoterr, m_numUDotErrorPoints);
-    } else {
-        m_constraints.kinematic = MX(casadi::Sparsity::dense(
-                nkc, m_numMeshPoints));
-        m_constraintsLowerBounds.kinematic = casadi::DM::repmat(
-                kcBounds.lower, nkc, m_numMeshPoints);
-        m_constraintsUpperBounds.kinematic = casadi::DM::repmat(
-                kcBounds.upper, nkc, m_numMeshPoints);
-    }
+    m_constraints.kinematic_udoterr = MX(casadi::Sparsity::dense(
+            nudoterr, m_numDynamicsPoints));
+    m_constraintsLowerBounds.kinematic_udoterr = casadi::DM::repmat(
+            kcBounds.lower, nudoterr, m_numDynamicsPoints);
+    m_constraintsUpperBounds.kinematic_udoterr = casadi::DM::repmat(
+            kcBounds.upper, nudoterr, m_numDynamicsPoints);
 
     // Initialize memory for projection constraints.
     // ---------------------------------------------
     int numProjectionConstraints =
             m_problem.getNumProjectionConstraintEquations();
-    m_constraints.projection = MX(
-            casadi::Sparsity::dense(numProjectionConstraints,
-                                    m_numMeshIntervals));
+    m_constraints.projection = MX(casadi::Sparsity::dense(
+            numProjectionConstraints, m_numMeshIntervals));
     m_constraintsLowerBounds.projection =
             DM::zeros(numProjectionConstraints, m_numMeshIntervals);
     m_constraintsUpperBounds.projection =
@@ -563,8 +582,8 @@ void Transcription::transcribe() {
         m_xdot_projection(Slice(0, NQ), Slice()) = u_projection;
     }
 
-    // projection constraints
-    // ----------------------
+    // kinematic constraints
+    // ---------------------
     if (m_problem.getNumKinematicConstraintEquations() &&
             !m_problem.isPrescribedKinematics() &&
             m_problem.getEnforceConstraintDerivatives()) {
@@ -577,6 +596,14 @@ void Transcription::transcribe() {
             "but the '{}' scheme was selected.",
             m_solver.getTranscriptionScheme());
 
+        // qerr, uerr
+        // ----------
+        const auto out = evalOnTrajectory(m_problem.getKinematicConstraints(),
+                {multibody_states}, m_meshIndices);
+        m_constraints.kinematic = out.at(0);
+
+        // projection constraints
+        // ----------------------
         if (m_solver.getTranscriptionScheme() == "hermite-simpson" &&
                 !m_problem.isKinematicConstraintMethodBordalba2023()) {
             // In Hermite-Simpson, we must compute a velocity correction at all
@@ -608,8 +635,8 @@ void Transcription::transcribe() {
         }
     }
 
-    // udot, zdot, residual, kcerr
-    // ---------------------------
+    // udot, zdot, residual, udoterr
+    // -----------------------------
     if (m_problem.isDynamicsModeImplicit()) {
         // udot.
         const MX w = m_unscaledVars[derivatives]
@@ -617,70 +644,29 @@ void Transcription::transcribe() {
         m_xdot(Slice(NQ, NQ + NU), Slice()) = w;
         if (m_numProjectionStates) {
             const MX w_projection = m_unscaledVars[derivatives]
-                                    (Slice(0, m_problem.getNumSpeeds()),
-                                            m_projectionStateIndices);
+                (Slice(0, m_problem.getNumSpeeds()), m_projectionStateIndices);
             m_xdot_projection(Slice(NQ, NQ + NU), Slice()) = w_projection;
         }
 
+        // Evaluate the implicit multibody system function and get multibody 
+        // residuals, auxiliary residuals, zdot (auxiliary derivatives), and
+        // udoterr (acceleration-level kinematic constraint errors).
         std::vector<Var> inputs{states, controls, multipliers, derivatives};
+        const auto out = evalOnTrajectory(m_problem.getImplicitMultibodySystem(),
+                inputs, m_gridIndices);
+        m_constraints.multibody_residuals = 
+                out.at(0)(Slice(), m_dynamicsIndices);
+        // zdot.
+        m_xdot(Slice(NQ + NU, NS), Slice()) = out.at(1);
+        m_constraints.auxiliary_residuals = 
+                out.at(2)(Slice(), m_dynamicsIndices);
+        m_constraints.kinematic_udoterr = 
+                out.at(3)(Slice(), m_dynamicsIndices);
 
-        // When the model has kinematic constraints, we must treat grid points
-        // differently, as kinematic constraints are computed for only some
-        // grid points. When the model does *not* have kinematic constraints,
-        // the DAE is the same for all grid points, but the evaluation is still
-        // done separately to keep implementation general.
-
-        // residual, zdot, kcerr
-        // Points where we compute algebraic constraints.
-        {
-            const auto out =
-                    evalOnTrajectory(m_problem.getImplicitMultibodySystem(),
-                            inputs, m_meshIndices);
-            m_constraints.multibody_residuals(Slice(), m_meshIndices) =
-                    out.at(0);
-            // zdot.
-            m_xdot(Slice(NQ + NU, NS), m_meshIndices) = out.at(1);
-            m_constraints.auxiliary_residuals(Slice(), m_meshIndices) =
-                    out.at(2);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                m_constraints.kinematic(Slice(0, nqerr), Slice()) = out.at(3)(
-                        Slice(0, nqerr), Slice());
-                m_constraints.kinematic(Slice(nqerr, nqerr + nuerr), Slice())
-                        = out.at(3)(Slice(nqerr, nqerr + nuerr), Slice());
-                m_constraints.kinematic_udoterr(Slice(), m_meshIndices) =
-                        out.at(3)(
-                                Slice(nqerr + nuerr, nqerr + nuerr + nudoterr),
-                                Slice());
-            } else {
-                m_constraints.kinematic = out.at(3);
-            }
-        }
-
-        // Points where we ignore algebraic constraints.
-        if (m_numMeshInteriorPoints) {
-            const casadi::Function& implicitMultibodyFunction =
-                    m_problem.isKinematicConstraintMethodBordalba2023() ?
-                    m_problem.getImplicitMultibodySystem() :
-                    m_problem.getImplicitMultibodySystemIgnoringConstraints();
-            const auto out = evalOnTrajectory(implicitMultibodyFunction, inputs,
-                    m_meshInteriorIndices);
-            m_constraints.multibody_residuals(Slice(), m_meshInteriorIndices) =
-                    out.at(0);
-            // zdot.
-            m_xdot(Slice(NQ + NU, NS), m_meshInteriorIndices) =
-                    out.at(1);
-            m_constraints.auxiliary_residuals(Slice(), m_meshInteriorIndices) =
-                    out.at(2);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                m_constraints.kinematic_udoterr(Slice(), m_meshInteriorIndices)
-                        = out.at(3)(
-                                Slice(nqerr + nuerr, nqerr + nuerr + nudoterr),
-                                Slice());
-            }
-        }
-
-        // Points where the multibody residuals depend on the projection states.
-        if (m_numProjectionStates) {
+        // Points where the multibody residuals and udoterro depend on the 
+        // projection states.
+        if (m_numProjectionStates && 
+                !m_projectionStateIndicesForControlIndices.is_empty()) {
             const casadi::Function& implicitMultibodyFunction =
                     m_problem.getImplicitMultibodySystem();
             const auto out = evalOnTrajectory(implicitMultibodyFunction, 
@@ -688,74 +674,38 @@ void Transcription::transcribe() {
                     m_projectionStateIndices);
             // This overrides the previous function evaluation assignments for
             // `kinematic_udoterr` and `multibody_residuals` at the mesh indices
-            // (i.e., for "points where we compute algebraic constraints"). We 
-            // still need the function evaluations above since we need state
+            // We still need the function evaluations above since we need state
             // derivatives for auxiliary states on the mesh points (note that 
             // the projection states overlap with all the mesh indices except 
             // the first mesh point). This also keeps the implementation above
             // general when we do not have projection states.
-            m_constraints.multibody_residuals(
-                    Slice(), m_projectionStateIndices) = out.at(0);
-            m_constraints.kinematic_udoterr(Slice(), m_projectionStateIndices)
-                    = out.at(3)(Slice(nqerr + nuerr, nqerr + nuerr + nudoterr),
-                            Slice());
+            m_constraints.multibody_residuals(Slice(), 
+                    m_projectionStateIndicesForControlIndices) = out.at(0);
+            m_constraints.kinematic_udoterr(Slice(), 
+                    m_projectionStateIndicesForControlIndices) = out.at(3);
         }
 
     } else { // Explicit dynamics mode.
+
+        // udot, zdot, udoterr
+        // -------------------
         std::vector<Var> inputs{states, controls, multipliers, derivatives};
 
-        // udot, zdot, kcerr.
-        // Points where we compute algebraic constraints.
-        {
-            // Evaluate the multibody system function and get udot
-            // (speed derivatives) and zdot (auxiliary derivatives).
-            const auto out = evalOnTrajectory(
-                    m_problem.getMultibodySystem(), inputs, m_meshIndices);
-            m_xdot(Slice(NQ, NQ + NU), m_meshIndices) = out.at(0);
-            m_xdot(Slice(NQ + NU, NS), m_meshIndices) = out.at(1);
-            m_constraints.auxiliary_residuals(Slice(), m_meshIndices) =
-                    out.at(2);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                m_constraints.kinematic(Slice(0, nqerr), Slice()) = out.at(3)(
-                        Slice(0, nqerr), Slice());
-                m_constraints.kinematic(Slice(nqerr, nqerr + nuerr), Slice())
-                        = out.at(3)(Slice(nqerr, nqerr + nuerr), Slice());
-                m_constraints.kinematic_udoterr(Slice(), m_meshIndices) =
-                        out.at(3)(
-                                Slice(nqerr + nuerr, nqerr + nuerr + nudoterr),
-                                Slice());
-            } else {
-                m_constraints.kinematic = out.at(3);
-            }
-        }
+        // Evaluate the explicit multibody system function and get udot
+        // (speed derivatives), zdot (auxiliary derivatives), and udoterr
+        // (acceleration-level kinematic constraint errors).
+        const auto out = evalOnTrajectory(m_problem.getMultibodySystem(), 
+                inputs, m_gridIndices);
+        m_xdot(Slice(NQ, NQ + NU), Slice()) = out.at(0);
+        m_xdot(Slice(NQ + NU, NS), Slice()) = out.at(1);
+        m_constraints.auxiliary_residuals = 
+                out.at(2)(Slice(), m_dynamicsIndices);
+        m_constraints.kinematic_udoterr = out.at(3)(Slice(), m_dynamicsIndices);
 
-        // Points where we ignore algebraic constraints.
-        if (m_numMeshInteriorPoints) {
-            // In the Bordalba et al. 2023 method, we need to enforce the 
-            // acceleration-level kinematic constraints at the mesh interval
-            // interior points.
-            const casadi::Function& multibodyFunction =
-                    m_problem.isKinematicConstraintMethodBordalba2023() ?
-                    m_problem.getMultibodySystem() :
-                    m_problem.getMultibodySystemIgnoringConstraints();
-            const auto out = evalOnTrajectory(multibodyFunction, inputs,
-                    m_meshInteriorIndices);
-            m_xdot(Slice(NQ, NQ + NU), m_meshInteriorIndices) =
-                    out.at(0);
-            m_xdot(Slice(NQ + NU, NS), m_meshInteriorIndices) =
-                    out.at(1);
-            m_constraints.auxiliary_residuals(Slice(), m_meshInteriorIndices) =
-                    out.at(2);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                m_constraints.kinematic_udoterr(Slice(), m_meshInteriorIndices)
-                        = out.at(3)(
-                                Slice(nqerr + nuerr, nqerr + nuerr + nudoterr),
-                                Slice());
-            }
-        }
-
-        // Points where the state derivatives depend on the projection states.
-        if (m_numProjectionStates) {
+        // Points where the state derivatives and udoterr depend on the 
+        // projection states.
+        if (m_numProjectionStates && 
+                !m_projectionStateIndicesForControlIndices.is_empty()) {
             const auto out = evalOnTrajectory(m_problem.getMultibodySystem(),
                     {projection_states, controls, multipliers, derivatives},
                     m_projectionStateIndices);
@@ -773,9 +723,8 @@ void Transcription::transcribe() {
             // overlap with all the mesh indices except the first mesh point). 
             // This also keeps the implementation above general when we do not 
             // have projection states.
-            m_constraints.kinematic_udoterr(Slice(), m_projectionStateIndices)
-                    = out.at(3)(Slice(nqerr + nuerr, nqerr + nuerr + nudoterr),
-                            Slice());
+            m_constraints.kinematic_udoterr(Slice(), 
+                    m_projectionStateIndicesForControlIndices) = out.at(3);
         }
     }
 
@@ -1088,8 +1037,8 @@ Solution Transcription::solve(const Iterate& guessOrig) {
 
     // The m_constraints symbolic vector holds all of the expressions for
     // the constraint functions.
-    auto g = flattenConstraints(m_constraints);
-    casadi_int numConstraints = g.numel();
+    auto flat = flattenConstraints(m_constraints);
+    casadi_int numConstraints = flat.constraints.numel();
 
     NlpsolCallback callback(*this, m_problem, numVariables, numConstraints,
             m_solver.getCallbackInterval());
@@ -1105,7 +1054,7 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         objective = 0;
     }
     nlp.emplace(std::make_pair("f", objective));
-    nlp.emplace(std::make_pair("g", g));
+    nlp.emplace(std::make_pair("g", flat.constraints));
     if (!m_solver.getWriteSparsity().empty()) {
         const auto prefix = m_solver.getWriteSparsity();
         auto gradient = casadi::MX::gradient(nlp["f"], nlp["x"]);
@@ -1124,10 +1073,20 @@ Solution Transcription::solve(const Iterate& guessOrig) {
                 prefix + "constraint_Jacobian_sparsity.mtx");
     }
 
-    const auto lbg = flattenConstraints(m_constraintsLowerBounds);
-    const auto ubg = flattenConstraints(m_constraintsUpperBounds);
+    const auto lbg = flattenConstraints(m_constraintsLowerBounds).constraints;
+    const auto ubg = flattenConstraints(m_constraintsUpperBounds).constraints;
     if (m_solver.getOptimSolver() == "fatrop") {
-        options["structure_detection"] = "auto";
+        FlattenedVariableInfo info = getFlattenedVariableInfo();
+        if (info.nx.empty() || info.nu.empty() || flat.ng.empty()) {
+            options["structure_detection"] = "auto";
+        } else {
+            options["structure_detection"] = "manual";
+            options["N"] = m_numMeshIntervals;
+            options["nx"] = info.nx;
+            options["nu"] = info.nu;
+            options["ng"] = flat.ng;
+        }
+
         std::vector<bool> equality;
         for (int i = 0; i < m_numConstraints; ++i) {
             equality.push_back(lbg(i).scalar() == ubg(i).scalar());
@@ -1173,7 +1132,7 @@ Solution Transcription::solve(const Iterate& guessOrig) {
 
         // For some reason, nlpResult.at("g") is all 0. So we calculate the
         // constraints ourselves.
-        casadi::Function constraintFunc("constraints", {x}, {g});
+        casadi::Function constraintFunc("constraints", {x}, {flat.constraints});
         casadi::DMVector constraintsOut;
         constraintFunc.call(finalVarsDMV, constraintsOut);
         printConstraintValues(solution, expandConstraints(constraintsOut[0]));

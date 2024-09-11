@@ -41,8 +41,8 @@ namespace CasOC {
 /// errors are enforced only at the mesh points. In the kinematic constraint 
 /// method by Bordalba et al. (2023) [2], the acceleration-level constraints are 
 /// also enforced at the collocation points. In the kinematic constraint method 
-/// by Posa et al. (2016) [3], the acceleration-level constraints are only enforced 
-/// at the mesh points.
+/// by Posa et al. (2016) [3], the acceleration-level constraints are only 
+/// enforced at the mesh points.
 ///
 /// References
 /// ----------
@@ -52,7 +52,9 @@ namespace CasOC {
 /// [2] Bordalba, Ricard, Tobias Schoels, Lluís Ros, Josep M. Porta, and
 ///     Moritz Diehl. "Direct collocation methods for trajectory optimization
 ///     in constrained robotic systems." IEEE Transactions on Robotics (2023).
-/// [3] TODO Posa et al. 2016
+/// [3] Posa, M., Kuindersma, S., Tedrake, R. "Optimization and stabilization of 
+///     trajectories for constrained dynamical systems." IEEE International 
+///     Conference on Robotics and Automation (2016).
 class HermiteSimpson : public Transcription {
 public:
     HermiteSimpson(const Solver& solver, const Problem& problem)
@@ -67,7 +69,8 @@ public:
                 grid(i) = .5 * (mesh[i / 2] + mesh[i / 2 + 1]);
             }
         }
-        createVariablesAndSetBounds(grid, 2 * m_problem.getNumStates(), 3);
+        createVariablesAndSetBounds(grid, 2 * m_problem.getNumStates(), 
+                2 * m_problem.getNumStates(), 3);
     }
 
 private:
@@ -76,7 +79,7 @@ private:
     casadi::DM createControlIndicesImpl() const override;
     void calcDefectsImpl(const casadi::MXVector& x, 
             const casadi::MXVector& xdot, casadi::MX& defects) const override;
-    std::vector<std::pair<Var, int>> getVariableOrder() const override;
+    FlattenedVariableInfo getFlattenedVariableInfo() const override;
     void calcInterpolatingControlsImpl(casadi::MX& controls) const override;
     void calcInterpolatingControlsImpl(casadi::DM& controls) const override;
 
