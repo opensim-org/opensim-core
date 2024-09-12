@@ -809,7 +809,7 @@ void Transcription::setObjectiveAndEndpointConstraints() {
 
         MXVector costOut;
         info.endpoint_function->call(
-                {m_unscaledVars[initial_time](-1),
+                {m_unscaledVars[initial_time](0),
                         m_unscaledVars[states](Slice(), 0),
                         m_unscaledVars[controls](Slice(), 0),
                         m_unscaledVars[multipliers](Slice(), 0),
@@ -896,7 +896,7 @@ void Transcription::setObjectiveAndEndpointConstraints() {
 
         MXVector endpointOut;
         info.endpoint_function->call(
-                {m_unscaledVars[initial_time](-1),
+                {m_unscaledVars[initial_time](0),
                         m_unscaledVars[states](Slice(), 0),
                         m_unscaledVars[controls](Slice(), 0),
                         m_unscaledVars[multipliers](Slice(), 0),
