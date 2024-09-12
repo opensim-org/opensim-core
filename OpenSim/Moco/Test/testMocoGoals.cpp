@@ -933,15 +933,17 @@ TEMPLATE_TEST_CASE("MocoOutputGoal", "", MocoCasADiSolver,
         {
             auto study = createStudy(0, 0);
             auto& problem = study.updProblem();
+            problem.setTimeBounds(0, 2);
             problem.template addGoal<MocoControlGoal>();
             auto &solver = study.template initSolver<TestType>();
-            solver.set_num_mesh_intervals(10);
+            solver.set_num_mesh_intervals(20);
             solutionControl = study.solve();
         }
         MocoSolution solutionOutput;
         {
             auto study = createStudy(0, 0);
             auto& problem = study.updProblem();
+            problem.setTimeBounds(0, 2);
             auto model = createSlidingMassModel();
 
             auto* component = new MySumSquaredControls();
@@ -953,7 +955,7 @@ TEMPLATE_TEST_CASE("MocoOutputGoal", "", MocoCasADiSolver,
             goal->setOutputPath("/mysumsquaredcontrols|sum_squared_controls");
 
             auto& solver = study.template initSolver<TestType>();
-            solver.set_num_mesh_intervals(10);
+            solver.set_num_mesh_intervals(20);
             solutionOutput = study.solve();
         }
 
@@ -1289,7 +1291,7 @@ TEMPLATE_TEST_CASE("MocoOutputTrackingGoal", "", MocoCasADiSolver,
 
     // Have a sliding mass track a sinusoidal function.
     // ------------------------------------------------
-    Sine trackingFunction(0.5, SimTK::Pi / 2.0, 0.0, 0.0);
+    LinearFunction trackingFunction(1.0, -1.0);
     auto studyTracking = createStudy({-100.0, 100.0}, {-100.0, 100.0});
     auto& problemTracking = studyTracking.updProblem();
     problemTracking.setTimeBounds(0, 1);

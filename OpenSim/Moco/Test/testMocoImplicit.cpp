@@ -77,19 +77,23 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     ftCost->setWeight(0.001);
     // Make sure the end-effector reaches the final target.
     auto* finalCost = mp.addGoal<MocoMarkerFinalGoal>("final");
-    finalCost->setWeight(1000.0);
+    finalCost->setWeight(100.0);
     finalCost->setPointName("/markerset/marker1");
     finalCost->setReferenceLocation(SimTK::Vec3(0, 2, 0));
+    // This effort term helps provide consistent solutions between implicit and
+    // explicit dynamics and avoid local minima where the time range converges 
+    // towards [0, 0].
+    auto* effort = mp.addGoal<MocoControlGoal>("effort");
 
     // Configure the solver.
     // =====================
-    int N = 29; // 29 mesh intervals = 30 mesh points
+    int N = 25; 
     auto& solver = study.initSolver<SolverType>();
     solver.set_multibody_dynamics_mode(dynamics_mode);
     solver.set_num_mesh_intervals(N);
     solver.set_transcription_scheme("trapezoidal");
-    // solver.set_verbosity(2);
 
+    // Set an initial guess.
     MocoTrajectory guess = solver.createGuess();
     guess.resampleWithNumTimes(2);
     guess.setTime({0, 1});
@@ -102,70 +106,61 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     guess.resampleWithNumTimes(10);
     solver.setGuess(guess);
 
-    // moco.visualize(guess);
-
-    study.print("double_pendulum_swingup_" + dynamics_mode + ".omoco");
-
     // Solve the problem.
     // ==================
     MocoSolution solution = study.solve();
+    solution.write(fmt::format(
+        "testMocoImplicit_testDoublePendulumSwingup_{}.sto", dynamics_mode));
     // study.visualize(solution);
 
     return solution;
 }
 
-// TODO does not pass consistently on Mac
-//TEMPLATE_TEST_CASE("Two consecutive problems produce the same solution", "",
-//        MocoCasADiSolver /*, MocoTropterSolver*/) {
-//    auto dynamics_mode = GENERATE(as<std::string>{}, "implicit", "explicit");
-//    
-//    auto solution1 = solveDoublePendulumSwingup<TestType>(dynamics_mode);
-//    auto solution2 = solveDoublePendulumSwingup<TestType>(dynamics_mode);
-//
-//    const double stateError = solution1.compareContinuousVariablesRMS(
-//            solution2, {{"states", {}}});
-//
-//    const double controlError = solution1.compareContinuousVariablesRMS(
-//            solution2, {{"controls", {}}});
-//
-//    CAPTURE(stateError, controlError);
-//
-//    // Solutions are approximately equal.
-//    CHECK(solution1.getFinalTime() ==
-//            Approx(solution2.getFinalTime()).margin(1e-2));
-//    CHECK(stateError == Approx(0));
-//    CHECK(controlError == Approx(0));   
-//}
+// TODO does not pass with MocoTropterSolver.
+TEMPLATE_TEST_CASE("Two consecutive problems produce the same solution", "", 
+        MocoCasADiSolver /**, MocoTropterSolver*/) {
+   auto dynamics_mode = GENERATE(as<std::string>{}, "implicit", "explicit");
+   DYNAMIC_SECTION(fmt::format("dynamics mode: {}", dynamics_mode)) {
+        auto solution1 = solveDoublePendulumSwingup<TestType>(dynamics_mode);
+        auto solution2 = solveDoublePendulumSwingup<TestType>(dynamics_mode);
 
-// TODO not passing consistently for MocoTropterSolver on Mac
+        const double stateError = solution1.compareContinuousVariablesRMS(
+            solution2, {{"states", {}}});
+        const double controlError = solution1.compareContinuousVariablesRMS(
+            solution2, {{"controls", {}}});
+
+        CAPTURE(stateError, controlError);
+
+        // Solutions are approximately equal.
+        CHECK(solution1.getFinalTime() ==
+            Approx(solution2.getFinalTime()).margin(1e-2));
+        CHECK(stateError == Approx(0));
+        CHECK(controlError == Approx(0));   
+   }
+}
+
 TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
-        "[linux/win][implicit]", MocoCasADiSolver /*,MocoTropterSolver*/) {
+        "[implicit]", MocoCasADiSolver, MocoTropterSolver) {
     
     GIVEN("solutions to implicit and explicit problems") {
 
-        auto solutionImplicit =
-                solveDoublePendulumSwingup<TestType>("implicit");
-        // TODO: The solution to this explicit problem changes every time.
+        auto solutionImplicit = solveDoublePendulumSwingup<TestType>("implicit");
         auto solution = solveDoublePendulumSwingup<TestType>("explicit");
-
         CAPTURE(solutionImplicit.getFinalTime(), solution.getFinalTime());
 
         const double stateError =
                 solutionImplicit.compareContinuousVariablesRMS(
                         solution, {{"states", {}}});
-
-        // There is more deviation in the controls.
         const double controlError =
                 solutionImplicit.compareContinuousVariablesRMS(
                         solution, {{"controls", {}}});
-
         CAPTURE(stateError, controlError);
 
         // Solutions are approximately equal.
         CHECK(solutionImplicit.getFinalTime() ==
-                Approx(solution.getFinalTime()).margin(1e-2));
-        CHECK(stateError < 2.0);
-        CHECK(controlError < 30.0);
+                Approx(solution.getFinalTime()).margin(1e-3));
+        CHECK(stateError < 1.0);
+        CHECK(controlError < 1.0);
 
         // Accelerations are correct.
         auto table = solution.exportToStatesTable();
@@ -186,7 +181,7 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
         const double RMS = solutionImplicit.compareContinuousVariablesRMS(
                 explicitWithDeriv, {{"derivatives", {}}});
         CAPTURE(RMS);
-        CHECK(RMS < 35.0);
+        CHECK(RMS < 1.0);
     }
 }
 
