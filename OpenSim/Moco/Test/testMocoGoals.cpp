@@ -921,7 +921,7 @@ auto createStudy = [](
     problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
     problem.setStateInfo("/slider/position/speed", {-100, 100},
                          initialSpeed, finalSpeed);
-    problem.setControlInfo("/actuator", MocoBounds(-10, 10));
+    problem.setControlInfo("/actuator", MocoBounds(-100, 100));
     return study;
 };
 
@@ -1292,26 +1292,37 @@ TEMPLATE_TEST_CASE("MocoOutputTrackingGoal", "", MocoCasADiSolver,
     Sine trackingFunction(0.5, SimTK::Pi / 2.0, 0.0, 0.0);
     auto studyTracking = createStudy({-100.0, 100.0}, {-100.0, 100.0});
     auto& problemTracking = studyTracking.updProblem();
+    problemTracking.setTimeBounds(0, 1);
     problemTracking.setStateInfo("/slider/position/value", {-5.0, 5.0});
     problemTracking.template addGoal<MocoControlGoal>("effort", 1e-3);
     auto* goalTracking =
             problemTracking.template addGoal<MocoOutputTrackingGoal>();
-    goalTracking->setName("speed_tracking");
+    goalTracking->setName("position_tracking");
     goalTracking->setOutputPath("/body|position");
     goalTracking->setExponent(2);
     goalTracking->setOutputIndex(0);
     goalTracking->setTrackingFunction(trackingFunction);
     auto& solverTracking = studyTracking.initSolver<TestType>();
-    solverTracking.set_num_mesh_intervals(10);
+    solverTracking.resetProblem(problemTracking);
+    solverTracking.set_num_mesh_intervals(25);
     MocoSolution solutionTracking = studyTracking.solve();
+    solutionTracking.write("testMocoGoals_MocoOutputTrackingGoal_solution.sto");
     auto solutionPosition =
             solutionTracking.getState("/slider/position/value");
     SimTK::Vector time = solutionTracking.getTime();
+    std::vector<double> timeVec;
+    for (int itime = 0; itime < solutionTracking.getNumTimes(); ++itime) {
+        std::cout << "time: " << time[itime] << std::endl;
+        timeVec.push_back(time[itime]);
+    }
     SimTK::Vector trackedPosition(solutionTracking.getNumTimes(), 0.0);
     for (int itime = 0; itime < solutionTracking.getNumTimes(); ++itime) {
         SimTK::Vector timeVec(1, time[itime]);
         trackedPosition[itime] = trackingFunction.calcValue(timeVec);
     }
+    TimeSeriesTable trackedPositionTable(timeVec);
+    trackedPositionTable.appendColumn("/slider/position/value", trackedPosition);
+    STOFileAdapter::write(trackedPositionTable, "testMocoGoals_MocoOutputTrackingGoal_trackedPosition.sto");
     auto trackingError = solutionPosition - trackedPosition;
     CHECK(trackingError.normRMS() == Approx(0).margin(1e-3));
 }

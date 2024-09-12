@@ -149,6 +149,8 @@ protected:
         std::vector<T> endpoint;
         std::vector<T> path;
         T projection;
+        T initial_controls;
+        T final_controls;
     };
 
     template <typename T>
@@ -180,6 +182,8 @@ protected:
     int m_numConstraints = -1;
     int m_numPathConstraintPoints = -1;
     int m_numProjectionStates = -1;
+    int m_numInitialControlConstraints = -1;
+    int m_numFinalControlConstraints = -1;
     casadi::DM m_grid;
     casadi::MX m_times;
     casadi::MX m_parameters;
@@ -505,20 +509,11 @@ private:
                 }
             }
 
-            // Path constraints.
-            // if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
-            //     for (int i = 0; i < N; ++i) {
-            //         for (const auto& path : constraints.path) {
-            //             copyColumn(path, igrid + i);
-            //             ng += path.rows();
-            //         }
-            //     }
-            // } else {
-            //     for (const auto& path : constraints.path) {
-            //         copyColumn(path, imesh);
-            //         ng += path.rows();
-            //     }
-            // }
+            // Initial controls.
+            if (imesh == 0) {
+                copyColumn(constraints.initial_controls, 0);
+                ng += constraints.initial_controls.rows();
+            }
 
             // Projection constraints.
             if (imesh > 0) {
@@ -551,17 +546,8 @@ private:
                 ng += path.rows();
             }
         }
-        // if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
-        //     for (const auto& path : constraints.path) {
-        //         copyColumn(path, m_numGridPoints - 1);
-        //         ng += path.rows();
-        //     }
-        // } else {
-        //     for (const auto& path : constraints.path) {
-        //         copyColumn(path, m_numMeshPoints - 1);
-        //         ng += path.rows();
-        //     }
-        // }
+        copyColumn(constraints.final_controls, 0);
+        ng += constraints.final_controls.rows();
         copyColumn(constraints.projection, m_numMeshIntervals - 1);
         ng += constraints.projection.rows();
         flat.ng.push_back(ng);
@@ -606,6 +592,8 @@ private:
             const auto& info = m_problem.getPathConstraintInfos()[ipc];
             out.path[ipc] = init(info.size(), m_numPathConstraintPoints);
         }
+        out.initial_controls = init(m_numInitialControlConstraints, 1);
+        out.final_controls = init(m_numFinalControlConstraints, 1);
 
         int iflat = 0;
         auto copyColumn = [&flat, &iflat](T& matrix, int columnIndex) {
@@ -658,18 +646,10 @@ private:
                 }
             }
 
-            // Path constraints.
-            // if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
-            //     for (int i = 0; i < N; ++i) {
-            //         for (auto& path : out.path) {
-            //             copyColumn(path, igrid + i);
-            //         }
-            //     }
-            // } else {
-            //     for (auto& path : out.path) {
-            //         copyColumn(path, imesh);
-            //     }
-            // }
+            // Initial controls.
+            if (imesh == 0) {
+                copyColumn(out.initial_controls, 0);
+            }
 
             // Projection constraints.
             if (imesh > 0) {
@@ -692,15 +672,7 @@ private:
                 copyColumn(path, idyn);
             }
         }
-        // if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
-        //     for (auto& path : out.path) {
-        //         copyColumn(path, m_numGridPoints - 1);
-        //     }
-        // } else {
-        //     for (auto& path : out.path) {
-        //         copyColumn(path, m_numMeshPoints - 1);
-        //     }
-        // }
+        copyColumn(out.final_controls, 0);
         copyColumn(out.projection, m_numMeshIntervals - 1);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,

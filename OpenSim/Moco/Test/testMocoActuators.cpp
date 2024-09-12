@@ -143,7 +143,7 @@ TEMPLATE_TEST_CASE(
             problem.addGoal<MocoControlGoal>("effort");
 
             auto& solver = study.initSolver<TestType>();
-            solver.set_num_mesh_intervals(30);
+            solver.set_num_mesh_intervals(50);
             solver.set_multibody_dynamics_mode("explicit");
             solver.set_optim_convergence_tolerance(1e-4);
             solver.set_optim_constraint_tolerance(1e-4);

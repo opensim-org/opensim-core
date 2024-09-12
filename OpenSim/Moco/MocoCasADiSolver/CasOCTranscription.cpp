@@ -144,6 +144,13 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         const auto& info = m_problem.getEndpointConstraintInfos()[iec];
         m_numConstraints += info.num_outputs;
     }
+    // Initial and final controls.
+    m_numInitialControlConstraints = 
+            (1 - controlIndicesMap(0).scalar()) * m_problem.getNumControls();
+    m_numConstraints += m_numInitialControlConstraints;
+    m_numFinalControlConstraints = 
+            (1 - controlIndicesMap(-1).scalar()) * m_problem.getNumControls();
+    m_numConstraints += m_numFinalControlConstraints;
     // Path constraints.
     m_constraints.path.resize(m_problem.getPathConstraintInfos().size());
     m_numPathConstraintPoints = m_numControlPoints;
@@ -188,9 +195,6 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             makeTimeIndices(meshInteriorIndicesVector);
     m_controlIndices = makeTimeIndices(controlIndicesVector);
     m_pathConstraintIndices = m_controlIndices;
-            // m_solver.getEnforcePathConstraintMeshInteriorPoints()
-            // ? makeTimeIndices(gridIndicesVector)
-            // : makeTimeIndices(meshIndicesVector);
     m_udotErrIndices = m_problem.isKinematicConstraintMethodBordalba2023()
             ? m_controlIndices
             : m_meshIndices;
@@ -341,7 +345,6 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         }
     }
     {
-        // TODO update this to set bounds properly based on the control points.
         const auto& controlInfos = m_problem.getControlInfos();
         int ic = 0;
         for (const auto& info : controlInfos) {
@@ -806,12 +809,12 @@ void Transcription::setObjectiveAndEndpointConstraints() {
 
         MXVector costOut;
         info.endpoint_function->call(
-                {m_unscaledVars[initial_time](0),
+                {m_unscaledVars[initial_time](-1),
                         m_unscaledVars[states](Slice(), 0),
                         m_unscaledVars[controls](Slice(), 0),
                         m_unscaledVars[multipliers](Slice(), 0),
                         m_unscaledVars[derivatives](Slice(), 0),
-                        m_unscaledVars[final_time](0),
+                        m_unscaledVars[final_time](-1),
                         m_unscaledVars[states](Slice(), -1),
                         m_unscaledVars[controls](Slice(), -1),
                         m_unscaledVars[multipliers](Slice(), -1),
@@ -910,6 +913,41 @@ void Transcription::setObjectiveAndEndpointConstraints() {
         m_constraintsLowerBounds.endpoint[iec] = info.lowerBounds;
         m_constraintsUpperBounds.endpoint[iec] = info.upperBounds;
     }
+
+    // Initial and final control constraints
+    // -------------------------------------
+    m_constraints.initial_controls = MX(casadi::Sparsity::dense(
+            m_numInitialControlConstraints, 1));
+    m_constraintsLowerBounds.initial_controls =
+            DM::zeros(m_numInitialControlConstraints, 1);
+    m_constraintsUpperBounds.initial_controls =
+            DM::zeros(m_numInitialControlConstraints, 1);
+
+    m_constraints.final_controls = MX(casadi::Sparsity::dense(
+            m_numFinalControlConstraints, 1));
+    m_constraintsLowerBounds.final_controls =
+            DM::zeros(m_numFinalControlConstraints, 1);
+    m_constraintsUpperBounds.final_controls =  
+            DM::zeros(m_numFinalControlConstraints, 1);
+
+    const auto& controlInfos = m_problem.getControlInfos();
+    int ic = 0;
+    for (const auto& info : controlInfos) {
+        if (m_numInitialControlConstraints) {
+            m_constraints.initial_controls(ic) = m_unscaledVars[controls](ic, 0);
+            m_constraintsLowerBounds.initial_controls(ic) = 
+                    info.initialBounds.lower;
+            m_constraintsUpperBounds.initial_controls(ic) =
+                    info.initialBounds.upper;
+        }
+        if (m_numFinalControlConstraints) {
+            m_constraints.final_controls(ic) = m_unscaledVars[controls](ic, -1);
+            m_constraintsLowerBounds.final_controls(ic) = info.finalBounds.lower;
+            m_constraintsUpperBounds.final_controls(ic) = info.finalBounds.upper;
+        }
+        ++ic;
+    }
+    
 }
 
 Solution Transcription::solve(const Iterate& guessOrig) {
