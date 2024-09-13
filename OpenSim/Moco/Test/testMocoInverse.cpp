@@ -186,7 +186,8 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
         auto& problem = study.updProblem();
 
         // Add control bound constraint.
-        auto* controlBound = problem.addPathConstraint<MocoControlBoundConstraint>();
+        auto* controlBound = 
+                problem.addPathConstraint<MocoControlBoundConstraint>();
         controlBound->addControlPath("/forceset/med_gas_r");
         controlBound->addControlPath("/forceset/med_gas_l");
         controlBound->setLowerBound(Constant(0));
@@ -194,7 +195,6 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
 
         auto& solver = study.updSolver<MocoCasADiSolver>();
         solver.resetProblem(problem);
-        solver.set_enforce_path_constraint_mesh_interior_points(true);
 
         MocoSolution solution = study.solve();
 

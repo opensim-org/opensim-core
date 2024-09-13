@@ -1584,7 +1584,6 @@ TEST_CASE("Prescribed kinematics with kinematic constraints", "[casadi]") {
     auto& solver = study.initCasADiSolver();
     solver.set_num_mesh_intervals(10);
     solver.set_multibody_dynamics_mode("implicit");
-    solver.set_interpolate_control_mesh_interior_points(false);
     MocoSolution solution = study.solve();
     const auto Fx = solution.getControl("/forceset/force_x");
     const auto Fy = solution.getControl("/forceset/force_y");
@@ -2229,3 +2228,8 @@ TEST_CASE("ConstantAccelerationConstraint") {
     }
 }
 
+// TODO enable test for Windows when MSVC build issues in FATROP are fixed.
+TEST_CASE("FATROP solver", "[casadi][unix]") {
+    auto model = createDoublePendulumModel();
+    
+}

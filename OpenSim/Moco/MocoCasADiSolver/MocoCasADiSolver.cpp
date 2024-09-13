@@ -48,13 +48,10 @@ void MocoCasADiSolver::constructProperties() {
     constructProperty_optim_finite_difference_scheme("central");
     constructProperty_parallel();
     constructProperty_output_interval(0);
-
     constructProperty_minimize_implicit_multibody_accelerations(false);
     constructProperty_implicit_multibody_accelerations_weight(1.0);
     constructProperty_minimize_implicit_auxiliary_derivatives(false);
     constructProperty_implicit_auxiliary_derivatives_weight(1.0);
-
-    constructProperty_enforce_path_constraint_mesh_interior_points(false);
     constructProperty_minimize_state_projection_distance(true);
     constructProperty_state_projection_distance_weight(1e-6);
     constructProperty_projection_slack_variable_bounds({-1e-3, 1e-3});

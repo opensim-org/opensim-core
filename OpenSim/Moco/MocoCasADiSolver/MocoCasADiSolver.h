@@ -142,7 +142,6 @@ public:
     OpenSim_DECLARE_PROPERTY(optim_finite_difference_scheme, std::string,
             "The finite difference scheme CasADi will use to calculate problem "
             "derivatives (default: 'central').");
-
     OpenSim_DECLARE_OPTIONAL_PROPERTY(parallel, int,
             "Evaluate integral costs and the differential-algebraic "
             "equations in parallel across grid points? "
@@ -154,7 +153,6 @@ public:
             "indicates no intermediate trajectories are saved, 1 indicates "
             "each iteration is saved, 5 indicates every fifth iteration is "
             "saved, etc.");
-
     OpenSim_DECLARE_PROPERTY(minimize_implicit_multibody_accelerations, bool,
             "Minimize the integral of the squared acceleration continuous "
             "variables when using the implicit multibody mode. "
@@ -171,14 +169,6 @@ public:
             "The weight on the cost term added if "
             "'minimize_implicit_auxiliary_derivatives' is enabled."
             "Default: 1.0.");
-
-    OpenSim_DECLARE_PROPERTY(enforce_path_constraint_mesh_interior_points, bool,
-            "If the transcription scheme is set to 'hermite-simpson' or one of "
-            "the pseudospectral schemes (e.g., 'legendre-gauss-3', "
-            "'legendre-gauss-radau-3'), then enable this property to enforce "
-            "MocoPathConstraints at points interior to the mesh interval. "
-            "Default: false.");
-
     OpenSim_DECLARE_PROPERTY(minimize_state_projection_distance, bool,
             "Minimize the distance between the projection states and the "
             "constraint manifold when using the 'Bordalba2023' method for "
