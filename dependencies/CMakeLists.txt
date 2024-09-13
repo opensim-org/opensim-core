@@ -243,6 +243,13 @@ if (OPENSIM_WITH_CASADI)
     CMAKE_DEPENDENT_OPTION(SUPERBUILD_casadi "Automatically download, configure, build and install casadi" ON
                            "OPENSIM_WITH_CASADI" OFF)
     mark_as_advanced(SUPERBUILD_casadi)
+
+    option(BUILD_FATROP_WITH_CASADI "Build the FATROP optimization library along with CasADi" ON)
+
+    # TODO remove when Windows builds are fixed.
+    if (WIN32) 
+        set(BUILD_FATROP_WITH_CASADI OFF)
+    endif()
 endif()
 
 if (WIN32)
@@ -356,24 +363,24 @@ endif()
 if(SUPERBUILD_casadi)
   if (WIN32)
       AddDependency(NAME       casadi
-                  DEFAULT    ON
-                  DEPENDS    ipopt
-                  GIT_URL    https://github.com/casadi/casadi.git
-                  GIT_TAG    3.6.6
-                  CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
-                             -DIPOPT_LIBRARIES:FILEPATH=ipopt.dll.lib
-                             -DIPOPT_INCLUDE_DIRS:PATH=${CMAKE_INSTALL_PREFIX}/ipopt/include/coin-or
-                             -DLIB_FULL_ipopt.dll.lib:FILEPATH=${CMAKE_INSTALL_PREFIX}/ipopt/lib/ipopt.dll.lib
-                             -DWITH_MUMPS:BOOL=OFF
-                             -DWITH_BUILD_FATROP:BOOL=ON
-                             -DWITH_BUILD_BLASFEO:BOOL=ON
-                             -DWITH_FATROP:BOOL=ON
-                             -DWITH_THREAD:BOOL=ON
-                             -DWITH_BUILD_MUMPS:BOOL=OFF
-                             -DWITH_EXAMPLES:BOOL=OFF
-                             -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
-                             -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt
-                  )
+                    DEFAULT    ON
+                    DEPENDS    ipopt
+                    GIT_URL    https://github.com/casadi/casadi.git
+                    GIT_TAG    3.6.6
+                    CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
+                               -DIPOPT_LIBRARIES:FILEPATH=ipopt.dll.lib
+                               -DIPOPT_INCLUDE_DIRS:PATH=${CMAKE_INSTALL_PREFIX}/ipopt/include/coin-or
+                               -DLIB_FULL_ipopt.dll.lib:FILEPATH=${CMAKE_INSTALL_PREFIX}/ipopt/lib/ipopt.dll.lib
+                               -DWITH_MUMPS:BOOL=OFF
+                               -DWITH_BUILD_FATROP:BOOL=ON
+                               -DWITH_BUILD_BLASFEO:BOOL=${BUILD_FATROP_WITH_CASADI}
+                               -DWITH_FATROP:BOOL=${BUILD_FATROP_WITH_CASADI}
+                               -DWITH_THREAD:BOOL=${BUILD_FATROP_WITH_CASADI}
+                               -DWITH_BUILD_MUMPS:BOOL=OFF
+                               -DWITH_EXAMPLES:BOOL=OFF
+                               -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
+                               -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt
+                    )
   else()
     AddDependency(NAME       casadi
                   DEFAULT    ON
@@ -383,9 +390,9 @@ if(SUPERBUILD_casadi)
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
                              -DWITH_THREAD:BOOL=ON
                              -DWITH_BUILD_MUMPS:BOOL=OFF
-                             -DWITH_BUILD_FATROP:BOOL=ON
-                             -DWITH_BUILD_BLASFEO:BOOL=ON
-                             -DWITH_FATROP:BOOL=ON
+                             -DWITH_BUILD_FATROP:BOOL=${BUILD_FATROP_WITH_CASADI}
+                             -DWITH_BUILD_BLASFEO:BOOL=${BUILD_FATROP_WITH_CASADI}
+                             -DWITH_FATROP:BOOL=${BUILD_FATROP_WITH_CASADI}
                              -DWITH_EXAMPLES:BOOL=OFF
                              -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
                              -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt
