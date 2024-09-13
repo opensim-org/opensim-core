@@ -50,28 +50,49 @@ TEST_CASE("MocoTrack gait10dof18musc", "[casadi]") {
 
     MocoTrack track;
 
-    track.setModel(ModelProcessor("walk_gait1018_subject01.osim") |
+    auto modelProcessor = ModelProcessor("walk_gait1018_subject01.osim") |
             ModOpRemoveMuscles() | ModOpAddReserves(100) |
-            ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml"));
-    track.setStatesReference(
-            TableProcessor("walk_gait1018_state_reference.mot") |
-            TabOpLowPassFilter(6));
+            ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml");
+    auto tableProcessor = TableProcessor("walk_gait1018_state_reference.mot") |
+            TabOpLowPassFilter(6);
+
+    track.setModel(modelProcessor);
+    track.setStatesReference(tableProcessor);
     track.set_states_global_tracking_weight(10.0);
+    track.set_control_effort_weight(0.001);
     track.set_track_reference_position_derivatives(true);
     track.set_initial_time(0.5);
     track.set_final_time(1.0);
 
     MocoStudy study = track.initialize();
     auto& solver = study.updSolver<MocoCasADiSolver>();
-    solver.set_optim_constraint_tolerance(1e-4);
-    solver.set_optim_convergence_tolerance(1e-4);
+    solver.set_optim_constraint_tolerance(1e-6);
+    solver.set_optim_convergence_tolerance(1e-6);
 
     MocoSolution solution = study.solve();
     solution.write("testMocoTrackGait10dof18musc_solution.sto");
 
-    const auto actual = solution.getControlsTrajectory();
+    // Check that the solution is close to the tracking reference (unit test).
+    Model model = modelProcessor.process();
+    model.initSystem();
+    auto table = tableProcessor.processAndConvertToRadians(model);
+    table.trim(0.5, 1.0);
+    GCVSplineSet splines(table);
+    const auto& time = solution.getTime();
+    SimTK::Vector timeVec(1, 0.0);
+    for (const auto& label : table.getColumnLabels()) {
+        const auto& solState = solution.getState(label);
+        SimTK::Vector error(time.size(), 0.0);
+        for (int i = 0; i < (int)time.size(); ++i) {
+            timeVec[0] = time[i];
+            error[i] = splines.get(label).calcValue(timeVec) - solState[i];
+        }
+        CHECK(error.norm() < 1e-2);
+    }
+    
+    // Check that the solution is close to the tracking reference (regression).
+    const auto actual = solution.getStatesTrajectory();
     MocoTrajectory std("std_testMocoTrackGait10dof18musc_solution.sto");
-    const auto expected = std.getControlsTrajectory();
-    CHECK(std.compareContinuousVariablesRMS(
-            solution, {{"states",{}}}) < 1e-2);
+    const auto expected = std.getStatesTrajectory();
+    CHECK(std.compareContinuousVariablesRMS(solution) < 1e-2); 
 }

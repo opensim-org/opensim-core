@@ -1741,10 +1741,12 @@ TEMPLATE_TEST_CASE("MocoOutputBoundConstraint", "",
 
         problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
             MocoInitialBounds(-1, 1));
-        problem.setStateInfo("/slider/position/speed", {-1, 1});
+        problem.setStateInfo("/slider/position/speed", {-5, 5});
         problem.setStateInfo("/slider2/position/value", MocoBounds(-5, 5),
             MocoInitialBounds(-1, 1));
-        problem.setStateInfo("/slider2/position/speed", {-1, 1});
+        problem.setStateInfo("/slider2/position/speed", {-5, 5});
+        problem.setControlInfo("/actuator", {-10, 10});
+        problem.setControlInfo("/actuator2", {-10, 10});
 
         auto* constr = problem.addPathConstraint<MocoOutputBoundConstraint>();
         Sine lower;
