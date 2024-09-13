@@ -169,6 +169,16 @@ setStatesStore(const Storage *aStatesStore)
 {
     _statesStore = aStatesStore;
 }
+/**
+* Set the states derivative storage.
+*
+* @param aStatesDerivativeStore States derivative storage.
+*/
+void StaticOptimizationTarget::
+setStatesDerivativeStore(const Storage *aStatesDerivativeStore)
+{
+	_statesDerivativeStore = aStatesDerivativeStore;
+}
 //------------------------------------------------------------------------------
 // STATES SPLINE SET
 //------------------------------------------------------------------------------
@@ -182,6 +192,17 @@ void StaticOptimizationTarget::
 setStatesSplineSet(GCVSplineSet aStatesSplineSet)
 {
     _statesSplineSet = aStatesSplineSet;
+}
+
+/**
+* Set the states derivative spline set.
+*
+* @param aStatesDerivativeSplineSet States derivative spline set.
+*/
+void StaticOptimizationTarget::
+setStatesDerivativeSplineSet(GCVSplineSet aStatesDerivativeSplineSet)
+{
+	_statesDerivativeSplineSet = aStatesDerivativeSplineSet;
 }
 
 //------------------------------------------------------------------------------
@@ -598,9 +619,18 @@ computeConstraintVector(SimTK::State& s, const Vector &parameters,Vector &constr
                 throw Exception(msg);
             }
         }
-        Function& targetFunc = _statesSplineSet.get(ind);
-        std::vector<int> derivComponents(1,0); //take first derivative
-        double targetAcceleration = targetFunc.calcDerivative(derivComponents, SimTK::Vector(1, s.getTime()));
+
+		// No longer use a function to calcDerivative, but instead use the _statesDerivativeSplineSet from SO FAST 
+		//Function& targetFunc = _statesSplineSet.get(ind);
+		//std::vector<int> derivComponents(1, 0); //take first derivative
+		//double targetAcceleration = targetFunc.calcDerivative(derivComponents, SimTK::Vector(1, s.getTime()));
+		double t = s.getTime();
+		int nq = _model->getNumCoordinates();
+		int nu = _model->getNumSpeeds();
+		Array<double> targetStateArray(0.0, nq + nu);
+		_statesDerivativeStore->getDataAtTime(t, nq + nu, targetStateArray);
+		double targetAcceleration = targetStateArray[ind];
+
         //std::cout << "computeConstraintVector:" << targetAcceleration << " - " <<  actualAcceleration[i] << endl;
         constraints[i] = targetAcceleration - actualAcceleration[i];
     }

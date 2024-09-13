@@ -36,8 +36,8 @@
 namespace OpenSim { 
 
 /**
- * This class provides an interface specification for static optimization Objective Function.
- *
+ * This class implements static optimization to compute muscle forces and
+ * activations without re-splining during the calculation of state derivatives.
  * @author Jeff Reinbolt
  */
 class OSIMANALYSES_API StaticOptimizationTarget : public SimTK::OptimizerSystem
@@ -67,6 +67,8 @@ private:
 
     const Storage *_statesStore;
     GCVSplineSet _statesSplineSet;
+	const Storage *_statesDerivativeStore;
+	GCVSplineSet _statesDerivativeSplineSet;
 
 protected:
     double _activationExponent;
@@ -84,7 +86,9 @@ public:
     // SET AND GET
     void setModel(Model& aModel);
     void setStatesStore(const Storage *aStatesStore);
+    void setStatesDerivativeStore(const Storage *aStatesDerivativeStore);
     void setStatesSplineSet(GCVSplineSet aStatesSplineSet);
+    void setStatesDerivativeSplineSet(GCVSplineSet aStatesDerivativeSplineSet);
     void setNumParams(const int aNP);
     void setNumConstraints(const int aNC);
     void setDX(double aVal);

@@ -320,6 +320,8 @@ record(const SimTK::State& s)
     StaticOptimizationTarget target(sWorkingCopy,_modelWorkingCopy,na,nacc,_useMusclePhysiology);
     target.setStatesStore(_statesStore);
     target.setStatesSplineSet(_statesSplineSet);
+    target.setStatesDerivativeStore(_statesDerivativeStore);
+	target.setStatesDerivativeSplineSet(_statesDerivativeSplineSet);
     target.setActivationExponent(_activationExponent);
     target.setDX(_numericalDerivativeStepSize);
 
@@ -577,6 +579,11 @@ int StaticOptimization::begin(const SimTK::State& s )
     }
 
     _statesSplineSet=GCVSplineSet(5,_statesStore);
+
+	// Add spline set for the first derivative of states to pass to target for SO FAST and no longer need re-splining to calcDerivative at each time step
+	_statesDerivativeStore = _statesSplineSet.constructStorage(1);
+	_statesDerivativeSplineSet = GCVSplineSet(5, _statesDerivativeStore);
+
 
     // DESCRIPTION AND LABELS
     constructDescription();
