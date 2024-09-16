@@ -255,9 +255,6 @@ public:
         const SimTK::Real mu_v = get_viscous_friction();
         const SimTK::Real latchvel = get_latch_velocity();
 
-        if (velSliding < 1e-10) {
-                velSliding = 0;
-        }
         SimTK::Real horizontalForce = force[1] * (
                 mu_d * tanh(velSliding / latchvel) + mu_v * velSliding
         );
