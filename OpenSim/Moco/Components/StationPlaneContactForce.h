@@ -180,7 +180,7 @@ public:
         const auto& vel = pt.getVelocityInGround(s);
         const SimTK::Real y = pos[1];
         const SimTK::Real velNormal = vel[1];
-        SimTK::Real velSliding = sqrt(vel[0] * vel[0] + vel[2] * vel[2]);
+        const SimTK::Real velSliding = sqrt(vel[0] * vel[0] + vel[2] * vel[2]);
         const SimTK::Real depthRate = 0 - velNormal;
         const SimTK::Real Kval = get_stiffness();
         const SimTK::Real Cval = get_dissipation();
@@ -214,7 +214,7 @@ public:
         if (velSliding < 1e-10) {
                 velSliding = 0;
         }
-        SimTK::Real horizontalForce = force[1] * (
+        const SimTK::Real horizontalForce = force[1] * (
                 mu_d * tanh(velSliding / latchvel) + mu_v * velSliding
         );
         if (SimTK::isNaN(horizontalForce) || SimTK::isInf(horizontalForce)) {
