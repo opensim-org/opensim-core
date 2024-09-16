@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim: StationPlaneContactForce.h                                        *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2024 Stanford University and the Authors                     *
+ * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Nicholas Bianco, Chris Dembia, Spencer Williams                 *
  *                                                                            *
@@ -149,51 +149,6 @@ Meyer A. J., Eskinazi, I., Jackson, J. N., Rao, A. V., Patten, C., & Fregly,
 B. J. (2016). Muscle Synergies Facilitate Computational Prediction of
 Subject-Specific Walking Motions. Frontiers in Bioengineering and
 Biotechnology, 4, 1055–27. http://doi.org/10.3389/fbioe.2016.00077 
-
-Following OpenSim convention, this contact element assumes that the y direction 
-is vertical. Vertical contact force is calculated based on vertical position 
-and velocity relative to a floor at y=0 using these equations:
-
-\f[
-v = \frac{k_{val} + k_{low}}{k_{val} - k_{low}}
-\f]
-\f[
-s = \frac{k_{val} - k_{low}}{2}
-\f]
-\f[
-R = -s * (v * y_{max} - c * log(\frac{cosh(y_{max} + h)}{c})
-\f]
-\f[
-F = -s * (v * y - c * log(\frac{cosh(y + h)}{c}) - R
-\f]
-
-With the following values:
-- \f$ k_{val} \f$: stiffness coefficient of contact element
-- \f$ k_{low} \f$: small out-of-contact stiffness to assist optimizations
-- \f$ y_{max} \f$: y value were out-of-contact force becomes zero
-- \f$ c \f$: transition curvature of transition between linear regions
-- \f$ h \f$: horizontal offset defining slope transition location
-- \f$ y \f$: current y (vertical) position of contact element
-
-Velocity is then used to incorporate non-linear damping:
-
-\f[
-F_{damped} = F * (1 + C_{val} * y_{vel})
-\f]
-
-With the following values:
-- \f$ C_{val} \f$: damping coefficient of contact element
-- \f$ y_{vel} \f$: current y (vertical) velocity of contact element, negated
-
-The force equation produces a force-penetration curve similar to a leaky 
-rectified linear function with a smooth transition region near zero. This 
-produces a smooth curve with a slight out-of-contact slope to assist 
-gradient-based optimizations when an element is inappropriately out of contact.
-
-Horizontal forces are then calculated based on this vertical force and the 
-horizontal velocity components of the contact element. Both dynamic (modeled 
-with a tanh function) and viscous (modeled with a linear function) friction 
-models may be used. 
  */
 class OSIMMOCO_API MeyerFregly2016Force
         : public StationPlaneContactForce {
@@ -233,8 +188,6 @@ public:
         const SimTK::Real h = 1e-3;
         const SimTK::Real c = 5e-4;
         const SimTK::Real ymax = 1e-2;
-        // Prevents dividing by zero when sliding velocity is zero.
-        const SimTK::Real slipOffset = 1e-4;
 
         /// Normal force.
         const SimTK::Real vp = (Kval + klow) / (Kval - klow);
@@ -245,6 +198,9 @@ public:
 
         SimTK::Real Fspring =
                 -sp * (vp * y - c * log(cosh((y + h) / c))) - constant;
+        if (SimTK::isNaN(Fspring) || SimTK::isInf(Fspring)) {
+            Fspring = 0;
+        }
 
         const SimTK::Real Fy = Fspring * (1 + Cval * depthRate);
 
@@ -261,6 +217,11 @@ public:
         SimTK::Real horizontalForce = force[1] * (
                 mu_d * tanh(velSliding / latchvel) + mu_v * velSliding
         );
+        if (SimTK::isNaN(horizontalForce) || SimTK::isInf(horizontalForce)) {
+            horizontalForce = 0;
+        }
+        
+        const SimTK::Real slipOffset = 1e-4;
         
         force[0] = -vel[0] / (velSliding + slipOffset) * horizontalForce;
         force[2] = -vel[2] / (velSliding + slipOffset) * horizontalForce;
