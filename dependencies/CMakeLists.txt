@@ -194,9 +194,8 @@ AddDependency(NAME       docopt
               GIT_TAG    3dd23e3280f213bacefdf5fcb04857bf52e90917)
               
 # `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
-set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 if(MSVC)
-    set(SPDLOG_CXX_FLAGS "${SPDLOG_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
 endif()
 
 AddDependency(NAME       spdlog
@@ -206,8 +205,7 @@ AddDependency(NAME       spdlog
               CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
-                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
-                         -DCMAKE_CXX_FLAGS:STRING=${SPDLOG_CXX_FLAGS})
+                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
 
 AddDependency(NAME       catch2
               DEFAULT    ON
