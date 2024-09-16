@@ -193,6 +193,10 @@ AddDependency(NAME       docopt
               GIT_URL    https://github.com/docopt/docopt.cpp.git
               GIT_TAG    3dd23e3280f213bacefdf5fcb04857bf52e90917)
 
+set(SPDLOG_CXX_FLAGS "")
+if(MSVC)
+    set(SPDLOG_CXX_FLAGS "/D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
+endif()
 
 AddDependency(NAME       spdlog
               DEFAULT    ON
@@ -202,7 +206,7 @@ AddDependency(NAME       spdlog
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
                          -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON,
-                         -DCMAKE_CXX_FLAGS:STRING="/D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
+                         -DCMAKE_CXX_FLAGS:STRING=${SPDLOG_CXX_FLAGS})
 
 AddDependency(NAME       catch2
               DEFAULT    ON
