@@ -5,7 +5,7 @@
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Nicholas Bianco, Chris Dembia, Spencer Williams                 *
+ * Author(s): Nicholas Bianco, Chris Dembia                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -159,12 +159,8 @@ public:
             "Spring stiffness in N/m (default: 1e4).");
     OpenSim_DECLARE_PROPERTY(dissipation, double,
             "Dissipation coefficient in s/m (default: 0.01).");
-    OpenSim_DECLARE_PROPERTY(dynamic_friction, double,
-            "Dynamic friction coefficient (default: 0).");
-    OpenSim_DECLARE_PROPERTY(viscous_friction, double,
-            "Viscous friction coefficient (default: 5).");
-    OpenSim_DECLARE_PROPERTY(latch_velocity, double,
-            "Latching velocity in m/s (default: 0.05).");
+    OpenSim_DECLARE_PROPERTY(tscale, double,
+            "TODO");
 
     MeyerFregly2016Force() {
         constructProperties();
@@ -180,11 +176,14 @@ public:
         const auto& vel = pt.getVelocityInGround(s);
         const SimTK::Real y = pos[1];
         const SimTK::Real velNormal = vel[1];
-        const SimTK::Real velSliding = sqrt(vel[0] * vel[0] + vel[2] * vel[2]);
+        // TODO should project vel into ground.
+        const SimTK::Real velSliding = vel[0];
+        // const SimTK::Real depth = 0 - y;
         const SimTK::Real depthRate = 0 - velNormal;
         const SimTK::Real Kval = get_stiffness();
         const SimTK::Real Cval = get_dissipation();
-        const SimTK::Real klow = 1e-1;
+        const SimTK::Real tscale = get_tscale();
+        const SimTK::Real klow = 1e-1 / (tscale * tscale);
         const SimTK::Real h = 1e-3;
         const SimTK::Real c = 5e-4;
         const SimTK::Real ymax = 1e-2;
@@ -207,24 +206,11 @@ public:
         force[1] = Fy;
 
         /// Friction force.
-        const SimTK::Real mu_d = get_dynamic_friction();
-        const SimTK::Real mu_v = get_viscous_friction();
-        const SimTK::Real latchvel = get_latch_velocity();
+        const SimTK::Real mu_d = 1;
+        const SimTK::Real latchvel = 0.05; // m/s
 
-        if (velSliding < 1e-10) {
-                velSliding = 0;
-        }
-        const SimTK::Real horizontalForce = force[1] * (
-                mu_d * tanh(velSliding / latchvel) + mu_v * velSliding
-        );
-        if (SimTK::isNaN(horizontalForce) || SimTK::isInf(horizontalForce)) {
-            horizontalForce = 0;
-        }
-        
-        const SimTK::Real slipOffset = 1e-4;
-        
-        force[0] = -vel[0] / (velSliding + slipOffset) * horizontalForce;
-        force[2] = -vel[2] / (velSliding + slipOffset) * horizontalForce;
+        const SimTK::Real mu = mu_d * tanh(velSliding / latchvel / 2);
+        force[0] = -force[1] * mu;
 
         return force;
     }
@@ -233,9 +219,7 @@ private:
     void constructProperties() {
         constructProperty_stiffness(1e4);
         constructProperty_dissipation(1e-2);
-        constructProperty_dynamic_friction(0);
-        constructProperty_viscous_friction(5);
-        constructProperty_latch_velocity(0.05);
+        constructProperty_tscale(1.0);
     }
 
 };
