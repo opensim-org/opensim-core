@@ -105,7 +105,6 @@ function(AddDependency)
             list(APPEND CMAKE_ARGS
                 -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE})
         endif()
-        list(APPEND CMAKE_ARGS ${DEP_CMAKE_ARGS})
 
         # Forward cmake arguments to dependencies.
         list(APPEND CMAKE_ARGS
@@ -139,6 +138,9 @@ function(AddDependency)
         if(SWIG_EXECUTABLE)
             list(APPEND CMAKE_ARGS -DSWIG_EXECUTABLE:FILEPATH=${SWIG_EXECUTABLE})
         endif()
+
+        # Append the dependency-specific CMake arguments.
+        list(APPEND CMAKE_ARGS ${DEP_CMAKE_ARGS})
 
         if(DEP_GIT_URL)
             ExternalProject_Add(${DEP_NAME}
@@ -192,10 +194,11 @@ AddDependency(NAME       docopt
               DEFAULT    ON
               GIT_URL    https://github.com/docopt/docopt.cpp.git
               GIT_TAG    3dd23e3280f213bacefdf5fcb04857bf52e90917)
-              
-# `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
+
+set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 if(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
+    # `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
+    set(SPDLOG_CXX_FLAGS "${SPDLOG_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
 endif()
 
 AddDependency(NAME       spdlog
@@ -205,7 +208,8 @@ AddDependency(NAME       spdlog
               CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
-                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
+                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
+                         -DCMAKE_CXX_FLAGS:STRING=${SPDLOG_CXX_FLAGS})
 
 AddDependency(NAME       catch2
               DEFAULT    ON
