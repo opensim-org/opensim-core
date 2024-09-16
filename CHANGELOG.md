@@ -23,7 +23,7 @@ v4.6
   components. The `ForceProducer` API was also rolled out to a variety of existing `Force` components, which
   means that API users can now now ask many `Force` components what forces they produce (see #3891 for a
   comprehensive overview).
-- Added `MeyerFregly2016Muscle` and completed the implementation of the `MeyerFregly2016Force` included in the `StationPlaneContactForce` class to support NMSM Pipeline-equivalent muscle and contant models in Moco. (#3877)
+- Added `MeyerFregly2016Muscle` class to support NMSM Pipeline-equivalent muscle models in Moco. (#3908)
 
 v4.5.1
 ======
