@@ -192,10 +192,11 @@ AddDependency(NAME       docopt
               DEFAULT    ON
               GIT_URL    https://github.com/docopt/docopt.cpp.git
               GIT_TAG    3dd23e3280f213bacefdf5fcb04857bf52e90917)
-
-set(SPDLOG_CXX_FLAGS "")
+              
+# `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
+set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 if(MSVC)
-    set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
+    set(SPDLOG_CXX_FLAGS "${SPDLOG_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
 endif()
 
 AddDependency(NAME       spdlog
