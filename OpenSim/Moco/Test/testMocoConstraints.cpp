@@ -2221,6 +2221,7 @@ TEST_CASE("ConstantAccelerationConstraint") {
     MocoStudy study = createSlidingMassMocoStudy(model, scheme);
     MocoSolution solution = study.solve();
 
+
     const auto& states = solution.exportToStatesTrajectory(model);
     for (const auto& state : states) {
         model.realizeAcceleration(state);
@@ -2230,6 +2231,137 @@ TEST_CASE("ConstantAccelerationConstraint") {
 
 // TODO enable test for Windows when MSVC build issues in FATROP are fixed.
 TEST_CASE("FATROP solver", "[casadi][unix]") {
+
+    MocoStudy study;
+    study.setName("double_pendulum_study");
     auto model = createDoublePendulumModel();
-    
+    model->initSystem();
+
+    MocoProblem& mp = study.updProblem();
+    mp.setModelAsCopy(*model);
+    mp.setTimeBounds(0, 1);
+    mp.setStateInfo("/jointset/j0/q0/value", {-5, 5}, 0);
+    mp.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0, 0);
+    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10});
+    mp.setStateInfo("/jointset/j1/q1/speed", {-5, 5}, 0, 0);
+    mp.setControlInfo("/tau0", {-50, 50});
+    mp.setControlInfo("/tau1", {-50, 50});
+    auto* effort = mp.addGoal<MocoControlGoal>();
+
+    auto& ms = study.initCasADiSolver();
+    ms.set_num_mesh_intervals(20);
+    ms.set_optim_solver("fatrop");
+    ms.set_optim_hessian_approximation("exact");
+    ms.set_optim_convergence_tolerance(1e-4);
+    ms.set_transcription_scheme("legendre-gauss-2");
+
+    SECTION("Disallowed solver settings") {
+        {
+            ms.set_optim_hessian_approximation("limited-memory");
+            CHECK_THROWS_WITH(study.solve(), 
+                Catch::Matchers::ContainsSubstring("The 'fatrop' solver only "
+                    "supports the 'exact' hessian approximation."));
+            ms.set_optim_hessian_approximation("exact");
+        }
+        {
+            ms.set_optim_constraint_tolerance(1e-3);
+            CHECK_THROWS_WITH(study.solve(), 
+                Catch::Matchers::ContainsSubstring("The 'fatrop' solver does "
+                "not utilize the constraint tolerance."));
+            ms.set_optim_constraint_tolerance(-1);
+        }
+        {
+            ms.set_transcription_scheme("trapezoidal");
+            CHECK_THROWS_WITH(study.solve(), 
+                Catch::Matchers::ContainsSubstring("The 'fatrop' solver only "
+                "supports the 'legendre-gauss-#' transcription schemes."));
+        }
+        {
+            ms.set_transcription_scheme("hermite-simpson");
+            CHECK_THROWS_WITH(study.solve(), 
+                Catch::Matchers::ContainsSubstring("The 'fatrop' solver only "
+                "supports the 'legendre-gauss-#' transcription schemes."));
+        }
+        {
+            ms.set_transcription_scheme("legendre-gauss-radau-3");
+            CHECK_THROWS_WITH(study.solve(), 
+                Catch::Matchers::ContainsSubstring("The 'fatrop' solver only "
+                "supports the 'legendre-gauss-#' transcription schemes."));
+        }
+    }
+
+    SECTION("Basic problem") {
+        MocoSolution solution = study.solve();
+        CHECK(solution.success());
+    }
+
+    // TODO produces "degenerate Jacobian" warning from FATROP
+    SECTION("Problem with kinematic constraints") {
+        const Coordinate& q0 = model->getCoordinateSet().get("q0");
+        const Coordinate& q1 = model->getCoordinateSet().get("q1");
+        CoordinateCouplerConstraint* constraint = 
+                new CoordinateCouplerConstraint();
+        Array<std::string> indepCoordNames;
+        indepCoordNames.append("q0");
+        constraint->setIndependentCoordinateNames(indepCoordNames);
+        constraint->setDependentCoordinateName("q1");
+
+        const SimTK::Real m = -2;
+        const SimTK::Real b = SimTK::Pi;
+        LinearFunction linFunc(m, b);
+        constraint->setFunction(&linFunc);
+        model->addConstraint(constraint);
+        model->finalizeConnections();
+
+        MocoProblem& mp = study.updProblem();
+        mp.setModelAsCopy(*model);
+
+        auto& ms = study.updSolver<MocoCasADiSolver>();
+        ms.resetProblem(mp);
+        ms.set_kinematic_constraint_method("Bordalba2023");
+
+        MocoSolution solution = study.solve();
+        CHECK(solution.success());
+    }
+
+    SECTION("Problem with path constraints") {
+        MocoProblem& mp = study.updProblem();
+        auto* frameDistance = 
+                mp.addPathConstraint<MocoFrameDistanceConstraint>();
+        frameDistance->addFramePair("/bodyset/b0", "/bodyset/b1", 0.0, 5.0);
+
+        auto& ms = study.updSolver<MocoCasADiSolver>();
+        ms.resetProblem(mp);
+
+        MocoSolution solution = study.solve();
+        CHECK(solution.success());
+    }
+
+    SECTION("Problem with initial and final control bounds") {
+        MocoProblem& mp = study.updProblem();
+        mp.setTimeBounds(0, 1);
+        mp.setStateInfo("/jointset/j0/q0/value", {-5, 5});
+        mp.setStateInfo("/jointset/j0/q0/speed", {-10, 10});
+        mp.setStateInfo("/jointset/j1/q1/value", {-10, 10});
+        mp.setStateInfo("/jointset/j1/q1/speed", {-5, 5});
+        mp.setControlInfo("/tau0", {-50, 50}, -4.3, 2.8);
+        mp.setControlInfo("/tau1", {-50, 50}, -3.2, 1.9);
+
+        auto& ms = study.updSolver<MocoCasADiSolver>();
+        ms.resetProblem(mp);
+
+        MocoSolution solution = study.solve();
+        CHECK(solution.success());
+
+        const auto& controls = solution.getControlsTrajectory();
+        int N = solution.getNumTimes();
+        CHECK_THAT(controls(0, 0), Catch::Matchers::WithinAbs(-4.3, 1e-6));
+        CHECK_THAT(controls(0, 1), Catch::Matchers::WithinAbs(-3.2, 1e-6));
+        CHECK_THAT(controls(N-1, 0), Catch::Matchers::WithinAbs(2.8, 1e-6));
+        CHECK_THAT(controls(N-1, 1), Catch::Matchers::WithinAbs(1.9, 1e-6));
+    }   
+
+    SECTION("Endpoint constraints are disallowed") {
+        // TODO
+    }
 }

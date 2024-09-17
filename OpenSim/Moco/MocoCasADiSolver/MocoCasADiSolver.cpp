@@ -278,6 +278,34 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         }
     }
 
+    if (get_optim_solver() == "fatrop") {
+        if (get_optim_max_iterations() != -1)
+            solverOptions["max_iter"] = get_optim_max_iterations();
+
+        if (get_optim_convergence_tolerance() != -1) {
+            const auto& tol = get_optim_convergence_tolerance();
+            solverOptions["tol"] = tol;
+            solverOptions["acceptable_tol"] = tol;
+        }
+        OPENSIM_THROW_IF_FRMOBJ(get_optim_constraint_tolerance() != -1,
+                Exception,
+                "The 'fatrop' solver does not utilize the constraint "
+                "tolerance.");
+   
+        OPENSIM_THROW_IF_FRMOBJ(get_optim_hessian_approximation() != "exact",
+                Exception,
+                "The 'fatrop' solver only supports the 'exact' hessian "
+                "approximation.");
+
+        const auto& scheme = get_transcription_scheme();
+        OPENSIM_THROW_IF_FRMOBJ(scheme == "trapezoidal" ||
+                                scheme == "hermite-simpson" ||
+                                scheme.find("radau") != std::string::npos,
+                Exception, 
+                "The 'fatrop' solver only supports the 'legendre-gauss-#' "
+                "transcription schemes.");
+    }
+
     checkPropertyValueIsInSet(getProperty_optim_sparsity_detection(),
             {"none", "random", "initial-guess"});
     casSolver->setSparsityDetection(get_optim_sparsity_detection());

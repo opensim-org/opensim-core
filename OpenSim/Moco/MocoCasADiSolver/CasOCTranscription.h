@@ -509,10 +509,14 @@ private:
                 }
             }
 
-            // Initial controls.
+            // Initial and final controls.
             if (imesh == 0) {
                 copyColumn(constraints.initial_controls, 0);
                 ng += constraints.initial_controls.rows();
+            }
+            if (imesh == m_numMeshIntervals - 1) {
+                copyColumn(constraints.final_controls, 0);
+                ng += constraints.final_controls.rows();
             }
 
             // Projection constraints.
@@ -546,8 +550,6 @@ private:
                 ng += path.rows();
             }
         }
-        copyColumn(constraints.final_controls, 0);
-        ng += constraints.final_controls.rows();
         copyColumn(constraints.projection, m_numMeshIntervals - 1);
         ng += constraints.projection.rows();
         flat.ng.push_back(ng);
@@ -646,9 +648,12 @@ private:
                 }
             }
 
-            // Initial controls.
+            // Initial and final controls.
             if (imesh == 0) {
                 copyColumn(out.initial_controls, 0);
+            }
+            if (imesh == m_numMeshIntervals - 1) {
+                copyColumn(out.final_controls, 0);
             }
 
             // Projection constraints.
@@ -672,7 +677,6 @@ private:
                 copyColumn(path, idyn);
             }
         }
-        copyColumn(out.final_controls, 0);
         copyColumn(out.projection, m_numMeshIntervals - 1);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,

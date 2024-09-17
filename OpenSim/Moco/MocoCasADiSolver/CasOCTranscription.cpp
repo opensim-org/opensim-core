@@ -1467,6 +1467,7 @@ void Transcription::printConstraintValues(const Iterate& it,
                 ++ikc;
             }
         }
+        // TODO fix this to print kinematic values correctly
         ss << "Kinematic constraint values at each mesh point:"
                 << std::endl;
         ss << "      time  ";
@@ -1484,7 +1485,6 @@ void Transcription::printConstraintValues(const Iterate& it,
                 ss << std::setprecision(2) << std::scientific
                    << std::setw(9) << value << "  ";
             }
-            // TODO fix this to print udoterr values correctly
             for (int iudot = 0; iudot < numUDotErr; ++iudot) {
                 const auto& value =
                         constraints.kinematic_udoterr(iudot, imesh).scalar();
