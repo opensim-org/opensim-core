@@ -83,72 +83,6 @@ private:
     }
 };
 
-/** This class is still under development. */
-class OSIMSIMULATION_API AckermannVanDenBogert2010Force
-        : public StationPlaneContactForce {
-OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Force,
-        StationPlaneContactForce);
-public:
-    OpenSim_DECLARE_PROPERTY(stiffness, double,
-            "Spring stiffness in N/m^3 (default: 5e7).");
-    OpenSim_DECLARE_PROPERTY(dissipation, double,
-            "Dissipation coefficient in s/m (default: 1.0).");
-    OpenSim_DECLARE_PROPERTY(friction_coefficient, double,
-            "Friction coefficient");
-    // TODO rename to transition_velocity
-    OpenSim_DECLARE_PROPERTY(tangent_velocity_scaling_factor, double,
-            "Governs how rapidly friction develops (default: 0.05).");
-
-    AckermannVanDenBogert2010Force() {
-        constructProperties();
-    }
-
-    /// Compute the force applied to body to which the station is attached, at
-    /// the station, expressed in ground.
-    SimTK::Vec3 computeContactForceOnStation(const SimTK::State& s)
-    const override {
-        SimTK::Vec3 force(0);
-        const auto& pt = getConnectee<Station>("station");
-        const auto& pos = pt.getLocationInGround(s);
-        const auto& vel = pt.getVelocityInGround(s);
-        const SimTK::Real y = pos[1];
-        const SimTK::Real velNormal = vel[1];
-        // TODO should project vel into ground.
-        const SimTK::Real velSliding = vel[0];
-        const SimTK::Real depth = 0 - y;
-        const SimTK::Real depthRate = 0 - velNormal;
-        const SimTK::Real& a = get_stiffness();
-        const SimTK::Real& b = get_dissipation();
-        if (depth > 0) {
-            force[1] = fmax(0, a * pow(depth, 3) * (1 + b * depthRate));
-        }
-        const SimTK::Real voidStiffness = 1.0; // N/m
-        force[1] += voidStiffness * depth;
-
-        const SimTK::Real velSlidingScaling =
-                get_tangent_velocity_scaling_factor();
-        // The paper used (1 - exp(-x)) / (1 + exp(-x)) = tanh(2x).
-        // tanh() has a wider domain than using exp().
-        const SimTK::Real transition = tanh(velSliding / velSlidingScaling / 2);
-
-        const SimTK::Real frictionForce =
-                -transition * get_friction_coefficient() * force[1];
-
-        force[0] = frictionForce;
-        return force;
-    }
-
-private:
-    void constructProperties() {
-        constructProperty_friction_coefficient(1.0);
-        constructProperty_stiffness(5e7);
-        constructProperty_dissipation(1.0);
-        constructProperty_tangent_velocity_scaling_factor(0.05);
-    }
-};
-
-
-
 /** This contact model is from the following paper:
 Meyer A. J., Eskinazi, I., Jackson, J. N., Rao, A. V., Patten, C., & Fregly,
 B. J. (2016). Muscle Synergies Facilitate Computational Prediction of
@@ -278,6 +212,70 @@ private:
         constructProperty_latch_velocity(0.05);
     }
 
+};
+
+/** This class is still under development. */
+class OSIMSIMULATION_API AckermannVanDenBogert2010Force
+        : public StationPlaneContactForce {
+OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Force,
+        StationPlaneContactForce);
+public:
+    OpenSim_DECLARE_PROPERTY(stiffness, double,
+            "Spring stiffness in N/m^3 (default: 5e7).");
+    OpenSim_DECLARE_PROPERTY(dissipation, double,
+            "Dissipation coefficient in s/m (default: 1.0).");
+    OpenSim_DECLARE_PROPERTY(friction_coefficient, double,
+            "Friction coefficient");
+    // TODO rename to transition_velocity
+    OpenSim_DECLARE_PROPERTY(tangent_velocity_scaling_factor, double,
+            "Governs how rapidly friction develops (default: 0.05).");
+
+    AckermannVanDenBogert2010Force() {
+        constructProperties();
+    }
+
+    /// Compute the force applied to body to which the station is attached, at
+    /// the station, expressed in ground.
+    SimTK::Vec3 computeContactForceOnStation(const SimTK::State& s)
+    const override {
+        SimTK::Vec3 force(0);
+        const auto& pt = getConnectee<Station>("station");
+        const auto& pos = pt.getLocationInGround(s);
+        const auto& vel = pt.getVelocityInGround(s);
+        const SimTK::Real y = pos[1];
+        const SimTK::Real velNormal = vel[1];
+        // TODO should project vel into ground.
+        const SimTK::Real velSliding = vel[0];
+        const SimTK::Real depth = 0 - y;
+        const SimTK::Real depthRate = 0 - velNormal;
+        const SimTK::Real& a = get_stiffness();
+        const SimTK::Real& b = get_dissipation();
+        if (depth > 0) {
+            force[1] = fmax(0, a * pow(depth, 3) * (1 + b * depthRate));
+        }
+        const SimTK::Real voidStiffness = 1.0; // N/m
+        force[1] += voidStiffness * depth;
+
+        const SimTK::Real velSlidingScaling =
+                get_tangent_velocity_scaling_factor();
+        // The paper used (1 - exp(-x)) / (1 + exp(-x)) = tanh(2x).
+        // tanh() has a wider domain than using exp().
+        const SimTK::Real transition = tanh(velSliding / velSlidingScaling / 2);
+
+        const SimTK::Real frictionForce =
+                -transition * get_friction_coefficient() * force[1];
+
+        force[0] = frictionForce;
+        return force;
+    }
+
+private:
+    void constructProperties() {
+        constructProperty_friction_coefficient(1.0);
+        constructProperty_stiffness(5e7);
+        constructProperty_dissipation(1.0);
+        constructProperty_tangent_velocity_scaling_factor(0.05);
+    }
 };
 
 /** This contact model uses a continuous equation to transition between in and
