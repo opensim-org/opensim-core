@@ -34,7 +34,7 @@ has a complete implementation. Details for how this model calculates forces
 are included in its documentation below. 
 
 @underdevelopment */
-class OSIMMOCO_API StationPlaneContactForce : public ForceProducer {
+class OSIMSIMULATION_API StationPlaneContactForce : public ForceProducer {
 OpenSim_DECLARE_ABSTRACT_OBJECT(StationPlaneContactForce, ForceProducer);
 public:
     OpenSim_DECLARE_OUTPUT(force_on_station, SimTK::Vec3,
@@ -84,7 +84,7 @@ private:
 };
 
 /** This class is still under development. */
-class OSIMMOCO_API AckermannVanDenBogert2010Force
+class OSIMSIMULATION_API AckermannVanDenBogert2010Force
         : public StationPlaneContactForce {
 OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Force,
         StationPlaneContactForce);
@@ -199,7 +199,7 @@ Horizontal forces are then calculated based on this vertical force and the
 horizontal velocity components of the contact element. Both dynamic (modeled 
 with a tanh function) and viscous (modeled with a linear function) friction 
 models may be used. */
-class OSIMMOCO_API MeyerFregly2016Force
+class OSIMSIMULATION_API MeyerFregly2016Force
         : public StationPlaneContactForce {
 OpenSim_DECLARE_CONCRETE_OBJECT(MeyerFregly2016Force,
         StationPlaneContactForce);
@@ -294,7 +294,7 @@ retains a normal metabolic cost in simulated walking after transtibial limb
 loss. PLoS ONE, 13(1), e0191310. http://doi.org/10.1371/journal.pone.0191310
 
 @underdevelopment */
-class OSIMMOCO_API EspositoMiller2018Force
+class OSIMSIMULATION_API EspositoMiller2018Force
         : public StationPlaneContactForce {
 OpenSim_DECLARE_CONCRETE_OBJECT(EspositoMiller2018Force,
         StationPlaneContactForce);
