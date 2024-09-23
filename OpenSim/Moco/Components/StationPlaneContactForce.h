@@ -27,12 +27,18 @@ namespace OpenSim {
 
 /** This class models compliant point contact with a ground plane y=0.
 
+Vertical force is calculated using stiffness and dissipation coefficients, 
+while horizontal force is calculated using a friction model. This class
+includes multiple contact models, though currently only MeyerFregly2016Force
+has a complete implementation. Details for how this model calculates forces
+are included in its documentation below. 
+
 @underdevelopment */
 class OSIMMOCO_API StationPlaneContactForce : public ForceProducer {
 OpenSim_DECLARE_ABSTRACT_OBJECT(StationPlaneContactForce, ForceProducer);
 public:
     OpenSim_DECLARE_OUTPUT(force_on_station, SimTK::Vec3,
-            calcContactForceOnStation, SimTK::Stage::Velocity);
+            computeContactForceOnStation, SimTK::Stage::Velocity);
 
     OpenSim_DECLARE_SOCKET(station, Station,
             "The body-fixed point that can contact the plane.");
@@ -49,7 +55,7 @@ public:
     const override {
         OpenSim::Array<double> values;
         // TODO cache.
-        const SimTK::Vec3 force = calcContactForceOnStation(s);
+        const SimTK::Vec3 force = computeContactForceOnStation(s);
         values.append(force[0]);
         values.append(force[1]);
         values.append(force[2]);
@@ -59,8 +65,7 @@ public:
             const SimTK::State& s,
             SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override;
 
-    // TODO rename to computeContactForceOnStation
-    virtual SimTK::Vec3 calcContactForceOnStation(
+    virtual SimTK::Vec3 computeContactForceOnStation(
             const SimTK::State& s) const = 0;
 
 private:
@@ -68,7 +73,7 @@ private:
         const SimTK::State& s,
         ForceConsumer& forceConsumer) const override {
 
-        const SimTK::Vec3 force = calcContactForceOnStation(s);
+        const SimTK::Vec3 force = computeContactForceOnStation(s);
         const auto& pt = getConnectee<Station>("station");
         const auto& pos = pt.getLocationInGround(s);
         const auto& frame = pt.getParentFrame();
@@ -100,7 +105,7 @@ public:
 
     /// Compute the force applied to body to which the station is attached, at
     /// the station, expressed in ground.
-    SimTK::Vec3 calcContactForceOnStation(const SimTK::State& s)
+    SimTK::Vec3 computeContactForceOnStation(const SimTK::State& s)
     const override {
         SimTK::Vec3 force(0);
         const auto& pt = getConnectee<Station>("station");
@@ -150,7 +155,7 @@ B. J. (2016). Muscle Synergies Facilitate Computational Prediction of
 Subject-Specific Walking Motions. Frontiers in Bioengineering and
 Biotechnology, 4, 1055–27. http://doi.org/10.3389/fbioe.2016.00077 
 
-Following OpenSim convention, this contact element assumes that the y-direction 
+Following OpenSim convention, this contact element assumes that the y-direction
 is vertical. Vertical contact force is calculated based on vertical position 
 and velocity relative to a floor at y=0 using these equations:
 
@@ -216,7 +221,7 @@ public:
 
     /// Compute the force applied to body to which the station is attached, at
     /// the station, expressed in ground.
-    SimTK::Vec3 calcContactForceOnStation(const SimTK::State& s)
+    SimTK::Vec3 computeContactForceOnStation(const SimTK::State& s)
     const override {
         SimTK::Vec3 force(0);
         const auto& pt = getConnectee<Station>("station");
@@ -316,7 +321,7 @@ public:
 
     /// Compute the force applied to body to which the station is attached, at
     /// the station, expressed in ground.
-    SimTK::Vec3 calcContactForceOnStation(const SimTK::State& s)
+    SimTK::Vec3 computeContactForceOnStation(const SimTK::State& s)
     const override {
         using SimTK::square;
         SimTK::Vec3 force(0);
