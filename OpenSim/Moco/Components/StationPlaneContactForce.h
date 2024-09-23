@@ -150,7 +150,7 @@ B. J. (2016). Muscle Synergies Facilitate Computational Prediction of
 Subject-Specific Walking Motions. Frontiers in Bioengineering and
 Biotechnology, 4, 1055–27. http://doi.org/10.3389/fbioe.2016.00077 
 
-Following OpenSim convention, this contact element assumes that the y direction 
+Following OpenSim convention, this contact element assumes that the y-direction 
 is vertical. Vertical contact force is calculated based on vertical position 
 and velocity relative to a floor at y=0 using these equations:
 
@@ -193,8 +193,7 @@ gradient-based optimizations when an element is inappropriately out of contact.
 Horizontal forces are then calculated based on this vertical force and the 
 horizontal velocity components of the contact element. Both dynamic (modeled 
 with a tanh function) and viscous (modeled with a linear function) friction 
-models may be used. 
- */
+models may be used. */
 class OSIMMOCO_API MeyerFregly2016Force
         : public StationPlaneContactForce {
 OpenSim_DECLARE_CONCRETE_OBJECT(MeyerFregly2016Force,
