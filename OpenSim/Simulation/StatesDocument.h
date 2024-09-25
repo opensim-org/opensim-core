@@ -489,8 +489,9 @@ public:
     //-------------------------------------------------------------------------
     // Construction
     //-------------------------------------------------------------------------
-    /** No valid default constructor. */
-    StatesDocument() = delete;
+    /** The default constructor serves no purpose other than satisfying a
+    compiler demand. */
+    StatesDocument() { }
 
     /** Construct a StatesDocument instance from an XML file in preparation
     for deserialzing the states into a states trajectory. Once constructed,
