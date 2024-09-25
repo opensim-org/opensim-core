@@ -77,7 +77,7 @@ private:
     string nameVec5{"dvVec5"};
     string nameVec6{"dvVec6"};
     // Omit a discrete state altogether
-    int omit{-1};
+    int omit;
 
 public:
 
@@ -89,8 +89,9 @@ public:
     ExtendedPointToPointSpring(const PhysicalFrame& body1, SimTK::Vec3 point1,
         const PhysicalFrame& body2, SimTK::Vec3 point2,
         double stiffness, double restlength,
-        int which = -1, const string& suffix = "", int omit = -1) : omit(omit),
-        PointToPointSpring(body1, point1, body2, point2, stiffness, restlength)
+        int which = -1, const string& suffix = "", int omit = -1) :
+        PointToPointSpring(body1, point1, body2, point2, stiffness, restlength),
+        omit(omit)
     {
         switch (which) {
         case(0) :
@@ -430,7 +431,7 @@ checkScalar(const Array_<T>& a, const Array_<T>& b, int precision)
 {
     double tol;
     Array_<T> dvA, dvB;
-    for (size_t i = 0; i < dvA.size(); ++i) {
+    for (size_t i = 0; i < (size_t)dvA.size(); ++i) {
         tol = padFactor*computeRoundingError(a[i], precision);
         CHECK_THAT(b[i], Catch::Matchers::WithinAbs(a[i], tol));
     }
@@ -443,8 +444,8 @@ void
 checkVector(const Array_<T>& a, const Array_<T>& b, int precision)
 {
     double tol;
-    for (size_t i = 0; i < a.size(); ++i) {
-        for (size_t j = 0; j < a[i].size(); ++j) {
+    for (size_t i = 0; i < (size_t)a.size(); ++i) {
+        for (size_t j = 0; j < (size_t)a[i].size(); ++j) {
             tol = padFactor*computeRoundingError(a[i][j], precision);
             CHECK_THAT(b[i][j], Catch::Matchers::WithinAbs(a[i][j], tol));
         }
@@ -479,13 +480,15 @@ testEqualityForDiscreteVariables(const Model& model,
             Array_<bool> dvA, dvB;
             model.getDiscreteVariableTrajectory<bool>(paths[i], trajA, dvA);
             model.getDiscreteVariableTrajectory<bool>(paths[i], trajB, dvB);
-            for (size_t j = 0; j < dvA.size(); ++j) CHECK(dvB[j] == dvA[j]);
+            for (size_t j = 0; j < (size_t)dvA.size(); ++j)
+                CHECK(dvB[j] == dvA[j]);
         }
         else if (SimTK::Value<int>::isA(abstractVal)) {
             Array_<int> dvA, dvB;
             model.getDiscreteVariableTrajectory<int>(paths[i], trajA, dvA);
             model.getDiscreteVariableTrajectory<int>(paths[i], trajB, dvB);
-            for (size_t j = 0; j < dvA.size(); ++j) CHECK(dvB[j] == dvA[j]);
+            for (size_t j = 0; j < (size_t)dvA.size(); ++j)
+                CHECK(dvB[j] == dvA[j]);
         }
         else if (SimTK::Value<float>::isA(abstractVal)) {
             Array_<float> dvA, dvB;
@@ -557,7 +560,7 @@ testEqualityForModelingOptions(const Model& model,
         Array_<int> moA, moB;
         model.getModelingOptionTrajectory<int>(paths[i], trajA, moA);
         model.getModelingOptionTrajectory<int>(paths[i], trajB, moB);
-        for (size_t j = 0; j < moA.size(); ++j) CHECK(moB[j] == moA[j]);
+        for (size_t j = 0; j<(size_t)moA.size(); ++j) CHECK(moB[j] == moA[j]);
     }
 }
 
@@ -690,7 +693,7 @@ TEST_CASE("Serialization and Deserialization")
         REQUIRE(traj.size() == traj.size());
 
         // Realize both state trajectories to Stage::Report
-        for (size_t i = 0; i < trajA.size(); ++i) {
+        for (size_t i = 0; i < (size_t)trajA.size(); ++i) {
             model->getSystem().realize(traj[i], Stage::Report);
             model->getSystem().realize(trajA[i], Stage::Report);
         }
