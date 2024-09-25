@@ -22,9 +22,10 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-// INCLUDE
-#include "OpenSim/Common/FunctionSet.h"
-#include "Force.h"
+
+#include <OpenSim/Common/FunctionSet.h>
+#include <OpenSim/Simulation/Model/Force.h>
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 
 namespace OpenSim {
 
@@ -50,8 +51,8 @@ optional:
 
 @author Peter Eastman, Matt DeMers
 **/
-class OSIMSIMULATION_API PrescribedForce : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(PrescribedForce, Force);
+class OSIMSIMULATION_API PrescribedForce : public ForceProducer {
+OpenSim_DECLARE_CONCRETE_OBJECT(PrescribedForce, ForceProducer);
 public:
 //==============================================================================
 // PROPERTIES
@@ -266,11 +267,13 @@ public:
     }
 protected:
 
-    /** Force interface. **/
-    void computeForce
-       (const SimTK::State&                state, 
-        SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-        SimTK::Vector&                     generalizedForces) const override;
+    /**
+     * Implements the `OpenSim::ForceProducer` interface.
+     */
+    void implProduceForces(
+        const SimTK::State& state,
+        ForceConsumer& consumer
+    ) const override;
 
 //==============================================================================
 // DATA

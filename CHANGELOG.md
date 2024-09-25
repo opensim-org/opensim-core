@@ -19,6 +19,10 @@ v4.6
 - `PointForceDirection` no longer has a virtual destructor, is `final`, and its `scale` functionality
   has been marked as `[[deprecated]]` (#3890)
 - Added `ExpressionBasedFunction` for creating `Function`s based on user-defined mathematical expressions. (#3892)
+- Added `ForceProducer`, `ForceConsumer`, and `ForceApplier`, which are fundamental APIs for force-producing
+  components. The `ForceProducer` API was also rolled out to a variety of existing `Force` components, which
+  means that API users can now now ask many `Force` components what forces they produce (see #3891 for a
+  comprehensive overview).
 
 v4.5.1
 ======

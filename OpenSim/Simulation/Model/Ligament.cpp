@@ -123,10 +123,8 @@ SimTK::Vec3 Ligament::computePathColor(const SimTK::State& state) const {
  void Ligament::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
-    // Cache the computed tension and strain of the ligament
 
-    this->_tensionCV = addCacheVariable("tension", 0.0, SimTK::Stage::Velocity);
-    this->_strainCV = addCacheVariable("strain", 0.0, SimTK::Stage::Velocity);
+    this->_tensionCV = addCacheVariable("tension", 0.0, SimTK::Stage::Position);
 }
 
 
@@ -204,9 +202,28 @@ void Ligament::extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
     }
 }
 
-const double& Ligament::getTension(const SimTK::State& s) const
+double Ligament::getTension(const SimTK::State& s) const
 {
-    return getCacheVariableValue(s, _tensionCV);
+    if (isCacheVariableValid(s, _tensionCV)) {
+        return getCacheVariableValue(s, _tensionCV);
+    }
+    // else: compute a new tension
+
+    const auto& path = getPath();
+    const double restingLength = get_resting_length();
+    const auto pathLength = path.getLength(s);
+
+    if (pathLength <= restingLength) {
+        setCacheVariableValue(s, _tensionCV, 0.0);
+        return 0.0;
+    }
+    else {
+        // evaluate normalized tendon force length curve
+        const double tension = getForceLengthCurve().calcValue(
+            SimTK::Vector(1, pathLength/restingLength)) * get_pcsa_force();
+        setCacheVariableValue(s, _tensionCV, tension);
+        return tension;
+    }
 }
 
 
@@ -221,28 +238,8 @@ double Ligament::computeMomentArm(const SimTK::State& s, Coordinate& aCoord) con
     return getPath().computeMomentArm(s, aCoord);
 }
 
-
-
-void Ligament::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+void Ligament::implProduceForces(const SimTK::State& s,
+        ForceConsumer& forceConsumer) const
 {
-    const auto& path = getPath();
-    const double& restingLength = get_resting_length();
-    const double& pcsaForce = get_pcsa_force();
-
-    double tension = 0;
-
-    if (path.getLength(s) <= restingLength){
-        setCacheVariableValue(s, _tensionCV, tension);
-        return;
-    }
-    
-    // evaluate normalized tendon force length curve
-    tension = getForceLengthCurve().calcValue(
-        SimTK::Vector(1, path.getLength(s)/restingLength))* pcsaForce;
-    setCacheVariableValue(s, _tensionCV, tension);
-
-    path.addInEquivalentForces(s, tension, bodyForces, generalizedForces);
+    getPath().produceForces(s, getTension(s), forceConsumer);
 }
-

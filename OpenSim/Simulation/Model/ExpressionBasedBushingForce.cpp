@@ -318,13 +318,12 @@ SimTK::Vec6 ExpressionBasedBushingForce::calcBushingForce(
 
 /* Compute the force contribution to the system and add in to appropriate
 * bodyForce and/or system generalizedForce. */
-void ExpressionBasedBushingForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+void ExpressionBasedBushingForce::implProduceForces(const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
     // convert internal forces to spatial and add then add to system
     // physical (body) forces
-    addInPhysicalForcesFromInternal(s, calcBushingForce(s), bodyForces);
+    producePhysicalForcesFromInternal(s, calcBushingForce(s), forceConsumer);
 }
 
 //=============================================================================
