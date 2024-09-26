@@ -255,6 +255,30 @@ void testFrictionForce(const SimTK::Real& equilibriumHeight) {
     }
 }
 
+// Test that the contact model produces the expected force output for a given
+// set of input kinematics and default parameters. 
+template<typename T>
+void testKnownKinematics() {
+    Model modelTemp = create2DPointMassModel<T>();
+    modelTemp.finalizeConnections();
+    Model model(modelTemp);
+    model.finalizeConnections();
+
+    SimTK::State state = model.initSystem();
+    model.setStateVariableValue(state, "ty/ty/value", -0.005);
+    model.setStateVariableValue(state, "ty/ty/speed", -0.01);
+    model.setStateVariableValue(state, "tx/tx/speed", 0.03);
+    model.setStateVariableValue(state, "tz/tz/speed", 0.02);
+
+    auto& contact = model.template getComponent<StationPlaneContactForce>("contact");
+    model.realizeVelocity(state);
+    const Vec3 contactForce = contact.calcContactForceOnStation(state);
+
+    CHECK(contactForce[0] == Approx(-5.9842).margin(1e-3));
+    CHECK(contactForce[1] == Approx(40.0051).margin(1e-3));
+    CHECK(contactForce[2] == Approx(-3.9894).margin(1e-3));
+}
+
 template<typename T>
 void testStationPlaneContactForce() {
     const SimTK::Real equilibriumHeight = testNormalForce<T>();
