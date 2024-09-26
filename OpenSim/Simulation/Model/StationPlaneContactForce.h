@@ -28,10 +28,9 @@ namespace OpenSim {
 /** This class models compliant point contact with a ground plane y=0.
 
 Vertical force is calculated using stiffness and dissipation coefficients, 
-while horizontal force is calculated using a friction model. This class
-includes multiple contact models, though currently only MeyerFregly2016Force
-has a complete implementation. Details for how this model calculates forces
-are included in its documentation below. 
+while horizontal force is calculated using a friction model. Multiple concrete 
+implementation of this class are available, but currently MeyerFregly2016Force 
+is the only complete and well-tested implementation and therefore recommended.
 
 @underdevelopment */
 class OSIMSIMULATION_API StationPlaneContactForce : public ForceProducer {
