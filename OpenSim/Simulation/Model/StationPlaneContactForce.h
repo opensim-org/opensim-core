@@ -141,6 +141,8 @@ public:
             "Spring stiffness in N/m (default: 1e4).");
     OpenSim_DECLARE_PROPERTY(dissipation, double,
             "Dissipation coefficient in s/m (default: 0.01).");
+    OpenSim_DECLARE_PROPERTY(spring_resting_length, double,
+            "Spring resting length in m (default: 0).");
     OpenSim_DECLARE_PROPERTY(dynamic_friction, double,
             "Dynamic friction coefficient (default: 0).");
     OpenSim_DECLARE_PROPERTY(viscous_friction, double,
@@ -160,6 +162,7 @@ public:
         const auto& pt = getConnectee<Station>("station");
         const auto& pos = pt.getLocationInGround(s);
         const auto& vel = pt.getVelocityInGround(s);
+        const SimTK::Real resting_length = get_spring_resting_length();
         const SimTK::Real y = pos[1];
         const SimTK::Real velNormal = vel[1];
         SimTK::Real velSliding = sqrt(vel[0] * vel[0] + vel[2] * vel[2]);
@@ -174,6 +177,7 @@ public:
         const SimTK::Real slipOffset = 1e-4;
 
         /// Normal force.
+        y = y - resting_length;
         const SimTK::Real vp = (Kval + klow) / (Kval - klow);
         const SimTK::Real sp = (Kval - klow) / 2;
 
