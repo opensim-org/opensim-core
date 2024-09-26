@@ -131,6 +131,8 @@ function(AddDependency)
              -DCMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE})
         list(APPEND CMAKE_ARGS
              -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_EXE_LINKER_FLAGS:STRING=${CMAKE_EXE_LINKER_FLAGS})
         if(APPLE)
             list(APPEND CMAKE_ARGS
                  -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=${CMAKE_OSX_DEPLOYMENT_TARGET})
@@ -176,11 +178,25 @@ SetDefaultCMakeBuildType()
 
 ####################### Add dependencies below.
 
+
+
 AddDependency(NAME       ezc3d
               DEFAULT    OFF
               GIT_URL    https://github.com/pyomeca/ezc3d.git
               GIT_TAG    Release_1.5.8
               CMAKE_ARGS -DBUILD_EXAMPLE:BOOL=OFF)
+
+set(SIMBODY_C_FLAGS "${CMAKE_C_FLAGS}")
+set(SIMBODY_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+# set(SIMBODY_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    # Enable Link-Time Optimization (LTO) when building with Clang for Enzyme.
+    set(SIMBODY_C_FLAGS "${SIMBODY_C_FLAGS} -flto")
+    set(SIMBODY_CXX_FLAGS "${SIMBODY_CXX_FLAGS} -flto")
+    # TODO not working, had to manually override "ld" using symlinks.
+    # set(SIMBODY_SHARED_LINKER_FLAGS "${SIMBODY_SHARED_LINKER_FLAGS} -fuse-ld=lld")
+    message(STATUS "Enabling LTO for Clang.")
+endif()
 
 AddDependency(NAME       simbody
               DEFAULT    ON
@@ -188,6 +204,9 @@ AddDependency(NAME       simbody
               GIT_TAG    d98f05fa1899633b544757e6c179562940f0849d
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
+                         -DCMAKE_CXX_FLAGS:STRING=${SIMBODY_CXX_FLAGS}
+                         -DCMAKE_C_FLAGS:STRING=${SIMBODY_C_FLAGS}
+                         -DCMAKE_SHARED_LINKER_FLAGS:STRING=${SIMBODY_SHARED_LINKER_FLAGS}
                          ${SIMBODY_EXTRA_CMAKE_ARGS})
 
 AddDependency(NAME       docopt

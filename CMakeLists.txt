@@ -440,6 +440,14 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     endif()
 endif()
 
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    # Enable Link-Time Optimization (LTO) when building with Clang for Enzyme.
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
+    # TODO not working.
+    # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld")
+endif()
+
 ## When building in any of the Release modes, tell VC++ cl compiler to use intrinsics
 ## (i.e. sqrt instruction rather than sqrt subroutine) with flag /Oi.
 
@@ -841,6 +849,12 @@ if (OPENSIM_WITH_CASADI OR OPENSIM_WITH_TROPTER)
         OpenSimCopyDependencyDLLsForWin(DEP_NAME IPOPT DEP_BIN_DIR "${Ipopt_ROOT_DIR}/bin")
     endif()
 endif()
+
+find_package(Enzyme REQUIRED CONFIG NO_DEFAULT_PATH)
+message("found dir ${Enzyme_DIR}")
+message("found ${Enzyme_FOUND}")
+get_property(importTargetsAfter DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY IMPORTED_TARGETS)
+message("imported targets ${importTargetsAfter}")
 
 # Installing dependencies into OpenSim's installation.
 # ----------------------------------------------------
