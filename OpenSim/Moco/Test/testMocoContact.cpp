@@ -257,9 +257,8 @@ void testFrictionForce(const SimTK::Real& equilibriumHeight) {
 
 // Test that the contact model produces the expected force output for a given
 // set of input kinematics and default parameters. 
-template<typename T>
 void testKnownKinematics() {
-    Model modelTemp = create2DPointMassModel<T>();
+    Model modelTemp = create2DPointMassModel<MeyerFregly2016Force>();
     modelTemp.finalizeConnections();
     Model model(modelTemp);
     model.finalizeConnections();
@@ -538,7 +537,7 @@ void testSmoothSphereHalfSpaceForce_FrictionForce(
 }
 
 TEMPLATE_TEST_CASE("testStationPlaneContactForce", "[tropter]", 
-        /*AckermannVanDenBogert2010Force, EspositoMiller2018Force,*/
+        AckermannVanDenBogert2010Force, EspositoMiller2018Force,
         MeyerFregly2016Force) {
     testStationPlaneContactForce<TestType>();
 }
@@ -639,4 +638,8 @@ TEST_CASE("MocoContactTrackingGoal", "[casadi]") {
     rootMeanSquare(externalLoadsDircol, "ground_force_r_vy",
             externalLoadsTimeStepping, "ground_force_r_vy",
             0.5);
+}
+
+TEST_CASE("testMeyerFregly2016ForceValues", "[casadi]") {
+    testKnownKinematics();
 }
