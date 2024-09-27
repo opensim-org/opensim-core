@@ -23,6 +23,7 @@ v4.6
   components. The `ForceProducer` API was also rolled out to a variety of existing `Force` components, which
   means that API users can now now ask many `Force` components what forces they produce (see #3891 for a
   comprehensive overview).
+- Added `MeyerFregly2016Muscle` class to support NMSM Pipeline-equivalent muscle models in Moco. (#3908)
 
 v4.5.1
 ======
@@ -87,6 +88,7 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Fixed `MocoOrientationTrackingGoal::initializeOnModelImpl` to check for missing kinematic states, but allow other missing columns. (#3830)
 - Improved exception handling for internal errors in `MocoCasADiSolver`. Problems will now abort and print a descriptive error message (rather than fail due to an empty trajectory). (#3834)
 - Upgraded the Ipopt dependency Metis to version 5.1.0 on Unix and macOS to enable building on `osx-arm64` (#3874).
+
 
 v4.5
 ====
