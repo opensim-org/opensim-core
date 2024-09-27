@@ -19,6 +19,7 @@
 
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Actuators/ModelOperators.h>
 
 #include <catch2/catch_all.hpp>
 #include "Testing.h"
@@ -615,4 +616,101 @@ TEST_CASE("MocoContactTrackingGoal", "[casadi]") {
     rootMeanSquare(externalLoadsDircol, "ground_force_r_vy",
             externalLoadsTimeStepping, "ground_force_r_vy",
             0.5);
+}
+
+// This is a round-trip test: we create external loads from a trajectory
+// using createExternalLoadsTableForGait(), then use the external loads to
+// apply forces to a model, and ensure the accelerations of the model match
+// the accelerations of the original model.
+TEST_CASE("createExternalLoadsTableForGait") {
+    
+    // The original model with foot-ground contact elements.
+    Model model("subject_20dof18musc_running.osim");
+    model.initSystem();
+
+    // A copy of the model with the foot-ground contact elements removed.
+    Model modelNoContact(model);
+    modelNoContact.initSystem();
+    modelNoContact.updForceSet().clearAndDestroy();
+    modelNoContact.updContactGeometrySet().clearAndDestroy();
+
+    // Load the trajectory. Remove all columns not associated with the skeletal
+    // kinematics.
+    TimeSeriesTable trajectory("running_solution_full_stride.sto");
+    auto labels = trajectory.getColumnLabels();
+    for (const auto& label : labels) {
+        if (label.find("/jointset") == std::string::npos) {
+            trajectory.removeColumn(label);
+        }
+    }
+    auto statesTraj = StatesTrajectory::createFromStatesTable(model, trajectory);
+    
+    // Create external loads for the calcaneus bodies and apply them to the
+    // model without contact forces.
+    std::vector<std::string> contact_r = {"/forceset/contactHeel_r", 
+            "/forceset/contactLateralMidfoot_r",
+            "/forceset/contactMedialMidfoot_r"};
+    std::vector<std::string> contact_l = {"/forceset/contactHeel_l", 
+            "/forceset/contactLateralMidfoot_l",
+            "/forceset/contactMedialMidfoot_l"};
+    auto externalLoadsTableCalcn = createExternalLoadsTableForGait(model, 
+                statesTraj, contact_r, contact_l);
+
+    // TODO: avoid writing to file for this conversion.
+    STOFileAdapter::write(externalLoadsTableCalcn, "external_loads_temp.sto");
+    Storage externalLoadsCalcn("external_loads_temp.sto");
+
+    ExternalForce* externalForceLeftCalcn = new ExternalForce(
+            externalLoadsCalcn, "ground_force_l_v", "ground_force_l_p", 
+            "ground_torque_l_", "calcn_l");
+    modelNoContact.addForce(externalForceLeftCalcn);
+
+    ExternalForce* externalForceRightCalcn = new ExternalForce(
+            externalLoadsCalcn, "ground_force_r_v", "ground_force_r_p", 
+            "ground_torque_r_", "calcn_r");
+    modelNoContact.addForce(externalForceRightCalcn);
+    modelNoContact.finalizeConnections();
+
+    // Create external loads for the toes bodies and apply them to the model
+    // without contact forces.
+    auto externalLoadsTableToes = createExternalLoadsTableForGait(model, 
+            statesTraj, {"/forceset/contactMedialToe_r"}, 
+            {"/forceset/contactMedialToe_l"});
+
+    // TODO: avoid writing to file for this conversion.
+    STOFileAdapter::write(externalLoadsTableToes, "external_loads_temp.sto");
+    Storage externalLoadsToes("external_loads_temp.sto");
+
+    ExternalForce* externalForceLeftToes = new ExternalForce(externalLoadsToes, 
+            "ground_force_l_v", "ground_force_l_p", "ground_torque_l_", 
+            "toes_l");
+    modelNoContact.addForce(externalForceLeftToes);
+
+    ExternalForce* externalForceRightToes = new ExternalForce(externalLoadsToes, 
+            "ground_force_r_v", "ground_force_r_p", "ground_torque_r_", 
+            "toes_r");
+    modelNoContact.addForce(externalForceRightToes);
+    modelNoContact.finalizeConnections();
+    
+    // If createExternalLoadsTableForGait() is working correctly, the
+    // accelerations of `modelNoContact` (i.e., with the external loads applied)
+    // should match the accelerations of `model` (i.e., the model with the 
+    // foot-ground contact elements).
+    SimTK::State stateNoContact = modelNoContact.initSystem();
+    for (int i = 0; i < static_cast<int>(statesTraj.getSize()); ++i) {
+        auto state = statesTraj[i];
+        model.realizeAcceleration(state);
+
+        // Set the kinematic state of the model without contact forces to match
+        // the original model's state.
+        stateNoContact.setTime(state.getTime());
+        stateNoContact.setQ(state.getQ());
+        stateNoContact.setU(state.getU());
+        modelNoContact.realizeAcceleration(stateNoContact);
+
+        // Compare accelerations.
+        SimTK::Vector error = state.getUDot() - stateNoContact.getUDot();
+        CAPTURE(error);
+        CHECK_THAT(error.norm(), Catch::Matchers::WithinAbs(0, 1e-6));
+    }
 }
