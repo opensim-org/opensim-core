@@ -711,6 +711,6 @@ TEST_CASE("createExternalLoadsTableForGait") {
         // Compare accelerations.
         SimTK::Vector error = state.getUDot() - stateNoContact.getUDot();
         CAPTURE(error);
-        CHECK_THAT(error.norm(), Catch::Matchers::WithinAbs(0, 1e-6));
+        CHECK_THAT(error.norm(), Catch::Matchers::WithinAbs(0, 1e-8));
     }
 }
