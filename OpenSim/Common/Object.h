@@ -365,6 +365,15 @@ public:
     setObjectIsUpToDateWithProperties() was called. **/
     bool isObjectUpToDateWithProperties() const {return _objectIsUpToDate;}
 
+    /** Copy Properties from passed in fromObject to this OpenSim::Object.
+    The copying is strictly based on Property names. if a Property in fromObject 
+    is default then it is not copied to avoid excess serialization. Name is 
+    not copied since it's not a Property.
+    @param       fromObject
+       The Object from which the Properties are copied
+    **/
+    void copyPropertiesFromObject(const OpenSim::Object& fromObject);
+
     /** Dump formatted property information to a given output stream, useful
     for creating a "help" facility for registered objects. Object name, 
     property name, and property comment are output. Input is a
