@@ -148,6 +148,7 @@
 #include <OpenSim/Simulation/OpenSense/IMU.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 
+#include <OpenSim/Simulation/StatesDocument.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 

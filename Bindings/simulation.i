@@ -252,6 +252,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 
 %template(StdVectorIMUs) std::vector< OpenSim::IMU* >;
 
+%include <OpenSim/Simulation/StatesDocument.h>
 %include <OpenSim/Simulation/StatesTrajectory.h>
 // This enables iterating using the getBetween() method.
 %template(IteratorRangeStatesTrajectoryIterator)
