@@ -26,9 +26,10 @@ jobs:
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
       run: |
-        (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
-        7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
-        echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
+        choco install doxygen.portable
+        # (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
+        # 7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
+        # echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
 
     - name: Install Python packages
       uses: actions/setup-python@v4
@@ -166,9 +167,10 @@ jobs:
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
       run: |
-        (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
-        7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
-        echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
+        choco install doxygen.portable
+        # (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
+        # 7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
+        # echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
 
     - name: Install Python packages
       uses: actions/setup-python@v4
@@ -274,9 +276,10 @@ jobs:
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
       run: |
-        (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
-        7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
-        echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
+        choco install doxygen.portable
+        # (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
+        # 7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
+        # echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
 
     - name: Install Python packages
       uses: actions/setup-python@v4
@@ -370,7 +373,7 @@ jobs:
   mac_target:
     name: Mac [target]
 
-    runs-on: macos-12
+    runs-on: macos-14
 
     if: ${{ contains(github.event.pull_request.title, '[perf-mac]') || contains(github.event.pull_request.body, '[perf-mac]') }}
 
@@ -498,7 +501,7 @@ jobs:
 
   mac_source:
 
-    runs-on: macos-12
+    runs-on: macos-14
     
     name: ${{ (contains(github.event.pull_request.title, '[perf-mac]') || contains(github.event.pull_request.body, '[perf-mac]')) && 'Mac [source]' || 'Mac' }}
 
@@ -635,7 +638,7 @@ jobs:
       - windows2022_target
       - windows2022_source
 
-    runs-on: macos-12
+    runs-on: macos-14
 
     if: ${{ contains(github.event.pull_request.title, '[perf-win]') || contains(github.event.pull_request.body, '[perf-win]') }}
 
@@ -719,7 +722,7 @@ jobs:
       - mac_target
       - mac_source
 
-    runs-on: macos-12
+    runs-on: macos-14
 
     if: ${{ contains(github.event.pull_request.title, '[perf-mac]') || contains(github.event.pull_request.body, '[perf-mac]') }}
 
