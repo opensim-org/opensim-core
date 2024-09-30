@@ -24,12 +24,9 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Install Doxygen
-      # choco install doxygen.portable # <-- too unreliable.
       run: |
         choco install doxygen.portable
-        # $response = Invoke-WebRequest -Uri "https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download" -Headers @{"User-Agent" = "Mozilla/5.0"}
-        # $downloadUrl = $response.Headers.Location
-        # Invoke-WebRequest -Uri $downloadUrl -OutFile "doxygen.zip" -Headers @{"User-Agent" = "Mozilla/5.0"}
+        # (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
         # 7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
         # echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
 
@@ -167,7 +164,6 @@ jobs:
         ref: ${{ github.event.pull_request.base.ref }}
 
     - name: Install Doxygen
-      # choco install doxygen.portable # <-- too unreliable.
       run: |
         choco install doxygen.portable
         # (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
@@ -276,11 +272,11 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Install Doxygen
-      # choco install doxygen.portable # <-- too unreliable.
       run: |
-        (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
-        7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
-        echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
+        choco install doxygen.portable
+        # (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
+        # 7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
+        # echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
 
     - name: Install Python packages
       uses: actions/setup-python@v4
