@@ -19,9 +19,9 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             ${ColPack_ROOT_DIR}/lib/libColPack.0.dylib
             ${IPOPT_LIBDIR}/libipopt.3.dylib
             ${IPOPT_LIBDIR}/libipopt.dylib
-            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.3.dylib
-            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.dylib
-            ${IPOPT_LIBDIR}/../../metis/lib/libmetis.dylib
+            ${IPOPT_LIBDIR}/libcoinmumps.3.dylib
+            ${IPOPT_LIBDIR}/libcoinmumps.dylib
+            ${IPOPT_LIBDIR}/libmetis.dylib
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
