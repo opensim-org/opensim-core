@@ -26,7 +26,9 @@ jobs:
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
       run: |
-        Invoke-WebRequest -Uri "https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download" -OutFile "doxygen.zip" -Headers @{"User-Agent" = "Mozilla/5.0"}
+        $response = Invoke-WebRequest -Uri "https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download" -Headers @{"User-Agent" = "Mozilla/5.0"}
+        $downloadUrl = $response.Headers.Location
+        Invoke-WebRequest -Uri $downloadUrl -OutFile "doxygen.zip" -Headers @{"User-Agent" = "Mozilla/5.0"}
         7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
         echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
 
@@ -166,7 +168,7 @@ jobs:
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
       run: |
-        Invoke-WebRequest -Uri "https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download" -OutFile "$env:GITHUB_WORKSPACE/doxygen.zip" -Headers @{"User-Agent" = "Mozilla/5.0"}
+        (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
         7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
         echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
 
