@@ -59,10 +59,10 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
             ${IPOPT_LIBDIR}/libipopt.so.3.14.16
             ${IPOPT_LIBDIR}/libipopt.so.3
             ${IPOPT_LIBDIR}/libipopt.so
-            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.so.3.0.5
-            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.so.3
-            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.so
-            ${IPOPT_LIBDIR}/../../metis/lib/libmetis.so
+            ${IPOPT_LIBDIR}/libcoinmumps.so.3.0.5
+            ${IPOPT_LIBDIR}/libcoinmumps.so.3
+            ${IPOPT_LIBDIR}/libcoinmumps.so
+            ${IPOPT_LIBDIR}/libmetis.so
 
             ${gfortran}
             ${quadmath}
