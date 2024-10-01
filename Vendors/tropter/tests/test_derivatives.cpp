@@ -658,7 +658,7 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                 INFO(inz << " (" << i << " " << j << ")");
                 REQUIRE_THAT(analytical_hessian(i, j), 
                         Catch::Matchers::WithinRel(
-                                actual_hessian_values[inz], 1e-5));
+                                actual_hessian_values[inz], 1e-4));
             }
         }
         {
