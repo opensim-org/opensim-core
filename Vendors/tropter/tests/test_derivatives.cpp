@@ -656,8 +656,9 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                 const auto& i = hes_sparsity.row[inz];
                 const auto& j = hes_sparsity.col[inz];
                 INFO(inz << " (" << i << " " << j << ")");
-                REQUIRE(analytical_hessian(i, j) ==
-                        Approx(actual_hessian_values[inz]).epsilon(1e-5));
+                REQUIRE_THAT(analytical_hessian(i, j), 
+                        Catch::Matchers::WithinRel(
+                                actual_hessian_values[inz], 1e-5));
             }
         }
         {
