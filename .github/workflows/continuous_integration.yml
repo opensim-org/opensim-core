@@ -638,7 +638,7 @@ jobs:
       - windows2022_target
       - windows2022_source
 
-    runs-on: macos-14
+    runs-on: ubuntu-latest
 
     if: ${{ contains(github.event.pull_request.title, '[perf-win]') || contains(github.event.pull_request.body, '[perf-win]') }}
 
@@ -722,7 +722,7 @@ jobs:
       - mac_target
       - mac_source
 
-    runs-on: macos-14
+    runs-on: ubuntu-latest
 
     if: ${{ contains(github.event.pull_request.title, '[perf-mac]') || contains(github.event.pull_request.body, '[perf-mac]') }}
 
