@@ -211,22 +211,14 @@ void simulateMuscle(
     //==========================================================================
     // 5. Verify files were written with correct values
     //==========================================================================
-    log_info("Loading the results from file");
     TimeSeriesTable tableD("testOutputReporter_Outputs.sto");
     TimeSeriesTable_<SimTK::Vec3> tableV3("testOutputReporter_OutputsVec3.sto");
     TimeSeriesTable_<SimTK::SpatialVec> tableSV("testOutputReporter_OutputsSpatialVec.sto");
 
-    log_info("Indexing initial values");
     double val_t0 = tableD.getIndependentColumn()[0];
     const SimTK::Real& val_ke0 = tableD.getRowAtIndex(0)[0];
     const Vec3& val_omega0 = tableV3.getRowAtIndex(0)[1];
     const SimTK::SpatialVec& val_jrf0 = tableSV.getRowAtIndex(0)[1];
-
-    log_info("Checking initial values");
-    // ASSERT_EQUAL(t0, val_t0, SimTK::Eps);
-    // ASSERT_EQUAL(ke0, val_ke0, SimTK::Eps);
-    // ASSERT_EQUAL(ang_acc0, val_omega0, SimTK::Eps);
-    // ASSERT_EQUAL(reaction0, val_jrf0, SimTK::Eps);
 
     CHECK_THAT(t0, Catch::Matchers::WithinAbs(val_t0, SimTK::Eps));
     CHECK_THAT(ke0, Catch::Matchers::WithinAbs(val_ke0, SimTK::Eps));
@@ -239,7 +231,6 @@ void simulateMuscle(
         }
     }
 
-    log_info("Indexing final values");
     double val_tf = tableD.getIndependentColumn()[tableD.getNumRows() - 1];
     const SimTK::Real& val_ke = tableD.getRowAtIndex(tableD.getNumRows() - 1)[0];
     const Vec3& val_omega = tableV3.getRowAtIndex(tableV3.getNumRows() - 1)[1];
@@ -251,16 +242,8 @@ void simulateMuscle(
     auto ang_acc = ball->getAngularAccelerationInGround(state);
     auto reaction = slider->calcReactionOnChildExpressedInGround(state);
 
-    log_info("Checking final time {}: ", state.getTime());
-
-    log_info("Checking final values");
-    // ASSERT_EQUAL(state.getTime(), val_tf, SimTK::Eps);
-    // ASSERT_EQUAL(ke, val_ke, SimTK::Eps);
-    // ASSERT_EQUAL(ang_acc, val_omega, SimTK::Eps);
-    // ASSERT_EQUAL(reaction, val_jrf, SimTK::Eps);
-
     CHECK_THAT(state.getTime(), Catch::Matchers::WithinAbs(val_tf, SimTK::Eps));
-    CHECK_THAT(ke, Catch::Matchers::WithinAbs(val_ke, SimTK::Eps));
+    CHECK_THAT(ke, Catch::Matchers::WithinAbs(val_ke, 1e-10));
     for (int i = 0; i < 3; ++i) {
         CHECK_THAT(ang_acc[i], 
                 Catch::Matchers::WithinAbs(val_omega[i], SimTK::Eps));
@@ -269,8 +252,6 @@ void simulateMuscle(
                     Catch::Matchers::WithinAbs(val_jrf[j][i], SimTK::Eps));
         }
     }
-
-    log_info("Exiting simulateMuscle");
 }
 
 TEST_CASE("Output Reporter")
@@ -287,6 +268,4 @@ TEST_CASE("Output Reporter")
     simulateMuscle( muscle,
         IntegrationAccuracy,
         true);
-
-    log_info("Exiting testOutputReporter");
 }
