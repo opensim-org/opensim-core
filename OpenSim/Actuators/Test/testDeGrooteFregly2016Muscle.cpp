@@ -598,15 +598,15 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getPennationAngularVelocity(state) == 0);
             CHECK(muscle.getTendonVelocity(state) == 0);
             CHECK_THAT(muscle.getForceVelocityMultiplier(state),
-                    Catch::Matchers::WithinRel(0.0, 1e-8));
+                    Catch::Matchers::WithinAbs(0.0));
 
             model.realizeDynamics(state);
             const auto Fmax = muscle.getMaxIsometricForce();
             const auto fpass = muscle.calcPassiveForceMultiplier(1.0);
             CHECK_THAT(muscle.getActiveFiberForce(state),
-                    Catch::Matchers::WithinRel(0.0, 1e-8));
+                    Catch::Matchers::WithinAbs(0.0));
             CHECK_THAT(muscle.getActiveFiberForceAlongTendon(state),
-                    Catch::Matchers::WithinRel(0.0, 1e-8));
+                    Catch::Matchers::WithinAbs(0.0));
             CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
             CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
                     Approx(Fmax * fpass));
@@ -641,9 +641,9 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             SimTK::Real muscleStiffness = muscle.calcMuscleStiffness(
                     tendonStiffness, fiberStiffnessAlongTendon);
             CHECK_THAT(muscle.getMuscleStiffness(state),
-                    Catch::Matchers::WithinRel(muscleStiffness, 1e-8));
+                    Catch::Matchers::WithinAbs(muscleStiffness));
             CHECK_THAT(muscle.getFiberActivePower(state),
-                    Catch::Matchers::WithinRel(0.0, 1e-8));
+                    Catch::Matchers::WithinAbs(0.0));
             CHECK(muscle.getFiberPassivePower(state) ==
                     Approx(Vmax * Fmax * fpass));
             CHECK(muscle.getTendonPower(state) == Approx(0.0));
