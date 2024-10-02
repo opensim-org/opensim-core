@@ -640,6 +640,12 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getTendonStiffness(state) == SimTK::Infinity);
             SimTK::Real muscleStiffness = muscle.calcMuscleStiffness(
                     tendonStiffness, fiberStiffnessAlongTendon);
+            CAPTURE(muscleStiffness);
+            CAPTURE(tendonStiffness);
+            CAPTURE(fiberStiffnessAlongTendon);
+            const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s)
+            CAPTURE(mdi.tendonStiffness);
+            CAPTURE(mdi.fiberStiffnessAlongTendon);
             CHECK_THAT(muscle.getMuscleStiffness(state),
                     Catch::Matchers::WithinAbs(muscleStiffness, 1e-10));
             CHECK_THAT(muscle.getFiberActivePower(state),
