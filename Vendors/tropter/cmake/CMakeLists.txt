@@ -1,16 +1,22 @@
 
 if(TROPTER_COPY_DEPENDENCIES AND APPLE)
     get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
-
     file(GLOB gfortran "${gcc_libdir}/libgfortran*.dylib")
     file(GLOB quadmath "${gcc_libdir}/libquadmath*.dylib")
 
     # Get the actual name of the library libgcc_s.1.dylib (can be libgcc_s.1.1.dylib),
     # or another if it changes in the future.
     execute_process(COMMAND bash "-c"
-        "basename `otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libgcc' | awk '{print $1}'`"
-        OUTPUT_VARIABLE libgcc_name
+        "otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libgfortran' | awk '{print $1}'"
+        OUTPUT_VARIABLE libgfortran_name
         OUTPUT_STRIP_TRAILING_WHITESPACE)
+        #message(STATUS "ipopt dir ${IPOPT_LIBDIR}" )
+        #message(STATUS "libgfortran_name ${libgfortran_name}")
+    execute_process(COMMAND bash "-c"
+        "otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libquadmath' | awk '{print $1}'"
+        OUTPUT_VARIABLE libquadmath_name
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+        #message(STATUS "libquadmath_name ${libquadmath_name}")
 
     install(FILES
             ${ADOLC_DIR}/lib64/libadolc.2.dylib
@@ -22,6 +28,8 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             ${IPOPT_LIBDIR}/libcoinmumps.3.dylib
             ${IPOPT_LIBDIR}/libcoinmumps.dylib
             ${IPOPT_LIBDIR}/libmetis.dylib
+            ${libgfortran_name}
+            ${libquadmath_name}
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 

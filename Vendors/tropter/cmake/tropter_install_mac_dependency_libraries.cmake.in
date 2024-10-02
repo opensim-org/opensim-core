@@ -89,14 +89,19 @@ install_name_tool_delete_rpath(adolc.2 "@ColPack_ROOT_DIR@/lib")
 install_name_tool_id(ipopt.3)
 install_name_tool_change(ipopt.3 coinmumps.3 "@IPOPT_LIBDIR@")
 install_name_tool_change(ipopt.3 metis "@IPOPT_LIBDIR@")
+install_name_tool_change_gfortran(ipopt.3)
+install_name_tool_change_quadmath(ipopt.3)
 
 # coinmumps
 install_name_tool_id(coinmumps.3)
 install_name_tool_change(coinmumps.3 metis "@IPOPT_LIBDIR@")
 install_name_tool_change(coinmumps.3 "${libgcc_name}" "${libgcc_dir}")
 install_name_tool_add_rpath(coinmumps.3)
+install_name_tool_change_gfortran(coinmumps.3)
+install_name_tool_change_quadmath(coinmumps.3)
 
 # metis
 install_name_tool_id(metis)
 install_name_tool_add_rpath(metis)
+ 
 
