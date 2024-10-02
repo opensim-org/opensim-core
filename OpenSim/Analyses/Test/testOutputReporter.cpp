@@ -245,6 +245,8 @@ void simulateMuscle(
     ASSERT_EQUAL(ke, val_ke, SimTK::Eps);
     ASSERT_EQUAL(ang_acc, val_omega, SimTK::Eps);
     ASSERT_EQUAL(reaction, val_jrf, SimTK::Eps);
+
+    log_info("Exiting simulateMuscle");
 }
 
 TEST_CASE("Output Reporter")
@@ -261,4 +263,6 @@ TEST_CASE("Output Reporter")
     simulateMuscle( muscle,
         IntegrationAccuracy,
         true);
+
+    log_info("Exiting testOutputReporter");
 }
