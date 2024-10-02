@@ -198,6 +198,8 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     message(STATUS "Enabling LTO for Clang.")
 endif()
 
+# set(SIMBODY_EXTRA_CMAKE_ARGS "-DBUILD_STATIC_LIBRARIES:BOOL=ON;-DBUILD_DYNAMIC_LIBRARIES:BOOL=OFF")
+
 AddDependency(NAME       simbody
               DEFAULT    ON
               GIT_URL    https://github.com/simbody/simbody.git

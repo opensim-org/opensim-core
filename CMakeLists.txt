@@ -442,8 +442,8 @@ endif()
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     # Enable Link-Time Optimization (LTO) when building with Clang for Enzyme.
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -g")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto -g")
     # TODO not working.
     # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld")
 endif()
