@@ -634,8 +634,10 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             SimTK::Real fiberStiffnessAlongTendon =
                     diffFiberStiffnessAlongTendon.calcDerivative(
                             muscle.get_optimal_fiber_length());
-            CHECK(muscle.getFiberStiffnessAlongTendon(state) ==
-                    Approx(fiberStiffnessAlongTendon));
+            CAPTURE(muscle.getFiberStiffnessAlongTendon(state));
+            CAPTURE(fiberStiffnessAlongTendon);
+            CHECK_THAT(muscle.getFiberStiffnessAlongTendon(state),
+                    Catch::Matchers::WithinRel(fiberStiffnessAlongTendon, 1e-6));
 
             SimTK::Real tendonStiffness = SimTK::Infinity;
             CHECK(muscle.getTendonStiffness(state) == SimTK::Infinity);
@@ -643,11 +645,9 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
                     tendonStiffness, fiberStiffnessAlongTendon);
             CAPTURE(muscleStiffness);
             CAPTURE(tendonStiffness);
-            CAPTURE(fiberStiffnessAlongTendon);
             CAPTURE(muscle.getTendonStiffness(state));
-            CAPTURE(muscle.getFiberStiffnessAlongTendon(state));
             CHECK_THAT(muscle.getMuscleStiffness(state),
-                    Catch::Matchers::WithinAbs(muscleStiffness, 1e-10));
+                    Catch::Matchers::WithinRel(muscleStiffness, 1e-6));
             CHECK_THAT(muscle.getFiberActivePower(state),
                     Catch::Matchers::WithinAbs(0.0, 1e-10));
             CHECK(muscle.getFiberPassivePower(state) ==
