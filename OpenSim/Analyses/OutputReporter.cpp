@@ -130,27 +130,23 @@ int OutputReporter::printResults(const std::string& baseName,
         return 0;
     }
 
-    log_info("OutputReporter checking extension is .sto: {}", extension);
     OPENSIM_THROW_IF_FRMOBJ(IO::Lowercase(extension) != ".sto",
         Exception, "Only writing results to '.sto' format is supported.");
 
     std::string prefix = dir.empty() ? "" : dir + "/";
 
-    log_info("OutputReporter.printResults: Writing double results to {}.", prefix);
     auto& tableD = _tableReporterDouble->getTable();
     if (tableD.getNumColumns()) {
         STOFileAdapter_<double>::write(tableD,
             prefix + baseName + "_Outputs" + extension);
     }
 
-    log_info("OutputReporter.printResults: Writing Vec3 results to {}.", prefix);
     auto& tableV3 = _tableReporterVec3->getTable();
     if (tableV3.getNumColumns()) {
         STOFileAdapter_<SimTK::Vec3>::write(tableV3,
             prefix + baseName + "_OutputsVec3" + extension);
     }
 
-    log_info("OutputReporter.printResults: Writing SpatialVec results to {}.", prefix);
     auto& tableSV = _tableReporterSpatialVec->getTable();
     if (tableSV.getNumColumns()) {
         STOFileAdapter_<SimTK::SpatialVec>::write(tableSV,
