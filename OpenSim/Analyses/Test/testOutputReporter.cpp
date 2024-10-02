@@ -223,10 +223,21 @@ void simulateMuscle(
     const SimTK::SpatialVec& val_jrf0 = tableSV.getRowAtIndex(0)[1];
 
     log_info("Checking initial values");
-    ASSERT_EQUAL(t0, val_t0, SimTK::Eps);
-    ASSERT_EQUAL(ke0, val_ke0, SimTK::Eps);
-    ASSERT_EQUAL(ang_acc0, val_omega0, SimTK::Eps);
-    ASSERT_EQUAL(reaction0, val_jrf0, SimTK::Eps);
+    // ASSERT_EQUAL(t0, val_t0, SimTK::Eps);
+    // ASSERT_EQUAL(ke0, val_ke0, SimTK::Eps);
+    // ASSERT_EQUAL(ang_acc0, val_omega0, SimTK::Eps);
+    // ASSERT_EQUAL(reaction0, val_jrf0, SimTK::Eps);
+
+    CHECK_THAT(t0, Catch::Matchers::WithinAbs(val_t0, SimTK::Eps));
+    CHECK_THAT(ke0, Catch::Matchers::WithinAbs(val_ke0, SimTK::Eps));
+    for (int i = 0; i < 3; ++i) {
+        CHECK_THAT(ang_acc0[i], 
+                Catch::Matchers::WithinAbs(val_omega0[i], SimTK::Eps));
+        for (int j = 0; j < 2; ++j) {
+            CHECK_THAT(reaction0[j][i], 
+                    Catch::Matchers::WithinAbs(val_jrf0[j][i], SimTK::Eps));
+        }
+    }
 
     log_info("Indexing final values");
     double val_tf = tableD.getIndependentColumn()[tableD.getNumRows() - 1];
@@ -240,11 +251,24 @@ void simulateMuscle(
     auto ang_acc = ball->getAngularAccelerationInGround(state);
     auto reaction = slider->calcReactionOnChildExpressedInGround(state);
 
+    log_info("Checking final time {}: ", state.getTime());
+
     log_info("Checking final values");
-    ASSERT_EQUAL(state.getTime(), val_tf, SimTK::Eps);
-    ASSERT_EQUAL(ke, val_ke, SimTK::Eps);
-    ASSERT_EQUAL(ang_acc, val_omega, SimTK::Eps);
-    ASSERT_EQUAL(reaction, val_jrf, SimTK::Eps);
+    // ASSERT_EQUAL(state.getTime(), val_tf, SimTK::Eps);
+    // ASSERT_EQUAL(ke, val_ke, SimTK::Eps);
+    // ASSERT_EQUAL(ang_acc, val_omega, SimTK::Eps);
+    // ASSERT_EQUAL(reaction, val_jrf, SimTK::Eps);
+
+    CHECK_THAT(state.getTime(), Catch::Matchers::WithinAbs(val_tf, SimTK::Eps));
+    CHECK_THAT(ke, Catch::Matchers::WithinAbs(val_ke, SimTK::Eps));
+    for (int i = 0; i < 3; ++i) {
+        CHECK_THAT(ang_acc[i], 
+                Catch::Matchers::WithinAbs(val_omega[i], SimTK::Eps));
+        for (int j = 0; j < 2; ++j) {
+            CHECK_THAT(reaction[j][i], 
+                    Catch::Matchers::WithinAbs(val_jrf[j][i], SimTK::Eps));
+        }
+    }
 
     log_info("Exiting simulateMuscle");
 }
