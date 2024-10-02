@@ -643,7 +643,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CAPTURE(muscleStiffness);
             CAPTURE(tendonStiffness);
             CAPTURE(fiberStiffnessAlongTendon);
-            const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s)
+            const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
             CAPTURE(mdi.tendonStiffness);
             CAPTURE(mdi.fiberStiffnessAlongTendon);
             CHECK_THAT(muscle.getMuscleStiffness(state),
