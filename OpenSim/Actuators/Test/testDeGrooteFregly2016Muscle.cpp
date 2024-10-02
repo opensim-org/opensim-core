@@ -26,6 +26,7 @@
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
@@ -643,9 +644,8 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CAPTURE(muscleStiffness);
             CAPTURE(tendonStiffness);
             CAPTURE(fiberStiffnessAlongTendon);
-            const MuscleDynamicsInfo& mdi = muscle.getMuscleDynamicsInfo(s);
-            CAPTURE(mdi.tendonStiffness);
-            CAPTURE(mdi.fiberStiffnessAlongTendon);
+            CAPTURE(muscle.getTendonStiffness(state));
+            CAPTURE(muscle.getFiberStiffnessAlongTendon(state));
             CHECK_THAT(muscle.getMuscleStiffness(state),
                     Catch::Matchers::WithinAbs(muscleStiffness, 1e-10));
             CHECK_THAT(muscle.getFiberActivePower(state),
