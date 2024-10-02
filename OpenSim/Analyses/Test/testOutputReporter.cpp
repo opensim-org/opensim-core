@@ -27,6 +27,7 @@
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Analyses/OutputReporter.h>
 
+#include "OpenSim/Common/Logger.h"
 #include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
@@ -197,15 +198,10 @@ void simulateMuscle(
     state.setTime(initialTime);
     manager.initialize(state);
 
-    cout << "\nIntegrating from " << initialTime << " to " << finalTime << endl;
+    log_info("Integrating from {} to {}", initialTime, finalTime);
 
-    // Start timing the simulation
-    const clock_t start = clock();
     // simulate
     state = manager.integrate(finalTime);
-
-    // how long did it take?
-    double comp_time = (double)(clock() - start) / CLOCKS_PER_SEC;
 
     //==========================================================================
     // 4. Print the results
