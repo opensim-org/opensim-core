@@ -254,11 +254,11 @@ void AnalysisSet::
 printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
-    int i;
-    int size = getSize();
-    for(i=0;i<size;i++) {
+    for(int i = 0; i < getSize(); i++) {
         Analysis& analysis = get(i);
-        if(analysis.getOn() && analysis.getPrintResultFiles()) analysis.printResults(aBaseName,aDir,aDT,aExtension);
+        if(analysis.getOn() && analysis.getPrintResultFiles()) {
+            analysis.printResults(aBaseName, aDir, aDT, aExtension);
+        }
     }
 }
 //=============================================================================
