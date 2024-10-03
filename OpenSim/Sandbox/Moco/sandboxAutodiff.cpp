@@ -2,6 +2,7 @@
 #include <OpenSim/Moco/osimMoco.h>
 
 using namespace casadi;
+using namespace OpenSim;
 
 /// Translate a point mass in one dimension in minimum time. This is a very
 /// simple example that shows only the basics of Moco.
@@ -21,21 +22,89 @@ using namespace casadi;
 /// constants  m       mass
 /// @endverbatim
 
+class CustomFunction : public casadi::Callback {
+public:
+    virtual ~CustomFunction() = default;
+    void constructFunction(const std::string& name, 
+            bool enableFiniteDifference,
+            const std::string& finiteDiffScheme, 
+            const double& mass) {
+        m_mass = mass;
+        casadi::Dict opts;
+        opts["enable_fd"] = enableFiniteDifference;
+        opts["fd_method"] = finiteDiffScheme;
+        this->construct(name, opts);
+    }
+
+    casadi_int get_n_in() override { return 3; }
+    std::string get_name_in(casadi_int i) override {
+        switch (i) {
+        case 0: return "time";
+        case 1: return "states";
+        case 2: return "controls";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        }
+    }
+    casadi::Sparsity get_sparsity_in(casadi_int i) override {
+        if (i == 0) {
+            return casadi::Sparsity::dense(1, 1);
+        } else if (i == 1) {
+            return casadi::Sparsity::dense(2, 1);
+        } else if (i == 2) {
+            return casadi::Sparsity::dense(1, 1);
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    }
+
+    // bool has_jac_sparsity(casadi_int oind, casadi_int iind) const override {
+    //     return false;
+    // }
+    // casadi::Sparsity get_jac_sparsity(casadi_int oind, casadi_int iind,
+    //         bool symmetric) const override;
+protected:
+    double m_mass = 1.0;
+};
+
+
+class MultibodySystem : public CustomFunction {
+public:
+    casadi_int get_n_out() override final { return 1; }
+    std::string get_name_out(casadi_int i) override final {
+        switch (i) {
+        case 0: return "multibody_derivatives";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        }
+    }
+    casadi::Sparsity get_sparsity_out(casadi_int i) override final {
+        if (i == 0) {
+            return casadi::Sparsity::dense(1, 1); // numSpeeds x 1
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    }
+    DMVector eval(const DMVector& args) const override {
+        DM controls = args.at(2);
+        DMVector out((int)n_out());
+        out[0] = controls / m_mass;
+        return out;
+    }
+};
+
 class TranscriptionSlidingMass {
 public:
-    TranscriptionSlidingMass(int degree, int numMeshIntervals)
-            : m_degree(degree), m_numMeshIntervals(numMeshIntervals) {
+    TranscriptionSlidingMass(double mass, int numMeshIntervals)
+            : m_mass(mass), m_numMeshIntervals(numMeshIntervals) {
+
+        // Construct the multibody system function.
+        this->m_multibodySystem = OpenSim::make_unique<MultibodySystem>();
+        this->m_multibodySystem->constructFunction(
+                "multibody_system", true, "central", m_mass);
 
         // Transcription scheme info (Legendre-Gauss).
-        m_numGridPoints = m_numMeshIntervals * (m_degree + 1) + 1;
-        m_numDefectsPerMeshInterval = (degree + 1) * m_numStates;
-        m_numConstraints = m_numDefectsPerMeshInterval * m_numMeshIntervals;
-
-        m_legendreRoots = casadi::collocation_points(degree, "legendre");
-        casadi::collocation_coeff(m_legendreRoots,
-                m_differentiationMatrix,
-                m_interpolationCoefficients,
-                m_quadratureCoefficients);
+        m_numGridPoints = m_numMeshIntervals + 1;
+        m_numDefectsPerMeshInterval = m_numStates;
+        m_numConstraints = m_numStates * m_numMeshIntervals;
 
          // Create the mesh.
         for (int i = 0; i < (numMeshIntervals + 1); ++i) {
@@ -43,17 +112,16 @@ public:
         }
 
         // Create the grid.
-        m_grid = casadi::DM::zeros(1, m_numGridPoints);
-        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-            const double t_i = m_mesh[imesh];
-            const double t_ip1 = m_mesh[imesh + 1];
-            int igrid = imesh * (m_degree + 1);
-            m_grid(igrid) = t_i;
-            for (int d = 0; d < m_degree; ++d) {
-                m_grid(igrid + d + 1) = t_i + (t_ip1 - t_i) * m_legendreRoots[d];
-            }
-        }
-        m_grid(m_numGridPoints - 1) = m_mesh[m_numMeshIntervals];
+        m_grid = m_mesh;
+
+        auto makeTimeIndices = [](const std::vector<int>& in) {
+            casadi::Matrix<casadi_int> out(1, in.size());
+            for (int i = 0; i < (int)in.size(); ++i) { out(i) = in[i]; }
+            return out;
+        };
+        std::vector<int> gridIndicesVector(m_numGridPoints);
+        std::iota(gridIndicesVector.begin(), gridIndicesVector.end(), 0);
+        m_gridIndices = makeTimeIndices(gridIndicesVector);
 
         // Create variables and set bounds.
         createVariablesAndSetBounds();
@@ -127,30 +195,33 @@ public:
         xdot(1, Slice()) = c(0, Slice()) / m_mass;
     }
 
+    void calcStateDerivativesCallback(const MX& x, const MX& c, MX& xdot) {
+        xdot(0, Slice()) = x(1, Slice());
+
+        std::vector<Var> inputs{states, controls};
+        const auto out = evalOnTrajectory(
+                    *m_multibodySystem, inputs, m_gridIndices);
+        xdot(1, Slice()) = out.at(0);
+    }
+
     void calcDefects(const casadi::MX& x, const casadi::MX& xdot, 
             casadi::MX& defects) {
 
         const int NS = m_numStates;
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-            int igrid = imesh * (m_degree + 1);
-            const auto h = m_times(igrid + m_degree + 1) - m_times(igrid);
-            const auto x_i = x(Slice(), Slice(igrid, igrid + m_degree + 1));
-            const auto xdot_i = xdot(Slice(), Slice(igrid + 1, igrid + m_degree + 1));
-            const auto x_ip1 = x(Slice(), igrid + m_degree + 1);
+            const auto h = m_times(imesh + 1) - m_times(imesh);
+            const auto x_i = x(Slice(), imesh);
+            const auto x_ip1 = x(Slice(), imesh + 1);
+            const auto xdot_i = xdot(Slice(), imesh);
+            const auto xdot_ip1 = xdot(Slice(), imesh + 1);
 
-            // Residual function defects.
-            MX residual = h * xdot_i - MX::mtimes(x_i, m_differentiationMatrix);
-            for (int d = 0; d < m_degree; ++d) {
-                defects(Slice(d * NS, (d + 1) * NS), imesh) = residual(Slice(), d);
-            }
-
-            // End state interpolation.
-            defects(Slice(m_degree * NS, (m_degree + 1) * NS), imesh) =
-                    x_ip1 - MX::mtimes(x_i, m_interpolationCoefficients);
+            // Trapezoidal defects.
+            defects(Slice(), imesh) = 
+                    x_ip1 - (x_i + 0.5 * h * (xdot_ip1 + xdot_i));
         }
     }
 
-    void solve() {
+    MocoTrajectory solve() {
         // Define the NLP.
         // ---------------
         transcribe();
@@ -174,8 +245,7 @@ public:
         nlp.emplace(std::make_pair("f", m_objective));
         nlp.emplace(std::make_pair("g", g));
 
-        const casadi::Function nlpFunc =
-            casadi::nlpsol("nlp", "ipopt", nlp);
+        const casadi::Function nlpFunc = casadi::nlpsol("nlp", "ipopt", nlp);
 
         // Run the optimization (evaluate the CasADi NLP function).
         // --------------------------------------------------------
@@ -186,6 +256,42 @@ public:
                     {"ubx", flattenVariables(m_upperBounds)},
                     {"lbg", flattenConstraints(m_constraintsLowerBounds)},
                     {"ubg", flattenConstraints(m_constraintsUpperBounds)}});
+
+        const auto finalVariables = nlpResult.at("x");
+        VariablesDM variables = expandVariables(finalVariables);
+        DM times = createTimes(variables[initial_time], variables[final_time]);
+
+        DM objective = nlpResult.at("f").scalar();
+        std::cout << "Objective: " << objective << std::endl;
+
+        // Create a MocoTrajectory.
+        // ------------------------
+        SimTK::Vector time(m_numGridPoints, 0.0);
+        for (int i = 0; i < m_numGridPoints; ++i) {
+            time[i] = times(i).scalar();
+        }
+
+        SimTK::Matrix statesTrajectory(m_numGridPoints, m_numStates, 0.0);
+        for (int i = 0; i < m_numGridPoints; ++i) {
+            for (int j = 0; j < m_numStates; ++j) {
+                statesTrajectory(i, j) = variables[states](j, i).scalar();
+            }
+        }
+
+        SimTK::Matrix controlsTrajectory(m_numGridPoints, m_numControls, 0.0);
+        for (int i = 0; i < m_numGridPoints; ++i) {
+            for (int j = 0; j < m_numControls; ++j) {
+                controlsTrajectory(i, j) = variables[controls](j, i).scalar();
+            }
+        }
+
+        std::vector<std::string> stateNames = {"position", "speed"};
+        std::vector<std::string> controlNames = {"force"};
+        MocoTrajectory trajectory(time, stateNames, controlNames, {}, {},
+                statesTrajectory, controlsTrajectory, SimTK::Matrix(), 
+                SimTK::RowVector());
+
+        return trajectory;
     }
 
 private:
@@ -257,6 +363,21 @@ private:
         return T::veccat(stdvec);
     }
 
+    VariablesDM expandVariables(const casadi::DM& x) const {
+        VariablesDM out;
+        using casadi::Slice;
+        casadi_int offset = 0;
+        for (const auto& key : getSortedVarKeys(m_variables)) {
+            const auto& value = m_variables.at(key);
+            // Convert a portion of the column vector into a matrix.
+            out[key] = casadi::DM::reshape(
+                    x(Slice(offset, offset + value.numel())), value.rows(),
+                    value.columns());
+            offset += value.numel();
+        }
+        return out;
+    }
+
     template <typename T>
     T flattenConstraints(const Constraints<T>& constraints) const {
         T flat = T(casadi::Sparsity::dense(m_numConstraints, 1));
@@ -282,17 +403,60 @@ private:
         return flat;
     }
 
+    template <typename T>
+    Constraints<T> expandConstraints(const T& flat) const {
+        using casadi::Sparsity;
+
+        // Allocate memory.
+        auto init = [](int numRows, int numColumns) {
+            return T(casadi::Sparsity::dense(numRows, numColumns));
+        };
+        Constraints<T> out;
+        out.defects = init(m_numDefectsPerMeshInterval, m_numMeshIntervals);
+
+        int iflat = 0;
+        auto copyColumn = [&flat, &iflat](T& matrix, int columnIndex) {
+            using casadi::Slice;
+            if (matrix.rows()) {
+                matrix(Slice(), columnIndex) =
+                        flat(Slice(iflat, iflat + matrix.rows()));
+                iflat += matrix.rows();
+            }
+        };
+
+        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+            copyColumn(out.defects, imesh);
+        }
+
+        OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
+                "Internal error: final value of the index into the flattened "
+                "constraints should be equal to the number of constraints.");
+        return out;
+    }
+
+    casadi::MXVector evalOnTrajectory(
+        const casadi::Function& pointFunction, const std::vector<Var>& inputs,
+        const casadi::Matrix<casadi_int>& timeIndices) const {
+            const auto trajFunc = pointFunction.map(
+                    timeIndices.size2(), "serial", 1);
+
+            // Assemble input.
+            MXVector mxIn(inputs.size() + 1);
+            mxIn[0] = m_times(timeIndices);
+            for (int i = 0; i < (int)inputs.size(); ++i) {
+                mxIn[i + 1] = m_variables.at(inputs[i])(Slice(), timeIndices); 
+            }
+
+            MXVector mxOut;
+            trajFunc.call(mxIn, mxOut);
+            return mxOut;
+        }
+
     // Member variables
     // ----------------
     double m_mass = 1.0;
     int m_numStates = 2;
     int m_numControls = 1;
-    int m_degree;
-
-    std::vector<double> m_legendreRoots;
-    casadi::DM m_differentiationMatrix;
-    casadi::DM m_interpolationCoefficients;
-    casadi::DM m_quadratureCoefficients;
 
     std::vector<double> m_mesh;
     casadi::DM m_grid;
@@ -313,13 +477,20 @@ private:
     Constraints<casadi::MX> m_constraints;
     Constraints<casadi::DM> m_constraintsLowerBounds;
     Constraints<casadi::DM> m_constraintsUpperBounds;
+
+    std::unique_ptr<MultibodySystem> m_multibodySystem;
+
+    casadi::Matrix<casadi_int> m_gridIndices;
 };
 
 
 
 int main() {
-    TranscriptionSlidingMass transcription(3, 50);
-    transcription.solve();
+    int num_mesh_intervals = 50;
+    double mass = 2.0;
+    TranscriptionSlidingMass transcription(mass, num_mesh_intervals);
+    MocoTrajectory solution = transcription.solve();
+    solution.write("sandboxAutodiff_solution.sto");
 
     return EXIT_SUCCESS;
 }
