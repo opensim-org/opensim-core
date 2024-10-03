@@ -12,5 +12,5 @@ OpenSimAddTests(
 
 
 # edge-case: one test ensures that `ExternalLoads` still works - even when it isn't in
-#            the working directory of the test runner
+#            the working directory of the test runner (#3926)
 file(COPY "ExternalLoadsInSubdir" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")

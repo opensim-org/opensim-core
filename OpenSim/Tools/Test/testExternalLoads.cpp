@@ -296,6 +296,10 @@ TEST_CASE("ExternalLoads Default Properties")
     model.initSystem();
 }
 
+// related: #3926
+//
+// adding a valid `OpenSim::ExternalLoads` to a model shouldn't result in a model
+// that cannot be copied.
 TEST_CASE("ExternalLoads Can Be Copied")
 {
     OpenSim::Model model{"ExternalLoadsInSubdir/model-in-subdir.osim"};
