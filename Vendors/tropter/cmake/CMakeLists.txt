@@ -11,12 +11,17 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
         OUTPUT_VARIABLE libgfortran_name
         OUTPUT_STRIP_TRAILING_WHITESPACE)
         #message(STATUS "ipopt dir ${IPOPT_LIBDIR}" )
-        #message(STATUS "libgfortran_name ${libgfortran_name}")
+        message(STATUS "libgfortran_name ${libgfortran_name}")
+        message(STATUS "l==============================================================================")
+
+    string(REPLACE "libgfortran.5" "libgcc_s.1.1" libgcc_name ${libgfortran_name})
+    message(STATUS "libgcc_name ${libgcc_name}")
+    
     execute_process(COMMAND bash "-c"
         "otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libquadmath' | awk '{print $1}'"
         OUTPUT_VARIABLE libquadmath_name
         OUTPUT_STRIP_TRAILING_WHITESPACE)
-        #message(STATUS "libquadmath_name ${libquadmath_name}")
+        message(STATUS "libquadmath_name ${libquadmath_name}")
 
     install(FILES
             ${ADOLC_DIR}/lib64/libadolc.2.dylib
@@ -30,6 +35,7 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             ${IPOPT_LIBDIR}/libmetis.dylib
             ${libgfortran_name}
             ${libquadmath_name}
+            ${libgcc_name}
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
