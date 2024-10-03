@@ -645,13 +645,11 @@ private:
     casadi::Matrix<casadi_int> m_gridIndices;
 };
 
-
-
 int main() {
     bool symbolicStateDerivatives = false;
     bool multibodySystemWithJacobian = true;
     bool callbackJacobian = true;
-    bool enableFiniteDifferences = true;
+    bool enableFiniteDifferences = false;
 
     int num_mesh_intervals = 50;
     double mass = 2.0;
@@ -660,6 +658,11 @@ int main() {
             callbackJacobian, enableFiniteDifferences);
     MocoTrajectory solution = transcription.solve();
     solution.write("sandboxAutodiff_solution.sto");
+
+    // TODO can't use AD when providing a callback function for the Jacobian of 
+    // the multibody system (i.e., multibodySystemWithJacobian = true and 
+    // callbackJacobian = true). This will be needed (I think) for Enzyme 
+    // support, need to investigate.
 
     return EXIT_SUCCESS;
 }
