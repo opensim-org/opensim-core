@@ -27,12 +27,10 @@ public:
     virtual ~CustomFunction() = default;
     virtual void constructFunction(const std::string& name, 
             bool enableFiniteDifference,
-            const std::string& finiteDiffScheme, 
             const double& mass) {
         m_mass = mass;
         casadi::Dict opts;
         opts["enable_fd"] = enableFiniteDifference;
-        opts["fd_method"] = finiteDiffScheme;
         this->construct(name, opts);
     }
 
@@ -86,7 +84,7 @@ public:
     }
 };
 
-class MultibodySystemWithJacobian : public CustomFunction {
+class MultibodySystemWithCallbackJacobian : public CustomFunction {
 public:
     casadi_int get_n_out() override final { return 1; }
     std::string get_name_out(casadi_int i) override final {
@@ -133,11 +131,11 @@ private:
         
         casadi::Sparsity get_sparsity_in(casadi_int i) override final {
             if (i == 0) {
-                return casadi::Sparsity::dense(1, 1); // nominal input
+                return casadi::Sparsity::dense(1, 1); // 1st nominal input
             } else if (i == 1) {
-                return casadi::Sparsity::dense(2, 1); // nominal input
+                return casadi::Sparsity::dense(2, 1); // 2nd nominal input
             } else if (i == 2) {
-                return casadi::Sparsity::dense(1, 1); // nominal input
+                return casadi::Sparsity::dense(1, 1); // 3rd nominal input
             } else if (i == 3) {
                 return casadi::Sparsity::dense(1, 1); // nominal output
             } else {
@@ -161,8 +159,8 @@ private:
             DMVector out((int)n_out());
             out[0] = DM::zeros(1, 1);
             out[1] = DM::zeros(1, 2);
-            out[2] = DM::ones(1, 1);
-            out[2] = out[2] / m_mass;
+            out[2] = DM::zeros(1, 1);
+            out[2] = 1.0 / m_mass;
             return out;
         }
     private:
@@ -170,19 +168,82 @@ private:
     };
 };
 
+class MultibodySystemWithSymbolicJacobian : public CustomFunction {
+public:
+    casadi_int get_n_out() override final { return 1; }
+    std::string get_name_out(casadi_int i) override final {
+        switch (i) {
+        case 0: return "multibody_derivatives";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        }
+    }
+
+    casadi::Sparsity get_sparsity_out(casadi_int i) override final {
+        if (i == 0) {
+            return casadi::Sparsity::dense(1, 1); // numSpeeds x 1
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    }
+
+    DMVector eval(const DMVector& args) const override {
+        DM controls = args.at(2);
+        DMVector out((int)n_out());
+        out[0] = controls / m_mass;
+        return out;
+    }
+
+    bool has_jacobian() const override { return true; }
+    casadi::Function get_jacobian(const std::string& name,
+            const std::vector<std::string>& inames,
+            const std::vector<std::string>& onames, 
+            const casadi::Dict& opts) const override {
+        casadi::MX t = casadi::MX::sym("t", 1, 1);
+        casadi::MX x = casadi::MX::sym("x", 2, 1);
+        casadi::MX u = casadi::MX::sym("u", 1, 1);
+
+        casadi::MX f = casadi::MX::sym("f", 1, 1);
+
+        casadi::MX dfdt(1, 1);
+        casadi::MX dfdx(1, 2);
+        casadi::MX dfdu(1, 1);
+        dfdu(0, 0) = 1.0 / m_mass;
+
+        casadi::Function jac_f = casadi::Function(name, {t, x, u, f},
+                {dfdt, dfdx, dfdu});
+        return jac_f;
+    }
+};
+
 class TranscriptionSlidingMass {
 public:
-    TranscriptionSlidingMass(double mass, int numMeshIntervals)
-            : m_mass(mass), m_numMeshIntervals(numMeshIntervals) {
+    TranscriptionSlidingMass(double mass, int numMeshIntervals,
+            bool symbolicStateDerivatives, bool multibodySystemWithJacobian, 
+            bool callbackJacobian, bool enableFiniteDifferences) : m_mass(mass),
+            m_numMeshIntervals(numMeshIntervals),
+            m_symbolicStateDerivatives(symbolicStateDerivatives),
+            m_multibodySystemWithJacobian(multibodySystemWithJacobian),
+            m_callbackJacobian(callbackJacobian),
+            m_enableFiniteDifferences(enableFiniteDifferences) {
 
         // Construct the multibody system function.
-        this->m_multibodySystem = OpenSim::make_unique<MultibodySystem>();
-        this->m_multibodySystem->constructFunction(
-                "multibody_system", true, "central", m_mass);
-
-        this->m_multibodySystemJac = OpenSim::make_unique<MultibodySystemWithJacobian>();
-        this->m_multibodySystemJac->constructFunction(
-                "multibody_system_with_jacobian", true, "central", m_mass);
+        if (!m_symbolicStateDerivatives) {
+            if (m_multibodySystemWithJacobian) {
+                if (m_callbackJacobian) {
+                    this->m_multibodySystem = OpenSim::make_unique<MultibodySystemWithCallbackJacobian>();
+                    this->m_multibodySystem->constructFunction(
+                            "multibody_system", m_enableFiniteDifferences, m_mass);
+                } else {
+                    this->m_multibodySystem = OpenSim::make_unique<MultibodySystemWithSymbolicJacobian>();
+                    this->m_multibodySystem->constructFunction(
+                            "multibody_system", m_enableFiniteDifferences, m_mass);
+                }
+            } else {
+                this->m_multibodySystem = OpenSim::make_unique<MultibodySystem>();
+                this->m_multibodySystem->constructFunction(
+                    "multibody_system", m_enableFiniteDifferences, m_mass);
+            }
+        }
 
         // Transcription scheme info (Legendre-Gauss).
         m_numGridPoints = m_numMeshIntervals + 1;
@@ -267,10 +328,18 @@ public:
         m_constraintsUpperBounds.defects =
                 DM::zeros(m_numDefectsPerMeshInterval, m_numMeshIntervals);
 
-        calcStateDerivativesCallbackWithJac(m_variables[states], m_variables[controls], 
+        calcStateDerivatives(m_variables[states], m_variables[controls], 
                 m_xdot);
 
         calcDefects(m_variables[states], m_xdot, m_constraints.defects);
+    }
+
+    void calcStateDerivatives(const MX& x, const MX& c, MX& xdot) {
+        if (m_symbolicStateDerivatives) {
+            calcStateDerivativesSymbolic(x, c, xdot);
+        } else {
+            calcStateDerivativesCallback(x, c, xdot);
+        }
     }
 
     void calcStateDerivativesSymbolic(const MX& x, const MX& c, MX& xdot) {
@@ -284,15 +353,6 @@ public:
         std::vector<Var> inputs{states, controls};
         const auto out = evalOnTrajectory(
                     *m_multibodySystem, inputs, m_gridIndices);
-        xdot(1, Slice()) = out.at(0);
-    }
-
-    void calcStateDerivativesCallbackWithJac(const MX& x, const MX& c, MX& xdot) {
-        xdot(0, Slice()) = x(1, Slice());
-
-        std::vector<Var> inputs{states, controls};
-        const auto out = evalOnTrajectory(
-                    *m_multibodySystemJac, inputs, m_gridIndices);
         xdot(1, Slice()) = out.at(0);
     }
 
@@ -575,8 +635,12 @@ private:
     Constraints<casadi::DM> m_constraintsLowerBounds;
     Constraints<casadi::DM> m_constraintsUpperBounds;
 
-    std::unique_ptr<MultibodySystem> m_multibodySystem;
-    std::unique_ptr<MultibodySystemWithJacobian> m_multibodySystemJac;
+    bool m_symbolicStateDerivatives = true;
+    bool m_multibodySystemWithJacobian = false;
+    bool m_callbackJacobian = false;
+    bool m_enableFiniteDifferences = false;
+
+    std::unique_ptr<CustomFunction> m_multibodySystem;
 
     casadi::Matrix<casadi_int> m_gridIndices;
 };
@@ -584,9 +648,16 @@ private:
 
 
 int main() {
+    bool symbolicStateDerivatives = false;
+    bool multibodySystemWithJacobian = true;
+    bool callbackJacobian = true;
+    bool enableFiniteDifferences = true;
+
     int num_mesh_intervals = 50;
     double mass = 2.0;
-    TranscriptionSlidingMass transcription(mass, num_mesh_intervals);
+    TranscriptionSlidingMass transcription(mass, num_mesh_intervals, 
+            symbolicStateDerivatives, multibodySystemWithJacobian, 
+            callbackJacobian, enableFiniteDifferences);
     MocoTrajectory solution = transcription.solve();
     solution.write("sandboxAutodiff_solution.sto");
 

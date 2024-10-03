@@ -57,6 +57,8 @@ void exampleMyCallback() {
     std::cout << "finite diff: " << J(casadi::DM(2.0))[0] << std::endl;
 }
 
+// see https://groups.google.com/g/casadi-users/c/e663pbPqHLU
+// see https://github.com/casadi/casadi/issues/2490
 class Example4To3 : public casadi::Callback {
 public:
     Example4To3(const std::string& name, 
@@ -85,67 +87,35 @@ public:
         casadi::DM ret = vertcat(sin(c)*d + d*d, 2*a + c, b*b + 5*c);
         return {ret};
     }
-};
-
-class Example4To3_Jac : public Example4To3 {
-public:
-    Example4To3_Jac(const std::string& name, 
-            const casadi::Dict& opts = casadi::Dict()) : Example4To3(name, opts) {}
-
-    virtual ~Example4To3_Jac() = default;
 
     bool has_jacobian() const override { return true; }
     casadi::Function get_jacobian(const std::string& name,
             const std::vector<std::string>& inames,
             const std::vector<std::string>& onames,
             const casadi::Dict& opts) const override {
+        
+        casadi::MX x = casadi::MX::sym("x",4,1);
+        casadi::MXVector split = vertsplit(x);
+        casadi::MX a = split[0];
+        casadi::MX b = split[1];
+        casadi::MX c = split[2];
+        casadi::MX d = split[3];
 
-        JacFun jac(name, opts);
-        return jac;
+        casadi::MX f = casadi::MX::sym("f",3,1);
+
+        casadi::MX res(3, 4);
+        res(0, 2) = d*cos(c);
+        res(0, 3) = sin(c) + 2*d;
+        res(1, 0) = 2;
+        res(1, 2) = 1;
+        res(2, 1) = 2*b;
+        res(2, 2) = 5;
+        casadi::Function jac_f = casadi::Function(name,{x,f},{res});
+
+        return jac_f;
     }
-private: 
-    class JacFun : public casadi::Callback {
-    public:
-        JacFun(const std::string& name, 
-                const casadi::Dict& opts = casadi::Dict()) {
-            this->construct(name, opts);
-        }
-        virtual ~JacFun() = default;
-
-        casadi_int get_n_in() override { return 2; }
-        casadi_int get_n_out() override { return 1; }
-
-        casadi::Sparsity get_sparsity_in(casadi_int i) override {
-            if (i == 0) {
-                return casadi::Sparsity::dense(4, 1);
-            } else if (i == 1) {
-                return casadi::Sparsity(3, 1);
-            } else {
-                return casadi::Sparsity(0, 0);
-            }
-        }
-
-        casadi::Sparsity get_sparsity_out(casadi_int i) override {
-            return sparsify(casadi::DM({{0,0,1,1},{1,0,1,0},{0,1,1,0}})).sparsity();
-        }
-
-        casadi::DMVector eval(const casadi::DMVector& arg) const override {
-            casadi::DMVector split = vertsplit(arg[0]);
-            casadi::DM a = split[0];
-            casadi::DM b = split[1];
-            casadi::DM c = split[2];
-            casadi::DM d = split[3];
-            casadi::DM ret(3, 4);
-            ret(0, 2) = d*cos(c);
-            ret(0, 3) = sin(c) + 2*d;
-            ret(1, 0) = 2;
-            ret(1, 2) = 1;
-            ret(2, 1) = 2*b;
-            ret(2, 2) = 5;
-            return {ret};
-        }
-    };
 };
+
 
 void example4to3() {
     // f = Example4To3_Jac('f')
@@ -153,20 +123,25 @@ void example4to3() {
     // J = Function('J',[x],[jacobian(f(x),x)])
     // print(J(vertcat(1,2,0,3)))
 
-    Example4To3_Jac f("f");
+    Example4To3 f("f");
     casadi::MX x = casadi::MX::sym("x", 4);
-    std::cout << "f(x): " << f(x) << std::endl;;
+    std::cout << "f(x): " << f(x)[0] << std::endl;
 
-    // casadi::Function J("J", {x}, {jacobian(f(x)[0], x)});
-    // casadi::DM a = 1.0;
-    // casadi::DM b = 2.0;
-    // casadi::DM c = 0.0;
-    // casadi::DM d = 3.0;
-    // std::cout << J(vertcat(a, b, c, d)) << std::endl;
+    casadi::DM y = casadi::DM::ones(4, 1);
+    std::cout << "f(y): " << f(y)[0] << std::endl;
+
+    casadi::MX dfdx = jacobian(f(x)[0], x);
+    std::cout << "dfdx: " << dfdx << std::endl;
+
+    casadi::Function J("J", {x}, {jacobian(f(x)[0], x)});
+    casadi::DM a = 1.0;
+    casadi::DM b = 2.0;
+    casadi::DM c = 0.0;
+    casadi::DM d = 3.0;
+    std::cout << J(vertcat(a, b, c, d)) << std::endl;
 }
 
 int main() {
-    exampleMyCallback();
     example4to3();
     return 0;
 }
