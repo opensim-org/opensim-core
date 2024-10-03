@@ -618,10 +618,11 @@ TEST_CASE("MocoContactTrackingGoal", "[casadi]") {
             0.5);
 }
 
-// This is a round-trip test: we create external loads from a trajectory
-// using createExternalLoadsTableForGait(), then use the external loads to
-// apply forces to a model, and ensure the accelerations of the model match
-// the accelerations of the original model.
+// This is a round-trip test. First, use createExternalLoadsTableForGait() to 
+// create a table of external loads based on a simulation with foot-ground 
+// contact force elements. Then, use the external loads to apply forces to the 
+// model with the contact force elements remove and ensure the accelerations 
+// match the accelerations of the original model.
 TEST_CASE("createExternalLoadsTableForGait") {
     
     // The original model with foot-ground contact elements.
