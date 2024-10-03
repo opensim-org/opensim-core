@@ -9,3 +9,8 @@ OpenSimAddTests(
     DATAFILES ${TEST_FILES}
     LINKLIBS osimTools Catch2::Catch2WithMain
     )
+
+
+# edge-case: one test ensures that `ExternalLoads` still works - even when it isn't in
+#            the working directory of the test runner
+file(COPY "ExternalLoadsInSubdir" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")

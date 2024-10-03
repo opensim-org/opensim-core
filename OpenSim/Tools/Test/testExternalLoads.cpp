@@ -21,24 +21,15 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <iostream>
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <catch2/catch_all.hpp>
+
+#include <iostream>
+
 using namespace OpenSim;
 using namespace std;
-
-void testExternalLoad();
-void testExternalLoadDefaultProperties();
-
-int main()
-{
-    SimTK_START_TEST("testExternalLoads");
-        SimTK_SUBTEST(testExternalLoad);
-        SimTK_SUBTEST(testExternalLoadDefaultProperties);
-    SimTK_END_TEST();
-}
-
 
 void addLoadToStorage(Storage &forceStore, SimTK::Vec3 force, SimTK::Vec3 point, SimTK::Vec3 torque)
 {
@@ -85,7 +76,7 @@ void addLoadToStorage(Storage &forceStore, SimTK::Vec3 force, SimTK::Vec3 point,
         forces->addToRdStorage(forceStore, 0.0, 1.0);
 }
 
-void testExternalLoad()
+TEST_CASE("ExternalLoads")
 {
     using namespace SimTK;
 
@@ -249,7 +240,8 @@ void testExternalLoad()
 }
 
 // Ensure the default values for the ExternalForce properties work as expected.
-void testExternalLoadDefaultProperties() {
+TEST_CASE("ExternalLoads Default Properties")
+{
     using namespace SimTK;
 
     Model model("Pendulum.osim");
@@ -302,4 +294,15 @@ void testExternalLoadDefaultProperties() {
     // If force_expressed_in_body can't be found, it's set to ground; no error.
     xf->set_force_expressed_in_body("nonexistent");
     model.initSystem();
+}
+
+TEST_CASE("ExternalLoads Can Be Copied")
+{
+    OpenSim::Model model{"ExternalLoadsInSubdir/model-in-subdir.osim"};
+    model.finalizeConnections();  // should work
+    model.addModelComponent(&dynamic_cast<OpenSim::ModelComponent&>(*Object::makeObjectFromFile("ExternalLoadsInSubdir/external-loads-in-subdir.xml")));
+    model.finalizeConnections();  // should also work
+
+    OpenSim::Model copy{model};   // create an independent copy containing the `OpenSim::ExternalLoads`
+    copy.finalizeConnections();   // should work (wasn't when this test was written)
 }
