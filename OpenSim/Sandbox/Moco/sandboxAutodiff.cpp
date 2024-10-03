@@ -25,7 +25,7 @@ using namespace OpenSim;
 class CustomFunction : public casadi::Callback {
 public:
     virtual ~CustomFunction() = default;
-    void constructFunction(const std::string& name, 
+    virtual void constructFunction(const std::string& name, 
             bool enableFiniteDifference,
             const std::string& finiteDiffScheme, 
             const double& mass) {
@@ -57,11 +57,6 @@ public:
         }
     }
 
-    // bool has_jac_sparsity(casadi_int oind, casadi_int iind) const override {
-    //     return false;
-    // }
-    // casadi::Sparsity get_jac_sparsity(casadi_int oind, casadi_int iind,
-    //         bool symmetric) const override;
 protected:
     double m_mass = 1.0;
 };
@@ -91,6 +86,90 @@ public:
     }
 };
 
+class MultibodySystemWithJacobian : public CustomFunction {
+public:
+    casadi_int get_n_out() override final { return 1; }
+    std::string get_name_out(casadi_int i) override final {
+        switch (i) {
+        case 0: return "multibody_derivatives";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        }
+    }
+    casadi::Sparsity get_sparsity_out(casadi_int i) override final {
+        if (i == 0) {
+            return casadi::Sparsity::dense(1, 1); // numSpeeds x 1
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    }
+    DMVector eval(const DMVector& args) const override {
+        DM controls = args.at(2);
+        DMVector out((int)n_out());
+        out[0] = controls / m_mass;
+        return out;
+    }
+    bool has_jacobian() const override { return true; }
+    casadi::Function get_jacobian(const std::string& name,
+            const std::vector<std::string>& inames,
+            const std::vector<std::string>& onames, 
+            const casadi::Dict& opts) const override {
+        MultibodySystemJacobian jac("multibody_system_jacobian", opts, m_mass);
+        return jac;
+    }
+    
+private:
+    class MultibodySystemJacobian : public casadi::Callback {
+    public:
+        MultibodySystemJacobian(const std::string& name, 
+                const casadi::Dict& opts, double mass) {
+            m_mass = mass;
+            this->construct(name, opts);
+        }
+
+        virtual ~MultibodySystemJacobian() = default;
+
+        casadi_int get_n_in() override final { return 4; }
+        casadi_int get_n_out() override final { return 3; }
+        
+        casadi::Sparsity get_sparsity_in(casadi_int i) override final {
+            if (i == 0) {
+                return casadi::Sparsity::dense(1, 1); // nominal input
+            } else if (i == 1) {
+                return casadi::Sparsity::dense(2, 1); // nominal input
+            } else if (i == 2) {
+                return casadi::Sparsity::dense(1, 1); // nominal input
+            } else if (i == 3) {
+                return casadi::Sparsity::dense(1, 1); // nominal output
+            } else {
+                return casadi::Sparsity(0, 0);
+            }
+        }
+
+        casadi::Sparsity get_sparsity_out(casadi_int i) override final {
+            if (i == 0) {
+                return casadi::Sparsity::dense(1, 1);
+            } else if (i == 1) {
+                return casadi::Sparsity::dense(1, 2); 
+            } else if (i == 2) {
+                return casadi::Sparsity::dense(1, 1);
+            } else {
+                return casadi::Sparsity(0, 0);
+            }
+        }
+
+        DMVector eval(const DMVector& args) const override {
+            DMVector out((int)n_out());
+            out[0] = DM::zeros(1, 1);
+            out[1] = DM::zeros(1, 2);
+            out[2] = DM::ones(1, 1);
+            out[2] = out[2] / m_mass;
+            return out;
+        }
+    private:
+        double m_mass = 1.0;
+    };
+};
+
 class TranscriptionSlidingMass {
 public:
     TranscriptionSlidingMass(double mass, int numMeshIntervals)
@@ -100,6 +179,10 @@ public:
         this->m_multibodySystem = OpenSim::make_unique<MultibodySystem>();
         this->m_multibodySystem->constructFunction(
                 "multibody_system", true, "central", m_mass);
+
+        this->m_multibodySystemJac = OpenSim::make_unique<MultibodySystemWithJacobian>();
+        this->m_multibodySystemJac->constructFunction(
+                "multibody_system_with_jacobian", true, "central", m_mass);
 
         // Transcription scheme info (Legendre-Gauss).
         m_numGridPoints = m_numMeshIntervals + 1;
@@ -184,7 +267,7 @@ public:
         m_constraintsUpperBounds.defects =
                 DM::zeros(m_numDefectsPerMeshInterval, m_numMeshIntervals);
 
-        calcStateDerivativesSymbolic(m_variables[states], m_variables[controls], 
+        calcStateDerivativesCallbackWithJac(m_variables[states], m_variables[controls], 
                 m_xdot);
 
         calcDefects(m_variables[states], m_xdot, m_constraints.defects);
@@ -201,6 +284,15 @@ public:
         std::vector<Var> inputs{states, controls};
         const auto out = evalOnTrajectory(
                     *m_multibodySystem, inputs, m_gridIndices);
+        xdot(1, Slice()) = out.at(0);
+    }
+
+    void calcStateDerivativesCallbackWithJac(const MX& x, const MX& c, MX& xdot) {
+        xdot(0, Slice()) = x(1, Slice());
+
+        std::vector<Var> inputs{states, controls};
+        const auto out = evalOnTrajectory(
+                    *m_multibodySystemJac, inputs, m_gridIndices);
         xdot(1, Slice()) = out.at(0);
     }
 
@@ -245,7 +337,12 @@ public:
         nlp.emplace(std::make_pair("f", m_objective));
         nlp.emplace(std::make_pair("g", g));
 
-        const casadi::Function nlpFunc = casadi::nlpsol("nlp", "ipopt", nlp);
+        casadi::Dict options;
+        casadi::Dict solverOptions;
+        solverOptions["hessian_approximation"] = "limited-memory";
+        options["ipopt"] = solverOptions;
+
+        const casadi::Function nlpFunc = casadi::nlpsol("nlp", "ipopt", nlp, options);
 
         // Run the optimization (evaluate the CasADi NLP function).
         // --------------------------------------------------------
@@ -479,6 +576,7 @@ private:
     Constraints<casadi::DM> m_constraintsUpperBounds;
 
     std::unique_ptr<MultibodySystem> m_multibodySystem;
+    std::unique_ptr<MultibodySystemWithJacobian> m_multibodySystemJac;
 
     casadi::Matrix<casadi_int> m_gridIndices;
 };
