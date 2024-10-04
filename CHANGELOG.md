@@ -26,6 +26,7 @@ v4.6
 - Made improvements to `MocoUtilities::createExternalLoadsTableForGait()`: center of pressure values are now set to zero, rather 
   than NaN, when vertical force is zero, and the vertical torque is returned in the torque columns (rather than the sum of the 
   sphere torques) to be consistent with the center of pressure GRF representation.
+- Update all code examples to use c++14 (#3929) 
 
 v4.5.1
 ======
