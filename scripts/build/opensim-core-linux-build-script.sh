@@ -78,6 +78,15 @@ else
 fi
 echo
 
+# Set UTF-8 locale and en_US locale for numeric formatting.
+echo "LOG: CHECKING AND SETTING LOCALE..."
+sudo apt update && sudo apt install --yes locales
+sudo locale-gen en_US.UTF-8
+sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+export LANG=en_US.UTF-8
+locale
+echo
+
 # Install dependencies from package manager.
 echo "LOG: INSTALLING DEPENDENCIES..."
 sudo apt-get update && sudo apt-get install --yes build-essential cmake autotools-dev autoconf pkg-config automake libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen python3 python3-dev python3-numpy python3-setuptools git libssl-dev libpcre3 libpcre3-dev libpcre2-dev libtool gfortran ninja-build patchelf || ( echo "Installation of dependencies using apt-get failed." && exit )
