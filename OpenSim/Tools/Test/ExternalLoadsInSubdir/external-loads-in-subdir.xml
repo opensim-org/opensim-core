@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30000">
+	<ExternalLoads name="PendulumExternalLoads">
+		<objects>
+			<ExternalForce name="single">
+				<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
+				<isDisabled>false</isDisabled>
+				<!--Name of the body the force is applied to.-->
+				<applied_to_body>new_body</applied_to_body>
+				<!--Name of the body the force is expressed in (default is ground).-->
+				<force_expressed_in_body>new_body</force_expressed_in_body>
+				<!--Name of the body the point is expressed in (default is ground).-->
+				<point_expressed_in_body>new_body</point_expressed_in_body>
+				<!--Identifier (string) to locate the force to be applied in the data source.-->
+				<force_identifier>head_v</force_identifier>
+				<!--Identifier (string) to locate the point to be applied in the data source.-->
+				<point_identifier>head_p</point_identifier>
+				<!--Identifier (string) to locate the torque to be applied in the data source.-->
+				<!--Name of the data source (Storage) that will supply the force data.-->
+				<data_source_name>Unassigned</data_source_name>
+			</ExternalForce>
+		</objects>
+		<groups />
+		<!--Storage file (.sto) containing (3) components of force and/or torque and point of application.Note: this file overrides the data source specified by the individual external forces if specified.-->
+		<datafile>forces-in-subdir.mot</datafile>
+	</ExternalLoads>
+</OpenSimDocument>

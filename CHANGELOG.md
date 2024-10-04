@@ -26,6 +26,8 @@ v4.6
 - Made improvements to `MocoUtilities::createExternalLoadsTableForGait()`: center of pressure values are now set to zero, rather 
   than NaN, when vertical force is zero, and the vertical torque is returned in the torque columns (rather than the sum of the 
   sphere torques) to be consistent with the center of pressure GRF representation.
+- Fixed an issue where a copy of an `OpenSim::Model` containing a `OpenSim::ExternalLoads` could not be
+  finalized (#3926)
 
 v4.5.1
 ======
