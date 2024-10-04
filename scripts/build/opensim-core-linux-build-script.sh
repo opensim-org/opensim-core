@@ -212,5 +212,23 @@ ctest --parallel $NUM_JOBS --output-on-failure
 echo "LOG: INSTALL OPENSIM-CORE..."
 cd ~/opensim-workspace/opensim-core-build
 cmake --install .
-echo 'export PATH=~/opensim-core/bin:$PATH' >> ~/.bashrc
-source ~/.bashrc
+# Update the .bashrc path to include the opensim-core install directory
+if [ -n "$BASH" ]; then
+  rcFile="$HOME/.bashrc"
+  prop="PATH"                     # export property to insert
+  val="~/opensim-core/bin:\$PATH" # the desired value
+  echo -e "Current script $0 running in bash."
+  echo -e "Updating shell env file: $rcFile"
+  # Check if the PATH variable exits and update it
+  if grep -q "^export $prop=" "$rcFile"; then
+    sed -i "s|^export $prop=.*|export $prop=$val|" "$rcFile" &&
+      echo "[updated] export $prop=$val"
+  else
+    echo -e "export $prop=$val" >>"$rcFile"
+    echo "[inserted] export $prop=$val"
+  fi
+  source $rcFile
+else
+  echo -e "Current shell is not bash. Please manually update your shell env file to add the opensim install to your path:"
+  echo -e "export PATH=~/opensim-core/bin:$PATH"
+fi
