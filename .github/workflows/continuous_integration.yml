@@ -21,12 +21,12 @@ jobs:
     runs-on: windows-2019
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
       run: |
-        (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
+        (New-Object System.Net.WebClient).DownloadFile("https://github.com/doxygen/doxygen/releases/download/Release_1_12_0/doxygen-1.12.0.windows.x64.bin.zip", "doxygen.zip")
         7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
         echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
 
@@ -159,14 +159,14 @@ jobs:
     runs-on: windows-2022
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         ref: ${{ github.event.pull_request.base.ref }}
 
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
       run: |
-        (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
+        (New-Object System.Net.WebClient).DownloadFile("https://github.com/doxygen/doxygen/releases/download/Release_1_12_0/doxygen-1.12.0.windows.x64.bin.zip", "doxygen.zip")
         7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
         echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
 
@@ -269,12 +269,12 @@ jobs:
       version: ${{ steps.configure.outputs.version }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
       run: |
-        (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
+        (New-Object System.Net.WebClient).DownloadFile("https://github.com/doxygen/doxygen/releases/download/Release_1_12_0/doxygen-1.12.0.windows.x64.bin.zip", "doxygen.zip")
         7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
         echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
 
@@ -370,12 +370,12 @@ jobs:
   mac_target:
     name: Mac [target]
 
-    runs-on: macos-12
+    runs-on: macos-14
 
     if: ${{ contains(github.event.pull_request.title, '[perf-mac]') || contains(github.event.pull_request.body, '[perf-mac]') }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         ref: ${{ github.event.pull_request.base.ref }} 
 
@@ -498,7 +498,7 @@ jobs:
 
   mac_source:
 
-    runs-on: macos-12
+    runs-on: macos-14
     
     name: ${{ (contains(github.event.pull_request.title, '[perf-mac]') || contains(github.event.pull_request.body, '[perf-mac]')) && 'Mac [source]' || 'Mac' }}
 
@@ -506,7 +506,7 @@ jobs:
       version: ${{ steps.configure.outputs.version }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Install Python packages
       uses: actions/setup-python@v4
@@ -635,7 +635,7 @@ jobs:
       - windows2022_target
       - windows2022_source
 
-    runs-on: macos-12
+    runs-on: ubuntu-latest
 
     if: ${{ contains(github.event.pull_request.title, '[perf-win]') || contains(github.event.pull_request.body, '[perf-win]') }}
 
@@ -719,7 +719,7 @@ jobs:
       - mac_target
       - mac_source
 
-    runs-on: macos-12
+    runs-on: ubuntu-latest
 
     if: ${{ contains(github.event.pull_request.title, '[perf-mac]') || contains(github.event.pull_request.body, '[perf-mac]') }}
 
@@ -798,7 +798,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Python packages
       uses: actions/setup-python@v4
@@ -912,7 +912,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Python packages
       uses: actions/setup-python@v4
@@ -1060,7 +1060,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Check for tabs
       # Ensure that there are no tabs in source code.
