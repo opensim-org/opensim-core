@@ -118,10 +118,6 @@ public:
 
 
 void example4to3() {
-    // f = Example4To3_Jac('f')
-    // x = MX.sym("x",4)
-    // J = Function('J',[x],[jacobian(f(x),x)])
-    // print(J(vertcat(1,2,0,3)))
 
     Example4To3 f("f");
     casadi::MX x = casadi::MX::sym("x", 4);

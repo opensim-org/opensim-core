@@ -18,7 +18,7 @@ endfunction()
 
 MocoAddSandboxExecutable(NAME sandboxSandbox LIB_DEPENDS osimMoco)
 
-MocoAddSandboxExecutable(NAME sandboxAutodiff LIB_DEPENDS osimMoco casadi)
+MocoAddSandboxExecutable(NAME sandboxAutodiff LIB_DEPENDS LLDEnzymeFlags osimMoco casadi)
 
 MocoAddSandboxExecutable(NAME sandboxTendonForceState
         LIB_DEPENDS osimMoco tropter)

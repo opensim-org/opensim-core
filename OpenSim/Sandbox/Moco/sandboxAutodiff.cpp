@@ -1,8 +1,66 @@
 #include <casadi/casadi.hpp>
+#include <cstddef>
+#include <memory>
 #include <OpenSim/Moco/osimMoco.h>
 
 using namespace casadi;
 using namespace OpenSim;
+
+extern int enzyme_dup;
+extern int enzyme_dupnoneed;
+extern int enzyme_out;
+extern int enzyme_const;
+
+template < typename return_type, typename ... T >
+return_type __enzyme_fwddiff(void*, T ... );
+
+template < typename return_type, typename ... T >
+return_type __enzyme_autodiff(void*, T ... );
+
+double f(double u, double mass) { return u / mass; }   
+
+double dfdu(double u, double mass) { 
+    double du = 1.0;
+    return __enzyme_fwddiff<double>((void*)f, enzyme_dup, u, du,
+                                              enzyme_const, mass); 
+}
+
+double df(double u, double du, double mass) {
+    return __enzyme_fwddiff<double>((void*)f, enzyme_dup, u, du,
+                                              enzyme_const, mass);
+}
+
+// double f(const double* t, const double* x, const double* u, double mass) {
+//     return u[0] / mass;
+// }
+
+// double dfdt(const double* t, const double* x, const double* u, int index, double mass) {
+//     double dt[1] = { 0.0 };
+//     __enzyme_fwddiff<double>((void*)f, enzyme_dup, t, dt,
+//                                               enzyme_const, x,
+//                                               enzyme_const, u,
+//                                               enzyme_const, mass);
+//     return dt[index]; 
+// }
+
+// double dfdx(const double* t, const double* x, const double* u, int index, double mass) {
+//     double dx[2] = { 0.0 };
+//     __enzyme_fwddiff<double>((void*)f, enzyme_const, t,
+//                                               enzyme_dup, x, dx,
+//                                               enzyme_const, u,
+//                                               enzyme_const, mass); 
+//     return dx[index];
+// }
+
+// double dfdu(const double* t, const double* x, const double* u, int index, double mass) {
+//     double du[1] = { 0.0 };
+//     __enzyme_fwddiff<double>((void*)f, enzyme_const, t,
+//                                               enzyme_const, x,
+//                                               enzyme_dup, u, du,
+//                                               enzyme_const, mass); 
+//     return du[index];
+// }
+
 
 /// Translate a point mass in one dimension in minimum time. This is a very
 /// simple example that shows only the basics of Moco.
@@ -22,10 +80,10 @@ using namespace OpenSim;
 /// constants  m       mass
 /// @endverbatim
 
-class CustomFunction : public casadi::Callback {
+class MultibodySystem : public casadi::Callback {
 public:
-    virtual ~CustomFunction() = default;
-    virtual void constructFunction(const std::string& name, 
+    virtual ~MultibodySystem() = default;
+    void constructFunction(const std::string& name, 
             bool enableFiniteDifference,
             const double& mass) {
         m_mass = mass;
@@ -55,144 +113,239 @@ public:
         }
     }
 
+    casadi_int get_n_out() override final { return 1; }
+    std::string get_name_out(casadi_int i) override final {
+        switch (i) {
+        case 0: return "multibody_derivatives";
+        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
+        }
+    }
+    casadi::Sparsity get_sparsity_out(casadi_int i) override final {
+        if (i == 0) {
+            return casadi::Sparsity::dense(1, 1); // numSpeeds x 1
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    }
+    DMVector eval(const DMVector& args) const override {
+        const DM& time = args.at(0);
+        const DM& states = args.at(1);
+        const DM& controls = args.at(2);
+        DMVector out((int)n_out());
+        out[0] = f(controls(0).scalar(), m_mass);
+        return out;
+    }
+
 protected:
     double m_mass = 1.0;
 };
 
 
-class MultibodySystem : public CustomFunction {
+class MultibodySystemJacobian : public casadi::Callback {
 public:
-    casadi_int get_n_out() override final { return 1; }
-    std::string get_name_out(casadi_int i) override final {
-        switch (i) {
-        case 0: return "multibody_derivatives";
-        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
-        }
+    MultibodySystemJacobian(const std::string& name, double mass) {
+        m_mass = mass;
+        casadi::Dict opts;
+        this->construct(name, opts);
     }
-    casadi::Sparsity get_sparsity_out(casadi_int i) override final {
+    virtual ~MultibodySystemJacobian() = default;
+
+    casadi_int get_n_in() override final { return 4; }
+    casadi_int get_n_out() override final { return 3; }
+    
+    casadi::Sparsity get_sparsity_in(casadi_int i) override final {
         if (i == 0) {
-            return casadi::Sparsity::dense(1, 1); // numSpeeds x 1
+            return casadi::Sparsity::dense(1, 1); // 1st nominal input
+        } else if (i == 1) {
+            return casadi::Sparsity::dense(2, 1); // 2nd nominal input
+        } else if (i == 2) {
+            return casadi::Sparsity::dense(1, 1); // 3rd nominal input
+        } else if (i == 3) {
+            return casadi::Sparsity::dense(1, 1); // nominal output
         } else {
             return casadi::Sparsity(0, 0);
         }
     }
+
+    casadi::Sparsity get_sparsity_out(casadi_int i) override final {
+        if (i == 0) {
+            return casadi::Sparsity::dense(1, 1);
+        } else if (i == 1) {
+            return casadi::Sparsity::dense(1, 2); 
+        } else if (i == 2) {
+            return casadi::Sparsity::dense(1, 1);
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    }
+
     DMVector eval(const DMVector& args) const override {
-        DM controls = args.at(2);
+        const DM& time = args.at(0);
+        const DM& states = args.at(1);
+        const DM& controls = args.at(2);
+
         DMVector out((int)n_out());
-        out[0] = controls / m_mass;
+
+        out[0] = DM::zeros(1, 1);
+        out[1] = DM::zeros(1, 2);
+        out[2] = DM::zeros(1, 1);
+
+        // double dt[1] = { 0.0 };
+        // double dx[2] = { 0.0 };
+        // double du[1] = { 0.0 };
+        // double dfdu = __enzyme_fwddiff<double>((void*)f, enzyme_dup, time->data(), dt,
+        //                                                  enzyme_dup, states->data(), dx,
+        //                                                  enzyme_dup, controls->data(), du,
+        //                                                  enzyme_const, m_mass);
+
+        // out[0](0, 0) = dt[0];
+
+        // out[1](0, 0) = dx[0];
+        // out[1](0, 1) = dx[1];
+
+        out[2](0, 0) = dfdu(controls.scalar(), m_mass);
         return out;
     }
+
+private:
+    double m_mass = 1.0;
 };
 
-class MultibodySystemWithCallbackJacobian : public CustomFunction {
+// class MultibodySystemForward : public casadi::Callback {
+// public:
+//     MultibodySystemForward(const std::string& name, double mass) {
+//         m_mass = mass;
+//         casadi::Dict opts;
+//         this->construct(name, opts);
+//     }
+//     virtual ~MultibodySystemForward() = default;
+
+//     casadi_int get_n_in() override final { return 7; }
+//     casadi_int get_n_out() override final { return 1; }
+    
+//     casadi::Sparsity get_sparsity_in(casadi_int i) override final {
+//         if (i == 0) {
+//             return casadi::Sparsity::dense(1, 1); // 1st nominal input
+//         } else if (i == 1) {
+//             return casadi::Sparsity::dense(2, 1); // 2nd nominal input
+//         } else if (i == 2) {
+//             return casadi::Sparsity::dense(1, 1); // 3rd nominal input
+//         } else if (i == 3) {
+//             return casadi::Sparsity::dense(1, 1); // nominal output
+//         } else if (i == 4) {
+//             return casadi::Sparsity::dense(1, 1); // 1st forward seed
+//         } else if (i == 5) {
+//             return casadi::Sparsity::dense(2, 1); // 2nd forward seed
+//         } else if (i == 6) {
+//             return casadi::Sparsity::dense(1, 1); // 3rd forward seed
+//         } else {
+//             return casadi::Sparsity(0, 0);
+//         }
+//     }
+
+//     casadi::Sparsity get_sparsity_out(casadi_int i) override final {
+//         if (i == 0) {
+//             return casadi::Sparsity::dense(1, 1); // Forward sensitivity
+//         } else {
+//             return casadi::Sparsity(0, 0);
+//         }
+//     }
+
+//     DMVector eval(const DMVector& args) const override {
+//         DM controls = args.at(2);
+//         DM dcontrols = args.at(6);
+//         DMVector out((int)n_out());
+//         out[0] = df(controls.scalar(), dcontrols.scalar(), m_mass);
+//         return out;
+//     }
+
+// private:
+//     double m_mass = 1.0;
+// };
+
+// TODO: need Enzyme "output arguments" for reverses sensitivities?
+// class MultibodySystemReverse : public casadi::Callback {
+// public:
+//     MultibodySystemReverse(const std::string& name, double mass) {
+//         m_mass = mass;
+//         casadi::Dict opts;
+//         this->construct(name, opts);
+//     }
+//     virtual ~MultibodySystemReverse() = default;
+
+//     casadi_int get_n_in() override final { return 5; }
+//     casadi_int get_n_out() override final { return 3; }
+    
+//     casadi::Sparsity get_sparsity_in(casadi_int i) override final {
+//         if (i == 0) {
+//             return casadi::Sparsity::dense(1, 1); // 1st nominal input
+//         } else if (i == 1) {
+//             return casadi::Sparsity::dense(2, 1); // 2nd nominal input
+//         } else if (i == 2) {
+//             return casadi::Sparsity::dense(1, 1); // 3rd nominal input
+//         } else if (i == 3) {
+//             return casadi::Sparsity::dense(1, 1); // nominal output
+//         } else if (i == 4 ) {
+//             return casadi::Sparsity::dense(1, 1); // reverse seed
+//         } else {
+//             return casadi::Sparsity(0, 0);
+//         }
+//     }
+
+//     casadi::Sparsity get_sparsity_out(casadi_int i) override final {
+//         if (i == 0) {
+//             return casadi::Sparsity::dense(1, 1); // 1st reverse sensitivity
+//         } else if (i == 1) {
+//             return casadi::Sparsity::dense(2, 1); // 2nd reverse sensitivity
+//         } else if (i == 2) {
+//             return casadi::Sparsity::dense(1, 1); // 3rd reverse sensitivity
+//         } else {
+//             return casadi::Sparsity(0, 0);
+//         }
+//     }
+
+//     DMVector eval(const DMVector& args) const override {
+//         DM controls = args.at(2);
+//         DMVector out((int)n_out());
+//         out[0] = DM::zeros(1, 1);
+//         out[1] = DM::zeros(1, 2);
+//         out[2] = DM::zeros(1, 1);
+//         out[2] = dfdu(controls.scalar(), m_mass);
+//         return out;
+//     }
+
+// private:
+//     double m_mass = 1.0;
+// };
+
+class MultibodySystemWithCallbackJacobian : public MultibodySystem {
 public:
-    casadi_int get_n_out() override final { return 1; }
-    std::string get_name_out(casadi_int i) override final {
-        switch (i) {
-        case 0: return "multibody_derivatives";
-        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
-        }
+    void constructFunction(const std::string& name, 
+            bool enableFiniteDifference,
+            const double& mass) {
+
+        m_jacobian = std::make_unique<MultibodySystemJacobian>(name, m_mass);
+        MultibodySystem::constructFunction(name, enableFiniteDifference, mass);
+        
     }
-    casadi::Sparsity get_sparsity_out(casadi_int i) override final {
-        if (i == 0) {
-            return casadi::Sparsity::dense(1, 1); // numSpeeds x 1
-        } else {
-            return casadi::Sparsity(0, 0);
-        }
-    }
-    DMVector eval(const DMVector& args) const override {
-        DM controls = args.at(2);
-        DMVector out((int)n_out());
-        out[0] = controls / m_mass;
-        return out;
-    }
+
     bool has_jacobian() const override { return true; }
     casadi::Function get_jacobian(const std::string& name,
             const std::vector<std::string>& inames,
             const std::vector<std::string>& onames, 
             const casadi::Dict& opts) const override {
-        MultibodySystemJacobian jac("multibody_system_jacobian", opts, m_mass);
-        return jac;
+
+        return *m_jacobian;
     }
-    
-private:
-    class MultibodySystemJacobian : public casadi::Callback {
-    public:
-        MultibodySystemJacobian(const std::string& name, 
-                const casadi::Dict& opts, double mass) {
-            m_mass = mass;
-            this->construct(name, opts);
-        }
-
-        virtual ~MultibodySystemJacobian() = default;
-
-        casadi_int get_n_in() override final { return 4; }
-        casadi_int get_n_out() override final { return 3; }
         
-        casadi::Sparsity get_sparsity_in(casadi_int i) override final {
-            if (i == 0) {
-                return casadi::Sparsity::dense(1, 1); // 1st nominal input
-            } else if (i == 1) {
-                return casadi::Sparsity::dense(2, 1); // 2nd nominal input
-            } else if (i == 2) {
-                return casadi::Sparsity::dense(1, 1); // 3rd nominal input
-            } else if (i == 3) {
-                return casadi::Sparsity::dense(1, 1); // nominal output
-            } else {
-                return casadi::Sparsity(0, 0);
-            }
-        }
-
-        casadi::Sparsity get_sparsity_out(casadi_int i) override final {
-            if (i == 0) {
-                return casadi::Sparsity::dense(1, 1);
-            } else if (i == 1) {
-                return casadi::Sparsity::dense(1, 2); 
-            } else if (i == 2) {
-                return casadi::Sparsity::dense(1, 1);
-            } else {
-                return casadi::Sparsity(0, 0);
-            }
-        }
-
-        DMVector eval(const DMVector& args) const override {
-            DMVector out((int)n_out());
-            out[0] = DM::zeros(1, 1);
-            out[1] = DM::zeros(1, 2);
-            out[2] = DM::zeros(1, 1);
-            out[2] = 1.0 / m_mass;
-            return out;
-        }
-    private:
-        double m_mass = 1.0;
-    };
+private:
+    // Must keep a reference alive.
+    // https://github.com/casadi/casadi/blob/0d8030d49e895de2dd38cee849c1429c8d50a286/docs/examples/python/callback.py#L252
+    mutable std::unique_ptr<MultibodySystemJacobian> m_jacobian;
 };
 
-class MultibodySystemWithSymbolicJacobian : public CustomFunction {
+class MultibodySystemWithSymbolicJacobian : public MultibodySystem {
 public:
-    casadi_int get_n_out() override final { return 1; }
-    std::string get_name_out(casadi_int i) override final {
-        switch (i) {
-        case 0: return "multibody_derivatives";
-        default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
-        }
-    }
-
-    casadi::Sparsity get_sparsity_out(casadi_int i) override final {
-        if (i == 0) {
-            return casadi::Sparsity::dense(1, 1); // numSpeeds x 1
-        } else {
-            return casadi::Sparsity(0, 0);
-        }
-    }
-
-    DMVector eval(const DMVector& args) const override {
-        DM controls = args.at(2);
-        DMVector out((int)n_out());
-        out[0] = controls / m_mass;
-        return out;
-    }
-
     bool has_jacobian() const override { return true; }
     casadi::Function get_jacobian(const std::string& name,
             const std::vector<std::string>& inames,
@@ -217,31 +370,55 @@ public:
 
 class TranscriptionSlidingMass {
 public:
-    TranscriptionSlidingMass(double mass, int numMeshIntervals,
-            bool symbolicStateDerivatives, bool multibodySystemWithJacobian, 
-            bool callbackJacobian, bool enableFiniteDifferences) : m_mass(mass),
-            m_numMeshIntervals(numMeshIntervals),
-            m_symbolicStateDerivatives(symbolicStateDerivatives),
-            m_multibodySystemWithJacobian(multibodySystemWithJacobian),
-            m_callbackJacobian(callbackJacobian),
-            m_enableFiniteDifferences(enableFiniteDifferences) {
+    TranscriptionSlidingMass() = default;
 
-        // Construct the multibody system function.
+    void setUseSymbolicStateDerivatives(bool symbolicStateDerivatives) {
+        m_symbolicStateDerivatives = symbolicStateDerivatives;
+    }
+
+    void setUseMultibodySystemWithJacobian(bool multibodySystemWithJacobian) {
+        m_multibodySystemWithJacobian = multibodySystemWithJacobian;
+    }
+
+    void setUseCallbackJacobian(bool callbackJacobian) {
+        m_callbackJacobian = callbackJacobian;
+    }
+
+    void setEnableFiniteDifferences(bool enableFiniteDifferences) {
+        m_enableFiniteDifferences = enableFiniteDifferences;
+    }
+
+    void setMass(double mass) {
+        m_mass = mass;
+    }
+
+    void setNumMeshIntervals(int numMeshIntervals) {
+        m_numMeshIntervals = numMeshIntervals;
+    }
+
+    void setHessianApproximation(const std::string& hessianApproximation) {
+        m_hessianApproximation = hessianApproximation;
+    }
+
+    void initialize() {
+         // Construct the multibody system function.
         if (!m_symbolicStateDerivatives) {
             if (m_multibodySystemWithJacobian) {
                 if (m_callbackJacobian) {
-                    this->m_multibodySystem = OpenSim::make_unique<MultibodySystemWithCallbackJacobian>();
-                    this->m_multibodySystem->constructFunction(
-                            "multibody_system", m_enableFiniteDifferences, m_mass);
+                    this->m_multibodySystemCallbackJac = 
+                        OpenSim::make_unique<MultibodySystemWithCallbackJacobian>();
+                    this->m_multibodySystemCallbackJac->constructFunction("multibody_system_callback_jacobian", 
+                            m_enableFiniteDifferences, m_mass);
                 } else {
-                    this->m_multibodySystem = OpenSim::make_unique<MultibodySystemWithSymbolicJacobian>();
-                    this->m_multibodySystem->constructFunction(
-                            "multibody_system", m_enableFiniteDifferences, m_mass);
+                    this->m_multibodySystemSymbolicJac = 
+                        OpenSim::make_unique<MultibodySystemWithSymbolicJacobian>();
+                    this->m_multibodySystemSymbolicJac->constructFunction("multibody_system_symbolic_jacobian", 
+                            m_enableFiniteDifferences, m_mass);
                 }
             } else {
                 this->m_multibodySystem = OpenSim::make_unique<MultibodySystem>();
-                this->m_multibodySystem->constructFunction(
-                    "multibody_system", m_enableFiniteDifferences, m_mass);
+                this->m_multibodySystem->constructFunction("multibody_system", 
+                            m_enableFiniteDifferences, m_mass);
             }
         }
 
@@ -251,8 +428,8 @@ public:
         m_numConstraints = m_numStates * m_numMeshIntervals;
 
          // Create the mesh.
-        for (int i = 0; i < (numMeshIntervals + 1); ++i) {
-            m_mesh.push_back(i / (double)(numMeshIntervals));
+        for (int i = 0; i < (m_numMeshIntervals + 1); ++i) {
+            m_mesh.push_back(i / (double)(m_numMeshIntervals));
         }
 
         // Create the grid.
@@ -349,10 +526,19 @@ public:
 
     void calcStateDerivativesCallback(const MX& x, const MX& c, MX& xdot) {
         xdot(0, Slice()) = x(1, Slice());
-
         std::vector<Var> inputs{states, controls};
-        const auto out = evalOnTrajectory(
-                    *m_multibodySystem, inputs, m_gridIndices);
+
+        MXVector out;
+        if (m_multibodySystemWithJacobian) {
+            if (m_callbackJacobian) {
+                out = evalOnTrajectory(*m_multibodySystemCallbackJac, inputs, m_gridIndices);
+            } else {
+                out = evalOnTrajectory(*m_multibodySystemSymbolicJac, inputs, m_gridIndices);
+            }
+        } else {
+            out = evalOnTrajectory(*m_multibodySystem, inputs, m_gridIndices);
+        }
+
         xdot(1, Slice()) = out.at(0);
     }
 
@@ -399,7 +585,7 @@ public:
 
         casadi::Dict options;
         casadi::Dict solverOptions;
-        solverOptions["hessian_approximation"] = "limited-memory";
+        solverOptions["hessian_approximation"] = m_hessianApproximation;
         options["ipopt"] = solverOptions;
 
         const casadi::Function nlpFunc = casadi::nlpsol("nlp", "ipopt", nlp, options);
@@ -639,30 +825,27 @@ private:
     bool m_multibodySystemWithJacobian = false;
     bool m_callbackJacobian = false;
     bool m_enableFiniteDifferences = false;
+    std::string m_hessianApproximation = "limited-memory";
 
-    std::unique_ptr<CustomFunction> m_multibodySystem;
+    std::unique_ptr<MultibodySystem> m_multibodySystem;
+    std::unique_ptr<MultibodySystemWithCallbackJacobian> m_multibodySystemCallbackJac;
+    std::unique_ptr<MultibodySystemWithSymbolicJacobian> m_multibodySystemSymbolicJac;
 
     casadi::Matrix<casadi_int> m_gridIndices;
 };
 
 int main() {
-    bool symbolicStateDerivatives = false;
-    bool multibodySystemWithJacobian = true;
-    bool callbackJacobian = true;
-    bool enableFiniteDifferences = false;
-
-    int num_mesh_intervals = 50;
-    double mass = 2.0;
-    TranscriptionSlidingMass transcription(mass, num_mesh_intervals, 
-            symbolicStateDerivatives, multibodySystemWithJacobian, 
-            callbackJacobian, enableFiniteDifferences);
+    TranscriptionSlidingMass transcription;
+    transcription.setMass(2.0);
+    transcription.setNumMeshIntervals(50);
+    transcription.setUseSymbolicStateDerivatives(false);
+    transcription.setUseMultibodySystemWithJacobian(true);
+    transcription.setUseCallbackJacobian(true);
+    transcription.setEnableFiniteDifferences(false);
+    transcription.setHessianApproximation("limited-memory");
+    transcription.initialize();
     MocoTrajectory solution = transcription.solve();
     solution.write("sandboxAutodiff_solution.sto");
-
-    // TODO can't use AD when providing a callback function for the Jacobian of 
-    // the multibody system (i.e., multibodySystemWithJacobian = true and 
-    // callbackJacobian = true). This will be needed (I think) for Enzyme 
-    // support, need to investigate.
 
     return EXIT_SUCCESS;
 }
