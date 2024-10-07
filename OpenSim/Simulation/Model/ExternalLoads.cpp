@@ -76,6 +76,12 @@ ExternalLoads::ExternalLoads(const ExternalLoads &otherExternalLoads) :
     ModelComponentSet<ExternalForce>(otherExternalLoads),
     _dataFileName(_dataFileNameProp.getValueStr())
 {
+    // copy the document over, because it's used during `extendFinalizeConnections`
+    // to figure out where the associated motion file (#3926)
+    if (auto* document = otherExternalLoads.getDocument()) {
+        setDocument(std::make_unique<XMLDocument>(*document).release());
+    }
+
     setNull();
 
     // Class Members

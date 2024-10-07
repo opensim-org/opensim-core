@@ -597,13 +597,16 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getFiberVelocityAlongTendon(state) == -1 * Vmax);
             CHECK(muscle.getPennationAngularVelocity(state) == 0);
             CHECK(muscle.getTendonVelocity(state) == 0);
-            CHECK(muscle.getForceVelocityMultiplier(state) == 0);
+            CHECK_THAT(muscle.getForceVelocityMultiplier(state),
+                    Catch::Matchers::WithinAbs(0.0, 1e-10));
 
             model.realizeDynamics(state);
             const auto Fmax = muscle.getMaxIsometricForce();
             const auto fpass = muscle.calcPassiveForceMultiplier(1.0);
-            CHECK(muscle.getActiveFiberForce(state) == 0);
-            CHECK(muscle.getActiveFiberForceAlongTendon(state) == 0);
+            CHECK_THAT(muscle.getActiveFiberForce(state),
+                    Catch::Matchers::WithinAbs(0.0, 1e-10));
+            CHECK_THAT(muscle.getActiveFiberForceAlongTendon(state),
+                    Catch::Matchers::WithinAbs(0.0, 1e-10));
             CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
             CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
                     Approx(Fmax * fpass));
@@ -630,16 +633,17 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             SimTK::Real fiberStiffnessAlongTendon =
                     diffFiberStiffnessAlongTendon.calcDerivative(
                             muscle.get_optimal_fiber_length());
-            CHECK(muscle.getFiberStiffnessAlongTendon(state) ==
-                    Approx(fiberStiffnessAlongTendon));
+            CHECK_THAT(muscle.getFiberStiffnessAlongTendon(state),
+                    Catch::Matchers::WithinRel(fiberStiffnessAlongTendon, 1e-6));
 
             SimTK::Real tendonStiffness = SimTK::Infinity;
             CHECK(muscle.getTendonStiffness(state) == SimTK::Infinity);
-            CHECK(muscle.getMuscleStiffness(state) ==
-                    Approx(muscle.calcMuscleStiffness(
-                            tendonStiffness, fiberStiffnessAlongTendon)));
-
-            CHECK(muscle.getFiberActivePower(state) == Approx(0.0));
+            SimTK::Real muscleStiffness = muscle.calcMuscleStiffness(
+                    tendonStiffness, fiberStiffnessAlongTendon);
+            CHECK_THAT(muscle.getMuscleStiffness(state),
+                    Catch::Matchers::WithinRel(muscleStiffness, 1e-6));
+            CHECK_THAT(muscle.getFiberActivePower(state),
+                    Catch::Matchers::WithinAbs(0.0, 1e-10));
             CHECK(muscle.getFiberPassivePower(state) ==
                     Approx(Vmax * Fmax * fpass));
             CHECK(muscle.getTendonPower(state) == Approx(0.0));
