@@ -76,9 +76,6 @@ execute_process(COMMAND bash "-c"
 # tropter
 install_name_tool_change(tropter adolc.2 "@ADOLC_DIR@/lib64")
 install_name_tool_change(tropter ipopt.3 "@IPOPT_LIBDIR@")
-#install_name_tool_change(tropter coinmumps.3 "@IPOPT_LIBDIR@")
-#install_name_tool_change(tropter metis "@IPOPT_LIBDIR@")
-#install_name_tool_add_rpath(tropter)
 
 # adol-c
 install_name_tool_id(adolc.2)
