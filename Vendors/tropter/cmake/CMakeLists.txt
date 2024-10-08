@@ -1,5 +1,9 @@
 
 if(TROPTER_COPY_DEPENDENCIES AND APPLE)
+
+    # Extract actual name of the library libgfortran, gcc, quadmath to install along on osx
+    # these show only as dependencies of libipopt, and libgcc is in same folder as libgfortran
+    # not very robust but works for our artifacts.
     execute_process(COMMAND bash "-c"
         "otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libgfortran' | awk '{print $1}'"
         OUTPUT_VARIABLE libgfortran_name
@@ -15,7 +19,6 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
     install(FILES
             ${ADOLC_DIR}/lib64/libadolc.2.dylib
             ${ADOLC_DIR}/lib64/libadolc.dylib
-            # /usr/local/opt/boost/lib/libboost_system.dylib
             ${ColPack_ROOT_DIR}/lib/libColPack.0.dylib
             ${IPOPT_LIBDIR}/libipopt.3.dylib
             ${IPOPT_LIBDIR}/libipopt.dylib
