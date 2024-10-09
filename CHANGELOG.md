@@ -28,6 +28,7 @@ v4.6
   sphere torques) to be consistent with the center of pressure GRF representation.
 - Fixed an issue where a copy of an `OpenSim::Model` containing a `OpenSim::ExternalLoads` could not be
   finalized (#3926)
+- Updated all code examples to use c++14 (#3929) 
 
 v4.5.1
 ======

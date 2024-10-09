@@ -10,7 +10,7 @@ Goals
 1. Detailed and helpful error messages and diagnostics (visualizing a 
 sparsity pattern, inspecting constraint violations).
 
-2. A simple and modern (C++11) interface for specifying the optimal control 
+2. A simple and modern (c++14) interface for specifying the optimal control 
    problem.
 
 3. Users do not need to supply derivative information (gradient, Jacobian, 
