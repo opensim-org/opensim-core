@@ -882,7 +882,7 @@ TEST_CASE("DoublePendulum tests, Posa2016 method - MocoCasADiSolver",
     std::string dynamics_mode = GENERATE(as<std::string>{}, 
             "explicit", "implicit");
     std::string section = fmt::format(
-            "enforce derivatives: {}, dynamics_mode: {}", 
+            "enforce derivatives: {}, dynamics mode: {}", 
             enforce_constraint_derivatives, dynamics_mode);
 
     DYNAMIC_SECTION(section) {
@@ -895,8 +895,11 @@ TEST_CASE("DoublePendulum tests, Posa2016 method - MocoCasADiSolver",
                     enforce_constraint_derivatives, dynamics_mode, "Posa2016");
         }
         SECTION("PointOnLine") {
+            // This test struggles to converge with the default number of mesh
+            // intervals.
             testDoublePendulumPointOnLine<MocoCasADiSolver>(
-                    enforce_constraint_derivatives, dynamics_mode, "Posa2016");
+                    enforce_constraint_derivatives, dynamics_mode, "Posa2016",
+                    "hermite-simpson", 50);
         }
     }
 }
@@ -1439,103 +1442,110 @@ TEST_CASE("Goals use Moco-defined accelerations and multipliers", "[casadi]") {
 }
 
 TEST_CASE("Multipliers are correct", "[casadi]") {
-    SECTION("Body welded to ground") {
-        auto dynamics_mode =
-                GENERATE(as<std::string>{}, "implicit", "explicit");
-        auto kinematic_constraint_method =
-                GENERATE(as<std::string>{}, "Posa2016", "Bordalba2023");
+    auto dynamics_mode =
+            GENERATE(as<std::string>{}, "implicit", "explicit");
+    auto kinematic_constraint_method =
+            GENERATE(as<std::string>{}, "Posa2016", "Bordalba2023");
+    std::string section = fmt::format(
+            "method: {}, dynamics mode: {}", 
+            kinematic_constraint_method, dynamics_mode);
 
-        Model model;
-        const double mass = 1.3169;
-        auto* body = new Body("body", mass, SimTK::Vec3(0), SimTK::Inertia(1));
-        model.addBody(body);
+    DYNAMIC_SECTION(section) {
+        SECTION("Body welded to ground") {                
+            Model model;
+            const double mass = 1.3169;
+            auto* body = new Body("body", mass, SimTK::Vec3(0), 
+                    SimTK::Inertia(1));
+            model.addBody(body);
 
-        auto* joint = new PlanarJoint("joint", model.getGround(), *body);
-        model.addJoint(joint);
+            auto* joint = new PlanarJoint("joint", model.getGround(), *body);
+            model.addJoint(joint);
 
-        auto* constr = new PointConstraint(model.getGround(), Vec3(0),
-                                           *body, Vec3(0));
-        model.addConstraint(constr);
-        model.finalizeConnections();
+            auto* constr = new PointConstraint(model.getGround(), Vec3(0),
+                                            *body, Vec3(0));
+            model.addConstraint(constr);
+            model.finalizeConnections();
 
-        MocoStudy study;
-        auto& problem = study.updProblem();
-        problem.setModelAsCopy(model);
+            MocoStudy study;
+            auto& problem = study.updProblem();
+            problem.setModelAsCopy(model);
 
-        problem.setTimeBounds(0, 0.5);
+            problem.setTimeBounds(0, 0.5);
 
-        auto& solver = study.initCasADiSolver();
-        solver.set_num_mesh_intervals(5);
-        solver.set_multibody_dynamics_mode(dynamics_mode);
-        solver.set_kinematic_constraint_method(kinematic_constraint_method);
-        solver.set_transcription_scheme("hermite-simpson");
-        solver.set_enforce_constraint_derivatives(true);
+            auto& solver = study.initCasADiSolver();
+            solver.set_num_mesh_intervals(5);
+            solver.set_multibody_dynamics_mode(dynamics_mode);
+            solver.set_kinematic_constraint_method(kinematic_constraint_method);
+            solver.set_transcription_scheme("hermite-simpson");
+            solver.set_enforce_constraint_derivatives(true);
 
-        MocoSolution solution = study.solve();
+            MocoSolution solution = study.solve();
 
-        // Constraints 0 through 2 are the locks for the 3 translational DOFs.
-        const auto FX = solution.getMultiplier("lambda_cid3_p0");
-        SimTK::Vector zero(FX);
-        zero.setToZero();
-        OpenSim_CHECK_MATRIX_TOL(FX, zero, 1e-5);
-        const auto FY = solution.getMultiplier("lambda_cid3_p1");
-        SimTK::Vector g(zero.size(), model.get_gravity()[1]);
-        OpenSim_CHECK_MATRIX_TOL(FY, mass * g, 1e-5);
-        const auto FZ = solution.getMultiplier("lambda_cid3_p2");
-        OpenSim_CHECK_MATRIX_TOL(FZ, zero, 1e-5);
-    }
+            // Constraints 0 through 2 are the locks for the 3 translational 
+            // DOFs.
+            const auto FX = solution.getMultiplier("lambda_cid3_p0");
+            SimTK::Vector zero(FX);
+            zero.setToZero();
+            OpenSim_CHECK_MATRIX_TOL(FX, zero, 1e-5);
+            const auto FY = solution.getMultiplier("lambda_cid3_p1");
+            SimTK::Vector g(zero.size(), model.get_gravity()[1]);
+            OpenSim_CHECK_MATRIX_TOL(FY, mass * g, 1e-5);
+            const auto FZ = solution.getMultiplier("lambda_cid3_p2");
+            OpenSim_CHECK_MATRIX_TOL(FZ, zero, 1e-5);
+        }
 
-    // This problem is a point mass constrained to the line 0 = x - y.
-    // constraint Jacobian G is [1, -1].
-    //      m xdd + G(0) * lambda = Fx  -> m xdd + lambda = Fx
-    //      m ydd + G(1) * lambda = Fy  -> m ydd - lambda = Fy
-    // Since xdd = ydd, we have:
-    //      lambda = 0.5 * (Fx - Fy).
-    // This test ensures that the multiplier has the correct value.
-    SECTION("Planar point mass with CoordinateCouplerConstraint") {
+        // This problem is a point mass constrained to the line 0 = x - y.
+        // constraint Jacobian G is [1, -1].
+        //      m xdd + G(0) * lambda = Fx  -> m xdd + lambda = Fx
+        //      m ydd + G(1) * lambda = Fy  -> m ydd - lambda = Fy
+        // Since xdd = ydd, we have:
+        //      lambda = 0.5 * (Fx - Fy).
+        // This test ensures that the multiplier has the correct value.
+        SECTION("Planar point mass with CoordinateCouplerConstraint") {
 
-        auto dynamics_mode =
-                GENERATE(as<std::string>{}, "implicit", "explicit");
-        auto kinematic_constraint_method =
-                GENERATE(as<std::string>{}, "Posa2016", "Bordalba2023");
+            auto dynamics_mode =
+                    GENERATE(as<std::string>{}, "implicit", "explicit");
+            auto kinematic_constraint_method =
+                    GENERATE(as<std::string>{}, "Posa2016", "Bordalba2023");
 
-        Model model = ModelFactory::createPlanarPointMass();
-        model.set_gravity(Vec3(0));
-        CoordinateCouplerConstraint* constraint =
-                new CoordinateCouplerConstraint();
-        Array<std::string> names;
-        names.append("tx");
-        constraint->setIndependentCoordinateNames(names);
-        constraint->setDependentCoordinateName("ty");
-        LinearFunction func(1.0, 0.0);
-        constraint->setFunction(func);
-        model.addConstraint(constraint);
+            Model model = ModelFactory::createPlanarPointMass();
+            model.set_gravity(Vec3(0));
+            CoordinateCouplerConstraint* constraint =
+                    new CoordinateCouplerConstraint();
+            Array<std::string> names;
+            names.append("tx");
+            constraint->setIndependentCoordinateNames(names);
+            constraint->setDependentCoordinateName("ty");
+            LinearFunction func(1.0, 0.0);
+            constraint->setFunction(func);
+            model.addConstraint(constraint);
 
-        model.finalizeConnections();
+            model.finalizeConnections();
 
-        MocoStudy study;
-        auto& problem = study.updProblem();
-        problem.setModelAsCopy(model);
+            MocoStudy study;
+            auto& problem = study.updProblem();
+            problem.setModelAsCopy(model);
 
-        problem.setTimeBounds(0, 1);
-        problem.setStateInfo("/jointset/tx/tx/value", {-5, 5}, 0, 3);
-        problem.setStateInfo("/jointset/tx/tx/speed", {-5, 5}, 0, 0);
-        problem.setControlInfo("/forceset/force_x", 0.5);
+            problem.setTimeBounds(0, 1);
+            problem.setStateInfo("/jointset/tx/tx/value", {-5, 5}, 0, 3);
+            problem.setStateInfo("/jointset/tx/tx/speed", {-5, 5}, 0, 0);
+            problem.setControlInfo("/forceset/force_x", 0.5);
 
-        problem.addGoal<MocoControlGoal>();
+            problem.addGoal<MocoControlGoal>();
 
-        auto& solver = study.initCasADiSolver();
-        solver.set_num_mesh_intervals(10);
-        solver.set_multibody_dynamics_mode(dynamics_mode);
-        solver.set_transcription_scheme("hermite-simpson");
-        solver.set_kinematic_constraint_method(kinematic_constraint_method);
-        solver.set_enforce_constraint_derivatives(true);
-        MocoSolution solution = study.solve();
-        const auto Fx = solution.getControl("/forceset/force_x");
-        const auto Fy = solution.getControl("/forceset/force_y");
-        const auto lambda = solution.getMultiplier("lambda_cid2_p0");
+            auto& solver = study.initCasADiSolver();
+            solver.set_num_mesh_intervals(10);
+            solver.set_multibody_dynamics_mode(dynamics_mode);
+            solver.set_transcription_scheme("hermite-simpson");
+            solver.set_kinematic_constraint_method(kinematic_constraint_method);
+            solver.set_enforce_constraint_derivatives(true);
+            MocoSolution solution = study.solve();
+            const auto Fx = solution.getControl("/forceset/force_x");
+            const auto Fy = solution.getControl("/forceset/force_y");
+            const auto lambda = solution.getMultiplier("lambda_cid2_p0");
 
-        OpenSim_CHECK_MATRIX_TOL(lambda, 0.5 * (Fx - Fy), 1e-5);
+            OpenSim_CHECK_MATRIX_TOL(lambda, 0.5 * (Fx - Fy), 1e-5);
+        }
     }
 }
 
@@ -1574,7 +1584,6 @@ TEST_CASE("Prescribed kinematics with kinematic constraints", "[casadi]") {
     auto& solver = study.initCasADiSolver();
     solver.set_num_mesh_intervals(10);
     solver.set_multibody_dynamics_mode("implicit");
-    solver.set_interpolate_control_mesh_interior_points(false);
     MocoSolution solution = study.solve();
     const auto Fx = solution.getControl("/forceset/force_x");
     const auto Fy = solution.getControl("/forceset/force_y");
@@ -1731,10 +1740,12 @@ TEMPLATE_TEST_CASE("MocoOutputBoundConstraint", "",
 
         problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
             MocoInitialBounds(-1, 1));
-        problem.setStateInfo("/slider/position/speed", {-1, 1});
+        problem.setStateInfo("/slider/position/speed", {-5, 5});
         problem.setStateInfo("/slider2/position/value", MocoBounds(-5, 5),
             MocoInitialBounds(-1, 1));
-        problem.setStateInfo("/slider2/position/speed", {-1, 1});
+        problem.setStateInfo("/slider2/position/speed", {-5, 5});
+        problem.setControlInfo("/actuator", {-10, 10});
+        problem.setControlInfo("/actuator2", {-10, 10});
 
         auto* constr = problem.addPathConstraint<MocoOutputBoundConstraint>();
         Sine lower;
@@ -2210,6 +2221,7 @@ TEST_CASE("ConstantAccelerationConstraint") {
     MocoStudy study = createSlidingMassMocoStudy(model, scheme);
     MocoSolution solution = study.solve();
 
+
     const auto& states = solution.exportToStatesTrajectory(model);
     for (const auto& state : states) {
         model.realizeAcceleration(state);
@@ -2217,3 +2229,139 @@ TEST_CASE("ConstantAccelerationConstraint") {
     }
 }
 
+// TODO enable test for Windows when MSVC build issues in FATROP are fixed.
+TEST_CASE("FATROP solver", "[casadi][unix]") {
+
+    MocoStudy study;
+    study.setName("double_pendulum_study");
+    auto model = createDoublePendulumModel();
+    model->initSystem();
+
+    MocoProblem& mp = study.updProblem();
+    mp.setModelAsCopy(*model);
+    mp.setTimeBounds(0, 1);
+    mp.setStateInfo("/jointset/j0/q0/value", {-5, 5}, 0);
+    mp.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0, 0);
+    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10});
+    mp.setStateInfo("/jointset/j1/q1/speed", {-5, 5}, 0, 0);
+    mp.setControlInfo("/tau0", {-50, 50});
+    mp.setControlInfo("/tau1", {-50, 50});
+    auto* effort = mp.addGoal<MocoControlGoal>();
+
+    auto& ms = study.initCasADiSolver();
+    ms.set_num_mesh_intervals(20);
+    ms.set_optim_solver("fatrop");
+    ms.set_optim_hessian_approximation("exact");
+    ms.set_optim_convergence_tolerance(1e-4);
+    ms.set_transcription_scheme("legendre-gauss-2");
+
+    SECTION("Disallowed solver settings") {
+        {
+            ms.set_optim_hessian_approximation("limited-memory");
+            CHECK_THROWS_WITH(study.solve(), 
+                Catch::Matchers::ContainsSubstring("The 'fatrop' solver only "
+                    "supports the 'exact' hessian approximation."));
+            ms.set_optim_hessian_approximation("exact");
+        }
+        {
+            ms.set_optim_constraint_tolerance(1e-3);
+            CHECK_THROWS_WITH(study.solve(), 
+                Catch::Matchers::ContainsSubstring("The 'fatrop' solver does "
+                "not utilize the constraint tolerance."));
+            ms.set_optim_constraint_tolerance(-1);
+        }
+        {
+            ms.set_transcription_scheme("trapezoidal");
+            CHECK_THROWS_WITH(study.solve(), 
+                Catch::Matchers::ContainsSubstring("The 'fatrop' solver only "
+                "supports the 'legendre-gauss-#' transcription schemes."));
+        }
+        {
+            ms.set_transcription_scheme("hermite-simpson");
+            CHECK_THROWS_WITH(study.solve(), 
+                Catch::Matchers::ContainsSubstring("The 'fatrop' solver only "
+                "supports the 'legendre-gauss-#' transcription schemes."));
+        }
+        {
+            ms.set_transcription_scheme("legendre-gauss-radau-3");
+            CHECK_THROWS_WITH(study.solve(), 
+                Catch::Matchers::ContainsSubstring("The 'fatrop' solver only "
+                "supports the 'legendre-gauss-#' transcription schemes."));
+        }
+    }
+
+    SECTION("Basic problem") {
+        MocoSolution solution = study.solve();
+        CHECK(solution.success());
+    }
+
+    // TODO produces "degenerate Jacobian" warning from FATROP
+    SECTION("Problem with kinematic constraints") {
+        const Coordinate& q0 = model->getCoordinateSet().get("q0");
+        const Coordinate& q1 = model->getCoordinateSet().get("q1");
+        CoordinateCouplerConstraint* constraint = 
+                new CoordinateCouplerConstraint();
+        Array<std::string> indepCoordNames;
+        indepCoordNames.append("q0");
+        constraint->setIndependentCoordinateNames(indepCoordNames);
+        constraint->setDependentCoordinateName("q1");
+
+        const SimTK::Real m = -2;
+        const SimTK::Real b = SimTK::Pi;
+        LinearFunction linFunc(m, b);
+        constraint->setFunction(&linFunc);
+        model->addConstraint(constraint);
+        model->finalizeConnections();
+
+        MocoProblem& mp = study.updProblem();
+        mp.setModelAsCopy(*model);
+
+        auto& ms = study.updSolver<MocoCasADiSolver>();
+        ms.resetProblem(mp);
+        ms.set_kinematic_constraint_method("Bordalba2023");
+
+        MocoSolution solution = study.solve();
+        CHECK(solution.success());
+    }
+
+    SECTION("Problem with path constraints") {
+        MocoProblem& mp = study.updProblem();
+        auto* frameDistance = 
+                mp.addPathConstraint<MocoFrameDistanceConstraint>();
+        frameDistance->addFramePair("/bodyset/b0", "/bodyset/b1", 0.0, 5.0);
+
+        auto& ms = study.updSolver<MocoCasADiSolver>();
+        ms.resetProblem(mp);
+
+        MocoSolution solution = study.solve();
+        CHECK(solution.success());
+    }
+
+    SECTION("Problem with initial and final control bounds") {
+        MocoProblem& mp = study.updProblem();
+        mp.setTimeBounds(0, 1);
+        mp.setStateInfo("/jointset/j0/q0/value", {-5, 5});
+        mp.setStateInfo("/jointset/j0/q0/speed", {-10, 10});
+        mp.setStateInfo("/jointset/j1/q1/value", {-10, 10});
+        mp.setStateInfo("/jointset/j1/q1/speed", {-5, 5});
+        mp.setControlInfo("/tau0", {-50, 50}, -4.3, 2.8);
+        mp.setControlInfo("/tau1", {-50, 50}, -3.2, 1.9);
+
+        auto& ms = study.updSolver<MocoCasADiSolver>();
+        ms.resetProblem(mp);
+
+        MocoSolution solution = study.solve();
+        CHECK(solution.success());
+
+        const auto& controls = solution.getControlsTrajectory();
+        int N = solution.getNumTimes();
+        CHECK_THAT(controls(0, 0), Catch::Matchers::WithinAbs(-4.3, 1e-6));
+        CHECK_THAT(controls(0, 1), Catch::Matchers::WithinAbs(-3.2, 1e-6));
+        CHECK_THAT(controls(N-1, 0), Catch::Matchers::WithinAbs(2.8, 1e-6));
+        CHECK_THAT(controls(N-1, 1), Catch::Matchers::WithinAbs(1.9, 1e-6));
+    }   
+
+    SECTION("Endpoint constraints are disallowed") {
+        // TODO
+    }
+}

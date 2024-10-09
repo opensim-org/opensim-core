@@ -281,15 +281,6 @@ also supports both non-holonomic constraints (that is, \f$ \nu(q, u, p) = 0 \f$)
 and acceleration-only constraints (that is, \f$ \alpha(q, u, \dot u, p) = 0 \f$),
 but these constraints are less commonly used in OpenSim models.
 
-By default, the controls within the mesh interval interior are constrained by 
-linear interpolation of control mesh endpoint values and is the recommended setting.
-However, you may disable this behavior in the solver:
-
-\code{.cpp}
-MocoCasADiSolver& solver = moco.initCasADiSolver();
-solver.set_interpolate_control_mesh_interior_points(false);
-\endcode
-
 @section casadivstropter MocoCasADiSolver versus MocoTropterSolver
 
 Moco provides two direct collocation solvers that transcribe continuous optimal
@@ -311,6 +302,19 @@ and CasADi’s open-source license is more restrictive than OpenSim’s.
 Those distributing Moco as a dependency of closed-source software may prefer
 distributing Moco without CasADi, as CasADi’s “weak copyleft” GNU Lesser General
 Public License 3.0 places requirements on how CasADi is redistributed.
+
+CasADi and Tropter's direct collocation implementations have differed slightly 
+over time as CasADi has become the primary focus of recent development. However,
+for problems that can be solved with both solvers, the solutions should be
+similar. The property `interpolate_control_midpoints` has been removed from 
+MocoCasADiSolver since it is unnecessary in our implementation of the
+Hermite-Simpson transcription scheme. For legacy reasons, it is still enabled 
+by default in MocoTropterSolver, but you may disable this behavior:
+
+\code{.cpp}
+MocoTropterSolver& solver = moco.initTropterSolver();
+solver.set_interpolate_control_midpoints(false);
+\endcode
 
 @section tips Tips for solving a custom problem
 

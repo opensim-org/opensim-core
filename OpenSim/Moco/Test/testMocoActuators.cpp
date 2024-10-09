@@ -76,46 +76,20 @@ namespace {
 
         return model;
     }
-}
 
-TEMPLATE_TEST_CASE(
-        "Hanging muscle minimum time", "[casadi]", MocoCasADiSolver) {
-    // GENERATE creates separate tests in which these variables are set to
-    // either true or false.
-    auto ignoreActivationDynamics = GENERATE(true, false);
-    auto ignoreTendonCompliance = GENERATE(true, false);
-    auto isTendonDynamicsExplicit = GENERATE(true, false);
-    auto transcription_scheme = GENERATE(as<std::string>{},
-            "hermite-simpson", "legendre-gauss-3", "legendre-gauss-radau-3");
+    MocoStudy createHangingMuscleStudy(const Model& model, 
+            const std::string& scheme, bool ignoreActivationDynamics, 
+            bool ignoreTendonCompliance, bool isTendonDynamicsExplicit)  {
 
-    // CAPTURE prints the current value of these variables to the console.
-    CAPTURE(ignoreActivationDynamics);
-    CAPTURE(ignoreTendonCompliance);
-    CAPTURE(isTendonDynamicsExplicit);
+        SimTK::Real initHeight = 0.165;
+        SimTK::Real finalHeight = 0.155;
+        SimTK::Real initSpeed = 0;
+        SimTK::Real finalSpeed = 0;
+        MocoBounds heightBounds(0.14, 0.17);
+        MocoBounds speedBounds(-10, 10);
+        MocoBounds actuBounds(0.1, 1);
+        MocoBounds normTendonBounds(0.1, 2);
 
-    const double optimalFiberLength = 0.1;
-    const double tendonSlackLength = 0.05;
-    SimTK::Real initHeight = 0.165;
-    SimTK::Real finalHeight = 0.155;
-    SimTK::Real initSpeed = 0;
-    SimTK::Real finalSpeed = 0;
-    MocoBounds heightBounds(0.14, 0.17);
-    MocoBounds speedBounds(-10, 10);
-    MocoBounds actuBounds(0.1, 1);
-    MocoBounds normTendonBounds(0.1, 2);
-
-    Model model = createHangingMuscleModel(optimalFiberLength,
-            tendonSlackLength, ignoreActivationDynamics, ignoreTendonCompliance,
-            isTendonDynamicsExplicit);
-
-    SimTK::State state = model.initSystem();
-
-    // Minimum time trajectory optimization.
-    // -------------------------------------
-    const auto svn = model.getStateVariableNames();
-    MocoSolution solutionTrajOpt;
-    std::string solutionFilename;
-    {
         MocoStudy study;
         MocoProblem& problem = study.updProblem();
         problem.setModelAsCopy(model);
@@ -125,25 +99,57 @@ TEMPLATE_TEST_CASE(
         problem.setStateInfo(
                 "/joint/height/speed", speedBounds, initSpeed, finalSpeed);
         problem.setControlInfo("/forceset/muscle",
-                               actuBounds, actuBounds.getLower());
+                            actuBounds, actuBounds.getLower());
         if (!ignoreActivationDynamics) {
             problem.setStateInfo("/forceset/muscle/activation",
-                                 actuBounds, actuBounds.getLower());
+                                actuBounds, actuBounds.getLower());
         }
         if (!ignoreTendonCompliance) {
             problem.setStateInfo("/forceset/muscle/normalized_tendon_force",
-                                 normTendonBounds, normTendonBounds.getLower());
+                                normTendonBounds, normTendonBounds.getLower());
         }
 
         problem.addGoal<MocoControlGoal>("effort");
 
-        auto& solver = study.initSolver<TestType>();
-        solver.set_num_mesh_intervals(30);
+        auto& solver = study.initCasADiSolver();
+        solver.set_num_mesh_intervals(50);
         solver.set_multibody_dynamics_mode("explicit");
-        solver.set_optim_convergence_tolerance(1e-4);
-        solver.set_optim_constraint_tolerance(1e-4);
-        solver.set_transcription_scheme(transcription_scheme);
+        solver.set_optim_convergence_tolerance(1e-6);
+        solver.set_optim_constraint_tolerance(1e-6);
+        solver.set_transcription_scheme(scheme);
+        solver.set_minimize_implicit_auxiliary_derivatives(true);
+        solver.set_implicit_auxiliary_derivatives_weight(1e-3);
 
+        return study;
+    }
+}
+
+TEST_CASE("Hanging muscle minimum time", "[casadi]") {
+    auto ignoreActivationDynamics = GENERATE(true, false);
+    auto ignoreTendonCompliance = GENERATE(true, false);
+    auto isTendonDynamicsExplicit = GENERATE(true, false);
+    auto transcription_scheme = GENERATE(as<std::string>{},
+            "hermite-simpson", "legendre-gauss-3", "legendre-gauss-radau-3");
+    CAPTURE(ignoreActivationDynamics);
+    CAPTURE(ignoreTendonCompliance);
+    CAPTURE(isTendonDynamicsExplicit);
+
+    // Create the hanging muscle model.
+    const double optimalFiberLength = 0.1;
+    const double tendonSlackLength = 0.05;
+    Model model = createHangingMuscleModel(optimalFiberLength,
+            tendonSlackLength, ignoreActivationDynamics, 
+            ignoreTendonCompliance, isTendonDynamicsExplicit);
+    model.initSystem();
+
+    // Minimum effort trajectory optimization.
+    // ---------------------------------------
+    MocoSolution solutionTrajOpt;
+    std::string solutionFilename;
+    {
+        MocoStudy study = createHangingMuscleStudy(model, 
+                transcription_scheme, ignoreActivationDynamics, 
+                ignoreTendonCompliance, isTendonDynamicsExplicit);
         solutionTrajOpt = study.solve();
         solutionFilename = "testDeGrooteFregly2016Muscle_solution";
         if (!ignoreActivationDynamics) solutionFilename += "_actdyn";
@@ -156,7 +162,7 @@ TEMPLATE_TEST_CASE(
         outputPaths.emplace_back(".*length.*");
         outputPaths.emplace_back(".*velocity.*");
         auto table = study.analyze(solutionTrajOpt, outputPaths);
-        //STOFileAdapter::write(table, solutionFilename + "_outputs.sto");
+        STOFileAdapter::write(table, solutionFilename + "_outputs.sto");
 
         solutionFilename += ".sto";
         solutionTrajOpt.write(solutionFilename);
@@ -214,9 +220,9 @@ TEMPLATE_TEST_CASE(
     // ------------------------------
     // See if we get the correct muscle activity.
     if (!ignoreActivationDynamics) {
-        Model modelCMC =
-                createHangingMuscleModel(optimalFiberLength, tendonSlackLength,
-                        ignoreActivationDynamics, ignoreTendonCompliance, true);
+        Model modelCMC = createHangingMuscleModel(optimalFiberLength, 
+                tendonSlackLength, ignoreActivationDynamics, 
+                ignoreTendonCompliance, true);
 
         // Need a reserve for CMC to solve.
         auto* actu = new CoordinateActuator();
@@ -283,55 +289,32 @@ TEMPLATE_TEST_CASE(
 
     // Track the kinematics from the trajectory optimization.
     // ------------------------------------------------------
-    // We will try to recover muscle activity.
+    // Check that we get the same states and controls with a tracking goal 
+    // added to the problem.
     if (!isTendonDynamicsExplicit) {
-        std::cout << "Tracking the trajectory optimization coordinate solution."
-                  << std::endl;
-        MocoStudy study;
-        MocoProblem& problem = study.updProblem();
-        problem.setModelAsCopy(model);
-        // Using an equality constraint for the time bounds was essential for
-        // recovering the correct excitation.
-        const double finalTime =
-                solutionTrajOpt.getTime()[solutionTrajOpt.getNumTimes() - 1];
-        problem.setTimeBounds(0, finalTime);
-        problem.setStateInfo(
-                "/joint/height/value", heightBounds, initHeight, finalHeight);
-        problem.setStateInfo(
-                "/joint/height/speed", speedBounds, initSpeed, finalSpeed);
-        problem.setControlInfo("/forceset/muscle",
-                               actuBounds, actuBounds.getLower());
-        if (!ignoreActivationDynamics) {
-            problem.setStateInfo("/forceset/muscle/activation",
-                                 actuBounds, actuBounds.getLower());
-        }
-        if (!ignoreTendonCompliance) {
-            problem.setStateInfo("/forceset/muscle/normalized_tendon_force",
-                                 normTendonBounds, normTendonBounds.getLower());
-        }
-
+        MocoStudy study = createHangingMuscleStudy(model, 
+                transcription_scheme, ignoreActivationDynamics, 
+                ignoreTendonCompliance, isTendonDynamicsExplicit);
+        
+        // Add a state tracking goal to the original problem.
+        auto& problem = study.updProblem();
         auto* tracking = problem.addGoal<MocoStateTrackingGoal>("tracking");
-
+        tracking->setWeight(100.0);
         auto states = solutionTrajOpt.exportToStatesTable();
         TimeSeriesTable ref(states.getIndependentColumn());
         ref.addTableMetaData("inDegrees", std::string("no"));
         ref.appendColumn("/joint/height/value",
                 states.getDependentColumn("/joint/height/value"));
-        // Tracking speed has a huge effect on getting a good solution for the
-        // control signal.
         ref.appendColumn("/joint/height/speed",
                 states.getDependentColumn("/joint/height/speed"));
-        // Tracking joint/height/speed slightly increases the
-        // iterations to converge, and tracking activation cuts the iterations
-        // in half.
+        if (!ignoreTendonCompliance) {
+            ref.appendColumn("/forceset/muscle/normalized_tendon_force",
+                    states.getDependentColumn(
+                            "/forceset/muscle/normalized_tendon_force"));
+        }
         tracking->setReference(ref);
-        tracking->setAllowUnusedReferences(true);
-
-        // Need a low-weighted effort cost so the problem is well-conditioned.
-        problem.addGoal<MocoControlGoal>("effort", 1e-3);
-
-        auto& solver = study.initSolver<TestType>();
-        solver.set_num_mesh_intervals(30);
+        auto& solver = study.updSolver<MocoCasADiSolver>();
+        solver.resetProblem(problem);
 
         MocoSolution solutionTrack = study.solve();
         std::string solutionFilename =
@@ -340,7 +323,7 @@ TEMPLATE_TEST_CASE(
         if (ignoreTendonCompliance) solutionFilename += "_rigidtendon";
         if (isTendonDynamicsExplicit) solutionFilename += "_exptendyn";
         solutionFilename += ".sto";
-        //solutionTrack.write(solutionFilename);
+        solutionTrack.write(solutionFilename);
         double error = solutionTrack.compareContinuousVariablesRMS(
                 solutionTrajOpt, {{"states", {}}, {"controls", {}}});
         CHECK(error < 0.01);
