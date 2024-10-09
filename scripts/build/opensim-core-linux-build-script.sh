@@ -212,5 +212,5 @@ ctest --parallel $NUM_JOBS --output-on-failure
 echo "LOG: INSTALL OPENSIM-CORE..."
 cd ~/opensim-workspace/opensim-core-build
 cmake --install .
-echo 'export PATH=~/opensim-core/bin:$PATH' >> ~/.bashrc
-source ~/.bashrc
+
+cd ~/opensim-core/bin && echo -e "yes" | ./opensim-install-command-line.sh
