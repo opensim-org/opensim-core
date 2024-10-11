@@ -17,50 +17,10 @@ return_type __enzyme_fwddiff(void*, T ... );
 template < typename return_type, typename ... T >
 return_type __enzyme_autodiff(void*, T ... );
 
-double f(double u, double mass) { return u / mass; }   
-
-double dfdu(double u, double mass) { 
-    double du = 1.0;
-    return __enzyme_fwddiff<double>((void*)f, enzyme_dup, u, du,
-                                              enzyme_const, mass); 
+double f(const std::vector<double>& t, const std::vector<double>& x, 
+        const std::vector<double>& u, double mass) {
+    return u[0] / mass;
 }
-
-double df(double u, double du, double mass) {
-    return __enzyme_fwddiff<double>((void*)f, enzyme_dup, u, du,
-                                              enzyme_const, mass);
-}
-
-// double f(const double* t, const double* x, const double* u, double mass) {
-//     return u[0] / mass;
-// }
-
-// double dfdt(const double* t, const double* x, const double* u, int index, double mass) {
-//     double dt[1] = { 0.0 };
-//     __enzyme_fwddiff<double>((void*)f, enzyme_dup, t, dt,
-//                                               enzyme_const, x,
-//                                               enzyme_const, u,
-//                                               enzyme_const, mass);
-//     return dt[index]; 
-// }
-
-// double dfdx(const double* t, const double* x, const double* u, int index, double mass) {
-//     double dx[2] = { 0.0 };
-//     __enzyme_fwddiff<double>((void*)f, enzyme_const, t,
-//                                               enzyme_dup, x, dx,
-//                                               enzyme_const, u,
-//                                               enzyme_const, mass); 
-//     return dx[index];
-// }
-
-// double dfdu(const double* t, const double* x, const double* u, int index, double mass) {
-//     double du[1] = { 0.0 };
-//     __enzyme_fwddiff<double>((void*)f, enzyme_const, t,
-//                                               enzyme_const, x,
-//                                               enzyme_dup, u, du,
-//                                               enzyme_const, mass); 
-//     return du[index];
-// }
-
 
 /// Translate a point mass in one dimension in minimum time. This is a very
 /// simple example that shows only the basics of Moco.
@@ -132,12 +92,16 @@ public:
         const DM& states = args.at(1);
         const DM& controls = args.at(2);
         DMVector out((int)n_out());
-        out[0] = f(controls(0).scalar(), m_mass);
+        std::vector<double> t(time->data(), time->data() + time.numel());
+        std::vector<double> x(states->data(), states->data() + states.numel());
+        std::vector<double> u(controls->data(), controls->data() + controls.numel());
+        out[0] = f(t, x, u, m_mass);
         return out;
     }
 
 protected:
     double m_mass = 1.0;
+
 };
 
 
@@ -146,6 +110,7 @@ public:
     MultibodySystemJacobian(const std::string& name, double mass) {
         m_mass = mass;
         casadi::Dict opts;
+        // opts["enable_fd"] = true;
         this->construct(name, opts);
     }
     virtual ~MultibodySystemJacobian() = default;
@@ -190,20 +155,53 @@ public:
         out[1] = DM::zeros(1, 2);
         out[2] = DM::zeros(1, 1);
 
-        // double dt[1] = { 0.0 };
-        // double dx[2] = { 0.0 };
-        // double du[1] = { 0.0 };
-        // double dfdu = __enzyme_fwddiff<double>((void*)f, enzyme_dup, time->data(), dt,
-        //                                                  enzyme_dup, states->data(), dx,
-        //                                                  enzyme_dup, controls->data(), du,
-        //                                                  enzyme_const, m_mass);
+        std::vector<double> t(time->data(), time->data() + time.numel());
+        std::vector<double> x(states->data(), states->data() + states.numel());
+        std::vector<double> u(controls->data(), controls->data() + controls.numel());
 
-        // out[0](0, 0) = dt[0];
+        std::vector<double> dt(1, 1.0);
+        std::vector<double> dx(2, 0.0);
+        std::vector<double> du(1, 0.0);
+        double dfdt = __enzyme_fwddiff<double>((void*)f, 
+                enzyme_dup, &t, &dt,
+                enzyme_dup, &x, &dx,
+                enzyme_dup, &u, &du,
+                enzyme_const, m_mass);
 
-        // out[1](0, 0) = dx[0];
-        // out[1](0, 1) = dx[1];
+        dt[0] = 0.0;
+        dx[0] = 1.0;
+        dx[1] = 0.0;
+        du[0] = 0.0;
+        double dfdx0 = __enzyme_fwddiff<double>((void*)f, 
+                enzyme_dup, &t, &dt,
+                enzyme_dup, &x, &dx,
+                enzyme_dup, &u, &du,
+                enzyme_const, m_mass);
 
-        out[2](0, 0) = dfdu(controls.scalar(), m_mass);
+        dt[0] = 0.0;
+        dx[0] = 0.0;
+        dx[1] = 1.0;
+        du[0] = 0.0;
+        double dfdx1 = __enzyme_fwddiff<double>((void*)f, 
+                enzyme_dup, &t, &dt,
+                enzyme_dup, &x, &dx,
+                enzyme_dup, &u, &du,
+                enzyme_const, m_mass);
+
+        dt[0] = 0.0;
+        dx[0] = 0.0;
+        dx[1] = 0.0;
+        du[0] = 1.0;
+        double dfdu = __enzyme_fwddiff<double>((void*)f, 
+                enzyme_dup, &t, &dt,
+                enzyme_dup, &x, &dx,
+                enzyme_dup, &u, &du,
+                enzyme_const, m_mass);
+
+        out[0](0, 0) = dfdt;
+        out[1](0, 0) = dfdx0;
+        out[1](0, 1) = dfdx1;
+        out[2](0, 0) = dfdu;
         return out;
     }
 
@@ -211,57 +209,77 @@ private:
     double m_mass = 1.0;
 };
 
-// class MultibodySystemForward : public casadi::Callback {
-// public:
-//     MultibodySystemForward(const std::string& name, double mass) {
-//         m_mass = mass;
-//         casadi::Dict opts;
-//         this->construct(name, opts);
-//     }
-//     virtual ~MultibodySystemForward() = default;
+class MultibodySystemForward : public casadi::Callback {
+public:
+    MultibodySystemForward(const std::string& name, double mass) {
+        m_mass = mass;
+        casadi::Dict opts;
+        this->construct(name, opts);
+    }
+    virtual ~MultibodySystemForward() = default;
 
-//     casadi_int get_n_in() override final { return 7; }
-//     casadi_int get_n_out() override final { return 1; }
+    casadi_int get_n_in() override final { return 7; }
+    casadi_int get_n_out() override final { return 1; }
     
-//     casadi::Sparsity get_sparsity_in(casadi_int i) override final {
-//         if (i == 0) {
-//             return casadi::Sparsity::dense(1, 1); // 1st nominal input
-//         } else if (i == 1) {
-//             return casadi::Sparsity::dense(2, 1); // 2nd nominal input
-//         } else if (i == 2) {
-//             return casadi::Sparsity::dense(1, 1); // 3rd nominal input
-//         } else if (i == 3) {
-//             return casadi::Sparsity::dense(1, 1); // nominal output
-//         } else if (i == 4) {
-//             return casadi::Sparsity::dense(1, 1); // 1st forward seed
-//         } else if (i == 5) {
-//             return casadi::Sparsity::dense(2, 1); // 2nd forward seed
-//         } else if (i == 6) {
-//             return casadi::Sparsity::dense(1, 1); // 3rd forward seed
-//         } else {
-//             return casadi::Sparsity(0, 0);
-//         }
-//     }
+    casadi::Sparsity get_sparsity_in(casadi_int i) override final {
+        if (i == 0) {
+            return casadi::Sparsity::dense(1, 1); // 1st nominal input
+        } else if (i == 1) {
+            return casadi::Sparsity::dense(2, 1); // 2nd nominal input
+        } else if (i == 2) {
+            return casadi::Sparsity::dense(1, 1); // 3rd nominal input
+        } else if (i == 3) {
+            return casadi::Sparsity::dense(1, 1); // nominal output
+        } else if (i == 4) {
+            return casadi::Sparsity::dense(1, 1); // 1st forward seed
+        } else if (i == 5) {
+            return casadi::Sparsity::dense(2, 1); // 2nd forward seed
+        } else if (i == 6) {
+            return casadi::Sparsity::dense(1, 1); // 3rd forward seed
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    }
 
-//     casadi::Sparsity get_sparsity_out(casadi_int i) override final {
-//         if (i == 0) {
-//             return casadi::Sparsity::dense(1, 1); // Forward sensitivity
-//         } else {
-//             return casadi::Sparsity(0, 0);
-//         }
-//     }
+    casadi::Sparsity get_sparsity_out(casadi_int i) override final {
+        if (i == 0) {
+            return casadi::Sparsity::dense(1, 1); // Forward sensitivity
+        } else {
+            return casadi::Sparsity(0, 0);
+        }
+    }
 
-//     DMVector eval(const DMVector& args) const override {
-//         DM controls = args.at(2);
-//         DM dcontrols = args.at(6);
-//         DMVector out((int)n_out());
-//         out[0] = df(controls.scalar(), dcontrols.scalar(), m_mass);
-//         return out;
-//     }
+    DMVector eval(const DMVector& args) const override {
+        const DM& time = args.at(0);
+        const DM& states = args.at(1);
+        const DM& controls = args.at(2);
 
-// private:
-//     double m_mass = 1.0;
-// };
+        const DM& dtime = args.at(4);
+        const DM& dstates = args.at(5);
+        const DM& dcontrols = args.at(6);
+
+        DMVector out((int)n_out());
+
+        std::vector<double> t(time->data(), time->data() + time.numel());
+        std::vector<double> x(states->data(), states->data() + states.numel());
+        std::vector<double> u(controls->data(), controls->data() + controls.numel());
+
+        std::vector<double> dt(dtime->data(), dtime->data() + dtime.numel());
+        std::vector<double> dx(dstates->data(), dstates->data() + dstates.numel());
+        std::vector<double> du(dcontrols->data(), dcontrols->data() + dcontrols.numel());
+        double df = __enzyme_fwddiff<double>((void*)f, 
+                enzyme_dup, &t, &dt,
+                enzyme_dup, &x, &dx,
+                enzyme_dup, &u, &du,
+                enzyme_const, m_mass);
+
+        out[0] = df;
+        return out;
+    }
+
+private:
+    double m_mass = 1.0;
+};
 
 // TODO: need Enzyme "output arguments" for reverses sensitivities?
 // class MultibodySystemReverse : public casadi::Callback {
@@ -318,54 +336,41 @@ private:
 //     double m_mass = 1.0;
 // };
 
-class MultibodySystemWithCallbackJacobian : public MultibodySystem {
+class MultibodySystemWithJacobian : public MultibodySystem {
 public:
     void constructFunction(const std::string& name, 
             bool enableFiniteDifference,
             const double& mass) {
 
         m_jacobian = std::make_unique<MultibodySystemJacobian>(name, m_mass);
+        m_forward = std::make_unique<MultibodySystemForward>(name, m_mass);
         MultibodySystem::constructFunction(name, enableFiniteDifference, mass);
         
     }
 
-    bool has_jacobian() const override { return true; }
-    casadi::Function get_jacobian(const std::string& name,
+    // bool has_jacobian() const override { return true; }
+    // casadi::Function get_jacobian(const std::string& name,
+    //         const std::vector<std::string>& inames,
+    //         const std::vector<std::string>& onames, 
+    //         const casadi::Dict& opts) const override {
+
+    //     return *m_jacobian;
+    // }
+
+    bool has_forward(casadi_int nfwd) const override { return nfwd==1; }
+    casadi::Function get_forward(casadi_int nfwd, const std::string& name,
             const std::vector<std::string>& inames,
             const std::vector<std::string>& onames, 
             const casadi::Dict& opts) const override {
 
-        return *m_jacobian;
+        return *m_forward;
     }
         
 private:
     // Must keep a reference alive.
     // https://github.com/casadi/casadi/blob/0d8030d49e895de2dd38cee849c1429c8d50a286/docs/examples/python/callback.py#L252
-    mutable std::unique_ptr<MultibodySystemJacobian> m_jacobian;
-};
-
-class MultibodySystemWithSymbolicJacobian : public MultibodySystem {
-public:
-    bool has_jacobian() const override { return true; }
-    casadi::Function get_jacobian(const std::string& name,
-            const std::vector<std::string>& inames,
-            const std::vector<std::string>& onames, 
-            const casadi::Dict& opts) const override {
-        casadi::MX t = casadi::MX::sym("t", 1, 1);
-        casadi::MX x = casadi::MX::sym("x", 2, 1);
-        casadi::MX u = casadi::MX::sym("u", 1, 1);
-
-        casadi::MX f = casadi::MX::sym("f", 1, 1);
-
-        casadi::MX dfdt(1, 1);
-        casadi::MX dfdx(1, 2);
-        casadi::MX dfdu(1, 1);
-        dfdu(0, 0) = 1.0 / m_mass;
-
-        casadi::Function jac_f = casadi::Function(name, {t, x, u, f},
-                {dfdt, dfdx, dfdu});
-        return jac_f;
-    }
+    std::unique_ptr<MultibodySystemJacobian> m_jacobian;
+    std::unique_ptr<MultibodySystemForward> m_forward;
 };
 
 class TranscriptionSlidingMass {
@@ -378,10 +383,6 @@ public:
 
     void setUseMultibodySystemWithJacobian(bool multibodySystemWithJacobian) {
         m_multibodySystemWithJacobian = multibodySystemWithJacobian;
-    }
-
-    void setUseCallbackJacobian(bool callbackJacobian) {
-        m_callbackJacobian = callbackJacobian;
     }
 
     void setEnableFiniteDifferences(bool enableFiniteDifferences) {
@@ -404,17 +405,11 @@ public:
          // Construct the multibody system function.
         if (!m_symbolicStateDerivatives) {
             if (m_multibodySystemWithJacobian) {
-                if (m_callbackJacobian) {
-                    this->m_multibodySystemCallbackJac = 
-                        OpenSim::make_unique<MultibodySystemWithCallbackJacobian>();
-                    this->m_multibodySystemCallbackJac->constructFunction("multibody_system_callback_jacobian", 
-                            m_enableFiniteDifferences, m_mass);
-                } else {
-                    this->m_multibodySystemSymbolicJac = 
-                        OpenSim::make_unique<MultibodySystemWithSymbolicJacobian>();
-                    this->m_multibodySystemSymbolicJac->constructFunction("multibody_system_symbolic_jacobian", 
-                            m_enableFiniteDifferences, m_mass);
-                }
+                this->m_multibodySystemJac = 
+                    OpenSim::make_unique<MultibodySystemWithJacobian>();
+                this->m_multibodySystemJac->constructFunction(
+                        "multibody_system_with_jacobian", 
+                        m_enableFiniteDifferences, m_mass);
             } else {
                 this->m_multibodySystem = OpenSim::make_unique<MultibodySystem>();
                 this->m_multibodySystem->constructFunction("multibody_system", 
@@ -530,11 +525,7 @@ public:
 
         MXVector out;
         if (m_multibodySystemWithJacobian) {
-            if (m_callbackJacobian) {
-                out = evalOnTrajectory(*m_multibodySystemCallbackJac, inputs, m_gridIndices);
-            } else {
-                out = evalOnTrajectory(*m_multibodySystemSymbolicJac, inputs, m_gridIndices);
-            }
+            out = evalOnTrajectory(*m_multibodySystemJac, inputs, m_gridIndices);
         } else {
             out = evalOnTrajectory(*m_multibodySystem, inputs, m_gridIndices);
         }
@@ -781,7 +772,7 @@ private:
         const casadi::Function& pointFunction, const std::vector<Var>& inputs,
         const casadi::Matrix<casadi_int>& timeIndices) const {
             const auto trajFunc = pointFunction.map(
-                    timeIndices.size2(), "serial", 1);
+                    timeIndices.size2(), "serial", 20);
 
             // Assemble input.
             MXVector mxIn(inputs.size() + 1);
@@ -823,13 +814,11 @@ private:
 
     bool m_symbolicStateDerivatives = true;
     bool m_multibodySystemWithJacobian = false;
-    bool m_callbackJacobian = false;
     bool m_enableFiniteDifferences = false;
     std::string m_hessianApproximation = "limited-memory";
 
     std::unique_ptr<MultibodySystem> m_multibodySystem;
-    std::unique_ptr<MultibodySystemWithCallbackJacobian> m_multibodySystemCallbackJac;
-    std::unique_ptr<MultibodySystemWithSymbolicJacobian> m_multibodySystemSymbolicJac;
+    std::unique_ptr<MultibodySystemWithJacobian> m_multibodySystemJac;
 
     casadi::Matrix<casadi_int> m_gridIndices;
 };
@@ -840,7 +829,6 @@ int main() {
     transcription.setNumMeshIntervals(50);
     transcription.setUseSymbolicStateDerivatives(false);
     transcription.setUseMultibodySystemWithJacobian(true);
-    transcription.setUseCallbackJacobian(true);
     transcription.setEnableFiniteDifferences(false);
     transcription.setHessianApproximation("limited-memory");
     transcription.initialize();
