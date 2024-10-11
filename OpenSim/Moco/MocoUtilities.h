@@ -250,7 +250,9 @@ private:
 /// distinguish between right ("<>_r") and left ("<>_l") forces, centers of
 /// pressure, and torques. Centers of pressure are computed assuming the
 /// that the contact plane's normal is in the y-direction, which is the OpenSim
-/// convention.
+/// convention. Torques are computed based on the center of pressure
+/// representation of the ground reaction forces: a "vertical" torque in the 
+/// y-direction and zero torque in the other directions.
 ///
 /// The forces and torques are computed from the first six outputs of
 /// getRecordValues(), while the centers of pressure are computed from the second

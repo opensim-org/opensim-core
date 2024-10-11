@@ -1,0 +1,9 @@
+pendulum_swing
+version=1
+nRows=2
+nColumns=7
+inDegrees=yes
+endheader
+time head_vx    head_vy head_vz head_px head_py head_pz
+0   0   0   0   0   0   0
+1   1000   1000   1000   0   0   0

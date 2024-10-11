@@ -197,15 +197,8 @@ void simulateMuscle(
     state.setTime(initialTime);
     manager.initialize(state);
 
-    cout << "\nIntegrating from " << initialTime << " to " << finalTime << endl;
-
-    // Start timing the simulation
-    const clock_t start = clock();
     // simulate
     state = manager.integrate(finalTime);
-
-    // how long did it take?
-    double comp_time = (double)(clock() - start) / CLOCKS_PER_SEC;
 
     //==========================================================================
     // 4. Print the results
@@ -221,13 +214,19 @@ void simulateMuscle(
 
     double val_t0 = tableD.getIndependentColumn()[0];
     const SimTK::Real& val_ke0 = tableD.getRowAtIndex(0)[0];
-    const Vec3& val_omega0 = tableV3.getRowAtIndex(01)[1];
+    const Vec3& val_omega0 = tableV3.getRowAtIndex(0)[1];
     const SimTK::SpatialVec& val_jrf0 = tableSV.getRowAtIndex(0)[1];
 
-    ASSERT_EQUAL(t0, val_t0, SimTK::Eps);
-    ASSERT_EQUAL(ke0, val_ke0, SimTK::Eps);
-    ASSERT_EQUAL(ang_acc0, val_omega0, SimTK::Eps);
-    ASSERT_EQUAL(reaction0, val_jrf0, SimTK::Eps);
+    CHECK_THAT(t0, Catch::Matchers::WithinAbs(val_t0, SimTK::Eps));
+    CHECK_THAT(ke0, Catch::Matchers::WithinAbs(val_ke0, SimTK::Eps));
+    for (int i = 0; i < 3; ++i) {
+        CHECK_THAT(ang_acc0[i], 
+                Catch::Matchers::WithinAbs(val_omega0[i], SimTK::Eps));
+        for (int j = 0; j < 2; ++j) {
+            CHECK_THAT(reaction0[j][i], 
+                    Catch::Matchers::WithinAbs(val_jrf0[j][i], SimTK::Eps));
+        }
+    }
 
     double val_tf = tableD.getIndependentColumn()[tableD.getNumRows() - 1];
     const SimTK::Real& val_ke = tableD.getRowAtIndex(tableD.getNumRows() - 1)[0];
@@ -240,10 +239,16 @@ void simulateMuscle(
     auto ang_acc = ball->getAngularAccelerationInGround(state);
     auto reaction = slider->calcReactionOnChildExpressedInGround(state);
 
-    ASSERT_EQUAL(state.getTime(), val_tf, SimTK::Eps);
-    ASSERT_EQUAL(ke, val_ke, SimTK::Eps);
-    ASSERT_EQUAL(ang_acc, val_omega, SimTK::Eps);
-    ASSERT_EQUAL(reaction, val_jrf, SimTK::Eps);
+    CHECK_THAT(state.getTime(), Catch::Matchers::WithinAbs(val_tf, SimTK::Eps));
+    CHECK_THAT(ke, Catch::Matchers::WithinAbs(val_ke, 1e-10));
+    for (int i = 0; i < 3; ++i) {
+        CHECK_THAT(ang_acc[i], 
+                Catch::Matchers::WithinAbs(val_omega[i], SimTK::Eps));
+        for (int j = 0; j < 2; ++j) {
+            CHECK_THAT(reaction[j][i], 
+                    Catch::Matchers::WithinAbs(val_jrf[j][i], SimTK::Eps));
+        }
+    }
 }
 
 TEST_CASE("Output Reporter")

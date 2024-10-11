@@ -76,9 +76,6 @@ execute_process(COMMAND bash "-c"
 # tropter
 install_name_tool_change(tropter adolc.2 "@ADOLC_DIR@/lib64")
 install_name_tool_change(tropter ipopt.3 "@IPOPT_LIBDIR@")
-install_name_tool_change(tropter coinmumps.3 "@IPOPT_LIBDIR@")
-install_name_tool_change(tropter coinmetis.1 "@IPOPT_LIBDIR@")
-install_name_tool_add_rpath(tropter)
 
 # adol-c
 install_name_tool_id(adolc.2)
@@ -88,15 +85,20 @@ install_name_tool_delete_rpath(adolc.2 "@ColPack_ROOT_DIR@/lib")
 # ipopt
 install_name_tool_id(ipopt.3)
 install_name_tool_change(ipopt.3 coinmumps.3 "@IPOPT_LIBDIR@")
-install_name_tool_change(ipopt.3 coinmetis.1 "@IPOPT_LIBDIR@")
+install_name_tool_change(ipopt.3 metis "@IPOPT_LIBDIR@")
+install_name_tool_change_gfortran(ipopt.3)
+install_name_tool_change_quadmath(ipopt.3)
 
 # coinmumps
 install_name_tool_id(coinmumps.3)
-install_name_tool_change(coinmumps.3 coinmetis.1 "@IPOPT_LIBDIR@")
+install_name_tool_change(coinmumps.3 metis "@IPOPT_LIBDIR@")
 install_name_tool_change(coinmumps.3 "${libgcc_name}" "${libgcc_dir}")
 install_name_tool_add_rpath(coinmumps.3)
+install_name_tool_change_gfortran(coinmumps.3)
+install_name_tool_change_quadmath(coinmumps.3)
 
-# coinmetis
-install_name_tool_id(coinmetis.1)
-install_name_tool_add_rpath(coinmetis.1)
+# metis
+install_name_tool_id(metis)
+install_name_tool_add_rpath(metis)
+ 
 

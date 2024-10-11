@@ -51,7 +51,9 @@ MocoAddTest(NAME testMocoImplicit)
 
 MocoAddTest(NAME testMocoConstraints)
 
-MocoAddTest(NAME testMocoContact)
+MocoAddTest(NAME testMocoContact RESOURCES
+        subject_20dof18musc_running.osim
+        running_solution_full_stride.sto)
 
 MocoAddTest(NAME testMocoControllers)
 

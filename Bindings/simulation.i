@@ -70,6 +70,8 @@ OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %include <OpenSim/Simulation/Model/ConstraintSet.h>
 
 %include <OpenSim/Simulation/Model/Force.h>
+%include <OpenSim/Simulation/Model/ForceProducer.h>
+
 %template(SetForces) OpenSim::Set<OpenSim::Force, OpenSim::ModelComponent>;
 %template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
 %include <OpenSim/Simulation/Model/ForceSet.h>
@@ -77,7 +79,6 @@ OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %template(SetExternalForces) OpenSim::Set<OpenSim::ExternalForce, OpenSim::ModelComponent>;
 %template(ModelComponentSetExternalForces) OpenSim::ModelComponentSet<OpenSim::ExternalForce>;
 
-%include <OpenSim/Simulation/Model/ForceProducer.h>
 %include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 %template(TwoFrameLinkerForce) OpenSim::TwoFrameLinker<OpenSim::Force, OpenSim::PhysicalFrame>;
 %template(TwoFrameLinkerForceProducer) OpenSim::TwoFrameLinker<OpenSim::ForceProducer, OpenSim::PhysicalFrame>;

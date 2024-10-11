@@ -1,27 +1,33 @@
 
 if(TROPTER_COPY_DEPENDENCIES AND APPLE)
-    get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
 
-    file(GLOB gfortran "${gcc_libdir}/libgfortran*.dylib")
-    file(GLOB quadmath "${gcc_libdir}/libquadmath*.dylib")
-
-    # Get the actual name of the library libgcc_s.1.dylib (can be libgcc_s.1.1.dylib),
-    # or another if it changes in the future.
+    # Extract actual name of the library libgfortran, gcc, quadmath to install along on osx
+    # these show only as dependencies of libipopt, and libgcc is in same folder as libgfortran
+    # not very robust but works for our artifacts.
     execute_process(COMMAND bash "-c"
-        "basename `otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libgcc' | awk '{print $1}'`"
-        OUTPUT_VARIABLE libgcc_name
+        "otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libgfortran' | awk '{print $1}'"
+        OUTPUT_VARIABLE libgfortran_name
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    string(REPLACE "libgfortran.5" "libgcc_s.1.1" libgcc_name ${libgfortran_name})
+    
+    execute_process(COMMAND bash "-c"
+        "otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libquadmath' | awk '{print $1}'"
+        OUTPUT_VARIABLE libquadmath_name
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     install(FILES
             ${ADOLC_DIR}/lib64/libadolc.2.dylib
             ${ADOLC_DIR}/lib64/libadolc.dylib
-            # /usr/local/opt/boost/lib/libboost_system.dylib
             ${ColPack_ROOT_DIR}/lib/libColPack.0.dylib
             ${IPOPT_LIBDIR}/libipopt.3.dylib
             ${IPOPT_LIBDIR}/libipopt.dylib
-            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.3.dylib
-            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.dylib
-            ${IPOPT_LIBDIR}/../../metis/lib/libmetis.dylib
+            ${IPOPT_LIBDIR}/libcoinmumps.3.dylib
+            ${IPOPT_LIBDIR}/libcoinmumps.dylib
+            ${IPOPT_LIBDIR}/libmetis.dylib
+            ${libgfortran_name}
+            ${libquadmath_name}
+            ${libgcc_name}
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
@@ -59,10 +65,10 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
             ${IPOPT_LIBDIR}/libipopt.so.3.14.16
             ${IPOPT_LIBDIR}/libipopt.so.3
             ${IPOPT_LIBDIR}/libipopt.so
-            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.so.3.0.5
-            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.so.3
-            ${IPOPT_LIBDIR}/../../mumps/lib/libcoinmumps.so
-            ${IPOPT_LIBDIR}/../../metis/lib/libmetis.so
+            ${IPOPT_LIBDIR}/libcoinmumps.so.3.0.5
+            ${IPOPT_LIBDIR}/libcoinmumps.so.3
+            ${IPOPT_LIBDIR}/libcoinmumps.so
+            ${IPOPT_LIBDIR}/libmetis.so
 
             ${gfortran}
             ${quadmath}
