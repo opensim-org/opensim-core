@@ -253,6 +253,14 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
     packSpatialVec(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::SpatialVec>();
     }
+    DataTable_<double, SimTK::Rotation_<double>>
+    packRotation() {
+        return $self->pack<SimTK::Rotation_<double>>();
+    }
+    DataTable_<double, SimTK::Rotation_<double>>
+    packRotation(std::vector<std::string> suffixes) {
+        return $self->pack<SimTK::Rotation_<double>>();
+    }
 }
 
 %ignore OpenSim::TimeSeriesTable_::TimeSeriesTable_(TimeSeriesTable_ &&);
@@ -294,6 +302,14 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
     packSpatialVec(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::SpatialVec>();
     }
+    TimeSeriesTable_<SimTK::Rotation_<double>>
+    packRotation() {
+        return $self->pack<SimTK::Rotation_<double>>();
+    }
+    TimeSeriesTable_<SimTK::Rotation_<double>>
+    packRotation(std::vector<std::string> suffixes) {
+        return $self->pack<SimTK::Rotation_<double>>();
+    }
 }
 %extend OpenSim::TimeSeriesTable_<SimTK::Vec3> {
     TimeSeriesTable_<double> flatten() {
@@ -328,6 +344,14 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
     }
 }
 %extend OpenSim::TimeSeriesTable_<SimTK::SpatialVec> {
+    TimeSeriesTable_<double> flatten() {
+        return $self->flatten();
+    }
+    TimeSeriesTable_<double> flatten(std::vector<std::string> suffixes) {
+        return $self->flatten(suffixes);
+    }
+}
+%extend OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>> {
     TimeSeriesTable_<double> flatten() {
         return $self->flatten();
     }
