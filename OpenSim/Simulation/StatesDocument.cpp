@@ -136,17 +136,20 @@ struct SDocUtil {
 //_____________________________________________________________________________
 StatesDocument::
 StatesDocument(const Model& model, const Array_<State>& trajectory,
-    const String& note, int p) :
-        note(note), precision(clamp(1, p, SimTK::LosslessNumDigitsReal))
+    const String& note, int p)
 {
+    this->note = note;
+    this->precision = clamp(1, p, SimTK::LosslessNumDigitsReal);
     formDoc(model, trajectory);
 }
 //_____________________________________________________________________________
 StatesDocument::
 StatesDocument(const Model& model, const vector<State>& trajectory,
-    const String& note, int p) :
-        note(note), precision(clamp(1, p, SimTK::LosslessNumDigitsReal))
+    const String& note, int p)
 {
+    this->note = note;
+    this->precision = clamp(1, p, SimTK::LosslessNumDigitsReal);
+
     // Repackage the trajectory of states as a SimTK::Array_<>, which is
     // the container type used by this class and also by the underlying
     // trajectory-related methods in OpenSim::Component.
