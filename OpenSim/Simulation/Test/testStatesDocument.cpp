@@ -36,6 +36,7 @@ using namespace OpenSim;
 using std::cout;
 using std::endl;
 using std::string;
+using std::vector;
 
 
 // Internal static methods and classes.
@@ -654,8 +655,11 @@ simulate(Model* model) {
     manager.initialize(state);
     state = manager.integrate(tf);
 
-    // Return a copy of the underlying state array
-    return reporter->getStateArray();
+    // Return a copy of the underlying state array, after repackaging it
+    // as a SimTK::Array_<State>.
+    const vector<State>& trajectory = reporter->getStateArray();
+    const Array_<State> traj(trajectory);
+    return traj;
 }
 
 } // End anonymous namespace

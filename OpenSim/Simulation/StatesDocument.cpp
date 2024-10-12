@@ -136,11 +136,34 @@ struct SDocUtil {
 //_____________________________________________________________________________
 StatesDocument::
 StatesDocument(const Model& model, const Array_<State>& trajectory,
-    const String& note, int p)
+    const String& note, int p) :
+        note(note), precision(clamp(1, p, SimTK::LosslessNumDigitsReal))
 {
-    this->note = note;
-    this->precision = clamp(1, p, SimTK::LosslessNumDigitsReal);
     formDoc(model, trajectory);
+}
+//_____________________________________________________________________________
+StatesDocument::
+StatesDocument(const Model& model, const vector<State>& trajectory,
+    const String& note, int p) :
+        note(note), precision(clamp(1, p, SimTK::LosslessNumDigitsReal))
+{
+    // Repackage the trajectory of states as a SimTK::Array_<>, which is
+    // the container type used by this class and also by the underlying
+    // trajectory-related methods in OpenSim::Component.
+    //
+    // The constructor below is shallow; it does not create copies of
+    // the contained State elements. The Array_<> refers directly to the
+    // contents of trajectory. Hence, the repackaging is quite inexpensive
+    // computationally.
+    //
+    // Unfortunately, this constructor does not have a const version, so
+    // the const modifier of trajectory has to be cast away. The vector is,
+    // however, safe from changes. Note that the method `formDoc()` only
+    // takes a const trajectory.
+    vector<State>& trajectoryNonconst = const_cast<vector<State>&>(trajectory);
+    Array_<State> traj(trajectoryNonconst, SimTK::DontCopy());
+
+    formDoc(model, traj);
 }
 
 //-----------------------------------------------------------------------------
@@ -365,7 +388,35 @@ void
 StatesDocument::
 deserialize(const Model& model, Array_<State>& traj) {
     checkDocConsistencyWithModel(model);
+    initializeNumberOfStateObjects();
+    initializePrecision();
+    initializeNote();
     prepareStatesTrajectory(model, traj);
+    initializeTime(traj);
+    initializeContinuousVariables(model, traj);
+    initializeDiscreteVariables(model, traj);
+    initializeModelingOptions(model, traj);
+}
+//_____________________________________________________________________________
+void
+StatesDocument::
+deserialize(const Model& model, vector<State>& trajectory) {
+    checkDocConsistencyWithModel(model);
+    initializeNumberOfStateObjects();
+    initializePrecision();
+    initializeNote();
+
+    // Repackage the trajectory of states as a SimTK::Array_<>, which is
+    // the container type used by this class and also by the underlying
+    // trajectory-related methods in OpenSim::Component.
+    // The following constructor is shallow; it does not create copies of
+    // the contained State elements. The Array_<> refers directly to the
+    // contents of trajectory. Hence, 1) the repackaging is quite inexpensive
+    // computationally, and 2) when the contents of `traj` are changed,
+    // so are the contents of `trajectory`.
+    prepareStatesTrajectory(model, trajectory);
+    Array_<State> traj(trajectory, SimTK::DontCopy());
+
     initializeTime(traj);
     initializeContinuousVariables(model, traj);
     initializeDiscreteVariables(model, traj);
@@ -398,26 +449,30 @@ checkDocConsistencyWithModel(const Model& model) {
 //_____________________________________________________________________________
 void
 StatesDocument::
-prepareStatesTrajectory(const Model& model, Array_<State>& traj) {
-    // Create a local copy of the Model and get a default State.
-    Model localModel(model);
-    SimTK::State state = localModel.initSystem();
-
-    // How many State objects should there be?
-    // The number of objects needs to be the same as the number of time stamps.
-    // Each State object has a time field, which will be set in
-    // initializeTime().
+initializeNumberOfStateObjects() {
+    // The number of State objects should be the same as the number of time
+    // stamps. That is, nStateObjects = nTime.
     Element rootElt = doc.getRootElement();
     Attribute nTimeAttr = rootElt.getOptionalAttribute("nTime");
-    int nTime;
-    bool success = nTimeAttr.getValue().tryConvertTo<int>(nTime);
+    bool success = nTimeAttr.getValue().tryConvertTo<int>(nStateObjects);
     SimTK_ASSERT_ALWAYS(success,
         "Unable to acquire nTime from root element.");
-    SimTK_ASSERT1_ALWAYS(nTime > 0,
-        "Root element attribute numStateObjects=%d; should be > 0.", nTime);
-
-    // Append State objects
-    for (int i=0; i < nTime; ++i) traj.emplace_back(state);
+    SimTK_ASSERT1_ALWAYS(nStateObjects > 0,
+        "Root element attribute numStateObjects=%d; should be > 0.",
+        nStateObjects);
+}
+//_____________________________________________________________________________
+void
+StatesDocument::
+initializePrecision() {
+    // Find the element
+    Element rootElt = doc.getRootElement();
+    Attribute precisionAttr = rootElt.getOptionalAttribute("precision");
+    int p;
+    bool success = precisionAttr.getValue().tryConvertTo<int>(p);
+    SimTK_ASSERT_ALWAYS(success,
+        "Unable to acquire the precision from the root element.");
+    this->precision = clamp(1, p, SimTK::LosslessNumDigitsReal);
 }
 //_____________________________________________________________________________
 void
@@ -440,17 +495,36 @@ initializeNote() {
     this->note = noteElts[0].getValue();
 }
 //_____________________________________________________________________________
+// Note that this method is overloaded to permit users the flexibility of
+// using either SimTK::Array_<> or std::vector<> as the trajectory container.
 void
 StatesDocument::
-initializePrecision() {
-    // Find the element
-    Element rootElt = doc.getRootElement();
-    Attribute precisionAttr = rootElt.getOptionalAttribute("precision");
-    int p;
-    bool success = precisionAttr.getValue().tryConvertTo<int>(p);
-    SimTK_ASSERT_ALWAYS(success,
-        "Unable to acquire the precision from the root element.");
-    this->precision = clamp(1, p, SimTK::LosslessNumDigitsReal);
+prepareStatesTrajectory(const Model& model, Array_<State>& traj) {
+    // Create a local copy of the Model and get its default State.
+    Model localModel(model);
+    SimTK::State defaultState = localModel.initSystem();
+
+    // Append the needed number of state objects to the trajectory.
+    // A copy of the default state is made with each call of emplace_back().
+    // These copies will be initialized during the rest of the deserialization
+    // process.
+    for (int i=0; i < nStateObjects; ++i) traj.emplace_back(defaultState);
+}
+//_____________________________________________________________________________
+// Note that this method is overloaded to permit users the flexibility of
+// using either SimTK::Array_<> or std::vector<> as the trajectory container.
+void
+StatesDocument::
+prepareStatesTrajectory(const Model& model, vector<State>& traj) {
+    // Create a local copy of the Model and get its default State.
+    Model localModel(model);
+    SimTK::State defaultState = localModel.initSystem();
+
+    // Append the needed number of state objects to the trajectory.
+    // A copy of the default state is made with each call of emplace_back().
+    // These copies will be initialized during the rest of the deserialization
+    // process.
+    for (int i=0; i < nStateObjects; ++i) traj.emplace_back(defaultState);
 }
 //_____________________________________________________________________________
 void
@@ -469,7 +543,7 @@ initializeTime(Array_<State>& traj) {
     timeElts[0].getValueAs<Array_<double>>(timeArr);
 
     // Check the size of the time array.
-    size_t n = traj.size();
+    size_t n = timeArr.size();
     SimTK_ASSERT2_ALWAYS(n == traj.size(),
         "Found %d time values. Should match numStateObjects = %d",
         n, traj.size());

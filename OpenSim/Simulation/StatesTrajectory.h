@@ -189,7 +189,7 @@ public:
 
     /** Iterator type that does not allow modifying the trajectory.
      * Most users do not need to understand what this is. */
-    typedef SimTK::Array_<SimTK::State>::const_iterator const_iterator;
+    typedef std::vector<SimTK::State>::const_iterator const_iterator;
 
     /** A helper type to allow using range for loops over a subset of the
      * trajectory. */
@@ -303,8 +303,8 @@ public:
     * ```
     * and then calling:
     * ```
-    *       StatesDocument::deserialize(const OpenSim::Model& model,
-    *                           SimTK::Array_<SimTK::State>& trajectory)
+    *   StatesDocument::deserialize(const OpenSim::Model& model,
+    *                           std::vector<SimTK::State>& trajectory)
     * ```
     *
     * The .ostates format is plain-text XML (see SimTK::Xml) with a
@@ -336,13 +336,13 @@ public:
     }
 
     /** Get a read-only reference to the underlying state array. */
-    const SimTK::Array_<SimTK::State>& getStateArray() const {
+    const std::vector<SimTK::State>& getStateArray() const {
         return m_states;
     }
 
 private:
 
-    SimTK::Array_<SimTK::State> m_states;
+    std::vector<SimTK::State> m_states;
 
 public:
 

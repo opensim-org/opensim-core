@@ -535,6 +535,28 @@ public:
         const SimTK::String& note = "",
         int precision = SimTK::LosslessNumDigitsReal);
 
+    /** Construct a StatesDocument instance from a states trajectory in
+    preparation for serializing the trajectory to file. Once constructed, the
+    document is not designed to be modified; it is a fixed snapshot of the
+    states trajectory at the time of construction. The intended mechanism for
+    obtaining a document that is consistent with a modified or new states
+    trajectory is simply to construct a new document. To serialize the
+    constructed document to file, call StatesDocument::serialize().
+
+    @param model The OpenSim::Model to which the states belong.
+    @param trajectory An array containing the time-ordered sequence of
+    SimTK::State objects.
+    @param note Annotation note for this states document. By default, the note
+    is an empty string.
+    @param precision The number of significant figures with which numerical
+    values are converted to strings. The default value is
+    SimTK:LosslessNumDigitsReal (about 20), which allows for lossless
+    reproduction of state. */
+    StatesDocument(const OpenSim::Model& model,
+        const std::vector<SimTK::State>& trajectory,
+        const SimTK::String& note = "",
+        int precision = SimTK::LosslessNumDigitsReal);
+
     //-------------------------------------------------------------------------
     // Accessors
     //-------------------------------------------------------------------------
@@ -558,8 +580,10 @@ public:
     //-------------------------------------------------------------------------
     /** Deserialize the states held by this document into a states trajectory.
     If deserialization fails, an exception describing the reason for the
-    failure is thrown. See the section called "Deserialization Requirements"
-    in the introductory documentation for this class for details.
+    failure is thrown. For details, see the section called "Deserialization
+    Requirements" in the introductory documentation for this class.
+    @note This method is overloaded to allow users the flexibility to use
+    either `SimTK::Array_<>` or `std::vector` as the trajectory container.
 
     @param model The OpenSim::Model with which the states are to be associated.
     @param trajectory The array into which the time-ordered sequence of
@@ -567,6 +591,20 @@ public:
     @throws SimTK::Exception */
     void deserialize(const OpenSim::Model& model,
         SimTK::Array_<SimTK::State>& trajectory);
+
+    /** Deserialize the states held by this document into a states trajectory.
+    If deserialization fails, an exception describing the reason for the
+    failure is thrown. For details, see the section called "Deserialization
+    Requirements" in the introductory documentation for this class.
+    @note This method is overloaded to allow users the flexibility to use
+    either `SimTK::Array_<>` or `std::vector` as the trajectory container.
+
+    @param model The OpenSim::Model with which the states are to be associated.
+    @param trajectory The array into which the time-ordered sequence of
+    SimTK::State objects will be deserialized.
+    @throws SimTK::Exception */
+    void deserialize(const OpenSim::Model& model,
+        std::vector<SimTK::State>& trajectory);
 
 protected:
     // Serialization Helpers.
@@ -587,8 +625,11 @@ protected:
 
     // Deserialization Helpers.
     void checkDocConsistencyWithModel(const Model& model);
+    void initializeNumberOfStateObjects();
     void prepareStatesTrajectory(const Model& model,
         SimTK::Array_<SimTK::State> &traj);
+    void prepareStatesTrajectory(const Model& model,
+        std::vector<SimTK::State> &traj);
     void initializeNote();
     void initializePrecision();
     void initializeTime(SimTK::Array_<SimTK::State> &traj);
@@ -602,6 +643,7 @@ protected:
 private:
     // Member Variables
     int precision{SimTK::LosslessNumDigitsReal};
+    int nStateObjects{0};
     SimTK::Xml::Document doc;
     SimTK::String filename{""};
     SimTK::String note{""};
