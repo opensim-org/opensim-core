@@ -571,12 +571,12 @@ void testBoundsCheck() {
     states.append(state);
     states.append(state);
 
-    //#ifdef NDEBUG
-    //    // In DEBUG, Visual Studio puts asserts into the index operator.
-    //    states[states.getSize() + 100];
-    //    states[4];
-    //    states[5];
-    //#endif
+    #ifdef NDEBUG
+        // In DEBUG, Visual Studio puts asserts into the index operator.
+        states[states.getSize() + 100];
+        states[4];
+        states[5];
+    #endif
 
     // SimTK::Array_<> only throws exceptions when in a DEBUG build
     #ifdef DEBUG
