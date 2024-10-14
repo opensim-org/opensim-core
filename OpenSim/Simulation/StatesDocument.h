@@ -129,8 +129,9 @@ OpenSim::Storage, OpenSim::TimeSeriesTable, OpenSim::StatesTrajectory, or
 OpenSim::Manager.
 
 Exchanges of state information between class StatesDocument and the rest of
-OpenSim are accomplished via objects of type SimTK::Array_<SimTK::State>,
-which are informally referred to as state trajectories (see directly below).
+OpenSim are accomplished via objects of type SimTK::Array_<SimTK::State>, or
+alternatively std::vector<SimTK::State>, which are informally referred to as
+state trajectories (see directly below).
 
 ### Trajectories
 In many methods of this class, as well as in related classes, you will
@@ -146,13 +147,21 @@ Because of the flexibility and computational speed of the SimTK::Array_<T>
 container class, you will often see trajectories passed in argument lists as
 SimTK::Array_<T>%s. SimTK::Array_<double> might represent the trajectory of a
 knee angle. SimTK::Array_<SimTK::Vec3> might represent the trajectory of the
-center of presser between a foot and the floor during a walking motion.
+center of pressure between a foot and the floor during a walking motion.
 SimTK::Array_<SimTK::State> is used to capture the full trajectory of states
 (continuous variables, discrete variables, and modeling options) recorded
 during a simulation.
 
-This class relies heavily on a few trjectory-centric methods available in
-the OpenSim::Component class. A few examples follow.
+@Note SimTK::Array_<SimTK::State> is preferred over std::vector<SimTK::State>
+for reasons of performance, binary compatibility with Simbody libraries, and
+consistency with Simbody's underlying code base. For a variety of common
+operations, like indexing through an array, SimTK::Array_<T> is about
+twice as fast as std::vector_<T> on Windows systems. Such speed differences
+may not be as large on Mac or Ubuntu systems, but it is safe to assume that
+SimTK::Array_<T> will be just as fast or have a speed advantage.
+
+Th `StatesDocument` class relies heavily on a few trjectory-centric methods
+available in the OpenSim::Component class. A few examples follow.
 
 ```
         template<class T>
@@ -194,7 +203,7 @@ StatesDocument instance. Constructing a new instance is the most reliable
 approach for ensuring an accurate serialization. This approach also greatly
 simplifies the implementation of the StatesDocument class, as methods for
 selectively editing aspects of the internal XML document are consequently
-not needed.
+unnecessary.
 
 ### Output Precision
 The precision with which numbers are serialized to a `.ostates` file can be
@@ -311,7 +320,7 @@ deserialize those same states and use them to accomplish a few basic things.
     // -------------------------------
     // Add a StatesTrajectory Reporter
     // -------------------------------
-    // The reporter records the SimTK::State in a SimTK::Array_<> at a
+    // The reporter records the SimTK::State in an std::vector<> at a
     // specified time interval.
     OpenSim::StatesTrajectoryReporter* reporter =
         new StatesTrajectoryReporter();
@@ -343,7 +352,7 @@ deserialize those same states and use them to accomplish a few basic things.
     // -----------------------
     // The reporter that was added to the system collects the states in an
     // OpenSim::StatesTrajectory object. Underneath the covers, the states are
-    // accumulated in a private array of state objects (i.e., Array_<State>).
+    // accumulated in a private array of state objects (i.e., vector<State>).
     // The StatesTrajectory class knows how to export a StatesDocument based
     // on those states. This "export" functionality is what is used below.
     const StatesTrajectory& trajectory = reporter->getStates();
@@ -352,7 +361,7 @@ deserialize those same states and use them to accomplish a few basic things.
     // Alternatively, a read-only reference to the underlying state array
     // can be obtained from the reporter and used to construct a
     // StatesDocument directly:
-    const SimTK::Array_<SimTK::State>& traj = reporter->getStateArray();
+    const std::vector<SimTK::State>& traj = reporter->getVectorOfStateObjects();
     StatesDocument doc(model, traj);
 
     // ----------------------------
@@ -398,7 +407,7 @@ deserialize those same states and use them to accomplish a few basic things.
     // Note that model and document must be entirely consistent with each
     // other for the deserialization to be successful.
     // See StatesDocument::deserialize() for details.
-    SimTK::Array_<SimTK::State> traj;
+    SimTK::Array_<SimTK::State> traj;  // Or, std::vector<SimTK::State> traj;
     doc.deserialize(model, traj);
 
     // Below are some things that can be done once a deserialized state
@@ -436,7 +445,7 @@ deserialize those same states and use them to accomplish a few basic things.
         // Access the value of a data cache variable. Note that this will
         // require state realization at the appropriate stage.
         system.realize(*iter, SimTK::Stage::Dynamics);
-        Vec3 force = forces.getContactElement(i)->getForce();
+        Vec3 force = forces.getContactElement(0)->getForce();
     }
 
     // ----------------------------------------------------
