@@ -431,7 +431,7 @@ StatesDocument::
 checkDocConsistencyWithModel(const Model& model) {
     // At this point, only the model name is checked here.
     // Many other aspects are checked for consistency than just the model
-    // name. Those are more easily checked as the doc is parced.
+    // name. Those are more easily checked as the doc is parsed.
 
     // Check that name of the model in the doc matches the name of the model'.
     Element rootElt = doc.getRootElement();
