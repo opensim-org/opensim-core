@@ -247,6 +247,14 @@ formTimeElement(const Model& model, const Array_<State>& traj) {
     timeElt.setValueAs<Array_<double>>(time, precision);
 }
 //_____________________________________________________________________________
+// Supported continuous variable type (October 2024): double
+//
+// Any type that can be represented as a SimTK::Value can be supported
+// in OpenSim.
+//
+// Refer to both formDiscreteElement() and initializeDiscreteVariables() for
+// example code for handling variables of different types.
+//
 void
 StatesDocument::
 formContinuousElement(const Model& model, const Array_<State>& traj) {
@@ -269,6 +277,12 @@ formContinuousElement(const Model& model, const Array_<State>& traj) {
     }
 }
 //_____________________________________________________________________________
+// Supported discrete variable types (October 2024):
+//      bool, int, float, double, Vec2, Vec3, Vec4, Vec5, Vec6
+//
+// Any type that can be represented as a SimTK::Value can be supported
+// in OpenSim by adding the appropriate `else if` block below.
+//
 void
 StatesDocument::
 formDiscreteElement(const Model& model, const Array_<State>& traj) {
@@ -360,6 +374,14 @@ formDiscreteElement(const Model& model, const Array_<State>& traj) {
 
 }
 //_____________________________________________________________________________
+// Supported modeling option type (October 2024): int
+//
+// Any type that can be represented as a SimTK::Value can be supported
+// in OpenSim.
+//
+// Refer to both formDiscreteElement() and initializeDiscreteVariables() for
+// example code for handling variables of different types.
+//
 void
 StatesDocument::
 formModelingElement(const Model& model, const Array_<State>& traj) {
@@ -555,6 +577,14 @@ initializeTime(Array_<State>& traj) {
     for (size_t i = 0; i < n; ++i) traj[i].setTime(timeArr[i]);
 }
 //_____________________________________________________________________________
+// Supported continuous variable type (October 2024): double
+//
+// Any type that can be represented as a SimTK::Value can be supported
+// in OpenSim.
+//
+// Refer to both formDiscreteElement() and initializeDiscreteVariables() for
+// example code for handling variables of different types.
+//
 void
 StatesDocument::
 initializeContinuousVariables(const Model& model, SimTK::Array_<State>& traj) {
@@ -602,6 +632,12 @@ initializeContinuousVariables(const Model& model, SimTK::Array_<State>& traj) {
     }
 }
 //_____________________________________________________________________________
+// Supported discrete variable types (October 2024):
+//      bool, int, float, double, Vec2, Vec3, Vec4, Vec5, Vec6
+//
+// Any type that can be represented as a SimTK::Value can be supported
+// in OpenSim by adding the appropriate `else if` block below.
+//
 void
 StatesDocument::
 initializeDiscreteVariables(const Model& model, SimTK::Array_<State>& traj) {
@@ -677,6 +713,14 @@ initializeDiscreteVariables(const Model& model, SimTK::Array_<State>& traj) {
     }
 }
 //_____________________________________________________________________________
+// Supported continuous variable type (October 2024): int
+//
+// Any type that can be represented as a SimTK::Value can be supported
+// in OpenSim.
+//
+// Refer to both formDiscreteElement() and initializeDiscreteVariables() for
+// example code for handling variables of different types.
+//
 void
 StatesDocument::
 initializeModelingOptions(const Model& model, SimTK::Array_<State>& traj) {
