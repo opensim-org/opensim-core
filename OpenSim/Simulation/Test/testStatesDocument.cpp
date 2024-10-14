@@ -657,7 +657,7 @@ simulate(Model* model) {
 
     // Return a copy of the underlying state array, after repackaging it
     // as a SimTK::Array_<State>.
-    const vector<State>& trajectory = reporter->getStateArray();
+    const vector<State>& trajectory = reporter->getVectorOfStateObjects();
     const Array_<State> traj(trajectory);
     return traj;
 }
