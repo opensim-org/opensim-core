@@ -44,7 +44,7 @@ public:
     /** Obtain the accumulated states as a StatesTrajectory object. */
     const StatesTrajectory& getStates() const;
     /** Obtain the accumulated states as a low-level array of states. */
-    const std::vector<SimTK::State>& getStateArray() const;
+    const std::vector<SimTK::State>& getVectorOfStateObjects() const;
     /** Clear the accumulated states. */
     void clear();
 
