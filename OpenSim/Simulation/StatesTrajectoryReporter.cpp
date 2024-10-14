@@ -35,7 +35,7 @@ const StatesTrajectory& StatesTrajectoryReporter::getStates() const {
 }
 
 const std::vector<SimTK::State>&
-StatesTrajectoryReporter::getStateArray() const {
+StatesTrajectoryReporter::getVectorOfStateObjects() const {
     return m_states.getStateArray();
 }
 
