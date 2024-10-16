@@ -350,26 +350,49 @@ TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
                     forceValues[11]);
         }
 
-        // Compute centers of pressure for both feet. We need to use the force
-        // and torque information from the half space to compute the correct
-        // locations.
+        // The simulated ground reaction forces and moments are just the 
+        // opposite of the sum of forces and torques applied to the half-space.
+        SimTK::Vec3 forcesRight = -halfSpaceForcesRight;
+        SimTK::Vec3 forcesLeft = -halfSpaceForcesLeft;
+        SimTK::Vec3 momentsRight = -halfSpaceTorquesRight;
+        SimTK::Vec3 momentsLeft = -halfSpaceTorquesLeft;
+
+        // The ground reaction moments should be equal to the moment caused by 
+        // ground reaction force when applied at the center of pressure plus the 
+        // vertical torque (see http://www.kwon3d.com/theory/grf/cop.html). 
+        // Here, the vertical components of the forces and torques are in the 
+        // y-direction (i.e., the y-component of the center of pressure is zero).
         // TODO: Support contact plane normals in any direction.
+
+        // Compute centers of pressure.
         SimTK::Vec3 copRight(0);
-        copRight(0) = halfSpaceTorquesRight(2) / halfSpaceForcesRight(1);
-        copRight(2) = -halfSpaceTorquesRight(0) / halfSpaceForcesRight(1);
+        if (std::abs(forcesRight(1)) > SimTK::SignificantReal) {
+            copRight(0) = momentsRight(2) / forcesRight(1);
+            copRight(2) = -momentsRight(0) / forcesRight(1);
+        }
 
         SimTK::Vec3 copLeft(0);
-        copLeft(0) = halfSpaceTorquesLeft(2) / halfSpaceForcesLeft(1);
-        copLeft(2) = -halfSpaceTorquesLeft(0) / halfSpaceForcesLeft(1);
+        if (std::abs(forcesLeft(1)) > SimTK::SignificantReal) {
+            copLeft(0) = momentsLeft(2) / forcesLeft(1);
+            copLeft(2) = -momentsLeft(0) / forcesLeft(1);
+        }
+
+        // Calculate the vertical torques.
+        SimTK::Vec3 verticalTorqueRight(0);
+        verticalTorqueRight(1) = momentsRight(1) - copRight(2) * forcesRight(0)
+                + copRight(0) * forcesRight(2);
+        SimTK::Vec3 verticalTorqueLeft(0);
+        verticalTorqueLeft(1) = momentsLeft(1) - copLeft(2) * forcesLeft(0)
+                + copLeft(0) * forcesLeft(2);
 
         // Append row to table.
         SimTK::RowVector_<SimTK::Vec3> row(6);
-        row(0) = sphereForcesRight;
+        row(0) = forcesRight;
         row(1) = copRight;
-        row(2) = sphereForcesLeft;
+        row(2) = forcesLeft;
         row(3) = copLeft;
-        row(4) = sphereTorquesRight;
-        row(5) = sphereTorquesLeft;
+        row(4) = verticalTorqueRight;
+        row(5) = verticalTorqueLeft;
         externalForcesTable.appendRow(state.getTime(), row);
     }
     // Create table.

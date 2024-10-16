@@ -23,7 +23,14 @@ v4.6
   components. The `ForceProducer` API was also rolled out to a variety of existing `Force` components, which
   means that API users can now now ask many `Force` components what forces they produce (see #3891 for a
   comprehensive overview).
+- Made improvements to `MocoUtilities::createExternalLoadsTableForGait()`: center of pressure values are now set to zero, rather 
+  than NaN, when vertical force is zero, and the vertical torque is returned in the torque columns (rather than the sum of the 
+  sphere torques) to be consistent with the center of pressure GRF representation.
+- Fixed an issue where a copy of an `OpenSim::Model` containing a `OpenSim::ExternalLoads` could not be
+  finalized (#3926)
+- Updated all code examples to use c++14 (#3929) 
 - Completed the implementation of the `MeyerFregly2016Force` included in the `StationPlaneContactForce` class to support NMSM Pipeline-equivalent contact models in Moco. (#3877)
+
 
 v4.5.1
 ======

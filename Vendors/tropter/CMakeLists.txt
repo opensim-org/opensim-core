@@ -13,8 +13,8 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Compiler flags.
 # ---------------
-set(CMAKE_CXX_STANDARD 11)
-# Using c++11 is not optional.
+set(CMAKE_CXX_STANDARD 14)
+# Using c++14 is not optional.
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Copy dependencies' libraries into tropter's installation?
