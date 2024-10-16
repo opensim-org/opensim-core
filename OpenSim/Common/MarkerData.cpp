@@ -34,6 +34,7 @@
 #include "Storage.h"
 #include "OpenSim/Auxiliary/auxiliaryTestFunctions.h"
 #include "OpenSim/Common/STOFileAdapter.h"
+#include "IO.h"
 
 //=============================================================================
 // STATICS
@@ -52,16 +53,16 @@ inline void addNumRowsNumColumns(const std::string& filenameOld,
     const std::string& filenameNew) {
     TimeSeriesTable table(filenameOld);
     std::regex endheader{ R"( *endheader *)" };
-    std::ifstream fileOld{ filenameOld };
-    std::ofstream fileNew{ filenameNew };
+    std::unique_ptr<std::ifstream> fileOld{IO::OpenInputFile(filenameOld)};
+    std::unique_ptr<std::ofstream> fileNew{IO::OpenOutputFile(filenameNew)};
     std::string line{};
-    while (std::getline(fileOld, line)) {
+    while (std::getline(*fileOld, line)) {
         if (std::regex_match(line, endheader))
-            fileNew << "nRows=" << table.getNumRows() << "\n"
+            *fileNew << "nRows=" << table.getNumRows() << "\n"
             << "nColumns=" << table.getNumColumns() + 1 << "\n"
             << "endheader\n";
         else
-            fileNew << line << "\n";
+            *fileNew << line << "\n";
     }
 }
 
@@ -137,7 +138,7 @@ MarkerData::~MarkerData()
  */
 void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
 {
-   ifstream in;
+   std::unique_ptr<ifstream> in{IO::OpenInputFile(aFileName)};
    string line, buffer;
    int frameNum, coordsRead;
    double time;
@@ -146,19 +147,17 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
     if (aFileName.empty())
         throw Exception("MarkerData.readTRCFile: ERROR- Marker file name is empty",__FILE__,__LINE__);
 
-   in.open(aFileName.c_str());
-
-    if (!in.good())
+    if (!in->good())
     {
         string errorMessage;
         errorMessage = "Unable to open marker file " + aFileName;
         throw Exception(errorMessage);
     }
 
-   readTRCFileHeader(in, aFileName, aSMD);
+   readTRCFileHeader(*in, aFileName, aSMD);
 
    /* read frame data */
-   while (getline(in, line))
+   while (getline(*in, line))
    {
       /* skip over any blank lines */
       if (findFirstNonWhiteSpace(line) == -1)
@@ -275,7 +274,7 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
 #endif
 
 //cleanup:
-   in.close();
+   in->close();
 }
 
 //_____________________________________________________________________________

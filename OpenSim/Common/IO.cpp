@@ -51,6 +51,8 @@
     #include <unistd.h>
 #endif
 
+#include "fast_float/fast_float.h"
+
 // CONSTANTS
 
 
@@ -64,6 +66,8 @@ int IO::_Pad = 8;
 int IO::_Precision = 8;
 char IO::_DoubleFormat[] = "%16.8lf";
 bool IO::_PrintOfflineDocuments = true;
+std::string IO::_locale = std::locale::classic().name(); 
+
 
 
 //=============================================================================
@@ -431,29 +435,13 @@ bool IO::FileExists(const std::string& filePath) {
 /**
  * Open a file.
  */
-FILE* IO::
-OpenFile(const string &aFileName,const string &aMode)
-{
-    FILE *fp = NULL;
-
-    // OPEN THE FILE
-    fp = fopen(aFileName.c_str(),aMode.c_str());
-    if(fp==NULL) {
-        log_error("IO.OpenFile(const string&,const string&): "
-                  "failed to open {}.", aFileName);
-        return(NULL);
-    }
-
-    return(fp);
-}
-//_____________________________________________________________________________
-/**
- * Open a file.
- */
-ifstream *IO::
+std::ifstream *IO::
 OpenInputFile(const string &aFileName,ios_base::openmode mode)
 {
-    ifstream *fs = new ifstream(aFileName.c_str(), ios_base::in | mode);
+    std::ifstream *fs = new std::ifstream();
+    log_info(_locale);
+    fs->imbue(std::locale(_locale));
+    fs->open(aFileName.c_str(), ios_base::in | mode);
     if(!fs || !(*fs)) {
         log_error("IO.OpenInputFile(const string&,openmode mode): "
                   "failed to open {}.", aFileName);
@@ -462,10 +450,12 @@ OpenInputFile(const string &aFileName,ios_base::openmode mode)
 
     return(fs);
 }
-ofstream *IO::
+std::ofstream *IO::
 OpenOutputFile(const string &aFileName,ios_base::openmode mode)
 {
-    ofstream *fs = new ofstream(aFileName.c_str(), ios_base::out | mode);
+    std::ofstream *fs = new std::ofstream();
+    fs->imbue(std::locale(_locale));
+    fs->open(aFileName.c_str(), ios_base::out | mode);
     if(!fs || !(*fs)) {
         log_error("IO.OpenOutputFile(const string&,openmode mode): failed to "
                   "open {}.", aFileName);
@@ -473,6 +463,17 @@ OpenOutputFile(const string &aFileName,ios_base::openmode mode)
     }
 
     return(fs);
+}
+
+double IO::
+stod(const std::string& __str, std::size_t* __idx)
+{ 
+    double result;
+    // std::istringstream iss(__str);
+    // iss.imbue(std::locale(_locale));
+    // iss >> result;
+    fast_float::from_chars(__str.data(), __str.data()+__str.size(), result);
+    return result;
 }
 //_____________________________________________________________________________
 /**

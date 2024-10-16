@@ -24,7 +24,7 @@
 // INCLUDES
 //=============================================================================
 #include "SegmentedQuinticBezierToolkit.h"
-#include <fstream>
+#include "IO.h"
 
 
 //=============================================================================
@@ -52,20 +52,18 @@ void SegmentedQuinticBezierToolkit::printMatrixToFile(
     const SimTK::Matrix& data,
     const std::string& filename)
 {
-    
-    ofstream datafile;
-    datafile.open(filename.c_str());
+    std::unique_ptr<std::ofstream> datafile{IO::OpenOutputFile(filename)};
 
     for(int i = 0; i < data.nrow(); i++){
-        datafile << col0(i) << ",";
+        *datafile << col0(i) << ",";
         for(int j = 0; j < data.ncol(); j++){
             if(j<data.ncol()-1)
-                datafile << data(i,j) << ",";
+                *datafile << data(i,j) << ",";
             else
-                datafile << data(i,j) << "\n";
+                *datafile << data(i,j) << "\n";
         }   
     }
-    datafile.close();
+    datafile->close();
 } 
 
 void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(

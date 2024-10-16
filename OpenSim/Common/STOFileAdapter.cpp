@@ -21,15 +21,17 @@
 
 #include "STOFileAdapter.h"
 
+#include "IO.h"
+
 namespace OpenSim {
 
 std::shared_ptr<DataAdapter> 
 createSTOFileAdapterForReading(const std::string& fileName) {
-    std::ifstream file{fileName};
+    std::unique_ptr<std::ifstream> file{IO::OpenInputFile(fileName)};
 
     std::regex keyvalue{R"((.*)=(.*))"};
     std::string line{};
-    while(std::getline(file, line)) {
+    while(std::getline(*file, line)) {
         if(line.find("endheader") != std::string::npos)
             break;
 

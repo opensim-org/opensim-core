@@ -97,7 +97,8 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
         getClassName() + 
         ": Cannot construct from empty filename. No filename specified.");
 
-    OPENSIM_THROW_IF(!ifstream(aFileName.c_str(), ios_base::in).good(),
+    std::unique_ptr<ifstream> in{IO::OpenInputFile(aFileName)};
+    OPENSIM_THROW_IF(!in->good(),
         Exception,
         getClassName() + ": Cannot open file " + aFileName +
         ". It may not exist or you do not have permission to read it.");

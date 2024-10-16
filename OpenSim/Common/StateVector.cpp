@@ -532,44 +532,26 @@ divide(StateVector *aStateVector)
  * The number of characters written to file is returned.  If an error
  * occurs, a negative value is returned.
  */
-int StateVector::
-print(FILE *fp) const
-{
-    // CHECK FILE POINTER
-    if(fp==NULL) {
-        log_error("StateVector.print(FILE*): null file pointer.");
-        return(-1);
+ int StateVector::
+ print(std::ofstream *fp) const 
+ {
+    if (fp == NULL || !fp->is_open()) {
+        log_error("StateVector.print(std::ofstream*): null file pointer or file not open.");
+        return (-1);
     }
-
+    auto posStart = fp->tellp();
     // TIME
-    char format[IO_STRLEN];
-    snprintf(format, IO_STRLEN, "%s", IO::GetDoubleOutputFormat());
-    int n=0,nTotal=0;
-    n = fprintf(fp,format,_t);
-    if(n<0) {
-        log_error("StateVector.print(FILE*): error writing to file.");
-        return(n);
-    }
-    nTotal += n;
+    *fp << fmt::format(IO::GetDoubleOutputFormat(), _t);
 
     // STATES
-    snprintf(format, IO_STRLEN, "\t%s", IO::GetDoubleOutputFormat());
-    for(int i=0;i<_data.getSize();i++) {
-        n = fprintf(fp,format,_data[i]);
-        if(n<0) {
-            log_error("StateVector.print(FILE*): error writing to file.");
-            return(n);
-        }
-        nTotal += n;
+    for (int i = 0; i < _data.getSize(); i++) {
+        *fp << "\t" << fmt::format(IO::GetDoubleOutputFormat(),_data[i]);
     }
 
     // CARRIAGE RETURN
-    n = fprintf(fp,"\n");
-    if(n<0) {
-        log_error("StateVector.print(FILE*): error writing to file.");
-        return(n);
-    }
-    nTotal += n;
+    *fp << std::endl;
 
-    return(nTotal);
+    auto posEnd = fp->tellp();
+    // How many characters were written
+    return (posEnd - posStart);
 }

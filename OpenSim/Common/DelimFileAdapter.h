@@ -310,12 +310,12 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     OPENSIM_THROW_IF(fileName.empty(),
                      EmptyFileName);
 
-    std::ifstream in_stream{fileName};
-    OPENSIM_THROW_IF(!in_stream.good(),
+    std::unique_ptr<std::ifstream> in_stream{IO::OpenInputFile(fileName)};
+    OPENSIM_THROW_IF(!in_stream->good(),
                      FileDoesNotExist,
                      fileName);
     
-    OPENSIM_THROW_IF(in_stream.peek() == std::ifstream::traits_type::eof(),
+    OPENSIM_THROW_IF(in_stream->peek() == std::ifstream::traits_type::eof(),
                      FileIsEmpty,
                      fileName);
 
@@ -328,7 +328,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     std::string numberOrDelim = "[0-9][0-9."+_delimitersRead+" -]+";
     std::regex dataLine{ numberOrDelim };
     ValueArrayDictionary keyValuePairs;
-    while(std::getline(in_stream, line)) {
+    while(std::getline(*in_stream, line)) {
         ++line_num;
 
         // We might be parsing a file with CRLF (\r\n) line endings on a
@@ -384,7 +384,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
 
     // Callable to get the next line in form of vector of tokens.
     auto nextLine = [&] {
-        return getNextLine(in_stream, _delimitersRead);
+        return getNextLine(*in_stream, _delimitersRead);
     };
 
     // Read the line containing column labels and fill up the column labels
@@ -436,8 +436,9 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
             matrix.resizeKeep(curCapacity, ncol);
         }
 
+        double result = -1;
         // Time is column 0.
-        timeVec.push_back(std::stod(row.front()));
+        timeVec.push_back(IO::stod(row.front()));
         row.erase(row.begin());
 
         auto row_vector = readElems(row);
@@ -482,7 +483,7 @@ DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
                                     double) const {
     SimTK::RowVector_<double> elems{static_cast<int>(tokens.size())};
     for(auto i = 0u; i < tokens.size(); ++i)
-        elems[static_cast<int>(i)] = std::stod(tokens[i]);
+        elems[static_cast<int>(i)] = IO::stod(tokens[i]);
 
     return elems;
 }
@@ -497,9 +498,9 @@ DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
         OPENSIM_THROW_IF(comps.size() != 3, 
                          IncorrectNumTokens,
                          "Expected 3x (multiple of 3) number of tokens.");
-        elems[i] = SimTK::UnitVec3{std::stod(comps[0]),
-                                   std::stod(comps[1]),
-                                   std::stod(comps[2])};
+        elems[i] = SimTK::UnitVec3{IO::stod(comps[0]),
+                                   IO::stod(comps[1]),
+                                   IO::stod(comps[2])};
     }
 
     return elems;
@@ -515,10 +516,10 @@ DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
         OPENSIM_THROW_IF(comps.size() != 4, 
                          IncorrectNumTokens,
                          "Expected 4x (multiple of 4) number of tokens.");
-        elems[i] = SimTK::Quaternion{std::stod(comps[0]),
-                                     std::stod(comps[1]),
-                                     std::stod(comps[2]),
-                                     std::stod(comps[3])};
+        elems[i] = SimTK::Quaternion{IO::stod(comps[0]),
+                                     IO::stod(comps[1]),
+                                     IO::stod(comps[2]),
+                                     IO::stod(comps[3])};
     }
 
     return elems;
@@ -534,12 +535,12 @@ DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
         OPENSIM_THROW_IF(comps.size() != 6, 
                          IncorrectNumTokens,
                          "Expected 6x (multiple of 6) number of tokens.");
-        elems[i] = SimTK::SpatialVec{{std::stod(comps[0]),
-                                      std::stod(comps[1]),
-                                      std::stod(comps[2])},
-                                     {std::stod(comps[3]),
-                                      std::stod(comps[4]),
-                                      std::stod(comps[5])}};
+        elems[i] = SimTK::SpatialVec{{IO::stod(comps[0]),
+                                      IO::stod(comps[1]),
+                                      IO::stod(comps[2])},
+                                     {IO::stod(comps[3]),
+                                      IO::stod(comps[4]),
+                                      IO::stod(comps[5])}};
     }
 
     return elems;
@@ -559,7 +560,7 @@ DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
                          "x (multiple of " + std::to_string(M) +
                          ") number of tokens.");
         for(int j = 0; j < M; ++j) {
-            elems[i][j] = std::stod(comps[j]);
+            elems[i][j] = IO::stod(comps[j]);
         }
     }
 
@@ -586,12 +587,11 @@ DelimFileAdapter<T>::extendWrite(const InputTables& absTables,
 
     OPENSIM_THROW_IF(fileName.empty(),
                      EmptyFileName);
-
-    std::ofstream out_stream{fileName};
+    std::unique_ptr<std::ofstream> out_stream{IO::OpenOutputFile(fileName)};
 
     // First line of the stream is the header.
     if (table->getTableMetaData().hasKey("header")) {
-        out_stream << table->
+        *out_stream << table->
                       getTableMetaData().
                       getValueForKey("header").
                       template getValue<std::string>() << "\n";
@@ -600,41 +600,41 @@ DelimFileAdapter<T>::extendWrite(const InputTables& absTables,
     for(const auto& key : table->getTableMetaDataKeys()) {
         try {
             if(key != "header")
-                out_stream << key << "=" 
+                *out_stream << key << "=" 
                            << table->
                               template getTableMetaData<std::string>(key) 
                            << "\n";
         } catch(const InvalidTemplateArgument&) {}
     }
     // Write name of the data-type -- vec3, vec6, etc.
-    out_stream << _dataTypeString << "=" << dataTypeName() << "\n";
+    *out_stream << _dataTypeString << "=" << dataTypeName() << "\n";
     // Write version number.
-    out_stream << _versionString << "=" << _versionNumber << "\n";
-    out_stream << _opensimVersionString << "=" << GetVersion() << "\n";
-    out_stream << _endHeaderString << "\n";
+    *out_stream << _versionString << "=" << _versionNumber << "\n";
+    *out_stream << _opensimVersionString << "=" << GetVersion() << "\n";
+    *out_stream << _endHeaderString << "\n";
 
     // Line containing column labels.
-    out_stream << _timeColumnLabel;
+    *out_stream << _timeColumnLabel;
     for(unsigned col = 0; col < table->getNumColumns(); ++col)
-        out_stream << _delimiterWrite
+        *out_stream << _delimiterWrite
                    << table->
                       getDependentsMetaData().
                       getValueArrayForKey("labels")[col].
                       template getValue<std::string>();
-    out_stream << "\n";
+    *out_stream << "\n";
 
     // Data rows.
     for(unsigned row = 0; row < table->getNumRows(); ++row) {
         constexpr auto prec = std::numeric_limits<double>::digits10 + 1;
-        out_stream << std::setprecision(prec)
+        *out_stream << std::setprecision(prec)
                    << table->getIndependentColumn()[row];
         const auto& row_r = table->getRowAtIndex(row);
         for(unsigned col = 0; col < table->getNumColumns(); ++col) {
             const auto& elt = row_r[col];
-            out_stream << _delimiterWrite;
-            writeElem(out_stream, elt, prec);
+            *out_stream << _delimiterWrite;
+            writeElem(*out_stream, elt, prec);
         }
-        out_stream << "\n";
+        *out_stream << "\n";
     }
 }
 

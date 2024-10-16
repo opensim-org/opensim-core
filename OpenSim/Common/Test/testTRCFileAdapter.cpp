@@ -107,8 +107,8 @@ void compareFiles(const std::string& filenameA,
             double d_tokenA{};
             double d_tokenB{};
             try {
-                d_tokenA = std::stod(tokenA);
-                d_tokenB = std::stod(tokenB);
+                d_tokenA = IO::stod(tokenA);
+                d_tokenB = IO::stod(tokenB);
             }
             catch (std::invalid_argument&) {
                 testFailed(filenameA, tokenA, tokenB);

@@ -142,22 +142,22 @@ parseImuData(const char* str, const size_t len) {
     std::smatch result_ts{};
     if(!std::regex_search(data, result_ts, regex_ts))
         throw std::runtime_error{"No timestamp in data stream."};
-    double timestamp{std::stod(result_ts[0])};
+    double timestamp{IO::stod(result_ts[0])};
     // Acceleration.
     std::array<double, 3> gravity{};
     std::smatch result_gravity{};
     if(std::regex_search(data, result_gravity, regex_gravity)) {
-        gravity[0] = std::stod(result_gravity[1]);
-        gravity[1] = std::stod(result_gravity[2]);
-        gravity[2] = std::stod(result_gravity[3]);
+        gravity[0] = IO::stod(result_gravity[1]);
+        gravity[1] = IO::stod(result_gravity[2]);
+        gravity[2] = IO::stod(result_gravity[3]);
     }
     // Angular veclocity.
     std::array<double, 3> omega{};
     std::smatch result_omega{};
     if(std::regex_search(data, result_omega, regex_omega)) {
-        omega[0] = std::stod(result_omega[1]);
-        omega[1] = std::stod(result_omega[2]);
-        omega[2] = std::stod(result_omega[3]);
+        omega[0] = IO::stod(result_omega[1]);
+        omega[1] = IO::stod(result_omega[2]);
+        omega[2] = IO::stod(result_omega[3]);
     }    
 
     return std::make_tuple(timestamp, gravity, omega);

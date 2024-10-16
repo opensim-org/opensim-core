@@ -97,7 +97,7 @@ protected:
     MapKeysToValues _keyValueMap;
     /** Cache for fileName and file pointer when the file is opened so we can flush and write intermediate files if needed */
     std::string _fileName;
-    FILE *_fp;
+    std::ofstream *_fp;
     /** Name and Description */
     std::string _name;
     std::string _description;
@@ -364,18 +364,18 @@ public:
     //--------------------------------------------------------------------------
     // IO
     //--------------------------------------------------------------------------
-    bool print(const std::string &aFileName,const std::string &aMode="w", const std::string& aComment="") const;
-    int print(const std::string &aFileName,double aDT,const std::string &aMode="w") const;
+    bool print(const std::string &aFileName,const std::ios_base::openmode &aMode=std::ios_base::out, const std::string& aComment="") const;
+    int print(const std::string &aFileName,double aDT,const std::ios_base::openmode &aMode=std::ios_base::out) const;
     void setOutputFileName(const std::string& aFileName) override ;
     // convenience function for Analyses and DerivCallbacks
     static void printResult(const Storage *aStorage,const std::string &aName,
         const std::string &aDir,double aDT,const std::string &aExtension);
     void interpolateAt(const Array<double> &targetTimes);
 private:
-    int writeHeader(FILE *rFP,double aDT=-1) const;
-    int writeSIMMHeader(FILE *rFP,double aDT=-1, const char*aComment=0) const;
-    int writeDescription(FILE *rFP) const;
-    int writeColumnLabels(FILE *rFP) const;
+    int writeHeader(std::ofstream *rFP,double aDT=-1) const;
+    int writeSIMMHeader(std::ofstream *rFP,double aDT=-1, const char*aComment=0) const;
+    int writeDescription(std::ofstream *rFP) const;
+    int writeColumnLabels(std::ofstream *rFP) const;
     int integrate(double aTI,double aTF,int aN,double *rArea,Storage *rStorage) const;
     int integrate(int aI1,int aI2,int aN,double *rArea,Storage *rStorage) const;
 

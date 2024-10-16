@@ -66,6 +66,8 @@ private:
     static char _DoubleFormat[IO_DBLFMTLEN];
     /** Whether offline documents should also be printed when Object::print is called. */
     static bool _PrintOfflineDocuments;
+    /** Locale specifier for reading and writing files */
+    static std::string _locale;
 
 
 //=============================================================================
@@ -100,10 +102,11 @@ public:
     static int ComputeNumberOfSteps(double aTI,double aTF,double aDT);
     static std::string ReadCharacters(std::istream &aIS,int aNChar);
     static bool FileExists(const std::string& filePath);
-    static FILE* OpenFile(const std::string &aFileName,const std::string &aMode);
+#endif
     static std::ifstream* OpenInputFile(const std::string &aFileName,std::ios_base::openmode mode=std::ios_base::in);
     static std::ofstream* OpenOutputFile(const std::string &aFileName,std::ios_base::openmode mode=std::ios_base::out);
-#endif
+    static double stod(const std::string& __str, std::size_t* __idx = 0);
+    // 
     // Directory management
     static int makeDir(const std::string &aDirName);
     static int chDir(const std::string &aDirName);

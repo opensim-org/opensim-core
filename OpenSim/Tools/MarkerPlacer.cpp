@@ -406,7 +406,7 @@ bool MarkerPlacer::processModel(Model* aModel,
 
         if (_outputMotionFileNameProp.isValidFileName()) {
             _outputStorage->print(aPathToSubject + _outputMotionFileName,
-                "w", "File generated from solving marker data for model "
+                std::ios_base::out, "File generated from solving marker data for model "
                 + aModel->getName());
         }
     }
