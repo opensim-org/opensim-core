@@ -30,16 +30,16 @@ public:
     Trapezoidal(const Solver& solver, const Problem& problem)
             : Transcription(solver, problem) {
         createVariablesAndSetBounds(m_solver.getMesh(),
-                m_problem.getNumStates(), 2);
+                m_problem.getNumStates(), m_problem.getNumStates(), 2);
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
-
+    casadi::DM createControlIndicesImpl() const override;
     void calcDefectsImpl(const casadi::MXVector& x, 
-                         const casadi::MXVector& xdot,
-                         casadi::MX& defects) const override;
+            const casadi::MXVector& xdot, casadi::MX& defects) const override;
+    FlattenedVariableInfo getFlattenedVariableInfo() const override;
 };
 
 } // namespace CasOC

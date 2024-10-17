@@ -72,13 +72,6 @@ public:
         const int numMeshIntervals = (int)mesh.size() - 1;
         const int numGridPoints = (int)mesh.size() + numMeshIntervals * m_degree;
         casadi::DM grid = casadi::DM::zeros(1, numGridPoints);
-        const bool interpControls =
-                m_solver.getInterpolateControlMeshInteriorPoints();
-        casadi::DM pointsForInterpControls;
-        if (interpControls) {
-            pointsForInterpControls = casadi::DM::zeros(1,
-                    numMeshIntervals * m_degree);
-        }
 
         // Get the collocation points (roots of Legendre polynomials). The roots
         // are returned on the interval (0, 1), not (-1, 1) as in the theses of
@@ -98,32 +91,73 @@ public:
             grid(igrid) = t_i;
             for (int d = 0; d < m_degree; ++d) {
                 grid(igrid + d + 1) = t_i + (t_ip1 - t_i) * m_legendreRoots[d];
-                if (interpControls) {
-                    pointsForInterpControls(imesh * m_degree + d) =
-                            grid(igrid + d + 1);
-                }
             }
         }
         grid(numGridPoints - 1) = mesh[numMeshIntervals];
         createVariablesAndSetBounds(grid,
-                (m_degree + 1) * m_problem.getNumStates(),
-                m_degree + 2,
-                pointsForInterpControls);
+                (m_degree + 1) * m_problem.getNumStates(), 
+                m_problem.getNumStates(), 
+                m_degree + 2);
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
+    casadi::DM createControlIndicesImpl() const override;
     void calcDefectsImpl(const casadi::MXVector& x, 
             const casadi::MXVector& xdot, casadi::MX& defects) const override;
-    void calcInterpolatingControlsImpl(const casadi::MX& controls,
-            casadi::MX& interpControls) const override;
+    void calcInterpolatingControlsImpl(casadi::MX& controls) const override;
+    void calcInterpolatingControlsImpl(casadi::DM& controls) const override;
+    FlattenedVariableInfo getFlattenedVariableInfo() const override;
 
     int m_degree;
     std::vector<double> m_legendreRoots;
     casadi::DM m_differentiationMatrix;
     casadi::DM m_interpolationCoefficients;
     casadi::DM m_quadratureCoefficients;
+
+    template <typename T>
+    void calcInterpolatingControlsHelper(T& controls) const {
+        using casadi::Slice;
+
+        // This interpolation scheme is based on control approximation defined 
+        // by Eq. 6.21 in the thesis of Huntington [2]. We cannot linearly 
+        // interpolate the control values at the mesh points (as recommended by
+        // Bordalba et al. [3]) because this would violate the sparsity
+        // structure required by the FATROP solver.
+
+        // Evaluate the `i`th Lagrange polynomial at the point `tau`.
+        auto getLagrangePolynomial = [this](int i, double tau) -> double {
+            double polynomial = 1.0;
+            for (int d = 0; d < m_degree; ++d) {
+                if (i != d) {
+                    polynomial *= (tau - m_legendreRoots[d]) /
+                                (m_legendreRoots[i] - m_legendreRoots[d]);
+                }
+            }
+            return polynomial;
+        };
+
+        // Define controls for the initial mesh point for all mesh intervals.
+        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+            const int igrid = imesh * (m_degree + 1);
+            controls(Slice(), igrid) = 0;
+            for (int d = 0; d < m_degree; ++d) {
+                const auto c_t = controls(Slice(), igrid + d + 1);
+                controls(Slice(), igrid) += getLagrangePolynomial(d, 0) * c_t;
+            }
+        }
+
+        // Define the control at the final mesh point for the final mesh 
+        // interval.
+        controls(Slice(), m_numGridPoints - 1) = 0;
+        for (int d = 0; d < m_degree; ++d) {
+            const int igrid = (m_numMeshIntervals - 1) * (m_degree + 1);
+            const auto c_t = controls(Slice(), igrid + d + 1);
+            controls(Slice(), m_numGridPoints - 1) +=
+                    getLagrangePolynomial(d, 1) * c_t;
+        }
+    }
 };
 
 } // namespace CasOC

@@ -25,6 +25,7 @@ namespace CasOC {
 /// This enum describes the different types of optimization variables, and
 /// are the keys for the Variables map.
 enum Var {
+    // Time variables.
     initial_time,
     final_time,
     /// Differential variables.
@@ -36,7 +37,7 @@ enum Var {
     /// Used for certain methods of solving kinematic constraints.
     slacks,
     /// Used in implicit dynamics mode.
-    derivatives, // TODO: Rename to accelerations?
+    derivatives,
     /// Constant in time.
     parameters,
     /// A "mirror" of the multibody states used in the projection method
@@ -48,10 +49,13 @@ enum Var {
 
 template <typename T>
 using Variables = std::unordered_map<Var, T, std::hash<int>>;
+template <typename T>
+using VectorVariables = std::unordered_map<Var, std::vector<T>, std::hash<int>>;
 
 /// Numeric variables for initial guesses and solutions.
 using VariablesDM = Variables<casadi::DM>;
 /// Symbolic variables, used to define the problem.
+using VectorVariablesMX = VectorVariables<casadi::MX>;
 using VariablesMX = Variables<casadi::MX>;
 
 /// This struct is used to obtain initial guesses.
@@ -70,6 +74,9 @@ struct Iterate {
     /// newTimes.
     Iterate resample(const casadi::DM& newTimes,
                      bool appendProjectionStates) const;
+    /// Make repeat copies of parameter variables (including initial and final
+    /// time) using the same value for each time point.
+    Iterate repmatParameters(int numPoints);
 };
 
 /// This struct is used to return a solution to a problem. Use `stats`

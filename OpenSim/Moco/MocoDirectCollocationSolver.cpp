@@ -25,7 +25,6 @@ void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_mesh();
     constructProperty_verbosity(2);
     constructProperty_transcription_scheme("hermite-simpson");
-    constructProperty_interpolate_control_mesh_interior_points(true);
     constructProperty_enforce_constraint_derivatives(true);
     constructProperty_multibody_dynamics_mode("explicit");
     constructProperty_optim_solver("ipopt");
