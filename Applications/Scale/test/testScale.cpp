@@ -169,10 +169,10 @@ void scaleGait2354()
     std::string setupFilePath;
 
     // Remove old results if any
-    FILE* file2Remove = IO::OpenFile(setupFilePath+"subject01_scaleSet_applied.xml", "w");
-    fclose(file2Remove);
-    file2Remove = IO::OpenFile(setupFilePath+"subject01_simbody.osim", "w");
-    fclose(file2Remove);
+    std::unique_ptr<std::ofstream> file2Remove1{IO::OpenOutputFile(setupFilePath+"subject01_scaleSet_applied.xml")};
+    file2Remove1->close();
+    std::unique_ptr<std::ofstream> file2Remove2{IO::OpenOutputFile(setupFilePath+"subject01_simbody.osim")};    
+    file2Remove2->close();
 
     // Construct model and read parameters file
     std::unique_ptr<ScaleTool> subject(new ScaleTool("subject01_Setup_Scale.xml"));
@@ -192,8 +192,8 @@ void scaleGait2354()
     }
 
     // See if we have any issues when calling run() twice.
-    file2Remove = IO::OpenFile(setupFilePath+"subject01_scaleSet_applied.xml", "w");
-    fclose(file2Remove);
+    std::unique_ptr<std::ofstream> file2Remove3{IO::OpenOutputFile(setupFilePath+"subject01_scaleSet_applied.xml")}; 
+    file2Remove3->close();
 
     subject->run();
     {
@@ -216,10 +216,10 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
     std::string setupFilePath=subject->getPathToSubject();
 
     // Remove old results if any
-    FILE* file2Remove = IO::OpenFile(setupFilePath+"subject01_scaleSet_applied_GUI.xml", "w");
-    fclose(file2Remove);
-    file2Remove = IO::OpenFile(setupFilePath+"subject01_scaledOnly_GUI.osim", "w");
-    fclose(file2Remove);
+    std::unique_ptr<std::ofstream> file2Remove4{IO::OpenOutputFile(setupFilePath+"subject01_scaleSet_applied_GUI.xml")};
+    file2Remove4->close();
+    std::unique_ptr<std::ofstream> file2Remove5{IO::OpenOutputFile(setupFilePath+"subject01_scaledOnly_GUI.osim")};
+    file2Remove5->close();
 
     Model guiModel("gait2354_simbody.osim");
 
@@ -265,8 +265,8 @@ void scaleModelWithLigament()
     std::string setupFilePath("");
 
     // Remove old model if any
-    FILE* file2Remove = IO::OpenFile(setupFilePath + "toyLigamentModelScaled.osim", "w");
-    fclose(file2Remove);
+    std::unique_ptr<std::ofstream> file2Remove6{IO::OpenOutputFile(setupFilePath + "toyLigamentModelScaled.osim")};
+    file2Remove6->close();
 
     // Construct model and read parameters file
     std::unique_ptr<ScaleTool> scaleTool(

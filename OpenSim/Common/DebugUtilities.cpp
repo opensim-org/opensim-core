@@ -20,6 +20,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "DebugUtilities.h"
+#include "IO.h"
 
 #include "Logger.h"
 #include <cstdlib>
@@ -50,10 +51,11 @@ void Fatal_Error(const char* msg, const char* function, const char* file,
 void AddEnvironmentVariablesFromFile(const std::string &aFileName)
 {
     if(aFileName.empty()) return;
-    std::ifstream input(aFileName.c_str());
+    std::unique_ptr<std::ifstream> input{IO::OpenInputFile(aFileName)};
+    
     std::string line;
     // Take any line that starts with "export" and set the environment variable that follows
-    while (getline(input,line)) {
+    while (getline(*input,line)) {
         if(line.find("export") != std::string::npos) {
             std::string env=line.substr(7);
             log_info("Setting environment '{}'", env);

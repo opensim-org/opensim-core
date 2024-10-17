@@ -4,6 +4,7 @@
 #include "FileAdapter.h"
 #include "TimeSeriesTable.h"
 #include "XsensDataReader.h"
+#include "IO.h"
 
 namespace OpenSim {
 
@@ -14,7 +15,7 @@ XsensDataReader* XsensDataReader::clone() const {
 DataAdapter::OutputTables 
 XsensDataReader::extendRead(const std::string& folderName) const {
 
-    std::vector<std::ifstream*> imuStreams;
+    std::vector<std::shared_ptr<std::ifstream>> imuStreams;
     std::vector<std::string> labels;
     // files specified by prefix + file name exist
     double dataRate = SimTK::NaN;
@@ -41,7 +42,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
         std::string prefix = _settings.get_trial_prefix();
         const ExperimentalSensor& nextItem = _settings.get_ExperimentalSensors(index);
         auto fileName = folderName + prefix + nextItem.getName() +".txt";
-        auto* nextStream = new std::ifstream{ fileName };
+        std::shared_ptr<std::ifstream> nextStream{IO::OpenInputFile(fileName)};
         OPENSIM_THROW_IF(!nextStream->good(),
             FileDoesNotExist,
             fileName);
@@ -82,7 +83,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
     std::map<std::string, std::string>::iterator it =
             headersKeyValuePairs.find("Update Rate");
     if (it != headersKeyValuePairs.end())
-        dataRate = std::stod(it->second);
+        dataRate = IO::stod(it->second);
     else
         dataRate = 40.0; // Need confirmation from XSens as later files don't specify rate
     // internally keep track of what data was found in input files
@@ -111,31 +112,30 @@ XsensDataReader::extendRead(const std::string& folderName) const {
             gyro_row_vector{ n_imus, SimTK::Vec3(SimTK::NaN) };
         // Cycle through the filles collating values
         int imu_index = 0;
-        for (std::vector<std::ifstream*>::iterator it = imuStreams.begin();
+        for (std::vector<std::shared_ptr<std::ifstream>>::iterator it = imuStreams.begin();
             it != imuStreams.end();
             ++it, ++imu_index) {
-            std::ifstream* nextStream = *it;
             // parse gyro info from imuStream
-            std::vector<std::string> nextRow = FileAdapter::getNextLine(*nextStream, "\t\r");
+            std::vector<std::string> nextRow = FileAdapter::getNextLine(**it, "\t\r");
             if (nextRow.empty()) {
                 done = true;
                 break;
             }
             if (foundLinearAccelerationData)
-                accel_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[accIndex]),
-                    std::stod(nextRow[accIndex + 1]), std::stod(nextRow[accIndex + 2]));
+                accel_row_vector[imu_index] = SimTK::Vec3(IO::stod(nextRow[accIndex]),
+                    IO::stod(nextRow[accIndex + 1]), IO::stod(nextRow[accIndex + 2]));
             if (foundMagneticHeadingData)
-                magneto_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[magIndex]),
-                    std::stod(nextRow[magIndex + 1]), std::stod(nextRow[magIndex + 2]));
+                magneto_row_vector[imu_index] = SimTK::Vec3(IO::stod(nextRow[magIndex]),
+                    IO::stod(nextRow[magIndex + 1]), IO::stod(nextRow[magIndex + 2]));
             if (foundAngularVelocityData)
-                gyro_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[gyroIndex]),
-                    std::stod(nextRow[gyroIndex + 1]), std::stod(nextRow[gyroIndex + 2]));
+                gyro_row_vector[imu_index] = SimTK::Vec3(IO::stod(nextRow[gyroIndex]),
+                    IO::stod(nextRow[gyroIndex + 1]), IO::stod(nextRow[gyroIndex + 2]));
             // Create Mat33 then convert into Quaternion
             SimTK::Mat33 imu_matrix{ SimTK::NaN };
             int matrix_entry_index = 0;
             for (int mcol = 0; mcol < 3; mcol++) {
                 for (int mrow = 0; mrow < 3; mrow++) {
-                    imu_matrix[mrow][mcol] = std::stod(nextRow[rotationsIndex + matrix_entry_index]);
+                    imu_matrix[mrow][mcol] = IO::stod(nextRow[rotationsIndex + matrix_entry_index]);
                     matrix_entry_index++;
                 }
             }

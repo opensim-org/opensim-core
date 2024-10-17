@@ -4,6 +4,7 @@
 #include "FileAdapter.h"
 #include "TimeSeriesTable.h"
 #include "APDMDataReader.h"
+#include "IO.h"
 
 namespace OpenSim {
 
@@ -32,12 +33,12 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     OPENSIM_THROW_IF(fileName.empty(),
         EmptyFileName);
 
-    std::ifstream in_stream{ fileName };
-    OPENSIM_THROW_IF(!in_stream.good(),
+    std::unique_ptr<std::ifstream> in_stream{IO::OpenInputFile(fileName)};
+    OPENSIM_THROW_IF(!in_stream->good(),
         FileDoesNotExist,
         fileName);
 
-    OPENSIM_THROW_IF(in_stream.peek() == std::ifstream::traits_type::eof(),
+    OPENSIM_THROW_IF(in_stream->peek() == std::ifstream::traits_type::eof(),
         FileIsEmpty,
         fileName);
 
@@ -62,7 +63,7 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     // We support two formats, they contain similar data but headers are different
     std::string line;
     // Line 1
-    std::getline(in_stream, line);
+    std::getline(*in_stream, line);
     std::vector<std::string> tokens = FileAdapter::tokenize(line, ",");
     bool newFormat = false;
     if (tokens[0] == "Format=7") {
@@ -87,7 +88,7 @@ APDMDataReader::extendRead(const std::string& fileName) const {
                 OPENSIM_THROW(Exception, "Data for sensor:" +sensorName + "was not found in data file "+ fileName+".");
         }
         // Line 2 unused
-        std::getline(in_stream, line);
+        std::getline(*in_stream, line);
     }
     else {
         // Older Format looks like this:
@@ -99,11 +100,11 @@ APDMDataReader::extendRead(const std::string& fileName) const {
 
         std::string trialName = tokens[1]; // May contain spaces
         // Line 2
-        std::getline(in_stream, line);
+        std::getline(*in_stream, line);
         tokens = FileAdapter::tokenize(line, ",");
-        dataRate = std::stod(tokens[1]);
+        dataRate = IO::stod(tokens[1]);
         // Line 3, find columns for IMUs
-        std::getline(in_stream, line);
+        std::getline(*in_stream, line);
         tokens = FileAdapter::tokenize(line, ",");
         OPENSIM_THROW_IF((tokens[0] != TimeLabel), UnexpectedColumnLabel,
             fileName,
@@ -129,7 +130,7 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     OPENSIM_THROW_IF((orientationsIndex.size() == 0),
         TableMissingHeader);
     // Line 4, Units unused
-    std::getline(in_stream, line);
+    std::getline(*in_stream, line);
 
     // For all tables, will create row, stitch values from different sensors then append
     bool done = false;
@@ -146,7 +147,7 @@ APDMDataReader::extendRead(const std::string& fileName) const {
             magneto_row_vector{ n_imus, SimTK::Vec3(SimTK::NaN) };
         TimeSeriesTableVec3::RowVector
             gyro_row_vector{ n_imus, SimTK::Vec3(SimTK::NaN) };
-        std::vector<std::string> nextRow = FileAdapter::getNextLine(in_stream, ",");
+        std::vector<std::string> nextRow = FileAdapter::getNextLine(*in_stream, ",");
         if (nextRow.empty()) {
             done = true;
             break;
@@ -155,20 +156,20 @@ APDMDataReader::extendRead(const std::string& fileName) const {
         for (int imu_index = 0; imu_index < n_imus; ++imu_index) {
             // parse gyro info from in_stream
            if (foundLinearAccelerationData)
-                accel_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[accIndex[imu_index]]),
-                    std::stod(nextRow[accIndex[imu_index] + 1]), std::stod(nextRow[accIndex[imu_index] + 2]));
+                accel_row_vector[imu_index] = SimTK::Vec3(IO::stod(nextRow[accIndex[imu_index]]),
+                    IO::stod(nextRow[accIndex[imu_index] + 1]), IO::stod(nextRow[accIndex[imu_index] + 2]));
             if (foundMagneticHeadingData)
-                magneto_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[magIndex[imu_index]]),
-                    std::stod(nextRow[magIndex[imu_index] + 1]), std::stod(nextRow[magIndex[imu_index] + 2]));
+                magneto_row_vector[imu_index] = SimTK::Vec3(IO::stod(nextRow[magIndex[imu_index]]),
+                    IO::stod(nextRow[magIndex[imu_index] + 1]), IO::stod(nextRow[magIndex[imu_index] + 2]));
             if (foundAngularVelocityData)
-                gyro_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[gyroIndex[imu_index]]),
-                    std::stod(nextRow[gyroIndex[imu_index] + 1]), std::stod(nextRow[gyroIndex[imu_index] + 2]));
+                gyro_row_vector[imu_index] = SimTK::Vec3(IO::stod(nextRow[gyroIndex[imu_index]]),
+                    IO::stod(nextRow[gyroIndex[imu_index] + 1]), IO::stod(nextRow[gyroIndex[imu_index] + 2]));
             // Create Quaternion from values in file, assume order in file W, X, Y, Z
             orientation_row_vector[imu_index] = 
-                SimTK::Quaternion(std::stod(nextRow[orientationsIndex[imu_index]]),
-                    std::stod(nextRow[orientationsIndex[imu_index] + 1]),
-                    std::stod(nextRow[orientationsIndex[imu_index] + 2]),
-                    std::stod(nextRow[orientationsIndex[imu_index] + 3]));
+                SimTK::Quaternion(IO::stod(nextRow[orientationsIndex[imu_index]]),
+                    IO::stod(nextRow[orientationsIndex[imu_index] + 1]),
+                    IO::stod(nextRow[orientationsIndex[imu_index] + 2]),
+                    IO::stod(nextRow[orientationsIndex[imu_index] + 3]));
         }
         // append to the tables
         times[rowNumber] = time;
