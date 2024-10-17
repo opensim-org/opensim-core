@@ -26,22 +26,14 @@
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace std;
 
-void testUpdatePre40KinematicsFor40MotionType();
-
-int main() {
-    LoadOpenSimLibrary("osimActuators");
-
-    SimTK_START_TEST("testSimulationUtilities");
-        SimTK_SUBTEST(testUpdatePre40KinematicsFor40MotionType);
-    SimTK_END_TEST();
-}
 
 // Ensure the simulate() method works as intended.
-void testSimulate() {
+TEST_CASE("testSimulate") {
     cout << "Running testSimulate" << endl;
 
     using SimTK::Vec3;
@@ -82,11 +74,11 @@ void testSimulate() {
     }
 }
 
-void testUpdatePre40KinematicsFor40MotionType() {
+TEST_CASE("testUpdatePre40KinematicsFor40MotionType") {
     
     // The model and motion files for this test are from the opensim-models
     // repository. This PR is related to issues #2240 and #2088.
-    
+    LoadOpenSimLibrary("osimActuators");
     Model model("testSimulationUtilities_leg6dof9musc_20303.osim");
     
     // Ensure the model file has an inconsistent motion type
@@ -173,23 +165,3 @@ void testUpdatePre40KinematicsFor40MotionType() {
             Exception);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
