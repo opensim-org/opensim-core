@@ -263,6 +263,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %template(analyze) OpenSim::analyze<double>;
 %template(analyzeVec3) OpenSim::analyze<SimTK::Vec3>;
 %template(analyzeSpatialVec) OpenSim::analyze<SimTK::SpatialVec>;
+%template(analyzeRotation) OpenSim::analyze<SimTK::Rotation_<double>>;
 
 %include <OpenSim/Simulation/VisualizerUtilities.h>
 
