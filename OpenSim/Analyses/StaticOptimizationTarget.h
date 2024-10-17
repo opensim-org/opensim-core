@@ -30,6 +30,7 @@
 #include "OpenSim/Common/Array.h"
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <simmath/Optimizer.h>
+#include "OpenSim/Actuators/CoordinateActuator.h"
 
 //=============================================================================
 //=============================================================================
@@ -61,9 +62,12 @@ private:
     Array<double> _recipOptForceSquared;
     /** Optimal force accounting for force-length curve if desired and if actuator is a muscle. */
     Array<double> _optimalForce;
+    /** Acceleration to target */
+    SimTK::Vector _targetAcceleration;
     
     SimTK::Matrix _constraintMatrix;
     SimTK::Vector _constraintVector;
+    SimTK::Vector _qddotFromNonLinear;
 
     const Storage *_statesStore;
     GCVSplineSet _statesSplineSet;
