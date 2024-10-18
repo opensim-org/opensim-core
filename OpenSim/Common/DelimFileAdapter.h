@@ -437,7 +437,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
         }
 
         // Time is column 0.
-        timeVec.push_back(std::stod(row.front()));
+        timeVec.push_back(OpenSim::IO::stod(row.front()));
         row.erase(row.begin());
 
         auto row_vector = readElems(row);
@@ -482,7 +482,7 @@ DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
                                     double) const {
     SimTK::RowVector_<double> elems{static_cast<int>(tokens.size())};
     for(auto i = 0u; i < tokens.size(); ++i)
-        elems[static_cast<int>(i)] = std::stod(tokens[i]);
+        elems[static_cast<int>(i)] = OpenSim::IO::stod(tokens[i]);
 
     return elems;
 }
@@ -497,9 +497,9 @@ DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
         OPENSIM_THROW_IF(comps.size() != 3, 
                          IncorrectNumTokens,
                          "Expected 3x (multiple of 3) number of tokens.");
-        elems[i] = SimTK::UnitVec3{std::stod(comps[0]),
-                                   std::stod(comps[1]),
-                                   std::stod(comps[2])};
+        elems[i] = SimTK::UnitVec3{OpenSim::IO::stod(comps[0]),
+                                   OpenSim::IO::stod(comps[1]),
+                                   OpenSim::IO::stod(comps[2])};
     }
 
     return elems;
@@ -515,10 +515,10 @@ DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
         OPENSIM_THROW_IF(comps.size() != 4, 
                          IncorrectNumTokens,
                          "Expected 4x (multiple of 4) number of tokens.");
-        elems[i] = SimTK::Quaternion{std::stod(comps[0]),
-                                     std::stod(comps[1]),
-                                     std::stod(comps[2]),
-                                     std::stod(comps[3])};
+        elems[i] = SimTK::Quaternion{OpenSim::IO::stod(comps[0]),
+                                     OpenSim::IO::stod(comps[1]),
+                                     OpenSim::IO::stod(comps[2]),
+                                     OpenSim::IO::stod(comps[3])};
     }
 
     return elems;
@@ -534,12 +534,12 @@ DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
         OPENSIM_THROW_IF(comps.size() != 6, 
                          IncorrectNumTokens,
                          "Expected 6x (multiple of 6) number of tokens.");
-        elems[i] = SimTK::SpatialVec{{std::stod(comps[0]),
-                                      std::stod(comps[1]),
-                                      std::stod(comps[2])},
-                                     {std::stod(comps[3]),
-                                      std::stod(comps[4]),
-                                      std::stod(comps[5])}};
+        elems[i] = SimTK::SpatialVec{{OpenSim::IO::stod(comps[0]),
+                                      OpenSim::IO::stod(comps[1]),
+                                      OpenSim::IO::stod(comps[2])},
+                                     {OpenSim::IO::stod(comps[3]),
+                                      OpenSim::IO::stod(comps[4]),
+                                      OpenSim::IO::stod(comps[5])}};
     }
 
     return elems;
@@ -559,7 +559,7 @@ DelimFileAdapter<T>::readElems_impl(const std::vector<std::string>& tokens,
                          "x (multiple of " + std::to_string(M) +
                          ") number of tokens.");
         for(int j = 0; j < M; ++j) {
-            elems[i][j] = std::stod(comps[j]);
+            elems[i][j] = OpenSim::IO::stod(comps[j]);
         }
     }
 

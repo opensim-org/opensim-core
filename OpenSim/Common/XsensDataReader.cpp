@@ -82,7 +82,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
     std::map<std::string, std::string>::iterator it =
             headersKeyValuePairs.find("Update Rate");
     if (it != headersKeyValuePairs.end())
-        dataRate = std::stod(it->second);
+        dataRate = OpenSim::IO::stod(it->second);
     else
         dataRate = 40.0; // Need confirmation from XSens as later files don't specify rate
     // internally keep track of what data was found in input files
@@ -122,20 +122,20 @@ XsensDataReader::extendRead(const std::string& folderName) const {
                 break;
             }
             if (foundLinearAccelerationData)
-                accel_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[accIndex]),
-                    std::stod(nextRow[accIndex + 1]), std::stod(nextRow[accIndex + 2]));
+                accel_row_vector[imu_index] = SimTK::Vec3(OpenSim::IO::stod(nextRow[accIndex]),
+                    OpenSim::IO::stod(nextRow[accIndex + 1]), OpenSim::IO::stod(nextRow[accIndex + 2]));
             if (foundMagneticHeadingData)
-                magneto_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[magIndex]),
-                    std::stod(nextRow[magIndex + 1]), std::stod(nextRow[magIndex + 2]));
+                magneto_row_vector[imu_index] = SimTK::Vec3(OpenSim::IO::stod(nextRow[magIndex]),
+                    OpenSim::IO::stod(nextRow[magIndex + 1]), OpenSim::IO::stod(nextRow[magIndex + 2]));
             if (foundAngularVelocityData)
-                gyro_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[gyroIndex]),
-                    std::stod(nextRow[gyroIndex + 1]), std::stod(nextRow[gyroIndex + 2]));
+                gyro_row_vector[imu_index] = SimTK::Vec3(OpenSim::IO::stod(nextRow[gyroIndex]),
+                    OpenSim::IO::stod(nextRow[gyroIndex + 1]), OpenSim::IO::stod(nextRow[gyroIndex + 2]));
             // Create Mat33 then convert into Quaternion
             SimTK::Mat33 imu_matrix{ SimTK::NaN };
             int matrix_entry_index = 0;
             for (int mcol = 0; mcol < 3; mcol++) {
                 for (int mrow = 0; mrow < 3; mrow++) {
-                    imu_matrix[mrow][mcol] = std::stod(nextRow[rotationsIndex + matrix_entry_index]);
+                    imu_matrix[mrow][mcol] = OpenSim::IO::stod(nextRow[rotationsIndex + matrix_entry_index]);
                     matrix_entry_index++;
                 }
             }
