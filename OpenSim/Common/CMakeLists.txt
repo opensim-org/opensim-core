@@ -12,12 +12,14 @@ if (NOT WITH_EZC3D)
     unset(ezc3d_LIBRARY)
 endif()
 
+find_package(FastFloat REQUIRED
+        HINTS "${OPENSIM_DEPENDENCIES_DIR}/fast_float")
 OpenSimAddLibrary(
     KIT Common
     AUTHORS "Clay_Anderson-Ayman_Habib-Peter_Loan"
     # Clients of osimCommon need not link to ezc3d.
-    LINKLIBS PUBLIC ${Simbody_LIBRARIES} spdlog::spdlog osimLepton
-             PRIVATE ${ezc3d_LIBRARY}
+    LINKLIBS PUBLIC ${Simbody_LIBRARIES} spdlog::spdlog osimLepton 
+             PRIVATE ${ezc3d_LIBRARY} FastFloat::fast_float  
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
     TESTDIRS "Test"

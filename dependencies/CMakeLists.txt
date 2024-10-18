@@ -216,6 +216,15 @@ AddDependency(NAME       catch2
               GIT_URL    https://github.com/catchorg/Catch2.git
               GIT_TAG    v3.5.0)
 
+
+AddDependency(NAME    fast_float
+              DEFAULT ON
+              GIT_URL https://github.com/fastfloat/fast_float.git
+              GIT_TAG tags/v6.1.6
+              GIT_SHALLOW TRUE)
+
+mark_as_advanced(SUPERBUILD_fast_float)
+
 # Moco settings.
 # --------------
 option(OPENSIM_WITH_CASADI
