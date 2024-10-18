@@ -1,7 +1,8 @@
 import sys
 import os
+
+curFolder = os.path.dirname(os.path.realpath(__file__))
 if (sys.platform.startswith('win')):
-    curFolder = os.path.dirname(os.path.realpath(__file__))
     os.add_dll_directory(curFolder)
     # When installed locally via "python -m pip install ." in Windows
     if os.path.isfile(os.path.join(curFolder, 'opensim-cmd.exe')):
@@ -26,3 +27,7 @@ from .moco import *
 from . import report
 
 from .version import __version__
+
+geometry_path = os.path.join(curFolder, 'Geometry')
+if os.path.exists(geometry_path):
+    ModelVisualizer.addDirToGeometrySearchPaths(geometry_path)
