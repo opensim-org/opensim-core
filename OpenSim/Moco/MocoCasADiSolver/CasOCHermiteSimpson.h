@@ -39,10 +39,19 @@ namespace CasOC {
 /// -------------------------------------------
 /// Position- and velocity-level kinematic constraint errors and path constraint 
 /// errors are enforced only at the mesh points. In the kinematic constraint 
-/// method by Bordalba et al. (2023), the acceleration-level constraints are 
+/// method by Bordalba et al. (2023) [1], the acceleration-level constraints are 
 /// also enforced at the collocation points. In the kinematic constraint method 
-/// by Posa et al. (2016), the acceleration-level constraints are only enforced 
-/// at the mesh points.
+/// by Posa et al. (2016) [2], the acceleration-level constraints are only 
+/// enforced at the mesh points.
+///
+/// References
+/// ----------
+/// [1] Bordalba, Ricard, Tobias Schoels, Lluís Ros, Josep M. Porta, and
+///     Moritz Diehl. "Direct collocation methods for trajectory optimization
+///     in constrained robotic systems." IEEE Transactions on Robotics (2023).
+/// [2] Posa, M., Kuindersma, S., Tedrake, R. "Optimization and stabilization of 
+///     trajectories for constrained dynamical systems." IEEE International 
+///     Conference on Robotics and Automation (2016).
 class HermiteSimpson : public Transcription {
 public:
     HermiteSimpson(const Solver& solver, const Problem& problem)
@@ -50,35 +59,24 @@ public:
         casadi::DM grid =
                 casadi::DM::zeros(1, (2 * m_solver.getMesh().size()) - 1);
         const auto& mesh = m_solver.getMesh();
-        const bool interpControls =
-                m_solver.getInterpolateControlMeshInteriorPoints();
-        casadi::DM pointsForInterpControls;
-        if (interpControls) {
-            pointsForInterpControls =
-                    casadi::DM::zeros(1, m_solver.getMesh().size() - 1);
-        }
         for (int i = 0; i < grid.numel(); ++i) {
             if (i % 2 == 0) {
                 grid(i) = mesh[i / 2];
             } else {
                 grid(i) = .5 * (mesh[i / 2] + mesh[i / 2 + 1]);
-                if (interpControls) {
-                    pointsForInterpControls(i / 2) = grid(i);
-                }
             }
         }
-        createVariablesAndSetBounds(grid, 2 * m_problem.getNumStates(), 3,
-                pointsForInterpControls);
+        createVariablesAndSetBounds(grid, 2 * m_problem.getNumStates(), 
+                2 * m_problem.getNumStates(), 3);
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
+    casadi::DM createControlIndicesImpl() const override;
     void calcDefectsImpl(const casadi::MXVector& x, 
-                         const casadi::MXVector& xdot,
-                         casadi::MX& defects) const override;
-    void calcInterpolatingControlsImpl(const casadi::MX& controls,
-            casadi::MX& interpControls) const override;
+            const casadi::MXVector& xdot, casadi::MX& defects) const override;
+    FlattenedVariableInfo getFlattenedVariableInfo() const override;
 };
 
 } // namespace CasOC
