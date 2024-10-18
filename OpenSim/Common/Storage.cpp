@@ -1417,7 +1417,7 @@ append(const StateVector &aStateVector,bool aCheckForDuplicateTime)
 
     if (_fp!=0){
         aStateVector.print(_fp);
-        fflush(_fp);
+        *_fp << std::flush;
     }
     return(_storage.getSize());
 }
@@ -2647,8 +2647,8 @@ setOutputFileName(const std::string& aFileName)
     _fileName = aFileName;
 
     // OPEN THE FILE
-    _fp = IO::OpenFile(aFileName,"w");
-    if(_fp==NULL) throw(Exception("Could not open file "+aFileName));
+    _fp = IO::OpenOutputFile(aFileName);
+    if (_fp == NULL || !_fp->is_open()) throw(Exception("Could not open file "+aFileName));
     // WRITE THE HEADER
     writeHeader(_fp);
     writeDescription(_fp);
@@ -2673,10 +2673,10 @@ setOutputFileName(const std::string& aFileName)
  * @return true on success
  */
 bool Storage::
-print(const string &aFileName,const string &aMode, const string& aComment) const
+print(const string &aFileName,const ios_base::openmode& aMode, const string& aComment) const
 {
     // OPEN THE FILE
-    FILE *fp = IO::OpenFile(aFileName,aMode);
+    std::ofstream *fp = IO::OpenOutputFile(aFileName,aMode);
     if(fp==NULL) return(false);
 
     // WRITE THE HEADER
@@ -2728,7 +2728,7 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
     }
 
     // CLOSE
-    fclose(fp);
+    fp->close();
 
     return(nTotal!=0);
 }
@@ -2747,14 +2747,14 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
  * a negative number is returned.
  */
 int Storage::
-print(const string &aFileName,double aDT,const string &aMode) const
+print(const string &aFileName,double aDT,const ios_base::openmode& aMode) const
 {
     // CHECK FOR VALID DT
     if(aDT<=0) return(0);
 
-    if (_fp!= NULL) fclose(_fp);
+    if (_fp!= NULL) _fp->close();
     // OPEN THE FILE
-    FILE *fp = IO::OpenFile(aFileName,aMode);
+    std::ofstream *fp = IO::OpenOutputFile(aFileName,aMode);
     if(fp==NULL) return(-1);
 
     // HOW MANY TIME STEPS?
@@ -2819,7 +2819,7 @@ print(const string &aFileName,double aDT,const string &aMode) const
     }
 
     // CLEANUP
-    fclose(fp);
+    fp->close();
     if(y!=NULL) { delete[] y;  y=NULL; }
 
     return(nTotal);
@@ -2851,29 +2851,29 @@ void Storage::printResult(const Storage* aStorage, const std::string& aName,
  * Write the header.
  */
 int Storage::
-writeHeader(FILE *rFP,double aDT) const
+writeHeader(std::ofstream *rFP, double aDT) const 
 {
-    if(rFP==NULL) return(-1);
+    if (rFP == NULL || !rFP->is_open()) return (-1);
 
     // COMPUTE ATTRIBUTES
-    int nr,nc;
-    if(aDT<=0) {
+    int nr, nc;
+    if (aDT <= 0) {
         nr = _storage.getSize();
     } else {
         double ti = getFirstTime();
         double tf = getLastTime();
-        nr = IO::ComputeNumberOfSteps(ti,tf,aDT);
+        nr = IO::ComputeNumberOfSteps(ti, tf, aDT);
     }
-    nc = getSmallestNumberOfStates()+1;
+    nc = getSmallestNumberOfStates() + 1;
 
     // ATTRIBUTES
-    fprintf(rFP,"%s\n",getName().c_str());
-    fprintf(rFP,"version=%d\n",LatestVersion);
-    fprintf(rFP,"nRows=%d\n",nr);
-    fprintf(rFP,"nColumns=%d\n",nc);
-    fprintf(rFP,"inDegrees=%s\n",(_inDegrees?"yes":"no"));
+    *rFP << getName() << "\n";
+    *rFP << "version=" << LatestVersion << "\n";
+    *rFP << "nRows=" << nr << "\n";
+    *rFP << "nColumns=" << nc << "\n";
+    *rFP << "inDegrees=" << (_inDegrees ? "yes" : "no") << std::endl;
 
-    return(0);
+    return (0);
 }
 //_____________________________________________________________________________
 /**
@@ -2882,69 +2882,69 @@ writeHeader(FILE *rFP,double aDT) const
  * @return SIMM header.
  */
 int Storage::
-writeSIMMHeader(FILE *rFP,double aDT, const char *aComment) const
+writeSIMMHeader(std::ofstream *rFP, double aDT, const char *aComment) const
 {
-    if(rFP==NULL) return(-1);
+    if (rFP == NULL || !rFP->is_open()) return (-1);
 
     // COMMENT
     // NOTE: avoid writing empty comment because SIMM seems to screw up parsing
     // of a line with only a #
     if (aComment && aComment[0])
-        fprintf(rFP,"\n# %s\n", aComment);
+        *rFP << "\n# " << aComment << std::endl;
     else
-        fprintf(rFP,"\n# SIMM Motion File Header:\n");
+        *rFP << "\n# SIMM Motion File Header:" << std::endl;
 
     // NAME
-    fprintf(rFP,"name %s\n",getName().c_str());
+    *rFP << "name " << getName() << std::endl;
 
     // COLUMNS
-    fprintf(rFP,"datacolumns %d\n",getSmallestNumberOfStates()+1);
+    *rFP << "datacolumns " << getSmallestNumberOfStates() + 1 << std::endl;
 
     // ROWS
     int nRows;
-    if(aDT<=0) {
+    if (aDT <= 0) {
         nRows = _storage.getSize();
     } else {
-        nRows = IO::ComputeNumberOfSteps(getFirstTime(),getLastTime(),aDT);
+        nRows = IO::ComputeNumberOfSteps(getFirstTime(), getLastTime(), aDT);
     }
-    fprintf(rFP,"datarows %d\n",nRows);
+    *rFP << "datarows " << nRows << std::endl;
 
     // OTHER DATA
-    fprintf(rFP,"otherdata 1\n");
+    *rFP << "otherdata 1" << std::endl;
 
     // RANGE
-    fprintf(rFP,"range %lf %lf\n",getFirstTime(),getLastTime());
+    *rFP << "range " << getFirstTime() << " " << getLastTime() << std::endl;
 
     // Other data from the map
     MapKeysToValues::const_iterator iter;
 
-    for(iter = _keyValueMap.begin(); iter != _keyValueMap.end(); iter++){
-        fprintf(rFP,"%s %s\n",iter->first.c_str(), iter->second.c_str());
+    for (iter = _keyValueMap.begin(); iter != _keyValueMap.end(); iter++) {
+        *rFP << iter->first << " " << iter->second << std::endl;
     }
-    return(0);
+    return (0);
 }
 //_____________________________________________________________________________
 /**
  * Write the description.
  */
 int Storage::
-writeDescription(FILE *rFP) const
+writeDescription(std::ofstream *rFP) const 
 {
-    if(rFP==NULL) return(-1);
+    if (rFP == NULL || !rFP->is_open()) return (-1);
 
     // DESCRIPTION
     string descrip = getDescription();
     size_t len = descrip.size();
-    if((len>0)&&(descrip[len-1]!='\n')) {
-        fprintf(rFP,"%s\n",descrip.c_str());
+    if ((len > 0) && (descrip[len - 1] != '\n')) {
+        *rFP << descrip << std::endl;
     } else {
-        fprintf(rFP,"%s",descrip.c_str());
+        *rFP << descrip;
     }
 
     // DESCRIPTION TOKEN
-    fprintf(rFP,"%s\n",_headerToken.c_str());
+    *rFP << _headerToken << std::endl;
 
-    return(0);
+    return (0);
 }
 //_____________________________________________________________________________
 /**
@@ -2953,24 +2953,29 @@ writeDescription(FILE *rFP) const
  * @param rFP File pointer.
  */
 int Storage::
-writeColumnLabels(FILE *rFP) const
+writeColumnLabels(std::ofstream *rFP) const 
 {
-    if(rFP==NULL) return(-1);
+    if (rFP == NULL || !rFP->is_open()) return (-1);
 
-    if(_columnLabels.getSize()) {
-        fprintf(rFP,"%s",_columnLabels[0].c_str());
-        for(int i=1;i<_columnLabels.getSize();i++) fprintf(rFP,"\t%s",_columnLabels[i].c_str());
-        fprintf(rFP,"\n");
+    if (_columnLabels.getSize()) {
+        *rFP << _columnLabels[0];
+        for (int i = 1; i < _columnLabels.getSize(); i++) {
+            *rFP << "\t" << _columnLabels[i];
+        }
+        *rFP << std::endl;
     } else {
         // Write default column labels
-        fprintf(rFP,"time");
-        int n=getSmallestNumberOfStates();
-        for(int i=0;i<n;i++) fprintf(rFP,"\tstate_%d",i);
-        fprintf(rFP,"\n");
+        *rFP << "time";
+        int n = getSmallestNumberOfStates();
+        for (int i = 0; i < n; i++) {
+            *rFP << "\tstate_" << i;
+        }
+        *rFP << std::endl;
     }
 
-    return(0);
+    return (0);
 }
+
 void Storage::addToRdStorage(Storage& rStorage, double aStartTime, double aEndTime)
 {
     bool addedData = false;

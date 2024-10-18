@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iomanip>
 
+#include "IO.h"
+
 namespace OpenSim {
 
 const std::string TRCFileAdapter::_headerDelimiters{ " \t\r" };
@@ -41,19 +43,19 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     OPENSIM_THROW_IF(fileName.empty(),
                      EmptyFileName);
 
-    std::ifstream in_stream{fileName};
-    OPENSIM_THROW_IF(!in_stream.good(),
+    std::unique_ptr<std::ifstream> in_stream{IO::OpenInputFile(fileName)};
+    OPENSIM_THROW_IF(!in_stream->good(),
                      FileDoesNotExist,
                      fileName);
 
     // Callable to get the next line in form of vector of tokens.
     auto nextLine = [&] {
-        return getNextLine(in_stream, _delimitersRead);
+        return getNextLine(*in_stream, _delimitersRead);
     };
 
     // First line of the stream is considered the header.
     std::string header{};
-    std::getline(in_stream, header);
+    std::getline(*in_stream, header);
     auto header_tokens = tokenize(header, _headerDelimiters);
     OPENSIM_THROW_IF(header_tokens.empty(),
                      FileIsEmpty,
@@ -193,15 +195,15 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
             //only if each component is specified read process as a Vec3
             if ( !(row.at(c).empty() || row.at(c + 1).empty() 
                                      || row.at(c + 2).empty()) ) {
-                row_vector[ind] = SimTK::Vec3{ std::stod(row.at(c)),
-                                               std::stod(row.at(c + 1)),
-                                               std::stod(row.at(c + 2)) };
+                row_vector[ind] = SimTK::Vec3{ IO::stod(row.at(c)),
+                                               IO::stod(row.at(c + 1)),
+                                               IO::stod(row.at(c + 2)) };
             } // otherwise the value will remain NaN (default)
             ++ind;
         }
         markerData[rowNumber] = row_vector;
         // Column 1 is time.
-        times[rowNumber] = std::stod(row.at(1));
+        times[rowNumber] = IO::stod(row.at(1));
         rowNumber++;
         if (rowNumber== last_size) {
             // resize all Data/Matrices, double the size  while keeping data
@@ -251,24 +253,23 @@ TRCFileAdapter::extendWrite(const InputTables& absTables,
 
     OPENSIM_THROW_IF(fileName.empty(),
                      EmptyFileName);
-
-    std::ofstream out_stream{fileName};
+    std::unique_ptr<std::ofstream> out_stream{IO::OpenOutputFile(fileName)};
 
     // First line of the stream is the header.
     try {
-    out_stream << table->
+    *out_stream << table->
                   getTableMetaData().
                   getValueForKey("header").
                   getValue<std::string>() << "\n";
     } catch(KeyNotFound&) {
-        out_stream << "PathFileType\t4\t(X/Y/Z)\t" << fileName << "\n";
+        *out_stream << "PathFileType\t4\t(X/Y/Z)\t" << fileName << "\n";
     }
 
     // Line containing metadata keys.
-    out_stream << _metadataKeys[0];
+    *out_stream << _metadataKeys[0];
     for(unsigned i = 1; i < _metadataKeys.size(); ++i)
-        out_stream << _delimiterWrite << _metadataKeys[i];
-    out_stream << "\n";
+        *out_stream << _delimiterWrite << _metadataKeys[i];
+    *out_stream << "\n";
 
     // Line containing metadata values.
     std::string datarate;
@@ -281,25 +282,25 @@ TRCFileAdapter::extendWrite(const InputTables& absTables,
         OPENSIM_THROW(MissingMetaData,
                       "DataRate");
     }
-    out_stream << datarate << _delimiterWrite;
+    *out_stream << datarate << _delimiterWrite;
     try {
-        out_stream << table->
+        *out_stream << table->
                       getTableMetaData().
                       getValueForKey(_metadataKeys[1]).
                       getValue<std::string>()
                    << _delimiterWrite;
     } catch(KeyNotFound&) {
-        out_stream << datarate << _delimiterWrite;
+        *out_stream << datarate << _delimiterWrite;
     }
 
     // Next is _metadataKeys[2] is NumFrames
-    out_stream << table->getNumRows() << _delimiterWrite;
+    *out_stream << table->getNumRows() << _delimiterWrite;
 
     // Next is _metadataKeys[3] is NumMarkers
-    out_stream << table->getNumColumns() << _delimiterWrite;
+    *out_stream << table->getNumColumns() << _delimiterWrite;
 
     try {
-        out_stream << table->
+        *out_stream << table->
                       getTableMetaData().
                       getValueForKey(_metadataKeys[4]).
                       getValue<std::string>()
@@ -309,69 +310,69 @@ TRCFileAdapter::extendWrite(const InputTables& absTables,
                       "Units");
     }
     try {
-        out_stream << table->
+        *out_stream << table->
                       getTableMetaData().
                       getValueForKey(_metadataKeys[5]).
                       getValue<std::string>()
                    << _delimiterWrite;
     } catch(KeyNotFound&) {
-        out_stream << datarate << _delimiterWrite;
+        *out_stream << datarate << _delimiterWrite;
     }
     try {
-        out_stream << table->
+        *out_stream << table->
                       getTableMetaData().
                       getValueForKey(_metadataKeys[6]).
                       getValue<std::string>()
                    << _delimiterWrite;
     } catch(KeyNotFound&) {
-        out_stream << 0 << _delimiterWrite;
+        *out_stream << 0 << _delimiterWrite;
     }
     try {
-        out_stream << table->
+        *out_stream << table->
                       getTableMetaData().
                       getValueForKey(_metadataKeys[7]).
                       getValue<std::string>();
     } catch(KeyNotFound&) {
-        out_stream << table->getNumRows();
+        *out_stream << table->getNumRows();
     }
-    out_stream << "\n";
+    *out_stream << "\n";
 
     // Line containing column labels.
-    out_stream << _frameNumColumnLabel << _delimiterWrite
+    *out_stream << _frameNumColumnLabel << _delimiterWrite
                << _timeColumnLabel     << _delimiterWrite;
     for(unsigned col = 0; col < table->getNumColumns(); ++col)
-        out_stream << table->
+        *out_stream << table->
                       getDependentsMetaData().
                       getValueArrayForKey("labels")[col].
                       getValue<std::string>()
                    << _delimiterWrite << _delimiterWrite << _delimiterWrite;
-    out_stream << "\n";
+    *out_stream << "\n";
 
     // Line containing xyz component labels for each marker.
-    out_stream << _delimiterWrite << _delimiterWrite;
+    *out_stream << _delimiterWrite << _delimiterWrite;
     for(unsigned col = 1; col <= table->getNumColumns(); ++col)
         for(auto& letter : {_xLabel, _yLabel, _zLabel})
-            out_stream << (letter + std::to_string(col)) << _delimiterWrite;
-    out_stream << "\n";
+            *out_stream << (letter + std::to_string(col)) << _delimiterWrite;
+    *out_stream << "\n";
 
     // Empty line.
-    out_stream << "\n";
+    *out_stream << "\n";
 
     // Data rows.
     for(unsigned row = 0; row < table->getNumRows(); ++row) {
         constexpr auto prec = std::numeric_limits<double>::digits10 + 1;
-        out_stream << row + 1                           << _delimiterWrite
+        *out_stream << row + 1                           << _delimiterWrite
                    << std::setprecision(prec) 
                    << table->getIndependentColumn()[row] << _delimiterWrite;
         const auto& row_r = table->getRowAtIndex(row);
         for(unsigned col = 0; col < table->getNumColumns(); ++col) {
             const auto& elt = row_r[col];
-            out_stream << std::setprecision(prec) 
+            *out_stream << std::setprecision(prec) 
                        << elt[0] << _delimiterWrite
                        << elt[1] << _delimiterWrite
                        << elt[2] << _delimiterWrite;
         }
-        out_stream << "\n";
+        *out_stream << "\n";
     }
 }
 
