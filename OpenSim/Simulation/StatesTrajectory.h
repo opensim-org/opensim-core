@@ -28,6 +28,7 @@
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <SimTKcommon/internal/IteratorRange.h>
+#include <OpenSim/Simulation/StatesDocument.h>
 
 #include "osimSimulationDLL.h"
 
@@ -47,7 +48,7 @@ class Model;
 // TODO See the bottom of this file for a class description to use once the
 // OSTATES file format is implemented.
 //
-/** 
+/**
  * \section StatesTrajectory
  * This class holds a sequence of SimTK::State%s. You can obtain a
  * StatesTrajectory during a simulation via the StatesTrajectoryReporter. You
@@ -75,7 +76,7 @@ class Model;
  * Python and MATLAB do not enforce constness and thus allow modifying the
  * trajectory.
  *
- * \subsection st_using_model Using with an OpenSim:: Model 
+ * \subsection st_using_model Using with an OpenSim:: Model
  * A StatesTrajectory is not very useful on its own, since neither the
  * trajectory nor the contained states know how the Component%s name the state
  * variables they create. You probably want to use the trajectory with an
@@ -151,7 +152,7 @@ public:
     /// @{
     /** Get a const reference to the state at a given index in the trajectory.
      * Here's an example of getting a state variable value from the first state
-     * in the trajectory: 
+     * in the trajectory:
      * @code{.cpp}
      * Model model("subject01.osim");
      * const StatesTrajectory states = getStatesTrajectorySomehow();
@@ -172,20 +173,20 @@ public:
         try {
             return m_states.at(index);
         } catch (const std::out_of_range&) {
-            OPENSIM_THROW(IndexOutOfRange, index, 0, 
+            OPENSIM_THROW(IndexOutOfRange, index, 0,
                           static_cast<unsigned>(m_states.size() - 1));
         }
     }
     /** Get a const reference to the first state in the trajectory. */
-    const SimTK::State& front() const { 
+    const SimTK::State& front() const {
         return m_states.front();
     }
     /** Get a const reference to the last state in the trajectory. */
-    const SimTK::State& back() const { 
+    const SimTK::State& back() const {
         return m_states.back();
     }
     /// @}
-    
+
     /** Iterator type that does not allow modifying the trajectory.
      * Most users do not need to understand what this is. */
     typedef std::vector<SimTK::State>::const_iterator const_iterator;
@@ -289,6 +290,56 @@ public:
     TimeSeriesTable exportToTable(const Model& model,
             const std::vector<std::string>& stateVars = {}) const;
 
+    /** Export a complete trajectory of states (i.e., one that includes
+    * all continuous, discrete, and modeling states) to an
+    * OpenSim::StatesDocument. That StatesDocument instance can then be
+    * used to serialize the states to an OSTATES file or document string by
+    * calling `StatesDocument::serialize()`.
+    *
+    * Once the states have been serialized, they can be deserialized by
+    * constructing a new StatesDocument by calling
+    * ```
+    *   StatesDocument(const SimTK::String& filename)
+    * ```
+    * and then calling:
+    * ```
+    *   StatesDocument::deserialize(const OpenSim::Model& model,
+    *                           std::vector<SimTK::State>& trajectory)
+    * ```
+    *
+    * The .ostates format is plain-text XML (see SimTK::Xml) with a
+    * specifiable precision between 1 and 20 significant figures. A precision
+    * of 20 digits results in losselss de/serialization.
+    *
+    * A note of CAUTION:
+    * Using either
+    *
+    *       StatesTrajectory StatesTrajectory::createFromStatesStorage() or
+    *       StatesTrajectory StatesTrajectory::createFromStatesTable()
+    *
+    * to construct a StatesTrajectory instance will likely leave discrete
+    * states (i.e., OpenSim::DiscreteVariable%s) and modeling states
+    * (i.e., OpenSim::ModelingOptions%s) uninitialized. The reason is that
+    * Storage and TimeSeriesTable objects include only the continuous states
+    * (i.e., OpenSim::StateVariable%s).
+    *
+    * Thus, when relying on serialization and deserialization to reproduce a
+    * complete StatesTrajectory, a StatesDocument is the preferred means as
+    * it will include continuous, discrete, and modeling states.
+    */
+    OpenSim::StatesDocument
+    exportToStatesDocument(const OpenSim::Model& model,
+        const SimTK::String& note = "",
+        int precision = SimTK::LosslessNumDigitsReal) const
+    {
+        return OpenSim::StatesDocument(model, m_states, note, precision);
+    }
+
+    /** Get a read-only reference to the underlying state array. */
+    const std::vector<SimTK::State>& getStateArray() const {
+        return m_states;
+    }
+
 private:
 
     std::vector<SimTK::State> m_states;
@@ -337,11 +388,11 @@ public:
                 msg += "    " + missingStates[i] + "\n";
             }
             msg += "    " + missingStates.back();
-    
+
             addMessage(msg);
         }
     };
-    
+
     /** Thrown when trying to create a StatesTrajectory from states data, and
      * the data contains columns that do not correspond to continuous state
      * variables. */
@@ -360,7 +411,7 @@ public:
                 msg += "    " + extraStates[i] + "\n";
             }
             msg += "    " + extraStates.back();
-    
+
             addMessage(msg);
         }
     };
@@ -519,7 +570,7 @@ public:
  *
  * A SimTK::State object contains many different types of data, but only some
  * are saved into the OSTATES file:
- * 
+ *
  * type of data                 | saved in OSTATES?
  * ---------------------------- | -----------------
  * (continuous) state variables | yes

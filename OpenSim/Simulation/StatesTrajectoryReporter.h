@@ -41,9 +41,11 @@ class OSIMSIMULATION_API StatesTrajectoryReporter : public AbstractReporter {
 OpenSim_DECLARE_CONCRETE_OBJECT(StatesTrajectoryReporter, AbstractReporter);
 
 public:
-    /** Access the accumulated states. */
-    const StatesTrajectory& getStates() const; 
-    /** Clear the accumulated states. */ 
+    /** Obtain the accumulated states as a StatesTrajectory object. */
+    const StatesTrajectory& getStates() const;
+    /** Obtain the accumulated states as a low-level array of states. */
+    const std::vector<SimTK::State>& getVectorOfStateObjects() const;
+    /** Clear the accumulated states. */
     void clear();
 
 protected:
