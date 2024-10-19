@@ -138,6 +138,10 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoTropterSolver.h>
 %include <OpenSim/Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 %include <OpenSim/Moco/MocoStudy.h>
+%template(analyzeVec3) OpenSim::MocoStudy::analyze<SimTK::Vec3>;
+%template(analyzeSpatialVec) OpenSim::MocoStudy::analyze<SimTK::SpatialVec>;
+%template(analyzeRotation) OpenSim::MocoStudy::analyze<SimTK::Rotation_<double>>;
+
 %include <OpenSim/Moco/MocoStudyFactory.h>
 
 %include <OpenSim/Moco/MocoTool.h>
@@ -148,5 +152,6 @@ namespace OpenSim {
 %template(analyzeMocoTrajectory) OpenSim::analyzeMocoTrajectory<double>;
 %template(analyzeMocoTrajectoryVec3) OpenSim::analyzeMocoTrajectory<SimTK::Vec3>;
 %template(analyzeMocoTrajectorySpatialVec) OpenSim::analyzeMocoTrajectory<SimTK::SpatialVec>;
+%template(analyzeMocoTrajectoryRotation) OpenSim::analyzeMocoTrajectory<SimTK::Rotation_<double>>;
 
 %include <OpenSim/Moco/ModelOperatorsDGF.h>
