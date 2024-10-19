@@ -413,7 +413,7 @@ jobs:
             -f "body=${NEW_COMMENT_BODY}"
 
   mac_x86_64:
-    runs-on: macos-14-large
+    runs-on: macos-13
     name: Mac x86_64
 
     outputs:
