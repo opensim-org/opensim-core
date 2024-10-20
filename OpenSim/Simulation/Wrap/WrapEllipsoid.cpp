@@ -696,7 +696,7 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
             }
 
             for (i = 0; i < 4; i++)
-                diag[i] = dedth2[i][i];
+                diag[i] = dedth2(i, i);
 
             nit2 = 0;
 
