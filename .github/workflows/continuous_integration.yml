@@ -979,7 +979,7 @@ jobs:
     - name: Test Python bindings
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        Run the python tests, verbosely.
+        # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
@@ -1091,7 +1091,7 @@ jobs:
     - name: Test Python bindings
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        Run the python tests, verbosely.
+        # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
