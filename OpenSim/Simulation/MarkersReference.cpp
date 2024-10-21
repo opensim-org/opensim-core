@@ -228,7 +228,7 @@ double
 MarkersReference::getSamplingFrequency() const {
     if(_markerTable.hasTableMetaDataKey("DataRate")) {
         auto datarate = _markerTable.getTableMetaData<std::string>("DataRate");
-        return IO::stod(datarate);
+        return OpenSim::IO::stod(datarate);
     } else
         return SimTK::NaN;
 }

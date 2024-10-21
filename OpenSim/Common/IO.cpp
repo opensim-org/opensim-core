@@ -52,7 +52,6 @@
 #endif
 
 #include "fast_float/fast_float.h"
-// #include <sstream>
 
 // CONSTANTS
 
@@ -459,10 +458,6 @@ std::ifstream *IO::
 OpenInputFile(const string &aFileName,ios_base::openmode mode)
 {
     ifstream *fs = new ifstream(aFileName.c_str(), ios_base::in | mode);
-    // std::ifstream *fs = new std::ifstream();
-    log_info(_locale);
-    // fs->imbue(std::locale(_locale));
-    // fs->open(aFileName.c_str(), ios_base::in | mode);
     if(!fs || !(*fs)) {
         log_error("IO.OpenInputFile(const string&,openmode mode): "
                   "failed to open {}.", aFileName);
@@ -475,9 +470,6 @@ std::ofstream *IO::
 OpenOutputFile(const string &aFileName,ios_base::openmode mode)
 {
     ofstream *fs = new ofstream(aFileName.c_str(), ios_base::out | mode);
-    // std::ofstream *fs = new std::ofstream();
-    // fs->imbue(std::locale(_locale));
-    // fs->open(aFileName.c_str(), ios_base::out | mode);
     if(!fs || !(*fs)) {
         log_error("IO.OpenOutputFile(const string&,openmode mode): failed to "
                   "open {}.", aFileName);
@@ -491,9 +483,6 @@ double IO::
 stod(const std::string& __str, std::size_t* __idx)
 { 
     double result;
-    // std::istringstream iss(__str);
-    // iss.imbue(std::locale(_locale));
-    // iss >> result;
     fast_float::from_chars(__str.data(), __str.data()+__str.size(), result);
     return result;
 }

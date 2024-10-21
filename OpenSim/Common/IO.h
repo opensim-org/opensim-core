@@ -66,8 +66,6 @@ private:
     static char _DoubleFormat[IO_DBLFMTLEN];
     /** Whether offline documents should also be printed when Object::print is called. */
     static bool _PrintOfflineDocuments;
-    /** Locale specifier for reading and writing files */
-    static std::string _locale;
 
 
 //=============================================================================
