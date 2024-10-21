@@ -31,6 +31,7 @@
 
 #include "Logger.h"
 #include <climits>
+#include <limits>
 #include <math.h>
 #include <string>
 #include <sstream>
@@ -482,9 +483,12 @@ stod(const std::string& __str, std::size_t* __idx)
 { 
     std::istringstream iss(__str);
     iss.imbue(_locale);
-    double result = 0.0;
+    double result;
     iss >> result;
-    log_info("stod str: {}; double: {}", __str, result);
+    if(iss.fail()){
+        result = std::numeric_limits<double>::quiet_NaN();
+        log_warn("Encountered non-numeric string value: {} ; parsed value:{}",__str, result);
+    }
     return result;
 }
 //_____________________________________________________________________________
