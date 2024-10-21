@@ -33,6 +33,7 @@
 #include <climits>
 #include <math.h>
 #include <string>
+#include <sstream>
 #include <time.h>
 #if defined(__linux__) || defined(__APPLE__)
     #include <sys/stat.h>
@@ -64,6 +65,7 @@ int IO::_Pad = 8;
 int IO::_Precision = 8;
 char IO::_DoubleFormat[] = "%16.8lf";
 bool IO::_PrintOfflineDocuments = true;
+const std::locale _locale = std::locale::classic(); 
 
 
 //=============================================================================
@@ -473,6 +475,17 @@ OpenOutputFile(const string &aFileName,ios_base::openmode mode)
     }
 
     return(fs);
+}
+
+double IO::
+stod(const std::string& __str, std::size_t* __idx)
+{ 
+    std::istringstream iss(__str);
+    iss.imbue(_locale);
+    double result = 0.0;
+    iss >> result;
+    log_info("stod str: {}; double: {}", __str, result);
+    return result;
 }
 //_____________________________________________________________________________
 /**

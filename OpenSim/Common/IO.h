@@ -103,6 +103,7 @@ public:
     static FILE* OpenFile(const std::string &aFileName,const std::string &aMode);
     static std::ifstream* OpenInputFile(const std::string &aFileName,std::ios_base::openmode mode=std::ios_base::in);
     static std::ofstream* OpenOutputFile(const std::string &aFileName,std::ios_base::openmode mode=std::ios_base::out);
+    static double stod(const std::string& __str, std::size_t* __idx = 0);
 #endif
     // Directory management
     static int makeDir(const std::string &aDirName);
