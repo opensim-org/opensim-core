@@ -66,8 +66,6 @@ int IO::_Pad = 8;
 int IO::_Precision = 8;
 char IO::_DoubleFormat[] = "%16.8lf";
 bool IO::_PrintOfflineDocuments = true;
-std::string IO::_locale = std::locale::classic().name(); 
-
 
 
 //=============================================================================
