@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MarkersReference.h"
+#include "OpenSim/Common/IO.h"
 #include <SimTKcommon/internal/State.h>
 #include <cmath>
 
@@ -228,7 +229,7 @@ double
 MarkersReference::getSamplingFrequency() const {
     if(_markerTable.hasTableMetaDataKey("DataRate")) {
         auto datarate = _markerTable.getTableMetaData<std::string>("DataRate");
-        return std::stod(datarate);
+        return OpenSim::IO::stod(datarate);
     } else
         return SimTK::NaN;
 }

@@ -4,6 +4,7 @@
 #include "FileAdapter.h"
 #include "TimeSeriesTable.h"
 #include "APDMDataReader.h"
+#include "IO.h"
 
 namespace OpenSim {
 
@@ -101,7 +102,7 @@ APDMDataReader::extendRead(const std::string& fileName) const {
         // Line 2
         std::getline(in_stream, line);
         tokens = FileAdapter::tokenize(line, ",");
-        dataRate = std::stod(tokens[1]);
+        dataRate = OpenSim::IO::stod(tokens[1]);
         // Line 3, find columns for IMUs
         std::getline(in_stream, line);
         tokens = FileAdapter::tokenize(line, ",");
@@ -155,20 +156,20 @@ APDMDataReader::extendRead(const std::string& fileName) const {
         for (int imu_index = 0; imu_index < n_imus; ++imu_index) {
             // parse gyro info from in_stream
            if (foundLinearAccelerationData)
-                accel_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[accIndex[imu_index]]),
-                    std::stod(nextRow[accIndex[imu_index] + 1]), std::stod(nextRow[accIndex[imu_index] + 2]));
+                accel_row_vector[imu_index] = SimTK::Vec3(OpenSim::IO::stod(nextRow[accIndex[imu_index]]),
+                    OpenSim::IO::stod(nextRow[accIndex[imu_index] + 1]), OpenSim::IO::stod(nextRow[accIndex[imu_index] + 2]));
             if (foundMagneticHeadingData)
-                magneto_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[magIndex[imu_index]]),
-                    std::stod(nextRow[magIndex[imu_index] + 1]), std::stod(nextRow[magIndex[imu_index] + 2]));
+                magneto_row_vector[imu_index] = SimTK::Vec3(OpenSim::IO::stod(nextRow[magIndex[imu_index]]),
+                    OpenSim::IO::stod(nextRow[magIndex[imu_index] + 1]), OpenSim::IO::stod(nextRow[magIndex[imu_index] + 2]));
             if (foundAngularVelocityData)
-                gyro_row_vector[imu_index] = SimTK::Vec3(std::stod(nextRow[gyroIndex[imu_index]]),
-                    std::stod(nextRow[gyroIndex[imu_index] + 1]), std::stod(nextRow[gyroIndex[imu_index] + 2]));
+                gyro_row_vector[imu_index] = SimTK::Vec3(OpenSim::IO::stod(nextRow[gyroIndex[imu_index]]),
+                    OpenSim::IO::stod(nextRow[gyroIndex[imu_index] + 1]), OpenSim::IO::stod(nextRow[gyroIndex[imu_index] + 2]));
             // Create Quaternion from values in file, assume order in file W, X, Y, Z
             orientation_row_vector[imu_index] = 
-                SimTK::Quaternion(std::stod(nextRow[orientationsIndex[imu_index]]),
-                    std::stod(nextRow[orientationsIndex[imu_index] + 1]),
-                    std::stod(nextRow[orientationsIndex[imu_index] + 2]),
-                    std::stod(nextRow[orientationsIndex[imu_index] + 3]));
+                SimTK::Quaternion(OpenSim::IO::stod(nextRow[orientationsIndex[imu_index]]),
+                    OpenSim::IO::stod(nextRow[orientationsIndex[imu_index] + 1]),
+                    OpenSim::IO::stod(nextRow[orientationsIndex[imu_index] + 2]),
+                    OpenSim::IO::stod(nextRow[orientationsIndex[imu_index] + 3]));
         }
         // append to the tables
         times[rowNumber] = time;

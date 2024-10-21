@@ -193,15 +193,15 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
             //only if each component is specified read process as a Vec3
             if ( !(row.at(c).empty() || row.at(c + 1).empty() 
                                      || row.at(c + 2).empty()) ) {
-                row_vector[ind] = SimTK::Vec3{ std::stod(row.at(c)),
-                                               std::stod(row.at(c + 1)),
-                                               std::stod(row.at(c + 2)) };
+                row_vector[ind] = SimTK::Vec3{ OpenSim::IO::stod(row.at(c)),
+                                               OpenSim::IO::stod(row.at(c + 1)),
+                                               OpenSim::IO::stod(row.at(c + 2)) };
             } // otherwise the value will remain NaN (default)
             ++ind;
         }
         markerData[rowNumber] = row_vector;
         // Column 1 is time.
-        times[rowNumber] = std::stod(row.at(1));
+        times[rowNumber] = OpenSim::IO::stod(row.at(1));
         rowNumber++;
         if (rowNumber== last_size) {
             // resize all Data/Matrices, double the size  while keeping data
