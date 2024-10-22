@@ -964,6 +964,7 @@ jobs:
         cd $GITHUB_WORKSPACE/../build
         # TODO: Temporary for python to find Simbody libraries.
         export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/opensim_dependencies_install/simbody/lib
+        echo $LD_LIBRARY_PATH
         ctest --parallel 4 --output-on-failure
 
     - name: Install opensim-core
