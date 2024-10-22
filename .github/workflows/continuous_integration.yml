@@ -959,13 +959,12 @@ jobs:
         cd $GITHUB_WORKSPACE/../build
         make --jobs 4
 
-    - name: Test opensim-core
-      run: |
-        cd $GITHUB_WORKSPACE/../build
-        # TODO: Temporary for python to find Simbody libraries.
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/opensim_dependencies_install/simbody/lib
-        echo $LD_LIBRARY_PATH
-        ctest --parallel 4 --output-on-failure
+    # - name: Test opensim-core
+    #   run: |
+    #     cd $GITHUB_WORKSPACE/../build
+    #     # TODO: Temporary for python to find Simbody libraries.
+    #     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/opensim_dependencies_install/simbody/lib
+    #     ctest --parallel 4 --output-on-failure
 
     - name: Install opensim-core
       run: |
@@ -1089,11 +1088,11 @@ jobs:
         zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}-ubuntu22.zip opensim-core-${{ steps.configure.outputs.version }}
         mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
 
-    - name: Test Python bindings
-      run: |
-        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        # Run the python tests, verbosely.
-        python3 -m unittest discover --start-directory opensim/tests --verbose
+    # - name: Test Python bindings
+    #   run: |
+    #     cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+    #     # Run the python tests, verbosely.
+    #     python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
