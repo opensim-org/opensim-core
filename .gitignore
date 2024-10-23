@@ -5,6 +5,7 @@
 # Ignore cmake files.
 *CMakeCache.txt
 *CMakeFiles
+CMakeLists.txt.user*
 # Ignore tmp directory/file. We use it sometimes to write debug information.
 tmp
 # Ignore build trees.
