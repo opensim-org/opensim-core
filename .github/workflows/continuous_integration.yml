@@ -540,9 +540,7 @@ jobs:
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
   mac_arm64:
-
     runs-on: macos-14
-    
     name: 'Mac Arm64'
 
     outputs:
@@ -1104,7 +1102,6 @@ jobs:
 
   build_gui:
     name: Build GUI [win2022]
-  
     runs-on: windows-2022
 
     env:
