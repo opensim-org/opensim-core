@@ -31,8 +31,10 @@
 
 #include "Logger.h"
 #include <climits>
+#include <limits>
 #include <math.h>
 #include <string>
+#include <sstream>
 #include <time.h>
 #if defined(__linux__) || defined(__APPLE__)
     #include <sys/stat.h>
@@ -64,6 +66,7 @@ int IO::_Pad = 8;
 int IO::_Precision = 8;
 char IO::_DoubleFormat[] = "%16.8lf";
 bool IO::_PrintOfflineDocuments = true;
+const std::locale _locale = std::locale::classic(); 
 
 
 //=============================================================================
@@ -473,6 +476,20 @@ OpenOutputFile(const string &aFileName,ios_base::openmode mode)
     }
 
     return(fs);
+}
+
+double IO::
+stod(const std::string& __str, std::size_t* __idx)
+{ 
+    std::istringstream iss(__str);
+    iss.imbue(_locale);
+    double result;
+    iss >> result;
+    if(iss.fail()){
+        result = std::numeric_limits<double>::quiet_NaN();
+        log_warn("Encountered non-numeric string value: {} ; parsed value:{}",__str, result);
+    }
+    return result;
 }
 //_____________________________________________________________________________
 /**
