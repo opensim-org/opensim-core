@@ -536,12 +536,12 @@ jobs:
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
-        name: opensim-core-${{ steps.configure.outputs.version }}-mac_x86_64
+        name: opensim-core-${{ steps.configure.outputs.version }}-mac-x86_64
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
   mac_arm64:
     runs-on: macos-14
-    name: 'Mac Arm64'
+    name: Mac Arm64
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
@@ -663,7 +663,7 @@ jobs:
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
-        name: opensim-core-${{ steps.configure.outputs.version }}-mac_arm64
+        name: opensim-core-${{ steps.configure.outputs.version }}-mac-arm64
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
   mac_arm64_perf:
@@ -791,7 +791,7 @@ jobs:
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
-        name: opensim-core-${{ github.event.pull_request.base.ref }}-mac_arm64
+        name: opensim-core-${{ github.event.pull_request.base.ref }}-mac-arm64
         path: opensim-core-${{ github.event.pull_request.base.ref }}.zip
 
   performance_analysis_mac:
@@ -817,7 +817,7 @@ jobs:
         owner: opensim-org
         ref: main
         workflow: performance_analysis_mac.yml
-        workflow_inputs: '{"commit_sha": "${{ github.event.pull_request.head.sha }}", "target_artifact_name": "opensim-core-${{ github.event.pull_request.base.ref }}-mac", "source_artifact_name": "opensim-core-${{ needs.mac_arm64.outputs.version }}-mac", "target_artifact_zip": "opensim-core-${{ github.event.pull_request.base.ref }}.zip", "source_artifact_zip": "opensim-core-${{ needs.mac_arm64.outputs.version }}.zip"}'
+        workflow_inputs: '{"commit_sha": "${{ github.event.pull_request.head.sha }}", "target_artifact_name": "opensim-core-${{ github.event.pull_request.base.ref }}-mac-arm64", "source_artifact_name": "opensim-core-${{ needs.mac_arm64.outputs.version }}-mac-arm64", "target_artifact_zip": "opensim-core-${{ github.event.pull_request.base.ref }}.zip", "source_artifact_zip": "opensim-core-${{ needs.mac_arm64.outputs.version }}.zip"}'
 
     - name: Await opensim-perf workflow
       uses: Codex-/await-remote-run@v1.11.0
