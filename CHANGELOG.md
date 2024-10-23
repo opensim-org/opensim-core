@@ -41,6 +41,7 @@ v4.6
   states belong, a date/time stamp of when the file was written, and a user-specified note. `.ostate` files also support a
   configurable output precision. At the highest ouput precsion (~20 significant figures), serialization/deserialization is
   a lossless process. (#3902)
+- Improved `OpenSim::IO::stod` string-to-decimal parsing function by making it not-locale-dependant (#3943, #3924; thanks @alexbeattie42)
 
 v4.5.1
 ======
