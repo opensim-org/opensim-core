@@ -35,7 +35,6 @@
 
 // DEFINES
 constexpr int IO_STRLEN = 2048;
-constexpr int IO_DBLFMTLEN = 256;
 
 
 namespace OpenSim { 
@@ -53,19 +52,6 @@ class OSIMCOMMON_API IO {
 // DATA
 //=============================================================================
 private:
-    // NUMBER OUTPUT
-    /** Specifies whether number output is in scientific or float format. */
-    static bool _Scientific;
-    /** Specifies whether number output is in %g format or not. */
-    static bool _GFormatForDoubleOutput;
-    /** Specifies number of digits of padding in number output. */ 
-    static int _Pad;
-    /** Specifies the precision of number output. */
-    static int _Precision;
-    /** The output format string. */
-    static char _DoubleFormat[IO_DBLFMTLEN];
-    /** Whether offline documents should also be printed when Object::print is called. */
-    static bool _PrintOfflineDocuments;
 
 
 //=============================================================================
