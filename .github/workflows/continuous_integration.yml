@@ -1102,7 +1102,7 @@ jobs:
 
   build_gui:
     name: Build GUI
-    runs-on: windows-2022
+    runs-on: ubuntu-latest
 
     env:
       GH_TOKEN: ${{ github.token }}
