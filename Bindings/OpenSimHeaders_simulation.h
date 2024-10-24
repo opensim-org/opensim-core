@@ -136,6 +136,7 @@
 #include <OpenSim/Simulation/Model/BushingForce.h>
 #include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>
 #include <OpenSim/Simulation/Model/ExpressionBasedBushingForce.h>
+#include <OpenSim/Simulation/Model/GravityHelper.h>
 
 #include <OpenSim/Simulation/Solver.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
@@ -169,5 +170,7 @@
 #include <OpenSim/Actuators/ForceVelocityCurve.h>
 #include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
 #include <OpenSim/Actuators/TendonForceLengthCurve.h>
+
+
 
 #endif // OPENSIM_OPENSIM_HEADERS_SIMULATION_H_
