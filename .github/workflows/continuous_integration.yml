@@ -1101,8 +1101,8 @@ jobs:
         path: opensim-core-${{ steps.configure.outputs.version }}-ubuntu22.zip
 
   build_gui:
-    name: Build GUI [win2022]
-    runs-on: windows-2022
+    name: Build GUI
+    runs-on: ubuntu-latest
 
     env:
       GH_TOKEN: ${{ github.token }}
