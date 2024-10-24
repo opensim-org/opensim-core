@@ -52,40 +52,94 @@ DM LegendreGaussRadau::createMeshIndicesImpl() const {
     return indices;
 }
 
+DM LegendreGaussRadau::createControlIndicesImpl() const {
+    DM indices = DM::ones(1, m_numGridPoints);
+    indices(0) = 0;
+    return indices;
+}
+
 void LegendreGaussRadau::calcDefectsImpl(const casadi::MXVector& x,
         const casadi::MXVector& xdot, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
     const int NS = m_problem.getNumStates();
+    const int NP = m_problem.getNumParameters();
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         const int igrid = imesh * m_degree;
-        const auto h = m_times(igrid + m_degree) - m_times(igrid);
+        const auto h = m_intervals(imesh);
         const auto x_i = x[imesh](Slice(), Slice(0, m_degree + 1));
         const auto xdot_i = xdot[imesh](Slice(), Slice(1, m_degree + 1));
 
         // Residual function defects.
         MX residual = h * xdot_i - MX::mtimes(x_i, m_differentiationMatrix);
         for (int d = 0; d < m_degree; ++d) {
-            defects(Slice(d * NS, (d + 1) * NS), imesh) = residual(Slice(), d);
+            const int istart = d * NS;
+            const int iend = (d + 1) * NS;
+            defects(Slice(istart, iend), imesh) = residual(Slice(), d);
         }
     }
 }
 
 void LegendreGaussRadau::calcInterpolatingControlsImpl(
-        const casadi::MX& controls, casadi::MX& interpControls) const {
-    if (m_problem.getNumControls() &&
-            m_solver.getInterpolateControlMeshInteriorPoints()) {
-        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-            const int igrid = imesh * m_degree;
-            const auto c_i = controls(Slice(), igrid);
-            const auto c_ip1 = controls(Slice(), igrid + m_degree);
-            for (int d = 0; d < m_degree-1; ++d) {
-                const auto c_t = controls(Slice(), igrid + d + 1);
-                interpControls(Slice(), imesh * (m_degree - 1) + d) =
-                        c_t - (m_legendreRoots[d] * (c_ip1 - c_i) + c_i);
+        casadi::MX& controls) const {
+    calcInterpolatingControlsHelper(controls);
+}
+
+void LegendreGaussRadau::calcInterpolatingControlsImpl(
+            casadi::DM& controls) const {
+    calcInterpolatingControlsHelper(controls);
+}
+
+Transcription::FlattenedVariableInfo 
+LegendreGaussRadau::getFlattenedVariableInfo() const {
+    FlattenedVariableInfo info;
+    int N = m_numPointsPerMeshInterval - 1;
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        int igrid = imesh * N;
+        info.order.push_back({initial_time, imesh});
+        info.order.push_back({final_time, imesh});
+        info.order.push_back({parameters, imesh});
+        if (imesh > 0) {
+            info.order.push_back({projection_states, imesh-1});
+            info.order.push_back({slacks, imesh-1});
+        }
+        for (int i = 0; i < N; ++i) {
+            info.order.push_back({states, igrid + i});
+        }
+        if (imesh == 0) {
+            for (int i = 1; i < N; ++i) {
+                info.order.push_back({controls, igrid + i});
+            }
+            for (int i = 1; i < N; ++i) {
+                info.order.push_back({multipliers, igrid + i});
+            }
+            for (int i = 1; i < N; ++i) {
+                info.order.push_back({derivatives, igrid + i});
+            }
+        } else {
+            for (int i = 0; i < N; ++i) {
+                info.order.push_back({controls, igrid + i});
+            }
+            for (int i = 0; i < N; ++i) {
+                info.order.push_back({multipliers, igrid + i});
+            }
+            for (int i = 0; i < N; ++i) {
+                info.order.push_back({derivatives, igrid + i});
             }
         }
+
     }
+    info.order.push_back({initial_time, m_numMeshIntervals});
+    info.order.push_back({final_time, m_numMeshIntervals});
+    info.order.push_back({parameters, m_numMeshIntervals});
+    info.order.push_back({projection_states, m_numMeshIntervals-1});
+    info.order.push_back({slacks, m_numMeshIntervals-1});
+    info.order.push_back({states, m_numGridPoints - 1});
+    info.order.push_back({controls, m_numGridPoints - 1});
+    info.order.push_back({multipliers, m_numGridPoints - 1});
+    info.order.push_back({derivatives, m_numGridPoints - 1});
+
+    return info;
 }
 
 } // namespace CasOC

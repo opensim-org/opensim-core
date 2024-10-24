@@ -35,6 +35,7 @@ void MocoTropterSolver::constructProperties() {
     constructProperty_optim_jacobian_approximation("exact");
     constructProperty_optim_sparsity_detection("random");
     constructProperty_exact_hessian_block_sparsity_mode();
+    constructProperty_interpolate_control_midpoints(true);
 }
 
 bool MocoTropterSolver::isAvailable() {
@@ -164,6 +165,9 @@ MocoTropterSolver::createTropterSolver(
         dircol->set_exact_hessian_block_sparsity_mode(
                 get_exact_hessian_block_sparsity_mode());
     }
+
+    dircol->set_interpolate_control_midpoints(
+            get_interpolate_control_midpoints());
 
     // Get optimization solver to check the remaining property settings.
     auto& optsolver = dircol->get_opt_solver();
