@@ -18,7 +18,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Moco/osimMocoDLL.h>
 #include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/ForceProducer.h>
 #include <OpenSim/Simulation/osimSimulation.h>
@@ -225,11 +224,11 @@ public:
 
 private:
     void constructProperties() {
-        constructProperty_stiffness(1e4);
-        constructProperty_dissipation(1e-2);
+        constructProperty_stiffness(1.0e4);
+        constructProperty_dissipation(1.0e-2);
         constructProperty_spring_resting_length(0);
         constructProperty_dynamic_friction(0);
-        constructProperty_viscous_friction(5);
+        constructProperty_viscous_friction(5.0);
         constructProperty_latch_velocity(0.05);
     }
 

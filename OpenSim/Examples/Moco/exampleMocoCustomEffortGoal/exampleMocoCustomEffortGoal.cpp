@@ -18,6 +18,7 @@
 
 #include "MocoCustomEffortGoal.h"
 
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>
 #include <OpenSim/Moco/osimMoco.h>
 

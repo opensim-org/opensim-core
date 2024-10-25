@@ -18,8 +18,10 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Moco/osimMoco.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Actuators/ModelOperators.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Simulation/Model/StationPlaneContactForce.h>
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
 #include <catch2/catch_all.hpp>
 #include "Testing.h"
@@ -66,7 +68,7 @@ Model create2DPointMassModel() {
     force->setName("contact");
     force->set_stiffness(1e5);
     force->set_dissipation(1.0);
-    force->set_friction_coefficient(FRICTION_COEFFICIENT);
+    // force->set_friction_coefficient(FRICTION_COEFFICIENT);
     force->connectSocket_station(*station);
     model.addComponent(force);
 
@@ -111,7 +113,7 @@ SimTK::Real testNormalForce() {
         // https://stackoverflow.com/questions/34696351/template-dependent-typename
         auto& contact = model.template getComponent<StationPlaneContactForce>("contact");
         model.realizeVelocity(state);
-        const Vec3 contactForce = contact.calcContactForceOnStation(state);
+        const Vec3 contactForce = contact.getContactForceOnStation(state);
         // The horizontal force is not quite zero, maybe from a buildup of
         // numerical error (tightening the accuracy reduces this force).
         CHECK(contactForce[0] == Approx(0).margin(0.01));
@@ -152,7 +154,7 @@ SimTK::Real testNormalForce() {
         model.realizeVelocity(finalState);
         // https://stackoverflow.com/questions/34696351/template-dependent-typename
         auto& contact = model.template getComponent<StationPlaneContactForce>("contact");
-        const Vec3 contactForce = contact.calcContactForceOnStation(finalState);
+        const Vec3 contactForce = contact.getContactForceOnStation(finalState);
         // For some reason, direct collocation doesn't produce the same
         // numerical issues with the x component of the force as seen above.
         CHECK(contactForce[0] == Approx(0).margin(1e-15));
@@ -272,7 +274,7 @@ void testKnownKinematics() {
 
     auto& contact = model.template getComponent<StationPlaneContactForce>("contact");
     model.realizeVelocity(state);
-    const Vec3 contactForce = contact.calcContactForceOnStation(state);
+    const Vec3 contactForce = contact.getContactForceOnStation(state);
 
     CHECK(contactForce[0] == Approx(-5.9842).margin(1e-3));
     CHECK(contactForce[1] == Approx(40.0051).margin(1e-3));
