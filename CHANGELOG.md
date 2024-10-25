@@ -28,7 +28,7 @@ v4.6
   sphere torques) to be consistent with the center of pressure GRF representation.
 - Fixed an issue where a copy of an `OpenSim::Model` containing a `OpenSim::ExternalLoads` could not be
   finalized (#3926)
-- Updated all code examples to use c++14 (#3929)
+- Updated all code examples to use c++14 (#3929) 
 - Added class `OpenSim::StateDocument` as a systematic means of serializing and deserializing a complete trajectory
   (i.e., time history) of all states in the `SimTK::State` to and from a single `.ostates` file. Prior to `StatesDocument`,
   only the trajectories of continuous states (e.g., joint angles, joint speeds, muscle forces, and the like) could be systematically
@@ -42,6 +42,8 @@ v4.6
   configurable output precision. At the highest ouput precsion (~20 significant figures), serialization/deserialization is
   a lossless process. (#3902)
 - Improved `OpenSim::IO::stod` string-to-decimal parsing function by making it not-locale-dependant (#3943, #3924; thanks @alexbeattie42)
+- Completed the implementation of the `MeyerFregly2016Force` included in the `StationPlaneContactForce` class to support NMSM Pipeline-equivalent contact models in Moco. (#3877)
+
 
 v4.5.1
 ======
@@ -108,6 +110,7 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Upgraded the Ipopt dependency Metis to version 5.1.0 on Unix and macOS to enable building on `osx-arm64` (#3874).
 - Added Python and Java (Matlab) scripting support for `TimeSeriesTable_<SimTK::Rotation>`. (#3940)
 - Added the templatized `MocoStudy::analyze<T>()` and equivalent scripting counterparts: `analyzeVec3`, `analyzeSpatialVec`, `analyzeRotation`. (#3940)
+
 
 v4.5
 ====
