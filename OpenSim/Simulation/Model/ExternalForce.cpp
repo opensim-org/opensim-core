@@ -24,6 +24,7 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Common/Assertion.h>
@@ -51,7 +52,7 @@ using namespace std;
 /**
  * Default constructor.
  */
-ExternalForce::ExternalForce() : Force()
+ExternalForce::ExternalForce()
 {
     setNull();
     constructProperties();
@@ -328,9 +329,8 @@ void ExternalForce::extendConnectToModel(Model& model)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 
-void ExternalForce::computeForce(const SimTK::State& state, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+void ExternalForce::implProduceForces(const SimTK::State& state,
+    ForceConsumer& forceConsumer) const
 {
     double time = state.getTime();
 
@@ -345,13 +345,14 @@ void ExternalForce::computeForce(const SimTK::State& state,
             point = _pointExpressedInBody->
                 findStationLocationInAnotherFrame(state, point, *_appliedToBody);
         }
-        applyForceToPoint(state, *_appliedToBody, point, force, bodyForces);
+
+        forceConsumer.consumePointForce(state, *_appliedToBody, point, force);
     }
 
     if (_appliesTorque) {
         Vec3 torque = getTorqueAtTime(time);
         torque = _forceExpressedInBody->expressVectorInGround(state, torque);
-        applyTorque(state, *_appliedToBody, torque, bodyForces);
+        forceConsumer.consumeTorque(state, *_appliedToBody, torque);
     }
 }
 

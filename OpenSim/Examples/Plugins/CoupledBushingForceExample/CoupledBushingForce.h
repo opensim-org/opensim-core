@@ -26,7 +26,8 @@
 
 // INCLUDE
 #include "osimPluginDLL.h"
-#include <OpenSim/Simulation/Model/Force.h>
+
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 
@@ -51,7 +52,7 @@ namespace OpenSim {
  * @author Ajay Seth
 
  */
-class OSIMPLUGIN_API CoupledBushingForce : public TwoFrameLinker<Force, PhysicalFrame> {
+class OSIMPLUGIN_API CoupledBushingForce : public TwoFrameLinker<ForceProducer, PhysicalFrame> {
 OpenSim_DECLARE_CONCRETE_OBJECT(CoupledBushingForce, TwoFrameLinker);
 public:
     //==============================================================================
@@ -115,21 +116,6 @@ public:
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
 
-    //--------------------------------------------------------------------------
-    // COMPUTATION
-    //--------------------------------------------------------------------------
-    /** Compute the bushing force contribution to the system and add in to appropriate
-     bodyForce and/or system generalizedForce. The bushing force is [K]*dq + [D]*dqdot
-     where, [K] is the spatial 6dof stiffness matrix between the two frames 
-         dq is the deflection in body spatial coordinates with rotations in Euler angles
-         [D] is the spatial 6dof damping matrix opposing the velocity between the frames
-         dqdot is the relative spatial velocity of the two frames
-     CoupledBushingForce implementation based SimTK::Force::LinearBushing
-     developed and implemented by Michael Sherman. */
-    void computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const override;
-
     /** Potential energy is determined by the elastic energy storage of the bushing.
         In spatial terms, U = ~dq*[K]*dq, with K and dq defined above. */
     double computePotentialEnergy(const SimTK::State& s) const override;
@@ -146,9 +132,22 @@ public:
     */
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
-
-
 private:
+    /**
+     * Implements the `ForceProducer` API by computing the bushing force's.
+     *
+     * The bushing force is [K]*dq + [D]*dqdot where:
+     *
+     * - [K] is the spatial 6dof stiffness matrix between the two frames
+     * - dq is the deflection in body * spatial coordinates with rotations in Euler angles
+     * - [D] is the spatial 6dof damping matrix opposing the velocity between the frames
+     * - dqdot is the relative spatial velocity of the two frames CoupledBushingForce
+     *
+     * This implementation is based on `SimTK::Force::LinearBushing`, developed
+     * and implemented by Michael Sherman.
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
+
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface.
     //--------------------------------------------------------------------------

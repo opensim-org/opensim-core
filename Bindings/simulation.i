@@ -70,6 +70,8 @@ OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %include <OpenSim/Simulation/Model/ConstraintSet.h>
 
 %include <OpenSim/Simulation/Model/Force.h>
+%include <OpenSim/Simulation/Model/ForceProducer.h>
+
 %template(SetForces) OpenSim::Set<OpenSim::Force, OpenSim::ModelComponent>;
 %template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
 %include <OpenSim/Simulation/Model/ForceSet.h>
@@ -79,6 +81,7 @@ OpenSim::ModelComponentSet<OpenSim::Constraint>;
 
 %include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 %template(TwoFrameLinkerForce) OpenSim::TwoFrameLinker<OpenSim::Force, OpenSim::PhysicalFrame>;
+%template(TwoFrameLinkerForceProducer) OpenSim::TwoFrameLinker<OpenSim::ForceProducer, OpenSim::PhysicalFrame>;
 %template(TwoFrameLinkerConstraint) OpenSim::TwoFrameLinker<OpenSim::Constraint, OpenSim::PhysicalFrame>;
 
 %include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
@@ -250,6 +253,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 
 %template(StdVectorIMUs) std::vector< OpenSim::IMU* >;
 
+%include <OpenSim/Simulation/StatesDocument.h>
 %include <OpenSim/Simulation/StatesTrajectory.h>
 // This enables iterating using the getBetween() method.
 %template(IteratorRangeStatesTrajectoryIterator)
@@ -260,6 +264,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %template(analyze) OpenSim::analyze<double>;
 %template(analyzeVec3) OpenSim::analyze<SimTK::Vec3>;
 %template(analyzeSpatialVec) OpenSim::analyze<SimTK::SpatialVec>;
+%template(analyzeRotation) OpenSim::analyze<SimTK::Rotation_<double>>;
 
 %include <OpenSim/Simulation/VisualizerUtilities.h>
 

@@ -25,7 +25,7 @@ void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_mesh();
     constructProperty_verbosity(2);
     constructProperty_transcription_scheme("hermite-simpson");
-    constructProperty_interpolate_control_midpoints(true);
+    constructProperty_interpolate_control_mesh_interior_points(true);
     constructProperty_enforce_constraint_derivatives(true);
     constructProperty_multibody_dynamics_mode("explicit");
     constructProperty_optim_solver("ipopt");
@@ -40,6 +40,7 @@ void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_implicit_auxiliary_derivative_bounds({-1000, 1000});
     constructProperty_minimize_lagrange_multipliers(false);
     constructProperty_lagrange_multiplier_weight(1.0);
+    constructProperty_kinematic_constraint_method("Posa2016");
 }
 
 void MocoDirectCollocationSolver::setMesh(const std::vector<double>& mesh) {
@@ -86,3 +87,42 @@ void MocoDirectCollocationSolver::checkConstraintJacobianRank(
         log_warn(dashes);
     }
 }
+
+void MocoDirectCollocationSolver::checkSlackVariables(
+        const MocoSolution& solution) const {
+    const auto& slacks = solution.getSlacksTrajectory();
+    const auto& slackNames = solution.getSlackNames();
+    const SimTK::Real threshold = 1e-3;
+    bool largeSlackDetected = false;
+
+    std::vector<std::string> slackWarnings;
+    for (int islack = 0; islack < slacks.ncol(); ++islack) {
+        if (SimTK::max(SimTK::abs(slacks.col(islack))) > threshold) {
+            largeSlackDetected = true;
+            std::stringstream ss;
+            ss << "Slack variable '" << slackNames[islack] << "' has a maximum "
+               << "value of " << SimTK::max(SimTK::abs(slacks.col(islack)))
+               << ".";
+            slackWarnings.push_back(ss.str());
+        }
+    }
+
+    if (largeSlackDetected) {
+        const std::string dashes(50, '-');
+        log_warn(dashes);
+        log_warn("Large slack variables detected.");
+        log_warn(dashes);
+        for (const auto& warning : slackWarnings) {
+            log_warn(warning);
+        }
+        log_warn("");
+        log_warn("Slack variables with values larger than ~{} might", threshold);
+        log_warn("indicate that the problem is struggling to enforce");
+        log_warn("kinematic constraints in the problem. Since slack variables");
+        log_warn("interact with defect constraints in the direct collocation ");
+        log_warn("formulation, large slack values may affect the quality ");
+        log_warn("of the solution. Consider refining the mesh or adjusting ");
+        log_warn("the constraint tolerance in the MocoProblem.");
+        log_warn(dashes);
+    }
+} 

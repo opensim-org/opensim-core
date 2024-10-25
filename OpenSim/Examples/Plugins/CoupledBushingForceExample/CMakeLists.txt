@@ -8,8 +8,8 @@ file(GLOB INCLUDE_FILES *.h)
 set(PLUGIN_NAME "osimCoupledBushingForcePlugin"
     CACHE STRING "Name of shared library to create")
 
-# OpenSim uses C++11 language features.
-set(CMAKE_CXX_STANDARD 11)
+# OpenSim uses c++14 language features.
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")

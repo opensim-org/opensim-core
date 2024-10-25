@@ -199,6 +199,7 @@ public:
     }
 
     MocoStudy initialize() const;
+    TimeSeriesTable initializeKinematics() const;
     /// Solve the problem returned by initialize() and compute the outputs
     /// listed in output_paths.
     MocoInverseSolution solve() const;

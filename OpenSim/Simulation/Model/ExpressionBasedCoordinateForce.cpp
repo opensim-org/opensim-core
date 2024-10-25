@@ -25,6 +25,8 @@
 // INCLUDES
 //=============================================================================
 #include "ExpressionBasedCoordinateForce.h"
+
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <lepton/Parser.h>
 #include <lepton/ParsedExpression.h>
@@ -120,15 +122,10 @@ void ExpressionBasedCoordinateForce::
     this->_forceMagnitudeCV = addCacheVariable("force_magnitude", 0.0, SimTK::Stage::Velocity);
 }
 
-//=============================================================================
-// Computing
-//=============================================================================
-// Compute and apply the force
-void ExpressionBasedCoordinateForce::computeForce(const SimTK::State& s,
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                              SimTK::Vector& generalizedForces) const
+void ExpressionBasedCoordinateForce::implProduceForces(const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
-    applyGeneralizedForce(s, *_coord, calcExpressionForce(s), generalizedForces);
+    forceConsumer.consumeGeneralizedForce(s, *_coord, calcExpressionForce(s));
 }
 
 // Compute the force

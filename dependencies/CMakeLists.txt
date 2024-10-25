@@ -105,7 +105,6 @@ function(AddDependency)
             list(APPEND CMAKE_ARGS
                 -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE})
         endif()
-        list(APPEND CMAKE_ARGS ${DEP_CMAKE_ARGS})
 
         # Forward cmake arguments to dependencies.
         list(APPEND CMAKE_ARGS
@@ -139,6 +138,9 @@ function(AddDependency)
         if(SWIG_EXECUTABLE)
             list(APPEND CMAKE_ARGS -DSWIG_EXECUTABLE:FILEPATH=${SWIG_EXECUTABLE})
         endif()
+
+        # Append the dependency-specific CMake arguments.
+        list(APPEND CMAKE_ARGS ${DEP_CMAKE_ARGS})
 
         if(DEP_GIT_URL)
             ExternalProject_Add(${DEP_NAME}
@@ -183,7 +185,7 @@ AddDependency(NAME       ezc3d
 AddDependency(NAME       simbody
               DEFAULT    ON
               GIT_URL    https://github.com/simbody/simbody.git
-              GIT_TAG    d98f05fa1899633b544757e6c179562940f0849d
+              GIT_TAG    f853397efad00798a169ff3dd1c52f5e20a24ba9
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
                          ${SIMBODY_EXTRA_CMAKE_ARGS})
@@ -193,6 +195,11 @@ AddDependency(NAME       docopt
               GIT_URL    https://github.com/docopt/docopt.cpp.git
               GIT_TAG    3dd23e3280f213bacefdf5fcb04857bf52e90917)
 
+set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+if(MSVC)
+    # `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
+    set(SPDLOG_CXX_FLAGS "${SPDLOG_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
+endif()
 
 AddDependency(NAME       spdlog
               DEFAULT    ON
@@ -201,7 +208,8 @@ AddDependency(NAME       spdlog
               CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
-                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
+                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
+                         -DCMAKE_CXX_FLAGS:STRING=${SPDLOG_CXX_FLAGS})
 
 AddDependency(NAME       catch2
               DEFAULT    ON
@@ -325,9 +333,9 @@ else()
         ExternalProject_Add(metis
             # URL    http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
             URL    https://sourceforge.net/projects/myosin/files/metis-5.1.0.tar.gz/download
-            CONFIGURE_COMMAND cd <SOURCE_DIR> && ${CMAKE_MAKE_PROGRAM} shared=1 config "prefix=${CMAKE_INSTALL_PREFIX}/metis" BUILDDIR=bdir
+            CONFIGURE_COMMAND cd <SOURCE_DIR> && ${CMAKE_MAKE_PROGRAM} shared=1 config "prefix=${CMAKE_INSTALL_PREFIX}/ipopt" BUILDDIR=bdir
             BUILD_COMMAND cd <SOURCE_DIR>/bdir && ${CMAKE_MAKE_PROGRAM}
-            INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/metis"
+            INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/ipopt"
             INSTALL_COMMAND cd <SOURCE_DIR>/bdir && ${CMAKE_MAKE_PROGRAM} install)
 
         # GCC 10 generates a warning when compling MUMPS that we must suppress using
@@ -338,7 +346,7 @@ else()
             PATCH_COMMAND cd <SOURCE_DIR> && ./get.Mumps
             CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch ADD_CFLAGS=-Wno-error=implicit-function-declaration
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
-            INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/mumps"
+            INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/ipopt"
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
 
         ExternalProject_Add(ipopt
@@ -346,7 +354,7 @@ else()
             URL https://github.com/coin-or/Ipopt/archive/refs/tags/releases/3.14.16.zip
             INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
             # Suppress warnings treated as errors in Clang/LLVM with -Wno-error=implicit-function-declaration
-            CONFIGURE_COMMAND <SOURCE_DIR>/configure --with-mumps --prefix=<INSTALL_DIR> --with-mumps-cflags="-I${CMAKE_INSTALL_PREFIX}/mumps/include/coin-or/mumps" --with-mumps-lflags="-L${CMAKE_INSTALL_PREFIX}/mumps/lib -lcoinmumps"
+            CONFIGURE_COMMAND <SOURCE_DIR>/configure --with-mumps --prefix=<INSTALL_DIR> --with-mumps-cflags="-I${CMAKE_INSTALL_PREFIX}/ipopt/include/coin-or/mumps" --with-mumps-lflags="-L${CMAKE_INSTALL_PREFIX}/ipopt/lib -lcoinmumps"
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()

@@ -21,12 +21,10 @@
 * limitations under the License.                                             *
 * -------------------------------------------------------------------------- */
 
-//=============================================================================
-// INCLUDES
-//=============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
-
 #include "BodyActuator.h"
+
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -104,53 +102,6 @@ const Body& BodyActuator::getBody() const
     return getConnectee<Body>("body");
 }
 
-//==============================================================================
-// APPLICATION
-//==============================================================================
-//_____________________________________________________________________________
-/**
-* Apply the actuator force/torque to Body.
-*/
-void BodyActuator::computeForce(const SimTK::State& s,
-                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                                SimTK::Vector& generalizedForces) const
-{
-    if (!_model) return;
-
-    const bool spatialForceIsGlobal = getSpatialForceIsGlobal();
-    
-    const Body& body = getBody();
-    // const SimTK::MobilizedBody& body_mb = body.getMobilizedBody();
-
-    Vec3 pointOfApplication = get_point(); 
-
-    // get the control signals
-    const SimTK::Vector bodyForceVals = getControls(s);
-
-    // Read spatialForces which should be in ground frame by default
-    Vec3 torqueVec(bodyForceVals[0], bodyForceVals[1],
-        bodyForceVals[2]);
-    Vec3 forceVec(bodyForceVals[3], bodyForceVals[4],
-        bodyForceVals[5]);
-
-    // if the user has given the spatialForces in body frame, transform them to
-    // global (ground) frame
-    if (!spatialForceIsGlobal){
-        torqueVec = body.expressVectorInGround(s, torqueVec);
-        forceVec = body.expressVectorInGround(s, forceVec);
-    }
-
-    // if the point of applying force is not in body frame (which is the default 
-    // case) transform it to body frame
-    if (get_point_is_global())
-        pointOfApplication = getModel().getGround().
-            findStationLocationInAnotherFrame(s, pointOfApplication, body);
-
-    applyTorque(s, body, torqueVec, bodyForces);
-    applyForceToPoint(s, body, pointOfApplication, forceVec, bodyForces);
-
-}
-
 //_____________________________________________________________________________
 /**
 * Compute power consumed by moving the body via applied spatial force.
@@ -179,4 +130,40 @@ double BodyActuator::getPower(const SimTK::State& s) const
     return power;
 }
 
+void BodyActuator::implProduceForces(const SimTK::State& s,
+        ForceConsumer& forceConsumer) const
+{
+    if (!_model) return;
 
+    const bool spatialForceIsGlobal = getSpatialForceIsGlobal();
+
+    const Body& body = getBody();
+    // const SimTK::MobilizedBody& body_mb = body.getMobilizedBody();
+
+    Vec3 pointOfApplication = get_point(); 
+
+    // get the control signals
+    const SimTK::Vector bodyForceVals = getControls(s);
+
+    // Read spatialForces which should be in ground frame by default
+    Vec3 torqueVec(bodyForceVals[0], bodyForceVals[1],
+        bodyForceVals[2]);
+    Vec3 forceVec(bodyForceVals[3], bodyForceVals[4],
+        bodyForceVals[5]);
+
+    // if the user has given the spatialForces in body frame, transform them to
+    // global (ground) frame
+    if (!spatialForceIsGlobal){
+        torqueVec = body.expressVectorInGround(s, torqueVec);
+        forceVec = body.expressVectorInGround(s, forceVec);
+    }
+
+    // if the point of applying force is not in body frame (which is the default 
+    // case) transform it to body frame
+    if (get_point_is_global())
+        pointOfApplication = getModel().getGround().
+        findStationLocationInAnotherFrame(s, pointOfApplication, body);
+
+    forceConsumer.consumeTorque(s, body, torqueVec);
+    forceConsumer.consumePointForce(s, body, pointOfApplication, forceVec);
+}

@@ -23,7 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 // INCLUDE
-#include "Force.h"
+
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 
 namespace OpenSim {
 
@@ -52,8 +53,8 @@ class Function;
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API ExternalForce : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(ExternalForce, Force);
+class OSIMSIMULATION_API ExternalForce : public ForceProducer {
+OpenSim_DECLARE_CONCRETE_OBJECT(ExternalForce, ForceProducer);
 public:
 //==============================================================================
 // PROPERTIES
@@ -220,11 +221,9 @@ protected:
     void extendConnectToModel(Model& model) override;
 
     /**
-     * Compute the force.
+     * Implements the `ForceProducer` API.
      */
-    void computeForce(const SimTK::State& state, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                      SimTK::Vector& generalizedForces) const override;
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
 
 private:
     void setNull();

@@ -27,7 +27,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/Model/Force.h>
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 
 
 //=============================================================================
@@ -37,10 +37,10 @@ namespace OpenSim {
 /**
  * Generate a force that acts to limit the range of motion of a coordinate.
  * Force is experienced at upper and lower limits of the coordinate value
- * according to a constant stiffnesses K_upper and K_lower, with a C2 continuous
+ * according to constant stiffnesses K_upper and K_lower, with a C2-continuous
  * transition from 0 to K. The transition parameter defines how far beyond the
  * limit the stiffness becomes constant. The integrator will like smoother
- * (i.e. larger transition regions).
+ * (i.e. larger) transition regions.
  *
  * Damping factor is also phased in through the transition region from 0 to the
  * value provided.
@@ -48,15 +48,15 @@ namespace OpenSim {
  * Limiting force is guaranteed to be zero within the upper and lower limits.
  *
  * The potential energy stored in the spring component of the force is
- * accessible as well as the power (nd optionally energy) dissipated.
+ * accessible as well as the power (and, optionally, energy) dissipated.
   * The function has the following shape:
  * 
  * \image html coordinate_limit_force.png
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API CoordinateLimitForce : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateLimitForce, Force);
+class OSIMSIMULATION_API CoordinateLimitForce : public ForceProducer {
+OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateLimitForce, ForceProducer);
 public:
 //==============================================================================
 // PROPERTIES
@@ -217,14 +217,12 @@ protected:
     /** Create the underlying Force that is part of the multibody system. */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-    //--------------------------------------------------------------------------
-    // Force Interface
-    //--------------------------------------------------------------------------
-    void computeForce(const SimTK::State& s, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                      SimTK::Vector& mobilityForces) const override;
-
 private:
+    /**
+     * Implements the `ForceProducer` interface.
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
+
     // Object helpers
     void setNull();
     void constructProperties();

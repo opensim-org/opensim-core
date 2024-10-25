@@ -260,7 +260,7 @@ void MocoOutputBase::printDescriptionImpl() const {
         str += fmt::format(", bounds: {}", getConstraintInfo().getBounds()[0]);
     }
 
-    log_cout(str);
+    log_info(str);
 }
 
 // ============================================================================

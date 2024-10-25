@@ -60,6 +60,7 @@
 %include <OpenSim/Common/Sine.h>
 %include <OpenSim/Common/PolynomialFunction.h>
 %include <OpenSim/Common/MultivariatePolynomialFunction.h>
+%include <OpenSim/Common/ExpressionBasedFunction.h>
 
 %include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 %include <OpenSim/Common/SmoothSegmentedFunction.h>
@@ -252,6 +253,14 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
     packSpatialVec(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::SpatialVec>();
     }
+    DataTable_<double, SimTK::Rotation_<double>>
+    packRotation() {
+        return $self->pack<SimTK::Rotation_<double>>();
+    }
+    DataTable_<double, SimTK::Rotation_<double>>
+    packRotation(std::vector<std::string> suffixes) {
+        return $self->pack<SimTK::Rotation_<double>>();
+    }
 }
 
 %ignore OpenSim::TimeSeriesTable_::TimeSeriesTable_(TimeSeriesTable_ &&);
@@ -293,6 +302,14 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
     packSpatialVec(std::vector<std::string> suffixes) {
         return $self->pack<SimTK::SpatialVec>();
     }
+    TimeSeriesTable_<SimTK::Rotation_<double>>
+    packRotation() {
+        return $self->pack<SimTK::Rotation_<double>>();
+    }
+    TimeSeriesTable_<SimTK::Rotation_<double>>
+    packRotation(std::vector<std::string> suffixes) {
+        return $self->pack<SimTK::Rotation_<double>>();
+    }
 }
 %extend OpenSim::TimeSeriesTable_<SimTK::Vec3> {
     TimeSeriesTable_<double> flatten() {
@@ -327,6 +344,14 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
     }
 }
 %extend OpenSim::TimeSeriesTable_<SimTK::SpatialVec> {
+    TimeSeriesTable_<double> flatten() {
+        return $self->flatten();
+    }
+    TimeSeriesTable_<double> flatten(std::vector<std::string> suffixes) {
+        return $self->flatten(suffixes);
+    }
+}
+%extend OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>> {
     TimeSeriesTable_<double> flatten() {
         return $self->flatten();
     }
@@ -370,7 +395,7 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
 %shared_ptr(OpenSim::IMUDataReader)
 %shared_ptr(OpenSim::XsensDataReader)
 %shared_ptr(OpenSim::APDMDataReader)
-%shared_ptr(OpenSim::STOFileAdapter_<duoble>)
+%shared_ptr(OpenSim::STOFileAdapter_<double>)
 %shared_ptr(OpenSim::STOFileAdapter_<SimTK::Vec3>)
 %shared_ptr(OpenSim::STOFileAdapter_<SimTK::UnitVec3>)
 %shared_ptr(OpenSim::STOFileAdapter_<SimTK::Quaternion>)

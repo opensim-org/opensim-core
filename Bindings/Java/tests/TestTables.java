@@ -265,6 +265,36 @@ class TestTables {
         assert tableFlat.getNumRows()             == 3;
         assert tableFlat.getNumColumns()          == 12;
         System.out.println(tableFlat);
+        table = new DataTable();
+        labels = new StdVectorString();
+        labels.add("col0.0"); labels.add("col0.1"); labels.add("col0.2");
+        labels.add("col0.3"); labels.add("col0.4"); labels.add("col0.5");
+        labels.add("col0.6"); labels.add("col0.7"); labels.add("col0.8");
+        labels.add("col1.0"); labels.add("col1.1"); labels.add("col1.2");
+        labels.add("col1.3"); labels.add("col1.4"); labels.add("col1.5");
+        labels.add("col1.6"); labels.add("col1.7"); labels.add("col1.8");
+        table.setColumnLabels(labels);
+        row = new RowVector(18, 1);
+        table.appendRow(1, row);
+        row = new RowVector(18, 2);
+        table.appendRow(2, row);
+        row = new RowVector(18, 3);
+        table.appendRow(3, row);
+        assert table.getColumnLabels().size() == 18;
+        assert table.getNumRows()             == 3;
+        assert table.getNumColumns()          == 18;
+        DataTableRotation tableRot = table.packRotation();
+        assert tableRot.getColumnLabel(0).equals("col0");
+        assert tableRot.getNumRows()    == 3;
+        assert tableRot.getNumColumns() == 2;
+        System.out.println(tableRot);
+        tableFlat = tableRot.flatten();
+        assert tableFlat.getColumnLabels().size() == 18;
+        assert tableFlat.getColumnLabel( 0).equals("col0_1");
+        assert tableFlat.getColumnLabel(15).equals("col1_7");
+        assert tableFlat.getNumRows()             == 3;
+        assert tableFlat.getNumColumns()          == 18;
+        System.out.println(tableFlat);
     }
 
     public static void test_DataTableVec3() {

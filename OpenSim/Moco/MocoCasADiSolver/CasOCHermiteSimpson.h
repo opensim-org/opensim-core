@@ -37,9 +37,12 @@ namespace CasOC {
 ///
 /// Kinematic constraints and path constraints.
 /// -------------------------------------------
-/// Kinematic constraint and path constraint errors are enforced only at the
-/// mesh points. Errors at collocation points at the mesh interval midpoint
-/// are ignored.
+/// Position- and velocity-level kinematic constraint errors and path constraint 
+/// errors are enforced only at the mesh points. In the kinematic constraint 
+/// method by Bordalba et al. (2023), the acceleration-level constraints are 
+/// also enforced at the collocation points. In the kinematic constraint method 
+/// by Posa et al. (2016), the acceleration-level constraints are only enforced 
+/// at the mesh points.
 class HermiteSimpson : public Transcription {
 public:
     HermiteSimpson(const Solver& solver, const Problem& problem)
@@ -47,7 +50,8 @@ public:
         casadi::DM grid =
                 casadi::DM::zeros(1, (2 * m_solver.getMesh().size()) - 1);
         const auto& mesh = m_solver.getMesh();
-        const bool interpControls = m_solver.getInterpolateControlMidpoints();
+        const bool interpControls =
+                m_solver.getInterpolateControlMeshInteriorPoints();
         casadi::DM pointsForInterpControls;
         if (interpControls) {
             pointsForInterpControls =
@@ -63,15 +67,16 @@ public:
                 }
             }
         }
-        createVariablesAndSetBounds(grid, 2 * m_problem.getNumStates(),
+        createVariablesAndSetBounds(grid, 2 * m_problem.getNumStates(), 3,
                 pointsForInterpControls);
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
-    void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
-            casadi::MX& defects) const override;
+    void calcDefectsImpl(const casadi::MXVector& x, 
+                         const casadi::MXVector& xdot,
+                         casadi::MX& defects) const override;
     void calcInterpolatingControlsImpl(const casadi::MX& controls,
             casadi::MX& interpControls) const override;
 };

@@ -25,7 +25,7 @@
 
 
 // INCLUDE
-#include "Force.h"
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 #include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 
 namespace OpenSim {
@@ -50,7 +50,7 @@ namespace OpenSim {
  * @author Matt DeMers
  */
 class OSIMSIMULATION_API ExpressionBasedBushingForce 
-    : public TwoFrameLinker<Force, PhysicalFrame> {
+    : public TwoFrameLinker<ForceProducer, PhysicalFrame> {
 OpenSim_DECLARE_CONCRETE_OBJECT(ExpressionBasedBushingForce, TwoFrameLinker);
 public:
 //==============================================================================
@@ -251,11 +251,6 @@ public:
     virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
 protected:
-    /** Compute the bushing force contribution to the system and add in to 
-        appropriate bodyForces and/or system generalizedForces */
-    virtual void computeForce(const SimTK::State& s,
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                              SimTK::Vector& generalizedForces) const override;
     /** Potential energy calculation is not implemented */
     //--------------------------------------------------------------------------
     // Visual support in SimTK visualizer
@@ -271,6 +266,11 @@ protected:
                                 SimTK::SpatialVec& forces_on_F_in_ground) const;
 
 private:
+    /**
+     * Implements the `ForceProducer` interface by computing the bushing force.
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
+
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface.
     //--------------------------------------------------------------------------

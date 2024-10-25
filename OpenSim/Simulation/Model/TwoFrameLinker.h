@@ -23,7 +23,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDE
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <simbody/internal/MobilizedBody.h>
@@ -258,6 +258,25 @@ protected:
     @see PhysicalFrame::findBaseFrame() */
     void addInPhysicalForcesFromInternal(const SimTK::State& state,
         SimTK::Vec6 f, SimTK::Vector_<SimTK::SpatialVec>& spatialForces) const;
+
+    /**
+     * Produces system spatial forces given internal forces.
+     *
+     * Internal forces are expressed in the mobility basis as parameterized by the
+     * deflection between `frame1` and `frame2`, `dq`, and its time derivative, `dqdot`.
+     *
+     * This helper function is intended to be used as part of a `ForceProducer::implProduceForces`
+     * implementation.
+     *
+     * @param state            the state used to evaluate forces
+     * @param f                a `SimTK::Vec6` of forces in the basis of the deflection
+     * @param forceConsumer    a `ForceConsumer` that shall recieve each evaluated force
+     */
+    void producePhysicalForcesFromInternal(
+        const SimTK::State& state,
+        const SimTK::Vec6& f,
+        ForceConsumer& forceConsumer
+    ) const;
 
 private:
     // create the frames property
@@ -567,6 +586,34 @@ void TwoFrameLinker<C, F>::addInPhysicalForcesFromInternal(
         const SimTK::State& s,
         SimTK::Vec6 f, SimTK::Vector_<SimTK::SpatialVec>& physicalForces) const
 {
+    // A `ForceConsumer` that applies body spatial vectors from `producePhysicalForcesFromInternal`
+    class Adaptor final : public ForceConsumer {
+    public:
+        explicit Adaptor(SimTK::Vector_<SimTK::SpatialVec>& physicalForces) :
+            _physicalForces{&physicalForces}
+        {}
+
+    private:
+        void implConsumeBodySpatialVec(
+            const SimTK::State& state,
+            const PhysicalFrame& body,
+            const SimTK::SpatialVec& spatialVec) final
+        {
+            (*_physicalForces)[body.getMobilizedBodyIndex()] += spatialVec;
+        }
+
+        SimTK::Vector_<SimTK::SpatialVec>* _physicalForces;
+    };
+
+    producePhysicalForcesFromInternal(s, f, Adaptor{physicalForces});
+}
+
+template<class C, class F>
+void TwoFrameLinker<C, F>::producePhysicalForcesFromInternal(
+    const SimTK::State& s,
+    const SimTK::Vec6& f,
+    ForceConsumer& forceConsumer) const
+{
     SimTK::SpatialVec F_GF;
     SimTK::SpatialVec F_GM;
     // convert the internal force to spatial forces on the two frames
@@ -586,9 +633,9 @@ void TwoFrameLinker<C, F>::addInPhysicalForcesFromInternal(
     SimTK::SpatialVec F_GB2(F_GM[0] + p_B2M_G % F_GM[1], F_GM[1]);
     SimTK::SpatialVec F_GB1(F_GF[0] + p_B1F_G % F_GF[1], F_GF[1]);
 
-    // Apply (add-in) the body forces to the system set of body forces
-    physicalForces[frame2.getMobilizedBodyIndex()] += F_GB2;
-    physicalForces[frame1.getMobilizedBodyIndex()] += F_GB1;
+    // Produce the body forces as body spatial vectors.
+    forceConsumer.consumeBodySpatialVec(s, frame2, F_GB2);
+    forceConsumer.consumeBodySpatialVec(s, frame1, F_GB1);
 }
 
 

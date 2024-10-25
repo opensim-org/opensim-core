@@ -23,14 +23,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 // INCLUDE
-#include "Force.h"
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 #include <lepton/ExpressionProgram.h>
 
 namespace OpenSim {
 
-class OSIMSIMULATION_API ExpressionBasedCoordinateForce : public Force
+class OSIMSIMULATION_API ExpressionBasedCoordinateForce : public ForceProducer
 {
-OpenSim_DECLARE_CONCRETE_OBJECT(ExpressionBasedCoordinateForce, Force);
+OpenSim_DECLARE_CONCRETE_OBJECT(ExpressionBasedCoordinateForce, ForceProducer);
 public:
 //==============================================================================
 // PROPERTIES
@@ -90,15 +90,6 @@ public:
     const double& getForceMagnitude(const SimTK::State& state) const;
 
 
-//==============================================================================
-// COMPUTATION
-//==============================================================================
-    /** Compute the coordinate force based on the user-defined expression
-        and apply it to the model */
-    void computeForce(const SimTK::State& state,
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                              SimTK::Vector& generalizedForces) const override;
-
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
@@ -128,6 +119,12 @@ protected:
 
 
 private:
+    /**
+     * Implements the `ForceProducer` API by computing the coordinate force based
+     * on the user-defined expression.
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
+
     void setNull();
     void constructProperties();
 

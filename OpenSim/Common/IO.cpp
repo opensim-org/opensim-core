@@ -31,8 +31,10 @@
 
 #include "Logger.h"
 #include <climits>
+#include <limits>
 #include <math.h>
 #include <string>
+#include <sstream>
 #include <time.h>
 #if defined(__linux__) || defined(__APPLE__)
     #include <sys/stat.h>
@@ -58,12 +60,28 @@ using namespace OpenSim;
 using namespace std;
 
 // STATICS
-bool IO::_Scientific = false;
-bool IO::_GFormatForDoubleOutput = false;
-int IO::_Pad = 8;
-int IO::_Precision = 8;
-char IO::_DoubleFormat[] = "%16.8lf";
-bool IO::_PrintOfflineDocuments = true;
+namespace
+{
+    constexpr int IO_DBLFMTLEN = 256;
+
+    /** Specifies whether number output is in scientific or float format. */
+    bool _Scientific = false;
+
+    /** Specifies whether number output is in %g format or not. */
+    bool _GFormatForDoubleOutput = false;
+
+    /** Specifies number of digits of padding in number output. */
+    int _Pad = 8;
+
+    /** Specifies the precision of number output. */
+    int _Precision = 8;
+
+    /** The output format string. */
+    char _DoubleFormat[IO_DBLFMTLEN] = "%16.8lf";
+
+    /** Whether offline documents should also be printed when Object::print is called. */
+    bool _PrintOfflineDocuments = true;
+}
 
 
 //=============================================================================
@@ -473,6 +491,26 @@ OpenOutputFile(const string &aFileName,ios_base::openmode mode)
     }
 
     return(fs);
+}
+
+double IO::
+stod(const std::string& __str, std::size_t* __idx)
+{ 
+    std::istringstream iss(__str);
+
+    // Always parse numbers with "C" locale, which uses a period character
+    // for the decimal place. Otherwise, Finns, Dutch, and other locales
+    // that use comma characters as a decimal place will encounter parsing
+    // issues (#3943, #3924).
+    iss.imbue(std::locale::classic());
+
+    double result;
+    iss >> result;
+    if (iss.fail()) {
+        result = std::numeric_limits<double>::quiet_NaN();
+        log_warn("Encountered non-numeric string value: {} ; parsed value:{}",__str, result);
+    }
+    return result;
 }
 //_____________________________________________________________________________
 /**

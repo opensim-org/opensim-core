@@ -18,13 +18,15 @@
  
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/osimSimulation.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 #include <OpenSim/Actuators/osimActuators.h>
 #include <Moco/osimMoco.h>
 
 using namespace OpenSim;
 
-class /*TODO OSIMMOCO_API*/AckermannVanDenBogert2010Force : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Force, Force);
+class /*TODO OSIMMOCO_API*/AckermannVanDenBogert2010Force : public ForceProducer {
+OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Force, ForceProducer);
 public:
     OpenSim_DECLARE_PROPERTY(stiffness, double, "TODO N/m^3");
     OpenSim_DECLARE_PROPERTY(dissipation, double, "TODO s/m");
@@ -73,16 +75,6 @@ public:
         force[0] = frictionForce;
         return force;
     }
-    void computeForce(const SimTK::State& s,
-            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-            SimTK::Vector& /*generalizedForces*/) const override {
-        const SimTK::Vec3 force = calcContactForce(s);
-        const auto& pt = getConnectee<Station>("station");
-        const auto& pos = pt.getLocationInGround(s);
-        const auto& frame = pt.getParentFrame();
-        applyForceToPoint(s, frame, pt.get_location(), force, bodyForces);
-        applyForceToPoint(s, getModel().getGround(), pos, -force, bodyForces);
-    }
 
     OpenSim::Array<std::string> getRecordLabels() const override {
         OpenSim::Array<std::string> labels;
@@ -105,6 +97,17 @@ public:
 
     // TODO potential energy.
 private:
+    void implProduceForces(const SimTK::State& s,
+        ForceConsumer& forceConsumer) const override {
+
+        const SimTK::Vec3 force = calcContactForce(s);
+        const auto& pt = getConnectee<Station>("station");
+        const auto& pos = pt.getLocationInGround(s);
+        const auto& frame = pt.getParentFrame();
+        forceConsumer.consumePointForce(s, frame, pt.get_location(), force);
+        forceConsumer.consumePointForce(s, getModel().getGround(), pos, -force);
+    }
+
     void constructProperties() {
         constructProperty_friction_coefficient(1.0);
         constructProperty_stiffness(5e7);

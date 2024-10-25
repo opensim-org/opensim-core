@@ -22,6 +22,7 @@
 #include <SimTKcommon/Scalar.h>
 
 #include <OpenSim/Actuators/ModelFactory.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 
 using namespace OpenSim;
 
@@ -38,21 +39,28 @@ MocoStudy MocoStudyFactory::createLinearTangentSteeringStudy(
         double computeActuation(const SimTK::State&) const override {
             return SimTK::NaN;
         }
-        void computeForce(const SimTK::State& state,
-                SimTK::Vector_<SimTK::SpatialVec>&,
-                SimTK::Vector& mobilityForces) const override {
-            const double angle = getControl(state);
-            const auto& coordX = getModel().getCoordinateSet().get(0);
-            const auto& coordY = getModel().getCoordinateSet().get(1);
-            applyGeneralizedForce(state, coordX,
-                    get_acceleration() * cos(angle), mobilityForces);
-            applyGeneralizedForce(state, coordY,
-                    get_acceleration() * sin(angle), mobilityForces);
-        }
 
         double getSpeed(const SimTK::State& state) const override
         {
             return SimTK::NaN;
+        }
+    private:
+        void implProduceForces(const SimTK::State& state,
+            ForceConsumer& forceConsumer) const override {
+            const double angle = getControl(state);
+            const auto& coordX = getModel().getCoordinateSet().get(0);
+            const auto& coordY = getModel().getCoordinateSet().get(1);
+
+            forceConsumer.consumeGeneralizedForce(
+                state,
+                coordX,
+                get_acceleration() * cos(angle)
+            );
+            forceConsumer.consumeGeneralizedForce(
+                state,
+                coordY,
+                get_acceleration() * sin(angle)
+            );
         }
     };
 
