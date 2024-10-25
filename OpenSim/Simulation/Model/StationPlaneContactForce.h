@@ -37,7 +37,7 @@ class OSIMSIMULATION_API StationPlaneContactForce : public ForceProducer {
 OpenSim_DECLARE_ABSTRACT_OBJECT(StationPlaneContactForce, ForceProducer);
 public:
     OpenSim_DECLARE_OUTPUT(force_on_station, SimTK::Vec3,
-            computeContactForceOnStation, SimTK::Stage::Velocity);
+            getContactForceOnStation, SimTK::Stage::Velocity);
 
     OpenSim_DECLARE_SOCKET(station, Station,
             "The body-fixed point that can contact the plane.");
@@ -53,8 +53,7 @@ public:
     OpenSim::Array<double> getRecordValues(const SimTK::State& s)
     const override {
         OpenSim::Array<double> values;
-        // TODO cache.
-        const SimTK::Vec3 force = computeContactForceOnStation(s);
+        const SimTK::Vec3& force = getContactForceOnStation(s);
         values.append(force[0]);
         values.append(force[1]);
         values.append(force[2]);
@@ -64,15 +63,34 @@ public:
             const SimTK::State& s,
             SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override;
 
-    virtual SimTK::Vec3 computeContactForceOnStation(
+    const SimTK::Vec3& getContactForceOnStation(const SimTK::State& s) const {
+        computeContactForceOnStation(s);
+        return getCacheVariableValue<SimTK::Vec3>(s, _forceOnStationCV);
+    }
+
+    void setContactForceOnStation(const SimTK::State& s,
+            const SimTK::Vec3& force) const {
+        setCacheVariableValue(s, _forceOnStationCV, force);
+    }
+
+protected:
+    virtual SimTK::Vec3 calcContactForceOnStation(
             const SimTK::State& s) const = 0;
 
 private:
-    void implProduceForces(
-        const SimTK::State& s,
-        ForceConsumer& forceConsumer) const override {
+    mutable CacheVariable<SimTK::Vec3> _forceOnStationCV;
 
-        const SimTK::Vec3 force = computeContactForceOnStation(s);
+    void computeContactForceOnStation(const SimTK::State& s) const {
+        if (!isCacheVariableValid(s, _forceOnStationCV)) {
+            return;
+        }
+        setContactForceOnStation(s, calcContactForceOnStation(s));
+    }
+
+    void implProduceForces(const SimTK::State& s, ForceConsumer& forceConsumer) 
+            const override {
+
+        const SimTK::Vec3& force = getContactForceOnStation(s);
         const auto& pt = getConnectee<Station>("station");
         const auto& pos = pt.getLocationInGround(s);
         const auto& frame = pt.getParentFrame();
@@ -156,14 +174,13 @@ public:
 
     /// Compute the force applied to body to which the station is attached, at
     /// the station, expressed in ground.
-    SimTK::Vec3 computeContactForceOnStation(const SimTK::State& s)
-    const override {
+    SimTK::Vec3 calcContactForceOnStation(const SimTK::State& s) const override {
         SimTK::Vec3 force(0);
         const auto& pt = getConnectee<Station>("station");
         const auto& pos = pt.getLocationInGround(s);
         const auto& vel = pt.getVelocityInGround(s);
         const SimTK::Real resting_length = get_spring_resting_length();
-        const SimTK::Real y = pos[1];
+        SimTK::Real y = pos[1];
         const SimTK::Real velNormal = vel[1];
         SimTK::Real velSliding = sqrt(vel[0] * vel[0] + vel[2] * vel[2]);
         const SimTK::Real depthRate = 0 - velNormal;
@@ -240,8 +257,7 @@ public:
 
     /// Compute the force applied to body to which the station is attached, at
     /// the station, expressed in ground.
-    SimTK::Vec3 computeContactForceOnStation(const SimTK::State& s)
-    const override {
+    SimTK::Vec3 calcContactForceOnStation(const SimTK::State& s) const override {
         SimTK::Vec3 force(0);
         const auto& pt = getConnectee<Station>("station");
         const auto& pos = pt.getLocationInGround(s);
@@ -323,8 +339,7 @@ public:
 
     /// Compute the force applied to body to which the station is attached, at
     /// the station, expressed in ground.
-    SimTK::Vec3 computeContactForceOnStation(const SimTK::State& s)
-    const override {
+    SimTK::Vec3 calcContactForceOnStation(const SimTK::State& s) const override {
         using SimTK::square;
         SimTK::Vec3 force(0);
         const auto& pt = getConnectee<Station>("station");

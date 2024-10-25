@@ -50,6 +50,7 @@
 #include "Model/ElasticFoundationForce.h"
 #include "Model/HuntCrossleyForce.h"
 #include "Model/SmoothSphereHalfSpaceForce.h"
+#include "Model/StationPlaneContactForce.h"
 #include "Model/Ligament.h"
 #include "Model/Blankevoort1991Ligament.h"
 #include "Model/JointSet.h"
@@ -269,6 +270,9 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( FunctionBasedBushingForce() );
     Object::registerType( ExpressionBasedBushingForce() );
     Object::registerType( ExpressionBasedCoordinateForce() );
+    Object::registerType(AckermannVanDenBogert2010Force());
+    Object::registerType(MeyerFregly2016Force());
+    Object::registerType(EspositoMiller2018Force());
 
     Object::registerType( ControlSetController() );
     Object::registerType( PrescribedController() );
