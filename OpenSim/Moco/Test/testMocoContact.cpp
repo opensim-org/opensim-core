@@ -540,7 +540,6 @@ void testSmoothSphereHalfSpaceForce_FrictionForce(
 }
 
 TEMPLATE_TEST_CASE("testStationPlaneContactForce", "[tropter]", 
-        AckermannVanDenBogert2010Force, EspositoMiller2018Force,
         MeyerFregly2016Force) {
     testStationPlaneContactForce<TestType>();
 }

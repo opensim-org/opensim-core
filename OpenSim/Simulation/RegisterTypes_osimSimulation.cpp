@@ -251,7 +251,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ContactMesh() );
     Object::registerType( ContactSphere() );
     Object::registerType( CoordinateLimitForce() );
-    Object::registerType( SmoothSphereHalfSpaceForce() );
+    Object::registerType( SmoothSphereHalfSpaceForce() );        
+    Object::registerType( MeyerFregly2016Force() );
     Object::registerType( HuntCrossleyForce() );
     Object::registerType( ElasticFoundationForce() );
     Object::registerType( HuntCrossleyForce::ContactParameters() );
@@ -270,9 +271,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( FunctionBasedBushingForce() );
     Object::registerType( ExpressionBasedBushingForce() );
     Object::registerType( ExpressionBasedCoordinateForce() );
-    Object::registerType(AckermannVanDenBogert2010Force());
-    Object::registerType(MeyerFregly2016Force());
-    Object::registerType(EspositoMiller2018Force());
 
     Object::registerType( ControlSetController() );
     Object::registerType( PrescribedController() );

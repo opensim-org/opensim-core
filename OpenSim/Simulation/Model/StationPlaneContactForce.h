@@ -27,11 +27,7 @@ namespace OpenSim {
 /** This class models compliant point contact with a ground plane y=0.
 
 Vertical force is calculated using stiffness and dissipation coefficients, 
-while horizontal force is calculated using a friction model. Multiple concrete 
-implementations of this class are available, but currently MeyerFregly2016Force 
-is the only complete and well-tested implementation and therefore recommended.
-
-@underdevelopment */
+while horizontal force is calculated using a friction model. */
 class OSIMSIMULATION_API StationPlaneContactForce : public ForceProducer {
 OpenSim_DECLARE_ABSTRACT_OBJECT(StationPlaneContactForce, ForceProducer);
 public:
@@ -163,7 +159,7 @@ public:
     OpenSim_DECLARE_PROPERTY(dynamic_friction, double,
             "Dynamic friction coefficient (default: 0).");
     OpenSim_DECLARE_PROPERTY(viscous_friction, double,
-            "Viscous friction coefficient (default: 5).");
+            "Viscous friction coefficient (default: 5.0).");
     OpenSim_DECLARE_PROPERTY(latch_velocity, double,
             "Latching velocity in m/s (default: 0.05).");
 
@@ -232,160 +228,6 @@ private:
         constructProperty_latch_velocity(0.05);
     }
 
-};
-
-/** This class is still under development. */
-class OSIMSIMULATION_API AckermannVanDenBogert2010Force
-        : public StationPlaneContactForce {
-OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Force,
-        StationPlaneContactForce);
-public:
-    OpenSim_DECLARE_PROPERTY(stiffness, double,
-            "Spring stiffness in N/m^3 (default: 5e7).");
-    OpenSim_DECLARE_PROPERTY(dissipation, double,
-            "Dissipation coefficient in s/m (default: 1.0).");
-    OpenSim_DECLARE_PROPERTY(friction_coefficient, double,
-            "Friction coefficient");
-    // TODO rename to transition_velocity
-    OpenSim_DECLARE_PROPERTY(tangent_velocity_scaling_factor, double,
-            "Governs how rapidly friction develops (default: 0.05).");
-
-    AckermannVanDenBogert2010Force() {
-        constructProperties();
-    }
-
-    /// Compute the force applied to body to which the station is attached, at
-    /// the station, expressed in ground.
-    SimTK::Vec3 calcContactForceOnStation(const SimTK::State& s) const override {
-        SimTK::Vec3 force(0);
-        const auto& pt = getConnectee<Station>("station");
-        const auto& pos = pt.getLocationInGround(s);
-        const auto& vel = pt.getVelocityInGround(s);
-        const SimTK::Real y = pos[1];
-        const SimTK::Real velNormal = vel[1];
-        // TODO should project vel into ground.
-        const SimTK::Real velSliding = vel[0];
-        const SimTK::Real depth = 0 - y;
-        const SimTK::Real depthRate = 0 - velNormal;
-        const SimTK::Real& a = get_stiffness();
-        const SimTK::Real& b = get_dissipation();
-        if (depth > 0) {
-            force[1] = fmax(0, a * pow(depth, 3) * (1 + b * depthRate));
-        }
-        const SimTK::Real voidStiffness = 1.0; // N/m
-        force[1] += voidStiffness * depth;
-
-        const SimTK::Real velSlidingScaling =
-                get_tangent_velocity_scaling_factor();
-        // The paper used (1 - exp(-x)) / (1 + exp(-x)) = tanh(2x).
-        // tanh() has a wider domain than using exp().
-        const SimTK::Real transition = tanh(velSliding / velSlidingScaling / 2);
-
-        const SimTK::Real frictionForce =
-                -transition * get_friction_coefficient() * force[1];
-
-        force[0] = frictionForce;
-        return force;
-    }
-
-private:
-    void constructProperties() {
-        constructProperty_friction_coefficient(1.0);
-        constructProperty_stiffness(5e7);
-        constructProperty_dissipation(1.0);
-        constructProperty_tangent_velocity_scaling_factor(0.05);
-    }
-};
-
-/** This contact model uses a continuous equation to transition between in and
-out of contact. The equation for the smooth transition was published in
-the following two papers:
-
-Koelewijn, A. D., & van den Bogert, A. J. (2016). Joint contact forces can
-be reduced by improving joint moment symmetry in below-knee amputee gait
-simulations. Gait & Posture, 49, 219–225.
-http://doi.org/10.1016/j.gaitpost.2016.07.007
-
-Esposito, E. R., & Miller, R. H. (2018). Maintenance of muscle strength
-retains a normal metabolic cost in simulated walking after transtibial limb
-loss. PLoS ONE, 13(1), e0191310. http://doi.org/10.1371/journal.pone.0191310
-
-@underdevelopment */
-class OSIMSIMULATION_API EspositoMiller2018Force
-        : public StationPlaneContactForce {
-OpenSim_DECLARE_CONCRETE_OBJECT(EspositoMiller2018Force,
-        StationPlaneContactForce);
-public:
-    OpenSim_DECLARE_PROPERTY(stiffness, double,
-            "Spring stiffness in N/m^3 (default: 2e6).");
-    OpenSim_DECLARE_PROPERTY(dissipation, double,
-            "Dissipation coefficient in s/m (default: 1.0).");
-    OpenSim_DECLARE_PROPERTY(friction_coefficient, double,
-            "Friction coefficient");
-    // TODO rename to transition_velocity
-    OpenSim_DECLARE_PROPERTY(tangent_velocity_scaling_factor, double,
-            "Governs how rapidly friction develops (default: 0.05).");
-    OpenSim_DECLARE_PROPERTY(depth_offset, double,
-            "'Resting length' of spring in meters (default: 0.001).");
-
-    EspositoMiller2018Force() {
-        constructProperties();
-    }
-
-    void extendFinalizeFromProperties() override {
-        m_depthOffsetSquared = SimTK::square(get_depth_offset());
-    }
-
-    /// Compute the force applied to body to which the station is attached, at
-    /// the station, expressed in ground.
-    SimTK::Vec3 calcContactForceOnStation(const SimTK::State& s) const override {
-        using SimTK::square;
-        SimTK::Vec3 force(0);
-        const auto& pt = getConnectee<Station>("station");
-        const auto& pos = pt.getLocationInGround(s);
-        const auto& vel = pt.getVelocityInGround(s);
-        const SimTK::Real height = pos[1];
-        const SimTK::Real velNormal = vel[1];
-        // TODO should project vel into ground.
-        const SimTK::Real velSliding = vel[0];
-
-        // The Appendix of Esposito and Miller 2018 uses height above ground,
-        // but we use penetration depth, so some signs are reversed.
-
-        // Normal force.
-        const SimTK::Real depth = 0 - height;
-        const SimTK::Real depthRate = 0 - velNormal;
-        const SimTK::Real a = get_stiffness();
-        const SimTK::Real b = get_dissipation();
-
-        // dy approaches 0 as y -> inf
-        //               depth as y -> -inf
-        const SimTK::Real dy =
-                0.5 * (sqrt(square(depth) + m_depthOffsetSquared) + depth);
-        const SimTK::Real voidStiffness = 1.0; // N/m
-        force[1] = a * square(dy) * (1 + b * depthRate) + voidStiffness * depth;
-
-        // Friction (TODO handle 3D).
-        const SimTK::Real velSlidingScaling =
-                get_tangent_velocity_scaling_factor();
-        const SimTK::Real transition = tanh(velSliding / velSlidingScaling);
-
-        const SimTK::Real frictionForce =
-                -transition * get_friction_coefficient() * force[1];
-        force[0] = frictionForce;
-        return force;
-    }
-
-    // TODO potential energy.
-private:
-    void constructProperties() {
-        constructProperty_stiffness(2.0e6);
-        constructProperty_dissipation(1.0);
-        constructProperty_friction_coefficient(1.0);
-        constructProperty_tangent_velocity_scaling_factor(0.05);
-        constructProperty_depth_offset(0.001);
-    }
-    SimTK::Real m_depthOffsetSquared;
 };
 
 } // namespace OpenSim
