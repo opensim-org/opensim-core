@@ -974,13 +974,6 @@ jobs:
         zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}-ubuntu20.zip opensim-core-${{ steps.configure.outputs.version }}
         mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
 
-    # - name: Test Python bindings
-    #   run: |
-    #      export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/opensim_dependencies_install/simbody/lib
-    #      cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-    #      # Run the python tests, verbosely.
-    #      python3 -m unittest discover --start-directory opensim/tests --verbose
-
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
       with:
@@ -1086,12 +1079,6 @@ jobs:
         mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure.outputs.version }}
         zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}-ubuntu22.zip opensim-core-${{ steps.configure.outputs.version }}
         mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
-
-    # - name: Test Python bindings
-    #   run: |
-    #     cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-    #     # Run the python tests, verbosely.
-    #     python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
