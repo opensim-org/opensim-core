@@ -186,19 +186,38 @@ AddDependency(NAME       ezc3d
               GIT_TAG    Release_1.5.8
               CMAKE_ARGS -DBUILD_EXAMPLE:BOOL=OFF)
 
-set(SIMBODY_C_FLAGS "${CMAKE_C_FLAGS}")
-set(SIMBODY_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-# set(SIMBODY_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    # Enable Link-Time Optimization (LTO) when building with Clang for Enzyme.
-    set(SIMBODY_C_FLAGS "${SIMBODY_C_FLAGS} -flto")
-    set(SIMBODY_CXX_FLAGS "${SIMBODY_CXX_FLAGS} -flto")
-    # TODO not working, had to manually override "ld" using symlinks.
-    # set(SIMBODY_SHARED_LINKER_FLAGS "${SIMBODY_SHARED_LINKER_FLAGS} -fuse-ld=lld")
-    message(STATUS "Enabling LTO for Clang.")
-endif()
+# set(SIMBODY_C_FLAGS "${CMAKE_C_FLAGS}")
+# set(SIMBODY_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+# # set(SIMBODY_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
+# if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+#     # Enable Link-Time Optimization (LTO) when building with Clang for Enzyme.
+#     set(SIMBODY_C_FLAGS "${SIMBODY_C_FLAGS} -flto")
+#     set(SIMBODY_CXX_FLAGS "${SIMBODY_CXX_FLAGS} -flto")
+#     # TODO not working, had to manually override "ld" using symlinks.
+#     # set(SIMBODY_SHARED_LINKER_FLAGS "${SIMBODY_SHARED_LINKER_FLAGS} -fuse-ld=lld")
+#     message(STATUS "Enabling LTO for Clang.")
+# endif()
 
 # set(SIMBODY_EXTRA_CMAKE_ARGS "-DBUILD_STATIC_LIBRARIES:BOOL=ON;-DBUILD_DYNAMIC_LIBRARIES:BOOL=OFF")
+
+# Requires an LLVM (15-18) build located at LLVM_DIR.
+# https://enzyme.mit.edu/Installation/
+ExternalProject_Add(Enzyme
+        GIT_REPOSITORY   https://github.com/EnzymeAD/Enzyme.git
+        GIT_TAG          v0.0.157
+        SOURCE_DIR       ${CMAKE_SOURCE_DIR}/Enzyme
+        TMP_DIR          ${CMAKE_BINARY_DIR}/Enzyme/tmp
+        STAMP_DIR        ${CMAKE_BINARY_DIR}/Enzyme/stamp
+        BINARY_DIR       ${CMAKE_BINARY_DIR}/Enzyme/build
+        INSTALL_DIR      ${CMAKE_INSTALL_PREFIX}/Enzyme
+        CMAKE_ARGS       -S ${CMAKE_SOURCE_DIR}/Enzyme/enzyme
+                         -B ${CMAKE_BINARY_DIR}/Enzyme/build
+        CMAKE_CACHE_ARGS -DLLVM_DIR:PATH=${LLVM_DIR}
+                         -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+                         -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+                         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+                         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+)
 
 AddDependency(NAME       simbody
               DEFAULT    ON

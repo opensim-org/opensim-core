@@ -110,7 +110,7 @@ public:
     MultibodySystemJacobian(const std::string& name, double mass) {
         m_mass = mass;
         casadi::Dict opts;
-        // opts["enable_fd"] = true;
+        opts["enable_fd"] = true;
         this->construct(name, opts);
     }
     virtual ~MultibodySystemJacobian() = default;
@@ -343,34 +343,34 @@ public:
             const double& mass) {
 
         m_jacobian = std::make_unique<MultibodySystemJacobian>(name, m_mass);
-        m_forward = std::make_unique<MultibodySystemForward>(name, m_mass);
+        // m_forward = std::make_unique<MultibodySystemForward>(name, m_mass);
         MultibodySystem::constructFunction(name, enableFiniteDifference, mass);
         
     }
 
-    // bool has_jacobian() const override { return true; }
-    // casadi::Function get_jacobian(const std::string& name,
-    //         const std::vector<std::string>& inames,
-    //         const std::vector<std::string>& onames, 
-    //         const casadi::Dict& opts) const override {
-
-    //     return *m_jacobian;
-    // }
-
-    bool has_forward(casadi_int nfwd) const override { return nfwd==1; }
-    casadi::Function get_forward(casadi_int nfwd, const std::string& name,
+    bool has_jacobian() const override { return true; }
+    casadi::Function get_jacobian(const std::string& name,
             const std::vector<std::string>& inames,
             const std::vector<std::string>& onames, 
             const casadi::Dict& opts) const override {
 
-        return *m_forward;
+        return *m_jacobian;
     }
+
+    // bool has_forward(casadi_int nfwd) const override { return nfwd==1; }
+    // casadi::Function get_forward(casadi_int nfwd, const std::string& name,
+    //         const std::vector<std::string>& inames,
+    //         const std::vector<std::string>& onames, 
+    //         const casadi::Dict& opts) const override {
+
+    //     return *m_forward;
+    // }
         
 private:
     // Must keep a reference alive.
     // https://github.com/casadi/casadi/blob/0d8030d49e895de2dd38cee849c1429c8d50a286/docs/examples/python/callback.py#L252
     std::unique_ptr<MultibodySystemJacobian> m_jacobian;
-    std::unique_ptr<MultibodySystemForward> m_forward;
+    // std::unique_ptr<MultibodySystemForward> m_forward;
 };
 
 class TranscriptionSlidingMass {
@@ -826,14 +826,30 @@ private:
 int main() {
     TranscriptionSlidingMass transcription;
     transcription.setMass(2.0);
-    transcription.setNumMeshIntervals(50);
+    transcription.setNumMeshIntervals(100);
     transcription.setUseSymbolicStateDerivatives(false);
     transcription.setUseMultibodySystemWithJacobian(true);
     transcription.setEnableFiniteDifferences(false);
-    transcription.setHessianApproximation("limited-memory");
+    // transcription.setHessianApproximation("exact");
     transcription.initialize();
     MocoTrajectory solution = transcription.solve();
     solution.write("sandboxAutodiff_solution.sto");
+
+    // Exact Hessian configurations
+    // ----------------------------
+    // 1. symbolic state derivatives w/ FD (~9 ms)
+    // 2. symbolic state derivatives (~10 ms)
+    // 3. callback state derivative w/ Jacobian (~178 ms)
+    // 4. callback state derivative w/ Jacobian, w/ FD (~248 ms)
+    // 5. callback state derivatives w/ FD (~340 ms)
+
+    // Limited-memory Hessian configurations
+    // -------------------------------------
+    // 1. symbolic state derivatives (~32 ms)
+    // 2. symbolic state derivatives w/ FD (~34 ms)
+    // 3. callback state derivative w/ Jacobian (~77 ms)
+    // 4. callback state derivative w/ Jacobian w/ FD (~80 ms)
+    // 4. callback state derivatives w/ FD (~80 ms)
 
     return EXIT_SUCCESS;
 }

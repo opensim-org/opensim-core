@@ -850,6 +850,7 @@ if (OPENSIM_WITH_CASADI OR OPENSIM_WITH_TROPTER)
     endif()
 endif()
 
+set(Enzyme_DIR ${CMAKE_SOURCE_DIR}/dependencies/build/Enzyme/build)
 find_package(Enzyme REQUIRED CONFIG NO_DEFAULT_PATH)
 message("found dir ${Enzyme_DIR}")
 message("found ${Enzyme_FOUND}")
