@@ -26,9 +26,10 @@
 #include "Component.h"
 #include "OpenSim/Common/IO.h"
 #include "XMLDocument.h"
-#include <unordered_map>
-#include <set>
+
 #include <regex>
+#include <unordered_map>
+#include <unordered_set>
 
 using namespace SimTK;
 
@@ -237,19 +238,18 @@ void Component::finalizeFromProperties()
     // Components are unique so they can be used to unambiguously locate
     // and connect all loaded Components. If a duplicate is encountered,
     // it is assigned a unique name.
-    auto subs = getImmediateSubcomponents();
-    std::set<std::string> names{};
+    std::unordered_set<std::string> names;
+    names.reserve(getNumImmediateSubcomponents());
 
-    // increment the count of duplicates to use as a unique suffix
-    int count{ 0 };
-    // temp variable to hold the unique name used to rename a duplicate
-    std::string uniqueName{};
-
-    for (auto& sub : subs) {
-        const std::string& name = sub->getName();
+    std::string uniqueName;
+    forEachImmediateSubcomponent([&](Component& sub)
+    {
+        const std::string& name = sub.getName();
 
         // reset duplicate count and search name
-        count = 0;
+        int count = 0;
+
+        // temp variable to hold the unique name used to rename a duplicate
         uniqueName = name;
 
         // while the name is still not unique keep incrementing the count
@@ -268,13 +268,12 @@ void Component::finalizeFromProperties()
                      getConcreteClassName(), getName(), name, uniqueName);
 
             // Now rename the subcomponent with its verified unique name
-            Component* mutableSub = const_cast<Component *>(sub.get());
-            mutableSub->setName(uniqueName);
+            sub.setName(uniqueName);
         }
 
         // keep track of unique names
         names.insert(uniqueName);
-    }
+    });
     // End of duplicate finding and renaming.
 
     extendFinalizeFromProperties();
@@ -285,18 +284,10 @@ void Component::finalizeFromProperties()
 // Call finalizeFromProperties on all subcomponents
 void Component::componentsFinalizeFromProperties() const
 {
-    for (auto& comp : _memberSubcomponents) {
-        const_cast<Component*>(comp.get())
-            ->finalizeFromProperties();
-    }
-    for (auto& comp : _propertySubcomponents) {
-        const_cast<Component*>(comp.get())
-            ->finalizeFromProperties();
-    }
-    for (auto& comp : _adoptedSubcomponents) {
-        const_cast<Component*>(comp.get())
-            ->finalizeFromProperties();
-    }
+    forEachImmediateSubcomponent([](const Component& subcomponent)
+    {
+        const_cast<Component&>(subcomponent).finalizeFromProperties();
+    });
 }
 
 // Base class implementation of non-virtual finalizeConnections method.
@@ -350,29 +341,19 @@ void Component::finalizeConnections(Component& root)
 void Component::componentsFinalizeConnections(Component& root)
 {
     // enable the subcomponents the opportunity to connect themselves
-    for (unsigned int i = 0; i<_memberSubcomponents.size(); ++i) {
-        _memberSubcomponents[i].upd()->finalizeConnections(root);
-    }
-    for(unsigned int i=0; i<_propertySubcomponents.size(); ++i){
-        _propertySubcomponents[i].get()->finalizeConnections(root);
-    }
-    for (unsigned int i = 0; i<_adoptedSubcomponents.size(); ++i) {
-        _adoptedSubcomponents[i].upd()->finalizeConnections(root);
-    }
+    forEachImmediateSubcomponent([&root](Component& subcomponent)
+    {
+        subcomponent.finalizeConnections(root);
+    });
 }
 
 void Component::clearConnections()
 {
     // First give the subcomponents the opportunity to disconnect themselves
-    for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
-        _memberSubcomponents[i]->clearConnections();
-    }
-    for (unsigned int i = 0; i<_propertySubcomponents.size(); i++){
-        _propertySubcomponents[i]->clearConnections();
-    }
-    for (unsigned int i = 0; i<_adoptedSubcomponents.size(); i++) {
-        _adoptedSubcomponents[i]->clearConnections();
-    }
+    forEachImmediateSubcomponent([](Component& subcomponent)
+    {
+        subcomponent.clearConnections();
+    });
 
     //Now cycle through and disconnect all sockets for this component
     for (auto& it : _socketsTable) {
@@ -442,10 +423,10 @@ void Component::componentsAddToSystem(SimTK::MultibodySystem& system) const
     }
     else if (_orderedSubcomponents.size() == 0) {
         // Otherwise, invoke on all immediate subcomponents in tree order
-        auto mySubcomponents = getImmediateSubcomponents();
-        for (const auto& compRef : mySubcomponents) {
-            compRef->addToSystem(system);
-        }
+        forEachImmediateSubcomponent([&system](const Component& subcomponent)
+        {
+            subcomponent.addToSystem(system);
+        });
     }
     else {
         OPENSIM_THROW_FRMOBJ(Exception,
@@ -464,12 +445,10 @@ void Component::initStateFromProperties(SimTK::State& state) const
 
 void Component::componentsInitStateFromProperties(SimTK::State& state) const
 {
-    for (unsigned int i = 0; i<_memberSubcomponents.size(); ++i)
-        _memberSubcomponents[i]->initStateFromProperties(state);
-    for (unsigned int i = 0; i<_propertySubcomponents.size(); ++i)
-        _propertySubcomponents[i]->initStateFromProperties(state);
-    for (unsigned int i = 0; i<_adoptedSubcomponents.size(); ++i)
-        _adoptedSubcomponents[i]->initStateFromProperties(state);
+    forEachImmediateSubcomponent([&state](const Component& subcomponent)
+    {
+        subcomponent.initStateFromProperties(state);
+    });
 }
 
 void Component::setPropertiesFromState(const SimTK::State& state)
@@ -480,12 +459,10 @@ void Component::setPropertiesFromState(const SimTK::State& state)
 
 void Component::componentsSetPropertiesFromState(const SimTK::State& state)
 {
-    for (unsigned int i = 0; i<_memberSubcomponents.size(); ++i)
-        _memberSubcomponents[i]->setPropertiesFromState(state);
-    for (unsigned int i = 0; i<_propertySubcomponents.size(); ++i)
-        _propertySubcomponents[i]->setPropertiesFromState(state);
-    for (unsigned int i = 0; i<_adoptedSubcomponents.size(); ++i)
-        _adoptedSubcomponents[i]->setPropertiesFromState(state);
+    forEachImmediateSubcomponent([&state](Component& subcomponent)
+    {
+        subcomponent.setPropertiesFromState(state);
+    });
 }
 
 // Base class implementation of virtual method. Note that we're not handling
@@ -739,15 +716,12 @@ int Component::getNumStateVariables() const
 
     //Get the number of state variables added (or exposed) by this Component
     int ns = getNumStateVariablesAddedByComponent();
+
     // And then include the states of its subcomponents
-    for (unsigned int i = 0; i<_memberSubcomponents.size(); i++)
-        ns += _memberSubcomponents[i]->getNumStateVariables();
-
-    for(unsigned int i=0; i<_propertySubcomponents.size(); i++)
-        ns += _propertySubcomponents[i]->getNumStateVariables();
-
-    for (unsigned int i = 0; i<_adoptedSubcomponents.size(); i++)
-        ns += _adoptedSubcomponents[i]->getNumStateVariables();
+    forEachImmediateSubcomponent([&ns](const Component& subcomponent)
+    {
+        ns += subcomponent.getNumStateVariables();
+    });
 
     return ns;
 }
@@ -1480,22 +1454,60 @@ void Component::adoptSubcomponent(Component* subcomponent)
 std::vector<SimTK::ReferencePtr<const Component>>
     Component::getImmediateSubcomponents() const
 {
-    std::vector<SimTK::ReferencePtr<const Component>> mySubcomponents;
-    for (auto& compRef : _memberSubcomponents) {
-        mySubcomponents.push_back(
-            SimTK::ReferencePtr<const Component>(compRef.get()) );
-    }
-    for (auto& compRef : _propertySubcomponents) {
-        mySubcomponents.push_back(
-            SimTK::ReferencePtr<const Component>(compRef.get()) );
-    }
-    for (auto& compRef : _adoptedSubcomponents) {
-        mySubcomponents.push_back(
-            SimTK::ReferencePtr<const Component>(compRef.get()) );
-    }
-    return mySubcomponents;
+    std::vector<SimTK::ReferencePtr<const Component>> rv;
+    rv.reserve(getNumImmediateSubcomponents());
+    forEachImmediateSubcomponent([&rv](const Component& c)
+    {
+        rv.emplace_back(&c);
+    });
+    return rv;
 }
 
+void Component::forEachImmediateSubcomponent(const std::function<void(const Component&)> callback) const
+{
+    for (unsigned int i = 0; i < _memberSubcomponents.size(); ++i) {
+        callback(*_memberSubcomponents[i]);
+    }
+    for (unsigned int i = 0; i < _propertySubcomponents.size(); ++i) {
+        callback(*_propertySubcomponents[i]);
+    }
+    for (unsigned int i = 0; i < _adoptedSubcomponents.size(); ++i) {
+        callback(*_adoptedSubcomponents[i]);
+    }
+}
+
+void Component::forEachImmediateSubcomponent(const std::function<void(Component&)> callback)
+{
+    for (unsigned int i = 0; i < _memberSubcomponents.size(); ++i) {
+        callback(*_memberSubcomponents[i]);
+    }
+    for (unsigned int i = 0; i < _propertySubcomponents.size(); ++i) {
+        callback(*_propertySubcomponents[i]);
+    }
+    for (unsigned int i = 0; i < _adoptedSubcomponents.size(); ++i) {
+        callback(*_adoptedSubcomponents[i]);
+    }
+}
+
+const Component* Component::findImmediateSubcomponentByName(const std::string& name) const
+{
+    for (const auto& memberSubcomponent : _memberSubcomponents) {
+        if (memberSubcomponent->getName() == name) {
+            return memberSubcomponent.get();
+        }
+    }
+    for (const auto& propertySubcomponent : _propertySubcomponents) {
+        if (propertySubcomponent->getName() == name) {
+            return propertySubcomponent.get();
+        }
+    }
+    for (const auto& adoptedSubcomponent : _adoptedSubcomponents) {
+        if (adoptedSubcomponent->getName() == name) {
+            return adoptedSubcomponent.get();
+        }
+    }
+    return nullptr;
+}
 
 size_t Component::getNumMemberSubcomponents() const
 {
@@ -1547,8 +1559,8 @@ getStateVariableSystemIndex(const std::string& stateVariableName) const
     // Otherwise we have to search through subcomponents
     SimTK::SystemYIndex yix;
 
-    for(unsigned int i = 0; i < _propertySubcomponents.size(); ++i) {
-        yix = _propertySubcomponents[i]->getStateVariableSystemIndex(stateVariableName);
+    for (const auto& propertySubcomponent : _propertySubcomponents) {
+        yix = propertySubcomponent->getStateVariableSystemIndex(stateVariableName);
         if(yix.isValid()){
             return yix;
         }
@@ -1620,7 +1632,21 @@ initializeDiscreteVariableIndexes(const std::string& dvName,
     it->second.dvIndex = dvIndex;
 }
 
+const Component* Component::traversePathToComponent(const ComponentPath& path) const
+{
+    const Component* current = path.isAbsolute() ? &getRoot() : this;
+    const size_t numPathLevels = path.getNumPathLevels();
 
+    for (size_t i = 0; current && i < numPathLevels; ++i) {
+        const auto& pathElement = path.getSubcomponentNameAtLevel(i);
+
+        current = pathElement == ".." ?
+            current->_owner.get() :
+            current->findImmediateSubcomponentByName(pathElement);
+    }
+
+    return current;
+}
 
 Array<std::string> Component::
 getStateVariableNamesAddedByComponent() const
@@ -2048,15 +2074,10 @@ void Component::initComponentTreeTraversal(const Component &root) const {
     }
 
     // recurse to handle children of subcomponents
-    for (unsigned int i = 0; i < nmsc; ++i) {
-        _memberSubcomponents[i]->initComponentTreeTraversal(root);
-    }
-    for (unsigned int i = 0; i < npsc; ++i) {
-        _propertySubcomponents[i]->initComponentTreeTraversal(root);
-    }
-    for (unsigned int i = 0; i < nasc; ++i) {
-        _adoptedSubcomponents[i]->initComponentTreeTraversal(root);
-    }
+    forEachImmediateSubcomponent([&root](const Component& c)
+    {
+        c.initComponentTreeTraversal(root);
+    });
 }
 
 

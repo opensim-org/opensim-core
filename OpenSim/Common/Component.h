@@ -51,9 +51,12 @@
 #include "OpenSim/Common/ComponentSocket.h"
 #include "OpenSim/Common/Object.h"
 #include "simbody/internal/MultibodySystem.h"
-#include <unordered_map>
 
 #include <OpenSim/Common/osimCommonDLL.h>
+
+#include <functional>
+#include <unordered_map>
+#include <utility>
 
 namespace OpenSim {
 
@@ -2848,6 +2851,25 @@ protected:
     std::vector<SimTK::ReferencePtr<const Component>>
         getImmediateSubcomponents() const;
 
+private:
+    /**
+     * Calls `callback` with a reference to each immediate subcomponent of this `Component`.
+     *
+     * @param callback A function that's called with a reference to each immediate subcomponent
+     *                 of this `Component`.
+     */
+    void forEachImmediateSubcomponent(const std::function<void(const Component&)> callback) const;
+    void forEachImmediateSubcomponent(const std::function<void(Component&)> callback);
+
+    /**
+     * Returns the first immediate subcomponent of this component with the given
+     * name, or `nullptr` if no component could be found.
+     *
+     * @param name The name of the immediate subcomponent to search for.
+     */
+    const Component* findImmediateSubcomponentByName(const std::string& name) const;
+protected:
+
     /** @name  Component Extension Interface
     The interface ensures that deserialization, resolution of inter-connections,
     and handling of dependencies are performed systematically and prior to
@@ -3537,48 +3559,12 @@ public:
 
 protected:
 
+    const Component* traversePathToComponent(const ComponentPath&) const;
+
     template<class C>
-    const C* traversePathToComponent(ComponentPath path) const
+    const C* traversePathToComponent(const ComponentPath& path) const
     {
-        // Get rid of all the ".."'s that are not at the front of the path.
-        path.trimDotAndDotDotElements();
-
-        // Move up either to the root component or just enough to resolve all
-        // the ".."'s.
-        size_t iPathEltStart = 0u;
-        const Component* current = this;
-        if (path.isAbsolute()) {
-            current = &current->getRoot();
-        } else {
-            while (iPathEltStart < path.getNumPathLevels() &&
-                    path.getSubcomponentNameAtLevel(iPathEltStart) == "..") {
-                // The path sends us up farther than the root.
-                if (!current->hasOwner()) return nullptr;
-                current = &current->getOwner();
-                ++iPathEltStart;
-            }
-        }
-
-        using RefComp = SimTK::ReferencePtr<const Component>;
-
-        // Skip over the root component name.
-        for (size_t i = iPathEltStart; i < path.getNumPathLevels(); ++i) {
-            // At this depth in the tree, is there a component whose name
-            // matches the corresponding path element?
-            const auto& currentPathElement =
-                path.getSubcomponentNameAtLevel(i);
-            const auto& currentSubs = current->getImmediateSubcomponents();
-            const auto it = std::find_if(currentSubs.begin(), currentSubs.end(),
-                    [currentPathElement](const RefComp& sub)
-                    { return sub->getName() == currentPathElement; });
-            if (it != currentSubs.end())
-                current = it->get();
-            else
-                return nullptr;
-        }
-        if (const C* comp = dynamic_cast<const C*>(current))
-            return comp;
-        return nullptr;
+        return dynamic_cast<const C*>(traversePathToComponent(std::move(path)));
     }
 
 public:
