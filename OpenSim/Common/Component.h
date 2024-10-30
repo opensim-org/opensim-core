@@ -3564,7 +3564,7 @@ protected:
     template<class C>
     const C* traversePathToComponent(const ComponentPath& path) const
     {
-        return dynamic_cast<const C*>(traversePathToComponent(std::move(path)));
+        return dynamic_cast<const C*>(traversePathToComponent(path));
     }
 
 public:
