@@ -42,6 +42,7 @@ v4.6
   configurable output precision. At the highest ouput precsion (~20 significant figures), serialization/deserialization is
   a lossless process. (#3902)
 - Improved `OpenSim::IO::stod` string-to-decimal parsing function by making it not-locale-dependant (#3943, #3924; thanks @alexbeattie42)
+- Improved the performance of `ComponentPath` traversal (e.g. as used by `Component::getComponent`, `Component::getStateVariableValue`)
 
 v4.5.1
 ======
