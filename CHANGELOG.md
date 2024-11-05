@@ -43,6 +43,7 @@ v4.6
   a lossless process. (#3902)
 - Improved `OpenSim::IO::stod` string-to-decimal parsing function by making it not-locale-dependant (#3943, #3924; thanks @alexbeattie42)
 - Improved the performance of `ComponentPath` traversal (e.g. as used by `Component::getComponent`, `Component::getStateVariableValue`)
+- Added `ConstantCurvatureJoint` to the SWIG bindings; it is now available in Matlab and Python (#3957). 
 
 v4.5.1
 ======
