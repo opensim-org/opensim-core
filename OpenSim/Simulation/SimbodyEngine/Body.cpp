@@ -26,16 +26,15 @@
 //=============================================================================
 #include "Body.h"
 #include <OpenSim/Common/ScaleSet.h>
+#include "simbody/internal/MobilizedBody.h"
 
 //=============================================================================
 // STATICS
 //=============================================================================
 using namespace std;
-//using namespace SimTK;
 using namespace OpenSim;
 using SimTK::Mat33;
 using SimTK::Vec3;
-using SimTK::DecorativeGeometry;
 
 //=============================================================================
 // CONSTRUCTOR(S)
@@ -180,6 +179,35 @@ void Body::setInertia(const SimTK::Inertia& inertia)
     upd_inertia()[3] = I[0][1];
     upd_inertia()[4] = I[0][2];
     upd_inertia()[5] = I[1][2];
+}
+
+SimTK::SpatialVec Body::calcMomentumAboutOrigin(const SimTK::State& s) const {
+    const SimTK::MobilizedBody& mobod = getMobilizedBody();
+    return mobod.calcBodyMomentumAboutBodyOriginInGround(s);
+}
+
+SimTK::Vec3 Body::calcAngularMomentumAboutOrigin(const SimTK::State& s) const {
+    return calcMomentumAboutOrigin(s)[0];
+}
+
+SimTK::Vec3 Body::calcLinearMomentumAboutOrigin(const SimTK::State& s) const {
+    return calcMomentumAboutOrigin(s)[1];
+}
+
+SimTK::SpatialVec Body::calcMomentumAboutMassCenter(const SimTK::State& s) const 
+{
+    const SimTK::MobilizedBody& mobod = getMobilizedBody();
+    return mobod.calcBodyMomentumAboutBodyMassCenterInGround(s);
+}
+
+SimTK::Vec3 Body::calcAngularMomentumAboutMassCenter(const SimTK::State& s) const 
+{
+    return calcMomentumAboutMassCenter(s)[0];
+}
+
+SimTK::Vec3 Body::calcLinearMomentumAboutMassCenter(const SimTK::State& s) const 
+{
+    return calcMomentumAboutMassCenter(s)[1];
 }
 
 //==============================================================================
