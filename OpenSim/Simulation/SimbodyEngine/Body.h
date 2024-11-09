@@ -56,6 +56,27 @@ public:
         "The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] "
         "measured about the mass_center and not the body origin.");
 
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(momentum_about_origin, SimTK::SpatialVec,
+            calcMomentumAboutOrigin, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(angular_momentum_about_origin, SimTK::Vec3,
+            calcAngularMomentumAboutOrigin, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(linear_momentum_about_origin, SimTK::Vec3,
+            calcLinearMomentumAboutOrigin, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(momentum_about_mass_center, SimTK::SpatialVec,
+            calcMomentumAboutMassCenter, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(angular_momentum_about_mass_center, SimTK::Vec3,
+            calcAngularMomentumAboutMassCenter, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(linear_momentum_about_mass_center, SimTK::Vec3,
+            calcLinearMomentumAboutMassCenter, SimTK::Stage::Velocity);
+
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
@@ -105,6 +126,31 @@ public:
     void scaleInertialProperties(const SimTK::Vec3& scaleFactors, bool scaleMass = true);
 
     void scaleMass(double aScaleFactor);
+
+    /** Calculate the Body's spatial momentum (angular, linear) measured and 
+    expressed in Ground, but taken about the Body origin. */
+    SimTK::SpatialVec calcMomentumAboutOrigin(const SimTK::State& s) const;
+
+    /** Calculate the Body's angular momentum measured and expressed in Ground,
+    but taken about the Body origin. */
+    SimTK::Vec3 calcAngularMomentumAboutOrigin(const SimTK::State& s) const;
+
+    /** Calculate the Body's linear momentum measured and expressed in Ground,
+    but taken about the Body origin. */
+    SimTK::Vec3 calcLinearMomentumAboutOrigin(const SimTK::State& s) const;
+    
+    /** Calculate the Body's spatial momentum (angular, linear) measured and
+    expressed in Ground, but taken about the Body mass center. */
+    SimTK::SpatialVec calcMomentumAboutMassCenter(const SimTK::State& s) const;
+
+    /** Calculate the Body's angular momentum measured and expressed in Ground,
+    but taken about the Body mass center. */
+    SimTK::Vec3 calcAngularMomentumAboutMassCenter(const SimTK::State& s) const;
+
+    /** Calculate the Body's linear momentum measured and expressed in Ground,
+    but taken about the Body mass center. */
+    SimTK::Vec3 calcLinearMomentumAboutMassCenter(const SimTK::State& s) const;
+
  protected:
 
     // Model component interface.
