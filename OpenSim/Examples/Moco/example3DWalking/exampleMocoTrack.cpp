@@ -41,10 +41,12 @@ void torqueDrivenMarkerTracking() {
     track.setName("torque_driven_marker_tracking");
 
     // Construct a ModelProcessor and add it to the tool. ModelProcessors
-    // accept a base model (or model file) and allow you to easily modify the
+    // accept a base model (or mexaodel file) and allow you to easily modify the
     // model by appending ModelOperators. Operations are performed in the order
     // that they are appended to the model.
     ModelProcessor modelProcessor("subject_walk_scaled.osim");
+    // Replace the PinJoints representing the model's toes with WeldJoints.
+    modelProcessor.append(ModOpReplaceJointsWithWelds({"mtp_r", "mtp_l"}));
     // Add ground reaction external loads in lieu of a ground-contact model.
     modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml") );
     // Remove all the muscles in the model's ForceSet.
@@ -112,6 +114,7 @@ void muscleDrivenStateTracking() {
     // DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
     // parameters.
     ModelProcessor modelProcessor("subject_walk_scaled.osim");
+    modelProcessor.append(ModOpReplaceJointsWithWelds({"mtp_r", "mtp_l"}));
     modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
     modelProcessor.append(ModOpIgnoreTendonCompliance());
     modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
@@ -210,6 +213,7 @@ void muscleDrivenJointMomentTracking() {
 
     // Construct a ModelProcessor and set it on the tool. 
     ModelProcessor modelProcessor("subject_walk_scaled.osim");
+    modelProcessor.append(ModOpReplaceJointsWithWelds({"mtp_r", "mtp_l"}));
     modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
     modelProcessor.append(ModOpIgnoreTendonCompliance());
     modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());

@@ -42,6 +42,11 @@ def torqueDrivenMarkerTracking():
     # appended to the model.
     # Create the base Model by passing in the model file.
     modelProcessor = osim.ModelProcessor("subject_walk_scaled.osim")
+    # Replace the PinJoints representing the model's toes with WeldJoints.
+    jointsToWeld = osim.StdVectorString()
+    jointsToWeld.append("mtp_r")
+    jointsToWeld.append("mtp_l")
+    modelProcessor.append(osim.ModOpReplaceJointsWithWelds(jointsToWeld))
     # Add ground reaction external loads in lieu of a ground-contact model.
     modelProcessor.append(osim.ModOpAddExternalLoads("grf_walk.xml"))
     # Remove all the muscles in the model's ForceSet.
@@ -104,6 +109,10 @@ def muscleDrivenStateTracking():
     # DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
     # parameters.
     modelProcessor = osim.ModelProcessor("subject_walk_scaled.osim")
+    jointsToWeld = osim.StdVectorString()
+    jointsToWeld.append("mtp_r")
+    jointsToWeld.append("mtp_l")
+    modelProcessor.append(osim.ModOpReplaceJointsWithWelds(jointsToWeld))
     modelProcessor.append(osim.ModOpAddExternalLoads("grf_walk.xml"))
     modelProcessor.append(osim.ModOpIgnoreTendonCompliance())
     modelProcessor.append(osim.ModOpReplaceMusclesWithDeGrooteFregly2016())
@@ -198,6 +207,10 @@ def muscleDrivenJointMomentTracking():
 
     # Construct a ModelProcessor and set it on the tool.
     modelProcessor = osim.ModelProcessor('subject_walk_scaled.osim')
+    jointsToWeld = osim.StdVectorString()
+    jointsToWeld.append("mtp_r")
+    jointsToWeld.append("mtp_l")
+    modelProcessor.append(osim.ModOpReplaceJointsWithWelds(jointsToWeld))
     modelProcessor.append(osim.ModOpAddExternalLoads('grf_walk.xml'))
     modelProcessor.append(osim.ModOpIgnoreTendonCompliance())
     modelProcessor.append(osim.ModOpReplaceMusclesWithDeGrooteFregly2016())

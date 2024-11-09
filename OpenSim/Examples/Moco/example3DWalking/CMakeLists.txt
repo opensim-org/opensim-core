@@ -10,7 +10,7 @@ set(EXAMPLE_MOCO_TRACK_FILES
         README.txt)
 
 OpenSimAddExampleCXX(NAME example3DWalking SUBDIR Moco
-        EXECUTABLES exampleMocoTrack exampleMocoInverse
+        EXECUTABLES exampleMocoTrack exampleMocoInverse example3DWalking
         RESOURCES "${EXAMPLE_MOCO_TRACK_FILES}")
 
 file(COPY ${EXAMPLE_MOCO_TRACK_FILES}

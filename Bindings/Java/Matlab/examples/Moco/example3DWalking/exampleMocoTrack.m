@@ -57,6 +57,11 @@ track.setName("torque_driven_marker_tracking");
 % appended to the model.
 % Create the base Model by passing in the model file.
 modelProcessor = ModelProcessor("subject_walk_scaled.osim");
+% Replace the PinJoints representing the model's toes with WeldJoints.
+jointsToWeld = StdVectorString();
+jointsToWeld.add("mtp_r");
+jointsToWeld.add("mtp_l");
+modelProcessor.append(ModOpReplaceJointsWithWelds(jointsToWeld));
 % Add ground reaction external loads in lieu of a ground-contact model.
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
 % Remove all the muscles in the model's ForceSet.
@@ -135,6 +140,10 @@ track.setName("muscle_driven_state_tracking");
 % DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
 % parameters.
 modelProcessor = ModelProcessor("subject_walk_scaled.osim");
+jointsToWeld = StdVectorString();
+jointsToWeld.add("mtp_r");
+jointsToWeld.add("mtp_l");
+modelProcessor.append(ModOpReplaceJointsWithWelds(jointsToWeld));
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
 modelProcessor.append(ModOpIgnoreTendonCompliance());
 modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
@@ -238,6 +247,10 @@ track.setName("muscle_driven_joint_moment_tracking");
 
 % Construct a ModelProcessor and set it on the tool.
 modelProcessor = ModelProcessor("subject_walk_scaled.osim");
+jointsToWeld = StdVectorString();
+jointsToWeld.add("mtp_r");
+jointsToWeld.add("mtp_l");
+modelProcessor.append(ModOpReplaceJointsWithWelds(jointsToWeld));
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
 modelProcessor.append(ModOpIgnoreTendonCompliance());
 modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
