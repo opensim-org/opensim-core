@@ -146,7 +146,7 @@ jobs:
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
-        distribution: 'coretto' # See 'Supported distributions' for available options
+        distribution: 'corretto' # See 'Supported distributions' for available options
         java-version: '8'
         
     - name: Install SWIG
