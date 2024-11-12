@@ -143,6 +143,12 @@ jobs:
       #Need numpy to use SWIG numpy typemaps.
       run: python3 -m pip install numpy==1.25
 
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'coretto' # See 'Supported distributions' for available options
+        java-version: '8'
+        
     - name: Install SWIG
       run: |
         choco install swig --version 4.1.1 --yes --limit-output --allow-downgrade
