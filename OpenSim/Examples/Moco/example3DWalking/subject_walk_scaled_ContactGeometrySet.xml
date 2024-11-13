@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="40600">
-	<ContactGeometrySet name="contact_geometry_set">
+	<ContactGeometrySet name="contactgeometryset">
 		<objects>
             <ContactHalfSpace name="floor">
                 <!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
