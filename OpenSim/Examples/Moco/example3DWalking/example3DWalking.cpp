@@ -146,16 +146,16 @@ int main() {
     // Add strong actuators to the model.
     for (const auto& side : {"l", "r"}) {
         addCoordinateActuator(feetModel, 
-                fmt::format("calcn_{}_tx", side), 1000);
+                fmt::format("calcn_{}_tx", side), 2000);
         addCoordinateActuator(feetModel, 
                 fmt::format("calcn_{}_ty", side), 3000);
         addCoordinateActuator(feetModel, 
-                fmt::format("calcn_{}_tx", side), 1000);
+                fmt::format("calcn_{}_tx", side), 2000);
         for (const auto& axis : {"x", "y", "z"}) {
             addCoordinateActuator(feetModel, 
-                fmt::format("calcn_{}_r{}", side, axis), 500);
+                fmt::format("calcn_{}_r{}", side, axis), 1000);
         }
-        addCoordinateActuator(feetModel, fmt::format("mtp_angle_{}", side), 100);
+        addCoordinateActuator(feetModel, fmt::format("mtp_angle_{}", side), 250);
     }
 
     // Print the model to a file.
@@ -207,12 +207,14 @@ int main() {
     track.setStatesReference( 
             TableProcessor(feetCoordinateReference) |
             TabOpLowPassFilter(20));
-    track.set_states_global_tracking_weight(0.1);
+    track.set_states_global_tracking_weight(1.0);
     MocoWeightSet stateWeightSet;
-    stateWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/value", 1e-3});
-    stateWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/speed", 1e-3});
-    stateWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/value", 1e-3});
-    stateWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/speed", 1e-3});
+    stateWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/value", 1e-2});
+    stateWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/speed", 1e-2});
+    stateWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/value", 1e-2});
+    stateWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/speed", 1e-2});
+    stateWeightSet.cloneAndAppend({"/jointset/calcn_r/calcn_r_ty/value", 0.0});
+    stateWeightSet.cloneAndAppend({"/jointset/calcn_l/calcn_l_ty/value", 0.0});
     track.set_states_weight_set(stateWeightSet);
     track.set_track_reference_position_derivatives(true);
     track.set_apply_tracked_states_to_guess(true);
@@ -229,7 +231,7 @@ int main() {
 
     // Add the contact tracking goal.
     auto* contactTracking = 
-            problem.addGoal<MocoContactTrackingGoal>("contact_tracking", 1e3);
+            problem.addGoal<MocoContactTrackingGoal>("contact_tracking", 1e-2);
     contactTracking->setExternalLoadsFile("grf_walk.xml");
     MocoContactTrackingGoalGroup leftContactGroup(
             {"contactHeel_l", "contactLateralRearfoot_l", 
@@ -243,22 +245,6 @@ int main() {
              "Right_GRF",
              {"contactLateralToe_r", "contactMedialToe_r"});
     contactTracking->addContactGroup(rightContactGroup);
-    contactTracking->setNormalizeTrackingError(true);
-
-    // Minimize foot accelerations.
-    // double accelWeight = 1e-2;
-    // auto* leftFootAccelGoal = 
-    //         problem.addGoal<MocoOutputGoal>("left_foot_acceleration", accelWeight);
-    // leftFootAccelGoal->setOutputPath("/bodyset/calcn_l|acceleration");
-    // auto* rightFootAccelGoal = 
-    //         problem.addGoal<MocoOutputGoal>("right_foot_acceleration", accelWeight);
-    // rightFootAccelGoal->setOutputPath("/bodyset/calcn_r|acceleration");
-    // auto* leftToesAccelGoal = 
-    //         problem.addGoal<MocoOutputGoal>("left_toes_acceleration", accelWeight);
-    // leftToesAccelGoal->setOutputPath("/bodyset/toes_l|acceleration");
-    // auto* rightToesAccelGoal = 
-    //         problem.addGoal<MocoOutputGoal>("right_toes_acceleration", accelWeight);
-    // rightToesAccelGoal->setOutputPath("/bodyset/toes_r|acceleration");
 
     // Set coordinate bounds.
     problem.setStateInfoPattern(".*/calcn_.*_r.*/value", {-SimTK::Pi, SimTK::Pi});
@@ -269,7 +255,7 @@ int main() {
     MocoCasADiSolver& solver = study.updSolver<MocoCasADiSolver>();
     solver.set_num_mesh_intervals(100);
     solver.set_transcription_scheme("legendre-gauss-radau-3");
-    solver.set_optim_convergence_tolerance(1e-3);
+    solver.set_optim_convergence_tolerance(1e-2);
     solver.set_optim_constraint_tolerance(1e-4);
     solver.set_optim_max_iterations(3000);
 
@@ -291,7 +277,7 @@ int main() {
     STOFileAdapter::write(externalForcesTableFlat,
             "feet_tracking_solution_ground_reactions.sto");
 
-    // study.visualize(solution);
+    study.visualize((solution));
 
     return EXIT_SUCCESS;
 }
