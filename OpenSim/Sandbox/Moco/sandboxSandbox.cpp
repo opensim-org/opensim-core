@@ -21,20 +21,39 @@
 
 #include <OpenSim/Moco/osimMoco.h>
 #include <casadi/casadi.hpp>
+#include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Simulation/VisualizerUtilities.h>
 
 using namespace OpenSim;
 using namespace casadi;
+
+using ContactForceRefs = 
+            std::vector<SimTK::ReferencePtr<const SmoothSphereHalfSpaceForce>>;
+
+void calcContactForces(const Model& model, SimTK::State& state, 
+        const SimTK::Vector& q, const SimTK::Vector& u,
+        const ContactForceRefs& contactForcesLeft,
+        const ContactForceRefs& contactForcesRight,
+        SimTK::Vec3& forcesLeft, SimTK::Vec3& forcesRight) {
+
+    state.updQ() = q;
+    state.updU() = u;
+    model.realizeVelocity(state);
+    for (const auto& contactForce : contactForcesLeft) {
+        forcesLeft += contactForce->getSphereForce(state)[1];
+    }
+    for (const auto& contactForce : contactForcesRight) {
+        forcesRight += contactForce->getSphereForce(state)[1];
+    }
+}
 
 class ContactTrackingObjective : public Callback {
 public:
     // Constructor
     ContactTrackingObjective(Model model,
-            TimeSeriesTable grfs,
-            TimeSeriesTable coordinates,
+            TimeSeriesTable grfs, TimeSeriesTable states,
             const std::vector<std::string>& contactForcesLeft,
-            const std::vector<std::string>& contactForcesRight,
-            const std::vector<std::string>& grfsLeft,
-            const std::vector<std::string>& grfsRight) {
+            const std::vector<std::string>& contactForcesRight) {
 
         // Model.
         m_model = std::move(model);
@@ -54,24 +73,10 @@ public:
 
         // Ground reaction forces.
         m_grfs = GCVSplineSet(grfs);
-        for (const auto& grf : grfsLeft) {
-            m_grfIndexesLeft.push_back(
-                static_cast<int>(grfs.getColumnIndex(grf)));
-        }
-        for (const auto& grf : grfsRight) {
-            m_grfIndexesRight.push_back(
-                static_cast<int>(grfs.getColumnIndex(grf)));
-        }
 
-        // Coordinates.
-        m_coordinates = GCVSplineSet(coordinates);
-        auto coordinateRefs = m_model.getCoordinatesInMultibodyTreeOrder();
-        for (int i = 0; i < (int)coordinateRefs.size(); ++i) {
-            std::string valuePath = fmt::format("{}/value", 
-                    coordinateRefs[i]->getAbsolutePathString());
-            m_coordinateMap[i] = (int)coordinates.getColumnIndex(valuePath);
-        }
-        
+        // States.
+        m_states = GCVSplineSet(states);
+
         casadi::Dict opts;
         opts["enable_fd"] = true;
         this->construct("objective", opts);
@@ -91,6 +96,14 @@ public:
 
     void setSpeedWeight(double weight) {
         m_speedWeight = weight;
+    }
+
+    const ContactForceRefs& getContactForcesLeft() const {
+        return m_contactForcesLeft;
+    }
+
+    const ContactForceRefs& getContactForcesRight() const {
+        return m_contactForcesRight;
     }
 
     // Number of inputs and outputs
@@ -120,14 +133,11 @@ public:
         SimTK::Vector q(m_state.getNQ(), arg.at(0)->data(), true);
         SimTK::Vector u(m_state.getNU(), arg.at(1)->data(), true);
 
+        SimTK::Vec3 errorsLeft(0);
+        SimTK::Vec3 errorsRight(0);
         m_state.updQ() = q;
         m_state.updU() = u;
         m_model.realizeVelocity(m_state);
-
-
-        // Force errors.
-        SimTK::Vec3 errorsLeft(0.0);
-        SimTK::Vec3 errorsRight(0.0);
         for (const auto& contactForce : m_contactForcesLeft) {
             errorsLeft += contactForce->getSphereForce(m_state)[1];
         }
@@ -135,24 +145,30 @@ public:
             errorsRight += contactForce->getSphereForce(m_state)[1];
         }
 
-        errorsLeft[0] -= m_grfs.get(m_grfIndexesLeft[0]).calcValue(m_time);
-        errorsLeft[1] -= m_grfs.get(m_grfIndexesLeft[1]).calcValue(m_time);
-        errorsLeft[2] -= m_grfs.get(m_grfIndexesLeft[2]).calcValue(m_time);
-        errorsRight[0] -= m_grfs.get(m_grfIndexesRight[0]).calcValue(m_time);
-        errorsRight[1] -= m_grfs.get(m_grfIndexesRight[1]).calcValue(m_time);
-        errorsRight[2] -= m_grfs.get(m_grfIndexesRight[2]).calcValue(m_time);
+        // Force errors.
+        errorsLeft[0] -= m_grfs.get(0).calcValue(m_time);
+        errorsLeft[1] -= m_grfs.get(1).calcValue(m_time);
+        errorsLeft[2] -= m_grfs.get(2).calcValue(m_time);
+        errorsRight[0] -= m_grfs.get(3).calcValue(m_time);
+        errorsRight[1] -= m_grfs.get(4).calcValue(m_time);
+        errorsRight[2] -= m_grfs.get(5).calcValue(m_time);
 
         // Coordinate errors.
         double coordinateError = 0.0;
-        for (const auto& kv : m_coordinateMap) {
-            double error = q[kv.first] - 
-                           m_coordinates.get(kv.second).calcValue(m_time);
-            coordinateError += error * error;
+        int istate = 0;
+        for (int iq = 0; iq < m_state.getNQ(); ++iq) {
+            double error = q[iq] - m_states.get(istate).calcValue(m_time);
+            coordinateError += m_coordinateWeight * error * error;
+            istate++;
+        }
+        for (int iu = 0; iu < m_state.getNU(); ++iu) {
+            double error = u[iu] - m_states.get(istate).calcValue(m_time);
+            coordinateError += m_speedWeight * error * error;
+            istate++;
         }
            
-        DM f = m_forceWeight * (errorsLeft.normSqr() * errorsRight.normSqr()) + 
-               m_coordinateWeight * coordinateError +
-               m_speedWeight * u.normSqr();
+        DM f = m_forceWeight * (errorsLeft.normSqr() + errorsRight.normSqr()) + 
+               (coordinateError / (m_state.getNQ() + m_state.getNU()));
         return {f};
     }
 
@@ -162,16 +178,10 @@ private:
     SimTK::Vector m_time;
 
     GCVSplineSet m_grfs;
-    std::vector<int> m_grfIndexesLeft;
-    std::vector<int> m_grfIndexesRight;
+    GCVSplineSet m_states;
 
-    using ContactForceRefs = 
-            std::vector<SimTK::ReferencePtr<const SmoothSphereHalfSpaceForce>>;
     ContactForceRefs m_contactForcesLeft;
     ContactForceRefs m_contactForcesRight;
-
-    GCVSplineSet m_coordinates;
-    std::unordered_map<int, int> m_coordinateMap;
 
     double m_forceWeight = 1.0;
     double m_coordinateWeight = 1.0;
@@ -179,7 +189,7 @@ private:
 };
 
 SimTK::RowVector solveContactTrackingProblem(ContactTrackingObjective& objfun, 
-        double time) {
+        double time, const TimeSeriesTable& states) {
 
     // The number of states. For each foot, we have a 6 DOF joint between the 
     // ground and the calcaneus, and a 1 DOF joint between the calcaneus and
@@ -191,29 +201,46 @@ SimTK::RowVector solveContactTrackingProblem(ContactTrackingObjective& objfun,
     // Define the optimization variables.
     MX q = MX::sym("q", nq, 1); // coordinates
     MX u = MX::sym("u", nu, 1); // speeds
-    MX x = vertcat(q, u);    // states
+    MX x = vertcat(q, u);       // states
 
     // Objective function
     objfun.setTime(time);
-    objfun.setForceWeight(1.0);
-    objfun.setCoordinateWeight(10.0);
-    objfun.setSpeedWeight(1e-3);
+    objfun.setForceWeight(1e-4);
+    objfun.setCoordinateWeight(0.01);
+    objfun.setSpeedWeight(0.01);
 
     MXVector costOut;
     objfun.call({q, u}, costOut);
     MX f = MX::sum1(costOut.at(0));
 
-    // Create the NLP
+    // Create the NLP.
     MXDict nlp;
     nlp.emplace(std::make_pair("x", x));
     nlp.emplace(std::make_pair("f", f));
+    casadi::Dict opts;
+    casadi::Dict optsIpopt;
+    double tol = 1e-3;
+    optsIpopt["tol"] = tol;
+    optsIpopt["dual_inf_tol"] = tol;
+    optsIpopt["compl_inf_tol"] = tol;
+    optsIpopt["acceptable_tol"] = tol;
+    optsIpopt["acceptable_dual_inf_tol"] = tol;
+    optsIpopt["acceptable_compl_inf_tol"] = tol;
+    opts["ipopt"] = optsIpopt;
+    casadi::Function solver = nlpsol("solver", "ipopt", nlp, opts);
 
-    // Allocate an NLP solver and buffers
-    casadi::Function solver = nlpsol("solver", "ipopt", nlp);
-
-    std::vector<double> lbx(nq+nu, -std::numeric_limits<double>::infinity());
-    std::vector<double> ubx(nq+nu, std::numeric_limits<double>::infinity());
-    std::vector<double> x0(nq+nu, 0.0);
+    // Set the bounds and initial guess.
+    SimTK::RowVector row = states.getNearestRow(time);
+    std::vector<double> x0;
+    std::vector<double> lbx;
+    std::vector<double> ubx;
+    for (int i = 0; i < row.size(); ++i) {
+        x0.push_back(row[i]);
+        lbx.push_back(-std::numeric_limits<double>::infinity());
+        ubx.push_back(std::numeric_limits<double>::infinity());
+        // lbx.push_back(row[i] - 0.25*std::abs(row[i]));
+        // ubx.push_back(row[i] + 0.25*std::abs(row[i]));
+    }
 
     // Solve the problem
     DMDict input = {{"lbx", lbx},
@@ -221,13 +248,8 @@ SimTK::RowVector solveContactTrackingProblem(ContactTrackingObjective& objfun,
                     {"x0",  x0}};
     DMDict output = solver(input);
 
-    // Print the optimal cost
-    double cost(output.at("f"));
-    std::cout << "optimal cost: " << cost << std::endl;
-
     // Print the optimal solution
     std::vector<double> xopt(output.at("x"));
-    std::cout << "optimal configuration: " << xopt << std::endl;
     SimTK::RowVector solution(nq+nu, xopt.data());
 
     return solution;
@@ -235,45 +257,101 @@ SimTK::RowVector solveContactTrackingProblem(ContactTrackingObjective& objfun,
 
 void contactTracking() {
 
-    // Load the "feet" model.
+    // Load the input data.
     Model model("feet.osim");
+    model.initSystem();
     TimeSeriesTable grfs("grf_walk.mot");
-    TimeSeriesTable coordinates("feet_coordinate_reference.sto");
+    TableProcessor tableProcessor = 
+            TableProcessor("feet_coordinate_reference.sto") |
+            TabOpAppendCoordinateValueDerivativesAsSpeeds();
+    TimeSeriesTable coordinates = tableProcessor.process(&model);
 
-    std::vector<std::string> contactForcesLeft = {"contactHeel_r", 
+    // Define the contact forces.
+    std::vector<std::string> contactForcesRight = {"contactHeel_r", 
             "contactLateralRearfoot_r", "contactLateralMidfoot_r", 
             "contactMedialMidfoot_r", "contactLateralToe_r", 
             "contactMedialToe_r"};
-    std::vector<std::string> contactForcesRight = {"contactHeel_l", 
+    std::vector<std::string> contactForcesLeft = {"contactHeel_l", 
             "contactLateralRearfoot_l", "contactLateralMidfoot_l", 
             "contactMedialMidfoot_l", "contactLateralToe_l", 
             "contactMedialToe_l"};
-    std::vector<std::string> grfsLeft = {"ground_force_l_vx", 
-            "ground_force_l_vy", "ground_force_l_vz"};
-    std::vector<std::string> grfsRight = {"ground_force_r_vx",
+
+    // Sort the ground reaction forces.
+    std::vector<std::string> grfsLabelsInOrder = {"ground_force_l_vx", 
+            "ground_force_l_vy", "ground_force_l_vz", "ground_force_r_vx",
             "ground_force_r_vy", "ground_force_r_vz"};
 
-    ContactTrackingObjective objfun(model, grfs, coordinates, 
-            contactForcesLeft, contactForcesRight, grfsLeft, grfsRight);
+    TimeSeriesTable grfsInOrder(grfs.getIndependentColumn());
+    for (const auto& label : grfsLabelsInOrder) {
+        grfsInOrder.appendColumn(label, grfs.getDependentColumn(label));
+    }
 
-    
-    TimeSeriesTable solutionTable;
-
-    std::vector<std::string> columnLabels;
+    std::vector<std::string> stateLabelsInOrder;
     auto coordinateRefs = model.getCoordinatesInMultibodyTreeOrder();
     for (int i = 0; i < (int)coordinateRefs.size(); ++i) {
         std::string valuePath = fmt::format("{}/value", 
                 coordinateRefs[i]->getAbsolutePathString());
-        columnLabels.push_back(valuePath);
+        stateLabelsInOrder.push_back(valuePath);
     }
     for (int i = 0; i < (int)coordinateRefs.size(); ++i) {
         std::string speedPath = fmt::format("{}/speed", 
                 coordinateRefs[i]->getAbsolutePathString());
-        columnLabels.push_back(speedPath);
+        stateLabelsInOrder.push_back(speedPath);
     }
 
-    SimTK::RowVector row = solveContactTrackingProblem(objfun, 0.5);
+    TimeSeriesTable statesInOrder(coordinates.getIndependentColumn());
+    for (const auto& label : stateLabelsInOrder) {
+        statesInOrder.appendColumn(label, 
+                coordinates.getDependentColumn(label));
+    }
 
+    ContactTrackingObjective objfun(model, grfsInOrder, statesInOrder, 
+            contactForcesLeft, contactForcesRight);
+
+
+    const auto& times = coordinates.getIndependentColumn();
+
+
+    
+    TimeSeriesTable statesSolutionTable;
+    TimeSeriesTable forcesSolutionTable;
+
+    SimTK::State state = model.initSystem();
+    for (int itime = 50; itime < 100; ++itime) {
+        double time = times[itime];
+        SimTK::RowVector row = solveContactTrackingProblem(objfun, time, 
+                statesInOrder);
+        statesSolutionTable.appendRow(time, row);
+
+        SimTK::Vector q(state.getNQ(), row.getContiguousScalarData(), true);
+        SimTK::Vector u(state.getNU(), 
+                row.getContiguousScalarData() + state.getNQ(), true);
+
+        SimTK::Vec3 forcesLeft(0);
+        SimTK::Vec3 forcesRight(0);
+        calcContactForces(model, state, q, u, 
+                objfun.getContactForcesLeft(), objfun.getContactForcesRight(),
+                forcesLeft, forcesRight);
+
+        SimTK::RowVector forcesRow(6);
+        forcesRow[0] = forcesLeft[0];
+        forcesRow[1] = forcesLeft[1];
+        forcesRow[2] = forcesLeft[2];
+        forcesRow[3] = forcesRight[0];
+        forcesRow[4] = forcesRight[1];
+        forcesRow[5] = forcesRight[2];
+
+        forcesSolutionTable.appendRow(time, forcesRow);
+    }
+    statesSolutionTable.setColumnLabels(stateLabelsInOrder);
+    statesSolutionTable.addTableMetaData<std::string>("inDegrees", "no");
+    STOFileAdapter::write(statesSolutionTable, "contact_initializer_solution_states.sto");
+
+    forcesSolutionTable.setColumnLabels(grfsLabelsInOrder);
+    STOFileAdapter::write(forcesSolutionTable, "contact_initializer_solution_forces.sto");
+
+    VisualizerUtilities::showMotion(model, 
+        TimeSeriesTable("contact_initializer_solution_states.sto"));
 
 }
 
