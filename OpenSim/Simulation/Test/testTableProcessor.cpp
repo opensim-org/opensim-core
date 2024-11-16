@@ -76,3 +76,13 @@ TEST_CASE("TableProcessor") {
         }
     }
 }
+
+TEST_CASE("TabOpLowPassFilter retains original time range") {
+    TimeSeriesTable table(std::vector<double>{1, 2, 3, 4, 5, 6},
+            SimTK::Test::randMatrix(6, 2), std::vector<std::string>{"a", "b"});
+    TableProcessor proc = TableProcessor(table) | TabOpLowPassFilter(6);
+    TimeSeriesTable out = proc.process();
+    CHECK(out.getNumRows() == 6);
+    CHECK(out.getIndependentColumn().front() == 1);
+    CHECK(out.getIndependentColumn().back() == 6);
+}
