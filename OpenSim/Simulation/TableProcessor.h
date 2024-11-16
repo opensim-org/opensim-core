@@ -194,8 +194,12 @@ public:
                     "Expected cutoff frequency to be positive, but got {}.",
                     get_cutoff_frequency());
 
+            const auto& times = table.getIndependentColumn();
+            double startTime = times.front();
+            double endTime = times.back();
             TableUtilities::filterLowpass(
                     table, get_cutoff_frequency(), true);
+            table.trim(startTime, endTime);
         }
     }
 };
