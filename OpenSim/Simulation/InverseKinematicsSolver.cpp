@@ -212,6 +212,10 @@ SimTK::Vec3 InverseKinematicsSolver::computeCurrentMarkerLocation(const std::str
 {
     const Array_<std::string> &names = _markersReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), markerName);
+    if (p == names.end())
+        throw Exception("InverseKinematicsSolver::computeCurrentMarkerLocation: "
+                        "invalid or unused marker name " +
+                        markerName + ".");
     int index = (int)std::distance(names.begin(), p);
     return computeCurrentMarkerLocation(index);
 }
@@ -239,6 +243,9 @@ double InverseKinematicsSolver::computeCurrentMarkerError(const std::string &mar
 {
     const Array_<std::string>& names = _markersReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), markerName);
+    if (p == names.end())
+        throw Exception("InverseKinematicsSolver::computeCurrentMarkerError: "
+                        "invalid or unused marker name "+markerName+".");
     int index = (int)std::distance(names.begin(), p);
     return computeCurrentMarkerError(index);
 }
