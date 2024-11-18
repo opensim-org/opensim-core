@@ -222,7 +222,7 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
                 "/jointset/back/lumbar_extension/speed"));
     }
 }
-// TODO: this test fails on Linux when parsing .sto file, disabling for now 
+
 TEST_CASE("Test IMUDataReporter for gait") {
 
     // Compute accelerometer signals from MocoInverse solution.
