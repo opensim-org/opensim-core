@@ -47,6 +47,7 @@ v4.6
 - Added the templatized `MocoStudy::analyze<T>()` and equivalent scripting counterparts: `analyzeVec3`, `analyzeSpatialVec`, `analyzeRotation`. (#3940)
 - Added `ConstantCurvatureJoint` to the SWIG bindings; it is now available in Matlab and Python (#3957). 
 - Added methods and `Output`s for calculating the angular momentum of a `Body`. (#3962)
+- Make `InverseKinematicsSolver` methods to query for marker specific results more robust to invalid names or those without corresponding data. (#3951) 
 
 
 v4.5.1
