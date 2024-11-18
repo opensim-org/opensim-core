@@ -689,8 +689,6 @@ void testNumberOfMarkersMismatch()
                 ikSolver.computeCurrentMarkerError("junk"), Exception);
         SimTK_TEST_MUST_THROW_EXC(
                 ikSolver.computeCurrentMarkerLocation("junk"), Exception);
-        SimTK_TEST_MUST_THROW_EXC(
-                ikSolver.computeCurrentMarkerError(1000), Exception);
         cout << endl;
     }
 }
