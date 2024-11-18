@@ -183,9 +183,20 @@ public:
     OpenSim_DECLARE_PROPERTY(cutoff_frequency, double,
             "Low-pass cutoff frequency (Hz) (default is -1, which means no "
             "filtering).");
-    TabOpLowPassFilter() { constructProperty_cutoff_frequency(-1); }
+    OpenSim_DECLARE_PROPERTY(trim_to_original_time_range, bool,
+            "Trim the rows of the output table to match the original table's "
+            "time range after padding and filtering (default: true).");
+    TabOpLowPassFilter() { 
+        constructProperty_cutoff_frequency(-1); 
+        constructProperty_trim_to_original_time_range(true);
+    }
     TabOpLowPassFilter(double cutoffFrequency) : TabOpLowPassFilter() {
         set_cutoff_frequency(cutoffFrequency);
+    }
+    TabOpLowPassFilter(double cutoffFrequency, bool trimToOriginalTimeRange) : 
+            TabOpLowPassFilter() {
+        set_cutoff_frequency(cutoffFrequency);
+        set_trim_to_original_time_range(trimToOriginalTimeRange);
     }
     void operate(TimeSeriesTable& table, const Model* model = nullptr)
             const override {
@@ -199,7 +210,9 @@ public:
             double finalTime = times.back();
             TableUtilities::filterLowpass(
                     table, get_cutoff_frequency(), true);
-            table.trim(initialTime, finalTime);
+            if (get_trim_to_original_time_range()) {
+                table.trim(initialTime, finalTime);
+            }
         }
     }
 };
