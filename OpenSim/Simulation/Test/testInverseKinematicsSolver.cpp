@@ -688,7 +688,17 @@ void testNumberOfMarkersMismatch()
         SimTK_TEST_MUST_THROW_EXC(
                 ikSolver.computeCurrentMarkerError("junk"), Exception);
         SimTK_TEST_MUST_THROW_EXC(
+                ikSolver.computeCurrentSquaredMarkerError("junk"), Exception);
+        SimTK_TEST_MUST_THROW_EXC(
                 ikSolver.computeCurrentMarkerLocation("junk"), Exception);
+        SimTK_TEST_MUST_THROW_EXC(
+                ikSolver.updateMarkerWeight("junk", 0.1), Exception);
+        SimTK_TEST_MUST_THROW_EXC(
+                ikSolver.computeCurrentOrientationError("junk"), Exception);
+        SimTK_TEST_MUST_THROW_EXC(
+                ikSolver.computeCurrentSensorOrientation("junk"), Exception);
+        SimTK_TEST_MUST_THROW_EXC(
+                ikSolver.updateOrientationWeight("junk", 0.1), Exception);
         cout << endl;
     }
 }
