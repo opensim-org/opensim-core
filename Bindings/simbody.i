@@ -305,7 +305,7 @@ namespace SimTK {
 %template(ArrayIndexInt) ArrayIndexTraits<int>;
 }
 
-%include <SWIGSimTK/PolygonalMesh.h>
+%include <SimTKcommon/internal/PolygonalMesh.h>
 %include <SWIGSimTK/DecorativeGeometry.h>
 
 
