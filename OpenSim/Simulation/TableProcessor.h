@@ -185,7 +185,7 @@ public:
             "filtering).");
     OpenSim_DECLARE_PROPERTY(trim_to_original_time_range, bool,
             "Trim the rows of the output table to match the original table's "
-            "time range after padding and filtering (default: true).");
+            "time range after filtering (default: true).");
     TabOpLowPassFilter() { 
         constructProperty_cutoff_frequency(-1); 
         constructProperty_trim_to_original_time_range(true);
