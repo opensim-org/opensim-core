@@ -47,6 +47,8 @@ v4.6
 - Added the templatized `MocoStudy::analyze<T>()` and equivalent scripting counterparts: `analyzeVec3`, `analyzeSpatialVec`, `analyzeRotation`. (#3940)
 - Added `ConstantCurvatureJoint` to the SWIG bindings; it is now available in Matlab and Python (#3957). 
 - Added methods and `Output`s for calculating the angular momentum of a `Body`. (#3962)
+- Updated `TabOpLowPassFilter` so that by default the processed table is trimmed to the original time range after padding and filtering. 
+  The original behavior (no trimming) can be enabled via the new property `trim_to_original_time_range`. (#3969)
 
 
 v4.5.1
