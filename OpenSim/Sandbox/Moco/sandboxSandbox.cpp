@@ -25,6 +25,9 @@
 #include <OpenSim/Simulation/VisualizerUtilities.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
+#include <OpenSim/Common/TRCFileAdapter.h>
+#include <OpenSim/Actuators/ModelProcessor.h>
+#include <OpenSim/Actuators/ModelOperators.h>
 
 
 using namespace OpenSim;
@@ -206,7 +209,8 @@ class ContactTrackingObjective : public Callback {
 public:
     ContactTrackingObjective(Model model,
             TimeSeriesTable grfs, TimeSeriesTable states,
-            const ContactBodyInfos& contactBodyInfos) {
+            const ContactBodyInfos& contactBodyInfos,
+            const std::vector<std::string>& previousSolutionStates) {
 
         // Model.
         m_model = std::move(model);
@@ -241,7 +245,23 @@ public:
         }
 
         // States.
+        m_stateNames = states.getColumnLabels();
+        for (const auto& stateName : m_stateNames) {
+            m_stateWeightSet.push_back(1.0);
+        }
         m_states = GCVSplineSet(states);
+
+        // Previous solution states.
+        m_previousSolutionStateIndexes.resize(previousSolutionStates.size());
+        for (int i = 0; i < (int)previousSolutionStates.size(); ++i) {
+            auto it = std::find(m_stateNames.begin(), m_stateNames.end(), 
+                    previousSolutionStates[i]);
+            if (it == m_stateNames.end()) {
+                throw Exception("State '{}' not found in state names.", 
+                        previousSolutionStates[i]);
+            }
+            m_previousSolutionStateIndexes[i] = (int)(it - m_stateNames.begin());
+        }
 
         casadi::Dict opts;
         opts["enable_fd"] = true;
@@ -256,12 +276,24 @@ public:
         m_forceWeight = weight;
     }
 
-    void setCoordinateWeight(double weight) {
-        m_coordinateWeight = weight;
+    void setTotalStateWeight(double weight) {
+        m_stateWeight = weight;
     }
 
-    void setSpeedWeight(double weight) {
-        m_speedWeight = weight;
+    void setStateWeight(const std::string& stateName, double weight) {
+        auto it = std::find(m_stateNames.begin(), m_stateNames.end(), stateName);
+        if (it == m_stateNames.end()) {
+            throw Exception("State '{}' not found in state names.", stateName);
+        }
+        m_stateWeightSet[it - m_stateNames.begin()] = weight;
+    }
+
+    void setPreviousSolution(const SimTK::RowVector& solution) {
+        m_previousSolution = solution;
+    }
+
+    void setPreviousSolutionWeight(double weight) {
+        m_previousSolutionWeight = weight;
     }
 
     const ContactForceRefs& getContactForceRefs() const {
@@ -327,18 +359,33 @@ public:
         int istate = 0;
         for (int iq = 0; iq < m_state.getNQ(); ++iq) {
             double error = q[iq] - m_states.get(istate).calcValue(m_time);
-            coordinateError += error * error;
+            coordinateError += m_stateWeightSet[istate] * error * error;
             istate++;
         }
         for (int iu = 0; iu < m_state.getNU(); ++iu) {
             double error = u[iu] - m_states.get(istate).calcValue(m_time);
-            speedError += error * error;
+            speedError += m_stateWeightSet[istate] * error * error;
             istate++;
         }
+
+        // Previous solution error.
+        double previousSolutionError = 0.0;
+        for (int i = 0; i < (int)m_previousSolutionStateIndexes.size(); ++i) {
+            double error;
+            if (m_previousSolutionStateIndexes[i] < m_state.getNQ()) {
+                error = q[m_previousSolutionStateIndexes[i]] - 
+                        m_previousSolution[i]; 
+            } else {
+                error = u[m_previousSolutionStateIndexes[i] - m_state.getNQ()] - 
+                        m_previousSolution[i];
+            }
+            previousSolutionError += error * error;
+        }
            
-        DM f = m_forceWeight      * forceError + 
-               m_coordinateWeight * (coordinateError / m_state.getNQ()) +
-               m_speedWeight      * (speedError / m_state.getNU());
+        DM f = m_forceWeight * forceError + 
+               m_stateWeight * (coordinateError / m_state.getNQ()) +
+               m_stateWeight * (speedError / m_state.getNU()) +
+               m_previousSolutionWeight * previousSolutionError;
         return {f};
     }
 
@@ -356,13 +403,18 @@ private:
 
     std::vector<double> m_forceScales;
     double m_forceWeight = 1.0;
-    double m_coordinateWeight = 1.0;
-    double m_speedWeight = 1.0;
+    double m_stateWeight = 1.0;
+    std::vector<std::string> m_stateNames;
+    std::vector<double> m_stateWeightSet;
 
+    SimTK::RowVector m_previousSolution;
+    std::vector<int> m_previousSolutionStateIndexes;
+    double m_previousSolutionWeight = 1.0;
 };
 
 SimTK::RowVector solveContactTrackingProblem(ContactTrackingObjective& objfun, 
-        double time, const TimeSeriesTable& states) {
+        double time, const TimeSeriesTable& states,
+        SimTK::RowVector previousSolution) {
 
     // The number of states. For each foot, we have a 6 DOF joint between the 
     // ground and the calcaneus, and a 1 DOF joint between the calcaneus and
@@ -378,9 +430,14 @@ SimTK::RowVector solveContactTrackingProblem(ContactTrackingObjective& objfun,
 
     // Objective function
     objfun.setTime(time);
-    objfun.setForceWeight(0.1);
-    objfun.setCoordinateWeight(0.01);
-    objfun.setSpeedWeight(0.01);
+    objfun.setForceWeight(0.05);
+    objfun.setTotalStateWeight(0.005);
+    objfun.setStateWeight("/jointset/mtp_r/mtp_angle_r/value", 1e-6);
+    objfun.setStateWeight("/jointset/mtp_l/mtp_angle_l/value", 1e-6);
+    objfun.setStateWeight("/jointset/mtp_r/mtp_angle_r/speed", 1e-6);
+    objfun.setStateWeight("/jointset/mtp_l/mtp_angle_l/speed", 1e-6);
+    objfun.setPreviousSolution(previousSolution);
+    objfun.setPreviousSolutionWeight(2.0);
 
     MXVector costOut;
     objfun.call({q, u}, costOut);
@@ -411,8 +468,6 @@ SimTK::RowVector solveContactTrackingProblem(ContactTrackingObjective& objfun,
         x0.push_back(row[i]);
         lbx.push_back(-std::numeric_limits<double>::infinity());
         ubx.push_back(std::numeric_limits<double>::infinity());
-        // lbx.push_back(row[i] - 0.25*std::abs(row[i]));
-        // ubx.push_back(row[i] + 0.25*std::abs(row[i]));
     }
 
     // Solve the problem
@@ -428,10 +483,11 @@ SimTK::RowVector solveContactTrackingProblem(ContactTrackingObjective& objfun,
     return solution;
 }
 
-void runContactTracking(Model model, 
+void runContactTracking(Model contactModel, 
         const ContactBodyInfos& contactBodyInfos,
         const TimeSeriesTable& grfData, 
-        const TimeSeriesTable& statesReference) {
+        const TimeSeriesTable& statesReference,
+        double initialTime, double finalTime) {
 
     std::vector<std::string> grfLabelsInOrder;
     for (const auto& info : contactBodyInfos) {
@@ -446,8 +502,8 @@ void runContactTracking(Model model,
     }
 
     std::vector<std::string> stateLabelsInOrder;
-    model.initSystem();
-    auto coordinateRefs = model.getCoordinatesInMultibodyTreeOrder();
+    contactModel.initSystem();
+    auto coordinateRefs = contactModel.getCoordinatesInMultibodyTreeOrder();
     for (int i = 0; i < (int)coordinateRefs.size(); ++i) {
         std::string valuePath = fmt::format("{}/value", 
                 coordinateRefs[i]->getAbsolutePathString());
@@ -466,17 +522,26 @@ void runContactTracking(Model model,
                 statesReference.getDependentColumn(label));
     }
 
-    model.printSubcomponentInfo();
-    ContactTrackingObjective objfun(model, grfs, states, contactBodyInfos);
+    std::vector<std::string> previousSolutionStates = {
+        "/jointset/mtp_r/mtp_angle_r/value",
+        "/jointset/mtp_r/mtp_angle_r/speed",
+        "/jointset/mtp_l/mtp_angle_l/value",
+        "/jointset/mtp_l/mtp_angle_l/speed"};
+    ContactTrackingObjective objfun(contactModel, grfs, states, contactBodyInfos,
+            previousSolutionStates);
 
     const auto& times = states.getIndependentColumn();
     TimeSeriesTable statesSolutionTable;
     TimeSeriesTable forcesSolutionTable;
 
-    SimTK::State state = model.initSystem();
-    for (int itime = 75; itime < 125; ++itime) {
+    SimTK::State state = contactModel.initSystem();
+    int initialIndex = (int)states.getNearestRowIndexForTime(initialTime);
+    int finalIndex = (int)states.getNearestRowIndexForTime(finalTime);
+    SimTK::RowVector previousSolution((int)states.getNumColumns(), 0.0);
+    for (int itime = initialIndex; itime <= finalIndex; ++itime) {
         double time = times[itime];
-        SimTK::RowVector row = solveContactTrackingProblem(objfun, time, states);
+        SimTK::RowVector row = solveContactTrackingProblem(
+                objfun, time, states, previousSolution);
         statesSolutionTable.appendRow(time, row);
 
         SimTK::Vector q(state.getNQ(), row.getContiguousScalarData(), true);
@@ -485,7 +550,7 @@ void runContactTracking(Model model,
 
         SimTK::Vector_<SimTK::Vec3> forces((int)contactBodyInfos.size(), 
                 SimTK::Vec3(0.0));
-        objfun.calcContactForces(model, state, q, u, forces);
+        objfun.calcContactForces(contactModel, state, q, u, forces);
 
         SimTK::RowVector forcesRow((int)contactBodyInfos.size()*3);
         for (int i = 0; i < (int)contactBodyInfos.size(); ++i) {
@@ -495,6 +560,8 @@ void runContactTracking(Model model,
         }
 
         forcesSolutionTable.appendRow(time, forcesRow);
+
+        previousSolution = row;
     }
     statesSolutionTable.setColumnLabels(stateLabelsInOrder);
     statesSolutionTable.addTableMetaData<std::string>("inDegrees", "no");
@@ -506,20 +573,129 @@ void runContactTracking(Model model,
             "contact_initializer_solution_forces.sto");
 }
 
+void computeFootMarkerPositions(Model contactModel, 
+        const TimeSeriesTable& statesReference,
+        const std::string& markersFile,
+        const std::string& ikTasksFile) {
+    contactModel.initSystem();
+    auto statesTraj = StatesTrajectory::createFromStatesTable(contactModel, 
+            statesReference);
+
+    TimeSeriesTableVec3 markerTrajectories(markersFile);
+    // TODO make sure a consistent time range is used everywhere
+    markerTrajectories.trim(statesTraj.front().getTime(),
+                             statesTraj.back().getTime());
+
+    // TODO check if table has "Units"
+    double scale = 1.0;
+    const std::string& units = 
+            markerTrajectories.getTableMetaData<std::string>("Units");
+    if (units == "mm") {
+        scale = 1000.0;
+    } else if (units == "m") {
+        scale = 1.0;
+    } else {
+        throw Exception("Units must be 'mm' or 'm'.");
+    }
+
+    auto markers = contactModel.getComponentList<Marker>();
+    std::vector<std::string> markerNames;
+    for (const auto& marker : markers) {
+        markerNames.push_back(marker.getName());
+    }
+
+    TimeSeriesTableVec3 contactMarkerTrajectories;
+    for (const auto& state : statesTraj) {
+        contactModel.realizePosition(state);
+        SimTK::RowVector_<SimTK::Vec3> row((int)markerNames.size());
+        int imarker = 0;
+        for (const auto& marker : markers) {
+            SimTK::Vec3 location = marker.getLocationInGround(state);
+            row[imarker++] = location * scale;
+        }
+        contactMarkerTrajectories.appendRow(state.getTime(), row);
+    }
+    contactMarkerTrajectories.setColumnLabels(markerNames);
+
+
+    IKTaskSet ikTasks(ikTasksFile);
+    std::vector<std::string> ikTaskNames;
+    for (int i = 0; i < ikTasks.getSize(); ++i) {
+        ikTaskNames.push_back(ikTasks.get(i).getName());
+    }
+
+
+    for (const auto& markerName : markerNames) {
+        if (markerTrajectories.hasColumn(markerName)) {
+            markerTrajectories.removeColumn(markerName);
+        }
+        markerTrajectories.appendColumn(markerName, 
+                contactMarkerTrajectories.getDependentColumn(markerName));
+
+        if (ikTaskNames.end() == std::find(ikTaskNames.begin(), 
+                ikTaskNames.end(), markerName)) {
+            IKMarkerTask ikTask;
+            ikTask.setName(markerName);
+            ikTask.setWeight(1000.0);  // TODO set relative to other weights
+            ikTasks.cloneAndAppend(ikTask);
+        } else {
+            // TODO set relative to other weights
+            ikTasks.get(markerName).setWeight(1000.0);
+        }
+    }
+
+    TRCFileAdapter::write(markerTrajectories, 
+            "marker_trajectories_updated.trc");
+    ikTasks.print("ik_tasks_updated.xml");
+}
+
+void createUpdatedCoordinateReference(Model model, 
+        const std::string& markersFile, const std::string& ikTasksFile) {
+    // Run inverse kinematics on the full model.
+    InverseKinematicsTool iktool;
+    iktool.setModel(model);
+    iktool.setMarkerDataFileName(markersFile);
+    iktool.set_IKTaskSet(ikTasksFile);
+    iktool.setOutputMotionFileName("full_model_ik.sto");    
+    iktool.run();
+
+    // Update the IK solution to something that we can visualize and use 
+    // in Moco.
+    TableProcessor tableProcessor = 
+            TableProcessor("full_model_ik.sto") |
+            TabOpUseAbsoluteStateNames() |
+            TabOpConvertDegreesToRadians() |
+            // TabOpLowPassFilter(10) |
+            TabOpAppendCoordinateValueDerivativesAsSpeeds();
+
+    TimeSeriesTable contactStatesReference = 
+            tableProcessor.processAndConvertToRadians("", model);
+    STOFileAdapter::write(contactStatesReference, 
+            "coordinates_updated.sto");
+}
+
 int main() {
 
     // contactTracking();
 
     // Load original model.
-    Model model("subject_walk_scaled.osim");
+    ModelProcessor modelProcessor = ModelProcessor("subject_walk_scaled.osim") |
+        ModOpRemoveMuscles();
+    Model model = modelProcessor.process();
     model.initSystem();
 
     // Load external loads.
     ExternalLoads externalLoads("grf_walk.xml", true);
 
     // Load IK data.
-    std::string markersFile = "marker_trajectories.trc";
-    std::string ikTasksFile = "ik_tasks.xml";
+    std::string markersFile = "markers_walk.trc";
+    std::string ikTasksFile = "ik_tasks_walk.xml";
+
+    // Set time range;
+    double initialTime = 0.48;
+    // double initialTime = 0.75;
+    double finalTime = 1.61;
+    // double finalTime = 0.8;
 
     // Attach contact geometry and forces to the model.
     // TODO have user add this to the model?
@@ -565,8 +741,6 @@ int main() {
         contactBodyInfos.push_back(contactBodyInfo);
     }
 
-    // Initialize the contact body map.
-
     // TODO check that the bodies with contact geometry are consistent with the 
     // external loads file.
 
@@ -585,7 +759,7 @@ int main() {
 
     // Load the contacts model.
     Model contactModel(fmt::format("{}_contact_bodies.osim", model.getName()));
-    model.initSystem();
+    contactModel.initSystem();
 
     // input: "feet" model, original TRC file, IK tasks
     // output: IK solution containing foot coordinates
@@ -600,18 +774,26 @@ int main() {
                     externalLoads.getDataFileName());
     TimeSeriesTable grfData(grfDataFilePath);
     runContactTracking(contactModel, contactBodyInfos, grfData, 
-            contactStatesReference);
+            contactStatesReference, initialTime, finalTime);
 
     // input: "feet" model, states file
     // output: TRC file containing updated marker positions
-    computeFootMarkerPositions();
+    TimeSeriesTable contactStatesSolution(
+            "contact_initializer_solution_states.sto");
+    computeFootMarkerPositions(contactModel, contactStatesSolution,
+            markersFile, ikTasksFile);
 
     // input: original model, "feet" TRC file, original TRC file, IK tasks
-    // createUpdatedCoordinateReference();
+    createUpdatedCoordinateReference(model, "marker_trajectories_updated.trc",
+            "ik_tasks_updated.xml");
 
 
+    TimeSeriesTable coordinatesUpdated(
+            "coordinates_updated.sto");
+    VisualizerUtilities::showMotion(model, coordinatesUpdated);
+    // TimeSeriesTableVec3 markerTrajectories("marker_trajectories_updated.trc");
+    // VisualizerUtilities::showMarkerData(markerTrajectories);
 
     return EXIT_SUCCESS;
 }
-
 

@@ -125,6 +125,54 @@ public:
     }
 };
 
+/** Add residual actuators to the model using
+ModelFactory::createResidualActuators. */
+class OSIMACTUATORS_API ModOpAddResiduals : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ModOpAddResiduals, ModelOperator);
+    OpenSim_DECLARE_PROPERTY(rotational_optimal_force, double,
+            "The optimal force for all residual actuators added to rotational "
+            "coordinates. Default: 1.");
+    OpenSim_DECLARE_PROPERTY(translational_optimal_force, double,
+            "The optimal force for all residual actuators added to "
+            "translational coordinates. Default: 1.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(bound, double,
+            "Set the min and max control to -bound and bound, respectively. "
+            "Default: no bounds.");
+    OpenSim_DECLARE_PROPERTY(skip_coordinates_with_actuators, bool,
+            "Whether or not to skip coordinates with existing actuators. "
+            "Default: true.")
+public:
+    ModOpAddResiduals() {
+        constructProperty_rotational_optimal_force(1);
+        constructProperty_translational_optimal_force(1);
+        constructProperty_bound();
+        constructProperty_skip_coordinates_with_actuators(true);
+    }
+    ModOpAddResiduals(double rotOptimalForce, double transOptimalForce) 
+            : ModOpAddResiduals() {
+        set_rotational_optimal_force(rotOptimalForce);
+        set_translational_optimal_force(transOptimalForce);
+    }
+    ModOpAddResiduals(double rotOptimalForce, double transOptimalForce, 
+            double bound) : 
+            ModOpAddResiduals(rotOptimalForce, transOptimalForce) {
+        set_bound(bound);
+    }
+    ModOpAddResiduals(double rotOptimalForce, double transOptimalForce, 
+            double bounds, bool skipCoordsWithActu)
+            : ModOpAddResiduals(rotOptimalForce, transOptimalForce, bounds) {
+        set_skip_coordinates_with_actuators(skipCoordsWithActu);
+    }
+    void operate(Model& model, const std::string&) const override {
+        model.initSystem();
+        ModelFactory::createResidualActuators(model, 
+                get_rotational_optimal_force(),
+                get_translational_optimal_force(),
+                getProperty_bound().empty() ? SimTK::NaN : get_bound(),
+                get_skip_coordinates_with_actuators());
+    }
+};
+
 /** Add external loads (e.g., ground reaction forces) to the model from a
 XML file. The ExternalLoads setting
 external_loads_model_kinematics_file is ignored. */

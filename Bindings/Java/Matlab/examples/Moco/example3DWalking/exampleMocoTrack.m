@@ -75,12 +75,12 @@ track.setModel(modelProcessor);
 % Use this convenience function to set the MocoTrack markers reference
 % directly from a TRC file. By default, the markers data is filtered at
 % 6 Hz and if in millimeters, converted to meters.
-track.setMarkersReferenceFromTRC("marker_trajectories.trc");
+track.setMarkersReferenceFromTRC("markers_walk.trc");
 
-% There is marker data in the 'marker_trajectories.trc' associated with
+% There is marker data in the 'markers_walk.trc' associated with
 % model markers that no longer exists (i.e. markers on the arms). Set this
 % flag to avoid an exception from being thrown.
-track.set_allow_unused_references(true);
+% track.set_allow_unused_references(true);
 
 % Increase the global marker tracking weight, which is the weight
 % associated with the internal MocoMarkerTrackingGoal term.

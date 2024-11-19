@@ -31,6 +31,7 @@
 #include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Tools/IKTaskSet.h>
 
 using namespace OpenSim;
 
@@ -48,12 +49,12 @@ void torqueDrivenMarkerTracking() {
     // Replace the PinJoints representing the model's toes with WeldJoints.
     modelProcessor.append(ModOpReplaceJointsWithWelds({"mtp_r", "mtp_l"}));
     // Add ground reaction external loads in lieu of a ground-contact model.
-    modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml") );
+    modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
     // Remove all the muscles in the model's ForceSet.
     modelProcessor.append(ModOpRemoveMuscles());
-    // Add CoordinateActuators to the model degrees-of-freedom. This
-    // ignores the pelvis coordinates which already have residual
-    // CoordinateActuators.
+    // Add CoordinateActuators to the pelvis coordinates. 
+    modelProcessor.append(ModOpAddResiduals(250.0, 50.0, 1.0));
+    // Add CoordinateActuators to the remaining degrees-of-freedom. 
     modelProcessor.append(ModOpAddReserves(250.0, 1.0));
     track.setModel(modelProcessor);
     // In C++, you could alternatively use the pipe operator '|' to
@@ -62,36 +63,21 @@ void torqueDrivenMarkerTracking() {
 
     // Use this convenience function to set the MocoTrack markers reference
     // directly from a TRC file. By default, the marker data is filtered at
-    //  6 Hz
-    track.setMarkersReferenceFromTRC("marker_trajectories.trc");
+    // 6 Hz
+    track.setMarkersReferenceFromTRC("markers_walk.trc");
 
-    // There is marker data in the 'marker_trajectories.trc' associated with
-    // model markers that no longer exists (i.e. markers on the arms). Set this
-    // flag to avoid an exception from being thrown.
-    track.set_allow_unused_references(true);
+    // // There is marker data in the 'markers_walk.trc' associated with
+    // // model markers that no longer exists (i.e. markers on the arms). Set this
+    // // flag to avoid an exception from being thrown.
+    // track.set_allow_unused_references(true);
 
     // Increase the global marker tracking weight, which is the weight
     // associated with the internal MocoMarkerTrackingGoal term.
     track.set_markers_global_tracking_weight(10);
 
-    // Increase the tracking weights for individual markers in the data set 
-    // placed on bony landmarks compared to markers located on soft tissue.
-    MocoWeightSet markerWeights;
-    markerWeights.cloneAndAppend({"R.ASIS", 20});
-    markerWeights.cloneAndAppend({"L.ASIS", 20});
-    markerWeights.cloneAndAppend({"R.PSIS", 20});
-    markerWeights.cloneAndAppend({"L.PSIS", 20});
-    markerWeights.cloneAndAppend({"R.Knee", 10});
-    markerWeights.cloneAndAppend({"R.Ankle", 10});
-    markerWeights.cloneAndAppend({"R.Heel", 10});
-    markerWeights.cloneAndAppend({"R.MT5", 5});
-    markerWeights.cloneAndAppend({"R.Toe", 2});
-    markerWeights.cloneAndAppend({"L.Knee", 10});
-    markerWeights.cloneAndAppend({"L.Ankle", 10});
-    markerWeights.cloneAndAppend({"L.Heel", 10});
-    markerWeights.cloneAndAppend({"L.MT5", 5});
-    markerWeights.cloneAndAppend({"L.Toe", 2});
-    track.set_markers_weight_set(markerWeights);
+    // Set the marker weights based on the IKTaskSet from the dataset.
+    IKTaskSet ikTaskSet("ik_tasks_walk.xml");
+    track.setMarkerWeightsFromIKTaskSet(ikTaskSet);
 
     // Initial time, final time, and mesh interval. The number of mesh points
     // used to discretize the problem is computed internally using these values.
@@ -116,6 +102,8 @@ void muscleDrivenStateTracking() {
     ModelProcessor modelProcessor("subject_walk_scaled.osim");
     modelProcessor.append(ModOpReplaceJointsWithWelds({"mtp_r", "mtp_l"}));
     modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+    // Add CoordinateActuators to the pelvis coordinates. 
+    modelProcessor.append(ModOpAddResiduals(250.0, 50.0, 1.0));
     modelProcessor.append(ModOpIgnoreTendonCompliance());
     modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
     // Only valid for DeGrooteFregly2016Muscles.
@@ -137,6 +125,7 @@ void muscleDrivenStateTracking() {
     // A TableProcessor with no operators, as we have here, simply returns the
     // base table.
     track.setStatesReference(TableProcessor("coordinates.sto"));
+    track.set_apply_tracked_states_to_guess(true);
 
     // This setting allows extra data columns contained in the states
     // reference that don't correspond to model coordinates.
@@ -215,6 +204,7 @@ void muscleDrivenJointMomentTracking() {
     ModelProcessor modelProcessor("subject_walk_scaled.osim");
     modelProcessor.append(ModOpReplaceJointsWithWelds({"mtp_r", "mtp_l"}));
     modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+    modelProcessor.append(ModOpAddResiduals(250.0, 50.0, 1.0));
     modelProcessor.append(ModOpIgnoreTendonCompliance());
     modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
     modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
@@ -282,7 +272,7 @@ void muscleDrivenJointMomentTracking() {
     // low-pass filter the data at 10 Hz. The reference data should use the 
     // same column label format as the output of the Inverse Dynamics Tool.
     TableProcessor jointMomentRef = 
-        TableProcessor("inverse_dynamics.sto") |
+        TableProcessor("id_walk.sto") |
         TabOpLowPassFilter(10);
     jointMomentTracking->setReference(jointMomentRef);
 

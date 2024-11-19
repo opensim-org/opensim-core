@@ -2,6 +2,39 @@
 <OpenSimDocument Version="40600">
 	<IKTaskSet>
 		<objects>
+            <!-- Upper-body markers (anatomical and tracking). -->
+            <IKMarkerTask name="R.Shoulder">
+                <!--Whether or not this task will be used during inverse kinematics solve.-->
+                <apply>true</apply>
+                <!--Weight given to a marker or coordinate for solving inverse kinematics problems.-->
+                <weight>5</weight>
+            </IKMarkerTask>
+            <IKMarkerTask name="L.Shoulder">
+                <apply>true</apply> <weight>5</weight> </IKMarkerTask>
+            <IKMarkerTask name="R.Clavicle">
+                <apply>true</apply> <weight>5</weight> </IKMarkerTask>
+            <IKMarkerTask name="L.Clavicle">
+                <apply>true</apply> <weight>5</weight> </IKMarkerTask>
+            <IKMarkerTask name="R.Biceps">
+                <apply>false</apply> <weight>1</weight> </IKMarkerTask>
+            <IKMarkerTask name="L.Biceps">
+                <apply>false</apply> <weight>1</weight> </IKMarkerTask>
+            <IKMarkerTask name="R.Elbow">
+                <apply>true</apply> <weight>2</weight> </IKMarkerTask>
+            <IKMarkerTask name="L.Elbow">
+                <apply>true</apply> <weight>2</weight> </IKMarkerTask>
+            <IKMarkerTask name="R.MElbow">
+                <apply>false</apply> <weight>0</weight> </IKMarkerTask>
+            <IKMarkerTask name="L.MElbow">
+                <apply>false</apply> <weight>0</weight> </IKMarkerTask>
+            <IKMarkerTask name="R.Forearm">
+                <apply>true</apply> <weight>1</weight> </IKMarkerTask>
+            <IKMarkerTask name="L.Forearm">
+                <apply>true</apply> <weight>1</weight> </IKMarkerTask>
+            <IKMarkerTask name="R.Wrist">
+                <apply>true</apply> <weight>1</weight> </IKMarkerTask>
+            <IKMarkerTask name="L.Wrist">
+                <apply>true</apply> <weight>1</weight> </IKMarkerTask>
 			<IKMarkerTask name="R.ASIS">
 				<!--Whether or not this task will be used during inverse kinematics solve, default is true.-->
 				<apply>true</apply>
