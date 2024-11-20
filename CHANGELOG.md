@@ -49,6 +49,9 @@ v4.6
 - Added methods and `Output`s for calculating the angular momentum of a `Body`. (#3962)
 - Updated `TabOpLowPassFilter` so that by default the processed table is trimmed to the original time range after padding and filtering. 
   The original behavior (no trimming) can be enabled via the new property `trim_to_original_time_range`. (#3969)
+- Make `InverseKinematicsSolver` methods to query for specific marker or orientation-sensor errors more robust to invalid names or names not 
+  in the intersection of names in the model and names in the provided referece/data. Remove methods that are index based from public interface.(#3951) 
+
 
 
 v4.5.1
