@@ -99,11 +99,15 @@ class OSIMACTUATORS_API ModOpAddReserves : public ModelOperator {
     OpenSim_DECLARE_PROPERTY(skip_coordinates_with_actuators, bool,
             "Whether or not to skip coordinates with existing actuators. "
             "Default: true.")
+    OpenSim_DECLARE_PROPERTY(skip_residual_coordinates, bool,
+            "Whether or not to skip coordinates associated with joints whose "
+            "parent body is Ground. Default: false.")
 public:
     ModOpAddReserves() {
         constructProperty_optimal_force(1);
         constructProperty_bound();
         constructProperty_skip_coordinates_with_actuators(true);
+        constructProperty_skip_residual_coordinates(false);
     }
     ModOpAddReserves(double optimalForce) : ModOpAddReserves() {
         set_optimal_force(optimalForce);
@@ -117,11 +121,17 @@ public:
             : ModOpAddReserves(optimalForce, bounds) {
         set_skip_coordinates_with_actuators(skipCoordsWithActu);
     }
+    ModOpAddReserves(double optimalForce, double bounds, 
+            bool skipCoordsWithActu, bool skipResidualCoords)
+            : ModOpAddReserves(optimalForce, bounds, skipCoordsWithActu) {
+        set_skip_residual_coordinates(skipResidualCoords);
+    }
     void operate(Model& model, const std::string&) const override {
         model.initSystem();
         ModelFactory::createReserveActuators(model, get_optimal_force(),
                 getProperty_bound().empty() ? SimTK::NaN : get_bound(),
-                get_skip_coordinates_with_actuators());
+                get_skip_coordinates_with_actuators(),
+                get_skip_residual_coordinates());
     }
 };
 

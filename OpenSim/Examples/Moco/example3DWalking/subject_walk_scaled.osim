@@ -13925,66 +13925,6 @@
 					<!--The maximum generalized force produced by this actuator.-->
 					<optimal_force>50</optimal_force>
 				</CoordinateActuator>
-				<CoordinateActuator name="pelvis_tx">
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>-1</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>1</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>pelvis_tx</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>250</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="pelvis_ty">
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>-1</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>1</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>pelvis_ty</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>250</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="pelvis_tz">
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>-1</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>1</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>pelvis_tz</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>250</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="pelvis_tilt">
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>-1</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>1</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>pelvis_tilt</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>50</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="pelvis_list">
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>-1</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>1</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>pelvis_list</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>50</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="pelvis_rotation">
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>-1</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>1</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>pelvis_rotation</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>50</optimal_force>
-				</CoordinateActuator>
 			</objects>
 			<groups>
 				<ObjectGroup name="right_leg">
@@ -14336,17 +14276,17 @@
 				</Marker>
 				<Marker name="R.Toe">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame>/bodyset/calcn_r</socket_parent_frame>
+					<socket_parent_frame>/bodyset/toes_r</socket_parent_frame>
 					<!--The fixed location of the station expressed in its parent frame.-->
-					<location>0.26700651536572234 0.041606788980609419 -0.022096158305038392</location>
+					<location>0.0882065 0.0436068 -0.0231762</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
 					<fixed>true</fixed>
 				</Marker>
 				<Marker name="R.MT5">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame>/bodyset/calcn_r</socket_parent_frame>
+					<socket_parent_frame>/bodyset/toes_r</socket_parent_frame>
 					<!--The fixed location of the station expressed in its parent frame.-->
-					<location>0.18350394240699403 0.021556413997335863 0.067222289435679775</location>
+					<location>0.00470394 0.0235564 0.0661423</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
 					<fixed>true</fixed>
 				</Marker>
@@ -14448,9 +14388,9 @@
 				</Marker>
 				<Marker name="L.Toe">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame>/bodyset/calcn_l</socket_parent_frame>
+					<socket_parent_frame>/bodyset/toes_l</socket_parent_frame>
 					<!--The fixed location of the station expressed in its parent frame.-->
-					<location>0.26657933699642716 0.040862289479530155 0.021563306737198706</location>
+					<location>0.0877793 0.0428623 0.0226433</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
 					<fixed>true</fixed>
 				</Marker>
@@ -14464,9 +14404,9 @@
 				</Marker>
 				<Marker name="L.MT5">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame>/bodyset/calcn_l</socket_parent_frame>
+					<socket_parent_frame>/bodyset/toes_l</socket_parent_frame>
 					<!--The fixed location of the station expressed in its parent frame.-->
-					<location>0.18354657708632413 0.022017373911328006 -0.067026898706232491</location>
+					<location>0.00474658 0.0240174 -0.0659469</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
 					<fixed>true</fixed>
 				</Marker>
@@ -14520,17 +14460,17 @@
 				</Marker>
 				<Marker name="L.MT5Ground">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame>/bodyset/calcn_l</socket_parent_frame>
+					<socket_parent_frame>/bodyset/toes_l</socket_parent_frame>
 					<!--The fixed location of the station expressed in its parent frame.-->
-					<location>0.18489738608 -0.0055854241194999996 -0.065262639290000007</location>
+					<location>0.00609739 -0.00358542 -0.0641826</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
 					<fixed>true</fixed>
 				</Marker>
 				<Marker name="L.ToeGround">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame>/bodyset/calcn_l</socket_parent_frame>
+					<socket_parent_frame>/bodyset/toes_l</socket_parent_frame>
 					<!--The fixed location of the station expressed in its parent frame.-->
-					<location>0.26578999249000002 -0.0055854241194999996 0.020884044572799999</location>
+					<location>0.08699 -0.00358542 0.021964</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
 					<fixed>true</fixed>
 				</Marker>
@@ -14568,17 +14508,17 @@
 				</Marker>
 				<Marker name="R.MT5Ground">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame>/bodyset/calcn_r</socket_parent_frame>
+					<socket_parent_frame>/bodyset/toes_r</socket_parent_frame>
 					<!--The fixed location of the station expressed in its parent frame.-->
-					<location>0.18489738608 -0.0055854241194999996 0.065262639290000007</location>
+					<location>0.00609739 -0.00358542 0.0641826</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
 					<fixed>true</fixed>
 				</Marker>
 				<Marker name="R.ToeGround">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame>/bodyset/calcn_r</socket_parent_frame>
+					<socket_parent_frame>/bodyset/toes_r</socket_parent_frame>
 					<!--The fixed location of the station expressed in its parent frame.-->
-					<location>0.26578999249000002 -0.0055854241194999996 -0.020884044572799999</location>
+					<location>0.08699 -0.00358542 -0.021964</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
 					<fixed>true</fixed>
 				</Marker>

@@ -256,7 +256,8 @@ void ModelFactory::removeMuscles(Model& model) {
 
 void ModelFactory::createReserveActuators(Model& model, double optimalForce,
         double bound,
-        bool skipCoordinatesWithExistingActuators) {
+        bool skipCoordinatesWithExistingActuators,
+        bool skipResidualCoordinates) {
     OPENSIM_THROW_IF(optimalForce <= 0, Exception,
             "Expected a positive value for the 'optimalForce' argument, but "
             "receieved {}.", optimalForce);
@@ -280,6 +281,12 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
                     break;
                 }
             }
+        }
+        // Don't add a reserve if the Joint's parent body is Ground.
+        if (!skipCoord && skipResidualCoordinates) {
+            const Joint& joint = coord.getJoint();
+            const Frame& frame = joint.getParentFrame().findBaseFrame();
+            skipCoord = dynamic_cast<const Ground*>(&frame) != nullptr;
         }
 
         if (!coord.isConstrained(state) && !skipCoord) {
