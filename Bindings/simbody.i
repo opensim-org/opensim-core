@@ -354,5 +354,11 @@ namespace SimTK {
         return key;
     }
 }
+%extend PolygonalMesh {
+    void loadFile(const std::string& pathname) {
+    // SWIG cant handle SimTK::String despite autoconversion
+        $self->loadFile(pathname);
+    }
+}
 }
 
