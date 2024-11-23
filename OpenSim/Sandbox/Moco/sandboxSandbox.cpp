@@ -622,7 +622,10 @@ void calcOrientationsAndTranslationsFromContactSolution(Model contactModel,
             TableProcessor("contact_initializer_solution_states.sto") |
             TabOpLowPassFilter(lowPassFilterFrequency);
     TimeSeriesTable contactStatesSolutionFiltered =
-            tableProcessor.process(&contactModel);;
+            tableProcessor.process(&contactModel);
+
+    STOFileAdapter::write(contactStatesSolutionFiltered, 
+            "contact_initializer_solution_states_filtered.sto");
 
     auto statesTraj = StatesTrajectory::createFromStatesTable(
             contactModel, contactStatesSolutionFiltered, true, true, false);
@@ -706,7 +709,7 @@ int main() {
     std::unordered_map<std::string, double> weights;
     weights["force"] = 0.1;
     weights["state"] = 0.01;
-    weights["previous_states"] = 1e-4;
+    weights["previous_states"] = 1e-3;
 
     // Low-pass filter frequency.
     // double lowPassFilterFrequency = 10.0;
