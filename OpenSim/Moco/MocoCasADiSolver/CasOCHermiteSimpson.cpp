@@ -50,15 +50,20 @@ DM HermiteSimpson::createMeshIndicesImpl() const {
     return indices;
 }
 
+DM HermiteSimpson::createControlIndicesImpl() const {
+    return DM::ones(1, m_numGridPoints);
+}
+
 void HermiteSimpson::calcDefectsImpl(const casadi::MXVector& x,
         const casadi::MXVector& xdot, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
     const int NS = m_problem.getNumStates();
+    const int NP = m_problem.getNumParameters();
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         // We enforce defect constraints on a mesh interval basis, so add
         // constraints until the number of mesh intervals is reached.
-        const auto h = m_times(2 * imesh + 2) - m_times(2 * imesh);
+        const auto h = m_intervals(imesh);
         const auto x_i = x[imesh](Slice(), 0);
         const auto x_mid = x[imesh](Slice(), 1);
         const auto x_ip1 = x[imesh](Slice(), 2);
@@ -71,28 +76,42 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MXVector& x,
                 x_mid - 0.5 * (x_ip1 + x_i) - (h / 8.0) * (xdot_i - xdot_ip1);
 
         // Simpson integration defects.
-        defects(Slice(NS, 2 * NS), imesh) =
+        defects(Slice(NS, 2*NS), imesh) =
                 x_ip1 - x_i - (h / 6.0) * (xdot_ip1 + 4.0 * xdot_mid + xdot_i);
     }
 }
 
-void HermiteSimpson::calcInterpolatingControlsImpl(
-        const casadi::MX& controls, casadi::MX& interpControls) const {
-    if (m_problem.getNumControls() &&
-            m_solver.getInterpolateControlMeshInteriorPoints()) {
-        int time_i;
-        int time_mid;
-        int time_ip1;
-        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-            time_i = 2 * imesh;
-            time_mid = 2 * imesh + 1;
-            time_ip1 = 2 * imesh + 2;
-            const auto c_i = controls(Slice(), time_i);
-            const auto c_mid = controls(Slice(), time_mid);
-            const auto c_ip1 = controls(Slice(), time_ip1);
-            interpControls(Slice(), imesh) = c_mid - 0.5 * (c_ip1 + c_i);
-        }
+Transcription::FlattenedVariableInfo 
+HermiteSimpson::getFlattenedVariableInfo() const {
+    FlattenedVariableInfo info;
+    int N = m_numPointsPerMeshInterval - 1;
+    int nx = 0;
+    int nu = 0;
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        int igrid = imesh * N;
+        info.order.push_back({initial_time, imesh});
+        info.order.push_back({final_time, imesh});
+        info.order.push_back({parameters, imesh});
+        info.order.push_back({states, igrid});
+        info.order.push_back({states, igrid + 1});
+        info.order.push_back({controls, igrid});
+        info.order.push_back({controls, igrid + 1});
+        info.order.push_back({multipliers, igrid});
+        info.order.push_back({multipliers, igrid + 1});
+        info.order.push_back({derivatives, igrid});
+        info.order.push_back({derivatives, igrid + 1});
+        info.order.push_back({projection_states, imesh});
+        info.order.push_back({slacks, imesh});
     }
+    info.order.push_back({initial_time, m_numMeshIntervals});
+    info.order.push_back({final_time, m_numMeshIntervals});
+    info.order.push_back({parameters, m_numMeshIntervals});
+    info.order.push_back({states, m_numGridPoints - 1});
+    info.order.push_back({controls, m_numGridPoints - 1});
+    info.order.push_back({multipliers, m_numGridPoints - 1});
+    info.order.push_back({derivatives, m_numGridPoints - 1});
+
+    return info;
 }
 
 } // namespace CasOC

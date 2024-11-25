@@ -40,22 +40,49 @@ DM Trapezoidal::createMeshIndicesImpl() const {
     return DM::ones(1, m_numGridPoints);
 }
 
-void Trapezoidal::calcDefectsImpl(const casadi::MXVector& x,
+DM Trapezoidal::createControlIndicesImpl() const {
+    return DM::ones(1, m_numGridPoints);
+}
+
+void Trapezoidal::calcDefectsImpl(const casadi::MXVector& x, 
         const casadi::MXVector& xdot, casadi::MX& defects) const {
 
     // We have arranged the code this way so that all constraints at a given
     // mesh point are grouped together (organizing the sparsity of the Jacobian
     // this way might have benefits for sparse linear algebra).
-    for (int itime = 0; itime < m_numMeshIntervals; ++itime) {
-        const auto h = m_times(itime + 1) - m_times(itime);
-        const auto x_i = x[itime](Slice(), 0);
-        const auto x_ip1 = x[itime](Slice(), 1);
-        const auto xdot_i = xdot[itime](Slice(), 0);
-        const auto xdot_ip1 = xdot[itime](Slice(), 1);
+    const int NS = m_problem.getNumStates();
+    const int NP = m_problem.getNumParameters();
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        const auto h = m_intervals(imesh);
+        const auto x_i = x[imesh](Slice(), 0);
+        const auto x_ip1 = x[imesh](Slice(), 1);
+        const auto xdot_i = xdot[imesh](Slice(), 0);
+        const auto xdot_ip1 = xdot[imesh](Slice(), 1);
 
         // Trapezoidal defects.
-        defects(Slice(), itime) = x_ip1 - (x_i + 0.5 * h * (xdot_ip1 + xdot_i));
+        defects(Slice(0, NS), imesh) =
+                x_ip1 - (x_i + 0.5 * h * (xdot_ip1 + xdot_i));
     }
+}
+
+Transcription::FlattenedVariableInfo 
+Trapezoidal::getFlattenedVariableInfo() const {
+    FlattenedVariableInfo info;
+    for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
+        info.order.push_back({initial_time, imesh});
+        info.order.push_back({final_time, imesh});
+        info.order.push_back({parameters, imesh});
+        info.order.push_back({states, imesh});
+        info.order.push_back({controls, imesh});
+        info.order.push_back({multipliers, imesh});
+        info.order.push_back({derivatives, imesh});
+        if (imesh) {
+            info.order.push_back({projection_states, imesh - 1});
+            info.order.push_back({slacks, imesh - 1});
+        }
+    }
+
+    return info;
 }
 
 } // namespace CasOC
