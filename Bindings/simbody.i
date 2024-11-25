@@ -305,7 +305,7 @@ namespace SimTK {
 %template(ArrayIndexInt) ArrayIndexTraits<int>;
 }
 
-%include <SWIGSimTK/PolygonalMesh.h>
+%include <SimTKcommon/internal/PolygonalMesh.h>
 %include <SWIGSimTK/DecorativeGeometry.h>
 
 
@@ -352,6 +352,12 @@ namespace SimTK {
         unsigned modifier = 0;
         $self->takeKeyHit(key, modifier);
         return key;
+    }
+}
+%extend PolygonalMesh {
+    void loadFile(const std::string& pathname) {
+    // SWIG cant handle SimTK::String despite autoconversion
+        $self->loadFile(pathname);
     }
 }
 }
