@@ -558,7 +558,7 @@ jobs:
       # Save the gfortran version to a file so we can use it in the cache key.
       run: |
         brew uninstall --ignore-dependencies --force pkg-config@0.29.2
-        brew install cmake pkgconf autoconf libtool automake wget pcre doxygen llvm
+        brew install cmake pkgconfig autoconf libtool automake wget pcre doxygen llvm
         brew reinstall gcc
         pip3 install numpy==1.25
         gfortran -v
