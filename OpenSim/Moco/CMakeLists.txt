@@ -118,6 +118,8 @@ set(MOCO_SOURCES
         )
 if(OPENSIM_WITH_CASADI)
     list(APPEND MOCO_SOURCES
+            MocoContactInitializer.h
+            MocoContactInitializer.cpp
             MocoCasADiSolver/CasOCProblem.h
             MocoCasADiSolver/CasOCProblem.cpp
             MocoCasADiSolver/CasOCSolver.h

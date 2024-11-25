@@ -41,7 +41,9 @@ MocoStudy constructBaseStudy(const std::string& studyName,
 
     MocoTrack track;
     track.setName(studyName);
-    track.setModel(std::move(modelProcessor));
+    Model model = modelProcessor.process();
+    model.initSystem();
+    track.setModel(modelProcessor);
 
     track.setStatesReference(tableProcessor);
     track.set_states_global_tracking_weight(0.1);
@@ -81,27 +83,6 @@ MocoStudy constructBaseStudy(const std::string& studyName,
     MocoContactTrackingGoalGroup leftContactGroup(contactForcesLeft, 
             "Left_GRF", {"/bodyset/toes_l"});
     contactTracking->addContactGroup(leftContactGroup);  
-    // contactTracking->setNormalizeTrackingError(true);
-
-    // Constrain the initial states to be close to the reference.
-    Model model = modelProcessor.process();
-    model.initSystem();
-    TimeSeriesTable coordinates = tableProcessor.process(&model);
-    const auto& labels = coordinates.getColumnLabels();
-    for (const auto& label : labels) {
-        const auto& value = coordinates.getDependentColumn(label);        
-        double lower = 0.0;
-        double upper = 0.0;
-        if (label.find("/speed") != std::string::npos) {
-            lower = value[0] - 0.25;
-            upper = value[0] + 0.25;
-        } else {
-            lower = value[0] - 0.1;
-            upper = value[0] + 0.1;
-        }
-
-        problem.setStateInfo(label, {}, {lower, upper});
-    }
 
     // Update the solver tolerances.
     auto& solver = study.updSolver<MocoCasADiSolver>();
@@ -162,6 +143,49 @@ void createInitialGuess(Model model) {
     translationTracking->setTranslationReference(translations);
     translationTracking->setFramePaths(frame_paths);
 
+    Model modelUpdated = modelProcessor.process();
+    modelUpdated.initSystem();
+
+    // Constrain the initial states to be close to the reference.
+    TimeSeriesTable coordinatesUpdated = tableProcessor.process(&modelUpdated);
+    const auto& labels = coordinatesUpdated.getColumnLabels();
+    for (const auto& label : labels) {
+        const auto& value = coordinatesUpdated.getDependentColumn(label);        
+        double lower = 0.0;
+        double upper = 0.0;
+        if (label.find("/speed") != std::string::npos) {
+            lower = value[0] - 0.1;
+            upper = value[0] + 0.1;
+        } else {
+            lower = value[0] - 0.05;
+            upper = value[0] + 0.05;
+        }
+
+        problem.setStateInfo(label, {}, {lower, upper});
+    }
+
+    // // Add cost for the the states and controls to be periodic.
+    // auto* periodicityGoal = problem.addGoal<MocoPeriodicityGoal>("periodicity");
+    // modelUpdated.initSystem();
+    // for (const auto& coord : modelUpdated.getComponentList<Coordinate>()) {
+
+    //     if (IO::EndsWith(coord.getName(), "_beta")) { continue; }
+
+    //     if (!IO::EndsWith(coord.getName(), "_tx")) {
+    //         periodicityGoal->addStatePair(coord.getStateVariableNames()[0]);
+    //     }
+    //     periodicityGoal->addStatePair(coord.getStateVariableNames()[1]);
+    // }
+    // for (const auto& muscle : modelUpdated.getComponentList<Muscle>()) {
+    //     periodicityGoal->addStatePair(muscle.getStateVariableNames()[0]);
+    //     periodicityGoal->addControlPair(muscle.getAbsolutePathString());
+    // }
+    // for (const auto& actu : modelUpdated.getComponentList<Actuator>()) {
+    //     periodicityGoal->addControlPair(actu.getAbsolutePathString());
+    // }
+    // periodicityGoal->setMode("cost");
+    // periodicityGoal->setWeight(1e-3);
+
     // Update the solver tolerances.
     auto& solver = study.updSolver<MocoCasADiSolver>();
     solver.resetProblem(problem);
@@ -177,8 +201,6 @@ void createInitialGuess(Model model) {
     // Solve!
     MocoSolution solution = study.solve().unseal();
     solution.write("example3DWalking_initial_guess.sto");
-    // MocoTrajectory solution("example3DWalking_tracking_solution.sto");
-    // study.visualize(solution);
 
     // Print the model.
     modelSolution.print("example3DWalking_initial_guess_model.osim");
@@ -189,8 +211,75 @@ void createInitialGuess(Model model) {
     STOFileAdapter::write(externalForcesTableFlat,
             "example3DWalking_initial_guess_ground_reactions.sto");
 
-    // Visualize the solution.
+}
+
+void createPeriodicInitialGuess(Model model) {
+
+    ModelProcessor modelProcessor(model);
+    modelProcessor.append(ModOpRemoveMuscles());
+    modelProcessor.append(ModOpAddReserves(250.0, SimTK::Infinity, true, true));
+
+    TimeSeriesTable coordinates("coordinates.sto");
+    coordinates.removeColumn("/jointset/patellofemoral_r/knee_angle_r_beta/value");
+    coordinates.removeColumn("/jointset/patellofemoral_l/knee_angle_l_beta/value");
+    TableProcessor tableProcessor = 
+            TableProcessor(coordinates) |
+            TabOpUseAbsoluteStateNames() |
+            TabOpAppendCoupledCoordinateValues() |
+            TabOpAppendCoordinateValueDerivativesAsSpeeds();
+
+    MocoStudy study = constructBaseStudy("create_initial_guess", 
+            modelProcessor, tableProcessor);
+
+    MocoProblem& problem = study.updProblem();
+
+    // Constrain the states and controls to be periodic.
+    Model modelUpdated = modelProcessor.process();
+    modelUpdated.initSystem();
+    auto* periodicityGoal = problem.addGoal<MocoPeriodicityGoal>("periodicity");
+    modelUpdated.initSystem();
+    for (const auto& coord : modelUpdated.getComponentList<Coordinate>()) {
+
+        if (IO::EndsWith(coord.getName(), "_beta")) { continue; }
+
+        if (!IO::EndsWith(coord.getName(), "_tx")) {
+            periodicityGoal->addStatePair(coord.getStateVariableNames()[0]);
+        }
+        periodicityGoal->addStatePair(coord.getStateVariableNames()[1]);
+    }
+    for (const auto& muscle : modelUpdated.getComponentList<Muscle>()) {
+        periodicityGoal->addStatePair(muscle.getStateVariableNames()[0]);
+        periodicityGoal->addControlPair(muscle.getAbsolutePathString());
+    }
+    for (const auto& actu : modelUpdated.getComponentList<Actuator>()) {
+        periodicityGoal->addControlPair(actu.getAbsolutePathString());
+    }
+
+    // Update the solver tolerances.
+    auto& solver = study.updSolver<MocoCasADiSolver>();
+    solver.resetProblem(problem);
+    solver.setGuessFile("example3DWalking_initial_guess.sto");
+
+    // Solve!
+    MocoSolution solution = study.solve().unseal();
+    solution.write("example3DWalking_periodic_initial_guess.sto");
+    // MocoTrajectory solution("example3DWalking_tracking_solution.sto");
     // study.visualize(solution);
+
+    // Print the model.
+    Model modelSolution = modelProcessor.process();
+    modelSolution.initSystem();
+    modelSolution.print("example3DWalking_periodic_initial_guess_model.osim");
+
+    // Extract the ground reaction forces.
+    TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
+            modelSolution, solution, contactForcesRight, contactForcesLeft);
+    STOFileAdapter::write(externalForcesTableFlat,
+            "example3DWalking_periodic_initial_guess_ground_reactions.sto");
+
+    // Visualize the solution.
+    study.visualize(solution);
+
 }
 
 void trackWalking(Model model) {
@@ -218,7 +307,30 @@ void trackWalking(Model model) {
             modelProcessor, tableProcessor);
 
     auto& problem = study.updProblem();
-    problem.addGoal<MocoInitialActivationGoal>("initial_activation");
+    problem.updGoal("state_tracking").setWeight(0.05);
+    problem.updGoal("grf_tracking").setWeight(5e-3);
+    // problem.addGoal<MocoInitialActivationGoal>("initial_activation");
+
+    // Constrain the states and controls to be periodic.
+    auto* periodicityGoal = problem.addGoal<MocoPeriodicityGoal>("periodicity");
+    model.initSystem();
+    for (const auto& coord : model.getComponentList<Coordinate>()) {
+
+        if (IO::EndsWith(coord.getName(), "_beta")) { continue; }
+
+        if (!IO::EndsWith(coord.getName(), "_tx")) {
+            periodicityGoal->addStatePair(coord.getStateVariableNames()[0]);
+        }
+        periodicityGoal->addStatePair(coord.getStateVariableNames()[1]);
+    }
+    for (const auto& muscle : model.getComponentList<Muscle>()) {
+        periodicityGoal->addStatePair(muscle.getStateVariableNames()[0]);
+        periodicityGoal->addControlPair(muscle.getAbsolutePathString());
+    }
+    for (const auto& actu : model.getComponentList<Actuator>()) {
+        periodicityGoal->addControlPair(actu.getAbsolutePathString());
+    }
+
 
     auto& solver = study.updSolver<MocoCasADiSolver>();
     solver.resetProblem(problem);
@@ -229,21 +341,21 @@ void trackWalking(Model model) {
     solver.setGuess(guess);
 
     // Solve!
-    MocoSolution solution = study.solve().unseal();
-    solution.write("example3DWalking_track_walking.sto");
-    // MocoTrajectory solution("example3DWalking_tracking_solution.sto");
-    // study.visualize(solution);
+    // MocoSolution solution = study.solve().unseal();
+    // solution.write("example3DWalking_track_walking.sto");
+    MocoTrajectory solution("example3DWalking_track_walking.sto");
+    study.visualize(solution);
 
     // Print the model.
-    Model modelSolution = modelProcessor.process();
-    modelSolution.initSystem();
-    modelSolution.print("example3DWalking_track_walking_model.osim");
+    // Model modelSolution = modelProcessor.process();
+    // modelSolution.initSystem();
+    // modelSolution.print("example3DWalking_track_walking_model.osim");
 
-    // Extract the ground reaction forces.
-    TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
-            modelSolution, solution, contactForcesRight, contactForcesLeft);
-    STOFileAdapter::write(externalForcesTableFlat,
-            "example3DWalking_track_walking_ground_reactions.sto");
+    // // Extract the ground reaction forces.
+    // TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
+    //         modelSolution, solution, contactForcesRight, contactForcesLeft);
+    // STOFileAdapter::write(externalForcesTableFlat,
+    //         "example3DWalking_track_walking_ground_reactions.sto");
 
     // Visualize the solution.
     // study.visualize(solution);
@@ -308,6 +420,8 @@ int main() {
     model.finalizeConnections();
 
     // createInitialGuess(model);
+
+    // createPeriodicInitialGuess(model);
 
     trackWalking(model);
 
