@@ -1,4 +1,5 @@
 #include <fstream>
+#include "CommonUtilities.h"
 #include "Simbody.h"
 #include "Exception.h"
 #include "FileAdapter.h"
@@ -58,8 +59,6 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     SimTK::Matrix_<SimTK::Vec3> linearAccelerationData{ last_size, n_imus };
     SimTK::Matrix_<SimTK::Vec3> magneticHeadingData{ last_size, n_imus };
     SimTK::Matrix_<SimTK::Vec3> angularVelocityData{ last_size, n_imus };
-    std::vector<double> times;
-    times.resize(last_size);
     // We support two formats, they contain similar data but headers are different
     std::string line;
     // Line 1
@@ -134,8 +133,6 @@ APDMDataReader::extendRead(const std::string& fileName) const {
 
     // For all tables, will create row, stitch values from different sensors then append
     bool done = false;
-    double time = 0.0;
-    double timeIncrement = 1 / dataRate;
     int rowNumber = 0;
     while (!done){
         // Make vectors one per table
@@ -172,7 +169,6 @@ APDMDataReader::extendRead(const std::string& fileName) const {
                     OpenSim::IO::stod(nextRow[orientationsIndex[imu_index] + 3]));
         }
         // append to the tables
-        times[rowNumber] = time;
         if (foundLinearAccelerationData) 
             linearAccelerationData[rowNumber] =  accel_row_vector;
         if (foundMagneticHeadingData) 
@@ -180,14 +176,10 @@ APDMDataReader::extendRead(const std::string& fileName) const {
         if (foundAngularVelocityData) 
             angularVelocityData[rowNumber] = gyro_row_vector;
         rotationsData[rowNumber] = orientation_row_vector;
-        // We could get some indication of time from file or generate time based on rate
-        // Here we use the latter mechanism.
-        time += timeIncrement;
         rowNumber++;
         if (std::remainder(rowNumber, last_size) == 0) {
             // resize all Data/Matrices, double the size  while keeping data
             int newSize = last_size*2;
-            times.resize(newSize);
             // Repeat for Data matrices in use
             if (foundLinearAccelerationData) linearAccelerationData.resizeKeep(newSize, n_imus);
             if (foundMagneticHeadingData) magneticHeadingData.resizeKeep(newSize, n_imus);
@@ -197,7 +189,9 @@ APDMDataReader::extendRead(const std::string& fileName) const {
         }
     }
     // Trim Matrices in use to actual data and move into tables
-    times.resize(rowNumber);
+    double timeIncrement = 1 / dataRate;
+    const auto times_vec = createVectorLinspace(rowNumber, 0.0, (rowNumber - 1) * timeIncrement);
+    std::vector<double> times(times_vec.getContiguousScalarData(),times_vec.getContiguousScalarData() + times_vec.size());
     // Repeat for Data matrices in use and create Tables from them or size 0 for empty
     linearAccelerationData.resizeKeep(foundLinearAccelerationData? rowNumber : 0,
         n_imus);

@@ -1,25 +1,12 @@
 #include <fstream>
-#include <numeric>
+#include "CommonUtilities.h"
 #include "Simbody.h"
 #include "Exception.h"
 #include "FileAdapter.h"
 #include "TimeSeriesTable.h"
-#include <vector>
 #include "XsensDataReader.h"
 
 namespace OpenSim {
-
-template <typename T>
-std::vector<T> uniformTimeSamples(const T offset, const T step_size, const int numEl) {
-    std::vector<int> ivec(numEl);
-    std::iota(ivec.begin(), ivec.end(), 0); // ivec will become: [0..numEl]
-    std::vector<T> output(ivec.size());
-    std::transform(ivec.begin(), ivec.end(), output.begin(),
-                   [step_size, offset](int value) {
-                       return std::fma(value, step_size, offset);
-                   });
-    return output;
-}
 
 XsensDataReader* XsensDataReader::clone() const {
     return new XsensDataReader{*this};
@@ -176,7 +163,9 @@ XsensDataReader::extendRead(const std::string& folderName) const {
         }
     }
     double timeIncrement = 1 / dataRate;
-    const std::vector<double> times = uniformTimeSamples(0.0, timeIncrement, rowNumber);
+    const auto times_vec = createVectorLinspace(rowNumber, 0.0, (rowNumber - 1) * timeIncrement);
+    std::vector<double> times(times_vec.getContiguousScalarData(),times_vec.getContiguousScalarData() + times_vec.size());
+
     // Repeat for Data matrices in use and create Tables from them or size 0 for empty
     linearAccelerationData.resizeKeep(foundLinearAccelerationData? rowNumber : 0,
         n_imus);
