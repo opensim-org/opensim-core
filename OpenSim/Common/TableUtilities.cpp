@@ -29,6 +29,7 @@
 #include "PiecewiseLinearFunction.h"
 #include "Signal.h"
 #include "Storage.h"
+#include <algorithm>
 #include <numeric>
 #include <vector>
 
@@ -122,7 +123,7 @@ int TableUtilities::findStateLabelIndexInternal(const std::string* begin,
 }
 
 template <typename T>
-bool isUniform(const std::vector<T>& x) {
+std::pair<bool,T> isUniform(const std::vector<T>& x) {
 
     // Initialize step as NaN
     T step = std::numeric_limits<T>::quiet_NaN();
@@ -154,8 +155,13 @@ bool isUniform(const std::vector<T>& x) {
     if (!tf && x.size() == 2) {
         tf = true; // Handle special case for two elements
     }
+    if (tf) {
+        step = mean_step;
+    } else {
+        step = *std::min_element(results.begin()+1, results.end());
+    }
 
-    return tf;
+    return {tf, step};
 }
 
 void TableUtilities::filterLowpass(
@@ -172,14 +178,12 @@ void TableUtilities::filterLowpass(
     const auto& time = table.getIndependentColumn();
 
     double dtMin = SimTK::Infinity;
-    for (int irow = 1; irow < numRows; ++irow) {
-        double dt = time[irow] - time[irow - 1];
-        if (dt < dtMin) dtMin = dt;
-    }
+    const auto uniform = isUniform(time);
+    const auto &uniformlySampled = uniform.first;
+    dtMin = uniform.second;
+
     OPENSIM_THROW_IF(
             dtMin < SimTK::Eps, Exception, "Storage cannot be resampled.");
-
-    const bool uniformlySampled = isUniform(time);
 
     // Resample if the sampling interval is not uniform.
     if (!uniformlySampled) {
