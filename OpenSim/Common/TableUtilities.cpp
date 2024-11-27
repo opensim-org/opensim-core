@@ -122,7 +122,7 @@ int TableUtilities::findStateLabelIndexInternal(const std::string* begin,
 }
 
 template <typename T>
-std::pair<bool, double> isUniform(const std::vector<T>& x) {
+bool isUniform(const std::vector<T>& x) {
 
     // Initialize step as NaN
     T step = std::numeric_limits<T>::quiet_NaN();
@@ -154,9 +154,8 @@ std::pair<bool, double> isUniform(const std::vector<T>& x) {
     if (!tf && x.size() == 2) {
         tf = true; // Handle special case for two elements
     }
-    if (tf) { step = mean_step; }
 
-    return {tf, step};
+    return tf;
 }
 
 void TableUtilities::filterLowpass(
@@ -180,7 +179,7 @@ void TableUtilities::filterLowpass(
     OPENSIM_THROW_IF(
             dtMin < SimTK::Eps, Exception, "Storage cannot be resampled.");
 
-    const auto [uniformlySampled, sampleRate] = isUniform(time);
+    const bool uniformlySampled = isUniform(time);
 
     // Resample if the sampling interval is not uniform.
     if (!uniformlySampled) {
