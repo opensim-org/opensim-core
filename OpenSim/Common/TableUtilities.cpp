@@ -29,6 +29,8 @@
 #include "PiecewiseLinearFunction.h"
 #include "Signal.h"
 #include "Storage.h"
+#include <numeric>
+#include <vector>
 
 using namespace OpenSim;
 
@@ -119,6 +121,44 @@ int TableUtilities::findStateLabelIndexInternal(const std::string* begin,
     return -1;
 }
 
+template <typename T>
+std::pair<bool, double> isUniform(const std::vector<T>& x) {
+
+    // Initialize step as NaN
+    T step = std::numeric_limits<T>::quiet_NaN();
+    bool tf = false;
+
+    T maxElement = std::max(std::abs(x.front()), std::abs(x.back()));
+    T tol = 4 * std::numeric_limits<T>::epsilon() * maxElement;
+    size_t numSpaces = x.size() - 1;
+    T span = x.back() - x.front();
+    const T mean_step =
+            (std::isfinite(span))
+                    ? span / numSpaces
+                    : (x.back() / numSpaces - x.front() / numSpaces);
+
+    T stepAbs = std::abs(mean_step);
+    if (stepAbs < tol) {
+        tol = (stepAbs < std::numeric_limits<T>::epsilon() * maxElement)
+                      ? std::numeric_limits<T>::epsilon() * maxElement
+                      : stepAbs;
+    }
+    std::vector<T> results(x.size());
+    std::adjacent_difference(x.begin(), x.end(), results.begin());
+    // First value from adjacent_difference is the first input so it is skipped
+    tf = std::all_of(
+            results.begin() + 1, results.end(), [&mean_step, &tol](T val) {
+                return std::abs(val - mean_step) <= tol;
+            });
+
+    if (!tf && x.size() == 2) {
+        tf = true; // Handle special case for two elements
+    }
+    if (tf) { step = mean_step; }
+
+    return {tf, step};
+}
+
 void TableUtilities::filterLowpass(
         TimeSeriesTable& table, double cutoffFreq, bool padData) {
     OPENSIM_THROW_IF(cutoffFreq < 0, Exception,
@@ -140,10 +180,10 @@ void TableUtilities::filterLowpass(
     OPENSIM_THROW_IF(
             dtMin < SimTK::Eps, Exception, "Storage cannot be resampled.");
 
-    double dtAvg = (time.back() - time.front()) / (numRows - 1);
+    const auto [uniformlySampled, sampleRate] = isUniform(time);
 
     // Resample if the sampling interval is not uniform.
-    if (dtAvg - dtMin > SimTK::Eps) {
+    if (!uniformlySampled) {
         table = resampleWithInterval(table, dtMin);
     }
 
