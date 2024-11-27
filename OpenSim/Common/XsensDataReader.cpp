@@ -1,4 +1,5 @@
 #include <fstream>
+#include <numeric>
 #include "Simbody.h"
 #include "Exception.h"
 #include "FileAdapter.h"
@@ -6,6 +7,18 @@
 #include "XsensDataReader.h"
 
 namespace OpenSim {
+
+template <typename T>
+std::vector<T> uniformTimeSamples(const T offset, const T step_size, const int numEl) {
+    std::vector<int> ivec(numEl);
+    std::iota(ivec.begin(), ivec.end(), 0); // ivec will become: [0..99]
+    std::vector<T> output(ivec.size());
+    std::transform(ivec.begin(), ivec.end(), output.begin(),
+                   [step_size, offset](int value) {
+                       return std::fma(value, step_size, offset);
+                   });
+    return output;
+}
 
 XsensDataReader* XsensDataReader::clone() const {
     return new XsensDataReader{*this};
@@ -96,8 +109,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
     // For all tables, will create row, stitch values from different files then append,time and timestep
     // are based on the first file
     bool done = false;
-    double time = 0.0;
-    double timeIncrement = 1 / dataRate;
+    // int time = 0.0;
     int rowNumber = 0;
     while (!done){
         // Make vectors one per table
@@ -146,7 +158,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
         if (done) 
             break;
         // append to the tables
-        times[rowNumber] = time;
+        // times[rowNumber] = time;
         if (foundLinearAccelerationData) 
             linearAccelerationData[rowNumber] =  accel_row_vector;
         if (foundMagneticHeadingData) 
@@ -154,12 +166,12 @@ XsensDataReader::extendRead(const std::string& folderName) const {
         if (foundAngularVelocityData) 
             angularVelocityData[rowNumber] = gyro_row_vector;
         rotationsData[rowNumber] = orientation_row_vector;
-        time += timeIncrement;
+        // time += timeIncrement;
         rowNumber++;
         if (std::remainder(rowNumber, last_size) == 0) {
             // resize all Data/Matrices, double the size  while keeping data
             int newSize = last_size*2;
-            times.resize(newSize);
+            // times.resize(newSize);
             // Repeat for Data matrices in use
             if (foundLinearAccelerationData) linearAccelerationData.resizeKeep(newSize, n_imus);
             if (foundMagneticHeadingData) magneticHeadingData.resizeKeep(newSize, n_imus);
@@ -168,8 +180,10 @@ XsensDataReader::extendRead(const std::string& folderName) const {
             last_size = newSize;
         }
     }
+    double timeIncrement = 1 / dataRate;
+    const auto time_vec = uniformTimeSamples(0.0, timeIncrement, rowNumber);
     // Trim Matrices in use to actual data and move into tables
-    times.resize(rowNumber);
+    // times.resize(rowNumber);
     // Repeat for Data matrices in use and create Tables from them or size 0 for empty
     linearAccelerationData.resizeKeep(foundLinearAccelerationData? rowNumber : 0,
         n_imus);
@@ -182,7 +196,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
     // Now create the tables from matrices
     // Create 4 tables for Rotations, LinearAccelerations, AngularVelocity, MagneticHeading
     // Tables could be empty if data is not present in file(s)
-    DataAdapter::OutputTables tables = createTablesFromMatrices(dataRate, labels, times,
+    DataAdapter::OutputTables tables = createTablesFromMatrices(dataRate, labels, time_vec,
         rotationsData, linearAccelerationData, magneticHeadingData, angularVelocityData);
     return tables;
 }
