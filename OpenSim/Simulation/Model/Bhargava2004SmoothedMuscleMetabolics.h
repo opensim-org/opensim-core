@@ -1,7 +1,7 @@
-#ifndef MOCO_BHARGAVA2004SMOOTHEDMUSCLEMETABOLICS_H
-#define MOCO_BHARGAVA2004SMOOTHEDMUSCLEMETABOLICS_H
+#ifndef BHARGAVA2004SMOOTHEDMUSCLEMETABOLICS_H
+#define BHARGAVA2004SMOOTHEDMUSCLEMETABOLICS_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: Bhargava2004SmoothedMuscleMetabolics.h                       *
+ *                 Bhargava2004SmoothedMuscleMetabolics.h                     *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2020 Stanford University and the Authors                     *
  *                                                                            *
@@ -19,7 +19,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Moco/osimMocoDLL.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <unordered_map>
 
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
@@ -380,4 +380,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_BHARGAVA2004SMOOTHEDMUSCLEMETABOLICS_H
+#endif // BHARGAVA2004SMOOTHEDMUSCLEMETABOLICS_H

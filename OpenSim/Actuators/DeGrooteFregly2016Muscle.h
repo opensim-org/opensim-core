@@ -1,5 +1,5 @@
-#ifndef MOCO_DEGROOTEFREGLY2016MUSCLE_H
-#define MOCO_DEGROOTEFREGLY2016MUSCLE_H
+#ifndef DEGROOTEFREGLY2016MUSCLE_H
+#define DEGROOTEFREGLY2016MUSCLE_H
 /* -------------------------------------------------------------------------- *
  *                 OpenSim:  DeGrooteFregly2016Muscle.h                       *
  * -------------------------------------------------------------------------- *
@@ -1002,4 +1002,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_DEGROOTEFREGLY2016MUSCLE_H
+#endif // DEGROOTEFREGLY2016MUSCLE_H
