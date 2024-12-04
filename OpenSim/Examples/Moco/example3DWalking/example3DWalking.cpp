@@ -35,7 +35,7 @@ const std::vector<std::string> contactForcesLeft = {"/contactHeel_l",
             "/contactMedialMidfoot_l", "/contactLateralToe_l", 
             "/contactMedialToe_l"};
 
-MocoStudy constructBaseStudy(const std::string& studyName, 
+MocoStudy constructContactTrackingStudy(const std::string& studyName, 
         ModelProcessor modelProcessor,
         TableProcessor tableProcessor) {
 
@@ -110,38 +110,10 @@ void createInitialGuess(Model model) {
             TabOpAppendCoupledCoordinateValues() |
             TabOpAppendCoordinateValueDerivativesAsSpeeds();
 
-    MocoStudy study = constructBaseStudy("create_initial_guess", 
+    MocoStudy study = constructContactTrackingStudy("create_initial_guess", 
             modelProcessor, tableProcessor);
 
     MocoProblem& problem = study.updProblem();
-
-    // Add a MocoOrientationTrackingGoal to the problem.
-    std::vector<std::string> frame_paths;
-    frame_paths.push_back("/bodyset/calcn_r");
-    frame_paths.push_back("/bodyset/toes_r");
-    frame_paths.push_back("/bodyset/calcn_l");
-    frame_paths.push_back("/bodyset/toes_l");
-
-    auto* orientationTracking = problem.addGoal<MocoOrientationTrackingGoal>(
-            "orientation_tracking", 0.5);
-    TimeSeriesTable_<SimTK::Quaternion> orientations(
-            "contact_initializer_solution_orientations.sto");
-    orientationTracking->setRotationReference(orientations);
-    orientationTracking->setFramePaths(frame_paths);
-
-    auto* angularVelocityTracking = problem.addGoal<MocoAngularVelocityTrackingGoal>(
-            "angular_velocity_tracking", 0.001);
-    TimeSeriesTable_<SimTK::Vec3> angular_velocities(
-            "contact_initializer_solution_angular_velocities.sto");
-    angularVelocityTracking->setAngularVelocityReference(angular_velocities);
-    angularVelocityTracking->setFramePaths(frame_paths);
-
-    auto* translationTracking = problem.addGoal<MocoTranslationTrackingGoal>(
-            "translation_tracking", 0.5);
-    TimeSeriesTable_<SimTK::Vec3> translations(
-            "contact_initializer_solution_translations.sto");
-    translationTracking->setTranslationReference(translations);
-    translationTracking->setFramePaths(frame_paths);
 
     Model modelUpdated = modelProcessor.process();
     modelUpdated.initSystem();
@@ -164,32 +136,9 @@ void createInitialGuess(Model model) {
         problem.setStateInfo(label, {}, {lower, upper});
     }
 
-    // // Add cost for the the states and controls to be periodic.
-    // auto* periodicityGoal = problem.addGoal<MocoPeriodicityGoal>("periodicity");
-    // modelUpdated.initSystem();
-    // for (const auto& coord : modelUpdated.getComponentList<Coordinate>()) {
-
-    //     if (IO::EndsWith(coord.getName(), "_beta")) { continue; }
-
-    //     if (!IO::EndsWith(coord.getName(), "_tx")) {
-    //         periodicityGoal->addStatePair(coord.getStateVariableNames()[0]);
-    //     }
-    //     periodicityGoal->addStatePair(coord.getStateVariableNames()[1]);
-    // }
-    // for (const auto& muscle : modelUpdated.getComponentList<Muscle>()) {
-    //     periodicityGoal->addStatePair(muscle.getStateVariableNames()[0]);
-    //     periodicityGoal->addControlPair(muscle.getAbsolutePathString());
-    // }
-    // for (const auto& actu : modelUpdated.getComponentList<Actuator>()) {
-    //     periodicityGoal->addControlPair(actu.getAbsolutePathString());
-    // }
-    // periodicityGoal->setMode("cost");
-    // periodicityGoal->setWeight(1e-3);
-
     // Update the solver tolerances.
     auto& solver = study.updSolver<MocoCasADiSolver>();
     solver.resetProblem(problem);
-
 
     Model modelSolution = modelProcessor.process();
     modelSolution.initSystem();
@@ -210,75 +159,6 @@ void createInitialGuess(Model model) {
             modelSolution, solution, contactForcesRight, contactForcesLeft);
     STOFileAdapter::write(externalForcesTableFlat,
             "example3DWalking_initial_guess_ground_reactions.sto");
-
-}
-
-void createPeriodicInitialGuess(Model model) {
-
-    ModelProcessor modelProcessor(model);
-    modelProcessor.append(ModOpRemoveMuscles());
-    modelProcessor.append(ModOpAddReserves(250.0, SimTK::Infinity, true, true));
-
-    TimeSeriesTable coordinates("coordinates.sto");
-    coordinates.removeColumn("/jointset/patellofemoral_r/knee_angle_r_beta/value");
-    coordinates.removeColumn("/jointset/patellofemoral_l/knee_angle_l_beta/value");
-    TableProcessor tableProcessor = 
-            TableProcessor(coordinates) |
-            TabOpUseAbsoluteStateNames() |
-            TabOpAppendCoupledCoordinateValues() |
-            TabOpAppendCoordinateValueDerivativesAsSpeeds();
-
-    MocoStudy study = constructBaseStudy("create_initial_guess", 
-            modelProcessor, tableProcessor);
-
-    MocoProblem& problem = study.updProblem();
-
-    // Constrain the states and controls to be periodic.
-    Model modelUpdated = modelProcessor.process();
-    modelUpdated.initSystem();
-    auto* periodicityGoal = problem.addGoal<MocoPeriodicityGoal>("periodicity");
-    modelUpdated.initSystem();
-    for (const auto& coord : modelUpdated.getComponentList<Coordinate>()) {
-
-        if (IO::EndsWith(coord.getName(), "_beta")) { continue; }
-
-        if (!IO::EndsWith(coord.getName(), "_tx")) {
-            periodicityGoal->addStatePair(coord.getStateVariableNames()[0]);
-        }
-        periodicityGoal->addStatePair(coord.getStateVariableNames()[1]);
-    }
-    for (const auto& muscle : modelUpdated.getComponentList<Muscle>()) {
-        periodicityGoal->addStatePair(muscle.getStateVariableNames()[0]);
-        periodicityGoal->addControlPair(muscle.getAbsolutePathString());
-    }
-    for (const auto& actu : modelUpdated.getComponentList<Actuator>()) {
-        periodicityGoal->addControlPair(actu.getAbsolutePathString());
-    }
-
-    // Update the solver tolerances.
-    auto& solver = study.updSolver<MocoCasADiSolver>();
-    solver.resetProblem(problem);
-    solver.setGuessFile("example3DWalking_initial_guess.sto");
-
-    // Solve!
-    MocoSolution solution = study.solve().unseal();
-    solution.write("example3DWalking_periodic_initial_guess.sto");
-    // MocoTrajectory solution("example3DWalking_tracking_solution.sto");
-    // study.visualize(solution);
-
-    // Print the model.
-    Model modelSolution = modelProcessor.process();
-    modelSolution.initSystem();
-    modelSolution.print("example3DWalking_periodic_initial_guess_model.osim");
-
-    // Extract the ground reaction forces.
-    TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
-            modelSolution, solution, contactForcesRight, contactForcesLeft);
-    STOFileAdapter::write(externalForcesTableFlat,
-            "example3DWalking_periodic_initial_guess_ground_reactions.sto");
-
-    // Visualize the solution.
-    study.visualize(solution);
 
 }
 
@@ -303,7 +183,7 @@ void trackWalking(Model model) {
             TabOpAppendCoupledCoordinateValues() |
             TabOpAppendCoordinateValueDerivativesAsSpeeds();
     
-    MocoStudy study = constructBaseStudy("track_walking",
+    MocoStudy study = constructContactTrackingStudy("track_walking",
             modelProcessor, tableProcessor);
 
     auto& problem = study.updProblem();
@@ -341,10 +221,10 @@ void trackWalking(Model model) {
     solver.setGuess(guess);
 
     // Solve!
-    // MocoSolution solution = study.solve().unseal();
-    // solution.write("example3DWalking_track_walking.sto");
-    MocoTrajectory solution("example3DWalking_track_walking.sto");
-    study.visualize(solution);
+    MocoSolution solution = study.solve().unseal();
+    solution.write("example3DWalking_track_walking.sto");
+    // MocoTrajectory solution("example3DWalking_track_walking.sto");
+    // study.visualize(solution);
 
     // Print the model.
     // Model modelSolution = modelProcessor.process();
@@ -419,7 +299,7 @@ int main() {
     }
     model.finalizeConnections();
 
-    // createInitialGuess(model);
+    createInitialGuess(model);
 
     // createPeriodicInitialGuess(model);
 
