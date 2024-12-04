@@ -301,8 +301,6 @@ int main() {
 
     createInitialGuess(model);
 
-    // createPeriodicInitialGuess(model);
-
     trackWalking(model);
 
 

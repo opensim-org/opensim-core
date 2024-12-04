@@ -16,7 +16,7 @@ function(MocoAddSandboxExecutable)
     file(COPY ${MOCOSAND_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
-MocoAddSandboxExecutable(NAME sandboxSandbox LIB_DEPENDS osimMoco casadi)
+MocoAddSandboxExecutable(NAME sandboxSandbox LIB_DEPENDS osimMoco)
 
 MocoAddSandboxExecutable(NAME sandboxTendonForceState
         LIB_DEPENDS osimMoco tropter)
