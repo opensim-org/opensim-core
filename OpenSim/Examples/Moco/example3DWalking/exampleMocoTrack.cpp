@@ -42,7 +42,7 @@ void torqueDrivenMarkerTracking() {
     track.setName("torque_driven_marker_tracking");
 
     // Construct a ModelProcessor and add it to the tool. ModelProcessors
-    // accept a base model (or mexaodel file) and allow you to easily modify the
+    // accept a base model (or model file) and allow you to easily modify the
     // model by appending ModelOperators. Operations are performed in the order
     // that they are appended to the model.
     ModelProcessor modelProcessor("subject_walk_scaled.osim");
