@@ -133,6 +133,10 @@ void InverseKinematicsSolver::updateMarkerWeight(const std::string& markerName, 
 {
     const Array_<std::string> &names = _markersReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), markerName);
+    if (p == names.end())
+        throw Exception(
+                "InverseKinematicsSolver::updateMarkerWeight: "
+                "invalid or unused marker name " + markerName + ".");
     int index = (int)std::distance(names.begin(), p);
     updateMarkerWeight(index, value);
 }
@@ -175,6 +179,10 @@ void InverseKinematicsSolver::updateOrientationWeight(const std::string& orienta
 {
     const Array_<std::string> &names = _orientationsReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), orientationName);
+    if (p == names.end())
+        throw Exception("InverseKinematicsSolver::updateOrientationWeight: "
+                        "invalid or unused orientation sensor name " +
+                        orientationName + ".");
     int index = (int)std::distance(names.begin(), p);
     updateOrientationWeight(index, value);
 }
@@ -212,6 +220,10 @@ SimTK::Vec3 InverseKinematicsSolver::computeCurrentMarkerLocation(const std::str
 {
     const Array_<std::string> &names = _markersReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), markerName);
+    if (p == names.end())
+        throw Exception("InverseKinematicsSolver::computeCurrentMarkerLocation: "
+                        "invalid or unused marker name " +
+                        markerName + ".");
     int index = (int)std::distance(names.begin(), p);
     return computeCurrentMarkerLocation(index);
 }
@@ -239,6 +251,9 @@ double InverseKinematicsSolver::computeCurrentMarkerError(const std::string &mar
 {
     const Array_<std::string>& names = _markersReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), markerName);
+    if (p == names.end())
+        throw Exception("InverseKinematicsSolver::computeCurrentMarkerError: "
+                        "invalid or unused marker name "+markerName+".");
     int index = (int)std::distance(names.begin(), p);
     return computeCurrentMarkerError(index);
 }
@@ -266,6 +281,10 @@ double InverseKinematicsSolver::computeCurrentSquaredMarkerError(const std::stri
 {
     const Array_<std::string>& names = _markersReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), markerName);
+    if (p == names.end())
+        throw Exception("InverseKinematicsSolver::computeCurrentSquaredMarkerError: "
+                        "invalid or unused marker name " +
+                        markerName + ".");
     int index = (int)std::distance(names.begin(), p);
     return computeCurrentSquaredMarkerError(index);
 }
@@ -301,6 +320,9 @@ SimTK::Rotation InverseKinematicsSolver::
 {
     const Array_<std::string>& names = _orientationsReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), osensorName);
+    if (p == names.end())
+        throw Exception("InverseKinematicsSolver::computeCurrentSensorOrientation: "
+                        "invalid or unused orientation sensor name " + osensorName + ".");
     int index = (int)std::distance(names.begin(), p);
     return computeCurrentSensorOrientation(index);
 }
@@ -331,6 +353,9 @@ double InverseKinematicsSolver::
 {
     const Array_<std::string>& names = _orientationsReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), osensorName);
+    if (p == names.end())
+        throw Exception("InverseKinematicsSolver::computeCurrentOrientationError: "
+                        "invalid or unused orientation sensor name " + osensorName + ".");
     int index = (int)std::distance(names.begin(), p);
     return computeCurrentOrientationError(index);
 }

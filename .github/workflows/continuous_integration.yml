@@ -366,7 +366,7 @@ jobs:
 
     - name: Download performance analysis results
       id: download-artifact
-      uses: dawidd6/action-download-artifact@v3.0.0
+      uses: dawidd6/action-download-artifact@v6
       with:
         github_token: ${{ secrets.PERF_DISPATCH_PAT }}
         run_id: ${{ steps.return_dispatch.outputs.run_id }}
@@ -830,7 +830,7 @@ jobs:
 
     - name: Download performance analysis results
       id: download-artifact
-      uses: dawidd6/action-download-artifact@v3.0.0
+      uses: dawidd6/action-download-artifact@v6
       with:
         github_token: ${{ secrets.PERF_DISPATCH_PAT }}
         run_id: ${{ steps.return_dispatch.outputs.run_id }}
