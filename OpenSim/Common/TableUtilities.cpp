@@ -122,48 +122,6 @@ int TableUtilities::findStateLabelIndexInternal(const std::string* begin,
     return -1;
 }
 
-template <typename T>
-std::pair<bool,T> isUniform(const std::vector<T>& x) {
-
-    // Initialize step as NaN
-    T step = std::numeric_limits<T>::quiet_NaN();
-    bool tf = false;
-
-    T maxElement = std::max(std::abs(x.front()), std::abs(x.back()));
-    T tol = 4 * std::numeric_limits<T>::epsilon() * maxElement;
-    size_t numSpaces = x.size() - 1;
-    T span = x.back() - x.front();
-    const T mean_step =
-            (std::isfinite(span))
-                    ? span / numSpaces
-                    : (x.back() / numSpaces - x.front() / numSpaces);
-
-    T stepAbs = std::abs(mean_step);
-    if (stepAbs < tol) {
-        tol = (stepAbs < std::numeric_limits<T>::epsilon() * maxElement)
-                      ? std::numeric_limits<T>::epsilon() * maxElement
-                      : stepAbs;
-    }
-    std::vector<T> results(x.size());
-    std::adjacent_difference(x.begin(), x.end(), results.begin());
-    // First value from adjacent_difference is the first input so it is skipped
-    tf = std::all_of(
-            results.begin() + 1, results.end(), [&mean_step, &tol](T val) {
-                return std::abs(val - mean_step) <= tol;
-            });
-
-    if (!tf && x.size() == 2) {
-        tf = true; // Handle special case for two elements
-    }
-    if (tf) {
-        step = mean_step;
-    } else {
-        step = *std::min_element(results.begin()+1, results.end());
-    }
-
-    return {tf, step};
-}
-
 void TableUtilities::filterLowpass(
         TimeSeriesTable& table, double cutoffFreq, bool padData) {
     OPENSIM_THROW_IF(cutoffFreq < 0, Exception,
@@ -177,10 +135,9 @@ void TableUtilities::filterLowpass(
 
     const auto& time = table.getIndependentColumn();
 
-    double dtMin = SimTK::Infinity;
     const auto uniform = isUniform(time);
     const auto &uniformlySampled = uniform.first;
-    dtMin = uniform.second;
+    const auto &dtMin = uniform.second;
 
     OPENSIM_THROW_IF(
             dtMin < SimTK::Eps, Exception, "Storage cannot be resampled.");
