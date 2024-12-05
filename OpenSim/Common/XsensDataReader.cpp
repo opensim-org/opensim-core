@@ -162,7 +162,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
             last_size = newSize;
         }
     }
-    double timeIncrement = 1 / dataRate;
+    const double timeIncrement = 1 / dataRate;
     const auto times = createVectorLinspaceInterval(rowNumber, 0.0, timeIncrement);
 
     // Repeat for Data matrices in use and create Tables from them or size 0 for empty
