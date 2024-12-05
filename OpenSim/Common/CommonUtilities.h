@@ -112,7 +112,7 @@ template <typename T>
 std::vector<T> createVectorLinspaceInterval(
         const int length, const T start, const T step_size) {
     std::vector<int> ivec(length);
-    std::iota(ivec.begin(), ivec.end(), 0); // ivec will become: [0..99]
+    std::iota(ivec.begin(), ivec.end(), 0); // ivec will become: [0..length]
     std::vector<T> output(ivec.size());
     std::transform(ivec.begin(), ivec.end(), output.begin(),
                     [step_size, start](int value) {
