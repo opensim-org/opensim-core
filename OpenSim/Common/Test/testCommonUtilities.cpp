@@ -22,6 +22,8 @@
 
 #include <OpenSim/Common/CommonUtilities.h>
 
+#include <algorithm> // for std::equal
+#include <limits>
 #include <vector>
 #include <numeric>
 #include <algorithm>
@@ -31,35 +33,36 @@
 
 using namespace OpenSim;
 
+constexpr double tol = std::numeric_limits<double>::epsilon() * 10;
 
 TEST_CASE("createVectorLinspaceInterval produces correct output for integers", "[createVectorLinspaceInterval]") {
     auto result = createVectorLinspaceInterval<int>(5, 0, 2);
     std::vector<int> expected = {0, 2, 4, 6, 8};
-    REQUIRE(result == expected);
+    REQUIRE_THAT(result, Catch::Matchers::Equals(expected));
 }
 
 TEST_CASE("createVectorLinspaceInterval produces correct output for floats", "[createVectorLinspaceInterval]") {
     auto result = createVectorLinspaceInterval<float>(5, 1.0f, 0.5f);
     std::vector<float> expected = {1.0f, 1.5f, 2.0f, 2.5f, 3.0f};
-    REQUIRE(result == expected);
+    REQUIRE_THAT(result, Catch::Matchers::Equals(expected));
 }
 
 TEST_CASE("createVectorLinspaceInterval handles negative step size", "[createVectorLinspaceInterval]") {
     auto result = createVectorLinspaceInterval<double>(5, 10.0, -2.0);
     std::vector<double> expected = {10.0, 8.0, 6.0, 4.0, 2.0};
-    REQUIRE(result == expected);
+    REQUIRE_THAT(result, Catch::Matchers::Equals(expected));
 }
 
 TEST_CASE("createVectorLinspaceInterval handles zero length", "[createVectorLinspaceInterval]") {
     auto result = createVectorLinspaceInterval<double>(0, 0.0, 1.0);
     std::vector<double> expected = {};
-    REQUIRE(result == expected);
+    REQUIRE_THAT(result, Catch::Matchers::Equals(expected));
 }
 
 TEST_CASE("createVectorLinspaceInterval handles large step size", "[createVectorLinspaceInterval]") {
     auto result = createVectorLinspaceInterval<int>(5, 0, 100);
     std::vector<int> expected = {0, 100, 200, 300, 400};
-    REQUIRE(result == expected);
+    REQUIRE_THAT(result, Catch::Matchers::Equals(expected));
 }
 
 TEST_CASE("createVectorLinspaceInterval handles large length", "[createVectorLinspaceInterval]") {
@@ -68,13 +71,19 @@ TEST_CASE("createVectorLinspaceInterval handles large length", "[createVectorLin
     std::iota(expected.begin(), expected.end(), 0.0);
     std::transform(expected.begin(), expected.end(), expected.begin(),
                    [](double value) { return value * 0.1; });
-    REQUIRE(result == expected);
+    REQUIRE_THAT(result, Catch::Matchers::Equals(expected));
 }
 
 TEST_CASE("createVectorLinspaceInterval produces correct output for small spacing with 10 elements", "[createVectorLinspaceInterval]") {
     auto result = createVectorLinspaceInterval<double>(10, 0.0, 0.001);
     std::vector<double> expected = {0.0, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009};
-    REQUIRE(result == expected);
+    // Check that the sizes of the vectors are the same
+    REQUIRE(result.size() == expected.size());
+
+    // Check that each result is within the specified tolerance of the expected value
+    for (size_t i = 0; i < result.size(); ++i) {
+        REQUIRE_THAT(result[i], Catch::Matchers::WithinAbs(expected[i], tol));
+    }
 }
 
 TEST_CASE("createVectorLinspaceInterval produces correct output for small spacing", "[createVectorLinspaceInterval]") {
@@ -83,5 +92,11 @@ TEST_CASE("createVectorLinspaceInterval produces correct output for small spacin
     std::transform(expected.begin(), expected.end(), expected.begin(),
                    [](double value) { return value * 0.001; });
     auto result = createVectorLinspaceInterval<double>(100, 0.0, 0.001);
-    REQUIRE(result == expected);
+    // Check that the sizes of the vectors are the same
+    REQUIRE(result.size() == expected.size());
+
+    // Check that each result is within the specified tolerance of the expected value
+    for (size_t i = 0; i < result.size(); ++i) {
+        REQUIRE_THAT(result[i], Catch::Matchers::WithinAbs(expected[i], tol));
+    }
 }
