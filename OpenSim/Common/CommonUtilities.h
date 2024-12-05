@@ -25,10 +25,13 @@
 
 #include "osimCommonDLL.h"
 #include "Assertion.h"
+#include <algorithm>
+#include <cmath>
 #include <functional>
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <numeric>
 #include <stack>
 #include <condition_variable>
 
@@ -80,6 +83,43 @@ private:
 /// @ingroup commonutil
 OSIMCOMMON_API
 SimTK::Vector createVectorLinspace(int length, double start, double end);
+
+/**
+ * @brief Creates a vector of uniformly spaced values with a known interval.
+ *
+ * This function generates a vector of length `length`, where each element
+ * is calculated based on the starting value and the specified step size.
+ * The elements are computed as:
+ * 
+ * output[i] = start + i * step_size
+ * 
+ * for i = 0, 1, 2, ..., length-1.
+ *
+ * @tparam T The type of the elements in the output vector. This can be any
+ *            numeric type (e.g., int, float, double).
+ * @param length The number of elements in the output vector.
+ * @param start The starting value of the sequence.
+ * @param step_size The difference between consecutive elements in the output vector.
+ * @return A std::vector<T> containing `length` elements, uniformly spaced
+ *         starting from `start` with a step size of `step_size`.
+ *
+ * @example
+ * std::vector<double> vec = createVectorLinspaceInterval(5, 0.0, 2.0);
+ * // vec will contain: [0.0, 2.0, 4.0, 6.0, 8.0]
+ */
+ /// @ingroup commonutil
+template <typename T>
+std::vector<T> createVectorLinspaceInterval(
+        const int length, const T start, const T step_size) {
+    std::vector<int> ivec(length);
+    std::iota(ivec.begin(), ivec.end(), 0); // ivec will become: [0..99]
+    std::vector<T> output(ivec.size());
+    std::transform(ivec.begin(), ivec.end(), output.begin(),
+                    [step_size, start](int value) {
+                    return std::fma(value, step_size, start);
+                    });
+    return output;
+};
 
 #ifndef SWIG
 /// Create a SimTK::Vector using modern C++ syntax.

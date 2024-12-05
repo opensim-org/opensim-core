@@ -190,8 +190,7 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     }
     // Trim Matrices in use to actual data and move into tables
     double timeIncrement = 1 / dataRate;
-    const auto times_vec = createVectorLinspace(rowNumber, 0.0, (rowNumber - 1) * timeIncrement);
-    std::vector<double> times(times_vec.getContiguousScalarData(),times_vec.getContiguousScalarData() + times_vec.size());
+    const auto times = createVectorLinspaceInterval(rowNumber, 0.0, timeIncrement);
     // Repeat for Data matrices in use and create Tables from them or size 0 for empty
     linearAccelerationData.resizeKeep(foundLinearAccelerationData? rowNumber : 0,
         n_imus);
