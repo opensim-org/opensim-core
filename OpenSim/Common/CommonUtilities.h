@@ -36,12 +36,12 @@
 
 namespace OpenSim {
 
-/// Since OpenSim does not require C++14 (which contains std::make_unique()),
-/// here is an implementation of make_unique().
+/// OpenSim now requires C++14 (which contains std::make_unique()),
+/// this wrapper now uses the standard std::make_unique().
 /// @ingroup commonutil
 template <typename T, typename... Args>
 std::unique_ptr<T> make_unique(Args&&... args) {
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    return std::make_unique<T>(std::forward<Args>(args)...);
 }
 
 /// Get a string with the current date and time formatted as %Y-%m-%dT%H%M%S
