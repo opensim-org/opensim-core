@@ -125,7 +125,6 @@ SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
  * details
  */
 /// @ingroup commonutil
-OSIMCOMMON_API
 template <typename T> 
 std::pair<bool, T> isUniform(const std::vector<T>& x) {
 
