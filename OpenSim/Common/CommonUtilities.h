@@ -34,6 +34,7 @@
 #include <numeric>
 #include <stack>
 #include <condition_variable>
+#include <utility>
 
 #include <SimTKcommon/internal/BigMatrix.h>
 
