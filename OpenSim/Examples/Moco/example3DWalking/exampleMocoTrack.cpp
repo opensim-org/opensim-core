@@ -16,7 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/// This example features two different tracking problems solved using the
+/// This example features three different tracking problems solved using the
 /// MocoTrack tool. 
 ///  - The first problem demonstrates the basic usage of the tool interface
 ///    to solve a torque-driven marker tracking problem. 
@@ -65,11 +65,6 @@ void torqueDrivenMarkerTracking() {
     // directly from a TRC file. By default, the marker data is filtered at
     // 6 Hz
     track.setMarkersReferenceFromTRC("markers_walk.trc");
-
-    // // There is marker data in the 'markers_walk.trc' associated with
-    // // model markers that no longer exists (i.e. markers on the arms). Set this
-    // // flag to avoid an exception from being thrown.
-    // track.set_allow_unused_references(true);
 
     // Increase the global marker tracking weight, which is the weight
     // associated with the internal MocoMarkerTrackingGoal term.
@@ -125,7 +120,6 @@ void muscleDrivenStateTracking() {
     // A TableProcessor with no operators, as we have here, simply returns the
     // base table.
     track.setStatesReference(TableProcessor("coordinates.sto"));
-    track.set_apply_tracked_states_to_guess(true);
 
     // This setting allows extra data columns contained in the states
     // reference that don't correspond to model coordinates.
@@ -149,23 +143,18 @@ void muscleDrivenStateTracking() {
     // Get a reference to the MocoControlGoal that is added to every MocoTrack
     // problem by default.
     MocoProblem& problem = study.updProblem();
-    MocoControlGoal& effort =
-        dynamic_cast<MocoControlGoal&>(problem.updGoal("control_effort"));
+    MocoControlGoal& effort = 
+            dynamic_cast<MocoControlGoal&>(problem.updGoal("control_effort"));
     effort.setWeight(0.1);
 
     // Put a large weight on the pelvis CoordinateActuators, which act as the
     // residual, or 'hand-of-god', forces which we would like to keep as small
     // as possible.
-    Model model = modelProcessor.process();
-    for (const auto& coordAct : model.getComponentList<CoordinateActuator>()) {
-        auto coordPath = coordAct.getAbsolutePathString();
-        if (coordPath.find("pelvis") != std::string::npos) {
-            effort.setWeightForControl(coordPath, 10);
-        }
-    }
+    effort.setWeightForControlPattern(".*pelvis.*", 10);
 
     // Constrain the states and controls to be periodic.
     auto* periodicityGoal = problem.addGoal<MocoPeriodicityGoal>("periodicity");
+    Model model = modelProcessor.process();
     model.initSystem();
     for (const auto& coord : model.getComponentList<Coordinate>()) {
         if (!IO::EndsWith(coord.getName(), "_tx")) {
@@ -224,25 +213,19 @@ void muscleDrivenJointMomentTracking() {
     track.set_final_time(1.61);
     track.set_mesh_interval(0.02);
 
-    // Set the control effort weights.
-    MocoWeightSet controlsWeightSet;
-    Model model = modelProcessor.process();
-    for (const auto& coordAct : model.getComponentList<CoordinateActuator>()) {
-        auto coordPath = coordAct.getAbsolutePathString();
-        if (coordPath.find("pelvis") != std::string::npos) {
-            controlsWeightSet.cloneAndAppend({coordPath, 10});
-        }
-    }
-
-    track.set_control_effort_weight(0.1);
-    track.set_controls_weight_set(controlsWeightSet);
-
     // Get the underlying MocoStudy.
     MocoStudy study = track.initialize();
     MocoProblem& problem = study.updProblem();
 
+    // Set the control effort weights.
+    MocoControlGoal& effort = 
+            dynamic_cast<MocoControlGoal&>(problem.updGoal("control_effort"));
+    effort.setWeight(0.1);
+    effort.setWeightForControlPattern(".*pelvis.*", 10);
+
     // Constrain the states and controls to be periodic.
     auto* periodicityGoal = problem.addGoal<MocoPeriodicityGoal>("periodicity");
+    Model model = modelProcessor.process();
     model.initSystem();
     for (const auto& coord : model.getComponentList<Coordinate>()) {
         if (!IO::EndsWith(coord.getName(), "_tx")) {
@@ -271,9 +254,8 @@ void muscleDrivenJointMomentTracking() {
     // Set the reference joint moments from an inverse dynamics solution and
     // low-pass filter the data at 10 Hz. The reference data should use the 
     // same column label format as the output of the Inverse Dynamics Tool.
-    TableProcessor jointMomentRef = 
-        TableProcessor("id_walk.sto") |
-        TabOpLowPassFilter(10);
+    TableProcessor jointMomentRef = TableProcessor("id_walk.sto") |
+                                    TabOpLowPassFilter(10);
     jointMomentTracking->setReference(jointMomentRef);
 
     // Set the force paths that will be applied to the model to compute the

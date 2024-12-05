@@ -16,6 +16,20 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+/// This example demonstrates how to use the MocoTrack tool to solve a 3D 
+/// walking optimization that tracks kinematics and ground reaction forces using 
+/// a foot-ground contact model. This example uses a sequential approach to 
+/// achieve the desired motion:
+///  - First, we update the model by attaching foot-ground contact elements and
+///    adding forces to the toe joints.
+///  - Second, we create an initial guess for the skeletal kinematics by solving
+///    a torque-driven tracking problem. 
+///  - Third, we solve a muscle-driven tracking problem that again tracks the 
+///    experimental kinematics and ground reaction forces while also enforcing
+///    periodicity constraints on the states and controls.
+/// 
+/// See the README.txt next to this file for more information.
+
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/VisualizerUtilities.h>
