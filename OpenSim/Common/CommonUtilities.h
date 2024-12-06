@@ -116,7 +116,7 @@ std::vector<T> createVectorLinspaceInterval(
     std::vector<T> output(ivec.size());
     std::transform(ivec.begin(), ivec.end(), output.begin(),
                     [step_size, start](int value) {
-                    return std::fma(static_cast<T>(value), step_size, start);
+                    return static_cast<T>(std::fma(static_cast<T>(value), step_size, start));
                     });
     return output;
 };
