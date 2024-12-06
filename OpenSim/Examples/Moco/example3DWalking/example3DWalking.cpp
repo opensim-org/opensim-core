@@ -23,10 +23,11 @@
 ///  - First, we update the model by attaching foot-ground contact elements and
 ///    adding forces to the toe joints.
 ///  - Second, we create an initial guess for the skeletal kinematics by solving
-///    a torque-driven tracking problem. 
-///  - Third, we solve a muscle-driven tracking problem that again tracks the 
-///    experimental kinematics and ground reaction forces while also enforcing
-///    periodicity constraints on the states and controls.
+///    a torque-driven problem tracking experimental coordinate data and ground
+///    reaction forces. 
+///  - Third, we solve a muscle-driven tracking problem (using the initial guess
+///    from the previous step) that again tracks the experimental data while 
+///    also enforcing periodicity constraints on the states and controls.
 /// 
 /// See the README.txt next to this file for more information.
 
