@@ -2160,7 +2160,7 @@ MocoStudy createSlidingMassMocoStudy(const Model& model,
     MocoStudy study;
     study.setName("sliding_mass");
     MocoProblem& mp = study.updProblem();
-    mp.setModel(make_unique<Model>(model));
+    mp.setModel(std::make_unique<Model>(model));
     mp.setTimeBounds(0, {0, 10});
     mp.setStateInfo("/slider/position/value",{0, 1}, 0, 1);
     mp.setStateInfo("/slider/position/speed", {-100, 100});
