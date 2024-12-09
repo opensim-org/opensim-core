@@ -55,7 +55,7 @@ static const double ConstraintTol = 1e-10;
 
 /// creates a model with one sliding mass
 std::unique_ptr<Model> createSlidingMassModel() {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("sliding_mass");
     model->set_gravity(SimTK::Vec3(0, 0, 0));
     auto* body = new Body("body", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
@@ -439,7 +439,7 @@ TEST_CASE("PrescribedMotion", "") {
 /// Create a torque-actuated double pendulum model. Each subtest will add to the
 /// model the relevant constraint(s).
 std::unique_ptr<Model> createDoublePendulumModel() {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("double_pendulum");
 
     using SimTK::Inertia;
@@ -2160,7 +2160,7 @@ MocoStudy createSlidingMassMocoStudy(const Model& model,
     MocoStudy study;
     study.setName("sliding_mass");
     MocoProblem& mp = study.updProblem();
-    mp.setModel(make_unique<Model>(model));
+    mp.setModel(std::make_unique<Model>(model));
     mp.setTimeBounds(0, {0, 10});
     mp.setStateInfo("/slider/position/value",{0, 1}, 0, 1);
     mp.setStateInfo("/slider/position/speed", {-100, 100});

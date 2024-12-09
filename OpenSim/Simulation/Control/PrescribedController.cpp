@@ -270,12 +270,12 @@ std::unique_ptr<Function> PrescribedController::createFunctionFromData(
     }
 
     if(method > 0) {
-        return OpenSim::make_unique<GCVSpline>(method, time.getSize(), 
+        return std::make_unique<GCVSpline>(method, time.getSize(), 
                 &time[0], &data[0], name);
     }
 
     if(method == 0) {
-        return OpenSim::make_unique<PiecewiseConstantFunction>(
+        return std::make_unique<PiecewiseConstantFunction>(
                 time.getSize(), &time[0], &data[0], name);
     }
 

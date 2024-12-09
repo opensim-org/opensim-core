@@ -46,7 +46,7 @@ using namespace OpenSim;
 namespace {
     std::unique_ptr<Model> createSlidingMassModel(
             double mass = 10.0, bool lock_coordinate = false) {
-        auto model = make_unique<Model>();
+        auto model = std::make_unique<Model>();
         model->setName("sliding_mass");
         model->set_gravity(SimTK::Vec3(0, 0, 0));
         auto* body = new Body("body", mass, SimTK::Vec3(0), SimTK::Inertia(0));
@@ -186,7 +186,7 @@ TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver, MocoTropterSolver) 
 
 /// This model is torque-actuated.
 std::unique_ptr<Model> createPendulumModel() {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("pendulum");
 
     using SimTK::Inertia;
@@ -377,7 +377,7 @@ TEST_CASE("Building a problem", "") {
 
         // Goals have the name "goal" by default.
         {
-            auto c0 = make_unique<MocoFinalTimeGoal>();
+            auto c0 = std::make_unique<MocoFinalTimeGoal>();
             SimTK_TEST(c0->getName() == "goal");
             mp.addGoal(std::move(c0));
         }
@@ -395,7 +395,7 @@ TEST_CASE("Building a problem", "") {
         }
         // Parameters have the name "parameter" by default.
         {
-            auto p0 = make_unique<MocoParameter>();
+            auto p0 = std::make_unique<MocoParameter>();
             SimTK_TEST(p0->getName() == "parameter");
             p0->appendComponentPath("/body");
             p0->setPropertyName("mass");
@@ -414,7 +414,7 @@ TEST_CASE("Building a problem", "") {
         }
         // Parameters must have a name.
         {
-            auto pEmptyName = make_unique<MocoParameter>();
+            auto pEmptyName = std::make_unique<MocoParameter>();
             pEmptyName->setName("");
             mp.addParameter(std::move(pEmptyName));
             SimTK_TEST_MUST_THROW_EXC(mp.createRep(), Exception);

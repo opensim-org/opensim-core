@@ -66,7 +66,7 @@ int main() {
     // ----------------------------------
 
     // get the base model
-    auto model = make_unique<Model>("subject01.osim");
+    auto model = std::make_unique<Model>("subject01.osim");
 
     // add coordinate actuators
     addCoordinateActuator(model, "lumbar_extension", 500);
