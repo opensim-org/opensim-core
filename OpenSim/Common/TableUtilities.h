@@ -60,12 +60,44 @@ public:
     static int findStateLabelIndex(
             const std::vector<std::string>& labels, const std::string& desired);
 
-    /// Lowpass filter the data in a TimeSeriesTable at a provided cutoff
-    /// frequency. If padData is true, then the data is first padded with pad()
-    /// using numRowsToPrependAndAppend = table.getNumRows() / 2.
-    /// The filtering is performed with Signal::LowpassIIR()
-    static void filterLowpass(TimeSeriesTable& table,
-            double cutoffFreq, bool padData = false);
+    /**
+     * @brief Applies a lowpass filter to the data in a TimeSeriesTable at a
+     * specified cutoff frequency.
+     *
+     * This function first checks if the provided cutoff frequency is
+     * non-negative. If the `padData` parameter is set to true, the data is
+     * mirror padded using the `pad()` function.
+     * The amount of padding is half the number of rows in the table on each side.
+     * In other words, using numRowsToPrependAndAppend = table.getNumRows() / 2.
+     * This will make the resulting data twice as long as the original and may 
+     * include "negative" time if the original independent (time) column began at 0.
+     *
+     * The function then verifies that the number of rows in the table is at
+     * least 4, as filtering requires a minimum amount of data. It retrieves the
+     * independent time column and checks if the time samples are uniformly
+     * spaced. If the time intervals are not uniform, the data is resampled to
+     * ensure consistent sampling before applying the lowpass filter. 
+     * See `CommonUtilities.h` for more information on how the uniform sampling 
+     * is calculated to determine if the data should be resampled.
+     *
+     * The filtering is performed using the `Signal::LowpassIIR()` method, which
+     * processes each dependent column of the table with the specified cutoff
+     * frequency and the determined sampling interval.
+     *
+     * @param table A reference to the TimeSeriesTable containing the data to be
+     * filtered.
+     * @param cutoffFreq The cutoff frequency for the lowpass filter. Must be
+     * non-negative.
+     * @param padData A boolean indicating whether to pad the data before
+     * filtering.
+     *
+     * @throws Exception if the cutoff frequency is negative, if the number of
+     * rows is less than 4, or if the time intervals are not suitable for
+     * resampling.
+     *
+     */
+    static void filterLowpass(
+            TimeSeriesTable& table, double cutoffFreq, bool padData = false);
 
     /// Pad each column by the number of rows specified. The padded data is
     /// obtained by reflecting and negating the data in the table.
