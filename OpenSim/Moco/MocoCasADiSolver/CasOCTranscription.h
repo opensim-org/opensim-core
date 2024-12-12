@@ -38,8 +38,8 @@ public:
     Iterate createRandomIterateWithinBounds(
             const SimTK::Random* = nullptr) const;
     template <typename T>
-    T createTimes(const T& initialTime, const T& finalTime) const {
-        return (finalTime - initialTime) * m_grid + initialTime;
+    T createTimes(const T& initial_time, const T& final_time) const {
+        return (final_time(0) - initial_time(0)) * m_grid + initial_time(0);
     }
     casadi::DM createQuadratureCoefficients() const {
         return createQuadratureCoefficientsImpl();
@@ -61,6 +61,17 @@ public:
 
         return meshIndices;
     }
+    casadi::DM createControlIndices() const {
+        casadi::DM controlIndices = createControlIndicesImpl();
+        const auto shape = controlIndices.size();
+        OPENSIM_THROW_IF(shape.first != 1 || shape.second != m_numGridPoints,
+                OpenSim::Exception,
+                "createControlIndicesImpl() must return a row vector of shape "
+                "length [1, {}], but a matrix of shape [{}, {}] was returned.",
+                m_numGridPoints, shape.first, shape.second);
+
+        return controlIndices;
+    }
 
     Solution solve(const Iterate& guessOrig);
 
@@ -69,12 +80,10 @@ protected:
     /// overridden virtual methods are accessible to the base class. This
     /// implementation allows initialization to occur during construction,
     /// avoiding an extra call on the instantiated object.
-    /// pointsForInterpControls are grid points at which the transcription
-    /// scheme applies constraints between control points.
     void createVariablesAndSetBounds(const casadi::DM& grid,
             int numDefectsPerMeshInterval,
-            int numPointsPerMeshInterval,
-            const casadi::DM& pointsForInterpControls = casadi::DM());
+            int numGapClosingDefectsPerMeshInterval,
+            int numPointsPerMeshInterval);
 
     /// We assume all functions depend on time and parameters.
     /// "inputs" is prepended by time and postpended (?) by parameters.
@@ -122,8 +131,16 @@ protected:
         }
     }
 
+    struct FlattenedVariableInfo {
+        std::vector<std::pair<Var, int>> order;
+        std::vector<casadi_int> nx;
+        std::vector<casadi_int> nu;
+    };
+
     template <typename T>
     struct Constraints {
+        T time;
+        T parameters;
         T defects;
         T multibody_residuals;
         T auxiliary_residuals;
@@ -131,9 +148,17 @@ protected:
         T kinematic_udoterr;
         std::vector<T> endpoint;
         std::vector<T> path;
-        T interp_controls;
         T projection;
+        T initial_controls;
+        T final_controls;
     };
+
+    template <typename T>
+    struct FlattenedConstraints {
+        T constraints;
+        std::vector<casadi_int> ng;
+    };
+
     void printConstraintValues(const Iterate& it,
             const Constraints<casadi::DM>& constraints,
             std::ostream& stream = std::cout) const;
@@ -148,26 +173,27 @@ protected:
     int m_numMeshIntervals = -1;
     int m_numMeshInteriorPoints = -1;
     int m_numDefectsPerMeshInterval = -1;
+    int m_numGapClosingDefectsPerMeshInterval = -1;
     int m_numPointsPerMeshInterval = -1;
+    int m_numControlPoints = -1;
     int m_numUDotErrorPoints = -1;
     int m_numMultibodyResiduals = -1;
     int m_numAuxiliaryResiduals = -1;
     int m_numConstraints = -1;
     int m_numPathConstraintPoints = -1;
     int m_numProjectionStates = -1;
+    int m_numInitialControlConstraints = -1;
+    int m_numFinalControlConstraints = -1;
     casadi::DM m_grid;
-    casadi::DM m_pointsForInterpControls;
     casadi::MX m_times;
+    casadi::MX m_parameters;
+    casadi::MX m_intervals;
     casadi::MX m_duration;
 
 private:
+    VectorVariablesMX m_scaledVectorVars;
     VariablesMX m_scaledVars;
     VariablesMX m_unscaledVars;
-    casadi::MX m_paramsTrajGrid;
-    casadi::MX m_paramsTrajMesh;
-    casadi::MX m_paramsTrajMeshInterior;
-    casadi::MX m_paramsTrajPathCon;
-    casadi::MX m_paramsTrajProjState;
     VariablesDM m_lowerBounds;
     VariablesDM m_upperBounds;
     VariablesDM m_shift;
@@ -183,8 +209,11 @@ private:
     casadi::Matrix<casadi_int> m_meshIndices;
     casadi::Matrix<casadi_int> m_meshInteriorIndices;
     casadi::Matrix<casadi_int> m_pathConstraintIndices;
+    casadi::Matrix<casadi_int> m_controlIndices;
+    casadi::Matrix<casadi_int> m_udotErrIndices;
     casadi::Matrix<casadi_int> m_projectionStateIndices;
     casadi::Matrix<casadi_int> m_notProjectionStateIndices;
+    casadi::Matrix<casadi_int> m_projectionStateIndicesForControlIndices;
 
     // State derivatives.
     casadi::MX m_xdot;
@@ -213,65 +242,103 @@ private:
     /// @note The returned vector must be a row vector of length m_numGridPoints
     /// with nonzero values at the mesh indices.
     virtual casadi::DM createMeshIndicesImpl() const = 0;
+    /// Override this function to specify the indicies in the grid where the
+    /// control points lie.
+    /// @note The returned vector must be a row vector of length m_numGridPoints
+    /// with nonzero values at the control indices.
+    virtual casadi::DM createControlIndicesImpl() const = 0;
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
-    virtual void calcDefectsImpl(const casadi::MXVector& x,
+    virtual void calcDefectsImpl(const casadi::MXVector& x, 
             const casadi::MXVector& xdot, casadi::MX& defects) const = 0;
-    virtual void calcInterpolatingControlsImpl(const casadi::MX& /*controls*/,
-            casadi::MX& /*interpControls*/) const {
-        OPENSIM_THROW_IF(m_pointsForInterpControls.numel(), OpenSim::Exception,
-                "Must provide constraints for interpolating controls.")
+    /// Override this function in your derived class to interpolate controls
+    /// for time points where control variables are not defined.
+    virtual void calcInterpolatingControlsImpl(casadi::MX& controls) const {
+        OPENSIM_THROW_IF(casadi::DM::all(createControlIndices()).scalar() == 0,
+                OpenSim::Exception,
+                "Must provide scheme for interpolating controls.");
     }
+    /// Override this function in your derived class to interpolate controls
+    /// for time points where control variables are not defined.
+    virtual void calcInterpolatingControlsImpl(casadi::DM& controls) const {
+        OPENSIM_THROW_IF(casadi::DM::all(createControlIndices()).scalar() == 0,
+                OpenSim::Exception,
+                "Must provide scheme for interpolating controls.");
+    }
+    /// Override this function to define the order of variables in the flattened
+    /// variable vector passed to nlpsol(). Returns a vector whose elements are
+    /// pairs of variable keys and trajectory indexes. Optionally, define the
+    /// number of states and controls for each mesh interval, which is needed by
+    /// the FATROP solver.
+    virtual FlattenedVariableInfo getFlattenedVariableInfo() const = 0;
 
     void transcribe();
     void setObjectiveAndEndpointConstraints();
     void calcDefects() {
-        calcDefectsImpl(m_statesByMeshInterval,
+        calcDefectsImpl(m_statesByMeshInterval, 
                 m_stateDerivativesByMeshInterval, m_constraints.defects);
     }
-    void calcInterpolatingControls() {
-        calcInterpolatingControlsImpl(
-                m_unscaledVars.at(controls), m_constraints.interp_controls);
+    template <typename T>
+    void calcInterpolatingControls(Variables<T>& vars) const {
+        calcInterpolatingControlsImpl(vars.at(controls));
+        calcInterpolatingControlsImpl(vars.at(multipliers));
+        calcInterpolatingControlsImpl(vars.at(derivatives));  
     }
 
-    /// Use this function to ensure you iterate through variables in the same
-    /// order.
-    template <typename T>
-    static std::vector<Var> getSortedVarKeys(const Variables<T>& vars) {
-        std::vector<Var> keys;
-        for (const auto& kv : vars) { keys.push_back(kv.first); }
-        std::sort(keys.begin(), keys.end());
-        return keys;
-    }
     /// Convert the map of variables into a column vector, for passing onto
     /// nlpsol(), etc.
-    template <typename T>
-    static T flattenVariables(const CasOC::Variables<T>& vars) {
-        std::vector<T> stdvec;
-        for (const auto& key : getSortedVarKeys(vars)) {
-            stdvec.push_back(vars.at(key));
+    casadi::MX flattenVariables(const VectorVariablesMX& vars) const {
+        std::vector<casadi::MX> stdvec;
+        auto info = getFlattenedVariableInfo();
+        for (const auto& kv : info.order) {
+            stdvec.push_back(vars.at(kv.first)[kv.second]);
         }
-        return T::veccat(stdvec);
+
+        return casadi::MX::vertcat(stdvec);
     }
+
+    /// Convert the map of variables into a column vector, for passing onto
+    /// nlpsol(), etc.
+    casadi::DM flattenVariables(const VariablesDM& vars) const {
+        std::vector<casadi::DM> stdvec;
+        auto info = getFlattenedVariableInfo();
+        for (const auto& kv : info.order) {
+            if (m_scaledVars.at(kv.first).rows()) {
+                stdvec.push_back(vars.at(kv.first)(casadi::Slice(), kv.second));
+            }
+        }
+
+        return casadi::DM::vertcat(stdvec);
+    }
+
     /// Convert the 'x' column vector into separate variables.
-    CasOC::VariablesDM expandVariables(const casadi::DM& x) const {
-        CasOC::VariablesDM out;
+    VariablesDM expandVariables(const casadi::DM& x) const {
+        VariablesDM out;
         using casadi::Slice;
         casadi_int offset = 0;
-        for (const auto& key : getSortedVarKeys(m_scaledVars)) {
-            const auto& value = m_scaledVars.at(key);
-            // Convert a portion of the column vector into a matrix.
-            out[key] = casadi::DM::reshape(
-                    x(Slice(offset, offset + value.numel())), value.rows(),
-                    value.columns());
-            offset += value.numel();
+        for (const auto& kv : m_scaledVars) {
+            out[kv.first] = casadi::DM::zeros(kv.second.rows(),
+                    kv.second.columns());
         }
+
+        auto info = getFlattenedVariableInfo();
+        for (const auto& kv : info.order) {
+            const auto& var = kv.first;
+            const auto& index = kv.second;
+            casadi_int size = m_scaledVars.at(var).rows();
+            if (size) {
+                out[var](Slice(), index) = casadi::DM::reshape(
+                        x(Slice(offset, offset + size)), size, 1);
+                offset += size;
+            }
+        }
+
         return out;
     }
 
     /// unscaled = (upper - lower) * scaled - 0.5 * (upper + lower);
     template <typename T>
-    Variables<T> unscaleVariables(const Variables<T>& scaledVars) {
+    Variables<T> unscaleVariables(const Variables<T>& scaledVars) const {
         using casadi::DM;
         Variables<T> out;
 
@@ -313,14 +380,16 @@ private:
     /// grouped together by time. Organizing the sparsity of the Jacobian
     /// this way might have benefits for sparse linear algebra.
     template <typename T>
-    T flattenConstraints(const Constraints<T>& constraints) const {
-        T flat = T(casadi::Sparsity::dense(m_numConstraints, 1));
+    FlattenedConstraints<T> flattenConstraints(
+            const Constraints<T>& constraints) const {
+        FlattenedConstraints<T> flat;
+        flat.constraints = T(casadi::Sparsity::dense(m_numConstraints, 1));
 
         int iflat = 0;
         auto copyColumn = [&flat, &iflat](const T& matrix, int columnIndex) {
             using casadi::Slice;
             if (matrix.rows()) {
-                flat(Slice(iflat, iflat + matrix.rows())) =
+                flat.constraints(Slice(iflat, iflat + matrix.rows())) =
                         matrix(Slice(), columnIndex);
                 iflat += matrix.rows();
             }
@@ -332,9 +401,6 @@ private:
         //
         //                   0    1    2    3
         //    endpoint       x    x    x    x
-        //    path_0         x
-        //    kinematic_0    x
-        //    residual_0     x
         //    defect_0       x    x
         //    projection_1        x
         //    path_1              x
@@ -399,67 +465,94 @@ private:
 
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
-        int icon = 0;
+        int idyn = 0;
+        auto dynamicsIndices = createControlIndices();
+        int ng = 0;
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
 
-            // Path constraints.
-            if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
-                for (int i = 0; i < N; ++i) {
-                    for (const auto& path : constraints.path) {
-                        copyColumn(path, igrid + i);
-                    }
-                }
-            } else {
-                for (const auto& path : constraints.path) {
-                    copyColumn(path, imesh);
-                }
-            }
+            // Time constraints.
+            copyColumn(constraints.time, imesh);
+
+            // Parameter constraints.
+            copyColumn(constraints.parameters, imesh);
+
+            // Defect constraints.
+            copyColumn(constraints.defects, imesh);
+            ng += m_numDefectsPerMeshInterval -
+                  m_numGapClosingDefectsPerMeshInterval;
 
             // Kinematic constraints.
             copyColumn(constraints.kinematic, imesh);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                for (int i = 0; i < N; ++i) {
-                    copyColumn(constraints.kinematic_udoterr, igrid + i);
-                }
+            ng += constraints.kinematic.rows();
+            if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
+                copyColumn(constraints.kinematic_udoterr, imesh);
+                ng += constraints.kinematic_udoterr.rows();
             }
 
             // Multibody and auxiliary residuals.
             for (int i = 0; i < N; ++i) {
-                copyColumn(constraints.multibody_residuals, igrid + i);
-                copyColumn(constraints.auxiliary_residuals, igrid + i);
-            }
-
-            // Defect constraints.
-            copyColumn(constraints.defects, imesh);
-
-            // Interpolating controls.
-            if (m_pointsForInterpControls.numel()) {
-                for (int i = 0; i < N-1; ++i) {
-                    copyColumn(constraints.interp_controls, icon++);
+                if (dynamicsIndices(igrid + i).scalar() == 1) {
+                    if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                        copyColumn(constraints.kinematic_udoterr, idyn);
+                        ng += constraints.kinematic_udoterr.rows();
+                    }
+                    copyColumn(constraints.multibody_residuals, idyn);
+                    ng += constraints.multibody_residuals.rows();
+                    copyColumn(constraints.auxiliary_residuals, idyn);
+                    ng += constraints.auxiliary_residuals.rows();
+                    for (const auto& path : constraints.path) {
+                        copyColumn(path, idyn);
+                        ng += path.rows();
+                    }
+                    ++idyn;
                 }
             }
 
+            // Initial and final controls.
+            if (imesh == 0) {
+                copyColumn(constraints.initial_controls, 0);
+                ng += constraints.initial_controls.rows();
+            }
+            if (imesh == m_numMeshIntervals - 1) {
+                copyColumn(constraints.final_controls, 0);
+                ng += constraints.final_controls.rows();
+            }
+
             // Projection constraints.
-            copyColumn(constraints.projection, imesh);
+            if (imesh > 0) {
+                copyColumn(constraints.projection, imesh - 1);
+                ng += constraints.projection.rows();
+            }
+
+            flat.ng.push_back(ng);
+            ng = 0;
         }
 
         // Final grid point.
-        if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
-            for (const auto& path : constraints.path) {
-                copyColumn(path, m_numGridPoints - 1);
-            }
-        } else {
-            for (const auto& path : constraints.path) {
-                copyColumn(path, m_numMeshPoints - 1);
-            }
-        }
         copyColumn(constraints.kinematic, m_numMeshPoints - 1);
-        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-            copyColumn(constraints.kinematic_udoterr, m_numGridPoints - 1);
+        ng += constraints.kinematic.rows();
+        if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
+            copyColumn(constraints.kinematic_udoterr, m_numMeshPoints - 1);
+            ng += constraints.kinematic_udoterr.rows();
         }
-        copyColumn(constraints.multibody_residuals, m_numGridPoints - 1);
-        copyColumn(constraints.auxiliary_residuals, m_numGridPoints - 1);
+        if (dynamicsIndices(m_numGridPoints - 1).scalar() == 1) {
+            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                copyColumn(constraints.kinematic_udoterr, idyn);
+                ng += constraints.kinematic_udoterr.rows();
+            }
+            copyColumn(constraints.multibody_residuals, idyn);
+            ng += constraints.multibody_residuals.rows();
+            copyColumn(constraints.auxiliary_residuals, idyn);
+            ng += constraints.auxiliary_residuals.rows();
+            for (const auto& path : constraints.path) {
+                copyColumn(path, idyn);
+                ng += path.rows();
+            }
+        }
+        copyColumn(constraints.projection, m_numMeshIntervals - 1);
+        ng += constraints.projection.rows();
+        flat.ng.push_back(ng);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
                 "Internal error: final value of the index into the flattened "
@@ -477,7 +570,9 @@ private:
             return T(casadi::Sparsity::dense(numRows, numColumns));
         };
         Constraints<T> out;
-        out.defects = init(m_numDefectsPerMeshInterval, m_numMeshPoints - 1);
+        out.time = init(2, m_numMeshIntervals);
+        out.parameters = init(m_problem.getNumParameters(), m_numMeshIntervals);
+        out.defects = init(m_numDefectsPerMeshInterval, m_numMeshIntervals);
         out.multibody_residuals = init(m_numMultibodyResiduals,
                 m_numGridPoints);
         out.auxiliary_residuals = init(m_numAuxiliaryResiduals,
@@ -485,12 +580,8 @@ private:
         int numQErr = m_problem.getNumQErr();
         int numUErr = m_problem.getNumUErr();
         int numUDotErr = m_problem.getNumUDotErr();
-        int numKC = m_problem.isKinematicConstraintMethodBordalba2023() ?
-                numQErr + numUErr : numQErr + numUErr + numUDotErr;
-        out.kinematic = init(numKC,m_numMeshPoints);
-        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-            out.kinematic_udoterr = init(numUDotErr, m_numUDotErrorPoints);
-        }
+        out.kinematic = init(numQErr + numUErr, m_numMeshPoints);
+        out.kinematic_udoterr = init(numUDotErr, m_numUDotErrorPoints);
         out.projection = init(m_problem.getNumProjectionConstraintEquations(),
                 m_numMeshIntervals);
         out.endpoint.resize(m_problem.getEndpointConstraintInfos().size());
@@ -503,8 +594,8 @@ private:
             const auto& info = m_problem.getPathConstraintInfos()[ipc];
             out.path[ipc] = init(info.size(), m_numPathConstraintPoints);
         }
-        out.interp_controls = init(m_problem.getNumControls(),
-                (int)m_pointsForInterpControls.numel());
+        out.initial_controls = init(m_numInitialControlConstraints, 1);
+        out.final_controls = init(m_numFinalControlConstraints, 1);
 
         int iflat = 0;
         auto copyColumn = [&flat, &iflat](T& matrix, int columnIndex) {
@@ -515,74 +606,78 @@ private:
                 iflat += matrix.rows();
             }
         };
-
+        
         for (auto& endpoint : out.endpoint) {
             copyColumn(endpoint, 0);
         }
 
         // Constraints for each mesh interval.
         int N = m_numPointsPerMeshInterval - 1;
-        int icon = 0;
+        int idyn = 0;
+        auto dynamicsIndices = createControlIndices();
         for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
             int igrid = imesh * N;
 
-            // Path constraints.
-            if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
-                for (int i = 0; i < N; ++i) {
-                    for (auto& path : out.path) {
-                        copyColumn(path, igrid + i);
-                    }
-                }
-            } else {
-                for (auto& path : out.path) {
-                    copyColumn(path, imesh);
-                }
-            }
+            // Time constraints.
+            copyColumn(out.time, imesh);
 
-            // Kinematic constraints.
-            copyColumn(out.kinematic, imesh);
-            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-                for (int i = 0; i < N; ++i) {
-                    copyColumn(out.kinematic_udoterr, igrid + i);
-                }
-            }
-
-            // Multibody and auxiliary residuals.
-            for (int i = 0; i < N; ++i) {
-                copyColumn(out.multibody_residuals, igrid + i);
-                copyColumn(out.auxiliary_residuals, igrid + i);
-            }
+            // Parameter constraints.
+            copyColumn(out.parameters, imesh);
 
             // Defect constraints.
             copyColumn(out.defects, imesh);
 
-            // Interpolating controls.
-            if (m_pointsForInterpControls.numel()) {
-                for (int i = 0; i < N-1; ++i) {
-                    copyColumn(out.interp_controls, icon++);
+            // Kinematic constraints.
+            copyColumn(out.kinematic, imesh);
+            if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
+                copyColumn(out.kinematic_udoterr, imesh);
+            }
+
+            // Multibody and auxiliary residuals.
+            for (int i = 0; i < N; ++i) {
+                if (dynamicsIndices(igrid + i).scalar() == 1) {
+                    if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                        copyColumn(out.kinematic_udoterr, idyn);
+                    }
+                    copyColumn(out.multibody_residuals, idyn);
+                    copyColumn(out.auxiliary_residuals, idyn);
+                    for (auto& path : out.path) {
+                        copyColumn(path, idyn);
+                    }
+                    ++idyn;
                 }
             }
 
-            // Projection constraints.
-            copyColumn(out.projection, imesh);
-        }
+            // Initial and final controls.
+            if (imesh == 0) {
+                copyColumn(out.initial_controls, 0);
+            }
+            if (imesh == m_numMeshIntervals - 1) {
+                copyColumn(out.final_controls, 0);
+            }
 
+            // Projection constraints.
+            if (imesh > 0) {
+                copyColumn(out.projection, imesh - 1);
+            }
+        }
+        
         // Final grid point.
-        if (m_solver.getEnforcePathConstraintMeshInteriorPoints()) {
-            for (auto& path : out.path) {
-                copyColumn(path, m_numGridPoints - 1);
-            }
-        } else {
-            for (auto& path : out.path) {
-                copyColumn(path, m_numMeshPoints - 1);
-            }
-        }
         copyColumn(out.kinematic, m_numMeshPoints - 1);
-        if (m_problem.isKinematicConstraintMethodBordalba2023()) {
-            copyColumn(out.kinematic_udoterr, m_numGridPoints - 1);
+        if (!m_problem.isKinematicConstraintMethodBordalba2023()) {
+            copyColumn(out.kinematic_udoterr, m_numMeshPoints - 1);
         }
-        copyColumn(out.multibody_residuals, m_numGridPoints - 1);
-        copyColumn(out.auxiliary_residuals, m_numGridPoints - 1);
+        if (dynamicsIndices(m_numGridPoints - 1).scalar() == 1) {
+            if (m_problem.isKinematicConstraintMethodBordalba2023()) {
+                copyColumn(out.kinematic_udoterr, idyn);
+            }
+            copyColumn(out.multibody_residuals, idyn);
+            copyColumn(out.auxiliary_residuals, idyn);
+            for (auto& path : out.path) {
+                copyColumn(path, idyn);
+            }
+        }
+        copyColumn(out.projection, m_numMeshIntervals - 1);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
                 "Internal error: final value of the index into the flattened "
@@ -599,6 +694,39 @@ private:
         return out;
     }
 
+    void convertStatesOrStateDerivativesToMXVector(const casadi::MX& in, 
+            const casadi::MX& in_proj, casadi::MXVector& out) const {
+        casadi_int istart = 0;
+        int numStates = m_problem.getNumStates();
+        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+            casadi_int numPts = m_numPointsPerMeshInterval;
+            casadi_int iend = istart + numPts - 1;
+            if (m_numProjectionStates) {
+                // The states and state derivatives at all points in the mesh 
+                // interval except the last point are the regular state 
+                // variables.
+                out[imesh](casadi::Slice(), casadi::Slice(0, numPts-1)) =
+                        in(casadi::Slice(), casadi::Slice(istart, iend));
+
+                // The multibody states and state derivatives at the last point 
+                // in the mesh interval are the projection states.
+                out[imesh](casadi::Slice(0, m_numProjectionStates), numPts-1) =
+                        in_proj(casadi::Slice(), imesh);
+
+                // The non-multibody states and state derivatives at the last 
+                // point (i.e., auxiliary state variables for muscles) are also 
+                // the same as the regular state variables (there are no 
+                // projection states for these variables).
+                auto sliceAuxStates = 
+                        casadi::Slice(m_numProjectionStates, numStates);
+                out[imesh](sliceAuxStates, numPts-1) = in(sliceAuxStates, iend);
+            } else {
+                out[imesh](casadi::Slice(), casadi::Slice()) = 
+                        in(casadi::Slice(), casadi::Slice(istart, iend+1));
+            }
+            istart = iend;
+        }
+    }
 
     friend class NlpsolCallback;
 };

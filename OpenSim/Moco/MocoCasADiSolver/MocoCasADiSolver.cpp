@@ -48,13 +48,10 @@ void MocoCasADiSolver::constructProperties() {
     constructProperty_optim_finite_difference_scheme("central");
     constructProperty_parallel();
     constructProperty_output_interval(0);
-
     constructProperty_minimize_implicit_multibody_accelerations(false);
     constructProperty_implicit_multibody_accelerations_weight(1.0);
     constructProperty_minimize_implicit_auxiliary_derivatives(false);
     constructProperty_implicit_auxiliary_derivatives_weight(1.0);
-
-    constructProperty_enforce_path_constraint_mesh_interior_points(false);
     constructProperty_minimize_state_projection_distance(true);
     constructProperty_state_projection_distance_weight(1e-6);
     constructProperty_projection_slack_variable_bounds({-1e-3, 1e-3});
@@ -210,7 +207,8 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     // Set solver options.
     // -------------------
     Dict solverOptions;
-    checkPropertyValueIsInSet(getProperty_optim_solver(), {"ipopt", "snopt"});
+    checkPropertyValueIsInSet(getProperty_optim_solver(),
+            {"ipopt", "snopt", "fatrop"});
     checkPropertyValueIsInSet(getProperty_transcription_scheme(),
             {"trapezoidal", "hermite-simpson", "legendre-gauss-1",
              "legendre-gauss-2", "legendre-gauss-3", "legendre-gauss-4",
@@ -280,6 +278,34 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         }
     }
 
+    if (get_optim_solver() == "fatrop") {
+        if (get_optim_max_iterations() != -1)
+            solverOptions["max_iter"] = get_optim_max_iterations();
+
+        if (get_optim_convergence_tolerance() != -1) {
+            const auto& tol = get_optim_convergence_tolerance();
+            solverOptions["tol"] = tol;
+            solverOptions["acceptable_tol"] = tol;
+        }
+        OPENSIM_THROW_IF_FRMOBJ(get_optim_constraint_tolerance() != -1,
+                Exception,
+                "The 'fatrop' solver does not utilize the constraint "
+                "tolerance.");
+   
+        OPENSIM_THROW_IF_FRMOBJ(get_optim_hessian_approximation() != "exact",
+                Exception,
+                "The 'fatrop' solver only supports the 'exact' hessian "
+                "approximation.");
+
+        const auto& scheme = get_transcription_scheme();
+        OPENSIM_THROW_IF_FRMOBJ(scheme == "trapezoidal" ||
+                                scheme == "hermite-simpson" ||
+                                scheme.find("radau") != std::string::npos,
+                Exception, 
+                "The 'fatrop' solver only supports the 'legendre-gauss-#' "
+                "transcription schemes.");
+    }
+
     checkPropertyValueIsInSet(getProperty_optim_sparsity_detection(),
             {"none", "random", "initial-guess"});
     casSolver->setSparsityDetection(get_optim_sparsity_detection());
@@ -339,10 +365,6 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     casSolver->setStateProjectionWeight(get_state_projection_distance_weight());
 
     casSolver->setOptimSolver(get_optim_solver());
-    casSolver->setInterpolateControlMeshInteriorPoints(
-            get_interpolate_control_mesh_interior_points());
-    casSolver->setEnforcePathConstraintMeshInteriorPoints(
-            get_enforce_path_constraint_mesh_interior_points());
     if (casProblem.getJarSize() > 1) {
         casSolver->setParallelism("thread", casProblem.getJarSize());
     }
@@ -394,19 +416,19 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     Logger::Level origLoggerLevel = Logger::getLevel();
     Logger::setLevel(Logger::Level::Warn);
     CasOC::Solution casSolution;
-    try {
-        casSolution = casSolver->solve(casGuess);
-    } catch(const Exception& ex) {
-        OPENSIM_THROW_FRMOBJ(Exception,
-            fmt::format("MocoCasADiSolver failed internally with message: {}",
-                ex.getMessage()));
-    } catch(const casadi::CasadiException& ex) {
-        OPENSIM_THROW_FRMOBJ(Exception,
-            fmt::format("MocoCasADiSolver failed internally with message: {}",
-                ex.what()));
-    } catch (...) {
-        OPENSIM_THROW_FRMOBJ(Exception, "MocoCasADiSolver failed internally.");
-    }
+    // try {
+    casSolution = casSolver->solve(casGuess);
+    // } catch(const Exception& ex) {
+    //     OPENSIM_THROW_FRMOBJ(Exception,
+    //         fmt::format("MocoCasADiSolver failed internally with message: {}",
+    //             ex.getMessage()));
+    // } catch(const casadi::CasadiException& ex) {
+    //     OPENSIM_THROW_FRMOBJ(Exception,
+    //         fmt::format("MocoCasADiSolver failed internally with message: {}",
+    //             ex.what()));
+    // } catch (...) {
+    //     OPENSIM_THROW_FRMOBJ(Exception, "MocoCasADiSolver failed internally.");
+    // }
     OpenSim::Logger::setLevel(origLoggerLevel);
 
     MocoSolution mocoSolution = convertToMocoTrajectory<MocoSolution>(
@@ -422,9 +444,12 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     }
     checkSlackVariables(mocoSolution);
 
+    std::string return_status = (get_optim_solver() == "ipopt") ?
+            "return_status" : "unified_return_status";
+
     const long long elapsed = stopwatch.getElapsedTimeInNs();
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
-            casSolution.objective, casSolution.stats.at("return_status"),
+            casSolution.objective, casSolution.stats.at(return_status),
             casSolution.stats.at("iter_count"), SimTK::nsToSec(elapsed),
             casSolution.objective_breakdown);
 
