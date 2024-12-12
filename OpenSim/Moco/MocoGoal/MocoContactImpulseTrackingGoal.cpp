@@ -116,7 +116,7 @@ void MocoContactImpulseTrackingGoal::initializeOnModelImpl(const Model& model) c
         extLoads = &get_external_loads();
     }
     else if (!get_external_loads_file().empty()) {
-        extLoadsFromFile = OpenSim::make_unique<ExternalLoads>(
+        extLoadsFromFile = std::make_unique<ExternalLoads>(
             get_external_loads_file(), true);
         extLoads = extLoadsFromFile.get();
     }

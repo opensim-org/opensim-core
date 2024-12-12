@@ -109,7 +109,7 @@ void MocoSolver::setSolutionStats(MocoSolution& sol, bool success,
 
 std::unique_ptr<ThreadsafeJar<const MocoProblemRep>>
         MocoSolver::createProblemRepJar(int size) const {
-    auto jar = OpenSim::make_unique<ThreadsafeJar<const MocoProblemRep>>();
+    auto jar = std::make_unique<ThreadsafeJar<const MocoProblemRep>>();
     for (int i = 0; i < size; ++i) {
         jar->leave(std::unique_ptr<MocoProblemRep>(m_problem->createRepHeap()));
     }

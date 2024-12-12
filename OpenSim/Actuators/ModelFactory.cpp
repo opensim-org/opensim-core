@@ -165,7 +165,7 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
     auto& muscleSet = model.updMuscles();
     for (int im = 0; im < muscleSet.getSize(); ++im) {
         auto& musc = muscleSet.get(im);
-        auto actu = OpenSim::make_unique<PathActuator>();
+        auto actu = std::make_unique<PathActuator>();
         actu->setName(musc.getName());
         musc.setName(musc.getName() + "_delete");
         actu->set_appliesForce(musc.get_appliesForce());

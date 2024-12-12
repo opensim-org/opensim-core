@@ -944,7 +944,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
 
         // Pre-emptively create a default DeGrooteFregly2016Muscle
         // (TODO: not ideal to do this).
-        auto actu = OpenSim::make_unique<DeGrooteFregly2016Muscle>();
+        auto actu = std::make_unique<DeGrooteFregly2016Muscle>();
 
         // Perform muscle-model-specific mappings or throw exception if the
         // muscle is not supported.

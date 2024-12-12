@@ -161,7 +161,7 @@ int main() {
         {
             MocoStudy study;
             auto& problem = study.updProblem();
-            auto model = OpenSim::make_unique<Model>();
+            auto model = std::make_unique<Model>();
             model->addComponent(new MyImplicitAuxiliaryDynamics("implicit"));
             problem.setModel(std::move(model));
             problem.setTimeBounds(0, 1.0);

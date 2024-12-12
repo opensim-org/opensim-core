@@ -29,7 +29,7 @@ using namespace OpenSim;
 std::unique_ptr<Model> createDoublePendulumModel() {
     // This function is similar to ModelFactory::createNLinkPendulum().
 
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("double_pendulum");
 
     using SimTK::Vec3;

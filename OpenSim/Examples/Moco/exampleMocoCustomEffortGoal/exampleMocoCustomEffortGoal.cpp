@@ -53,7 +53,7 @@ using namespace OpenSim;
 /// @endverbatim
 
 std::unique_ptr<Model> createSlidingMassModel() {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("sliding_mass");
     model->set_gravity(SimTK::Vec3(0, 0, 0));
     auto* body = new Body("body", 2.0, SimTK::Vec3(0), SimTK::Inertia(0));
