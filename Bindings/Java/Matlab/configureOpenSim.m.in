@@ -114,6 +114,7 @@ try
         % This function returns all but the leaf element of the provided path.
         openSimFolder = fileparts(openSimFolder);
     end
+    api_distro = false;
     % For this to be an OpenSim installation, there must be a buildinfo file.
     buildInfoFile = fullfile(openSimFolder, '@CMAKE_INSTALL_SYSCONFDIR@', ...
                 'OpenSim_buildinfo.txt');
