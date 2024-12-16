@@ -221,7 +221,7 @@ MocoSolution solveMarkerTrackingProblem(
 
     // Model(dynamics).
     // -----------------
-    auto model = make_unique<Model>("subject01.osim");
+    auto model = std::make_unique<Model>("subject01.osim");
     addCoordinateActuator(model, "lumbar_extension", 500);
     addCoordinateActuator(model, "pelvis_tilt", 500);
     addCoordinateActuator(model, "pelvis_tx", 1000);

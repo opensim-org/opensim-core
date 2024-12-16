@@ -33,7 +33,7 @@
 using namespace OpenSim;
 
 std::unique_ptr<Model> createRocketModel() {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("sliding_mass");
     model->set_gravity(SimTK::Vec3(9.81, 0, 0));
     auto* body = new Body("body", 500000.0, SimTK::Vec3(0), SimTK::Inertia(0));

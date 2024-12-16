@@ -153,7 +153,7 @@ void MocoProblemRep::initialize() {
     // order (we verified this with checkOrderSystemControls() above). 
     // Therefore, this is valid whether or not solvers need to compute the 
     // controls from the model.
-    auto actuatorController = make_unique<ActuatorInputController>();
+    auto actuatorController = std::make_unique<ActuatorInputController>();
     actuatorController->setName("actuator_controller");
     for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
         if (!controlledActuatorPaths.count(actu.getAbsolutePathString()) &&
@@ -267,7 +267,7 @@ void MocoProblemRep::initialize() {
     // The constraint forces will be applied to the copied model via an
     // OpenSim::DiscreteForces component, a thin wrapper to Simbody's
     // DiscreteForces class, which adds discrete variables to the state.
-    auto constraintForcesUPtr = make_unique<DiscreteForces>();
+    auto constraintForcesUPtr = std::make_unique<DiscreteForces>();
     constraintForcesUPtr->setName("constraint_forces");
     m_constraint_forces.reset(constraintForcesUPtr.get());
     m_model_disabled_constraints.addComponent(constraintForcesUPtr.release());
@@ -285,7 +285,7 @@ void MocoProblemRep::initialize() {
         // forces can be computed correctly from the solver-supplied UDot
         // (otherwise, Simbody will compute its own "incorrect" UDot using
         // forward dynamics).
-        auto accelMotionUPtr = make_unique<AccelerationMotion>("motion");
+        auto accelMotionUPtr = std::make_unique<AccelerationMotion>("motion");
         m_acceleration_motion.reset(accelMotionUPtr.get());
         m_model_disabled_constraints.addModelComponent(
                 accelMotionUPtr.release());
