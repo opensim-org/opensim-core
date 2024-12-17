@@ -52,6 +52,7 @@ v4.6
 - Make `InverseKinematicsSolver` methods to query for specific marker or orientation-sensor errors more robust to invalid names or names not 
   in the intersection of names in the model and names in the provided referece/data. Remove methods that are index based from public interface.(#3951) 
 - Replace usages of `OpenSim::make_unique` with `std::make_unique` and remove wrapper function now that C++14 is used in OpenSim (#3979). 
+- Fix Point Kinematics Reporter variable and initialization error and add unit tests (#3966)
 
 
 
