@@ -66,7 +66,7 @@ function configureOpenSim()
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [openSimFolder] = uiGetOpenSimFolder()
+function [openSimFolder, api_distro] = uiGetOpenSimFolder()
     % Prompt user for OpenSim folder.
     startPath = '';
     
@@ -86,6 +86,7 @@ function [openSimFolder] = uiGetOpenSimFolder()
     if ~openSimFolder
         showMessage('You did not select a folder.', 'Error', true);
     end
+    api_distro = false
     if ismac
         [~, name, ext] = fileparts(openSimFolder);
         % If openSimFolder is '/Applications/OpenSim 4.0.1' then we'll get:
@@ -114,6 +115,7 @@ try
         % This function returns all but the leaf element of the provided path.
         openSimFolder = fileparts(openSimFolder);
     end
+    api_distro = false;
     % For this to be an OpenSim installation, there must be a buildinfo file.
     buildInfoFile = fullfile(openSimFolder, '@CMAKE_INSTALL_SYSCONFDIR@', ...
                 'OpenSim_buildinfo.txt');
@@ -122,7 +124,7 @@ try
         % installation; ask the user to choose an install directory.
         correctFolder = false;
         while ~correctFolder
-            openSimFolder = uiGetOpenSimFolder();
+            [openSimFolder, api_distro] = uiGetOpenSimFolder();
             % Check if the user selected a valid folder.
             if api_distro
                 subfoldername = 'etc';
