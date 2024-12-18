@@ -23,7 +23,7 @@
 
 // INCLUDE
 #include <limits>
-#include <iterator> // For std::next
+#include <iterator> // std::next
 
 #include <OpenSim/Analyses/PointKinematics.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -120,8 +120,6 @@ TEST_CASE("PointKinematics Record Kinematics Single Body", "[PointKinematics]") 
     pk.setRelativeToBody(&body2);
     pk.setPoint(SimTK::Vec3(1.0, 2.0, 3.0));
     analyzeTool.updAnalysisSet().cloneAndAppend(pk);
-
-    // analyzeTool.run();
 
     std::string output_file_name = "test_analysis_point_kinematics_1.xml";
     analyzeTool.print(output_file_name);
