@@ -203,6 +203,16 @@ AddDependency(NAME       spdlog
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
                          -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
 
+AddDependency(NAME hdf5
+              DEFAULT ON
+              GIT_URL https://github.com/HDFGroup/hdf5.git
+              GIT_TAG hdf5-1_12_0
+              CMAKE_ARGS -DBUILD_STATIC_LIBS:BOOL=ON
+                         -DBUILD_TESTING:BOOL=OFF
+                         -DHDF5_CPP_LIB:BOOL=ON
+                         -DHDF5_BUILD_EXAMPLES:BOOL=OFF
+                         -DHDF5_BUILD_TOOLS:BOOL=OFF)
+                         
 AddDependency(NAME       catch2
               DEFAULT    ON
               GIT_URL    https://github.com/catchorg/Catch2.git
@@ -231,7 +241,13 @@ AddDependency(NAME colpack
                          -DENABLE_EXAMPLES:BOOL=OFF
                          -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
 
+
 mark_as_advanced(SUPERBUILD_colpack)
+
+set(SUPERBUILD_adolc ON CACHE BOOL 
+    "Automatically download, configure, build and install adolc")
+set(SUPERBUILD_ipopt ON CACHE BOOL 
+    "Automatically download, configure, build and install ipopt")
 
 CMAKE_DEPENDENT_OPTION(SUPERBUILD_adolc "Automatically download, configure, build and install adolc" ON
                        "OPENSIM_WITH_TROPTER" OFF)

@@ -711,7 +711,27 @@ else()
 endif()
 
 find_package(spdlog REQUIRED
-        HINTS "${OPENSIM_DEPENDENCIES_DIR}/spdlog")
+                HINTS "${OPENSIM_DEPENDENCIES_DIR}/spdlog")
+
+# HDF5
+#-----
+if(WIN32)
+    set(hdf5_hint "${OPENSIM_DEPENDENCIES_DIR}/hdf5/cmake/hdf5")
+else()
+    set(hdf5_hint "${OPENSIM_DEPENDENCIES_DIR}/hdf5/share/cmake/hdf5")
+endif()
+
+
+
+FIND_PACKAGE(hdf5 HINTS "${hdf5_hint}" COMPONENTS C CXX HL)
+
+OpenSimCopyDependencyDLLsForWin(DEP_NAME hdf5
+        DEP_BIN_DIR ${hdf5_DIR}/../../bin)
+
+if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+    OpenSimInstallDependencyLibraries(hdf5 "${HDF5_INSTALL_PREFIX}"
+        "${HDF5_LIBRARY_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+endif()
 
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
@@ -917,6 +937,15 @@ if(${OPENSIM_COPY_DEPENDENCIES})
         # LIB: .so files on Linux, .dylib on macOS
         file(GLOB ezc3d_desired_lib_files "${ezc3d_LIBRARY_DIR}/*ezc3d*")
         install(FILES ${ezc3d_desired_lib_files}
+                DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    endif()
+
+    # HDF5
+    # ---
+    if(NOT WIN32)
+        # LIB: .so files on Linux, .dylib on macOS
+        file(GLOB hdf5_desired_lib_files "${HDF5_LIBRARY_DIR}/*hdf5*")
+        install(FILES ${hdf5_desired_lib_files}
                 DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     endif()
 

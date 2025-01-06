@@ -45,6 +45,9 @@
 #include "Model/ContactHalfSpace.h"
 #include "Model/ContactMesh.h"
 #include "Model/ContactSphere.h"
+#include "Model/Smith2018ContactMesh.h"
+#include "Model/Smith2018ArticularContactForce.h"
+#include "Model/ContactSphere.h"
 #include "Model/CoordinateLimitForce.h"
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
@@ -257,6 +260,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( HuntCrossleyForce::ContactParametersSet() );
     Object::registerType( ElasticFoundationForce::ContactParameters() );
     Object::registerType( ElasticFoundationForce::ContactParametersSet() );
+    Object::registerType(Smith2018ContactMesh());
+    Object::registerType(Smith2018ArticularContactForce());
 
     Object::registerType( Ligament() );
     Object::registerType( Blankevoort1991Ligament() );

@@ -73,6 +73,11 @@ OpenSimGenerateJavaWrapper(moco
     ${SWIG_JAVA_MOCO_CXX_FILE}
     ${SWIG_JAVA_MOCO_H_FILE})
 
+OpenSimGenerateJavaWrapper(jam
+    ${SWIG_JAVA_JAM_INTERFACE_FILE}
+    ${SWIG_JAVA_JAM_CXX_FILE}
+    ${SWIG_JAVA_JAM_H_FILE})
+
 set(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
 add_library(osim${KIT} 
@@ -89,13 +94,15 @@ add_library(osim${KIT}
     ${SWIG_JAVA_EXAMPLECOMPONENTS_H_FILE}
     ${SWIG_JAVA_MOCO_CXX_FILE}
     ${SWIG_JAVA_MOCO_H_FILE}
+    ${SWIG_JAVA_JAM_CXX_FILE}
+    ${SWIG_JAVA_JAM_H_FILE}
     OpenSimContext.cpp
     OpenSimContext.h)
 
 target_include_directories(osim${KIT} PRIVATE
                            ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
 
-target_link_libraries(osim${KIT} osimTools osimExampleComponents osimMoco)
+target_link_libraries(osim${KIT} osimTools osimExampleComponents osimMoco osimJAM)
     
 set_target_properties(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
@@ -120,6 +127,8 @@ set_source_files_properties(
         ${SWIG_JAVA_SIMULATION_CXX_FILE}
         ${SWIG_JAVA_ACTUATORS_CXX_FILE}
         ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
+        ${SWIG_JAVA_MOCO_CXX_FILE}
+        ${SWIG_JAVA_JAM_CXX_FILE}
         PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS}")
 
 # RPATH: The osim libraries that osimJavaJNI needs are in the same folder as

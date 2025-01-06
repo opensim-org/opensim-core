@@ -20,7 +20,7 @@ OpenSimAddApplication(NAME opensim-cmd
             parse_arguments.h
     )
 
-target_link_libraries(opensim-cmd docopt_s osimMoco)
+target_link_libraries(opensim-cmd docopt_s osimMoco osimJAM hdf5-static hdf5_cpp-static hdf5_hl-static)
 
 if(BUILD_TESTING)
     subdirs(test)

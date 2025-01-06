@@ -19,7 +19,6 @@ set_directory_properties(PROPERTIES COMPILE_OPTIONS "")
 
 # Helper macros.
 # ==============
-
 # Helper function to for copying files into the python package.
 macro(OpenSimPutFileInPythonPackage source_full_path relative_dest_dir)
 
@@ -140,8 +139,10 @@ macro(OpenSimAddPythonModule)
 
     target_include_directories(${_libname} PRIVATE
             "${Python3_INCLUDE_DIRS}"
-            "${Python3_NumPy_INCLUDE_DIRS}")
-    
+            "${Python3_NumPy_INCLUDE_DIRS}"
+            "${HDF5_INCLUDE_DIR}"
+            )
+
     # On macOS, the python interpreter might link to the python library 
     # statically, in which case we do not want to link dynamically to the
     # python library. This situation occurs with Anaconda's python.
@@ -163,7 +164,7 @@ macro(OpenSimAddPythonModule)
         target_link_libraries(${_libname} ${Python3_LIBRARIES})
     endif()
 
-    target_link_libraries(${_libname} osimTools osimExampleComponents osimMoco)
+    target_link_libraries(${_libname} osimTools osimExampleComponents osimMoco osimJAM)
     
     # Set target properties for various platforms.
     # --------------------------------------------
@@ -233,7 +234,7 @@ OpenSimAddPythonModule(MODULE analyses)
 OpenSimAddPythonModule(MODULE tools)
 OpenSimAddPythonModule(MODULE examplecomponents)
 OpenSimAddPythonModule(MODULE moco)
-
+OpenSimAddPythonModule(MODULE jam)
 
 # Copy files to create complete package in the build tree.
 # ========================================================

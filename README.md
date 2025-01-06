@@ -34,7 +34,7 @@ OpenSim is software that lets users develop models of musculoskeletal structures
 
 <!-- OpenSim Simulation -->
 <p align="center">
-    <img src="doc/images/opensim_running.gif" alt=Simulation of human running by Sam Hamner (doi:10.1016/j.jbiomech.2010.06.025)¨>
+    <img src="doc/images/opensim_running.gif" alt=Simulation of human running by Sam Hamner (doi:10.1016/j.jbiomech.2010.06.025)ï¿½>
 </p>
 
 More information can be found at our websites:
