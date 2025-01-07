@@ -171,13 +171,17 @@ OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
                                             ".*lumbar_bending(?!/value).*",
                                             ".*lumbar_rotation.*"},
         std::vector<std::string> negateAndShiftPatterns = {
-                                                   ".*pelvis_list/value",
-                                                   ".*pelvis_tz/value",
-                                                   ".*lumbar_bending/value"},
+                                            ".*pelvis_list/value",
+                                            ".*pelvis_tz/value",
+                                            ".*lumbar_bending/value"}
+#ifndef SWIG
+                                            ,
         std::vector<std::pair<std::string, std::string>> symmetryPatterns = {
-                {"(_r(\\|_|$|/))", "_l$1"}, 
-                {"(_l(\\|_|$|/))", "_r$1"}
-        });
+                {R"(_r(\\|_|$|/))", "_l$1"}, 
+                {R"(_l(\\|_|$|/))", "_r$1"}
+        }
+#endif
+);
 
 /// This obtains the value of the OPENSIM_MOCO_PARALLEL environment variable.
 /// The value has the following meanings:
