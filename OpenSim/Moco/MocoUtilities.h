@@ -173,9 +173,9 @@ OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
         std::vector<std::string> negateAndShiftPatterns = {
                                             ".*pelvis_list/value",
                                             ".*pelvis_tz/value",
-                                                   ".*lumbar_bending/value"},
+                                            ".*lumbar_bending/value"},
         std::vector<std::pair<std::string, std::string>> symmetryPatterns =
-                {{R"(_r(/|_|$))", "_l$1"}, {R"(_l(/|_|$))", "_r$1"}});
+                {{R"(_r(\/|_|$))", "_l$1"}, {R"(_l(\/|_|$))", "_r$1"}});
 #else 
 // Variant that doesn't take symmetryPatterns which are unusable from scripting
 OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
