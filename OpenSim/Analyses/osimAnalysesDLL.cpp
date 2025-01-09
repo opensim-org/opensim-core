@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -48,7 +48,7 @@ static void Plugin_Detach()
 //
 // The code below handles both Windows and Linux library entrypoints
 //
-#if defined(WIN32)
+#if defined(_WIN32)
 //=============================================================================
 // DLL Main Entry Point
 //=============================================================================
@@ -78,7 +78,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 
     return TRUE;
 }
-#elif defined(__linux__)
+#else
 static void __attribute__((constructor)) Shared_Object_Constructor()
 {
    Plugin_Attach();

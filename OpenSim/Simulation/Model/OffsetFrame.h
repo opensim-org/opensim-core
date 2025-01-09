@@ -1,7 +1,7 @@
 #ifndef OPENSIM_OFFSET_FRAME_H_
 #define OPENSIM_OFFSET_FRAME_H_
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  OffsetFrame.h                           
+ *                          OpenSim:  OffsetFrame.h                           *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
- * Author(s): Matt DeMers Ajay Seth, Ayman Habib                              *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Author(s): Matt DeMers, Ajay Seth, Ayman Habib                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -24,9 +24,8 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/Frame.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 namespace OpenSim {
 
@@ -66,12 +65,17 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3, 
-    "Translational offset of this frame's origin from the parent frame's origin, " 
-    "expressed in the parent frame.");
+    OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3,
+    "Translational offset (in meters) of this frame's origin from the parent "
+    "frame's origin, expressed in the parent frame.");
     OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
-    "Orientation offset of this frame in its parent frame, expressed as a "
-    "frame-fixed x-y-z rotation sequence.");
+    "Orientation offset (in radians) of this frame in its parent frame, "
+    "expressed as a frame-fixed x-y-z rotation sequence.");
+
+//==============================================================================
+// SOCKETS
+//==============================================================================
+    OpenSim_DECLARE_SOCKET(parent, C, "The parent frame to this frame.");
 
 //=============================================================================
 // PUBLIC METHODS
@@ -146,15 +150,10 @@ public:
     */
     void setOffsetTransform(const SimTK::Transform& offset);
 
-
-    /** Scale the offset given scale factors for spatial (XYZ) dimensions */
-    void scale(const SimTK::Vec3& scaleFactors);
+    /** Scale the offset given scale factors for spatial (XYZ) dimensions. */
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:
-    /** The transform X_GF for this OffsetFrame, F, in ground, G.*/
-    SimTK::Transform
-        calcGroundTransform(const SimTK::State& state) const override;
-
     /** Extend how OffsetFrame determines its base Frame. */
     const Frame& extendFindBaseFrame() const override final;
     /** Extend how OffsetFrame determines its transform in its base Frame. */
@@ -163,17 +162,26 @@ protected:
     /** @name Component Interface
     These methods adhere to the Component Interface**/
     /**@{**/
-    void constructConnectors() override;
     void extendFinalizeFromProperties() override;
+    void extendConnectToModel(Model& model) override;
     /**@}**/
+
+    // The transform X_GO for this OffsetFrame, O, in Ground, G.
+    SimTK::Transform
+        calcTransformInGround(const SimTK::State& state) const override final;
+    // The spatial velocity, V_GO  {omega; v} of this OffsetFrame in Ground.
+    SimTK::SpatialVec
+        calcVelocityInGround(const SimTK::State& state) const override final;
+    // The spatial acceleration, A_GO {alpha; a} of this OffsetFrame in Ground.
+    SimTK::SpatialVec
+        calcAccelerationInGround(const SimTK::State& state) const override final;
 
 private:
 
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
-    
-    // the tranform on my parent frame
+    // the Offset transform in its parent frame
     SimTK::Transform _offsetTransform;
 //=============================================================================
 }; // END of class OffsetFrame
@@ -187,7 +195,7 @@ template <class C>
 OffsetFrame<C>::OffsetFrame() : C()
 {
     setNull();
-    this->constructInfrastructure();
+    this->constructProperties();
 }
 
 // Convenience constructors
@@ -195,6 +203,7 @@ template <class C>
 OffsetFrame<C>::OffsetFrame(const C& parent, const SimTK::Transform& offset)
     : OffsetFrame()
 {
+    this->setName(parent.getName() + "_offset_frame");
     setParentFrame(parent);
     setOffsetTransform(offset);
 }
@@ -214,7 +223,7 @@ OffsetFrame<C>::OffsetFrame(const std::string& name,
     : OffsetFrame()
 {
     this->setName(name);
-    this->template updConnector<C>("parent").set_connectee_name(parentName);
+    this->template updSocket<C>("parent").setConnecteePath(parentName);
     setOffsetTransform(offset);
 }
 
@@ -234,21 +243,46 @@ void OffsetFrame<C>::constructProperties()
     // transform at default
 }
 
-template <class C>
-void OffsetFrame<C>::constructConnectors()
-{
-    this->template constructConnector<C>("parent");
-}
-
 //=============================================================================
-// FRAME COMPUTATIONS
+// FRAME COMPUTATIONS must be specialized by concrete derived Offsets
 //=============================================================================
 // Implementation of Frame interface by OffsetFrame.
 template <class C>
 SimTK::Transform OffsetFrame<C>::
-calcGroundTransform(const SimTK::State& s) const
+calcTransformInGround(const SimTK::State& state) const
 {
-    return getParentFrame().getGroundTransform(s)*getOffsetTransform();
+    return this->getParentFrame().getTransformInGround(state)*getOffsetTransform();
+}
+
+template <class C>
+SimTK::SpatialVec OffsetFrame<C>::
+calcVelocityInGround(const SimTK::State& state) const
+{
+    // The rigid offset of the OffsetFrame expressed in ground
+    const SimTK::Vec3& r = this->getParentFrame().getTransformInGround(state).R()*
+        getOffsetTransform().p();
+    // Velocity of the base frame in ground
+    SimTK::SpatialVec V_GF = this->getParentFrame().getVelocityInGround(state);
+    // translational velocity needs additional omega x r term due to offset 
+    V_GF(1) += V_GF(0) % r;
+
+    return V_GF;
+}
+
+template <class C>
+SimTK::SpatialVec OffsetFrame<C>::
+calcAccelerationInGround(const SimTK::State& state) const
+{
+    // The rigid offset of the OffsetFrame expressed in ground
+    const SimTK::Vec3& r = this->getParentFrame().getTransformInGround(state).R()*
+        getOffsetTransform().p();
+    // Velocity of the parent frame in ground
+    const SimTK::SpatialVec& V_GF = this->getParentFrame().getVelocityInGround(state);
+    // Velocity of the parent frame in ground
+    SimTK::SpatialVec A_GF = getParentFrame().getAccelerationInGround(state);
+    A_GF[1] += (A_GF[0] % r + V_GF[0] % (V_GF[0] % r));
+
+    return A_GF;
 }
 
 //=============================================================================
@@ -257,13 +291,13 @@ calcGroundTransform(const SimTK::State& s) const
 template <class C>
 void OffsetFrame<C>::setParentFrame(const C& parent)
 {
-    this->template updConnector<C>("parent").connect(parent);
+    this->connectSocket_parent(parent);
 }
 
 template <class C>
 const C& OffsetFrame<C>::getParentFrame() const
 {
-    return this->template getConnector<C>("parent").getConnectee();
+    return this->template getSocket<C>("parent").getConnectee();
 }
 
 template <class C>
@@ -283,8 +317,17 @@ void OffsetFrame<C>::setOffsetTransform(const SimTK::Transform& xform)
 }
 
 template<class C>
-inline void OffsetFrame<C>::scale(const SimTK::Vec3 & scaleFactors)
+inline void OffsetFrame<C>::
+extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
+    Super::extendScale(s, scaleSet);
+
+    // Get scale factors (if an entry for the parent Frame's base Body exists).
+    const SimTK::Vec3& scaleFactors =
+        this->getScaleFactors(scaleSet, getParentFrame());
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
+        return;
+
     upd_translation() = get_translation().elementwiseMultiply(scaleFactors);
 }
 
@@ -311,9 +354,14 @@ void OffsetFrame<C>::extendFinalizeFromProperties()
     _offsetTransform.updR().setRotationToBodyFixedXYZ(get_orientation());
 }
 
+template<class C>
+void OffsetFrame<C>::extendConnectToModel(Model& model)
+{
+    Super::extendConnectToModel(model);
+    OPENSIM_THROW_IF(this == &getParentFrame(), Exception,
+        getConcreteClassName() + " cannot connect to itself!");
+}
 
 } // end of namespace OpenSim
 
 #endif // OPENSIM_OFFSET_FRAME_H_
-
-

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Brian Garner, Peter Loan                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,12 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "WrapCylinderObst.h"
-#include <OpenSim/Simulation/Model/PathPoint.h>
-#include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include <OpenSim/Simulation/Wrap/WrapResult.h>
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/Mtx.h>
-#include <sstream>
 
 //=============================================================================
 // STATICS
@@ -40,12 +35,6 @@ static const char* wrapTypeName = "cylinderObst";
 static const double TwoPi = 2.0*SimTK::Pi;
 static const double max_wrap_pts_circle_ang = (5.0/360.0)*TwoPi;
 
-// The following variables could be used for speedy wrap_pts definitions (NOT CURRENTLY USED)
-static const int num_circle_wrap_pts = 36;  // Number of circle points in 360 degrees
-static double circle_wrap_pts_sin[num_circle_wrap_pts];
-static double circle_wrap_pts_cos[num_circle_wrap_pts];
-static bool circle_wrap_pts_inited = false;
-
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -53,14 +42,10 @@ static bool circle_wrap_pts_inited = false;
 /**
 * Default constructor.
 */
-WrapCylinderObst::WrapCylinderObst() :
-WrapObject(),
-_radius(_radiusProp.getValueDbl()),
-_wrapDirectionName(_wrapDirectionNameProp.getValueStr()),
-_length(_lengthProp.getValueDbl())
+WrapCylinderObst::WrapCylinderObst()
 {
-    setNull();
-    setupProperties();
+    initCircleWrapPts();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -71,120 +56,71 @@ WrapCylinderObst::~WrapCylinderObst()
 {
 }
 
-//_____________________________________________________________________________
-/**
-* Copy constructor.
-*
-* @param aWrapCylinderObst WrapCylinderObst to be copied.
-*/
-WrapCylinderObst::WrapCylinderObst(const WrapCylinderObst& aWrapCylinderObst) :
-WrapObject(aWrapCylinderObst),
-_radius(_radiusProp.getValueDbl()),
-_wrapDirectionName(_wrapDirectionNameProp.getValueStr()),
-_length(_lengthProp.getValueDbl())
-{
-    setNull();
-    setupProperties();
-    copyData(aWrapCylinderObst);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
-/**
-* Set the data members of this WrapCylinder to their null values.
-*/
-void WrapCylinderObst::setNull()
-{
-    _wrapDirection = righthand;
-    if(!circle_wrap_pts_inited) initCircleWrapPts();
-}
-
 /** Initialize static data variables used for speedy definition of wrap_pts (for graphics mainly) */
 void WrapCylinderObst::initCircleWrapPts()
-{   int i;  double q;
-    for(i=0; i<num_circle_wrap_pts; i++) {
-        q = TwoPi*(double)(i)/(double)(num_circle_wrap_pts);
-        circle_wrap_pts_sin[i] = sin(q);
-        circle_wrap_pts_cos[i] = cos(q);
-    }   circle_wrap_pts_inited = true;
+{
 }
 
 //_____________________________________________________________________________
 /**
 * Connect properties to local pointers.
 */
-void WrapCylinderObst::setupProperties()
+void WrapCylinderObst::constructProperties()
 {
-    // BASE CLASS
-    WrapObject::setupProperties();
-
-    _radiusProp.setName("radius");
-    _radiusProp.setValue(-1.0);
-    _propertySet.append(&_radiusProp);
-
-    _wrapDirectionNameProp.setName("wrapDirection");
-    _wrapDirectionNameProp.setValue("Unassigned");
-    _propertySet.append(&_wrapDirectionNameProp);
-
-    _lengthProp.setName("length");
-    _lengthProp.setValue(1.0);
-    _propertySet.append(&_lengthProp);
+    constructProperty_radius(1.0);
+    constructProperty_wrapDirection("righthand");
+    m_wrapDirection = righthand;
+    constructProperty_length(1.0);
 }
 
 //_____________________________________________________________________________
-/**
+/*
 * Perform some set up functions that happen after the
 * object has been deserialized or copied.
-*
-* @param aModel pointer to OpenSim model.
 */
-void WrapCylinderObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
+void WrapCylinderObst::extendFinalizeFromProperties()
 {
     // Base class
-    Super::connectToModelAndBody(aModel, aBody);
+    Super::extendFinalizeFromProperties();
 
     // maybe set a parent pointer, _body = aBody;
-    if (_radius < 0.0)
-    {
-        string errorMessage = "Error: radius for WrapCylinderObst " + getName() + " was either not specified, or is negative.";
-        throw Exception(errorMessage);
-    }
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_radius() < 0,
+        InvalidPropertyValue,
+        getProperty_radius().getName(),
+        "Radius cannot be less than zero");
+
 /*
-    Cylinder* cyl = new Cylinder(_radius, _length);
+    Cylinder* cyl = new Cylinder(get_radius(), get_length());
     setGeometryQuadrants(cyl);
 */
-    if (_wrapDirectionName == "righthand" || _wrapDirectionName == "right" || _wrapDirectionName == "righthanded" || _wrapDirectionName == "Righthand" || _wrapDirectionName == "Right" || _wrapDirectionName == "Righthanded")
-        _wrapDirection = righthand;
+    if (get_wrapDirection() == "righthand" || get_wrapDirection() == "right" || get_wrapDirection() == "righthanded" || get_wrapDirection() == "Righthand" || get_wrapDirection() == "Right" || get_wrapDirection() == "Righthanded")
+        m_wrapDirection = righthand;
     else
-    if (_wrapDirectionName == "lefthand"  || _wrapDirectionName == "left"  || _wrapDirectionName == "lefthanded"  || _wrapDirectionName == "Lefthand"  || _wrapDirectionName == "Left"  || _wrapDirectionName == "Lefthanded")
-        _wrapDirection = lefthand;
+    if (get_wrapDirection() == "lefthand"  || get_wrapDirection() == "left"  || get_wrapDirection() == "lefthanded"  || get_wrapDirection() == "Lefthand"  || get_wrapDirection() == "Left"  || get_wrapDirection() == "Lefthanded")
+        m_wrapDirection = lefthand;
     else
-    if (_wrapDirectionName == "Unassigned")  // wrapDirection was not specified in obstacle object definition; use default
-        { _wrapDirection = righthand;   _wrapDirectionName = "righthand";   }
+    if (get_wrapDirection() == "Unassigned")  // wrapDirection was not specified in obstacle object definition; use default
+        { m_wrapDirection = righthand;
+        set_wrapDirection("righthand");
+    }
     else {  // wrapDirection was specified incorrectly in obstacle object definition; throw an exception
-        string errorMessage = "Error: wrapDirection for wrap obstacle " + getName() + " was specified incorrectly.  Use \"righthand\" or \"lefthand\".";
-        throw Exception(errorMessage);
+        string errorMessage = "wrapDirection was specified incorrectly. "
+                                "Use \"righthand\" or \"lefthand\".";
+        OPENSIM_THROW_FRMOBJ(InvalidPropertyValue,
+                            "wrapDirection",
+                            errorMessage);
     }
 
-}
-
-//_____________________________________________________________________________
-/**
-* Copy data members from one WrapCylinderObst to another.
-*
-* @param aWrapCylinderObst WrapCylinderObst to be copied.
-*/
-void WrapCylinderObst::copyData(const WrapCylinderObst& aWrapCylinderObst)
-{
-    // BASE CLASS
-    WrapObject::copyData(aWrapCylinderObst);
-
-    _radius = aWrapCylinderObst._radius;
-    _length = aWrapCylinderObst._length;
-    _wrapDirectionName = aWrapCylinderObst._wrapDirectionName;
-    _wrapDirection = aWrapCylinderObst._wrapDirection;
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_length() < 0,
+        InvalidPropertyValue,
+        getProperty_length().getName(),
+        "Length cannot be less than zero");
 }
 
 //_____________________________________________________________________________
@@ -209,26 +145,29 @@ const char* WrapCylinderObst::getWrapTypeName() const
 string WrapCylinderObst::getDimensionsString() const
 {
     stringstream dimensions;
-    dimensions << "radius " << _radius << "\nheight " << _length;
+    dimensions << "radius " << get_radius() << "\nheight " << get_length();
 
     return dimensions.str();
 }
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
-* Assignment operator.
-*
-* @return Reference to this object.
-*/
-WrapCylinderObst& WrapCylinderObst::operator=(const WrapCylinderObst& aWrapCylinderObst)
-{
-    // BASE CLASS
-    WrapObject::operator=(aWrapCylinderObst);
+double WrapCylinderObst::getRadius() const {
+    return get_radius();
+}
 
-    return(*this);
+void WrapCylinderObst::setRadius(double aRadius) {
+    set_radius(aRadius);
+}
+
+double WrapCylinderObst::getLength() const {
+    return get_length();
+}
+
+void WrapCylinderObst::setLength(double aLength) {
+    set_length(aLength);
+}
+
+int WrapCylinderObst::getWrapDirection() const {
+    return (int)m_wrapDirection;
 }
 
 //=============================================================================
@@ -248,7 +187,7 @@ WrapCylinderObst& WrapCylinderObst::operator=(const WrapCylinderObst& aWrapCylin
 int WrapCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
-    SimTK::Vec3& aPointP = aPoint1;     double R=0.8*( _wrapDirection==righthand ? _radius : -_radius );
+    SimTK::Vec3& aPointP = aPoint1;     double R=0.8*( m_wrapDirection==righthand ? get_radius() : -get_radius() );
     SimTK::Vec3& aPointS = aPoint2;     double Qx,Qy,Qz, Tx,Ty,Tz;
 
     // Initialize return values
@@ -299,8 +238,5 @@ int WrapCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimT
 
     return wrapped;
 }
-
-
-
 
 

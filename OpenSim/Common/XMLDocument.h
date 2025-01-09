@@ -1,5 +1,5 @@
-#ifndef _XMLDocument_h_
-#define _XMLDocument_h_
+#ifndef OPENSIM_XMLDOCUMENT_H
+#define OPENSIM_XMLDOCUMENT_H
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  XMLDocument.h                           *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ayman Habib                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,10 +29,10 @@
 
 
 // INCLUDES
-#include <iostream> // Ayman: Remove .h extension per .NET 2003
 #include "osimCommonDLL.h"
-#include <SimTKcommon.h>
 #include "Array.h"
+#include "SimTKcommon/internal/Xml.h"
+#include "SimTKcommon/SmallMatrix.h"
 
 //using namespace std;  // Ayman:per .NET 2003
 
@@ -49,7 +49,7 @@ namespace OpenSim {
  * @version 1.0
  * @author Ayman Habib, Frank C. Anderson, 
  */
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning( disable : 4251 )   // VC2010 no-dll export of std::string
 
 #endif
@@ -90,15 +90,64 @@ public:
     static void renameChildNode(SimTK::Xml::Element& aNode, std::string oldElementName, std::string newElementName);
     const int& getDocumentVersion() const { return _documentVersion; };
     static void getVersionAsString(const int aVersion, std::string& aString); 
-    Xml::Element getRootDataElement();
+    SimTK::Xml::Element getRootDataElement();
     bool isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoubles=1e-6, 
         bool compareDefaults=false, bool compareVersionNumbers=false);
+    /** This adds an XML element to `element` of the following form:
+    @code
+    <Connector_PhysicalFrame_ name="parent_frame">
+        <connectee_name>...</connectee_name>
+    </Connector_PhysicalFrame_>
+    @endcode
+    This syntax was revised in XML document version 30508; see
+    updateConnectors30508(). As such, this function should *not* be used for
+    updating versions 30508 or greater. */
     static void addConnector(SimTK::Xml::Element& element,
         const std::string& connectorTag, const std::string& connectorName, 
         const std::string& connectorValue);
-    static void addPhysicalOffsetFrame(SimTK::Xml::Element& element, const std::string& frameName,
+    /** In version 30508, the XML syntax for Connectors changed:
+    Previous:
+    @code
+    <connectors>
+        <Connector_PhysicalFrame_ name="parent_frame">
+            <connectee_name>...</connectee_name>
+        </Connector_PhysicalFrame_>
+        <Connector_PhysicalFrame_ name="child_frame">
+            <connectee_name>...</connectee_name>
+        </Connector_PhysicalFrame_>
+    </connectors>
+    @endcode
+    New:
+    @code
+    <connector_parent_frame_connectee_name>...
+        </connector_parent_frame_connectee_name>
+    <connector_child_frame_connectee_name>...
+        </connector_child_frame_connectee_name>
+    @endcode
+    
+    If there is no `<connectors>` element, then this function does not edit
+    componentElt. */
+    static void updateConnectors30508(SimTK::Xml::Element& componentElt);
+    static void addPhysicalOffsetFrame30505_30517(SimTK::Xml::Element& element,
+        const std::string& frameName,
         const std::string& parentFrameName,
         const SimTK::Vec3& location, const SimTK::Vec3& orientation);
+    /** Convert component names into the appropriate paths based on where we
+     * know components were located in version 30000 model files.
+     * @param connecteeSetName "bodyset", "jointset", etc.
+     * @param connecteeName The name of the connectee from the version 30000
+     *      file.
+     * Note: It is okay for connecteePath to be a reference to connecteeName. */
+    static std::string updateConnecteePath30517(
+            const std::string& connecteeSetName,
+            const std::string& connecteeName);
+    /** Find the first XML Element (depth-first search) with the provided
+    `name`, anywhere in the XML document that contains `element`. If the XML
+    document does not contain an element with name `name`, or if `name` is
+    empty, then the returned Xml::Element is empty (Xml::Element::isValid()
+    returns false). */
+    static SimTK::Xml::Element findElementWithName(
+            SimTK::Xml::Element& element, const std::string& name);
 
 private:
     static bool isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element& elt2, double toleranceForDoubles);
@@ -115,7 +164,8 @@ public:
     //--------------------------------------------------------------------------
     // IO
     //--------------------------------------------------------------------------
-    bool print(const std::string &aFileName=NULL);
+    /// If the filename is empty, the file is printed to cout.
+    bool print(const std::string& aFileName = {});
 
 //=============================================================================
 };  // END CLASS XMLDocument
@@ -125,4 +175,4 @@ public:
 //=============================================================================
 
 
-#endif // __XMLDocument_h__
+#endif // OPENSIM_XMLDOCUMENT_H

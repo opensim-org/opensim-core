@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,29 +29,17 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <iostream>
-#include <string>
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Common/Array.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/RootSolver.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
+#include "CMC.h"
 #include "VectorFunctionForActuators.h"
+#include <OpenSim/Common/RootSolver.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
-#include <OpenSim/Common/OptimizationTarget.h>
-#include <simmath/Optimizer.h>
-#include "CMC.h"
-#include  <OpenSim/Tools/CMC_Point.h>
 #include <OpenSim/Tools/CMC_Joint.h>
 #include <OpenSim/Tools/CMC_TaskSet.h>
 #include <OpenSim/Tools/ActuatorForceTarget.h>
 #include <OpenSim/Tools/ForwardTool.h>
-#include "SimTKcommon.h" 
-#include "MuscleStateTrackingTask.h"
+#include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace std;
 using SimTK::Vector;
@@ -98,9 +86,9 @@ public:
  */
 CMC::CMC() :
     TrackingController(),
-    _paramList(-1) , 
-    _f(0.0),
-    _controlSet()
+    _controlSet(),
+    _paramList(-1),
+    _f(0.0)
 {
     setNull();
     setupProperties();
@@ -145,11 +133,11 @@ CMC::CMC(Model *aModel,CMC_TaskSet *aTaskSet) :
             labels.append(_taskSet->get(i).getName());
         }
     }
-    _pErrStore = new Storage(1000,"PositionErrors");
+    _pErrStore.reset(new Storage(1000,"PositionErrors"));
     _pErrStore->setColumnLabels(labels);
-    _vErrStore = new Storage(1000,"VelocityErrors");
+    _vErrStore.reset(new Storage(1000,"VelocityErrors"));
     _pErrStore->setColumnLabels(labels);
-    _stressTermWeightStore = new Storage(1000,"StressTermWeight");
+    _stressTermWeightStore.reset(new Storage(1000,"StressTermWeight"));
 }
 
 void CMC::copyData( const CMC &aCmc ) 
@@ -210,9 +198,9 @@ setNull()
     _tf = 1.0e12;
     _targetDT = 1.0e-3;
     _checkTargetTime = false;
-    _pErrStore = NULL;
-    _vErrStore = NULL;
-    _stressTermWeightStore = NULL;
+    _pErrStore.reset();
+    _vErrStore.reset();
+    _stressTermWeightStore.reset();
     _useCurvatureFilter = false;
     _verbose = false;
     _paramList.setSize(0);
@@ -474,7 +462,7 @@ getActuatorForcePredictor()
 Storage* CMC::
 getPositionErrorStorage() const
 {
-    return(_pErrStore);
+    return(_pErrStore.get());
 }
 //_____________________________________________________________________________
 /**
@@ -485,7 +473,7 @@ getPositionErrorStorage() const
 Storage* CMC::
 getVelocityErrorStorage() const
 {
-    return(_vErrStore);
+    return(_vErrStore.get());
 }
 //_____________________________________________________________________________
 /**
@@ -496,7 +484,7 @@ getVelocityErrorStorage() const
 Storage* CMC::
 getStressTermWeightStorage() const
 {
-    return(_stressTermWeightStore);
+    return(_stressTermWeightStore.get());
 }
 
 
@@ -528,11 +516,14 @@ computeInitialStates(SimTK::State& s, double &rTI)
 
     double tiReal = rTI;
     if( _verbose ) {
-        cout<<"\n\n=============================================\n";
-        cout<<"enter CMC.computeInitialStates: ti="<< rTI << "  q's=" << s.getQ() <<endl;
-        cout<<"\nenter CMC.computeInitialStates: ti="<< rTI << "  u's=" << s.getU() <<endl;
-        cout<<"\nenter CMC.computeInitialStates: ti="<< rTI << "  z's=" << s.getZ() <<endl;
-        cout<<"=============================================\n";
+        log_info("-------------------------------------------");
+        log_info("CMC::computeInitialStates, guess (ti = {}):", rTI);
+        log_info("-------------------------------------------");
+        log_info(" -- Q = {}", s.getQ());
+        log_info(" -- U = {}", s.getU());
+        log_info(" -- Z = {}", s.getZ());
+        log_info("-------------------------------------------");
+        log_info("");
     }
 
 
@@ -567,22 +558,28 @@ computeInitialStates(SimTK::State& s, double &rTI)
 
     obtainActuatorEquilibrium(s,tiReal,0.200,xmin,true);
     if( _verbose ) {
-        cout<<"\n\n=============================================\n";
-        cout<<"#1 act Equ.  CMC.computeInitialStates: ti="<< rTI << "  q's=" << s.getQ() <<endl;
-        cout<<"\n#1 act Equ.  CMC.computeInitialStates: ti="<< rTI << "  u's=" << s.getU() <<endl;
-        cout<<"\n#1 act Equ.  CMC.computeInitialStates: ti="<< rTI << "  z's=" << s.getZ() <<endl;
-        cout<<"=============================================\n";
+        log_info("------------------------------------------------------------");
+        log_info("CMC::computeInitialStates, actuator equilibrium #1 (ti = {}):", rTI);
+        log_info("------------------------------------------------------------");
+        log_info(" -- Q = {}", s.getQ());
+        log_info(" -- U = {}", s.getU());
+        log_info(" -- Z = {}", s.getZ());
+        log_info("------------------------------------------------------------");
+        log_info("");
     }
     restoreConfiguration( s, initialState ); // set internal coord,speeds to initial vals. 
 
     // 2
     obtainActuatorEquilibrium(s,tiReal,0.200,xmin,true);
     if( _verbose ) {
-        cout<<"\n\n=============================================\n";
-        cout<<"#2 act Equ.  CMC.computeInitialStates: ti="<< rTI << "  q's=" << s.getQ() <<endl;
-        cout<<"\n#2 act Equ.  CMC.computeInitialStates: ti="<< rTI << "  u's=" << s.getU() <<endl;
-        cout<<"\n#2 act Equ.  CMC.computeInitialStates: ti="<< rTI << "  z's=" << s.getZ() <<endl;
-        cout<<"=============================================\n";
+        log_info("------------------------------------------------------------");
+        log_info("CMC::computeInitialStates, actuator equilibrium #2 (ti = {}):", rTI);
+        log_info("------------------------------------------------------------");
+        log_info(" -- Q = {}", s.getQ());
+        log_info(" -- U = {}", s.getU());
+        log_info(" -- Z = {}", s.getZ());
+        log_info("------------------------------------------------------------");
+        log_info("");
     }
     restoreConfiguration( s, initialState );
 
@@ -627,11 +624,14 @@ computeInitialStates(SimTK::State& s, double &rTI)
     setTargetDT(oldTargetDT);
     _model->updAnalysisSet().setOn(true);
     if( _verbose ) {
-        cout<<"\n\n=============================================\n";
-        cout<<"finish CMC.computeInitialStates: ti="<< rTI << "  q's=" << s.getQ() <<endl;
-        cout<<"\nfinish CMC.computeInitialStates: ti="<< rTI << "  u's=" << s.getU() <<endl;
-        cout<<"\nfinish CMC.computeInitialStates: ti="<< rTI << "  z's=" << s.getZ() <<endl;
-        cout<<"=============================================\n";
+        log_info("-------------------------------------------");
+        log_info("CMC::computeInitialStates, final (ti = {}):", rTI);
+        log_info("-------------------------------------------");
+        log_info(" -- Q = {}", s.getQ());
+        log_info(" -- U = {}", s.getU());
+        log_info(" -- Z = {}", s.getZ());
+        log_info("-------------------------------------------");
+        log_info("");
     }
 }
 
@@ -718,10 +718,9 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     double tiReal = s.getTime(); 
     double tfReal = _tf; 
 
-    cout<<"CMC.computeControls:  t = "<<s.getTime()<<endl;
+    log_info("CMC::computeControls, t = {}", tiReal);
     if(_verbose) { 
-        cout<<"\n\n----------------------------------\n";
-        cout<<"integration step size = "<<_targetDT<<",  target time = "<<_tf<<endl;
+        log_info(" -- step size = {}, target time = {}", _targetDT, _tf);
     }
 
     // SET CORRECTIONS 
@@ -737,25 +736,29 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
         qSet->evaluate(uDesired,1,tiReal);
     }
     Array<double> qCorrection(0.0,nq),uCorrection(0.0,nu);
-       const Vector& q = s.getQ();
-       const Vector& u = s.getU();
 
-    for(i=0;i<nq;i++) qCorrection[i] = q[i] - qDesired[i];
-    for(i=0;i<nu;i++) uCorrection[i] = u[i] - uDesired[i];
+    const CoordinateSet& coords = _model->getCoordinateSet();
+    for (i = 0; i < nq; ++i) {
+        qCorrection[i] = coords[i].getValue(s) - qDesired[i];
+        uCorrection[i] = coords[i].getSpeedValue(s) - uDesired[i];
+    }
 
     _predictor->getCMCActSubsys()->setCoordinateCorrections(&qCorrection[0]);
     _predictor->getCMCActSubsys()->setSpeedCorrections(&uCorrection[0]);
 
     if( _verbose ) {
-        cout << "\n=============================" << endl;
-        cout << "\nCMC:computeControls"  << endl;
-        cout << "\nq's = " << s.getQ() << endl;
-        cout << "\nu's = " << s.getU() << endl;
-        cout << "\nz's = " << s.getZ() << endl;
-        cout<<"\nqDesired:"<<qDesired << endl;
-        cout<<"\nuDesired:"<<uDesired << endl;
-        cout<<"\nQCorrections:"<<qCorrection << endl;
-        cout<<"\nUCorrections:"<<uCorrection << endl;
+        log_info("------------------------------");
+        log_info("CMC::computeControls, summary:");
+        log_info("------------------------------");
+        log_info(" -- Q = {}", s.getQ());
+        log_info(" -- U = {}", s.getU());
+        log_info(" -- Z = {}", s.getZ());
+        log_info(" -- Qdesired = {}", qDesired);
+        log_info(" -- Udesired = {}", uDesired);
+        log_info(" -- Qcorrection = {}", qCorrection);
+        log_info(" -- Ucorrection = {}", uCorrection);
+        log_info("------------------------------");
+        log_info("");
     }
 
     // realize to Velocity because some tasks (eg. CMC_Point) need to be
@@ -767,7 +770,9 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     _taskSet->recordErrorsAsLastErrors();
     Array<double> &pErr = _taskSet->getPositionErrors();
     Array<double> &vErr = _taskSet->getVelocityErrors();
-    if(_verbose) cout<<"\nErrors at time "<<s.getTime()<<":"<<endl;
+    if(_verbose) {
+        log_info("Errors at time {}: ", tiReal);
+    }
     int e=0;
     for(i=0;i<_taskSet->getSize();i++) {
         
@@ -775,18 +780,19 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 
         if(_verbose) {
             for(j=0;j<task.getNumTaskFunctions();j++) {
-                cout<<task.getName()<<":  ";
-                cout<<"pErr="<<pErr[e]<<" vErr="<<vErr[e]<<endl;
+                log_warn("Task '{}': pErr = {}, vErr = {}.", task.getName(),
+                        pErr[e], vErr[e]);
                 e++;
             }
+            log_info("");
         }
     }
 
-    double *err = new double[pErr.getSize()];
+    std::unique_ptr<double[]> err{new double[pErr.getSize()]};
     for(i=0;i<pErr.getSize();i++) err[i] = pErr[i];
-    _pErrStore->append(tiReal,pErr.getSize(),err);
+    _pErrStore->append(tiReal,pErr.getSize(),err.get());
     for(i=0;i<vErr.getSize();i++) err[i] = vErr[i];
-    _vErrStore->append(tiReal,vErr.getSize(),err);
+    _vErrStore->append(tiReal,vErr.getSize(),err.get());
 
     
     // COMPUTE DESIRED ACCELERATIONS
@@ -806,12 +812,19 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
                 CMC_Joint& jointTask = dynamic_cast<CMC_Joint&>(_taskSet->get(i));
                 if(jointTask.getLimit()) {
                     double w = ForwardTool::SigmaDn(jointTask.getLimit() * relativeTau, jointTask.getLimit(), fabs(pErr[i]));
-                    if(_verbose) cout << "Task " << i << ": err=" << pErr[i] << ", limit=" << jointTask.getLimit() << ", sigmoid=" << w << endl;
+                    if(_verbose) {
+                        log_info("Task {}: pErr = {}, limit = {}, sigmoid = {}.",
+                            i, pErr[i], jointTask.getLimit(), w);
+                    }
                     stressTermWeight = min(stressTermWeight, w);
                 }
             }
         }
-        if(_verbose) cout << "Setting stress term weight to " << stressTermWeight << " (relativeTau was " << relativeTau << ")" << std::endl;
+        if(_verbose) {
+            log_info("Setting stress term weight to {} (relativeTau was {}).",
+                stressTermWeight, relativeTau);
+            log_info("");
+        }
         realTarget->setStressTermWeight(stressTermWeight);
 
         for(i=0;i<vErr.getSize();i++) err[i] = vErr[i];
@@ -828,8 +841,9 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     }
 
     if(_verbose) {
-        cout<<"\nxmin:\n"<<xmin<<endl;
-        cout<<"\nxmax:\n"<<xmax<<endl;
+        log_info("xmin: {}", xmin);
+        log_info("xmax: {}", xmax);
+        log_info("");
     }
 
     // COMPUTE BOUNDS ON MUSCLE FORCES
@@ -844,12 +858,10 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     SimTK::State newState = _predictor->getCMCActSubsys()->getCompleteState();
     
      if(_verbose) {
-        cout<<endl<<endl;
-        cout<<"\ntiReal = "<<tiReal<<"  tfReal = "<<tfReal<<endl;
-        cout<<"Min forces:\n";
-        cout<<fmin<<endl;
-        cout<<"Max forces:\n";
-        cout<<fmax<<endl;
+        log_info("tiReal = {}, tfReal = {}", tiReal, tfReal);
+        log_info("Min forces: {}", fmin);
+        log_info("Max forces: {}", fmax);
+        log_info("");
     }
 
     // Print actuator force range if range is small
@@ -857,9 +869,11 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     for(i=0;i<N;i++) {
         range = fmax[i] - fmin[i];
         if(range<1.0) {
-            cout << "CMC::computeControls WARNING- small force range for "
-                 << getActuatorSet()[i].getName()
-                 << " ("<<fmin[i]<<" to "<<fmax[i]<<")\n" << endl;
+            const auto& actu = getSocket<Actuator>("actuators").getConnectee(i);
+            log_warn("CMC::computeControls: small force range for {} ({} to {})",
+                actu.getName(), fmin[i], fmax[i]);
+            log_info("");
+
             // if the force range is so small it means the control value, x, 
             // is inconsequential and we might as well choose the smallest control
             // value possible, or else the RootSolver will choose the last value
@@ -898,19 +912,19 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
             _optimizer->optimize(fVector);
         }
         catch (const SimTK::Exception::Base& ex) {
-            cout << ex.getMessage() << endl;
-            cout << "OPTIMIZATION FAILED..." << endl;
-            cout<<endl;
+            log_error(ex.getMessage());
+            log_error("OPTIMIZATION FAILED...");
 
             ostringstream msg;
-            msg << "CMC.computeControls: ERROR- Optimizer could not find a solution." << endl;
+            msg << "CMC::computeControls: Optimizer could not find a solution." << endl;
             msg << "Unable to find a feasible solution at time = " << s.getTime() << "." << endl;
             msg << "Model cannot generate the forces necessary to achieve the target acceleration." << endl;
             msg << "Possible issues: 1. not all model degrees-of-freedom are actuated, " << endl;
             msg << "2. there are tracking tasks for locked coordinates, and/or" << endl;
             msg << "3. there are unnecessary control constraints on reserve/residual actuators." << endl;
+            msg << endl;
                    
-            cout<<"\n"<<msg.str()<<endl<<endl;
+            log_error(msg.str());
 
          throw(new OpenSim::Exception(msg.str(), __FILE__,__LINE__));
         }
@@ -921,8 +935,8 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     if(_verbose) _target->printPerformance(&_f[0]);
 
     if(_verbose) {
-        cout<<"\nDesired actuator forces:\n";
-        cout<<_f<<endl;
+        log_info("Desired actuator forces: {}", _f);
+        log_info("");
     }
 
 
@@ -934,7 +948,9 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     Array<double> controls(0.0,N);
     controls = rootSolver.solve(s, xmin,xmax,tol);
     if(_verbose) {
-       cout<<"\n\nXXX t=" << _tf << "   Controls:" <<controls<<endl;
+        log_info("CMC::computeControls, root solve (tFinal = {}):", _tf);
+        log_info(" -- controls = {}", _tf, controls);
+        log_info("");
     }
     
     // FILTER OSCILLATIONS IN CONTROL VALUES
@@ -1013,19 +1029,25 @@ FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
                OpenSim::Array<double> &rControls,bool aVerbosePrinting)
 {
     if(aDT <= SimTK::Zero) {
-        if(aVerbosePrinting) cout<<"\nCMC.filterControls: aDT is practically 0.0, skipping!\n\n";
+        if(aVerbosePrinting) {
+            log_info("CMC::filterControls: aDT is practically 0.0, skipping!");
+            log_info("");
+        }
         return;
     }
 
-    if(aVerbosePrinting) cout<<"\n\nFiltering controls to limit curvature...\n";
+    if(aVerbosePrinting) {
+        log_info("Filtering controls to limit curvature...");
+        log_info("");
+    }
 
     int i;
     int size = rControls.getSize();
     Array<double> x0(0.0,size),x1(0.0,size),x2(0.0,size);
 
     // SET TIMES
-    double t0,t1,t2;
-    t2 = s.getTime();
+    double t0,t1/*,t2*/;
+    // t2 = s.getTime();
     t1 = s.getTime() - aDT;
     t0 = t1 - aDT;
 
@@ -1060,10 +1082,12 @@ FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
         rControls[i] = (3.0*x2[i] + 2.0*x1[i] + x0[i]) / 6.0;
 
         // PRINT
-        if(aVerbosePrinting) cout<<aControlSet[i].getName()<<": old="<<x2[i]<<" new="<<rControls[i]<<endl;
+        if(aVerbosePrinting) {
+            log_info("ControlSet '{}': old = {}, new = {}", 
+                    aControlSet[i].getName(), x2[i], rControls[i]);
+            log_info("");
+        }
     }
-
-    if(aVerbosePrinting) cout<<endl<<endl;
 }
 
 
@@ -1071,16 +1095,17 @@ FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
 // compute the control value for all actuators this Controller is responsible for
 void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
 {
-    SimTK_ASSERT( _controlSet.getSize() == getActuatorSet().getSize() , 
+    SimTK_ASSERT( _controlSet.getSize() == getNumActuators(),
         "CMC::computeControls number of controls does not match number of actuators.");
     
     SimTK::Vector actControls(1, 0.0);
-    for(int i=0; i<getActuatorSet().getSize(); i++){
+    const auto& socket = getSocket<Actuator>("actuators");
+    for(int i = 0; i < (int)socket.getNumConnectees(); i++){
         actControls[0] = _controlSet[_controlSetIndices[i]].getControlValue(s.getTime());
-        getActuatorSet()[i].addInControls(actControls, controls);
+        socket.getConnectee(i).addInControls(actControls, controls);
     }
 
-    double *val = &controls[0];
+    // double *val = &controls[0];
 }
 
 // for any post XML deserialization initialization
@@ -1096,11 +1121,11 @@ void CMC::extendConnectToModel(Model& model)
             labels.append(_taskSet->get(i).getName());
         }
     }
-    _pErrStore = new Storage(1000,"PositionErrors");
+    _pErrStore.reset(new Storage(1000,"PositionErrors"));
     _pErrStore->setColumnLabels(labels);
-    _vErrStore = new Storage(1000,"VelocityErrors");
+    _vErrStore.reset(new Storage(1000,"VelocityErrors"));
     _pErrStore->setColumnLabels(labels);
-    _stressTermWeightStore = new Storage(1000,"StressTermWeight");
+    _stressTermWeightStore.reset(new Storage(1000,"StressTermWeight"));
 
 }
 // for adding any components to the model
@@ -1115,10 +1140,8 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
 
     system.updDefaultSubsystem().addEventHandler(computeControlsHandler );
 
-    const Set<Actuator>& fSet = getActuatorSet();
-    int nActs = fSet.getSize();
 
-    mutableThis->_controlSetIndices.setSize(nActs);
+    mutableThis->_controlSetIndices.setSize(getNumActuators());
 
     // Create the control set that will hold the controls computed by CMC
     mutableThis->_controlSet.setName(_model->getName());
@@ -1129,10 +1152,10 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
     double xmin =0, xmax=0;
 
     std::string actName = "";
-    
-    for(int i=0; i < nActs; ++i ) {
+    const auto& socket = getSocket<Actuator>("actuators");
+    for (int i = 0; i < getNumActuators(); ++i) {
 
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        auto* act = dynamic_cast<const ScalarActuator*>(&socket.getConnectee(i));
         //Actuator& act = getActuatorSet().get(i);
 
         ControlLinear *control = new ControlLinear();
@@ -1146,19 +1169,19 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
         if (xmax ==SimTK::Infinity)
             xmax =MAX_CONTROLS_FOR_RRA;
 
-        Muscle *musc = dynamic_cast<Muscle *>(act);
+        auto *musc = dynamic_cast<const Muscle *>(act);
         // if controlling muscles, CMC requires that the control be constant (i.e. piecewise constant or use steps)
         // since it uses this assumption to rootsolve for the required controls over the CMC time-window.
         if(musc){
             control->setUseSteps(true);
             if(xmin < MIN_CMC_CONTROL_VALUE){
-                cout << "CMC::Warning: CMC cannot compute controls for muscles with muscle controls < " << MIN_CMC_CONTROL_VALUE <<".\n" <<
-                    "The minimum control limit for muscle '" << musc->getName() << "' has been reset to " << MIN_CMC_CONTROL_VALUE <<"." <<endl;
+                log_warn("CMC::extendAddToSystem: CMC cannot compute controls for muscles with muscle controls less than {}.", MIN_CMC_CONTROL_VALUE);
+                log_warn("CMC::extendAddToSystem: The minimum control limit for muscle '{}' has been reset to {}.", musc->getName(), MIN_CMC_CONTROL_VALUE);
                 xmin = MIN_CMC_CONTROL_VALUE;
             }
             if(xmax < MAX_CMC_CONTROL_VALUE){
-                cout << "CMC::Warning: CMC cannot compute controls for muscles with muscle controls > " << MAX_CMC_CONTROL_VALUE <<".\n" <<
-                    "The maximum control limit for muscle '" << musc->getName() << "' has been reset to " << MAX_CMC_CONTROL_VALUE << "." << endl;
+                log_warn("CMC::extendAddToSystem: CMC cannot compute controls for muscles with muscle controls greater than {}.", MAX_CMC_CONTROL_VALUE);
+                log_warn("CMC::extendAddToSystem: The maximum control limit for muscle '{}' has been reset to {}.", musc->getName(), MAX_CMC_CONTROL_VALUE);
                 xmax = MAX_CMC_CONTROL_VALUE;
             }
         }

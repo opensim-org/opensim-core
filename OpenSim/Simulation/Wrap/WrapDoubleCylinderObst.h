@@ -1,5 +1,5 @@
-#ifndef __WrapDoubleCylinderObst_h__
-#define __WrapDoubleCylinderObst_h__
+#ifndef OPENSIM_WRAP_DOUBLE_CYLINDER_OBST_H_
+#define OPENSIM_WRAP_DOUBLE_CYLINDER_OBST_H_
 /* -------------------------------------------------------------------------- *
  *                     OpenSim:  WrapDoubleCylinderObst.h                     *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2019 Stanford University and the Authors                *
  * Author(s): Brian Garner, Peter Loan                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -22,20 +22,20 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
+
+
+// INCLUDE
+#include "WrapObject.h"
+
 
 namespace OpenSim {
 
 class Body;
 class Model;
-class PathPoint;
 class PathWrap;
 class WrapResult;
+
+/** @cond **/ // hide from Doxygen
 
 //=============================================================================
 //=============================================================================
@@ -44,55 +44,45 @@ class WrapResult;
  * algorithm presented in Garner & Pandy (2000).
  *
  * @author Brian Garner, derived from Peter Loan
- * @version 0.1
+ * updated for OpenSim 4.0 by Benjamin Michaud, 2019.
  */
 class OSIMSIMULATION_API WrapDoubleCylinderObst : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapDoubleCylinderObst, WrapObject);
-
-//=============================================================================
-// DATA
-//=============================================================================
-
+private:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
     enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylinders' z-axis
     {
         righthand,
         lefthand
     };
 
-    PropertyDbl _radiusUcylProp;
-    double& _radiusUcyl;
 
-    PropertyDbl _radiusVcylProp;
-    double& _radiusVcyl;
+public:
+    // Name of body to which B cylinder is attached
+    OpenSim_DECLARE_PROPERTY(wrapVcylHomeBodyName, std::string, "The name of body to which B cylinder is attached.");
+
+    OpenSim_DECLARE_PROPERTY(radiusUcyl, double, "The radius of the first cylinder.");
+    OpenSim_DECLARE_PROPERTY(radiusVcyl, double, "The radius of the second cylinder.");
 
     // Facilitate prescription of wrapping direction around obstacle: "righthand" or "lefthand".
     // In traversing from the 1st point (P) to the 2nd (S), the path will wrap either
     //    right-handed or left-handed about the obstacle's z-axis.
-    PropertyStr _wrapUcylDirectionNameProp;
-    std::string& _wrapUcylDirectionName;
-    WrapDirectionEnum _wrapUcylDirection;
+    OpenSim_DECLARE_PROPERTY(wrapUcylDirection, std::string, "Describe if the first cylinder is right or left handed.");
+    OpenSim_DECLARE_PROPERTY(wrapVcylDirection, std::string, "Describe if the second cylinder is right or left handed.");
 
-    PropertyStr _wrapVcylDirectionNameProp;
-    std::string& _wrapVcylDirectionName;
-    WrapDirectionEnum _wrapVcylDirection;
+    OpenSim_DECLARE_PROPERTY(translationVcyl, SimTK::Vec3, "The translation of the second cylinder.");
+    OpenSim_DECLARE_PROPERTY(xyz_body_rotationVcyl, SimTK::Vec3, "The rotation of the second cylinder.");
+    OpenSim_DECLARE_PROPERTY(length, double, "The length of the cylinder.");
 
-    // Name of body to which B cylinder is attached
-    PropertyStr _wrapVcylHomeBodyNameProp;
-    std::string& _wrapVcylHomeBodyName;
-    OpenSim::Body* _wrapVcylHomeBody;
-    OpenSim::Body* _wrapUcylHomeBody;
-
-    PropertyDblArray _xyzBodyRotationVcylProp;
-    Array<double>& _xyzBodyRotationVcyl;
-
-    PropertyDblVec3 _translationVcylProp;
-    SimTK::Vec3 & _translationVcyl;
-
-    PropertyDbl _lengthProp;
-    double& _length;
-    
+private:
+    PhysicalFrame* _wrapVcylHomeBody;
+    PhysicalFrame* _wrapUcylHomeBody;
+    WrapDirectionEnum m_wrapUcylDirection;
+    WrapDirectionEnum m_wrapVcylDirection;
     // State of activity of each or both cylinders:  0=inactive, 1=U-Cylinder, 2=V-Cylinder, 3=Both Cylinders
-    int _activeState;   
+    int _activeState;
     Model* _model;
 
 //=============================================================================
@@ -103,44 +93,33 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapDoubleCylinderObst, WrapObject);
     //--------------------------------------------------------------------------
 public:
     WrapDoubleCylinderObst();
-    WrapDoubleCylinderObst(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst);
     virtual ~WrapDoubleCylinderObst();
-
-#ifndef SWIG
-    WrapDoubleCylinderObst& operator=(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst);
-#endif
-    void copyData(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst);
-
-    double getRadius() const { return _radiusUcyl; }
-    void setRadius(double aRadius) { _radiusUcyl = aRadius; }
-    double getLength() const { return _length; }
-    void setLength(double aLength) { _length = aLength; }
-    //WrapDirectionEnum getWrapDirection() const { return _wrapUcylDirection; }
-    int getWrapDirection() const { return (int)_wrapUcylDirection; }
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
-    void scale(const SimTK::Vec3& aScaleFactors) override { }
-    virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
-#ifndef SWIG
+
+    void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
+protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
-#endif
-protected:
-    void setupProperties();
+
+    void extendFinalizeFromProperties() override;
 
 private:
-    void setNull();
+    void constructProperties();
+
     void getVcylToUcylRotationMatrix(const SimTK::State& s, double M[9]) const;
 
 
 //=============================================================================
-};  // END of class WrapCylinder
+};  // END of class WrapDoubleCylinderObst
 //=============================================================================
 //=============================================================================
+
+/** @endcond **/
 
 } // end of namespace OpenSim
 
-#endif // __WrapCylinder_h__
+#endif // OPENSIM_WRAP_DOUBLE_CYLINDER_OBST_H_
 
 

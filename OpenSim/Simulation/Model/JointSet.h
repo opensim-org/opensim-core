@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -43,29 +43,10 @@ class OSIMSIMULATION_API JointSet : public ModelComponentSet<Joint> {
 OpenSim_DECLARE_CONCRETE_OBJECT(JointSet, ModelComponentSet<Joint>);
 
 public:
-    JointSet();
-    JointSet(Model& model);
-    JointSet(const JointSet& aJointSet);
-    ~JointSet();
+    /** Use Super's constructors. @see ModelComponentSet */
+    using ModelComponentSet::ModelComponentSet;
 
-    // Somehow the following function is not exported from base template
-    JointSet(Model& model, const std::string &aFileName, 
-             bool aUpdateFromXMLNode = true)
-    :   Super(model, aFileName, aUpdateFromXMLNode) {}
-
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    JointSet& operator=(const JointSet &aJointSet);
-#endif
-    //--------------------------------------------------------------------------
-    // UTILITIES
-    //--------------------------------------------------------------------------
-    void scale(const ScaleSet& aScaleSet);
-
-private:
-    void setNull();
+    // default copy, and assignment operator
 
 //=============================================================================
 };  // END of class JointSet

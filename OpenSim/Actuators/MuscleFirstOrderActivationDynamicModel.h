@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -22,7 +22,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "Simbody.h"
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 
@@ -85,11 +84,11 @@ public:
 // PROPERTIES
 //==============================================================================
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
-        "Activation time constant in seconds");
+        "Activation time constant, in seconds (overridden when this is a subcomponent of a Muscle)");
     OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
-        "Deactivation time constant in seconds");
+        "Deactivation time constant, in seconds (overridden when this is a subcomponent of a Muscle)");
     OpenSim_DECLARE_PROPERTY(minimum_activation, double,
-        "Lower bound on activation");
+        "Lower bound on activation (overridden when this is a subcomponent of a Muscle)");
 
 //==============================================================================
 // PUBLIC METHODS

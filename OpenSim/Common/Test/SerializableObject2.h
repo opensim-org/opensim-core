@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -131,7 +131,8 @@ public:
         setupSerializedMembers();
         updateFromXMLDocument();
     }
-    SerializableObject3(const SerializableObject3 &aObject){
+    SerializableObject3(const SerializableObject3 &aObject) :
+        Object(aObject) {
         setNull();
         setupSerializedMembers();
         *this = aObject;
@@ -139,6 +140,7 @@ public:
 
 private:
     void setNull(){
+        _propertySet._array.setMemoryOwner(true);
     }
     void setupSerializedMembers(){
         // Bool

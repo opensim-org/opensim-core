@@ -1,0 +1,230 @@
+namespace OpenSim {
+/**
+
+@example exampleMarkerTracking10DOF.m
+This is a simple example of using a marker tracking goal.
+
+@example exampleMocoTrack.m
+This is an example using the MocoTrack tool with a complex model to track
+walking.
+
+@example exampleMocoInverse.m
+This is an example using the MocoInverse tool with a complex model to prescribe
+walking. This example also shows how to track electromyography data.
+
+@example exampleSquatToStand.m
+This is an example that predicts a squat-to-stand movement and optimizes
+the stiffness of an assistive passive device. This example is used in hands-on
+workshops, and accordingly has blanks that users must fill in. See @ref
+exampleSquatToStand_answers.m for a completed version.
+
+@example exampleSquatToStand_answers.m
+This is an example that predicts a squat-to-stand movement and optimizes
+the stiffness of an assistive passive device.
+
+@example exampleIMUTracking.m
+This is an example that uses a squat-to-stand motion to create synthetic
+accelerometer data, and then creates a tracking simulation to track the
+synthetic accelerometer signals. This example is used in hands-on workshops,
+and accordingly has blanks that users must fill in. See @ref
+exampleSquatToStand_answers.m for a completed version.
+
+@example exampleIMUTracking_answers.m
+This is an example that uses a squat-to-stand motion to create synthetic
+accelerometer data, and then creates a tracking simulation to track the
+synthetic accelerometer signals.
+
+@example exampleEMGTracking.m
+This is an example that uses the MocoInverse tool and EMG data to create an
+EMG-driven simulation of walking. This example is used in hands-on workshops,
+and accordingly has blanks that users must fill in. See @ref
+exampleSquatToStand_answers.m for a completed version.
+
+@example exampleEMGTracking_answers.m
+This is an example that uses the MocoInverse tool and EMG data to create an
+EMG-driven simulation of walking.
+
+@example exampleMinimizeJointReaction.m
+This is an example of MocoJointReactionGoal.
+
+@example exampleOptimizeMass.m
+A simple parameter optimization example.
+
+@example examplePrototypeCustomGoal.m
+This is an example of how to prototype a custom goal in Matlab. See
+@ref mococustomgoal.
+
+@example exampleSlidingMass.m
+This is Moco's simplest example.
+
+@example example2DWalking.m
+This example conducts a 2-D prediction of walking, employing a
+MocoPerodicityGoal.
+
+@example examplePolynomialPathFitter.m
+This example demonstrates how to use PolynomialPathFitter to 
+create a set of FunctionBasedPaths for a model.
+
+
+@example exampleMocoTrack.py
+This is an example using the MocoTrack tool with a complex model to track
+walking.
+
+@example exampleMocoInverse.py
+This is an example using the MocoInverse tool with a complex model to prescribe
+walking. This example also shows how to track electromyography data.
+
+@example exampleSquatToStand.py
+This is an example that predicts a squat-to-stand movement and optimizes
+the stiffness of an assistive passive device. This example is used in hands-on
+workshops, and accordingly has blanks that users must fill in. See @ref
+exampleSquatToStand_answers.m for a completed version.
+
+@example exampleSquatToStand_answers.py
+This is an example that predicts a squat-to-stand movement and optimizes
+the stiffness of an assistive passive device.
+
+@example exampleIMUTracking.py
+This is an example that uses a squat-to-stand motion to create synthetic
+accelerometer data, and then creates a tracking simulation to track the
+synthetic accelerometer signals. This example is used in hands-on workshops,
+and accordingly has blanks that users must fill in. See @ref
+exampleSquatToStand_answers.m for a completed version.
+
+@example exampleIMUTracking_answers.py
+This is an example that uses a squat-to-stand motion to create synthetic
+accelerometer data, and then creates a tracking simulation to track the
+synthetic accelerometer signals.
+
+@example exampleEMGTracking.py
+This is an example that uses the MocoInverse tool and EMG data to create an
+EMG-driven simulation of walking. This example is used in hands-on workshops,
+and accordingly has blanks that users must fill in. See @ref
+exampleSquatToStand_answers.m for a completed version.
+
+@example exampleEMGTracking_answers.py
+This is an example that uses the MocoInverse tool and EMG data to create an
+EMG-driven simulation of walking.
+
+@example exampleOptimizeMass.py
+A simple parameter optimization example.
+
+@example examplePredictAndTrack.py
+This example predicts the trajectory to swing a double pendulum from horizontal
+to vertical, and then tracks the resulting trajectory.
+
+@example exampleSlidingMass.py
+This is Moco's simplest example.
+
+@example exampleHangingMuscle.py
+This example optimizes the motion of a point mass actuated by a single muscle
+and shows you how to use the AnalyzeTool and a metabolic probe with a
+MocoSolution.
+
+@example exampleKinematicConstraints.py
+This example demonstrates how Moco solves problems with kinematic constraints
+and includes a visualization of the Lagrange multipliers that Moco solves for.
+
+@example examplePolynomialPathFitter.py
+This example demonstrates how to use PolynomialPathFitter to 
+create a set of FunctionBasedPaths for a model.
+
+
+
+@example example2DWalking.cpp
+This example conducts a 2-D prediction of walking, employing a
+MocoPerodicityGoal.
+
+@example example2DWalkingMetabolics.cpp
+This is an example using the MocoTrack tool that also shows how to
+minimize the total metabolic rate employing the
+Bhargava2004SmoothedMuscleMetabolics.
+
+@example exampleCustomImplicitAuxiliaryDynamics.cpp
+This example shows how to define dynamics with an implicit differential
+equation.
+
+@example exampleMarkerTracking.cpp
+This is a simple example of using a marker tracking goal.
+
+@example exampleMocoTrack.cpp
+This is an example using the MocoTrack tool with a complex model to track
+walking.
+
+@example exampleMocoInverse.cpp
+This is an example using the MocoInverse tool with a complex model to prescribe
+walking. This example also shows how to track electromyography data.
+
+@example exampleSlidingMass.cpp
+This is Moco's simplest example.
+
+@example exampleSlidingMassAdvanced.cpp
+This example shows setting solver settings, customizing an initial guess,
+and defining a custom goal (cost term).
+See @ref mococustomgoal.
+
+@example exampleTracking.cpp
+This is a simple example of how to use a MocoStateTrackingGoal.
+
+@example exampleHangingMuscle.cpp
+This example optimizes the motion of a point mass actuated by a single muscle
+and shows you how to use the AnalyzeTool and a metabolic probe with a
+MocoSolution.
+
+@example exampleMocoCustomEffortGoal.cpp
+This example shows creating a custom goal in a plugin library, which allows
+you to use the custom goal in C++, the command-line, Matlab, Python, and the
+GUI.
+See @ref mococustomgoal.
+
+
+@page mocoexamples Moco Examples
+
+Moco's examples are categorized as beginner, intermediate, and advanced.
+Some examples are available from multiple interfaces. Use the links in the
+<b>Interfaces</b> column to view the code. In the OpenSim distribution, all
+examples are in the `Resources/Code/` folder.
+
+@note The intent of all examples is to demonstrate Moco's interface. We do not
+validate the results of these examples. Users are responsible for
+validating their results before making any scientific claims.
+
+@section Beginner
+
+name | model/motion | description | interfaces
+---- | ------------ | ----------- | ----------
+SlidingMass | point mass | Moco's simplest example; MocoFinalTimeGoal | [MATLAB](@ref exampleSlidingMass.m), [Python](@ref exampleSlidingMass.py), [C++](@ref exampleSlidingMass.cpp)
+SlidingMassAdvanced | point mass | MocoFinalTimeGoal, solver settings, customizing the initial guess | [C++](@ref exampleSlidingMassAdvanced.cpp)
+Tracking | double pendulum | Using MocoStateTrackingGoal | [C++](@ref exampleTracking.cpp)
+MarkerTracking | double pendulum | Using MocoMarkerTrackingGoal | [C++](@ref exampleMarkerTracking.cpp)
+HangingMuscle | point mass with muscle | DeGrooteFregly2016Muscle, Umberger2010MuscleMetabolicsProbe, AnalyzeTool, MocoInitialActivationGoal, MocoInitialVelocityEquilibriumDGFGoal, plotting a TimeSeriesTable | [Python](@ref exampleHangingMuscle.py), [C++](@ref exampleHangingMuscle.cpp)
+OptimizeMass | point mass | Parameter optimization with MocoMarkerFinalGoal and MocoParameter | [MATLAB](@ref exampleOptimizeMass.m), [Python](@ref exampleOptimizeMass.py)
+MinimizeJointReaction | pendulum | MocoJointReactionGoal, MocoControlGoal, prescribeControlsToModel | [MATLAB](@ref exampleMinimizeJointReaction.m)
+exampleKinematicConstraints | point mass | %Point mass constrained to a parabola | [Python](@ref exampleKinematicConstraints.py)
+
+@section Intermediate
+
+name | model/motion | description | interfaces
+---- | ------------ | ----------- | ----------
+MocoTrack | lower-limb | Using the MocoTrack tool for walking with marker tracking and state tracking; generating a PDF report | [MATLAB](@ref exampleMocoTrack.m), [Python](@ref exampleMocoTrack.py), [C++](@ref exampleMocoTrack.cpp)
+MocoInverse | lower-limb | Using the MocoInverse tool for walking; MocoControlTrackingGoal; generating a PDF report | [MATLAB](@ref exampleMocoInverse.m), [Python](@ref exampleMocoInverse.py), [C++](@ref exampleMocoInverse.cpp)
+2DWalking | walking | MocoTrack, MocoStudy prediction, MocoControlGoal, MocoAverageSpeedGoal, MocoPeriodicityGoal, MocoContactTrackingGoal, createPeriodicSolution | [MATLAB](@ref example2DWalking.m), [C++](@ref example2DWalking.cpp)
+2DWalkingMetabolics | walking | MocoTrack, MocoControlGoal, MocoPeriodicityGoal, Bhargava2004SmoothedMuscleMetabolics | [C++](@ref example2DWalkingMetabolics.cpp)
+MarkerTracking10DOF | walking | MocoControlGoal, MocoMarkerTrackingGoal | [MATLAB](@ref exampleMarkerTracking10DOF.m)
+SquatToStand | torque-driven single leg | MocoStudy motion prediction, MocoInverse | [MATLAB](@ref exampleSquatToStand_answers.m) [Python](@ref exampleSquatToStand_answers.py)
+IMUTracking | torque-driven single leg | MocoStudy motion prediction, MocoAccelerationTrackingGoal | [MATLAB](@ref exampleIMUTracking_answers.m) [Python](@ref exampleIMUTracking_answers.py)
+EMGTracking | lower-limb | MocoInverse, MocoControlTrackingGoal | [MATLAB](@ref exampleEMGTracking_answers.m) [Python](@ref exampleEMGTracking_answers.py)
+PredictAndTrack | double pendulum | MocoMarkerFinalGoal, MocoFinalTimeGoal, MocoMarkerTrackingGoal, MocoStateTrackingGoal | [Python](@ref examplePredictAndTrack.py)
+PrototypeCustomGoal | N/A | Sandbox for defining a custom MocoGoal | [MATLAB](@ref examplePrototypeCustomGoal.m)
+PolynomialPathFitter | N/A | Fit FunctionBasedPath%s to a model | [MATLAB](@ref examplePolynomialPathFitter.m) [Python](@ref examplePolynomialPathFitter.py)
+
+@section Advanced
+
+name | model/motion | description | interfaces
+---- | ------------ | ----------- | ----------
+CustomImplicitAuxiliaryDynamics | N/A | Creating a component with implicit auxiliary dynamics (like muscle tendon compliance) | [C++](@ref exampleCustomImplicitAuxiliaryDynamics.cpp)
+CustomEffortGoal | N/A | Creating a plugin for a custom goal | [C++](@ref exampleMocoCustomEffortGoal.cpp)
+
+
+*/
+} // namespace OpenSim

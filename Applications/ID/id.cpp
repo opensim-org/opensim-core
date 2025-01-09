@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -53,6 +53,17 @@ int main(int argc,char **argv)
 
     //LoadOpenSimLibrary("osimSdfastEngine");
 
+    // DEPRECATION NOTICE
+    const std::string deprecationNotice = R"(
+    THIS EXECUTABLE IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE.
+
+    Use opensim-cmd instead, which can do everything that this executable can.
+
+      id -S SetupFileName -> opensim-cmd run-tool SetupFileName
+      id -PS              -> opensim-cmd print-xml id
+    )";
+    log_warn(deprecationNotice);
+
 
     // PARSE COMMAND LINE
     int i;
@@ -73,7 +84,7 @@ int main(int argc,char **argv)
 
             PrintUsage(argv[0], cout);
             return(0);
- 
+
         // PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
         } else if((option=="-PrintSetup")||(option=="-PS")) {
             InverseDynamicsTool *tool = new InverseDynamicsTool();
@@ -81,7 +92,8 @@ int main(int argc,char **argv)
             Object::setSerializeAllDefaults(true);
             tool->print("default_Setup_InverseDynamics.xml");
             Object::setSerializeAllDefaults(false);
-            cout << "Created file default_Setup_InverseDynamics.xml with default setup" << endl;
+            log_info("Created file default_Setup_InverseDynamics.xml with "
+                     "default setup");
             return(0);
 
         // IDENTIFY SETUP FILE
@@ -109,19 +121,18 @@ int main(int argc,char **argv)
     }
     // ERROR CHECK
     if(setupFileName=="") {
-        cout<<"\n\nid.exe: ERROR- A setup file must be specified.\n";
+        log_error("id.exe: A setup file must be specified.");
         PrintUsage(argv[0], cout);
         return(-1);
     }
     // CONSTRUCT
-    cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
+    log_info("Constructing tool from setup file {}", setupFileName);
     InverseDynamicsTool id(setupFileName);
 
 
-    cout<<"-----------------------------------------------------------------------"<<endl;
-    cout<<"Starting Inverse Dynamics\n";
-    cout<<"-----------------------------------------------------------------------"<<endl;
-    cout<<"-----------------------------------------------------------------------"<<endl<<endl;
+    log_info("--------------------------------------------------------------");
+    log_info("Starting Inverse Dynamics");
+    log_info("--------------------------------------------------------------");
 
     // start timing
     std::clock_t startTime = std::clock();
@@ -129,13 +140,14 @@ int main(int argc,char **argv)
     // RUN
     id.run();
 
-    std::cout << "Inverse dynamics compute time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
+    auto timeInMilliseconds = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
+    log_info("Inverse dynamics compute time = {} ms", timeInMilliseconds);
 
     //----------------------------
     // Catch any thrown exceptions
     //----------------------------
     } catch(const std::exception& x) {
-        cout << "Exception in ID: " << x.what() << endl;
+        log_error("Exception in ID: {}", x.what());
         return -1;
     }
     //----------------------------

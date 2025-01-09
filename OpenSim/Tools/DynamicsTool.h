@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,13 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimToolsDLL.h"
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include  <OpenSim/Simulation/Model/ForceSet.h>
-#include  <OpenSim/Simulation/Model/ExternalLoads.h>
+#include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include "Tool.h"
 
 #ifdef SWIG
@@ -81,9 +75,11 @@ protected:
     /** Name of the file containing the external loads applied to the model. */
     OpenSim::PropertyStr _externalLoadsFileNameProp;
     std::string &_externalLoadsFileName;
-    /** External loads object that manages loading and applying external forces
-        to the model, including transformations required by the Tool */
+    /** ExternalLoads member for creating and editing applied external forces
+    (e.g. GRFs through the GUI) prior to running the Tool */
     ExternalLoads   _externalLoads;
+    // Reference to external loads added to the model but not owned by the Tool
+    SimTK::ReferencePtr<ExternalLoads> _modelExternalLoads;
 
 
 //=============================================================================
@@ -144,10 +140,14 @@ public:
     void setExcludedForces(const Array<std::string> &aExcluded) {
         _excludedForces = aExcluded;
     }
-    bool createExternalLoads( const std::string &aExternalLoadsFileName,
-                                     Model& aModel, const Storage *loadKinematics=NULL);
+    bool createExternalLoads( const std::string &externalLoadsFileName,
+                              Model& model);
 
-    virtual bool run() SWIG_DECLARE_EXCEPTION=0;
+    bool modelHasExternalLoads() { return !_modelExternalLoads.empty(); }
+
+    void removeExternalLoadsFromModel();
+
+    virtual bool run() override SWIG_DECLARE_EXCEPTION=0;
 
 
 //=============================================================================

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Jeffrey A. Reinbolt                                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,12 +29,8 @@
 //=============================================================================
 #include "osimAnalysesDLL.h"
 #include <memory>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Common/GCVSplineSet.h>
-#include <SimTKcommon.h>
 #include "ForceReporter.h"
 
 //=============================================================================
@@ -123,7 +119,8 @@ public:
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-    void setStorageCapacityIncrements(int aIncrement);
+    [[deprecated("this method no longer does anything")]]
+    void setStorageCapacityIncrements(int) {}
     Storage* getActivationStorage();
     Storage* getForceStorage();
 
@@ -143,11 +140,11 @@ public:
     // ANALYSIS
     //--------------------------------------------------------------------------
     int
-        begin(SimTK::State& s ) override;
+        begin(const SimTK::State& s ) override;
     int
         step(const SimTK::State& s, int setNumber ) override;
     int
-        end(SimTK::State& s ) override;
+        end(const SimTK::State& s ) override;
 protected:
     virtual int
         record(const SimTK::State& s );

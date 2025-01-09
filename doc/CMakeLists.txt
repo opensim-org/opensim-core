@@ -29,8 +29,8 @@ if(${DOXYGEN_FOUND})
 
     # There are two ways of using MathJax: from the internet, or locally.
     # We prefer using MathJax locally, but we have to download it first.
-    # We download a 50 mb MathJax zip and unzip it (150 mb).
-    # The zip can be thrown away, but the 150 mb MathJax directory must stay
+    # We download a MathJax zip (~30 MB) and unzip it (over 100 MB).
+    # The zip can be thrown away, but the unzipped MathJax directory must stay
     # with the Doxygen documentation.
 
     # If we are unable to download MathJax, and the user has LaTeX, we fall
@@ -40,7 +40,7 @@ if(${DOXYGEN_FOUND})
     # This block of commands is all executing during the configuring phase.
     if(${OPENSIM_DOXYGEN_USE_MATHJAX} AND NOT EXISTS "${MATHJAX_ZIP_PATH}")
         message(STATUS "Trying to download MathJax for Doxygen...")
-        file(DOWNLOAD https://github.com/mathjax/MathJax/archive/v2.5-latest.zip
+        file(DOWNLOAD https://github.com/mathjax/MathJax/archive/2.7.0.zip
             "${MATHJAX_ZIP_PATH}"
             #SHOW_PROGRESS Clutters the CMake output.
             STATUS MATHJAX_DOWNLOAD_STATUS
@@ -69,7 +69,7 @@ if(${DOXYGEN_FOUND})
 
         # See Doxyfile.in for a description of these variables.
         set(OPENSIM_DOXYGEN_USE_MATHJAX_DOXYFILE "YES")
-        set(OPENSIM_DOXYGEN_MATHJAX_RELPATH "MathJax-2.5-latest")
+        set(OPENSIM_DOXYGEN_MATHJAX_RELPATH "MathJax-2.7.0")
 
     else()
 
@@ -98,7 +98,7 @@ if(${DOXYGEN_FOUND})
         *and* install Simbody Doxygen documentation. By default,
         OpenSim's Doxygen documentation will link to your *local* Simbody
         Doxygen documentation, and this variable is automatically populated 
-        with the location of Simbody's Doyxgen files.
+        with the location of Simbody's Doxygen files.
         However, when the OpenSim Doxygen documentation is put online, 
         there is no 'local' Simbody Doxygen documentation. In this case, 
         set this variable to a URL where one can find the correct 
@@ -153,14 +153,48 @@ if(${DOXYGEN_FOUND})
             # This means the user wants to use MathJax *and* we were able to
             # download it successfully.
 
-            set(mathjax_unzipped_dir "${html_binary_dir}/MathJax-2.5-latest")
+            set(mathjax_unzipped_dir "${html_binary_dir}/MathJax-2.7.0")
 
-            # This creates a folder html_${audience}/MathJax-2.5-latest in the
+            # This creates a folder html_${audience}/MathJax-2.7-latest in the
             # build tree.
             add_custom_command(
                 OUTPUT "${mathjax_unzipped_dir}"
                 COMMENT "Unzipping MathJax.zip for ${audience} documentation"
                 COMMAND ${CMAKE_COMMAND} -E tar -x "${MATHJAX_ZIP_PATH}" 
+                # Trim away unnecessary files (over 100 MB -> about 5 MB).
+                # https://github.com/mathjax/MathJax-docs/wiki/Guide:-reducing-size-of-a-mathjax-installation/1814429ed1e97bfb7675c0fd400804baa9287249
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/docs"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/test"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/localization"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/unpacked"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/config"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/jax/output/SVG"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/TeX/png"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/Asana-Math"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/Gyre-Pagella"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/Gyre-Termes"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/Latin-Modern"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/Neo-Euler"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/STIX-Web"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/TeX/eot"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/TeX/otf"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/TeX/svg"
                 WORKING_DIRECTORY "${html_binary_dir}"
                 )
 
@@ -221,4 +255,37 @@ if(${DOXYGEN_FOUND})
     # documentation.
     install(FILES "OpenSimAPI.html" DESTINATION "${CMAKE_INSTALL_DOCDIR}")
 
+endif()
+
+# The repository stores a PDF version of MocoCheatSheet.tex, as well as the
+# LaTeX source for generating the PDF. This command generates the PDF from the
+# tex file, but it's installed to a location different from the one to which
+# the in-source PDF is installed.
+find_package(LATEX COMPONENTS PDFLATEX)
+if(LATEX_PDFLATEX_FOUND)
+
+    set_package_properties(LATEX PROPERTIES
+            URL https://www.latex-project.org/
+            TYPE OPTIONAL
+            PURPOSE "Building the MocoCheatSheet PDF.")
+
+    set(cheatsheet_binary_dir "${CMAKE_CURRENT_BINARY_DIR}/cheatsheet/")
+    # So that we can build the install target even if doxygen was not built.
+    file(MAKE_DIRECTORY ${cheatsheet_binary_dir})
+
+    add_custom_target(MocoCheatSheet
+            COMMENT "MocoCheatSheet LaTeX PDF"
+            SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/Moco/MocoCheatSheet.tex")
+    set_target_properties(MocoCheatSheet PROPERTIES
+            PROJECT_LABEL "MocoCheatSheet")
+    add_custom_command(TARGET MocoCheatSheet
+            COMMENT "Running pdflatex to build MocoCheatSheet."
+            COMMAND "${PDFLATEX_COMPILER}"
+            "-output-directory='${cheatsheet_binary_dir}'"
+            "Moco/MocoCheatSheet.tex"
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+
+    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/cheatsheet/"
+            DESTINATION "${CMAKE_INSTALL_DOCDIR}/"
+            FILES_MATCHING PATTERN "*.pdf")
 endif()

@@ -1,7 +1,5 @@
 #ifndef OPENSIM_PRESCRIBED_CONTROLLER_H_
 #define OPENSIM_PRESCRIBED_CONTROLLER_H_
-
-
 /* -------------------------------------------------------------------------- *
  *                      OpenSim:  PrescribedController.h                      *
  * -------------------------------------------------------------------------- *
@@ -11,8 +9,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2024 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
+ * Contributor(s): Nicholas Bianco                                            *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -33,34 +32,59 @@ namespace OpenSim {
 
 class Function;
 
-//=============================================================================
-//=============================================================================
 /**
  * PrescribedController is a concrete Controller that specifies functions that 
  * prescribe the control values of its actuators as a function of time.
  *
+ * The control functions are specified in the `ControlFunctions` property. Use 
+ * `prescribeControlForActuator()` to assign a control function to an actuator 
+ * based on the name or path of the actuator. After connecting the controller to 
+ * the model, the added control function will be placed at the correct index in 
+ * the `ControlFunctions` property. If modifying the `ControlFunctions` property
+ * directly, the number and order of functions must match the number and order 
+ * of actuators connected to the controller. However, it is recommended to use
+ * `prescribeControlForActuator()` to ensure the correct mapping between 
+ * actuator and control function.
+ *
+ * When loading from file, the order of the control functions in the file must
+ * match the order of actuators connected to the controller. If 
+ * `prescribeControlForActuator()` is used to assign control functions, the 
+ * control functions will be stored in the correct order in the 
+ * `ControlFunctions` when saving the controller to file (since they are 
+ * reordered as described above).
+ *
+ * A controls storage file can be specified in the `controls_file` property.
+ * Each column must be either the name or path of an actuator in the model. If
+ * the actuator name is used as the column label, the first actuator with a 
+ * matching name will be connected to the controller and assigned a control 
+ * function based on the column data. Using actuator paths in the column labels
+ * is recommended to avoid ambiguity. Finally, any actuators with existing 
+ * control functions will be ignored when setting controls from file.
+ *
+ * @note Prior to OpenSim 4.6, PrescribedController support setting a prescribed
+ *       control based on the actuator's index in the `ControlFunctions`
+ *       property. This interface is deprecated and will be removed in a future
+ *       release.
+ *
  * @author  Ajay Seth
  */
-//=============================================================================
-
 class OSIMSIMULATION_API PrescribedController : public Controller {
 OpenSim_DECLARE_CONCRETE_OBJECT(PrescribedController, Controller);
 
-//=============================================================================
-// DATA
-//=============================================================================
 public:
-    /** FunctionSet of prescribed controls associated with each actuator  */
+//=============================================================================
+// PROPERTIES
+//=============================================================================
     OpenSim_DECLARE_PROPERTY(ControlFunctions, FunctionSet,
-        "Functions (one per control) describing the controls for actuators"
-        "specified for this controller." );
+        "Functions (one per control) describing the controls for actuators "
+        "specified for this controller. The control function set must match "
+        "the number and order of connected actuators." );
 
-    /** (Optional) prescribed controls from a storage file  */
     OpenSim_DECLARE_OPTIONAL_PROPERTY(controls_file, std::string,
         "Controls storage (.sto) file containing controls for individual "
-        "actuators in the model. Column labels must match actuator names.");
+        "actuators in the model. Each column label must be either the name "
+        "or path to an actuator in the model.");
 
-    /** (Optional) interpolation method for controls in storage.  */
     OpenSim_DECLARE_OPTIONAL_PROPERTY(interpolation_method, int,
         "Interpolate the controls file data using piecewise: '0-constant', "
         "'1-linear', '3-cubic' or '5-quintic' functions.");
@@ -68,10 +92,8 @@ public:
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
+
     // CONSTRUCTION AND DESTRUCTION
-    //--------------------------------------------------------------------------
-public:
     /** Default constructor */
     PrescribedController();
 
@@ -84,11 +106,9 @@ public:
                          int interpMethodType = 1);
 
     /** Destructor */
-    virtual ~PrescribedController();
+    ~PrescribedController() override;
 
-    //--------------------------------------------------------------------------
-    // CONTROL
-    //--------------------------------------------------------------------------
+    // CONTROLLER INTERFACE
     /**
      * Compute the control values for all actuators under the control of this
      * Controller.
@@ -99,43 +119,52 @@ public:
     void computeControls(const SimTK::State& s, 
                          SimTK::Vector& controls) const override;
 
+    // GET AND SET
     /**
-     *  Assign a prescribe control function for the desired actuator identified 
-     *  by its index. Controller takes ownership of the function.
-     *  @param index                the actuator's index in the controller's set
+     *  Assign a prescribed control function for the desired actuator identified
+     *  by the provided label. The label can be either the name of the actuator,
+     *  or the absolute path to the actuator in the model.
+     *  @param actuLabel            label for the actuator in the controller
      *  @param prescribedFunction   the actuator's control function
+     *
+     *  @note As of OpenSim 4.6, PrescribedController no longer takes ownership
+     *        of the passed in Function and instead makes a copy.
      */
-    void prescribeControlForActuator(int index, Function *prescribedFunction);
+    void prescribeControlForActuator(const std::string& actuLabel,
+                                     const Function& prescribedFunction);
 
-    /**
-     *  Assign a prescribe control function for the desired actuator identified
-     *  by its name. Controller takes ownership of the function.
-     *  @param actName                the actuator's name in the controller's set
-     *  @param prescribedFunction     the actuator's control function
-     */
-    void prescribeControlForActuator(const std::string actName,
-                                     Function *prescribedFunction);
+    [[deprecated("Use prescribeControlForActuator(const std::string&, const Function&) instead")]]
+    void prescribeControlForActuator(int index, Function* prescribedFunction) {
+        OPENSIM_THROW_FRMOBJ(Exception,
+            "PrescribedController::prescribeControlForActuator(int, Function*) "
+            "is deprecated. Use prescribeControlForActuator(const std::string&, "
+            "const Function&) instead.");
+    }
 
 protected:
-    /** Model component interface */
+    // MODEL COMPONENT INTERFACE
     void extendConnectToModel(Model& model) override;
+    void updateFromXMLNode(SimTK::Xml::Element& node,
+                           int versionNumber) override;
+
 private:
-    // construct and initialize properties
+    // Construct and initialize properties.
     void constructProperties();
 
-    // utility
-    Function* createFunctionFromData(const std::string& name,
-        const Array<double>& time, const Array<double>& data);
+    // Utility functions.
+    std::unique_ptr<Function> createFunctionFromData(const std::string& name,
+        const Array<double>& time, const Array<double>& data) const;
+    int getActuatorIndexFromLabel(const std::string& actuLabel) const;
 
     // This method sets all member variables to default (e.g., NULL) values.
     void setNull();
 
-//=============================================================================
-};  // END of class PrescribedController
+    // Member variables.
+    std::unordered_map<std::string, int> _actuLabelsToControlFunctionIndexMap;
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+};  // class PrescribedController
+
+} // namespace OpenSim
 
 #endif // OPENSIM_PRESCRIBED_CONTROLLER_H_
 

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -35,13 +35,16 @@
 //
 //=============================================================================
 #include <OpenSim/Simulation/osimSimulation.h>
+#include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
+
+#include "SimulationComponentsForTesting.h"
 
 using namespace OpenSim;
 using namespace std;
 
-//=============================================================================
+//==============================================================================
 // Common Parameters for the simulations are just global.
 const static double integ_accuracy = 1.0e-3;
 
@@ -51,12 +54,18 @@ void testMomentArmDefinitionForModel(const string &filename,
                                      SimTK::Vec2 rom = SimTK::Vec2(-SimTK::Pi/2,0),
                                      double mass = -1.0, string errorMessage = "");
 
+void testMomentArmsAcrossCompoundJoint();
+
 int main()
 {
     clock_t startTime = clock();
     LoadOpenSimLibrary("osimActuators");
+    Object::registerType(CompoundJoint());
 
     try {
+
+        testMomentArmsAcrossCompoundJoint();
+        cout << "Joint composed of more than one mobilized body: PASSED\n" << endl;
 
         testMomentArmDefinitionForModel("BothLegs22.osim", "r_knee_angle", "VASINT", 
             SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), 0.0, 
@@ -128,6 +137,33 @@ int main()
     cout << "Moment-arm test time: " << 1.0e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms" << endl;
 
     return 0;
+}
+
+void testMomentArmsAcrossCompoundJoint()
+{
+    Model model;
+
+    Body* leg = new Body("leg", 10., SimTK::Vec3(0,1,0), SimTK::Inertia(1,1,1));
+    model.addComponent(leg);
+
+    CompoundJoint* hip = new CompoundJoint("hip",
+        model.getGround(), SimTK::Vec3(0), SimTK::Vec3(0),
+        *leg, SimTK::Vec3(0, 0.5, 0), SimTK::Vec3(0));
+    model.addComponent(hip);
+
+    Thelen2003Muscle* musc = new Thelen2003Muscle("muscle", 10., 0.1, 0.2, 0.);
+    musc->addNewPathPoint("p1", model.updGround(), SimTK::Vec3(0.05, 0, 0));
+    musc->addNewPathPoint("p2", *leg, SimTK::Vec3(0.05, 0.25, 0.01));
+    model.addForce(musc);
+
+    SimTK::State& s = model.initSystem();
+
+    const Coordinate& c = model.getCoordinateSet()[0];
+
+    model.print("testMomentArmsAcrossCompoundJoint.osim");
+    testMomentArmDefinitionForModel("testMomentArmsAcrossCompoundJoint.osim",
+        c.getName(), "muscle", SimTK::Vec2(-2 * SimTK::Pi / 3, SimTK::Pi / 18),
+        0.0, "testMomentArmsAcrossCompoundJoint: FAILED");
 }
 
 //==========================================================================================================
@@ -216,12 +252,12 @@ SimTK::Vector computeGenForceScaling(const Model &osimModel, const SimTK::State 
                 && (ac.getJoint().getName() != "tib_pat_r") ){
             MobilizedBodyIndex modbodIndex = ac.getBodyIndex();
             const MobilizedBody& mobod = osimModel.getMatterSubsystem().getMobilizedBody(modbodIndex);
-            SpatialVec Hcol = mobod.getHCol(s, SimTK::MobilizerUIndex(0)); //ac.getMobilizerQIndex())); // get n’th column of H
+            SpatialVec Hcol = mobod.getHCol(s, SimTK::MobilizerUIndex(0)); //ac.getMobilizerQIndex())); // get nth column of H
 
-            double thetaScale = Hcol[0].norm(); // magnitude of the rotational part of this column of H
+            /*double thetaScale = */Hcol[0].norm(); // magnitude of the rotational part of this column of H
             
             double Ci = C[mobod.getFirstUIndex(s)+ac.getMobilizerQIndex()];
-            double Wi = 1.0/thetaScale;
+            // double Wi = 1.0/thetaScale;
             //if(thetaScale)
                 W[mobod.getFirstUIndex(s)+ac.getMobilizerQIndex()] = Ci; 
         }
@@ -289,13 +325,13 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 
     // Disable all forces
     for(int i=0; i<osimModel.updForceSet().getSize(); i++){
-        osimModel.updForceSet()[i].setDisabled(s, true);
+        osimModel.updForceSet()[i].setAppliesForce(s, false);
     }
     // Also disable gravity
     osimModel.getGravityForce().disable(s);
 
     // Enable just muscle we are interested in.
-    muscle.setDisabled(s, false);
+    muscle.setAppliesForce(s, true);
 
     coord.setClamped(s, false);
     coord.setLocked(s, false);
@@ -309,7 +345,7 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
     cout << "===================================================================================" << endl;
     for(int i = 0; i <=nsteps; i++){
         coord.setValue(s, q, true);
-        double angle = coord.getValue(s);
+        // double angle = coord.getValue(s);
 
         //cout << "muscle  force: " << muscle.getForce(s) << endl;
         //double ma = muscle.computeMomentArm(s, coord);

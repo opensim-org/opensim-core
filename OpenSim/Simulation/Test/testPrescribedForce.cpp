@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Eastman, Ajay Seth                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -30,7 +30,7 @@
 //      3. Force at a point
 //      4. Torque on a body
 //      4. Forces from a file.
-//     Add tests here 
+//     Add tests here
 //
 //==========================================================================================================
 #include <iostream>
@@ -42,7 +42,6 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Analyses/PointKinematics.h>
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
@@ -60,7 +59,7 @@ using namespace std;
 
 //==========================================================================================================
 // Common Parameters for the simulations are just global.
-const static double integ_accuracy = 1.0e-4;
+const static double integ_accuracy = 1.0e-6;
 const static double duration = 1.0;
 const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 
@@ -75,17 +74,35 @@ void testTorque();
 
 int main()
 {
-    try {
-        testNoForce();
-        testForceAtOrigin();
-        testForceAtPoint();
-        testTorque();
+    SimTK::Array_<std::string> failures;
+
+    try { testNoForce(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testNoForce");
     }
-    catch (const Exception& e) {
-        e.print(cerr);
+    try { testForceAtOrigin(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testForceAtOrigin");
+    }
+    try { testForceAtPoint(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testForceAtPoint");
+    }
+    try { testTorque(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testTorque");
+    }
+
+    if (!failures.empty()) {
+        cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
-    cout << "Done" << endl;
+
+    cout << "testPrescribedForce Done" << endl;
     return 0;
 }
 
@@ -103,27 +120,25 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
-    const Ground& ground = osimModel->getGround();;
+    const Ground& ground = osimModel->getGround();
     OpenSim::Body ball;
     ball.setName("ball");
-
+    ball.setMass(0);
     // Add joints
-    FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0), false);
+    FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0));
 
     // Rename coordinates for a free joint
-    CoordinateSet free_coords = free.getCoordinateSet();
-    for(int i=0; i<free_coords.getSize(); i++){
+    for(int i=0; i<free.numCoordinates(); i++){
         std::stringstream coord_name;
         coord_name << "free_q" << i;
-        free_coords.get(i).setName(coord_name.str());
-        free_coords.get(i).setMotionType(i > 2 ? Coordinate::Translational : Coordinate::Rotational);
+        free.upd_coordinates(i).setName(coord_name.str());
     }
 
     osimModel->addBody(&ball);
     osimModel->addJoint(&free);
 
     // Add a PrescribedForce.
-    PrescribedForce force(&ball);
+    PrescribedForce force("forceOnBall", ball);
     if (forceX != NULL)
         force.setForceFunctions(forceX, forceY, forceZ);
     if (pointX != NULL)
@@ -143,6 +158,7 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     ball.setInertia(ballMass.getInertia());
 
     osimModel->setGravity(gravity_vec);
+    osimModel->finalizeConnections();
     osimModel->print("TestPrescribedForceModel.osim");
 
     delete osimModel;
@@ -155,24 +171,21 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     // Compute the force and torque at the specified times.
 
     const OpenSim::Body& body = osimModel->getBodySet().get("ball");
+    osim_state.setTime(0.0);
+    Manager manager(*osimModel);
+    manager.initialize(osim_state);
 
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
-    Manager manager(*osimModel,  integrator);
-    manager.setInitialTime(0.0);
     for (unsigned int i = 0; i < times.size(); ++i)
     {
-        manager.setFinalTime(times[i]);
-        manager.integrate(osim_state);
+        osim_state = manager.integrate(times[i]);
+        ASSERT_EQUAL(osim_state.getTime(), times[i], SimTK::Eps);
+
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 accel, angularAccel;
-        osimModel->updSimbodyEngine().getAcceleration(osim_state, body, Vec3(0), accel);
-        osimModel->updSimbodyEngine().getAngularAcceleration(osim_state, body, angularAccel);
-        ASSERT_EQUAL(accelerations[i][0], accel[0], 1e-10);
-        ASSERT_EQUAL(accelerations[i][1], accel[1], 1e-10);
-        ASSERT_EQUAL(accelerations[i][2], accel[2], 1e-10);
-        ASSERT_EQUAL(angularAccelerations[i][0], angularAccel[0], 1e-10);
-        ASSERT_EQUAL(angularAccelerations[i][1], angularAccel[1], 1e-10);
-        ASSERT_EQUAL(angularAccelerations[i][2], angularAccel[2], 1e-10);
+        Vec3 accel = body.findStationAccelerationInGround(osim_state, Vec3(0));
+        Vec3 angularAccel = body.getAccelerationInGround(osim_state)[0];
+
+        ASSERT_EQUAL(accelerations[i], accel, integ_accuracy);
+        ASSERT_EQUAL(angularAccelerations[i], angularAccel, integ_accuracy);
     }
 }
 

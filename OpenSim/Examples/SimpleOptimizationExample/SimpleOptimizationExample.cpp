@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                     OpenSim:  SimpleOptimizationExample.cpp                      *
+ *                     OpenSim:  SimpleOptimizationExample.cpp                *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -45,7 +45,9 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 
        /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
        ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
-             numKnobs(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel){}
+             OptimizerSystem(numParameters), 
+             si(s),
+             osimModel(aModel){}
                 
     int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const override {
 
@@ -82,7 +84,6 @@ class ExampleOptimizationSystem : public OptimizerSystem {
    }    
 
 private:
-    int numKnobs;
     State& si;
     Model& osimModel;
  };
@@ -123,7 +124,7 @@ int main()
         
         // Initialize the optimizer system we've defined.
         ExampleOptimizationSystem sys(1, si, osimModel);
-        Real f = NaN;
+        // Real f = NaN;
         
         /* Define initial values and bounds for the controls to optimize */
 
@@ -144,7 +145,7 @@ int main()
         opt.setLimitedMemoryHistory(500);
             
         // Optimize it!
-        f = opt.optimize(controls); // f=-0.049390301058364026
+        /*f = */opt.optimize(controls); // f=-0.049390301058364026
             
         cout << "Elapsed time = " << (std::clock()-startTime)/CLOCKS_PER_SEC << "s" << endl;
         

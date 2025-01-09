@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -20,24 +20,25 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "DebugUtilities.h"
-#include <sstream>
+
+#include "Logger.h"
+#include <cstdlib>
+#include <exception>
 #include <fstream>
 #include <iostream>
-#include <cassert>
+#include <sstream>
 #include <stdexcept>
-#include <cstdlib>
 
 namespace OpenSim {
 namespace DebugUtilities {
 
-void Fatal_Error(const char *msg, const char *function, const char *file, unsigned int line)
-{
-    std::ostringstream string_stream;
-    string_stream << "Fatal Error: " << msg << " (function = " << function << ", file = " << file << ", line = " << line << ")";
-    std::cerr << string_stream.str() << std::endl;
-    throw std::runtime_error(string_stream.str());
-    assert(false);
-    exit(1);
+void Fatal_Error(const char* msg, const char* function, const char* file,
+        unsigned int line) {
+    std::string str = fmt::format("Fatal Error: {} (function = {}, file = {}, "
+                                  "line = {})", msg, function, file, line);
+    log_critical(str);
+    throw std::runtime_error(str);
+    std::terminate();
 }
 
 /**
@@ -55,8 +56,8 @@ void AddEnvironmentVariablesFromFile(const std::string &aFileName)
     while (getline(input,line)) {
         if(line.find("export") != std::string::npos) {
             std::string env=line.substr(7);
-            std::cout << "Setting environment '" << env << "'" << std::endl;
-#ifdef WIN32
+            log_info("Setting environment '{}'", env);
+#ifdef _WIN32
             _putenv(env.c_str());
 #else
             putenv(const_cast<char*>(env.c_str()));

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,8 +25,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
 #include <OpenSim/Simulation/Model/Model.h>
 #include "StatesReporter.h"
 
@@ -158,15 +156,13 @@ constructDescription()
 {
     char descrip[1024];
 
-    strcpy(descrip,"\nThis file contains the states of a model ");
-    strcat(descrip,"during a simulation.\n");
-    strcat(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
-    if(getInDegrees()) {
-        strcat(descrip,"\nAngles are in degrees.");
-    } else {
-        strcat(descrip,"\nAngles are in radians.");
-    }
-    strcat(descrip,"\n\n");
+    strcpy(descrip, "\nThis file contains the states of a model ");
+    strcat(descrip, "during a simulation.\n");
+    strcat(descrip, "\nUnits are S.I. units (second, meters, Newtons, ...)");
+    strcat(descrip, "\nIf the header above contains a line with ");
+    strcat(descrip, "'inDegrees', this indicates whether rotational values ");
+    strcat(descrip, "are in degrees (yes) or radians (no).");
+    strcat(descrip, "\n\n");
 
     setDescription(descrip);
 }
@@ -206,7 +202,7 @@ record(const SimTK::State& s)
     _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
 
     SimTK::Vector stateValues = _model->getStateVariableValues(s);
-    StateVector nextRow(s.getTime(), stateValues.size(), &stateValues[0]);
+    StateVector nextRow(s.getTime(), stateValues);
     _statesStore.append(nextRow);
 
     return(0);
@@ -227,7 +223,7 @@ record(const SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int StatesReporter::
-begin( SimTK::State& s)
+begin( const SimTK::State& s)
 {
     if(!proceed()) return(0);
     // LABELS
@@ -283,7 +279,7 @@ step(const SimTK::State& s, int stepNumber )
  * @return -1 on error, 0 otherwise.
  */
 int StatesReporter::
-end( SimTK::State& s )
+end( const SimTK::State& s )
 {
     if (!proceed()) return 0;
 
@@ -318,8 +314,8 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
     if(!getOn()) {
-        printf("StatesReporter.printResults: Off- not printing.\n");
-        return(0);
+        log_info("StatesReporter.printResults: Off- not printing.");
+        return 0;
     }
 
     std::string prefix=aBaseName+"_"+getName()+"_";

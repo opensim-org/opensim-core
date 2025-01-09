@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  * Contributor(s): Frank C. Anderson                                          *
  *                                                                            *
@@ -22,14 +22,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//==============================================================================
-// INCLUDES
-//==============================================================================
+#include "CoordinateActuator.h"
+
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
-
-#include "CoordinateActuator.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -160,16 +159,17 @@ CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel
 {
     ForceSet& as = aModel.updForceSet();
     as.setSize(0);
-    const CoordinateSet& cs = aModel.getCoordinateSet();
-    for(int i=0; i<cs.getSize(); i++) {
-        if(!aIncludeLockedAndConstrainedCoordinates && (cs[i].isConstrained(s))) continue;
+    auto coordinates = aModel.getCoordinatesInMultibodyTreeOrder();
+    for(size_t i=0u; i < coordinates.size(); ++i) {
+        const Coordinate& coord = *coordinates[i];
+        if(!aIncludeLockedAndConstrainedCoordinates && (coord.isConstrained(s))) continue;
         CoordinateActuator *actuator = new CoordinateActuator();
-        actuator->setCoordinate(&cs.get(i));
-        actuator->setName(cs.get(i).getName()+"_actuator");
+        actuator->setCoordinate(const_cast<Coordinate*>(&coord));
+        actuator->setName(coord.getName()+"_actuator");
         actuator->setOptimalForce(aOptimalForce);
         as.append(actuator);
     }
-    as.invokeConnectToModel(aModel);
+
     aModel.invalidateSystem();
     return &as;
 }
@@ -179,33 +179,32 @@ CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel
 //==============================================================================
 //_____________________________________________________________________________
 /**
- * Apply the actuator force to BodyA and BodyB.
+ * Produces the actuator force for BodyA and BodyB.
  */
-void CoordinateActuator::computeForce( const SimTK::State& s, 
-                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                               SimTK::Vector& mobilityForces) const
+void CoordinateActuator::implProduceForces(const SimTK::State& s,
+        ForceConsumer& forceConsumer) const
 {
-    if(!_model) return;
-
-   double force;
-   if (isActuationOverridden(s)) {
-       force = computeOverrideActuation(s);
-    } else {
-       force = computeActuation(s);
+    if (!_model) {
+        return;
     }
-   setActuation(s, force);
 
-    if(isCoordinateValid()){
-        applyGeneralizedForce(s, *_coord, getActuation(s), mobilityForces);
+    const double force = isActuationOverridden(s) ?
+        computeOverrideActuation(s) :
+        computeActuation(s);
+
+    setActuation(s, force);
+
+    if (isCoordinateValid()) {
+        forceConsumer.consumeGeneralizedForce(s, *_coord, getActuation(s));
     } else {
-       std::cout << "CoordinateActuator::computeForce  Invalid coordinate " << std::endl;
+        log_warn("CoordinateActuator::implProduceForces: Invalid coordinate");
     }
 }
 
 double CoordinateActuator::
 getSpeed( const SimTK::State& s) const
 {
-    assert(_coord);
+    OPENSIM_ASSERT_FRMOBJ(_coord != nullptr);
     return _coord->getSpeedValue(s);
 };
 

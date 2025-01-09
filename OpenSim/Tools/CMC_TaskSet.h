@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -28,12 +28,12 @@
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // INCLUDES
-#include "osimToolsDLL.h"
-#include <OpenSim/Common/ArrayPtrs.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/FunctionSet.h>
 #include "CMC_Task.h"
 
 namespace OpenSim {
+
+class Model;
 
 //=============================================================================
 //=============================================================================
@@ -102,9 +102,11 @@ public:
         throw OpenSim::Exception("CMC_TaskSet::operator=() not implemented");
         return *this;
     }
-    CMC_TaskSet(const CMC_TaskSet& aCMCTaskSet):
-    _dataFileName(_dataFileNameProp.getValueStr()) {
-        _propertySet = aCMCTaskSet.getPropertySet();
+    CMC_TaskSet(const CMC_TaskSet& aCMCTaskSet) :
+        Set<TrackingTask>(aCMCTaskSet),
+        _dataFileNameProp(aCMCTaskSet._dataFileNameProp),
+        _dataFileName(_dataFileNameProp.getValueStr()){
+
     }
 
 private:

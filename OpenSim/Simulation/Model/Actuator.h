@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Soha Pouya                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "Force.h"
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 
 
 #ifdef SWIG
@@ -36,10 +36,6 @@
 
 namespace OpenSim {
 
-class Model;
-class Controller;
-class Coordinate;
-
 //=============================================================================
 //           ACTUATOR (base class to make a vector of control values)
 //=============================================================================
@@ -50,11 +46,15 @@ class Coordinate;
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API Actuator : public Force {
-OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator, Force);
+class OSIMSIMULATION_API Actuator : public ForceProducer {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator, ForceProducer);
 //=============================================================================
 // NO PROPERTIES
 //=============================================================================
+//=============================================================================
+// OUTPUTS
+//=============================================================================
+OpenSim_DECLARE_OUTPUT(power, double, getPower, SimTK::Stage::Dynamics);
 
 //=============================================================================
 // DATA
@@ -84,9 +84,6 @@ private:
 protected:
     // ModelComponent Interface
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-
-    // Update the geometry attached to the actuator. Use inertial frame.
-    virtual void updateGeometry();
 
 public:
 
@@ -145,6 +142,14 @@ public:
         "for control values.");
 
 //==============================================================================
+// OUTPUTS 
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(actuation, double, getActuation,
+            SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(speed, double, getSpeed, SimTK::Stage::Velocity);
+
+
+//==============================================================================
 // PUBLIC METHODS
 //==============================================================================
     ScalarActuator();
@@ -161,19 +166,16 @@ public:
     // Accessing actuation, speed, and power of a scalar valued actuator
     virtual void setActuation(const SimTK::State& s, double aActuation) const;
     virtual double getActuation(const SimTK::State& s) const;
-    virtual void setSpeed( const SimTK::State& s, double aspeed) const;
-    virtual double getSpeed( const SimTK::State& s) const;
+    virtual double getSpeed( const SimTK::State& s) const = 0;
     double getPower(const SimTK::State& s) const override { return getActuation(s)*getSpeed(s); }
     virtual double getStress(const SimTK::State& s) const;
     virtual double getOptimalForce() const;
 
-    // manage bounds on Control
-    void setMinControl(const double& aMinControl) 
-    {   set_min_control(aMinControl); }
-    double getMinControl() const { return get_min_control(); }
-    void setMaxControl(const double& aMaxControl) 
-    {   set_max_control(aMaxControl); }
-    double getMaxControl() const { return get_max_control(); }
+    /** Methods to manage the bounds on ScalarActuator's control */
+    void setMinControl(const double& aMinControl);
+    double getMinControl() const;
+    void setMaxControl(const double& aMaxControl);
+    double getMaxControl() const;
 
     //--------------------------------------------------------------------------
     // Overriding Actuation
@@ -244,8 +246,9 @@ protected:
     }
 
 private:
-    void constructProperties() override;
-    void constructOutputs() override;
+    void constructProperties();
+
+    mutable CacheVariable<double> _actuationCV;
 
 //=============================================================================
 };  // END of class ScalarActuator

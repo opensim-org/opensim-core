@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2012 Stanford University and the Authors                *
+* Copyright (c) 2005-2017 Stanford University and the Authors                *
 * Author(s): Ajay Seth, Matthew Millard                                      *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -32,7 +32,6 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
-#include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Analyses/ProbeReporter.h>
@@ -62,8 +61,8 @@ static const int CorrectnessTest        = 2;
 static const double MaxIsometricForce0 = 100.0,
 OptimalFiberLength0 = 0.1,
 TendonSlackLength0 = 0.2,
-PennationAngle0 = 0.0,
-PennationAngle1 = SimTK::Pi / 4;
+    PennationAngle0 = 0.0;
+// PennationAngle1 = SimTK::Pi / 4;
 
 static const double Activation0 = 0.01,
 Deactivation0 = 0.4,
@@ -208,14 +207,13 @@ void simulateMuscle(
 
     // Get a reference to the model's ground body
     Ground& ground = model.updGround();
-    ground.addMeshGeometry("box.vtp");
 
     OpenSim::Body * ball = new OpenSim::Body("ball",
         ballMass,
         Vec3(0),
                         ballMass*SimTK::Inertia::sphere(ballRadius));
 
-    ball->addMeshGeometry("sphere.vtp");
+    ball->attachGeometry(new Sphere(ballRadius));
     // ball connected  to ground via a slider along X
     double xSinG = optimalFiberLength*cos(pennationAngle) + tendonSlackLength;
 
@@ -227,15 +225,15 @@ void simulateMuscle(
         Vec3(0),
                         Vec3(0));
 
-    CoordinateSet& jointCoordinateSet = slider->upd_CoordinateSet();
-        jointCoordinateSet[0].setName("tx");
-        jointCoordinateSet[0].setDefaultValue(1.0);
-    jointCoordinateSet[0].setRangeMin(0);
-        jointCoordinateSet[0].setRangeMax(1.0);
+    auto& sliderCoord = slider->updCoordinate();
+    sliderCoord.setName("tx");
+    sliderCoord.setDefaultValue(1.0);
+    sliderCoord.setRangeMin(0);
+    sliderCoord.setRangeMax(1.0);
 
     if (motion != NULL){
-        jointCoordinateSet[0].setPrescribedFunction(*motion);
-        jointCoordinateSet[0].setDefaultIsPrescribed(true);
+        sliderCoord.setPrescribedFunction(*motion);
+        sliderCoord.setDefaultIsPrescribed(true);
     }
     // add ball to model
     model.addBody(ball);
@@ -247,7 +245,7 @@ void simulateMuscle(
     //==========================================================================
 
     //Attach the muscle
-    const string &actuatorType = aMuscle->getConcreteClassName();
+    /*const string &actuatorType = */aMuscle->getConcreteClassName();
     aMuscle->setName("muscle");
     aMuscle->addNewPathPoint("muscle-box", ground, Vec3(anchorWidth / 2, 0, 0));
     aMuscle->addNewPathPoint("muscle-ball", *ball, Vec3(-ballRadius, 0, 0));
@@ -276,12 +274,12 @@ void simulateMuscle(
 
     // Create a prescribed controller that simply 
     //applies controls as function of time
-    PrescribedController * muscleController = new PrescribedController();
+    PrescribedController* muscleController = new PrescribedController();
     if (control != NULL){
         muscleController->setActuators(model.updActuators());
         // Set the individual muscle control functions 
         //for the prescribed muscle controller
-        muscleController->prescribeControlForActuator("muscle", control->clone());
+        muscleController->prescribeControlForActuator("muscle", *control->clone());
 
         // Add the control set controller to the model
         model.addController(muscleController);
@@ -437,7 +435,7 @@ void simulateMuscle(
     // Add SystemEnergyProbe to measure system power (d/dt system KE+PE)
     SystemEnergyProbe* sysPowerProbe = new SystemEnergyProbe(*sysEnergyProbe);  // use copy constructor
     sysPowerProbe->setName("SystemPower");
-    sysPowerProbe->setDisabled(false);
+    sysPowerProbe->setEnabled(true);
     sysPowerProbe->setOperation("differentiate");
     model.addProbe(sysPowerProbe);
     cout << probeCounter++ << ") Added SystemEnergyProbe to measure system power (d/dt system KE+PE)" << endl;
@@ -490,7 +488,8 @@ void simulateMuscle(
     MuscleAnalysis* muscleReporter = new MuscleAnalysis(&model);
     model.addAnalysis(muscleReporter);
     model.print("testProbesModel.osim");
-    model.printBasicInfo(cout);
+    model.finalizeFromProperties();
+    model.printBasicInfo();
 
 
 
@@ -526,32 +525,30 @@ void simulateMuscle(
     model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
 
     double Emuscle0 = muscWorkProbe->getProbeOutputs(si)(0);
-    //cout << "Muscle initial energy = " << Emuscle0 << endl;
+    log_debug("Muscle initial energy = {}", Emuscle0);
     double Esys0 = model.getMultibodySystem().calcEnergy(si);
     Esys0 += (Emuscle0 + jointWorkProbe->getProbeOutputs(si)(0));
     double PEsys0 = model.getMultibodySystem().calcPotentialEnergy(si);
-    //cout << "Total initial system energy = " << Esys0 << endl; 
+    log_debug("Total system initial energy = {}", Esys0);
+    log_debug("System potential energy = {}", PEsys0);
 
     //==========================================================================
     // 4. SIMULATION Integration
     //==========================================================================
 
-    // Create the integrator
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-    integrator.setAccuracy(integrationAccuracy);
-
     // Create the manager
-    Manager manager(model, integrator);
+    Manager manager(model);
+    manager.setIntegratorAccuracy(integrationAccuracy);
 
     // Integrate from initial time to final time
-    manager.setInitialTime(initialTime);
-    manager.setFinalTime(finalTime);
+    si.setTime(initialTime);
     cout << "\nIntegrating from " << initialTime << " to " << finalTime << endl;
 
     // Start timing the simulation
     const clock_t start = clock();
     // simulate
-    manager.integrate(si);
+    manager.initialize(si);
+    manager.integrate(finalTime);
 
     // how long did it take?
     double comp_time = (double)(clock() - start) / CLOCKS_PER_SEC;

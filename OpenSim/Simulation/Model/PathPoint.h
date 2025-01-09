@@ -1,7 +1,7 @@
-#ifndef __PathPoint_h__
-#define __PathPoint_h__
+#ifndef OPENSIM_PATH_POINT_H_
+#define OPENSIM_PATH_POINT_H_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  PathPoint.h                            *
+ *                        OpenSim:  PathPoint.h                               *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Peter Loan                                                      *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -25,129 +24,100 @@
 
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Array.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/Object.h>
-
-#ifdef SWIG
-    #ifdef OSIMSIMULATION_API
-        #undef OSIMSIMULATION_API
-        #define OSIMSIMULATION_API
-    #endif
-#endif
+#include "OpenSim/Common/Assertion.h"
+#include "OpenSim/Simulation/Model/Station.h"
+#include "OpenSim/Simulation/Model/AbstractPathPoint.h"
 
 namespace OpenSim {
 
 class PhysicalFrame;
-class Model;
-class Geometry;
-class GeometryPath;
-class SimbodyEngine;
-class WrapObject;
 
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a path point.
- *
- * @author Peter Loan
- * @version 1.0
+ * A path point that is stationary with respect to parent's PhysicalFrame
  */
-class OSIMSIMULATION_API PathPoint : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathPoint, Object);
-
-//=============================================================================
-// DATA
-//=============================================================================
-private:
-
-protected:
-
-   const Model* _model;
-
-   PropertyDblVec3 _locationProp;
-   SimTK::Vec3 &_location;
-
-    PropertyStr _bodyNameProp;
-   std::string &_bodyName;
-
-
-    const PhysicalFrame* _body;
-
-    GeometryPath* _path; // the path that owns this location point
-
+class OSIMSIMULATION_API PathPoint : public AbstractPathPoint {
+    OpenSim_DECLARE_CONCRETE_OBJECT(PathPoint, AbstractPathPoint);
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
+        "The fixed location of the path point expressed in its parent frame.");
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
-public:
     PathPoint();
-    PathPoint(const PathPoint &aPoint);
-    virtual ~PathPoint();
 
-#ifndef SWIG
-    PathPoint& operator=(const PathPoint &aPoint);
-#endif
-   void copyData(const PathPoint &aPoint);
-    virtual void init(const PathPoint& aPoint);
-
-#ifndef SWIG
-    const SimTK::Vec3& getLocation() const { return _location; }
-#endif
-    SimTK::Vec3& getLocation()  { return _location; }
-
-    const double& getLocationCoord(int aXYZ) const { assert(aXYZ>=0 && aXYZ<=2); return _location[aXYZ]; }
-    void setLocationCoord(int aXYZ, double aValue) { assert(aXYZ>=0 && aXYZ<=2); _location[aXYZ]=aValue; }
-    // A variant that uses basic types for use by GUI
-
-    void setLocation( const SimTK::State& s, const SimTK::Vec3& aLocation);
-    void setLocation( const SimTK::State& s, int aCoordIndex, double aLocation);
-    void setLocation( const SimTK::State& s, double pt[]){ // A variant that uses basic types for use by GUI
-        setLocation(s,SimTK::Vec3::updAs(pt));
+    // A variant that uses basic types for use by GUI, e.g. OpenSimContext
+    /** <b>(Deprecated)</b> Old PathPoint interface */
+    DEPRECATED_14("Use setLocation() instead.")
+    void setLocationCoord(const SimTK::State&s, int aXYZ, double aValue) {
+        OPENSIM_ASSERT_FRMOBJ(aXYZ>=0 && aXYZ<=2);
+        updStation().upd_location()[aXYZ]=aValue;
     }
-    void setBody(const PhysicalFrame& aBody);
-    void changeBodyPreserveLocation(const SimTK::State& s, PhysicalFrame& aBody);
 
-    const PhysicalFrame& getBody() const { return *_body; }
-    const std::string& getBodyName() const { return _bodyName; }
-    GeometryPath* getPath() const { return _path; }
+    SimTK::Vec3 getLocation(const SimTK::State& s) const override {
+        return getStation().get_location();
+    }
 
-    virtual void scale(const SimTK::State& s, const SimTK::Vec3& aScaleFactors);
-    virtual const WrapObject* getWrapObject() const { return NULL; }
+    void setLocation(const SimTK::Vec3& location);
 
-    virtual bool isActive(const SimTK::State& s) const { return true; }
-    virtual void connectToModelAndPath(const Model& aModel, GeometryPath& aPath);
-    virtual void update(const SimTK::State& s) { }
+    void changeBodyPreserveLocation(const SimTK::State& s,
+                                    const PhysicalFrame& body);
 
-    // get the relative velocity of the path point with respect to the body
-    // it is connected to.
-    virtual void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity);
-    // get the partial of the point location w.r.t. to the coordinates (Q)
-    // it is dependent on.
-    virtual SimTK::Vec3 getdPointdQ(const SimTK::State& s) const
-        { return SimTK::Vec3(0); }
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
-    virtual void updateGeometry();
-
-    // Utility
-    static PathPoint* makePathPointOfType(PathPoint* aPoint, const std::string& aNewTypeName);
-    static void deletePathPoint(PathPoint* aPoint) { if (aPoint) delete aPoint; }
+    SimTK::Vec3 getdPointdQ(const SimTK::State& s) const override {
+        return SimTK::Vec3(0);
+    }
 
 protected:
 
+    const Station& getStation() const { 
+        return getMemberSubcomponent<Station>(stationIx);
+    }
+    Station& updStation() {
+        return updMemberSubcomponent<Station>(stationIx);
+    }
+
+    // Component Interface
+    void extendFinalizeFromProperties() override;
+    void extendConnectToModel(Model& model) override;
+
+private: 
+    // Satisfy Point interface
+    /* Calculate the location of this PathPoint in Ground as a function of
+       the state. */
+    SimTK::Vec3
+        calcLocationInGround(const SimTK::State& state) const override final {
+        return getStation().getLocationInGround(state);
+    }
+    /* Calculate the velocity of this PathPoint with respect to and expressed
+       in Ground as a function of the state. */
+    SimTK::Vec3
+        calcVelocityInGround(const SimTK::State& state) const override final {
+        return getStation().getVelocityInGround(state);
+    }
+    /* Calculate the acceleration of this PathPoint with respect to and
+       expressed in ground as a function of the state. */
+    SimTK::Vec3
+        calcAccelerationInGround(const SimTK::State& state) const override final {
+        return getStation().getAccelerationInGround(state);
+    }
+
+    void constructProperties();
 private:
-    void setNull();
-    void setupProperties();
+
+    MemberSubcomponentIndex stationIx{ constructSubcomponent<Station>("station") };
+
 //=============================================================================
 };  // END of class PathPoint
 //=============================================================================
 //=============================================================================
 
+
 } // end of namespace OpenSim
 
-#endif // __PathPoint_h__
+#endif // OPENSIM_PATH_POINT_H_

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Tim Dorn                                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -123,9 +123,9 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /** Enabled by default. **/
-    OpenSim_DECLARE_PROPERTY(isDisabled, bool,
-        "Flag indicating whether the Probe is disabled or not.");
+    /** Enabled (true) by default. **/
+    OpenSim_DECLARE_PROPERTY(enabled, bool,
+        "Flag indicating whether the Probe is Enabled.");
 
     OpenSim_DECLARE_PROPERTY(probe_operation, std::string,
         "The operation to perform on the probe input value: "
@@ -139,6 +139,12 @@ public:
 
     OpenSim_DECLARE_PROPERTY(gain, double,
         "Constant gain to scale the probe output by.");
+
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(probe_outputs, SimTK::Vector, getProbeOutputs,
+            SimTK::Stage::Report);
 
 //=============================================================================
 // METHODS
@@ -154,10 +160,12 @@ public:
     /** Get the number of states in the underlying SimTK::Measure. */
     int getNumInternalMeasureStates() const;
 
-    /** Returns true if the Probe is disabled or false if the probe is enabled. */
-    bool isDisabled() const;
-    /** %Set the Probe as disabled (true) or enabled (false). */
-    void setDisabled(bool isDisabled);
+    /** Returns true if the Probe is enabled and false if the probe is 
+        disabled. */
+    bool isEnabled() const;
+    
+    /** %Set the Probe as enabled (true) or disabled (false). */
+    void setEnabled(bool enabled);
 
     /** Return the operation being performed on the probe value. */
     std::string getOperation() const;
@@ -208,6 +216,8 @@ public:
     @return         The SimTK::Vector of probe output values.**/
     SimTK::Vector getProbeOutputs(const SimTK::State& state) const;
 
+    void updateFromXMLNode(SimTK::Xml::Element& node,
+                           int versionNumber) override;
 
 protected:
     // ModelComponent interface.
@@ -223,8 +233,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties() override;
-    void constructOutputs() override;
+    void constructProperties();
 
 
 //=============================================================================

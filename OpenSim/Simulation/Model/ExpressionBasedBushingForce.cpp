@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,9 +24,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <Vendors/lepton/include/Lepton.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <Lepton.h>
+
 #include "ExpressionBasedBushingForce.h"
 
 using namespace std;
@@ -51,8 +50,16 @@ std::string to_string(T const& value) {
 
 //_____________________________________________________________________________
 // Default constructor.
-ExpressionBasedBushingForce::ExpressionBasedBushingForce() :
-    TwoFrameLinker<Force, PhysicalFrame>()
+ExpressionBasedBushingForce::ExpressionBasedBushingForce()
+{
+    setNull();
+    constructProperties();
+}
+
+ExpressionBasedBushingForce::ExpressionBasedBushingForce(
+        const std::string& name, const PhysicalFrame& frame1,
+        const PhysicalFrame& frame2)
+        : Super(name, frame1, frame2)
 {
     setNull();
     constructProperties();
@@ -63,12 +70,24 @@ ExpressionBasedBushingForce::
 ExpressionBasedBushingForce(const std::string& name,
     const std::string& frame1Name,
     const std::string& frame2Name)
-    : TwoFrameLinker<Force, PhysicalFrame>(name, frame1Name, frame2Name)
+    : Super(name, frame1Name, frame2Name)
 {
     setNull();
     constructProperties();
 }
 
+
+ExpressionBasedBushingForce::ExpressionBasedBushingForce(
+        const std::string& name, const PhysicalFrame& frame1,
+        const SimTK::Vec3& point1, const SimTK::Vec3& orientation1,
+        const PhysicalFrame& frame2, const SimTK::Vec3& point2,
+        const SimTK::Vec3& orientation2)
+        : Super(name, frame1, point1, orientation1, frame2, point2,
+                         orientation2)
+{
+    setNull();
+    constructProperties();
+}
 
 // Convenience constructor for zero value force functions.
 ExpressionBasedBushingForce::
@@ -79,12 +98,34 @@ ExpressionBasedBushingForce(const string&   name,
                             const string&   frame2Name,
                             const Vec3&     point2, 
                             const Vec3&     orientation2)
-    : TwoFrameLinker<Force, PhysicalFrame>(name,
-                                          frame1Name, point1, orientation1,
-                                          frame2Name, point2, orientation2)
+    : Super(name,
+            frame1Name, point1, orientation1,
+            frame2Name, point2, orientation2)
 {
     setNull();
     constructProperties();
+}
+
+ExpressionBasedBushingForce::ExpressionBasedBushingForce(
+        const std::string& name, const PhysicalFrame& frame1,
+        const SimTK::Vec3& point1, const SimTK::Vec3& orientation1,
+        const PhysicalFrame& frame2, const SimTK::Vec3& point2,
+        const SimTK::Vec3& orientation2, const SimTK::Vec3& transStiffness,
+        const SimTK::Vec3& rotStiffness, const SimTK::Vec3& transDamping,
+        const SimTK::Vec3& rotDamping)
+        : ExpressionBasedBushingForce(name, frame1, point1, orientation1,
+                                      frame2, point2, orientation2)
+{
+    // populate moments and forces as linear (ramp) expressions based on
+    // stiffness
+    setMxExpression( to_string(rotStiffness[0]) + string("*theta_x") );
+    setMyExpression( to_string(rotStiffness[1]) + string("*theta_y") );
+    setMzExpression( to_string(rotStiffness[2]) + string("*theta_z") );
+    setFxExpression( to_string(transStiffness[0]) + string("*delta_x") );
+    setFyExpression( to_string(transStiffness[1]) + string("*delta_y") );
+    setFzExpression( to_string(transStiffness[2]) + string("*delta_z") );
+    set_rotational_damping(rotDamping);
+    set_translational_damping(transDamping);
 }
 
 // Convenience constructor for linear functions.
@@ -104,7 +145,8 @@ ExpressionBasedBushingForce::ExpressionBasedBushingForce(
                                    frame1Name, point1, orientation1,
                                    frame2Name, point2, orientation2)
 {
-    // populate moments and forces as linear (ramp) expressions based on stiffness
+    // populate moments and forces as linear (ramp) expressions based on
+    // stiffness
     setMxExpression( to_string(rotStiffness[0]) + string("*theta_x") );
     setMyExpression( to_string(rotStiffness[1]) + string("*theta_y") );
     setMzExpression( to_string(rotStiffness[2]) + string("*theta_z") );
@@ -227,6 +269,7 @@ void ExpressionBasedBushingForce::setFzExpression(std::string expression)
     set_Fz_expression(expression);
     FzProg = Lepton::Parser::parse(expression).optimize().createProgram();
 }
+
 //=============================================================================
 // COMPUTATION
 //=============================================================================
@@ -267,24 +310,20 @@ SimTK::Vec6 ExpressionBasedBushingForce::
     return -_dampingMatrix * dqdot;
 }
 
+SimTK::Vec6 ExpressionBasedBushingForce::calcBushingForce(
+        const SimTK::State& s) const {
+    return calcStiffnessForce(s) + calcDampingForce(s);
+}
+
 
 /* Compute the force contribution to the system and add in to appropriate
 * bodyForce and/or system generalizedForce. */
-void ExpressionBasedBushingForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+void ExpressionBasedBushingForce::implProduceForces(const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
-    // stiffness force
-    Vec6 fk = calcStiffnessForce(s);
-    // damping force
-    Vec6 fv = calcDampingForce(s);
-
-    // total bushing force in the internal basis of the deflection (dq) 
-    Vec6 f = fk + fv;
-
     // convert internal forces to spatial and add then add to system
     // physical (body) forces
-    addInPhysicalForcesFromInternal(s, f, bodyForces);
+    producePhysicalForcesFromInternal(s, calcBushingForce(s), forceConsumer);
 }
 
 //=============================================================================
@@ -325,7 +364,7 @@ OpenSim::Array<double> ExpressionBasedBushingForce::
     SpatialVec F_GF( Vec3(0.0),Vec3(0.0) );
     
     // total bushing force in the internal basis of the deflection (dq) 
-    Vec6 f = calcStiffnessForce(s) + calcDampingForce(s);
+    Vec6 f = calcBushingForce(s);
 
     convertInternalForceToForcesOnFrames(s, f, F_GF, F_GM);
 
@@ -377,19 +416,20 @@ void ExpressionBasedBushingForce::generateDecorations
         geometryArray.push_back(decorativeFrame1);
         geometryArray.push_back(decorativeFrame2);
 
-        // if the model is moving, calculate and draw the bushing forces.
-        if(!fixed){
+        // if the model is moving and the state is adequately realized,
+        // calculate and draw the bushing forces.
+        if(!fixed && (s.getSystemStage() >= Stage::Dynamics)){
             SpatialVec F_GM(Vec3(0.0), Vec3(0.0));
             SpatialVec F_GF(Vec3(0.0), Vec3(0.0));
 
             // total bushing force in the internal basis of the deflection (dq) 
-            Vec6 f = calcStiffnessForce(s) + calcDampingForce(s);
+            Vec6 f = calcBushingForce(s);
 
             convertInternalForceToForcesOnFrames(s, f, F_GF, F_GM);
 
             // location of the bushing on frame2
-            SimTK::Vec3 p_b2M_b2 = frame2.findTransformInBaseFrame().p();
-            SimTK::Vec3 p_GM_G = frame2.getGroundTransform(s).p();
+            //SimTK::Vec3 p_b2M_b2 = frame2.findTransformInBaseFrame().p();
+            SimTK::Vec3 p_GM_G = frame2.getTransformInGround(s).p();
             
             // Add moment on frame2 as line vector starting at bushing location
             SimTK::Vec3 scaled_M_GM(get_moment_visual_scale()*F_GM[0]);

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,21 +29,15 @@
 #include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/ArrayPtrs.h>
 #include "ControllerSet.h"
 #include "AnalysisSet.h"
-#include "SimTKsimbody.h"
 #include "ForceSet.h"
 #include "ExternalLoads.h"
 
 namespace OpenSim { 
 
-class PrescribedForce;
-class GCVSpline;
-
 class Model;
 class ForceSet;
-class Body;
 
 
 //=============================================================================
@@ -74,7 +68,7 @@ protected:
     PropertyBool _replaceForceSetProp;
     bool &_replaceForceSet;
     
-    /** Names of the xml files used to construct an force set for the
+    /** Names of the xml files used to construct a force set for the
     model. */
     PropertyStrArray _forceSetFilesProp;
     Array<std::string> &_forceSetFiles;
@@ -96,8 +90,8 @@ protected:
     double &_tf;
     
     /** A flag used to specify whether or not equilibrium is solved for
-    the auxiliary states.  This often needs to be done auxiliary sates whose
-    starting values are unknown (e.g., muscle fiber lengths). */
+    the auxiliary states.  This often needs to be done for auxiliary states
+    whose starting values are unknown (e.g., muscle fiber lengths). */
     OpenSim::PropertyBool _solveForEquilibriumForAuxiliaryStatesProp;
     bool &_solveForEquilibriumForAuxiliaryStates;
     
@@ -133,8 +127,12 @@ protected:
     /** Name of the file containing the external loads applied to the model. */
     OpenSim::PropertyStr _externalLoadsFileNameProp;
     std::string &_externalLoadsFileName;
-    /** Actual external forces being applied. e.g. GRF */
+    
+    /** ExternalLoads member for creating and editing applied external forces
+        (e.g. GRFS through the GUI) prior to running the Tool */
     ExternalLoads   _externalLoads;
+    // Reference to external loads added to the model but not owned by the Tool
+    SimTK::ReferencePtr<ExternalLoads> _modelExternalLoads;
 
 //=============================================================================
 // METHODS
@@ -258,10 +256,11 @@ public:
     void setReplaceForceSet(bool aReplace) { _replaceForceSet = aReplace; }
 
     std::string getNextAvailableForceName(const std::string prefix="Force") const;
-    
+
     const ExternalLoads& getExternalLoads() const { return _externalLoads; }
     ExternalLoads& updExternalLoads() { return _externalLoads; }
     void setExternalLoads(ExternalLoads& el) { _externalLoads = el; }
+    bool modelHasExternalLoads() {return !_modelExternalLoads.empty(); }
 
     // External loads get/set
     const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
@@ -273,7 +272,10 @@ public:
     int getOutputPrecision() const { return _outputPrecision; }
     void setOutputPrecision(int aPrecision) { _outputPrecision = aPrecision; }
 
-    AnalysisSet& getAnalysisSet() const;
+    const AnalysisSet& getAnalysisSet() const { return _analysisSet; }
+    AnalysisSet& updAnalysisSet() const { return _analysisSet; }
+    const ControllerSet& getControllerSet() const { return _controllerSet; }
+    ControllerSet& updControllerSet() const { return _controllerSet; }
 
     /** 
     * Get Results Directory
@@ -319,7 +321,8 @@ public:
     * Load and construct a model based on the property settings of
     * this investigation.
     */
-    void loadModel(const std::string &aToolSetupFileName, ForceSet *rOriginalForceSet = 0 );
+    void loadModel(const std::string &aToolSetupFileName,
+            ForceSet *rOriginalForceSet = 0 ) SWIG_DECLARE_EXCEPTION;
     
     /**
     * Update the forces applied to a model.
@@ -345,7 +348,7 @@ public:
     void removeControllerSetFromModel();
     void removeAnalysisSetFromModel();
     void setToolOwnsModel(const bool trueFalse) { _toolOwnsModel=trueFalse; };
-    const bool getToolOwnsModel() const { return _toolOwnsModel; };
+    bool getToolOwnsModel() const { return _toolOwnsModel; };
 
     // Interface to build controller from a ControlSet file
     std::string getControlsFileName() const;
@@ -365,14 +368,22 @@ public:
     * without interpolation.
     * @param aExtension Extension for written files.
     */
-    virtual void printResults(const std::string &aBaseName,const std::string &aDir="",
+    void printResults(const std::string &aBaseName,const std::string &aDir="",
         double aDT=-1.0,const std::string &aExtension=".sto");
 
-    bool createExternalLoads( const std::string &aExternalLoadsFileName,
-                                     Model& aModel, const Storage *loadKinematics=NULL);
+    bool createExternalLoads( const std::string& externalLoadsFileName,
+                              Model& model);
+    void removeExternalLoadsFromModel();
 
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
     virtual void loadQStorage (const std::string& statesFileName, Storage& rQStore) const;
+
+protected:
+
+    /// Obtain a string of the provided time using asctime(). This function
+    /// removes the newline that asctime() includes at the end of the string.
+    std::string getTimeString(const time_t& t) const;
+
 //=============================================================================
 };  // END of class AbstractTool
 

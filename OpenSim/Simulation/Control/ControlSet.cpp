@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,14 +29,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyObjArray.h>
-#include <OpenSim/Common/Storage.h>
 #include "ControlSet.h"
 #include "ControlLinear.h"
-#include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
-
-
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/XMLDocument.h>
 
 
 using namespace OpenSim;
@@ -121,7 +117,6 @@ ControlSet::ControlSet(const Storage& aStorage, int numControls, int startIndex)
     }
     for(j=0;j<nControls;j++) {
 
-        //cout << "Process column number " << j+startIndex << endl;
         // EXTRACT CONTROL NODE
         control = ExtractControl(aStorage,j+startIndex);
 
@@ -586,7 +581,7 @@ getParameterMins(Array<double> &rMins,const Array<int> *aList) const
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -637,7 +632,7 @@ getParameterMaxs(Array<double> &rMaxs,const Array<int> *aList) const
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -691,7 +686,7 @@ getParameterValues(double rP[],const Array<int> *aList) const
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -742,7 +737,7 @@ getParameterValues(Array<double> &rP,const Array<int> *aList) const
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -793,7 +788,7 @@ setParameterValues(const double *aP,const Array<int> *aList)
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -829,8 +824,8 @@ setParameterValues(const Array<double> &aP,const Array<int> *aList)
             Control& control = get(i);
             for(p=0;p<control.getNumParameters();p++,sp++) {
                 if(sp>=aP.getSize()) {
-                    printf("ControlSet.setParameterValues: ERR- incorrect ");
-                    printf("number of parameters.\n");
+                    log_error("ControlSet.setParameterValues: incorrect number "
+                              "of control parameters ({}).", aP.getSize());
                     return;
                 }
                 control.setParameterValue(p,aP[sp]);
@@ -842,9 +837,10 @@ setParameterValues(const Array<double> &aP,const Array<int> *aList)
         int c;
         int n = aList->getSize();
         if(n > aP.getSize()) {
+            log_warn("ControlSet.setParameterValues: the size of the array of "
+                     "control parameters ({}) is different than the size of "
+                     "the list of controls ({}).", n, aP.getSize());
             n = aP.getSize();
-            printf("ControlSet.setParameterValues: WARN- aP and aList are ");
-            printf("different sizes.\n");
         }
 
         for(i=0;i<n;i++) {
@@ -856,7 +852,7 @@ setParameterValues(const Array<double> &aP,const Array<int> *aList)
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -897,7 +893,7 @@ simplify(const PropertySet &aProperties)
         try {
             control.simplify(aProperties);
         } catch(const Exception& x) {
-            x.print(cout);
+            log_error("Exception: {}", x.getMessage());
         }
     }
 }
@@ -928,7 +924,7 @@ filter(double aT)
                 control.filter(aT);
             }
         } catch(const Exception& x) {
-            x.print(cout);
+            log_error("Exception: {}", x.getMessage());
         }
     }
 }
@@ -1050,21 +1046,20 @@ ControlSet::ExtractControl(const Storage& storage,int index)
 {
     int i;
 
-    // cout << "index=" << index << endl;
     // NAME ATTRIBUTE
     const Array<std::string> &columnLabels = storage.getColumnLabels();
-    // cout << "colabels size=" << columnLabels.getSize() << endl;
     std::string colName = columnLabels.get(index+1);
 
     // TIME
     double *times = NULL;
     int nTimes = storage.getTimeColumn(times);
+    std::unique_ptr<double[]> times_ptr{times};
 
     // VALUE
     int nValues = nTimes;
-    int rValue;
     double *values = NULL;
-    rValue = storage.getDataColumn(index,values);
+    storage.getDataColumn(index,values);
+    std::unique_ptr<double[]> values_ptr{values};
 
     // CONSTRUCT LINEAR CONTROL NODE
     ControlLinear *control = new ControlLinear;

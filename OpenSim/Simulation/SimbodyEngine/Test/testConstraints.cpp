@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Samuel R. Hamner                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,7 +25,7 @@
 // testConstraints builds OpenSim models using the OpenSim API and builds an 
 // equivalent Simbody system using the Simbody API for each test case. A test 
 // fails if the OpenSim and Simbody final states of the simulation are not 
-// equivelent (norm-err less than 10x integration error tolerance)
+// equivalent (norm-err less than 10x integration error tolerance)
 //
 //  Tests Include:
 //      1. Test locking (constraint) mechanism on coordinates
@@ -36,12 +36,12 @@
 //     Add tests here as new constraint types are added to OpenSim
 //
 //==============================================================================
+
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/PointKinematics.h>
 #include <OpenSim/Analyses/ForceReporter.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/osimCommon.h>
-
 #include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -56,7 +56,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
-
 #include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
@@ -65,6 +64,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKsimbody.h"
+#include <catch2/catch_all.hpp>
+
 
 using namespace OpenSim;
 using namespace std;
@@ -131,36 +132,6 @@ public:
     }
 }; // End of MultidimensionalFunction
 
-void testRollingOnSurfaceConstraint();
-void testCoordinateLocking();
-void testWeldConstraint();
-void testPointOnLineConstraint();
-void testCoordinateCouplerConstraint();
-void testPointConstraint();
-void testConstantDistanceConstraint();
-
-int main()
-{
-    try {
-        testPointConstraint();
-        testConstantDistanceConstraint();
-        testCoordinateLocking();
-        testWeldConstraint();
-        // Compare behavior of PointOnLineConstraint between the foot and ground
-        testPointOnLineConstraint();
-        // Compare behavior of CoordinateCouplerConstraint as a custom knee
-        testCoordinateCouplerConstraint();
-        // test OpenSim roll constraint against a composite of Simbody constraints
-        testRollingOnSurfaceConstraint();
-    }
-    catch(const OpenSim::Exception& e) {
-        e.print(cerr);
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
-}
-
 //==============================================================================
 // Common Functions 
 //==============================================================================
@@ -204,18 +175,12 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
 
     // SETUP OpenSim SIMULATION Manager
     osimModel->getMultibodySystem().realize(osim_state, Stage::Velocity);
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
-    integrator.setAccuracy(integ_accuracy);
 
-    Manager manager(*osimModel,  integrator);
+    Manager manager(*osimModel);
+    manager.setIntegratorAccuracy(integ_accuracy);
 
-    // Specify the initial and final times of the simulation.
-    // In this case, the initial and final times are set based on
-    // the range of times over which the controls are available.
-    //Control *control;
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(duration);
-    manager.integrate(osim_state);
+    manager.initialize(osim_state);
+    osim_state = manager.integrate(duration);
 }
 
 void compareSimulationStates(SimTK::Vector q_sb, SimTK::Vector u_sb,
@@ -307,8 +272,8 @@ void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, Mod
     // Get the state at the end of the integration from OpenSim.
     Vector& qf = osim_state.updQ();
     Vector& uf = osim_state.updU();
-    cout<<"\nOpenSim Final q's:\n "<<qf<<endl;
-    cout<<"\nOpenSim Final u's:\n "<<uf<<endl;
+    qf.dump("\nOpenSim Final q's:");
+    uf.dump("\nOpenSim Final u's:");
 
     //==========================================================================================================
     // Compare Simulation Results
@@ -320,7 +285,7 @@ void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, Mod
 // Test Cases
 //==========================================================================================================
 
-void testPointConstraint()
+TEST_CASE("testPointConstraint")
 {
     using namespace SimTK;
 
@@ -356,7 +321,7 @@ void testPointConstraint()
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
-    const Ground& ground = osimModel->getGround();;
+    const Ground& ground = osimModel->getGround();
 
     //OpenSim foot
     OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
@@ -391,7 +356,7 @@ void testPointConstraint()
     compareSimulations(system, state, osimModel, osim_state, "testPointConstraint FAILED\n");
 }
 
-void testConstantDistanceConstraint()
+TEST_CASE("testConstantDistanceConstraint")
 {
     using namespace SimTK;
 
@@ -434,45 +399,53 @@ void testConstantDistanceConstraint()
 
     //==========================================================================================================
     // Setup OpenSim model
-    Model *osimModel = new Model;
+    Model osimModel;
     //OpenSim bodies
-    const Ground& ground = osimModel->getGround();;
+    const Ground& ground = osimModel.getGround();
 
     //OpenSim foot
-    OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
+    auto* osim_foot = new OpenSim::Body("foot", footMass.getMass(),
+                                        footMass.getMassCenter(),
+                                        footMass.getInertia());
 
     // create foot as a free joint
-    FreeJoint footJoint("footToGround", ground, Vec3(0), Vec3(0), osim_foot, Vec3(0), Vec3(0));
+    auto* footJoint = new FreeJoint("footToGround", ground, Vec3(0), Vec3(0),
+                                    *osim_foot, Vec3(0), Vec3(0));
     
     // Add the thigh body which now also contains the hip joint to the model
-    osimModel->addBody(&osim_foot);
-    osimModel->addJoint(&footJoint);
+    osimModel.addBody(osim_foot);
+    osimModel.addJoint(footJoint);
 
     // add a constant distance constraint
-    ConstantDistanceConstraint rodConstraint(ground, pointOnGround, osim_foot, pointOnFoot,rodLength);
-    osimModel->addConstraint(&rodConstraint);
+    auto* rodConstraint = new ConstantDistanceConstraint(
+                ground, pointOnGround, *osim_foot, pointOnFoot, rodLength);
+    osimModel.addConstraint(rodConstraint);
 
-    // BAD: have to set memoryOwner to false or program will crash when this test is complete.
-    osimModel->disownAllComponents();
-
-    osimModel->setGravity(gravity_vec);
+    osimModel.setGravity(gravity_vec);
 
     //Add analyses before setting up the model for simulation
-    Kinematics *kinAnalysis = new Kinematics(osimModel);
+    Kinematics* kinAnalysis = new Kinematics(&osimModel);
     kinAnalysis->setInDegrees(false);
-    osimModel->addAnalysis(kinAnalysis);
+    osimModel.addAnalysis(kinAnalysis);
 
-    // Need to setup model before adding an analysis since it creates the AnalysisSet
-    // for the model if it does not exist.
-    State& osim_state = osimModel->initSystem();
+    // Need to setup model before adding an analysis since it creates the
+    // AnalysisSet for the model if it does not exist.
+    State& osim_state = osimModel.initSystem();
 
-    //==========================================================================================================
+    //=========================================================================
     // Compare Simbody system and OpenSim model simulations
-    compareSimulations(system, state, osimModel, osim_state, "testConstantDistanceConstraint FAILED\n");
+    compareSimulations(system, state, &osimModel, osim_state,
+                       "testConstantDistanceConstraint FAILED\n");
 }
-void testCoordinateLocking()
+TEST_CASE("testCoordinateLocking")
 {
     using namespace SimTK;
+
+    cout << endl;
+    cout << "==================================================================" << endl;
+    cout << " OpenSim testCoordinateLocking " << endl;
+    cout << "==================================================================" << endl;
+
 
     double fixedKneeAngle = Pi/2;
 
@@ -487,7 +460,7 @@ void testCoordinateLocking()
     // create hip as a pin joint
     PinJoint hip("hip",ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
     // Rename hip coordinates for a pin joint
-    hip.getCoordinateSet()[0].setName("hip_flex");
+    hip.updCoordinate().setName("hip_flex");
 
     // Add the thigh body 
     osimModel->addBody(&osim_thigh);
@@ -534,12 +507,10 @@ void testCoordinateLocking()
     osimModel->getMultibodySystem().realize(si2, Stage::Velocity );
  
     // Create the integrator and manager for the simulation.
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem());
-    integrator.setMaximumStepSize(1.0e-3);
-    integrator.setMinimumStepSize(1.0e-6);
-    integrator.setAccuracy(integ_accuracy);
-
-    Manager manager(*osimModel,  integrator);
+    Manager manager(*osimModel);
+    manager.setIntegratorMaximumStepSize(1.0e-3);
+    manager.setIntegratorMinimumStepSize(1.0e-6);
+    manager.setIntegratorAccuracy(integ_accuracy);
 
     // Print out the initial position and velocity states
     si2.getQ().dump("Initial q's"); // pendulum positions
@@ -547,10 +518,10 @@ void testCoordinateLocking()
     Vector qi = si2.getQ();
 
     // Integrate from initial time to final time
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(duration);
-    cout<<"\n\nIntegrating from "<<manager.getInitialTime()<<" to "<<manager.getFinalTime()<<std::endl;
-    manager.integrate(si2);
+    si2.setTime(0.0);
+    manager.initialize(si2);
+    cout<<"\n\nIntegrating from "<<si2.getTime()<<" to "<<duration<<std::endl;
+    si2 = manager.integrate(duration);
 
     // Print out the final position and velocity states
     Vector qf = si2.getQ();
@@ -562,7 +533,7 @@ void testCoordinateLocking()
     ASSERT(fabs(qf[1]-fixedKneeAngle) <= integ_accuracy, __FILE__, __LINE__, errorMessage.str());
 }
 
-void testWeldConstraint()
+TEST_CASE("testWeldConstraint")
 {
     using namespace SimTK;
 
@@ -667,7 +638,7 @@ void testWeldConstraint()
         "testWeldConstraint FAILED\n");
 }
 
-void testPointOnLineConstraint()
+TEST_CASE("testPointOnLineConstraint")
 {
     using namespace SimTK;
 
@@ -745,7 +716,7 @@ void testPointOnLineConstraint()
     compareSimulations(system, state, osimModel, osim_state, "testPointOnLineConstraint FAILED\n");
 } // end testPointOnLineConstraint
 
-void testCoordinateCouplerConstraint()
+TEST_CASE("testCoordinateCouplerConstraint")
 {
     using namespace SimTK;
 
@@ -837,7 +808,7 @@ void testCoordinateCouplerConstraint()
     PinJoint hip("hip",ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
 
     // Rename hip coordinates for a pin joint
-    hip.getCoordinateSet()[0].setName("hip_flex");
+    hip.updCoordinate().setName("hip_flex");
     
     // Add the thigh body which now also contains the hip joint to the model
     osimModel->addBody(&osim_thigh);
@@ -909,6 +880,7 @@ void testCoordinateCouplerConstraint()
     osimModel->disownAllComponents();
 
     // write out the model to file
+    osimModel->finalizeConnections();
     osimModel->print("testCouplerConstraint.osim");
 
     //wipe-out the model just constructed
@@ -931,9 +903,24 @@ void testCoordinateCouplerConstraint()
 
     // Forces were held in storage during simulation, now write to file
     forceReport->printResults("CouplerModelForces");
+
+    // repro for #3347: creating a `CoordinateCouplerConstraint` with no
+    // `coupled_coordinates_function` should throw a runtime exception
+    // rather than segfault
+    {
+        OpenSim::Model m;
+        m.addConstraint(new OpenSim::CoordinateCouplerConstraint{});
+
+        try {
+            // this shouldn't segfault...
+            m.buildSystem();
+        } catch (const std::exception&) {
+            // ... but it is permitted to throw
+        }
+    }
 }
 
-void testRollingOnSurfaceConstraint()
+TEST_CASE("testRollingOnSurfaceConstraint")
 {
     using namespace SimTK;
 
@@ -1007,21 +994,19 @@ void testRollingOnSurfaceConstraint()
     Ground& ground = osimModel->updGround();;
     Mesh arrowGeom("arrow.vtp");
     arrowGeom.setColor(Vec3(1, 0, 0));
-    arrowGeom.setFrameName("ground");
-    ground.addGeometry(arrowGeom);
+    ground.attachGeometry(arrowGeom.clone());
 
     //OpenSim rod
     auto osim_rod = new OpenSim::Body("rod", mass, comInRod, inertiaAboutCom);
     OpenSim::PhysicalOffsetFrame* cylFrame = new PhysicalOffsetFrame(*osim_rod, Transform(comInRod));
     cylFrame->setName("comInRod");
-    osimModel->addFrame(cylFrame);
+    osimModel->addComponent(cylFrame);
     Mesh cylGeom("cylinder.vtp");
     cylGeom.set_scale_factors(2 * halfRodLength*Vec3(0.1, 1, 0.1));
-    cylGeom.setFrameName("comInRod");
-    osim_rod->addGeometry(cylGeom);
+    cylFrame->attachGeometry(cylGeom.clone());
 
     // create rod as a free joint
-    auto rodJoint = new PlanarJoint("rodToGround", ground.getName(), osim_rod->getName());
+    auto rodJoint = new PlanarJoint("rodToGround", ground, *osim_rod);
 
     // Add the thigh body which now also contains the hip joint to the model
     osimModel->addBody(osim_rod);
@@ -1029,10 +1014,10 @@ void testRollingOnSurfaceConstraint()
 
     // add a point on line constraint
     auto roll = new RollingOnSurfaceConstraint();
-    roll->setRollingBodyByName("rod");
-    roll->setSurfaceBodyByName("ground");
+    roll->connectSocket_rolling_body(*osim_rod);
+    roll->connectSocket_surface_body(ground);
 
-    double h = roll->get_surface_height();
+    /*double h = */roll->get_surface_height();
     
     osimModel->addConstraint(roll);
     osimModel->setGravity(gravity_vec);
@@ -1046,7 +1031,7 @@ void testRollingOnSurfaceConstraint()
     // for the model if it does not exist.
     //osimModel->setUseVisualizer(true);
     State osim_state = osimModel->initSystem();
-    roll->setDisabled(osim_state, false);
+    roll->setIsEnforced(osim_state, true);
     osim_state.updY() = state.getY();
 
     // compute model accelerations
@@ -1070,4 +1055,57 @@ void testRollingOnSurfaceConstraint()
     //==========================================================================================================
     // Compare Simbody system and OpenSim model simulations
     compareSimulations(system, state, osimModel, osim_state, "testRollingOnSurfaceConstraint FAILED\n");
+}
+
+TEST_CASE("testSerializeDeserialize")
+{
+    std::cout << "Test serialize & deserialize." << std::endl;
+
+    std::string origModelFile{"testJointConstraints.osim"};
+    std::string oldModelFile{"testConstraints_SerializeDeserialize_old.osim"};
+    std::string newModelFile{"testConstraints_SerializeDeserialize_new.osim"};
+
+    // Toggle of 'isDisabled' property for some muscles in model file.
+    std::set<std::string> flippedConstraints{"tib_pat_r_r3_con",
+                                             "tib_pat_r_tx_con",
+                                             "tib_pat_r_ty_con"};
+    {
+        auto xml = SimTK::Xml::Document{origModelFile};
+        auto constraints = xml.getRootElement().
+                               getRequiredElement("Model").
+                               getRequiredElement("ConstraintSet").
+                               getRequiredElement("objects").
+                               getAllElements("CoordinateCouplerConstraint");
+        for(unsigned i = 0; i < constraints.size(); ++i) {
+            const auto& constraintName =
+                constraints[i].getRequiredAttributeValue("name");
+            if(flippedConstraints.find(constraintName) !=
+               flippedConstraints.end()) {
+                auto elem = constraints[i].getRequiredElement("isDisabled");
+                elem.setValue("true");
+            }
+        }
+        xml.writeToFile(oldModelFile);
+    }
+
+    // Model with Force::isDisabled (version < 30508)
+    Model oldModel{oldModelFile};
+    oldModel.print(newModelFile);
+    Model newModel{newModelFile};
+
+    const auto& oldConstraintSet = oldModel.getConstraintSet();
+    const auto& newConstraintSet = newModel.getConstraintSet();
+
+    ASSERT(oldConstraintSet.getSize() == newConstraintSet.getSize());
+    for(int i = 0; i < oldConstraintSet.getSize(); ++i) {
+        ASSERT(oldConstraintSet.get(i).get_isEnforced() ==
+               newConstraintSet.get(i).get_isEnforced());
+
+        if(flippedConstraints.find(newConstraintSet.get(i).getName()) !=
+           flippedConstraints.end())
+            ASSERT(newConstraintSet.get(i).get_isEnforced() == false);
+    }
+
+    std::remove(oldModelFile.c_str());
+    std::remove(newModelFile.c_str());
 }

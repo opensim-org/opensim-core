@@ -1,0 +1,1118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40000">
+	<Model name="DynamicWalkerModel">
+		<!--The model's ground reference frame.-->
+		<Ground name="ground">
+			<!--The geometry used to display the axes of this Frame.-->
+			<FrameGeometry name="frame_geometry">
+				<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+				<socket_frame>..</socket_frame>
+				<!--Scale factors in X, Y, Z directions respectively.-->
+				<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+			</FrameGeometry>
+		</Ground>
+		<!--Acceleration due to gravity, expressed in ground.-->
+		<gravity>0 -9.8066499999999994 0</gravity>
+		<!--List of bodies that make up this model.-->
+		<BodySet name="bodyset">
+			<objects>
+				<Body name="Platform">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Brick name="Platform_geom_1">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Half lengths in X, Y, Z respectively.-->
+							<half_lengths>10 0.01 1</half_lengths>
+						</Brick>
+					</attached_geometry>
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>1 1 1 0 0 0</inertia>
+				</Body>
+				<Body name="Pelvis">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Sphere name="Pelvis_geom_1">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Radius of sphere, defaults to 1.0-->
+							<radius>0.20000000000000001</radius>
+						</Sphere>
+					</attached_geometry>
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>1 1 1 0 0 0</inertia>
+				</Body>
+				<Body name="RightThigh">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Ellipsoid name="RightThigh_geom_1">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Radii of Ellipsoid.-->
+							<radii>0.040000000000000001 0.20000000000000001 0.040000000000000001</radii>
+						</Ellipsoid>
+					</attached_geometry>
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>2 2 0.02 0 0 0</inertia>
+				</Body>
+				<Body name="LeftThigh">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Ellipsoid name="LeftThigh_geom_1">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Radii of Ellipsoid.-->
+							<radii>0.040000000000000001 0.20000000000000001 0.040000000000000001</radii>
+						</Ellipsoid>
+					</attached_geometry>
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>2 2 0.02 0 0 0</inertia>
+				</Body>
+				<Body name="RightShank">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Ellipsoid name="RightShank_geom_1">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Radii of Ellipsoid.-->
+							<radii>0.043499999999999997 0.2175 0.043499999999999997</radii>
+						</Ellipsoid>
+					</attached_geometry>
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>2 2 0.002 0 0 0</inertia>
+				</Body>
+				<Body name="LeftShank">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Ellipsoid name="LeftShank_geom_1">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Radii of Ellipsoid.-->
+							<radii>0.043499999999999997 0.2175 0.043499999999999997</radii>
+						</Ellipsoid>
+					</attached_geometry>
+					<!--The mass of the body (kg)-->
+					<mass>0.10000000000000001</mass>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>2 2 0.002 0 0 0</inertia>
+				</Body>
+			</objects>
+			<groups />
+		</BodySet>
+		<!--List of joints that connect the bodies.-->
+		<JointSet name="jointset">
+			<objects>
+				<PinJoint name="PlatformToGround">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame>ground_offset</socket_parent_frame>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame>Platform_offset</socket_child_frame>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="platform_rz">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>-0.17453292519943295</default_value>
+							<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+							<default_speed_value>0</default_speed_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>-1.7453292519943295 1.7453292519943295</range>
+							<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+							<locked>true</locked>
+						</Coordinate>
+					</coordinates>
+					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="ground_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/ground</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0 0</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="Platform_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/Platform</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0 0</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+				<PlanarJoint name="PelvisToPlatform">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame>/bodyset/Platform</socket_parent_frame>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame>/bodyset/Pelvis</socket_child_frame>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="Pelvis_rz">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>0</default_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>-3.1415926535897931 3.1415926535897931</range>
+						</Coordinate>
+						<Coordinate name="Pelvis_tx">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>0</default_value>
+							<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+							<default_speed_value>0</default_speed_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>0 10</range>
+						</Coordinate>
+						<Coordinate name="Pelvis_ty">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>0.83499999999999996</default_value>
+							<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+							<default_speed_value>0</default_speed_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>-5 5</range>
+						</Coordinate>
+					</coordinates>
+				</PlanarJoint>
+				<PinJoint name="RThighToPelvis">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame>Pelvis_offset</socket_parent_frame>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame>RightThigh_offset</socket_child_frame>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="RHip_rz">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>0.52359877559829882</default_value>
+							<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+							<default_speed_value>0</default_speed_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>-1.7453292519943295 1.7453292519943295</range>
+						</Coordinate>
+					</coordinates>
+					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="Pelvis_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/Pelvis</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0 0.20000000000000001</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="RightThigh_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/RightThigh</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0.20000000000000001 0</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+				<PinJoint name="LThighToPelvis">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame>Pelvis_offset</socket_parent_frame>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame>LeftThigh_offset</socket_child_frame>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="LHip_rz">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>-0.17453292519943295</default_value>
+							<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+							<default_speed_value>0</default_speed_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>-1.7453292519943295 1.7453292519943295</range>
+						</Coordinate>
+					</coordinates>
+					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="Pelvis_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/Pelvis</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0 -0.20000000000000001</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="LeftThigh_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/LeftThigh</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0.20000000000000001 0</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+				<PinJoint name="RShankToRThigh">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame>RightThigh_offset</socket_parent_frame>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame>RightShank_offset</socket_child_frame>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="RKnee_rz">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>-0.52359877559829882</default_value>
+							<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+							<default_speed_value>0</default_speed_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>-1.7453292519943295 0</range>
+						</Coordinate>
+					</coordinates>
+					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="RightThigh_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/RightThigh</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 -0.20000000000000001 0</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="RightShank_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/RightShank</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0.2175 0</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+				<PinJoint name="LShankToLThigh">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame>LeftThigh_offset</socket_parent_frame>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame>LeftShank_offset</socket_child_frame>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="LKnee_rz">
+							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+							<default_value>-0.52359877559829882</default_value>
+							<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+							<default_speed_value>0</default_speed_value>
+							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+							<range>-1.7453292519943295 0</range>
+						</Coordinate>
+					</coordinates>
+					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="LeftThigh_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/LeftThigh</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 -0.20000000000000001 0</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="LeftShank_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/LeftShank</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0.2175 0</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+			</objects>
+			<groups />
+		</JointSet>
+		<!--Controllers that provide the control inputs for Actuators.-->
+		<ControllerSet name="controllerset">
+			<objects />
+			<groups />
+		</ControllerSet>
+		<!--Forces in the model (includes Actuators).-->
+		<ForceSet name="forceset">
+			<objects>
+				<HuntCrossleyForce name="RHipForce">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>RHipContact PlatformContact</geometry>
+								<stiffness>1000000</stiffness>
+								<dissipation>2</dissipation>
+								<static_friction>0.80000000000000004</static_friction>
+								<dynamic_friction>0.40000000000000002</dynamic_friction>
+								<viscous_friction>0.40000000000000002</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.20000000000000001</transition_velocity>
+				</HuntCrossleyForce>
+				<HuntCrossleyForce name="LHipForce">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>LHipContact PlatformContact</geometry>
+								<stiffness>1000000</stiffness>
+								<dissipation>2</dissipation>
+								<static_friction>0.80000000000000004</static_friction>
+								<dynamic_friction>0.40000000000000002</dynamic_friction>
+								<viscous_friction>0.40000000000000002</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.20000000000000001</transition_velocity>
+				</HuntCrossleyForce>
+				<HuntCrossleyForce name="RKneeForce">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>RKneeContact PlatformContact</geometry>
+								<stiffness>1000000</stiffness>
+								<dissipation>2</dissipation>
+								<static_friction>0.80000000000000004</static_friction>
+								<dynamic_friction>0.40000000000000002</dynamic_friction>
+								<viscous_friction>0.40000000000000002</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.20000000000000001</transition_velocity>
+				</HuntCrossleyForce>
+				<HuntCrossleyForce name="LKneeForce">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>LKneeContact PlatformContact</geometry>
+								<stiffness>1000000</stiffness>
+								<dissipation>2</dissipation>
+								<static_friction>0.80000000000000004</static_friction>
+								<dynamic_friction>0.40000000000000002</dynamic_friction>
+								<viscous_friction>0.40000000000000002</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.20000000000000001</transition_velocity>
+				</HuntCrossleyForce>
+				<HuntCrossleyForce name="RFootForce">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>RFootContact PlatformContact</geometry>
+								<stiffness>1000000</stiffness>
+								<dissipation>2</dissipation>
+								<static_friction>0.80000000000000004</static_friction>
+								<dynamic_friction>0.40000000000000002</dynamic_friction>
+								<viscous_friction>0.40000000000000002</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.20000000000000001</transition_velocity>
+				</HuntCrossleyForce>
+				<HuntCrossleyForce name="LFootForce">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>LFootContact PlatformContact</geometry>
+								<stiffness>1000000</stiffness>
+								<dissipation>2</dissipation>
+								<static_friction>0.80000000000000004</static_friction>
+								<dynamic_friction>0.40000000000000002</dynamic_friction>
+								<viscous_friction>0.40000000000000002</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.20000000000000001</transition_velocity>
+				</HuntCrossleyForce>
+				<CoordinateLimitForce name="RHipLimitTorque">
+					<!--Coordinate (name) to be limited.-->
+					<coordinate>RHip_rz</coordinate>
+					<!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
+					<upper_stiffness>0.5</upper_stiffness>
+					<!--The upper limit of the coordinate range of motion (rotations in degrees).-->
+					<upper_limit>100</upper_limit>
+					<!--Stiffness of the passive limit force when coordinate exceeds lower limit. Note, rotational stiffness expected in N*m/degree.-->
+					<lower_stiffness>0.5</lower_stiffness>
+					<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
+					<lower_limit>-100</lower_limit>
+					<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
+					<damping>0.025000000000000001</damping>
+					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
+					<transition>5</transition>
+				</CoordinateLimitForce>
+				<CoordinateLimitForce name="LHipLimitTorque">
+					<!--Coordinate (name) to be limited.-->
+					<coordinate>LHip_rz</coordinate>
+					<!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
+					<upper_stiffness>0.5</upper_stiffness>
+					<!--The upper limit of the coordinate range of motion (rotations in degrees).-->
+					<upper_limit>100</upper_limit>
+					<!--Stiffness of the passive limit force when coordinate exceeds lower limit. Note, rotational stiffness expected in N*m/degree.-->
+					<lower_stiffness>0.5</lower_stiffness>
+					<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
+					<lower_limit>-100</lower_limit>
+					<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
+					<damping>0.025000000000000001</damping>
+					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
+					<transition>5</transition>
+				</CoordinateLimitForce>
+				<CoordinateLimitForce name="RKneeLimitTorque">
+					<!--Coordinate (name) to be limited.-->
+					<coordinate>RKnee_rz</coordinate>
+					<!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
+					<upper_stiffness>0.5</upper_stiffness>
+					<!--The upper limit of the coordinate range of motion (rotations in degrees).-->
+					<upper_limit>0</upper_limit>
+					<!--Stiffness of the passive limit force when coordinate exceeds lower limit. Note, rotational stiffness expected in N*m/degree.-->
+					<lower_stiffness>0.5</lower_stiffness>
+					<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
+					<lower_limit>-140</lower_limit>
+					<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
+					<damping>0.025000000000000001</damping>
+					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
+					<transition>5</transition>
+				</CoordinateLimitForce>
+				<CoordinateLimitForce name="LKneeLimitTorque">
+					<!--Coordinate (name) to be limited.-->
+					<coordinate>LKnee_rz</coordinate>
+					<!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
+					<upper_stiffness>0.5</upper_stiffness>
+					<!--The upper limit of the coordinate range of motion (rotations in degrees).-->
+					<upper_limit>0</upper_limit>
+					<!--Stiffness of the passive limit force when coordinate exceeds lower limit. Note, rotational stiffness expected in N*m/degree.-->
+					<lower_stiffness>0.5</lower_stiffness>
+					<!--The lower limit of the coordinate range of motion (rotations in degrees).-->
+					<lower_limit>-140</lower_limit>
+					<!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
+					<damping>0.025000000000000001</damping>
+					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
+					<transition>5</transition>
+				</CoordinateLimitForce>
+				<HuntCrossleyForce name="ObstacleForces">
+					<!--Material properties.-->
+					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
+						<objects>
+							<HuntCrossleyForce::ContactParameters>
+								<!--Names of geometry objects affected by these parameters.-->
+								<geometry>LFootContact RFootContact Obstacle1 Obstacle2 Obstacle3 Obstacle4 Obstacle5 Obstacle6 Obstacle7 Obstacle8 Obstacle9 Obstacle10 Obstacle11 Obstacle12 Obstacle13 Obstacle14 Obstacle15 Obstacle16 Obstacle17 Obstacle18 Obstacle19 Obstacle20 Obstacle21 Obstacle22 Obstacle23 Obstacle24 Obstacle25 Obstacle26 Obstacle27 Obstacle28 Obstacle29 Obstacle30 Obstacle31 Obstacle32 Obstacle33 Obstacle34 Obstacle35 Obstacle36 Obstacle37 Obstacle38 Obstacle39 Obstacle40</geometry>
+								<stiffness>1000000</stiffness>
+								<dissipation>1</dissipation>
+								<static_friction>0.80000000000000004</static_friction>
+								<dynamic_friction>0.40000000000000002</dynamic_friction>
+								<viscous_friction>0.40000000000000002</viscous_friction>
+							</HuntCrossleyForce::ContactParameters>
+						</objects>
+						<groups />
+					</HuntCrossleyForce::ContactParametersSet>
+					<!--Slip velocity (creep) at which peak static friction occurs.-->
+					<transition_velocity>0.20000000000000001</transition_velocity>
+				</HuntCrossleyForce>
+			</objects>
+			<groups />
+		</ForceSet>
+		<!--Geometry to be used in contact forces.-->
+		<ContactGeometrySet name="contactgeometryset">
+			<objects>
+				<ContactHalfSpace name="PlatformContact">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 0.025000000000000001 0</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 -1.5700000000000001</orientation>
+				</ContactHalfSpace>
+				<ContactSphere name="RHipContact">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Pelvis</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 0 0.20000000000000001</location>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.050000000000000003</radius>
+				</ContactSphere>
+				<ContactSphere name="LHipContact">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Pelvis</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 0 -0.20000000000000001</location>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.050000000000000003</radius>
+				</ContactSphere>
+				<ContactSphere name="RKneeContact">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/RightShank</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 0.20000000000000001 0</location>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.050000000000000003</radius>
+				</ContactSphere>
+				<ContactSphere name="LKneeContact">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/LeftShank</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 0.20000000000000001 0</location>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.050000000000000003</radius>
+				</ContactSphere>
+				<ContactSphere name="RFootContact">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/RightShank</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 -0.2175 0</location>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.050000000000000003</radius>
+				</ContactSphere>
+				<ContactSphere name="LFootContact">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/LeftShank</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>0 -0.2175 0</location>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.050000000000000003</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle1">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>5.6488414693503177 -0.034553368473436298 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.074441710591795371</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle2">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>8.83059299629614 -0.036921020547336474 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.077401275684170587</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle3">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>8.7804886202688355 -0.021683957252809159 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.058354946566011451</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle4">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>6.6652374256713056 -0.038157324844782632 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.078946656055978295</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle5">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>9.3675847663017215 -0.037972006757830697 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.078715008447288376</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle6">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>9.2392968687457451 -0.018405272127053167 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.05425659015881646</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle7">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>6.5238959317978109 -0.03401297590942931 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.073766219886786638</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle8">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>7.9937988322094391 -0.015857080285780555 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.051071350357225688</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle9">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>7.3271446791724939 -0.031289643716586567 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.07036205464573321</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle10">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>8.8828699190970184 -0.024413448468820036 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.061766810586025046</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle11">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>7.0911527753647841 -0.03194510611247061 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.071181382640588264</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle12">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>3.3170032598107175 -0.016108113375147698 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.051385141718934622</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle13">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>7.9146505297436232 -0.03167588695141961 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.070844858689274509</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle14">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>9.2852908632204691 -0.015826705932069814 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.051033382415087265</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle15">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>8.8429969470614012 -0.033372402915576062 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.072965503644470076</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle16">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>9.1537540596610203 -0.026754345498917552 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.064692931873646942</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle17">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>7.1705260750097652 -0.032024755940593744 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.071280944925742176</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle18">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>8.23852093006046 -0.031312864244488203 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.070391080305610254</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle19">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>9.4856164109829688 -0.017855944357401045 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.053569930446751304</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle20">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>8.7201044932038787 -0.023169257439987205 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.060211571799984001</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle21">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>7.2129649803903053 -0.033030409423335676 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.072538011779169589</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle22">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>7.1887185424501805 -0.031777841343760473 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.070972301679700589</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle23">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>6.3676603476610207 -0.028133172719131273 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.06641646589891409</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle24">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>4.5640398295957114 -0.021180198098969677 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.057725247623712096</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle25">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>9.0959211277646475 -0.034542835825651597 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.074428544782064496</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle26">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>6.5552351643886073 -0.023399610383635409 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.060499512979544263</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle27">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>9.1275121711004665 -0.029785072227519339 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.068481340284399173</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle28">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>8.8876728146332162 -0.03493988706951099 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.074924858836888736</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle29">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>7.8106214916659518 -0.037012647931915443 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.077515809914894304</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle30">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>8.9881982052063005 -0.03308949826268389 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.072611872828354865</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle31">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>7.0892991643129522 -0.016820502949513531 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.052275628686891909</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle32">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>4.0704683695058934 -0.033700013522448273 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.073375016903060336</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle33">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>9.326761706720994 -0.028651767860932632 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.067064709826165789</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle34">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>5.7311744329442416 -0.023090943465573159 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.060113679331966444</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle35">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>9.2898050504074234 -0.022469161009075325 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.059336451261344153</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle36">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>8.2393142195191587 -0.029447566593639278 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.068059458242049092</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle37">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>5.905035655738736 -0.031541148075360195 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.070676435094200241</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle38">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>7.7368636305931116 -0.017011713071926386 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.052514641339907978</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle39">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>7.4819968735448104 -0.018657072455261353 0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.054571340569076691</radius>
+				</ContactSphere>
+				<ContactSphere name="Obstacle40">
+					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+					<socket_frame>/bodyset/Platform</socket_frame>
+					<!--Location of geometry center in the PhysicalFrame.-->
+					<location>5.382110001333432 -0.038907233199045259 -0.40000000000000002</location>
+					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+					<orientation>0 0 0</orientation>
+					<!--Radius of the sphere (default: 0).-->
+					<radius>0.079884041498806568</radius>
+				</ContactSphere>
+			</objects>
+			<groups />
+		</ContactGeometrySet>
+	</Model>
+</OpenSimDocument>

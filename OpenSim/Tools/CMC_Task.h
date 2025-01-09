@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -28,19 +28,17 @@
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // INCLUDES
-#include "osimToolsDLL.h"
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/PropertyBoolArray.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/FunctionSet.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include "TrackingTask.h"
 
+namespace SimTK {
+class State;
+}
+
 namespace OpenSim {
+
+class Function;
 
 //=============================================================================
 //=============================================================================
@@ -216,12 +214,6 @@ public:
     virtual void computeAccelerations(const SimTK::State& s ) = 0;
     virtual void computeJacobian();
     virtual void computeEffectiveMassMatrix();
-
-    //--------------------------------------------------------------------------
-    // XML
-    //--------------------------------------------------------------------------
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
-
 
 //=============================================================================
 };  // END of class CMC_Task

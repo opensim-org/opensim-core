@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -119,7 +119,9 @@ public:
     }
 
 private:
-    void setNull() {}
+    void setNull() {
+        _propertySet._array.setMemoryOwner(true);
+    }
     // If sourcep is set we are doing a copy construction in which case old
     // and new properties must be handled differently. The old ones must be
     // recreated from scratch; the new ones are copied automatically in the

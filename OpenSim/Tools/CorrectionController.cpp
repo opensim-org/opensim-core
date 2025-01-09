@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,14 +23,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include "CorrectionController.h"
 
@@ -228,31 +223,27 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
     
     SimTK::Vector actControls(1, 0.0);
 
-    for(int i=0; i< getActuatorSet().getSize(); i++){
-        CoordinateActuator* act = 
-            dynamic_cast<CoordinateActuator*>(&getActuatorSet().get(i));
-        SimTK_ASSERT( act,  "CorrectionController::computeControls dynamic cast failed");
-
-        Coordinate *aCoord = act->getCoordinate();
-        if( aCoord->isConstrained(s) ) {
+    int i = 0;
+    auto coordinateActuators = getComponentList<CoordinateActuator>();
+    for(auto& act : coordinateActuators) {
+        const Coordinate* coord = act.getCoordinate();
+        if(coord->isConstrained(s) ) {
             actControls =  0.0;
         } 
-        else
-        {
-            double qval = aCoord->getValue(s);
-            double uval = aCoord->getSpeedValue(s);
+        else {
+            double qval = coord->getValue(s);
+            double uval = coord->getSpeedValue(s);
 
             // COMPUTE EXCITATIONS
-            double oneOverFmax = 1.0 / act->getOptimalForce();
+            double oneOverFmax = 1.0 / act.getOptimalForce();
             double pErr = qval - yDesired[2*i];
             double vErr = uval - yDesired[2*i+1];
             double pErrTerm = _kp*oneOverFmax*pErr;
             double vErrTerm = _kv*oneOverFmax*vErr;
             actControls = -vErrTerm - pErrTerm;
         }
-
-        
-        getActuatorSet()[i].addInControls(actControls, controls);
+        act.addInControls(actControls, controls);
+        ++i;
     }
 }
 
@@ -264,30 +255,49 @@ void CorrectionController::extendConnectToModel(Model& model)
     // create an actuator for each generalized coordinate in the model 
     // add these actuators to the model and set their indexes 
     const CoordinateSet& cs = _model->getCoordinateSet();
+    auto actuators = model.updComponentList<CoordinateActuator>();
+
     for(int i=0; i<cs.getSize(); i++) {
-        std::cout << " CorrectionController::extendConnectToModel(): " 
-                  <<  cs.get(i).getName()+"_corrector" << "  added " 
-                  << std::endl;
-        std::string name = cs.get(i).getName()+"_corrector";
-        CoordinateActuator *actuator = NULL;
-        if(_model->getForceSet().contains(name)){
-            actuator = (CoordinateActuator *)&_model->getForceSet().get(name);
+        const Coordinate& coord = cs[i];
+        const std::string name = coord.getName() + "_corrector";
+
+        CoordinateActuator* actuator = nullptr;
+
+        for (auto& ca : actuators) {
+            if (ca.getName() == name) {
+                actuator = &ca;
+                break;
+            }
         }
-        else{
+
+        if(!actuator) {
+            // create the corrector actuator if it doe not already exist
             actuator = new CoordinateActuator();
             actuator->setCoordinate(&cs.get(i));
             actuator->setName(name);
-            _model->addForce(actuator);
-        }
+            // Since CorrectionController is creating these actuators for its
+            // own devices, it should take ownership of them, so that when
+            // the controller is removed, so are all the actuators it added.
+            adoptSubcomponent(actuator);
+            setNextSubcomponentInSystem(*actuator);
             
-        actuator->setOptimalForce(1.0);
-        
-        updActuators().adoptAndAppend(actuator);
-   }
-    setNumControls(getActuatorSet().getSize());
+            log_info("CorrectionController::extendConnectToModel(): {} added.",
+                name);
 
-    printf(" CorrectionController::extendConnectToModel()  num Actuators= %d kv=%f kp=%f \n",
-        _model->getForceSet().getSize(), _kv, _kp );
+            actuator->setOptimalForce(1.0);
+        }
+        
+        // Add to the Controller's list of Actuators (no ownership).
+        addActuator(*actuator);
+   }
+
+    // We're only using CoordinateActuators here, so the number of actuators
+    // should always match the number of controls.
+    setNumControls(getNumActuators());
+
+    log_info("CorrectionController::extendConnectToModel(): "
+             "numActuators = {:d}, kv = {:0.3f}, kp = {:0.3f}",
+            getNumControls(), _kv, _kp);
 }
 
 // for any initialization requiring a state or the complete system 

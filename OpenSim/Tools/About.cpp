@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -69,7 +69,7 @@ using namespace std;
 
 extern "C" {
 
-void opensim_version_actuators(int* major, int* minor, int* build) {
+void opensim_version_tools(int* major, int* minor, int* build) {
     static const char* l = "OPENSIM library="   GET_LIBRARY_STRING;
     static const char* t = "OPENSIM type="      GET_TYPE_STRING;
     static const char* d = "OPENSIM debug="     GET_DEBUG_STRING;
@@ -88,7 +88,7 @@ void opensim_version_actuators(int* major, int* minor, int* build) {
     }
 }
 
-void opensim_about_actuators(const char* key, int maxlen, char* value) {
+void opensim_about_tools(const char* key, int maxlen, char* value) {
     if (maxlen <= 0 || value==0) return;
     value[0] = '\0'; // in case we don't find a match
     if (key==0) return;

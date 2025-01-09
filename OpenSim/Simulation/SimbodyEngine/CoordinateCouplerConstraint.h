@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Function.h>
 #include "Constraint.h"
 
@@ -38,7 +37,7 @@ class Model;
  * A class implementing a CoordinateCoupler Constraint.  The underlying SimTK
  * Constraint is a Constraint::CoordinateCoupler in Simbody, which relates 
  * coordinates to one another at the position level (i.e. holonomic).
- * Relationship between coordinates is a specified by a function that equates 
+ * Relationship between coordinates is specified by a function that equates 
  * to zero only when the coordinates satisfy the constraint function.
  *
  * OpenSim::CoordinateCouplerConstraint assumes that there is one coordinate
@@ -110,12 +109,15 @@ public:
         return function.getValue(); 
     }
     void setFunction(const Function &aFunction)
-        { set_coupled_coordinates_function(*aFunction.clone());}
+        { set_coupled_coordinates_function(aFunction); }
     void setFunction(Function *aFunction)
         { set_coupled_coordinates_function(*aFunction); }
 
-    // SCALE
-    void scale(const ScaleSet& aScaleSet) override;
+    /** Scale the CoordinateCouplerConstraint using the scale factors assigned
+        to the Body associated with the CoordinateCouplerConstraint's dependent
+        coordinate. Scaling is performed only if the dependent coordinate is a
+        translation. */
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:
     void extendConnectToModel(Model& aModel) override;

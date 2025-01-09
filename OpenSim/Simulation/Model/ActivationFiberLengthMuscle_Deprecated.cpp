@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan, Ajay Seth                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -72,19 +72,6 @@ void ActivationFiberLengthMuscle_Deprecated::setNull()
 // Allocate and initialize properties. (There aren't any here.)
 void ActivationFiberLengthMuscle_Deprecated::constructProperties()
 {
-}
-
-
-void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) const
-{
-    // Reasonable initial activation value
-    setActivation(state, 0.001);
-    setFiberLength(state, getOptimalFiberLength());
-    _model->getMultibodySystem().realize(state, SimTK::Stage::Velocity);
-
-    // Compute isometric force to get starting value
-    // of _fiberLength.
-    computeIsometricForce(state, getActivation(state));
 }
 
 //_____________________________________________________________________________
@@ -184,7 +171,7 @@ void ActivationFiberLengthMuscle_Deprecated::
 {
     double adot = 0;
     double ldot = 0;
-    if (!isDisabled(s)) {
+    if (appliesForce(s)) {
         adot = getActivationDeriv(s);
         ldot = getFiberVelocity(s);
     }
@@ -354,29 +341,21 @@ double ActivationFiberLengthMuscle_Deprecated::getStress(const SimTK::State& s) 
 //==============================================================================
 // SCALING
 //==============================================================================
-
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen after the muscle is scaled.
- * For this object, that entails updating the muscle path. Derived classes
- * should probably also scale or update some of the force-generating
- * properties.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void ActivationFiberLengthMuscle_Deprecated::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+void ActivationFiberLengthMuscle_Deprecated::
+extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    GeometryPath &path = upd_GeometryPath();
+    Super::extendPostScale(s, scaleSet);
 
-    path.postScale(s, aScaleSet);
-
+    AbstractGeometryPath& path = updPath();
     if (path.getPreScaleLength(s) > 0.0)
-        {
-            double scaleFactor = getLength(s) / path.getPreScaleLength(s);
-            upd_optimal_fiber_length() *= scaleFactor;
-            upd_tendon_slack_length() *= scaleFactor;
-            path.setPreScaleLength(s, 0.0) ;
-        }
+    {
+        double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
+        upd_optimal_fiber_length() *= scaleFactor;
+        upd_tendon_slack_length() *= scaleFactor;
+
+        // Clear the pre-scale length that was stored in the path.
+        path.setPreScaleLength(s, 0.0);
+    }
 }
 
 //--------------------------------------------------------------------------
@@ -401,13 +380,9 @@ void ActivationFiberLengthMuscle_Deprecated::computeForce(const SimTK::State& s,
         // ask for muscle derivatives, which will be integrated
         // in the case the force is being overridden, the states aren't being used
         // but a valid derivative cache entry is still required
-        int numStateVariables = getNumStateVariables();
-        Array<std::string> stateVariableNames = getStateVariableNames();
-        for (int i = 0; i < numStateVariables; ++i) {
-            setStateVariableDeriv(s, stateVariableNames[i], 0.0);
-        }
+        setStateVariableDeriv(s, STATE_ACTIVATION_NAME, 0.0);
+        setStateVariableDeriv(s, STATE_FIBER_LENGTH_NAME, 0.0);
     } 
-
 }
 
 //_____________________________________________________________________________
@@ -417,7 +392,7 @@ void ActivationFiberLengthMuscle_Deprecated::computeForce(const SimTK::State& s,
  */
 void ActivationFiberLengthMuscle_Deprecated::computeInitialFiberEquilibrium(SimTK::State& s) const
 {
-    double force = computeIsometricForce(s, getActivation(s));
+    /*double force = */computeIsometricForce(s, getActivation(s));
 
     //cout<<getName()<<": isometric force = "<<force<<endl;
     //cout<<getName()<<": fiber length = "<<getFiberLength(s)<<endl;
@@ -433,7 +408,7 @@ double ActivationFiberLengthMuscle_Deprecated::
     const double &pennationAngleAtOptimal = get_pennation_angle_at_optimal();
     const double &maxContractionVelocity = get_max_contraction_velocity();
 
-    double normalizedLength = getFiberLength(s) / optimalFiberLength;
+    //double normalizedLength = getFiberLength(s) / optimalFiberLength;
     double normalizedVelocity = -cos(pennationAngleAtOptimal) * getLengtheningSpeed(s) / (maxContractionVelocity * optimalFiberLength);
     double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,1.0,normalizedVelocity);
 

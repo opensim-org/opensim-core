@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Ajay Seth, Michael A. Sherman                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,14 +23,15 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning( disable : 4251 )
 #endif
 
+#include "Assertion.h"
 #include "osimCommonDLL.h"
 #include <string>
 #include "Property_Deprecated.h"
-#include "SimTKcommon.h"
+#include "OpenSim/Common/Array.h"
 
 //=============================================================================
 //=============================================================================
@@ -88,6 +89,16 @@ public:
         PropertyDblVec_* prop = new PropertyDblVec_<M>(*this);
         return prop;
     }
+    
+    void assign(const AbstractProperty& that) override {
+        try {
+            *this = dynamic_cast<const PropertyDblVec_&>(that);
+        } catch(const std::bad_cast&) {
+            OPENSIM_THROW(InvalidArgument,
+                          "Unsupported type. Expected: " + this->getTypeName() +
+                          " | Received: " + that.getTypeName());
+        }
+    }
 
 public:
 
@@ -105,9 +116,12 @@ public:
     void setValue(const SimTK::Vec<M> &aVec) { 
         SimTK::Vec<M>::updAs(&_dblvec[0])=aVec; 
     }
+    // This helps avoid the -Woverloaded-virtual warning with Clang (the method
+    // above otherwise hides the virtual setValue() methods in the base class).
+    using Property_Deprecated::setValue;
     /** set value of this property from an array of doubles of equal or greater length */
     void setValue(const Array<double> &anArray) override {
-        assert(anArray.getSize() >= M);
+        OPENSIM_ASSERT(anArray.getSize() >= M);
         for(int i=0;i<M; i++)
             _dblvec[i] = anArray[i];
     }
@@ -117,7 +131,7 @@ public:
     const SimTK::Vec<M>& getValueDblVec() const {return SimTK::Vec<M>::getAs(&_dblvec[0]); };
     /** set value from double array */ // to be used by the serialization code
     void setValue(int aSize, const double aArray[]) override { 
-        assert(aSize == M);
+        OPENSIM_ASSERT(aSize == M);
         setValue(SimTK::Vec<M>::getAs(aArray));
     };
 #ifndef SWIG
@@ -132,7 +146,7 @@ public:
         std::string str = "(";
         char dbl[256];
             for(int i=0; i < M; i++){
-                sprintf(dbl, "%g", _dblvec[i]);
+                snprintf(dbl, 256, "%g", _dblvec[i]);
                 str += (i>0?" ":"") + std::string(dbl);
             }
         str += ")";

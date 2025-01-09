@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -112,6 +112,12 @@ public:
 
     // default destructor, copy constructor, copy assignment
 
+protected:
+    //--------------------------------------------------------------------------
+    // Implement ModelComponent Interface
+    //--------------------------------------------------------------------------
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+
 private:
     void constructProperties();
 
@@ -122,19 +128,21 @@ private:
     Body* getBodyA() const {return _bodyA.get();}
     Body* getBodyB() const {return _bodyB.get();}    
 
-    //--------------------------------------------------------------------------
-    // Implement Force interface
-    //--------------------------------------------------------------------------
-    void computeForce(const SimTK::State& state, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                      SimTK::Vector& mobilityForces) const override;
+    /**
+     * Implements the `ForceProducer` interface.
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
 
     //--------------------------------------------------------------------------
     // Implement Actuator interface (also see getOptimalForce() above)
-    //--------------------------------------------------------------------------    
-    double computeActuation( const SimTK::State& s) const override;
+    //--------------------------------------------------------------------------
+    double computeActuation(const SimTK::State& s) const override;
     // Return the stress, defined as abs(force/optimal_force).
-    double getStress( const SimTK::State& s ) const override;
+    double getStress(const SimTK::State& s) const override;
+    /** Get speed along force vector. */
+    double getSpeed(const SimTK::State& s) const override;
+    /** Computes speed along force vector. */
+    double calcSpeed(const SimTK::State& s) const;
 
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface
@@ -151,6 +159,11 @@ private:
     // The bodies on which this point-to-point actuator acts.
     SimTK::ReferencePtr<Body> _bodyA, _bodyB;
 
+    // CachedVariables: Speed- and direction along force, used to compute power
+    mutable CacheVariable<double> _speedCV;
+    mutable CacheVariable<SimTK::UnitVec3> _directionCV;
+
+    SimTK::UnitVec3 getDirectionBAInGround(const SimTK::State& s) const;
 //=============================================================================
 };  // END of class PointToPointActuator
 

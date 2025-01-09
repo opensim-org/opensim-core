@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,8 +25,12 @@
 // INCLUDES
 //=============================================================================
 #include "ExpressionBasedPointToPointForce.h"
-#include <OpenSim/Simulation/Model/BodySet.h>
+
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
+
+#include <lepton/Parser.h>
+#include <lepton/ParsedExpression.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -112,14 +116,21 @@ void ExpressionBasedPointToPointForce::extendConnectToModel(Model& model)
     Super::extendConnectToModel(model); // Let base class connect first.
 
     // Look up the two bodies being connected by bushing by name in the
-    // model. TODO: use Connectors
+    // model. TODO: use Sockets
     const string& body1Name = getBody1Name();
     const string& body2Name = getBody2Name();
 
-    _body1 =
-        static_cast<const PhysicalFrame*>(&getModel().getComponent(body1Name));
-    _body2 =
-        static_cast<const PhysicalFrame*>(&getModel().getComponent(body2Name));
+    if(getModel().hasComponent(body1Name))
+        _body1 = &(getModel().getComponent<PhysicalFrame>(body1Name));
+    else
+        _body1 = &(getModel().getComponent<PhysicalFrame>(
+            "./bodyset/" + body1Name));
+
+    if (getModel().hasComponent(body2Name))
+        _body2 = &(getModel().getComponent<PhysicalFrame>(body2Name));
+    else
+        _body2 = &(getModel().getComponent<PhysicalFrame>(
+            "./bodyset/" + body2Name));
 
     if(getName() == "")
         setName("expressionP2PForce_"+body1Name+"To"+body2Name);
@@ -140,29 +151,25 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);    // Base class first.
 
-    addCacheVariable<double>("force_magnitude", 0.0, SimTK::Stage::Velocity);
+    this->_forceMagnitudeCV = addCacheVariable("force_magnitude", 0.0, SimTK::Stage::Velocity);
 
     // Beyond the const Component get access to underlying SimTK elements
     ExpressionBasedPointToPointForce* mutableThis =
         const_cast<ExpressionBasedPointToPointForce *>(this);
-
-    // Get underlying mobilized bodies
-    mutableThis->_b1 = _body1->getMobilizedBody();
-    mutableThis->_b2 = _body2->getMobilizedBody();
 }
 
 //=============================================================================
 // Computing
 //=============================================================================
-// Compute and apply the force
-void ExpressionBasedPointToPointForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+// compute and produce forces
+void ExpressionBasedPointToPointForce::implProduceForces(
+    const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
     using namespace SimTK;
 
-    const Transform& X_GB1 = _b1->getBodyTransform(s);
-    const Transform& X_GB2 = _b2->getBodyTransform(s);
+    const Transform& X_GB1 = _body1->getMobilizedBody().getBodyTransform(s);
+    const Transform& X_GB2 = _body2->getMobilizedBody().getBodyTransform(s);
 
     const Vec3 s1_G = X_GB1.R() * getPoint1();
     const Vec3 s2_G = X_GB2.R() * getPoint2();
@@ -172,8 +179,8 @@ void ExpressionBasedPointToPointForce::computeForce(const SimTK::State& s,
     const Vec3 r_G = p2_G - p1_G; // vector from point1 to point2
     const double d = r_G.norm();  // distance between the points
 
-    const Vec3 v1_G = _b1->findStationVelocityInGround(s, getPoint1());
-    const Vec3 v2_G = _b2->findStationVelocityInGround(s, getPoint2());
+    const Vec3 v1_G = _body1->getMobilizedBody().findStationVelocityInGround(s, getPoint1());
+    const Vec3 v2_G = _body2->getMobilizedBody().findStationVelocityInGround(s, getPoint2());
     const Vec3 vRel = v2_G - v1_G; // relative velocity
 
     //speed along the line connecting the two bodies
@@ -184,19 +191,18 @@ void ExpressionBasedPointToPointForce::computeForce(const SimTK::State& s,
     forceVars["ddot"] = ddot;
 
     double forceMag = _forceProg.evaluate(forceVars);
-    setCacheVariableValue<double>(s, "force_magnitude", forceMag);
+    setCacheVariableValue(s, _forceMagnitudeCV, forceMag);
 
     const Vec3 f1_G = (forceMag/d) * r_G;
 
-    bodyForces[_b1->getMobilizedBodyIndex()] +=  SpatialVec(s1_G % f1_G, f1_G);
-    bodyForces[_b2->getMobilizedBodyIndex()] -=  SpatialVec(s2_G % f1_G, f1_G);
+    forceConsumer.consumeBodySpatialVec(s, *_body1,  SpatialVec(s1_G % f1_G, f1_G));
+    forceConsumer.consumeBodySpatialVec(s, *_body2, -SpatialVec(s2_G % f1_G, f1_G));
 }
 
 // get the force magnitude that has already been computed
 const double& ExpressionBasedPointToPointForce::
-    getForceMagnitude(const SimTK::State& s)
-{
-    return getCacheVariableValue<double>(s, "force_magnitude");
+        getForceMagnitude(const SimTK::State& s) const {
+    return getCacheVariableValue(s, _forceMagnitudeCV);
 }
 
 
@@ -245,14 +251,13 @@ getRecordValues(const SimTK::State& state) const
     SimTK::Vec3 forces = bodyForces(_body1->getMobilizedBodyIndex())[1];
     values.append(3, &forces[0]);
 
-    SimTK::Vec3 gpoint(0);
-    _model->getSimbodyEngine().getPosition(state, *_body1, getPoint1(), gpoint);
+    SimTK::Vec3 gpoint = _body1->findStationLocationInGround(state, getPoint1());
     values.append(3, &gpoint[0]);
 
     forces = bodyForces(_body2->getMobilizedBodyIndex())[1];
     values.append(3, &forces[0]);
 
-    _model->getSimbodyEngine().getPosition(state, *_body2, getPoint2(), gpoint);
+    gpoint = _body2->findStationLocationInGround(state, getPoint2());
     values.append(3, &gpoint[0]);
 
     return values;

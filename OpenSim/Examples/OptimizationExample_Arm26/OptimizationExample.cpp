@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Samuel R. Hamner, Ajay Seth                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,6 +31,7 @@
 //==============================================================================
 //==============================================================================
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 #include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
 
 using namespace OpenSim;
@@ -39,25 +40,23 @@ using namespace std;
 
 // Global variables to define integration time window, optimizer step count,
 // the best solution.
-int stepCount = 0;
-double initialTime = 0.0;
-double finalTime = 0.25;
+int stepCount = 0; 
+const double initialTime = 0.0;
+const double finalTime = 0.25;
+const double desired_accuracy = 1.0e-5;
 double bestSoFar = Infinity;
 
 class ExampleOptimizationSystem : public OptimizerSystem {
-   public:
-
-       /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
-       ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
-             numControls(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel)
-       {
-           // Create the integrator for the simulation.
-           p_integrator = new RungeKuttaMersonIntegrator(osimModel.getMultibodySystem());
-           p_integrator->setAccuracy(1.0e-7);
-           p_manager = new Manager(osimModel, *p_integrator);
-       }
+public:
+    /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
+    ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
+        OptimizerSystem(numParameters), 
+        si(s),
+        osimModel(aModel)
+    {}
                 
-    int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const override {
+    int objectiveFunc(const Vector &newControls,
+        bool new_coefficients, Real& f) const override {
 
         // make a copy of the initial states
         State s = si;
@@ -66,24 +65,24 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         osimModel.updDefaultControls() = newControls;
                 
         // Integrate from initial time to final time
-        p_manager->setInitialTime(initialTime);
-        p_manager->setFinalTime(finalTime);
+        Manager manager(osimModel);
+        manager.setIntegratorAccuracy(desired_accuracy);
+        s.setTime(initialTime);
 
         osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 
-        p_manager->integrate(s);
+        manager.initialize(s);
+        s = manager.integrate(finalTime);
 
         /* Calculate the scalar quantity we want to minimize or maximize. 
-        *  In this case, we’re maximizing forward velocity of the 
+        *  In this case, we're maximizing forward velocity of the
         *  forearm/hand mass center, so to maximize, compute velocity 
         *  and multiply it by -1.
         */
-        Vec3 massCenter = osimModel.getBodySet().get("r_ulna_radius_hand").getMassCenter();
-        Vec3 velocity;
+        const auto& hand = osimModel.getBodySet().get("r_ulna_radius_hand");
         osimModel.getMultibodySystem().realize(s, Stage::Velocity);
-        osimModel.getSimbodyEngine().getVelocity(s, osimModel.getBodySet()
-            .get("r_ulna_radius_hand"), massCenter, velocity);
-        
+        Vec3 massCenter = hand.getMassCenter();
+        Vec3 velocity = hand.findStationVelocityInGround(s, massCenter);
         f = -velocity[0];
         stepCount++;
         
@@ -100,10 +99,8 @@ class ExampleOptimizationSystem : public OptimizerSystem {
    }    
 
 private:
-    int numControls;
     State& si;
     Model& osimModel;
-    SimTK::ReferencePtr<Manager> p_manager;
     SimTK::ReferencePtr<RungeKuttaMersonIntegrator> p_integrator;
 
  };
@@ -151,7 +148,7 @@ int main()
         Real f = NaN;
         
         /* Define initial values and bounds for the controls to optimize */
-        Vector controls(numControls, 0.01);
+        Vector controls(numControls, 0.02);
         controls[3] = 0.99;
         controls[4] = 0.99;
         controls[5] = 0.99;
@@ -168,8 +165,8 @@ int main()
 
         // Specify settings for the optimizer
         opt.setConvergenceTolerance(0.1);
-        opt.useNumericalGradient(true, 1e-5);
-        opt.setMaxIterations(100);
+        opt.useNumericalGradient(true, desired_accuracy);
+        opt.setMaxIterations(2);
         opt.setLimitedMemoryHistory(500);
 
         // Optimize it!
@@ -195,17 +192,19 @@ int main()
         ofile.close(); 
 
         // Re-run simulation with optimal controls.
-        RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-        integrator.setAccuracy(1.0e-7);
-        Manager manager(osimModel, integrator);
+        Manager manager(osimModel);
+        manager.setIntegratorAccuracy(desired_accuracy);
         osimModel.updDefaultControls() = controls;
 
         // Integrate from initial time to final time.
-        manager.setInitialTime(initialTime);
-        manager.setFinalTime(finalTime);
+        si.setTime(initialTime);
         osimModel.getMultibodySystem().realize(si, Stage::Acceleration);
-        manager.integrate(si);
-        manager.getStateStorage().print("Arm26_optimized_states.sto");
+        manager.initialize(si);
+        si = manager.integrate(finalTime);
+
+        auto statesTable = manager.getStatesTable();
+        STOFileAdapter_<double>::write(statesTable, 
+                                      "Arm26_optimized_states.sto");
     }
     catch (const std::exception& ex)
     {

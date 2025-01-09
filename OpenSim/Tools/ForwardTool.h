@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -22,16 +22,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyObjPtr.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
 
 #include "osimToolsDLL.h"
@@ -46,8 +36,10 @@
 namespace OpenSim { 
 
 class Body;
-class PrescribedForce;
 class ControlSet;
+class Manager;
+class PrescribedForce;
+class Storage;
 
 
 //=============================================================================
@@ -134,7 +126,12 @@ public:
     // INTERFACE
     //--------------------------------------------------------------------------
     bool run() override SWIG_DECLARE_EXCEPTION;
+    /// <b>(Deprecated)</b> Use setPrintResultFiles(true) and run() instead.
+    DEPRECATED_14("Use setPrintResultFiles(true) and run() instead.")
     void printResults();
+private:
+    void printResultsInternal();
+public:
 
     //--------------------------------------------------------------------------
     // UTILITY

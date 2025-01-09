@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Thomas Uchida, Ajay Seth                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -55,9 +55,9 @@ getActivation(const SimTK::State& s) const
 void ZerothOrderMuscleActivationDynamics::
 setActivation(SimTK::State& s, double activation) const
 {
-    cout << "\nWARNING: attempting to set activation of " << getName()
-         << ", which is of type " << getConcreteClassName()
-         << " and, therefore, has no activation variable to set." << endl;
+    log_warn("Attempting to set activation of '{}', which is of type {}, and, "
+             "therefore, has no activation variable to set.", getName(),
+            getConcreteClassName());
 }
 
 //==============================================================================

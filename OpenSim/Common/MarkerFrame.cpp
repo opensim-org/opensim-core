@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -63,21 +63,6 @@ MarkerFrame::MarkerFrame(int aNumMarkers, int aFrameNumber, double aTime, Units&
     _units(aUnits)
 {
     setNull();
-}
-
-/**
- * Copy constructor.
- */
-MarkerFrame::MarkerFrame(const MarkerFrame& aFrame) :
-   Object(aFrame)
-{
-    setNull();
-
-    _numMarkers = aFrame._numMarkers;
-    _frameNumber = aFrame._frameNumber;
-    _frameTime = aFrame._frameTime;
-    _units = aFrame._units;
-    _markers = aFrame._markers;
 }
 
 //_____________________________________________________________________________

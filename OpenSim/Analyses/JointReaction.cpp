@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers, Ajay Seth                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,12 +25,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include "JointReaction.h"
 
 using namespace OpenSim;
@@ -190,26 +186,36 @@ setupProperties()
 {
 
     _forcesFileNameProp.setName("forces_file");
-    _forcesFileNameProp.setComment("The name of a file containing forces storage."
-        "If a file name is provided, the applied forces for all actuators will be constructed "
-        "from the forces_file instead of from the states.  This option should be used "
-        "to calculated joint loads from static optimization results.");
+    _forcesFileNameProp.setComment("The name of a file containing forces "
+        "storage. If a file name is provided, the forces for all actuators "
+        "will be applied according to values specified in the forces_file "
+        "instead of being computed from the states. This option should be "
+        "used to calculate joint reactions from static optimization results.");
     _propertySet.append(&_forcesFileNameProp);
 
     _jointNamesProp.setName("joint_names");
-    _jointNamesProp.setComment("Names of the joints on which to perform the analysis."
-        "The key word 'All' indicates that the analysis should be performed for all bodies.");
+    _jointNamesProp.setComment("Names of the joints on which to perform the "
+        "analysis. The key word 'All' indicates that the analysis should be "
+        "performed for all joints.");
     _propertySet.append(&_jointNamesProp);
 
     _onBodyProp.setName("apply_on_bodies");
-    _onBodyProp.setComment("Choice of body (parent or child) for which the reaction "
-        "loads are calculated.  Child body is default.  If the array has one entry only, "
-        "that selection is applied to all chosen joints.");
+    _onBodyProp.setComment("Choice of body ('parent' or 'child') for which "
+        "the reaction loads are calculated. Child body is default. The array "
+        "must either have one entry or the same number of entries as joints "
+        "specified above. If the array has one entry only, that selection "
+        "is applied to all chosen joints.");
     _propertySet.append(&_onBodyProp);
 
     _inFrameProp.setName("express_in_frame");
-    _inFrameProp.setComment("Choice of frame (ground, parent, or child) in which the calculated "
-        "reactions are expressed.  ground body is default.  If the array has one entry only, "
+    _inFrameProp.setComment("Names of frames in which the calculated "
+        "reactions are expressed, or the keyword 'child' or 'parent' to "
+        "indicate the joint's 'child' or 'parent' Frame. "
+        "ground is default. If a Frame named 'child' or "
+        "'parent' exists and the keyword 'child' or 'parent' is used, "
+        "the analysis will use that Frame. The array must "
+        "either have one entry or the same number of entries as joints "
+        "specified above. If the array has one entry only, "
         "that selection is applied to all chosen joints.");
     _propertySet.append(&_inFrameProp);
 }
@@ -227,15 +233,15 @@ void JointReaction::setupReactionList()
 {
     /* check length of property arrays.  if one is empty, set it to default*/
     if(_jointNames.getSize() == 0) {
-        cout << "\nNo joints are specified in joint_names.  Setting to ALL\n";
+        log_info("No joints are specified in joint_names. Setting to ALL");
         _jointNames.setSize(1);
         _jointNames[0] = "ALL";}
     if(_onBody.getSize() == 0) {
-        cout << "\nNo bodies are specified in apply_on_bodies.  Setting to child\n";
+        log_info("No bodies are specified in apply_on_bodies. Setting to child");
         _onBody.setSize(1);
         _onBody[0] = "child";}
     if(_inFrame.getSize() == 0) {
-        cout << "\nNo bodies are specified in express_in_frame.  Setting to ground\n";
+        log_info("No bodies are specified in express_in_frame. Setting to ground");
         _inFrame.setSize(1);
         _inFrame[0] = "ground";}
 
@@ -261,23 +267,17 @@ void JointReaction::setupReactionList()
     *  set the values so that all reactions will be reported on the child body, expressed  
     *  in the ground frame.*/
     if (_onBody.getSize() == 1);
-    else if (_onBody.getSize() != numJointNames) {
-        cout << "\n WARNING: apply_on_bodies list is not the same length as joint_names."
-            <<"\n All reaction loads will be reported on the child bodies.\n";
-        _onBody.setSize(1);
-        _onBody[0]= "child";}
+    else if (_onBody.getSize() != numJointNames)
+        OPENSIM_THROW(InvalidArgument,
+            "apply_on_bodies list is neither of length 1 nor the same length as indicated by joint_names.");
 
     if (_inFrame.getSize() == 1);
-    else if (_inFrame.getSize() != numJointNames) {
-        cout << "\n WARNING: express_in_frame list is not the same length as joint_names."
-            <<"\n All reaction loads will be reported in the child body frames.\n";
-        _inFrame.setSize(1);
-        _inFrame[0] = "ground";}
+    else if (_inFrame.getSize() != numJointNames)
+        OPENSIM_THROW(InvalidArgument,
+            "express_in_frame list is neither of length 1 nor the same length as indicated by joint_names.");
     
-
     /* setup the JointReactionKey and, for valid joint names, determine and set the 
     *  reactionIndex, onBodyIndex, and inFrameIndex of each JointReactionKey */
-
     _reactionList.setSize(0);
     int index = -1;
     for (int i = 0; i < _jointNames.getSize(); ++i) {
@@ -286,7 +286,6 @@ void JointReaction::setupReactionList()
         if (index > -1) { // found the Joint in the model
             // Add joint to JointReactionKey 
             const Joint& joint = jointSet[index];
-            currentKey.jointIndex = index;
             currentKey.joint = &joint;
 
             // Want joint reaction applied to child or parent?
@@ -299,31 +298,46 @@ void JointReaction::setupReactionList()
             std::transform(appliedOnName.begin(), appliedOnName.end(),
                 appliedOnName.begin(), ::tolower);
             // determine if user wants reaction on child or parent
+            OPENSIM_THROW_IF(appliedOnName != "child" && appliedOnName != "parent",
+                             InvalidArgument,
+                             "'apply_on_bodies' must be either 'child' or 'parent'");
             currentKey.isAppliedOnChild = (appliedOnName == "child");
             currentKey.appliedOnBody = currentKey.isAppliedOnChild ?
-                &joint.getChildFrame() : &joint.getParentFrame();
+                &joint.getChildFrame().findBaseFrame() : &joint.getParentFrame().findBaseFrame();
 
+            // set frame that reactions are expressed in
             std::string expressedIn = "ground";
             if (_inFrame.size()) {
                 expressedIn = (i < _inFrame.size()) ? _inFrame[i] : _inFrame[0];
             }
-            // convert to lowercase
-            std::transform(expressedIn.begin(), expressedIn.end(),
-                expressedIn.begin(), ::tolower);
-            if (expressedIn == "child"){
-                currentKey.expressedInFrame = &joint.getChildFrame();
+
+            if (_model->hasComponent<Frame>(expressedIn))
+                currentKey.expressedInFrame =
+                    &_model->getComponent<Frame>(expressedIn);
+            else if (_model->getBodySet().hasComponent<Frame>(expressedIn))
+                currentKey.expressedInFrame =
+                    &_model->getBodySet().getComponent<Frame>(expressedIn);
+            else if (_model->getJointSet().hasComponent<Frame>(expressedIn))
+                currentKey.expressedInFrame =
+                    &_model->getJointSet().getComponent<Frame>(expressedIn);
+            else {
+                std::transform(expressedIn.begin(), expressedIn.end(), expressedIn.begin(), ::tolower);
+                if (expressedIn == "child")
+                    currentKey.expressedInFrame = &joint.getChildFrame().findBaseFrame();
+                else if (expressedIn == "parent")
+                    currentKey.expressedInFrame = &joint.getParentFrame().findBaseFrame();
+                else {
+                    OPENSIM_THROW(InvalidArgument,
+                                  "'express_in_frame' must either be a Frame "
+                                  "name or the keyword 'child' or 'parent'.")
+                }
             }
-            else if (expressedIn == "parent"){
-                currentKey.expressedInFrame = &joint.getParentFrame();
-            }
-            else{ //if not child or parent use ground
-                currentKey.expressedInFrame = &_model->getGround();
-            }
+            
             _reactionList.append(currentKey);
         }
         else {
-            cout << "\nWARNING: " << _jointNames[i] << " is not a valid joint. "
-                "Ignoring this entry.\n";
+            log_warn("'{}' is not a valid joint. Ignoring this entry.",
+                     _jointNames[i]);
         }
     }
 }
@@ -403,18 +417,19 @@ void JointReaction::loadForcesFromFile()
     // check if the forces storage file name is valid and, if so, load the file into storage
     if(_forcesFileNameProp.isValidFileName()) {
         
-        cout << "\nLoading actuator forces from file " << _forcesFileName << "." << endl;
+        log_info("Loading actuator forces from file {}.", _forcesFileName);
         _storeActuation = new Storage(_forcesFileName);
         int storeSize = _storeActuation->getSmallestNumberOfStates();
-        
-        cout << "Found " << storeSize << " actuator forces with time stamps ranging from "
-            << _storeActuation->getFirstTime() << " to " << _storeActuation->getLastTime() << "." << endl;
+
+        log_info("Found {} actuator forces with time stamps ranging from {}"
+                 "to {}.", storeSize, _storeActuation->getFirstTime(),
+                 _storeActuation->getLastTime());
 
         // check if actuator set and forces file have the same actuators
         bool _containsAllActuators = true;
         int actuatorSetSize = _model->getActuators().getSize();
         if(actuatorSetSize > storeSize){
-            cout << "The forces file does not contain enough actuators." << endl;
+            log_warn("The forces file does not contain enough actuators.");
             _containsAllActuators = false;
         }
         else {
@@ -423,27 +438,36 @@ void JointReaction::loadForcesFromFile()
                 std::string actuatorName = _model->getActuators().get(actuatorIndex).getName();
                 int storageIndex = _storeActuation->getStateIndex(actuatorName,0);
                 if(storageIndex == -1) {
-                    cout << "\nThe actuator " << actuatorName << " was not found in the forces file." << endl;
+                    log_warn("The actuator '{}' was not found in the forces "
+                             "file.",
+                            actuatorName);
+
                     _containsAllActuators = false;
                 }
             }
         }
 
         if(_containsAllActuators) {
-            if(storeSize> actuatorSetSize) cout << "\nWARNING:  The forces file contains actuators that are not in the model's actuator set." << endl;
+            if(storeSize> actuatorSetSize) {
+                log_warn("The forces file contains actuators that are not in "
+                         "the model's actuator set.");
+            }
             _useForceStorage = true;
-            cout << "WARNING:  Ignoring fiber lengths and activations from the states since " << _forcesFileNameProp.getName() << " is also set." << endl;
-            cout << "Actuator forces will be constructed from " << _forcesFileName << "." << endl;
+            log_warn("Ignoring fiber lengths and activations from the states "
+                     "since {} is also set. Actuator forces will be "
+                     "constructed from {}.",
+                    _forcesFileNameProp.getName(), _forcesFileName);
         }
         else {
             _useForceStorage = false;
-            cout << "Actuator forces will be constructed from the states." << endl;
+            log_info("Actuator forces will be constructed from the states.");
         }
     }
 
     else {
-        cout << "WARNING:  " << _forcesFileNameProp.getName() << " is not a valid file name." << endl;
-        cout << "Actuator forces will be constructed from the states." << endl;
+        log_warn("'{}' is not a valid file name. Actuator forces will be "
+                 "constructed from the states.",
+                _forcesFileNameProp.getName());
         _useForceStorage = false;
     }
 }
@@ -527,19 +551,19 @@ record(const SimTK::State& s)
 
     _model->updMultibodySystem().realize(s_analysis, s.getSystemStage());
     if(_useForceStorage){
-
-        const Set<Actuator> *actuatorSet = &_model->getActuators();
-        int nA = actuatorSet->getSize();
+        const auto& actuatorSet = _model->getActuators();
+        int nA = actuatorSet.getSize();
         Array<double> forces(0,nA);
         _storeActuation->getDataAtTime(s.getTime(),nA,forces);
         int storageIndex = -1;
         for(int actuatorIndex=0;actuatorIndex<nA;actuatorIndex++)
         {
             //Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(actuatorIndex));
-            std::string actuatorName = actuatorSet->get(actuatorIndex).getName();
+            std::string actuatorName = actuatorSet.get(actuatorIndex).getName();
             storageIndex = _storeActuation->getStateIndex(actuatorName, 0);
             if(storageIndex == -1){
-                cout << "The actuator, " << actuatorName << ", was not found in the forces file." << endl;
+                log_warn("The actuator '{}' was not found in the forces file.",
+                        actuatorName);
                 break;
             }
             const ScalarActuator* act = dynamic_cast<const ScalarActuator*>(&actuatorSet[actuatorIndex]);
@@ -551,18 +575,8 @@ record(const SimTK::State& s)
     }
     // VARIABLES
     const Ground& ground = _model->getGround();
-    int numJoints = _model->getNumJoints();
 
-    /** define 2 variable length vectors of Vec3 vectors to contain calculated  
-    *   forces and moments for all the bodies in the model */
-    Vector_<Vec3> allForcesVec(numJoints);
-    Vector_<Vec3> allMomentsVec(numJoints);
-
-    /* Calculate All joint reaction forces and moments.
-    *  Applied to child bodies, expressed in ground frame.  
-    *  computeReactions realizes to the acceleration stage internally
-    *  so you don't have to call realize in this analysis.*/ 
-    _model->getSimbodyEngine().computeReactions(s_analysis, allForcesVec, allMomentsVec);
+    _model->realizeAcceleration(s_analysis);
 
     /* retrieved desired joint reactions, convert to desired bodies, and convert
     *  to desired reference frames*/
@@ -571,41 +585,34 @@ record(const SimTK::State& s)
     for(int i=0; i<numOutputJoints; i++) {
         JointReactionKey currentKey = _reactionList[i];
         const Joint& joint = *currentKey.joint;
-        Vec3 force = allForcesVec[currentKey.jointIndex];
-        Vec3 moment = allMomentsVec[currentKey.jointIndex];
-        const PhysicalFrame& expressedInBody = *currentKey.expressedInFrame;
+        const Frame& expressedInBody = *currentKey.expressedInFrame;
+        SpatialVec jointReaction;
+        Vec3 pointOfApplication;
         
-        // find the point of application of the joint load on the child
-        // in the ground reference frame
-        Vec3 childLocationInGlobal = joint.getChildFrame().getGroundTransform(s_analysis).p();
-        // set the point of application to the joint location in the child body
-        Vec3 pointOfApplication(0,0,0);
-        
-        // check if the load on the child needs to be converted to an equivalent
-        // load on the parent body.
+        // check if the load requested is on the parent or child
         if(!currentKey.isAppliedOnChild){
-            /*Take reaction load from child and apply on parent*/
-            force = -force;
-            moment = -moment;
-            Vec3 parentLocationInGlobal = joint.getParentFrame().getGroundTransform(s_analysis).p();
+            jointReaction = joint.calcReactionOnParentExpressedInGround(s_analysis);
 
-            // define vector from the mobilizer location on the child to the location on the parent
-            Vec3 translation = parentLocationInGlobal - childLocationInGlobal;
-            // find equivalent moment if the load is shifted to the parent location
-            moment -= translation % force;
-
-            // reset the point of application to the joint location in the parent expressed in ground
-            pointOfApplication = parentLocationInGlobal;
+            // find the point of application in immediate parent frame, then
+            // transform to the base frame of the parent (expressedInBody)
+            Vec3 parentLocationInGlobal = joint.getParentFrame().getTransformInGround(s_analysis).p();
+            pointOfApplication = 
+                ground.findStationLocationInAnotherFrame(s_analysis, parentLocationInGlobal, expressedInBody);
         }
         else{
-            // set the point of application to the joint location in the child expressed in ground
-            pointOfApplication = childLocationInGlobal;
+            jointReaction = joint.calcReactionOnChildExpressedInGround(s_analysis);
+
+            // find the point of application in immediate child frame, then
+            // transform to the base frame of the child (expressedInBody)
+            Vec3 childLocationInGlobal = joint.getChildFrame().getTransformInGround(s_analysis).p();
+            pointOfApplication =
+                ground.findStationLocationInAnotherFrame(s_analysis, childLocationInGlobal, expressedInBody);
         }
-        /* express loads in the desired reference frame*/
-        _model->getSimbodyEngine()
-            .transform(s_analysis, ground, force, expressedInBody, force);
-        _model->getSimbodyEngine().transform(s_analysis,ground,moment,expressedInBody,moment);
-        _model->getSimbodyEngine().transformPosition(s_analysis,ground,pointOfApplication,expressedInBody,pointOfApplication);
+
+        // transform SpatialVec of reaction forces and moments to the
+        // requested base frame (expressedInBody)
+        Vec3 force = ground.expressVectorInAnotherFrame(s_analysis, jointReaction[1], expressedInBody);
+        Vec3 moment = ground.expressVectorInAnotherFrame(s_analysis, jointReaction[0], expressedInBody);
 
         /* place results in the truncated loads vectors*/
         forcesVec[i] = force;
@@ -639,7 +646,7 @@ record(const SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int JointReaction::
-begin(SimTK::State& s)
+begin(const SimTK::State& s)
 {
     if(!proceed()) return(0);
     // Read forces file here rather than during initialization
@@ -686,7 +693,7 @@ step( const SimTK::State& s, int stepNumber)
  * @return -1 on error, 0 otherwise.
  */
 int JointReaction::
-end(SimTK::State& s)
+end(const SimTK::State&s)
 {
     if(!proceed()) return(0);
 
@@ -721,7 +728,9 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
     // Reaction Loads
-    Storage::printResult(&_storeReactionLoads,aBaseName+"_"+getName()+"_ReactionLoads",aDir,aDT,aExtension);
+    Storage::printResult(&_storeReactionLoads,
+            aBaseName + "_" + getName() + "_ReactionLoads", aDir, aDT,
+            aExtension);
 
     return(0);
 }

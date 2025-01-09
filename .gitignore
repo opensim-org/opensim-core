@@ -1,13 +1,85 @@
 # Ignore backup files created by editors like emacs, vim.
 *~
 *.swp
+*.swo
 # Ignore cmake files.
 *CMakeCache.txt
 *CMakeFiles
 # Ignore tmp directory/file. We use it sometimes to write debug information.
 tmp
 # Ignore build trees.
-build*
+/build*
+# Ignore install dir.
+install
+
+# Vim
+.*.swo
+.*.swp
+*~
+
+# OpenSim
+err.log
+out.log
+
+# Mac
+.DS_Store
+
+# dependencies
+dependencies/*
+!dependencies/CMakeLists.txt
+!dependencies/*.cmake
+!dependencies/*.patch
 
 # python
 *.pyc
+venv
+
+# Matlab
+*.asv
+
+# Moco optimization delete-to-stop file
+delete_this_to_stop_optimization*.txt
+
+# Clion
+# -----
+# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+
+# User-specific stuff:
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/dictionaries
+.idea/vcs.xml
+.idea/opensim-core.iml
+.idea/OpenSim.iml
+.idea/misc.xml
+.idea/editor.xml
+.idea/codeStyles/codeStyleConfig.xml
+.idea/codeStyles/Project.xml
+.idea/editor.xml
+.idea/copilot/**
+.cache/clangd/**
+**/.vscode/
+
+
+# Sensitive or high-churn files:
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.xml
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+
+.idea/deployment.xml
+.idea/other.xml
+.idea/encodings.xml
+.idea/inspectionProfiles/Project_Default.xml
+
+# Clang-Tidy
+.clang-tidy
+
+# CMake
+cmake-build-*
+
+## File-based project format:
+*.iws

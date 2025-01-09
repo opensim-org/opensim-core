@@ -1,5 +1,5 @@
-#ifndef __WrapResult_h__
-#define __WrapResult_h__
+#ifndef OPENSIM_WRAP_RESULT_H
+#define OPENSIM_WRAP_RESULT_H
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  WrapResult.h                           *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,13 +25,13 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Array.h>
-#include "SimTKcommon.h"
+#include "SimTKcommon/SmallMatrix.h"
 
 namespace OpenSim {
+
+/** @cond **/ // hide from Doxygen
 
 //=============================================================================
 //=============================================================================
@@ -56,27 +56,36 @@ public:
     SimTK::Vec3 r2;              // wrap tangent point nearest to p2
     SimTK::Vec3 c1;              // intermediate point used by some wrap objects
     SimTK::Vec3 sv;              // intermediate point used by some wrap objects
-    double factor;             // scale factor used to normalize parameters
-
-//=============================================================================
+    // TODO(chrisdembia): This member variable is not copied by the copy
+    // constructor or copy assignment operator, so I've initialized it to NaN
+    // so we can more easily detect any bugs caused by not copying this
+    // variable.
+    double factor = SimTK::NaN;  // scale factor used to normalize parameters
+    bool singleWrap = false; //Flag to indicate if a single wrap object to be considered so we can optimize
+    //=============================================================================
 // METHODS
 //=============================================================================
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    WrapResult();
-    virtual ~WrapResult();
-    void copyData(const WrapResult& aWrapResult);
+    WrapResult() = default;
+    virtual ~WrapResult() = default;
+    WrapResult(const WrapResult& other);
     WrapResult& operator=(const WrapResult& aWrapResult);
+
+private:
+    void copyData(const WrapResult& aWrapResult);
 
 //=============================================================================
 };  // END of class WrapResult
 //=============================================================================
 //=============================================================================
 
+/** @endcond **/
+
 } // end of namespace OpenSim
 
-#endif // __WrapResult_h__
+#endif // OPENSIM_WRAP_RESULT_H
 
 

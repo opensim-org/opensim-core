@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,6 +29,7 @@
 
 
 // INCLUDES
+#include "Assertion.h"
 #include "osimCommonDLL.h"
 #include <string>
 #include "Object.h"
@@ -74,17 +75,19 @@ public:
     bool isAcceptableObjectTag
         (const std::string& objectTypeTag) const override {return true;}
     const Object& getValueAsObject(int index=-1) const override
-    {   assert(index <= 0); return getValueObj(); }
+    {   OPENSIM_ASSERT(index <= 0); return getValueObj(); }
     Object& updValueAsObject(int index=-1) override
-    {   assert(index <= 0); return getValueObj(); }
+    {   OPENSIM_ASSERT(index <= 0); return getValueObj(); }
     void setValueAsObject(const Object& obj, int index=-1) override
-    {   assert(index <= 0); delete _value; _value=obj.clone(); }
+    {   OPENSIM_ASSERT(index <= 0); delete _value; _value=obj.clone(); }
 
     //--------------------------------------------------------------------------
     // OPERATORS
     //--------------------------------------------------------------------------
 public:
     PropertyObj& operator=(const PropertyObj &aProperty);
+
+    void assign(const AbstractProperty& that) override;
 
     //--------------------------------------------------------------------------
     // GET AND SET

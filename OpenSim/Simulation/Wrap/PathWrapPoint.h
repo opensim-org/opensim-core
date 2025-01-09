@@ -1,5 +1,5 @@
-#ifndef __PathWrapPoint_h__
-#define __PathWrapPoint_h__
+#ifndef OPENSIM_PATH_WRAP_POINT_H_
+#define OPENSIM_PATH_WRAP_POINT_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  PathWrapPoint.h                          *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2022 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,82 +23,73 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <OpenSim/Simulation/Model/AbstractPathPoint.h>
 
-// INCLUDE
-#include <iostream>
-#include <string>
-#include <math.h>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Array.h>
+// legacy: this used to be included (older codebases may transitively depend on it)
 #include <OpenSim/Simulation/Model/PathPoint.h>
-
-#ifdef SWIG
-    #ifdef OSIMSIMULATION_API
-        #undef OSIMSIMULATION_API
-        #define OSIMSIMULATION_API
-    #endif
-#endif
 
 namespace OpenSim {
 
 class WrapObject;
 
-//=============================================================================
-//=============================================================================
 /**
- * A class implementing a SIMM muscle via point, which is a muscle point that
- * is active only for a specified range of a coordinate.
+ * A class implementing a path wrapping point, which is a path point that
+ * is produced by a PathWrap.
  *
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API PathWrapPoint : public PathPoint {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathWrapPoint, PathPoint);
+class OSIMSIMULATION_API PathWrapPoint final : public AbstractPathPoint {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathWrapPoint, AbstractPathPoint);
 
-//=============================================================================
-// DATA
-//=============================================================================
-private:
-    Array<SimTK::Vec3> _wrapPath; // points defining muscle path on surface of wrap object
-    double _wrapPathLength; // length of _wrapPath
-
-    const WrapObject* _wrapObject; // the wrap object this point is on
-
-protected:
-
-//=============================================================================
-// METHODS
-//=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 public:
-    PathWrapPoint();
-    PathWrapPoint(const PathWrapPoint &aPoint);
-    virtual ~PathWrapPoint();
+    void extendAddToSystem(SimTK::MultibodySystem&) const override;
 
-    void copyData(const PathWrapPoint &aPoint);
+    const WrapObject* getWrapObject() const override;
+    void setWrapObject(const WrapObject*);
 
-#ifndef SWIG
-    PathWrapPoint& operator=(const PathWrapPoint &aPoint);
-#endif
+    const Array<SimTK::Vec3>& getWrapPath(const SimTK::State&) const;
+    void setWrapPath(const SimTK::State&, const Array<SimTK::Vec3>&) const;
+    void clearWrapPath(const SimTK::State&) const;
 
-    Array<SimTK::Vec3>& getWrapPath() { return _wrapPath; }
-    double getWrapLength() const { return _wrapPathLength; }
-    void setWrapLength(double aLength) { _wrapPathLength = aLength; }
-    const WrapObject* getWrapObject() const override { return _wrapObject; }
-    void setWrapObject(const WrapObject* aWrapObject) { _wrapObject = aWrapObject; }
+    double getWrapLength(const SimTK::State&) const;
+    void setWrapLength(const SimTK::State&, double newLength) const;
+
+    // careful: Although this class effectively represents a *sequence*
+    //          of many wrapping points, these methods still need to be
+    //          here for legacy compatability with `AbstractPathPoint`,
+    //          which is used extensively by `GeometryPath`.
+    //
+    // The implementation uses the first, or last, tangent point of the path
+    // wrap as a "best guess" of the location. `GeometryPath`, itself, handles
+    // stuffing the relevant data data into this class.
+    //
+    // (later iterations of `GeometryPath` may ideally (e.g.) hold a sequence
+    //  of path *segments*, rather than path *points*)
+    SimTK::Vec3 getLocation(const SimTK::State&) const override;
+    void setLocation(const SimTK::State&, const SimTK::Vec3&) const;
+    SimTK::Vec3 getdPointdQ(const SimTK::State&) const override;
 
 private:
-    void setNull();
-    void setupProperties();
-//=============================================================================
-};  // END of class PathWrapPoint
-//=============================================================================
-//=============================================================================
+    SimTK::Vec3 calcLocationInGround(const SimTK::State&) const override;
+    SimTK::Vec3 calcVelocityInGround(const SimTK::State&) const override;
+    SimTK::Vec3 calcAccelerationInGround(const SimTK::State&) const override;
+
+    // points defining muscle path on surface of wrap object
+    mutable CacheVariable<Array<SimTK::Vec3>> _wrapPath;
+
+    // length of _wrapPath
+    mutable CacheVariable<double> _wrapPathLength;
+
+    // location of the first tangent point of the path wrap
+    mutable CacheVariable<SimTK::Vec3> _location;
+
+    // the wrap object this point is on
+    SimTK::ReferencePtr<const WrapObject> _wrapObject; 
+};
 
 } // end of namespace OpenSim
 
-#endif // __PathWrapPoint_h__
+#endif // OPENSIM_PATH_WRAP_POINT_H_
 
 

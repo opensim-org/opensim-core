@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,7 +27,6 @@
 // INCLUDE
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 
-#include <simbody/internal/common.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 /*
 The parent class, Muscle.h, provides 
@@ -37,7 +36,6 @@ The parent class, Muscle.h, provides
     4. pennation_angle_at_optimal
     5. max_contraction_velocity
 */
-#include <OpenSim/Simulation/Model/Muscle.h>
 
 //All of the sub-models required for a muscle model:
 #include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
@@ -45,7 +43,6 @@ The parent class, Muscle.h, provides
 
 #include <OpenSim/Actuators/ActiveForceLengthCurve.h>
 #include <OpenSim/Actuators/ForceVelocityCurve.h>
-#include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
 #include <OpenSim/Actuators/FiberForceLengthCurve.h>
 #include <OpenSim/Actuators/FiberCompressiveForceLengthCurve.h>
 #include <OpenSim/Actuators/FiberCompressiveForceCosPennationCurve.h>
@@ -54,7 +51,9 @@ The parent class, Muscle.h, provides
 
 namespace OpenSim {
 
-
+//==============================================================================
+//                        Millard2012AccelerationMuscle
+//==============================================================================
 /**
 This class implements a 3 state (activation,fiber length and fiber velocity) 
 acceleration musculo-tendon model that has several advantages over 
@@ -172,6 +171,11 @@ MuscleFirstOrderActivationDynamicModel.
 \li N: Newtons
 \li kg: kilograms
 \li s: seconds
+
+<B>Caution</B>
+
+The Millard2012AccelerationMuscle class is experimental and has not been
+extensively tested in all operational conditions.
 
 <B>Usage</B>
 
@@ -630,10 +634,11 @@ public:
         according to their relative compliances.
         
         @param s the state of the system
+        @throws MuscleCannotEquilibrate
     */
     void computeInitialFiberEquilibrium(SimTK::State& s) const override final;
         
-///@cond TO BE DEPRECATED. 
+///@cond DEPRECATED
     /*  Once the ignore_tendon_compliance flag is implemented correctly get rid 
         of this method as it duplicates code in calcMuscleLengthInfo,
         calcFiberVelocityInfo, and calcMuscleDynamicsInfo
@@ -651,15 +656,15 @@ public:
                                             double fiberLength, 
                                             double fiberVelocity) const;
 ///@endcond
-    
+
+    /** Adjust the properties of the muscle after the model has been scaled. The
+        optimal fiber length and tendon slack length are each multiplied by the
+        ratio of the current path length and the path length before scaling. */
+    void extendPostScale(const SimTK::State& s,
+                         const ScaleSet& scaleSet) override;
+
 protected:
 
-    /**Related to scaling, soon to be removed.
-    @param s the state of the model
-    @param aScaleSet the scale set
-    */
-    void postScale(const SimTK::State& s, const ScaleSet& aScaleSet) override;
-    
     /**
     @param s the state of the model
     @return the time derivative of activation
@@ -771,7 +776,7 @@ private:
     void setNull();
 
     //constructs all of the properties required to use this class
-    void constructProperties() override;
+    void constructProperties();
     
     /*Builds all of the components that are necessary to use this 
     muscle model in simulation*/
@@ -900,27 +905,36 @@ private:
                                           const AccelerationMuscleInfo& ami,
                                           std::string& caller) const;
 
-    //=====================================================================
-    // Private Utility Class Members
-    //      -Computes activation dynamics and fiber kinematics
-    //=====================================================================
+    // Status flag returned by initMuscleState().
+    enum StatusFromInitMuscleState {
+        Success_Converged,
+        Warning_FiberAtLowerBound,
+        Failure_MaxIterationsReached
+    };
 
-    /*
+    // Associative array of values returned by initMuscleState():
+    // solution_error, iterations, fiber_length, fiber_velocity, passive_force,
+    // and tendon_force.
+    typedef std::map<std::string, double> ValuesFromInitMuscleState;
+
+    /* Calculate the muscle state such that the fiber and tendon are developing
+    the same force.
+
     @param s the system state
     @param aActivation the initial activation of the muscle
     @param aSolTolerance the desired relative tolerance of the equilibrium 
            solution
-    @param aMaxIterations the maximum number of Newton steps allowed before
-           attempts to initialize the model are given up, and an exception is 
-           thrown.
+    @param aMaxIterations the maximum number of Newton steps allowed before we
+           give up attempting to initialize the model
     @param aNewtonStepFraction the fraction of a Newton step to take at each
            update
     */
-    SimTK::Vector initMuscleState(SimTK::State& s, double aActivation,
-                             double aSolTolerance, int aMaxIterations,
-                             double aNewtonStepFraction) const;
-    
-
+    std::pair<StatusFromInitMuscleState, ValuesFromInitMuscleState>
+        initMuscleState(const SimTK::State& s,
+                        const double aActivation,
+                        const double aSolTolerance,
+                        const int aMaxIterations,
+                        const double aNewtonStepFraction) const;
 
     /*
     This can only be called at the velocity stage at least.
@@ -993,8 +1007,8 @@ private:
         double fcphiV;//fiber compressive force cos pennation damping multiplier
         double fibV;  //fiber damping
 
-        //Visco elastic force multiplier
-        double fseVEM;  // ' ' visco elastic multiplier   
+        //Viscoelastic force multiplier
+        double fseVEM;  // ' ' viscoelastic multiplier   
         double fpeVEM;
         double fkVEM;
         double fcphiVEM;
@@ -1033,9 +1047,9 @@ private:
 
         double dfibV_dlce;
 
-        //Partial derivative of the visco elastic multiplier 
+        //Partial derivative of the viscoelastic multiplier 
         //w.r.t. the input variable
-        double dfseVEM_dtl;   //d(tendon force length visco elastic multiplier)
+        double dfseVEM_dtl;   //d(tendon force length viscoelastic multiplier)
                               //d(tendon length)
 
         double dfpeVEM_dlce; //d(fiber force length viscoelastic multiplier)
@@ -1059,8 +1073,8 @@ private:
             phi(SimTK::NaN),
             cosphi(SimTK::NaN),
             sinphi(SimTK::NaN),
-            dphi_dlce(SimTK::NaN),
             dphi_dt(SimTK::NaN),
+            dphi_dlce(SimTK::NaN),
             d_dphidt_dlce(SimTK::NaN),
             tl(SimTK::NaN),
             dtl_dt(SimTK::NaN),

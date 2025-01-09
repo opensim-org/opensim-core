@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,9 +26,7 @@
 // INCLUDE
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 #include <OpenSim/Common/SmoothSegmentedFunction.h>
-#include <Simbody.h>
 
 #ifdef SWIG
     #ifdef OSIMACTUATORS_API
@@ -211,6 +209,11 @@ public:
     'normFiberLength'. */
     double calcValue(double normFiberLength) const;
 
+    /** Evaluates the active-force-length curve value and derivative at a
+     * normalized fiber length of 'normFiberLength'. */
+    SmoothSegmentedFunction::ValueAndDerivative calcValueAndDerivative(
+        double normFiberLength) const;
+
 
     /** Calculates the derivative of the active-force-length multiplier with
     respect to the normalized fiber length.
@@ -223,6 +226,10 @@ public:
         normalized fiber length.
     */
     double calcDerivative(double normFiberLength, int order) const;
+    
+    /// If possible, use the simpler overload above.
+    double calcDerivative(const std::vector<int>& derivComponents,
+                          const SimTK::Vector& x) const override;
 
     /** Returns a SimTK::Vec2 containing the lower (0th element) and upper (1st
     element) bounds on the domain of the curve. Outside this domain, the curve

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,11 +29,7 @@
 
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include "Simbody.h"
 
 
 namespace OpenSim { 
@@ -89,6 +85,13 @@ public:
     /** Get the current value of the 'optimal_force' property. **/
     double getOptimalForce() const override; // Part of Actuator interface.
 
+protected:
+
+    //--------------------------------------------------------------------------
+    // Implement ModelComponent Interface
+    //--------------------------------------------------------------------------
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+
 private:
     void setNull();
     void constructProperties();
@@ -99,24 +102,32 @@ private:
     Body* getBody() const;
 
     //--------------------------------------------------------------------------
-    // Implement Force interface
+    // Implement ScalarActuator interface
     //--------------------------------------------------------------------------
-    void computeForce(const SimTK::State& state, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                      SimTK::Vector& mobilityForces) const override;
+    /** Get speed along force vector. */
+    double getSpeed(const SimTK::State& s) const override;
+
+    /** Computes speed along force vector. */
+    double calcSpeed(const SimTK::State& s) const;
+
+    /**
+     * Implements the `ForceProducer` interface by applying the actuator force to
+     * BodyA and BodyB.
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
 
     //--------------------------------------------------------------------------
     // Implement Actuator interface (also see getOptimalForce() above)
     //--------------------------------------------------------------------------
-    double computeActuation( const SimTK::State& s) const override;
-    double getStress( const SimTK::State& s ) const override;
+    double computeActuation(const SimTK::State& s) const override;
+    double getStress(const SimTK::State& s) const override;
 
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface
     //--------------------------------------------------------------------------
     // Setup method to initialize Body reference
     void extendConnectToModel(Model& model) override;
-    
+
     //--------------------------------------------------------------------------
     // Implement Object interface.
     //--------------------------------------------------------------------------
@@ -125,6 +136,9 @@ private:
 
     // Corresponding Body to which the point actuator is applied.
     SimTK::ReferencePtr<Body> _body;
+
+    // CacheVariable for storing computed speed along force direction.
+    mutable CacheVariable<double> _speedCV;
 
 //=============================================================================
 };  // END of class PointActuator

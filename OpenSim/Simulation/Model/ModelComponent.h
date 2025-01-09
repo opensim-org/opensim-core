@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Ayman Habib, Michael Sherman                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -43,14 +43,14 @@
 
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Component.h>
-#include <OpenSim/Simulation/Model/Geometry.h>
-#include "Simbody.h"
 
 namespace OpenSim {
 
 class Model;
+class Frame;
+class ScaleSet;
+
 //==============================================================================
 //                            MODEL COMPONENT
 //==============================================================================
@@ -82,12 +82,6 @@ class Model;
 class OSIMSIMULATION_API ModelComponent : public Component {
 OpenSim_DECLARE_ABSTRACT_OBJECT(ModelComponent, Component);
 //==============================================================================
-// PROPERTIES
-//==============================================================================
-public:
-    OpenSim_DECLARE_LIST_PROPERTY(geometry, Geometry,
-        "List of Geometry that is attached to this Model Component.");
-//==============================================================================
 // METHODS
 //==============================================================================
 public:
@@ -107,31 +101,87 @@ public:
     /** Connect this ModelComponent to its aggregate- a  Model */
     void connectToModel(Model& model);
 
-    /**
-     * Get a const reference to the Model this component is part of.
-     */
+    /** Get a const reference to the Model this component is part of. */
     const Model& getModel() const;
-    /**
-     * Get a modifiable reference to the Model this component is part of.
-     */
+
+    /** Get a modifiable reference to the Model this component is part of. */
     Model& updModel();
-    /**
-     * returns the number of published Geometry objects 
-     * maintained by the ModelComponent.
-     */
-    int getNumGeometry() const {
-        return getProperty_geometry().size();
-    }
-    /**
-     * Copy the passed in Geometry and add the copy to the visualization of 
-     * this ModelComponent as subcomponent.
-     */
-    void addGeometry(OpenSim::Geometry& aGeometry);
 
-    void extendFinalizeFromProperties() override;
+    /** Does this ModelComponent have a Model associated with it? */
+    bool hasModel() const { return !_model.empty(); }
+
+    /** Perform any computations that must occur before ModelComponent::scale()
+        is invoked on all ModelComponents in the Model. For example, a
+        GeometryPath must calculate and store its path length in the original
+        model before scaling so that an owning Muscle can use this information
+        to update the properties of the muscle after scaling. This method calls
+        the virtual extendPreScale() method, which may be implemented by any
+        subclass of ModelComponent.
+        @see extendPreScale()
+        @see scale()
+        @see postScale() */
+    void preScale(const SimTK::State& s, const ScaleSet& scaleSet);
+
+    /** Scale the ModelComponent. This method calls the virtual extendScale()
+        method, which may be implemented by any subclass of ModelComponent.
+        @see preScale()
+        @see extendScale()
+        @see postScale() */
+    void scale(const SimTK::State& s, const ScaleSet& scaleSet);
+
+    /** Perform any computations that must occur after ModelComponent::scale()
+        has been invoked on all ModelComponents in the Model. This method calls
+        the virtual extendPostScale() method, which may be implemented by any
+        subclass of ModelComponent.
+        @see preScale()
+        @see scale()
+        @see extendPostScale() */
+    void postScale(const SimTK::State& s, const ScaleSet& scaleSet);
+
 protected:
-template <class T> friend class ModelComponentSet;
+    /** Get the scale factors corresponding to the base OpenSim::Body of the
+        specified Frame. Returns ModelComponent::InvalidScaleFactors if the
+        ScaleSet does not contain scale factors for the base Body. */
+    const SimTK::Vec3& getScaleFactors(const ScaleSet& scaleSet,
+                                       const Frame& frame) const;
 
+    /** Returned by getScaleFactors() if the ScaleSet does not contain scale
+        factors for the base Body associated with the specified Frame. */
+    static const SimTK::Vec3 InvalidScaleFactors;
+
+    /** Perform any computations that must occur before ModelComponent::scale()
+        is invoked on all ModelComponents in the Model. For example, a
+        GeometryPath must calculate and store its path length in the original
+        model before scaling so that an owning Muscle can use this information
+        to update the properties of the muscle after scaling. This method is
+        virtual and may be implemented by any subclass of ModelComponent, but
+        all implementations must begin with a call to `Super::extendPreScale()`
+        to execute the parent class methods before the child class method. The
+        base class implementation in ModelComponent does nothing.
+        @see preScale() */
+    virtual void extendPreScale(const SimTK::State& s,
+                                const ScaleSet& scaleSet) {};
+
+    /** Scale the ModelComponent. This method is virtual and may be implemented
+        by any subclass of ModelComponent, but all implementations must begin
+        with a call to `Super::extendScale()` to execute the parent class
+        methods before the child class method. The base class implementation in
+        ModelComponent does nothing.
+        @see scale() */
+    virtual void extendScale(const SimTK::State& s,
+                             const ScaleSet& scaleSet) {};
+
+    /** Perform any computations that must occur after ModelComponent::scale()
+        has been invoked on all ModelComponents in the Model. This method is
+        virtual and may be implemented by any subclass of ModelComponent, but
+        all implementations must begin with a call to `Super::extendPostScale()`
+        to execute the parent class methods before the child class method. The
+        base class implementation in ModelComponent does nothing.
+        @see postScale() */
+    virtual void extendPostScale(const SimTK::State& s,
+                                 const ScaleSet& scaleSet) {};
+
+template <class T> friend class ModelComponentSet;
     /** @name           ModelComponent Basic Interface
     The interface ensures that deserialization, resolution of inter-connections,
     and handling of dependencies are performed systematically and prior to 
@@ -162,6 +212,7 @@ template <class T> friend class ModelComponentSet;
     particular the fact that all your subcomponents will be invoked before you
     are may be surprising. **/ 
     //@{
+    void extendFinalizeFromProperties() override;
 
     /** Perform any necessary initializations required to connect the 
     component into the Model, and check for error conditions. extendConnectToModel() 
@@ -188,14 +239,6 @@ template <class T> friend class ModelComponentSet;
                             %ModelComponent should be connected. **/
     virtual void extendConnectToModel(Model& model) {};
 
-    /** Perform initialization on the passed in Geometry before adding it to
-     the list of subcomponents and Properties of this ModelComponent. For 
-     example, Frames can set the frame name on the Geometry to themselves. 
-
-     @param[in,out]  geometry to be added to current ModelComponent   
-     **/
-    virtual void extendAddGeometry(OpenSim::Geometry& geometry) {};
-
     // End of Model Component Basic Interface (protected virtuals).
     //@} 
 
@@ -212,12 +255,16 @@ template <class T> friend class ModelComponentSet;
     // End of System Creation and Access Methods.
     //@} 
 
+    void updateFromXMLNode(SimTK::Xml::Element& aNode,
+        int versionNumber) override;
+
 
 private:
     /** Satisfy the general Component interface, but this is not part of the
-    * ModelComponent interface. ModelComponent::extendConnect() ensures that
-    * extendConnectToModel() on ModelComponent subcomponents are invoked. **/
-    void extendConnect(Component& root) override final;
+    * ModelComponent interface. ModelComponent::extendFinalizeConnections()
+    * ensures that extendConnectToModel() on ModelComponent subcomponents are
+    * invoked. **/
+    void extendFinalizeConnections(Component& root) override final;
 
     const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
     const SimTK::DefaultSystemSubsystem& updDefaultSubsystem();

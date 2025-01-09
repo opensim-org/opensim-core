@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,7 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimToolsDLL.h"
 #include <OpenSim/Common/Set.h>
 #include "MarkerPair.h"
 

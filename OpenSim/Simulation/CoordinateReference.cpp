@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -28,7 +28,8 @@ using namespace SimTK;
 
 namespace OpenSim {
 
-CoordinateReference::CoordinateReference() : Reference_<double>(),
+CoordinateReference::CoordinateReference()
+        : Reference_<double>(),
     _coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
     _defaultWeight(_defaultWeightProp.getValueDbl())
 {
@@ -44,7 +45,9 @@ CoordinateReference::CoordinateReference() : Reference_<double>(),
  * @param name of the reference to be found in the model and
  * @param referenceFunction is its function returning its value
  */
-CoordinateReference::CoordinateReference(const std::string name, Function &referenceFunction) : Reference_<double>(name),
+CoordinateReference::CoordinateReference(const std::string name, 
+    const Function& referenceFunction)
+        : Reference_<double>(name),
     _coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
     _defaultWeight(_defaultWeightProp.getValueDbl())
 {
@@ -88,9 +91,9 @@ const SimTK::Array_<std::string>& CoordinateReference::getNames() const
 
 
 /** get the values of the CoordinateReference */
-void CoordinateReference::getValues(const SimTK::State &s, SimTK::Array_<double> &values) const
+void CoordinateReference::getValuesAtTime(double time, SimTK::Array_<double> &values) const
 {
-    SimTK::Vector t(1, s.getTime());
+    SimTK::Vector t(1, time);
     values.resize(getNumRefs());
     values[0] = _coordinateValueFunction->calcValue(t);
 }
@@ -137,6 +140,13 @@ double CoordinateReference::getWeight(const SimTK::State &s) const
 void CoordinateReference::setWeight(double weight)
 {
     _defaultWeight = weight;
+}
+
+
+void CoordinateReference::setValueFunction(const OpenSim::Function& function)
+{
+    delete _coordinateValueFunction;
+    _coordinateValueFunction = function.clone();
 }
 
 } // end of namespace OpenSim

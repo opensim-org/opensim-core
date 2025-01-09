@@ -1,0 +1,1 @@
+__version__ = "@OPENSIM_RELEASE_VERSION@"

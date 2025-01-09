@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Nabeel Allana                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,9 +24,6 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-
 #include "McKibbenActuator.h"
 
 using namespace OpenSim;
@@ -94,24 +91,6 @@ double McKibbenActuator::computeActuation( const SimTK::State& s ) const
     return force;
 }
 
-//==============================================================================
-// APPLICATION
-//==============================================================================
-//_____________________________________________________________________________
-/**
- * Apply the actuator force to the path
- *
- * @param s current SimTK::State
- */
-void McKibbenActuator::computeForce(const SimTK::State& s, 
-                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                                SimTK::Vector& generalizedForces) const
-{
-
-    double actuation = computeActuation(s);
-
-    getGeometryPath().addInEquivalentForces(s, actuation, bodyForces, generalizedForces);
-}
 //_____________________________________________________________________________
 /**
  * Sets the actual Body references _bodyA and _bodyB

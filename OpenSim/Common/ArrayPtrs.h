@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,6 +31,7 @@
 #include "osimCommonDLL.h"
 #include <iostream>
 #include "Exception.h"
+#include "Logger.h"
 
 
 //=============================================================================
@@ -86,6 +87,10 @@ protected:
 // CONSTRUCTION
 //=============================================================================
 public:
+
+// This typedef is used to avoid "duplicate const" errors with SWIG.
+typedef typename std::add_const<T>::type ConstT;
+
 //_____________________________________________________________________________
 /**
  * Destructor.
@@ -361,8 +366,8 @@ bool computeNewCapacity(int aMinCapacity,int &rNewCapacity)
 
     // CHECK FOR ZERO INCREMENT
     if(_capacityIncrement == 0) {
-        std::cout << "ArrayPtrs.computeNewCapacity: WARN- capacity is set";
-        std::cout << " not to increase (i.e., _capacityIncrement==0).\n";
+        log_warn("ArrayPtrs.computeNewCapacity: capacity is set not to "
+                 "increase (i.e., _capacityIncrement==0).");
         return(false);
     }
 
@@ -395,7 +400,7 @@ bool ensureCapacity(int aCapacity)
     int i;
     T **newArray = new T*[aCapacity];
     if(newArray==NULL) {
-        std::cout << "ArrayPtrs.ensureCapacity: ERR- failed to increase capacity.\n";
+        log_error("ArrayPtrs.ensureCapacity: failed to increase capacity.");
         return(false);
     }
 
@@ -436,7 +441,7 @@ void trim()
     // ALLOCATE NEW ARRAY
     _array = new T*[newCapacity];
     if(_array==NULL) {
-        std::cout << "ArrayPtrs.trim: ERR- unable to allocate array.\n";
+        log_error("ArrayPtrs.trim: unable to allocate array.");
         return;
     }
 
@@ -556,7 +561,7 @@ int size() const {return getSize();}
  * @return Index of the object with the address aObject.  If no such object
  * exists in the array, -1 is returned.
  */
-int getIndex(const T *aObject,int aStartIndex=0) const
+int getIndex(ConstT *aObject,int aStartIndex=0) const
 {
     if(aStartIndex<0) aStartIndex=0;
     if(aStartIndex>=getSize()) aStartIndex=0;
@@ -617,7 +622,7 @@ int getIndex(const std::string &aName,int aStartIndex=0) const
 bool append(T *aObject)
 {
     if(aObject==NULL) {
-        std::cout<<"ArrayPtrs.append: ERR- NULL pointer."<<std::endl;
+        log_error("ArrayPtrs.append: NULL pointer.");
         return(false);
     }
 
@@ -680,13 +685,13 @@ bool insert(int aIndex,T *aObject)
 {
     // NULL POINTER
     if(aObject==NULL) {
-        std::cout<<"ArrayPtrs.insert: ERR- NULL pointer."<<std::endl;
+        log_error("ArrayPtrs.insert: NULL pointer.");
         return(false);
     }
 
     // NEGATIVE INDEX
     if(aIndex<0) {
-        std::cout << "ArrayPtrs.insert: ERR- aIndex was less than 0.\n";
+        log_error("ArrayPtrs.insert: aIndex was less than 0.");
         return(false);
     }
 
@@ -770,7 +775,7 @@ bool remove(int aIndex)
  * specified address is not found, no action is taken.
  * @return True if the removal was successful, false otherwise.
  */
-bool remove(const T* aObject)
+bool remove(ConstT* aObject)
 {
     int index = getIndex(aObject);
     return( remove(index) );
@@ -968,7 +973,7 @@ T* getLast() const
  * is empty), or the array contains no element that is less than or equal
  * to aValue, -1 is returned.
  */
-int searchBinary(const T &aObject,bool aFindFirst=false,
+int searchBinary(ConstT& aObject,bool aFindFirst=false,
                       int aLo=-1,int aHi=-1) const
 {
     if(_size<=0) return(-1);

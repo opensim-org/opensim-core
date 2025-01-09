@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,14 +23,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyIntArray.h>
 #include "PathWrapPoint.h"
 #include "WrapResult.h"
 
@@ -43,9 +36,11 @@
 
 namespace OpenSim {
 
+class Model;
 class WrapObject;
-class SimbodyEngine;
 class GeometryPath;
+
+/** @cond **/ // hide from Doxygen
 
 //=============================================================================
 //=============================================================================
@@ -57,38 +52,28 @@ class GeometryPath;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API PathWrap : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathWrap, Object);
-
-//=============================================================================
-// DATA
-//=============================================================================
+class OSIMSIMULATION_API PathWrap : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathWrap, ModelComponent);
 public:
+    //==============================================================================
+    // PROPERTIES
+    //==============================================================================
+    OpenSim_DECLARE_PROPERTY(wrap_object, std::string,
+        "A WrapObject that this PathWrap interacts with.");
+    OpenSim_DECLARE_PROPERTY(method, std::string,
+        "The wrapping method used to solve the path around the wrap object.");
 
-    enum WrapMethod
-    {
+    // TODO Range should not be exposed as far as one can tell, since all instances
+    // are (-1, -1), which is the default value, and that means the PathWrap is
+    // ignoring/overwriting this property anyways.
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE(range, int, 2,
+        "The range of indices to use to compute the path over the wrap object.")
+
+    enum WrapMethod {
         hybrid,
         midpoint,
         axial
     };
-
-protected:
-    PropertyStr _wrapObjectNameProp;
-    std::string &_wrapObjectName;
-
-    PropertyStr _methodNameProp;   // currently used only for ellipsoid wrapping
-    std::string& _methodName;
-    WrapMethod _method;
-
-    PropertyIntArray _rangeProp;
-    Array<int> &_range;
-
-    const WrapObject* _wrapObject;
-    GeometryPath* _path;
-
-    WrapResult _previousWrap;  // results from previous wrapping
-
-    PathWrapPoint _wrapPoints[2]; // the two muscle points created when the muscle wraps
 
 //=============================================================================
 // METHODS
@@ -98,40 +83,62 @@ protected:
     //--------------------------------------------------------------------------
 public:
     PathWrap();
-    PathWrap(const PathWrap& aPathWrap);
     ~PathWrap();
 
 #ifndef SWIG
-    PathWrap& operator=(const PathWrap& aPathWrap);
-    void connectToModelAndPath(const Model& aModel, GeometryPath& aPath);
     void setStartPoint( const SimTK::State& s, int aIndex);
     void setEndPoint( const SimTK::State& s, int aIndex);
 #endif
-    void copyData(const PathWrap& aPathWrap);
-    int getStartPoint() const { return _range[0]; }
-    int getEndPoint() const { return _range[1]; }
-    const std::string& getWrapObjectName() const { return _wrapObjectName; }
+    int getStartPoint() const { return get_range(0); }
+    int getEndPoint() const { return get_range(1); }
+    const std::string& getWrapObjectName() const { return get_wrap_object(); }
     const WrapObject* getWrapObject() const { return _wrapObject; }
     void setWrapObject(WrapObject& aWrapObject);
-    PathWrapPoint& getWrapPoint(int aIndex);
+
+    const PathWrapPoint& getWrapPoint1() const {
+        return getMemberSubcomponent<PathWrapPoint>(_wrapPoint1Ix);
+    }
+    const PathWrapPoint& getWrapPoint2() const {
+        return getMemberSubcomponent<PathWrapPoint>(_wrapPoint2Ix);
+    }
+    PathWrapPoint& updWrapPoint1() { 
+        return updMemberSubcomponent<PathWrapPoint>(_wrapPoint1Ix);
+    }
+    PathWrapPoint& updWrapPoint2() {
+        return updMemberSubcomponent<PathWrapPoint>(_wrapPoint2Ix);
+    }
+
     WrapMethod getMethod() const { return _method; }
     void setMethod(WrapMethod aMethod);
-    const std::string& getMethodName() const { return _methodName; }
-    GeometryPath* getPath() const { return _path; }
+    const std::string& getMethodName() const { return get_method(); }
 
     const WrapResult& getPreviousWrap() const { return _previousWrap; }
     void setPreviousWrap(const WrapResult& aWrapResult);
     void resetPreviousWrap();
 
-protected:
-    void setupProperties();
+private:
+    void constructProperties();
+    void extendConnectToModel(Model& model) override;
+    void setNull();
 
 private:
-    void setNull();
+    WrapMethod _method;
+
+    const WrapObject* _wrapObject;
+    const GeometryPath* _path;
+
+    WrapResult _previousWrap;  // results from previous wrapping
+
+    MemberSubcomponentIndex _wrapPoint1Ix{
+        constructSubcomponent<PathWrapPoint>("pwpt1") };
+    MemberSubcomponentIndex _wrapPoint2Ix{
+        constructSubcomponent<PathWrapPoint>("pwpt2") };
 //=============================================================================
 };  // END of class PathWrap
 //=============================================================================
 //=============================================================================
+
+/** @endcond **/
 
 } // end of namespace OpenSim
 

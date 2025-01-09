@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,7 +26,6 @@
 //=============================================================================
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/LinearFunction.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include "FunctionBasedBushingForce.h"
 
 using namespace std;
@@ -41,13 +40,25 @@ using namespace OpenSim;
 
 //_____________________________________________________________________________
 // Default constructor.
-FunctionBasedBushingForce::FunctionBasedBushingForce() :
-    TwoFrameLinker<Force, PhysicalFrame>()
+FunctionBasedBushingForce::FunctionBasedBushingForce()
 {
     setNull();
     constructProperties();
 }
 
+FunctionBasedBushingForce::FunctionBasedBushingForce(
+        const std::string& name,
+        const PhysicalFrame& frame1,
+        const SimTK::Vec3& point1,
+        const SimTK::Vec3& orientation1,
+        const PhysicalFrame& frame2,
+        const SimTK::Vec3& point2,
+        const SimTK::Vec3& orientation2)
+    : Super(name, frame1, point1, orientation1, frame2, point2, orientation2)
+{
+    setNull();
+    constructProperties();
+}
 
 // Convenience constructor for zero value force functions.
 FunctionBasedBushingForce::FunctionBasedBushingForce(const string&   name,
@@ -57,12 +68,39 @@ FunctionBasedBushingForce::FunctionBasedBushingForce(const string&   name,
                                     const string&   frame2Name,
                                     const Vec3&     point2,
                                     const Vec3&     orientation2)
-    : TwoFrameLinker<Force, PhysicalFrame>(name,
-                                          frame1Name, point1, orientation1,
-                                          frame2Name, point2, orientation2)
+    : Super(name,
+            frame1Name, point1, orientation1,
+            frame2Name, point2, orientation2)
 {
     setNull();
     constructProperties();
+}
+
+FunctionBasedBushingForce::FunctionBasedBushingForce(
+        const std::string& name,
+        const PhysicalFrame& frame1,
+        const SimTK::Vec3& point1,
+        const SimTK::Vec3& orientation1,
+        const PhysicalFrame& frame2,
+        const SimTK::Vec3& point2,
+        const SimTK::Vec3& orientation2,
+        const SimTK::Vec3& transStiffness,
+        const SimTK::Vec3& rotStiffness,
+        const SimTK::Vec3& transDamping,
+        const SimTK::Vec3& rotDamping)
+    : FunctionBasedBushingForce(name,
+                                frame1, point1, orientation1,
+                                frame2, point2, orientation2)
+{
+    // populate m_ii and f_ii as LinearFunction based on stiffness
+    set_m_x_theta_x_function( LinearFunction( rotStiffness[0], 0.0) );
+    set_m_y_theta_y_function( LinearFunction( rotStiffness[1], 0.0) );
+    set_m_z_theta_z_function( LinearFunction( rotStiffness[2], 0.0) );
+    set_f_x_delta_x_function( LinearFunction( transStiffness[0], 0.0) );
+    set_f_y_delta_y_function( LinearFunction( transStiffness[1], 0.0) );
+    set_f_z_delta_z_function( LinearFunction( transStiffness[2], 0.0) );
+    set_rotational_damping(rotDamping);
+    set_translational_damping(transDamping);
 }
 
 // Convenience constructor for linear functions.
@@ -121,6 +159,15 @@ void FunctionBasedBushingForce::constructProperties()
     constructProperty_visual_aspect_ratio(1.0);
 }
 
+void FunctionBasedBushingForce::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
+
+    for (int i = 0; i < 3; i++) {
+        _dampingMatrix[i][i] = get_rotational_damping(0)[i];
+        _dampingMatrix[i + 3][i + 3] = get_translational_damping(0)[i];
+    }
+}
 //=============================================================================
 // COMPUTATION
 //=============================================================================
@@ -148,14 +195,13 @@ SimTK::Vec6 FunctionBasedBushingForce::
     calcDampingForce(const SimTK::State& s) const
 {
     Vec6 dqdot = computeDeflectionRate(s);
+    // _dampingMatrix is initialized from Properties in extendFinalizeFromProperties (issue #2512)
     return -_dampingMatrix * dqdot;
 }
 
-/* Compute the force contribution to the system and add in to appropriate
- * bodyForce and/or system generalizedForce. */
-void FunctionBasedBushingForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+void FunctionBasedBushingForce::implProduceForces(
+    const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
     // stiffness force
     Vec6 fk = calcStiffnessForce(s);
@@ -167,7 +213,7 @@ void FunctionBasedBushingForce::computeForce(const SimTK::State& s,
 
     // convert internal forces to spatial and add then add to system
     // physical (body) forces
-    addInPhysicalForcesFromInternal(s, f, bodyForces);
+    producePhysicalForcesFromInternal(s, f, forceConsumer);
 }
 
 //=============================================================================
@@ -227,8 +273,8 @@ OpenSim::Array<double> FunctionBasedBushingForce::
  * Implement generateDecorations to make visuals to represent the spring.
  */
 
-void FunctionBasedBushingForce::generateDecorations
-       (bool                                        fixed, 
+void FunctionBasedBushingForce::generateDecorations(
+        bool                                        fixed, 
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         s,
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const
@@ -265,8 +311,9 @@ void FunctionBasedBushingForce::generateDecorations
         geometryArray.push_back(decorativeFrame1);
         geometryArray.push_back(decorativeFrame2);
 
-        // if the model is moving, calculate and draw the bushing forces.
-        if(!fixed){
+        // if the model is moving and the state is adequately realized,
+        // calculate and draw the bushing forces.
+        if (!fixed && (s.getSystemStage() >= Stage::Dynamics)) {
             SpatialVec F_GM(Vec3(0.0), Vec3(0.0));
             SpatialVec F_GF(Vec3(0.0), Vec3(0.0));
 
@@ -276,8 +323,8 @@ void FunctionBasedBushingForce::generateDecorations
             convertInternalForceToForcesOnFrames(s, f, F_GF, F_GM);
 
             // location of the bushing on frame2
-            SimTK::Vec3 p_b2M_b2 = frame2.findTransformInBaseFrame().p();
-            SimTK::Vec3 p_GM_G = frame2.getGroundTransform(s).p();
+            //SimTK::Vec3 p_b2M_b2 = frame2.findTransformInBaseFrame().p();
+            SimTK::Vec3 p_GM_G = frame2.getTransformInGround(s).p();
 
             // Add moment on frame2 as line vector starting at bushing location
             SimTK::Vec3 scaled_M_GM(get_moment_visual_scale()*F_GM[0]);

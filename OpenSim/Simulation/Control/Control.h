@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,7 +31,6 @@
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyDbl.h>
 
@@ -39,6 +38,8 @@
 //=============================================================================
 //=============================================================================
 namespace OpenSim { 
+
+template <class T> class Array;
 
 /**
  * A class that represents a control in a dynamic simulation.
@@ -375,14 +376,14 @@ public:
      *
      * @return 0.
      */
-    virtual const double getFirstTime() const;
+    virtual double getFirstTime() const;
     /**
      * Gets the last time for which a parameter is specified. Should be overridden
      * by derived classes that have a defined max time.
      *
      * @return 0.
      */
-    virtual const double getLastTime() const;
+    virtual double getLastTime() const;
 
     // UTILITY
     /**

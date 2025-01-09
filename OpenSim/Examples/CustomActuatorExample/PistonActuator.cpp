@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,75 +21,36 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//=============================================================================
-// INCLUDES
-//=============================================================================
 #include "PistonActuator.h"
+
 #include <OpenSim/OpenSim.h>
 
 using namespace OpenSim;
 using namespace std;
 
-
 //=============================================================================
-// STATICS
+// CONSTRUCTORS
 //=============================================================================
-
-
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-PistonActuator::~PistonActuator()
-{
-}
-//_____________________________________________________________________________
-/**
- * Default constructor.
- * @param aBodyNameA name of the first body to which the force is applied
- * @param aBodyNameB name of the second body to which the force is applied
- *
- */
-PistonActuator::PistonActuator( string aBodyNameA, string aBodyNameB) :
-    ScalarActuator(),
-    _bodyA(NULL),
-    _bodyB(NULL)
+PistonActuator::PistonActuator()
 {
     constructProperties();
+}
 
-    if (_model) {
-        _bodyA = &_model->updBodySet().get(get_bodyA());
-        _bodyB = &_model->updBodySet().get(get_bodyB());
-    } 
+PistonActuator::PistonActuator(const PhysicalFrame& frameA,
+        const PhysicalFrame& frameB) : PistonActuator() {
+    setFrameA(frameA);
+    setFrameB(frameB);
 }
 
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Set the data members of this actuator to their null values.
- */
-void PistonActuator::setNull()
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
 void PistonActuator::constructProperties()
 {
     setAuthors("Matt S. DeMers");
-    SimTK::Vec3 x(0.0, 0.0, 0.0);
-
-    constructProperty_bodyA("");
-    constructProperty_bodyB("");
 
     constructProperty_points_are_global(false);
+    SimTK::Vec3 x(0.0, 0.0, 0.0);
     constructProperty_pointA(x);
     constructProperty_pointB(x);
     constructProperty_optimal_force(1.0);
@@ -98,201 +59,127 @@ void PistonActuator::constructProperties()
 //=============================================================================
 // GET AND SET
 //=============================================================================
-//-----------------------------------------------------------------------------
-// BodyID
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the generalized Body to which the Body actuator is applied.
- *
- * @param aBody Pointer to the generalized Body.
- */
-void PistonActuator::setBodyA(Body* aBody)
+void PistonActuator::setFrameA(const PhysicalFrame& frameA) 
 {
-    _bodyA = aBody;
-    if(aBody)
-        set_bodyA(aBody->getName());
+    // This function is created by the OpenSim_DECLARE_SOCKET macro.
+    connectSocket_frameA(frameA);
 }
-//_____________________________________________________________________________
-/**
- * Set the generalized Body to which the equal and opposite Body actuation 
- * is applied.
- *
- * @param aBody Pointer to the generalized Body.
- */
-void PistonActuator::setBodyB(Body* aBody)
+
+void PistonActuator::setFrameB(const PhysicalFrame& frameB) 
 {
-    _bodyB = aBody;
-    if(aBody)
-        set_bodyB(aBody->getName());
+    connectSocket_frameB(frameB);
 }
-//_____________________________________________________________________________
-/**
- * Get the generalized Body to which the Body actuator
- * is applied.
- *
- * @return Pointer to the Body
- */
-Body* PistonActuator::getBodyA() const
+
+const PhysicalFrame& PistonActuator::getFrameA() const
 {
-    return(_bodyA);
+    // getConnectee() is a function in Component for accessing the component
+    // connected to a socket. Inside the angle brackes, we provide the type
+    // (class) of the socket.
+    return getConnectee<PhysicalFrame>("frameA");
 }
-//_____________________________________________________________________________
-/**
- * Get the generalized Body to which the equal and opposite Body actuation
- * is applied.
- *
- * @return Pointer to the Body
- */
-Body* PistonActuator::getBodyB() const
+
+const PhysicalFrame& PistonActuator::getFrameB() const
 {
-    return(_bodyB);
+    return getConnectee<PhysicalFrame>("frameB");
 }
 
 //-----------------------------------------------------------------------------
 // OPTIMAL FORCE
 //-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the optimal force of the actuator.
- *
- * @param aOptimalForce Optimal force.
- */
 void PistonActuator::setOptimalForce(double aOptimalForce)
 {
     set_optimal_force(aOptimalForce);
 }
-//_____________________________________________________________________________
-/**
- * Get the optimal force of the actuator.
- *
- * @return Optimal force.
- */
 double PistonActuator::getOptimalForce() const
 {
-    return(get_optimal_force());
+    return get_optimal_force();
 }
-//_____________________________________________________________________________
-/**
- * Get the stress of the force. This would be the force or torque provided by 
- * this actuator divided by its optimal force.
- * @return Stress.
- */
+
 double PistonActuator::getStress( const SimTK::State& s) const
 {
     return fabs(getActuation(s) / get_optimal_force());
 }
 
 
-//=============================================================================
-// COMPUTATIONS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Compute all quantities necessary for applying the actuator force to the
- * model.
- *
- * @param s current SimTK::State 
- */
-
-double PistonActuator::computeActuation( const SimTK::State& s ) const
+void PistonActuator::implProduceForces(
+    const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
-    if(!_model) return 0;
+    const PhysicalFrame& frameA = getFrameA();
+    const PhysicalFrame& frameB = getFrameB();
 
-    // FORCE
-    return ( getControl(s) * getOptimalForce() );
-}
-
-
-
-//=============================================================================
-// APPLICATION
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Apply the actuator force to BodyA and BodyB.
- *
- * @param s current SimTK::State
- */
-void PistonActuator::computeForce(const SimTK::State& s, 
-                                    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                                    SimTK::Vector& generalizedForces) const
-{
-    if(!_model) return;
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
-    
-    if(_bodyA ==NULL || _bodyB ==NULL)
-        return;
-    
-    /* store _pointA and _pointB positions in the global frame.  If not
-    ** already in the body frame, transform _pointA and _pointB into their
-    ** respective body frames. */
-
-    SimTK::Vec3 pointA_inGround, pointB_inGround;
-
-    SimTK::Vec3 _pointA = get_pointA();
-    SimTK::Vec3 _pointB = get_pointB();
-    if (get_points_are_global())
-    {
-        pointA_inGround = _pointA;
-        pointB_inGround = _pointB;
-        engine.transformPosition(s, getModel().getGround(), _pointA, *_bodyA, _pointA);
-        engine.transformPosition(s, getModel().getGround(), _pointB, *_bodyB, _pointB);
-    }
-    else
-    {
-        engine.transformPosition(s, *_bodyA, _pointA, getModel().getGround(), pointA_inGround);
-        engine.transformPosition(s, *_bodyB, _pointB, getModel().getGround(), pointB_inGround);
+    // We need points A and B expressed in local A and B frame respectively.
+    SimTK::Vec3 pointA   = get_pointA();
+    SimTK::Vec3 pointB   = get_pointB();
+    const Ground& ground = getModel().getGround();
+    if (get_points_are_global()) {
+        pointA = ground.findStationLocationInAnotherFrame(s, pointA, frameA);
+        pointB = ground.findStationLocationInAnotherFrame(s, pointB, frameB);
     }
 
-    // find the direction along which the actuator applies its force
-    SimTK::Vec3 r = pointA_inGround - pointB_inGround;
-
-    SimTK::UnitVec3 direction(r);
-
-    // find the force magnitude and set it. then form the force vector
+    // Calculate the force magnitude and the force vector.
     double forceMagnitude = computeActuation(s);
-    setActuation(s,  forceMagnitude );
-    SimTK::Vec3 force = forceMagnitude*direction;
+    setActuation(s, forceMagnitude);
+    SimTK::Vec3 force = forceMagnitude * calcDirectionBAInGround(s);
 
-    // apply equal and opposite forces to the bodies
-    applyForceToPoint(s, *_bodyA, _pointA, force, bodyForces);
-    applyForceToPoint(s, *_bodyB, _pointB, -force, bodyForces);
+    // Produce equal and opposite forces.
+    forceConsumer.consumePointForce(s, frameA, pointA,  force);
+    forceConsumer.consumePointForce(s, frameB, pointB, -force);
 }
-//_____________________________________________________________________________
-/**
- * extendConnectToModel() sets the actual Body references _bodyA and _bodyB
- */
-void PistonActuator::
-extendConnectToModel(Model& aModel)
-{
-    Super::extendConnectToModel( aModel);
 
-    if (_model) {
-        _bodyA = &_model->updBodySet().get(upd_bodyA());
-        _bodyB = &_model->updBodySet().get(upd_bodyB());
+SimTK::UnitVec3 PistonActuator::calcDirectionBAInGround(
+    const SimTK::State& s) const
+{
+    // Get pointA and pointB positions in the local frame of bodyA and bodyB,
+    // respectively.
+    // Points may have been supplied either global or local frame.
+    const bool pointsAreGlobal = get_points_are_global();
+    const SimTK::Vec3& pointA  = getPointA();
+    const SimTK::Vec3& pointB  = getPointB();
+
+    SimTK::Vec3 pointA_inGround =
+        pointsAreGlobal ? pointA
+                        : getFrameA().findStationLocationInGround(s, pointA);
+    SimTK::Vec3 pointB_inGround =
+        pointsAreGlobal ? pointB
+                        : getFrameB().findStationLocationInGround(s, pointB);
+
+    // Find the direction along which the actuator applies its force.
+    const SimTK::Vec3 r = pointA_inGround - pointB_inGround;
+    const SimTK::UnitVec3 direction(r); // normalize
+
+    return direction;
+}
+
+//=============================================================================
+// SCALAR ACTUATOR INTERFACE
+//=============================================================================
+double PistonActuator::getSpeed(const SimTK::State& s) const
+{
+    // Speed is zero for constant points defined in the same frame.
+    if (get_points_are_global()) {
+        return 0.;
     }
+
+    const SimTK::Vec3& pointA_inBodyA = getPointA();
+    const SimTK::Vec3& pointB_inBodyB = getPointB();
+
+    // Get the relative velocity of the points in ground.
+    SimTK::Vec3 velA_G =
+        getFrameA().findStationVelocityInGround(s, pointA_inBodyA);
+    SimTK::Vec3 velB_G =
+        getFrameB().findStationVelocityInGround(s, pointB_inBodyB);
+    SimTK::Vec3 velAB_G = velA_G - velB_G;
+    // Speed used to compute power is the speed along the line connecting
+    // the two bodies.
+    double speed = ~velAB_G * calcDirectionBAInGround(s);
+    return speed;
 }
 
 //=============================================================================
-// XML
+// ACTUATOR INTERFACE
 //=============================================================================
-//-----------------------------------------------------------------------------
-// UPDATE FROM XML NODE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Update this object based on its XML node.
- *
- * This method simply calls Object::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) and then calls
- * a few methods in this class to ensure that variable members have been
- * set in a consistent manner.
- */
-void PistonActuator::
-updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+double PistonActuator::computeActuation(const SimTK::State& s) const
 {
-    Actuator::updateFromXMLNode(aNode, versionNumber);
-    setBodyA(_bodyA);
-    setBodyB(_bodyB);
-    setOptimalForce(upd_optimal_force());
-}   
+    return getControl(s) * getOptimalForce();
+}

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,11 +26,21 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Analyses/osimAnalyses.h>
+#include <OpenSim/Simulation/Model/FunctionBasedPath.h>
 
 using namespace OpenSim;
 using namespace std;
 
 void testPropertiesDump(const OpenSim::Object& aObject);
+
+int testUnrecognizedTypes() {
+    try {
+        Object* newObject = Object::newInstanceOfType("Unreccognized");
+    } catch (Exception&) {
+        return 0;
+    }
+    return 1;
+}
 
 static void indent(int nSpaces) {
     for (int i=0; i<nSpaces; ++i) cout << " ";
@@ -39,11 +49,11 @@ static void indent(int nSpaces) {
 // Recursively dump out contents of an object and its properties.
 static void dumpObj(const Object& obj, int nSpaces) {
     indent(nSpaces);
-    cout << obj.getConcreteClassName() << " Object " 
+    cout << obj.getConcreteClassName() << " Object "
          << (obj.getName().empty()?"NONAME":obj.getName())
          << endl;
     for (int p=0; p < obj.getNumProperties(); ++p) {
-        const AbstractProperty& ap = obj.getPropertyByIndex(p); 
+        const AbstractProperty& ap = obj.getPropertyByIndex(p);
         indent(nSpaces+2);
         cout << ap.getName() << "=" << ap.toString() << endl;
         // Check return values from Property API for debugging purposes
@@ -62,70 +72,87 @@ static void dumpObj(const Object& obj, int nSpaces) {
     }
 }
 
+
 int main()
 {
+    // Actuators library is not loaded automatically (unless using clang).
+    #if !defined(__clang__)
+        LoadOpenSimLibrary("osimActuators");
+    #endif
+
     try {
-        Model testModel;
+        Model testModel = ModelFactory::createSlidingPointMass();
         srand((unsigned)time(0));
-        // for Body, Joint, Constraint, Force, Marker, ContactGeometry, Controller and Probe
-        ArrayPtrs<OpenSim::Body> availableBodyTypes;
-        Object::getRegisteredObjectsOfGivenType<OpenSim::Body>(availableBodyTypes);
-        for (int i=0; i< availableBodyTypes.getSize(); i++){
-            Object* clone = availableBodyTypes[i]->clone();
-            Object* randClone = randomize(clone);
-            testModel.addBody(Body::safeDownCast(randClone));
-            const Body& inModel = testModel.getBodySet().get(randClone->getName());
-            ASSERT(inModel == *randClone);
-            randClone->print("bodyTestPrint.xml");
+
+        //Test serialization for all ModelComponents
+        ArrayPtrs<OpenSim::ModelComponent> availableComponentTypes;
+        Object::getRegisteredObjectsOfGivenType<OpenSim::ModelComponent>(availableComponentTypes);
+
+        for (int i=0; i< availableComponentTypes.getSize(); i++){
+            Object* clone = availableComponentTypes[i]->clone();
+            Object* randClone;
+            // FunctionBasedPath requires that its properties follow specific
+            // requirements. For example, `length_function` must have the same
+            // number arguments as `coordinate_paths` and the coordinate paths
+            // must match a 'Coordinate' in the model. Therefore, we must make
+            // sure we obey these requirements before randomizing the Function
+            // property value.
+            if (auto* path = dynamic_cast<FunctionBasedPath*>(clone)){
+                path->setCoordinatePaths({"/jointset/slider/position"});
+                LinearFunction f = LinearFunction(1.0, 0.0);
+                randomize(&f);
+                path->setLengthFunction(f);
+                randClone = path;
+            } else {
+                randClone = randomize(clone);
+            }
+            try {
+                ModelComponent* comp = ModelComponent::safeDownCast(randClone);
+                testModel.addModelComponent(comp);
+            } //Ignore the validity of the property values
+            catch (const InvalidPropertyValue&) {
+                // const string& errMsg = err.getMessage();
+                //std::cout << errMsg << std::endl;
+            }
         }
 
-        ArrayPtrs<OpenSim::Joint> availablJointTypes;
-        Object::getRegisteredObjectsOfGivenType<OpenSim::Joint>(availablJointTypes);
-        for (int i = 0; i< availablJointTypes.getSize(); i++){
-            Object* clone = availablJointTypes[i]->clone();
-            Object* randClone = randomize(clone);
-            testModel.addJoint(Joint::safeDownCast(randClone));
-        }
+        int nc = testModel.getMiscModelComponentSet().getSize();
+        cout << nc << " model components were serialized in testModel." << endl;
 
-        ArrayPtrs<OpenSim::Constraint> availableConstraintTypes;
-        Object::getRegisteredObjectsOfGivenType<OpenSim::Constraint>(availableConstraintTypes);
-        for (int i = 0; i< availableConstraintTypes.getSize(); i++){
-            Object* clone = availableConstraintTypes[i]->clone();
-            Object* randClone = randomize(clone);
-            testModel.addConstraint(Constraint::safeDownCast(randClone));
-        }
 
-        ArrayPtrs<OpenSim::Force> availableForceTypes;
-        Object::getRegisteredObjectsOfGivenType<OpenSim::Force>(availableForceTypes);
-        for (int i=0; i< availableForceTypes.getSize(); i++){
-            Object* clone = availableForceTypes[i]->clone();
-            Object* randClone = randomize(clone);
-            testModel.addForce(Force::safeDownCast(randClone));
-        }
-
-        ArrayPtrs<OpenSim::Controller> availableControllerTypes;
-        Object::getRegisteredObjectsOfGivenType<OpenSim::Controller>(availableControllerTypes);
-        for (int i=0; i< availableControllerTypes.getSize(); i++){
-            Object* clone = availableControllerTypes[i]->clone();
-            Object* randClone = randomize(clone);
-            testModel.addController(Controller::safeDownCast(randClone));
-        }
-
-        ArrayPtrs<OpenSim::Probe> availableProbeTypes;
-        Object::getRegisteredObjectsOfGivenType<OpenSim::Probe>(availableProbeTypes);
-        for (int i=0; i< availableProbeTypes.getSize(); i++){
-            Object* clone = availableProbeTypes[i]->clone();
-            Object* randClone = randomize(clone);
-            testModel.addProbe(Probe::safeDownCast(randClone));
-        }
-
+        //Serialize all the components
         testModel.print("allComponents.osim");
 
-        Model deserializedModel("allComponents.osim", false);
-        ASSERT(testModel == deserializedModel,  
-            "deserializedModel FAILED to match original model.");       
+        Model deserializedModel("allComponents.osim");
+        deserializedModel.print("allComponents_reserialized.osim");
+
+        nc = deserializedModel.getMiscModelComponentSet().getSize();
+        cout << nc << " model components were deserialized from file." << endl;
+
+        ASSERT(testModel == deserializedModel,
+            "deserializedModel FAILED to match original model.");
+
+        //Might as well test cloning and assignment
+        Model* cloneModel = testModel.clone();
+
+        ASSERT(testModel == *cloneModel,
+            "cloneModel FAILED to match original model.");
+
+        Model assignedModel = *cloneModel;
+
+        delete cloneModel;
+
+        ASSERT(testModel == assignedModel,
+            "assignedModel FAILED to match original model.");
+
     }
     catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    try {
+        ASSERT(testUnrecognizedTypes()==0);
+    } catch (const Exception& e) {
         e.print(cerr);
         return 1;
     }

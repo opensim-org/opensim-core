@@ -1,5 +1,5 @@
-#ifndef __WrapObjectSet_h__
-#define __WrapObjectSet_h__
+#ifndef OPENSIM_WRAP_OBJECT_SET_H_
+#define OPENSIM_WRAP_OBJECT_SET_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  WrapObjectSet.h                          *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2018 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,16 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Set.h>
+#include <OpenSim/Simulation/Model/ModelComponentSet.h>
 #include "WrapObject.h"
-
-#ifdef SWIG
-    #ifdef OSIMSIMULATION_API
-        #undef OSIMSIMULATION_API
-        #define OSIMSIMULATION_API
-    #endif
-#endif
 
 namespace OpenSim {
 
@@ -45,21 +37,14 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMSIMULATION_API WrapObjectSet : public Set<WrapObject> {
-OpenSim_DECLARE_CONCRETE_OBJECT(WrapObjectSet, Set<WrapObject>);
+class OSIMSIMULATION_API WrapObjectSet : public ModelComponentSet<WrapObject> {
+OpenSim_DECLARE_CONCRETE_OBJECT(WrapObjectSet, ModelComponentSet<WrapObject>);
 
-private:
-    void setNull();
 public:
-    WrapObjectSet();
-    WrapObjectSet(const WrapObjectSet& aWrapObjectSet);
-    ~WrapObjectSet(void);
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    WrapObjectSet& operator=(const WrapObjectSet &aWrapObjectSet);
-#endif
+    /** Use Super's constructors. @see ModelComponentSet */
+    using Super::Super;
+
+    // default copy, assignment operator, and destructor
 //=============================================================================
 };  // END of class WrapObjectSet
 //=============================================================================
@@ -67,4 +52,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __WrapObjectSet_h__
+#endif // OPENSIM_WRAP_OBJECT_SET_H_

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,13 +25,11 @@
  * Define the standard SimTK compliant "version" and "about" routines.
  */
 
-
-#include "osimCommonDLL.h"
-
-#include <string>
+#include "About.h"
 #include <cstring>
-#include <cctype>
-
+#include <cstdio>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define STR(var) #var
 #define MAKE_VERSION_STRING(maj,min,build)  STR(maj.min.build)
@@ -57,19 +55,29 @@
 #define GET_TYPE_STRING \
     MAKE_STRING(OPENSIM_COMMON_TYPE)
 
+#define GET_SYSTEM_INFO \
+    MAKE_STRING(OSIM_SYS_INFO)
+
+#define GET_COMPILER_INFO \
+    MAKE_STRING(OSIM_COMPILER_INFO)
+
+#define GET_OS_NAME \
+    MAKE_STRING(OSIM_OS_NAME)
+
+#define GET_OSIM_VERSION \
+    MAKE_STRING(OSIM_VERSION)
+
 #ifndef NDEBUG
     #define GET_DEBUG_STRING "debug"
 #else
     #define GET_DEBUG_STRING "release"
 #endif
 
-
 using namespace std;
-
 
 extern "C" {
 
-void opensim_version_tools(int* major, int* minor, int* build) {
+void opensim_version_common(int* major, int* minor, int* build) {
     static const char* l = "OPENSIM library="   GET_LIBRARY_STRING;
     static const char* t = "OPENSIM type="      GET_TYPE_STRING;
     static const char* d = "OPENSIM debug="     GET_DEBUG_STRING;
@@ -88,7 +96,7 @@ void opensim_version_tools(int* major, int* minor, int* build) {
     }
 }
 
-void opensim_about_tools(const char* key, int maxlen, char* value) {
+void opensim_about_common(const char* key, int maxlen, char* value) {
     if (maxlen <= 0 || value==0) return;
     value[0] = '\0'; // in case we don't find a match
     if (key==0) return;
@@ -110,6 +118,96 @@ void opensim_about_tools(const char* key, int maxlen, char* value) {
         strncpy(value,v,maxlen-1);
         value[maxlen-1] = '\0'; // in case we ran out of room
     }
+}
+
+} // extern "C"
+
+namespace OpenSim {
+
+static const char* OpenSimVersion = GET_OSIM_VERSION;
+
+std::string GetVersionAndDate() { 
+    char buffer[256];
+    snprintf(buffer, 256, "version %s, build date %s %s",
+            OpenSimVersion, __TIME__, __DATE__);
+    return std::string(buffer);
+}
+
+std::string GetVersion() {
+    return OpenSimVersion;
+}
+
+std::string GetOSInfoVerbose() {
+    const char * str = GET_SYSTEM_INFO;
+    return str;
+}
+
+std::string GetOSInfo() {
+    const char * str = GET_OS_NAME;
+    return str;
+}
+
+std::string GetCompilerVersion() {
+    std::string os = GetOSInfo();
+    std::string str = "(Unknown)";
+
+    if( 0 == os.compare("Windows")) {
+        const int MSVCVersion = atoi(GET_COMPILER_INFO);
+        if( MSVCVersion >= 1910 ) {
+            // With Visual Studio 2017, the versioning of the Visual C++
+            // compiler became more fine-grained, so we can no longer use
+            // a switch statement.
+            // Also, Visual Studio 2017 decouples the Visual Studio IDE
+            // from the C++ toolset (compiler), so providing the IDE year 
+            // does not indicate the compiler version (it may be possible
+            // to use the Visual Studio 2019 IDE, or whatever is next, 
+            // with the same C++ toolset that came with Visual Studio 2017.
+            // Therefore, we no longer provide the Visual Studio year.
+            // https://blogs.msdn.microsoft.com/vcblog/2016/10/05/visual-c-compiler-version/
+            // https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+            if (1910 <= MSVCVersion && MSVCVersion < 2000) {
+                str = "Microsoft Visual C++ 14.1";
+            }
+            str += " (MSC_VER " + std::to_string(MSVCVersion) + ")";
+        } else {
+            switch( MSVCVersion ) {
+                case 1900:
+                    str = "Visual Studio 2015";
+                    break;
+                case 1800:
+                    str = "Visual Studio 2013";
+                    break;
+                case 1700:
+                    str = "Visual Studio 2011";
+                    break;
+                case 1600:
+                    str = "Visual Studio 2010";
+                    break;
+                case 1500:
+                    str = "Visual Studio 2008";
+                    break;
+                case 1400:
+                    str = "Visual Studio 2005";
+                    break;
+                case 1310:
+                    str = "Visual Studio 2003";
+                    break;
+                case 1300:
+                    str = "Visual Studio 2002";
+                    break;
+            }
+        }
+    } else if( 0 == os.compare("Darwin")) {
+        str = "Mac OS X :";
+        str += GET_COMPILER_INFO;
+    } else if( 0 == os.compare("Linux")){
+        str = "Linux :";
+        str = GET_COMPILER_INFO;
+    } else {
+        str = GET_COMPILER_INFO;
+    }
+
+    return str;
 }
 
 }

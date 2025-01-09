@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  testCMCGait10dof18musc.cpp             *
+ *                  OpenSim:  testCMCGait10dof18musc.cpp                      *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2023 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -21,58 +21,69 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
+#include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Tools/CMCTool.h>
-#include <OpenSim/Tools/ForwardTool.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
-using namespace std;
 
-void testGait10dof18musc();
-
-int main() {
-
-    SimTK::Array_<std::string> failures;
-
-    // redo with the Millard2012EquilibriumMuscle 
-    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
-
-    try {testGait10dof18musc();}
-    catch (const std::exception& e)
-        {  cout << e.what() <<endl; failures.push_back("testGait10dof18musc_Millard"); }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done" << endl;
-
-    return 0;
-}
-
-void testGait10dof18musc() {
-    cout<<"\n******************************************************************" << endl;
-    cout << "*                      testGait10dof18musc                       *" << endl;
-    cout << "******************************************************************\n" << endl;
+TEST_CASE("testGait10dof18musc (Windows)", "[win]") {
     CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
     cmc.run();
 
-    Storage results("gait10dof18musc_ResultsCMC/walk_subject_states.sto");
-    Storage temp("gait10dof18musc_std_walk_subject_states.sto");
+    const TimeSeriesTable results(
+        "gait10dof18musc_ResultsCMC/walk_subject_states.sto");
+    const TimeSeriesTable std(
+        "gait10dof18musc_std_walk_subject_states_win.sto");
 
-    Storage *standard = new Storage();
-    cmc.getModel().formStateStorage(temp, *standard);
-
-    Array<double> rms_tols(0.02, 2*10+2*18); // activations within 2%
-    for(int i=0; i<20; ++i){
-        rms_tols[i] = 0.01;  // angles and speeds within .6 degrees .6 degs/s 
+    // TODO: Replace with macro from OpenSim/Moco/Test/Testing.h
+    const auto& actual = results.getMatrix();
+    const auto& expected = std.getMatrix();
+    REQUIRE((actual.nrow() == expected.nrow()));
+    REQUIRE((actual.ncol() == expected.ncol()));
+    for (int ir = 0; ir < actual.nrow(); ++ir) {
+        for (int ic = 0; ic < actual.ncol(); ++ic) {
+            INFO("(" << ir << "," << ic << "): " << actual.getElt(ir, ic) <<
+                " vs " << expected.getElt(ir, ic));
+            REQUIRE((Catch::Approx(actual.getElt(ir, ic)).margin(1e-3)
+                == expected.getElt(ir, ic)));
+        }
     }
+}
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testArm26 failed");
+TEST_CASE("testGait10dof18musc (Mac/Linux)", "[unix]") {
+    CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
+    cmc.run();
 
-    const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-    cout << "\ntestGait10dof18musc "+muscleType+" passed\n" << endl;
+    const TimeSeriesTable results(
+        "gait10dof18musc_ResultsCMC/walk_subject_states.sto");
+    const TimeSeriesTable std(
+        "gait10dof18musc_std_walk_subject_states_unix.sto");
+
+    // Unix systems produce inconsistent results compared to Windows. Somehow,
+    // CMC produces results with differing number of time points, so we need to
+    // interpolate the results to the same time points as the standard results.
+    // The shapes of the muscle activity curves also differ slightly, so we
+    // allow a larger margin of error for the muscle activity curves. Therefore,
+    // this is a weaker test compared to the Windows test.
+    GCVSplineSet resultSplines(results);
+    GCVSplineSet stdSplines(std);
+
+    // TODO: Replace with (a new) macro from OpenSim/Moco/Test/Testing.h
+    const auto& time = std.getIndependentColumn();
+    for (const auto& label : results.getColumnLabels()) {
+        const auto& result = resultSplines.get(label);
+        const auto& expected = stdSplines.get(label);
+        SimTK::Vector timeVec(1, 0.0);
+        for (int it = 0; it < static_cast<int>(time.size()); ++it) {
+            timeVec[0] = time[it];
+            INFO(label << " at time " << time[it] << ": " <<
+                result.calcValue(timeVec) << " vs " <<
+                expected.calcValue(timeVec));
+            REQUIRE((Catch::Approx(result.calcValue(timeVec)).margin(1e-1)
+                == expected.calcValue(timeVec)));
+        }
+    }
 }

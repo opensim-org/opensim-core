@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Tim Dorn                                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,9 +24,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include "BodyDragForce.h"
+
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
 // STATICS
@@ -42,7 +44,7 @@ using namespace OpenSim;
 /**
  * Default constructor
  */
-BodyDragForce::BodyDragForce() : Force()
+BodyDragForce::BodyDragForce()
 {
     setNull();
     constructProperties();
@@ -107,20 +109,23 @@ void BodyDragForce::connectToModel(Model& aModel)
 // COMPUTATION
 //=============================================================================
 
-void BodyDragForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+void BodyDragForce::implProduceForces(
+    const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
     if(!_model) return;     // some minor error checking
 
     SimTK::Vec3 bodyCoMPosBody, bodyCoMPosGround, bodyCoMVelGround, bodyCoMVelGroundRaisedPower, dragForceGround, dragForceBody, oppVelSign;
     BodySet &bs = _model->updBodySet();                                     // get body set
-    Body &ground = _model->getSimbodyEngine().getGroundBody();              // get ground body
+    const Ground &ground = _model->getGround(); // get ground body
     Body &aBody = bs.get(get_body_name());                                      // get the body to apply the force to
 
-    bodyCoMPosBody = aBody.getMassCenter();                                                 // get CoM position of body in the BODY coordinate system
-    _model->getSimbodyEngine().getPosition(s, aBody, bodyCoMPosBody, bodyCoMPosGround);     // get CoM position of body in the GROUND coordinate system
-    _model->getSimbodyEngine().getVelocity(s, aBody, bodyCoMPosBody, bodyCoMVelGround);     // get CoM velocity of body in the GROUND coordinate system
+    // get CoM position of body in the BODY coordinate system
+    bodyCoMPosBody = aBody.getMassCenter();
+    // get CoM position of body in the GROUND coordinate system
+    bodyCoMPosGround = aBody.getPositionInGround(s);
+    // get CoM velocity of body in the GROUND coordinate system
+    bodyCoMVelGround = aBody.findStationVelocityInGround(s, bodyCoMPosBody);
 
     for (int i=0; i<3;i++)
     {
@@ -131,14 +136,16 @@ void BodyDragForce::computeForce(const SimTK::State& s,
         dragForceGround[i] = oppVelSign[i] * get_coefficient() * std::pow(bodyCoMVelGround[i], get_exponent()); // calculate drag force in the GROUND coordinate system
     }
 
-    _model->getSimbodyEngine().transform(s, ground, dragForceGround, aBody, dragForceBody);         // transform drag force into the BODY coordinate system
+    // transform drag force into the BODY coordinate system
+    dragForceBody = ground.expressVectorInAnotherFrame(s,
+                                                       dragForceGround,
+                                                       aBody);
 
-
-    // Apply drag force to the body
-    // ------------------------------
-    // applyForceToPoint requires the force application point to be in the inertial (ground) frame
+    // Produce drag force as a point force on the body
+    // -----------------------------------------------
+    // `consumePointForce` requires the force application point to be in the inertial (ground) frame
     // and the force vector itself to be in the body frame
-    applyForceToPoint(s, aBody, bodyCoMPosGround, dragForceBody, bodyForces);
+    forceConsumer.consumePointForce(s, aBody, bodyCoMPosGround, dragForceBody);
 
 
 
@@ -157,7 +164,7 @@ void BodyDragForce::computeForce(const SimTK::State& s,
         cout << "Drag coefficient = " << get_coefficient() << "\tDrag exponent = " << get_exponent() << endl;
         cout << "dragForce (ground) = " << dragForceGround << endl;
         cout << "dragForce (body frame) = " << dragForceBody << endl;
-        system("pause");
+        auto res = system("pause");
     }
 
     return;
@@ -194,12 +201,15 @@ OpenSim::Array<double> BodyDragForce::getRecordValues(const SimTK::State& s) con
 
     SimTK::Vec3 bodyCoMPosBody, bodyCoMPosGround, bodyCoMVelGround, bodyCoMVelGroundRaisedPower, dragForceGround, dragForceBody, oppVelSign;
     BodySet &bs = _model->updBodySet();                                     // get body set
-    Body &ground = _model->getSimbodyEngine().getGroundBody();              // get ground body
-    Body &aBody = bs.get(get_body_name());                                      // get the body to apply the force to
+    const Ground &ground = _model->getGround();              // get ground body
+    Body &aBody = bs.get(get_body_name());                                      // get the body in which the force is applied
 
-    bodyCoMPosBody = aBody.getMassCenter();                                                 // get CoM position of body in the BODY coordinate system
-    _model->getSimbodyEngine().getPosition(s, aBody, bodyCoMPosBody, bodyCoMPosGround);     // get CoM position of body in the GROUND coordinate system
-    _model->getSimbodyEngine().getVelocity(s, aBody, bodyCoMPosBody, bodyCoMVelGround);     // get CoM velocity of body in the GROUND coordinate system
+    // get CoM position of body in the BODY coordinate system
+    bodyCoMPosBody = aBody.getMassCenter();
+    // get CoM position of body in the GROUND coordinate system
+    bodyCoMPosGround = aBody.getPositionInGround(s);
+    // get CoM velocity of body in the GROUND coordinate system
+    bodyCoMVelGround = aBody.findStationVelocityInGround(s, bodyCoMPosBody);
 
     for (int i=0; i<3;i++)
     {

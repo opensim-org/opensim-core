@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -65,27 +65,28 @@ void testGait2354() {
 
     int nq = results.getColumnLabels().getSize()-1;
 
-    // Tracking kinematics angles in degrees should be within 2 degrees
-    Array<double> rms_tols(2.0, nq);
+    // Tracking kinematics angles in degrees should be within 1.5 degrees
+    std::vector<double> rms_tols(nq, 1.5);
     rms_tols[3] = 0.005; // pelvis translations in m should be with 5mm
     rms_tols[4] = 0.005;
     rms_tols[5] = 0.005;
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testGait2354 tracking failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols,
+        __FILE__, __LINE__, "testGait2354 tracking failed");
 
     Storage results2("subject01_ResultsCMC/subject01_walk1_states.sto");
-    Storage standard2("std_subject01_walk1_states.sto");
+    Storage standard2("std_subject01_walk1_states_WithControlConstraints.sto");
 
     Array<string> col_labels = standard2.getColumnLabels();
-    Array<double> rms_tols2(0.1, col_labels.getSize()-1);
-    for (int i = 23; i < 46; ++i){
-        rms_tols2[i] = 0.75; // velocities
-    }
-    for (int i = 46; i < rms_tols2.getSize(); ++i){
-        rms_tols2[i] = 0.15; // muscle activations and fiber-lengths
+
+    // tolerance for joint angles 0.02rad ~= 1.15 degs and activation within 2%
+    std::vector<double> rms_tols2(col_labels.getSize()-1, 0.02);
+    for (int i = 0; i < nq; ++i){
+        rms_tols2[2*i+1] = 0.25; // velocities rad/s
     }
 
-    CHECK_STORAGE_AGAINST_STANDARD(results2, standard2, rms_tols2, __FILE__, __LINE__, "testGait2354 states failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results2, standard2, rms_tols2,
+        __FILE__, __LINE__, "testGait2354 states failed");
 
     cout << "\n testGait2354 passed\n" << endl;
 }

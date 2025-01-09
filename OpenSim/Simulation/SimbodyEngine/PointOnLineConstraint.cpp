@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Samuel R. Hamner                                                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,15 +24,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <math.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/Constant.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
-#include <OpenSim/Simulation/Model/Model.h>
-
 #include "PointOnLineConstraint.h"
-#include "SimbodyEngine.h"
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <simbody/internal/MobilizedBody.h>
+#include <simbody/internal/Constraint.h>
 
 //=============================================================================
 // STATICS
@@ -59,7 +54,7 @@ PointOnLineConstraint::PointOnLineConstraint() :
     Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -72,10 +67,10 @@ PointOnLineConstraint::PointOnLineConstraint( const PhysicalFrame& lineBody,
         Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
-    setLineBodyByName(lineBody.getName());
-    setFollowerBodyByName(followerBody.getName());
+    connectSocket_line_body(lineBody);
+    connectSocket_follower_body(followerBody);
 
     set_line_direction_vec(lineDirection);
     set_point_on_line(pointOnLine);
@@ -113,21 +108,15 @@ void PointOnLineConstraint::constructProperties()
     constructProperty_point_on_follower(origin);
 }
 
-void PointOnLineConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("line_body");
-    constructConnector<PhysicalFrame>("follower_body");
-}
-
 void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
     // Get underlying mobilized bodies
     // Get underlying mobilized bodies
     const PhysicalFrame& fl =
-        getConnector<PhysicalFrame>("line_body").getConnectee();
+        getSocket<PhysicalFrame>("line_body").getConnectee();
     const PhysicalFrame& ff =
-        getConnector<PhysicalFrame>("follower_body").getConnectee();
+        getSocket<PhysicalFrame>("follower_body").getConnectee();
 
     SimTK::MobilizedBody bl = fl.getMobilizedBody();
     SimTK::MobilizedBody bf = ff.getMobilizedBody();
@@ -151,12 +140,12 @@ void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) co
  * Following methods set attributes of the point on line constraint */
 void PointOnLineConstraint::setLineBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("line_body").set_connectee_name(aBodyName);
+    updSocket<PhysicalFrame>("line_body").setConnecteePath(aBodyName);
 }
 
 void PointOnLineConstraint::setFollowerBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("follower_body").set_connectee_name(aBodyName);
+    updSocket<PhysicalFrame>("follower_body").setConnecteePath(aBodyName);
 
 }
 
@@ -184,18 +173,31 @@ void PointOnLineConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
     int documentVersion = versionNumber;
     if (documentVersion < XMLDocument::getLatestVersion()){
         if (documentVersion<30500){
-            // replace old properties with latest use of Connectors
+            // replace old properties with latest use of Sockets
             SimTK::Xml::element_iterator body1Element = aNode.element_begin("line_body");
             SimTK::Xml::element_iterator body2Element = aNode.element_begin("follower_body");
             std::string body1_name(""), body2_name("");
-            // If default constructed then elements not serialized since they are default
-            // values. Check that we have associated elements, then extract their values.
-            if (body1Element != aNode.element_end())
+            // If default constructed then elements not serialized since they
+            // are default values. Check that we have associated elements, then
+            // extract their values.
+            // Constraints in pre-4.0 models are necessarily 1 level deep
+            // (model, constraints), and Bodies are necessarily 1 level deep.
+            // Here we create the correct relative path (accounting for sets
+            // being components).
+            if (body1Element != aNode.element_end()) {
                 body1Element->getValueAs<std::string>(body1_name);
-            if (body2Element != aNode.element_end())
+                body1_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                   body1_name);
+            }
+            if (body2Element != aNode.element_end()) {
                 body2Element->getValueAs<std::string>(body2_name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "line_body", body1_name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "follower_body", body2_name);
+                body2_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                   body2_name);
+            }
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                    "line_body", body1_name);
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                    "follower_body", body2_name);
         }
     }
 

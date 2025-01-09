@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth, Tim Dorn                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -54,8 +54,9 @@ AnalysisPlugin_Template::AnalysisPlugin_Template() : Analysis()
 void AnalysisPlugin_Template::
 setNull()
 {
-    _bodyIndices = NULL;
-    _bodypos = NULL;
+
+    _bodyIndices = Array<int>();
+    _bodypos = Array<double>();
 }
 
 
@@ -94,11 +95,9 @@ constructDescription()
 
     descrip = "\nThis file contains body positions (of origin) and orientations.\n";
     descrip += "\nUnits are S.I. units (seconds, meters, Newtons, ...)";
-    if(getInDegrees()) {
-        descrip += "\nAngles are in degrees.";
-    } else {
-        descrip += "\nAngles are in radians.";
-    }
+    descrip += "\nIf the header above contains a line with ";
+    descrip += "'inDegrees', this indicates whether rotational values ";
+    descrip += "are in degrees (yes) or radians (no).";
     descrip += "\n\n";
 
     setDescription(descrip);
@@ -219,12 +218,11 @@ int AnalysisPlugin_Template::
 record(const SimTK::State& s)
 {
     // VARIABLES
-    double dirCos[3][3];
     SimTK::Vec3 vec,angVec;
     double Mass = 0.0;
 
     // GROUND BODY
-    const Body& ground = _model->getGroundBody();
+    const Ground& ground = _model->getGround();
 
     // POSITION
     const BodySet& bodySet = _model->getBodySet();
@@ -232,13 +230,14 @@ record(const SimTK::State& s)
     for(int i=0;i<_bodyIndices.getSize();i++) {
 
         const Body& body = bodySet.get(_bodyIndices[i]);
-        SimTK::Vec3 com = body.getMassCenter();
 
         // GET POSITIONS AND EULER ANGLES
-        _model->getSimbodyEngine().getPosition(s,body,com,vec);
-        _model->getSimbodyEngine().getDirectionCosines(s,body,dirCos);
-        _model->getSimbodyEngine().convertDirectionCosinesToAngles(dirCos,
-            &angVec[0],&angVec[1],&angVec[2]);
+        vec = body.getPositionInGround(s);
+        angVec = body.getTransformInGround(s).R()
+            .convertThreeAxesRotationToThreeAngles(SimTK::BodyRotationSequence,
+                                                   SimTK::XAxis,
+                                                   SimTK::YAxis,
+                                                   SimTK::ZAxis);
 
         // CONVERT TO DEGREES?
         if(getInDegrees()) {
@@ -277,8 +276,7 @@ record(const SimTK::State& s)
  *
  * @return -1 on error, 0 otherwise.
  */
-int AnalysisPlugin_Template::
-begin(SimTK::State& s)
+int AnalysisPlugin_Template::begin(const SimTK::State& s)
 {
     if(!proceed()) return(0);
 
@@ -343,7 +341,7 @@ step(const SimTK::State& s, int stepNumber)
  * @return -1 on error, 0 otherwise.
  */
 int AnalysisPlugin_Template::
-end(SimTK::State& s)
+end(const SimTK::State&s)
 {
     if(!proceed()) return(0);
 

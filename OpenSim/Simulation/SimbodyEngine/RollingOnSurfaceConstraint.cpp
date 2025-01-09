@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,6 +25,9 @@
 // INCLUDES
 //=============================================================================
 #include "RollingOnSurfaceConstraint.h"
+#include "simbody/internal/SimbodyMatterSubsystem.h"
+#include "simbody/internal/Constraint_PointInPlane.h"
+#include "simbody/internal/MobilizedBody_Weld.h"
 
 //=============================================================================
 // STATICS
@@ -51,7 +54,7 @@ RollingOnSurfaceConstraint::RollingOnSurfaceConstraint() :
     UnilateralConstraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 //=============================================================================
@@ -86,17 +89,11 @@ void RollingOnSurfaceConstraint::constructProperties()
     constructProperty_contact_radius(0.01);
 }
 
-void RollingOnSurfaceConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("rolling_body");
-    constructConnector<PhysicalFrame>("surface_body");
-}
-
 void RollingOnSurfaceConstraint::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
-    _rollingFrame = &getConnector<PhysicalFrame>("rolling_body").getConnectee();
-    _surfaceFrame = &getConnector<PhysicalFrame>("surface_body").getConnectee();
+    _rollingFrame = &getSocket<PhysicalFrame>("rolling_body").getConnectee();
+    _surfaceFrame = &getSocket<PhysicalFrame>("surface_body").getConnectee();
 }
 
 void RollingOnSurfaceConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
@@ -152,11 +149,12 @@ void RollingOnSurfaceConstraint::extendInitStateFromProperties(SimTK::State& sta
     }
 }
 
-void RollingOnSurfaceConstraint::extendSetPropertiesFromState(const SimTK::State& state)
-{
+void
+RollingOnSurfaceConstraint::
+extendSetPropertiesFromState(const SimTK::State& state) {
     Super::extendSetPropertiesFromState(state);
 
-    set_isDisabled(isDisabled(state));
+    set_isEnforced(isEnforced(state));
     for(int i=0; i < _numConstraintEquations; i++){
         SimTK::Constraint& simConstraint = 
             updSystem().updMatterSubsystem().updConstraint(_indices[i]);
@@ -173,12 +171,12 @@ void RollingOnSurfaceConstraint::extendSetPropertiesFromState(const SimTK::State
  * Following methods set attributes of the weld constraint */
 void RollingOnSurfaceConstraint::setRollingBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("rolling_body").set_connectee_name(aBodyName);
+    updSocket<PhysicalFrame>("rolling_body").setConnecteePath(aBodyName);
 }
 
 void RollingOnSurfaceConstraint::setSurfaceBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("surface_body").set_connectee_name(aBodyName);
+    updSocket<PhysicalFrame>("surface_body").setConnecteePath(aBodyName);
 }
 
 /** Set the point of contact on the rolling body that will be in contact with the surface */
@@ -201,7 +199,7 @@ void RollingOnSurfaceConstraint::setContactPointForInducedAccelerations(const Si
     getSystem().realize(s, SimTK::Stage::Position);
 
     // For external forces we assume w.r.t. ground
-    Vec3 spoint = _rollingFrame->findLocationInAnotherFrame(s, point, *_surfaceFrame);
+    Vec3 spoint = _rollingFrame->findStationLocationInAnotherFrame(s, point, *_surfaceFrame);
 
     // The contact point coordinates in the surface body frame 
     contactY.setDefaultPlaneNormal(UnitVec3(surfaceNormal));
@@ -296,37 +294,39 @@ std::vector<bool> RollingOnSurfaceConstraint::unilateralConditionsSatisfied(cons
     return conditionsSatisfied;
 }
 
-//-----------------------------------------------------------------------------
-// DISABLE
-//-----------------------------------------------------------------------------
-bool RollingOnSurfaceConstraint::isDisabled(const SimTK::State &state) const
-{
+bool RollingOnSurfaceConstraint::isEnforced(const SimTK::State &state) const {
     // The parent constraint in is the plane constraint, so check its value
-    return updSystem().updMatterSubsystem().updConstraint(_indices[0]).isDisabled(state);
+    return !updSystem().
+           updMatterSubsystem().
+           updConstraint(_indices[0]).
+           isDisabled(state);
 }
 
-bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisabled)
-{
-    // All constraints treated the same as default behavior i.e. at initialization
-    std::vector<bool> shouldBeOn(_numConstraintEquations, !isDisabled);
+bool RollingOnSurfaceConstraint::setIsEnforced(SimTK::State& state,
+                                               bool isEnforced) {
+    // All constraints treated the same as default behavior i.e. at
+    // initialization
+    std::vector<bool> shouldBeOn(_numConstraintEquations, isEnforced);
 
-    // If dynamics has been realized, then this is an attempt to enable/disable the constraint
-    // during a computation and not an initialization, in which case we must check the 
-    // unilateral conditions for each constraint
+    // If dynamics has been realized, then this is an attempt to enforce/disable
+    //  the constraint during a computation and not an initialization, in which
+    // case we must check the unilateral conditions for each constraint
     if(state.getSystemStage() > Stage::Dynamics)
         shouldBeOn = unilateralConditionsSatisfied(state);
 
-    return setDisabled(state, isDisabled, shouldBeOn);
+    return setIsEnforced(state, isEnforced, shouldBeOn);
 }
 
-bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisabled, std::vector<bool> shouldBeOn)
-{
-
+bool RollingOnSurfaceConstraint::setIsEnforced(SimTK::State& state,
+                                               bool isEnforced,
+                                               std::vector<bool> shouldBeOn) {
     for(int i=0; i < _numConstraintEquations; i++){
-        SimTK::Constraint& simConstraint = updSystem().updMatterSubsystem().updConstraint(_indices[i]);
+        SimTK::Constraint& simConstraint =
+            updSystem().updMatterSubsystem().updConstraint(_indices[i]);
         bool isConstraintOn = !simConstraint.isDisabled(state);
 
-        // Check if we already have the correct enabling of the constraint then do nothing 
+        // Check if we already have the correct enabling of the constraint then
+        // do nothing 
         if(shouldBeOn[i] == isConstraintOn)
             continue;
 
@@ -340,13 +340,15 @@ bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisable
     }
 
     //Update the property accordingly
-    set_isDisabled(isDisabled);
+    set_isEnforced(isEnforced);
 
     // Return whether or not constraint is in the state the caller wanted
     // The first constraint is the "master" so its state is what we care about
-    return isDisabled == updSystem().updMatterSubsystem().updConstraint(_indices[0]).isDisabled(state);
+    return isEnforced != updSystem().
+                         updMatterSubsystem().
+                         updConstraint(_indices[0]).
+                         isDisabled(state);
 }
-
 
 //-----------------------------------------------------------------------------
 // FORCES
@@ -371,7 +373,7 @@ void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state,
             
             int sbi = -1;
             int rbi = -1;
-            int anc = simConstraint.getAncestorMobilizedBody().getMobilizedBodyIndex();
+            //int anc = simConstraint.getAncestorMobilizedBody().getMobilizedBodyIndex();
             
             for(int j=0; j< ncb; j++){
                 if (_surfaceFrame->getMobilizedBodyIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())
@@ -398,20 +400,40 @@ void RollingOnSurfaceConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, i
     int documentVersion = versionNumber;
     if (documentVersion < XMLDocument::getLatestVersion()){
         if (documentVersion<30500){
-            // replace old properties with latest use of Connectors
+            // replace old properties with latest use of Sockets
             SimTK::Xml::element_iterator body1Element = aNode.element_begin("rolling_body");
             SimTK::Xml::element_iterator body2Element = aNode.element_begin("surface_body");
             std::string body1_name(""), body2_name("");
-            // If default constructed then elements not serialized since they are default
-            // values. Check that we have associated elements, then extract their values.
-            if (body1Element != aNode.element_end())
+            // If default constructed then elements not serialized since they
+            // are default values. Check that we have associated elements, then
+            // extract their values.
+            // Constraints in pre-4.0 models are necessarily 1 level deep
+            // (model, constraints), and Bodies are necessarily 1 level deep.
+            // Here we create the correct relative path (accounting for sets
+            // being components).
+            if (body1Element != aNode.element_end()) {
                 body1Element->getValueAs<std::string>(body1_name);
-            if (body2Element != aNode.element_end())
+                body1_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                   body1_name);
+            }
+            if (body2Element != aNode.element_end()) {
                 body2Element->getValueAs<std::string>(body2_name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "rolling_body", body1_name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "surface_body", body2_name);
+                body2_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                   body2_name);
+            }
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                    "rolling_body", body1_name);
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                    "surface_body", body2_name);
         }
     }
 
     Super::updateFromXMLNode(aNode, versionNumber);
+}
+
+bool
+RollingOnSurfaceConstraint::
+setIsEnforcedWithCachedUnilateralConditions(bool isEnforced,
+                                            SimTK::State& state) {
+    return setIsEnforced(state, isEnforced, _defaultUnilateralConditions);
 }

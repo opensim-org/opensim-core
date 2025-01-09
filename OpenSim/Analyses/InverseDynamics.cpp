@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Eran Guendelman, Jeffrey A. Reinbolt                            *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,19 +25,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
-#include <OpenSim/Simulation/Model/Force.h>
-#include <SimTKmath.h>
-#include <SimTKlapack.h>
 #include "InverseDynamics.h"
 
 
@@ -63,9 +52,9 @@ InverseDynamics::~InverseDynamics()
  */
 InverseDynamics::InverseDynamics(Model *aModel) :
     Analysis(aModel),
+    _numCoordinateActuators(0),
     _useModelForceSet(_useModelForceSetProp.getValueBool()),
-    _modelWorkingCopy(NULL),
-    _numCoordinateActuators(0)
+    _modelWorkingCopy(NULL)
 {
     setNull();
 
@@ -82,9 +71,9 @@ InverseDynamics::InverseDynamics(Model *aModel) :
  */
 InverseDynamics::InverseDynamics(const InverseDynamics &aInverseDynamics):
     Analysis(aInverseDynamics),
+    _numCoordinateActuators(aInverseDynamics._numCoordinateActuators),
     _useModelForceSet(_useModelForceSetProp.getValueBool()),
-    _modelWorkingCopy(NULL),
-    _numCoordinateActuators(aInverseDynamics._numCoordinateActuators)
+    _modelWorkingCopy(NULL)
 {
     setNull();
     // COPY TYPE AND NAME
@@ -177,11 +166,11 @@ constructColumnLabels()
               if( act )labels.append(act->getName());
            }
         } else {
-           const CoordinateSet& cs = _modelWorkingCopy->getCoordinateSet();
+           auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
            for (int i=0; i < _numCoordinateActuators; i++) {
               Force& force = _forceSet->get(i);
-              for(int i=0; i<cs.getSize(); i++) {
-                 Coordinate& coord = cs.get(i);
+              for(size_t i=0u; i<coordinates.size(); ++i) {
+                 const Coordinate& coord = *coordinates[i];
                  if(coord.getName()==force.getName()) {
                     if(coord.getMotionType() == Coordinate::Rotational) {
                         labels.append(force.getName()+"_moment");
@@ -196,7 +185,6 @@ constructColumnLabels()
         }
     }
     setColumnLabels(labels);
-
 }
 
 //_____________________________________________________________________________
@@ -259,22 +247,6 @@ getStorage()
     return(_storage);
 }
 
-//-----------------------------------------------------------------------------
-// STORAGE CAPACITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the capacity increments of all storage instances.
- *
- * @param aIncrement Increment by which storage capacities will be increased
- * when storage capacities run out.
- */
-void InverseDynamics::
-setStorageCapacityIncrements(int aIncrement)
-{
-    _storage->setCapacityIncrement(aIncrement);
-}
-
 //=============================================================================
 // ANALYSIS
 //=============================================================================
@@ -314,7 +286,7 @@ record(const SimTK::State& s)
     SimTK::State sWorkingCopy = _modelWorkingCopy->getWorkingState();
 
     // Set modeling options for Actuators to be overridden
-    for(int i=0,j=0; i<_forceSet->getSize(); i++) {
+    for(int i=0; i<_forceSet->getSize(); i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
         if( act ) {
             act->overrideActuation(sWorkingCopy, true);
@@ -334,7 +306,7 @@ record(const SimTK::State& s)
 
     int nf = _numCoordinateActuators;
     int nacc = _accelerationIndices.getSize();
-    int nq = _modelWorkingCopy->getNumCoordinates();
+    // int nq = _modelWorkingCopy->getNumCoordinates();
 
 //cout << "\nQ= " << s.getQ() << endl;
 //cout << "\nU= " << s.getU() << endl;
@@ -349,14 +321,18 @@ record(const SimTK::State& s)
         for(int i=0; i<nacc; i++) _constraintMatrix(i,j) = (c[i] - _constraintVector[i]);
         f[j] = 0;
     }
+
+    auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
+
     for(int i=0; i<nacc; i++) {
-        Coordinate& coord = _modelWorkingCopy->getCoordinateSet().get(_accelerationIndices[i]);
+        const Coordinate& coord = *coordinates[_accelerationIndices[i]];
         int ind = _statesStore->getStateIndex(coord.getSpeedName(), 0);
         if (ind < 0){
-            string fullname = coord.getJoint().getName() + "/" + coord.getSpeedName();
+            // get the full coordinate speed state variable path name
+            string fullname = coord.getStateVariableNames()[1];
             ind = _statesStore->getStateIndex(fullname, 0);
             if (ind < 0){
-                string msg = "StaticOptimizationTarget::computeConstraintVector: \n";
+                string msg = "InverseDynamics::record(): \n";
                 msg += "target motion for coordinate '";
                 msg += coord.getName() + "' not found.";
                 throw Exception(msg);
@@ -405,8 +381,7 @@ record(const SimTK::State& s)
  *
  * @return -1 on error, 0 otherwise.
  */
-int InverseDynamics::
-begin(SimTK::State& s )
+int InverseDynamics::begin(const SimTK::State& s )
 {
     if(!proceed()) return(0);
 
@@ -429,8 +404,6 @@ begin(SimTK::State& s )
     delete _modelWorkingCopy;
     _modelWorkingCopy = _model->clone();
     _modelWorkingCopy->updAnalysisSet().setSize(0);
-    //_modelWorkingCopy = _model->clone();
-    //_modelWorkingCopy = new Model(*_model);
 
     // Replace model force set with only generalized forces
     if(_model) {
@@ -451,7 +424,7 @@ begin(SimTK::State& s )
             // Copy whatever forces that are not muscles back into the model
             
             for(int i=0; i<saveForces->getSize(); i++){
-                const Force& f=saveForces->get(i);
+                // const Force& f=saveForces->get(i);
                 if ((dynamic_cast<const Muscle*>(&saveForces->get(i)))==NULL)
                     as.append(saveForces->get(i).clone());
             }
@@ -463,11 +436,11 @@ begin(SimTK::State& s )
 
         // Gather indices into speed set corresponding to the unconstrained degrees of freedom (for which we will set acceleration constraints)
         _accelerationIndices.setSize(0);
-        const CoordinateSet& coordSet = _model->getCoordinateSet();
-        for(int i=0; i<coordSet.getSize(); i++) {
-            const Coordinate& coord = coordSet.get(i);
+        auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
+        for(size_t i=0u; i<coordinates.size(); ++i) {
+            const Coordinate& coord = *coordinates[i];
             if(!coord.isConstrained(sWorkingCopy)) {
-                _accelerationIndices.append(i);
+                _accelerationIndices.append(static_cast<int>(i));
             }
         }
 
@@ -560,13 +533,13 @@ step(const SimTK::State& s, int stepNumber )
  * @return -1 on error, 0 otherwise.
  */
 int InverseDynamics::
-end(SimTK::State& s )
+end(const SimTK::State&s )
 {
     if(!proceed()) return(0);
 
     record(s);
 
-    _model->overrideAllActuators( s, false );
+    _model->overrideAllActuators(*const_cast<SimTK::State*>(&s), false );
 
     return(0);
 }

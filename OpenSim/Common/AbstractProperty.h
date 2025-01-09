@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Cassidy Kelly, Ajay Seth, Michael A. Sherman *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,14 +24,37 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDES
+#include "Assertion.h"
+#include <string>
+#include <typeinfo>
 #include "osimCommonDLL.h"
-#include "Simbody.h"
+#include "Exception.h"
+#include "SimTKcommon/internal/Xml.h"
 
 
 namespace OpenSim {
 
 class Object;
 template <class T> class Property;
+
+//==============================================================================
+/// Property Exceptions
+//==============================================================================
+class InvalidPropertyValue : public Exception {
+public:
+    InvalidPropertyValue(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const Object& obj,
+        const std::string& propertyName,
+        const std::string& errorMsg) :
+        Exception(file, line, func, obj) {
+        std::string msg = "Property '" + propertyName;
+        msg += "' has an invalid value.\n(details: " + errorMsg + ").\n";
+        addMessage(msg);
+    }
+};
+
 
 //==============================================================================
 //                            ABSTRACT PROPERTY
@@ -56,13 +79,13 @@ public:
     /** Require that the number of values n in the value list of this property
     be in the range aMin <= n <= aMax. */
     void setAllowableListSize(int aMin, int aMax) 
-    {   assert(0 <= aMin && aMin <= aMax); 
+    {   OPENSIM_ASSERT(0 <= aMin && aMin <= aMax);
        _minListSize = aMin; _maxListSize = aMax; }
 
     /** Require that the number of values n in the value list of this property
     be exactly n=aNum values. **/
     void setAllowableListSize(int aNum) 
-    {   assert(aNum >= 1); _minListSize = _maxListSize = aNum; }
+    {   OPENSIM_ASSERT(aNum >= 1); _minListSize = _maxListSize = aNum; }
     
     // Default copy constructor and copy assignment operator.
 
@@ -74,11 +97,28 @@ public:
     allocated on the heap and it is up to the caller to delete it when done. **/
     virtual AbstractProperty* clone() const = 0;
 
-    /** For relatively simple types, return the current value of this property 
-    in a string suitable for displaying to a user in the GUI. Objects just
-    return something like "(Object)". **/
-    // TODO: replace this with something more reasonable
+    /** For relatively simple types, return the current value of this property
+    in a string suitable for displaying to a user in the GUI (i.e., this number
+    may be rounded and not an exact representation of the actual value being
+    used). Objects just return something like "(Object)".
+    For `Property`s, This function calls `toStringForDisplay()` with 
+    `precision = 6`.**/
     virtual std::string toString() const = 0;
+
+    /** For relatively simple types, return the current value of this property
+    in a string suitable for displaying to a user in the GUI (i.e., this number
+    may be rounded and not an exact representation of the actual value being 
+    used). Objects just return something like "(Object)". This differs from 
+    `toString()` as it has an argument, `precision`, for controlling the number
+    of digits printed to string for floats. If this function is not overridden
+    in a derived class, this function uses `toString()` and the `precision` 
+    argument is ignored. 
+    For `Property`s, in general, this means that floats will
+    be represented with the number of significant digits denoted by the
+    `precision` argument, and the default formatting of `stringstream`
+    determines whether or not exponential notation is used. **/
+    virtual std::string toStringForDisplay(const int precision) const
+    {   return toString(); }
 
     /** This returns a string representation of this property's value type 
     which will be the same as T::getClassName() for Object-derived types T, and
@@ -116,7 +156,7 @@ public:
         if (getComment() != other.getComment()) return false;
         if (getMinListSize() != other.getMinListSize()) return false;
         if (getMaxListSize() != other.getMaxListSize()) return false;
-     
+
         if (size() != other.size()) return false;
         // Note: we're delegating comparison of the "use default" flags
         // because only the new Property system copies them correctly, so
@@ -192,6 +232,9 @@ public:
     list isn't already of maximum size. 
     @returns The index assigned to this value in the list. **/
     template <class T> int appendValue(const T& value);
+
+    /** Assign (copy) property *that* to this object. */
+    virtual void assign(const AbstractProperty& that) = 0;
     /**@}**/
 
     /** This method sets the "use default" flag for this property and the 
@@ -274,6 +317,10 @@ protected:
     AbstractProperty();
     AbstractProperty(const std::string& name, 
                      const std::string& comment);
+    AbstractProperty(const AbstractProperty&)            = default;
+    AbstractProperty(AbstractProperty&&)                 = default;
+    AbstractProperty& operator=(const AbstractProperty&) = default;
+    AbstractProperty& operator=(AbstractProperty&&)      = default;
 
     // This is the remainder of the interface that a concrete Property class
     // must implement, hidden from AbstractProperty users.

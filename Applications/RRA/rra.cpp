@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Frank C. Anderson                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -47,6 +47,17 @@ int main(int argc,char **argv)
     try {
     //----------------------
 
+    // DEPRECATION NOTICE
+    const std::string deprecationNotice = R"(
+    THIS EXECUTABLE IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE.
+
+    Use opensim-cmd instead, which can do everything that this executable can.
+
+      rra -S SetupFileName -> opensim-cmd run-tool SetupFileName
+      rra -PS              -> opensim-cmd print-xml rra
+    )";
+    log_warn(deprecationNotice);
+
     // PARSE COMMAND LINE
     int i;
     string option = "";
@@ -66,7 +77,7 @@ int main(int argc,char **argv)
         (option=="-usage")||(option=="-u")||(option=="-Usage")||(option=="-U")) {
             PrintUsage(argv[0], cout);
             return(0);
- 
+
         // PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
         } else if((option=="-PrintSetup")||(option=="-PS")) {
             RRATool *investigation = new RRATool();
@@ -74,7 +85,7 @@ int main(int argc,char **argv)
             Object::setSerializeAllDefaults(true);
             investigation->print("default_Setup_RRA.xml");
             Object::setSerializeAllDefaults(false);
-            cout << "Created file default_Setup_RRA.xml with default setup" << endl;
+            log_info("Created file default_Setup_RRA.xml with default setup");
             return(0);
 
         // IDENTIFY SETUP FILE
@@ -101,27 +112,24 @@ int main(int argc,char **argv)
 
     // ERROR CHECK
     if(setupFileName=="") {
-        cout<<"\n\n"<<argv[0]<<": ERROR- A setup file must be specified.\n";
+        log_error("{}: A setup file must be specified.", argv[0]);
         PrintUsage(argv[0], cout);
         return(-1);
     }
 
     // CONSTRUCT
-    cout<<"Constructing investigation from setup file "<<setupFileName<<".\n\n";
+    log_info("Constructing investigation from setup file {}.", setupFileName);
     RRATool rra(setupFileName);
 
     // PRINT MODEL INFORMATION
     Model& model = rra.getModel();
-    cout<<"-----------------------------------------------------------------------\n";
-    cout<<"Loaded library\n";
-    cout<<"-----------------------------------------------------------------------\n";
-    model.printBasicInfo(cout);
-    cout<<"-----------------------------------------------------------------------\n\n";
-
+    log_info("---------------------------------------------------------------");
+    log_info("Loaded library");
+    log_info("---------------------------------------------------------------");
+    model.printBasicInfo();
 
     // RUN
     rra.run();
-
 
     //----------------------------
     // Catch any thrown exceptions

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <OpenSimDocument Version="30501">
 	<Model name="double_pendulum">
 		<!--Acceleration due to gravity, expressed in ground.-->
@@ -154,11 +155,11 @@
 					<connectors>
 						<Connector_PhysicalFrame_ name="parent_body">
 							<!--Name of the component this Connector should be connected to.-->
-							<connectee_name>ground</connectee_name>
+							<connectee_name>../ground</connectee_name>
 						</Connector_PhysicalFrame_>
                         <Connector_PhysicalFrame_ name="child_body">
 							<!--Name of the component this Connector should be connected to.-->
-							<connectee_name>rod1</connectee_name>
+							<connectee_name>../rod1</connectee_name>
 						</Connector_PhysicalFrame_>
 					</connectors>
 					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->

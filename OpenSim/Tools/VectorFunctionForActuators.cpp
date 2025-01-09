@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,17 +26,10 @@
 
 // INCLUDES
 #include "VectorFunctionForActuators.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/Model/ControllerSet.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include "CMC.h"
 
-#include "SimTKsimbody.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -57,7 +50,7 @@ VectorFunctionForActuators::~VectorFunctionForActuators()
  */
 VectorFunctionForActuators::
 VectorFunctionForActuators(SimTK::System *aActuatorSystem, Model* model, CMCActuatorSubsystem* actSubsystem) :
-    VectorFunctionUncoupledNxN(model->getControllerSet().get("CMC" ).getActuatorSet().getSize() ),
+    VectorFunctionUncoupledNxN(model->getControllerSet().get("CMC" ).getNumActuators() ),
     _f(0.0)
 {
     setNull();
@@ -254,7 +247,7 @@ getCMCActSubsys()
  * @param aF Array of actuator force differences.
  */
 void VectorFunctionForActuators::
-evaluate( const SimTK::State& s, double *aX, double *rF) 
+evaluate(const SimTK::State& s, const double *aX, double *rF)
 {
     int i;
     int N = getNX();
@@ -264,29 +257,20 @@ evaluate( const SimTK::State& s, double *aX, double *rF)
 
     // create a Manager that will integrate just the actuator subsystem and use only the 
     // CMC controller
-
-    Manager manager(*_model, *_integrator);
-    manager.setInitialTime(_ti);
-    manager.setFinalTime(_tf);
-    manager.setSystem( _CMCActuatorSystem );
-    // tell the manager to not call the analyses or write to storage 
-    // while the CMCSubsystem is being integrated.
-    manager.setPerformAnalyses(false); 
-    manager.setWriteToStorage(false); 
     SimTK::State& actSysState = _CMCActuatorSystem->updDefaultState();
     getCMCActSubsys()->updZ(actSysState) = _model->getMultibodySystem()
                                             .getDefaultSubsystem().getZ(s);
-
     actSysState.setTime(_ti);
 
-    // Integration
-    manager.integrate(actSysState, 0.000001);
+    SimTK::TimeStepper ts(*_CMCActuatorSystem, *_integrator);
+    ts.initialize(actSysState);
+    ts.stepTo(_tf);
 
-    const Set<Actuator>& forceSet = controller.getActuatorSet();
     // Vector function values
+    const auto& socket = controller.getSocket<Actuator>("actuators");
     int j = 0;
     for(i=0;i<N;i++) {
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&forceSet[i]);
+        auto act = dynamic_cast<const ScalarActuator*>(&socket.getConnectee(i));
         rF[j] = act->getActuation(getCMCActSubsys()->getCompleteState()) - _f[j];
         j++;
     }
@@ -300,12 +284,10 @@ evaluate( const SimTK::State& s, double *aX, double *rF)
  * @param s SimTK::State 
  * @param aF Array of actuator force differences.
  */
-void VectorFunctionForActuators::
-evaluate(const SimTK::State& s,  OpenSim::Array<double> &rF,
-            const OpenSim::Array<int> &aDerivWRT)
-{
-    cout<<"\n\nVectorFunctionForActuators.evaluate:  ";
-    cout<<"Unimplemented method\n\n";
+void VectorFunctionForActuators::evaluate(const SimTK::State& s,
+        const OpenSim::Array<double>& aX, OpenSim::Array<double>& rF,
+        const OpenSim::Array<int>& aDerivWRT) {
+    log_warn("VectorFunctionForActuators::evaluate: Unimplemented method.");
 }
 
 //_____________________________________________________________________________
@@ -315,8 +297,7 @@ evaluate(const SimTK::State& s,  OpenSim::Array<double> &rF,
  * @param aX Array of controls.
  * @param aF Array of actuator force differences.
  */
-void VectorFunctionForActuators::
-evaluate( const SimTK::State& s,  const OpenSim::Array<double> &aX, OpenSim::Array<double> &rF)
-{
+void VectorFunctionForActuators::evaluate(const SimTK::State& s,
+        const OpenSim::Array<double>& aX, OpenSim::Array<double>& rF) {
     evaluate( s, &aX[0],&rF[0]);
 }

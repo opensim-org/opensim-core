@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,6 +26,7 @@
 #include "Reference.h"
 #include <OpenSim/Common/PropertyObjPtr.h>
 #include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/PropertyDbl.h>
 
 namespace OpenSim {
 
@@ -40,8 +41,10 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API CoordinateReference : public Reference_<double> {
-OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateReference, Reference_<double>);
+class OSIMSIMULATION_API CoordinateReference
+        : public Reference_<double> {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            CoordinateReference, Reference_<double>);
 
 //=============================================================================
 // MEMBER VARIABLES
@@ -73,7 +76,8 @@ public:
     * @param ReferenceFunction that specifies the value of the coordinate
     *        to be matched at a given time
     */
-    CoordinateReference(const std::string name, Function &ReferenceFunction);
+    CoordinateReference(const std::string name,
+                        const Function &ReferenceFunction);
 
     CoordinateReference(const CoordinateReference& source);
     CoordinateReference& operator=(const CoordinateReference& source);
@@ -88,7 +92,7 @@ public:
     /** get the name(s) of the reference or its referettes */
     const SimTK::Array_<std::string>& getNames() const override;
     /** get the value of the Reference as a function of the state */
-    void getValues(const SimTK::State &s, SimTK::Array_<double> &values) const override;
+    void getValuesAtTime(double time, SimTK::Array_<double>& values) const override;
     /** get the weighting (importance) of meeting this Reference */
     void getWeights(const SimTK::State &s, SimTK::Array_<double>& weights) const override;
 
@@ -108,10 +112,7 @@ public:
     void setWeight(double weight);
 
     /** %Set the coordinate value as a function of time. */
-    void setValueFunction(const OpenSim::Function& function)
-    {
-        _coordinateValueFunction = function.clone();
-    }
+    void setValueFunction(const OpenSim::Function& function);
 private:
     void copyData(const CoordinateReference& source);
 

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Chand T. John, Ajay Seth                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -34,6 +34,7 @@
 
 // Include OpenSim and functions
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 
 // This allows us to use OpenSim functions, classes, etc., without having to
 // prefix the names of those things with "OpenSim::".
@@ -285,8 +286,11 @@ int main()
         manager.integrate( si );
 
         // Save the simulation results.
-        osimModel.printControlStorage( "tugOfWar_controls.sto" );
-        manager.getStateStorage().print( "tugOfWar_states.sto" );
+        auto controlsTable = osimModel.getControlsTable();
+        STOFileAdapter::write(controlsTable, "tugOfWar_controls.sto");
+
+        auto statesTable = manager.getStatesTable();
+        STOFileAdapter::write(statesTable, "tugOfWar_states.sto");
     }
     catch (const std::exception &ex) {
         

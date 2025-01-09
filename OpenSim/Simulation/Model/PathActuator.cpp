@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,8 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "PathActuator.h"
-#include "Model.h"
-#include "PointForceDirection.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -44,7 +42,6 @@ PathActuator::PathActuator()
 {
     setNull();
     constructProperties();
-    finalizeFromProperties();
 }
 
 //=============================================================================
@@ -65,7 +62,7 @@ void PathActuator::setNull()
  */
 void PathActuator::constructProperties()
 {
-    constructProperty_GeometryPath(GeometryPath());
+    constructProperty_path(GeometryPath());
     constructProperty_optimal_force(1.0);
 }
 
@@ -110,7 +107,7 @@ double PathActuator::getOptimalForce() const
  */
 double PathActuator::getLength(const SimTK::State& s) const
 {
-    return getGeometryPath().getLength(s);
+    return getPath().getLength(s);
 }
 //_____________________________________________________________________________
 /**
@@ -120,7 +117,7 @@ double PathActuator::getLength(const SimTK::State& s) const
  */
 double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
 {
-    return getGeometryPath().getLengtheningSpeed(s);
+    return getPath().getLengtheningSpeed(s);
 }
 //_____________________________________________________________________________
 /**
@@ -128,9 +125,9 @@ double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
 * this actuator divided by its optimal force.
 * @return Stress.
 */
-double PathActuator::getStress( const SimTK::State& s) const
+double PathActuator::getStress(const SimTK::State& s) const
 {
-    return fabs(getActuation(s)/get_optimal_force()); 
+    return fabs(getActuation(s)/get_optimal_force());
 }
 
 
@@ -141,16 +138,11 @@ double PathActuator::getStress( const SimTK::State& s) const
  *
  */
 void PathActuator::addNewPathPoint(
-         const std::string& proposedName, 
-         PhysicalFrame& aBody, 
+         const std::string& proposedName,
+         const PhysicalFrame& aBody,
          const SimTK::Vec3& aPositionOnBody) {
-    // Create new PathPoint
-    PathPoint* newPathPoint = updGeometryPath()
-        .appendNewPathPoint(proposedName, aBody, aPositionOnBody);
-    // Set offset/position on owner body
-    newPathPoint->setName(proposedName);
-    for (int i=0; i<3; i++) // Use interface that does not depend on state
-        newPathPoint->setLocationCoord(i, aPositionOnBody[i]);
+    // Create new PathPoint already appended to the PathPointSet for the path
+    updGeometryPath().appendNewPathPoint(proposedName, aBody, aPositionOnBody);
 }
 
 //=============================================================================
@@ -161,49 +153,10 @@ void PathActuator::addNewPathPoint(
  * Compute all quantities necessary for applying the actuator force to the
  * model.
  */
-double PathActuator::computeActuation( const SimTK::State& s ) const
+double PathActuator::computeActuation(const SimTK::State& s) const
 {
-    if(!_model)
-        return 0.0;
-
     // FORCE
     return( getControl(s) * get_optimal_force() );
-}
-
-
-//=============================================================================
-// APPLICATION
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Apply the actuator force along path wrapping over and connecting rigid bodies
- */
-void PathActuator::computeForce( const SimTK::State& s, 
-                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                               SimTK::Vector& mobilityForces) const
-{
-    if(!_model) return;
-
-    const GeometryPath &path = getGeometryPath();
-
-    // compute path's lengthening speed if necessary
-    double speed = path.getLengtheningSpeed(s);
-
-    // the lengthening speed of this actuator is the "speed" of the actuator 
-    // used to compute power
-    setSpeed(s, speed);
-
-    double force =0;
-    if( isActuationOverridden(s) ) {
-        force = computeOverrideActuation(s);
-    } else {
-        force = computeActuation(s);
-    }
-
-    // the force of this actuator used to compute power
-    setActuation(s, force);
-
-    path.addInEquivalentForces(s, force, bodyForces, mobilityForces);
 }
 
 /**
@@ -211,29 +164,7 @@ void PathActuator::computeForce( const SimTK::State& s,
  */
 double PathActuator::computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const
 {
-    return getGeometryPath().computeMomentArm(s, aCoord);
-}
-
-//------------------------------------------------------------------------------
-//                            CONNECT TO MODEL
-//------------------------------------------------------------------------------
-/**
- * Perform some setup functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel OpenSim model containing this PathActuator.
- */
-void PathActuator::extendFinalizeFromProperties()
-{
-    GeometryPath &path = updGeometryPath();
-
-    clearComponents();
-    addComponent(&path);
-
-    // Set owner here in case errors happen later so we can put useful message about responsible party.
-    path.setOwner(this);
-
-    Super::extendFinalizeFromProperties();
+    return getPath().computeMomentArm(s, aCoord);
 }
 
 //------------------------------------------------------------------------------
@@ -246,11 +177,28 @@ void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
 
     // if this force is disabled OR it is being overridden (not computing dynamics)
     // then don't compute the color of the path.
-    if (!isDisabled(state) && !isActuationOverridden(state)){
+    if (appliesForce(state) && !isActuationOverridden(state)){
         const SimTK::Vec3 color = computePathColor(state);
         if (!color.isNaN())
-            getGeometryPath().setColor(state, color);
+            getPath().setColor(state, color);
     }
+}
+
+void PathActuator::implProduceForces(const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
+{
+    if (!_model) {
+        return;
+    }
+
+    const double force = isActuationOverridden(s) ?
+        computeOverrideActuation(s) :
+        computeActuation(s);
+
+    // the force of this actuator used to compute power
+    setActuation(s, force);
+
+    getPath().produceForces(s, force, forceConsumer);
 }
 
 //------------------------------------------------------------------------------
@@ -264,67 +212,4 @@ void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
 // activation level.
 SimTK::Vec3 PathActuator::computePathColor(const SimTK::State& state) const {
     return SimTK::Vec3(SimTK::NaN);
-}
-
-
-//=============================================================================
-// XML
-//=============================================================================
-//-----------------------------------------------------------------------------
-// UPDATE FROM XML NODE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Update this object based on its XML node.
- *
- * This method simply calls Object::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) and then calls
- * a few methods in this class to ensure that variable members have been
- * set in a consistent manner.
- */
-void PathActuator::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
-{
-    updGeometryPath().setOwner(this);
-    Super::updateFromXMLNode(aNode, versionNumber);
-}   
-
-//=============================================================================
-// SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen before the muscle is scaled.
- * For this object, that entails calculating and storing the muscle-tendon
- * length in the current body position.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void PathActuator::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().preScale(s, aScaleSet);
-}
-
-//_____________________________________________________________________________
-/**
- * Scale the muscle based on XYZ scale factors for each body.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- * @return Whether muscle was successfully scaled or not.
- */
-void PathActuator::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().scale(s, aScaleSet);
-}
-
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen after the muscle is scaled.
- * For this object, that entails updating the muscle path. Derived classes
- * should probably also scale or update some of the force-generating
- * properties.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void PathActuator::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().postScale(s, aScaleSet);
 }

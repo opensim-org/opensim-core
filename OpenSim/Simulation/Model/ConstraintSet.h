@@ -1,5 +1,5 @@
-#ifndef __ConstraintSet_h__
-#define __ConstraintSet_h__
+#ifndef OPENSIM_CONSTRAINT_SET_H_
+#define OPENSIM_CONSTRAINT_SET_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  ConstraintSet.h                          *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2018 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,24 +23,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
 
-#ifdef SWIG
-    #ifdef OSIMSIMULATION_API
-        #undef OSIMSIMULATION_API
-        #define OSIMSIMULATION_API
-    #endif
-#endif
-
 namespace OpenSim {
-
-
-class Model;
-
-//class ScaleSet;
 
 //=============================================================================
 //=============================================================================
@@ -48,30 +34,15 @@ class Model;
  * A class for holding a set of constraints.
  *
  * @authors Ajay Seth
- * @version 1.0
  */
-
 class OSIMSIMULATION_API ConstraintSet : public ModelComponentSet<Constraint> {
 OpenSim_DECLARE_CONCRETE_OBJECT(ConstraintSet, ModelComponentSet<Constraint>);
 
-private:
-    void setNull();
 public:
-    ConstraintSet();
-    ConstraintSet(Model& model);
+    /** Use Super's constructors. @see ModelComponentSet */
+    using Super::Super;
 
-    ConstraintSet(Model& model, const std::string &aFileName, 
-                  bool aUpdateFromXMLNode=true)
-    :   Super(model, aFileName, aUpdateFromXMLNode) {}
-    ConstraintSet(const ConstraintSet& aAbsConstraintSet);
-    ~ConstraintSet(void);
-
-    //--------------------------------------------------------------------------
-    // UTILITIES
-    //--------------------------------------------------------------------------
-
-    // SCALE
-    void scale(const ScaleSet& aScaleSet);
+    // default copy, assignment operator, and destructor
 
 //=============================================================================
 };  // END of class ConstraintSet
@@ -80,4 +51,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __ConstraintSet_h__
+#endif // OPENSIM_CONSTRAINT_SET_H_

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Ayman Habib, Matt DeMers                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -56,6 +56,27 @@ public:
         "The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] "
         "measured about the mass_center and not the body origin.");
 
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(momentum_about_origin, SimTK::SpatialVec,
+            calcMomentumAboutOrigin, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(angular_momentum_about_origin, SimTK::Vec3,
+            calcAngularMomentumAboutOrigin, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(linear_momentum_about_origin, SimTK::Vec3,
+            calcLinearMomentumAboutOrigin, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(momentum_about_mass_center, SimTK::SpatialVec,
+            calcMomentumAboutMassCenter, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(angular_momentum_about_mass_center, SimTK::Vec3,
+            calcAngularMomentumAboutMassCenter, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(linear_momentum_about_mass_center, SimTK::Vec3,
+            calcLinearMomentumAboutMassCenter, SimTK::Stage::Velocity);
+
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
@@ -92,14 +113,44 @@ public:
      */
     SimTK::MassProperties getMassProperties() const;
 
-    void scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass = false);
-    void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true);
+    /** Scale the Body's center of mass location and its inertial properties. */
+    void scale(const SimTK::Vec3& scaleFactors, bool scaleMass = false);
+
+    /** Scale the Body's center of mass location only. Note that
+        scaleInertialProperties() must be called after this method to update the
+        Body's mass and inertia tensor. */
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+
+    /** Scale the Body's mass and inertia tensor. */
+    void scaleInertialProperties(const ScaleSet& scaleSet, bool scaleMass = true);
+    void scaleInertialProperties(const SimTK::Vec3& scaleFactors, bool scaleMass = true);
+
     void scaleMass(double aScaleFactor);
-    /** Add a Mesh specified by file name to the list of Geometry owned by the Body.
-        Transform is assumed to be the same as the Body.
-        Scale defaults to 1.0 but can be changed on the call line.
-    */
-    void addMeshGeometry(const std::string &aGeometryFileName, const SimTK::Vec3 scale = SimTK::Vec3(1));
+
+    /** Calculate the Body's spatial momentum (angular, linear) measured and 
+    expressed in Ground, but taken about the Body origin. */
+    SimTK::SpatialVec calcMomentumAboutOrigin(const SimTK::State& s) const;
+
+    /** Calculate the Body's angular momentum measured and expressed in Ground,
+    but taken about the Body origin. */
+    SimTK::Vec3 calcAngularMomentumAboutOrigin(const SimTK::State& s) const;
+
+    /** Calculate the Body's linear momentum measured and expressed in Ground,
+    but taken about the Body origin. */
+    SimTK::Vec3 calcLinearMomentumAboutOrigin(const SimTK::State& s) const;
+    
+    /** Calculate the Body's spatial momentum (angular, linear) measured and
+    expressed in Ground, but taken about the Body mass center. */
+    SimTK::SpatialVec calcMomentumAboutMassCenter(const SimTK::State& s) const;
+
+    /** Calculate the Body's angular momentum measured and expressed in Ground,
+    but taken about the Body mass center. */
+    SimTK::Vec3 calcAngularMomentumAboutMassCenter(const SimTK::State& s) const;
+
+    /** Calculate the Body's linear momentum measured and expressed in Ground,
+    but taken about the Body mass center. */
+    SimTK::Vec3 calcLinearMomentumAboutMassCenter(const SimTK::State& s) const;
+
  protected:
 
     // Model component interface.
@@ -124,17 +175,12 @@ private:
         return _internalRigidBody;
     }
 
-    /** Convert old format Geometry version 3.2 to recent 4.0 format */
-    void convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& aNode, 
-                                             const SimTK::Vec3& outerScaleFactors, 
-                                             const SimTK::Vec6& outerTransform, 
-                                             SimTK::Xml::Element& geomSetElement) const;
-    void createFrameForXform(const SimTK::Xml::element_iterator&, const std::string& frameName, 
-                                            const SimTK::Vec6& localXform, const std::string& bodyName) const;
     // mutable because fist get constructs tensor from properties
     mutable SimTK::Inertia _inertia;
 
-    SimTK::Array_<Body*> _slaves;
+    // Keep track of the slave bodies used to partition this Body
+    // in order break kinematic loops
+    SimTK::Array_<SimTK::ReferencePtr<Body>> _slaves;
 
     // Internal use for a Master body. Differs from its public MassProperties
     // which is the "effective" mass of the Body including internal slave

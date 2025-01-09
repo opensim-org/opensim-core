@@ -1,5 +1,5 @@
-#ifndef __PathPointSet_h__
-#define __PathPointSet_h__
+#ifndef OPENSIM_PATH_POINT_SET_H
+#define OPENSIM_PATH_POINT_SET_H
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  PathPointSet.h                          *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2018 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,38 +23,27 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Set.h>
-#include "PathPoint.h"
-#include "SimTKsimbody.h"
+#include <OpenSim/Simulation/Model/ModelComponentSet.h>
+#include "AbstractPathPoint.h"
 
 namespace OpenSim {
 
 //=============================================================================
 //=============================================================================
 /**
- * A class for holding a set of muscle points.
+ * A class for holding a set of path points.
+ * @note the Set contains any path point that derives from AbstractPathPoint
  *
  * @authors Peter Loan
- * @version 1.0
  */
+class OSIMSIMULATION_API PathPointSet : public Set<AbstractPathPoint> {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathPointSet, Set<AbstractPathPoint>);
 
-class OSIMSIMULATION_API PathPointSet : public Set<PathPoint> {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathPointSet, Set<PathPoint>);
-
-private:
-    void setNull();
 public:
-    PathPointSet();
-    PathPointSet(const PathPointSet& aPathPointSet);
-    ~PathPointSet(void);
+    /** Use Super's constructors. @see Set */
+    using Super::Super;
 
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    PathPointSet& operator=(const PathPointSet &aPathPointSet);
-#endif
+    // default copy, assignment operator, and destructor
 
 //=============================================================================
 };  // END of class PathPointSet
@@ -63,4 +52,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __PathPointSet_h__
+#endif // OPENSIM_PATH_POINT_SET_H

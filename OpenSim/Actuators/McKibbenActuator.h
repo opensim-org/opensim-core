@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Nabeel Allana                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,12 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Simulation/Model/PathActuator.h>
-
-#include "Simbody.h"
 
 namespace OpenSim
 {
@@ -100,14 +95,6 @@ protected:
 
 private:
     void constructProperties();
-
-    //--------------------------------------------------------------------------
-    // Implement Force interface
-    //--------------------------------------------------------------------------
-    void computeForce(const SimTK::State& state, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                      SimTK::Vector& mobilityForces) const override;
-
 
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface

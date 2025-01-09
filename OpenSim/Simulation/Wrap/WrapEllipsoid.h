@@ -1,5 +1,5 @@
-#ifndef __WrapEllipsoid_h__
-#define __WrapEllipsoid_h__
+#ifndef OPENSIM_WRAP_ELLIPSOID_H_
+#define OPENSIM_WRAP_ELLIPSOID_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  WrapEllipsoid.h                          *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2019 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,25 +25,10 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyStr.h>
 #include "WrapObject.h"
-
-#ifdef SWIG
-    #ifdef OSIMSIMULATION_API
-        #undef OSIMSIMULATION_API
-        #define OSIMSIMULATION_API
-    #endif
-#endif
 
 namespace OpenSim {
 
-class Body;
-class Model;
 class PathWrap;
 class WrapResult;
 
@@ -53,50 +38,45 @@ class WrapResult;
  * A class implementing an ellipsoid for muscle wrapping.
  *
  * @author Peter Loan
- * @version 1.0
+ * updated for OpenSim 4.0 by Benjamin Michaud, 2019.
  */
 class OSIMSIMULATION_API WrapEllipsoid : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapEllipsoid, WrapObject);
-
+public:
 //=============================================================================
-// DATA
+// PROPERTIES
 //=============================================================================
-protected:
-
-    PropertyDblArray _dimensionsProp;
-    Array<double>& _dimensions;
+    OpenSim_DECLARE_PROPERTY(dimensions, SimTK::Vec3,
+                             "The length of the radii of the ellipsoid.");
 
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 public:
     WrapEllipsoid();
-    WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid);
     virtual ~WrapEllipsoid();
 
-#ifndef SWIG
-    WrapEllipsoid& operator=(const WrapEllipsoid& aWrapEllipsoid);
-#endif
-    void copyData(const WrapEllipsoid& aWrapEllipsoid);
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
-        SimTK::Vec3 getRadii() const;
+    SimTK::Vec3 getRadii() const;
 
-    void scale(const SimTK::Vec3& aScaleFactors) override;
-    void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
-#ifndef SWIG
-    int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
-#endif
+    /** Scale the ellipsoid's dimensions. The base class (WrapObject) scales the
+        origin of the ellipsoid in the body's reference frame. */
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:
-    void setupProperties();
+    int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
+
+    /// Implement generateDecorations to draw geometry in visualizer
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
+
+    void extendFinalizeFromProperties() override;
 
 private:
-    void setNull();
+    void constructProperties();
+
     int calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1, SimTK::Vec3& m,
                                                 SimTK::Vec3& a, SimTK::Vec3& vs, double vs4) const;
     void CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a, 
@@ -115,6 +95,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __WrapEllipsoid_h__
+#endif // OPENSIM_WRAP_ELLIPSOID_H_
 
 

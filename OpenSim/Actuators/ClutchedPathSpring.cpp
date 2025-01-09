@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                     *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -122,6 +122,28 @@ void ClutchedPathSpring::setInitialStretch(double stretch0)
      set_initial_stretch(getStretch(state));
  }
  
+ void ClutchedPathSpring::extendFinalizeFromProperties()
+ {
+     Super::extendFinalizeFromProperties();
+
+     OPENSIM_THROW_IF_FRMOBJ(
+         (SimTK::isNaN(get_stiffness()) || get_stiffness() < 0),
+         InvalidPropertyValue, getProperty_stiffness().getName(),
+         "Stiffness cannot be less than zero");
+     OPENSIM_THROW_IF_FRMOBJ(
+         (SimTK::isNaN(get_dissipation()) || get_dissipation() < 0),
+         InvalidPropertyValue, getProperty_dissipation().getName(),
+         "Dissipation cannot be less than zero");
+     OPENSIM_THROW_IF_FRMOBJ(
+         (SimTK::isNaN(get_relaxation_time_constant()) || get_relaxation_time_constant() < 0),
+         InvalidPropertyValue, 
+         getProperty_relaxation_time_constant().getName(),
+         "Relaxation time constant cannot be less than zero");
+     OPENSIM_THROW_IF_FRMOBJ(
+         (SimTK::isNaN(get_initial_stretch()) || get_initial_stretch() < 0),
+         InvalidPropertyValue, getProperty_initial_stretch().getName(),
+         "Initial stretch cannot be less than zero");
+ }
 
 
 

@@ -9,7 +9,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2014 Stanford University and the Authors                     *
+* Copyright (c) 2005-2017 Stanford University and the Authors                *
 * Author(s): Soha Pouya, Michael Sherman                                     *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,10 +25,10 @@
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 namespace OpenSim {
 
-class Body;
 class Model;
 
 //=============================================================================
@@ -62,6 +62,12 @@ public:
     /** The default is spatial_force_is_global=true. **/
     OpenSim_DECLARE_PROPERTY(spatial_force_is_global, bool,
         "Interpret axis in Ground frame if true; otherwise, body's frame.");
+    
+//==============================================================================
+// SOCKETS
+//==============================================================================
+    OpenSim_DECLARE_SOCKET(body, Body,
+        "The body on which to apply the spatial force.");
 
 //==============================================================================
 // PUBLIC METHODS
@@ -132,18 +138,12 @@ private:
     //--------------------------------------------------------------------------
     /** Construct the infrastructure of the BodyActuator component.
     Begin with its properties. */
-    void constructProperties() override;
+    void constructProperties();
 
-    /** Next define its structural dependencies on other components.
-    This will be the body that force/torques are applied to.*/
-    void constructConnectors() override;
-
-    //--------------------------------------------------------------------------
-    // Implement Force interface
-    //--------------------------------------------------------------------------
-    void computeForce(const SimTK::State& state,
-                    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                    SimTK::Vector& mobilityForces) const override;
+    /**
+     * Implements the `ForceProducer` interface.
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
 
     //--------------------------------------------------------------------------
     // Implement Actuator interface.

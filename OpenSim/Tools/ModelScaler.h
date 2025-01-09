@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,19 +25,12 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <math.h>
-#include "osimToolsDLL.h"
-#include "osimToolsDLL.h"
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyStrArray.h>
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include "MeasurementSet.h"
+
+namespace SimTK {
+class State;
+}
 
 namespace OpenSim {
 
@@ -118,7 +111,8 @@ public:
 #endif
    void copyData(const ModelScaler &aModelScaler);
 
-    bool processModel(Model* aModel, const std::string& aPathToSubject="", double aFinalMass = -1.0);
+    bool processModel(Model* aModel, const std::string& aPathToSubject="",
+            double aFinalMass = -1.0) const;
     /* Register types to be used when reading a ModelScaler object from xml file. */
     static void registerTypes();
 

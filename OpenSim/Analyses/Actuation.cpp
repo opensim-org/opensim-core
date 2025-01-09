@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2012 Stanford University and the Authors                *
+* Copyright (c) 2005-2017 Stanford University and the Authors                *
 * Author(s): Frank C. Anderson                                               *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,15 +25,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
+#include "Actuation.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include "Actuation.h"
-
-
-
 
 using namespace OpenSim;
 using namespace std;
@@ -173,7 +167,8 @@ void Actuation::setModel(Model& aModel)
         _na = 0;
 
     if (_na <= 0){
-        cout << "WARNING: Actuation analysis canceled. There are no Actuators in the model." << endl;
+        log_warn("Actuation analysis canceled. There are no Actuators in the "
+                 "model.");
         return;
     }
 
@@ -240,12 +235,9 @@ constructDescription()
     strcat(descrip, "from the model.\n");
 
     strcat(descrip, "\nUnits are S.I. units (second, meters, Newtons, ...)");
-    if (getInDegrees()) {
-        strcat(descrip, "\nAngles are in degrees.");
-    }
-    else {
-        strcat(descrip, "\nAngles are in radians.");
-    }
+    strcat(descrip, "\nIf the header above contains a line with ");
+    strcat(descrip, "'inDegrees', this indicates whether rotational values ");
+    strcat(descrip, "are in degrees (yes) or radians (no).");
     strcat(descrip, "\n\n");
 
     setDescription(descrip);
@@ -268,7 +260,8 @@ constructColumnLabels()
         labels.append("time");
         const Set<Actuator>& ai = _model->getActuators();
         for (int i = 0; i < ai.getSize(); i++)
-            if (!ai.get(i).get_isDisabled()) labels.append(ai.get(i).getName());
+            if(ai.get(i).get_appliesForce())
+                labels.append(ai.get(i).getName());
         setColumnLabels(labels);
     }
     _forceStore->setColumnLabels(getColumnLabels());
@@ -334,27 +327,6 @@ getPowerStorage() const
     return(_powerStore);
 }
 
-
-//-----------------------------------------------------------------------------
-// STORAGE CAPACITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
-* Set the capacity increments of all storage instances.
-*
-* @param aIncrement Increment by which storage capacities will be increased
-* when storage capacities run out.
-*/
-void Actuation::
-setStorageCapacityIncrements(int aIncrement)
-{
-    _forceStore->setCapacityIncrement(aIncrement);
-    _speedStore->setCapacityIncrement(aIncrement);
-    _powerStore->setCapacityIncrement(aIncrement);
-}
-
-
-
 //=============================================================================
 // ANALYSIS
 //=============================================================================
@@ -377,7 +349,7 @@ record(const SimTK::State& s)
     const Set<Actuator>& fSet = _model->getActuators();
     for (int i = 0, iact = 0; i<fSet.getSize(); i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
-        if (!fSet.get(i).get_isDisabled())
+        if(fSet.get(i).get_appliesForce())
             _fsp[iact++] = act->getActuation(s);
     }
     _forceStore->append(tReal, _na, _fsp);
@@ -385,14 +357,14 @@ record(const SimTK::State& s)
     // SPEED
     for (int i = 0, iact = 0; i<fSet.getSize(); i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
-        if (!fSet.get(i).get_isDisabled())
+        if(fSet.get(i).get_appliesForce())
             _fsp[iact++] = act->getSpeed(s);
     }
     _speedStore->append(tReal, _na, _fsp);
 
     // POWER
     for (int i = 0, iact = 0; i<fSet.getSize(); i++) {
-        if (!fSet.get(i).get_isDisabled())
+        if(fSet.get(i).get_appliesForce())
             _fsp[iact++] = fSet.get(i).getPower(s);
     }
     _powerStore->append(tReal, _na, _fsp);
@@ -418,12 +390,12 @@ record(const SimTK::State& s)
 * @return -1 on error, 0 otherwise.
 */
 int Actuation::
-begin(SimTK::State& s)
+begin(const SimTK::State& s)
 {
     if (!proceed()) return(0);
 
     // NUMBER OF ACTUATORS
-    int na = _model->getActuators().getSize();
+    int na = getNumEnabledActuators();
     _na = na;
     // WORK ARRAY
     if (_fsp != NULL) delete[] _fsp;
@@ -491,8 +463,7 @@ step(const SimTK::State& s, int stepNumber)
 *
 * @return -1 on error, 0 otherwise.
 */
-int Actuation::
-end(SimTK::State& s)
+int Actuation::end(const SimTK::State& s)
 {
     if (!proceed()) return 0;
 
@@ -527,8 +498,8 @@ printResults(const string &aBaseName, const string &aDir, double aDT,
 const string &aExtension)
 {
     if (!getOn()) {
-        printf("Actuation.printResults: Off- not printing.\n");
-        return(0);
+        log_info("Actuation.printResults: Off- not printing.");
+        return 0;
     }
 
     std::string prefix = aBaseName + "_" + getName() + "_";
@@ -554,7 +525,8 @@ getNumEnabledActuators()
     int numActuators = actuators.getSize();
     int numEnabled = numActuators;
     for (int i = 0; i< numActuators; i++)
-        if (actuators[i].get_isDisabled()) numEnabled--;
+        if(!actuators[i].get_appliesForce())
+            numEnabled--;
 
     return numEnabled;
 }

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -37,7 +37,7 @@ class SpatialTransform;
 A class implementing a custom joint.  The underlying implementation in Simbody 
 is a SimTK::MobilizedBody::FunctionBased. Custom joints offer a generic joint
 representation, which can be used to model both conventional (pins, slider,
-universal, etc…) as well as more complex biomechanical joints. The behavior of
+universal, etc.) as well as more complex biomechanical joints. The behavior of
 a custom joint is specified by its SpatialTransform. A SpatialTransform is com-
 prised of 6 TransformAxes (3 rotations and 3 translations) that define the
 spatial position of Child in Parent as a function of coordinates. Each transform
@@ -51,6 +51,7 @@ transform axis functions that depend on the same coordinate(s).
 */
 class OSIMSIMULATION_API CustomJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(CustomJoint, Joint);
+
 public:
 //==============================================================================
 // PROPERTIES
@@ -71,24 +72,21 @@ public:
     CustomJoint();
 
     /** Construct joint with supplied coordinates and transform axes */
-    CustomJoint( const std::string &name,
-                 const std::string& parentName,
-                 const std::string& childName,
-                 SpatialTransform& aSpatialTransform,
-                 bool reverse=false);
+    CustomJoint(const std::string&    name,
+                const PhysicalFrame&  parent,
+                const PhysicalFrame&  child,
+                SpatialTransform&     spatialTransform);
 
     /** Joint constructor with explicit parent and child offsets in terms of
         their location and orientation. */
-    CustomJoint(const std::string& name,
-        const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent,
-        const SimTK::Vec3& orientationInParent,
-        const PhysicalFrame& child,
-        const SimTK::Vec3& locationInChild,
-        const SimTK::Vec3& orientationInChild,
-        SpatialTransform& aSpatialTransform,
-        bool reverse=false);
-
+    CustomJoint(const std::string&    name,
+                const PhysicalFrame&  parent,
+                const SimTK::Vec3&    locationInParent,
+                const SimTK::Vec3&    orientationInParent,
+                const PhysicalFrame&  child,
+                const SimTK::Vec3&    locationInChild,
+                const SimTK::Vec3&    orientationInChild,
+                SpatialTransform&     spatialTransform);
 
     // default destructor, copy constructor, copy assignment
 
@@ -98,8 +96,40 @@ public:
     SpatialTransform& updSpatialTransform()
     {   return upd_SpatialTransform(); }
 
+    /** Exposes getCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::getCoordinate;
+
+    /** Exposes updCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::updCoordinate;
+
+    /** Get a const reference to a Coordinate associated with this Joint. */
+    const Coordinate& getCoordinate(unsigned idx) const {
+        OPENSIM_THROW_IF(numCoordinates() == 0,
+                         JointHasNoCoordinates);
+        OPENSIM_THROW_IF((int)idx > numCoordinates()-1,
+                         InvalidCall,
+                         "Index passed to getCoordinate() exceeds the largest "
+                         "index available");
+
+        return get_coordinates(idx);
+    }
+
+    /** Get a writable reference to a Coordinate associated with this Joint. */
+    Coordinate& updCoordinate(unsigned idx) {
+        OPENSIM_THROW_IF(numCoordinates() == 0,
+                         JointHasNoCoordinates);
+        OPENSIM_THROW_IF(idx >= static_cast<unsigned>(numCoordinates()),
+                         InvalidCall,
+                         "Index passed to updCoordinate() exceeds the largest "
+                         "index available");
+
+        return upd_coordinates(idx);
+    }
+
     // SCALE
-    void scale(const ScaleSet& aScaleSet) override;
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1)

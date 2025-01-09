@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,8 +25,7 @@
 
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "Force.h"
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 #include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 
 namespace OpenSim {
@@ -51,7 +50,7 @@ namespace OpenSim {
  * @author Matt DeMers
  */
 class OSIMSIMULATION_API ExpressionBasedBushingForce 
-    : public TwoFrameLinker<Force, PhysicalFrame> {
+    : public TwoFrameLinker<ForceProducer, PhysicalFrame> {
 OpenSim_DECLARE_CONCRETE_OBJECT(ExpressionBasedBushingForce, TwoFrameLinker);
 public:
 //==============================================================================
@@ -95,17 +94,39 @@ public:
         "Damping parameters resisting translational deflection (delta_dot) .");
 
 //==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(bushing_force, SimTK::Vec6, calcBushingForce,
+            SimTK::Stage::Dynamics);
+
+//==============================================================================
 // PUBLIC METHODS
 //==============================================================================
     /** Default constructor leaves bodies unspecified, sets the bushing frames
       * to be at their body origins, and sets all bushing parameters to zero. **/
     ExpressionBasedBushingForce();
 
+    /** This convenience constructor sets the bushing frames and sets all
+     * bushing functions to zero.  **/
+    ExpressionBasedBushingForce(const std::string& name,
+                                const PhysicalFrame& frame1,
+                                const PhysicalFrame& frame2);
+
     /** This convenience constructor defines and sets the bushing frames by name
-    *  and sets all bushing functions to zero.  **/
+     * and sets all bushing functions to zero.  **/
     ExpressionBasedBushingForce(const std::string& name,
                                 const std::string& frame1Name,
                                 const std::string& frame2Name);
+
+    /** This convenience constructor defines and sets the bushing frames on
+      * each body, and sets all bushing functions to zero.  **/
+    ExpressionBasedBushingForce(const std::string& name,
+                                const PhysicalFrame& frame1,
+                                const SimTK::Vec3& point1,
+                                const SimTK::Vec3& orientation1,
+                                const PhysicalFrame& frame2,
+                                const SimTK::Vec3& point2,
+                                const SimTK::Vec3& orientation2);
 
     /** This convenience constructor defines and sets the bushing frames on 
       * each body, and sets all bushing functions to zero.  **/
@@ -116,6 +137,22 @@ public:
                  const std::string& frame2Name,
                  const SimTK::Vec3& point2, 
                  const SimTK::Vec3& orientation2);
+
+    /** This convenience constructor defines a bushing that behaves like a
+      * primitive bushing.  Stiffnesses are used to define linear functions for
+      * force deflection profiles.**/
+    ExpressionBasedBushingForce(const std::string& name,
+                                const PhysicalFrame& frame1,
+                                const SimTK::Vec3& point1,
+                                const SimTK::Vec3& orientation1,
+                                const PhysicalFrame& frame2,
+                                const SimTK::Vec3& point2,
+                                const SimTK::Vec3& orientation2,
+                                const SimTK::Vec3& transStiffness,
+                                const SimTK::Vec3& rotStiffness,
+                                const SimTK::Vec3& transDamping,
+                                const SimTK::Vec3& rotDamping);
+
     /** This convenience constructor defines a bushing that behaves like a
       * primitive bushing.  Stiffnesses are used to define linear functions for
       * force deflection profiles.**/
@@ -195,7 +232,10 @@ public:
         function of the deflection rate between the bushing frames. It is the 
         force on frame2 from frame1 in the basis of the deflection rate (dqdot).*/
     SimTK::Vec6 calcDampingForce(const SimTK::State& state) const;
-  
+
+    /** Calculate the total bushing force. This is the sum of the stiffness and
+        damping force contributions. */
+    SimTK::Vec6 calcBushingForce(const SimTK::State& state) const;
 
     //--------------------------------------------------------------------------
     // Reporting
@@ -204,18 +244,13 @@ public:
      * Provide name(s) of the quantities (column labels) of the force value(s) 
      * to be reported.
      */
-    virtual OpenSim::Array<std::string> getRecordLabels() const ;
+    virtual OpenSim::Array<std::string> getRecordLabels() const override;
     /**
     *  Provide the value(s) to be reported that correspond to the labels
     */
-    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
+    virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
 protected:
-    /** Compute the bushing force contribution to the system and add in to 
-        appropriate bodyForces and/or system generalizedForces */
-    virtual void computeForce(const SimTK::State& s,
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                              SimTK::Vector& generalizedForces) const;
     /** Potential energy calculation is not implemented */
     //--------------------------------------------------------------------------
     // Visual support in SimTK visualizer
@@ -231,6 +266,11 @@ protected:
                                 SimTK::SpatialVec& forces_on_F_in_ground) const;
 
 private:
+    /**
+     * Implements the `ForceProducer` interface by computing the bushing force.
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
+
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface.
     //--------------------------------------------------------------------------

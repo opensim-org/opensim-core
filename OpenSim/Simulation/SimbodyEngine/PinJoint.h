@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "Joint.h"
 
 namespace OpenSim {
@@ -46,12 +45,63 @@ are in the desired direction.
 class OSIMSIMULATION_API PinJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(PinJoint, Joint);
 
+public:
+    /** Index of Coordinate for use as an argument to getCoordinate() and
+        updCoordinate().
+
+        <b>C++ example</b>
+        \code{.cpp}
+        const auto& rz = myPinJoint.getCoordinate(PinJoint::Coord::RotationZ);
+        \endcode
+
+        <b>Python example</b>
+        \code{.py}
+        import opensim
+        rz = myPinJoint.getCoordinate(opensim.PinJoint.Coord_RotationZ)
+        \endcode
+
+        <b>Java example</b>
+        \code{.java}
+        rz = myPinJoint.getCoordinate(PinJoint.Coord.RotationZ);
+        \endcode
+
+        <b>MATLAB example</b>
+        \code{.m}
+        rz = myPinJoint.get_coordinates(0);
+        \endcode
+    */
+    enum class Coord: unsigned {
+        RotationZ = 0u ///< 0
+    };
+
+private:
     /** Specify the Coordinate of the PinJoint */
-    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                    static_cast<unsigned>(Coord::RotationZ)) };
 
 public:
     /** Use Joint's constructors. @see Joint */
     using Joint::Joint;
+
+    /** Exposes getCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::getCoordinate;
+
+    /** Exposes updCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::updCoordinate;
+
+    /** Get a const reference to the Coordinate associated with this Joint.
+        @see Coord */
+    const Coordinate& getCoordinate(Coord idx) const {
+        return get_coordinates( static_cast<unsigned>(idx) );
+    }
+
+    /** Get a writable reference to the Coordinate associated with this Joint.
+        @see Coord */
+    Coordinate& updCoordinate(Coord idx) {
+        return upd_coordinates( static_cast<unsigned>(idx) );
+    }
 
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,8 +24,10 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
@@ -50,7 +52,7 @@ using namespace std;
 /**
  * Default constructor.
  */
-ExternalForce::ExternalForce() : Force()
+ExternalForce::ExternalForce()
 {
     setNull();
     constructProperties();
@@ -88,38 +90,17 @@ ExternalForce::ExternalForce(SimTK::Xml::Element& node) : Super(node)
 {
     setNull();
     constructProperties();
-    updateFromXMLNode(node);
+    updateFromXMLNode(node, -1);
 }
 
 void ExternalForce::setNull()
 {
     setAuthors("Ajay Seth");
-    _dataSource = NULL;
-    _appliedToBody = NULL;
-    _forceExpressedInBody = NULL;
-    _pointExpressedInBody = NULL; 
+    _dataSource = nullptr;
+    _appliedToBody = nullptr;
+    _forceExpressedInBody = nullptr;
+    _pointExpressedInBody = nullptr; 
 }
-
-
-//-----------------------------------------------------------------------------
-// UPDATE FROM XML NODE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Update this object based on its XML node.
- */
-void ExternalForce::
-updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
-{
-    // Base class
-    Force::updateFromXMLNode(aNode, versionNumber);
-
-    if( getProperty_force_identifier().empty() 
-        && getProperty_torque_identifier().empty()){
-        throw Exception("ExternalForce:: no force or torque identified.");
-    }
-}   
-
 
 /**
  * Connect properties to local pointers.
@@ -127,68 +108,103 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 void ExternalForce::constructProperties()
 {
     constructProperty_applied_to_body("");
-    constructProperty_force_expressed_in_body("");
-    constructProperty_point_expressed_in_body("");
-    constructProperty_force_identifier("");
-    constructProperty_point_identifier("");
-    constructProperty_torque_identifier("");
-    constructProperty_data_source_name("");
+    constructProperty_force_expressed_in_body("ground");
+    constructProperty_point_expressed_in_body("ground");
+    constructProperty_force_identifier();
+    constructProperty_point_identifier();
+    constructProperty_torque_identifier();
+    constructProperty_data_source_name();
 }
 
 void ExternalForce::setDataSource(const Storage &dataSource)
 { 
     _dataSource = &dataSource;
 
-    cout << "ExternalForce::" << getName() << endl;
-    cout << "Data source being set to " << _dataSource->getName() << endl;
+    log_info("ExternalForce::{} Data source being set to {}", 
+        getName(), _dataSource->getName());   
 
     set_data_source_name(_dataSource->getName());
+}
+
+void ExternalForce::extendFinalizeFromProperties() {
+    Super::extendFinalizeFromProperties();
+
+    if( getProperty_force_identifier().empty() 
+        && getProperty_torque_identifier().empty()){
+        OPENSIM_THROW_FRMOBJ(InvalidPropertyValue, 
+            getName(), "ExternalForce:: no force or torque identified.");
+    }
+    
+    _appliesForce = appliesForce();
+    _specifiesPoint = specifiesPoint();
+    _appliesTorque = appliesTorque();
 }
 
 void ExternalForce::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
 
+    //TODO Use Sockets!
     const string& appliedToBodyName = get_applied_to_body();
     const string& forceExpressedInBodyName = get_force_expressed_in_body();
+    const string& pointExpressedInBodyName =  get_point_expressed_in_body();
 
     // This might not have been supplied in which case it will have size()==0.
     const Property<string>& dataSourceProp = getProperty_data_source_name();
 
-    _appliesForce = appliesForce();
-    _specifiesPoint = specifiesPoint();
-    _appliesTorque = appliesTorque();
-
     // hook up body pointers from names
-    if (_model){
-        _appliedToBody = 
-            static_cast<const PhysicalFrame*>(&_model->getComponent(appliedToBodyName));
-        _forceExpressedInBody = 
-            static_cast<const PhysicalFrame*>(&_model->getComponent(forceExpressedInBodyName));
-        _pointExpressedInBody = _specifiesPoint ? 
-            static_cast<const PhysicalFrame*>(&_model->getComponent(get_point_expressed_in_body()))
-            : nullptr;
+    _appliedToBody.reset();
+    _forceExpressedInBody.reset();
+    _pointExpressedInBody.reset();
+    if (hasModel()) {
+        if (getModel().hasComponent<PhysicalFrame>(appliedToBodyName))
+            _appliedToBody = &_model->getComponent<PhysicalFrame>(
+                    appliedToBodyName);
+        else if(getModel().hasComponent<PhysicalFrame>(
+            "./bodyset/" + appliedToBodyName))
+            _appliedToBody = &getModel().getComponent<PhysicalFrame>(
+                "./bodyset/" + appliedToBodyName);
+
+        if (getModel().hasComponent<PhysicalFrame>(forceExpressedInBodyName))
+            _forceExpressedInBody = &getModel().getComponent<PhysicalFrame>(
+                    forceExpressedInBodyName);
+        else if(getModel().hasComponent<PhysicalFrame>(
+            "./bodyset/" + forceExpressedInBodyName))
+            _forceExpressedInBody = &_model->getComponent<PhysicalFrame>(
+                "./bodyset/" + forceExpressedInBodyName);
+
+        if (_specifiesPoint) {
+            if (getModel().hasComponent<PhysicalFrame>(
+                pointExpressedInBodyName))
+                _pointExpressedInBody = &_model->getComponent<PhysicalFrame>(
+                    pointExpressedInBodyName);
+            else if (getModel().hasComponent<PhysicalFrame>(
+                "./bodyset/" + pointExpressedInBodyName))
+                _pointExpressedInBody = &_model->getComponent<PhysicalFrame>(
+                    "./bodyset/" + pointExpressedInBodyName);
+        }
     }
 
     if(!_appliedToBody){
-        throw(Exception("ExternalForce: Could not find body '"+appliedToBodyName+"' to apply force to." ));
+        throw(Exception("ExternalForce: Could not find body '" + appliedToBodyName +
+            "' to apply force to." ));
     }
-    if(!_forceExpressedInBody){
-        cout << "WARNING::ExternalForce could not find body '"+forceExpressedInBodyName+"' that force is expressed in-"
-                "  ground is being assumed." << endl;
+    if(!_forceExpressedInBody) {
+        log_warn("ExternalForce could not find body '{}' that force is "
+                 "expressed in-ground is being assumed.",
+                forceExpressedInBodyName);
+        _forceExpressedInBody = &_model->getGround();
     }
     if(_specifiesPoint && !_pointExpressedInBody){
-        cout << "WARNING::ExternalForce could not find body '"+get_point_expressed_in_body()+"' that point is expressed in-"
-                "  ground is being assumed." << endl;
-        _pointExpressedInBody = &_model->updBodySet().get("ground");
+        log_warn("ExternalForce could not find body '{}' that point is "
+                 "expressed in-ground is being assumed.",
+                get_point_expressed_in_body());
+        _pointExpressedInBody = &_model->getGround();
     }
 
     if(!_dataSource){
-        // No property set either
-        if((dataSourceProp.size()==0) || (dataSourceProp.getValue(0) == "")){
-            throw(Exception("ExternalForce: Not Data source has been set."));
-        }
-        // else: TODO load the data from the source. Currently this is overly
+        throw Exception("ExternalForce: No Data source has been set.");
+        // TODO: Load the data from dataSourceProp. Currently this is overly
         // complicated and handled by the ExternalLoads class.
     }
     else if(dataSourceProp.size()) {
@@ -313,33 +329,30 @@ void ExternalForce::extendConnectToModel(Model& model)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 
-void ExternalForce::computeForce(const SimTK::State& state, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+void ExternalForce::implProduceForces(const SimTK::State& state,
+    ForceConsumer& forceConsumer) const
 {
     double time = state.getTime();
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
 
-    assert(_appliedToBody!=nullptr);
+    OPENSIM_ASSERT_FRMOBJ(_appliedToBody != nullptr);
 
     if (_appliesForce) {
         Vec3 force = getForceAtTime(time);
-        engine.transform(state, *_forceExpressedInBody, force, 
-                                getModel().getGround(), force);
+        force = _forceExpressedInBody->expressVectorInGround(state, force);
         Vec3 point(0); // Default is body origin.
         if (_specifiesPoint) {
             point = getPointAtTime(time);
-            engine.transformPosition(state, *_pointExpressedInBody, point, 
-                                            *_appliedToBody,        point);
+            point = _pointExpressedInBody->
+                findStationLocationInAnotherFrame(state, point, *_appliedToBody);
         }
-        applyForceToPoint(state, *_appliedToBody, point, force, bodyForces);
+
+        forceConsumer.consumePointForce(state, *_appliedToBody, point, force);
     }
 
     if (_appliesTorque) {
         Vec3 torque = getTorqueAtTime(time);
-        engine.transform(state, *_forceExpressedInBody, torque, 
-                                getModel().getGround(), torque);
-        applyTorque(state, *_appliedToBody, torque, bodyForces);
+        torque = _forceExpressedInBody->expressVectorInGround(state, torque);
+        forceConsumer.consumeTorque(state, *_appliedToBody, torque);
     }
 }
 
@@ -425,26 +438,26 @@ OpenSim::Array<std::string> ExternalForce::getRecordLabels() const {
  */
 OpenSim::Array<double> ExternalForce::getRecordValues(const SimTK::State& state) const
 {
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
     OpenSim::Array<double>  values(SimTK::NaN);
     double time = state.getTime();
 
     if (_appliesForce) {
         Vec3 force = getForceAtTime(time);
-        engine.transform(state, *_forceExpressedInBody, force, getModel().getGround(), force);
+        force = _forceExpressedInBody->expressVectorInGround(state, force);
         for(int i=0; i<3; ++i)
             values.append(force[i]);
     
         if (_specifiesPoint) {
             Vec3 point = getPointAtTime(time);
-            engine.transformPosition(state, *_pointExpressedInBody, point, *_appliedToBody, point);
+            point = _pointExpressedInBody->
+                findStationLocationInAnotherFrame(state, point, *_appliedToBody);
             for(int i=0; i<3; ++i)
                 values.append(point[i]);
         }
     }
     if (_appliesTorque){
         Vec3 torque = getTorqueAtTime(time);
-        engine.transform(state, *_forceExpressedInBody, torque, getModel().getGround(), torque);
+        torque = _forceExpressedInBody->expressVectorInGround(state, torque);
         for(int i=0; i<3; ++i)
             values.append(torque[i]);
     }

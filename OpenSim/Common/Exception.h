@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -30,12 +30,8 @@
 
 // INCLUDES
 #include "osimCommonDLL.h"
+#include <spdlog/common.h>
 #include <string>
-
-#ifdef WIN32
-#pragma warning(disable:4251) /*no DLL interface for type of member of exported class*/
-#pragma warning(disable:4275) /*no DLL interface for base class of exported class*/
-#endif
 
 #ifdef SWIG
     #ifdef OSIMCOMMON_API
@@ -49,37 +45,63 @@
 
 namespace OpenSim {
 
+class Object;
 
-/** Macros to throw OpenSim exceptions. The purpose of these macros is to avoid
-having to provide the first few arguments (which are common to all OpenSim
-exceptions) to the exception constructor in the throw statements. This also
-allows us to add more details (eg class name) later easily.                   */
 
+/** @name Macros to throw OpenSim exceptions
+The purpose of these macros is to aid with consistent message formatting,
+include file/line/function information in all messages, and to make it easier
+for developers to produce good messages.
+@{                                                                            */
+/**  
+@relates OpenSim::Exception                                                   */
+#define OPENSIM_THROW(EXCEPTION, ...)                                \
+    throw EXCEPTION{__FILE__, __LINE__, __func__, __VA_ARGS__};
+
+/** This macro checks the given condition and throws the given exception if the
+condition is true. Here's an example that throws an exception if some result is
+incorrect, and passes `result` and `5` to the constructor of the
+`ResultIsIncorrect` exception:
+@code
+auto result = getSomeResult();
+OPENSIM_THROW_IF(result != 5, ResultIsIncorrect, result, 5);
+@endcode
+@relates OpenSim::Exception                                                   */
+// These macros also allow us to add more details (e.g. class name) later easily.
 // Note -- Extra braces enclosing "if" are to avoid problems when these macros 
 // are called within if-else statements like:
-// \code{.cpp}
 //           if(<some condition>)
 //               OPENSIM_THROW_IF(<arguments>)
 //           else
 //               <some statements>
-// \endcode                                                                     
-#define OPENSIM_THROW(EXCEPTION, ...)                                \
-    throw EXCEPTION{__FILE__, __LINE__, __func__, __VA_ARGS__};
-
 #define OPENSIM_THROW_IF(CONDITION, EXCEPTION, ...)                  \
     {                                                                \
     if(CONDITION)                                                    \
         OPENSIM_THROW(EXCEPTION, __VA_ARGS__)                        \
     }
 
+/** Macro to throw from within an Object. This macro picks up implicit pointer
+to the object and uses it to print information.                               */
+#define OPENSIM_THROW_FRMOBJ(EXCEPTION, ...)                         \
+    throw EXCEPTION{__FILE__, __LINE__, __func__, *this, __VA_ARGS__};
+
+/** Macro to throw from within an Object if a condition evaluates to TRUE. This 
+macro picks up implicit pointer to the object and uses it to print 
+information.                                                                  */
+#define OPENSIM_THROW_IF_FRMOBJ(CONDITION, EXCEPTION, ...)           \
+    {                                                                \
+    if(CONDITION)                                                    \
+        OPENSIM_THROW_FRMOBJ(EXCEPTION, __VA_ARGS__)                 \
+    }
+/** @}                                                                        */
 
 
 /**
  * A class for basic exception functionality.
  * \if developer
- * To create exception classes in OpenSim, use the following guidlines.
- * If the intention is the derive from an exception named (say) BaseException
- * that is part of OpenSim, use the following blueprint:
+ * To create exception classes in OpenSim, use the following guidelines.
+ * If the intention is to derive from an exception named, for example,
+ * BaseException that is part of OpenSim, use the following blueprint:
  * \code{.cpp}
  *     class MyNewException : public BaseException {
  *     public:
@@ -97,8 +119,6 @@ allows us to add more details (eg class name) later easily.                   */
  * derived classes. When creating new exceptions, remember to call addMessage()
  * as shown above if the exception class does have any error message.
  * \endif
- *
- * @author Frank C. Anderson
  */
 class OSIMCOMMON_API Exception  : public std::exception {
 
@@ -125,10 +145,61 @@ public:
               int aLine=-1);
 
     /** Call this constructor from derived classes to add file, line and 
-    function information to the error message                                 */
+    function information to the error message. Use this when throwing
+    Derived classes. Use OPENSIM_THROW_<> macros at throw sites.              */
     Exception(const std::string& file,
               size_t line,
               const std::string& func);
+
+    /** Use this when you want to throw an Exception (with OPENSIM_THROW or
+    OPENSIM_THROW_IF) and also provide a message.                             */
+    Exception(const std::string& file,
+              size_t line,
+              const std::string& func,
+              const std::string& msg);
+
+    /** The message created by this constructor will contain the class name and
+    instance name of the provided Object. Use this when throwing derived
+    classes. Use OPENSIM_THROW_<> macros at throw sites.                      */
+    Exception(const std::string& file,
+              size_t line,
+              const std::string& func,
+              const Object& obj);
+
+    /** The message created by this constructor will contain the class name and
+    instance name of the provided Object, and also accepts a message. Use this
+    when throwing Exception directly. Use OPENSIM_THROW_<> macros at throw 
+    sites.                                                                    */
+    Exception(const std::string& file,
+              size_t line,
+              const std::string& func,
+              const Object& obj,
+              const std::string& msg);
+
+    /** Use this when you want to throw an Exception (with OPENSIM_THROW or
+    OPENSIM_THROW_IF) and also provide a message that is formatted
+    using fmt::format() syntax. */
+    template <typename... Args>
+    Exception(const std::string& file,
+              size_t line,
+              const std::string& func,
+              spdlog::string_view_t fmt,
+              const Args&... args)
+            : Exception{file, line, func, fmt::format(fmt, args...)} {}
+
+    /** The message created by this constructor will contain the class name and
+    instance name of the provided Object, and also accepts a message formatted
+    using fmt::format() syntax. Use this when throwing an Exception directly.
+    Use OPENSIM_THROW_FRMOBJ and OPENSIM_THROW_IF_FRMOBJ macros at throw sites.
+    */
+    template <typename... Args>
+    Exception(const std::string& file,
+              size_t line,
+              const std::string& func,
+              const Object& obj,
+              spdlog::string_view_t fmt,
+              const Args&... args)
+            : Exception{file, line, func, obj, fmt::format(fmt, args...)} {}
 
     virtual ~Exception() throw() {}
 
@@ -155,12 +226,51 @@ public:
 };  // END CLASS Exception
 
 
+class InvalidArgument : public Exception {
+public:
+    InvalidArgument(const std::string& file,
+                    size_t line,
+                    const std::string& func,
+                    const std::string& msg = "") :
+        Exception(file, line, func) {
+        std::string mesg = "Invalid Argument. " + msg;
+
+        addMessage(mesg);
+    }
+};
+
+class InvalidCall : public Exception {
+public:
+    InvalidCall(const std::string& file,
+                size_t line,
+                const std::string& func,
+                const std::string& msg = "") :
+        Exception(file, line, func) {
+        std::string mesg = "Invalid Call. " + msg;
+
+        addMessage(mesg);
+    }
+};
+
+class InvalidTemplateArgument : public Exception {
+public:
+    InvalidTemplateArgument(const std::string& file,
+                            size_t line,
+                            const std::string& func,
+                            const std::string& msg) :
+        Exception(file, line, func) {
+        std::string mesg = "Invalid Template argument. " + msg;
+
+        addMessage(mesg);
+    }
+};
+
 class IndexOutOfRange : public Exception {
 public:
     IndexOutOfRange(const std::string& file,
                     size_t line,
                     const std::string& func,
-                    size_t index, 
+                    size_t index,
                     size_t min, 
                     size_t max) :
         Exception(file, line, func) {
@@ -183,6 +293,33 @@ public:
 
         addMessage(msg);
     }
+};
+
+class IOError : public Exception {
+public:
+    using Exception::Exception;
+};
+
+class ComponentNotFound : public Exception {
+public:
+    using Exception::Exception;
+    ComponentNotFound(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& toFindName,
+        const std::string& toFindClassName,
+        const std::string& thisName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName;
+        msg += "' could not find '" + toFindName;
+        msg += "' of type " + toFindClassName + ". ";
+        addMessage(msg);
+    }
+};
+
+class NonUniqueLabels : public OpenSim::Exception {
+public:
+    using Exception::Exception;
 };
 
 }; //namespace

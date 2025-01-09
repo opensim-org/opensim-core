@@ -10,7 +10,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Jack Middleton, Ajay Seth                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -30,14 +30,8 @@
 //============================================================================
 // These files contain declarations and definitions of variables and methods
 // that will be used by the Controller class.
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Set.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/Control/ControlSet.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyObjPtr.h>
 #include "Controller.h"
-#include "SimTKsimbody.h"
+#include <OpenSim/Common/PropertyStr.h>
 
 //=============================================================================
 //=============================================================================
@@ -114,8 +108,11 @@ protected:
      */
     void copyData(const ControlSetController &aController);
 
-    // for any post XML deserialization initialization
+    /// Read in the ControlSet.
     void extendFinalizeFromProperties() override;
+
+    /// Update the Controller's actuator list.
+    void extendConnectToModel(Model& model) override;
 
     //--------------------------------------------------------------------------
     // OPERATORS

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,15 +25,12 @@
  * Author: Ajay Seth
  */
 
+#include "PointActuator.h"
 
-//=============================================================================
-// INCLUDES
-//=============================================================================
 #include <OpenSim/Common/XMLDocument.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-
-#include "PointActuator.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -86,6 +83,14 @@ void PointActuator::constructProperties()
     constructProperty_optimal_force(1.0);
 }
 
+void PointActuator::extendAddToSystem(SimTK::MultibodySystem& system) const
+{
+    Super::extendAddToSystem(system);
+
+    // Cache the computed speed of the actuator
+    this->_speedCV = addCacheVariable("speed", 0.0, SimTK::Stage::Velocity);
+}
+
 //=============================================================================
 // GET AND SET
 //=============================================================================
@@ -127,7 +132,7 @@ double PointActuator::getOptimalForce() const
 //_____________________________________________________________________________
 // Get the stress of the force. This would be the force or torque provided by 
 // this actuator divided by its optimal force.
-double PointActuator::getStress( const SimTK::State& s) const
+double PointActuator::getStress(const SimTK::State& s) const
 {
     return std::abs(getActuation(s) / getOptimalForce()); 
 }
@@ -137,62 +142,67 @@ double PointActuator::getStress( const SimTK::State& s) const
 // COMPUTATIONS
 //=============================================================================
 //_____________________________________________________________________________
+
+double PointActuator::getSpeed(const SimTK::State& s) const
+{
+    if (isCacheVariableValid(s, _speedCV)) {
+        return getCacheVariableValue(s, _speedCV);
+    }
+
+    double speed = calcSpeed(s);
+
+    updCacheVariableValue(s, _speedCV) = speed;
+    markCacheVariableValid(s, _speedCV);
+    return speed;
+}
+
+double PointActuator::calcSpeed(const SimTK::State& s) const
+{
+    // get the velocity of the actuator in ground
+    Vec3 velocity = _body->findStationVelocityInGround(s, get_point());
+    return velocity.norm();
+}
+
 /**
  * Compute all quantities necessary for applying the actuator force to the
  * model.
  */
-double PointActuator::computeActuation( const SimTK::State& s ) const
+double PointActuator::computeActuation(const SimTK::State& s) const
 {
-    if(!_model) return 0;
+    if (!_model) {
+        return SimTK::NaN;
+    }
 
     // FORCE
     return getControl(s) * getOptimalForce();
 }
 
-
-
-//=============================================================================
-// APPLICATION
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Apply the actuator force to BodyA and BodyB.
- */
-void PointActuator::computeForce(const SimTK::State& s, 
-                                 SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                                 SimTK::Vector& generalizedForces) const
+void PointActuator::implProduceForces(
+    const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
-
-    if( !_model || !_body ) return;
-
-    double force;
-
-    if (isActuationOverridden(s)) {
-        force = computeOverrideActuation(s);
-    } else {
-       force = computeActuation(s);
+    if (!_model || !_body) {
+        return;
     }
+
+    const double force = isActuationOverridden(s) ? computeOverrideActuation(s)
+                                                  : computeActuation(s);
     setActuation(s, force);
 
-    
-    Vec3 forceVec = force*SimTK::UnitVec3(get_direction());
+    Vec3 forceVec = force * SimTK::UnitVec3(get_direction());
+    if (!get_force_is_global()) {
+        forceVec = _body->expressVectorInGround(s, forceVec);
+    }
+
     Vec3 lpoint = get_point();
-    if (!get_force_is_global())
-        engine.transform(s, *_body, forceVec, 
-                         getModel().getGround(), forceVec);
-    if (get_point_is_global())
-        engine.transformPosition(s, getModel().getGround(), lpoint, 
-                                 *_body, lpoint);
-    applyForceToPoint(s, *_body, lpoint, forceVec, bodyForces);
+    if (get_point_is_global()) {
+        lpoint = getModel().getGround().findStationLocationInAnotherFrame(
+            s,
+            lpoint,
+            *_body);
+    }
 
-    // get the velocity of the actuator in ground
-    Vec3 velocity(0);
-    engine.getVelocity(s, *_body, lpoint, velocity);
-
-    // the speed of the point is the "speed" of the actuator used to compute 
-    // power
-    setSpeed(s, velocity.norm());
+    forceConsumer.consumePointForce(s, *_body, lpoint, forceVec);
 }
 //_____________________________________________________________________________
 /**

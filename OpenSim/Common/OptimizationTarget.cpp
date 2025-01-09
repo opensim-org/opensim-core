@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,10 +29,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <stdlib.h>
 #include <stdio.h>
 #include "OptimizationTarget.h"
-#include <iostream>
 
 //=============================================================================
 // EXPORTED STATIC CONSTANTS
@@ -141,9 +139,9 @@ void OptimizationTarget::
 validatePerturbationSize(double &aSize)
 {
     if(aSize<SMALLDX) {
-        printf("OptimizationTarget.validatePerturbationSize: WARNING- ");
-        printf("dx size too small (%le).\n",aSize);
-        printf("\tResetting dx=%le.\n",SMALLDX);
+        log_warn("OptimizationTarget.validatePerturbationSize: dx size too "
+                 "small ({}). Resetting dx={}.",
+                aSize, SMALLDX);
         aSize = SMALLDX;
     }
 }
@@ -155,7 +153,7 @@ printPerformance(double *x)
 {
     double p;
     objectiveFunc(SimTK::Vector(getNumParameters(),x,true),true,p);
-    std::cout << "performance = " << p << std::endl;
+    log_cout("performance = {}", p);
 }
 
 //=============================================================================

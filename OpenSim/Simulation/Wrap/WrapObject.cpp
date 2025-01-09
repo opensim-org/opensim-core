@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,13 +25,11 @@
 // INCLUDES
 //=============================================================================
 #include "WrapObject.h"
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PathPoint.h>
 #include "WrapResult.h"
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/Mtx.h>
+#include <OpenSim/Simulation/Model/PathPoint.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Common/ScaleSet.h>
+
 
 //=============================================================================
 // STATICS
@@ -43,180 +41,69 @@ using SimTK::Vec3;
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
-//_____________________________________________________________________________
-/**
+/*
  * Default constructor.
  */
-WrapObject::WrapObject() :
-    Object(),
-   _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
-   _translation(_translationProp.getValueDblVec()),
-    _active(_activeProp.getValueBool()),
-    _quadrantName(_quadrantNameProp.getValueStr())
+WrapObject::WrapObject() : ModelComponent()
 {
-    setNull();
-    setupProperties();
     constructProperties();
 }
 
-//_____________________________________________________________________________
-/**
+/*
  * Destructor.
  */
 WrapObject::~WrapObject()
-{
-}
+{}
 
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aWrapObject WrapObject to be copied.
- */
-WrapObject::WrapObject(const WrapObject& aWrapObject) :
-    Object(aWrapObject),
-   _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
-   _translation(_translationProp.getValueDblVec()),
-    _active(_activeProp.getValueBool()),
-    _quadrantName(_quadrantNameProp.getValueStr())
-{
-    setNull();
-    setupProperties();
-    //constructProperties();
-    copyData(aWrapObject);
-}
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Set the data members of this WrapObject to their null values.
- */
-void WrapObject::setNull()
-{
-    _quadrant = allQuadrants;
-}
-
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void WrapObject::setupProperties()
-{
-    const double defaultRotations[] = {0.0, 0.0, 0.0};
-    _xyzBodyRotationProp.setName("xyz_body_rotation");
-    _xyzBodyRotationProp.setValue(3, defaultRotations);
-    _propertySet.append(&_xyzBodyRotationProp);
-
-    const SimTK::Vec3 defaultTranslations(0.0);
-    _translationProp.setName("translation");
-    _translationProp.setValue(defaultTranslations);
-    //_translationProp.setAllowableListSize(3);
-    _propertySet.append(&_translationProp);
-
-    _activeProp.setName("active");
-    _activeProp.setValue(true);
-    _propertySet.append(&_activeProp);
-
-    _quadrantNameProp.setName("quadrant");
-    _quadrantNameProp.setValue("Unassigned");
-    _propertySet.append(&_quadrantNameProp);
-}
 
 void WrapObject::constructProperties()
 {
-    constructProperty_display_preference(1);
-    Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
-    defaultColor[0] = 0.0; 
+    constructProperty_active(true);
+    const Vec3 defaultRotation(0.0);
+    constructProperty_xyz_body_rotation(defaultRotation);
+    const SimTK::Vec3 defaultTranslations(0.0);
+    constructProperty_translation(defaultTranslations);
 
-    constructProperty_color(defaultColor);
+    constructProperty_quadrant("Unassigned");
+    Appearance defaultAppearance;
+    defaultAppearance.set_color(SimTK::Cyan);
+    defaultAppearance.set_opacity(0.5);
+    defaultAppearance.set_representation(VisualRepresentation::DrawSurface);
+    constructProperty_Appearance(defaultAppearance);
 }
 
-void WrapObject::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
+const PhysicalFrame& WrapObject::getFrame() const
 {
-   _body = &aBody;
-   _model = &aModel;
-
-    setupQuadrant();
-
-    SimTK::Rotation rot;
-    rot.setRotationToBodyFixedXYZ(Vec3(_xyzBodyRotation[0], _xyzBodyRotation[1], _xyzBodyRotation[2]));
-    _pose.set(rot, _translation);
-}
-
-//_____________________________________________________________________________
-/**
- * Scale the wrap object by aScaleFactors. This base class method scales
- * only the _translation property, which is a local member. The derived classes
- * are expected to scale the object itself, because they contain the object's
- * dimensions.
- *
- * @param aScaleFactors The XYZ scale factors.
- */
-void WrapObject::scale(const SimTK::Vec3& aScaleFactors)
-{
-   for (int i=0; i<3; i++)
-      _translation[i] *= aScaleFactors[i];
-}
-
-//_____________________________________________________________________________
-/**
- * set quadrants for the geometric object representing the wrap object
- * This has to be done after geometry object creation so it's not 
- * part of WrapObject::connectToModelAndBody()
- *
-void WrapObject::setGeometryQuadrants(OpenSim::AnalyticGeometry *aGeometry) const
-{
-    // The following code should be moved to the base class WrapObject
-    bool    quads[] = {true, true, true, true, true, true};
-
-    if (_quadrant != allQuadrants){
-        // Turn off half wrap object
-        if (_wrapSign==1)
-            quads[2*_wrapAxis]=false;
-        else
-            quads[2*_wrapAxis+1]=false;
+    if (!_frame) {
+        OPENSIM_THROW_FRMOBJ(OpenSim::Exception, "Tried to call WrapObject::getFrame before the frame has been set. Make sure that `OpenSim::WrapObject::setFrame` is called on the `WrapObject` before doing any operations with the `WrapObject`.");
     }
-    aGeometry->setQuadrants(quads);
-}*/
-//_____________________________________________________________________________
-/**
- * Copy data members from one WrapObject to another.
- *
- * @param aWrapObject WrapObject to be copied.
- */
-void WrapObject::copyData(const WrapObject& aWrapObject)
-{
-    _xyzBodyRotation = aWrapObject._xyzBodyRotation;
-    _translation = aWrapObject._translation;
-    _active = aWrapObject._active;
-    _quadrantName = aWrapObject._quadrantName;
-    _quadrant = aWrapObject._quadrant;
+    return _frame.getRef();
 }
 
-//_____________________________________________________________________________
-/**
- * Set the name of the quadrant, and call setupQuadrant() to determine the
- * appropriate values of _quadrant, _wrapAxis, and _wrapSign.
- *
- * @param aName The name of the quadrant (e.g., "+x", "-y").
- */
-void WrapObject::setQuadrantName(const string& aName)
+void WrapObject::setFrame(const PhysicalFrame& frame)
 {
-    _quadrantName = aName;
-
-    setupQuadrant();
+    _frame.reset(&frame);
 }
 
-//_____________________________________________________________________________
-/**
- * Determine the appropriate values of _quadrant, _wrapAxis, and _wrapSign,
- * based on the name of the quadrant. This should be called in 
- * connectToModelAndBody() and whenever the quadrant name changes.
- */
-void WrapObject::setupQuadrant()
+void WrapObject::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
+    Super::extendScale(s, scaleSet);
+
+    // Get scale factors (if an entry for the Frame's base Body exists).
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, getFrame());
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
+        return;
+
+    upd_translation() = get_translation().elementwiseMultiply(scaleFactors);
+}
+
+void WrapObject::extendFinalizeFromProperties()
+{
+    SimTK::Rotation rot;
+    rot.setRotationToBodyFixedXYZ(get_xyz_body_rotation());
+    _pose.set(rot, get_translation());
+
+    const std::string& _quadrantName = get_quadrant();
     if (_quadrantName == "-x" || _quadrantName == "-X") {
         _quadrant = negativeX;
         _wrapAxis = 0;
@@ -246,46 +133,20 @@ void WrapObject::setupQuadrant()
         _wrapSign = 0;
     } else if (_quadrantName == "Unassigned") {  // quadrant was not specified in wrap object definition; use default
         _quadrant = allQuadrants;
-        _quadrantName = "all";
+        upd_quadrant() = "all";
         _wrapSign = 0;
-    } else {  // quadrant was specified incorrectly in wrap object definition; throw an exception
-        string errorMessage = "Error: quadrant for wrap object " + getName() + " was specified incorrectly.";
-        throw Exception(errorMessage);
+    } else {
+        OPENSIM_THROW_FRMOBJ(
+            InvalidPropertyValue,
+            getProperty_quadrant().getName(),
+            "Quadrant was specified incorrectly in definition of wrap object");
     }
 }
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-WrapObject& WrapObject::operator=(const WrapObject& aWrapObject)
-{
-    // BASE CLASS
-    Object::operator=(aWrapObject);
-
-    return(*this);
-}
-
-//=============================================================================
-// WRAPPING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Calculate the wrapping of one path segment over one wrap object.
- *
- * @param aPoint1 The first path point
- * @param aPoint2 The second path point
- * @param aPathWrap An object holding the parameters for this path/wrap-object pairing
- * @param aWrapResult The result of the wrapping (tangent points, etc.)
- * @return The status, as a WrapAction enum
- */
-int WrapObject::wrapPathSegment(const SimTK::State& s, PathPoint& aPoint1, PathPoint& aPoint2,
-                                          const PathWrap& aPathWrap, WrapResult& aWrapResult) const
+int WrapObject::wrapPathSegment(const SimTK::State& s,
+                                AbstractPathPoint& aPoint1, AbstractPathPoint& aPoint2,
+                                const PathWrap& aPathWrap,
+                                WrapResult& aWrapResult) const
 {
    int return_code = noWrap;
     bool p_flag;
@@ -294,13 +155,11 @@ int WrapObject::wrapPathSegment(const SimTK::State& s, PathPoint& aPoint1, PathP
 
     // Convert the path points from the frames of the bodies they are attached
     // to, to the frame of the wrap object's body
-    //_model->getSimbodyEngine().transformPosition(s, aPoint1.getBody(), aPoint1.getLocation(), getBody(), pt1);
-    pt1 = aPoint1.getBody()
-        .findLocationInAnotherFrame(s, aPoint1.getLocation(), getBody());
-    
-    //_model->getSimbodyEngine().transformPosition(s, aPoint2.getBody(), aPoint2.getLocation(), getBody(), pt2);
-    pt2 = aPoint2.getBody()
-        .findLocationInAnotherFrame(s, aPoint2.getLocation(), getBody());
+    pt1 = aPoint1.getParentFrame()
+        .findStationLocationInAnotherFrame(s, aPoint1.getLocation(s), getFrame());
+
+    pt2 = aPoint2.getParentFrame()
+        .findStationLocationInAnotherFrame(s, aPoint2.getLocation(s), getFrame());
 
     // Convert the path points from the frame of the wrap object's body
     // into the frame of the wrap object
@@ -322,4 +181,114 @@ int WrapObject::wrapPathSegment(const SimTK::State& s, PathPoint& aPoint1, PathP
    }
 
    return return_code;
+}
+
+void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
+        int versionNumber) {
+    int documentVersion = versionNumber;
+    if (documentVersion < XMLDocument::getLatestVersion()) {
+        if (documentVersion < 30515) {
+            // Replace 3.3 display_preference, color, and VisibleObject with
+            // Appearance's visible and color.
+            // We ignore most of VisibleObject's other properties (e.g.,
+            // transform), since it would be misleading to draw the wrap object
+            // in the wrong place.
+            SimTK::Xml::Element appearanceNode("Appearance");
+            // Use the correct defaults for WrapObject's appearance, which
+            // are different from the default Appearance.
+            SimTK::Xml::Element color("color");
+            color.setValue("0 1 1"); // SimTK::Cyan
+            appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                    color);
+            SimTK::Xml::Element defaultOpacity("opacity");
+            defaultOpacity.setValue("0.5");
+            appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                    defaultOpacity);
+            SimTK::Xml::Element defaultSurfProp("SurfaceProperties");
+            appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                    defaultSurfProp);
+            SimTK::Xml::Element rep("representation");
+            rep.setValue("3"); // VisualRepresentation::DrawSurface
+            defaultSurfProp.insertNodeAfter(defaultSurfProp.element_end(), rep);
+            bool appearanceModified = false;
+
+            // color.
+            SimTK::Xml::element_iterator colorIter =
+                    node.element_begin("color");
+            if (colorIter != node.element_end()) {
+                color.setValue(colorIter->getValue());
+                node.removeNode(colorIter);
+                colorIter->clearOrphan();
+                appearanceModified = true;
+            }
+
+            // display_preference -> visible, representation
+            SimTK::Xml::Element visibleNode("visible");
+            SimTK::Xml::element_iterator dispPrefIter =
+                    node.element_begin("display_preference");
+            if (dispPrefIter != node.element_end()) {
+                if (dispPrefIter->getValueAs<int>() == 0) {
+                    visibleNode.setValue("false");
+                    appearanceModified = true;
+                } else if (dispPrefIter->getValueAs<int>() < 4) {
+                    // Set `representation`.
+                    // If the value is 4, we use 3 instead, which is the
+                    // default (above).
+                    rep.setValue(dispPrefIter->getValue());
+                    appearanceModified = true;
+                }
+                node.removeNode(dispPrefIter);
+                dispPrefIter->clearOrphan();
+            }
+            SimTK::Xml::element_iterator visObjIter =
+                    node.element_begin("VisibleObject");
+            if (visObjIter != node.element_end()) {
+                SimTK::Xml::element_iterator voDispPrefIter =
+                        visObjIter->element_begin("display_preference");
+                if (voDispPrefIter != visObjIter->element_end()) {
+                    if (voDispPrefIter->getValueAs<int>() == 0) {
+                        visibleNode.setValue("false");
+                        appearanceModified = true;
+                    } else if (rep.getValue() == "3" &&
+                            voDispPrefIter->getValueAs<int>() < 4) {
+                        // Set `representation`.
+                        // The representation still has its default value,
+                        // meaning the user only specified the inner display
+                        // preference, therefore we should use this one.
+                        rep.setValue(voDispPrefIter->getValue());
+                        appearanceModified = true;
+                    }
+                }
+                node.removeNode(visObjIter);
+                visObjIter->clearOrphan();
+            }
+            if (visibleNode.getValue() != "") {
+                appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                        visibleNode);
+                appearanceModified = true;
+            } else if (visibleNode.isOrphan()) {
+                visibleNode.clearOrphan();
+            }
+
+            // Add Appearance to the WrapObject.
+            if (appearanceModified) {
+                node.insertNodeAfter(node.element_end(), appearanceNode);
+            } else if (appearanceNode.isOrphan()) {
+                appearanceNode.clearOrphan();
+            }
+        }
+    }
+    Super::updateFromXMLNode(node, versionNumber);
+}
+
+SimTK::Transform WrapObject::calcWrapGeometryTransformInBaseFrame() const
+{
+    // B: base Frame (Body or Ground)
+    // F: PhysicalFrame that this WrapGeometry is connected to
+    // P: the frame defined (relative to F) by the location and orientation
+    //    properties.
+    const SimTK::Transform& X_BF = getFrame().findTransformInBaseFrame();
+    const auto& X_FP = getTransform();
+    const auto X_BP = X_BF * X_FP;
+    return X_BP;
 }

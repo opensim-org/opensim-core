@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Tim Dorn                                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -163,17 +163,15 @@ void ProbeReporter::constructDescription()
 {
     char descrip[1024];
 
-    strcpy(descrip,"\nThis file contains the probes on a model ");
-    strcat(descrip,"during a simulation.\n");
+    strcpy(descrip, "\nThis file contains the probes on a model ");
+    strcat(descrip, "during a simulation.\n");
 
-    strcat(descrip,"\nThe units used are dependent on the type of probe component");
+    strcat(descrip, "\nThe units used are dependent on the type of probe component");
 
-    if(getInDegrees()) {
-        strcat(descrip,"\nAngles are in degrees.");
-    } else {
-        strcat(descrip,"\nAngles are in radians.");
-    }
-    strcat(descrip,"\n\n");
+    strcat(descrip, "\nIf the header above contains a line with ");
+    strcat(descrip, "'inDegrees', this indicates whether rotational values ");
+    strcat(descrip, "are in degrees (yes) or radians (no).");
+    strcat(descrip, "\n\n");
 
     setDescription(descrip);
 }
@@ -197,7 +195,7 @@ void ProbeReporter::constructColumnLabels(const SimTK::State& s)
         for(int i=0 ; i<nP ; i++) {
             Probe& p = _model->getProbeSet().get(i);
 
-            if (p.isDisabled()) continue; // Skip over disabled probes
+            if (!p.isEnabled()) continue; // Skip over disabled probes
 
             // Get column names for the probe after the operation
             Array<string> probeLabels = p.getProbeOutputLabels();
@@ -235,7 +233,7 @@ int ProbeReporter::record(const SimTK::State& s)
     // MAKE SURE ALL ProbeReporter QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Report );
 
-    StateVector nextRow = StateVector(s.getTime());
+    StateVector nextRow(s.getTime());
 
     // NUMBER OF Probes
     const ProbeSet& probes = _model->getProbeSet();
@@ -244,7 +242,7 @@ int ProbeReporter::record(const SimTK::State& s)
     for(int i=0 ; i<nP ; i++) {
         Probe& nextProbe = (Probe&)probes[i];
 
-        if (!nextProbe.isDisabled())
+        if (nextProbe.isEnabled())
         {
             // Get probe values after the probe operation
             SimTK::Vector values = nextProbe.getProbeOutputs(s);
@@ -273,7 +271,7 @@ int ProbeReporter::record(const SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int ProbeReporter::
-begin(SimTK::State& s)
+begin(const SimTK::State& s)
 {
     if(!proceed()) return 0;
 
@@ -330,7 +328,7 @@ step(const SimTK::State& s, int stepNumber )
  * @return -1 on error, 0 otherwise.
  */
 int ProbeReporter::
-end(SimTK::State& s )
+end(const SimTK::State&s )
 {
     if (!proceed()) return 0;
 
@@ -365,7 +363,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
     if(!getOn()) {
-        printf("ProbeReporter.printResults: Off- not printing.\n");
+        log_info("ProbeReporter.printResults: Off- not printing.");
         return 0;
     }
 

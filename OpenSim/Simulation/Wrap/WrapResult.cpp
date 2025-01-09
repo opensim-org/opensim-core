@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -32,23 +32,8 @@
 using namespace std;
 using namespace OpenSim;
 
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-WrapResult::WrapResult()
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-WrapResult::~WrapResult()
-{
+WrapResult::WrapResult(const WrapResult& other) {
+    copyData(other);
 }
 
 //_____________________________________________________________________________
@@ -57,8 +42,7 @@ WrapResult::~WrapResult()
  *
  * @param aWrapResult WrapResult to be copied.
  */
-void WrapResult::copyData(const WrapResult& aWrapResult)
-{
+void WrapResult::copyData(const WrapResult& aWrapResult) {
     wrap_pts = aWrapResult.wrap_pts;
     wrap_path_length = aWrapResult.wrap_path_length;
 
@@ -72,6 +56,9 @@ void WrapResult::copyData(const WrapResult& aWrapResult)
         c1[i] = aWrapResult.c1[i];
         sv[i] = aWrapResult.sv[i];
     }
+
+    singleWrap = aWrapResult.singleWrap;
+    // TODO: Should factor be omitted from the copy?
 }
 
 //=============================================================================
@@ -83,9 +70,10 @@ void WrapResult::copyData(const WrapResult& aWrapResult)
  *
  * @return Reference to this object.
  */
-WrapResult& WrapResult::operator=(const WrapResult& aWrapResult)
-{
-    copyData(aWrapResult);
+WrapResult& WrapResult::operator=(const WrapResult& aWrapResult) {
+    if (this != &aWrapResult) {
+        copyData(aWrapResult);
+    }
 
-    return(*this);
+    return *this;
 }

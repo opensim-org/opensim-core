@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,15 +26,14 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson, Ajay Seth 
  */
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning( disable : 4251 )
 #endif
 
 // INCLUDES
 #include "osimCommonDLL.h"
 #include "ArrayPtrs.h"
-#include "Property_Deprecated.h"
-#include "PropertyGroup.h"
+//#include "Property_Deprecated.h"
 #include "PropertyDblVec.h"
 
 
@@ -46,13 +45,15 @@
 #endif
 
 #ifndef SWIG
-#ifdef WIN32
+#ifdef _WIN32
 template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Property_Deprecated>;
 #endif
 #endif
 
 
 namespace OpenSim { 
+
+class Property_Deprecated;
 
 // convenient abbreviations
 typedef PropertyDblVec_<2> PropertyDblVec2;
@@ -90,7 +91,7 @@ public:
 public:
     PropertySet();
     PropertySet(const PropertySet &aSet);
-    virtual ~PropertySet() { _array.setSize(0); };
+    PropertySet& operator=(const PropertySet& aSet);
 
     //--------------------------------------------------------------------------
     // OPERATORS
@@ -112,11 +113,11 @@ public:
     // Number of properties
     int getSize() const;
     // Get
-    virtual Property_Deprecated* get(int i) throw (Exception);
+    virtual Property_Deprecated* get(int i);
 #ifndef SWIG
     virtual const Property_Deprecated* get(int i) const;
 #endif
-    virtual Property_Deprecated* get(const std::string &aName) throw (Exception);
+    virtual Property_Deprecated* get(const std::string &aName);
 #ifndef SWIG
     virtual const Property_Deprecated* get(const std::string &aName) const;
 #endif

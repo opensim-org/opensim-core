@@ -1,5 +1,5 @@
-#ifndef __ContactGeometrySet_h__
-#define __ContactGeometrySet_h__
+#ifndef OPENSIM_CONTACT_GEOMETRY_SET_H_
+#define OPENSIM_CONTACT_GEOMETRY_SET_H_
 /* -------------------------------------------------------------------------- *
  *                       OpenSim:  ContactGeometrySet.h                       *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2018 Stanford University and the Authors                *
  * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,48 +23,28 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Set.h>
 #include "OpenSim/Simulation/Model/ModelComponentSet.h"
 #include "ContactGeometry.h"
 
 namespace OpenSim {
-
-class Model;
-
 //=============================================================================
 //=============================================================================
 /**
- * A class for holding a set of ContactGeometry objects.
+ * A class for holding a set of ContactGeometry components.
  *
  * @authors Peter Eastman
- * @version 1.0
  */
-
 class OSIMSIMULATION_API ContactGeometrySet 
 :   public ModelComponentSet<ContactGeometry> {
 OpenSim_DECLARE_CONCRETE_OBJECT(ContactGeometrySet, 
                                 ModelComponentSet<ContactGeometry>);
 
-private:
-    void setNull();
 public:
-    ContactGeometrySet();
-    ContactGeometrySet(Model& model);
-    ContactGeometrySet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode);
-    ContactGeometrySet(const ContactGeometrySet& aContactGeometrySet);
-    ~ContactGeometrySet(void);
+    /** Use Super's constructors. @see ModelComponentSet */
+    using Super::Super;
 
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    ContactGeometrySet& operator=(const ContactGeometrySet &aContactGeometrySet);
-#endif
-    //--------------------------------------------------------------------------
-    // UTILITIES
-    //--------------------------------------------------------------------------
-    void scale(const ScaleSet& aScaleSet);
+    // default copy, assignment operator, and destructor
+
 //=============================================================================
 };  // END of class ContactGeometrySet
 //=============================================================================
@@ -72,4 +52,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __ContactGeometrySet_h__
+#endif // OPENSIM_CONTACT_GEOMETRY_SET_H_

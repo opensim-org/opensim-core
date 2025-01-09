@@ -12,6 +12,7 @@ Contents:
 - [Ways to Contribute](#ways-to-contribute)
 - [Making a Pull Request](#making-a-pull-request-pr)
 - [Writing tests](#writing-tests)
+- [Running Moco tests](#running-moco-tests)
 - [Checking for Memory Leaks through GitHub](#checking-for-memory-leaks-through-github)
 - [Coding Standards](#coding-standards)
 - [List of Contributors](#list-of-contributors)
@@ -31,7 +32,7 @@ There are lots of ways to contribute to the OpenSim project, and people with wid
 
     Delp SL, Anderson FC, Arnold AS, Loan P, Habib A, John CT, Guendelman E, Thelen DG (2007) OpenSim: open-source software to create and analyze dynamic simulations of movement. *IEEE Trans Biomed Eng* 54:1940–50.
 
-    Seth A, Sherman M, Reinbolt JA, Delp SL (2011) OpenSim: A musculoskeletal modeling and simulation framework for in silico investigations and exchange. *Procedia IUTAM* 2:212–232.
+    Seth A, Hicks JL, Uchida TK, Habib A, Dembia CL, Dunne JJ, Ong CF, DeMers MS, Rajagopal A, Millard M, Hamner SR, Arnold EM, Yong JR, Lakshmikanth SK, Sherman MA, Ku JP, Delp SL (2018) OpenSim: Simulating musculoskeletal dynamics and neuromuscular control to study human and animal movement. *PLoS Computational Biology* 14(7):e1006223.
 
 
 
@@ -41,23 +42,31 @@ Please don't surprise us with a big out-of-the-blue pull request (PR). Preferabl
 
 If you have never made a PR before, there are excellent GitHub tutorials to familiarize you with the concepts and steps like the [GitHub Bootcamp](https://help.github.com/categories/bootcamp/).
 
-When you are ready to make a PR, please adhere to the following guidelines:
+Most PRs will need to be reviewed by at least one member of the OpenSim Dev Team. The Dev Team is a Team within the opensim-org GitHub organization. Dev Team members are listed [here](https://github.com/orgs/opensim-org/teams/dev-team/members).
+
+When you are ready to make a PR, please adhere to the guidelines below. 
 
 1. To help the people who review your pull request, include a detailed description of what changes or additions the PR includes and what you have done to test and verify the changes. Reference the existing Issue (or set of Issues) that documents the problem the PR is adressing (e.g., use ``#<issue_number>`` ). Also, please make sure detailed information about the commits is easily available.
 
 2. Make sure that your request conforms to our [coding standards](#coding-standards).
 
-3. Make sure that tests pass on your local machine before making a pull request. The [README.md](https://github.com/opensim-org/opensim-core) mentions how to run the tests.
+3. Make sure that your code executes as intended and that *all* tests pass on your local machine before making a pull request. The [README.md](https://github.com/opensim-org/opensim-core) explains how to run the tests. If your changes introduce runtime options or branching in the code, please ensure that all options or branches are being tested and that exceptions are being thrown in invalid scenarios.
 
 4. Typo fixes can be merged by any member of the Development (Dev) Team.
 
-5. Updates to comments, Doxygen, compiler compatibility, or CMake files must be reviewed by at least one member of the Dev Team before being merged. The original author or the reviewer(s) may merge the pull request.
+5. Updates to comments, Doxygen, compiler compatibility, CMake files, or continuous integration files must be reviewed by at least one member of the Dev Team before being merged. The original author or the reviewer(s) may merge the pull request.
 
-6. Any other changes to the code require review by at least two members of the Dev Team. If the pull request involves adding a new class or performing a major object/algorithm refactor, one of these reviewers must be an Owner. The Owners and Dev Team are Teams within the opensim-org GitHub organization. The original author may NOT merge the pull request.
+6. Any other changes to the code require review by one member of the Dev Team, and manual testing by one member of the Dev Team. A reviewer may determine that a second reviewer from the Dev Team is required for the pull request to be accepted; you may also suggest whether the pull request should require one or two reviewers. You or the reviewers may merge the pull request once the reviewers accept the pull request.
 
-7. As the changes introduced by your pull request become finalized throughout the review process, you should decide if your changes warrant being mentioned in the change log. If so, update the [CHANGELOG.md](https://github.com/opensim-org/opensim-core/blob/master/CHANGELOG.md) with an additional commit to your pull request.
+7. If your pull request involves adding a new class or performing a major object or algorithm refactor, the Dev Team can assist with assigning appropriate reviewers. 
+
+8. As the changes introduced by your pull request become finalized throughout the review process, you should decide if your changes warrant being mentioned in the change log. If so, update the [CHANGELOG.md](https://github.com/opensim-org/opensim-core/blob/master/CHANGELOG.md) with an additional commit to your pull request.
+
+9. CI must be run for all changes, except Matlab tests and examples, non-Doxygen markdown files, and non-Doxygen comments. CI tests must pass before merge, unless the author and reviewer(s) deem the failures unrelated to the change.
 
 A few additional practices will help streamline the code review process. Please use tags (i.e., @user_name) and quoting to help keep the discussion organized. Please also call for a meeting or Skype call when discussions start to stagnate. In addition, we recommend getting input on your interface design before implementing a major new component or other change.
+
+It is important that reviewers also review the effect that your PR has on the doxygen documentation. To facilitate this, we automatically upload the doxygen documentation for each PR to [myosin.sourceforge.net](http://myosin.sourceforge.net); you can view the documentation for a specific PR at `myosin.sourceforge.net/<issue-number>`.
 
 
 Writing tests
@@ -72,6 +81,101 @@ go into the `OpenSim/Tests/shared` directory. You can then use the
 copy the necessary shared files to the proper build directory. *DO NOT CHANGE* files
 that are already in `OpenSim/Tests/shared`; you could inadvertently weaken tests
 that rely on some obscure aspect of the files.
+
+
+Platform-specific tests
+-----------------------
+The Catch2 testing framework can be used to write platform-specific tests. Such
+tests should be avoided if possible, but may be necessary in certain cases (e.g.,
+slightly different numerical optimization behavior on different platforms). For
+example, if you want to write a test that only runs on Windows, you can use the
+`TEST_CASE()` or `TEMPLATE_TEST_CASE` macros with the tag `"[win]"`:
+
+```cpp
+TEST_CASE("MyTest", "[win]") {
+    // ...
+}
+```
+
+```cpp
+TEMPLATE_TEST_CASE("MyTest", "[win]", TestType) {
+    // ...
+}
+```
+
+Specifying the tag `"[win]"` means that this test will be _excluded_ on Mac and
+Linux. The tags `"[mac]"` and `"[linux]"` can be used similarly for tests specific 
+to Mac or Linux. If you want to run a test on two platforms but not the third,
+use combined tags (e.g., `"[win/linux]"`, `"[mac/win]"`, or `"[unix]"`). Do not
+concatenate tags; for example, `"[win][linux]"`) will not run on Linux or Windows
+since Windows excludes Linux-only tests and vice-versa. Specifying no tag means 
+that the test will run on all platforms. The table below summarizes the tags that 
+can be used to specify platform-specific tests.
+
+| Platform(s)       | Tag(s)                                       |
+|-------------------|----------------------------------------------|
+| Windows           | `"[win]"`                                    |
+| Mac               | `"[mac]"`                                    |
+| Linux             | `"[linux]"`                                  |
+| Mac and Linux     | `"[unix]"`, `"[mac/linux]"`, `"[linux/mac]"` |
+| Windows and Mac   | `"[win/mac]"`, `"[mac/win]"`                 |
+| Windows and Linux | `"[win/linux]"`, `"[linux/win]"`             |
+| All platforms     | (no tag)                                     |
+
+Building GUI
+-------------
+In case you suspect your changes to the opensim-core is breaking API (can break client
+code including the OpenSim application/GUI) you can include the tag [build-gui] in the
+commit message and a separate build of the GUI (from the opensim-gui repository) will be
+triggered.
+
+Running Moco tests
+------------------
+In general, Moco's tests depend on the CasADi and Tropter libraries, whose use
+is determined by the `OPENSIM_WITH_CASADI` and `OPENSIM_WITH_TROPTER` CMake
+variables. The CTests are designed to succeed regardless of the value of these
+CMake variables: if `OPENSIM_WITH_CASADI` is off, Moco's C++ tests are run with
+arguments `"~*MocoCasADiSolver*" "~[casadi]"`, which excludes Catch2 templatized 
+tests using MocoCasADiSolver and other tests that are tagged as relying on CasADi 
+(likewise for Tropter). If the test executables are run without CTest (e.g., 
+debugging a project in Visual Studio), the tests will fail if either 
+`OPENSIM_WITH_CASADI` orv`OPENSIM_WITH_TROPTER` is false; for the tests to pass, 
+provide the argument(s) `"~*MocoCasADiSolver*" "~[casadi]"` and/or
+`"~*MocoTropterSolver*" "~[tropter]"` (depending on which libraries are available).
+
+
+Checking for Memory Leaks with LibASAN
+--------------------------------------
+
+The easiest way to check for memory leaks is to use LibASAN on Linux or Mac. If you are
+using Windows 11 then you can use WSL2 to create a Linux virtual machine. Alternatively, you
+can use Windows' native support for libASAN, which is documented [here](https://devblogs.microsoft.com/cppblog/addresssanitizer-asan-for-windows-with-msvc/).
+
+Make sure you have the `clang` and `clang++` C/C++ compilers installed (best
+to google this), and then compile OpenSim in a terminal with the relevant flags:
+
+```bash
+# enable libASAN when compiling C++ sources
+export CXXFLAGS="-fsanitize=address"
+
+# link the libASAN runtime when linking binaries
+export LDFLAGS="-fsanitize=address"
+
+# configure dependencies, for example:
+cmake -S dependencies/ -B ../osim-deps-build -DCMAKE_INSTALL_PREFIX=${PWD}/../osim-deps-install
+
+# build dependencies, for example:
+cmake --build ../osim-deps-build/
+
+# configure OpenSim, for example:
+cmake -S . -B ../osim-build -DOPENSIM_DEPENDENCIES_PATH=${PWD}/../osim-deps-install
+
+# build OpenSim, for example:
+cmake --build ../osim-build/
+
+# (then run/test something: the runtime should now perform memory checks)
+```
+
 
 Checking for Memory Leaks through GitHub
 ----------------------------------------
@@ -91,6 +195,7 @@ Coding Standards
 - [Throw and return are not functions](#throw-and-return-are-not-functions)
 - [Always use pre-increment and pre-decrement operators when you have a choice](#always-use-pre-increment-and-pre-decrement-operators-when-you-have-a-choice)
 - [Place pointer and reference symbols with the type](#place-pointer-and-reference-symbols-with-the-type)
+- [Setters and pass-by-value](#setters-and-pass-by-value)
 - [Removing methods](#removing-methods)
 
 ### Header guards
@@ -173,7 +278,7 @@ shows protected members, nested classes, etc. When writing doxygen comments,
 you can use `\internal` or `\if developer ... \endif`
 for documentation that is only intended for developers.
 
-Read more about doxygen on this page: Guide to Building Doxygen
+Read more about doxygen on this page: [Guide to Building Doxygen](http://simtk-confluence.stanford.edu:8080/display/OpenSim/Guide+to+Building+Doxygen)
 
 ### Each line of text should be at most 80 characters
 
@@ -222,7 +327,9 @@ We have some conventional starting verbs; you should use the same ones when they
 `realize` | Initiate state-dependent computations and cache results internally; no result returned.
 `add`     | Add the object (Component) to an internal list of references. Should not take over ownership. 
 `adopt`   | Take over ownership (e.g., `Set::adoptAndAppend()`).
-`extend`  | A virtual method intended to extend a defining capability of a Base class. The first line of the derived class implementation must be `Super::extend<DoSomething>()`. For example, a ModelComponent knows how to ``connectToModel``, but the details of how each concrete ModelComponent type does this is implemented by the derived class.
+`extend`  | A virtual method intended to extend a defining capability of a Base class; can either be pure virtual or not. The first line of the derived class implementation must be `Super::extend<DoSomething>()`. For example, a ModelComponent knows how to ``connectToModel``, but the details of how each concrete ModelComponent type does this is implemented by the derived class.
+`implement` | A virtual method intended to implement a *pure* virtual function of a Base class. The derived class's implementation does *not* call any method on `Super`.
+`express` | Express a vector in a different basis (i.e., without translation). Typically used as `Frame::expressVectorIn*()`.
 
 ### ``throw`` and ``return`` are not functions
 
@@ -234,9 +341,9 @@ Both pre-increment i and post-increment i are available. When you don’t look a
 
 
 ```cpp
-/*YES*/ for (int i; i < limit; ++i);
+/*YES*/ for (int i = 0; i < limit; ++i);
 
-/*NO*/ for (int i; i < limit; i++);
+/*NO*/ for (int i = 0; i < limit; i++);
 ```
 
 This will prevent you from using the wrong operator in the expensive cases, which are not always obvious.
@@ -270,6 +377,14 @@ Therefore, you should place the ``*`` and ``&`` next to the type, not the variab
 
 /*NO*/  f(int I, string &name, char *something);
 ```
+
+### Setters and pass-by-value
+
+Setter functions usually make a copy of the passed-in argument, and therefore
+it is often preferable to use pass-by-value and then `std::move` the argument
+into a member variable (rather than to pass-by-reference).
+
+https://stackoverflow.com/questions/270408/is-it-better-in-c-to-pass-by-value-or-pass-by-constant-reference
 
 ### Removing methods
 
@@ -311,6 +426,11 @@ Kate Saul          |              |Original MuscleAnalysis
 Jack Middleton     |              |Initial Simbody integration
 Jeffrey Reinbolt   |              |Static Optimization; Examples; Musculoskeletal modeling
 Shrinidhi Lakshmikanth|@klshrinidhi|Data interface
+Andrew LaPre       |@ankela       |IK error output to file
+Neil Dhir		   |@wagglefoot   |Python API contributions; specifically example usages
+Akshay Patel       |@akshaypatel1811|Python examples
+Colin Smith        |@clnsmith     |Blankevoort1991Ligament
+Adam Kewley        |@adamkewley   |Controller performance
 
 Contributor License Agreement
 -----------------------------

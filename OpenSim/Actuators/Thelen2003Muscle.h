@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard, Ajay Seth, Peter Loan                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,8 +25,7 @@
 
 
 // INCLUDE
-#include <simbody/internal/common.h>
-
+#include <OpenSim/Common/Component.h>
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 #include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
@@ -40,8 +39,9 @@
 #endif
 
 namespace OpenSim {
+
 //==============================================================================
-//                          THELEN 2003 MUSCLE
+//                               Thelen2003Muscle
 //==============================================================================
 /**
  Implementation of a two state (activation and fiber-length) Muscle model by 
@@ -138,11 +138,17 @@ public:
     OpenSim_DECLARE_PROPERTY(fv_linear_extrap_threshold, double,
         "fv threshold where linear extrapolation is used");
 
-    OpenSim_DECLARE_UNNAMED_PROPERTY(MuscleFirstOrderActivationDynamicModel,
-        "The model governing the excitation-to-activation dynamics.");
+    OpenSim_DECLARE_PROPERTY(maximum_pennation_angle, double,
+        "Maximum pennation angle, in radians");
 
-    OpenSim_DECLARE_UNNAMED_PROPERTY(MuscleFixedWidthPennationModel,
-        "The model governing the fiber and tendon kinematics.");
+    OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
+        "Activation time constant, in seconds");
+
+    OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
+        "Deactivation time constant, in seconds");
+
+    OpenSim_DECLARE_PROPERTY(minimum_activation, double,
+        "Lower bound on activation");
 
     enum CurveType{FiberActiveForceLength,
                     FiberPassiveForceLength,
@@ -204,7 +210,7 @@ public:
 // Public Convenience Methods
 //==============================================================================
     void printCurveToCSVFile(const CurveType ctype, 
-                            const std::string& path);
+                            const std::string& path) const;
 
 //==============================================================================
 // Public Computations
@@ -217,10 +223,12 @@ public:
         tendon are in static equilibrium and update the state
         
         Part of the Muscle.h interface
+
+        @throws MuscleCannotEquilibrate
     */
     void computeInitialFiberEquilibrium(SimTK::State& s) const override;
        
-    ///@cond TO BE DEPRECATED. 
+    ///@cond DEPRECATED
     /*  Once the ignore_tendon_compliance flag is implemented correctly get rid 
         of this method as it duplicates code in calcMuscleLengthInfo,
         calcFiberVelocityInfo, and calcMuscleDynamicsInfo
@@ -278,30 +286,49 @@ protected:
 
 private:
     void setNull();
-    void constructProperties() override;
+    void constructProperties();
 
-    //=====================================================================
-    // Private Utility Class Members
-    //      -Computes activation dynamics and fiber kinematics
-    //=====================================================================
-    //bool initializedModel;
-
-    //=====================================================================
-    // Private Accessor names
-    //=====================================================================
-    //This is so we can get some compiler checking on these string names
-
+    // Subcomponents owned by the muscle. The properties of these subcomponents
+    // are set (in extendFinalizeFromProperties()) from the properties of the
+    // muscle.
+    MemberSubcomponentIndex pennMdlIdx{
+      constructSubcomponent<MuscleFixedWidthPennationModel>("pennMdl") };
+    MemberSubcomponentIndex actMdlIdx{
+      constructSubcomponent<MuscleFirstOrderActivationDynamicModel>("actMdl") };
 
     //=====================================================================
     // Private Computation
     //      -Computes curve values, derivatives and integrals
     //=====================================================================
 
-    //Initialization
-    SimTK::Vector initMuscleState(SimTK::State& s, double aActivation,
-                             double aSolTolerance, int aMaxIterations) const;
+    // Status flag returned by initMuscleState().
+    enum StatusFromInitMuscleState {
+        Success_Converged,
+        Warning_FiberAtLowerBound,
+        Failure_MaxIterationsReached
+    };
 
-    
+    // Associative array of values returned by initMuscleState():
+    // solution_error, iterations, fiber_length, passive_force, and
+    // tendon_force.
+    typedef std::map<std::string, double> ValuesFromInitMuscleState;
+
+    /* Calculate the muscle state such that the fiber and tendon are developing
+    the same force.
+
+    @param s the system state
+    @param aActivation the initial activation of the muscle
+    @param aSolTolerance the desired relative tolerance of the equilibrium 
+           solution
+    @param aMaxIterations the maximum number of Newton steps allowed before we
+           give up attempting to initialize the model
+    */
+    std::pair<StatusFromInitMuscleState, ValuesFromInitMuscleState>
+        initMuscleState(const SimTK::State& s,
+                        const double aActivation,
+                        const double aSolTolerance,
+                        const int aMaxIterations) const;
+
     double calcFm(double ma, double fal, double fv, 
                  double fpe, double fiso) const;
 
@@ -339,7 +366,7 @@ private:
     double calcdlceN(double act,double fal, double actFalFv) const;
     double calcfv(double aFse, double aFpe, double aFal,
                   double aCosPhi, double aAct) const;
-    SimTK::Vector calcfvInv(double aAct,  double aFal, double dlceN, 
+    double calcfvInv(double aAct,  double aFal, double dlceN, 
                             double tolerance, int maxIterations) const;
     double calcDdlceDaFalFv(double aAct, double fal, 
                             double aFalFv) const;

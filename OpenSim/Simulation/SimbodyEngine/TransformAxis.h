@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan, Frank C. Anderson, Jeffrey A. Reinbolt, Ajay Seth   *
  *            Michael Sherman                                                 *
  *                                                                            *
@@ -25,12 +25,15 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include "Joint.h"
+#include <OpenSim/Common/Assertion.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <SimTKcommon/internal/ReferencePtr.h>
 
 namespace OpenSim {
 
-class CustomJoint;
-class Coordinate;
+class Joint;
 
 //==============================================================================
 //                            TRANSFORM AXIS
@@ -113,12 +116,9 @@ public:
 
     /** Alternate signature that writes the axis value to its argument. **/
     void getAxis(SimTK::Vec3& axis) const {axis = getAxis();}
-    /** Alternate signature that writes the axis value to its argument as
-    an ordinary C array. **/
-    void getAxis(double rAxis[]) const {SimTK::Vec3::updAs(rAxis)= getAxis();}
     /** Get one component (0,1, or 2) of the axis vector. **/
     double getAxis(int which) const 
-    {   assert(0<=which && which<=2); return getAxis()[which]; }
+    {   OPENSIM_ASSERT_FRMOBJ(0<=which && which<=2); return getAxis()[which]; }
 
     /** Determine whether a custom function has been specified to map between 
     the generalized coordinate and the amount of transformation along the 

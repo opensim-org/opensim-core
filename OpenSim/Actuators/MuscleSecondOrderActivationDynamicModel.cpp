@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,8 +23,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-
-//#include <SimTKcommon\Testing.h>
 #include "MuscleSecondOrderActivationDynamicModel.h"
 using namespace std;
 using namespace OpenSim;
@@ -194,9 +192,9 @@ double MuscleSecondOrderActivationDynamicModel::
         "%s: Two arguments are required: excitation and activation", 
         getName().c_str());
 
-    double dactivation_dt   = x(0);
+    // double dactivation_dt   = x(0);
     double activation       = x(1);
-    double excitation       = x(2);
+    // double excitation       = x(2);
 
     return activation;
 }

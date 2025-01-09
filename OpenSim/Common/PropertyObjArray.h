@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -98,6 +98,16 @@ public:
         return (*this);
     }
 
+    void assign(const AbstractProperty& that) override {
+        try {
+            *this = dynamic_cast<const PropertyObjArray&>(that);
+        } catch(const std::bad_cast&) {
+            OPENSIM_THROW(InvalidArgument,
+                          "Unsupported type. Expected: " + this->getTypeName() +
+                          " | Received: " + that.getTypeName());
+        }
+    }
+
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
@@ -124,6 +134,9 @@ public:
 
     // Other members (not in Property base class)
     void setValue(const ArrayPtrs<T> &aArray) { _array = aArray; }
+    // This helps avoid the -Woverloaded-virtual warning with Clang (the method
+    // above otherwise hides the virtual setValue() methods in the base class).
+    using Property_Deprecated::setValue;
     ArrayPtrs<T>& getValueObjArray() { return _array; }
 #ifndef SWIG
     const ArrayPtrs<T>& getValueObjArray() const { return _array; }

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -41,6 +41,15 @@ int main(int argc,char **argv)
     //----------------------
     try {
 
+    // DEPRECATION NOTICE
+    const std::string deprecationNotice = R"(
+    THIS EXECUTABLE IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE.
+
+    DEPRECATED:    versionUpdate inputFileName outputFileName
+    REPLACED WITH: opensim-cmd update-file inputFileName outputFileName
+    )";
+    log_warn(deprecationNotice);
+
     // PARSE COMMAND LINE
     string option = "";
     string inputFileName = "";
@@ -53,15 +62,16 @@ int main(int argc,char **argv)
     outputFileName = (argc == 2)?(outputFileName=inputFileName): string(argv[2]);
     // ERROR CHECK
     if(inputFileName=="") {
-        cout<<"\n\versionUpdate.exe: ERROR- An input file must be specified.\n";
+        log_error("versionUpdate.exe: An input file must be specified.");
         PrintUsage(argv[0], cout);
         return(-1);
     }
-    
+
     string::size_type extSep = inputFileName.rfind(".");
 
     if (extSep == string::npos) {
-        cout<<"\n\versionUpdate.exe: ERROR- Unknown file type encountered. File extension must be specified.\n";
+        log_error("versionUpdate.exe: Unknown file type encountered. "
+                  "File extension must be specified.");
         PrintUsage(argv[0], cout);
         return 1;// if '_fileName' contains path information...
     }
@@ -72,7 +82,8 @@ int main(int argc,char **argv)
         return (0);
     }
     if (extension != ".xml" && extension != ".osim") {
-        cout<<"\n\versionUpdate.exe: ERROR- Unknown file type encountered. Only .xml, .osim and .sto files are supported.\n";
+        log_error("versionUpdate.exe: Unknown file type encountered. "
+                  "Only .xml, .osim and .sto files are supported.");
         PrintUsage(argv[0], cout);
         return 1;// if '_fileName' contains path information...
     }

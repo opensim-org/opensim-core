@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,9 +25,6 @@
 // C++ INCLUDES
 #include "SimmSpline.h"
 #include "Constant.h"
-#include "PropertyInt.h"
-#include "PropertyDbl.h"
-#include "PropertyDblArray.h"
 #include "SimmMacros.h"
 #include "XYFunctionInterface.h"
 #include "FunctionAdapter.h"
@@ -81,14 +78,14 @@ SimmSpline::SimmSpline(int aN,const double *aX,const double *aY,
     // NUMBER OF DATA POINTS
     if(aN < 2)
     {
-        printf("SimmSpline: ERROR- there must be 2 or more data points.\n");
+        log_error("SimmSpline: there must be 2 or more data points.");
         return;
     }
 
     // CHECK DATA
     if((aX==NULL)||(aY==NULL))
     {
-        printf("SimmSpline: ERROR- NULL arrays for data points encountered.\n");
+        log_error("SimmSpline: NULL arrays for data points encountered.");
         return;
     }
 

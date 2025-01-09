@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -174,15 +174,13 @@ constructDescription()
 {
     char descrip[1024];
 
-    strcpy(descrip,"\nThis file contains expression evaluation ");
-    strcat(descrip,"during a simulation.\n");
-    strcat(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
-    if(getInDegrees()) {
-        strcat(descrip,"\nAngles are in degrees.");
-    } else {
-        strcat(descrip,"\nAngles are in radians.");
-    }
-    strcat(descrip,"\n\n");
+    strcpy(descrip, "\nThis file contains expression evaluation ");
+    strcat(descrip, "during a simulation.\n");
+    strcat(descrip, "\nUnits are S.I. units (second, meters, Newtons, ...)");
+    strcat(descrip, "\nIf the header above contains a line with ");
+    strcat(descrip, "'inDegrees', this indicates whether rotational values ");
+    strcat(descrip, "are in degrees (yes) or radians (no).");
+    strcat(descrip, "\n\n");
 
     setDescription(descrip);
 }
@@ -230,7 +228,7 @@ record(const SimTK::State& s)
         _variables.find(stateNames[i])->second = rStateValues[i];
     }
     double value = Lepton::Parser::parse(_expressionStr).evaluate(_variables);
-    StateVector nextRow = StateVector(s.getTime());
+    StateVector nextRow{s.getTime(), {}};
      nextRow.getData().append(value);
     _resultStore.append(nextRow);
 
@@ -252,7 +250,7 @@ record(const SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int SymbolicExpressionReporter::
-begin( SimTK::State& s)
+begin( const SimTK::State& s)
 {
     if(!proceed()) return(0);
     // LABELS
@@ -312,7 +310,7 @@ step(const SimTK::State& s, int stepNumber )
  * @return -1 on error, 0 otherwise.
  */
 int SymbolicExpressionReporter::
-end( SimTK::State& s )
+end( const SimTK::State& s )
 {
     if (!proceed()) return 0;
 

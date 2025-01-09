@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan, Jeffrey A. Reinbolt                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,7 +27,6 @@
 #include "Schutte1993Muscle_Deprecated.h"
 #include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
 // STATICS
@@ -447,7 +446,7 @@ double Schutte1993Muscle_Deprecated::computeIsometricForce(SimTK::State& s, doub
    int i;
    double length,tendon_length, fiber_force, tmp_fiber_length, min_tendon_stiffness;
    double cos_factor, fiber_stiffness;
-   double old_fiber_length, length_change, tendon_stiffness, percent;
+   double old_fiber_length{SimTK::NaN}, length_change, tendon_stiffness, percent;
    double error_force = 0.0, old_error_force, tendon_force, tendon_strain;
    double passiveForce, activeForce, tendonForce, fiberLength;
 
@@ -531,8 +530,8 @@ double Schutte1993Muscle_Deprecated::computeIsometricForce(SimTK::State& s, doub
          tendon_force = 0.0;
       else
          tendon_force = getTendonForceLengthCurve().calcValue(SimTK::Vector(1, tendon_strain)) * _maxIsometricForce;
-         setActuation(s, tendon_force);
-         setTendonForce(s, tendon_force);
+      setActuation(s, tendon_force);
+      setTendonForce(s, tendon_force);
 
       old_error_force = error_force;
  

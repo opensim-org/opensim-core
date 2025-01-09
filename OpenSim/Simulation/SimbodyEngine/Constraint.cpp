@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,7 +26,7 @@
 //=============================================================================
 #include "Constraint.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
+#include "simbody/internal/Constraint.h"
 
 //=============================================================================
 // STATICS
@@ -71,7 +71,31 @@ void Constraint::setNull(void)
  */
 void Constraint::constructProperties(void)
 {
-    constructProperty_isDisabled(false);
+    constructProperty_isEnforced(true);
+}
+
+void Constraint::updateFromXMLNode(SimTK::Xml::Element& node,
+                                   int versionNumber) {
+    if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30509) {
+            // Rename property 'isDisabled' to 'isEnforced' and
+            // negate the contained value.
+            std::string oldName{ "isDisabled" };
+            std::string newName{ "isEnforced" };
+            if (node.hasElement(oldName)) {
+                auto elem = node.getRequiredElement(oldName);
+                bool isDisabled = false;
+                elem.getValue().tryConvertToBool(isDisabled);
+
+                // now update tag name to 'isEnforced'
+                elem.setElementTag(newName);
+                // update its value to be the opposite of 'isDisabled'
+                elem.setValue(SimTK::String(!isDisabled));
+            }
+        }
+    }
+
+    Super::updateFromXMLNode(node, versionNumber);
 }
 
 //_____________________________________________________________________________
@@ -93,16 +117,16 @@ void Constraint::extendInitStateFromProperties(SimTK::State& s) const
         _model->updMatterSubsystem().updConstraint(_index);
 
     // Otherwise we have to change the status of the constraint
-    if(get_isDisabled())
-        simConstraint.disable(s);
-    else
+    if(get_isEnforced())
         simConstraint.enable(s);
+    else
+        simConstraint.disable(s);
 }
 
 void Constraint::extendSetPropertiesFromState(const SimTK::State& state)
 {
     Super::extendSetPropertiesFromState(state);
-    set_isDisabled(isDisabled(state));
+    set_isEnforced(isEnforced(state));
 }
 
 //=============================================================================
@@ -116,56 +140,43 @@ void Constraint::extendSetPropertiesFromState(const SimTK::State& state)
  *
  * @param aConstraint Constraint to update from
  */
-void Constraint::updateFromConstraint(SimTK::State& s, const Constraint &aConstraint)
+void Constraint::updateFromConstraint(SimTK::State& s,
+                                      const Constraint &aConstraint)
 {
-    setDisabled(s, aConstraint.isDisabled(s));
+    setIsEnforced(s, aConstraint.isEnforced(s));
 }
 
 //=============================================================================
 // GET AND SET
 //=============================================================================
 //-----------------------------------------------------------------------------
-// DISABLE
+// ENFORCED
 //-----------------------------------------------------------------------------
 
-//_____________________________________________________________________________
-/**
- * Get whether or not this Constraint is disabled.
- * Simbody multibody system instance is realized every time the isDisabled
- * changes, BUT multiple sets to the same value have no cost.
- *
- * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.
- */
-bool Constraint::isDisabled(const SimTK::State& s) const
+bool Constraint::isEnforced(const SimTK::State& s) const
 {
-    return _model->updMatterSubsystem().updConstraint(_index).isDisabled(s);
+    return !_model->updMatterSubsystem().updConstraint(_index).isDisabled(s);
 }
 
-//_____________________________________________________________________________
-/**
- * Set whether or not this Constraint is disabled.
- * Simbody multibody system instance is realized every time the isDisabled
- * changes, BUT multiple sets to the same value have no cost.
- *
- * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.
- */
-bool Constraint::setDisabled(SimTK::State& s, bool isDisabled)
+bool Constraint::setIsEnforced(SimTK::State& s, bool isEnforced)
 {
-    SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
-    bool modelConstraintIsDisabled = simConstraint.isDisabled(s);
+    SimTK::Constraint& simConstraint =
+        _model->updMatterSubsystem().updConstraint(_index);
+    bool modelConstraintIsEnforced = !simConstraint.isDisabled(s);
 
-    // Check if we already have the correct enabling of the constraint then do nothing 
-    if(isDisabled == modelConstraintIsDisabled)
+    // Check if we already have the correct enabling of the constraint then
+    // do nothing 
+    if(isEnforced == modelConstraintIsEnforced)
         return true;
 
     // Otherwise we have to change the status of the constraint
-    if(isDisabled)
-        simConstraint.disable(s);
-    else
+    if(isEnforced)
         simConstraint.enable(s);
+    else
+        simConstraint.disable(s);
 
     _model->updateAssemblyConditions(s);
-    set_isDisabled(isDisabled);
+    set_isEnforced(isEnforced);
     
     return true;
 }
@@ -179,21 +190,26 @@ bool Constraint::setDisabled(SimTK::State& s, bool isDisabled)
  * Ask the constraint for the forces it is imposing on the system
  * Simbody multibody system must be realized to at least position
  * Returns: the bodyForces on those bodies being constrained (constrainedBodies)
- *              a SpatialVec (6 components) describing resulting torque and force
+ *          a SpatialVec (6 components) describing resulting torque and force
  *          mobilityForces acting along constrained mobilities  
  *
  * @param state State of model
- * @param bodyForcesInAncestor is a Vector of SpatialVecs contain constraint forces
+ * @param bodyForcesInAncestor is a Vector of SpatialVecs contain constraint 
+          forces
  * @param mobilityForces is a Vector of forces that act along the constrained
  *         mobilities associated with this constraint
  */
-void Constraint::calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
-                                      SimTK::Vector& mobilityForces) const
-{
-    SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
+void Constraint::
+calcConstraintForces(const SimTK::State& s,
+                     SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
+                     SimTK::Vector& mobilityForces) const {
+    SimTK::Constraint& simConstraint =
+        _model->updMatterSubsystem().updConstraint(_index);
     if(!simConstraint.isDisabled(s)){
         SimTK::Vector multipliers = simConstraint.getMultipliersAsVector(s);
-        simConstraint.calcConstraintForcesFromMultipliers(s, multipliers, bodyForcesInAncestor, mobilityForces);
+        simConstraint.calcConstraintForcesFromMultipliers(s, multipliers,
+                                                          bodyForcesInAncestor,
+                                                          mobilityForces);
     }
 }
 
@@ -212,24 +228,24 @@ Array<std::string> Constraint::getRecordLabels() const
     // number of mobilities being directly constrained
     int ncm = simConstraint.getNumConstrainedU(ds);
 
-    const BodySet &bodies = _model->getBodySet();
+    const auto& physicalFrames = _model->getComponentList<PhysicalFrame>();
     
     Array<std::string> labels("");
 
     for(int i=0; i<ncb; ++i){
         const SimTK::MobilizedBody &b = simConstraint.getMobilizedBodyFromConstrainedBody(SimTK::ConstrainedBodyIndex(i));
         const SimTK::MobilizedBodyIndex &bx =  b.getMobilizedBodyIndex();
-        Body *bod = NULL;
-        for(int j=0; j<bodies.getSize(); ++j ){
-            if(bodies[j].getMobilizedBodyIndex() == bx){
-                bod = &bodies[j];
+        const PhysicalFrame *frame = nullptr;
+        for(auto& phf : physicalFrames){
+            if(phf.getMobilizedBodyIndex() == bx){
+                frame = &phf;
                 break;
             }
         }
-        if(bod == NULL){
+        if(frame == nullptr){
             throw Exception("Constraint "+getName()+" does not have an identifiable body index.");
         }
-        string prefix = getName()+"_"+bod->getName();
+        string prefix = getName()+"_"+frame->getName();
         labels.append(prefix+"_Fx");
         labels.append(prefix+"_Fy");
         labels.append(prefix+"_Fz");
@@ -238,10 +254,8 @@ Array<std::string> Constraint::getRecordLabels() const
         labels.append(prefix+"_Mz");
     }
 
-    char c[2] = "";
     for(int i=0; i<ncm; ++i){
-        sprintf(c, "%d", i);
-        labels.append(getName()+"_mobility_F"+c);
+        labels.append(fmt::format("{}_mobility_F{}", getName(), i));
     }
     
     return labels;

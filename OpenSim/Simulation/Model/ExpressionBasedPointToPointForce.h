@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,15 +23,20 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Force.h"
-#include <Vendors/lepton/include/Lepton.h>
+#include <OpenSim/Simulation/Model/ForceProducer.h>
+
+#include <lepton/ExpressionProgram.h>
+
+namespace SimTK {
+class MobilizedBody;
+}
 
 //==============================================================================
 //==============================================================================
 namespace OpenSim { 
 
 /**
- * A point-to-point Force who's force magnitude is determined by a user-defined
+ * A point-to-point Force whose force magnitude is determined by a user-defined
  * expression, with the distance (d) and its time derivative (ddot) as variables. 
  * The direction of the force is directed along the line connecting the two 
  * points. 
@@ -48,8 +53,8 @@ namespace OpenSim {
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API ExpressionBasedPointToPointForce : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(ExpressionBasedPointToPointForce, Force);
+class OSIMSIMULATION_API ExpressionBasedPointToPointForce : public ForceProducer {
+OpenSim_DECLARE_CONCRETE_OBJECT(ExpressionBasedPointToPointForce, ForceProducer);
 public:
 //==============================================================================
 // PROPERTIES
@@ -67,6 +72,11 @@ public:
         "the distance (d) between the points and its time derivative (ddot). "
         "Note, expression cannot have any whitespace separating characters.");
 
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(force_magnitude, double, getForceMagnitude,
+            SimTK::Stage::Dynamics);
 
 //==============================================================================
 // PUBLIC METHODS
@@ -128,17 +138,7 @@ public:
     * @param state    const state (reference) for the model
     * @return         const double ref to the force magnitude
     */
-    const double& getForceMagnitude(const SimTK::State& state);
-
-
-    //--------------------------------------------------------------------------
-    // COMPUTATION
-    //--------------------------------------------------------------------------
-    /** Compute the point-to-point force based on the user-defined expression 
-        and apply it to the model */
-    void computeForce(const SimTK::State& state, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const override;
+    const double& getForceMagnitude(const SimTK::State& state) const;
 
 
     //-----------------------------------------------------------------------------
@@ -162,17 +162,23 @@ protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 private:
+    /**
+     * Implements the `ForceProducer` API by computing the point-to-point force
+     * based on the `expression` property.
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
+
     void setNull();
     void constructProperties();
 
     // parser programs for efficiently evaluating the expressions
     Lepton::ExpressionProgram _forceProg;
 
-    // Temporary solution until implemented with Connectors
+    // Temporary solution until implemented with Sockets
     SimTK::ReferencePtr<const PhysicalFrame> _body1;
     SimTK::ReferencePtr<const PhysicalFrame> _body2;
-    SimTK::ReferencePtr<const SimTK::MobilizedBody> _b1; 
-    SimTK::ReferencePtr<const SimTK::MobilizedBody> _b2;
+
+    mutable CacheVariable<double> _forceMagnitudeCV;
 
 //==============================================================================
 };  // END of class override

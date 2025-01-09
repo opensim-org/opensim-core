@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,6 +25,9 @@
  *  Below is an example of an OpenSim application that provides its own 
  *  main() routine.  This application acts as an example for utilizing the 
  *  ControllabeSpring actuator.
+ *
+ *  See the following link for a walkthrough of this example:
+ *  https://simtk-confluence.stanford.edu/display/OpenSim/Creating+a+Customized+Actuator
  */
 
 // Author:  Matt DeMers
@@ -34,89 +37,93 @@
 #include "PistonActuator.h"
 #include "ControllableSpring.h"
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 
 using namespace OpenSim;
 using namespace SimTK;
 
-//______________________________________________________________________________
-/**
- * Run a simulation of block sliding with contact on by two muscles sliding with contact 
- */
 int main()
 {
-
     try {
-        // Create a new OpenSim model
+        // Create a new OpenSim model.
         Model osimModel;
         osimModel.setName("osimModel");
         osimModel.setAuthors("Matt DeMers");
 
         double Pi = SimTK::Pi;
             
-        // Get the ground body
+        // Get the ground body.
         Ground& ground = osimModel.updGround();
-        ground.addMeshGeometry("checkered_floor.vtp");
+        ground.attachGeometry(new Mesh("checkered_floor.vtp"));
 
-        // create linkage body
+        // Create linkage body.
         double linkageMass = 0.001, linkageLength = 0.5, linkageDiameter = 0.06;
         
-        Vec3 linkageDimensions(linkageDiameter, linkageLength, linkageDiameter);
         Vec3 linkageMassCenter(0,linkageLength/2,0);
-        Inertia linkageInertia = Inertia::cylinderAlongY(linkageDiameter/2.0, linkageLength/2.0);
+        Inertia linkageInertia =
+            Inertia::cylinderAlongY(linkageDiameter/2.0, linkageLength/2.0);
 
-        OpenSim::Body* linkage1 = new OpenSim::Body("linkage1", linkageMass, linkageMassCenter, linkageMass*linkageInertia);
-        
-        // Graphical representation
-        Cylinder cyl;
-        cyl.set_scale_factors(linkageDimensions);
-        Frame* cyl1Frame = new PhysicalOffsetFrame(*linkage1, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
+        OpenSim::Body* linkage1 = new OpenSim::Body("linkage1", linkageMass,
+                linkageMassCenter, linkageMass*linkageInertia);
+
+        // Graphical representation.
+        Sphere sphere(0.05);
+        linkage1->attachGeometry(sphere.clone());
+        Cylinder cyl(linkageDiameter/2, linkageLength/2);
+        Frame* cyl1Frame = new PhysicalOffsetFrame(*linkage1, 
+            Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
         cyl1Frame->setName("Cyl1_frame");
-        osimModel.addFrame(cyl1Frame);
-        cyl.setFrameName("Cyl1_frame");
-        linkage1->addGeometry(cyl);
+        cyl1Frame->attachGeometry(cyl.clone());
+        osimModel.addComponent(cyl1Frame);
 
-        Sphere sphere(0.1);
-        linkage1->addGeometry(sphere);
-         
-        // Create a second linkage body
-        OpenSim::Body* linkage2 = new OpenSim::Body(*linkage1);
-        linkage2->setName("linkage2");
-        Frame* cyl2Frame = new PhysicalOffsetFrame(*linkage2, Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
+        // Create a second linkage body.
+        OpenSim::Body* linkage2 = new OpenSim::Body("linkage2", linkageMass,
+                linkageMassCenter, linkageMass*linkageInertia);
+        linkage2->attachGeometry(sphere.clone());
+        Frame* cyl2Frame = new PhysicalOffsetFrame(*linkage2,
+            Transform(Vec3(0.0, linkageLength / 2.0, 0.0)));
         cyl2Frame->setName("Cyl2_frame");
-        osimModel.addFrame(cyl2Frame);
-        (linkage2->upd_geometry(0)).setFrameName("Cyl2_frame");
-        // Create a block to be the pelvis
+        cyl2Frame->attachGeometry(cyl.clone());
+        osimModel.addComponent(cyl2Frame);
+
+        // Create a block to be the pelvis.
         double blockMass = 20.0, blockSideLength = 0.2;
         Vec3 blockMassCenter(0);
-        Inertia blockInertia = blockMass*Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
-        OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
-        Brick brick(SimTK::Vec3(0.05, 0.05, 0.05));
-        block->addGeometry(brick);
+        Inertia blockInertia = blockMass*Inertia::brick(blockSideLength,
+                blockSideLength, blockSideLength);
+        OpenSim::Body* block = new OpenSim::Body("block", blockMass,
+                blockMassCenter, blockInertia);
+        block->attachGeometry(new Brick(SimTK::Vec3(0.05, 0.05, 0.05)));
 
-        // Create 1 degree-of-freedom pin joints between the bodies to create a kinematic chain from ground through the block
-        Vec3 orientationInGround(0), locationInGround(0), locationInParent(0.0, linkageLength, 0.0), orientationInChild(0), locationInChild(0);
+        // Create 1 degree-of-freedom pin joints between the bodies to create a
+        // kinematic chain from ground through the block.
+        Vec3 orientationInGround(0);
+        Vec3 locationInGround(0);
+        Vec3 locationInParent(0.0, linkageLength, 0.0);
+        Vec3 orientationInChild(0);
+        Vec3 locationInChild(0);
 
-        PinJoint *ankle = new PinJoint("ankle", ground, locationInGround, orientationInGround, *linkage1, 
-            locationInChild, orientationInChild);
+        PinJoint* ankle = new PinJoint("ankle",
+                ground, locationInGround, orientationInGround,
+                *linkage1, locationInChild, orientationInChild);
 
-        PinJoint *knee = new PinJoint("knee", *linkage1, locationInParent, orientationInChild, *linkage2,
-            locationInChild, orientationInChild);
+        PinJoint* knee = new PinJoint("knee",
+                *linkage1, locationInParent, orientationInChild,
+                *linkage2, locationInChild, orientationInChild);
 
-        PinJoint *hip = new PinJoint("hip", *linkage2, locationInParent, orientationInChild, *block,
-            locationInChild, orientationInChild);
+        PinJoint* hip = new PinJoint("hip",
+                *linkage2, locationInParent, orientationInChild,
+                *block, locationInChild, orientationInChild);
         
         double range[2] = {-SimTK::Pi*2, SimTK::Pi*2};
-        CoordinateSet& ankleCoordinateSet = ankle->upd_CoordinateSet();
-        ankleCoordinateSet[0].setName("q1");
-        ankleCoordinateSet[0].setRange(range);
+        ankle->updCoordinate().setName("q1");
+        ankle->updCoordinate().setRange(range);
 
-        CoordinateSet& kneeCoordinateSet = knee->upd_CoordinateSet();
-        kneeCoordinateSet[0].setName("q2");
-        kneeCoordinateSet[0].setRange(range);
+        knee->updCoordinate().setName("q2");
+        knee->updCoordinate().setRange(range);
 
-        CoordinateSet& hipCoordinateSet = hip->upd_CoordinateSet();
-        hipCoordinateSet[0].setName("q3");
-        hipCoordinateSet[0].setRange(range);
+        hip->updCoordinate().setName("q3");
+        hip->updCoordinate().setRange(range);
 
         // Add the bodies to the model
         osimModel.addBody(linkage1);
@@ -128,18 +135,19 @@ int main()
         osimModel.addJoint(knee);
         osimModel.addJoint(hip);
         // Define constraints on the model
-        //  Add a point on line constraint to limit the block to vertical motion
-
+        // Add a point on line constraint to limit the block to vertical motion
         Vec3 lineDirection(0,1,0), pointOnLine(0,0,0), pointOnBlock(0);
-        PointOnLineConstraint *lineConstraint = new PointOnLineConstraint(ground, lineDirection, pointOnLine, *block, pointOnBlock);
+        PointOnLineConstraint *lineConstraint =
+            new PointOnLineConstraint(ground, lineDirection, pointOnLine,
+                    *block, pointOnBlock);
         osimModel.addConstraint(lineConstraint);
 
         // Add PistonActuator between the first linkage and the block
         Vec3 pointOnBodies(0);
-        PistonActuator *piston = new PistonActuator();
+        PistonActuator* piston = new PistonActuator();
         piston->setName("piston");
-        piston->setBodyA(linkage1);
-        piston->setBodyB(block);
+        piston->setFrameA(*linkage1);
+        piston->setFrameB(*block);
         piston->setPointA(pointOnBodies);
         piston->setPointB(pointOnBodies);
         piston->setOptimalForce(200.0);
@@ -149,10 +157,10 @@ int main()
         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // Added ControllableSpring between the first linkage and the second block
         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        ControllableSpring *spring = new ControllableSpring;
+        ControllableSpring* spring = new ControllableSpring();
         spring->setName("spring");
-        spring->setBodyA(block);
-        spring->setBodyB(linkage1);
+        spring->setFrameA(*block);
+        spring->setFrameB(*linkage1);
         spring->setPointA(pointOnBodies);
         spring->setPointB(pointOnBodies);
         spring->setOptimalForce(2000.0);
@@ -166,7 +174,7 @@ int main()
 
         // create a controller to control the piston and spring actuators
         // the prescribed controller sets the controls as functions of time
-        PrescribedController *legController = new PrescribedController();
+        PrescribedController* legController = new PrescribedController();
         // give the legController control over all (two) model actuators
         legController->setActuators(osimModel.updActuators());
 
@@ -175,8 +183,10 @@ int main()
         double x[] = {1.0, 1.0, 0.25,  0.25, 5.0};
 
         // specify the control function for each actuator
-        legController->prescribeControlForActuator("piston", new Constant(0.1));
-        legController->prescribeControlForActuator("spring", new PiecewiseLinearFunction(5, t, x));
+        legController->prescribeControlForActuator("piston",
+                Constant(0.1));
+        legController->prescribeControlForActuator("spring", 
+                PiecewiseLinearFunction(5, t, x));
 
         // add the controller to the model
         osimModel.addController(legController);     
@@ -184,8 +194,8 @@ int main()
         // define the acceleration due to gravity
         osimModel.setGravity(Vec3(0, -9.80665, 0));
 
-        // enable the model visualizer see the model in action, which can be
-        // useful for debugging
+        // Set to true to visualize the simulation, which can be useful for
+        // debugging.
         osimModel.setUseVisualizer(false);
 
         // Initialize system
@@ -198,39 +208,42 @@ int main()
         coordinates[0].setValue(si, q1_i, true);
         coordinates[1].setValue(si,q2_i, true);
 
-        // Setup integrator and manager
-        SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-        integrator.setAccuracy(1.0e-3);
-
-        ForceReporter *forces = new ForceReporter(&osimModel);  
+        // Setup ForceReporter and Manager
+        ForceReporter* forces = new ForceReporter(&osimModel);  
         osimModel.updAnalysisSet().adoptAndAppend(forces);
-        Manager manager(osimModel, integrator);
+        Manager manager(osimModel);
+        manager.setIntegratorAccuracy(1.0e-3);
     
         //Examine the model
         osimModel.printDetailedInfo(si, std::cout);
+
+        // No need to call the finalizeConnections() as it is 
+        // already called by the initSystem()
         // Save the model
         osimModel.print("toyLeg.osim");
+
         // Print out the initial position and velocity states
         si.getQ().dump("Initial q's");
         si.getU().dump("Initial u's");
         std::cout << "Initial time: " << si.getTime() << std::endl;
 
-        osimModel.dumpPathName();
         // Integrate
-        manager.setInitialTime(t0);
-        manager.setFinalTime(tf);
+        si.setTime(t0);
+        manager.initialize(si);
         std::cout<<"\n\nIntegrating from " << t0 << " to " << tf << std::endl;
-        manager.integrate(si);
+        manager.integrate(tf);
 
         // Save results
-        osimModel.printControlStorage("SpringActuatedLeg_controls.sto");
-        Storage statesDegrees(manager.getStateStorage());
-        osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-        //statesDegrees.print("PistonActuatedLeg_states_degrees.mot");
-        statesDegrees.print("SpringActuatedLeg_states_degrees.mot");
+        auto controlsTable = osimModel.getControlsTable();
+        STOFileAdapter::write(controlsTable, "SpringActuatedLeg_controls.sto");
 
-        forces->getForceStorage().print("actuator_forces.mot");
-        
+        auto statesTable = manager.getStatesTable();
+        osimModel.updSimbodyEngine().convertRadiansToDegrees(statesTable);
+        STOFileAdapter::write(statesTable,
+                "SpringActuatedLeg_states_degrees.sto");
+
+        auto forcesTable = forces->getForcesTable();
+        STOFileAdapter::write(forcesTable, "actuator_forces.sto");
     }
     catch (const std::exception& ex)
     {

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,6 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "ForceVelocityCurve.h"
+#include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -170,15 +171,26 @@ void ForceVelocityCurve::setEccentricCurviness(double aEccentricCurviness)
 //==============================================================================
 double ForceVelocityCurve::calcValue(double normFiberVelocity) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "ForceVelocityCurve: Curve is not up-to-date with its properties");
     return m_curve.calcValue(normFiberVelocity);
+}
+
+SmoothSegmentedFunction::ValueAndDerivative ForceVelocityCurve::
+    calcValueAndDerivative(double normFiberVelocity) const
+{
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
+        "ForceVelocityCurve: Curve is not up-to-date with its properties");
+    return m_curve.calcValueAndFirstDerivative(normFiberVelocity);
 }
 
 double ForceVelocityCurve::calcDerivative(double normFiberVelocity,
                                           int order) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "ForceVelocityCurve: Curve is not up-to-date with its properties");
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2,
         "ForceVelocityCurve::calcDerivative",
@@ -187,9 +199,17 @@ double ForceVelocityCurve::calcDerivative(double normFiberVelocity,
     return m_curve.calcDerivative(normFiberVelocity,order);
 }
 
+double ForceVelocityCurve::
+    calcDerivative(const std::vector<int>& derivComponents,
+                   const SimTK::Vector& x) const
+{
+    return m_curve.calcDerivative(derivComponents, x);
+}
+
 SimTK::Vec2 ForceVelocityCurve::getCurveDomain() const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "ForceVelocityCurve: Curve is not up-to-date with its properties");
     return m_curve.getCurveDomain();
 }

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,15 +23,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include "Constraint.h"
-#include "Body.h"
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 namespace OpenSim {
 
@@ -39,8 +33,8 @@ namespace OpenSim {
 //=============================================================================
 /**
  * A class implementing a constraint that maintains a constant distance between
- * between two points on separate PhysicalFrames. 
- * The underlying SimTK::Constraint in Simbody is a Constraint::Rod
+ * two points on separate PhysicalFrames. 
+ * The underlying SimTK::Constraint in Simbody is a SimTK::Constraint::Rod.
  *
  * @author Matt DeMers
  */
@@ -60,6 +54,12 @@ public:
     OpenSim_DECLARE_PROPERTY(constant_distance, double, "constant distance "
         "to be rigidly maintained between the two points "
         "fixed on each body.");
+
+    OpenSim_DECLARE_SOCKET(body_1, PhysicalFrame,
+        "The first body participating in this constraint.");
+    OpenSim_DECLARE_SOCKET(body_2, PhysicalFrame,
+        "The second body participating in this constraint.");
+
 
 //=============================================================================
 // METHODS
@@ -107,20 +107,18 @@ protected:
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
         override;
 
-    /** Updating XML formating to latest revision */
+    /** Updating XML formatting to latest revision */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 
 
 private:
     /** Construct ConstantDistanceConstraint's properties */
-    void constructProperties() override;
-    /** Construct ConstantDistanceConstraint's connectors */
-    void constructConnectors() override;
+    void constructProperties();
 
     void setNull();
 
 //=============================================================================
-};  // END of class ConstantDistanceConstraint
+}; // END of class ConstantDistanceConstraint
 //=============================================================================
 //=============================================================================
 

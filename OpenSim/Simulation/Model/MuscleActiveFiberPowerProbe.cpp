@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,6 +24,7 @@
 // INCLUDES and STATICS
 //=============================================================================
 #include "MuscleActiveFiberPowerProbe.h"
+#include "Model.h"
 
 
 using namespace std;
@@ -112,8 +113,8 @@ void MuscleActiveFiberPowerProbe::extendConnectToModel(Model& model)
         int k = model.getMuscles().getIndex(actName);
         if (k<0) {
             string errorMessage = getConcreteClassName() + ": Invalid Muscle '" + actName + "' specified in <muscle_names>.";
-            std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
-            setDisabled(true);
+            log_warn("{} Probe will be disabled.", errorMessage);
+            setEnabled(false);
         }
     }
 }

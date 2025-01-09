@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): OpenSim Team                                                     *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Author(s): OpenSim Team                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -25,9 +25,14 @@
 
 #include "Model/AnalysisSet.h"
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
+#include "Model/Bhargava2004SmoothedMuscleMetabolics.h"
 #include "Model/Model.h"
-#include "Model/ModelDisplayHints.h"
 #include "Model/ModelVisualizer.h"
+#include "Model/Force.h"
+#include "Model/ForceAdapter.h"
+#include "Model/ForceApplier.h"
+#include "Model/ForceConsumer.h"
+#include "Model/ForceProducer.h"
 #include "Model/ForceSet.h"
 #include "Model/BodyScale.h"
 #include "Model/BodyScaleSet.h"
@@ -41,7 +46,9 @@
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
 #include "Model/HuntCrossleyForce.h"
+#include "Model/SmoothSphereHalfSpaceForce.h"
 #include "Model/Ligament.h"
+#include "Model/Blankevoort1991Ligament.h"
 #include "Model/JointSet.h"
 #include "Model/Marker.h"
 #include "Model/Station.h"
@@ -51,6 +58,7 @@
 #include "Model/ConditionalPathPoint.h"
 #include "Model/MovingPathPoint.h"
 #include "Model/GeometryPath.h"
+#include "Model/FunctionBasedPath.h"
 #include "Model/PrescribedForce.h"
 #include "Model/PointToPointSpring.h"
 #include "Model/ExpressionBasedPointToPointForce.h"
@@ -78,6 +86,7 @@
 #include "Control/ControlConstant.h"
 #include "Control/ControlLinear.h"
 #include "Control/PrescribedController.h"
+#include "Control/SynergyController.h"
 #include "Wrap/PathWrap.h"
 #include "Wrap/PathWrapSet.h"
 #include "Wrap/WrapCylinder.h"
@@ -110,10 +119,25 @@
 #include "SimbodyEngine/TransformAxis.h"
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
+#include "SimbodyEngine/ConstantCurvatureJoint.h"
 
+#include "AssemblySolver.h"
+#include "CoordinateReference.h"
+#include "InverseDynamicsSolver.h"
+#include "InverseKinematicsSolver.h"
+#include "MarkersReference.h"
+#include "OrientationsReference.h"
 #include "MomentArmSolver.h"
+#include "Reference.h"
+#include "Solver.h"
+#include "StatesTrajectory.h"
+#include "StatesTrajectoryReporter.h"
+#include "TableProcessor.h"
+#include "PositionMotion.h"
+#include "OpenSense/OpenSenseUtilities.h"
+#include "OpenSense/IMU.h"
+#include "SimulationUtilities.h"
 
 #include "RegisterTypes_osimSimulation.h"   // to expose RegisterTypes_osimSimulation
-
 
 #endif // _osimSimulation_h_

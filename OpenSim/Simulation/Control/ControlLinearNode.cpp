@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,9 +24,7 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include "ControlLinearNode.h"
 
 
@@ -66,6 +64,7 @@ ControlLinearNode(double aT,double aValue) :
  * @param aControl Control to copy.
  */
 ControlLinearNode::ControlLinearNode(const ControlLinearNode &aControl) :
+    Object(aControl),
     _t(_propT.getValueDbl()),
     _value(_propValue.getValueDbl())
 {
@@ -294,11 +293,11 @@ toString()
     const char *format = IO::GetDoubleOutputFormat();
 
     strcpy(string,"t=");
-    sprintf(tmp,format,_t);
+    snprintf(tmp,128,format,_t);
     strcat(string,tmp);
 
     strcat(string," value=");
-    sprintf(tmp,format,_value);
+    snprintf(tmp,128,format,_value);
     strcat(string,tmp);
 
     return(string);

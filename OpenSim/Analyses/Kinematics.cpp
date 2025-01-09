@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,12 +25,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include "Kinematics.h"
-
 
 
 using namespace OpenSim;
@@ -50,8 +46,9 @@ using namespace std;
 /**
  * Destructor.
  */
-Kinematics::~Kinematics()
-{
+Kinematics::~Kinematics() 
+{ 
+    deleteStorage(); 
 }
 //_____________________________________________________________________________
 /**
@@ -111,8 +108,8 @@ setNull()
     setName("Kinematics");
     _pStore=_vStore=_aStore=NULL;
 
-    // Let the list own the storages so we don't have to manually delete them
-    _storageList.setMemoryOwner(true);
+    // Make sure storages are owned/managed by the Analysis
+    _storageList.setMemoryOwner(false);
 
     _recordAccelerations = true;
 }
@@ -207,7 +204,7 @@ updateCoordinatesToRecord()
     _values.setSize(_coordinateIndices.getSize());
 
     if(_values.getSize()==0) {
-         cout << "WARNING: Kinematics analysis has no coordinates to record values for" << endl;
+        log_warn("Kinematics analysis has no coordinates to record values for");
     }
 }
 
@@ -226,13 +223,11 @@ constructDescription()
 {
     char descrip[1024];
 
-    strcpy(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
-    if(getInDegrees()) {
-        strcat(descrip,"\nAngles are in degrees.");
-    } else {
-        strcat(descrip,"\nAngles are in radians.");
-    }
-    strcat(descrip,"\n\n");
+    strcpy(descrip, "\nUnits are S.I. units (second, meters, Newtons, ...)");
+    strcat(descrip, "\nIf the header above contains a line with ");
+    strcat(descrip, "'inDegrees', this indicates whether rotational values ");
+    strcat(descrip, "are in degrees (yes) or radians (no).");
+    strcat(descrip, "\n\n");
 
     setDescription(descrip);
 }
@@ -324,31 +319,7 @@ void Kinematics::setModel(Model& aModel)
 
     // Allocate storages to contain the results of the analysis
     allocateStorage();
-
-    // UPDATE LABELS
-    updateCoordinatesToRecord();
-    constructColumnLabels();
 }
-
-//-----------------------------------------------------------------------------
-// STORAGE CAPACITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the capacity increments of all storage instances.
- *
- * @param aIncrement Increment by which storage capacities will be increased
- * when storage capacities run out.
- */
-void Kinematics::
-setStorageCapacityIncrements(int aIncrement)
-{
-    if (_aStore) _aStore->setCapacityIncrement(aIncrement);
-    _vStore->setCapacityIncrement(aIncrement);
-    _pStore->setCapacityIncrement(aIncrement);
-}
-
-
 
 //=============================================================================
 // ANALYSIS
@@ -409,12 +380,16 @@ int Kinematics::record(const SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int Kinematics::
-begin( SimTK::State& s )
+begin( const SimTK::State& s )
 {
     if(!proceed()) return(0);
 
     double time = s.getTime();
     
+    // UPDATE LABELS
+    updateCoordinatesToRecord();
+    constructColumnLabels();
+
     // RESET STORAGE
     _pStore->reset(time);
     _vStore->reset(time);
@@ -472,7 +447,7 @@ step(const SimTK::State& s, int stepNumber )
  * @return -1 on error, 0 otherwise.
  */
 int Kinematics::
-end( SimTK::State& s )
+end( const SimTK::State& s )
 {
     if (!proceed()) return 0;
 
@@ -507,8 +482,8 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
     if(!getOn()) {
-        printf("Kinematics.printResults: Off- not printing.\n");
-        return(0);
+        log_info("Kinematics.printResults: Off- not printing.");
+        return 0;
     }
 
     // ACCELERATIONS

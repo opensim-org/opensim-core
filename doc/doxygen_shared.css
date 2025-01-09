@@ -10,7 +10,7 @@ table {
 }
 
 pre, code {
-    font-family: monospace;
+	font-family: Menlo, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
 }
 
 p {
@@ -197,15 +197,16 @@ pre.fragment {
 div.fragment {
         padding: 4px 6px;
         margin: 4px 8px 4px 2px;
-	background-color: #e3e3e3;
-	border: 1px solid #e3e3e3;
-	font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace !important;
+	background-color: #f3f3f3;
+	border: 1px solid #f3f3f3;
 }
 
 div.line {
-	font-family: monospace;
+    /* This is the font used for code blocks (@code). Menlo is on OSX, Consolas
+     * is on Windows. */
+	font-family: Menlo, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
     font-size: 11px;
-    color: #717171;
+    /* color: #000000; */ /* use default font color for code */
 	min-height: 13px; 
 	line-height: 1.0;
 	text-wrap: unrestricted;

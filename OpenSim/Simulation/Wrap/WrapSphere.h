@@ -1,5 +1,5 @@
-#ifndef __WrapSphere_h__
-#define __WrapSphere_h__
+#ifndef OPENSIM_WRAP_SPHERE_H_
+#define OPENSIM_WRAP_SPHERE_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  WrapSphere.h                           *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2019 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,18 +25,10 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include "WrapObject.h"
 
 namespace OpenSim {
 
-class Body;
-class Model;
-class PathPoint;
 class PathWrap;
 class WrapResult;
 
@@ -46,17 +38,15 @@ class WrapResult;
  * A class implementing a sphere for muscle wrapping.
  *
  * @author Peter Loan
- * @version 1.0
+ * updated for OpenSim 4.0 by Benjamin Michaud, 2019.
  */
 class OSIMSIMULATION_API WrapSphere : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapSphere, WrapObject);
-
-//=============================================================================
-// DATA
-//=============================================================================
-
-    PropertyDbl _radiusProp;
-    double& _radius;
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the sphere.");
 
 //=============================================================================
 // METHODS
@@ -66,28 +56,28 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapSphere, WrapObject);
     //--------------------------------------------------------------------------
 public:
     WrapSphere();
-    WrapSphere(const WrapSphere& aWrapSphere);
     virtual ~WrapSphere();
 
-#ifndef SWIG
-    WrapSphere& operator=(const WrapSphere& aWrapSphere);
-#endif
-    void copyData(const WrapSphere& aWrapSphere);
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
     double getRadius() const;
 
-    void scale(const SimTK::Vec3& aScaleFactors) override;
-    void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
-#ifndef SWIG
+    /** Scale the sphere by the average of the scale factors in each direction.
+        The base class (WrapObject) scales the origin of the sphere in the
+        body's reference frame. */
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+
+protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
-#endif
-protected:
-    void setupProperties();
 
+    /// Implement generateDecorations to draw geometry in visualizer
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
+
+    void extendFinalizeFromProperties() override;
 private:
-    void setNull();
+    void constructProperties();
 
 //=============================================================================
 };  // END of class WrapSphere
@@ -96,6 +86,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __WrapSphere_h__
+#endif // OPENSIM_WRAP_SPHERE_H_
 
 

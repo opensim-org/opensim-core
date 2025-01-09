@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,11 +25,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <fstream>
 #include "ExternalLoads.h"
 #include "Model.h"
 #include "BodySet.h"
-#include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Common/IO.h>
 
@@ -45,44 +43,25 @@ using SimTK::Vec3;
  */
 ExternalLoads::~ExternalLoads()
 {
-    _storages.clearAndDestroy();
 }
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
 ExternalLoads::ExternalLoads():
-_dataFileName(_dataFileNameProp.getValueStr()),
-_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+_dataFileName(_dataFileNameProp.getValueStr())
 {
     setNull();
 }
 
-ExternalLoads::ExternalLoads(Model& model) : 
-    ModelComponentSet<ExternalForce>(model),
+ExternalLoads::ExternalLoads(const std::string &fileName, bool updateFromXMLNode) :
+    Super(fileName, false),
     _dataFileName(_dataFileNameProp.getValueStr()),
-    _externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-    _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
-{
-    setNull();
-}
-
-//_____________________________________________________________________________
-/**
- * Construct an actuator set from file.
- *
- * @param aFileName Name of the file.
- */
-ExternalLoads::ExternalLoads(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode) :
-    ModelComponentSet<ExternalForce>(model, aFileName, false),
-    _dataFileName(_dataFileNameProp.getValueStr()),
-    _externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-    _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+    _loadedFromFile(fileName)
 {
     setNull();
 
-    if(aUpdateFromXMLNode)
+    if(updateFromXMLNode)
         updateFromXMLDocument();
 }
 
@@ -95,10 +74,14 @@ ExternalLoads::ExternalLoads(Model& model, const std::string &aFileName, bool aU
  */
 ExternalLoads::ExternalLoads(const ExternalLoads &otherExternalLoads) :
     ModelComponentSet<ExternalForce>(otherExternalLoads),
-    _dataFileName(_dataFileNameProp.getValueStr()),
-    _externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-    _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+    _dataFileName(_dataFileNameProp.getValueStr())
 {
+    // copy the document over, because it's used during `extendFinalizeConnections`
+    // to figure out where the associated motion file (#3926)
+    if (auto* document = otherExternalLoads.getDocument()) {
+        setDocument(std::make_unique<XMLDocument>(*document).release());
+    }
+
     setNull();
 
     // Class Members
@@ -118,7 +101,7 @@ void ExternalLoads::setNull()
 
     // PROPERTIES
     setupSerializedMembers();
-    _storages.clearAndDestroy();
+    _storages.clear();
 }
 
 
@@ -132,8 +115,8 @@ void ExternalLoads::copyData(const ExternalLoads &aAbsExternalLoads)
 {
     // ACTUATORS
     _dataFileName = aAbsExternalLoads._dataFileName;
-    _externalLoadsModelKinematicsFileName = aAbsExternalLoads._externalLoadsModelKinematicsFileName;
-    _lowpassCutoffFrequencyForLoadKinematics = aAbsExternalLoads._lowpassCutoffFrequencyForLoadKinematics;
+    _storages = aAbsExternalLoads._storages;
+    _loadedFromFile = aAbsExternalLoads._loadedFromFile;
 }
 
 //_____________________________________________________________________________
@@ -149,22 +132,6 @@ void ExternalLoads::setupSerializedMembers()
                 "Note: this file overrides the data source specified by the individual external forces if specified.";
     _dataFileNameProp.setComment(comment);
     _propertySet.append(&_dataFileNameProp);
-
-    _externalLoadsModelKinematicsFileName="";
-    comment =   "Optional motion file (.mot) or storage file (.sto) containing the model kinematics "
-                "used to transform a point expressed in ground to the body of force application."
-                "If the point is not expressed in ground, the point is not transformed";
-    _externalLoadsModelKinematicsFileNameProp.setComment(comment);
-    _externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
-    _propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
-
-    _lowpassCutoffFrequencyForLoadKinematics=-1.0;
-    comment = "Optional low-pass cut-off frequency for filtering the model kinematics corresponding "
-              "used to transform the point of application. A negative value results in no filtering. "
-              "The default value is -1.0, so no filtering.";
-    _lowpassCutoffFrequencyForLoadKinematicsProp.setComment(comment);
-    _lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
-    _propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
 }
 
 
@@ -180,7 +147,7 @@ void ExternalLoads::setupSerializedMembers()
 ExternalLoads& ExternalLoads::operator=(const ExternalLoads &otherExternalLoads)
 {
     // BASE CLASS
-    ModelComponentSet<ExternalForce>::operator=(otherExternalLoads);
+    Super::operator=(otherExternalLoads);
 
     // Class Members
     copyData(otherExternalLoads);
@@ -188,18 +155,54 @@ ExternalLoads& ExternalLoads::operator=(const ExternalLoads &otherExternalLoads)
     return(*this);
 }
 
-void ExternalLoads::invokeConnectToModel(Model& aModel)
+void ExternalLoads::extendConnectToModel(Model& aModel)
 {
-    Storage *forceData = new Storage(_dataFileName);
-
-    for(int i=0; i<getSize(); ++i)
-        get(i).setDataSource(*forceData);
-
     // BASE CLASS
-    Super::invokeConnectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
-    // add loaded storage into list of storages for later garbage collection
-    _storages.append(forceData);
+    Storage *forceData = nullptr;
+    auto loadDataFromDirectoryAdjacentToFile =
+        [this, &forceData](const std::string& filepath) {
+            // Change working directory the ExternalLoads location
+            auto cwd = IO::CwdChanger::changeToParentOf(filepath);
+            try {
+                forceData = new Storage(this->_dataFileName);
+            }
+            catch (const std::exception &ex) {
+                log_error("Failed to read ExternalLoads data file '{}'.",
+                        this->_dataFileName);
+                if (this->getDocument()) {
+                    cwd.restore();
+                } else {
+                    cwd.stay();
+                }
+                throw(ex);
+            }
+    };
+    if (_dataFileName.length() > 0) {
+        if(IO::FileExists(_dataFileName))
+            forceData = new Storage(_dataFileName);
+        else if(getDocument()) { // ExternalLoads constructed from file
+            loadDataFromDirectoryAdjacentToFile(getDocumentFileName());
+        }
+        else if (!_loadedFromFile.empty()) {
+            // Might be dealing with a copy of an ExternalLoads constructed
+            // from file.
+            loadDataFromDirectoryAdjacentToFile(_loadedFromFile);
+        }
+        else {
+            // Cannot find the data file and do not have an ExternalLoads (XML)
+            // document to test if file is in its directory.
+            throw Exception("Error: unable to read ExternalLoads data file '" +
+                _dataFileName + "'.");
+        }
+
+        for (int i = 0; i < getSize(); ++i)
+            get(i).setDataSource(*forceData);
+
+        // add loaded storage into list of storages for later garbage collection
+        _storages.push_back(shared_ptr<Storage>(forceData));
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -220,34 +223,50 @@ void ExternalLoads::invokeConnectToModel(Model& aModel)
  * coordinates for the model. Note that all generalized coordinates must
  * be specified and in radians and Euler parameters.
  */
-void ExternalLoads::transformPointsExpressedInGroundToAppliedBodies(const Storage &kinematics, double startTime, double endTime)
+void ExternalLoads::transformPointsExpressedInGroundToAppliedBodies(
+    const Storage &kinematics, double startTime, double endTime)
 {
-    for(int i=0; i<getSize(); i++){
+    std::vector<ExternalForce*> transformedForces;
+    for(int i=0; i<getSize(); ++i){
         ExternalForce *transformedExf = transformPointExpressedInGroundToAppliedBody(get(i), kinematics, startTime, endTime);
-        if(transformedExf){
-            // replace the force
+        transformedForces.push_back(transformedExf);
+    }
+    // Once we've transformed the forces (done with computation),
+    // then replace them in the Set
+    for (int i = 0; i < (int)transformedForces.size(); ++i) {
+        ExternalForce *transformedExf = transformedForces[i];
+        if (transformedExf) {
             set(i, transformedExf);
         }
     }
+
+    if (transformedForces.size())
+        _dataFileName = "";
 }
 
-ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const ExternalForce &exForce, const Storage &kinematics, double startTime, double endTime)
+ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(
+    const ExternalForce &exForce, const Storage &kinematics,
+    double startTime, double endTime)
 {
-    if(!&getModel() || !getModel().isValidSystem()) // no model and no system underneath, cannot proceed
+    if(!hasModel() || !getModel().isValidSystem()) // no model and no system underneath, cannot proceed
         throw Exception("ExternalLoads::transformPointExpressedInGroundToAppliedBody() requires a model with a valid system."); 
 
     if(!exForce._specifiesPoint){ // The external force does not apply a force to a point
-        cout << "ExternalLoads: WARNING ExternalForce '"<< exForce.getName() <<"' does not specify a point of application." << endl;
+        log_warn("ExternalLoads: ExternalForce '{}' does not specify a point of application.",
+            exForce.getName());
         return NULL;
     }
 
     if (exForce.getPointExpressedInBodyName() != getModel().getGround().getName()){
-        cout << "ExternalLoads: WARNING ExternalForce '"<< exForce.getName() <<"' is not expressed in ground and will not be transformed." << endl;
+        log_warn("ExternalLoads: ExternalForce '{}' is not expressed in ground "
+                 "and will not be transformed.",
+                exForce.getName());
         return NULL;
     }
 
     if (exForce.getAppliedToBodyName() == getModel().getGround().getName()){
-        cout << "ExternalLoads: WARNING ExternalForce '"<< exForce.getName() <<"' is applied to a point on ground and will not be transformed." << endl;
+        log_warn("ExternalLoads: ExternalForce '{}' is applied to a point on ground and will not be transformed.",
+            exForce.getName());
         return NULL;
     }
 
@@ -260,7 +279,8 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 
     if (nt > 0){
         if (startTime!= -SimTK::Infinity){  // Start time was actually specified.
-            // since splining relevant data, make sure we don't truncate user specified time by starting one index back
+            // since we are interpolating relevant data, make sure we don't
+            // truncate user specified time by starting one index back
             findex = kinematics.findIndex(startTime)-1; 
             startIndex = findex >= 0 ? findex : 0;
         }
@@ -271,8 +291,9 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
         }
     }
     else{
-        cout << "ExternalLoads: WARNING specified load kinematics contains no coordinate values. " 
-            << "Point of force application cannot be transformed." << endl;
+        log_warn("ExternalLoads: Specified load kinematics contains no "
+                 "coordinate values. "
+                 "Point of force application cannot be transformed.");
         return NULL;
     }
 
@@ -350,7 +371,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
         
         // get the untransformed point expressed in ground in the ExternalForce specified in  ground (check made above)
         pGround = exForce.getPointAtTime(time);
-        getModel().getSimbodyEngine().transformPosition(s, ground, pGround, appliedToBody, pAppliedBody);
+        pAppliedBody = ground.findStationLocationInAnotherFrame(s, pGround, appliedToBody);
 
         // populate the force data for this instant in time
         for(int j =0; j<3; ++j){
@@ -371,9 +392,9 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
     exF_transformedPoint->setPointExpressedInBodyName(exForce.getAppliedToBodyName());
     exF_transformedPoint->setDataSource(*newDataSource);
 
-    _storages.append(newDataSource);
+    _storages.push_back(shared_ptr<Storage>(newDataSource));
 
-    newDataSource->print("NewDataSource_TransformedP.sto");
+    newDataSource->print(exForce.getName()+"_NewDataSource_TransformedP.sto");
 
     return exF_transformedPoint;
 }
@@ -386,8 +407,7 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 {
     int documentVersion = versionNumber;
     if ( documentVersion < 20301){
-        if (Object::getDebugLevel()>=1)
-            cout << "Updating ExternalLoad object to latest format..." << endl;
+        log_debug("Updating ExternalLoad object to latest format...");
         _dataFileName="";
         SimTK::Xml::element_iterator dataFileElementIter =aNode.element_begin("datafile");
         if(dataFileElementIter!=aNode.element_end()) {
@@ -395,24 +415,26 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             SimTK::String transcoded = dataFileElementIter->getValueAs<SimTK::String>();
                     if (transcoded.length()>0)
                 _dataFileName =transcoded;
-                }
+        }
         SimTK::Xml::element_iterator kinFileNode = aNode.element_begin("external_loads_model_kinematics_file");
         if (kinFileNode != aNode.element_end()){
             SimTK::String transcoded = kinFileNode->getValueAs<SimTK::String>();
                     if (transcoded.length()>0)
-                _externalLoadsModelKinematicsFileName =transcoded;
-                }
+                        log_warn("ExternalLoads: external_loads_model_kinematics_file option is not supported anymore."
+                            "Results may change.");
+        }
         SimTK::Xml::element_iterator kinFilterNode = aNode.element_begin("lowpass_cutoff_frequency_for_load_kinematics");
         if (kinFilterNode != aNode.element_end()){
-            _lowpassCutoffFrequencyForLoadKinematics = kinFilterNode->getValueAs<double>();
+            // This is now unnecessary since we dropped supoprt for external_loads_model_kinematics_file
+                // _lowpassCutoffFrequencyForLoadKinematics = kinFilterNode->getValueAs<double>();
             }
             bool changeWorkingDir = false;
             std::string savedCwd;
             // Change to directory of Document
             if(!ifstream(_dataFileName.c_str(), ios_base::in).good()) {
             string msg =
-                    "Object: ERR- Could not open file " + _dataFileName+ "IO. It may not exist or you don't have permission to read it.";
-                cout << msg;
+                    "Object: Could not open file " + _dataFileName+ "IO. It may not exist or you don't have permission to read it.";
+                log_error(msg);
                 // Try switching to directory of setup file before aborting
                 if(getDocument()) {
                     savedCwd = IO::getCwd();
@@ -426,7 +448,7 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             }
             Storage* dataSource = new Storage(_dataFileName, true);
             if (!dataSource->makeStorageLabelsUnique()){
-                cout << "Making labels unique in storage file "<< _dataFileName << endl;
+                log_info("Making labels unique in storage file {}", _dataFileName);
                 dataSource = new Storage(_dataFileName);
                 dataSource->makeStorageLabelsUnique();
                 dataSource->print(_dataFileName);
@@ -435,13 +457,20 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             
             const Array<string> &labels = dataSource->getColumnLabels();
             // Populate data file and other things that haven't changed
-            // Create a ForceSet out of this XML node, this will create a set of PrescribedForces then we can reassign at a higher level to ExternalForces
-            ModelComponentSet<PrescribedForce> oldForces(updModel(), getDocument()->getFileName(), true);
+            // Create Set of Forces from this XML node, which we
+            // then reassign to an ExternalForce and add to ExternalLoads
+            Set<PrescribedForce> oldForces(getDocument()->getFileName(), true);
             for(int i=0; i< oldForces.getSize(); i++){
                 PrescribedForce& oldPrescribedForce = oldForces.get(i);
                 ExternalForce* newExternalForce = new ExternalForce();
                 newExternalForce->setName(oldPrescribedForce.getName());
-                newExternalForce->setAppliedToBodyName(oldPrescribedForce.getBodyName());
+                // In 4.0, PrescribedForce's body_name became a relative path
+                // to the body; we need to pull off just the body name.
+                std::string bodyName = oldPrescribedForce.getBodyName();
+                const auto slashLoc = bodyName.rfind('/');
+                if (slashLoc != std::string::npos)
+                    bodyName = bodyName.substr(slashLoc + 1);
+                newExternalForce->setAppliedToBodyName(bodyName);
                 newExternalForce->setPointExpressedInBodyName("ground");
                 newExternalForce->setForceExpressedInBodyName("ground");
                 // Reconstruct function names and use these to extract the identifier(s)
@@ -461,7 +490,20 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             }
             delete dataSource;
         }
-    else 
+        else {
+            // Warn on removed external_loads_kinematics_specification
+            SimTK::Xml::element_iterator kinFileNode =
+                    aNode.element_begin("external_loads_model_kinematics_file");
+            if (kinFileNode != aNode.element_end()) {
+                SimTK::String transcoded =
+                        kinFileNode->getValueAs<SimTK::String>();
+                if (transcoded.length() > 0)
+                    log_warn("ExternalLoades: "
+                             "external_loads_model_kinematics_file "
+                             "option is not supported anymore. Results may "
+                             "change.");
+            }
+        }
         // Call base class now assuming _node has been corrected for current version
         ModelComponentSet<ExternalForce>::updateFromXMLNode(aNode, versionNumber);
 }

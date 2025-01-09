@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "StepFunction.h"
-#include <OpenSim/Common/FunctionAdapter.h>
 
 //=============================================================================
 // STATICS
@@ -86,6 +85,7 @@ StepFunction::StepFunction(double startTime, double endTime, double startValue, 
  * @param aStepFunction StepFunction object to be copied.
  */
 StepFunction::StepFunction(const StepFunction &aStepFunction) :
+    Function(aStepFunction),
     _startTime(_startTimeProp.getValueDbl()), 
     _endTime(_endTimeProp.getValueDbl()),
     _startValue(_startValueProp.getValueDbl()),

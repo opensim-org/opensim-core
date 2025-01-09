@@ -127,7 +127,7 @@
 		<!--Forces in the model.-->
 		<ForceSet>
 			<objects>
-				<BushingForce>
+				<BushingForce name = "bushing">
 					<!--One of the two bodies connected by the bushing.-->
 					<body_1>ground</body_1>
 					<!--The other of the two bodies connected by the bushing.-->

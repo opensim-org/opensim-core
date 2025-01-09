@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                        OpenSim:  PathWrapPoint.cpp                         *
+ *                         OpenSim:  PathWrapPoint.cpp                        *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2022 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,95 +21,110 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//=============================================================================
-// INCLUDES
-//=============================================================================
 #include "PathWrapPoint.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
-//=============================================================================
-// STATICS
-//=============================================================================
-using namespace std;
-using namespace OpenSim;
-
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-PathWrapPoint::PathWrapPoint()
+void OpenSim::PathWrapPoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
-    setNull();
+    Super::extendAddToSystem(system);
+
+    _wrapPath = addCacheVariable("wrap_path", Array<SimTK::Vec3>{}, SimTK::Stage::Position);
+    _wrapPathLength = addCacheVariable("wrap_path_length", 0.0, SimTK::Stage::Position);
+    _location = addCacheVariable("wrap_location", SimTK::Vec3{}, SimTK::Stage::Position);
 }
 
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-PathWrapPoint::~PathWrapPoint()
+const OpenSim::WrapObject* OpenSim::PathWrapPoint::getWrapObject() const
 {
+    return _wrapObject.get();
 }
 
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aPoint PathWrapPoint to be copied.
- */
-PathWrapPoint::PathWrapPoint(const PathWrapPoint &aPoint) :
-   PathPoint(aPoint)
+void OpenSim::PathWrapPoint::setWrapObject(const WrapObject* wrapObject)
 {
-    setNull();
-    copyData(aPoint);
+    _wrapObject.reset(wrapObject);
 }
 
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy data members from one PathWrapPoint to another.
- *
- * @param aPoint PathWrapPoint to be copied.
- */
-void PathWrapPoint::copyData(const PathWrapPoint &aPoint)
+const OpenSim::Array<SimTK::Vec3>& OpenSim::PathWrapPoint::getWrapPath(const SimTK::State& s) const
 {
-    _wrapPath = aPoint._wrapPath;
-    _wrapPathLength = aPoint._wrapPathLength;
-    _wrapObject = aPoint._wrapObject;
+    return getCacheVariableValue(s, _wrapPath);
 }
 
-//_____________________________________________________________________________
-/**
- * Set the data members of this PathWrapPoint to their null values.
- */
-void PathWrapPoint::setNull()
+void OpenSim::PathWrapPoint::setWrapPath(const SimTK::State& s, const Array<SimTK::Vec3>& src) const
 {
-    _wrapPath.setSize(0);
-    _wrapPathLength = 0.0;
+    updCacheVariableValue(s, _wrapPath) = src;
+    markCacheVariableValid(s, _wrapPath);
 }
 
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-PathWrapPoint& PathWrapPoint::operator=(const PathWrapPoint &aPoint)
+void OpenSim::PathWrapPoint::clearWrapPath(const SimTK::State& s) const
 {
-    // BASE CLASS
-    PathPoint::operator=(aPoint);
+    updCacheVariableValue(s, _wrapPath).setSize(0);
+    markCacheVariableValid(s, _wrapPath);
+}
 
-    copyData(aPoint);
+double OpenSim::PathWrapPoint::getWrapLength(const SimTK::State& s) const
+{
+    return getCacheVariableValue(s, _wrapPathLength);
+}
 
-    return(*this);
+void OpenSim::PathWrapPoint::setWrapLength(const SimTK::State& s, double aLength) const
+{
+    updCacheVariableValue(s, _wrapPathLength) = aLength;
+    markCacheVariableValid(s, _wrapPathLength);
+}
+
+SimTK::Vec3 OpenSim::PathWrapPoint::getLocation(const SimTK::State& s) const
+{
+    return getCacheVariableValue(s, _location);
+}
+
+void OpenSim::PathWrapPoint::setLocation(const SimTK::State& s, const SimTK::Vec3& loc) const
+{
+    updCacheVariableValue(s, _location) = loc;
+    markCacheVariableValid(s, _location);
+}
+
+SimTK::Vec3 OpenSim::PathWrapPoint::getdPointdQ(const SimTK::State& s) const
+{
+    return SimTK::Vec3(0);
+}
+
+// these methods were initially adapted from `OpenSim::Station`'s implementation
+
+SimTK::Vec3 OpenSim::PathWrapPoint::calcLocationInGround(const SimTK::State& state) const
+{
+    return getParentFrame().getTransformInGround(state) * getLocation(state);
+}
+
+SimTK::Vec3 OpenSim::PathWrapPoint::calcVelocityInGround(const SimTK::State& state) const
+{
+    const PhysicalFrame& parent = getParentFrame();
+
+    // compute the local position vector of the station in its reference frame
+    // expressed in ground
+    SimTK::Vec3 r = parent.getTransformInGround(state).R() * getLocation(state);
+    const SimTK::SpatialVec& V_GF = parent.getVelocityInGround(state);
+
+    // The velocity of the station in ground is a function of its frame's
+    // linear (vF = V_GF[1]) and angular (omegaF = A_GF[0]) velocity, such that
+    // velocity of the station: v = vF + omegaF x r
+    return V_GF[1] + V_GF[0] % r;
+}
+
+SimTK::Vec3 OpenSim::PathWrapPoint::calcAccelerationInGround(const SimTK::State& state) const
+{
+    const PhysicalFrame& parent = getParentFrame();
+
+    // The spatial velocity of the reference frame expressed in ground
+    const SimTK::SpatialVec& V_GF = parent.getVelocityInGround(state);
+
+    // The spatial acceleration of the reference frame expressed in ground
+    const SimTK::SpatialVec& A_GF = parent.getAccelerationInGround(state);
+
+    // compute the local position vector of the point in its reference frame
+    // expressed in ground
+    SimTK::Vec3 r = parent.getTransformInGround(state).R() * getLocation(state);
+
+    // The acceleration of the station in ground is a function of its frame's
+    // linear (aF = A_GF[1]) and angular (alpha = A_GF[0]) accelerations and
+    // Coriolis acceleration due to the angular velocity (omega = V_GF[0]) of
+    // its frame, such that: a = aF + alphaF x r + omegaF x (omegaF x r)
+    return A_GF[1] + A_GF[0]%r +  V_GF[0] % (V_GF[0] % r);
 }

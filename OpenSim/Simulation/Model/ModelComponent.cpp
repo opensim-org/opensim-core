@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Michael Sherman                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -32,22 +32,15 @@ namespace OpenSim {
 //==============================================================================
 //                             MODEL COMPONENT
 //==============================================================================
-ModelComponent::ModelComponent() : _model(nullptr) 
-{
-    constructProperty_geometry();
-}
+ModelComponent::ModelComponent() : Component() {}
 
 ModelComponent::ModelComponent(const std::string& fileName, bool updFromXMLNode)
-:   Component(fileName, updFromXMLNode), _model(nullptr)
-{
-    constructProperty_geometry();
-}
+:   Component(fileName, updFromXMLNode)
+{}
 
 ModelComponent::ModelComponent(SimTK::Xml::Element& element) 
-:   Component(element), _model(nullptr)
-{
-    constructProperty_geometry();
-}
+:   Component(element)
+{}
 
 const Model& ModelComponent::getModel() const
 {
@@ -68,9 +61,9 @@ Model& ModelComponent::updModel()
 }
 
 
-void ModelComponent::extendConnect(Component &root)
+void ModelComponent::extendFinalizeConnections(Component& root)
 {
-    Super::extendConnect(root);
+    Super::extendFinalizeConnections(root);
     Model* model = dynamic_cast<Model*>(&root);
     // Allow (model) component to include its own subcomponents
     // before calling the base method which automatically invokes
@@ -82,51 +75,14 @@ void ModelComponent::extendConnect(Component &root)
 void ModelComponent::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
-    int geomSize = getProperty_geometry().size();
-    if (geomSize > 0){
-        for (int i = 0; i < geomSize; ++i){
-            addComponent(&upd_geometry(i));
-        }
-    }
 }
+
 // Base class implementation of virtual method.
 void ModelComponent::connectToModel(Model& model)
 {
     _model = &model;
     extendConnectToModel(model);
 }
-
-void ModelComponent::addGeometry(OpenSim::Geometry& geom) {
-    extendAddGeometry(geom);
-    // Check that name exists and is unique as it's used to form PathName
-    if (geom.getName().empty()){
-        bool nameFound = false;
-        int index = 1;
-        while (!nameFound){
-            std::stringstream ss;
-            // generate candidate name
-            ss << getName() << "_geom_" << index;
-            std::string candidate = ss.str();
-            bool exists = false;
-            for (int idx = 0; idx < getProperty_geometry().size() && !exists; idx++){
-                if (get_geometry(idx).getName() == candidate){
-                    exists = true;
-                    break;
-                }
-            }
-            if (!exists){
-                nameFound = true;
-                geom.setName(candidate);
-            }
-            else
-                index++;
-        }
-        
-    }
-    append_geometry(geom);
-    return;
-}
-
 
 const SimTK::DefaultSystemSubsystem& ModelComponent::
 getDefaultSubsystem() const
@@ -135,5 +91,71 @@ getDefaultSubsystem() const
 const SimTK::DefaultSystemSubsystem& ModelComponent::
 updDefaultSubsystem()
 {   return updModel().updDefaultSubsystem(); }
+
+
+void ModelComponent::updateFromXMLNode(SimTK::Xml::Element& aNode,
+        int versionNumber) {
+
+    if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30506) {
+            // geometry list property removed. Everything that was in this list
+            // should be moved to the components list property.
+            SimTK::Xml::element_iterator geometry = aNode.element_begin("geometry");
+            if (geometry != aNode.element_end()) {
+                // We found a list property of geometry.
+                SimTK::Xml::Element componentsNode;
+                SimTK::Xml::element_iterator componentsIt = aNode.element_begin("components");
+                if (componentsIt == aNode.element_end()) {
+                    // This component does not yet have a list property of
+                    // components, so we'll create one.
+                    componentsNode = SimTK::Xml::Element("components");
+                    aNode.insertNodeBefore(aNode.element_begin(), componentsNode);
+                } else {
+                    componentsNode = *componentsIt;
+                }
+                // Copy each node under <geometry> into <components>.
+                for (auto geomIt = geometry->element_begin();
+                        geomIt != geometry->element_end(); ++geomIt) {
+                    componentsNode.appendNode(geomIt->clone());
+                }
+                // Now that we moved over the geometry, we can delete the
+                // <geometry> element.
+                aNode.eraseNode(geometry);
+            }
+        }
+    }
+    Super::updateFromXMLNode(aNode, versionNumber);
+}
+
+// Base class implementations of virtual methods for scaling.
+void ModelComponent::preScale(const SimTK::State& s, const ScaleSet& scaleSet)
+{   extendPreScale(s, scaleSet); }
+
+void ModelComponent::scale(const SimTK::State& s, const ScaleSet& scaleSet)
+{   extendScale(s, scaleSet); }
+
+void ModelComponent::postScale(const SimTK::State& s, const ScaleSet& scaleSet)
+{   extendPostScale(s, scaleSet); }
+
+// (static) Returned by getScaleFactors() if scale factors not found.
+const SimTK::Vec3 ModelComponent::InvalidScaleFactors = SimTK::Vec3(0);
+
+const SimTK::Vec3& ModelComponent::
+getScaleFactors(const ScaleSet& scaleSet, const Frame& frame) const
+{
+    const std::string& baseFrameName = frame.findBaseFrame().getName();
+
+    int size = scaleSet.getSize();
+
+    for (int i = 0; i < size; ++i) {
+        if (scaleSet[i].getSegmentName() == baseFrameName) {
+            if (scaleSet[i].getApply())
+                return scaleSet[i].getScaleFactors();
+        }
+    }
+
+    // No scale factors found for the base Body or not applicable.
+    return InvalidScaleFactors;
+}
 
 } // end of namespace OpenSim

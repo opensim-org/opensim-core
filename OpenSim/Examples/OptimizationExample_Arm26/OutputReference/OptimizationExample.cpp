@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
- * Author(s): Samuel R. Hamner, Ajay Seth                                                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Author(s): Samuel R. Hamner, Ajay Seth                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -31,6 +31,7 @@
 //==============================================================================
 //==============================================================================
 #include <OpenSim/OpenSim.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 #include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
 
 using namespace OpenSim;
@@ -78,7 +79,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         manager.integrate(s);
 
         /* Calculate the scalar quantity we want to minimize or maximize. 
-        *  In this case, we’re maximizing forward velocity of the 
+        *  In this case, we're maximizing forward velocity of the
         *  forearm/hand mass center, so to maximize, compute velocity 
         *  and multiply it by -1.
         */
@@ -93,12 +94,15 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         
         // Store and print the  results of the first step.
         if( stepCount == 1){ 
-            manager.getStateStorage().print("Arm26_noActivation_states.sto");
+            auto statesTable = manager.getStatesTable();
+            STOFileAdapter::write(statesTable, "Arm26_noActivation_states.sto");
         }
         // Use an if statement to only store and print the results of an 
         //  optimization step if it is better than a previous result.
         else if( f < bestSoFar){
-            manager.getStateStorage().print("Arm26_bestSoFar_states.sto");
+            auto statesTable = manager.getStatesTable();
+            STOFileAdapter::write(statesTable, "Arm26_bestSoFar_states.sto");
+
             bestSoFar = f;
             cout << "\nobjective evaluation #: " << stepCount << "  controls = " << newControls <<  " bestSoFar = " << f << std::endl;
         }           

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Michael A. Sherman, Ayman Habib                      *
  * Contributor(s): Frank C. Anderson, Jeffrey A. Reinbolt                     *
  *                                                                            *
@@ -56,10 +56,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(motion_type, std::string, 
-        "Coordinate can describe rotational, translational, or coupled motion. "
-        "Defaults to rotational.");
-
     OpenSim_DECLARE_PROPERTY(default_value, double, 
         "The value of this coordinate before any value has been set. "
         "Rotational coordinate value is in radians and Translational in meters.");
@@ -97,13 +93,26 @@ public:
         "this flag set to false, to dictate the value of unimportant coordinates " 
         "if they are linked via constraints."); 
 
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(value, double, getValue, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(speed, double, getSpeedValue, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(acceleration, double, getAccelerationValue,
+            SimTK::Stage::Acceleration);
+
     /** Motion type that describes the motion dictated by the coordinate.
-        Types include: Rotational, Translational and Coupled (both) */
-    enum MotionType
+        Specifically it describes how the coordinate can be interpreted.
+        A coordinate can be interpreted as Rotational or Translational if
+        the displacement about or along an axis is the coordinate value.
+        If the Coordinate cannot be interpreted as being either of these
+        it is flagged as Coupled. */
+    enum MotionType: unsigned
     {
-        Rotational,
-        Translational,
-        Coupled
+        Undefined = 0u,     ///< 0
+        Rotational = 1u,    ///< 1
+        Translational = 2u, ///< 2
+        Coupled = 3u        ///< 3
     };
 
 
@@ -119,16 +128,24 @@ public:
 
     /** access to the generalized Coordinate's motion type
         This can be Rotational, Translational, or Coupled (both) */
-    MotionType getMotionType() const { return _motionType; }
-    void setMotionType(MotionType aMotionType);
+    MotionType getMotionType() const;
 
     /** get the value of the Coordinate from the state */
     double getValue(const SimTK::State& s) const;
-    /** set the value of the Coordinate on to the state.
-        optional flag to enforce the constraints immediately, which may 
-        adjust its value in the state. Use getValue(s) to see if/how the
-        value was adjusted to satisfy the kinematic constraints. */
-    void setValue(SimTK::State& s, double aValue, bool aEnforceContraints=true) const;
+    /** Set the value of the Coordinate on to the state.
+        Optional flag to enforce the constraints immediately (true by default),
+        which can adjust all coordinate values in the state to satisfy model
+        constraints. Use getValue(s) to see if/how the value was adjusted to
+        satisfy the kinematic constraints. If setting multiple Coordinate values
+        consecutively, e.g. in a loop, set the flag to false and then call
+        Model::assemble(state) once all Coordinate values have been set.
+        Alternatively, use Model::setStateVariableValues() to set all coordinate
+        values and their speeds at once followed by Model::assemble(state).
+      
+        The provided value will be clamped to the coordinate's range if
+        the coordinate is clamped and enforceConstraints is true.
+        */
+    void setValue(SimTK::State& s, double aValue, bool enforceContraints=true) const;
 
     /** get the speed value of the Coordinate from the state */
     double getSpeedValue(const SimTK::State& s) const;
@@ -136,6 +153,10 @@ public:
     /** return the name (label) used to identify the Coordinate's speed
         state variable. Returns the string "<coordinate_name>/speed" */
     const std::string& getSpeedName() const;
+    
+    /** get the derivative of Coordinate's value from the state. This value is
+        *not* necessarily equal to the value returned by getSpeedValue(). */
+    double getQDotValue(const SimTK::State& s) const;
 
     /** get the default value for this coordinate. This is the value 
         used if no value has been set prior to a simulation. */
@@ -155,7 +176,7 @@ public:
     /** determine or set whether or not the Coordinate is 
         "clamped" between a range of values. */
     bool getClamped(const SimTK::State& s) const;
-    void setClamped(SimTK::State& s, bool aLocked) const;
+    void setClamped(SimTK::State& s, bool aClamped) const;
     /** get/set whether or not the Coordinate is clamped by default */
     bool getDefaultClamped() const { return get_clamped(); }
     void setDefaultClamped(bool aClamped ) { upd_clamped() = aClamped; }
@@ -164,7 +185,8 @@ public:
     double getRangeMin() const {return get_range(0); }
     double getRangeMax() const {return get_range(1); }
     /** set the range with a double array of length 2 in order of
-        minimum and maximum coordinate values */
+        minimum and maximum coordinate values (`setRange()` is not
+        wrapped; use `setRangeMin()` and `setRangeMax()` instead) */
     void setRange(double aRange[2]);
     void setRangeMin(double aMin);
     void setRangeMax(double aMax);
@@ -204,6 +226,11 @@ public:
     SimTK::MobilizedBodyIndex getBodyIndex() const { return _bodyIndex; };
     /**@}**/
 
+    /* For internal consistency checking. Returns the user-specified MotionType
+       serialized with pre-4.0 model files if one is provided, otherwise
+        returns MotionType::Undefined. */
+    const MotionType& getUserSpecifiedMotionTypePriorTo40() const;
+
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
@@ -230,6 +257,11 @@ protected:
     // Only the coordinate or the joint itself can specify the owner
     // of Coordinate
     void setJoint(const Joint& aOwningJoint);
+
+    // Override to account for version updates in the XML format.
+    void updateFromXMLNode(SimTK::Xml::Element& aNode,
+        int versionNumber = -1) override;
+
 
 //=============================================================================
 // MODEL DATA
@@ -273,7 +305,7 @@ private:
 
     // All coordinates (Simbody mobility) have associated constraints that
     // perform joint locking, prescribed motion and range of motion.
-    // Constraints are created upon setup: locked, precribedFunction
+    // Constraints are created upon setup: locked, prescribed Function
     // and range must be set.
     // NOTE: Changing the prescribed motion function requires topology to be realized
     //       so state is invalidated
@@ -295,9 +327,6 @@ private:
     Constraint, so we can change the value at which to lock the joint. */
     SimTK::ReferencePtr<ModifiableConstant> _lockFunction;
 
-    /* Motion type (translational, rotational or combination). */
-    MotionType _motionType;
-
     /* Label for the related state that is the generalized speed of
        this coordinate. */
     std::string _speedName;
@@ -305,11 +334,13 @@ private:
     /* The OpenSim::Joint that owns this coordinate. */
     SimTK::ReferencePtr<const Joint> _joint;
 
+    /* User set MotionType from versions of OpenSim that predate 4.0 */
+    MotionType _userSpecifiedMotionTypePriorTo40{ Undefined };
+
     mutable bool _lockedWarningGiven;
 
     // PRIVATE METHODS implementing the Component interface
-    void constructProperties() override;
-    void constructOutputs() override;
+    void constructProperties();
     void extendFinalizeFromProperties() override;
 
     friend class CoordinateCouplerConstraint; 

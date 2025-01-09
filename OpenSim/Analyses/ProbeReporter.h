@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Tim Dorn                                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,15 +27,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/Probe.h>
-#include <OpenSim/Simulation/Model/ProbeSet.h>
 #include "osimAnalysesDLL.h"
-#include "SimTKsimbody.h"
 
 
 #ifdef SWIG
@@ -47,6 +43,8 @@
 //=============================================================================
 //=============================================================================
 namespace OpenSim { 
+
+class ProbeSet;
 
 /**
  * A class for reporting the outputs of all model-connected Probes to file during
@@ -143,11 +141,11 @@ public:
     //--------------------------------------------------------------------------
 
     int
-        begin(SimTK::State& s ) override;
+        begin(const SimTK::State& s ) override;
     int
         step(const SimTK::State& s, int setNumber ) override;
     int
-        end(SimTK::State& s ) override;
+        end(const SimTK::State& s ) override;
 protected:
     virtual int
         record(const SimTK::State& s );
@@ -159,9 +157,10 @@ public:
         for(int i=0 ; i<nP ; i++) {
             Probe& nextProbe = (Probe&)probes[i];
             if (nextProbe.getOperation()=="integrate" || nextProbe.getOperation()=="min" || nextProbe.getOperation()=="max"){
-                nextProbe.setDisabled(true);
-                std::cout << "Disabling probe " << nextProbe.getName() << " as invalid for non-integration context." << std::endl;
-
+                nextProbe.setEnabled(false);
+                log_warn("Disabling probe {} as invalid for non-integration "
+                         "context.",
+                        nextProbe.getName());
             }
         }
     }

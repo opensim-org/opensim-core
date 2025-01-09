@@ -1,5 +1,5 @@
-#ifndef _Set_h_
-#define _Set_h_
+#ifndef OPENSIM_SET_H_
+#define OPENSIM_SET_H_
 /* -------------------------------------------------------------------------- *
  *                              OpenSim:  Set.h                               *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2018 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -22,10 +22,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
- */
 
 // INCLUDES
 #include <iostream>
@@ -41,16 +37,14 @@ namespace OpenSim {
 //=============================================================================
 /**
  * A class for holding a set of pointers to objects.  It is derived from
- * class Object and is implemented as a wrapper around template
- * ArrayPtrs<T>.  It is implemented around an array of pointers, rather
- * than values, so that it can make use of any virtual methods associated
- * with class T.
+ * base class C and is implemented as a wrapper around template class
+ * ArrayPtrs<T>.  
  *
  * @see ArrayPtrs
  * @author Frank C. Anderson
  */
-template<class T> class Set : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT_T(Set, T, Object);
+template<class T, class C=Object> class Set : public C {
+OpenSim_DECLARE_CONCRETE_OBJECT_T(Set, T, C);
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // DATA
@@ -86,8 +80,7 @@ virtual ~Set()
 /**
  * Default constructor.
  */
-Set() :
-    Object(),
+Set() : Super(),
     _objects((ArrayPtrs<T>&)_propObjects.getValueObjArray()),
     _objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
 {
@@ -100,13 +93,14 @@ Set() :
  * @param aFileName             Name of the file.
  * @param aUpdateFromXMLNode    Whether to update from XML.
  */
-Set(const std::string &aFileName, bool aUpdateFromXMLNode = true) :
-    Object(aFileName),
+Set(const std::string &aFileName, bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION
+    : Super(aFileName),
     _objects((ArrayPtrs<T>&)_propObjects.getValueObjArray()),
     _objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
 {
     setNull();
-    if(aUpdateFromXMLNode) updateFromXMLDocument();
+    if (aUpdateFromXMLNode)
+        this->updateFromXMLDocument();
 }
 //_____________________________________________________________________________
 /**
@@ -114,8 +108,7 @@ Set(const std::string &aFileName, bool aUpdateFromXMLNode = true) :
  *
  * @param aSet Set to be copied.
  */
-Set(const Set<T> &aSet) :
-    Object(aSet),
+Set(const Set<T,C> &aSet) : Super(aSet),
     _objects((ArrayPtrs<T>&)_propObjects.getValueObjArray()),
     _objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
 {
@@ -148,10 +141,10 @@ void
 setupProperties()
 {
     _propObjects.setName("objects");
-    _propertySet.append(    &_propObjects );
+    this->_propertySet.append(    &_propObjects );
 
     _propObjectGroups.setName("groups");
-    _propertySet.append(    &_propObjectGroups );
+    this->_propertySet.append(    &_propObjectGroups );
 }
 
 public:
@@ -184,15 +177,15 @@ public:
  * _memoryOwner is set to true. So, the result is two independent,
  * identical sets, with the possible exception of the _memoryOwner flag.
  *
- * @param aSet Set to be copied.
+ * @param set The Set to be copied.
  * @return Reference to this set.
  */
 #ifndef SWIG
-Set<T>& operator=(const Set<T> &aSet)
+Set<T,C>& operator=(const Set<T,C> &set)
 {   
-    Super::operator=(aSet);
-    _objects = aSet._objects;
-    _objectGroups = aSet._objectGroups;
+    Super::operator=(set);
+    _objects = set._objects;
+    _objectGroups = set._objectGroups;
 
     return(*this);
 }
@@ -233,7 +226,7 @@ T& operator[](int aIndex) const
  * @param aSet Set to be output.
  * @return Reference to the output stream.
  */
-friend std::ostream& operator<<(std::ostream &aOut,const Set<T> &aSet)
+friend std::ostream& operator<<(std::ostream &aOut,const Set<T, C> &aSet)
 {
     aOut << "Set[" << aSet.getSize() <<"] =";
 
@@ -848,4 +841,4 @@ const ObjectGroup* getGroup(int aIndex) const
 //=============================================================================
 //=============================================================================
 
-#endif  // __Set_h__
+#endif  // OPENSIM_SET_H_

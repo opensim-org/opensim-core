@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -22,7 +22,6 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "Simbody.h"
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 
@@ -99,11 +98,11 @@ public:
 // PROPERTIES
 //==============================================================================
     OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
-        "Optimal length of the muscle fibers (overridden when this is a subcomponent of Muscle)");
+        "Optimal length of the muscle fibers, in meters (overridden when this is a subcomponent of a Muscle)");
     OpenSim_DECLARE_PROPERTY(pennation_angle_at_optimal, double,
-        "Angle between tendon and fibers at optimal fiber length expressed in radians (overridden when this is a subcomponent of Muscle)");
+        "Angle between tendon and fibers at optimal fiber length, in radians (overridden when this is a subcomponent of a Muscle)");
     OpenSim_DECLARE_PROPERTY(maximum_pennation_angle, double,
-        "Maximum pennation angle (radians)");
+        "Maximum pennation angle, in radians (overridden when this is a subcomponent of a Muscle)");
 
 //==============================================================================
 // PUBLIC METHODS

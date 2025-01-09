@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,11 +29,18 @@
 
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/VectorFunctionUncoupledNxN.h>
-#include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
+
+namespace SimTK {
+class Integrator;
+class System;
+}
 
 //=============================================================================
 //=============================================================================
 namespace OpenSim { 
+
+class CMCActuatorSubsystem;
+class Model;
 
 /**
  * An abstract class for representing a vector function.
@@ -114,28 +121,30 @@ public:
     //--------------------------------------------------------------------------
 
     void calcValue( const double *aX, double *rF, int aSize) override {
-        std::cout << "Unimplemented evaluate method" << std::endl; 
+        log_warn("Unimplemented evaluate method."); 
 //      exit(0);
     }
     void calcValue( const Array<double> &aX, Array<double> &rF) override {
-        std::cout << "Unimplemented evaluate method" << std::endl; 
+        log_warn("Unimplemented evaluate method."); 
 //      exit(0);
     }
     virtual void calcValue( const Array<double> &aX, Array<double> &rF, const Array<int> &aDerivWRT) {
-        std::cout << "Unimplemented evaluate method" << std::endl; 
+        log_warn("Unimplemented evaluate method."); 
 //      exit(0);
     }
     void calcDerivative(const Array<double> &aX,Array<double> &rY,
         const Array<int> &aDerivWRT) override {
-        std::cout << "Unimplemented calcDerivative method" << std::endl; 
+        log_warn("Unimplemented calcDerivative method."); 
     }
 
-    virtual void evaluate( const SimTK::State& s,  double *aX, double *rF);
-    void evaluate( const SimTK::State& s,  const OpenSim::Array<double> &aX, Array<double> &rF) override;
-    virtual void evaluate( const SimTK::State& s,  Array<double> &rF, const Array<int> &aDerivWRT);
-    virtual void evaluate(const double *rY){}
-    virtual void evaluate(const Array<double> &rY){}
-    virtual void evaluate(Array<double> &rY, const Array<int> &aDerivWRT){}
+    void evaluate(const SimTK::State& s, const double *aX, double *rF) override;
+    void evaluate(const SimTK::State& s, const Array<double>& aX,
+            Array<double>& rF) override;
+    void evaluate(const SimTK::State& s, const Array<double>& aX,
+            Array<double>& rF, const Array<int>& aDerivWRT) override;
+    virtual void evaluate(const double *rY) {}
+    virtual void evaluate(const Array<double> &rY) {}
+    virtual void evaluate(Array<double> &rY, const Array<int> &aDerivWRT) {}
 
 
 //=============================================================================

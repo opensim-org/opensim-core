@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,11 +29,10 @@
 //-----------------------------------------------------------------------------
 // INCLUDES
 //-----------------------------------------------------------------------------
-#include <fstream>  // Ayman: remove .h per .NET 2003
-#include "osimCommonDLL.h"
+#include "Assertion.h"
 #include "XMLDocument.h"
-#include "Exception.h"
 #include "Object.h"
+#include <functional>
 
 
 using namespace OpenSim;
@@ -50,11 +49,28 @@ using namespace std;
 // 20303
 // 30000 for OpenSim 3.0 release
 // 30500 for OpenSim 4.0 development and Connectors
-// 30501 for Changing serialization of Marker
-// 30502 for Changing serialization of Geometry
-// 30503 for Changing serialization of Ground
-// 30505 for Changing serialization of Joint to create offset frames
-const int XMLDocument::LatestVersion = 30505;   
+// 30501 for changing serialization of Marker
+// 30502 for changing serialization of Geometry
+// 30503 for changing serialization of Ground
+// 30505 for changing serialization of Joint to create offset frames
+// 30506 for testing 30505 conversion code
+// 30507 for changing serialization of Coordinates owned by Joint
+// 30508 for moving Connector's connectee_name to enclosing Component.
+// 30509 for replacing 'isDisabled' with: 'appliesForce', 'isEnforced' and
+//       'enabled', for Force, Constraint and Controller, respectively
+// 30510 for renaming Connector to Socket.
+// 30511 for replacing Probe::isDisabled with Probe::enabled.
+// 30512 for removing Model::FrameSet and moving frames to components list
+// 30513 for removing internal (silent) clamping of Muscle controls (excitations)
+// 30514 for removing "reverse" property from Joint
+// 30515 for WrapObject color, display_preference, VisibleObject -> Appearance
+// 30516 for GeometryPath default_color -> Appearance
+// 30517 for removal of _connectee_name suffix to shorten XML for socket, input
+// 40000 for OpenSim 4.0 release 40000
+// 40500 for updating GeometryPath nodes to have property name 'path'.
+// 40600 for converting Controller actuators to a list Socket.
+
+const int XMLDocument::LatestVersion = 40600;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
@@ -100,7 +116,7 @@ XMLDocument::XMLDocument()
  * @param aFileName File name of the XML document.
  */
 XMLDocument::XMLDocument(const string &aFileName) :
-Xml::Document(aFileName)
+SimTK::Xml::Document(aFileName)
 {
 
 
@@ -167,8 +183,9 @@ print(const string &aFileName)
 {
     // Standard Out
     if(aFileName.empty()) {
-        cout << *this;
-        cout << flush;
+        std::stringstream ss;
+        ss << *this;
+        log_cout(ss.str());
     // File
     } else {
         setIndentString("\t");
@@ -204,7 +221,7 @@ getVersionAsString(const int aVersion, std::string& aString)
     for(int i=0; i<3; i++)
     {
         int digits = ver / div;
-        sprintf(pad, "%02d",digits); 
+        snprintf(pad, 3, "%02d", digits);
         ver -= div*(ver / div);
         div /=100;
         aString += string(pad);
@@ -230,7 +247,7 @@ updateDocumentVersion()
     }
 
     // Validate >=  10500 and < latest as sanity check
-    assert(_documentVersion >= 10500 && _documentVersion <= LatestVersion);
+    OPENSIM_ASSERT(_documentVersion >= 10500 && _documentVersion <= LatestVersion);
 }
 //_____________________________________________________________________________
 /**
@@ -278,7 +295,7 @@ void XMLDocument::copyDefaultObjects(const XMLDocument &aDocument){
 /*static*/ 
 void  XMLDocument::renameChildNode(SimTK::Xml::Element& aNode, std::string oldElementName, std::string newElementName)
 {
-    Xml::element_iterator elmtIter(aNode.element_begin(oldElementName));
+    SimTK::Xml::element_iterator elmtIter(aNode.element_begin(oldElementName));
     if (elmtIter!=aNode.element_end()){
         elmtIter->setElementTag(newElementName);
     }
@@ -292,15 +309,15 @@ bool XMLDocument::isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoub
         equal = (_documentVersion == aOtherDocument._documentVersion);
     if (!equal) return false;
     // Get Roots 
-    Xml::Element root1=  getRootElement();
-    Xml::Element root2=  aOtherDocument.getRootElement();
+    SimTK::Xml::Element root1=  getRootElement();
+    SimTK::Xml::Element root2=  aOtherDocument.getRootElement();
 
     //if (!equal) return false;
     // Cycle through children and compare. Order is assumed to be the same for now
     SimTK::Array_<SimTK::Xml::Element> elts1 = root1.getAllElements();
     SimTK::Array_<SimTK::Xml::Element> elts2 = root2.getAllElements();
     if (elts1.size() != elts2.size()){
-        cout << "Different number of children at Top level" << endl;
+        log_info("Different number of children at Top level");
         equal = false;
     }
     if (!equal) return false;
@@ -314,8 +331,8 @@ bool XMLDocument::isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoub
             continue;
         equal = isElementEqual(elts1[it], elts2[it], toleranceForDoubles);
         if (!equal){ 
-            cout << elts1[it].getElementTag() << " is different" << endl;  
-            return false; 
+            log_info("{} is different", elts1[it].getElementTag());
+            return false;
         }
     }
     return true;
@@ -331,7 +348,7 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
     // Handle different # attributes
     if ( (att1 == elt1.attribute_end() && att2 != elt2.attribute_end()) ||
          (att1 != elt1.attribute_end() && att2 == elt2.attribute_end()) ){
-            cout << "Number of attributes is different, element " << elt1.getElementTag() << endl;
+            log_info("Number of attributes is different, element {}", elt1.getElementTag());
             return false;
     }
     bool equal =true;
@@ -340,8 +357,8 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
         equal = (att1->getName() == att2->getName());
         equal = equal && (att1->getValue() == att2->getValue());
         if (!equal) {
-            cout << "Attribute " << att1->getName() << " is different " << att1->getValue() << 
-            "vs." << att2->getValue() << endl;
+            log_info("Attribute {} is different {} vs. {}", att1->getName(),
+                    att1->getValue(), att2->getValue());
         }
     }
     if (!equal) return false;
@@ -350,26 +367,28 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
     SimTK::Array_<SimTK::Xml::Element> elts1 = elt1.getAllElements();
     SimTK::Array_<SimTK::Xml::Element> elts2 = elt2.getAllElements();
     if (elts1.size() != elts2.size()){
-        cout << "Different number of children for Element " << elt1.getElementTag() << endl;
+        log_info("Different number of children for Element {}",
+                elt1.getElementTag());
         equal = false;
     }
     if (!equal) return false;
     // Recursively compare Elements unless Value Elements in that case do direct compare
     for(unsigned it = 0; it < elts1.size() && equal; it++){
         SimTK::String elt1Tag = elts1[it].getElementTag();
-        cout << "Compare " << elt1Tag << endl;
+        log_info("Compare {}", elt1Tag);
         SimTK::Xml::element_iterator elt2_iter = elt2.element_begin(elt1Tag);
         if (elt2_iter==elt2.element_end()){
-            cout << "Element " << elt1Tag << " was not found in reference document" << endl;
+            log_info("Element {} was not found in reference document", elt1Tag);
             equal = false;
             break;
         }
         bool value1 = elts1[it].isValueElement();
         bool value2 = elt2_iter->isValueElement();
         equal = (value1 == value2);
-        if (!equal){ 
-            cout << elts1[it].getElementTag() << " is different. One is Value Element the other isn't" << endl;  
-            return false; 
+        if (!equal){
+            log_info("{} is different. One is Value Element the other isn't",
+                     elts1[it].getElementTag());
+            return false;
         }
         if (value1){
             // We should check if this's a double or array of doubles in that case we can getValueAs<double>
@@ -387,14 +406,14 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
         else    // recur
             equal = isElementEqual(elts1[it], elts2[it], toleranceForDoubles);
         if (!equal){ 
-            cout << elts1[it].getElementTag() << " is different" << endl;  
+            log_info("{} is different", elts1[it].getElementTag());
             SimTK::String pad;
             elts1[it].writeToString(pad);
-            cout << pad << endl;
-            cout << "------------------- vs. ------" << endl;
+            log_info(pad);
+            log_info("------------------- vs. ------");
             elts2[it].writeToString(pad);
-            cout << pad << endl;
-            return equal; 
+            log_info(pad);
+            return equal;
         }
     }
 
@@ -428,7 +447,39 @@ void XMLDocument::addConnector(SimTK::Xml::Element& element,
     //connectors_node->writeToString(debug);
 }
 
-void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
+void XMLDocument::updateConnectors30508(SimTK::Xml::Element& componentElt)
+{
+    using ElementItr = SimTK::Xml::element_iterator;
+    
+    ElementItr connectors_node = componentElt.element_begin("connectors");
+    
+    // See if there's a <connectors> element.
+    if (connectors_node == componentElt.element_end()) return;
+    
+    for (ElementItr connectorElt = connectors_node->element_begin();
+            connectorElt != componentElt.element_end();
+            ++connectorElt) {
+        // Grab name of Connector.
+        const auto& connectorName =
+                connectorElt->getRequiredAttributeValue("name");
+        // Grab value of connectee_name property.
+        ElementItr connecteeNameElt =
+                connectorElt->element_begin("connectee_name");
+        SimTK::String connecteeName;
+        connecteeNameElt->getValueAs<std::string>(connecteeName);
+        
+        // Create new element for this connector's connectee name.
+        SimTK::Xml::Element newConnecteeNameElt(
+                "connector_" + connectorName + "_connectee_name");
+        newConnecteeNameElt.setValue(connecteeName);
+        componentElt.insertNodeAfter(connectors_node, newConnecteeNameElt);
+    }
+    
+    // No longer want the old syntax for connectors.
+    componentElt.eraseNode(connectors_node);
+}
+
+void XMLDocument::addPhysicalOffsetFrame30505_30517(SimTK::Xml::Element& element,
     const std::string& frameName,
     const std::string& parentFrameName, 
     const SimTK::Vec3& location, const SimTK::Vec3& orientation)
@@ -446,7 +497,17 @@ void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
     newFrameElement.setAttributeValue("name", frameName);
     //newFrameElement.writeToString(debug);
 
-    XMLDocument::addConnector(newFrameElement, "Connector_PhysicalFrame_", "parent", parentFrameName);
+    // This function always adds the frame as a subcomponent of a component
+    // that is a member of the forceset, making this frame three levels
+    // deep. The connectee is either ground or a member of bodyset.
+    if(parentFrameName == "ground")
+        XMLDocument::addConnector(newFrameElement,
+            "Connector_PhysicalFrame_", "parent", "../../../"
+            + parentFrameName);
+    else
+        XMLDocument::addConnector(newFrameElement,
+            "Connector_PhysicalFrame_", "parent", "../../../bodyset/"
+            + parentFrameName);
 
     std::ostringstream transValue;
     transValue << location[0] << " " << location[1] << " " << location[2];
@@ -460,4 +521,51 @@ void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
 
     frames_node->insertNodeAfter(frames_node->element_end(), newFrameElement);
     //frames_node->writeToString(debug);
+}
+
+string XMLDocument::updateConnecteePath30517(
+        const std::string& connecteeSetName,
+        const std::string& connecteeName) {
+    std::string connecteePath;
+    if (connecteeSetName == "bodyset" && connecteeName == "ground") {
+        connecteePath = "/" + connecteeName;
+    } else{
+        connecteePath = "/" + connecteeSetName + "/" + connecteeName;
+    }
+    return connecteePath;
+}
+
+SimTK::Xml::Element XMLDocument::findElementWithName(
+        SimTK::Xml::Element& element, const std::string& name) {
+    using namespace SimTK;
+
+    if (name.empty()) return Xml::Element();
+
+    // First, get to the root of the XML document.
+    Xml::Element current = element;
+    while (current.hasParentElement())
+        current = current.getParentElement();
+    Xml::Element root = current;
+
+    // This will be a recursive lambda function.
+    std::function<Xml::Element(Xml::Element&, const std::string&)>
+        searchForElement;
+    // For recursion, must capture the function itself.
+    // Returns an invalid Element if no element with `name` could be found.
+    searchForElement = [&searchForElement](
+            Xml::Element& elem, const std::string& name) -> Xml::Element {
+        // This is a depth-first search.
+        for (auto it = elem.element_begin(); it != elem.element_end();
+                ++it) {
+            std::string elemName = it->getOptionalAttributeValue("name");
+            if (elemName == name)
+                return elem;
+            Xml::Element foundElem = searchForElement(*it, name);
+            if (foundElem.isValid())
+                return foundElem;
+            // Keep searching other branches.
+        }
+        return Xml::Element(); // Did not find.
+    };
+    return searchForElement(root, name);
 }

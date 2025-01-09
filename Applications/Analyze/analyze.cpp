@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ayman Habib                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -49,6 +49,17 @@ int main(int argc,char **argv)
     //----------------------
     try {
 
+    // DEPRECATION NOTICE
+    const std::string deprecationNotice = R"(
+    THIS EXECUTABLE IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE.
+
+    Use opensim-cmd instead, which can do everything that this executable can.
+
+      analyze -S SetupFileName -> opensim-cmd run-tool SetupFileName
+      analyze -PS              -> opensim-cmd print-xml analyze
+    )";
+    log_warn(deprecationNotice);
+
     // PARSE COMMAND LINE
     int i;
     string option = "";
@@ -69,7 +80,7 @@ int main(int argc,char **argv)
 
             PrintUsage(argv[0], cout);
             return(0);
- 
+
         // PRINT A DEFAULT SETUP FILE FOR THIS INVESTIGATION
         } else if((option=="-PrintSetup")||(option=="-PS")) {
             AnalyzeTool *tool = new AnalyzeTool();
@@ -77,7 +88,8 @@ int main(int argc,char **argv)
             Object::setSerializeAllDefaults(true);
             tool->print("default_Setup_Analyze.xml");
             Object::setSerializeAllDefaults(false);
-            cout << "Created file default_Setup_Analyze.xml with default setup" << endl;
+            log_info("Created file default_Setup_Analyze.xml with default "
+                     "setup");
             return(0);
 
         // IDENTIFY SETUP FILE
@@ -106,7 +118,7 @@ int main(int argc,char **argv)
 
     // ERROR CHECK
     if(setupFileName=="") {
-        cout<<"\n\nforward.exe: ERROR- A setup file must be specified.\n";
+        log_error("analyze.exe: A setup file must be specified.", argv[0]);
         PrintUsage(argv[0], cout);
         return(-1);
     }
@@ -116,15 +128,14 @@ int main(int argc,char **argv)
     LoadOpenSimLibrary("osimActuators");
 
     // CONSTRUCT
-    cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
+    log_info("Constructing tool from setup file {}", setupFileName);
     AnalyzeTool analyze(setupFileName);
 
     // PRINT MODEL INFORMATION
-    Model& model = analyze.getModel();
-    cout<<"-----------------------------------------------------------------------\n";
-    cout<<"Loaded library\n";
-    cout<<"-----------------------------------------------------------------------\n";
-    cout<<"-----------------------------------------------------------------------\n\n";
+    // Model& model = analyze.getModel();
+    log_info("--------------------------------------------------------------");
+    log_info("Loaded library");
+    log_info("--------------------------------------------------------------");
 
     // start timing
     std::clock_t startTime = std::clock();
@@ -132,13 +143,14 @@ int main(int argc,char **argv)
     // RUN
     analyze.run();
 
-    std::cout << "Analyze compute time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
+    auto timeInMilliseconds = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
+    log_info("Analyze compute time = {} ms", timeInMilliseconds);
 
     //----------------------------
     // Catch any thrown exceptions
     //----------------------------
     } catch(const std::exception& x) {
-        cout << "Exception in analyze: " << x.what() << endl;
+        log_error("Exception in analyze: {}", x.what());
         return -1;
     }
     //----------------------------

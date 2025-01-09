@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,6 +25,7 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include "SpringGeneralizedForce.h"
@@ -173,19 +174,18 @@ getStiffness() const
 //==============================================================================
 //_____________________________________________________________________________
 /**
- * Compute all quantities necessary for applying the spring force to the
- * model.
+ * Compute all quantities necessary for producing the spring force.
+ *
  * Force applied = -stiffness * (_coordinateValue - restLength) 
  *                   - viscosity * _coordinateSpeed
  */
-void SpringGeneralizedForce::computeForce(const SimTK::State& s, 
-                                  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                                  SimTK::Vector& generalizedForces) const
+void SpringGeneralizedForce::implProduceForces(
+    const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
     if( !_model || !_coord ) return;
 
-    // FORCE
-    applyGeneralizedForce(s, *_coord, computeForceMagnitude(s), generalizedForces);
+    forceConsumer.consumeGeneralizedForce(s, *_coord, computeForceMagnitude(s));
 }
 //_____________________________________________________________________________
 /**

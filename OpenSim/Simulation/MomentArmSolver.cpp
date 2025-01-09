@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -22,10 +22,8 @@
  * -------------------------------------------------------------------------- */
 
 #include "MomentArmSolver.h"
-#include "Model/GeometryPath.h"
 #include "Model/PointForceDirection.h"
 #include "Model/Model.h"
-#include "SimbodyEngine/Body.h"
 
 using namespace std;
 using namespace SimTK;
@@ -117,7 +115,7 @@ double MomentArmSolver::solve(const State &state, const Coordinate &aCoord,
     for(int i=0; i<n; i++) {
         getModel().getMatterSubsystem().
             addInStationForce(s_ma, 
-                pfds[i]->body().getMobilizedBodyIndex(), 
+                pfds[i]->frame().getMobilizedBodyIndex(), 
                 pfds[i]->point(), pfds[i]->direction(), _bodyForces);
     }
 

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,6 +27,7 @@
 #include "CoupledBushingForce.h"
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "simbody/internal/Force_Custom.h"
 
 //=============================================================================
 // STATICS
@@ -49,7 +50,7 @@ CoupledBushingForce::~CoupledBushingForce()
 /**
  * Default constructor.
  */
-CoupledBushingForce::CoupledBushingForce() : TwoFrameLinker<Force, PhysicalFrame>()
+CoupledBushingForce::CoupledBushingForce() : TwoFrameLinker<ForceProducer, PhysicalFrame>()
 {
     setAuthors("Ajay Seth");
     constructProperties();
@@ -61,7 +62,7 @@ CoupledBushingForce::CoupledBushingForce( const std::string& name,
                                           const std::string& frame2Name,
                                           SimTK::Mat66 stiffnessMat,
                                           SimTK::Mat66 dampingMat)
-    : TwoFrameLinker<Force, PhysicalFrame>(name, frame1Name, frame2Name)
+    : TwoFrameLinker<ForceProducer, PhysicalFrame>(name, frame1Name, frame2Name)
 {
     setAuthors("Ajay Seth");
     constructProperties();
@@ -103,13 +104,9 @@ void CoupledBushingForce::extendFinalizeFromProperties()
 //=============================================================================
 // COMPUTATION
 //=============================================================================
-/* Compute the force contribution to the system and add in to appropriate
- * bodyForce and/or system generalizedForce.
- * CoupledBushingForce implementation based SimTK::Force::LinearBushing
- * developed and implemented by Michael Sherman. */
-void CoupledBushingForce::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+void CoupledBushingForce::implProduceForces(
+    const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
     // Calculate stiffness generalized forces of bushing by first computing
     // the deviation of the two frames measured by dq
@@ -120,11 +117,11 @@ void CoupledBushingForce::computeForce(const SimTK::State& s,
     Vec6 fv = -_dampingMatrix * computeDeflectionRate(s);
 
     // total bushing force in the internal basis of the deflection (dq) 
-    Vec6 f = fk + fv; 
+    Vec6 f = fk + fv;
 
-    // convert internal forces to spatial and add then add to system
-    // physical (body) forces
-    addInPhysicalForcesFromInternal(s, f, bodyForces);
+    // convert the internal forces to into spatial forces and emit them
+    // into the `ForceConsumer`
+    producePhysicalForcesFromInternal(s, f, forceConsumer);
 }
 
 /** Potential energy stored in the bushing is purely a function of the deflection

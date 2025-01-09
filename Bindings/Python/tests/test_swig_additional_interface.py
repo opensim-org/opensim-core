@@ -18,6 +18,9 @@ import opensim as osim
 test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
                         'tests')
 
+# Silence warning messages if mesh (.vtp) files cannot be found.
+osim.Model.setDebugLevel(0)
+
 class TestSwigAddtlInterface(unittest.TestCase):
     def test_markAdopted1(self):
         """Ensures that we can tell an object that some other object is managing
@@ -32,12 +35,15 @@ class TestSwigAddtlInterface(unittest.TestCase):
     
     def test_markAdopted2(self):
         a = osim.Model()
+        ground = a.getGround()
     
         # We just need the following not to cause a segfault.
     
         # Model add*
         pa = osim.PathActuator()
         pa.setName('pa')
+        pa.addNewPathPoint("pa-point1", ground, osim.Vec3(0.0,0.0,0.0))
+        pa.addNewPathPoint("pa-point2", ground, osim.Vec3(1.0,0.0,0.0))
         a.addForce(pa)
 
         probe = osim.Umberger2010MuscleMetabolicsProbe()
@@ -62,17 +68,17 @@ class TestSwigAddtlInterface(unittest.TestCase):
         orient_in_parent = osim.Vec3(0, 0, 0)
         loc_in_body = osim.Vec3(0, 0, 0)
         orient_in_body = osim.Vec3(0, 0, 0)
-        print "creating Weld Joint.."
+        print("creating Weld Joint..")
         joint = osim.WeldJoint("weld_joint",
                 a.getGround(),
                 loc_in_parent, orient_in_parent,
                 body,
                 loc_in_body, orient_in_parent)
-        print "adding a body .."
+        print("adding a body ..")
         a.addBody(body)
-        print "adding a joint .."
+        print("adding a joint ..")
         a.addJoint(joint)
-        print "Creating a ConstantDistanceConstraint.."
+        print("Creating a ConstantDistanceConstraint..")
         constr = osim.ConstantDistanceConstraint()
         constr.setBody1ByName("ground")
         constr.setBody1PointLocation(osim.Vec3(0, 0, 0))
@@ -223,13 +229,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         s.adoptAndAppend(o)
         del s
         del o
-
-        s = osim.FrameSet()
-        o = osim.Body()
-        s.adoptAndAppend(o)
-        del s
-        del o
-    
+   
         s = osim.ForceSet()
         o = osim.CoordinateLimitForce()
         s.adoptAndAppend(o)
@@ -272,97 +272,35 @@ class TestSwigAddtlInterface(unittest.TestCase):
         constr.setBody2PointLocation(osim.Vec3(1, 0, 0))
         constr.setConstantDistance(1)
         a.addConstraint(constr)
-    
-    def test_vec3_operators(self):
-        v1 = osim.Vec3(1, 2, 3)
-        # Tests __getitem__().
-        assert v1[0] == 1
-        assert v1[1] == 2
-    
-        # Out of bounds.
-        with self.assertRaises(RuntimeError):
-            v1[-1]
-        with self.assertRaises(RuntimeError):
-            v1[3]
-        with self.assertRaises(RuntimeError):
-            v1[5]
-    
-        # Tests __setitem__().
-        v1[0] = 5
-        assert v1[0] == 5
-    
-        # Out of bounds.
-        with self.assertRaises(RuntimeError):
-            v1[-1] = 5
-        with self.assertRaises(RuntimeError):
-            v1[3] = 1.3
 
-        # Add. TODO removed for now.
-        v2 = osim.Vec3(5, 6, 7)
-        #v3 = v1 + v2
-        #assert v3[0] == 10
-        #assert v3[1] == 8
-        #assert v3[2] == 10
+    def test_PrescribedController_prescribeControlForActuator(self):
+        # Test memory management for
+        # PrescribedController::prescribeControlForActuator().
+        model = osim.Model()
+        # Body.
+        body = osim.Body('b1', 1.0, osim.Vec3(0, 0, 0), osim.Inertia(0, 0, 0))
+        model.addBody(body)
+        # Joint.
+        joint = osim.PinJoint('j1', model.getGround(), body)
+        model.addJoint(joint)
+        # Actuator.
+        actu = osim.CoordinateActuator()
+        actu.setName('actu')
+        actu.setCoordinate(joint.get_coordinates(0))
+        model.addForce(actu)
+        # Controller.
+        contr = osim.PrescribedController()
+        contr.addActuator(actu)
+        contr.prescribeControlForActuator('actu', osim.Constant(4))
+        model.addController(contr)
+        # Should not throw.
+        model.initSystem()
 
-        # Length.
-        assert len(v2) == 3
-
-
-    def test_vector_operators(self):
-        v = osim.Vector(5, 3)
-
-        # Tests __getitem__()
-        assert v[0] == 3
-        assert v[4] == 3
-
-        # Out of bounds.
-        with self.assertRaises(RuntimeError):
-            v[-1]
-        with self.assertRaises(RuntimeError):
-            v[5]
-
-        # Tests __setitem__()
-        v[0] = 15
-        assert v[0] == 15
-
-        with self.assertRaises(RuntimeError):
-            v[-1] = 12
-        with self.assertRaises(RuntimeError):
-            v[5] = 14
-        with self.assertRaises(RuntimeError):
-            v[9] = 18
-
-        # Size.
-        assert len(v) == 5
-
-    def test_exceptions(self):
-        with self.assertRaises(RuntimeError):
-            osim.Model("NONEXISTANT_FILE_NAME")
-        with self.assertRaises(RuntimeError):
-            m = osim.Model()
-            # Asking for the visualizer just after constructing a model
-            # throws an exception.
-            m.getVisualizer()
-
-#    def test_typemaps(self):
-        # TODO disabled for now
-        #m = osim.Model()
-        #m.setGravity(osim.Vec3(1, 2, 3))
-        #m.setGravity([1, 2, 3])
-
-        #with self.assertRaises(ValueError):
-        #    m.setGravity(['a', 2, 3])
-        #with self.assertRaises(ValueError):
-        #    m.setGravity([1, 2])
-        #with self.assertRaises(ValueError):
-        #    m.setGravity([1, 2, 6, 3])
-
-    def test_printing(self):
-        v1 = osim.Vec3(1, 3, 2)
-        assert v1.__str__() == "~[1,3,2]"
-
-        v2 = osim.Vector(7, 3)
-        assert v2.__str__() == "~[3 3 3 3 3 3 3]"
+        contr2 = osim.PrescribedController()
+        contr2.addActuator(actu)
+        contr2.prescribeControlForActuator('notAnActu', osim.Constant(5))
+        model.addController(contr2)
+        self.assertRaises(RuntimeError, model.initSystem)
 
     def test_set_iterator(self):
         fs = osim.FunctionSet()

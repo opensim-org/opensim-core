@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Matt S. DeMers                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,12 +29,7 @@
 
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
-
-#include "Simbody.h"
 
 namespace OpenSim { 
 
@@ -130,18 +125,22 @@ public:
     /** Get the second body (bodyB) to which this actuator applies torque. */
     const PhysicalFrame& getBodyB() const {return *_bodyB;}
 
+protected:
+    //--------------------------------------------------------------------------
+    // Implement ModelComponent Interface
+    //--------------------------------------------------------------------------
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+
 //==============================================================================
 // PRIVATE
 //==============================================================================
 private:
     void constructProperties();
 
-    //--------------------------------------------------------------------------
-    // Implement Force interface
-    //--------------------------------------------------------------------------
-    void computeForce(const SimTK::State& state, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                      SimTK::Vector& mobilityForces) const override;
+    /**
+     * Implements the `ForceProducer` interface.
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
 
     //--------------------------------------------------------------------------
     // Implement Actuator interface (also see getOptimalForce() above)
@@ -149,6 +148,10 @@ private:
     double computeActuation(const SimTK::State& s) const override;
     // Return the stress, defined as abs(force/optimal_force).
     double getStress(const SimTK::State& state) const override; 
+    //* Get speed along force vector. */
+    double getSpeed(const SimTK::State& s) const override;
+    //* Compute speed along force vector. */
+    double calcSpeed(const SimTK::State& s) const;
 
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface
@@ -173,6 +176,9 @@ private:
 
     // Corresponding Body to which the equal and opposite torque is applied.
     SimTK::ReferencePtr<const PhysicalFrame> _bodyB;
+
+    // CachedVariable: Speed used to compute power.
+    mutable CacheVariable<double> _speedCV;
 
 //==============================================================================
 };  // END of class TorqueActuator

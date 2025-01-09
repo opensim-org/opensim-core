@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,7 +25,7 @@
 
 // IMPORT AND EXPORT
 // UNIX
-#ifndef WIN32
+#ifndef _WIN32
     #define OSIMCOMMON_API
 
 // WINDOWS
@@ -39,6 +39,10 @@
     #else
         #define OSIMCOMMON_API __declspec(dllimport)
     #endif
+
+    #pragma warning(disable:4251) /*no DLL interface for type of member of exported class*/
+    #pragma warning(disable:4275) /*no DLL interface for base class of exported class*/
+    #pragma warning(disable:4661) /*instantiating incomplete template class*/
 
 #endif
 

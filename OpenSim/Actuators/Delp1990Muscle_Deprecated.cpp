@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -128,9 +128,17 @@ void Delp1990Muscle_Deprecated::copyData(const Delp1990Muscle_Deprecated &aMuscl
     _activation1 = aMuscle._activation1;
     _activation2 = aMuscle._activation2;
     _mass = aMuscle._mass;
+
+    delete _tendonForceLengthCurve;
     _tendonForceLengthCurve = (Function*)Object::SafeCopy(aMuscle._tendonForceLengthCurve);
+
+    delete _activeForceLengthCurve;
     _activeForceLengthCurve = (Function*)Object::SafeCopy(aMuscle._activeForceLengthCurve);
+
+    delete _passiveForceLengthCurve;
     _passiveForceLengthCurve = (Function*)Object::SafeCopy(aMuscle._passiveForceLengthCurve);
+
+    delete _forceVelocityCurve;
     _forceVelocityCurve = (Function*)Object::SafeCopy(aMuscle._forceVelocityCurve);
 }
 
@@ -428,7 +436,8 @@ Function* Delp1990Muscle_Deprecated::getActiveForceLengthCurve() const
  */
 bool Delp1990Muscle_Deprecated::setActiveForceLengthCurve(Function* aActiveForceLengthCurve)
 {
-    _activeForceLengthCurve = aActiveForceLengthCurve;
+    delete _activeForceLengthCurve;
+    _activeForceLengthCurve = aActiveForceLengthCurve->clone();
     return true;
 }
 
@@ -452,7 +461,8 @@ Function* Delp1990Muscle_Deprecated::getPassiveForceLengthCurve() const
  */
 bool Delp1990Muscle_Deprecated::setPassiveForceLengthCurve(Function* aPassiveForceLengthCurve)
 {
-    _passiveForceLengthCurve = aPassiveForceLengthCurve;
+    delete _passiveForceLengthCurve;
+    _passiveForceLengthCurve = aPassiveForceLengthCurve->clone();
     return true;
 }
 
@@ -476,7 +486,8 @@ Function* Delp1990Muscle_Deprecated::getTendonForceLengthCurve() const
  */
 bool Delp1990Muscle_Deprecated::setTendonForceLengthCurve(Function* aTendonForceLengthCurve)
 {
-    _tendonForceLengthCurve = aTendonForceLengthCurve;
+    delete _tendonForceLengthCurve;
+    _tendonForceLengthCurve = aTendonForceLengthCurve->clone();
     return true;
 }
 
@@ -500,7 +511,8 @@ Function* Delp1990Muscle_Deprecated::getForceVelocityCurve() const
  */
 bool Delp1990Muscle_Deprecated::setForceVelocityCurve(Function* aForceVelocityCurve)
 {
-    _forceVelocityCurve = aForceVelocityCurve;
+    delete _forceVelocityCurve;
+    _forceVelocityCurve = aForceVelocityCurve->clone();
     return true;
 }
 
@@ -564,7 +576,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
     int i;
     double tendon_length, fiber_force, tmp_fiber_length, min_tendon_stiffness;
     double cos_factor, fiber_stiffness;
-    double old_fiber_length, length_change, tendon_stiffness, percent;
+    double old_fiber_length{SimTK::NaN}, length_change, tendon_stiffness, percent;
     double error_force = 0.0, old_error_force, tendon_force, tendon_strain;
    
     // If the muscle has no fibers, then treat it as a ligament.

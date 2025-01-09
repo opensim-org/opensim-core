@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -22,14 +22,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "ContactGeometry.h"
-#include "BodySet.h"
-#include "Model.h"
-#include <OpenSim/Common/ScaleSet.h>
 
+using namespace OpenSim;
 using SimTK::Vec3;
 using SimTK::Rotation;
-
-namespace OpenSim {
 
 //=============================================================================
 // CONSTRUCTOR
@@ -47,14 +43,15 @@ ContactGeometry::ContactGeometry() : ModelComponent()
 
 //_____________________________________________________________________________
 // Convenience constructor.
-ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, 
-    PhysicalFrame& body) : ModelComponent()
+ContactGeometry::ContactGeometry(const PhysicalFrame& frame) :
+    ContactGeometry()
 {
-    setNull();
-    constructProperties();
+    setFrame(frame);
+}
 
-    _body = &body;
-    set_body_name(body.getName());
+ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, 
+    const PhysicalFrame& frame) : ContactGeometry(frame)
+{
     set_location(location);
     set_orientation(orientation);
 }
@@ -64,107 +61,148 @@ void ContactGeometry::setNull()
     setAuthors("Peter Eastman");
 }
 
-
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
 void ContactGeometry::constructProperties()
 {
-    constructProperty_body_name("Unassigned");
     constructProperty_location(Vec3(0));
     constructProperty_orientation(Vec3(0));
-    constructProperty_display_preference(1);
+    Appearance defaultAppearance;
+    defaultAppearance.set_color(SimTK::Cyan);
+    defaultAppearance.set_representation(VisualRepresentation::DrawWireframe);
+    constructProperty_Appearance(defaultAppearance);
 
-    Array<double> defaultColor(1.0, 3); //color default to 0, 1, 1
-    defaultColor[0] = 0.0; 
-    constructProperty_color(defaultColor);
 }
 
 const Vec3& ContactGeometry::getLocation() const
-{
-    return get_location();
-}
+{ return get_location(); }
 
 void ContactGeometry::setLocation(const Vec3& location)
-{
-    set_location(location);
-}
+{ set_location(location); }
 
 const Vec3& ContactGeometry::getOrientation() const
-{
-    return get_orientation();
-}
+{ return get_orientation(); }
 
 void ContactGeometry::setOrientation(const Vec3& orientation)
+{ set_orientation(orientation); }
+
+SimTK::Transform ContactGeometry::getTransform() const
 {
-    set_orientation(orientation);
+    return SimTK::Transform(
+            SimTK::Rotation(SimTK::BodyRotationSequence,
+                get_orientation()[0], SimTK::XAxis,
+                get_orientation()[1], SimTK::YAxis,
+                get_orientation()[2], SimTK::ZAxis),
+            get_location());
 }
 
-SimTK::Transform ContactGeometry::getTransform()
+const PhysicalFrame& ContactGeometry::getFrame() const
 {
-    return SimTK::Transform(Rotation(SimTK::BodyRotationSequence,
-        get_orientation()[0], SimTK::XAxis,
-        get_orientation()[1], SimTK::YAxis,
-        get_orientation()[2], SimTK::ZAxis), get_location());
+    return getSocket<PhysicalFrame>("frame").getConnectee();
 }
 
-PhysicalFrame& ContactGeometry::updBody()
+void ContactGeometry::setFrame(const PhysicalFrame& frame)
 {
-    return *_body;
+    connectSocket_frame(frame);
 }
 
 const PhysicalFrame& ContactGeometry::getBody() const
-{
-    return *_body;
-}
+{ return getFrame(); }
 
-void ContactGeometry::setBody(PhysicalFrame& body)
-{
-    _body = &body;
-    set_body_name(body.getName());
-}
-
-const std::string& ContactGeometry::getBodyName()
-{
-    return get_body_name();
-}
-
-void ContactGeometry::setBodyName(const std::string& name)
-{
-    set_body_name(name);
-    _body = nullptr;
-}
-
-const int ContactGeometry::getDisplayPreference()
-{
-    return get_display_preference();
-}
-
-void ContactGeometry::setDisplayPreference(const int dispPref)
-{
-    set_display_preference(dispPref);
-}
-
-void ContactGeometry::extendConnectToModel(Model& aModel)
-{
-    Super::extendConnectToModel(aModel);
-
-    //TODO use Connectors!
-    try {
-        _body =
-            static_cast<PhysicalFrame*>(&updModel().updComponent(get_body_name()));
-    }
-    catch (...)
-    {
-        std::string errorMessage = "Invalid body (" + get_body_name() + ") specified in contact geometry " + getName();
-        throw (Exception(errorMessage.c_str()));
-    }
-}
+void ContactGeometry::setBody(const PhysicalFrame& frame)
+{ setFrame(frame); }
 
 void ContactGeometry::scale(const ScaleSet& aScaleSet)
 {
-    throw Exception("ContactGeometry::Scale is not implemented");
+    throw Exception("ContactGeometry::scale is not implemented");
 }
 
-} // end of namespace OpenSim
+void ContactGeometry::updateFromXMLNode(SimTK::Xml::Element& node,
+                                        int versionNumber) {
+    if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30505) {
+            SimTK::Xml::element_iterator bodyElement =
+                node.element_begin("body_name");
+            std::string body_name("");
+            // Element may not exist if body_name property had default value.
+            if (bodyElement != node.element_end()) {
+                bodyElement->getValueAs<std::string>(body_name);
+            }
+            // ContactGeometry in pre-4.0 models are necessarily 1 level deep
+            // (model, contact_geom), and Bodies are necessarily 1 level deep.
+            // Here we create the correct relative path (accounting for sets
+            // being components).
+            body_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                              body_name);
+            XMLDocument::addConnector(node, "Connector_PhysicalFrame_",
+                    "frame", body_name);
+        }
+
+        if (versionNumber < 30507) {
+            // display_preference and color were replaced with Appearance in PR
+            // #1122, at which point the latest XML version number was 30507;
+            // however, the corresponding updateFromXMLNode code below was
+            // added a while later.
+            // https://github.com/opensim-org/opensim-core/pull/1122
+            
+            SimTK::Xml::Element appearanceNode("Appearance");
+
+            // Move color inside Appearance.
+            SimTK::Xml::element_iterator colorIter =
+                        node.element_begin("color");
+            bool addAppearanceNode = false;
+            if (colorIter != node.element_end()) {
+                appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                        node.removeNode(colorIter));
+                addAppearanceNode = true;
+            } else {
+                // If the user didn't set a color but set one of the other
+                // Appearance properties, then we must set color explicitly so
+                // that the Appearance's default of white is not used.
+                SimTK::Xml::Element color("color");
+                color.setValue("0 1 1"); // SimTK::Cyan
+                appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                        color);
+            }
+
+            // Move <display_preference> to
+            // <Appearance><SurfaceProperties><representation>
+            SimTK::Xml::element_iterator reprIter =
+                    node.element_begin("display_preference");
+            if (reprIter != node.element_end()) {
+                if (reprIter->getValue() == "0") {
+                    SimTK::Xml::Element visible("visible");
+                    visible.setValue("false");
+                    appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                            visible);
+                } else {
+                    reprIter->setElementTag("representation");
+                    if (reprIter->getValue() == "4") {
+                        // Enum changed to go 0-3 instead of 0-4
+                        reprIter->setValue("3");
+                    }
+                    SimTK::Xml::Element surfProp("SurfaceProperties");
+                    surfProp.insertNodeAfter(surfProp.element_end(),
+                            node.removeNode(reprIter));
+                    appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                            surfProp);
+                }
+                addAppearanceNode = true;
+            }
+            if (addAppearanceNode) 
+                node.insertNodeAfter(node.element_end(), appearanceNode);
+            else if (appearanceNode.isOrphan())
+                appearanceNode.clearOrphan();
+        }
+    }
+    Super::updateFromXMLNode(node, versionNumber);
+}
+
+
+
+
+
+
+
+
+
+
+

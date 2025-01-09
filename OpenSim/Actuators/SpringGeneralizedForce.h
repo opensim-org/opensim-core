@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,9 +27,8 @@
 // INCLUDES
 //==============================================================================
 #include "osimActuatorsDLL.h"
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/Force.h>
+
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 
 //==============================================================================
 //==============================================================================
@@ -44,8 +43,8 @@ class Coordinate;
  * @author Frank C. Anderson, Ajay Seth
  * @version 2.0
  */
-class OSIMACTUATORS_API SpringGeneralizedForce : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(SpringGeneralizedForce, Force);
+class OSIMACTUATORS_API SpringGeneralizedForce : public ForceProducer {
+OpenSim_DECLARE_CONCRETE_OBJECT(SpringGeneralizedForce, ForceProducer);
 public:
 //==============================================================================
 // PROPERTIES
@@ -98,10 +97,6 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATIONS
 protected:
-    // Force interface.
-    void computeForce(  const SimTK::State& state, 
-                        SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                        SimTK::Vector& mobilityForces) const override;
     
     // ModelComponent interface.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
@@ -110,6 +105,14 @@ protected:
     void extendConnectToModel(Model& model) override;
 
 private:
+    /**
+     * Implements the `ForceProducer` interface.
+     */
+    void implProduceForces(
+        const SimTK::State& state,
+        ForceConsumer& forceConsumer
+    ) const override;
+
     void setNull();
     void constructProperties();
     double computeForceMagnitude(const SimTK::State& s) const;

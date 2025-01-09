@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,11 +29,9 @@
 // INCLUDES
 //==============================================================================
 #include "TorqueActuator.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
 
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 using std::string;
@@ -77,6 +75,13 @@ void TorqueActuator::constructProperties()
     constructProperty_optimal_force(1.0);
 }
 
+void TorqueActuator::extendAddToSystem(SimTK::MultibodySystem& system) const
+{
+    Super::extendAddToSystem(system);
+
+    // Cache the computed speed of the actuator
+    this->_speedCV = addCacheVariable("speed", 0.0, SimTK::Stage::Velocity);
+}
 
 //==============================================================================
 // GET AND SET
@@ -126,7 +131,9 @@ double TorqueActuator::getStress(const State& s) const
  */
 double TorqueActuator::computeActuation(const State& s) const
 {
-    if(!_model) return 0;
+    if (!_model) {
+        return SimTK::NaN;
+    }
 
     // FORCE
     return getControl(s) * getOptimalForce();
@@ -139,50 +146,71 @@ double TorqueActuator::computeActuation(const State& s) const
 //==============================================================================
 //_____________________________________________________________________________
 /**
- * Apply the actuator force to BodyA and BodyB.
+ * Produce the actuator forces for BodyA and BodyB.
  */
-void TorqueActuator::computeForce(const State& s, 
-                                  Vector_<SpatialVec>& bodyForces, 
-                                  Vector& generalizedForces) const
+void TorqueActuator::implProduceForces(
+    const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
-    if(!_model) return;
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
+    if (!_model || !_bodyA) {
+        return;
+    }
 
     const bool torqueIsGlobal = getTorqueIsGlobal();
-    const Vec3& axis = getAxis();
-    
-    double actuation = 0;
+    const Vec3& axis          = getAxis();
 
-    if (isActuationOverridden(s)) {
-        actuation = computeOverrideActuation(s);
-    } else {
-        actuation = computeActuation(s);
-    }
+    double actuation = isActuationOverridden(s) ? computeOverrideActuation(s)
+                                                : computeActuation(s);
     setActuation(s, actuation);
 
-    if(!_bodyA)
-        return;
-    
-    setActuation(s, actuation);
     Vec3 torque = actuation * UnitVec3(axis);
-    
-    if (!torqueIsGlobal)
-        engine.transform(s, *_bodyA, torque, getModel().getGround(), torque);
-    
-    applyTorque(s, *_bodyA, torque, bodyForces);
+
+    if (!torqueIsGlobal) {
+        torque = _bodyA->expressVectorInGround(s, torque);
+    }
+
+    forceConsumer.consumeTorque(s, *_bodyA, torque);
 
     // if bodyB is not specified, use the ground body by default
-    if(_bodyB)
-        applyTorque(s, *_bodyB, -torque, bodyForces);
+    if (_bodyB) {
+        forceConsumer.consumeTorque(s, *_bodyB, -torque);
+    }
+}
+
+double TorqueActuator::getSpeed(const SimTK::State& s) const
+{
+    if (isCacheVariableValid(s, _speedCV)) {
+        return getCacheVariableValue(s, _speedCV);
+    }
+
+    double speed = calcSpeed(s);
+
+    updCacheVariableValue(s, _speedCV) = speed;
+    markCacheVariableValid(s, _speedCV);
+    return speed;
+}
+
+double TorqueActuator::calcSpeed(const SimTK::State& s) const
+{
+    if (!_model || !_bodyA) {
+        return SimTK::NaN;
+    }
+
+    const bool torqueIsGlobal = getTorqueIsGlobal();
+    const Vec3& axis          = SimTK::UnitVec3(getAxis());
 
     // get the angular velocity of the body in ground
-    Vec3 omegaA(0), omegaB(0);
-    engine.getAngularVelocity(s, *_bodyA, omegaA);
-    engine.getAngularVelocity(s, *_bodyB, omegaB);
+    Vec3 omegaA = _bodyA->getVelocityInGround(s)[0];
+    // if bodyB is not specified, use the ground body by default
+    Vec3 omegaB =
+        _bodyB ? _bodyB->getVelocityInGround(s)[0] : SimTK::Vec3{0., 0., 0.};
+
     // the "speed" is the relative angular velocity of the bodies
     // projected onto the torque axis.
-    setSpeed(s, ~(omegaA-omegaB)*axis);
+    double speed = ~(omegaA - omegaB) * axis;
+    return speed;
 }
+
 //_____________________________________________________________________________
 /**
  * Sets the actual Body references _bodyA and _bodyB
@@ -196,13 +224,16 @@ void TorqueActuator::extendConnectToModel(Model& model)
             "TorqueActuator::extendConnectToModel(): body name properties "
             "were not set.");
 
-    // Look up the bodies by name in the Model, and record pointers to the
-    // corresponding body objects.
-    _bodyA =
-        static_cast<const PhysicalFrame*>(&getModel().getComponent(get_bodyA()));
-    _bodyB =
-        static_cast<const PhysicalFrame*>(&getModel().getComponent(get_bodyB()));
+    // TODO: Replace this custom lookup with Sockets
+    if(getModel().hasComponent<PhysicalFrame>(get_bodyA()))
+        _bodyA = &getModel().getComponent<PhysicalFrame>(get_bodyA());
+    else
+        _bodyA = &getModel().getComponent<PhysicalFrame>("./bodyset/"+get_bodyA());
 
+    if (getModel().hasComponent<PhysicalFrame>(get_bodyB()))
+        _bodyB = &getModel().getComponent<PhysicalFrame>(get_bodyB());
+    else
+        _bodyB = &getModel().getComponent<PhysicalFrame>("./bodyset/" + get_bodyB());
 }
 
 //==============================================================================

@@ -1,4 +1,4 @@
-%module(directors="1") common
+%module(package="opensim", directors="1") common
 #pragma SWIG nowarn=822,451,503,516,325
 // 401 is "Nothing known about base class *some-class*.
 //         Maybe you forgot to instantiate *some-template* using %template."
@@ -11,6 +11,7 @@
 %{
 #define SWIG_FILE_WITH_INIT
 #include <Bindings/OpenSimHeaders_common.h>
+#include <Bindings/PropertyHelper.h>
 %}
 
 %{
@@ -95,6 +96,17 @@ care of deleting it.
             self.thisown = False
 %}
 };
+
+/*
+The added component is not responsible for its own memory management anymore
+once added to another Component. This snippet is based on the
+MODEL_ADOPT_HELPER macro in python_simulation.i.
+
+note: ## is a "glue" operator: `a ## b` --> `ab`.
+*/
+%pythonappend OpenSim::Component::addComponent %{
+    subcomponent._markAdopted()
+%}
 
 
 %extend OpenSim::Array<double> {
@@ -194,6 +206,7 @@ care of deleting it.
             else:
                 # This is how Python knows to stop iterating.
                  raise StopIteration()
+        __next__ = next # For Python 3.
 
     def __iter__(self):
         """Get an iterator for this Set, starting at index 0."""
@@ -215,6 +228,75 @@ care of deleting it.
 %}
 };
 
+// This function tries to downcast the component; if that does not succeed,
+// then it just returns a Component (or whatever the type for this specific
+// ComponentList is).
+%extend OpenSim::ComponentList {
+%pythoncode %{
+
+    def __iter__(self):
+        """Get an iterator for this ComponentList, to be used as such::
+           
+            for c in model.getComponentsList():
+                c.getName()
+        """
+        import sys
+        opensim_pkg = sys.modules[__name__.partition('.')[0]]
+        it = self.begin()
+        while it != self.end():
+            component = it.__deref__()
+            try:
+                ConcreteClass = getattr(opensim_pkg, component.getConcreteClassName())
+                concrete_component = ConcreteClass.safeDownCast(component)
+                yield concrete_component 
+            except:
+                yield component
+            it.next()
+%}
+};
+
+// Return concrete instances from certain methods.
+// -----------------------------------------------
+// http://stackoverflow.com/questions/27392602/swig-downcasting-from-base-to-derived
+// "$1" holds the original return value from getConnectee() (an Object*).
+// An Object with name Foo is registered with SWIG as "OpenSim::Foo *".
+// If the type query fails, we just return an Object*
+%typemap(out) const OpenSim::Object& OpenSim::Component::getConnectee {
+    swig_type_info * const outtype = SWIG_TypeQuery(
+            ("OpenSim::" + ($1)->getConcreteClassName() + " *").c_str());
+    if (outtype) {
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    } else {
+        swig_type_info * const outtype = SWIG_TypeQuery("OpenSim::Object *");
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    }
+}
+%typemap(out) const OpenSim::Component& OpenSim::Component::getComponent {
+    swig_type_info * const outtype = SWIG_TypeQuery(
+            ("OpenSim::" + ($1)->getConcreteClassName() + " *").c_str());
+    if (outtype) {
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    } else {
+        swig_type_info * const outtype = SWIG_TypeQuery("OpenSim::Component *");
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    }
+}
+%typemap(out) OpenSim::Component& OpenSim::Component::updComponent {
+    swig_type_info * const outtype = SWIG_TypeQuery(
+            ("OpenSim::" + ($1)->getConcreteClassName() + " *").c_str());
+    if (outtype) {
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    } else {
+        swig_type_info * const outtype = SWIG_TypeQuery("OpenSim::Component *");
+        $result = SWIG_NewPointerObj(SWIG_as_voidptr($1), outtype, $owner);
+    }
+}
+
+%extend OpenSim::DataTable_ {
+    std::string __str__() const {
+        return $self->toString();
+    }
+}
 
 // Include all the OpenSim code.
 // =============================
@@ -235,3 +317,4 @@ SET_ADOPT_HELPER(Scale);
         return super(FunctionSet, self).adoptAndAppend(aFunction)
 %}
 };
+

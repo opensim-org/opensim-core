@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -78,6 +78,9 @@ public:
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
+    /** Construct a ClutchedPathSpring with default parameters. Users should
+        note that the default values for stiffness and dissipation are `NaN`
+        so they must be set before simulating. */
     ClutchedPathSpring();
     
     /** Convenience constructor with ClutchedPathSpring parameters
@@ -138,6 +141,7 @@ protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendInitStateFromProperties(SimTK::State& state) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
+    void extendFinalizeFromProperties() override;
     void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
 private:

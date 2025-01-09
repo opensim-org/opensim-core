@@ -5,8 +5,8 @@ This breaks Python PEP 8 convention, but allows us to be consistent within our
 own project.
 */
 
-/** Pass Doxygen documentation to python wrapper */
-%feature("autodoc", "3");
+/** The following line produces legacy documentation in python wrapper, replaced with -doxygen in swig 4.0+ */
+//%feature("autodoc", "3");
 
 // Make sure clone does not leak memory
 %newobject *::clone;

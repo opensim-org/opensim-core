@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -57,9 +57,33 @@ PropertySet::PropertySet()
  */
 PropertySet::PropertySet(const PropertySet &aSet)
 {
-    _array = aSet._array;
-    _array.setMemoryOwner(false);
+    // CARE: the copy constructor/assignment implementation
+    // for _array will unconditionally take ownership of the
+    // array's contents (see: #3457, #3247)
+    //
+    // long-term, Array::setMemoryOwner should be removed (#3275)
+    _array.setSize(0);
+    for (int i = 0; i < aSet._array.getSize(); ++i)
+    {
+        _array.append(aSet._array[i]);
+    }
+}
 
+PropertySet& PropertySet::operator=(const PropertySet& aSet)
+{
+   if (this != &aSet) {
+       // CARE: the copy constructor/assignment implementation
+       // for _array will unconditionally take ownership of the
+       // array's contents (see: #3457, #3247)
+       //
+       // long-term, Array::setMemoryOwner should be removed (#3275)
+       _array.setSize(0);
+       for (int i = 0; i < aSet._array.getSize(); ++i)
+       {
+           _array.append(aSet._array[i]);
+       }
+   }
+   return *this;
 }
 
 
@@ -136,7 +160,7 @@ getSize() const
  * @throws Exception if the index is out of bounds.
  */
 Property_Deprecated* PropertySet::
-get(int aIndex) throw(Exception)
+get(int aIndex)
 {
     // NO SUCH PROPERTY - THROW EXCEPTION
     if((aIndex<0)||(aIndex>=_array.getSize())) {
@@ -172,7 +196,7 @@ get(int aIndex) const
  * @throws Exception if there is no such property.
  */
 Property_Deprecated* PropertySet::
-get(const string &aName) throw(Exception)
+get(const string &aName)
 {
     int i;
     PropertyInt prop(aName,0);
@@ -212,14 +236,17 @@ get(const string &aName) const
  * @return Pointer to the property.
  */
 const Property_Deprecated* PropertySet::
-contains(const string& aName) const
+contains(const string& name) const
 {
-    int i;
-    PropertyInt prop(aName,0);
-    for(i=0;i<_array.getSize();i++) {
-        if((*_array[i]) == prop) return(_array[i]);
-    }
-    return NULL;
+    int i = _array.getIndex(name);
+    //PropertyInt prop(aName,0);
+    //for(i=0;i<_array.getSize();i++) {
+    //    if((*_array[i]) == prop) return(_array[i]);
+    //}
+
+    if (i >= 0) return _array.get(i);
+
+    return nullptr;
 }
 //_____________________________________________________________________________
 /**
@@ -229,14 +256,17 @@ contains(const string& aName) const
  * @return Pointer to the property.
  */
 Property_Deprecated* PropertySet::
-contains(const string& aName)
+contains(const string& name)
 {
-    int i;
-    PropertyInt prop(aName,0);
-    for(i=0;i<_array.getSize();i++) {
-        if((*_array[i]) == prop) return(_array[i]);
-    }
-    return NULL;
+    int i  = _array.getIndex(name);
+    //PropertyInt prop(aName,0);
+    //for(i=0;i<_array.getSize();i++) {
+    //    if((*_array[i]) == prop) return(_array[i]);
+    //}
+
+    if (i >= 0) return _array.get(i);
+
+    return nullptr;
 }
 
 

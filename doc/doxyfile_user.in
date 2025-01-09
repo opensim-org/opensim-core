@@ -59,4 +59,5 @@ HTML_STYLESHEET        = "@CMAKE_CURRENT_SOURCE_DIR@/doxygen_user.css"
 # files. In the HTML_STYLESHEET file, use the file name only. Also note that 
 # the files will be copied as-is; there are no commands or markers available.
 
-HTML_EXTRA_FILES       = "@CMAKE_CURRENT_SOURCE_DIR@/doxygen_shared.css"
+HTML_EXTRA_FILES       = "@CMAKE_CURRENT_SOURCE_DIR@/doxygen_shared.css" \
+                         "@CMAKE_CURRENT_SOURCE_DIR@/Moco/MocoCheatSheet.pdf"

@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2015 Stanford University and the Authors                *
+* Copyright (c) 2005-2017 Stanford University and the Authors                *
 * Author(s): Ajay Seth                                                       *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -32,6 +32,8 @@
 using namespace std;
 using namespace OpenSim;
 
+const char* Ground::GroundNameString{ "ground" };
+
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
@@ -41,19 +43,39 @@ using namespace OpenSim;
 */
 Ground::Ground() : PhysicalFrame()
 {
-    setName("ground");
+    setName(GroundNameString);
     setAuthors("Ajay Seth");
-    upd_geometry(0).setFrameName("ground");
+}
+
+/* Ground should never change name */
+void Ground::extendFinalizeFromProperties() {
+    Super::extendFinalizeFromProperties();
+    // Ground is always named "ground"
+    if (getName() != GroundNameString) {
+        std::string msg = getConcreteClassName() + " '" + getName() + "' ";
+        setName(GroundNameString);
+        msg += "was renamed and is being reset to '" + getName() + "'.";
+        log_info(msg);
+    }
 }
 
 /*
 * Implementation of Frame interface by Ground.
-* 
 */
-SimTK::Transform Ground::
-    calcGroundTransform(const SimTK::State& s) const
+SimTK::Transform Ground::calcTransformInGround(const SimTK::State& s) const
 {
     return SimTK::Transform();
+}
+
+SimTK::SpatialVec Ground::calcVelocityInGround(const SimTK::State& s) const
+{
+    return SimTK::SpatialVec(0);
+}
+
+/** The spatial acceleration {alpha; a} for this Frame in ground */
+SimTK::SpatialVec Ground::calcAccelerationInGround(const SimTK::State& s) const
+{
+    return SimTK::SpatialVec(0);
 }
 
 void Ground::extendAddToSystem(SimTK::MultibodySystem& system) const

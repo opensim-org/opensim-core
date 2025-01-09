@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,12 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/ExternalForce.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.h>
 #include "InducedAccelerationsSolver.h"
 
 using namespace OpenSim;
@@ -107,11 +102,11 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 
         //Use same conditions on constraints
         s_solver.updU() = s.getU();
-        s_solver.updU() = s.getZ();
+        s_solver.updZ() = s.getZ();
 
         //Make sure all the actuators are on!
         for(int f=0; f<_modelCopy.getActuators().getSize(); f++){
-            _modelCopy.updActuators().get(f).setDisabled(s_solver, false);
+            _modelCopy.updActuators().get(f).setAppliesForce(s_solver, true);
         }
 
         // Get to  the point where we can evaluate unilateral constraint conditions
@@ -165,7 +160,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
         // ******************************* end ERROR CHECKING *******************************/
     
         for(int i=0; i<constraintOn.getSize(); i++) {
-            _replacementConstraints[i].setDisabled(s_solver, !constraintOn[i]);
+            _replacementConstraints[i].setIsEnforced(s_solver, constraintOn[i]);
             // Make sure we stay at Dynamics so each constraint can evaluate its conditions
             _modelCopy.getMultibodySystem().realize(s_solver, SimTK::Stage::Acceleration);
         }
@@ -183,7 +178,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 
         // disable other forces
         for(int f=0; f<_modelCopy.getForceSet().getSize(); f++){
-            _modelCopy.updForceSet()[f].setDisabled(s_solver, true);
+            _modelCopy.updForceSet()[f].setAppliesForce(s_solver, false);
         }
     }
     else if(forceName == "velocity"){       
@@ -195,7 +190,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
             
         // zero actuator forces
         for(int f=0; f<_modelCopy.getActuators().getSize(); f++){
-            _modelCopy.updActuators().get(f).setDisabled(s_solver, true);
+            _modelCopy.updActuators().get(f).setAppliesForce(s_solver, false);
         }
         // Set the configuration (gen. coords and speeds) of the model.
         _modelCopy.getMultibodySystem().realize(s_solver, SimTK::Stage::Velocity);
@@ -206,7 +201,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 
         // zero actuator forces
         for(int f=0; f<_modelCopy.getActuators().getSize(); f++){
-            _modelCopy.updActuators().get(f).setDisabled(s_solver, true);
+            _modelCopy.updActuators().get(f).setAppliesForce(s_solver, false);
         }
 
         // zero velocity
@@ -216,11 +211,11 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
         // light up the one Force who's contribution we are looking for
         int ai = _modelCopy.getForceSet().getIndex(forceName);
         if(ai<0){
-            cout << "Force '"<< forceName << "' not found in model '" <<
-                _modelCopy.getName() << "'." << endl;
+            log_warn("Force '{}' not found in model '{}'.", forceName,
+                    _modelCopy.getName());
         }
         Force &force = _modelCopy.getForceSet().get(ai);
-        force.setDisabled(s_solver, false);
+        force.setAppliesForce(s_solver, true);
 
         ScalarActuator *actuator = dynamic_cast<ScalarActuator*>(&force);
         if(actuator){
@@ -244,7 +239,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
     _modelCopy.getMultibodySystem().realize(s_solver, SimTK::Stage::Acceleration);
 
     // Sanity check that constraints hasn't totally changed the configuration of the model
-    double error = (s.getQ()-s_solver.getQ()).norm();
+    // double error = (s.getQ()-s_solver.getQ()).norm();
 
     // Report reaction forces for debugging
     /*
@@ -350,34 +345,37 @@ Array<bool> InducedAccelerationsSolver::
             point = exf->getPointAtTime(t);
             // point should be expressed in the "applied to" body for consistency across all constraints
             if(exf->getPointExpressedInBodyName() != exf->getAppliedToBodyName()){
-                int appliedToBodyIndex = getModel().getBodySet().getIndex(exf->getAppliedToBodyName());
-                if(appliedToBodyIndex < 0){
-                    cout << "External force appliedToBody " <<  exf->getAppliedToBodyName() << " not found." << endl;
-                }
+                const PhysicalFrame* appliedToBody =
+                        getModel().findComponent<PhysicalFrame>(
+                                exf->getAppliedToBodyName());
+                const PhysicalFrame* expressedInBody =
+                        getModel().findComponent<PhysicalFrame>(
+                                exf->getPointExpressedInBodyName());
 
-                int expressedInBodyIndex = getModel().getBodySet().getIndex(exf->getPointExpressedInBodyName());
-                if(expressedInBodyIndex < 0){
-                    cout << "External force expressedInBody " <<  exf->getPointExpressedInBodyName() << " not found." << endl;
-                }
-
-                const Body &appliedToBody = getModel().getBodySet().get(appliedToBodyIndex);
-                const Body &expressedInBody = getModel().getBodySet().get(expressedInBodyIndex);
+                OPENSIM_THROW_IF_FRMOBJ(appliedToBody == nullptr, Exception,
+                        "ExternalForce's appliedToBody " +
+                                exf->getAppliedToBodyName() + " not found.");
+                OPENSIM_THROW_IF_FRMOBJ(expressedInBody == nullptr, Exception,
+                        "ExternalForce's pointExpressedInBodyName " +
+                                exf->getPointExpressedInBodyName() +
+                                " not found.");
 
                 getModel().getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-                getModel().getSimbodyEngine().transformPosition(s, expressedInBody, point, appliedToBody, point);
+                point = expressedInBody->findStationLocationInAnotherFrame(
+                        s, point, *appliedToBody);
             }
 
             _replacementConstraints[i].setContactPointForInducedAccelerations(s, point);
 
             // turn on the constraint
-            _replacementConstraints[i].setDisabled(s, false);
+            _replacementConstraints[i].setIsEnforced(s, true);
             // return the state of the constraint
             constraintOn[i] = true;
 
         }
         else{
             // turn off the constraint
-            _replacementConstraints[i].setDisabled(s, true);
+            _replacementConstraints[i].setIsEnforced(s, false);
             // return the state of the constraint
             constraintOn[i] = false;
         }

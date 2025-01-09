@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Saryn R. Goldberg                            *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,14 +31,15 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include "VectorFunction.h"
-#include "Array.h"
-#include "SimTKsimbody.h"
+//#include "Array.h"
 
-
+namespace SimTK { class State; }
 
 //=============================================================================
 //=============================================================================
 namespace OpenSim { 
+
+template <class T> class Array;
 
 /**
  * An abstract class for representing a vector function.
@@ -95,14 +96,18 @@ public:
     //--------------------------------------------------------------------------
     // EVALUATE
     //--------------------------------------------------------------------------
-    virtual void evaluate( const SimTK::State& s, const double *aX, double *rF) { 
-        std::cout << "VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( const SimTK::State&, const double*, double*)" << std::endl;
+    virtual void evaluate( const SimTK::State& s, const double *aX, double *rF) {
+        log_error("VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( "
+                  "const SimTK::State&, const double*, double*)");
     }
     virtual void evaluate( const SimTK::State& s, const Array<double> &aX, Array<double> &rF){
-        std::cout << "VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( const SimTK::State&, const Array<double>, Array<double>)" << std::endl;
+        log_error("VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( "
+                  "const SimTK::State&, const Array<double>, Array<double>)");
     }
     virtual void evaluate( const SimTK::State& s, const Array<double> &aX, Array<double> &rF, const Array<int> &aDerivWRT){
-        std::cout << "VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( const SimTK::State&, const Array<double>&a, Array<double>&, const Array<int>&)" << std::endl;
+        log_error("VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( "
+                     "const SimTK::State&, const Array<double>&a, "
+                     "Array<double>&, const Array<int>&)");
     }
 
 //=============================================================================

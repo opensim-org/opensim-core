@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,14 +24,7 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Property_Deprecated.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include "Control.h"
-
-
 
 
 using namespace OpenSim;
@@ -253,14 +246,14 @@ getFilterOn() const
 
 // Convenience methods
 //_____________________________________________________________________________
-const double Control::getFirstTime() const
+double Control::getFirstTime() const
 {
     string msg = "Control.getFirstTime: This method must be overridden.";
     throw(Exception(msg,__FILE__,__LINE__));
     return 0;
 }
 //_____________________________________________________________________________
-const double Control::getLastTime() const
+double Control::getLastTime() const
 {
     string msg = "Control.getLastTime: This method must be overridden.";
     throw(Exception(msg,__FILE__,__LINE__));

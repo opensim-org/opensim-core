@@ -1,5 +1,5 @@
-#ifndef __CoordinateSet_h__
-#define __CoordinateSet_h__
+#ifndef OPENSIM_COORDINATE_SET_H_
+#define OPENSIM_COORDINATE_SET_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  CoordinateSet.h                          *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan, Ajay Seth                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,14 +23,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Simulation/Model/ModelComponentSet.h>
+#include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
-
 namespace OpenSim {
-
-class Model;
 //=============================================================================
 //=============================================================================
 /**
@@ -38,42 +34,21 @@ class Model;
  *
  * @authors Peter Loan, Ajay Seth
  */
-
-class OSIMSIMULATION_API CoordinateSet : public ModelComponentSet<Coordinate> {
-OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateSet, ModelComponentSet<Coordinate>);
+class OSIMSIMULATION_API CoordinateSet : public Set<Coordinate> {
+OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateSet, Set<Coordinate>);
 
 public:
-    CoordinateSet();
-    CoordinateSet(Model& model) : Super(model) {}
-    CoordinateSet(Model& model, const std::string &aFileName, 
-                  bool aUpdateFromXMLNode=true)
-    :   Super(model, aFileName, aUpdateFromXMLNode) {}
-    CoordinateSet(const CoordinateSet& aCoordinateSet);
-    ~CoordinateSet(void);
+    /** Use Super's constructors. @see Set */
+    using Super::Super;
 
     /**
-     * Populate this flat list of Coordinates given a Model that has already
-     * been setup.
+     * Populate this %Set as a flat list of all Model Coordinates given 
+     * the a Model with Joints, which owns the Coordinates.
      */
     void populate(Model& model);
 
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    CoordinateSet& operator=(const CoordinateSet &aCoordinateSet);
-#endif
-    void getSpeedNames(OpenSim::Array<std::string> &rNames ) const
-{
-    for(int i=0;i<_objects.getSize();i++) {
-        Coordinate *obj = _objects[i];
-        if(obj==NULL) {
-            rNames.append("NULL");
-        } else {
-            rNames.append(obj->getSpeedName());
-        }
-    }
-}
+    void getSpeedNames(OpenSim::Array<std::string> &rNames) const;
+
 //=============================================================================
 };  // END of class CoordinateSet
 //=============================================================================
@@ -81,4 +56,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __CoordinateSet_h__
+#endif // OPENSIM_COORDINATE_SET_H_

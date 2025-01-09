@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,21 +23,20 @@
  * -------------------------------------------------------------------------- */
 
 // UNIX PLATFORM
-#ifndef WIN32
-
-#define OSIMPLUGIN_API
+#ifndef _WIN32
+    #define OSIMPLUGIN_API
 
 // WINDOWS PLATFORM
 #else
 
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <windows.h>
-#ifdef OSIMPLUGIN_EXPORTS
-#define OSIMPLUGIN_API __declspec(dllexport)
-#else
-#define OSIMPLUGIN_API __declspec(dllimport)
-#endif
+    #define WIN32_LEAN_AND_MEAN
+    #define NOMINMAX
+    #include <windows.h>
+    #ifdef OSIMPLUGIN_EXPORTS
+        #define OSIMPLUGIN_API __declspec(dllexport)
+    #else
+        #define OSIMPLUGIN_API __declspec(dllimport)
+    #endif
 
 #endif // PLATFORM
 

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,15 +24,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <math.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/Constant.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/Model.h>
-
 #include "ConstantDistanceConstraint.h"
-#include "SimbodyEngine.h"
+
+#include <simbody/internal/MobilizedBody.h>
+#include <simbody/internal/Constraint_Rod.h>
 
 //=============================================================================
 // STATICS
@@ -61,7 +56,7 @@ ConstantDistanceConstraint::ConstantDistanceConstraint() :
     Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 /*
@@ -73,12 +68,11 @@ ConstantDistanceConstraint::ConstantDistanceConstraint(
     const double& distance) : Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
-    setBody1ByName(body1.getName());
-    setBody2ByName(body2.getName());
+    connectSocket_body_1(body1);
+    connectSocket_body_2(body2);
     set_location_body_1(locationBody1);
-
     set_location_body_2(locationBody2);
     set_constant_distance(distance);
 }
@@ -106,22 +100,13 @@ void ConstantDistanceConstraint::constructProperties()
     constructProperty_constant_distance(SimTK::NaN);
 }
 
-void ConstantDistanceConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("body_1");
-    constructConnector<PhysicalFrame>("body_2");
-}
-
-
 void ConstantDistanceConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
 
     // Get underlying mobilized bodies
-    const PhysicalFrame& f1 =
-        getConnector<PhysicalFrame>("body_1").getConnectee();
-    const PhysicalFrame& f2 =
-        getConnector<PhysicalFrame>("body_2").getConnectee();
+    const PhysicalFrame& f1 = getConnectee<PhysicalFrame>("body_1");
+    const PhysicalFrame& f2 = getConnectee<PhysicalFrame>("body_2");
 
     SimTK::MobilizedBody b1 = f1.getMobilizedBody();
     SimTK::MobilizedBody b2 = f2.getMobilizedBody();
@@ -140,24 +125,24 @@ void ConstantDistanceConstraint::extendAddToSystem(SimTK::MultibodySystem& syste
 //=============================================================================
 const PhysicalFrame& ConstantDistanceConstraint::getBody1() const
 {
-    return getConnector<PhysicalFrame>("body_1").getConnectee();
+    return getConnectee<PhysicalFrame>("body_1");
 }
 
 const PhysicalFrame& ConstantDistanceConstraint::getBody2() const
 {
-    return getConnector<PhysicalFrame>("body_2").getConnectee();
+    return getConnectee<PhysicalFrame>("body_2");
 }
 
 /*
 * Following methods set attributes of the constraint */
 void ConstantDistanceConstraint::setBody1ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_1").set_connectee_name(aBodyName);
+    updSocket<PhysicalFrame>("body_1").setConnecteePath(aBodyName);
 }
 
 void ConstantDistanceConstraint::setBody2ByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("body_2").set_connectee_name(aBodyName);
+    updSocket<PhysicalFrame>("body_2").setConnecteePath(aBodyName);
 }
 
 /** Set the location for point on body 1*/
@@ -187,14 +172,27 @@ void ConstantDistanceConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, i
             SimTK::Xml::element_iterator body1Element = aNode.element_begin("body_1");
             SimTK::Xml::element_iterator body2Element = aNode.element_begin("body_2");
             std::string body1_name(""), body2_name("");
-            // If default constructed then elements not serialized since they are default
-            // values. Check that we have associated elements, then extract their values.
-            if (body1Element != aNode.element_end())
+            // If default constructed then elements not serialized since they
+            // are default values. Check that we have associated elements, then
+            // extract their values.
+            // Constraints in pre-4.0 models are necessarily 1 level deep
+            // (model, constraints), and Bodies are necessarily 1 level deep.
+            // Here we create the correct relative path (accounting for sets
+            // being components).
+            if (body1Element != aNode.element_end()) {
                 body1Element->getValueAs<std::string>(body1_name);
-            if (body2Element != aNode.element_end())
+                body1_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                   body1_name);
+            }
+            if (body2Element != aNode.element_end()) {
                 body2Element->getValueAs<std::string>(body2_name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "body_1", body1_name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_", "body_2", body2_name);
+                body2_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                   body2_name);
+            }
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                    "body_1", body1_name);
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                    "body_2", body2_name);
         }
     }
 
@@ -210,9 +208,9 @@ void ConstantDistanceConstraint::generateDecorations(
     if (fixed) return;
     const Vec3 pink(1, .6, .8);
     const OpenSim::PhysicalFrame& frame1 = getBody1();
-    const Vec3& p_B1 = frame1.getGroundTransform(state)*get_location_body_1();
+    const Vec3& p_B1 = frame1.getTransformInGround(state)*get_location_body_1();
     const OpenSim::PhysicalFrame& frame2 = getBody2();
-    const Vec3& p_B2 = frame2.getGroundTransform(state)*get_location_body_2();
+    const Vec3& p_B2 = frame2.getTransformInGround(state)*get_location_body_2();
     appendToThis.push_back(
         SimTK::DecorativeLine(p_B1, p_B2).setBodyId(0)
         .setColor(pink).setOpacity(1.0).setLineThickness(.05));

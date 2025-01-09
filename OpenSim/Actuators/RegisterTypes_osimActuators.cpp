@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,37 +25,9 @@
 #include <iostream>
 #include <OpenSim/Common/Object.h>
 #include "RegisterTypes_osimActuators.h"
+#include "osimActuators.h"
+#include "ModelOperators.h"
 
-#include "CoordinateActuator.h"
-#include "PointActuator.h"
-#include "TorqueActuator.h"
-#include "BodyActuator.h"
-#include "PointToPointActuator.h"
-#include "ClutchedPathSpring.h"
-
-#include "Thelen2003Muscle.h"
-#include "Thelen2003Muscle_Deprecated.h"
-
-#include "Schutte1993Muscle_Deprecated.h"
-#include "Delp1990Muscle_Deprecated.h"
-#include "SpringGeneralizedForce.h"
-
-#include "RigidTendonMuscle.h"
-
-#include "ActiveForceLengthCurve.h"
-#include "ForceVelocityCurve.h"
-#include "ForceVelocityInverseCurve.h"
-#include "TendonForceLengthCurve.h"
-#include "FiberForceLengthCurve.h"
-#include "FiberCompressiveForceLengthCurve.h"
-#include "FiberCompressiveForceCosPennationCurve.h"
-#include "MuscleFirstOrderActivationDynamicModel.h"
-#include "MuscleSecondOrderActivationDynamicModel.h"
-
-#include "MuscleFixedWidthPennationModel.h"
-
-#include "Millard2012EquilibriumMuscle.h"
-#include "Millard2012AccelerationMuscle.h"
 
 // Awaiting new component architecture that supports subcomponents with states.
 //#include "ConstantMuscleActivation.h"
@@ -78,11 +50,13 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
   try {
 
     Object::registerType( CoordinateActuator() );
+    Object::registerType( ActivationCoordinateActuator() );
     Object::registerType( PointActuator() );
     Object::registerType( TorqueActuator() );
     Object::registerType( BodyActuator() );
     Object::registerType( PointToPointActuator() );
     Object::registerType( ClutchedPathSpring() );
+    Object::registerType( McKibbenActuator() );
 
     Object::registerType( Thelen2003Muscle() );
     Object::registerType( Thelen2003Muscle_Deprecated() );
@@ -104,6 +78,20 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 
     Object::RegisterType(Millard2012EquilibriumMuscle());
     Object::RegisterType(Millard2012AccelerationMuscle());
+    Object::RegisterType(DeGrooteFregly2016Muscle());
+
+    Object::registerType(ModelProcessor());
+    Object::registerType(ModOpIgnoreActivationDynamics());
+    Object::registerType(ModOpIgnoreTendonCompliance());
+    Object::registerType(ModOpScaleMaxIsometricForce());
+    Object::registerType(ModOpRemoveMuscles());
+    Object::registerType(ModOpAddReserves());
+    Object::registerType(ModOpAddExternalLoads());
+    Object::registerType(ModOpReplaceJointsWithWelds());
+    Object::registerType(ModOpReplaceMusclesWithPathActuators());
+    Object::registerType(ModOpReplacePathsWithFunctionBasedPaths());
+    Object::registerType(PolynomialPathFitterBounds());
+    Object::registerType(PolynomialPathFitter());
 
     //Object::RegisterType( ConstantMuscleActivation() );
     //Object::RegisterType( ZerothOrderMuscleActivationDynamics() );
@@ -121,7 +109,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
     //Object::RenameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 
   } catch (const std::exception& e) {
-    std::cerr 
+    std::cerr
         << "ERROR during osimActuators Object registration:\n"
         << e.what() << "\n";
   }

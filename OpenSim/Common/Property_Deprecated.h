@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,11 +29,10 @@
 
 
 // INCLUDES
+#include "Assertion.h"
 #include "osimCommonDLL.h"
-#include "Array.h"
-#include "ArrayPtrs.h"
 #include "AbstractProperty.h"
-#include "DebugUtilities.h"
+#include "Exception.h"
 
 #include <string>
 
@@ -63,12 +62,13 @@ namespace OpenSim {
  *
  * As additional property types are needed, they may be added however.
  *
- * @todo Make default constructors for all derived classes
+ * TODO: Make default constructors for all derived classes
  * @version 1.0
  * @author Frank C. Anderson
  */
 
 class Object;
+template <class T> class Array;
 
 #ifdef SWIG
     #ifdef OSIMCOMMON_API
@@ -77,7 +77,7 @@ class Object;
     #define OSIMCOMMON_API
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning( disable : 4290 )   // VC++ non-ANSI Exception handling
 #pragma warning( disable : 4251 )   // VC2010 no-dll export of std::string
 
@@ -147,15 +147,15 @@ public:
     virtual void readFromXMLElement
        (SimTK::Xml::Element& propertyElement,
         int                  versionNumber) override
-    {assert(!"Property_Deprecated::readFromXMLElement not implemented");}
+    {OPENSIM_ASSERT(!"Property_Deprecated::readFromXMLElement not implemented");}
 
     virtual void writeToXMLElement
        (SimTK::Xml::Element& propertyElement) const override
-    {assert(!"Property_Deprecated::writeToXMLElement not implemented");}
+    {OPENSIM_ASSERT(!"Property_Deprecated::writeToXMLElement not implemented");}
 
     // Override for array types.
     int getNumValues() const override {return 1;}
-    void clearValues() override {assert(!"implemented");}
+    void clearValues() override {OPENSIM_ASSERT(!"implemented");}
 
     bool isUnnamedProperty() const override {return false;}
     bool isObjectProperty() const override {return false;}

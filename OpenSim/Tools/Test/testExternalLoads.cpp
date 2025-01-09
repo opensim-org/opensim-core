@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,36 +21,21 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <iostream>
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <catch2/catch_all.hpp>
+
+#include <iostream>
+
 using namespace OpenSim;
 using namespace std;
-
-void testExternalLoad();
-
-int main()
-{
-    try {
-        testExternalLoad();
-    }
-    catch (const Exception& e) {
-        e.print(cerr);
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
-}
-
 
 void addLoadToStorage(Storage &forceStore, SimTK::Vec3 force, SimTK::Vec3 point, SimTK::Vec3 torque)
 {
     int nLoads = forceStore.getColumnLabels().getSize()/9;
     string labels[9] = { "forceX", "forceY", "forceZ", "pointX", "pointY", "pointZ","torqueX", "torqueY", "torqueZ"};
-    char suffix[2];
-    sprintf(suffix, "%d", nLoads); 
-    
+
     Array<string> col_labels;
     col_labels.append("time");
     StateVector dataRow;
@@ -68,7 +53,7 @@ void addLoadToStorage(Storage &forceStore, SimTK::Vec3 force, SimTK::Vec3 point,
             data[i] = torque[i-6];
     }
 
-    dataRow.setStates(0, 9, data);
+    dataRow.setStates(0, SimTK::Vector_<double>(9, data));
 
     Storage *forces = NULL;
     Storage tempStore;
@@ -91,7 +76,7 @@ void addLoadToStorage(Storage &forceStore, SimTK::Vec3 force, SimTK::Vec3 point,
         forces->addToRdStorage(forceStore, 0.0, 1.0);
 }
 
-void testExternalLoad()
+TEST_CASE("ExternalLoads")
 {
     using namespace SimTK;
 
@@ -112,16 +97,14 @@ void testExternalLoad()
 
     // Integrator and integration manager
     double integ_accuracy = 1e-6;
-    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem() );
-    integrator.setAccuracy(integ_accuracy);
-    Manager manager(model,  integrator);
-    manager.setInitialTime(init_t);
+    Manager manager(model);
+    manager.setIntegratorAccuracy(integ_accuracy);
+    s.setTime(init_t);
+    manager.initialize(s);
 
     for(int i = 0; i < nsteps+1; i++){
-        manager.setFinalTime(dt*i);
-        manager.integrate(s);
+        manager.integrate(dt*i);
         q_grav[i] = model.updCoordinateSet()[0].getValue(s);
-        manager.setInitialTime(dt*i);
     }
 
     //q_grav.dump("Coords due to gravity.");
@@ -141,13 +124,11 @@ void testExternalLoad()
     ExternalForce xf(forceStore, "force", "point", "torque", pendBodyName, "ground", pendBodyName);
     xf.setName("grav");
 
-    ExternalLoads* extLoads = new ExternalLoads(model);
+    ExternalLoads* extLoads = new ExternalLoads();
     extLoads->adoptAndAppend(&xf);
 
     extLoads->print("ExternalLoads_test.xml");
-
-    for(int i=0; i<extLoads->getSize(); i++)
-        model.addForce(&(*extLoads)[i]);
+    model.addModelComponent(extLoads);
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter();
@@ -171,20 +152,18 @@ void testExternalLoad()
     // initial position
     model.updCoordinateSet()[0].setValue(s2, q_init);
 
-    RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem() );
-    integrator2.setAccuracy(integ_accuracy);
-    Manager manager2(model,  integrator2);
-    manager2.setInitialTime(init_t);
+    Manager manager2(model);
+    manager2.setIntegratorAccuracy(integ_accuracy);
+    s2.setTime(init_t);
+    manager2.initialize(s2);
 
     // Simulate with the external force applied instead of gravity
     Vector_<double> q_xf(nsteps+1);
     Vector_<Vec3> pcom_xf(nsteps+1);
 
     for(int i = 0; i < nsteps+1; i++){
-        manager2.setFinalTime(dt*i);
-        manager2.integrate(s2);
+        manager2.integrate(dt*i);
         q_xf[i] = model.updCoordinateSet()[0].getValue(s2);
-        manager2.setInitialTime(dt*i);
     }
 
     //q_xf.dump("Coords due to external force point expressed in pendulum.");
@@ -219,6 +198,7 @@ void testExternalLoad()
 
     ExternalForce xf2(forceStore2, id_base+"_F", point_id, id_base+"_T", pendBodyName, "ground", "ground");
     xf2.setName("xf_pInG");
+    xf2.finalizeFromProperties();
     // Empty out existing external forces
     extLoads->setMemoryOwner(false);
     extLoads->setSize(0);
@@ -226,16 +206,7 @@ void testExternalLoad()
 
     //Ask external loads to transform point expressed in ground to the applied body
     extLoads->setDataFileName(forceStore2.getName());
-    extLoads->invokeConnectToModel(model);
     extLoads->transformPointsExpressedInGroundToAppliedBodies(*qStore);
-
-    // remove previous external force from the model too
-    model.disownAllComponents();
-    model.updForceSet().setSize(0);
-
-    // after external loads has transformed the point of the force, then add it the model
-    for(int i=0; i<extLoads->getSize(); i++)
-        model.addForce(&(*extLoads)[i]);
 
     // recreate dynamical system to reflect new force
     SimTK::State &s3 = model.initSystem();
@@ -246,19 +217,17 @@ void testExternalLoad()
     // initial position
     model.updCoordinateSet()[0].setValue(s3, q_init);
 
-    RungeKuttaMersonIntegrator integrator3(model.getMultibodySystem() );
-    integrator3.setAccuracy(integ_accuracy);
-    Manager manager3(model,  integrator3);
-    manager3.setInitialTime(init_t);
+    Manager manager3(model);
+    manager3.setIntegratorAccuracy(integ_accuracy);
+    s3.setTime(init_t);
+    manager3.initialize(s3);
 
     // Simulate with the external force applied instead of gravity
     Vector_<double> q_xf2(nsteps+1);
 
     for(int i = 0; i < nsteps+1; i++){
-        manager3.setFinalTime(dt*i);
-        manager3.integrate(s3);
+        manager3.integrate(dt*i);
         q_xf2[i] = model.updCoordinateSet()[0].getValue(s3);
-        manager3.setInitialTime(dt*i);
     }
 
     //q_xf2.dump("Coords due to external force point expressed in ground.");
@@ -268,4 +237,76 @@ void testExternalLoad()
 
     // kinematics should match to within integ accuracy
     ASSERT_EQUAL(0.0, norm_err, integ_accuracy);
+}
+
+// Ensure the default values for the ExternalForce properties work as expected.
+TEST_CASE("ExternalLoads Default Properties")
+{
+    using namespace SimTK;
+
+    Model model("Pendulum.osim");
+
+    auto& pendulum = model.getBodySet().get(model.getNumBodies()-1);
+    string pendBodyName = pendulum.getName();
+    Vec3 comInB = pendulum.getMassCenter();
+
+    Storage forceStore;
+    addLoadToStorage(forceStore,  pendulum.getMass()*model.getGravity(),
+            comInB, Vec3(0, 0, 0));
+    forceStore.setName("test_external_load_default_properties.sto");
+    forceStore.print(forceStore.getName());
+
+    ExternalForce* xf = new ExternalForce();
+    xf->setName("grav");
+    xf->setDataSource(forceStore);
+    SimTK_TEST(!xf->appliesForce());
+    SimTK_TEST(!xf->specifiesPoint());
+    SimTK_TEST(!xf->appliesTorque());
+    xf->set_force_identifier("force");
+    SimTK_TEST(xf->appliesForce());
+    xf->set_point_identifier("point");
+    SimTK_TEST(xf->specifiesPoint());
+    xf->set_torque_identifier("torque");
+    SimTK_TEST(xf->appliesTorque());
+    SimTK_TEST(xf->getAppliedToBodyName() == "");
+    xf->set_applied_to_body(pendBodyName);
+    SimTK_TEST(xf->getPointExpressedInBodyName() == "ground");
+    xf->set_point_expressed_in_body(pendBodyName);
+    SimTK_TEST(xf->getForceExpressedInBodyName() == "ground");
+    // Leave force_expressed_in_body as default ("ground").
+    ExternalLoads* extLoads = new ExternalLoads();
+    extLoads->adoptAndAppend(xf);
+
+    extLoads->print("testExternalLoadDefaultProperties_ExternalLoads.xml");
+
+    for(int i=0; i<extLoads->getSize(); i++)
+        model.addForce(&(*extLoads)[i]);
+    
+    // Ensure that, even when force_expressed_in_body is unspecified, no issues
+    // occur when initializing ExternalForce.
+    model.initSystem();
+
+    // ExternalForce throws an exception if it can't find the applied_to_body.
+    xf->set_applied_to_body("");
+    SimTK_TEST_MUST_THROW_EXC(model.initSystem(), OpenSim::Exception);
+    xf->set_applied_to_body(pendBodyName);
+
+    // If force_expressed_in_body can't be found, it's set to ground; no error.
+    xf->set_force_expressed_in_body("nonexistent");
+    model.initSystem();
+}
+
+// related: #3926
+//
+// adding a valid `OpenSim::ExternalLoads` to a model shouldn't result in a model
+// that cannot be copied.
+TEST_CASE("ExternalLoads Can Be Copied")
+{
+    OpenSim::Model model{"ExternalLoadsInSubdir/model-in-subdir.osim"};
+    model.finalizeConnections();  // should work
+    model.addModelComponent(&dynamic_cast<OpenSim::ModelComponent&>(*Object::makeObjectFromFile("ExternalLoadsInSubdir/external-loads-in-subdir.xml")));
+    model.finalizeConnections();  // should also work
+
+    OpenSim::Model copy{model};   // create an independent copy containing the `OpenSim::ExternalLoads`
+    copy.finalizeConnections();   // should work (wasn't when this test was written)
 }

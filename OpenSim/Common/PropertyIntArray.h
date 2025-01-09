@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -32,7 +32,8 @@
 #include "osimCommonDLL.h"
 #include <string>
 #include "Property_Deprecated.h"
-#ifdef WIN32
+#include "Array.h"
+#ifdef _WIN32
 #pragma warning( disable : 4251 )
 #endif
 
@@ -83,6 +84,8 @@ public:
     //--------------------------------------------------------------------------
 public:
     PropertyIntArray& operator=(const PropertyIntArray &aProperty);
+
+    void assign(const AbstractProperty& that) override;
 
     //--------------------------------------------------------------------------
     // GET AND SET

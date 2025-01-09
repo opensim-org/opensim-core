@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,13 +25,11 @@
  * Author: Matt DeMers
  */
 
-//==============================================================================
-// INCLUDES
-//==============================================================================
+#include "PointToPointActuator.h"
+
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-
-#include "PointToPointActuator.h"
 
 using namespace OpenSim;
 using std::string;
@@ -71,6 +69,18 @@ void PointToPointActuator::constructProperties()
     constructProperty_optimal_force(1.0);
 }
 
+void PointToPointActuator::extendAddToSystem(
+    SimTK::MultibodySystem& system) const
+{
+    Super::extendAddToSystem(system);
+
+    // Cache the computed speed of the actuator
+    this->_speedCV     = addCacheVariable("speed", 0.0, SimTK::Stage::Velocity);
+    this->_directionCV = addCacheVariable(
+        "direction",
+        SimTK::UnitVec3{1.0, 0., 0.},
+        SimTK::Stage::Position);
+}
 
 //==============================================================================
 // GET AND SET
@@ -114,7 +124,7 @@ void PointToPointActuator::setBodyB(Body* aBody)
  * this actuator divided by its optimal force.
  * @return Stress.
  */
-double PointToPointActuator::getStress( const SimTK::State& s) const
+double PointToPointActuator::getStress(const SimTK::State& s) const
 {
     return std::abs(getActuation(s) / getOptimalForce()); 
 }
@@ -126,9 +136,11 @@ double PointToPointActuator::getStress( const SimTK::State& s) const
  * @param s current SimTK::State 
  */
 
-double PointToPointActuator::computeActuation( const SimTK::State& s ) const
+double PointToPointActuator::computeActuation(const SimTK::State& s) const
 {
-    if(!_model) return 0;
+    if (!_model) {
+        return SimTK::NaN;
+    }
 
     // FORCE
     return getControl(s) * getOptimalForce();
@@ -140,80 +152,113 @@ double PointToPointActuator::computeActuation( const SimTK::State& s ) const
 // APPLICATION
 //==============================================================================
 //_____________________________________________________________________________
-/**
- * Apply the actuator force to BodyA and BodyB.
- *
- * @param s current SimTK::State
- */
-void PointToPointActuator::computeForce(const SimTK::State& s, 
-                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                                SimTK::Vector& generalizedForces) const
+
+SimTK::UnitVec3 PointToPointActuator::getDirectionBAInGround(
+    const SimTK::State& s) const
 {
+    if (isCacheVariableValid(s, _directionCV)) {
+        return getCacheVariableValue(s, _directionCV);
+    }
+
+    // Get pointA and pointB positions in the local frame of bodyA and bodyB,
+    // respectively.
+    // Points may have been supplied either global or local frame.
     const bool pointsAreGlobal = getPointsAreGlobal();
-    const SimTK::Vec3& pointA = getPointA();
-    const SimTK::Vec3& pointB = getPointB();
+    const SimTK::Vec3& pointA  = getPointA();
+    const SimTK::Vec3& pointB  = getPointB();
 
-    if(!_model) return;
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
-    
-    if( !_bodyA || !_bodyB )
-        return;
-    
-    // Get pointA and pointB positions in both the global frame, and in 
-    // the local frame of bodyA and bodyB, respectively. Points may have
-    // been supplied either way.
-
-    SimTK::Vec3 pointA_inGround, pointB_inGround, 
-                pointA_inBodyA, pointB_inBodyB;
-
-    if (pointsAreGlobal)
-    {
-        pointA_inGround = pointA;
-        pointB_inGround = pointB;
-        engine.transformPosition(s, getModel().getGround(), pointA_inGround, 
-                                 *_bodyA, pointA_inBodyA);
-        engine.transformPosition(s, getModel().getGround(), pointB_inGround, 
-                                 *_bodyB, pointB_inBodyB);
-    }
-    else
-    {
-        pointA_inBodyA = pointA;
-        pointB_inBodyB = pointB;
-        engine.transformPosition(s, *_bodyA, pointA_inBodyA, 
-                                 getModel().getGround(), pointA_inGround);
-        engine.transformPosition(s, *_bodyB, pointB_inBodyB, 
-                                 getModel().getGround(), pointB_inGround);
-    }
+    SimTK::Vec3 pointA_inGround =
+        pointsAreGlobal ? pointA
+                        : _bodyA->findStationLocationInGround(s, pointA);
+    SimTK::Vec3 pointB_inGround =
+        pointsAreGlobal ? pointB
+                        : _bodyB->findStationLocationInGround(s, pointB);
 
     // Find the direction along which the actuator applies its force.
     // NOTE: this will fail if the points are coincident.
     const SimTK::Vec3 r = pointA_inGround - pointB_inGround;
     const SimTK::UnitVec3 direction(r); // normalize
 
-    // Find the force magnitude and set it. Then form the force vector.
-    double forceMagnitude;
+    updCacheVariableValue(s, _directionCV) = direction;
+    markCacheVariableValid(s, _directionCV);
+    return direction;
+}
 
-    if (isActuationOverridden(s)) {
-        forceMagnitude = computeOverrideActuation(s);
-    } else {
-       forceMagnitude = computeActuation(s);
+double PointToPointActuator::getSpeed(const SimTK::State& s) const
+{
+    if (isCacheVariableValid(s, _speedCV)) {
+        return getCacheVariableValue(s, _speedCV);
     }
-    setActuation(s, forceMagnitude);
 
-    const SimTK::Vec3 force = forceMagnitude*direction;
+    double speed = calcSpeed(s);
 
-    // Apply equal and opposite forces to the bodies.
-    applyForceToPoint(s, *_bodyA, pointA_inBodyA, force, bodyForces);
-    applyForceToPoint(s, *_bodyB, pointB_inBodyB, -force, bodyForces);
+    updCacheVariableValue(s, _speedCV) = speed;
+    markCacheVariableValid(s, _speedCV);
+    return speed;
+}
+
+double PointToPointActuator::calcSpeed(const SimTK::State& s) const
+{
+    if (!_model || !_bodyA || !_bodyB) {
+        return SimTK::NaN;
+    }
+
+    // Speed is zero for constant points defined in the same frame.
+    const bool pointsAreGlobal = getPointsAreGlobal();
+    if (pointsAreGlobal) {
+        return 0.;
+    }
+
+    const SimTK::Vec3& pointA_inBodyA = getPointA();
+    const SimTK::Vec3& pointB_inBodyB = getPointB();
 
     // Get the relative velocity of the points in ground.
-    SimTK::Vec3 velA_G, velB_G, velAB_G;
-    engine.getVelocity(s, *_bodyA, pointA_inBodyA, velA_G);
-    engine.getVelocity(s, *_bodyB, pointB_inBodyB, velB_G);
-    velAB_G = velA_G-velB_G;
-    // Speed used to compute power is the speed along the line connecting 
+    SimTK::Vec3 velA_G
+        = _bodyA->findStationVelocityInGround(s, pointA_inBodyA);
+    SimTK::Vec3 velB_G
+        = _bodyB->findStationVelocityInGround(s, pointB_inBodyB);
+    SimTK::Vec3 velAB_G = velA_G - velB_G;
+    // Speed used to compute power is the speed along the line connecting
     // the two bodies.
-    setSpeed(s, ~velAB_G*direction);
+    double speed = ~velAB_G * getDirectionBAInGround(s);
+    return speed;
+}
+
+void PointToPointActuator::implProduceForces(
+    const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
+{
+    if (!_model || !_bodyA || !_bodyB) {
+        return;
+    }
+
+    // Get pointA and pointB positions in the global frame.
+    // Points may have been supplied either global or local frame.
+    const bool pointsAreGlobal = getPointsAreGlobal();
+    const SimTK::Vec3& pointA  = getPointA();
+    const SimTK::Vec3& pointB  = getPointB();
+    const Ground& ground       = getModel().getGround();
+
+    SimTK::Vec3 pointA_inBodyA =
+        pointsAreGlobal
+            ? ground.findStationLocationInAnotherFrame(s, pointA, *_bodyA)
+            : pointA;
+    SimTK::Vec3 pointB_inBodyB =
+        pointsAreGlobal
+            ? ground.findStationLocationInAnotherFrame(s, pointB, *_bodyB)
+            : pointB;
+
+    // Find the force magnitude and set it. Then form the force vector.
+    double forceMagnitude = isActuationOverridden(s)
+                                ? computeOverrideActuation(s)
+                                : computeActuation(s);
+    setActuation(s, forceMagnitude);
+
+    const SimTK::Vec3 force = forceMagnitude * getDirectionBAInGround(s);
+
+    // Produce equal and opposite forces on the body frames.
+    forceConsumer.consumePointForce(s, *_bodyA, pointA_inBodyA, force);
+    forceConsumer.consumePointForce(s, *_bodyB, pointB_inBodyB, -force);
 }
 //_____________________________________________________________________________
 /**

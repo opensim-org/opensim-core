@@ -1,7 +1,7 @@
 #ifndef OPENSIM_PATH_SPRING_H_
 #define OPENSIM_PATH_SPRING_H_
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  PathSpring.h                            *
+ *                            OpenSim:  PathSpring.h                          *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                      *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -24,35 +24,32 @@
  * -------------------------------------------------------------------------- */
 
 
-//=============================================================================
-// INCLUDES
-//=============================================================================
-#include <OpenSim/Common/ScaleSet.h>
-#include "Model.h"
-#include "Force.h"
+#include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
+#include <OpenSim/Simulation/Model/ForceProducer.h>
+#include <OpenSim/Simulation/Model/GeometryPath.h>
 
 namespace OpenSim {
 
-class GeometryPath;
+class ScaleSet;
 
 //=============================================================================
 //=============================================================================
 /**
  * A class implementing a PathSpring. The path of the PathSpring is
- * determined by a GeometryPath object. A PathSpring is a massless Force
- * element which applies tension along a path connected to bodies and can wrap
- * over surfaces.  The tension is proportional to its stretch beyond its
- * resting length and the amount of dissipation scales with amount of stretch,
- * such that tension = (K*s)*(1+D*ldot) where stretch, s = l-lo for l > lo, and 
- * 0 otherwise. l is the path length of the spring and lo is its rest length.
- * K is the linear stiffness and D is the dissipation factor.
+ * determined by an object derived from AbstractGeometryPath. A PathSpring is a
+ * massless Force element which applies tension along a path connected to bodies
+ * and can wrap over surfaces.  The tension is proportional to its stretch
+ * beyond its resting length and the amount of dissipation scales with amount of
+ * stretch, such that tension = (K*s)*(1+D*ldot) where stretch, s = l-lo for
+ * l > lo, and 0 otherwise. l is the path length of the spring and lo is its
+ * rest length. K is the linear stiffness and D is the dissipation factor.
  * When l < lo the spring applies no tension to the bodies and considered
  * to be slack.
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API PathSpring : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathSpring, Force);
+class OSIMSIMULATION_API PathSpring : public ForceProducer {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathSpring, ForceProducer);
 public:
 //=============================================================================
 // PROPERTIES
@@ -63,16 +60,28 @@ public:
         "The linear stiffness (N/m) of the PathSpring");
     OpenSim_DECLARE_PROPERTY(dissipation, double,
         "The dissipation factor (s/m) of the PathSpring");
-    OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath, 
-        "The GeometryPath defines the set of points and wrapping surface" 
-        "interactions that form the path of action of the PathSpring");
+    OpenSim_DECLARE_PROPERTY(path, AbstractGeometryPath,
+        "The path defines the length and lengthening speed of the PathSpring");
 
+//=============================================================================
+// OUTPUTS
+//=============================================================================
+    OpenSim_DECLARE_OUTPUT(length, double, getLength,
+        SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(stretch, double, getStretch,
+        SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(lengthening_speed, double, getLengtheningSpeed,
+        SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(tension, double, getTension,
+        SimTK::Stage::Dynamics);
 
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
     
-    /** Default constructor */
+    /** Construct a PathSpring with default parameters. Users should note
+    that the default values for resting_length, stiffness, and dissipation
+    are `NaN` so they must be set before simulating. */
     PathSpring();
 
     /** Convenience constructor with PathSpring parameters
@@ -106,12 +115,36 @@ public:
     {   return get_dissipation(); }
     void setDissipation(double dissipation);
 
-    /** Access the GeometryPath to update connection points and
-        specify wrap objects the path can interact with. */
-    const GeometryPath& getGeometryPath() const 
-    {   return get_GeometryPath(); }
-    GeometryPath& updGeometryPath() 
-    {   return upd_GeometryPath(); }
+    /** get/set the path object */
+    AbstractGeometryPath& updPath() { return upd_path(); }
+    const AbstractGeometryPath& getPath() const { return get_path(); }
+
+    template <typename PathType>
+    PathType& updPath() {
+        return dynamic_cast<PathType&>(upd_path());
+    }
+    template <typename PathType>
+    const PathType& getPath() const {
+        return dynamic_cast<const PathType&>(get_path());
+    }
+
+    template <typename PathType>
+    PathType* tryUpdPath() {
+        return dynamic_cast<PathType*>(&upd_path());
+    }
+    template <typename PathType>
+    const PathType* tryGetPath() const {
+        return dynamic_cast<const PathType*>(&get_path());
+    }
+
+    GeometryPath& updGeometryPath() {
+        return updPath<GeometryPath>();
+    }
+    const GeometryPath& getGeometryPath() const {
+        return getPath<GeometryPath>();
+    }
+    
+    bool hasVisualPath() const override { return getPath().isVisualPath(); };
 
     //--------------------------------------------------------------------------
     //  <B> State dependent values </B>
@@ -131,26 +164,19 @@ public:
     // COMPUTATIONS
     //--------------------------------------------------------------------------
     /** compute the moment-arm of the PathSpring about a coordinate of interest. */
-    double computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const;
+    double computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const;
 
     //--------------------------------------------------------------------------
     // SCALE
     //--------------------------------------------------------------------------
-    /**
-     * Scale the PathSpring.
-     * @param s     the (SimTK::) State of system that defines the current pose
-     * @param scaleSet XYZ scale factors for all the bodies in the model
-     */
-    void preScale(const SimTK::State& s, const ScaleSet& scaleSet);
-    void scale(const SimTK::State& s, const ScaleSet& scaleSet);
-    void postScale(const SimTK::State& s, const ScaleSet& scaleSet);
+
+    /** Adjust the resting length of the path spring after the model has been
+        scaled. The `resting_length` property is multiplied by the quotient of
+        the current path length and the path length before scaling. */
+    void extendPostScale(const SimTK::State& s,
+                         const ScaleSet& scaleSet) override;
 
 protected:
-    /** Implementation of Force component virtual method */
-    void computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const override; 
-
     /** Implement ModelComponent interface. */
     void extendFinalizeFromProperties() override;
 
@@ -176,8 +202,12 @@ protected:
     }
 
 private:
-    void constructProperties() override;
-    void constructOutputs() override;
+    /**
+     * Implements the `ForceProducer` API
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
+
+    void constructProperties();
 
 //=============================================================================
 };  // END of class PathSpring

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan, Ajay Seth                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,14 +24,29 @@
  * -------------------------------------------------------------------------- */
 // INCLUDE
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <simbody/internal/MobilizedBody.h>
 
 namespace OpenSim {
 
 class Model;
-class ScaleSet;
+
+class JointFramesAreTheSame : public Exception {
+public:
+    JointFramesAreTheSame(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& sameName) :
+        Exception(file, line, func) {
+        std::string msg = "Joint '" + thisName + "' cannot connect frame '" +
+            sameName + "' to itself.";
+        addMessage(msg);
+    }
+};
+
 
 /**
 An OpenSim Joint is an OpenSim::ModelComponent which connects two PhysicalFrames
@@ -61,28 +76,31 @@ A Seth, M Sherman, P Eastman, S Delp; Nonlinear dynamics 62 (1), 291-303
 
 <b>C++ example</b>
 \code{.cpp}
-    // Define a Pin joint between ground and platform.
-    PinJoint* platformToGround = new PinJoint("PlatformToGround",
-                                              "ground", "platform");
+// Define a pin joint that attaches pendulum (an OpenSim::Body) to ground.
+PinJoint* myPin = new PinJoint("pendulumToGround", myModel.getGround(),
+                               pendulum);
 \endcode
 
 <b>Python example</b>
 \code{.py}
     # Define a ball joint between blockA and blockB.
-    abJoint  = osim.BallJoint('JointName', 'blockA', 'blockB')
+    abJoint = osim.BallJoint('JointName', blockA, blockB)
 \endcode
 
-In the case that you want to connect to an existing PhysicalFrame, like
-a Body or Ground, but not to their origins you can create
-PhysicalOffsetFrames to connect to and add them to the Joint.
+If you want to connect to an existing PhysicalFrame (e.g., a Body or Ground)
+but not to its origin, you can create and connect to a PhysicalOffsetFrame; the
+following convenience constructor does this for you:
 
 <b>C++ example</b>
 \code{.cpp}
-// Define a Pin joint between ground and platform with offsets.
-PinJoint* platformToGround = new PinJoint("PlatformToGround",
-                                          "groundOffset", "platformOffset");
-platformToGround.append_frames(new PhysicalOffsetFrame("groundOffset", ...));
-platformToGround.append_frames(new PhysicalOffsetFrame("platformOffset", ...));
+// Define a pin joint that attaches the end of pendulum to the ground origin.
+PinJoint* myPin = new PinJoint("pendulumToGround",
+                               myModel.getGround(),   //parent PhysicalFrame
+                               Vec3(0),               //location in parent
+                               Vec3(0),               //orientation in parent
+                               pendulum,              //child PhysicalFrame
+                               Vec3(0,-length/2.,0),  //location in child
+                               Vec3(0));              //orientation in child
 \endcode
 
 
@@ -95,115 +113,91 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_UNNAMED_PROPERTY(CoordinateSet,
-        "Set holding the generalized coordinates (q's) that parameterize this joint." );
+    OpenSim_DECLARE_LIST_PROPERTY(coordinates, Coordinate,
+        "List containing the generalized coordinates (q's) that parameterize "
+        "this joint.");
 
-    OpenSim_DECLARE_PROPERTY(reverse, bool,
-        "Advanced option. Specify the direction of the joint in the multibody tree: "
-        "parent->child (forward, reverse is false) or child->parent (reverse is true) "
-        "NOTE: the Joint transform and its coordinates maintain a parent->child "
-        "sense, even if the Joint is reversed.");
+    OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalOffsetFrame,
+        "Physical offset frames owned by the Joint that are typically used to "
+        "satisfy the owning Joint's parent and child frame connections "
+        "(sockets). PhysicalOffsetFrames are often used to describe the fixed "
+        "transformation from a Body's origin to another location of interest "
+        "on the Body (e.g., the joint center). When the joint is deleted, so "
+        "are the PhysicalOffsetFrame components in this list.");
 
-    OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalFrame,
-        "Physical frames owned by the Joint that are used to satisfy the Joint's "
-        "parent and child frame connections. For examples, PhysicalOffsetFrames "
-        "are often used to offset the connection from a Body's origin to another "
-        "location of interest (e.g. the joint center). That offset can be added "
-        "to the Joint. When the joint is delete so are the Frames in this list.");
+//==============================================================================
+// SOCKETS
+//==============================================================================
+    OpenSim_DECLARE_SOCKET(parent_frame, PhysicalFrame,
+        "The parent frame for the joint.");
+    OpenSim_DECLARE_SOCKET(child_frame, PhysicalFrame,
+        "The child frame for the joint.");
 
-//=============================================================================
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(power, double, calcPower, SimTK::Stage::Acceleration);
+    OpenSim_DECLARE_OUTPUT(reaction_on_parent, SimTK::SpatialVec,
+        calcReactionOnParentExpressedInGround, SimTK::Stage::Acceleration);
+    OpenSim_DECLARE_OUTPUT(reaction_on_child, SimTK::SpatialVec,
+        calcReactionOnChildExpressedInGround, SimTK::Stage::Acceleration);
+
+//==============================================================================
 // METHODS
-//=============================================================================
-    /** Default Constructor. Create an unnamed Joint with parent and child
-        frame connectors that are unsatisfied. */
+//==============================================================================
+    /** Default constructor. Create an unnamed Joint with parent and child frame
+        sockets that are unsatisfied. */
     Joint();
 
-    /** Convenience Constructor */
-    /** Create a Joint where the parent and child frames are specified by name.
-        Also an advanced option to reverse the direction in the multibody tree,
-        that is child to parent, but the coordinates remain as if defined parent
-        to child. This can be useful for defining models from the ground up, yet
-        maintaining the convention of the knee, for example, of the relative
-        motion of the tibia (child) w.r.t. the femur (parent).
+    /** Convenience constructor. Create a Joint by specifying the parent and
+        child frames.
 
-        @param[in] name     the name associated with this joint (should be
-                            unique from other joints in the same model)
-        @param[in] parentName   the name of the parent PhysicalFrame for the joint
-        @param[in] childName    the name of the child PhysicalFrame for the joint
-        @param[in] reverse  Advanced optional flag (bool) specifying the 
-                            direction of the Joint in the multibody tree. 
-                            Default is false (that is, parent to child).
-        */
-    Joint( const std::string& name,
-           const std::string& parentName,
-           const std::string& childName,
-           bool reverse = false);
-
-    /** Backwards compatible Convenience Constructor 
-    Construct a Joint where the parent and child are specified as well as the
-    joint frames in the child and parent bodies in terms of their location
-    and orientation in their respective physical frames. Also an advanced option
-    to specify the tree structure to be constructed in the reverse direction,
-    that is child to parent, but the coordinates remain as if defined parent
-    to child. This can be useful for defining models from the ground up, yet
-    maintaining the convention of the knee, for example, of the relative
-    motion of the tibia (child) w.r.t. the femur (parent).
-
-    @param[in] name     the name associated with this joint (should be
-                        unique from other joints in the same model)
-    @param[in] parent   the parent PhysicalFrame that joint connects to
-    @param[in] locationInParent    Vec3 of the location of the joint in the
-                                   parent frame.
-    @param[in] orientationInParent Vec3 of the XYZ body-fixed Euler angles
-                                   of the joint frame orientation in the
-                                   parent frame.
-    @param[in] child    the child PhysicalFrame that joint connects to
-    @param[in] locationInChild     Vec3 of the location of the joint in the
-                                   child physical frame.
-    @param[in] orientationInChild  Vec3 of the XYZ body-fixed Euler angles
-                                   of the joint frame orientation in the
-                                   child physical frame.
-    @param[in] reverse  Advanced optional flag (bool) specifying the
-                        direction of the Joint in the multibody tree.
-                        Default is false (that is, forward).
+        @param[in] name    the name associated with this joint (should be unique
+                           from other joints in the same model)
+        @param[in] parent  the parent PhysicalFrame to which this joint connects
+        @param[in] child   the child PhysicalFrame to which this joint connects
     */
-    Joint(const std::string& name,
-        const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent,
-        const SimTK::Vec3& orientationInParent,
-        const PhysicalFrame& child,
-        const SimTK::Vec3& locationInChild,
-        const SimTK::Vec3& orientationInChild,
-        bool reverse);
+    Joint(const std::string&    name,
+          const PhysicalFrame&  parent,
+          const PhysicalFrame&  child);
 
-    /** Same as above, without the option to reverse the joint. */
-    Joint(const std::string& name,
-        const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent,
-        const SimTK::Vec3& orientationInParent,
-        const PhysicalFrame& child,
-        const SimTK::Vec3& locationInChild,
-        const SimTK::Vec3& orientationInChild) :
-            Joint(name, parent, locationInParent, orientationInParent,
-                        child, locationInChild, orientationInChild, false) {}
+    /** Backwards-compatible convenience constructor. Construct a Joint where
+        the parent and child frames are specified as well as the location and
+        orientation of the parent and child frames in their respective physical
+        frames.
+
+        @param[in] name    the name associated with this joint (should be unique
+                           from other joints in the same model)
+        @param[in] parent  the parent PhysicalFrame to which this joint connects
+        @param[in] locationInParent     Vec3 of the location of the joint in the
+                                        parent frame.
+        @param[in] orientationInParent  Vec3 of the XYZ body-fixed Euler angles
+                                        of the joint frame orientation in the
+                                        parent frame.
+        @param[in] child   the child PhysicalFrame to which this joint connects
+        @param[in] locationInChild      Vec3 of the location of the joint in the
+                                        child frame.
+        @param[in] orientationInChild   Vec3 of the XYZ body-fixed Euler angles
+                                        of the joint frame orientation in the
+                                        child frame.
+    */
+    Joint(const std::string&    name,
+          const PhysicalFrame&  parent,
+          const SimTK::Vec3&    locationInParent,
+          const SimTK::Vec3&    orientationInParent,
+          const PhysicalFrame&  child,
+          const SimTK::Vec3&    locationInChild,
+          const SimTK::Vec3&    orientationInChild);
 
     virtual ~Joint();
 
     // GET & SET
-
-    void setChildFrameName(const std::string& name);
-    const std::string& getChildFrameName() const;
-
     /**
      * Get the child joint frame.
      *
      * @return const PhysicalFrame reference.
      */
     const PhysicalFrame& getChildFrame() const;
-
-    // Relating to the parent joint frame
-    void setParentFrameName(const std::string& aName);
-    const std::string& getParentFrameName() const;
 
     /**
      * Get the parent frame to which this joint attaches.
@@ -212,16 +206,29 @@ public:
      */
     const OpenSim::PhysicalFrame& getParentFrame() const;
 
-    // Coordinate Set
-    const CoordinateSet& getCoordinateSet() const {return get_CoordinateSet();}
+    /** Convenience method to get a const reference to the Coordinate associated
+        with a single-degree-of-freedom Joint. If the Joint has more than one
+        Coordinate, you must use get_coordinates() or provide the appropriate
+        argument to the getCoordinate() method defined in the derived class. */
+    const Coordinate& getCoordinate() const;
 
-    bool getReverse() const { return get_reverse(); }
+    /** Convenience method to get a writable reference to the Coordinate
+        associated with a single-degree-of-freedom Joint. If the Joint has more
+        than one Coordinate, you must use upd_coordinates() or provide the
+        appropriate argument to the updCoordinate() method defined in the
+        derived class. */
+    Coordinate& updCoordinate();
 
-    //Model building
-    int numCoordinates() const { return get_CoordinateSet().getSize(); }
+    // Model building
+    int numCoordinates() const { return getProperty_coordinates().size(); }
 
     // Utility
     bool isCoordinateUsed(const Coordinate& aCoordinate) const;
+
+    /** Add a frame to the *frames* property in this Joint. The frame is
+     * adopted, and should have been dynamically allocated.
+     * Use this function instead of append_frames(). */
+    void addFrame(PhysicalOffsetFrame* frame);
 
     // Computation
     /** Given some system mobility (generalized) forces, calculate the 
@@ -236,17 +243,38 @@ public:
     comprised of multiple mobilizers and/or constraints, should override this 
     method and account for multiple internal components.
 
-    @param s containing the generalized coordinate and speed values 
+    @param state containing the generalized coordinate and speed values 
     @param mobilityForces for the system as computed by inverse dynamics, 
                           for example 
     @return spatial force, FB_G, acting on the body connected by this joint at 
     its location B, expressed in ground.  */
     SimTK::SpatialVec 
-    calcEquivalentSpatialForce(const SimTK::State &s, 
+        calcEquivalentSpatialForce(const SimTK::State& state, 
                                const SimTK::Vector &mobilityForces) const;
+    
+    /// Joint Reaction forces 
+    /** Calculate the joint reaction force and moment acting on the parent frame
+        and expressed in Ground. 
+    @param[in]  state containing the generalized coordinate and speed values 
+    @return     SpatialVec of reaction force, RP_G, acting on parent frame, P,
+                and expressed in ground, G.  */
+    SimTK::SpatialVec
+        calcReactionOnParentExpressedInGround(const SimTK::State &state) const {
+        return getChildFrame().getMobilizedBody()
+            .findMobilizerReactionOnParentAtFInGround(state);
+    }
+    /** Calculate the joint reaction force and moment acting on the child frame
+        and expressed in Ground.
+    @param[in]  state containing the generalized coordinate and speed values 
+    @return     SpatialVec of reaction force, RP_G, acting on child frame, C,
+                and expressed in ground, G.  */
+    SimTK::SpatialVec
+        calcReactionOnChildExpressedInGround(const SimTK::State &state) const {
+        return getChildFrame().getMobilizedBody()
+            .findMobilizerReactionOnBodyAtMInGround(state);
+    }
 
-
-    /** Joints in general do not contribute power since the reaction space 
+    /** Joints in general do not contribute power since the reaction space
         forces are orthogonal to the mobility space. However, when joint motion 
         is prescribed, the internal forces that move the joint will do work. In 
         that case, the power is non-zero and the supplied SimTK::State
@@ -254,42 +282,53 @@ public:
         constraint forces are available. */
     virtual double calcPower(const SimTK::State &s) const;
 
-    // SCALE
-    /**
-    * Scale a joint based on XYZ scale factors for PhysicalFrames.
-    * Generic behavior is to scale the locations of parent and child offsets
-    * according to scale factors of the physical frame upon which they are located.
-    *
-    * Joint subclasses should invoke this method before scaling joint specific
-    * properties
-    *
-    * @param aScaleSet Set of XYZ scale factors for the bodies.
-    */
-    virtual void scale(const ScaleSet& aScaleSet);
-
-protected:
-    /** A CoordinateIndex member is created by constructCoordinate(). E.g.:  
-    \code{.cpp}
-    class My2DofJoint::Joint {
-        CoordinateIndex dof1{ constructCoordinate(Coordinate::MotionType::Rotational) };
-        CoordinateIndex dof2{ constructCoordinate(Coordinate::MotionType::Translational) };
-        ...
-    }
-    \endcode
-    */
 #ifndef SWIG
     /// @class CoordinateIndex
     /// Unique integer type for local Coordinate indexing
     SimTK_DEFINE_UNIQUE_INDEX_TYPE(CoordinateIndex);
 
-    /** Utility for derived Joints to add Coordinate(s) to reflect its DOFs.
-    Derived Joints must construct as many Coordinates as reflected by the
-    Mobilizer Qs. */
-    CoordinateIndex constructCoordinate(Coordinate::MotionType mt); 
+    /** Get the MotionType for a Coordinate that this Joint has enabled by
+        its CoordinateIndex (in the Joints list of Coordinates). */
+    Coordinate::MotionType getMotionType(CoordinateIndex cix) const;
+#endif //SWIG
+protected:
+    /** A CoordinateIndex member is created by constructCoordinate(). E.g.:
+    \code{.cpp}
+    class My2DofJoint : public Joint {
+    public:
+        enum class Coord: unsigned {
+            RotationX,
+            TranslationX
+        };
+
+    private:
+        CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational,
+                            static_cast<unsigned>(Coord::RotationX)) };
+        CoordinateIndex tx{ constructCoordinate(Coordinate::MotionType::Translational,
+                            static_cast<unsigned>(Coord::TranslationX)) };
+        ...
+    };
+    \endcode
+    */
+#ifndef SWIG
+    /** Utility for a derived Joint to add the Coordinates that correspond to
+    the motion it permits. Derived Joints must construct as many Coordinates as
+    are reflected by the underlying Mobilizer Qs. The index of the corresponding
+    enumeration (enum) is required at construction to ensure the Joint's
+    internal list of Coordinates is consistent with its interface; an exception
+    is thrown if the Coordinates are not constructed in the same order as the
+    enums have been defined. */
+    CoordinateIndex constructCoordinate(Coordinate::MotionType mt,
+                                        unsigned idx);
+
+    // This is only intended to allow the CustomJoint to set the MotionTypes
+    // of its Coordinates
+    void setMotionType(CoordinateIndex cix, Coordinate::MotionType mt);
 #endif //SWIG
 
     // build Joint transforms from properties
     void extendFinalizeFromProperties() override;
+    void extendConnectToModel(Model& model) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
@@ -307,9 +346,12 @@ protected:
     /** Updating XML formating to latest revision */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 
-    /** Calculate the equivalent spatial force, FB_G, acting on a mobilized body specified by index
-       acting at its mobilizer frame B, expressed in ground.  */
-    SimTK::SpatialVec calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s, const SimTK::MobilizedBodyIndex mbx, const SimTK::Vector &mobilityForces) const;
+    /** Calculate the equivalent spatial force, FB_G, acting on a mobilized body
+        specified by index acting at its mobilizer frame B, expressed in ground. */
+    SimTK::SpatialVec 
+        calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s,
+            const SimTK::MobilizedBodyIndex mbx, 
+            const SimTK::Vector &mobilityForces) const;
 
     /** Return the equivalent (internal) SimTK::Rigid::Body for the parent/child
         OpenSim::Body. Not valid until after extendAddToSystem on the Body has been called.*/
@@ -339,7 +381,7 @@ protected:
         // if the joint is reversed then flip the underlying tree representation
         // of inboard and outboard bodies, although the joint direction will be
         // preserved, the inboard must exist first.
-        if (get_reverse()){
+        if (isReversed){
             inb = getChildFrame().getMobilizedBody();
             SimTK::Transform swap = inbX;
             inbX = outbX;
@@ -405,15 +447,9 @@ protected:
                           const PhysicalFrame* physicalFrame = nullptr) const {
         // CREATE MOBILIZED BODY
         SimTK::MobilizedBody::Direction dir =
-            SimTK::MobilizedBody::Direction(get_reverse());
+            SimTK::MobilizedBody::Direction(isReversed);
 
         T simtkBody(inboard, inboardTransform, outboard, outboardTransform, dir);
-
-        const CoordinateSet& coords = get_CoordinateSet();
-        int nc = numCoordinates();
-
-        SimTK_ASSERT1(nc == coords.getSize(), "%s list of coordinates does not match number of mobilities.",
-                      getConcreteClassName().c_str());
 
         startingCoordinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,
             physicalFrame,
@@ -443,11 +479,7 @@ private:
 
     /** Construct the infrastructure of the Joint component.
         Begin with its properties. */
-    void constructProperties() override;
-
-    /** Next define its structural dependencies on other components.
-        These will be the parent and child frames of the Joint.*/
-    void constructConnectors() override;
+    void constructProperties();
 
     /** Utility method for accessing the number of mobilities provided by
         an underlying MobilizedBody */
@@ -457,10 +489,10 @@ private:
         return mobod.getDefaultQ().size();
     }
 
-    // Only Model's connectToModel can access private
-    // members of the Joint to set Joint connected to a slave body
-    // of a master body.
-    friend Model; // void Model::extendConnectToModel(Model &model);
+    // Only Model::extendConnectToModel() should access private members
+    // of the Joint to set whether the Joint is connected to a slave body.
+    // See Model::createMultibodyTree();
+    friend Model;
 
     void setSlaveBodyForParent(Body& slaveForParent){
         _slaveBodyForParent = slaveForParent;
@@ -470,18 +502,26 @@ private:
         _slaveBodyForChild = slaveForChild;
     }
 
-    //=========================================================================
+    //==========================================================================
     // DATA
-    //=========================================================================
+    //==========================================================================
+protected:
+    // Specifies the direction of the Joint in the multibody tree: parent->child
+    // (isReversed is false; default) or child->parent (isReversed is true). The
+    // Joint's transform and coordinates maintain a parent->child sense even if
+    // the joint is reversed.
+    bool isReversed = false;
+
+private:
     SimTK::ReferencePtr<Body> _slaveBodyForParent;
     SimTK::ReferencePtr<Body> _slaveBodyForChild;
 
-    friend class JointSet;
+    SimTK::Array_<Coordinate::MotionType> _motionTypes;
 
-//=============================================================================
+//==============================================================================
 };  // END of class Joint
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 // Specializations
 template <>
@@ -526,6 +566,17 @@ inline int Joint::getNumMobilities(const SimTK::MobilizedBody::Free& mobod) cons
     return 6;
 }
 
+class JointHasNoCoordinates : public Exception {
+public:
+    JointHasNoCoordinates(const std::string& file,
+                          size_t line,
+                          const std::string& func) :
+        Exception(file, line, func) {
+        std::string mesg = "The Joint has no Coordinates.";
+
+        addMessage(mesg);
+    }
+};
 
 } // end of namespace OpenSim
 

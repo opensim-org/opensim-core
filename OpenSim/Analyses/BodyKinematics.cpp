@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,14 +25,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include "BodyKinematics.h"
-
-
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -190,25 +184,29 @@ constructDescription()
     char descrip[1024];
     char tmp[MAXLEN];
 
-    strcpy(descrip,"\nThis file contains the kinematics ");
-    strcat(descrip,"(positions and orientations,\n");
-    strcat(descrip,"velocities and angular velocities, or");
-    strcat(descrip," accelerations and angular accelerations)\n");
-    strcat(descrip,"of the centers of mass");
-    sprintf(tmp," of the body segments in model %s.\n",
+    strcpy(descrip, "\nThis file contains the kinematics ");
+    strcat(descrip, "(positions and orientations,\n");
+    strcat(descrip, "velocities and angular velocities, or");
+    strcat(descrip, " accelerations and angular accelerations)\n");
+    strcat(descrip, "of the centers of mass");
+    snprintf(tmp, MAXLEN, " of the body segments in model %s.\n",
         _model->getName().c_str());
-    strcat(descrip,tmp);
-    strcat(descrip,"\nBody segment orientations are described using");
-    strcat(descrip," body-fixed X-Y-Z Euler angles.\n");
-    strcat(descrip,"\nAngular velocities and accelerations are given about");
-    strcat(descrip," the body-local axes.\n");
-    strcat(descrip,"\nUnits are S.I. units (seconds, meters, Newtons, ...)");
-    if(getInDegrees()) {
-        strcat(descrip,"\nAngles are in degrees.");
-    } else {
-        strcat(descrip,"\nAngles are in radians.");
+    strcat(descrip, tmp);
+    strcat(descrip, "\nBody segment orientations are described using");
+    strcat(descrip, " body-fixed X-Y-Z Euler angles.\n");
+    if (_expressInLocalFrame) {
+        strcat(descrip, "\nAngular velocities and accelerations are");
+        strcat(descrip, " expressed in the body-local frame.\n");
+    } 
+    else {
+        strcat(descrip, "\nAngular velocities and accelerations are");
+        strcat(descrip, " expressed in the ground frame.\n");
     }
-    strcat(descrip,"\n\n");
+    strcat(descrip, "\nUnits are S.I. units (seconds, meters, Newtons, ...)");
+    strcat(descrip, "\nIf the header above contains a line with ");
+    strcat(descrip, "'inDegrees', this indicates whether rotational values ");
+    strcat(descrip, "are in degrees (yes) or radians (no).");
+    strcat(descrip, "\n\n");
 
     setDescription(descrip);
 }
@@ -317,7 +315,10 @@ updateBodiesToRecord()
     }
     _kin.setSize(6*_bodyIndices.getSize()+(_recordCenterOfMass?3:0));
 
-    if(_kin.getSize()==0) cout << "WARNING: BodyKinematics analysis has no bodies to record kinematics for" << endl;
+    if(_kin.getSize()==0) {
+        log_warn("BodyKinematics analysis has no bodies to record kinematics "
+                 "for");
+    }
 }
 
 
@@ -384,24 +385,6 @@ getPositionStorage()
 }
 
 //-----------------------------------------------------------------------------
-// STORAGE CAPACITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the capacity increments of all storage instances.
- *
- * @param aIncrement Increment by which storage capacities will be increased
- * when storage capacities run out.
- */
-void BodyKinematics::
-setStorageCapacityIncrements(int aIncrement)
-{
-    _aStore->setCapacityIncrement(aIncrement);
-    _vStore->setCapacityIncrement(aIncrement);
-    _pStore->setCapacityIncrement(aIncrement);
-}
-
-//-----------------------------------------------------------------------------
 // ANGULAR VELOCITY IN LOCAL FRAME FLAG
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
@@ -446,7 +429,6 @@ record(const SimTK::State& s)
     // Realize to Acceleration first since we'll ask for Accelerations 
     _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
     // VARIABLES
-    double dirCos[3][3];
     SimTK::Vec3 vec,angVec;
     double Mass = 0.0;
 
@@ -460,10 +442,8 @@ record(const SimTK::State& s)
         Body& body = bs.get(_bodyIndices[i]);
         const SimTK::Vec3& com = body.get_mass_center();
         // GET POSITIONS AND EULER ANGLES
-        _model->getSimbodyEngine().getPosition(s, body,com,vec);
-        _model->getSimbodyEngine().getDirectionCosines(s, body,dirCos);
-        _model->getSimbodyEngine().convertDirectionCosinesToAngles(dirCos,
-            &angVec[0],&angVec[1],&angVec[2]);
+        vec = body.findStationLocationInGround(s, com);
+        angVec = body.getTransformInGround(s).R().convertRotationToBodyFixedXYZ();
 
         // CONVERT TO DEGREES?
         if(getInDegrees()) {
@@ -483,7 +463,7 @@ record(const SimTK::State& s)
         for(int i=0;i<bs.getSize();i++) {
             Body& body = bs.get(i);
             const SimTK::Vec3& com = body.get_mass_center();
-            _model->getSimbodyEngine().getPosition(s, body,com,vec);
+            vec = body.findStationLocationInGround(s, com);
             // ADD TO WHOLE BODY MASS
             Mass += body.get_mass();
             rP[0] += body.get_mass() * vec[0];
@@ -506,12 +486,11 @@ record(const SimTK::State& s)
         Body& body = bs.get(_bodyIndices[i]);
         const SimTK::Vec3& com = body.get_mass_center();
         // GET VELOCITIES AND ANGULAR VELOCITIES
-        _model->getSimbodyEngine().getVelocity(s, body,com,vec);
-        if(_expressInLocalFrame) {
-            _model->getSimbodyEngine().transform(s, ground,vec,body,vec);
-            _model->getSimbodyEngine().getAngularVelocityBodyLocal(s, body,angVec);
-        } else {
-            _model->getSimbodyEngine().getAngularVelocity(s, body,angVec);
+        vec = body.findStationVelocityInGround(s, com);
+        angVec = body.getVelocityInGround(s)[0];
+        if (_expressInLocalFrame) {
+            vec = ground.expressVectorInAnotherFrame(s, vec, body);
+            angVec = ground.expressVectorInAnotherFrame(s, angVec, body);
         }
 
         // CONVERT TO DEGREES?
@@ -532,7 +511,7 @@ record(const SimTK::State& s)
         for(int i=0;i<bs.getSize();i++) {
             Body& body = bs.get(i);
             const SimTK::Vec3& com = body.get_mass_center();
-            _model->getSimbodyEngine().getVelocity(s, body,com,vec);
+            vec = body.findStationVelocityInGround(s, com);
             rV[0] += body.get_mass() * vec[0];
             rV[1] += body.get_mass() * vec[1];
             rV[2] += body.get_mass() * vec[2];
@@ -554,12 +533,11 @@ record(const SimTK::State& s)
         const SimTK::Vec3& com = body.get_mass_center();
 
         // GET ACCELERATIONS AND ANGULAR ACCELERATIONS
-        _model->getSimbodyEngine().getAcceleration(s, body,com,vec);
+        vec = body.findStationAccelerationInGround(s, com);
+        angVec = body.getAccelerationInGround(s)[0];
         if(_expressInLocalFrame) {
-            _model->getSimbodyEngine().transform(s, ground,vec,body,vec);
-            _model->getSimbodyEngine().getAngularAccelerationBodyLocal(s, body,angVec);
-        } else {
-            _model->getSimbodyEngine().getAngularAcceleration(s, body,angVec);
+            vec = ground.expressVectorInAnotherFrame(s, vec, body);
+            angVec = ground.expressVectorInAnotherFrame(s, angVec, body);
         }
 
         // CONVERT TO DEGREES?
@@ -580,7 +558,7 @@ record(const SimTK::State& s)
         for(int i=0;i<bs.getSize();i++) {
             Body& body = bs.get(i);
             const SimTK::Vec3& com = body.get_mass_center();
-            _model->getSimbodyEngine().getAcceleration(s, body,com,vec);
+            vec = body.findStationAccelerationInGround(s, com);
             rA[0] += body.get_mass() * vec[0];
             rA[1] += body.get_mass() * vec[1];
             rA[2] += body.get_mass() * vec[2];
@@ -615,7 +593,7 @@ record(const SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int BodyKinematics::
-begin(SimTK::State& s )
+begin(const SimTK::State& s )
 {
     if(!proceed()) return(0);
 
@@ -673,7 +651,7 @@ step(const SimTK::State& s, int stepNumber)
  * @return -1 on error, 0 otherwise.
  */
 int BodyKinematics::
-end(SimTK::State& s )
+end(const SimTK::State&s )
 {
     if(!proceed()) return(0);
 
@@ -710,6 +688,13 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
     string suffix;
     if(_expressInLocalFrame) suffix = "_bodyLocal";
     else suffix = "_global";
+
+    // Set the file headers just before printing in case the flag
+    // _expressInLocalFrame has changed or inDegrees
+    constructDescription();
+    _aStore->setInDegrees(getInDegrees());
+    _vStore->setInDegrees(getInDegrees());
+    _pStore->setInDegrees(getInDegrees());
 
     // ACCELERATIONS
     Storage::printResult(_aStore,aBaseName+"_"+getName()+"_acc"+suffix,aDir,aDT,aExtension);

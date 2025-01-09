@@ -9,7 +9,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org/home/simbody.  *
  *                                                                            *
- * Portions copyright (c) 2005-12 Stanford University and the Authors.        *
+ * Portions Copyright (c) 2005-2017 Stanford University and the Authors.      *
  * Authors: Michael Sherman                                                   *
  * Contributors: Peter Eastman                                                *
  *                                                                            *
@@ -727,6 +727,7 @@ public:
     template <class EE> Vec& operator-=(const EE& e) {return scalarMinusEq(e);}
     template <class EE> Vec& operator*=(const EE& e) {return scalarTimesEq(e);}
     template <class EE> Vec& operator/=(const EE& e) {return scalarDivideEq(e);}
+#endif
     // Generalized element assignment & computed assignment methods. These will work
     // for any assignment-compatible element, not just scalars.
     template <class EE> Vec& scalarEq(const EE& ee)
@@ -745,7 +746,6 @@ public:
       { for(int i=0;i<M;++i) d[i*STRIDE] /= ee; return *this; }
     template <class EE> Vec& scalarDivideEqFromLeft(const EE& ee)
       { for(int i=0;i<M;++i) d[i*STRIDE] = ee / d[i*STRIDE]; return *this; }
-#endif
 
     /** Set every scalar in this %Vec to NaN; this is the default initial
     value in Debug builds, but not in Release. **/

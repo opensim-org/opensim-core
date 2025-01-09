@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,6 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "FiberForceLengthCurve.h"
+#include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -213,15 +214,26 @@ void FiberForceLengthCurve::setOptionalProperties(double aStiffnessAtLowForce,
 //==============================================================================
 double FiberForceLengthCurve::calcValue(double normFiberLength) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "FiberForceLengthCurve: Curve is not up-to-date with its properties");
     return m_curve.calcValue(normFiberLength);
+}
+
+SmoothSegmentedFunction::ValueAndDerivative FiberForceLengthCurve::
+    calcValueAndDerivative(double normFiberLength) const
+{
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
+        "FiberForceLengthCurve: Curve is not up-to-date with its properties");
+    return m_curve.calcValueAndFirstDerivative(normFiberLength);
 }
 
 double FiberForceLengthCurve::calcDerivative(double normFiberLength,
                                              int order) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "FiberForceLengthCurve: Curve is not up-to-date with its properties");
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2,
         "FiberForceLengthCurve::calcDerivative",
@@ -230,9 +242,17 @@ double FiberForceLengthCurve::calcDerivative(double normFiberLength,
     return m_curve.calcDerivative(normFiberLength,order);
 }
 
+double FiberForceLengthCurve::
+    calcDerivative(const std::vector<int>& derivComponents,
+                   const SimTK::Vector& x) const
+{
+    return m_curve.calcDerivative(derivComponents, x);
+}
+
 double FiberForceLengthCurve::calcIntegral(double normFiberLength) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "FiberForceLengthCurve: Curve is not up-to-date with its properties");
 
     if(!m_curve.isIntegralAvailable()) {
@@ -246,7 +266,8 @@ double FiberForceLengthCurve::calcIntegral(double normFiberLength) const
 
 SimTK::Vec2 FiberForceLengthCurve::getCurveDomain() const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "FiberForceLengthCurve: Curve is not up-to-date with its properties");
     return m_curve.getCurveDomain();
 }
@@ -289,7 +310,7 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
     double prevErr  = 0;
     double errStart = err;
     double errMin   = 0;
-    double solMin   = 0;
+    // double solMin   = 0;
 
     bool flag_improvement = false;
     bool flag_Newton      = false;
@@ -297,7 +318,6 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
     int maxIter   = 20;
     int iter      = 0;
     int localIter = 0;
-    int evalIter  = 0;
 
     while(iter < maxIter && abs(err) > relTol) {
         flag_improvement = false;
@@ -381,8 +401,6 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
                 flag_Newton = false;
             }
         }
-
-        evalIter += localIter;
 
         step = step/2.0;
         iter++;

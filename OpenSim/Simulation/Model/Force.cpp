@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,7 +23,6 @@
 
 #include "Force.h"
 #include "Model.h"
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/ForceAdapter.h>
 
 
@@ -57,7 +56,47 @@ void Force::setNull()
 // Define properties.
 void Force::constructProperties()
 {
-    constructProperty_isDisabled(false);
+    constructProperty_appliesForce(true);
+}
+
+void
+Force::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber) {
+    if(versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30509) {
+            // Rename property 'isDisabled' to 'appliesForce' and
+            // negate the contained value.
+            std::string oldName{ "isDisabled" };
+            std::string newName{ "appliesForce" };
+            if (node.hasElement(oldName)) {
+                auto elem = node.getRequiredElement(oldName);
+                bool isDisabled = false;
+                elem.getValue().tryConvertToBool(isDisabled);
+
+                // now update tag name to 'appliesForce'
+                elem.setElementTag(newName);
+                // update its value to be the opposite of 'isDisabled'
+                elem.setValue(SimTK::String(!isDisabled));
+            }
+        }
+        if (versionNumber < 40500) {
+            // In version 40500, the XML syntax for components that own 
+            // GeometryPath objects (PathActuator, PathSpring, Ligament,
+            // and Blankevoort1991Ligament) changed: the 'GeometryPath` unnamed
+            // property was replaced with the named property 'path', which is of
+            // type 'AbstractGeometryPath'. Since 'path' is still a one object property,
+            // the property will still be serialized using the concrete type
+            // (e.g., 'GeometryPath') and with name attribute set to 'path'.
+            // Therefore, we can simply update the name attribute of any
+            // existing 'GeometryPath' nodes to 'path'.
+            SimTK::Xml::element_iterator geometryPathNode =
+                    node.element_begin("GeometryPath");
+            if (geometryPathNode != node.element_end()) {
+                geometryPathNode->setAttributeValue("name", "path");
+            }
+        }
+    }
+
+    Super::updateFromXMLNode(node, versionNumber);
 }
 
 // Create an underlying SimTK::Force to represent the OpenSim::Force in the 
@@ -82,47 +121,47 @@ void Force::extendInitStateFromProperties(SimTK::State& s) const
     SimTK::Force& simForce = _model->updForceSubsystem().updForce(_index);
 
     // Otherwise we have to change the status of the constraint
-    if(get_isDisabled())
-        simForce.disable(s);
-    else
+    if(get_appliesForce())
         simForce.enable(s);
-
+    else
+        simForce.disable(s);
 }
 
 void Force::extendSetPropertiesFromState(const SimTK::State& state)
 {
     Super::extendSetPropertiesFromState(state);
 
-    set_isDisabled(isDisabled(state));
+    set_appliesForce(appliesForce(state));
 }
 
 
 //_____________________________________________________________________________
 /**
- * Set whether or not this Force is disabled.
- * Simbody multibody system instance is realized every time the isDisabled
+ * Set whether or not this Force is applied.
+ * Simbody multibody system instance is realized every time the appliesForce
  * changes, BUT multiple sets to the same value have no cost.
  *
- * @param isDisabled If true the force is disabled; if false the Force is enabled.
+ * @param applyForce If true the force is applied (or enabled).
+                     If false the Force is not applied (or disabled).
  */
-void Force::setDisabled(SimTK::State& s, bool isDisabled) const
+void Force::setAppliesForce(SimTK::State& s, bool applyForce) const
 {
     if(_index.isValid()){
         SimTK::Force& simtkForce = _model->updForceSubsystem().updForce(_index);
-        if(isDisabled)
-            simtkForce.disable(s);
-        else
+        if(applyForce)
             simtkForce.enable(s);
+        else
+            simtkForce.disable(s);
     }
 }
 
-bool Force::isDisabled(const SimTK::State& s) const
+bool Force::appliesForce(const SimTK::State& s) const
 {
     if(_index.isValid()){
         SimTK::Force& simtkForce = _model->updForceSubsystem().updForce(_index);
-        return simtkForce.isDisabled(s);
+        return !simtkForce.isDisabled(s);
     }
-    return get_isDisabled();
+    return get_appliesForce();
 }
 
 //-----------------------------------------------------------------------------
@@ -137,25 +176,32 @@ double Force::computePotentialEnergy(const SimTK::State& state) const
 //-----------------------------------------------------------------------------
 // METHODS TO APPLY FORCES AND TORQUES
 //-----------------------------------------------------------------------------
-void Force::applyForceToPoint(const SimTK::State &s, const PhysicalFrame &aBody, const Vec3& aPoint, 
-                                    const Vec3& aForce, Vector_<SpatialVec> &bodyForces) const
+void Force::applyForceToPoint(const SimTK::State &s, const PhysicalFrame &frame,
+                              const Vec3& point, const Vec3& forceInG, 
+                              Vector_<SpatialVec> &bodyForces) const
 {
-    _model->getMatterSubsystem().addInStationForce(s, aBody.getMobilizedBodyIndex(),
-                                                   aPoint, aForce, bodyForces);
+    // get the point expressed in frame, F, expressed in the base, B.
+    auto p_B = frame.findTransformInBaseFrame()*point;
+
+    _model->getMatterSubsystem().addInStationForce(s, 
+                                    frame.getMobilizedBodyIndex(),
+                                    p_B, forceInG, bodyForces);
 }
 
-void Force::applyTorque(const SimTK::State &s, const PhysicalFrame& aBody, 
-                        const Vec3& aTorque, Vector_<SpatialVec> &bodyForces) const
+void Force::applyTorque(const SimTK::State &s, const PhysicalFrame& frame, 
+                        const Vec3& torque, Vector_<SpatialVec> &bodyForces) const
 {
-    _model->getMatterSubsystem().addInBodyTorque(s, aBody.getMobilizedBodyIndex(),
-                                                 aTorque, bodyForces);
+    _model->getMatterSubsystem().addInBodyTorque(s, frame.getMobilizedBodyIndex(),
+                                                 torque, bodyForces);
 }
 
-void Force::applyGeneralizedForce(const SimTK::State &s, const Coordinate &aCoord, 
-                                        double aForce, Vector &mobilityForces) const
+void Force::applyGeneralizedForce(const SimTK::State &s, const Coordinate &coord, 
+                                        double force, Vector &mobilityForces) const
 {
-    _model->getMatterSubsystem().addInMobilityForce(s, SimTK::MobilizedBodyIndex(aCoord.getBodyIndex()), 
-                                    SimTK::MobilizerUIndex(aCoord.getMobilizerQIndex()), aForce, mobilityForces);
+    _model->getMatterSubsystem().addInMobilityForce(s, 
+                                 SimTK::MobilizedBodyIndex(coord.getBodyIndex()), 
+                                 SimTK::MobilizerUIndex(coord.getMobilizerQIndex()),
+                                 force, mobilityForces);
 }
 
 

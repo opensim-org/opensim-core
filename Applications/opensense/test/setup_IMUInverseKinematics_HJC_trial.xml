@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40000">
+	<IMUInverseKinematicsTool name="track_HJC_trial">
+		<!--The accuracy of the solution in absolute terms, i.e. the number of significant digits to which the solution can be trusted. Default 1e-6.-->
+		<accuracy>9.9999999999999995e-07</accuracy>
+		<!-- Space fixed Euler angles (XYZ order) from IMU Space to OpenSim. Default to (0, 0, 0). -->
+		<sensor_to_opensim_rotations>-1.5707963 0 0</sensor_to_opensim_rotations>
+		<!--The relative weighting of kinematic constraint errors. By default this is Infinity, which means constraints are strictly enforced as part of the optimization and are not appended to the objective (cost) function. Any other non-zero positive scalar is the penalty factor for constraint violations.-->
+		<constraint_weight>Inf</constraint_weight>
+		<!--The time range for the study.-->
+		<time_range>417 431</time_range>
+		<!--Name/path to the xml .osim file used to load a model to be analyzed.-->
+		<model_file></model_file>
+		<!--Name/path to a .trc or .sto file of type Vec3 of marker data.-->
+		<marker_file></marker_file>
+		<!--Name/path to a .sto file of sensor frame orientations as quaternions.-->
+		<orientations_file>MT_012005D6_009-quaternions_RHJCSwinger.sto</orientations_file>
+		<!--Name of the directory where results are written. Be default this is the directory in which the setup file is be  executed.-->
+		<results_directory></results_directory>
+	</IMUInverseKinematicsTool>
+</OpenSimDocument>

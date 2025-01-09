@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,20 +24,15 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDES
-#include <iostream>
 #include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/JointSet.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/ConstraintSet.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
-#include <SimTKsimbody.h>
+#include "SimTKcommon/Orientation.h"
+#include "SimTKcommon/SmallMatrix.h"
+#include "SimTKcommon/basics.h"
 
 #ifdef SWIG
     #ifdef OSIMSIMULATION_API
@@ -46,17 +41,14 @@
     #endif
 #endif
 
+namespace SimTK { class State; }
+
 namespace OpenSim {
 
-class Body;
-class Constraint;
-class Coordinate;
-class Joint;
-class Body;
-class Joint;
-class Model;
 class CoordinateSet;
-class JointSet;
+class Model;
+class PhysicalFrame;
+class Storage;
 
 //=============================================================================
 //=============================================================================
@@ -117,25 +109,8 @@ public:
 #endif
 
     //--------------------------------------------------------------------------
-    // SCALING
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    virtual bool  scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass = -1.0, bool aPreserveMassDist = false);
-#endif
-
-    //--------------------------------------------------------------------------
     // KINEMATICS
     //--------------------------------------------------------------------------
-    void getPosition(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const;
-    void getVelocity(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const;
-    void getAcceleration(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rAcc) const;
-    void getDirectionCosines(const SimTK::State& s, const PhysicalFrame &aBody, double rDirCos[3][3]) const;
-    void getDirectionCosines(const SimTK::State& s, const PhysicalFrame &aBody, double *rDirCos) const;
-    void getAngularVelocity(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngVel) const;
-    void getAngularVelocityBodyLocal(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngVel) const;
-    void getAngularAcceleration(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngAcc) const;
-    void getAngularAccelerationBodyLocal(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngAcc) const;
-    SimTK::Transform getTransform(const SimTK::State& s, const PhysicalFrame &aBody) const;
 
     //--------------------------------------------------------------------------
     // LOAD ACCESS AND COMPUTATION
@@ -145,13 +120,31 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRAINTS
     //--------------------------------------------------------------------------
-    virtual void formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
-       OpenSim::Storage *&rQComplete,OpenSim::Storage *&rUComplete) const;
+    /**
+    * From a potentially partial specification of the generalized coordinates,
+    * form a complete storage of the generalized coordinates (q's) and
+    * generalized speeds (u's) in radians and radians/s respectively.
+    *
+    * @param s Used as working memory.
+    * @param aQIn Storage containing the q's or a subset of the q's.
+    * @param rQComplete Storage containing all the q's.  If q's were not
+    * in aQIn, the values are set to 0.0.  When a q is constrained, its value
+    * is altered to be consistent with the constraint.  The caller is responsible
+    * for deleting the memory associated with this storage. Units are radians.
+    * @param rUComplete Storage containing all the u's.  The generalized speeds
+    * are obtained by spline fitting the q's and differentiating the splines.
+    * When a u is constrained, its value is altered to be consistent with the
+    * constraint.  The caller is responsible for deleting the memory
+    * associated with this storage. Units are radians/s.
+    */
+    void formCompleteStorages( const SimTK::State& s, 
+        const OpenSim::Storage &aQIn,
+        OpenSim::Storage *&rQComplete,
+        OpenSim::Storage *&rUComplete) const;
 
     //--------------------------------------------------------------------------
     // EQUATIONS OF MOTION
     //--------------------------------------------------------------------------
-    void formEulerTransform(const SimTK::State& s, const PhysicalFrame &aBody, double *rE) const;
 
     //unimplemented virtual void formMassMatrix(double *rI) {};
     //unimplemented virtual void formJacobianTranslation(const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, double *rJ, const PhysicalFrame *aRefBody=NULL) const {};
@@ -161,21 +154,11 @@ public:
     //--------------------------------------------------------------------------
     // UTILITY
     //--------------------------------------------------------------------------
-    void transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aVec[3], const PhysicalFrame &aBodyTo, double rVec[3]) const;
-    void transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aVec, const PhysicalFrame &aBodyTo, SimTK::Vec3& rVec) const;
-    void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aPos[3], const PhysicalFrame &aBodyTo, double rPos[3]) const;
-    void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aPos, const PhysicalFrame &aBodyTo, SimTK::Vec3& rPos) const;
-    void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aPos[3], double rPos[3]) const;
-    void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aPos, SimTK::Vec3& rPos) const;
-
-    double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1,
-        const SimTK::Vec3& aPoint1, const PhysicalFrame& aBody2, const SimTK::Vec3& aPoint2) const;
-    double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1, 
-        const double aPoint1[3], const PhysicalFrame& aBody2, const double aPoint2[3]) const;
-
 
     void convertRadiansToDegrees(Storage &rStorage) const;
+    void convertRadiansToDegrees(TimeSeriesTable& table) const;
     void convertDegreesToRadians(Storage &rStorage) const;
+    void convertDegreesToRadians(TimeSeriesTable& table) const;
     void convertDegreesToRadians(double *aQDeg, double *rQRad) const;
     void convertRadiansToDegrees(double *aQRad, double *rQDeg) const;
 
@@ -192,8 +175,88 @@ public:
     void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double rDirCos[3][3]) const;
     void convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double *rDirCos) const;
 
+    //-------------------------------------------------------------------------
+    // DEPRECATED METHODS
+    //-------------------------------------------------------------------------
+    /** @name Deprecated */
+    // @{
+    /** <b>(Deprecated)</b> Use Frame::getPositionInGround() instead. */
+    DEPRECATED_14("use Frame::getPositionInGround() instead")
+    void getPosition(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const;
+    
+    /** <b>(Deprecated)</b> Use Frame::getVelocityInGround() instead. */
+    DEPRECATED_14("use Frame::getVelocityInGround() instead")
+    void getVelocity(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const;
+    
+    /** <b>(Deprecated)</b> Use Frame::getAccelerationInGround() instead. */
+    DEPRECATED_14("use Frame::getAccelerationInGround() instead")
+    void getAcceleration(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rAcc) const;
+    
+    /** <b>(Deprecated)</b> Use Frame::getTransformInGround().R() instead. */
+    DEPRECATED_14("use Frame::getTransformInGround().R() instead")
+    void getDirectionCosines(const SimTK::State& s, const PhysicalFrame &aBody, double rDirCos[3][3]) const;
+    
+    /** <b>(Deprecated)</b> Use Frame::getTransformInGround().R() instead. */
+    DEPRECATED_14("use Frame::getTransformInGround().R() instead")
+    void getDirectionCosines(const SimTK::State& s, const PhysicalFrame &aBody, double *rDirCos) const;
+    
+    /** <b>(Deprecated)</b> Use Frame::getVelocityInGround()[0] instead. */
+    DEPRECATED_14("use Frame::getVelocityInGround()[0] instead")
+    void getAngularVelocity(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngVel) const;
+    
+    /** <b>(Deprecated)</b> See Frame::getVelocityInGround()[0]. */
+    DEPRECATED_14("see Frame::getVelocityInGround()[0]")
+    void getAngularVelocityBodyLocal(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngVel) const;
+    
+    /** <b>(Deprecated)</b> Use Frame::getAccelerationInGround()[0] instead. */
+    DEPRECATED_14("use Frame::getAccelerationInGround()[0] instead")
+    void getAngularAcceleration(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngAcc) const;
+    
+    /** <b>(Deprecated)</b> See Frame::getAccelerationInGround()[0]. */
+    DEPRECATED_14("see Frame::getAccelerationInGround()[0]")
+    void getAngularAccelerationBodyLocal(const SimTK::State& s, const PhysicalFrame &aBody, SimTK::Vec3& rAngAcc) const;
+    
+    /** <b>(Deprecated)</b> Use Frame::getTransformInGround() instead. */
+    DEPRECATED_14("use Frame::getTransformInGround() instead")
+    SimTK::Transform getTransform(const SimTK::State& s, const PhysicalFrame &aBody) const;
+
+    /** <b>(Deprecated)</b> Use Frame::expressVectorInAnotherFrame() instead. */
+    DEPRECATED_14("use Frame::expressVectorInAnotherFrame() instead") 
+    void transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aVec[3], const PhysicalFrame &aBodyTo, double rVec[3]) const;
+    
+    /** <b>(Deprecated)</b> Use Frame::expressVectorInAnotherFrame() instead. */
+    DEPRECATED_14("use Frame::expressVectorInAnotherFrame() instead")
+    void transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aVec, const PhysicalFrame &aBodyTo, SimTK::Vec3& rVec) const;
+    
+    /** <b>(Deprecated)</b> Use Frame::findStationLocationInAnotherFrame() instead. */
+    DEPRECATED_14("use Frame::findStationLocationInAnotherFrame() instead")
+    void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aPos[3], const PhysicalFrame &aBodyTo, double rPos[3]) const;
+    
+    /** <b>(Deprecated)</b> Use Frame::findStationLocationInAnotherFrame() instead. */
+    DEPRECATED_14("use Frame::findStationLocationInAnotherFrame() instead")
+    void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aPos, const PhysicalFrame &aBodyTo, SimTK::Vec3& rPos) const;
+    
+    /** <b>(Deprecated)</b> Use Frame::findStationLocationInGround() instead. */
+    DEPRECATED_14("use Frame::findStationLocationInGround() instead")
+    void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aPos[3], double rPos[3]) const;
+    
+    /** <b>(Deprecated)</b> Use Frame::findStationLocationInGround() instead. */
+    DEPRECATED_14("use Frame::findStationLocationInGround() instead")
+    void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aPos, SimTK::Vec3& rPos) const;
+
+    /** <b>(Deprecated)</b> Use Point::calcDistanceBetween() or Frame::findStationLocationInGround() instead */
+    DEPRECATED_14("use Point::calcDistanceBetween() or Frame::findStationLocationInGround() instead")
+    double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1, const SimTK::Vec3& aPoint1, const PhysicalFrame& aBody2, const SimTK::Vec3& aPoint2) const;
+    
+    /** <b>(Deprecated)</b> Use Point::calcDistanceBetween() or Frame::findStationLocationInGround() instead */
+    DEPRECATED_14("use Point::calcDistanceBetween() or Frame::findStationLocationInGround() instead")
+    double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1, const double aPoint1[3], const PhysicalFrame& aBody2, const double aPoint2[3]) const;
+
+    // @}
+
 private:
     void scaleRotationalDofColumns(Storage &rStorage, double factor) const;
+    void scaleRotationalDofColumns(TimeSeriesTable& table, double factor) const;
 
 
 private:

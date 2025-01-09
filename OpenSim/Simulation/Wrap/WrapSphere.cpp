@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,13 +25,12 @@
 // INCLUDES
 //=============================================================================
 #include "WrapSphere.h"
-#include <OpenSim/Simulation/Model/PathPoint.h>
 #include "PathWrap.h"
 #include "WrapResult.h"
 #include "WrapMath.h"
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/Mtx.h>
-#include <sstream>
+#include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
 // STATICS
@@ -48,12 +47,9 @@ static const char* wrapTypeName = "sphere";
 /**
  * Default constructor.
  */
-WrapSphere::WrapSphere() :
-    WrapObject(),
-   _radius(_radiusProp.getValueDbl())
+WrapSphere::WrapSphere()
 {
-    setNull();
-    setupProperties();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -64,44 +60,28 @@ WrapSphere::~WrapSphere()
 {
 }
 
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aWrapSphere WrapSphere to be copied.
- */
-WrapSphere::WrapSphere(const WrapSphere& aWrapSphere) :
-    WrapObject(aWrapSphere),
-   _radius(_radiusProp.getValueDbl())
-{
-    setNull();
-    setupProperties();
-    copyData(aWrapSphere);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set the data members of this WrapSphere to their null values.
- */
-void WrapSphere::setNull()
-{
-}
-
-//_____________________________________________________________________________
-/**
  * Connect properties to local pointers.
  */
-void WrapSphere::setupProperties()
+void WrapSphere::constructProperties()
 {
-    // BASE CLASS
-    //WrapObject::setupProperties();
+    constructProperty_radius(0.05);
+}
 
-    _radiusProp.setName("radius");
-    _radiusProp.setValue(-1.0);
-    _propertySet.append(&_radiusProp);
+void WrapSphere::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
+{
+    Super::extendScale(s, scaleSet);
+
+    // Get scale factors (if an entry for the Frame's base Body exists).
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, getFrame());
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
+        return;
+
+    upd_radius() *= (scaleFactors.sum() / 3.);
 }
 
 //_____________________________________________________________________________
@@ -111,50 +91,22 @@ void WrapSphere::setupProperties()
  *
  * @param aModel OpenSim model.
  */
-void WrapSphere::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
+void WrapSphere::extendFinalizeFromProperties()
 {
     // Base class
-    Super::connectToModelAndBody(aModel, aBody);
+    Super::extendFinalizeFromProperties();
 
-   // maybe set a parent pointer, _body = aBody;
+    // maybe set a parent pointer, _body = aBody;
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_radius() < 0,
+        InvalidPropertyValue,
+        getProperty_radius().getName(),
+        "Radius cannot be less than zero");
 
-    if (_radius < 0.0)
-    {
-        string errorMessage = "Error: radius for wrapSphere " + getName() + " was either not specified, or is negative.";
-        throw Exception(errorMessage);
-    }
 /*
     Sphere* sphere = new Sphere(_radius);
     setGeometryQuadrants(sphere);
 */
-}
-
-//_____________________________________________________________________________
-/**
- * Scale the sphere by the average of the three scale factors. The base class
- * scales the origin of the sphere in the body's reference frame.
- *
- * @param aScaleFactors The XYZ scale factors.
- */
-void WrapSphere::scale(const SimTK::Vec3& aScaleFactors)
-{
-   WrapObject::scale(aScaleFactors);
-
-   _radius *= (aScaleFactors.sum() / 3.0);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one WrapSphere to another.
- *
- * @param aWrapSphere WrapSphere to be copied.
- */
-void WrapSphere::copyData(const WrapSphere& aWrapSphere)
-{
-    // BASE CLASS
-    WrapObject::copyData(aWrapSphere);
-
-    _radius = aWrapSphere._radius;
 }
 
 //_____________________________________________________________________________
@@ -179,7 +131,7 @@ const char* WrapSphere::getWrapTypeName() const
 string WrapSphere::getDimensionsString() const
 {
     stringstream dimensions;
-    dimensions << "radius " << _radius;
+    dimensions << "radius " << get_radius();
 
     return dimensions.str();
 }
@@ -192,24 +144,7 @@ string WrapSphere::getDimensionsString() const
  */
 double WrapSphere::getRadius() const
 {
-    return _radius;
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-WrapSphere& WrapSphere::operator=(const WrapSphere& aWrapSphere)
-{
-    // BASE CLASS
-    WrapObject::operator=(aWrapSphere);
-
-    return(*this);
+    return get_radius();
 }
 
 //=============================================================================
@@ -229,13 +164,16 @@ WrapSphere& WrapSphere::operator=(const WrapSphere& aWrapSphere)
 int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                  const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
-   double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2, ra[3][3], rrx[3][3], aa[3][3], mat[4][4], 
-            axis[4], vec[4], rotvec[4], angle, *r11, *r22;
+   double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2,
+            axis[4], angle, *r11, *r22;
     Vec3 ri, p2m, p1m, mp, r1n, r2n,
             p1p2, np2, hp2, r1m, r2m, y, z, n, r1a, r2a,
             r1b, r2b, r1am, r2am, r1bm, r2bm;
-            
-   int i, j, maxit, return_code = wrapped;
+    SimTK::Vec3 vec, rotvec;
+    SimTK::Mat33 ra, aa;
+    SimTK::Rotation rrx;
+
+   int i, j,/* maxit, */ return_code = wrapped;
    bool far_side_wrap = false;
    static SimTK::Vec3 origin(0,0,0);
 
@@ -252,7 +190,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
         aWrapResult.sv[i] = previousWrap.sv[i];
     }
 
-   maxit = 50;
+   //maxit = 50;
    aFlag = true;
 
     aWrapResult.wrap_pts.setSize(0);
@@ -266,12 +204,12 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     }
 
    // check that neither point is inside the radius of the sphere
-    if (Mtx::Magnitude(3, p1m) < _radius || Mtx::Magnitude(3, p2m) < _radius)
+    if (p1m.norm() < get_radius() || p2m.norm() < get_radius())
       return insideRadius;
 
-    a = Mtx::DotProduct(3, ri, ri);
-   b = -2.0 * Mtx::DotProduct(3, mp, ri);
-   c = Mtx::DotProduct(3, mp, mp) - _radius * _radius;
+   a = (~ri*ri);
+   b = -2.0 * (~mp*ri);
+   c = (~mp*mp) - get_radius() * get_radius();
    disc = b * b - 4.0 * a * c;
 
    // check if there is an intersection of p1p2 and the sphere
@@ -300,36 +238,26 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       return noWrap;
    }
 
-    Mtx::Normalize(3, p1p2, p1p2);
-    Mtx::Normalize(3, p2m, np2);
+    WrapMath::NormalizeOrZero(p1p2, p1p2);
+    WrapMath::NormalizeOrZero(p2m, np2);
 
-    Mtx::CrossProduct(p1p2, np2, hp2);
+    hp2 = p1p2 % np2;
 
    // if the muscle line passes too close to the center of the sphere
    // then give up
-    if (Mtx::Magnitude(3, hp2) < 0.00001) {
+    if (hp2.norm() < 0.00001) {
         // JPL 12/28/06: r1 and r2 from the previous wrap have already
         // been copied into aWrapResult (and not yet overwritten). So
         // just go directly to calc_path.
-#if 0
-      // no wait!  don't give up!  Instead use the previous r1 & r2:
-      // -- added KMS 9/9/99
-      //
-        const WrapResult& previousWrap = aPathWrap.getPreviousWrap();
-      for (i = 0; i < 3; i++) {
-         aWrapResult.r1[i] = previousWrap.r1[i];
-         aWrapResult.r2[i] = previousWrap.r2[i];
-      }
-#endif
-      goto calc_path;
+        goto calc_path;
    }
 
    // calc tangent point candidates r1a, r1b
-    Mtx::Normalize(3, hp2, n);
+    WrapMath::NormalizeOrZero(hp2, n);
     for (i = 0; i < 3; i++)
         y[i] = origin[i] - aPoint1[i];
-    Mtx::Normalize(3, y, y);
-    Mtx::CrossProduct(n, y, z);
+    WrapMath::NormalizeOrZero(y, y);
+    z = n % y;
    
    for (i = 0; i < 3; i++)
    {
@@ -338,26 +266,25 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       ra[i][2] = z[i];
    }
 
-    a1 = asin(_radius / Mtx::Magnitude(3, p1m));
+    a1 = asin(get_radius() / p1m.norm());
 
-    WrapMath::Make3x3DirCosMatrix(a1, rrx);
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
-    // TODO: test that this gives same result as SIMM code
-
-   for (i = 0; i < 3; i++)
-      r1a[i] = aPoint1[i] + aa[i][1] * Mtx::Magnitude(3, p1m) * cos(a1);
-
-   WrapMath::Make3x3DirCosMatrix(-a1, rrx);
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
+    rrx.setRotationFromAngleAboutX(a1);
+    aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
-      r1b[i] = aPoint1[i] + aa[i][1] * Mtx::Magnitude(3, p1m) * cos(a1);
+      r1a[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
+
+   rrx.setRotationFromAngleAboutX(-a1);
+   aa = ra * ~rrx;
+
+   for (i = 0; i < 3; i++)
+      r1b[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
 
    // calc tangent point candidates r2a, r2b
     for (i = 0; i < 3; i++)
         y[i] = origin[i] - aPoint2[i];
-    Mtx::Normalize(3, y, y);
-    Mtx::CrossProduct(n, y, z);
+    WrapMath::NormalizeOrZero(y, y);
+    z = n % y;
 
    for (i = 0; i < 3; i++)
    {
@@ -366,39 +293,37 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       ra[i][2] = z[i];
    }
 
-   a2 = asin(_radius / Mtx::Magnitude(3, p2m));
-   
-   WrapMath::Make3x3DirCosMatrix(a2, rrx);
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
+   a2 = asin(get_radius() / p2m.norm());
+
+   rrx.setRotationFromAngleAboutX(a2);
+   aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
-      r2a[i] = aPoint2[i] + aa[i][1] * Mtx::Magnitude(3, p2m) * cos(a2);
+      r2a[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);
 
-   WrapMath::Make3x3DirCosMatrix(-a2, rrx);
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
+   rrx.setRotationFromAngleAboutX(-a2);
+   aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
-      r2b[i] = aPoint2[i] + aa[i][1] * Mtx::Magnitude(3, p2m) * cos(a2);
+      r2b[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);
 
    // determine wrapping tangent points r1 & r2
-    for (i = 0; i < 3; i++) {
-        r1am[i] = r1a[i] - origin[i];
-        r1bm[i] = r1b[i] - origin[i];
-        r2am[i] = r2a[i] - origin[i];
-        r2bm[i] = r2b[i] - origin[i];
-    }
+    r1am = r1a - origin;
+    r1bm = r1b - origin;
+    r2am = r2a - origin;
+    r2bm = r2b - origin;
 
-    Mtx::Normalize(3, r1am, r1am);
-    Mtx::Normalize(3, r1bm, r1bm);
-    Mtx::Normalize(3, r2am, r2am);
-    Mtx::Normalize(3, r2bm, r2bm);
+    WrapMath::NormalizeOrZero(r1am, r1am);
+    WrapMath::NormalizeOrZero(r1bm, r1bm);
+    WrapMath::NormalizeOrZero(r2am, r2am);
+    WrapMath::NormalizeOrZero(r2bm, r2bm);
    
    {
       // check which of the tangential points results in the shortest distance
-        j1 = Mtx::DotProduct(3, r1am, r2am);
-      j2 = Mtx::DotProduct(3, r1am, r2bm);
-      j3 = Mtx::DotProduct(3, r1bm, r2am);
-      j4 = Mtx::DotProduct(3, r1bm, r2bm);
+      j1 = (~r1am*r2am);
+      j2 = (~r1am*r2bm);
+      j3 = (~r1bm*r2am);
+      j4 = (~r1bm*r2bm);
        
       if (j1 > j2 && j1 > j3 && j1 > j4)
       {
@@ -442,7 +367,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    {
       if (DSIGN(aPoint1[_wrapAxis]) == _wrapSign || DSIGN(aPoint2[_wrapAxis]) == _wrapSign)
       {
-         double tt, r_squared = _radius * _radius;
+         double tt, r_squared = get_radius() * get_radius();
             Vec3 mm;
          // If either muscle point is on the constrained side, then check for intersection
          // of the muscle line and the cylinder. If there is an intersection, then
@@ -481,9 +406,9 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
          for (i = 0; i < 3; i++)
             sum_musc[i] = (origin[i] - aPoint1[i]) + (origin[i] - aPoint2[i]);
 
-            Mtx::Normalize(3, sum_musc, sum_musc);
+         WrapMath::NormalizeOrZero(sum_musc, sum_musc);
 
-            if (Mtx::DotProduct(3, r1am, sum_musc) > Mtx::DotProduct(3, r1bm, sum_musc))
+            if ((~r1am*sum_musc) > (~r1bm*sum_musc))
          {
                 for (i = 0; i < 3; i++)
                     aWrapResult.r1[i] = r1a[i];
@@ -496,7 +421,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
             r11 = &r1a[0];
          }
 
-            if (Mtx::DotProduct(3, r2am, sum_musc) > Mtx::DotProduct(3, r2bm, sum_musc))
+            if ((~r2am*sum_musc) > (~r2bm*sum_musc))
          {
                 for (i = 0; i < 3; i++)
                     aWrapResult.r2[i] = r2a[i];
@@ -513,9 +438,9 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
          for (i = 0; i < 3; i++)
             sum_musc[i] = (aWrapResult.r1[i] - aPoint1[i]) + (aWrapResult.r2[i] - aPoint2[i]);
 
-            Mtx::Normalize(3, sum_musc, sum_musc);
+         WrapMath::NormalizeOrZero(sum_musc, sum_musc);
 
-            if (Mtx::DotProduct(3, sum_musc, wrapaxis) < 0.0)
+            if ((~sum_musc*wrapaxis) < 0.0)
          {
                 for (i = 0; i < 3; i++) {
                     aWrapResult.r1[i] = r11[i];
@@ -529,7 +454,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
             sum_r[i] = (aWrapResult.r1[i] - origin[i]) + (aWrapResult.r2[i] - origin[i]);
          }
 
-            if (Mtx::DotProduct(3, sum_r, sum_musc) < 0.0)
+         if ((~sum_r*sum_musc) < 0.0)
             far_side_wrap = true;
       }
    }
@@ -540,20 +465,19 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
         r2m[i] = aWrapResult.r2[i] - origin[i];
     }
 
-    Mtx::Normalize(3, r1m, r1n);
-    Mtx::Normalize(3, r2m, r2n);
+    WrapMath::NormalizeOrZero(r1m, r1n);
+    WrapMath::NormalizeOrZero(r2m, r2n);
 
-    angle = acos(Mtx::DotProduct(3, r1n, r2n));
+    angle = acos((~r1n*r2n));
    
    if (far_side_wrap)
         angle = -(2 * SimTK_PI - angle);
    
-   r1r2 = _radius * angle;
+   r1r2 = get_radius() * angle;
    aWrapResult.wrap_path_length = r1r2;
 
-    Vec3 axis3;
-    Mtx::CrossProduct(r1n, r2n, axis3);
-    Mtx::Normalize(3, axis3, axis3);
+    Vec3 axis3 = r1n % r2n;
+    WrapMath::NormalizeOrZero(axis3, axis3);
 
    for(int ii=0; ii<3; ii++) axis[ii]=axis3[ii];
    axis[3] = 1.0;
@@ -572,13 +496,13 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    vec[0] = r1m[0];
    vec[1] = r1m[1];
    vec[2] = r1m[2];
-   vec[3] = 1.0;
 
-   for (i = 0; i < numWrapSegments - 2; i++) {
+    SimTK::Rotation R;
+    for (i = 0; i < numWrapSegments - 2; i++) {
         double wangle = angle * (i+1) / (numWrapSegments - 1) * SimTK_DEGREE_TO_RADIAN;
 
-        WrapMath::ConvertAxisAngleTo4x4DirCosMatrix(Vec3::getAs(axis), wangle, mat);
-        Mtx::Multiply(4, 4, 1, (double*)mat, (double*)vec, (double*)rotvec);
+        R.setRotationFromAngleAboutNonUnitVector(wangle, Vec3::getAs(axis));
+        rotvec = ~R * vec;
 
         SimTK::Vec3 wp;
         for (j = 0; j < 3; j++)
@@ -591,4 +515,29 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     aWrapResult.wrap_pts.append(aWrapResult.r2);
 
    return return_code;
+}
+
+// Implement generateDecorations by WrapSphere to replace the previous out of place implementation 
+// in ModelVisualizer
+void WrapSphere::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const 
+{
+
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (!fixed) return;
+
+    if (hints.get_show_wrap_geometry()) {
+        const Appearance& defaultAppearance = get_Appearance();
+        if (!defaultAppearance.get_visible()) return;
+        const Vec3 color = defaultAppearance.get_color();
+        const auto X_BP = calcWrapGeometryTransformInBaseFrame();
+        appendToThis.push_back(
+            SimTK::DecorativeSphere(getRadius())
+            .setTransform(X_BP).setResolution(2.0)
+            .setColor(color).setOpacity(defaultAppearance.get_opacity())
+            .setScale(1).setRepresentation(defaultAppearance.get_representation())
+            .setBodyId(getFrame().getMobilizedBodyIndex()));
+    }
+
+
 }

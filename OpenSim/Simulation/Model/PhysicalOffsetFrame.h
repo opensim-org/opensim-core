@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,9 +24,8 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Simulation/Model/OffsetFrame.h> 
-#include <OpenSim/Simulation/Model/PhysicalFrame.h> 
+#include <OpenSim/Simulation/Model/OffsetFrame.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 namespace OpenSim {
 
@@ -57,14 +56,25 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
     /** Constructors are defined by the OffsetFrame base class */
+#ifndef SWIG    
     using OffsetFrame<PhysicalFrame>::OffsetFrame;
+#endif
 
-    ~PhysicalOffsetFrame() final {}
+    ~PhysicalOffsetFrame() = default;
 
 protected:
     /** Extend Component interface for adding the PhysicalOffsetFrame to the 
         underlying multibody system */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override final;
+
+    /**
+     * Extends setting the mobilized body index such that `PhysicalOffsetFrame` also
+     * sets the `MobilizedBodyIndex` of the parent frame.
+     */
+    void extendSetMobilizedBodyIndex(const SimTK::MobilizedBodyIndex&) const final;
+
+private:
+
 
 //=============================================================================
 }; // END of class PhysicalOffsetFrame

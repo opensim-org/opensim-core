@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Contributor(s): Frank C. Anderson, Jeffrey A. Reinbolt                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,9 +29,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include "CMC_Task.h"
+#include <OpenSim/Simulation/Model/Model.h>
 #include "CMC_Point.h"
 
 using namespace std;
@@ -136,14 +134,14 @@ updateWorkVariables(const SimTK::State& s)
         if(_wrtBodyName == "center_of_mass") {
             SimTK::Vec3 pVec,vVec;
             double Mass = 0.0;
-            double rP[3] = { 0.0, 0.0, 0.0 };
+            // double rP[3] = { 0.0, 0.0, 0.0 };
             for(int i=0;i<bs.getSize();i++) {
                 Body& body = bs.get(i);
                 const SimTK::Vec3& com = body.get_mass_center();
-                _model->getSimbodyEngine().getPosition(s, body,com,pVec);
+                pVec = body.findStationLocationInGround(s, com);
                 if(pVec[0] != pVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
                                             + "' references invalid acceleration components",__FILE__,__LINE__);
-                _model->getSimbodyEngine().getVelocity(s, body,com,vVec);
+                vVec = body.findStationVelocityInGround(s, com);
                 if(vVec[0] != vVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
                                             + "' references invalid acceleration components",__FILE__,__LINE__);
                 // ADD TO WHOLE BODY MASS
@@ -160,10 +158,10 @@ updateWorkVariables(const SimTK::State& s)
 
             _wrtBody =  &bs.get(_wrtBodyName);
 
-            _model->getSimbodyEngine().getPosition(s, *_wrtBody,_point,_p);
+            _p = _wrtBody->findStationLocationInGround(s, _point);
             if(_p[0] != _p[0]) throw Exception("CMC_Point.updateWorkVariables: ERROR- point task '" + getName() 
                                                 + "' references invalid position components",__FILE__,__LINE__);
-            _model->getSimbodyEngine().getVelocity(s, *_wrtBody,_point,_v);
+            _v = _wrtBody->findStationVelocityInGround(s, _point);
             if(_v[0] != _v[0]) throw Exception("CMC_Point.updateWorkVariables: ERROR- point task '" + getName() 
                                                 + "' references invalid velocity components",__FILE__,__LINE__);
 
@@ -293,14 +291,14 @@ computeErrors(const SimTK::State& s, double aT)
         for(int i=0;i<3;i++) {
             pVec(i) = _pTrk[i]->calcValue(SimTK::Vector(1,aT));
         }
-        _model->getSimbodyEngine().getPosition(s, *_expressBody,pVec,_inertialPTrk);
+        _inertialPTrk = _expressBody->findStationLocationInGround(s, pVec);
         if(_vTrk[0]==NULL) {
-            _model->getSimbodyEngine().getVelocity(s, *_expressBody,pVec,_inertialVTrk);
+            _inertialVTrk = _expressBody->findStationVelocityInGround(s, pVec);
         } else {
             for(int i=0;i<3;i++) {
                 vVec(i) = _vTrk[i]->calcValue(SimTK::Vector(1,aT));
             }
-            _model->getSimbodyEngine().getVelocity(s, *_expressBody,origin,_inertialVTrk); // get velocity of _expressBody origin in inertial frame
+            _inertialVTrk = _expressBody->findStationVelocityInGround(s, origin); // get velocity of _expressBody origin in inertial frame
             _inertialVTrk += vVec; // _vTrk is velocity in _expressBody, so it is simply added to velocity of _expressBody origin in inertial frame
         }
 
@@ -440,7 +438,7 @@ computeAccelerations(const SimTK::State& s )
         for(int i=0;i<bs.getSize();i++) {
             Body& body = bs.get(i);
             com = body.get_mass_center();
-            _model->getSimbodyEngine().getAcceleration(s, body,com,aVec);
+            aVec = body.findStationAccelerationInGround(s, com);
             if(aVec[0] != aVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
                                             + "' references invalid acceleration components",__FILE__,__LINE__);
             // ADD TO WHOLE BODY MASS
@@ -454,8 +452,7 @@ computeAccelerations(const SimTK::State& s )
     } else {
 
         _wrtBody =  &bs.get(_wrtBodyName);
-
-        _model->getSimbodyEngine().getAcceleration(s, *_wrtBody,_point,_a);
+        _a = _wrtBody->findStationAccelerationInGround(s, _point);
         if(_a[0] != _a[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
                                             + "' references invalid acceleration components",__FILE__,__LINE__);
     }
@@ -478,6 +475,6 @@ computeAccelerations(const SimTK::State& s )
 void CMC_Point::
 updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-    CMC_Task::updateFromXMLNode(aNode);
+    CMC_Task::updateFromXMLNode(aNode, versionNumber);
     setPoint(_point);
 }

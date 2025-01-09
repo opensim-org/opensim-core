@@ -1,5 +1,5 @@
-#ifndef __ContactHalfSpace_h__
-#define __ContactHalfSpace_h__
+#ifndef OPENSIM_CONTACT_HALF_SPACE_H_
+#define OPENSIM_CONTACT_HALF_SPACE_H_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  ContactHalfSpace.h                        *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -28,10 +28,11 @@
 namespace OpenSim {
 
 /**
- * This class represents a half space (that is, everything to one side of an infinite plane)
- * for use in contact modeling.  In its local coordinate system, all points for which x>0 are
- * considered to be inside the geometry.  Its location and orientation properties can be used
- * to move and rotate it to represent other half spaces.
+ * This class represents a half space (that is, everything to one side of an
+ * infinite plane) for use in contact modeling.  In its local coordinate
+ * system, all points for which x>0 are considered to be inside the geometry.
+ * Its location and orientation properties can be used to move and rotate it to
+ * represent other half spaces.
  *
  * @author Peter Eastman
  */
@@ -48,29 +49,40 @@ public:
      */
     ContactHalfSpace();
     /**
-     * Construct a ContactHalfSpace.  All points in its local coordinate system for which
-     * x>0 are considered to be inside the geometry.
+     * Construct a ContactHalfSpace.  All points in its local coordinate system
+     * for which x>0 are considered to be inside the geometry.
      *
-     * @param location     the location of the geometry within the Body it is attached to
-     * @param orientation  the orientation of the half space within the Body it is attached to
-     * @param body         the Body this half space is attached to
+     * @param location     the location of the mesh within the PhysicalFrame it
+     *                     is attached to
+     * @param orientation  the orientation of the mesh within the PhysicalFrame
+     *                     it is attached to
+     * @param frame        the PhysicalFrame this mesh is attached to
      */
-    ContactHalfSpace(const SimTK::Vec3& location, const SimTK::Vec3& orientation,
-                     PhysicalFrame& body);
+    ContactHalfSpace(const SimTK::Vec3& location,
+                     const SimTK::Vec3& orientation,
+                     const PhysicalFrame& frame);
     /**
-     * Construct a ContactHalfSpace.  All points in its local coordinate system for which
-     * x>0 are considered to be inside the geometry.
+     * Construct a ContactHalfSpace.  All points in its local coordinate system
+     * for which x>0 are considered to be inside the geometry.
      *
-     * @param location     the location of the geometry within the Body it is attached to
-     * @param orientation  the orientation of the half space within the Body it is attached to
-     * @param body         the Body this half space is attached to
+     * @param location     the location of the mesh within the PhysicalFrame it
+     *                     is attached to
+     * @param orientation  the orientation of the mesh within the PhysicalFrame
+     *                     it is attached to
+     * @param frame        the PhysicalFrame this mesh is attached to
      * @param name         the name of this object
      */
-    ContactHalfSpace(const SimTK::Vec3& location, const SimTK::Vec3& orientation, 
-        PhysicalFrame& body, const std::string& name);
-    ContactHalfSpace(const ContactHalfSpace& geom);
+    ContactHalfSpace(const SimTK::Vec3& location,
+                     const SimTK::Vec3& orientation,
+                     const PhysicalFrame& frame,
+                     const std::string& name);
 
-    SimTK::ContactGeometry createSimTKContactGeometry() override;
+    SimTK::ContactGeometry createSimTKContactGeometry() const override;
+
+    // VISUALIZATION
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 private:
     // INITIALIZATION
     void setNull();
@@ -82,4 +94,4 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __ContactHalfSpace_h__
+#endif // OPENSIM_CONTACT_HALF_SPACE_H_ 

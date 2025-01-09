@@ -1,0 +1,10 @@
+PathFileType	4	(X/Y/Z)	example.trc
+DataRate	CameraRate	NumFrames	NumMarkers	Units	OrigDataRate	OrigDataStartFrame	OrigNumFrames
+100	100	5	3	m	100	1	5
+Frame#	Time	marker1			marker2			marker3		
+		X1	Y1	Z1	X2	Y2	Z2	X3	Y3	Z3
+1	0.01				-0.152	0.245	-1.71	-0.0517	0.305	-1.7
+2	0.02	-0.273	0.0745	-1.57	-0.152	0.245	-1.71	-0.0517	0.305	-1.7
+3	0.03	-0.273	0.0745	-1.57	Nan	nan	NAN	-0.0517	0.305	-1.7
+4	0.04	-0.273	0.0745	-1.57	-0.152	0.245	-1.71	-0.0517	0.305	-1.7
+5	0.05	-0.273	0.0745	-1.57	-0.152	0.245	-1.71	-0.0517	0.305	-1.7

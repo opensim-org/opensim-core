@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,14 +29,9 @@
 // INCLUDES
 #include "IO.h"
 #include "StateVector.h"
-#include "SimTKcommon.h"
-
-
 
 using namespace OpenSim;
 using namespace std;
-
-
 
 //=============================================================================
 // CONSTRUCTOR(S)
@@ -53,33 +48,28 @@ StateVector::~StateVector()
 /**
  * Default constructor.
  */
-StateVector::StateVector(double aT,int aN,const double aData[]) :
+StateVector::StateVector(double aT) :
+    StateVector(aT, SimTK::Vector_<double>()) {
+    // No operation.
+}
+
+//_____________________________________________________________________________
+/**
+ * Create a StateVector with a time-stamp and an array of values.
+ *
+ * @param aT Time-stamp of the state-vector.
+ * @param data Array of values to set the state-vector to.
+ */
+StateVector::StateVector(double aT, const SimTK::Vector_<double>& data) :
     _data(0.0)
 {
     // INITIAL VALUES
     setNull();
 
     // SET THE DATA
-    setStates(aT,aN,aData);
-}
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- */
-StateVector::StateVector(const StateVector &aVector) :
-    _data(0.0)
-{
-    // INITIAL VALUES
-    setNull();
-
-    // SET STATES
-    setStates(aVector.getTime(),aVector.getSize(),&aVector.getData()[0]);
+    setStates(aT, data);
 }
 
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
 //_____________________________________________________________________________
 /**
  * Set the null or default values of the states.
@@ -176,15 +166,17 @@ getTime() const
 //_____________________________________________________________________________
 /**
  * Set the state values of this vector.
+ * 
+ * @param aT Time-stamp of the state vector.
+ * @param data Array of values to set the state to.
  */
 void StateVector::
-setStates(double aT,int aN,const double *aData)
-{
+setStates(double aT, const SimTK::Vector_<double>& data) {
     _t = aT;
-    _data.setSize(aN);
+    _data.setSize(data.size());
     int size = _data.getSize();
-    for(int i=0;i<size;i++) {
-        _data[i] = aData[i];
+    for(int i = 0; i < size; ++i) {
+        _data[i] = data[i];
     }
 }
 //_____________________________________________________________________________
@@ -298,16 +290,17 @@ add(double aValue)
  *
  * Only the first aN states are altered.
  *
- * @param aN Length of aY.
- * @param aY Array of values to add to the states.
+ * @param values Array of values to add to this state-vector.
  */
 void StateVector::
-add(int aN,double aY[])
-{
-    if(aY==NULL) return;
-    int i,n=aN;
-    if(n>_data.getSize()) n = _data.getSize();
-    for(i=0;i<n;i++)  _data[i] += aY[i];
+add(const SimTK::Vector_<double>& values) {
+    if(values.size() == 0)
+        return;
+    int i, n = values.size();
+    if( n > _data.getSize())
+        n = _data.getSize();
+    for(i = 0; i < n; ++i)
+        _data[i] += values[i];
 }
 //_____________________________________________________________________________
 /**
@@ -370,16 +363,16 @@ subtract(double aValue)
  *
  * Only the first aN states are altered.
  *
- * @param aN Length of aY.
- * @param aY Array of values to subtracted from the states.
+ * @param values Array of values to subtract from this state-vector.
  */
-void StateVector::
-subtract(int aN,double aY[])
-{
-    if(aY==NULL) return;
-    int i,n=aN;
-    if(n>_data.getSize()) n = _data.getSize();
-    for(i=0;i<n;i++)  _data[i] -= aY[i];
+void StateVector::subtract(const SimTK::Vector_<double>& values) {
+    if(values.size() == 0)
+        return;
+    int i, n = values.size();
+    if(n > _data.getSize())
+        n = _data.getSize();
+    for(i = 0; i < n; ++i)
+        _data[i] -= values[i];
 }
 //_____________________________________________________________________________
 /**
@@ -425,16 +418,16 @@ multiply(double aValue)
  *
  * Only the first aN states are altered.
  *
- * @param aN Length of aY.
- * @param aY Array of values the states are multiplied by.
+ * @param values Array of values to multiply this state-vector with.
  */
-void StateVector::
-multiply(int aN,double aY[])
-{
-    if(aY==NULL) return;
-    int i,n=aN;
-    if(n>_data.getSize()) n = _data.getSize();
-    for(i=0;i<n;i++)  _data[i] *= aY[i];
+void StateVector::multiply(const SimTK::Vector_<double>& values) {
+    if(values.size() == 0)
+        return;
+    int i, n = values.size();
+    if(n > _data.getSize())
+        n = _data.getSize();
+    for(i = 0; i < n; ++i)
+        _data[i] *= values[i];
 }
 //_____________________________________________________________________________
 /**
@@ -472,7 +465,7 @@ void StateVector::
 divide(double aValue)
 {
     if(aValue==0.0) {
-        printf("StateVector.divide: ERROR- divide by zero\n");
+        log_error("StateVector.divide: divide by zero.");
         return;
     }
 
@@ -487,20 +480,20 @@ divide(double aValue)
  *
  * Only the first aN states are altered.
  *
- * @param aN Length of aY.
- * @param aY Array of values the states are divided by.
+ * @param values Array of values the states are divided by.
  */
-void StateVector::
-divide(int aN,double aY[])
-{
-    if(aY==NULL) return;
-    int i,n=aN;
-    if(n>_data.getSize()) n = _data.getSize();
-    for(i=0;i<n;i++) {  
-        if(aY[i]==0.0)  _data[i] = SimTK::NaN;
-        else    _data[i] /= aY[i];
+void StateVector::divide(const SimTK::Vector_<double>& values) {
+    if(values.size() == 0)
+        return;
+    int i, n = values.size();
+    if(n > _data.getSize())
+        n = _data.getSize();
+    for(i = 0; i < n; ++i) {  
+        if(values[i] == 0.0)
+            _data[i] = SimTK::NaN;
+        else
+            _data[i] /= values[i];
     }
-        
 }
 //_____________________________________________________________________________
 /**
@@ -544,27 +537,27 @@ print(FILE *fp) const
 {
     // CHECK FILE POINTER
     if(fp==NULL) {
-        printf("StateVector.print(FILE*): null file pointer.\n");
+        log_error("StateVector.print(FILE*): null file pointer.");
         return(-1);
     }
 
     // TIME
     char format[IO_STRLEN];
-    sprintf(format,"%s",IO::GetDoubleOutputFormat());
+    snprintf(format, IO_STRLEN, "%s", IO::GetDoubleOutputFormat());
     int n=0,nTotal=0;
     n = fprintf(fp,format,_t);
     if(n<0) {
-        printf("StateVector.print(FILE*): error writing to file.\n");
+        log_error("StateVector.print(FILE*): error writing to file.");
         return(n);
     }
     nTotal += n;
 
     // STATES
-    sprintf(format,"\t%s",IO::GetDoubleOutputFormat());
+    snprintf(format, IO_STRLEN, "\t%s", IO::GetDoubleOutputFormat());
     for(int i=0;i<_data.getSize();i++) {
         n = fprintf(fp,format,_data[i]);
         if(n<0) {
-            printf("StateVector.print(FILE*): error writing to file.\n");
+            log_error("StateVector.print(FILE*): error writing to file.");
             return(n);
         }
         nTotal += n;
@@ -573,7 +566,7 @@ print(FILE *fp) const
     // CARRIAGE RETURN
     n = fprintf(fp,"\n");
     if(n<0) {
-        printf("StateVector.print(FILE*): error writing to file.\n");
+        log_error("StateVector.print(FILE*): error writing to file.");
         return(n);
     }
     nTotal += n;

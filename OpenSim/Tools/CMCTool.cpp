@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Contributor(s): Frank C. Anderson, Eran Guendelman, Chand T. John          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -20,26 +20,22 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <time.h>
 #include "CMCTool.h"
-#include "AnalyzeTool.h"
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include "VectorFunctionForActuators.h"
-#include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Simulation/Control/ControlLinear.h>
-#include <OpenSim/Simulation/Control/ControlSet.h>
-#include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
-#include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Analyses/Actuation.h>
-#include "ForwardTool.h"
-#include <OpenSim/Common/DebugUtilities.h>
-#include "CMC.h" 
+#include "CMC.h"
 #include "CMC_TaskSet.h"
 #include "ActuatorForceTarget.h"
 #include "ActuatorForceTargetFast.h"
+#include "VectorFunctionForActuators.h"
+#include <OpenSim/Common/Assertion.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
+#include <OpenSim/Analyses/Kinematics.h>
+#include <OpenSim/Analyses/Actuation.h>
+#include <OpenSim/Common/DebugUtilities.h>
+
 
 using namespace std;
 using namespace SimTK;
@@ -388,42 +384,54 @@ operator=(const CMCTool &aTool)
  */
 bool CMCTool::run()
 {
-    cout<<"Running tool "<<getName()<<".\n";
+    log_info("Running tool '{}'.", getName());
 
     // CHECK FOR A MODEL
     if(_model==NULL) {
-        string msg = "ERROR- A model has not been set.";
-        cout<<endl<<msg<<endl;
+        string msg = "A model has not been set.";
+        log_error(msg);
         throw(Exception(msg,__FILE__,__LINE__));
     }
     // OUTPUT DIRECTORY
     // Do the maneuver to change then restore working directory 
     // so that the parsing code behaves properly if called from a different directory
-    string saveWorkingDirectory = IO::getCwd();
-    string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
-    IO::chDir(directoryOfSetupFile);
+    auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
     try {
 
     // SET OUTPUT PRECISION
     IO::SetPrecision(_outputPrecision);
 
-    bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
+    /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
     CMC_TaskSet taskSet(_taskSetFileName);           
     //taskSet.print("cmcTasksRT.xml");
-    cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl;         
+    log_info("TaskSet size = {}.", taskSet.getSize());
 
-    CMC* controller = new CMC(_model,&taskSet); // Need to make it a pointer since Model takes ownership 
+    CMC* controller = new CMC(_model,&taskSet); // Need to make it a pointer since Model takes ownership
     controller->setName( "CMC" );
 
     // Don't automatically give CMC all the model actuators
     // Check to see if user has explicitly listed Actuators to be
     // excluded from CMC's control.
-
-    controller->setActuators(getActuatorsForCMC(_excludedActuators));
-    _model->addController(controller );
-    controller->setDisabled(false);
+    std::vector<std::string> actuatorPaths =
+            getActuatorsPathsForCMC(_excludedActuators);
+    for (const auto& actuatorPath : actuatorPaths) {
+        if (_model->hasComponent(actuatorPath) && !actuatorPath.empty()
+                && actuatorPath != ComponentPath::root()) {
+            const auto& actuator = _model->getComponent<Actuator>(actuatorPath);
+            controller->addActuator(actuator);
+        } else {
+            for (const auto& actu : _model->getComponentList<Actuator>()) {
+                if (actu.getName() == actuatorPath) {
+                    controller->addActuator(actu);
+                    break;
+                }
+            }
+        }
+    }
+    _model->addController(controller);
+    controller->setEnabled(true);
     controller->setUseCurvatureFilter(false);
     controller->setTargetDT(_targetDT);
     controller->setCheckTargetTime(true);
@@ -432,22 +440,23 @@ bool CMCTool::run()
     SimTK::State& s = _model->initSystem();
     _model->getMultibodySystem().realize(s, Stage::Position );
      taskSet.setModel(*_model);
-    _model->equilibrateMuscles(s);
-  
+    if (_solveForEquilibriumForAuxiliaryStates) {
+         _model->equilibrateMuscles(s);
+    }
+
     // ---- INPUT ----
     // DESIRED POINTS AND KINEMATICS
     if(_desiredPointsFileName=="" && _desiredKinematicsFileName=="") {
-        cout<<"ERROR- a desired points file and desired kinematics file were not specified.\n\n";
-        IO::chDir(saveWorkingDirectory);
+        log_error("A desired points file and desired kinematics file were not specified.");
         return false;
     }
 
     Storage *desiredPointsStore=NULL;
     bool desiredPointsFlag = false;
     if(_desiredPointsFileName=="") {
-        cout<<"\n\nWARN- a desired points file was not specified.\n\n";
+        log_warn("A desired points file was not specified.");
     } else {
-        cout<<"\n\nLoading desired points from file "<<_desiredPointsFileName<<" ...\n";
+        log_info("Loading desired points from file '{}'...", _desiredPointsFileName);
         desiredPointsStore = new Storage(_desiredPointsFileName);
         desiredPointsFlag = true;
     }
@@ -455,9 +464,9 @@ bool CMCTool::run()
     Storage *desiredKinStore=NULL;
     bool desiredKinFlag = false;
     if(_desiredKinematicsFileName=="") {
-        cout<<"\n\nWARN- a desired kinematics file was not specified.\n\n";
+        log_warn("A desired kinematics file was not specified.");
     } else {
-        cout<<"\n\nLoading desired kinematics from file "<<_desiredKinematicsFileName<<" ...\n";
+        log_info("Loading desired kinematics from file '{}'...", _desiredKinematicsFileName);
         desiredKinStore = new Storage(_desiredKinematicsFileName);
         desiredKinFlag = true;
     }
@@ -468,17 +477,19 @@ bool CMCTool::run()
     if(desiredPointsFlag) {
         double ti = desiredPointsStore->getFirstTime();
         if(_ti<ti) {
-            cout<<"\nThe initial time set for the cmc run precedes the first time\n";
-            cout<<"in the desired points file "<<_desiredPointsFileName<<".\n";
-            cout<<"Resetting the initial time from "<<_ti<<" to "<<ti<<".\n\n";
+            log_warn("The initial time set for CMC precedes the first time in "
+                     "the desired points file '{}'.",
+                    _desiredPointsFileName);
+            log_warn("Resetting the initial time from {} to {}.", _ti, ti);
             _ti = ti;
         }
         // Final time
         double tf = desiredPointsStore->getLastTime();
         if(_tf>tf) {
-            cout<<"\n\nWARN- The final time set for the cmc run is past the last time stamp\n";
-            cout<<"in the desired points file "<<_desiredPointsFileName<<".\n";
-            cout<<"Resetting the final time from "<<_tf<<" to "<<tf<<".\n\n";
+            log_warn("The final time set for CMC precedes the last time in "
+                     "the desired points file '{}'.",
+                    _desiredPointsFileName);
+            log_warn("Resetting the final time from {} to {}.", _tf, tf);
             _tf = tf;
         }
     }
@@ -487,17 +498,19 @@ bool CMCTool::run()
     if(desiredKinFlag) {
         double ti = desiredKinStore->getFirstTime();
         if(_ti<ti) {
-            cout<<"\nThe initial time set for the cmc run precedes the first time\n";
-            cout<<"in the desired kinematics file "<<_desiredKinematicsFileName<<".\n";
-            cout<<"Resetting the initial time from "<<_ti<<" to "<<ti<<".\n\n";
+            log_warn("The initial time set for CMC precedes the first time in "
+                     "the desired kinematics file '{}'.",
+                    _desiredKinematicsFileName);
+            log_warn("Resetting the initial time from {} to {}.", _ti, ti);
             _ti = ti;
         }
         // Final time
         double tf = desiredKinStore->getLastTime();
         if(_tf>tf) {
-            cout<<"\n\nWARN- The final time set for the cmc run is past the last time stamp\n";
-            cout<<"in the desired kinematics file "<<_desiredKinematicsFileName<<".\n";
-            cout<<"Resetting the final time from "<<_tf<<" to "<<tf<<".\n\n";
+            log_warn("The final time set for CMC precedes the last time in "
+                     "the desired kinematics file '{}'.",
+                    _desiredKinematicsFileName);
+            log_warn("Resetting the initial time from {} to {}.", _ti, ti);
             _tf = tf;
         }
     }
@@ -511,11 +524,11 @@ bool CMCTool::run()
         desiredPointsStore->print("desiredPoints_padded.sto");
         if(_lowpassCutoffFrequency>=0) {
             int order = 50;
-            cout<<"\n\nLow-pass filtering desired points with a cutoff frequency of ";
-            cout<<_lowpassCutoffFrequency<<"...";
+            log_info("Low-pass filtering desired points with a cutoff frequency of {}...",
+                _lowpassCutoffFrequency);
             desiredPointsStore->lowpassFIR(order,_lowpassCutoffFrequency);
         } else {
-            cout<<"\n\nNote- not filtering the desired points.\n\n";
+            log_info("Not filtering the desired points.");
         }
     }
 
@@ -524,18 +537,17 @@ bool CMCTool::run()
         if (_verbose) desiredKinStore->print("desiredKinematics_padded.sto");
         if(_lowpassCutoffFrequency>=0) {
             int order = 50;
-            cout<<"\n\nLow-pass filtering desired kinematics with a cutoff frequency of ";
-            cout<<_lowpassCutoffFrequency<<"...\n\n";
+            log_info("Low-pass filtering desired kinematics with a cutoff frequency of {}...",
+                _lowpassCutoffFrequency);
             desiredKinStore->lowpassFIR(order,_lowpassCutoffFrequency);
         } else {
-            cout<<"\n\nNote- not filtering the desired kinematics.\n\n";
+            log_info("Not filtering the desired kinematics.");
         }
     }
 
      // TASK SET
-    if(_taskSetFileName=="") {           
-        cout<<"ERROR- a task set was not specified\n\n";         
-        IO::chDir(saveWorkingDirectory);         
+    if(_taskSetFileName=="") {  
+        log_error("A task set was not specified.");
         return false;        
     }
 
@@ -543,7 +555,7 @@ bool CMCTool::run()
 
     int nq = _model->getNumCoordinates();
     int nu = _model->getNumSpeeds();
-    int na = controller->getActuatorSet().getSize();
+    int na = controller->getNumActuators();
 
     // Form complete storage objects for the q's and u's
     // This means filling in unspecified generalized coordinates and
@@ -553,17 +565,15 @@ bool CMCTool::run()
 
     if(desiredKinFlag) {
         _model->getMultibodySystem().realize(s, Stage::Time );
-        _model->getSimbodyEngine().formCompleteStorages(s, *desiredKinStore,qStore,uStore);
-        if(qStore->isInDegrees()){
-            _model->getSimbodyEngine().convertDegreesToRadians(*qStore);
-            _model->getSimbodyEngine().convertDegreesToRadians(*uStore);
-        }
+        // qStore and uStore returned are in radians
+        _model->getSimbodyEngine().formCompleteStorages(s, *desiredKinStore,
+            qStore, uStore);
     }
 
     // Spline
     GCVSplineSet *posSet=NULL;
     if(desiredPointsFlag) {
-        cout<<"\nConstructing function set for tracking desired points...\n\n";
+        log_info("Constructing function set for tracking desired points...");
         posSet = new GCVSplineSet(5,desiredPointsStore);
 
         Storage *velStore=posSet->constructStorage(1);
@@ -581,7 +591,7 @@ bool CMCTool::run()
     GCVSplineSet *uDotSet=NULL;
 
     if(desiredKinFlag) {
-        cout<<"\nConstructing function set for tracking desired kinematics...\n\n";
+        log_info("Constructing function set for tracking desired kinematics...");
         qSet = new GCVSplineSet(5,qStore);
         delete qStore; qStore = NULL;
 
@@ -621,7 +631,6 @@ bool CMCTool::run()
         GCVSplineSet* stateFuntcions = new GCVSplineSet(3, &stateStorage);
         for (int i=0; i< stateFuntcions->getSize(); i++)
             qAndPosSet->cloneAndAppend(stateFuntcions->get(i));
-
     }
 
     taskSet.setFunctions(*qAndPosSet);
@@ -641,17 +650,25 @@ bool CMCTool::run()
     Array<double> q(0.0,nq);
     Array<double> u(0.0,nu);
     if(desiredKinFlag) {
-        cout<<"Using the generalized coordinates specified in "<<_desiredKinematicsFileName;
-        cout<<" to set the initial configuration.\n" << endl;
+        log_info("Using the generalized coordinates specified in {} to set the "
+            "initial configuration.", _desiredKinematicsFileName);
         qSet->evaluate(q,0,_ti);
         uSet->evaluate(u,0,_ti);
     } else {
-        cout<<"Using the generalized coordinates specified as zeros ";
-        cout<<" to set the initial configuration.\n" << endl;
+        log_info("Using the generalized coordinates specified as zeros to set "
+            "the initial configuration.");
     }
 
-    for(int i=0;i<nq;i++) s.updQ()[i] = q[i];
-    for(int i=0;i<nu;i++) s.updU()[i] = u[i];
+    // formCompleteStorages ensures qSet is in order of model Coordinates
+    // but we cannot assume order of coordinates is the same in the State,
+    // so set each Coordinate value and speed individually.
+    const CoordinateSet& coords = _model->getCoordinateSet();
+    for (int i = 0; i < nq; ++i) {
+        // The last argument to setValue is a bool to enforce kinematic constraints
+        // or not. It is being set to true when we set the last coordinate value.
+        coords[i].setValue(s, q[i], i==(nq-1));
+        coords[i].setSpeedValue(s, u[i]);
+    }
 
     // Actuator force predictor
     // This requires the trajectories of the generalized coordinates
@@ -669,10 +686,10 @@ bool CMCTool::run()
     const SimTK::Vector &modelZ = _model->getMultibodySystem()
                                             .getDefaultSubsystem().getZ(s);
     
-    int nra = actSysZ.size();
-    int nrm = modelZ.size();
+    // int nra = actSysZ.size();
+    // int nrm = modelZ.size();
 
-    assert(nra == nrm);
+    OPENSIM_ASSERT_FRMOBJ(actSysZ.size() == modelZ.size());
     actSysZ = modelZ;
 
     VectorFunctionForActuators *predictor =
@@ -694,14 +711,15 @@ bool CMCTool::run()
     SimTK::OptimizerAlgorithm algorithm = SimTK::InteriorPoint;
     if(IO::Uppercase(_optimizerAlgorithm) == "CFSQP") {
         if(!SimTK::Optimizer::isAlgorithmAvailable(SimTK::CFSQP)) {
-            std::cout << "CFSQP optimizer algorithm unavailable.  Will try to use IPOPT instead." << std::endl;
+            log_warn("CFSQP optimizer algorithm unavailable. Will try to use "
+                "IPOPT instead.");
             algorithm = SimTK::InteriorPoint;
         } else {
-            std::cout << "Using CFSQP optimizer algorithm." << std::endl;
+            log_info("Using CFSQP optimizer algorithm.");
             algorithm = SimTK::CFSQP;
         }
     } else if(IO::Uppercase(_optimizerAlgorithm) == "IPOPT") {
-        std::cout << "Using IPOPT optimizer algorithm." << std::endl;
+        log_info("Using IPOPT optimizer algorithm.");
         algorithm = SimTK::InteriorPoint;
     } else {
         throw Exception("CMCTool: ERROR- Unrecognized optimizer algorithm: '"+_optimizerAlgorithm+"'",__FILE__,__LINE__);
@@ -710,11 +728,12 @@ bool CMCTool::run()
     SimTK::Optimizer *optimizer = new SimTK::Optimizer(*target, algorithm);
     controller->setOptimizationTarget(target, optimizer);
 
-    cout<<"\nSetting optimizer print level to "<<_printLevel<<".\n";
+    log_info("Setting optimizer print level to {}.", _printLevel);
     optimizer->setDiagnosticsLevel(_printLevel);
-    cout<<"Setting optimizer convergence tolerance to "<<_optimizationConvergenceTolerance<<".\n";
+    log_info("Setting optimizer convergence tolerance to {}.",
+            _optimizationConvergenceTolerance);
     optimizer->setConvergenceTolerance(_optimizationConvergenceTolerance);
-    cout<<"Setting optimizer maximum iterations to "<<_maxIterations<<".\n";
+    log_info("Setting optimizer maximum iterations to {}.", _maxIterations);
     optimizer->setMaxIterations(_maxIterations);
     optimizer->useNumericalGradient(false); // Use our own central difference approximations
     optimizer->useNumericalJacobian(false);
@@ -726,8 +745,11 @@ bool CMCTool::run()
         optimizer->setAdvancedRealOption("nlp_scaling_max_gradient",100);
     }
 
-    if(_verbose) cout<<"\nSetting cmc controller to use verbose printing."<<endl;
-    else cout<<"\nSetting cmc controller to not use verbose printing."<<endl;
+    if(_verbose) { 
+        log_info("Setting cmc controller to use verbose printing.\n");
+    } else {
+        log_info("Setting cmc controller to not use verbose printing.\n");
+    }
     controller->setUseVerbosePrinting(_verbose);
 
     controller->setCheckTargetTime(true);
@@ -735,64 +757,57 @@ bool CMCTool::run()
     // ---- SIMULATION ----
     //
     // Manager
-    RungeKuttaMersonIntegrator integrator(_model->getMultibodySystem());
-    integrator.setMaximumStepSize(_maxDT);
-    integrator.setMinimumStepSize(_minDT);
-    integrator.setAccuracy(_errorTolerance);
-    Manager manager(*_model, integrator);
+    Manager manager(*_model);
+    manager.setIntegratorMaximumStepSize(_maxDT);
+    manager.setIntegratorMinimumStepSize(_minDT);
+    manager.setIntegratorAccuracy(_errorTolerance);
     
     _model->setAllControllersEnabled( true );
 
     manager.setSessionName(getName());
-    manager.setInitialTime(_ti);
-    manager.setFinalTime(_tf-_targetDT-SimTK::Zero);
+    s.setTime(_ti);
+    double finalTime = _tf - _targetDT - SimTK::Zero;
 
     // Initialize integrand controls using controls read in from file (which specify min/max control values)
     initializeControlSetUsingConstraints(rraControlSet,controlConstraints, controller->updControlSet());
 
     // Initial auxiliary states
     time_t startTime,finishTime;
-    struct tm *localTime;
     double elapsedTime;
-    if( s.getNZ() > 0) { // If there are actuator states (i.e. muscles dynamics)
-        cout<<"\n\n\n";
-        cout<<"================================================================\n";
-        cout<<"================================================================\n";
-        cout<<"Computing initial values for muscles states (activation, length)\n";
+    if(s.getNZ() > 0) { // If there are actuator states (i.e. muscles dynamics)
+        log_info("-----------------------------------------------------------------");
+        log_info("Computing initial values for muscles states (activation, length):");
+        log_info("-----------------------------------------------------------------");
         time(&startTime);
-        localTime = localtime(&startTime);
-        cout<<"Start time = "<<asctime(localTime)<<endl;
-        cout<<"================================================================\n";
+        log_info(" -- Start time = {}", getTimeString(startTime));
+        log_info("-----------------------------------------------------------------");
+        log_info("");
+
         try {
         controller->computeInitialStates(s,_ti);
         }
         catch(const Exception& x) {
         // TODO: eventually might want to allow writing of partial results
             x.print(cout);
-            IO::chDir(saveWorkingDirectory);
             return false;
         }
         catch(...) {
             // TODO: eventually might want to allow writing of partial results
-            IO::chDir(saveWorkingDirectory);
             // close open files if we die prematurely (e.g. Opt fail)
             return false;
         }
         time(&finishTime);
-        cout<<endl;
         // copy the final states from the last integration 
         s.updY() = cmcActSubsystem.getCompleteState().getY();
-        cout<<"----------------------------------------------------------------\n";
-        cout<<"Finished computing initial states:\n";
-        cout<<"----------------------------------------------------------------\n";
-        cout<<"================================================================\n";
-        localTime = localtime(&startTime);
-        cout<<"Start time   = "<<asctime(localTime);
-        localTime = localtime(&finishTime);
-        cout<<"Finish time  = "<<asctime(localTime);
-        elapsedTime = difftime(finishTime,startTime);
-        cout<<"Elapsed time = "<<elapsedTime<<" seconds.\n";
-        cout<<"================================================================\n";
+        log_info("----------------------------------");
+        log_info("Finished computing initial states:");
+        log_info("----------------------------------");
+        log_info(" -- Start time = {}", getTimeString(startTime));
+        log_info(" -- Finish time = {}", getTimeString(finishTime));
+        elapsedTime = difftime(finishTime, startTime);
+        log_info(" -- Elapsed time = {} seconds.", elapsedTime);
+        log_info("----------------------------------");
+        log_info("");
     } else {
         cmcActSubsystem.setCompleteState( s );
         actuatorSystemState.updTime() = _ti; 
@@ -802,20 +817,18 @@ bool CMCTool::run()
         controller->computeControls( s, controller->updControlSet() );
         controller->setTargetDT(_targetDT);
     }
-    manager.setInitialTime(_ti);
 
     // ---- INTEGRATE ----
-    cout<<"\n\n\n";
-    cout<<"================================================================\n";
-    cout<<"================================================================\n";
-    cout<<"Using CMC to track the specified kinematics\n";
-    cout<<"Integrating from "<<_ti<<" to "<<_tf<<endl;
+    log_info("--------------------------------------------");
+    log_info("Using CMC to track the specified kinematics:");
+    log_info("--------------------------------------------");
+    log_info(" -- Integrating from {} to {}", _ti, _tf);
     s.updTime() = _ti;
     controller->setTargetTime( _ti );
     time(&startTime);
-    localTime = localtime(&startTime);
-    cout<<"Start time = "<<asctime(localTime);
-    cout<<"================================================================\n";
+    log_info(" -- Start time = {}", getTimeString(startTime));
+    log_info("--------------------------------------------");
+    log_info("");
 
     _model->getMultibodySystem().realize(s, Stage::Acceleration );
 
@@ -827,37 +840,35 @@ bool CMCTool::run()
     IO::makeDir(getResultsDir());   // Create directory for output in case it doesn't exist
     manager.getStateStorage().setOutputFileName(getResultsDir() + "/" + getName() + "_states.sto");
     try {
-        manager.integrate(s);
+        manager.initialize(s);
+        manager.integrate(finalTime);
     }
     catch(const Exception& x) {
         // TODO: eventually might want to allow writing of partial results
         x.print(cout);
-        IO::chDir(saveWorkingDirectory);
         // close open files if we die prematurely (e.g. Opt fail)
         manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
         return false;
     }
     catch(...) {
         // TODO: eventually might want to allow writing of partial results
-        IO::chDir(saveWorkingDirectory);
         // close open files if we die prematurely (e.g. Opt fail)
         manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
         return false;
     }
     time(&finishTime);
-    cout<<"----------------------------------------------------------------\n";
-    cout<<"Finished tracking the specified kinematics\n";
+    log_info("-------------------------------------------");
+    log_info("Finished tracking the specified kinematics.");
+    log_info("-------------------------------------------");
     if( _verbose ){
-      std::cout << "states= " << s.getY() << std::endl;
+      log_info(" -- States = {}", s.getY()); 
     }
-    cout<<"================================================================\n";
-    localTime = localtime(&startTime);
-    cout<<"Start time   = "<<asctime(localTime);
-    localTime = localtime(&finishTime);
-    cout<<"Finish time  = "<<asctime(localTime);
-    elapsedTime = difftime(finishTime,startTime);
-    cout<<"Elapsed time = "<<elapsedTime<<" seconds.\n";
-    cout<<"================================================================\n\n\n";
+    log_info(" -- Start time = {}", getTimeString(startTime));
+    log_info(" -- Finish time = {}", getTimeString(finishTime));
+    elapsedTime = difftime(finishTime, startTime);
+    log_info(" -- Elapsed time = {} seconds.", elapsedTime);
+    log_info("-------------------------------------------");
+    log_info("");
 
     // ---- RESULTS -----
     printResults(getName(),getResultsDir()); // this will create results directory if necessary
@@ -877,13 +888,10 @@ bool CMCTool::run()
     } catch(const Exception& x) {
         // TODO: eventually might want to allow writing of partial results
         x.print(cout);
-        IO::chDir(saveWorkingDirectory);
         // close open files if we die prematurely (e.g. Opt fail)
         
         return false;
     }
-
-    IO::chDir(saveWorkingDirectory);
 
     return true;
 }
@@ -906,7 +914,7 @@ addNecessaryAnalyses()
     for(int i=0; i<as.getSize(); i++) 
         if(as.get(i).getConcreteClassName() == "Actuation") { act = (Actuation*)&as.get(i); break; }
     if(!act) {
-        std::cout << "No Actuation analysis found in analysis set -- adding one" << std::endl;
+        log_info("No Actuation analysis found in analysis set -- adding one...");
         act = new Actuation(_model);
         act->setModel(*_model );
         act->setStepInterval(stepInterval);
@@ -919,7 +927,7 @@ addNecessaryAnalyses()
     for(int i=0; i<as.getSize(); i++) 
         if(as.get(i).getConcreteClassName() == "Kinematics" && as.get(i).getPrintResultFiles()) { kin = (Kinematics*)&as.get(i); break; }
     if(!kin) {
-        std::cout << "No Kinematics analysis found in analysis set -- adding one" << std::endl;
+        log_info("No Kinematics analysis found in analysis set -- adding one...");
         kin = new Kinematics(_model);
         kin->setModel(*_model );
         kin->setStepInterval(stepInterval);
@@ -982,7 +990,7 @@ initializeControlSetUsingConstraints(
             }
             if(control==NULL) continue;
             control->setUseSteps(false);
-            cout<<"Set "<<rraControlName<<" to use linear interpolation.\n";
+            log_info("Set {} to use linear interpolation.", rraControlName);
         }
 #endif
     }   
@@ -1095,44 +1103,86 @@ void CMCTool::setOriginalForceSet(const ForceSet &aForceSet) {
 
 
 /* Get the Set of model actuators for CMC that exclude user specified Actuators */
-Set<Actuator> CMCTool::
-    getActuatorsForCMC(const Array<std::string> &actuatorsByNameOrGroup)
-{   
-    Set<Actuator> actuatorsForCMC = _model->getActuators();
-    for (int i=actuatorsForCMC.getSize()-1; i>0; i--){
-        if (actuatorsForCMC.get(i).get_isDisabled())
-            actuatorsForCMC.remove(i);
+std::vector<std::string> CMCTool::getActuatorsPathsForCMC(
+        const Array<std::string>& actuatorsByNameOrGroup) {
+
+    const Set<Actuator>& actuatorsForCMC = _model->getActuators();
+    std::vector<std::string> actuatorsToSkip;
+    for (int i=actuatorsForCMC.getSize()-1; i>0; i--) {
+        if (!actuatorsForCMC.get(i).get_appliesForce()) {
+            actuatorsToSkip.push_back(
+                actuatorsForCMC.get(i).getAbsolutePathString());
+        }
     }
     Array<string> groupNames;
     actuatorsForCMC.getGroupNames(groupNames);
 
-    /* The search for individual group or force names IS case-sensitive BUT keywords are not*/
-    for(int i=0; i<actuatorsByNameOrGroup.getSize(); i++){
-        // index result when a name is not a force or group name for forces in the model
-        int k = -1;  
+    // The search for individual group or force names IS case-sensitive, but
+    // keywords are not.
+    for (int i = 0; i < actuatorsByNameOrGroup.getSize(); i++) {
+        // index result when a name is not a force or group name for forces in
+        // the model
+        int k = -1;
         // It is possible to list actuators by name and group
-        // So check if name is a group name first   
-        if(groupNames.getSize() > 0){
+        // So check if name is a group name first
+        if (groupNames.getSize() > 0) {
             k = groupNames.findIndex(actuatorsByNameOrGroup[i]);
-            if(k > -1){ //found
+            if (k > -1) { // found
                 const ObjectGroup* group = actuatorsForCMC.getGroup(k);
-                Array<Object*> members = group->getMembers();
-                for(int j=0; j<members.getSize(); j++)
-                    actuatorsForCMC.remove((Actuator *)members[j]);
-                actuatorsForCMC.removeGroup(actuatorsByNameOrGroup[i]);
+                Array<const Object*> members = group->getMembers();
+                for (int j = 0; j < members.getSize(); j++) {
+                    if (auto* actu = dynamic_cast<const Actuator*>(members[j])) {
+                        actuatorsToSkip.push_back(
+                            actu->getAbsolutePathString());
+                    }
+                }
             }
-        } //otherwise, check for an individual actuator
-        else{
+        } // otherwise, check for an individual actuator
+        else {
             k = actuatorsForCMC.getIndex(actuatorsByNameOrGroup[i]);
-            if(k > -1){ //found
-                actuatorsForCMC.remove(k);
+            if (k > -1) { // found
+                actuatorsToSkip.push_back(
+                    actuatorsForCMC.get(k).getAbsolutePathString());
             }
         }
         // No actuator(s) by group or individual name was found
-        if(k < 0)
-            cout << "\nCMCTool::WARNING could not find actuator or group named '" << actuatorsByNameOrGroup[i] << "' to be excluded from CMC." << endl;
-
+        if (k < 0)
+            log_warn("CMCTool: Could not find actuator or group named '{}' to "
+                     "be excluded from CMC.",
+                    actuatorsByNameOrGroup[i]);
     }
 
-    return actuatorsForCMC;
+    const int numActu = actuatorsForCMC.getSize();
+    std::vector<std::string> actuatorsForCMCPaths(numActu);
+    for (int i = 0; i < numActu; ++i) {
+        // Skip actuators that are not force-generating. Check both the path
+        // and name of the actuator.
+        const auto& actuPath = actuatorsForCMC.get(i).getAbsolutePathString();
+        const auto& actuName = actuatorsForCMC.get(i).getName();
+        if (std::find(actuatorsToSkip.begin(), actuatorsToSkip.end(), actuPath) !=
+                actuatorsToSkip.end()) {
+            continue;
+        }
+        if (std::find(actuatorsToSkip.begin(), actuatorsToSkip.end(), actuName) !=
+                actuatorsToSkip.end()) {
+            continue;
+        }
+
+        // If the actuator has a valid path, use it to retrieve the actuator.
+        // Otherwise, use the name to search for the actuator.
+        if (_model->hasComponent(actuPath) && !actuPath.empty()
+                && actuPath != ComponentPath::root()) {
+            const auto& actuator = _model->getComponent<Actuator>(actuPath);
+            actuatorsForCMCPaths.push_back(actuator.getAbsolutePathString());
+        } else {
+            for (const auto& actu : _model->getComponentList<Actuator>()) {
+                if (actu.getName() == actuName) {
+                    actuatorsForCMCPaths.push_back(actuName);
+                    break;
+                }
+            }
+        }
+    }
+
+    return actuatorsForCMCPaths;
 }

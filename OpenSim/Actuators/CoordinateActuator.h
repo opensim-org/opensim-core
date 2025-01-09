@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  * Contributor(s): Frank C. Anderson                                          *
  *                                                                            *
@@ -26,8 +26,6 @@
 
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 
 namespace OpenSim { 
@@ -40,9 +38,9 @@ class Model;
 //                           COORDINATE ACTUATOR
 //==============================================================================
 /**
- * An actuator that applies a generalized force to along a generalized
- * a generalized coordinate, which is proportional to its input control.
- * It replaces the GeneralizeForce class implemented by Frank C. Anderson
+ * An actuator that applies a generalized force in the direction of a
+ * generalized coordinate. The applied generalized force is proportional to the
+ * input control of the CoordinateActuator. Replaces the GeneralizedForce class.
  *
  * @author Ajay Seth
  * @author Frank C. Anderson
@@ -91,12 +89,10 @@ public:
 // PRIVATE
 //==============================================================================
 private:
-    //--------------------------------------------------------------------------
-    // Implement Force interface
-    //--------------------------------------------------------------------------
-    void computeForce(const SimTK::State& state, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                      SimTK::Vector& mobilityForces) const override;
+    /**
+     * Implements the `ForceProducer` interface.
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
 
 
     //--------------------------------------------------------------------------

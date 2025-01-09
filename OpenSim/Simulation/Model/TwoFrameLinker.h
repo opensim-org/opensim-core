@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2015 Stanford University and the Authors                     *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,14 +23,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDE
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Common/ScaleSet.h>
+#include <simbody/internal/MobilizedBody.h>
 
 namespace OpenSim {
-
-class PhysicalOffsetFrame;
 
 //=============================================================================
 //=============================================================================
@@ -46,6 +44,9 @@ class PhysicalOffsetFrame;
  *    class BushingForce : public TwoFrameLinker<Force, PhysicalFrame>
  * @endcode
  *
+ * @tparam C The base class.
+ * @tparam F The type of frame that the class links together.
+ *
  * @author Ajay Seth
  */
 template <class C = Component, class F = Frame>
@@ -55,9 +56,18 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /// Frames added to satisfy the connectors of this TwoFrameLinker Component
+    /// Frames added to satisfy the sockets of this TwoFrameLinker Component
     OpenSim_DECLARE_LIST_PROPERTY(frames, F,
         "Frames created/added to satisfy this component's connections.");
+
+//==============================================================================
+// SOCKETS
+//==============================================================================
+
+    OpenSim_DECLARE_SOCKET(frame1, F,
+            "The first frame participating in this linker.");
+    OpenSim_DECLARE_SOCKET(frame2, F,
+            "The second frame participating in this linker.");
 
 //=============================================================================
 // PUBLIC METHODS
@@ -66,8 +76,17 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
-    /** By default, the TwoFrameLinker is not connected to any frames and its.*/
+    /** By default, the TwoFrameLinker is not connected to any frames. */
     TwoFrameLinker();
+
+    /** Convenience Constructor.
+    Create a TwoFrameLinker Component between two Frames.
+
+    @param[in] name         the name of this TwoFrameLinker component
+    @param[in] frame1       the name of the first Frame being linked
+    @param[in] frame2       the name of the second Frame being linked
+    */
+    TwoFrameLinker(const std::string &name, const F& frame1, const F& frame2);
 
     /** Convenience Constructor.
     Create a TwoFrameLinker Component between two Frames identified by name.
@@ -79,6 +98,20 @@ public:
     TwoFrameLinker(const std::string &name,
         const std::string& frame1Name,
         const std::string& frame2Name);
+
+    /** Convenience Constructor with two Frames
+    Construct a TwoFrameLinker where the two frames are specified by name
+    and offset transforms on the respective frames.
+
+    @param[in] name             the name of this TwoFrameLinker component
+    @param[in] frame1           the first Frame being linked
+    @param[in] offsetOnFrame1   offset Transform on the first frame
+    @param[in] frame2           the second Frame being linked
+    @param[in] offsetOnFrame2   offset Transform on the second frame
+    */
+    TwoFrameLinker(const std::string &name,
+        const F& frame1, const SimTK::Transform& offsetOnFrame1,
+        const F& frame2, const SimTK::Transform& offsetOnFrame2);
 
     /** Convenience Constructor
     Construct a TwoFrameLinker where the two frames are specified by name 
@@ -95,6 +128,28 @@ public:
         const SimTK::Transform& offsetOnFrame1,
         const std::string& frame2Name,
         const SimTK::Transform& offsetOnFrame2);
+
+    /** Backwards compatible Convenience Constructor
+    TwoFrameLinker with offsets specified in terms of the location and
+    orientation in respective PhysicalFrames.
+
+    @param[in] name             the name of this TwoFrameLinker component
+    @param[in] frame1              the first Frame being linked
+    @param[in] locationInFrame1    Vec3 of offset location on the first frame
+    @param[in] orientationInFrame1 Vec3 of orientation offset expressed as
+                                   XYZ body-fixed Euler angles w.r.t frame1.
+    @param[in] frame2              the second Frame being linked
+    @param[in] locationInFrame2    Vec3 of offset location on the second frame
+    @param[in] orientationInFrame2 Vec3 of orientation offset expressed as
+                                   XYZ body-fixed Euler angles w.r.t frame2.
+    */
+    TwoFrameLinker(const std::string &name,
+                   const PhysicalFrame& frame1,
+                   const SimTK::Vec3& locationInFrame1,
+                   const SimTK::Vec3& orientationInFrame1,
+                   const PhysicalFrame& frame2,
+                   const SimTK::Vec3& locationInFrame2,
+                   const SimTK::Vec3& orientationInFrame2);
 
     /** Backwards compatible Convenience Constructor
     TwoFrameLinker with offsets specified in terms of the location and 
@@ -155,26 +210,15 @@ public:
     @return dqdot  Vec6 of (3) angular and (3) translational deflection rates. */
     SimTK::Vec6 computeDeflectionRate(const SimTK::State& s) const;
 
-    /**
-    * Scale the TwoFrameLinker component according to XYZ scale factors.
-    * Associate PhysicalFrames. Generic behavior is to scale the locations
-    * of PhyscialOffsetFrames according to the scale factors of the physical
-    * frame upon which they are attached.
-    *
-    * @param scaleSet   Set of XYZ scale factors for PhysicalFrames.
-    */
-    virtual void scale(const ScaleSet& scaleSet);
-
 protected:
     /** @name Component Interface
         These methods adhere to the Component Interface**/
     /**@{**/
-    void constructConnectors() override;
-    void extendFinalizeFromProperties() override;
     void extendConnectToModel(Model& model) override; 
     // update previous model formats for all components linking two frames
     // in one place - here.
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
+    void 
+    updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
     /**@}**/
 
     /** Helper method to convert internal force expressed in the mobility basis
@@ -215,9 +259,28 @@ protected:
     void addInPhysicalForcesFromInternal(const SimTK::State& state,
         SimTK::Vec6 f, SimTK::Vector_<SimTK::SpatialVec>& spatialForces) const;
 
+    /**
+     * Produces system spatial forces given internal forces.
+     *
+     * Internal forces are expressed in the mobility basis as parameterized by the
+     * deflection between `frame1` and `frame2`, `dq`, and its time derivative, `dqdot`.
+     *
+     * This helper function is intended to be used as part of a `ForceProducer::implProduceForces`
+     * implementation.
+     *
+     * @param state            the state used to evaluate forces
+     * @param f                a `SimTK::Vec6` of forces in the basis of the deflection
+     * @param forceConsumer    a `ForceConsumer` that shall recieve each evaluated force
+     */
+    void producePhysicalForcesFromInternal(
+        const SimTK::State& state,
+        const SimTK::Vec6& f,
+        ForceConsumer& forceConsumer
+    ) const;
+
 private:
     // create the frames property
-    void constructProperties() override;
+    void constructProperties();
 
     //hang on to references to the individual frames for fast access
     mutable SimTK::ReferencePtr<const F> _frame1;
@@ -237,7 +300,17 @@ template <class C, class F>
 TwoFrameLinker<C, F>::TwoFrameLinker() : C()
 {
     this->setAuthors("Ajay Seth");
-    this->constructInfrastructure();
+    this->constructProperties();
+}
+
+template <class C, class F>
+TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
+    const F& frame1,
+    const F& frame2) : TwoFrameLinker<C, F>()
+{
+    this->setName(name);
+    this->template updSocket<F>("frame1").connect(frame1);
+    this->template updSocket<F>("frame2").connect(frame2);
 }
 
 // Convenience constructors
@@ -247,9 +320,36 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     const std::string& frame2Name) : TwoFrameLinker<C, F>()
 {
     this->setName(name);
-    this->template updConnector<F>("frame1").set_connectee_name(frame1Name);
-    this->template updConnector<F>("frame2").set_connectee_name(frame2Name);
+    this->template updSocket<F>("frame1").setConnecteePath(frame1Name);
+    this->template updSocket<F>("frame2").setConnecteePath(frame2Name);
 }
+
+template <class C, class F>
+TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
+    const F& frame1, const SimTK::Transform& transformInFrame1,
+    const F& frame2, const SimTK::Transform& transformInFrame2)
+    : TwoFrameLinker()
+{
+    this->setName(name);
+
+    PhysicalOffsetFrame frame1Offset(frame1.getName() + "_offset",
+        frame1, transformInFrame1);
+
+    PhysicalOffsetFrame frame2Offset(frame2.getName() + "_offset",
+        frame2, transformInFrame2);
+
+    // Append the offset frames to the Joints internal list of frames
+    int ix1 = append_frames(frame1Offset);
+    int ix2 = append_frames(frame2Offset);
+    this->finalizeFromProperties();
+
+    this->connectSocket_frame1(get_frames(ix1));
+    this->connectSocket_frame2(get_frames(ix2));
+
+    static_cast<PhysicalOffsetFrame&>(upd_frames(ix1)).setParentFrame(frame1);
+    static_cast<PhysicalOffsetFrame&>(upd_frames(ix2)).setParentFrame(frame2);
+}
+
 
 template <class C, class F>
 TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
@@ -266,14 +366,32 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
         frame2Name, transformInFrame2);
 
     // Append the offset frames to the Joints internal list of frames
-    append_frames(frame1Offset);
-    append_frames(frame2Offset);
+    int ix1 = append_frames(frame1Offset);
+    int ix2 = append_frames(frame2Offset);
+    this->finalizeFromProperties();
 
-    this->template updConnector<PhysicalFrame>("frame1")
-        .set_connectee_name(frame1Offset.getName());
-    this->template updConnector<PhysicalFrame>("frame2")
-        .set_connectee_name(frame2Offset.getName());
+    this->connectSocket_frame1(get_frames(ix1));
+    this->connectSocket_frame2(get_frames(ix2));
 }
+
+template <class C, class F>
+TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
+               const PhysicalFrame& frame1,
+               const SimTK::Vec3& locationInFrame1,
+               const SimTK::Vec3& orientationInFrame1,
+               const PhysicalFrame& frame2,
+               const SimTK::Vec3& locationInFrame2,
+               const SimTK::Vec3& orientationInFrame2)
+    : TwoFrameLinker(name,
+        frame1, SimTK::Transform(SimTK::Rotation(SimTK::BodyRotationSequence,
+            orientationInFrame1[0], SimTK::XAxis,
+            orientationInFrame1[1], SimTK::YAxis,
+            orientationInFrame1[2], SimTK::ZAxis), locationInFrame1),
+        frame2, SimTK::Transform(SimTK::Rotation(SimTK::BodyRotationSequence,
+            orientationInFrame2[0], SimTK::XAxis,
+            orientationInFrame2[1], SimTK::YAxis,
+            orientationInFrame2[2], SimTK::ZAxis), locationInFrame2))
+{}
 
 template <class C, class F>
 TwoFrameLinker<C, F>::TwoFrameLinker(const std::string& name,
@@ -301,17 +419,10 @@ void TwoFrameLinker<C, F>::constructProperties()
 }
 
 template <class C, class F>
-void TwoFrameLinker<C,F>::constructConnectors()
-{
-    this->template constructConnector<F>("frame1");
-    this->template constructConnector<F>("frame2");
-}
-
-template <class C, class F>
 const F& TwoFrameLinker<C, F>::getFrame1() const
 {
-    if (!(this->isObjectUpToDateWithProperties() && !this->hasSystem())) {
-        _frame1 = &(this->template getConnector<F>("frame1").getConnectee());
+    if (!(this->isObjectUpToDateWithProperties() && this->hasSystem())) {
+        _frame1 = &(this->template getSocket<F>("frame1").getConnectee());
     }
     return _frame1.getRef();
 }
@@ -320,72 +431,18 @@ template <class C, class F>
 const F& TwoFrameLinker<C, F>::getFrame2() const
 {
     if (!(this->isObjectUpToDateWithProperties() && this->hasSystem())) {
-        _frame2 = &(this->template getConnector<F>("frame2").getConnectee());
+        _frame2 = &(this->template getSocket<F>("frame2").getConnectee());
     }
     return _frame2.getRef();
 }
-
-template<class C, class F>
-void TwoFrameLinker<C, F>::scale(const ScaleSet& scaleSet)
-{
-    SimTK::Vec3 frame1Factors(1.0);
-    SimTK::Vec3 frame2Factors(1.0);
-
-    // Find the factors associated with the PhysicalFrames this Joint connects
-    const std::string& base1Name = this->getFrame1().findBaseFrame().getName();
-    const std::string& base2Name = this->getFrame2().findBaseFrame().getName();
-    // Get scale factors
-    bool found_b1 = false;
-    bool found_b2 = false;
-    for (int i = 0; i < scaleSet.getSize(); i++) {
-        Scale& scale = scaleSet.get(i);
-        if (!found_b1 && (scale.getSegmentName() == base1Name)) {
-            scale.getScaleFactors(frame1Factors);
-            found_b1 = true;
-        }
-        if (!found_b2 && (scale.getSegmentName() == base2Name)) {
-            scale.getScaleFactors(frame2Factors);
-            found_b2 = true;
-        }
-        if (found_b1 && found_b2)
-            break;
-    }
-
-    // if the frame is owned by this Joint scale it,
-    // otherwise let the owner of the frame decide.
-    int found = getProperty_frames().findIndex(getFrame1());
-    if (found >= 0) {
-        PhysicalOffsetFrame* offset
-            = dynamic_cast<PhysicalOffsetFrame*>(&upd_frames(found));
-        if (offset)
-            offset->scale(frame1Factors);
-    }
-    found = getProperty_frames().findIndex(getFrame2());
-    if (found >= 0) {
-        PhysicalOffsetFrame* offset
-            = dynamic_cast<PhysicalOffsetFrame*>(&upd_frames(found));
-        if (offset)
-            offset->scale(frame2Factors);
-    }
-}
-
-template<class C, class F>
-void TwoFrameLinker<C, F>::extendFinalizeFromProperties()
-{
-    Super::extendFinalizeFromProperties();
-    for (int i = 0; i < this->getProperty_frames().size(); ++i) {
-        this->addComponent(&upd_frames(i));
-    }
-}
-
 
 template<class C, class F>
 void TwoFrameLinker<C, F>::extendConnectToModel(Model& model) 
 {
     Super::extendConnectToModel(model); //connect to frames 
     // now keep a reference to the frames
-    _frame1 = &(this->template getConnector<F>("frame1").getConnectee());
-    _frame2 = &(this->template getConnector<F>("frame2").getConnectee());
+    _frame1 = &(this->template getSocket<F>("frame1").getConnectee());
+    _frame2 = &(this->template getSocket<F>("frame2").getConnectee());
 }
 
 
@@ -396,9 +453,9 @@ template <class C, class F>
 SimTK::Transform TwoFrameLinker<C, F>::computeRelativeOffset(const SimTK::State& s) const
 {
     // Define frame1 as the "fixed" frame, F
-    SimTK::Transform X_GF = getFrame1().getGroundTransform(s);
+    SimTK::Transform X_GF = getFrame1().getTransformInGround(s);
     // Define the frame2 as the "moving" frame, M
-    SimTK::Transform X_GM = getFrame2().getGroundTransform(s);
+    SimTK::Transform X_GM = getFrame2().getTransformInGround(s);
     // Express M in F
     return ~X_GF * X_GM;
 }
@@ -428,8 +485,8 @@ SimTK::SpatialVec TwoFrameLinker<C, F>::computeRelativeVelocity(const SimTK::Sta
     const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
     const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
 
-    SimTK::Transform X_GF = frame1.getGroundTransform(s);
-    SimTK::Transform X_GM = frame2.getGroundTransform(s);
+    SimTK::Transform X_GF = frame1.getTransformInGround(s);
+    SimTK::Transform X_GM = frame2.getTransformInGround(s);
     SimTK::Transform X_FM = ~X_GF * X_GM;
     const SimTK::Rotation& R_GF = X_GF.R();
 
@@ -491,11 +548,11 @@ void TwoFrameLinker<C, F>::convertInternalForceToForcesOnFrames(
     const F& frame1 = getFrame1();
     const F& frame2 = getFrame2();
 
-    const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
-    const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
+    //const SimTK::Transform& X_GB1 = frame1.getMobilizedBody().getBodyTransform(s);
+    //const SimTK::Transform& X_GB2 = frame2.getMobilizedBody().getBodyTransform(s);
 
-    SimTK::Transform X_GF = frame1.getGroundTransform(s);
-    SimTK::Transform X_GM = frame2.getGroundTransform(s);
+    SimTK::Transform X_GF = frame1.getTransformInGround(s);
+    SimTK::Transform X_GM = frame2.getTransformInGround(s);
     SimTK::Transform X_FM = ~X_GF * X_GM;
     const SimTK::Mat33 N_FM =
         SimTK::Rotation::calcNForBodyXYZInBodyFrame(dq.getSubVec<3>(0));
@@ -529,6 +586,34 @@ void TwoFrameLinker<C, F>::addInPhysicalForcesFromInternal(
         const SimTK::State& s,
         SimTK::Vec6 f, SimTK::Vector_<SimTK::SpatialVec>& physicalForces) const
 {
+    // A `ForceConsumer` that applies body spatial vectors from `producePhysicalForcesFromInternal`
+    class Adaptor final : public ForceConsumer {
+    public:
+        explicit Adaptor(SimTK::Vector_<SimTK::SpatialVec>& physicalForces) :
+            _physicalForces{&physicalForces}
+        {}
+
+    private:
+        void implConsumeBodySpatialVec(
+            const SimTK::State& state,
+            const PhysicalFrame& body,
+            const SimTK::SpatialVec& spatialVec) final
+        {
+            (*_physicalForces)[body.getMobilizedBodyIndex()] += spatialVec;
+        }
+
+        SimTK::Vector_<SimTK::SpatialVec>* _physicalForces;
+    };
+
+    producePhysicalForcesFromInternal(s, f, Adaptor{physicalForces});
+}
+
+template<class C, class F>
+void TwoFrameLinker<C, F>::producePhysicalForcesFromInternal(
+    const SimTK::State& s,
+    const SimTK::Vec6& f,
+    ForceConsumer& forceConsumer) const
+{
     SimTK::SpatialVec F_GF;
     SimTK::SpatialVec F_GM;
     // convert the internal force to spatial forces on the two frames
@@ -548,9 +633,9 @@ void TwoFrameLinker<C, F>::addInPhysicalForcesFromInternal(
     SimTK::SpatialVec F_GB2(F_GM[0] + p_B2M_G % F_GM[1], F_GM[1]);
     SimTK::SpatialVec F_GB1(F_GF[0] + p_B1F_G % F_GF[1], F_GF[1]);
 
-    // Apply (add-in) the body forces to the system set of body forces
-    physicalForces[frame2.getMobilizedBodyIndex()] += F_GB2;
-    physicalForces[frame1.getMobilizedBodyIndex()] += F_GB1;
+    // Produce the body forces as body spatial vectors.
+    forceConsumer.consumeBodySpatialVec(s, frame2, F_GB2);
+    forceConsumer.consumeBodySpatialVec(s, frame1, F_GB1);
 }
 
 
@@ -562,7 +647,8 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
     int documentVersion = versionNumber;
     if (documentVersion < XMLDocument::getLatestVersion()) {
         if (documentVersion < 30505) {
-            // replace old properties with latest use of PhysicalOffsetFrames properties
+            // replace old properties with latest use of PhysicalOffsetFrames
+            // properties
             SimTK::Xml::element_iterator body1Element =
                 aNode.element_begin("body_1");
             SimTK::Xml::element_iterator body2Element =
@@ -588,11 +674,6 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
                 body2Element->getValueAs<std::string>(frame2Name);
             }
 
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
-                "frame1", frame1Name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
-                "frame2", frame2Name);
-
             Vec3 locationInFrame1(0);
             Vec3 orientationInFrame1(0);
             Vec3 locationInFrame2(0);
@@ -611,22 +692,52 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
                 orientBody2Elt->getValueAs<Vec3>(orientationInFrame2);
             }
 
+            // The value of the connectee name depends on if we need to insert
+            // offset frames.
+            std::string frame1_connectee_name;
+            std::string frame2_connectee_name;
+
             // now append updated frames to the property list if they are not
             // identity transforms.
             if ((locationInFrame1.norm() > 0.0) ||
                 (orientationInFrame1.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame(aNode, frame1Name + "_offset",
-                    frame1Name, locationInFrame1, orientationInFrame1);
-                body1Element->setValue(frame1Name + "_offset");
+                frame1_connectee_name = frame1Name + "_offset";
+                XMLDocument::addPhysicalOffsetFrame30505_30517(aNode,
+                        frame1_connectee_name,
+                        frame1Name, locationInFrame1, orientationInFrame1);
+            }
+            // Prior to 4.0, all bodies lived in the Model's BodySet and
+            // Constraints and Forces (current TwoFrameLinker) were always
+            // in the ConstraintSet and ForceSet, which means we need to go
+            // two levels up (../../)  and into the bodyset to find the 
+            // Bodies (frames) being linked.
+            else {
+                frame1_connectee_name =
+                        XMLDocument::updateConnecteePath30517("bodyset",
+                                                              frame1Name);
             }
 
             // again for the offset frame on the child
             if ((locationInFrame2.norm() > 0.0) ||
                 (orientationInFrame2.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame(aNode, frame2Name + "_offset",
-                    frame2Name, locationInFrame2, orientationInFrame2);
+                frame2_connectee_name = frame2Name + "_offset";
+                XMLDocument::addPhysicalOffsetFrame30505_30517(aNode,
+                        frame2_connectee_name,
+                        frame2Name, locationInFrame2, orientationInFrame2);
                 body2Element->setValue(frame2Name + "_offset");
+            } else {
+                frame2_connectee_name =
+                        XMLDocument::updateConnecteePath30517("bodyset",
+                                                              frame2Name);
             }
+
+
+            // Now we know whether to use the original body_1 and body_2
+            // strings or if we should use the offsets.
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                "frame1", frame1_connectee_name);
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                "frame2", frame2_connectee_name);
         }
     }
     Super::updateFromXMLNode(aNode, versionNumber);

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,6 +23,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "AbstractGeometryPath.h"
 #include "Actuator.h"
 #include "GeometryPath.h"
 
@@ -37,8 +38,8 @@ class Model;
 
 /**
  * This is the base class for actuators that apply controllable tension along 
- * a geometry path. %PathActuator has no states; the control is simply the 
- * tension to be applied along a geometry path (i.e. tensionable rope).
+ * a path. %PathActuator has no states; the control is simply the tension to be
+ * applied along a path (i.e. tensionable rope).
  *
  * @author Ajay Seth
  */
@@ -48,10 +49,13 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath,
-        "The set of points defining the path of the muscle.");
+    OpenSim_DECLARE_PROPERTY(path, AbstractGeometryPath,
+        "The path of the actuator which defines length and lengthening speed.");
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum force this actuator can produce.");
+
+    OpenSim_DECLARE_OUTPUT(tension, double, computeActuation,
+                           SimTK::Stage::Acceleration);
 
 //=============================================================================
 // PUBLIC METHODS
@@ -64,10 +68,35 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
     // Path
-    GeometryPath& updGeometryPath() { return upd_GeometryPath(); }
-    const GeometryPath& getGeometryPath() const 
-    {   return get_GeometryPath(); }
-    bool hasGeometryPath() const override { return true;};
+    AbstractGeometryPath& updPath() { return upd_path(); }
+    const AbstractGeometryPath& getPath() const { return get_path(); }
+
+    template <typename PathType>
+    PathType& updPath() {
+        return dynamic_cast<PathType&>(upd_path());
+    }
+    template <typename PathType>
+    const PathType& getPath() const {
+        return dynamic_cast<const PathType&>(get_path());
+    }
+
+    template <typename PathType>
+    PathType* tryUpdPath() {
+        return dynamic_cast<PathType*>(&upd_path());
+    }
+    template <typename PathType>
+    const PathType* tryGetPath() const {
+        return dynamic_cast<const PathType*>(&get_path());
+    }
+
+    GeometryPath& updGeometryPath() {
+        return updPath<GeometryPath>();
+    }
+    const GeometryPath& getGeometryPath() const {
+        return getPath<GeometryPath>();
+    }
+    
+    bool hasVisualPath() const override { return getPath().isVisualPath(); };
 
     // OPTIMAL FORCE
     void setOptimalForce(double aOptimalForce);
@@ -77,45 +106,37 @@ public:
     virtual double getLength(const SimTK::State& s) const;
     virtual double getLengtheningSpeed(const SimTK::State& s) const;
 
+    //--------------------------------------------------------------------------
+    // Implement ScalarActuator Interface
+    //--------------------------------------------------------------------------
+    double getSpeed(const SimTK::State& s) const final
+    {
+        return getLengtheningSpeed(s);
+    }
+
     // Power: Since lengthening is positive and tension always shortens, positive power
     // is when muscle is shortening under tension.
-    double getPower(const SimTK::State& s) const override 
+    double getPower(const SimTK::State& s) const override
     {   return -getActuation(s)*getSpeed(s); }
 
 
     // STRESS
-    double getStress( const SimTK::State& s ) const override;
+    double getStress(const SimTK::State& s) const override;
 
     // Convenience method to add PathPoints
-     /** Note that this function does not maintain the State and so should be used only
-        before a valid State is created */
-    void addNewPathPoint(const std::string& proposedName, PhysicalFrame& aBody,
-                           const SimTK::Vec3& aPositionOnBody);
-
-    //--------------------------------------------------------------------------
-    // APPLICATION
-    //--------------------------------------------------------------------------
-    virtual void computeForce( const SimTK::State& state, 
-                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                               SimTK::Vector& mobilityForces) const override;
+    /** @note This function does not maintain the State and so should be used
+     * only before a valid State is created.
+     * @note Only valid if the `path` owned by this PathActuator supports
+     * PathPoint%s (e.g., GeometryPath). */
+    void addNewPathPoint(const std::string& proposedName,
+                         const PhysicalFrame& aBody,
+                         const SimTK::Vec3& aPositionOnBody);
 
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    double computeActuation( const SimTK::State& s) const override;
-    virtual double computeMomentArm( const SimTK::State& s, Coordinate& aCoord) const;
-
-    //--------------------------------------------------------------------------
-    // XML
-    //--------------------------------------------------------------------------
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
-
-    //--------------------------------------------------------------------------
-    // SCALING
-    //--------------------------------------------------------------------------
-    virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+    double computeActuation(const SimTK::State& s) const override;
+    virtual double computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const;
 
 protected:
     /** Override this method if you would like to calculate a color for use when
@@ -138,11 +159,15 @@ protected:
     virtual SimTK::Vec3 computePathColor(const SimTK::State& state) const;
 
     /** Extension of parent class method; derived classes may extend further. **/
-    void extendFinalizeFromProperties() override;
-    /** Extension of parent class method; derived classes may extend further. **/
     void extendRealizeDynamics(const SimTK::State& state) const override;
 
 private:
+    /**
+     * Implements the `ForceProducer` API by applying the actuator force along
+     * the (potentially, wrapping) path connecting rigid bodies.
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
+
     void setNull();
     void constructProperties();
 

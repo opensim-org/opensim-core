@@ -15,4 +15,8 @@ tests.
 If you have pseudocode that you know does *not* compile, you should put it in a
 file named as `pseudo*.cpp`.
 
-
+The pocket guide (OpenSimPocketGuide.pdf) is a Google Doc that anyone can edit
+at
+https://docs.google.com/document/d/1OAKAXQTxUw02zohSkaIUzOol6qmlE2t_Idv8DJPfaLQ/edit.
+If you make substantial edits to the Google Doc, please download it as a PDF
+and update the copy in the repository (with a pull request).

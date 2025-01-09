@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,22 +25,23 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
-#include <math.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include "IKTaskSet.h"
 #include "osimToolsDLL.h"
-#include "SimTKsimbody.h"
+#include <SimTKcommon/internal/ResetOnCopy.h>
+
+namespace SimTK {
+class State;
+}
 
 namespace OpenSim {
 
 class Model;
 class MarkerData;
+class IKTaskSet;
 class IKTrial;
 class Storage;
 
@@ -106,7 +107,8 @@ protected:
     // Whether to move the model markers (set to false if you just want to preview the static pose)
     bool _moveModelMarkers;
 
-    Storage* _outputStorage;
+    // This is cached during processModel() so the GUI can access it.
+    mutable SimTK::ResetOnCopy<std::unique_ptr<Storage>> _outputStorage;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -123,7 +125,8 @@ public:
 #ifndef SWIG
     MarkerPlacer& operator=(const MarkerPlacer &aMarkerPlacementParams);
 #endif
-    bool processModel(Model* aModel, const std::string& aPathToSubject="");
+    bool processModel(Model* aModel,
+            const std::string& aPathToSubject="") const;
 
     //--------------------------------------------------------------------------
     // GET AND SET
@@ -158,7 +161,14 @@ public:
         _coordinateFileName = aCoordinateFileName;
         _coordinateFileNameProp.setValueIsDefault(false);
     }
-    
+
+    const std::string& getMarkerFileName() const {return _markerFileName; }
+    void setMarkerFileName( const std::string& aMarkerFileName)
+    {
+        _markerFileName=aMarkerFileName;
+        _markerFileNameProp.setValueIsDefault(false);
+    }
+
     double getMaxMarkerMovement() const { return _maxMarkerMovement; }
     void setMaxMarkerMovement(double aMaxMarkerMovement)
     {
@@ -198,7 +208,8 @@ public:
 private:
     void setNull();
     void setupProperties();
-    void moveModelMarkersToPose(SimTK::State& s, Model& aModel, MarkerData& aPose);
+    void moveModelMarkersToPose(SimTK::State& s, Model& aModel,
+            MarkerData& aPose) const;
 //=============================================================================
 };  // END of class MarkerPlacer
 //=============================================================================

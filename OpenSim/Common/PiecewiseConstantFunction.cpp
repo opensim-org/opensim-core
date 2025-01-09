@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,9 +25,7 @@
 // C++ INCLUDES
 #include "PiecewiseConstantFunction.h"
 #include "Constant.h"
-#include "PropertyInt.h"
-#include "PropertyDbl.h"
-#include "PropertyDblArray.h"
+#include "FunctionAdapter.h"
 #include "SimmMacros.h"
 #include "XYFunctionInterface.h"
 
@@ -76,15 +74,17 @@ PiecewiseConstantFunction::PiecewiseConstantFunction(int aN,const double *aX,con
        // NUMBER OF DATA POINTS
        if(aN < 2)
        {
-             printf("PiecewiseConstantFunction: ERROR- there must be 2 or more data points.\n");
-             return;
+           log_error("PiecewiseConstantFunction: there must be 2 or more "
+                     "data points.");
+           return;
        }
 
        // CHECK DATA
        if((aX==NULL)||(aY==NULL))
        {
-             printf("PiecewiseConstantFunction: ERROR- NULL arrays for data points encountered.\n");
-             return;
+           log_error("PiecewiseConstantFunction: NULL arrays for data points "
+                     "encountered.");
+           return;
        }
 
        // INDEPENDENT VALUES (KNOT SEQUENCE)

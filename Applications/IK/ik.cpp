@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -57,8 +57,16 @@ int main(int argc,char **argv)
     try {
     //----------------------
 
-    // REGISTER TYPES
-    InverseKinematicsTool::registerTypes();
+    // DEPRECATION NOTICE
+    const std::string deprecationNotice = R"(
+    THIS EXECUTABLE IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE.
+
+    Use opensim-cmd instead, which can do everything that this executable can.
+
+      ik -S SetupFileName -> opensim-cmd run-tool SetupFileName
+      ik -PS              -> opensim-cmd print-xml ik
+    )";
+    log_warn(deprecationNotice);
 
     // PARSE COMMAND LINE
     string option = "";
@@ -93,7 +101,8 @@ int main(int argc,char **argv)
                 Object::setSerializeAllDefaults(true);
                 tool->print("default_Setup_IK.xml");
                 Object::setSerializeAllDefaults(false);
-                cout << "Created file default_Setup_IK.xml with default setup" << endl;
+                log_info("Created file default_Setup_IK.xml with default "
+                         "setup");
                 return 0;
 
             // PRINT PROPERTY INFO
@@ -113,7 +122,8 @@ int main(int argc,char **argv)
 
             // UNRECOGNIZED
             } else {
-                cout << "Unrecognized option" << option << "on command line... Ignored" << endl;
+                log_warn("Unrecognized option {} on command line... Ignored",
+                         option);
                 PrintUsage(argv[0], cout);
                 return(0);
             }
@@ -122,19 +132,14 @@ int main(int argc,char **argv)
 
     // ERROR CHECK
     if(setupFileName=="") {
-        cout<<"\n\nik.exe: ERROR- A setup file must be specified.\n";
+        log_error("ik.exe: A setup file must be specified.");
         PrintUsage(argv[0], cout);
         return(-1);
     }
 
     // CONSTRUCT
-    cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
+    log_info("Constructing tool from setup file {}.", setupFileName);
     InverseKinematicsTool ik(setupFileName);
-    //ik.print("ik_setup_check.xml");
-
-    // PRINT MODEL INFORMATION
-    //Model& model = ik.getModel();
-    //model.printBasicInfo(cout);
 
     // start timing
     std::clock_t startTime = std::clock();
@@ -142,14 +147,14 @@ int main(int argc,char **argv)
     // RUN
     ik.run();
 
-    std::cout << "IK compute time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
-
+    auto timeInMilliseconds = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
+    log_info("IK compute time = {} ms", timeInMilliseconds);
 
     //----------------------------
     // Catch any thrown exceptions
     //----------------------------
     } catch(const std::exception& x) {
-        cout << "Exception in IK: " << x.what() << endl;
+        log_error("Exception in IK: {}", x.what());
         return -1;
     }
     //----------------------------
@@ -172,4 +177,4 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream<<"-Setup, -S         SetupFileName    Specify an xml setup file for solving an inverse kinematics problem.\n";
     aOStream<<"-PropertyInfo, -PI                  Print help information for properties in setup files.\n";
 }
-    
+

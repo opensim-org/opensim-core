@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,9 +27,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/ScaleSet.h>
-#include "Model.h"
-#include "Force.h"
+
+#include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
+#include <OpenSim/Simulation/Model/ForceProducer.h>
+#include <OpenSim/Simulation/Model/GeometryPath.h>
 
 #ifdef SWIG
     #ifdef OSIMACTUATORS_API
@@ -40,22 +41,23 @@
 
 namespace OpenSim {
 
-class GeometryPath;
+class Function;
+class ScaleSet;
 
 //=============================================================================
 //=============================================================================
 /**
  * A class implementing a ligament. The path of the ligament is
- * stored in a GeometryPath object.
+ * stored in an object derived from AbstractGeometryPath.
  */
-class OSIMSIMULATION_API Ligament : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(Ligament, Force);
+class OSIMSIMULATION_API Ligament : public ForceProducer {
+OpenSim_DECLARE_CONCRETE_OBJECT(Ligament, ForceProducer);
 public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath, 
-        "the set of points defining the path of the ligament");
+    OpenSim_DECLARE_PROPERTY(path, AbstractGeometryPath,
+        "The path defines the length and lengthening speed of the PathSpring");
     OpenSim_DECLARE_PROPERTY(resting_length, double,
         "resting length of the ligament");
     OpenSim_DECLARE_PROPERTY(pcsa_force, double,
@@ -73,14 +75,41 @@ public:
     // assignment operator.
 
     //--------------------------------------------------------------------------
+    // PATH
+    //--------------------------------------------------------------------------
+    AbstractGeometryPath& updPath() { return upd_path(); }
+    const AbstractGeometryPath& getPath() const { return get_path(); }
+
+    template <typename PathType>
+    PathType& updPath() {
+        return dynamic_cast<PathType&>(upd_path());
+    }
+    template <typename PathType>
+    const PathType& getPath() const {
+        return dynamic_cast<const PathType&>(get_path());
+    }
+
+    template <typename PathType>
+    PathType* tryUpdPath() {
+        return dynamic_cast<PathType*>(&upd_path());
+    }
+    template <typename PathType>
+    const PathType* tryGetPath() const {
+        return dynamic_cast<const PathType*>(&get_path());
+    }
+
+    GeometryPath& updGeometryPath() {
+        return updPath<GeometryPath>();
+    }
+    const GeometryPath& getGeometryPath() const {
+        return getPath<GeometryPath>();
+    }
+    
+    bool hasVisualPath() const override { return getPath().isVisualPath(); };
+
+    //--------------------------------------------------------------------------
     // GET
     //--------------------------------------------------------------------------
-    // Properties
-    const GeometryPath& getGeometryPath() const 
-    {   return get_GeometryPath(); }
-    GeometryPath& updGeometryPath() 
-    {   return upd_GeometryPath(); }
-    bool hasGeometryPath() const override { return true;};
     virtual double getLength(const SimTK::State& s) const;
     virtual double getRestingLength() const 
     {   return get_resting_length(); }
@@ -93,22 +122,19 @@ public:
     virtual bool setForceLengthCurve(const Function& aForceLengthCurve);
 
     // computed variables
-    const double& getTension(const SimTK::State& s) const;
+    double getTension(const SimTK::State& s) const;
 
-    //--------------------------------------------------------------------------
-    // COMPUTATIONS
-    //--------------------------------------------------------------------------
     virtual double computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const;
-    void computeForce(const SimTK::State& s, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                      SimTK::Vector& generalizedForces) const override;
 
     //--------------------------------------------------------------------------
     // SCALE
     //--------------------------------------------------------------------------
-    virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+
+    /** Adjust the resting length of the ligament after the model has been
+        scaled. The `resting_length` property is multiplied by the quotient of
+        the current path length and the path length before scaling. */
+    void extendPostScale(const SimTK::State& s,
+                         const ScaleSet& scaleSet) override;
 
 protected:
     /** Override this method if you would like to calculate a color for use
@@ -160,7 +186,11 @@ protected:
     }
 
 private:
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const final;
+
     void constructProperties();
+
+    mutable CacheVariable<double> _tensionCV;
 
 //=============================================================================
 };  // END of class Ligament

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,9 +26,7 @@
 // INCLUDE
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 #include <OpenSim/Common/SmoothSegmentedFunction.h>
-#include <simbody/internal/common.h>
 
 #ifdef SWIG
     #ifdef OSIMACTUATORS_API
@@ -265,6 +263,11 @@ public:
     'aNormLength'. */
     double calcValue(double aNormLength) const;
 
+    /** Evaluates the tendon-force-length curve value and derivative at a
+    normalized tendon length of 'aNormLength'. */
+    SmoothSegmentedFunction::ValueAndDerivative calcValueAndDerivative(
+        double aNormLength) const;
+
     /** Calculates the derivative of the tendon-force-length multiplier with
     respect to the normalized tendon length.
     @param aNormLength
@@ -276,6 +279,10 @@ public:
         normalized tendon length.
     */
     double calcDerivative(double aNormLength, int order) const;
+    
+    /// If possible, use the simpler overload above.
+    double calcDerivative(const std::vector<int>& derivComponents,
+                          const SimTK::Vector& x) const override;
 
     /** Calculates the normalized area under the curve. Since it is expensive to
     construct, the curve is built only when necessary.

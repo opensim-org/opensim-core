@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2012 Stanford University and the Authors                *
+* Copyright (c) 2005-2017 Stanford University and the Authors                *
 * Author(s): Tim Dorn                                                        *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,7 +26,7 @@
 // INCLUDE
 //=============================================================================
 #include "ActuatorForceProbe.h"
-#include "ForceSet.h"
+#include "Model.h"
 #include <OpenSim/Common/IO.h>
 
 using namespace std;
@@ -104,7 +104,7 @@ const Property<string>& ActuatorForceProbe::getActuatorNames() const
 * Returns whether to report sum of all Actuator forces together
 or report the forces individually.
 */
-const bool ActuatorForceProbe::getSumForcesTogether() const
+bool ActuatorForceProbe::getSumForcesTogether() const
 {
     return get_sum_forces_together();
 }
@@ -113,7 +113,7 @@ const bool ActuatorForceProbe::getSumForcesTogether() const
 /**
 * Returns the exponent to apply to each Actuator force.
 */
-const double ActuatorForceProbe::getExponent() const
+double ActuatorForceProbe::getExponent() const
 {
     return get_exponent();
 }
@@ -182,8 +182,8 @@ void ActuatorForceProbe::extendConnectToModel(Model& model)
         const int k = model.getActuators().getIndex(actName);
         if (k<0) {
             string errorMessage = getConcreteClassName() + ": Invalid Actuator '" + actName + "' specified in <actuator_names>.";
-            std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
-            setDisabled(true);
+            log_warn("{} Probe will be disabled.", errorMessage);
+            setEnabled(false);
             //throw (Exception(errorMessage.c_str()));
         }
         else

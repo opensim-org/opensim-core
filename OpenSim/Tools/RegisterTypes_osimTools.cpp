@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -31,9 +31,10 @@
 #include "CMCTool.h"
 #include "RRATool.h"
 #include "ForwardTool.h"
-//#include "PerturbationTool.h"
 #include "AnalyzeTool.h"
 #include "InverseKinematicsTool.h"
+#include "IMUInverseKinematicsTool.h"
+
 #include "InverseDynamicsTool.h"
 
 #include "GenericModelMaker.h"
@@ -83,8 +84,6 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
     Object::registerType( IKCoordinateTask() );
     Object::registerType( IKMarkerTask() );
     Object::registerType( IKTaskSet() );
-    //Object::registerType( IKTrial() );
-    //Object::registerType( IKTrialSet() );
     Object::registerType( MarkerPair() );
     Object::registerType( MarkerPairSet() );
     Object::registerType( MarkerPlacer() );
@@ -100,7 +99,9 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
     Object::registerType( CMC_TaskSet() );
 
     Object::registerType( SMC_Joint() );
+    Object::registerType( OrientationWeightSet());
     Object::registerType( InverseKinematicsTool() );
+    Object::registerType( IMUInverseKinematicsTool());
     Object::registerType( InverseDynamicsTool() );
     // Old versions
     Object::RenameType("rdCMC_Joint",   "CMC_Joint");
@@ -110,9 +111,8 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
     Object::RenameType("IKTool", "InverseKinematicsTool");
 
   } catch (const std::exception& e) {
-    std::cerr 
-        << "ERROR during osimTools Object registration:\n"
-        << e.what() << "\n";
+    log_error("Error during osimTools Object registration: {}.", e.what());
+    log_error("");
   }
 }
 

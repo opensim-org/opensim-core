@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,6 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "ActiveForceLengthCurve.h"
+#include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -152,15 +153,26 @@ void ActiveForceLengthCurve::setMinValue(double minimumValue)
 //==============================================================================
 double ActiveForceLengthCurve::calcValue(double normFiberLength) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "ActiveForceLengthCurve: Curve is not up-to-date with its properties");
     return m_curve.calcValue(normFiberLength);
+}
+
+SmoothSegmentedFunction::ValueAndDerivative ActiveForceLengthCurve::
+    calcValueAndDerivative(double normFiberLength) const
+{
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
+        "ActiveForceLengthCurve: Curve is not up-to-date with its properties");
+    return m_curve.calcValueAndFirstDerivative(normFiberLength);
 }
 
 double ActiveForceLengthCurve::calcDerivative(double normFiberLength,
                                               int order) const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "ActiveForceLengthCurve: Curve is not up-to-date with its properties");
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2,
         "ActiveForceLengthCurve::calcDerivative",
@@ -169,9 +181,17 @@ double ActiveForceLengthCurve::calcDerivative(double normFiberLength,
     return m_curve.calcDerivative(normFiberLength,order);
 }
 
+double ActiveForceLengthCurve::
+    calcDerivative(const std::vector<int>& derivComponents,
+                   const SimTK::Vector& x) const
+{
+    return m_curve.calcDerivative(derivComponents, x);
+}
+
 SimTK::Vec2 ActiveForceLengthCurve::getCurveDomain() const
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+    OPENSIM_ASSERT(
+        isObjectUpToDateWithProperties() &&
         "ActiveForceLengthCurve: Curve is not up-to-date with its properties");
 
     return m_curve.getCurveDomain();

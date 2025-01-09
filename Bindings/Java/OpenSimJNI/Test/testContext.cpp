@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -77,7 +77,7 @@ int main()
     int n1 = fs.getNumGroups();
     const ObjectGroup* grp = fs.getGroup("wrist");
     assert(grp);
-    const Array<Object*>& members = grp->getMembers();
+    const Array<const Object*>& members = grp->getMembers();
     int sz = members.getSize();
     ASSERT_EQUAL(sz,5,0);
     assert(members.get(0)->getName()=="ECRB");
@@ -122,11 +122,12 @@ int main()
     bool after = PropertyHelper::getValueBool(dProp);
     SimTK_ASSERT_ALWAYS(!after, "Property has wrong value!!");
     dTRIlong->updGeometryPath().updateGeometry(context->getCurrentStateRef());
-    const OpenSim::Array<PathPoint*>& path = context->getCurrentPath(*dTRIlong);
+    const OpenSim::Array<AbstractPathPoint*>& path = context->getCurrentPath(*dTRIlong);
     cout << "Muscle Path" << endl;
     cout << path.getSize() << endl;
     for(int i=0; i< path.getSize(); i++)
-        cout << path.get(i)->getBodyName() << path.get(i)->getLocation() << endl;
+        cout << path[i]->getParentFrame().getName()
+             << path[i]->getLocation(context->getCurrentStateRef()) << endl;
     // Compare to known path 
     const OpenSim::Body& dBody = model->getBodySet().get("r_ulna_radius_hand");
     Transform xform = context->getTransform(dBody);
@@ -156,12 +157,14 @@ int main()
     cout << xform << endl;
     // Compare to known xform
     dTRIlong->updGeometryPath().updateGeometry(context->getCurrentStateRef());
-    const OpenSim::Array<PathPoint*>& newPath = context->getCurrentPath(*dTRIlong);
+    const OpenSim::Array<AbstractPathPoint*>& newPath = context->getCurrentPath(*dTRIlong);
+    context->realizePosition();
     // Compare to known path 
     cout << "New Muscle Path" << endl;
     cout << path.getSize() << endl;
     for(int i=0; i< path.getSize(); i++)
-        cout << path.get(i)->getBodyName() << path.get(i)->getLocation() << endl;
+        cout << path[i]->getParentFrame().getName() 
+             << path[i]->getLocation(context->getCurrentStateRef()) << endl;
     double length2 = context->getMuscleLength(*dTRIlong);
     cout << length2 << endl;
     ASSERT_EQUAL(.315748, length2, 1e-5);
@@ -176,6 +179,83 @@ int main()
     assert(context->getLocked(dr_elbow_flexNew));
     ASSERT_EQUAL(0.5, context->getValue(dr_elbow_flexNew), 0.000001);
 
+    // Exercise Editing workflow
+    // These are the same calls done from GUI code base through Property edits
+    OpenSim::Body& bdy = model->updBodySet().get("r_humerus");
+    AbstractProperty& massProp = bdy.updPropertyByName("mass");
+    double oldValue = PropertyHelper::getValueDouble(massProp);
+    double v = oldValue + 1.0;
+    context->cacheModelAndState();
+    PropertyHelper::setValueDouble(v, massProp);
+    context->restoreStateFromCachedModel();
+
+    // Exercise PathPoint operations used to edit Path in GUI
+    PathPointSet& pathPoints = dTRIlong->updGeometryPath().updPathPointSet();
+    std::string pathBeforeInXML = dTRIlong->updGeometryPath().dump();
+    std::cout << pathBeforeInXML << endl;
+    int origSize = pathPoints.getSize();
+    AbstractPathPoint& savePoint = pathPoints.get("TRIlong-P2");
+    const std::string& saveFrameName = savePoint.getParentFrame().getName();
+    AbstractPathPoint* clonedPoint = savePoint.clone();
+
+    // Test delete second PathPoint from TRIlong muscle
+    context->deletePathPoint(dTRIlong->updGeometryPath(), 2); 
+    assert(pathPoints.getSize() == origSize - 1);
+    std::string pathAfterDeletionInXML = dTRIlong->updGeometryPath().dump();
+    std::cout << pathAfterDeletionInXML << endl;
+    
+    // Test adding PathPoint to TRIlong muscle (Stationary)
+    Component& frame = model->updBodySet().updComponent(saveFrameName);
+    PhysicalFrame* physFrame = PhysicalFrame::safeDownCast(&frame);
+    context->addPathPoint(dTRIlong->updGeometryPath(), 3, *physFrame);
+    assert(pathPoints.getSize() == origSize);
+    std::string pathAfterReinsertionInXML = dTRIlong->updGeometryPath().dump();
+    std::cout << pathAfterReinsertionInXML << endl;
+
+    // Test changing type to ConditionalPathPoint
+    ConditionalPathPoint* newPoint = new ConditionalPathPoint();
+    AbstractPathPoint& oldPoint = pathPoints.get(2);
+    newPoint->setCoordinate(model->getCoordinateSet().get(0));
+    newPoint->setParentFrame(oldPoint.getParentFrame());
+    context->replacePathPoint(dTRIlong->updGeometryPath(), oldPoint, *newPoint);
+    assert(pathPoints.getSize() == origSize);
+
+    std::string pathAfterTypeChangeToViaInXML = dTRIlong->updGeometryPath().dump();
+    std::cout << pathAfterTypeChangeToViaInXML << endl;
+ 
+    // Make a change to a socket that is invalid and verify that we can recover
+    // from that invalid change by not making it on model directly
+    // context has reference to the model already
+    context->cacheModelAndState();
+    Joint& shoulder = model->updJointSet().updComponent<Joint>("r_shoulder");
+    AbstractSocket& socket = shoulder.updSocket("child_frame");
+    try {
+        // create an invalid model where joint connects two frames on ground,
+        // the test will verify the connectee has not been changed 
+        context->setSocketConnecteePath(socket, "ground");
+    }
+    catch (const std::exception& e) {
+        // Expect meaningful error message explaining why initsystem failed
+        // in GUI use case this gets propagated to users
+        cout << "Exception: " << e.what() << endl;
+    }
+    AbstractSocket& psocket = shoulder.updSocket("parent_frame");
+    const Object& connecteeBefore = psocket.getConnecteeAsObject();
+    try {
+        // Try to create an invalid model again, this call should leave the 
+        // model untouched since change invalidates psocket
+        context->setSocketConnecteePath(psocket, "r_ulna_radius_hand");
+
+    }
+    catch (const std::exception& e) {
+        // Expect meaningful error message explaining why initsystem failed
+        // in GUI use case this gets propagated to users
+        cout << "Exception: " << e.what() << endl;
+    }
+    const Object& connecteeAfter = psocket.getConnecteeAsObject();
+    OPENSIM_THROW_IF(&connecteeAfter != &connecteeBefore, OpenSim::Exception, 
+        "Connectee changed after unsuccessful edit");
+    // model is still valid here despite attempts to make invalid edits
     return status;
   } catch (const std::exception& e) {
       cout << "Exception: " << e.what() << endl;

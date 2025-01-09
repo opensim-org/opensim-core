@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan, Ajay Seth                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,7 +25,8 @@
 // INCLUDES
 //=============================================================================
 #include "WeldConstraint.h"
-#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <simbody/internal/Constraint_Weld.h>
+#include <simbody/internal/MobilizedBody.h>
 
 //=============================================================================
 // STATICS
@@ -81,8 +82,8 @@ WeldConstraint::WeldConstraint(const std::string &name,
 WeldConstraint::WeldConstraint(const std::string &name,
     const PhysicalFrame& frame1, const SimTK::Transform& transformInFrame1,
     const PhysicalFrame& frame2, const SimTK::Transform& transformInFrame2)
-    : TwoFrameLinker<Constraint, PhysicalFrame>(name,
-        frame1.getName(), transformInFrame1, frame2.getName(), transformInFrame2)
+    : TwoFrameLinker<Constraint, PhysicalFrame>(name, frame1, transformInFrame1,
+                                                      frame2, transformInFrame2)
 {
     setNull();
 }
@@ -145,10 +146,10 @@ void WeldConstraint::
     // wrt foot (i.e., frame2) because we are passing it in from a
     // prescribed force.
     // We must also get that point position vector wrt ground (i.e., frame1)
-    Vec3 spoint = frame2.findLocationInAnotherFrame(s, point, frame1);
+    Vec3 spoint = frame2.findStationLocationInAnotherFrame(s, point, frame1);
 
-    SimTK::Transform in1(frame1.getGroundTransform(s).R(), spoint);
-    SimTK::Transform in2(frame2.getGroundTransform(s).R(), point);
+    SimTK::Transform in1(frame1.getTransformInGround(s).R(), spoint);
+    SimTK::Transform in2(frame2.getTransformInGround(s).R(), point);
 
     // Add new internal PhysicalOffSetFrames that the Constraint can update 
     // without affecting any other components.
@@ -157,7 +158,7 @@ void WeldConstraint::
         _internalOffset1.reset(new PhysicalOffsetFrame(frame1, in1));
         _internalOffset1->setName("internal_" + frame1.getName());
         updProperty_frames().adoptAndAppendValue(_internalOffset1.get());
-        updConnector<PhysicalFrame>("frame1").connect(*_internalOffset1);
+        connectSocket_frame1(*_internalOffset1);
     }
     else { // otherwise it is already "wired" up so just update
         _internalOffset1->setOffsetTransform(in1);
@@ -167,7 +168,7 @@ void WeldConstraint::
         _internalOffset2.reset(new PhysicalOffsetFrame(frame2, in2));
         _internalOffset2->setName("internal_" + frame2.getName());
         updProperty_frames().adoptAndAppendValue(_internalOffset2.get());
-        updConnector<PhysicalFrame>("frame2").connect(*_internalOffset2);
+        connectSocket_frame2(*_internalOffset2);
     }
     else {
         _internalOffset2->setOffsetTransform(in2);

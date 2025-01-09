@@ -2,7 +2,7 @@
 set(TEST_ENVIRONMENT checkEnvironment)       
  
 add_executable(${TEST_ENVIRONMENT}
-    ${OpenSim_SOURCE_DIR}/OpenSim/Examples/checkEnvironment/test.cpp)         
+    ${OpenSim_SOURCE_DIR}/OpenSim/Examples/checkEnvironment/checkEnvironment.cpp)         
 target_link_libraries(${TEST_ENVIRONMENT} osimTools)
 set_target_properties(${TEST_ENVIRONMENT}        
        PROPERTIES        
@@ -23,7 +23,11 @@ endforeach(DATA_FILE)
 if(BUILD_TESTING)        
   set(TEST_EXAMPLE_MODEL testExampleModel)       
          
-  add_test(${TEST_EXAMPLE_MODEL}Runs ${EXECUTABLE_OUTPUT_PATH}/${TEST_ENVIRONMENT})          
+  add_test(${TEST_EXAMPLE_MODEL}Runs ${EXECUTABLE_OUTPUT_PATH}/${TEST_ENVIRONMENT}) 
+  set_tests_properties(${TEST_EXAMPLE_MODEL}Runs PROPERTIES 
+    ENVIRONMENT "OPENSIM_USE_VISUALIZER=0") 
 endif(BUILD_TESTING)         
          
-install(TARGETS ${TEST_ENVIRONMENT} DESTINATION "${CMAKE_INSTALL_BINDIR}")
+if(OPENSIM_BUILD_INDIVIDUAL_APPS)
+    install(TARGETS ${TEST_ENVIRONMENT} DESTINATION "${CMAKE_INSTALL_BINDIR}")
+endif()

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "CoordinateActuator.h"
+#include "ActivationCoordinateActuator.h"
 #include "PointActuator.h"
 #include "TorqueActuator.h"
 #include "BodyActuator.h"
@@ -38,8 +39,14 @@
 #include "RigidTendonMuscle.h"
 #include "Millard2012EquilibriumMuscle.h"
 #include "Millard2012AccelerationMuscle.h"
+#include "DeGrooteFregly2016Muscle.h"
 
 #include "McKibbenActuator.h"
+
+#include "ModelFactory.h"
+#include "ModelProcessor.h"
+#include "ModelOperators.h"
+#include "PolynomialPathFitter.h"
 
 #include "RegisterTypes_osimActuators.h"    // to expose RegisterTypes_osimActuators
 

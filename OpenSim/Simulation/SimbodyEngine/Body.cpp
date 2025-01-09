@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,21 +24,17 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Simbody.h"
 #include "Body.h"
-#include <OpenSim/Simulation/Model/Frame.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ModelVisualizer.h>
+#include <OpenSim/Common/ScaleSet.h>
+#include "simbody/internal/MobilizedBody.h"
 
 //=============================================================================
 // STATICS
 //=============================================================================
 using namespace std;
-//using namespace SimTK;
 using namespace OpenSim;
 using SimTK::Mat33;
 using SimTK::Vec3;
-using SimTK::DecorativeGeometry;
 
 //=============================================================================
 // CONSTRUCTOR(S)
@@ -49,7 +45,6 @@ using SimTK::DecorativeGeometry;
  */
 Body::Body() : PhysicalFrame()
 {
-    //_body = this;
     constructProperties();
 }
 
@@ -65,8 +60,6 @@ Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,
     set_mass(aMass);
     set_mass_center(aMassCenter);
     setInertia(aInertia);
-    // Better use name search or more robust method
-    upd_geometry(0).setFrameName(aName);
 }
 
 //_____________________________________________________________________________
@@ -84,8 +77,10 @@ void Body::constructProperties()
 void Body::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
+    _inertia = SimTK::Inertia{};  // forces `getInertia` to re-update from the property (#3395)
     const SimTK::MassProperties& massProps = getMassProperties();
     _internalRigidBody = SimTK::Body::Rigid(massProps);
+    _slaves.clear();
 }
 
 //_____________________________________________________________________________
@@ -96,7 +91,7 @@ void Body::extendFinalizeFromProperties()
 void Body::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
-    
+
     int nslaves = (int)_slaves.size();
 
     if (nslaves){
@@ -121,20 +116,6 @@ void Body::extendConnectToModel(Model& aModel)
 //=============================================================================
 // GET AND SET
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Add display geometry to body.
- *
- * @param aGeometryFileName Geometry filename.
- */
-void Body::addMeshGeometry(const std::string& aGeometryFileName, const SimTK::Vec3 scale)
-{
-    Mesh geom(aGeometryFileName);
-    geom.set_scale_factors(scale);
-    if (geom.getFrameName() == "")
-        geom.setFrameName(getName());
-    addGeometry(geom);
-}
 
 //_____________________________________________________________________________
 /**
@@ -148,34 +129,35 @@ const SimTK::Inertia& Body::getInertia() const
     if (_inertia.isNaN()){
         // initialize from properties
         const double& m = getMass();
+        const SimTK::Vec6& Ivec = get_inertia();
         // if mass is zero, non-zero inertia makes no sense
-        if (-SimTK::SignificantReal <= m && m <= SimTK::SignificantReal){
+        if (std::abs(m) <= SimTK::SignificantReal &&
+                Ivec.norm() > SimTK::SignificantReal) {
             // force zero inertia
-            cout<<"Body '"<<getName()<<"' is massless but nonzero inertia provided.";
-            cout<<" Inertia reset to zero. "<<"Otherwise provide nonzero mass."<< endl;
+            log_warn("Body '{}' is massless but nonzero inertia provided.",getName());
+            log_warn(" Inertia reset to zero. Otherwise provide nonzero mass.");
             _inertia = SimTK::Inertia(0);
         }
         else{
-            const SimTK::Vec6& Ivec = get_inertia();
             try {
                 _inertia = SimTK::Inertia(Ivec.getSubVec<3>(0), Ivec.getSubVec<3>(3));
-            } 
+            }
             catch (const std::exception& ex){
                 // Should throw an Exception but we have models we have released with
                 // bad inertias. E.g. early gait23 models had an error in the inertia
-                // of the toes Body. We cannot allow failures with our models so 
+                // of the toes Body. We cannot allow failures with our models so
                 // raise a warning and do something sensible with the values at hand.
-                cout << "WARNING: Body " + getName() + " has invalid inertia. " << endl;
-                cout << ex.what() << endl;
+                log_warn("Body {} has invalid inertia. ", getName());
+                log_error(ex.what());
 
                 // get some aggregate value for the inertia based on existing values
                 double diag = Ivec.getSubVec<3>(0).norm()/sqrt(3.0);
 
                 // and then assume a spherical shape.
                 _inertia = SimTK::Inertia(Vec3(diag), Vec3(0));
-                
-                cout << getName() << " Body's inertia being reset to:" << endl;
-                cout << _inertia << endl;
+
+                log_warn("{} Body's inertia being reset to: {}",
+                    getName(), _inertia);
             }
         }
     }
@@ -199,46 +181,71 @@ void Body::setInertia(const SimTK::Inertia& inertia)
     upd_inertia()[5] = I[1][2];
 }
 
-//=============================================================================
-// SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Scale the body.
- *
- * @param aScaleFactors XYZ scale factors.
- * @param aScaleMass whether or not to scale mass properties
- */
-void Body::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
-{
-    Super::scale(aScaleFactors);
-    for(int i=0; i<3; i++) {
-        upd_mass_center()[i] *= aScaleFactors[i];
-    }
-
-        scaleInertialProperties(aScaleFactors, aScaleMass);
+SimTK::SpatialVec Body::calcMomentumAboutOrigin(const SimTK::State& s) const {
+    const SimTK::MobilizedBody& mobod = getMobilizedBody();
+    return mobod.calcBodyMomentumAboutBodyOriginInGround(s);
 }
 
-//_____________________________________________________________________________
-/**
- * Scale the body's mass and inertia tensor.
- *
- * @param aScaleFactors XYZ scale factors.
- * @param aScaleMass Whether or not to scale the mass
- */
-void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
+SimTK::Vec3 Body::calcAngularMomentumAboutOrigin(const SimTK::State& s) const {
+    return calcMomentumAboutOrigin(s)[0];
+}
+
+SimTK::Vec3 Body::calcLinearMomentumAboutOrigin(const SimTK::State& s) const {
+    return calcMomentumAboutOrigin(s)[1];
+}
+
+SimTK::SpatialVec Body::calcMomentumAboutMassCenter(const SimTK::State& s) const 
+{
+    const SimTK::MobilizedBody& mobod = getMobilizedBody();
+    return mobod.calcBodyMomentumAboutBodyMassCenterInGround(s);
+}
+
+SimTK::Vec3 Body::calcAngularMomentumAboutMassCenter(const SimTK::State& s) const 
+{
+    return calcMomentumAboutMassCenter(s)[0];
+}
+
+SimTK::Vec3 Body::calcLinearMomentumAboutMassCenter(const SimTK::State& s) const 
+{
+    return calcMomentumAboutMassCenter(s)[1];
+}
+
+//==============================================================================
+// SCALING
+//==============================================================================
+void Body::scale(const SimTK::Vec3& scaleFactors, bool scaleMass)
+{
+    Super::scaleAttachedGeometry(scaleFactors);
+    upd_mass_center() = get_mass_center().elementwiseMultiply(scaleFactors);
+    scaleInertialProperties(scaleFactors, scaleMass);
+}
+
+void Body::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
+{
+    Super::extendScale(s, scaleSet);
+
+    // Get scale factors (if an entry for this Body exists).
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, *this);
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
+        return;
+
+    upd_mass_center() = get_mass_center().elementwiseMultiply(scaleFactors);
+}
+
+void Body::scaleInertialProperties(const SimTK::Vec3& scaleFactors, bool scaleMass)
 {
     // Save the unscaled mass for possible use later.
     double unscaledMass = get_mass();
 
     // Calculate and store the product of the scale factors.
-    double massScaleFactor = abs(aScaleFactors[0] * aScaleFactors[1] * aScaleFactors[2]);
+    double massScaleFactor = abs(scaleFactors[0] * scaleFactors[1] * scaleFactors[2]);
 
     // Scale the mass.
-    if (aScaleMass)
+    if (scaleMass)
         upd_mass() *= massScaleFactor;
-
-    SimTK::SymMat33 inertia = _inertia.asSymMat33();
+    // Fix issue #2871 by fmatari
+    SimTK::Mat33 inertia = getInertia().toMat33();
+    //SimTK::SymMat33 inertia = getInertia().asSymMat33();
 
     // If the mass is zero, then make the inertia tensor zero as well.
     // If the X, Y, Z scale factors are equal, then you can scale the
@@ -250,15 +257,15 @@ void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScale
     if (get_mass() <= SimTK::Eps) {
         inertia *= 0.0;
     }
-    else if (SimTK::isNumericallyEqual(aScaleFactors[0], aScaleFactors[1])
-             && SimTK::isNumericallyEqual(aScaleFactors[1], aScaleFactors[2])) {
+    else if (SimTK::isNumericallyEqual(scaleFactors[0], scaleFactors[1])
+             && SimTK::isNumericallyEqual(scaleFactors[1], scaleFactors[2])) {
         // If the mass is also being scaled, scale the inertia terms by massScaleFactor.
-        if (aScaleMass) {
+        if (scaleMass) {
             inertia *= massScaleFactor;
         }
 
         // Now scale by the length-squared component.
-        inertia *= (aScaleFactors[0] * aScaleFactors[0]);
+        inertia *= (scaleFactors[0] * scaleFactors[0]);
 
     } else {
         // If the scale factors are not equal, then assume that the segment
@@ -304,22 +311,22 @@ void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScale
             length = sqrt(term);
 
         // 4. Scale the radius and length, and recalculate the diagonal inertia terms.
-        length *= aScaleFactors[axis];
+        length *= scaleFactors[axis];
 
         if (axis == 0) {
-            rad_sqr = radius * (aScaleFactors[1]) * radius * (aScaleFactors[2]);
+            rad_sqr = radius * (scaleFactors[1]) * radius * (scaleFactors[2]);
             inertia[0][0] = 0.5 * get_mass() * rad_sqr;
             inertia[1][1] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
             inertia[2][2] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
 
         } else if (axis == 1) {
-            rad_sqr = radius * (aScaleFactors[0]) * radius * (aScaleFactors[2]);
+            rad_sqr = radius * (scaleFactors[0]) * radius * (scaleFactors[2]);
             inertia[0][0] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
             inertia[1][1] = 0.5 * get_mass() * rad_sqr;
             inertia[2][2] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
 
         } else {
-            rad_sqr = radius * (aScaleFactors[0]) * radius * (aScaleFactors[1]);
+            rad_sqr = radius * (scaleFactors[0]) * radius * (scaleFactors[1]);
             inertia[0][0] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
             inertia[1][1] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
             inertia[2][2] = 0.5 * get_mass() * rad_sqr;
@@ -328,14 +335,14 @@ void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScale
         // 5. Scale the inertia products, in case some are non-zero. These are scaled by
         //    two scale factors for the length term (which two depend on the inertia term
         //    being scaled), and, if the mass is also scaled, by massScaleFactor.
-        inertia[0][1] *= ((aScaleFactors[0] * aScaleFactors[1]));
-        inertia[0][2] *= ((aScaleFactors[0] * aScaleFactors[2]));
-        inertia[1][0] *= ((aScaleFactors[1] * aScaleFactors[0]));
-        inertia[1][2] *= ((aScaleFactors[1] * aScaleFactors[2]));
-        inertia[2][0] *= ((aScaleFactors[2] * aScaleFactors[0]));
-        inertia[2][1] *= ((aScaleFactors[2] * aScaleFactors[1]));
+        inertia[0][1] *= ((scaleFactors[0] * scaleFactors[1]));
+        inertia[0][2] *= ((scaleFactors[0] * scaleFactors[2]));
+        inertia[1][0] *= ((scaleFactors[1] * scaleFactors[0]));
+        inertia[1][2] *= ((scaleFactors[1] * scaleFactors[2]));
+        inertia[2][0] *= ((scaleFactors[2] * scaleFactors[0]));
+        inertia[2][1] *= ((scaleFactors[2] * scaleFactors[1]));
 
-        if (aScaleMass) {
+        if (scaleMass) {
             inertia[0][1] *= massScaleFactor;
             inertia[0][2] *= massScaleFactor;
             inertia[1][0] *= massScaleFactor;
@@ -348,6 +355,16 @@ void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScale
     setInertia(SimTK::Inertia(inertia));
 }
 
+void Body::scaleInertialProperties(const ScaleSet& scaleSet, bool scaleMass)
+{
+    // Get scale factors (if an entry for this Body exists).
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, *this);
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
+        return;
+
+    scaleInertialProperties(scaleFactors, scaleMass);
+}
+
 //_____________________________________________________________________________
 /**
  * Scale the body's mass and inertia tensor (represents a scaling of the
@@ -358,8 +375,7 @@ void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScale
 void Body::scaleMass(double aScaleFactor)
 {
     upd_mass() *= aScaleFactor;
-    _inertia *= aScaleFactor;
-    upd_inertia() *= aScaleFactor;
+    setInertia(aScaleFactor * getInertia());
 }
 
 //=============================================================================
@@ -369,8 +385,10 @@ SimTK::MassProperties Body::getMassProperties() const
 {
     const double& m = get_mass();
     const Vec3& com = get_mass_center();
+    try {
+        OPENSIM_THROW_IF_FRMOBJ(!(m >= 0.0), Exception,
+                "Body " + getName() + " has unspecified or negative mass.");
 
-    try{
         const SimTK::Inertia& Icom = getInertia();
 
         SimTK::Inertia Ib = Icom;
@@ -379,7 +397,7 @@ SimTK::MassProperties Body::getMassProperties() const
             // shift if com has nonzero distance from b
             Ib = Icom.shiftFromMassCenter(com, m);
         }
-    
+
         return SimTK::MassProperties(m, com, Ib);
     }
     catch (const std::exception& ex) {
@@ -395,19 +413,20 @@ SimTK::MassProperties Body::getMassProperties() const
 
 void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-    if (versionNumber < XMLDocument::getLatestVersion()){
+    if (versionNumber < XMLDocument::getLatestVersion()) {
         if (versionNumber < 30500) {
             SimTK::Vec6 newInertia(1.0, 1.0, 1.0, 0., 0., 0.);
             std::string inertiaComponents[] = { "inertia_xx", "inertia_yy", "inertia_zz", "inertia_xy", "inertia_xz", "inertia_yz" };
-            for (int i = 0; i<6; ++i){
+            for (int i = 0; i < 6; ++i) {
                 SimTK::Xml::element_iterator iIter = aNode.element_begin(inertiaComponents[i]);
-                if (iIter != aNode.element_end()){
+                if (iIter != aNode.element_end()) {
                     newInertia[i] = iIter->getValueAs<double>();
                     aNode.removeNode(iIter);
+                    iIter->clearOrphan();
                 }
             }
             std::ostringstream strs;
-            for (int i = 0; i < 6; ++i){
+            for (int i = 0; i < 6; ++i) {
                 strs << newInertia[i];
                 if (i < 5) strs << " ";
             }
@@ -415,195 +434,8 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             SimTK::Xml::Element inertiaNode("inertia", strInertia);
             aNode.insertNodeAfter(aNode.element_end(), inertiaNode);
         }
-        if (versionNumber < 30502){
-            // Find node for <VisibleObject> remove it then create Geometry for the 
-            SimTK::Xml::element_iterator iIter = aNode.element_begin("VisibleObject");
-            if (iIter != aNode.element_end()){
-                SimTK::Xml::Element visObjElement = SimTK::Xml::Element::getAs(aNode.removeNode(iIter));
-                // Scale factors
-                SimTK::Vec3 outerScaleFactors(1.0);
-                SimTK::Xml::element_iterator outerScaleFactortIter = visObjElement.element_begin("scale_factors");
-                if (outerScaleFactortIter != visObjElement.element_end()){
-                    outerScaleFactors = outerScaleFactortIter->getValueAs<SimTK::Vec3>();
-                }
-                SimTK::Vec6 outerTransform(0.0);
-                SimTK::Xml::element_iterator outerTransformIter = visObjElement.element_begin("transform");
-                if (outerTransformIter != visObjElement.element_end()){
-                    outerTransform = outerTransformIter->getValueAs<SimTK::Vec6>();
-                }
-                
-                if (versionNumber < 20101) {
-                    SimTK::Xml::element_iterator geometryIter = visObjElement.element_begin("geometry_files");
-                    SimTK::Array_<SimTK::String> oldGeometryFiles;
-                    if (geometryIter != aNode.element_end()){
-                        geometryIter->getValueAs(oldGeometryFiles);
-                    }
-                    std::string bodyName = aNode.getRequiredAttribute("name").getValue();
-                    SimTK::Xml::Element geometrySetNode("geometry");
-                    aNode.insertNodeAfter(aNode.element_end(), geometrySetNode);
-                    // Create Mesh node for each item in oldGeometryFiles
-                    for (unsigned ng = 0; ng < oldGeometryFiles.size(); ng++) {
-                        SimTK::Xml::Element meshNode("Mesh");
-                        std::string geomName = bodyName + "_geom_" + to_string(ng);
-                        meshNode.setAttributeValue("name", geomName);
-                        SimTK::Xml::Element meshFileNode("mesh_file", oldGeometryFiles[ng]);
-                        std::stringstream localScaleStr;
-                        localScaleStr << outerScaleFactors[0] << " " << outerScaleFactors[1]
-                            << " " << outerScaleFactors[2];
-                        SimTK::Xml::Element scaleFactorsNode("scale_factors", localScaleStr.str());
-                        meshNode.insertNodeAfter(meshNode.element_end(), scaleFactorsNode);
-                        meshNode.insertNodeAfter(meshNode.element_end(), meshFileNode);
-                        XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", bodyName);
-                        geometrySetNode.insertNodeAfter(geometrySetNode.element_end(), meshNode);
-                    }
-                }
-                else {
-                    SimTK::Xml::element_iterator geomSetIter = visObjElement.element_begin("GeometrySet");
-                    if (geomSetIter != visObjElement.element_end()){
-                        convertDisplayGeometryToGeometryXML(aNode, outerScaleFactors, outerTransform, *geomSetIter);
-                        geomSetIter->setElementTag("geometry");
-                    }
-                }
-                // Regardless add a node for FrameGeometry to control the display of BodyFrame
-                std::string bodyName = aNode.getRequiredAttribute("name").getValue();
-                SimTK::Xml::Element bodyFrameNode("FrameGeometry");
-                bodyFrameNode.setAttributeValue("name", bodyName + "_body_frame");
-                XMLDocument::addConnector(bodyFrameNode, "Connector_Frame_", "frame", bodyName);
-                SimTK::Xml::Element appearanceNode("Appearance");
-                SimTK::Xml::Element frameRepresentation("representation");
-                frameRepresentation.setValue("0");
-                appearanceNode.insertNodeAfter(appearanceNode.element_end(), frameRepresentation);
-                bodyFrameNode.insertNodeAfter(bodyFrameNode.element_end(), appearanceNode);
-                SimTK::Xml::element_iterator geomSetIter = aNode.element_begin("geometry");
-                if (geomSetIter != aNode.element_end()){
-                    geomSetIter->insertNodeAfter(geomSetIter->node_end(), bodyFrameNode);
-                 }
-            }
-        }
     }
     Super::updateFromXMLNode(aNode, versionNumber);
-}
-
-void Body::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bodyNode,
-    const SimTK::Vec3& outerScaleFactors, const SimTK::Vec6& outerTransform, 
-    SimTK::Xml::Element& geomSetElement) const
-{
-    std::string bodyName = bodyNode.getRequiredAttribute("name").getValue();
-
-    SimTK::Xml::element_iterator objectsIter = geomSetElement.element_begin("objects");
-
-    if (objectsIter != geomSetElement.element_end()){
-        SimTK::Xml::Element geometrySetNode("geometry");
-        bodyNode.insertNodeAfter(bodyNode.element_end(), geometrySetNode);
-
-        SimTK::Xml::element_iterator displayGeomIter = objectsIter->element_begin("DisplayGeometry");
-        int counter = 1;
-        while (displayGeomIter != objectsIter->element_end()){
-            // Create a <Mesh> Element and populate it
-            SimTK::Xml::Element meshNode("Mesh");
-            std::string geomName = bodyName + "_geom_" + to_string(counter);
-            meshNode.setAttributeValue("name", geomName);
-            // geometry_file
-            std::string geomFile = "";
-            SimTK::Xml::element_iterator geomFileIter = displayGeomIter->element_begin("geometry_file");
-            if (geomFileIter != displayGeomIter->element_end()){
-                geomFile = geomFileIter->getValueAs<SimTK::String>();
-            }
-            // transform
-            SimTK::Vec6 localXform(0.);
-            SimTK::Xml::element_iterator localXformIter = displayGeomIter->element_begin("transform");
-            if (localXformIter != displayGeomIter->element_end()){
-                localXform = localXformIter->getValueAs<SimTK::Vec6>();
-            }
-            if (localXform.norm() > SimTK::Eps){
-                // Create a Frame
-                std::string frameName = bodyName + "_Frame_" + to_string(counter);
-                SimTK::Xml::Element frameNode("frame_name", frameName);
-                meshNode.insertNodeAfter(meshNode.element_end(), frameNode);
-
-                SimTK::Xml::Element modelNode = bodyNode;
-                do {
-                modelNode = modelNode.getParentElement();
-                SimTK::String edump;
-                modelNode.writeToString(edump);
-                } while (modelNode.getElementTag() != "Model" && !modelNode.isTopLevelNode());
-
-                SimTK::Xml::element_iterator frameSetIter = modelNode.element_begin("FrameSet");
-                SimTK::Xml::element_iterator frameSetObjectsIter;
-                if (frameSetIter != modelNode.element_end()){
-                    frameSetObjectsIter = frameSetIter->element_begin("objects");
-                }
-                else {
-                    SimTK::Xml::Element frameSetNode("FrameSet");
-                    modelNode.insertNodeAfter(modelNode.element_end(), frameSetNode);
-                    SimTK::Xml::Element frameSetObjectsNode("objects");
-                    frameSetNode.insertNodeAfter(frameSetNode.element_end(), frameSetObjectsNode);
-                    frameSetObjectsIter = frameSetNode.element_begin("objects");
-                }
-                createFrameForXform(frameSetObjectsIter, frameName, localXform, bodyName);
-                                
-                XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", frameName);
-            }
-            else
-                XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", bodyName);
-            // scale_factor
-            SimTK::Vec3 localScale(1.);
-            SimTK::Xml::element_iterator localScaleIter = displayGeomIter->element_begin("scale_factors");
-            if (localScaleIter != displayGeomIter->element_end()){
-                localScale = localScaleIter->getValueAs<SimTK::Vec3>();
-            }
-            // Now compose scale factors and transforms and create new node to insert into bodyNode
-             SimTK::Xml::Element meshFileNode("mesh_file", geomFile);
-             std::stringstream localScaleStr;
-             localScaleStr << localScale[0] * outerScaleFactors[0] << " " << localScale[1] * outerScaleFactors[1] 
-                 << " " << localScale[2] * outerScaleFactors[2];
-             SimTK::Xml::Element scaleFactorsNode("scale_factors", localScaleStr.str());
-             meshNode.insertNodeAfter(meshNode.element_end(), scaleFactorsNode);
-             meshNode.insertNodeAfter(meshNode.element_end(), meshFileNode);
-             SimTK::Xml::Element appearanceNode("Appearance");
-             // Move color and opacity under Appearance
-             SimTK::Xml::element_iterator colorIter = displayGeomIter->element_begin("color");
-             if (colorIter != displayGeomIter->element_end()){
-                 appearanceNode.insertNodeAfter(appearanceNode.element_end(), displayGeomIter->removeNode(colorIter));
-             }
-             SimTK::Xml::element_iterator opacityIter = displayGeomIter->element_begin("opacity");
-             if (opacityIter != displayGeomIter->element_end()){
-                 appearanceNode.insertNodeAfter(appearanceNode.element_end(), displayGeomIter->removeNode(opacityIter));
-             }
-             SimTK::Xml::element_iterator reprIter = displayGeomIter->element_begin("display_preference");
-             if (reprIter != displayGeomIter->element_end()){
-                 reprIter->setElementTag("representation");
-                 if (reprIter->getValue() == "4"){
-                     // Enum changed to go 0-3 instead of 0-4
-                     SimTK::String rep = "3";
-                     reprIter->setValue(rep);
-                 }
-                 appearanceNode.insertNodeAfter(appearanceNode.element_end(), displayGeomIter->removeNode(reprIter));
-             }
-             meshNode.insertNodeAfter(meshNode.element_end(), appearanceNode);
-             // Insert Mesh into parent
-             geometrySetNode.insertNodeAfter(geometrySetNode.element_end(), meshNode);
-             displayGeomIter++;
-             counter++;
-        }
-    }
-}
-// This private method creates a frame in the owner model document with passed in name and content relative to bodyName
-void Body::createFrameForXform(const SimTK::Xml::element_iterator& frameSetIter, const std::string& frameName, const SimTK::Vec6& localXform, const std::string& bodyName) const
-{
-    SimTK::Xml::Element frameNode("PhysicalOffsetFrame");
-    frameNode.setAttributeValue("name", frameName);
-    stringstream ss;
-    ss << localXform[3] << " " << localXform[4] << " " << localXform[5];
-    SimTK::Xml::Element translationNode("translation", ss.str());
-    ss.clear();
-    ss << localXform[0] << " " << localXform[1] << " " << localXform[2];
-    SimTK::Xml::Element orientationNode("rotation", ss.str());
-    frameNode.insertNodeAfter(frameNode.element_end(), translationNode);
-    frameNode.insertNodeAfter(frameNode.element_end(), orientationNode);
-    frameSetIter->insertNodeAfter(frameSetIter->element_end(), frameNode);
-    XMLDocument::addConnector(frameNode, "Connector_PhysicalFrame_", "parent", bodyName);
-
 }
 
 Body* Body::addSlave()
@@ -615,11 +447,11 @@ Body* Body::addSlave()
     name << getName() << "_slave_" << count;
     slave->setName(name.str());
 
-    //add to internal list as memory owner
-    _slaves.push_back(slave);
+    //add to internal list of references
+    _slaves.push_back(SimTK::ReferencePtr<Body>(slave));
 
     //add to list of subcomponents to automatically add to system and initialize
-    addComponent(slave);
+    adoptSubcomponent(slave);
 
     return slave;
 }

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,11 +25,8 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
 #include "osimCommonDLL.h"
 #include "Object.h"
-#include "ArrayPtrs.h"
 #include "Units.h"
 
 namespace OpenSim {
@@ -64,7 +61,6 @@ private:
 public:
     MarkerFrame();
     MarkerFrame(int aNumMarkers, int aFrameNumber, double aTime, Units& aUnits);
-    MarkerFrame(const MarkerFrame& aFrame);
     virtual ~MarkerFrame();
 
     void addMarker(const SimTK::Vec3& aCoords);

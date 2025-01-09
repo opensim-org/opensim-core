@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,5 +31,18 @@ using namespace OpenSim;
 void PhysicalOffsetFrame::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
-    setMobilizedBodyIndex(getParentFrame().getMobilizedBodyIndex());
+
+    // note: this frame might be attached to other `PhysicalOffsetFrame`s, or dependent
+    //       frames, so use `findBaseFrame` to ensure that we "dig" all the way to the
+    //       underlying mobilized body (e.g. an `OpenSim::Body`)
+    setMobilizedBodyIndex(dynamic_cast<const PhysicalFrame&>(findBaseFrame()).getMobilizedBodyIndex());
+}
+
+void PhysicalOffsetFrame::extendSetMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const
+{
+    // the `MobilizedBodyIndex` has been set on this frame (by `setMobilizedBodyIndex`), but
+    // this extension point also ensures that the `MobilizedBodyIndex` is also transitively
+    // assigned to the parent frame (which may, itself, be a `PhysicalOffsetFrame`, or a
+    // `Body`, etc.)
+    PhysicalFrame::setMobilizedBodyIndexOf(getParentFrame(), mbix);
 }

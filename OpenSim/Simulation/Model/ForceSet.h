@@ -1,5 +1,5 @@
-#ifndef __ForceSet_h__
-#define __ForceSet_h__
+#ifndef OPENSIM_FORCE_SET_H_
+#define OPENSIM_FORCE_SET_H_
 /* -------------------------------------------------------------------------- *
  *                            OpenSim:  ForceSet.h                            *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Jack Middleton                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,15 +25,14 @@
 
 
 // INCLUDES
-#include "Force.h"
-#include "Muscle.h"
 #include "ModelComponentSet.h"
+#include "Muscle.h"
 
 namespace OpenSim {
 
+class Actuator;
+class Force;
 class Model;
-class ScalarActuator;
-class Muscle;
 
 //=============================================================================
 //=============================================================================
@@ -67,31 +66,26 @@ protected:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
+    /** Use Super's constructors. @see ModelComponentSet */
+    using Super::Super;
+
     ForceSet();
-    ForceSet(Model& model);
-    ForceSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true);
-    ForceSet(const ForceSet &aForceSet);
-    virtual ~ForceSet();
+    ForceSet(const ForceSet&);
+    ForceSet(ForceSet&&);
+    ForceSet& operator=(ForceSet&&);
+    ForceSet& operator=(const ForceSet&);
+    ~ForceSet() override;
 
 private:
-    void setNull();
-    void setupSerializedMembers();
     void updateActuators();
     void updateMuscles();
 
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-public:
-#ifndef SWIG
-    ForceSet& operator=(const ForceSet &aSet);
-#endif
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
 public:
     // Override ModelComponentSet method.
-    void invokeConnectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
 
     // FORCE
     bool remove(int aIndex) override;
@@ -100,7 +94,19 @@ public:
     bool append(Force &aForce);
 #endif
     bool append(ForceSet &aForceSet, bool aAllowDuplicateNames=false);
-    bool set(int aIndex, Force *aForce);
+    /** Set the force at an index.  A copy of the specified actuator is NOT
+    * made. The force previously set at the index is removed (and deleted).
+    *
+    * @internal This method overrides the method in ModelComponentSet<Force> so 
+    * that several internal variables of the set can be updated.
+    *
+    * @param aIndex Array index where the actuator is to be stored.  aIndex
+    * should be in the range 0 <= aIndex <= getSize();
+    * @param aForce Pointer to the actuator to be set.
+    * @param preserveGroups If true, the new object will be added to the groups
+    * that the object it replaces belonged to.
+    * @return True if successful; false otherwise. */
+    bool set(int aIndex, Force *aForce, bool preserveGroups = false) override;
     bool insert(int aIndex, Force *aObject) override;
 
     // subsets 
@@ -126,6 +132,6 @@ public:
 } // end of namespace OpenSim
 
 
-#endif // __ForceSet_h__
+#endif // OPENSIM_FORCE_SET_H_
 
 

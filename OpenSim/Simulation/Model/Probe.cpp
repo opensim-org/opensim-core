@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Tim Dorn                                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "Probe.h"
+#include "OpenSim/Common/XMLDocument.h"
 
 using namespace std;
 using namespace SimTK;
@@ -48,10 +49,17 @@ public:
     // Default copy constructor, destructor, copy assignment are fine.
  
     // Implementations of virtual methods.
-    Implementation* cloneVirtual() const {return new Implementation(*this);}
-    int getNumTimeDerivativesVirtual() const {return 0;}
-    Stage getDependsOnStageVirtual(int order) const
-    {   return Stage::Acceleration; }
+    Implementation* cloneVirtual() const override {
+        return new Implementation(*this);
+    }
+
+    int getNumTimeDerivativesVirtual() const override {
+        return 0;
+    }
+
+    Stage getDependsOnStageVirtual(int order) const override {   
+        return Stage::Acceleration; 
+    }
  
     void calcCachedValueVirtual(const State& s, int derivOrder, T& value) const
         override
@@ -96,7 +104,7 @@ namespace OpenSim {
 Probe::Probe()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -114,16 +122,10 @@ void Probe::setNull(void)
  */
 void Probe::constructProperties(void)
 {
-    constructProperty_isDisabled(false);
+    constructProperty_enabled(true);
     constructProperty_probe_operation("value");  // means "pass the value through".
     constructProperty_initial_conditions_for_integration();
     constructProperty_gain(1.0);
-}
-
-void Probe::constructOutputs()
-{
-    constructOutput<SimTK::Vector>("probe_outputs", &Probe::getProbeOutputs,
-            Stage::Report);
 }
 
 //_____________________________________________________________________________
@@ -143,7 +145,7 @@ void Probe::extendAddToSystem(MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
 
-    if (isDisabled())
+    if (!isEnabled())
         return;
 
     // Make writable briefly so we can finalize the Probe to include 
@@ -193,7 +195,7 @@ void Probe::extendAddToSystem(MultibodySystem& system) const
                 << ") and size of initial conditions vector (" 
                 << getInitialConditions().size() << ").\nAssuming an initial condition vector of " 
                 << getProbeOutputLabels().getSize() << " zeros." << endl;
-            cout << errorMessage.str() << endl;
+            log_error(errorMessage.str());
 
             SimTK::Vector newInitCond(getProbeOutputLabels().getSize());
             newInitCond = 0;
@@ -284,7 +286,7 @@ void Probe::reset(SimTK::State& s)
     const double resetValue = 0.0;
     
     for (int i=0; i<getNumProbeInputs(); ++i) {
-        if (!isDisabled()) {
+        if (isEnabled()) {
             //cout << "Resetting probe " << getName() << ",  (" << i << " / " << getNumProbeInputs() << ")." << endl;
             //const Measure::Scale& scaleMeasure = Measure::Scale::getAs(afterOperationValues[i]);
 
@@ -313,13 +315,13 @@ void Probe::reset(SimTK::State& s)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Gets whether the Probe is disabled or not.
+ * Gets whether the Probe is enabled.
  *
- * @return true if the Probe is disabled, false if enabled.
+ * @return true if the Probe is enabled, false if disabled.
  */
-bool Probe::isDisabled() const
+bool Probe::isEnabled() const
 {
-    return get_isDisabled();
+    return get_enabled();
 }
 
 //_____________________________________________________________________________
@@ -363,12 +365,12 @@ double Probe::getGain() const
 
 //_____________________________________________________________________________
 /**
- * Sets whether the Probe is disabled or not.
+ * Sets whether the Probe is enabled or not.
  *
  */
-void Probe::setDisabled(bool isDisabled) 
+void Probe::setEnabled(bool enabled) 
 {
-    set_isDisabled(isDisabled);
+    set_enabled(enabled);
 }
 
 //_____________________________________________________________________________
@@ -412,7 +414,7 @@ void Probe::setGain(double gain)
  */
 SimTK::Vector Probe::getProbeOutputs(const State& s) const 
 {
-    if (isDisabled()) {
+    if (!isEnabled()) {
         stringstream errorMessage;
         errorMessage << getConcreteClassName() 
             << ": Cannot get the output from Probe '" 
@@ -445,7 +447,7 @@ SimTK::Vector Probe::getProbeOutputs(const State& s) const
  */
 int Probe::getNumInternalMeasureStates() const
 {
-    if (isDisabled())
+    if (!isEnabled())
         return 0;
 
     int n = 0;
@@ -455,6 +457,28 @@ int Probe::getNumInternalMeasureStates() const
     return n;
 }
 
+void Probe::updateFromXMLNode(SimTK::Xml::Element& node,
+                              int versionNumber) {
+    if(versionNumber < XMLDocument::getLatestVersion()) {
+        if(versionNumber < 30511) {
+            // Rename property 'isDisabled' to 'enabled' and
+            // negate the contained value.
+            std::string oldName{"isDisabled"};
+            std::string newName{"enabled"};
+            if(node.hasElement(oldName)) {
+                auto elem = node.getRequiredElement(oldName);
+                bool isDisabled = false;
+                elem.getValue().tryConvertToBool(isDisabled);
 
+                // now update tag name to 'enabled'
+                elem.setElementTag(newName);
+                // update its value to be the opposite of 'isDisabled'
+                elem.setValue(SimTK::String(!isDisabled));
+            }
+        }
+    }
+
+    Super::updateFromXMLNode(node, versionNumber);
+}
 
 } // end of namespace OpenSim

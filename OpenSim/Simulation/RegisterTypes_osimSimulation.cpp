@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -32,10 +32,10 @@
 #include "Model/Ground.h"
 #include "Model/OffsetFrame.h"
 #include "Model/PhysicalOffsetFrame.h"
+#include "Model/StationDefinedFrame.h"
 
 #include "Model/AnalysisSet.h"
 #include "Model/ForceSet.h"
-#include "Model/FrameSet.h"
 #include "Model/BodyScale.h"
 #include "Model/BodyScaleSet.h"
 #include "Model/BodySet.h"
@@ -49,7 +49,9 @@
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
 #include "Model/HuntCrossleyForce.h"
+#include "Model/SmoothSphereHalfSpaceForce.h"
 #include "Model/Ligament.h"
+#include "Model/Blankevoort1991Ligament.h"
 #include "Model/JointSet.h"
 #include "Model/Marker.h"
 #include "Model/Station.h"
@@ -59,6 +61,7 @@
 #include "Model/ConditionalPathPoint.h"
 #include "Model/MovingPathPoint.h"
 #include "Model/GeometryPath.h"
+#include "Model/FunctionBasedPath.h"
 #include "Model/PrescribedForce.h"
 #include "Model/ExternalForce.h"
 #include "Model/PointToPointSpring.h"
@@ -76,16 +79,20 @@
 #include "Model/SystemEnergyProbe.h"
 #include "Model/Umberger2010MuscleMetabolicsProbe.h"
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
+#include "Model/Bhargava2004SmoothedMuscleMetabolics.h"
 #include "Model/Appearance.h"
 #include "Model/Geometry.h"
+
 #include "Model/ModelVisualPreferences.h"
+#include "Model/ExpressionBasedCoordinateForce.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
 #include "Control/ControlConstant.h"
 #include "Control/ControlLinear.h"
 #include "Control/PrescribedController.h"
-#include "Control/ToyReflexController.h"
+#include "Control/InputController.h"
+#include "Control/SynergyController.h"
 
 #include "Wrap/PathWrap.h"
 #include "Wrap/PathWrapSet.h"
@@ -118,9 +125,19 @@
 #include "SimbodyEngine/FreeJoint.h"
 #include "SimbodyEngine/CustomJoint.h"
 #include "SimbodyEngine/WeldJoint.h"
+#include "SimbodyEngine/ScapulothoracicJoint.h"
+#include "OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.h"
 #include "SimbodyEngine/TransformAxis.h"
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
+#include "OpenSense/IMUPlacer.h"
+#include "OpenSense/IMU.h"
+#include "OrientationsReference.h"
+#include "StatesTrajectoryReporter.h"
+#include "TableProcessor.h"
+#include "MarkersReference.h"
+#include "PositionMotion.h"
+#include "Control/InputController.h"
 
 #include <string>
 #include <iostream>
@@ -141,11 +158,9 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
   try {
 
     Object::registerType( AnalysisSet() );
-    Object::registerType( ModelDisplayHints());
     Object::registerType( Model() );
     Object::registerType( BodyScale() );
     Object::registerType( BodyScaleSet());
-    Object::registerType( FrameSet());
     Object::registerType( BodySet());
     Object::registerType( ComponentSet() );
     Object::registerType( ControllerSet() );
@@ -163,9 +178,13 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ConditionalPathPoint() );
     Object::registerType( MovingPathPoint() );
     Object::registerType( SurfaceProperties());
-    Object::registerType( CurveProperties());
     Object::registerType( Appearance());
     Object::registerType( ModelVisualPreferences());
+
+    Object::registerType(MarkersReference());
+    Object::registerType(MarkerWeight());
+    Object::registerType(Set<MarkerWeight>());
+
 
     Object::registerType( Brick());
     Object::registerType( Sphere());
@@ -178,6 +197,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( FrameGeometry());
     Object::registerType( Arrow());
     Object::registerType( GeometryPath());
+    Object::registerType( FunctionBasedPath());
 
     Object::registerType( ControlSet() );
     Object::registerType( ControlConstant() );
@@ -200,6 +220,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( OpenSim::Body() );
     Object::registerType( OpenSim::Ground());
     Object::registerType( PhysicalOffsetFrame());
+    Object::registerType( StationDefinedFrame());
 
     Object::registerType( WeldJoint());
     Object::registerType( CustomJoint());
@@ -207,10 +228,12 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( FreeJoint() );
     Object::registerType( BallJoint() );
     Object::registerType( GimbalJoint() );
+    Object::registerType( ScapulothoracicJoint() );
     Object::registerType( UniversalJoint() );
     Object::registerType( PinJoint() );
     Object::registerType( SliderJoint() );
     Object::registerType( PlanarJoint() );
+    Object::registerType( ConstantCurvatureJoint() );
     Object::registerType( TransformAxis() );
     Object::registerType( Coordinate() );
     Object::registerType( SpatialTransform() );
@@ -227,6 +250,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ContactMesh() );
     Object::registerType( ContactSphere() );
     Object::registerType( CoordinateLimitForce() );
+    Object::registerType( SmoothSphereHalfSpaceForce() );
     Object::registerType( HuntCrossleyForce() );
     Object::registerType( ElasticFoundationForce() );
     Object::registerType( HuntCrossleyForce::ContactParameters() );
@@ -235,6 +259,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ElasticFoundationForce::ContactParametersSet() );
 
     Object::registerType( Ligament() );
+    Object::registerType( Blankevoort1991Ligament() );
     Object::registerType( PrescribedForce() );
     Object::registerType( ExternalForce() );
     Object::registerType( PointToPointSpring() );
@@ -243,26 +268,39 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( BushingForce() );
     Object::registerType( FunctionBasedBushingForce() );
     Object::registerType( ExpressionBasedBushingForce() );
+    Object::registerType( ExpressionBasedCoordinateForce() );
 
     Object::registerType( ControlSetController() );
     Object::registerType( PrescribedController() );
-    Object::registerType( ToyReflexController() );
+    Object::registerType( SynergyVector() );
+    Object::registerType( SynergyController() );
 
     Object::registerType( PathActuator() );
     Object::registerType( ProbeSet() );
     Object::registerType( JointInternalPowerProbe() );
     Object::registerType( SystemEnergyProbe() );
+    Object::registerType( ActuatorForceProbe() );
+    Object::registerType( ActuatorPowerProbe() );
     Object::registerType( Umberger2010MuscleMetabolicsProbe() );
     Object::registerType( Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet() );
     Object::registerType( Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter() );
+    Object::registerType( Bhargava2004SmoothedMuscleMetabolics());
+    Object::registerType( Bhargava2004SmoothedMuscleMetabolics_MuscleParameters() );
+    Object::registerType( OrientationWeight() );
 
-    // Register commonly used Connectors for de/serialization
-    Object::registerType(Connector<Frame>());
-    Object::registerType(Connector<PhysicalFrame>());
-    Object::registerType(Connector<Body>());
+    Object::registerType( IMUPlacer() );
+    Object::registerType( IMU() );
+    Object::registerType( StatesTrajectoryReporter() );
+
+    Object::registerType( TableProcessor() );
+
+    Object::registerType( TabOpLowPassFilter() );
+    Object::registerType( TabOpUseAbsoluteStateNames() );
+    Object::registerType( TabOpAppendCoupledCoordinateValues() );
+    Object::registerType( PositionMotion() );
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

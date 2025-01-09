@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2024 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,55 +21,56 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//==========================================================================================================
-//  testControllers builds OpenSim models using the OpenSim API and verifies that controllers
-//  behave as described.
+//=============================================================================
+//  testControllers builds OpenSim models using the OpenSim API and verifies 
+//  that controllers behave as described.
 //
 //  Tests Include:
-//      1. Test a control set controller on a block with an ideal actuator
-//      2. Test a corrective controller on a block with an ideal actuator
-//      
+//  1. Test the Controller interface
+//  2. Test a ControlSetController on a block with an ideal actuator
+//  3. Test a PrescribedController on a block with an ideal actuator
+//  4. Test a CorrectionController tracking a block with an ideal actuator
+//  5. Test a PrescribedController on the arm26 model with reserves.
 //     Add tests here as new controller types are added to OpenSim
 //
-//==========================================================================================================
+//=============================================================================
+
 #include <OpenSim/OpenSim.h>
+
+#include <catch2/catch_all.hpp>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
+using Catch::Matchers::ContainsSubstring;
 
-void testControlSetControllerOnBlock();
-void testPrescribedControllerOnBlock(bool disabled);
-void testCorrectionControllerOnBlock();
-void testPrescribedControllerFromFile(const std::string& modelFile,
-                                      const std::string& actuatorsFile,
-                                      const std::string& controlsFile);
+TEST_CASE("Test Controller interface") {
 
-int main()
-{
-    try {
-        cout << "Testing ControlSetController" << endl; 
-        testControlSetControllerOnBlock();
-        cout << "Testing PrescribedController" << endl; 
-        testPrescribedControllerOnBlock(false);
-        testPrescribedControllerOnBlock(true);
-        cout << "Testing CorrectionController" << endl; 
-        testCorrectionControllerOnBlock();
-        cout << "Testing PrescribedController from File" << endl;
-        testPrescribedControllerFromFile("arm26.osim", "arm26_Reserve_Actuators.xml",
-                                         "arm26_controls.xml");
-    }   
-    catch (const Exception& e) {
-        e.print(cerr);
-        return 1;
+    Model model = ModelFactory::createNLinkPendulum(2);
+    auto* controller = new PrescribedController();
+    controller->prescribeControlForActuator("/tau0", Constant(1.0));
+    controller->prescribeControlForActuator("/tau1", Constant(2.0));
+
+    SECTION("No actuators connecteed") {
+        model.addController(controller);
+        REQUIRE_THROWS(model.finalizeConnections());
     }
-    cout << "Done" << endl;
-    return 0;
+
+    SECTION("Adding actuators individually") {
+        controller->addActuator(model.getComponent<Actuator>("/tau0"));
+        controller->addActuator(model.getComponent<Actuator>("/tau1"));
+        model.addController(controller);
+        model.finalizeConnections();
+    }
+
+    SECTION("Adding multiple actuators from a ComponentList") {
+        controller->setActuators(model.getComponentList<Actuator>());
+        model.addController(controller);
+        model.finalizeConnections();
+    }
 }
 
-//==========================================================================================================
-void testControlSetControllerOnBlock()
-{
+TEST_CASE("testControlSetControllerOnBlock") {
     using namespace SimTK;
 
     // Create a new OpenSim model
@@ -86,23 +87,22 @@ void testControlSetControllerOnBlock()
 
     OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockInertia);
 
-    //Create a free joint with 6 degrees-of-freedom
+    // Create a slider joint with 1 degree of freedom
     SimTK::Vec3 noRotation(0);
-    SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
+    SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
     
-    // Create coordinates (degrees-of-freedom) between the ground and block
-    CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
+    // Create coordinate (degree of freedom) between the ground and block
+    auto& sliderCoord = blockToGround.updCoordinate();
     double posRange[2] = {-1, 1};
-    jointCoordinateSet[0].setName("xTranslation");
-    jointCoordinateSet[0].setMotionType(Coordinate::Translational);
-    jointCoordinateSet[0].setRange(posRange);
+    sliderCoord.setName("xTranslation");
+    sliderCoord.setRange(posRange);
 
     // Add the block and joint to the model
     osimModel.addBody(&block);
     osimModel.addJoint(&blockToGround);
 
     // Define a single coordinate actuator.
-    CoordinateActuator actuator(jointCoordinateSet[0].getName());
+    CoordinateActuator actuator(sliderCoord.getName());
     actuator.setName("actuator");
 
     // Add the actuator to the model
@@ -123,13 +123,15 @@ void testControlSetControllerOnBlock()
     actuatorControls.setControlValues(initialTime, controlForce);
     actuatorControls.setControlValues(finalTime, controlForce);
     // Create a control set controller that simply applies controls from a ControlSet
-    ControlSetController actuatorController;
+    auto* actuatorController = new ControlSetController();
+
     // Make a copy and set it on the ControlSetController as it takes ownership of the 
     // ControlSet passed in
-    actuatorController.setControlSet((ControlSet*)Object::SafeCopy(&actuatorControls));
+    actuatorController->setControlSet(
+        (ControlSet*)Object::SafeCopy(&actuatorControls));
 
     // add the controller to the model
-    osimModel.addController(&actuatorController);
+    osimModel.addController(actuatorController);
 
     // Initialize the system and get the state representing the state system
     SimTK::State& si = osimModel.initSystem();
@@ -141,15 +143,15 @@ void testControlSetControllerOnBlock()
 
     // Create the integrator and manager for the simulation.
     double accuracy = 1.0e-3;
-    SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-    integrator.setAccuracy(accuracy);
-    Manager manager(osimModel, integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(accuracy);
 
     // Integrate from initial time to final time
-    manager.setInitialTime(initialTime);
-    manager.setFinalTime(finalTime);
-    std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager.integrate(si);
+    si.setTime(initialTime);
+    manager.initialize(si);
+    log_info("");
+    log_info("Integrating from {} to {}", initialTime, finalTime);
+    si = manager.integrate(finalTime);
 
     si.getQ().dump("Final position:");
     double x_err = fabs(coordinates[0].getValue(si) - 0.5*(controlForce[0]/blockMass)*finalTime*finalTime);
@@ -160,13 +162,12 @@ void testControlSetControllerOnBlock()
     states.print("block_push.sto");
 
     osimModel.disownAllComponents();
-}// end of testControlSetControllerOnBlock()
+}
 
-
-//==========================================================================================================
-void testPrescribedControllerOnBlock(bool disabled)
-{
+TEST_CASE("testPrescribedControllerOnBlock") {
     using namespace SimTK;
+
+    auto enabled = GENERATE(true, false);
 
     // Create a new OpenSim model
     Model osimModel;
@@ -182,22 +183,21 @@ void testPrescribedControllerOnBlock(bool disabled)
 
     OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockInertia);
 
-    //Create a free joint with 6 degrees-of-freedom
+    // Create a slider joint with 1 degree of freedom
     SimTK::Vec3 noRotation(0);
-    SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
-    // Create 6 coordinates (degrees-of-freedom) between the ground and block
-    CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
+    SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
+
+    // Create 1 coordinate (degree of freedom) between the ground and block
+    auto& sliderCoord = blockToGround.updCoordinate();
     double posRange[2] = {-1, 1};
-    jointCoordinateSet[0].setName("xTranslation");
-    jointCoordinateSet[0].setMotionType(Coordinate::Translational);
-    jointCoordinateSet[0].setRange(posRange);
+    sliderCoord.setRange(posRange);
 
     // Add the block body to the model
     osimModel.addBody(&block);
     osimModel.addJoint(&blockToGround);
 
     // Define a single coordinate actuator.
-    CoordinateActuator actuator(jointCoordinateSet[0].getName());
+    CoordinateActuator actuator(sliderCoord.getName());
     actuator.setName("actuator");
 
     // Add the actuator to the model
@@ -213,17 +213,20 @@ void testPrescribedControllerOnBlock(bool disabled)
     PrescribedController actuatorController;
     actuatorController.setName("testPrescribedController");
     actuatorController.setActuators(osimModel.updActuators());
-    actuatorController.prescribeControlForActuator(0, new Constant(controlForce));
-    actuatorController.setDisabled(disabled);
+    actuatorController.prescribeControlForActuator(
+        osimModel.getActuators().get(0).getAbsolutePathString(),
+        Constant(controlForce));
+    actuatorController.setEnabled(enabled);
 
     // add the controller to the model
     osimModel.addController(&actuatorController);
+    osimModel.disownAllComponents();
     
     osimModel.print("blockWithPrescribedController.osim");
-    Model modelfileFromFile("blockWithPrescribedController.osim", false);
+    Model modelFromFile("blockWithPrescribedController.osim");
 
     // Verify that serialization and then deserialization is correct
-    ASSERT(osimModel == modelfileFromFile);
+    ASSERT(osimModel == modelFromFile);
 
     // Initialize the system and get the state representing the state system
     SimTK::State& si = osimModel.initSystem();
@@ -235,32 +238,30 @@ void testPrescribedControllerOnBlock(bool disabled)
 
     // Create the integrator and manager for the simulation.
     double accuracy = 1.0e-3;
-    SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-    integrator.setAccuracy(accuracy);
-    Manager manager(osimModel, integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(accuracy);
 
     // Integrate from initial time to final time
-    manager.setInitialTime(initialTime);
-    manager.setFinalTime(finalTime);
-    std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager.integrate(si);
+    si.setTime(initialTime);
+    manager.initialize(si);
+    log_info("");
+    log_info("Integrating from {} to {}", initialTime, finalTime);
+    si = manager.integrate(finalTime);
 
     si.getQ().dump("Final position:");
 
-    double expected = disabled ? 0 : 0.5*(controlForce/blockMass)*finalTime*finalTime;
-    ASSERT_EQUAL(expected, coordinates[0].getValue(si), accuracy, __FILE__, __LINE__, "PrescribedController failed to produce the expected motion of block.");
+    double expected = enabled ? 0.5*(controlForce/blockMass)*finalTime*finalTime : 0;
+    ASSERT_EQUAL(expected, coordinates[0].getValue(si), accuracy,
+        __FILE__, __LINE__, 
+        "PrescribedController failed to produce the expected motion of block.");
 
     // Save the simulation results
     Storage states(manager.getStateStorage());
     states.print("block_push.sto");
 
-    osimModel.disownAllComponents();
-}// end of testPrescribedControllerOnBlock()
+}
 
-
-//==========================================================================================================
-void testCorrectionControllerOnBlock()
-{
+TEST_CASE("testCorrectionControllerOnBlock") {
     using namespace SimTK;
 
     // Create a new OpenSim model
@@ -277,22 +278,22 @@ void testCorrectionControllerOnBlock()
 
     OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockInertia);
 
-    //Create a free joint with 6 degrees-of-freedom
+    // Create a slider joint with 1 degree of freedom
     SimTK::Vec3 noRotation(0);
-    SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
-    // Create coordinates (degrees-of-freedom) between the ground and block
-    CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
+    SliderJoint blockToGround("slider",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
+
+    // Create coordinate (degree of freedom) between the ground and block
+    auto& sliderCoord = blockToGround.updCoordinate();
     double posRange[2] = {-1, 1};
-    jointCoordinateSet[0].setName("xTranslation");
-    jointCoordinateSet[0].setMotionType(Coordinate::Translational);
-    jointCoordinateSet[0].setRange(posRange);
+    sliderCoord.setName("xTranslation");
+    sliderCoord.setRange(posRange);
 
     // Add the block body to the model
     osimModel.addBody(&block);
     osimModel.addJoint(&blockToGround);
 
     // Generate tracking data
-    Storage *desiredXTranslation = new Storage();
+    // Storage *desiredXTranslation = new Storage();
 
     CorrectionController tracker;
 
@@ -300,22 +301,22 @@ void testCorrectionControllerOnBlock()
     osimModel.addController(&tracker);
 
     // Initialize the system and get the state representing the state system
-    SimTK::State& si = osimModel.initSystem();
+    /*SimTK::State& si = */osimModel.initSystem();
 
-    // Create the integrator and manager for the simulation.
-    SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-    integrator.setAccuracy(1.0e-4);
-    Manager manager(osimModel, integrator);
+    // Create the manager for the simulation.
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1.0e-4);
 
     osimModel.disownAllComponents();
-}// end of testCorrectionControllerOnBlock()
+}
 
 
-void testPrescribedControllerFromFile(const std::string& modelFile,
-                                      const std::string& actuatorsFile,
-                                      const std::string& controlsFile)
-{
+TEST_CASE("testPrescribedControllerFromFile") {
     using namespace SimTK;
+
+    std::string modelFile = "arm26.osim";
+    std::string actuatorsFile = "arm26_Reserve_Actuators.xml";
+    std::string controlsFile = "arm26_controls.xml";
 
     double initialTime = 0.03;
     double finalTime = 1.0;
@@ -324,33 +325,32 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     Model osimModel(modelFile);
 
     try{
-        ForceSet *forceSet=new ForceSet(osimModel, actuatorsFile);
+        ForceSet *forceSet=new ForceSet(actuatorsFile, true);
         osimModel.updForceSet().append(*forceSet);
     }
     catch(const std::exception& e){
-        cout << "Actuators not loaded: " << e.what() << endl;
+        log_error("Actuators not loaded: {}", e.what());
     }
 
     ControlSetController csc;
     ControlSet* cs = new ControlSet(controlsFile);
     csc.setControlSet(cs);
-
     // add the controller to the model
     osimModel.addController(&csc);
 
     // Initialize the system and get the state representing the state system
     SimTK::State& si = osimModel.initSystem();
 
-    // Create the integrator and manager for the simulation.
-    SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-    integrator.setAccuracy(1.0e-5);
-    Manager manager(osimModel, integrator);
+    // Create the manager for the simulation.
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1.0e-5);
 
     // Integrate from initial time to final time
-    manager.setInitialTime(initialTime);
-    manager.setFinalTime(finalTime);
-    cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager.integrate(si);
+    si.setTime(initialTime);
+    manager.initialize(si);
+    log_info("");
+    log_info("Integrating from {} to {}", initialTime, finalTime);
+    si = manager.integrate(finalTime);
 
     string modelName = osimModel.getName();
     // Save the simulation results
@@ -368,9 +368,8 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
 
     // remove previous controllers
     osimModel.updControllerSet().remove(0);
-    cout << "Number of Controllers should be 0 is ";
-        cout << osimModel.getControllerSet().getSize() << endl;
-    
+    log_info("Number of Controllers should be 0 is {}", 
+        osimModel.getControllerSet().getSize());
     
     //************* Rerun with a PrescribedController ***********************/
 
@@ -383,16 +382,16 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     // Initialize the system and get the state representing the state system
     SimTK::State& s2 = osimModel.initSystem();
 
-    // Create the integrator and manager for the simulation.
-    SimTK::RungeKuttaMersonIntegrator integrator2(osimModel.getMultibodySystem());
-    integrator2.setAccuracy(1.0e-5);
-    Manager manager2(osimModel, integrator2);
+    // Create the manager for the simulation.
+    Manager manager2(osimModel);
+    manager2.setIntegratorAccuracy(1.0e-5);
 
     // Integrate from initial time to final time
-    manager2.setInitialTime(initialTime);
-    manager2.setFinalTime(finalTime);
-    cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager2.integrate(s2);
+    s2.setTime(initialTime);
+    manager2.initialize(s2);
+    log_info("");
+    log_info("Integrating from {} to {}", initialTime, finalTime);
+    s2 = manager2.integrate(finalTime);
 
     // Save the simulation results
     Storage states(manager2.getStateStorage());
@@ -404,15 +403,112 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     Storage controls(outfileName);
 
     int nstates = osimModel.getNumStateVariables();
-    int ncontrols = osimModel.getNumControls();
+    /*int ncontrols = */osimModel.getNumControls();
 
     CHECK_STORAGE_AGAINST_STANDARD(states, std_states, 
-        Array<double>(0.005, nstates), __FILE__, __LINE__,
+        std::vector<double>(nstates, 0.005), __FILE__, __LINE__,
         "testPrescribedControllerFromFile '"+modelName+"'states failed");
 
     CHECK_STORAGE_AGAINST_STANDARD(controls, std_controls, 
-        Array<double>(0.01, nstates), __FILE__, __LINE__,
+        std::vector<double>(nstates, 0.015), __FILE__, __LINE__,
         "testPrescribedControllerFromFile '"+modelName+"'controls failed");
      
     osimModel.disownAllComponents();
+}
+
+TEST_CASE("PrescribedController control function ordering") {
+    Model model = ModelFactory::createNLinkPendulum(3);
+    auto* controller = new PrescribedController();
+    controller->addActuator(model.getComponent<Actuator>("/tau0"));
+    controller->addActuator(model.getComponent<Actuator>("/tau1"));
+    controller->addActuator(model.getComponent<Actuator>("/tau2"));
+
+    GIVEN("Controls prescribed out of order") {
+        controller->prescribeControlForActuator("/tau1", Constant(2.0));
+        controller->prescribeControlForActuator("/tau0", Constant(1.0));
+        controller->prescribeControlForActuator("/tau2", Constant(3.0));
+        // Control function reordering happens during 
+        // PrescribedController::extendConnectToModel().
+        model.addController(controller);
+        model.finalizeConnections();
+
+        THEN("Control functions are reordered based on connectee order") {
+            const auto& controlFunctions = controller->get_ControlFunctions();
+            SimTK::Vector time(1, 0.0);
+            CHECK(controlFunctions.get(0).calcValue(time) == 1.0);
+            CHECK(controlFunctions.get(1).calcValue(time) == 2.0);
+            CHECK(controlFunctions.get(2).calcValue(time) == 3.0);
+        }
+
+        THEN("Serialization and deserialization works as expected") {
+            model.print("testControllers_triplePendulum.osim");
+            Model modelDeserialized("testControllers_triplePendulum.osim");
+            modelDeserialized.initSystem();
+            const auto& controller = 
+                    modelDeserialized.getComponent<PrescribedController>(
+                            "/controllerset/prescribedcontroller");
+            const auto& controlFunctions = controller.get_ControlFunctions();
+            SimTK::Vector time(1, 0.0);
+            CHECK(controlFunctions.get(0).calcValue(time) == 1.0);
+            CHECK(controlFunctions.get(1).calcValue(time) == 2.0);
+            CHECK(controlFunctions.get(2).calcValue(time) == 3.0);
+        }
+    }    
+}
+
+TEST_CASE("PrescribedController behavior") {
+    Model model("testControllers_TugOfWar.osim");
+    model.initSystem();
+    auto& controller = model.updComponent<PrescribedController>(
+            "/controllerset/prescribedcontroller");
+
+    SECTION("Overwriting control function with same label") {
+        controller.prescribeControlForActuator(
+                "actu_slider", Constant(1.0));
+        CHECK_NOTHROW(model.initSystem());
+    }
+
+    SECTION("Different label for same actuator should throw") {
+        controller.prescribeControlForActuator(
+                "/forceset/actu_slider", Constant(1.0));
+        std::string msg = "The number of control functions (2) does not match"; 
+        CHECK_THROWS_WITH(model.initSystem(), ContainsSubstring(msg));
+    }
+
+    SECTION("Model serialization and deserialization works as expected") {
+        model.print("testControllers_TugOfWar_serialized.osim");
+        Model modelDeserialized("testControllers_TugOfWar_serialized.osim");
+        CHECK_NOTHROW(modelDeserialized.initSystem());
+    }
+}
+
+TEST_CASE("Marking controls as invalid") {
+    Model model = ModelFactory::createNLinkPendulum(2);
+    auto* controller = new PrescribedController();
+    controller->addActuator(model.getComponent<Actuator>("/tau0"));
+    controller->addActuator(model.getComponent<Actuator>("/tau1"));
+    SimTK::Real tau0 = SimTK::Test::randReal();
+    SimTK::Real tau1 = SimTK::Test::randReal();
+    controller->prescribeControlForActuator("/tau0", Constant(tau0));
+    controller->prescribeControlForActuator("/tau1", Constant(tau1));
+    model.addController(controller);
+    SimTK::State state = model.initSystem();
+
+    GIVEN("Controls vector set to random values") {
+        SimTK::Vector origControls = SimTK::Test::randVector(2);
+        model.realizeVelocity(state);
+        model.setControls(state, origControls);
+
+        THEN("Controls cache is marked valid") {
+            SimTK_TEST_EQ(model.getControls(state), origControls);
+        }
+
+        THEN("Marking controls invalid invokes Controller::computeControls()") {
+            model.markControlsAsInvalid(state);
+            const SimTK::Vector& newControls = model.getControls(state);
+            CHECK(newControls.size() == 2);
+            CHECK(newControls[0] == tau0);
+            CHECK(newControls[1] == tau1);
+        }
+    }
 }

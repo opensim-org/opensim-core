@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Jeffrey A. Reinbolt, Ayman Habib, Ajay Seth, Jack Middleton,    *
  *            Samuel R. Hamner                                                *
  *                                                                            *
@@ -48,12 +48,12 @@ int main()
         Model osimModel;
         osimModel.setName("tugOfWar");
     }
-    catch (OpenSim::Exception ex)
+    catch (const OpenSim::Exception& ex)
     {
         std::cout << ex.getMessage() << std::endl;
         return 1;
     }
-    catch (std::exception ex)
+    catch (const std::exception& ex)
     {
         std::cout << ex.what() << std::endl;
         return 1;

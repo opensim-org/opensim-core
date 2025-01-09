@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -28,15 +28,15 @@
  */
 
 // INCLUDES
+#include "Function.h"
 #include "osimCommonDLL.h"
 #include "Object.h"
-#include "PropertyDbl.h"
-#include "Function.h"
 #include "Set.h"
 
 //=============================================================================
 //=============================================================================
 namespace OpenSim { 
+
 
 /**
  * A class for holding a set of functions.

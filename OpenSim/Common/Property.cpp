@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,12 +23,10 @@
 //============================================================================
 // INCLUDES
 //============================================================================
-#include "AbstractProperty.h"
 #include "Property.h"
 #include "Object.h"
-
 #include <string>
-#include <limits>
+
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -54,6 +52,13 @@ isEqual(double a, double b) {
     return std::abs(a - b) <= 1e-7;
 }
 
+bool Property<SimTK::Vec2>::TypeHelper::
+        isEqual(const SimTK::Vec2& a, const SimTK::Vec2& b) {
+    for (int i=0; i < 2; ++i)
+        if (!Property<double>::TypeHelper::isEqual(a[i],b[i]))
+            return false;
+    return true;
+}
 
 bool Property<SimTK::Vec3>::TypeHelper::
 isEqual(const SimTK::Vec3& a, const SimTK::Vec3& b) {

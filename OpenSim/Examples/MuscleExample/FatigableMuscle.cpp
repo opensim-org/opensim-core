@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan, Ajay Seth                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -86,10 +86,6 @@ void FatigableMuscle::extendAddToSystem(SimTK::MultibodySystem& system) const
     addStateVariable("target_activation");
     addStateVariable("active_motor_units");
     addStateVariable("fatigued_motor_units");
-    // and their corresponding derivatives
-    addCacheVariable("target_activation_deriv", 0.0, SimTK::Stage::Dynamics);
-    addCacheVariable("active_motor_units_deriv", 0.0, SimTK::Stage::Dynamics);
-    addCacheVariable("fatigued_motor_units_deriv", 0.0, SimTK::Stage::Dynamics);
 }
 
 void FatigableMuscle::extendInitStateFromProperties(SimTK::State& s) const
@@ -206,10 +202,11 @@ void FatigableMuscle::computeStateVariableDerivatives(const SimTK::State& s) con
     // Allow Super to assign any state derivative values for states it allocated
     Super::computeStateVariableDerivatives(s);
 
-    int nd = getNumStateVariables();
+    // int nd = getNumStateVariables();
 
-    SimTK_ASSERT1(nd == 5, "FatigableMuscle: Expected 5 state variables"
-        " but encountered  %f.", nd);
+    SimTK_ASSERT1(getNumStateVariables() == 5, 
+                  "FatigableMuscle: Expected 5 state variables"
+                  " but encountered  %f.", getNumStateVariables());
 
     // compute the rates at which motor units are converted to/from active
     // and fatigued states based on Liu et al. 2008
@@ -221,9 +218,10 @@ void FatigableMuscle::computeStateVariableDerivatives(const SimTK::State& s) con
 
     // compute the target activation rate
     double excitation = getExcitation(s);
-    double targetActivation = clampActivation(getTargetActivation(s));
-    double targetActivationRate = calcActivationDerivative(targetActivation,
-                                                           excitation);
+    double targetActivation =
+        getActivationModel().clampActivation(getTargetActivation(s));
+    double targetActivationRate =
+        getActivationModel().calcDerivative(targetActivation, excitation);
 
     // specify the activation derivative based on the amount of active motor 
     // units and the rate at which motor units are becoming active.

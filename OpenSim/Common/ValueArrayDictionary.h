@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2015 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Authors:                                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,7 +25,10 @@
 #define OPENSIM_VALUE_ARRAY_DICTIONARY_H_
 
 #include "OpenSim/Common/ValueArray.h"
+#include "SimTKcommon/internal/ClonePtr.h"
 
+#include <iterator>
+#include <map>
 #include <memory>
 
 namespace OpenSim {
@@ -40,18 +43,27 @@ private:
 public:
     using AbstractValue = SimTK::AbstractValue;
 
+    /** Does a key-value pair corresponding to the given key currently exist ?*/
+    bool hasKey(const std::string& key) const {
+        return _dictionary.find(key) != _dictionary.end();
+    }
+
     /** Get the first entry of the array corresponding to the given key.      
 
     \throws KeyNotFound If key is not found.                                  */
     const AbstractValue& getValueForKey(const std::string& key) const {
-        OPENSIM_THROW_IF(isKeyNotFound(key),
+        OPENSIM_THROW_IF(!hasKey(key),
                          KeyNotFound, key);
         return (*(_dictionary.at(key)))[0];
     }
 
-    /** Set the value corresponding to a given key.                           */
+    /** Set the value corresponding to a given key. Value is set only if the key
+    does not already exist.
+
+    \retval true  If the value was set for the given key.
+    \retval false If the value was not set because key already present.       */
     template<typename ValueType>
-    void setValueForKey(const std::string& key,
+    bool setValueForKey(const std::string& key,
                         const ValueType& value) {
         using Value = SimTK::ClonePtr<AbstractValueArray>;
 
@@ -59,7 +71,7 @@ public:
         valueArray->upd().push_back(SimTK::Value<ValueType>{value});
         AbstractValueArray* absValueArray{valueArray};
 
-        _dictionary.emplace(key, Value{absValueArray});
+        return _dictionary.emplace(key, Value{absValueArray}).second;
     }
 
     /** Get the array corresponding to a given key.                           
@@ -67,17 +79,32 @@ public:
     \throws KeyNotFound If key is not found.                                  */
     const AbstractValueArray& 
     getValueArrayForKey(const std::string& key) const {
-        OPENSIM_THROW_IF(isKeyNotFound(key),
+        OPENSIM_THROW_IF(!hasKey(key),
                          KeyNotFound, key);
         return *(_dictionary.at(key));
     }
 
-    /** Set the array corresponding to a given key.                           */
-    void setValueArrayForKey(const std::string& key, 
+    /** Set the array corresponding to a given key. Value array is set only if
+    the key does not already exist.
+
+    \retval true  If the value was set for the given key.
+    \retval false If the value was not set because key already present.       */
+    bool setValueArrayForKey(const std::string& key, 
                              const AbstractValueArray& abstractValueArray) {
         using Value = SimTK::ClonePtr<AbstractValueArray>;
 
-        _dictionary.emplace(key, Value{abstractValueArray.clone()});
+        auto res = _dictionary.emplace(key, Value{abstractValueArray.clone()});
+        return res.second;
+    }
+
+    /** Get a writable reference to the array corresponding to a given key.
+
+    \throws KeyNotFound If key is not found.                                  */
+    AbstractValueArray&
+    updValueArrayForKey(const std::string& key) {
+        OPENSIM_THROW_IF(!hasKey(key),
+                         KeyNotFound, key);
+        return *(_dictionary.at(key));
     }
 
     /** Remove a key and its associated array.                                */
@@ -112,11 +139,18 @@ public:
     Dictionary::const_iterator getKeyValueEnd() const {
         return _dictionary.cend();
     }
-private:
-    bool isKeyNotFound(const std::string& key) const {
-        return _dictionary.find(key) == _dictionary.end();
+
+    /** Get value corresponding to the given key as string.
+
+    \throws KeyNotFound If key is not found.                                  */
+    std::string getValueAsString(const std::string& key) const {
+        OPENSIM_THROW_IF(!hasKey(key),
+                         KeyNotFound, key);
+        
+        return _dictionary.at(key)->toString(0);
     }
 
+private:
     Dictionary _dictionary;
 };
 

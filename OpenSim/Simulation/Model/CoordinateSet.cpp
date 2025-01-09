@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,74 +29,34 @@
 using namespace std;
 using namespace OpenSim;
 
-//=============================================================================
-// DESTRUCTOR AND CONSTRUCTORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-CoordinateSet::~CoordinateSet(void)
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Default constructor of a CoordinateSet.
- */
-CoordinateSet::CoordinateSet() :
-    ModelComponentSet<Coordinate>()
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor of a CoordinateSet.
- */
-CoordinateSet::CoordinateSet(const CoordinateSet& aCoordinateSet):
-    ModelComponentSet<Coordinate>(aCoordinateSet)
-{
-    *this = aCoordinateSet;
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
-/**
-  * Populate this flat list of Coordinates given a Model that has been set up
-  */
+/*
+ * Populate a flat list of Coordinates given a Model with Joints.
+ */
 void CoordinateSet::populate(Model& model)
 {
-    setModel(model);
-    // Append Coordinate from Joint's coordinate set to the model's set as pointers
-    setMemoryOwner(false);
+    // Aggregate Coordinates owned by the Joint's into a single CoordinateSet
     setSize(0);
+    setMemoryOwner(false);
 
-    // At the Model level coordinate names are likely not to be unique
-    // unless qualified by its owning component name, namely the Joint
-    for(int i=0; i< model.getJointSet().getSize(); i++){
-        Joint& nextJoint = model.getJointSet().get(i);
-        CoordinateSet& coords = nextJoint.upd_CoordinateSet();
-        for(int j=0; j< nextJoint.numCoordinates(); j++){
-            adoptAndAppend(&coords[j]);
+    auto joints = model.updComponentList<Joint>();
+
+    for(Joint& joint : joints) {
+        for(int j=0; j< joint.numCoordinates(); ++j){
+            adoptAndAppend(&joint.upd_coordinates(j));
         }
     }
 }
 
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-#ifndef SWIG
-CoordinateSet& CoordinateSet::operator=(const CoordinateSet &aCoordinateSet)
-{
-    Set<Coordinate>::operator=(aCoordinateSet);
-    return (*this);
+void CoordinateSet::getSpeedNames(OpenSim::Array<std::string> &rNames) const {
+    for (int i = 0; i<_objects.getSize(); ++i) {
+        Coordinate *obj = _objects[i];
+        OPENSIM_THROW_IF_FRMOBJ(!obj, Exception,
+            "Has a Coordinate that is null.");
+        rNames.append(obj->getSpeedName());
+    }
 }
-#endif
+

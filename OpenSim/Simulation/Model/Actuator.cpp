@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,11 +26,18 @@
 //=============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
 #include "Actuator.h"
+#include "OpenSim/Common/DebugUtilities.h"
 
 
 using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
+
+// here for perf reasons: many functions take a const reference to a
+// std::string. Using a C string literal results in millions of temporary
+// std::strings being constructed so, instead, pre-allocate it in static
+// storage
+static const std::string overrideActuationKey{"override_actuation"};
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -75,17 +82,6 @@ void Actuator::extendAddToSystem(SimTK::MultibodySystem& system) const
     mutableThis->_controlIndex = _model->updDefaultControls().size();
     _model->updDefaultControls().resizeKeep(_controlIndex + numControls());
     _model->updDefaultControls()(_controlIndex, numControls()) = Vector(numControls(), 0.0);
-}
-
-
-//_____________________________________________________________________________
-/**
- * Update the geometric representation of the Actuator if any.
- * The resulting geometry is maintained at the VisibleObject layer
- * 
- */
-void Actuator::updateGeometry()
-{
 }
 
 // CONTROLS
@@ -144,7 +140,7 @@ void Actuator::addInControls(const Vector& actuatorControls, Vector& modelContro
 /** Default constructor */
 ScalarActuator::ScalarActuator()
 {
-    constructInfrastructure();
+    constructProperties();
 }
 
 /**
@@ -157,10 +153,24 @@ void ScalarActuator::constructProperties()
     constructProperty_max_control( Infinity);
 }
 
-void ScalarActuator::constructOutputs() 
+void ScalarActuator::setMinControl(const double& aMinControl)
 {
-    constructOutput<double>("actuation", &ScalarActuator::getActuation, SimTK::Stage::Velocity);
-    constructOutput<double>("speed", &ScalarActuator::getSpeed, SimTK::Stage::Velocity);
+    set_min_control(aMinControl);
+}
+
+double ScalarActuator::getMinControl() const
+{
+    return get_min_control();
+}
+
+void ScalarActuator::setMaxControl(const double& aMaxControl)
+{
+    set_max_control(aMaxControl);
+}
+
+double ScalarActuator::getMaxControl() const
+{
+    return get_max_control();
 }
 
 // Create the underlying computational system component(s) that support the
@@ -170,14 +180,13 @@ void ScalarActuator::extendAddToSystem(SimTK::MultibodySystem& system) const
     Super::extendAddToSystem(system);
     // Add modeling flag to compute actuation with dynamic or by-pass with 
     // override actuation provided
-    addModelingOption("override_actuation", 1);
+    addModelingOption(overrideActuationKey, 1);
 
-    // Cache the computed actuation and speed of the scalar valued actuator
-    addCacheVariable<double>("actuation", 0.0, Stage::Velocity);
-    addCacheVariable<double>("speed", 0.0, Stage::Velocity);
+    // Cache the computed actuation of the scalar valued actuator
+    _actuationCV = addCacheVariable("actuation", 0.0, Stage::Velocity);
 
     // Discrete state variable is the override actuation value if in override mode
-    addDiscreteVariable("override_actuation", Stage::Time);
+    addDiscreteVariable(overrideActuationKey, Stage::Time);
 }
 
 double ScalarActuator::getControl(const SimTK::State& s) const
@@ -197,43 +206,36 @@ double ScalarActuator::getOptimalForce() const
 
 double ScalarActuator::getActuation(const State &s) const
 {
-    if (isDisabled(s)) return 0.0;
-    return getCacheVariableValue<double>(s, "actuation");
+    if (appliesForce(s)) {
+        return getCacheVariableValue(s, _actuationCV);
+    } else {
+        return 0.0;
+    }
 }
 
 void ScalarActuator::setActuation(const State& s, double aActuation) const
 {
-    setCacheVariableValue<double>(s, "actuation", aActuation);
-}
-
-double ScalarActuator::getSpeed(const State& s) const
-{
-    return getCacheVariableValue<double>(s, "speed");
-}
-
-void ScalarActuator::setSpeed(const State &s, double speed) const
-{
-    setCacheVariableValue<double>(s, "speed", speed);
+    setCacheVariableValue(s, _actuationCV, aActuation);
 }
 
 void ScalarActuator::overrideActuation(SimTK::State& s, bool flag) const
 {
-    setModelingOption(s, "override_actuation", int(flag));
+    setModelingOption(s, overrideActuationKey, int(flag));
 }
 
 bool ScalarActuator::isActuationOverridden(const SimTK::State& s) const
 {
-    return (getModelingOption(s, "override_actuation") > 0);
+    return (getModelingOption(s, overrideActuationKey) > 0);
 }
        
 void ScalarActuator::setOverrideActuation(SimTK::State& s, double actuation) const
 {
-    setDiscreteVariableValue(s, "override_actuation", actuation);;
+    setDiscreteVariableValue(s, overrideActuationKey, actuation);;
 }
 
 double ScalarActuator::getOverrideActuation(const SimTK::State& s) const
 {
-    return getDiscreteVariableValue(s, "override_actuation");
+    return getDiscreteVariableValue(s, overrideActuationKey);
 }
 double ScalarActuator::computeOverrideActuation(const SimTK::State& s) const
 {

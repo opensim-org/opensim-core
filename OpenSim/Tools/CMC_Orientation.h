@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  * Contributor(s): Frank C. Anderson                                          *
  *                                                                            *
@@ -31,8 +31,6 @@
 //============================================================================
 // INCLUDE
 //============================================================================
-#include "osimToolsDLL.h"
-#include <OpenSim/Simulation/Model/Model.h>
 #include "CMC_Task.h"
 
 namespace OpenSim {
@@ -76,7 +74,6 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    virtual void computeDesiredAccelerations();
     void computeJacobian() override;
     void computeEffectiveMassMatrix() override;
 

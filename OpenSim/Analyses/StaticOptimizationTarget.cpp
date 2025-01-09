@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,14 +29,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <stdlib.h>
-#include <stdio.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include "StaticOptimizationTarget.h"
-#include <iostream>
 
 using namespace OpenSim;
 using namespace std;
@@ -66,7 +60,6 @@ const double StaticOptimizationTarget::SMALLDX = 1.0e-14;
 StaticOptimizationTarget::
 StaticOptimizationTarget(const SimTK::State& s, Model *aModel,int aNP,int aNC, bool useMusclePhysiology)
 {
-
     // ALLOCATE STATE ARRAYS
     _recipAreaSquared.setSize(aNP);
     _recipOptForceSquared.setSize(aNP);
@@ -81,16 +74,14 @@ StaticOptimizationTarget(const SimTK::State& s, Model *aModel,int aNP,int aNC, b
 
     // Gather indices into speed set corresponding to the unconstrained degrees of freedom (for which we will set acceleration constraints)
     _accelerationIndices.setSize(0);
-    const CoordinateSet& coordSet = _model->getCoordinateSet();
-    for(int i=0; i<coordSet.getSize(); i++) {
-        const Coordinate& coord = coordSet.get(i);
+    auto coordinates = aModel->getCoordinatesInMultibodyTreeOrder();
+    for (size_t i = 0u; i < coordinates.size(); ++i) {
+        const Coordinate& coord = *coordinates[i];
         if(!coord.isConstrained(s)) {
-            _accelerationIndices.append(i);
+            _accelerationIndices.append(static_cast<int>(i));
         }
     }
-
 }
-
 
 //==============================================================================
 // CONSTRUCTION
@@ -306,9 +297,8 @@ void StaticOptimizationTarget::
 validatePerturbationSize(double &aSize)
 {
     if(aSize<SMALLDX) {
-        printf("StaticOptimizationTarget.validatePerturbationSize: WARNING- ");
-        printf("dx size too small (%le).\n",aSize);
-        printf("\tResetting dx=%le.\n",SMALLDX);
+        log_warn("StaticOptimizationTarget.validatePerturbationSize: dx size "
+                 "too small ({}). Resetting dx={}.", aSize, SMALLDX);
         aSize = SMALLDX;
     }
 }
@@ -323,9 +313,8 @@ printPerformance(const SimTK::State& s, double *parameters)
     objectiveFunc(SimTK::Vector(getNumParameters(),parameters,true),true,p);
     SimTK::Vector constraints(getNumConstraints());
     constraintFunc(SimTK::Vector(getNumParameters(),parameters,true),true,constraints);
-    cout << endl;
-    cout << "time = " << s.getTime() <<" Performance =" << p << 
-    " Constraint violation = " << sqrt(~constraints*constraints) << endl;
+    log_cout("time = {} Performance = {} Constraint violation = {}",
+            s.getTime(), p, sqrt(~constraints*constraints));
 }
 
 //______________________________________________________________________________
@@ -592,12 +581,15 @@ computeConstraintVector(SimTK::State& s, const Vector &parameters,Vector &constr
     Vector actualAcceleration(getNumConstraints());
     computeAcceleration(s, parameters, actualAcceleration);
 
+    auto coordinates = _model->getCoordinatesInMultibodyTreeOrder();
+
     // CONSTRAINTS
     for(int i=0; i<getNumConstraints(); i++) {
-        Coordinate& coord = _model->getCoordinateSet().get(_accelerationIndices[i]);
+        const Coordinate& coord = *coordinates[_accelerationIndices[i]];
         int ind = _statesStore->getStateIndex(coord.getSpeedName(), 0);
         if (ind < 0){
-            string fullname = coord.getJoint().getName() + "/" + coord.getSpeedName();
+            // get the full coordinate speed state variable path name
+            string fullname = coord.getStateVariableNames()[1];
             ind = _statesStore->getStateIndex(fullname, 0);
             if (ind < 0){
                 string msg = "StaticOptimizationTarget::computeConstraintVector: \n";
@@ -665,7 +657,7 @@ constraintJacobian(const SimTK::Vector &parameters, const bool new_parameters, S
 void StaticOptimizationTarget::
 computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vector &rAccel) const
 {
-    double time = s.getTime();
+    // double time = s.getTime();
     
 
     const ForceSet& fs = _model->getForceSet();

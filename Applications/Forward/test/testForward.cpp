@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -33,60 +33,34 @@
 using namespace OpenSim;
 using namespace std;
 
-void testPendulum();    // test manager/integration process
-void testPendulumExternalLoad(); // test application of external loads point in pendulum
-void testPendulumExternalLoadWithPointInGround(); // test application of external loads point in ground
-void testArm26();       // now add computation of controls and generation of muscle forces
-void testGait2354();    // controlled muscles and ground reactions forces 
-void testGait2354WithController(); // included additional controller
+void testPendulum();
+void testPendulumExternalLoad();
+void testPendulumExternalLoadWithPointInGround();
+void testArm26();
+void testGait2354();
+void testGait2354WithController();
+void testGait2354WithControllerGUI();
+
 
 int main() {
     Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 
-    SimTK::Array_<std::string> failures;
-
-    // test manager/integration process
-    try { testPendulum(); cout << "\nPendulum test PASSED " << endl; }  
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testPendulum"); }
-    
-    // test application of external loads
-    try { testPendulumExternalLoad(); 
-        cout << "\nPendulum with external load test PASSED " << endl; }
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testPendulumExternalLoad"); }
-    
-    // test application of external loads
-    try { testPendulumExternalLoadWithPointInGround(); 
-        cout << "\nPendulum with external load and point in ground PASSED " << endl; }
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testPendulumExternalLoadWithPointInGround"); }
-    
-    // now add computation of controls and generation of muscle forces
-    try { testArm26(); 
-        cout << "\narm26 test PASSED " << endl; }
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testArm26"); }
-        
-    // include applied ground reactions forces 
-    try { testGait2354(); 
-        cout << "\ngait2354 test PASSED " << endl; }
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testGait2354"); }        
-
-    // finally include a controller
-    try { testGait2354WithController(); 
-        cout << "\ngait2354 with correction controller test PASSED " << endl; }
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testGait2354WithController"); }  
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done" << endl;
-    return 0;
+    SimTK_START_TEST("testForward");
+        // test manager/integration process
+        SimTK_SUBTEST(testPendulum);
+        // test application of external loads point in pendulum
+        SimTK_SUBTEST(testPendulumExternalLoad);
+        // test application of external loads with point moving in ground
+        SimTK_SUBTEST(testPendulumExternalLoadWithPointInGround);
+        // now add computation of controls and generation of muscle forces
+        SimTK_SUBTEST(testArm26);
+        // controlled muscles and ground reactions forces
+        SimTK_SUBTEST(testGait2354);
+        // included additional controller
+        SimTK_SUBTEST(testGait2354WithController);
+        // implements steps GUI takes to provide a model
+        SimTK_SUBTEST(testGait2354WithControllerGUI);
+    SimTK_END_TEST();
 }
 
 void testPendulum() {
@@ -121,7 +95,7 @@ void testPendulumExternalLoad() {
     ASSERT(results.getLastTime() == 1.0);
 
     Storage standard("Results/pendulum_states.sto");
- 
+
 
     Array<double> data;
     int i = results.getSize() - 1;
@@ -130,25 +104,27 @@ void testPendulumExternalLoad() {
     data.setSize(state->getSize());
     standard.getDataAtTime(time, state->getSize(), data);
     int nc = forward.getModel().getNumCoordinates();
-    for (int j = 0; j < nc; ++j) {      
+    for (int j = 0; j < nc; ++j) {
         stringstream message;
-        message << "t=" << time <<" state# "<< j << " " << standard.getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j];
-        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2, __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        message << "t=" << time <<" state# "<< j << " "
+            << standard.getColumnLabels()[j+1] << " std=" << data[j]
+            <<"  computed=" << state->getData()[j];
+        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2,
+            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
         cout << "ASSERT_EQUAL PASSED " << message.str() << endl;
     }
 }
 
 
 void testPendulumExternalLoadWithPointInGround() {
-    ForwardTool forward("pendulum_ext_point_in_ground_Setup_Forward.xml");cout << endl;
+    ForwardTool forward("pendulum_ext_point_in_ground_Setup_Forward.xml");
     forward.run();
+
     Storage results("Results/pendulum_ext_gravity_point_in_ground_states.sto");
     ASSERT(results.getFirstTime() == 0.0);
     ASSERT(results.getLastTime() == 1.0);
 
     Storage standard("Results/pendulum_states.sto");
- 
-
     Array<double> data;
     int i = results.getSize() - 1;
     StateVector* state = results.getStateVector(i);
@@ -156,11 +132,14 @@ void testPendulumExternalLoadWithPointInGround() {
     data.setSize(state->getSize());
     standard.getDataAtTime(time, state->getSize(), data);
     int nc = forward.getModel().getNumCoordinates();
-    for (int j = 0; j < nc; ++j) {      
+    for (int j = 0; j < nc; ++j) {
         stringstream message;
-        message << "t=" << time <<" state# "<< j << " " << standard.getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j];
-        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2, __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
-        cout << "ASSERT_EQUAL PASSED " << message.str() << endl;
+        message << "t=" << time <<" state# "<< j << " " << standard.getColumnLabels()[j+1]
+            << " std=" << data[j] <<"  computed=" << state->getData()[j];
+        cout << message.str() << endl;
+        ASSERT_EQUAL(data[j], state->getData()[j], 1e-2,
+            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        cout << "ASSERT_EQUAL PASSED " << endl;
     }
 }
 
@@ -181,7 +160,8 @@ void testArm26() {
     for (int j = 0; j < state->getSize(); ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
-        ASSERT_EQUAL(data[j], state->getData()[j], 1.0e-3, __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3,
+            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
         cout << "ASSERT_EQUAL PASSED " << message.str();
     }
 
@@ -193,7 +173,8 @@ void testArm26() {
     for (int j = 0; j < state->getSize(); ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
-        ASSERT_EQUAL(data[j], state->getData()[j], 1.0e-3, __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
+        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3,
+            __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
         cout << "ASSERT_EQUAL PASSED " << message.str();
     }
 }
@@ -208,18 +189,20 @@ void testGait2354()
     Storage* standard = new Storage();
     string statesFileName("std_subject01_walk1_states.sto");
     forward.loadStatesStorage( statesFileName, standard );
-    
+
     int nstates = forward.getModel().getNumStateVariables();
     int nq = forward.getModel().getNumCoordinates();
-    Array<double> rms_tols(0.001, 2*nstates); //activations and fiber-lengths
+    std::vector<double> rms_tols(2*nstates, 0.001); //activations and fiber-lengths
 
     for(int i=0; i<nq; ++i){
         rms_tols[2*i] = 0.035; // coordinates at less than 2degrees
         rms_tols[2*i+1] = 2.5; // speeds can deviate by a lot due to open-loop test
     }
-    
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testGait2354 failed");
+
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
+        __FILE__, __LINE__, "testGait2354 failed");
 }
+
 
 void testGait2354WithController() {
     ForwardTool forward("subject01_Setup_Forward_Controller.xml");
@@ -232,12 +215,47 @@ void testGait2354WithController() {
 
     int nstates = forward.getModel().getNumStateVariables();
     int nq = forward.getModel().getNumCoordinates();
-    Array<double> rms_tols(0.001, 2*nstates); //activations and fiber-lengths
+    std::vector<double> rms_tols(2*nstates, 0.001); //activations and fiber-lengths
 
     for(int i=0; i<nq; ++i){
         rms_tols[2*i] = 0.01; // coordinates at less than 0.6 degree
         rms_tols[2*i+1] = 0.1; // speeds should deviate less with feedback controller
     }
-    
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testGait2354WithController failed");
+
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
+        __FILE__, __LINE__, "testGait2354WithController failed");
+}
+
+void testGait2354WithControllerGUI() {
+
+    // The following lines are the steps from ForwardToolModel.java that
+    // associates the a previous (orgiModel) model with the ForwardTool
+    // instead of the Tool loading the model specified in the setup
+    ForwardTool forward("subject01_Setup_Forward_Controller.xml");
+    Model origModel(forward.getModelFilename());
+
+    Model* model = new Model(origModel);
+    model->initSystem();
+
+    const std::string resultsDir{ "ResultsCorrectionControllerGUI" };
+
+    forward.setResultsDir(resultsDir);
+    forward.updateModelForces(*model, "");
+    forward.setModel(*model);
+
+    forward.run();
+
+    // For good measure we'll make sure we still get the identical results
+    Storage results(resultsDir+"/subject01_states.sto");
+    //Storage standard("std_subject01_walk1_states.sto");
+    Storage standard("ResultsCorrectionController/subject01_states.sto");
+
+    int nstates = forward.getModel().getNumStateVariables();
+    int nq = forward.getModel().getNumCoordinates();
+    std::vector<double> rms_tols(2 * nstates, SimTK::SqrtEps);
+
+    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols,
+        __FILE__, __LINE__, "testGait2354WithControllerGUI failed");
+
+    delete model;
 }

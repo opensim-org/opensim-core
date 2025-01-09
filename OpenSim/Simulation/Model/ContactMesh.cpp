@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -28,22 +28,20 @@
 
 namespace OpenSim {
 
-ContactMesh::ContactMesh() :
-    ContactGeometry(),
-    _filename(_filenameProp.getValueStr()),
-    _geometry(NULL)
+ContactMesh::ContactMesh() 
 {
     setNull();
-    setupProperties();
+    constructProperties();
 }
 
-ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& location, const SimTK::Vec3& orientation, Body& body) :
-    ContactGeometry(location, orientation, body),
-    _filename(_filenameProp.getValueStr()),
-    _geometry(NULL)
+ContactMesh::ContactMesh(const std::string& filename,
+                         const SimTK::Vec3& location,
+                         const SimTK::Vec3& orientation,
+                         const PhysicalFrame& frame) :
+    ContactGeometry(location, orientation, frame)
 {
     setNull();
-    setupProperties();
+    constructProperties();
     setFilename(filename);
     if (filename != ""){
         std::ifstream file;
@@ -53,36 +51,19 @@ ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& locatio
         file.close();
         SimTK::PolygonalMesh mesh;
         mesh.loadFile(filename);
-        _geometry = new SimTK::ContactGeometry::TriangleMesh(mesh);
+        _geometry.reset(new SimTK::ContactGeometry::TriangleMesh(mesh));
+        _decorativeGeometry.reset(new SimTK::DecorativeMesh(mesh));
     }
 }
 
-ContactMesh::ContactMesh(const std::string& filename, const SimTK::Vec3& location, const SimTK::Vec3& orientation, Body& body, const std::string& name) :
-    ContactGeometry(location, orientation, body),
-    _filename(_filenameProp.getValueStr()),
-    _geometry(NULL)
+ContactMesh::ContactMesh(const std::string& filename,
+                         const SimTK::Vec3& location,
+                         const SimTK::Vec3& orientation,
+                         const PhysicalFrame& frame,
+                         const std::string& name) :
+    ContactMesh(filename, location, orientation, frame)
 {
-    setNull();
-    setupProperties();
-    setFilename(filename);
     setName(name);
-    if (filename != ""){
-        std::ifstream file;
-        file.open(filename.c_str());
-        if (file.fail())
-            throw Exception("Error loading mesh file: "+filename+". The file should exist in same folder with model.\n Loading is aborted.");
-        file.close();
-    }
-}
-
-ContactMesh::ContactMesh(const ContactMesh& geom) :
-    ContactGeometry(geom),
-    _filename(_filenameProp.getValueStr()),
-    _geometry(NULL)
-{
-    setNull();
-    setupProperties();
-    _filename = geom._filename;
 }
 
 void ContactMesh::setNull()
@@ -90,58 +71,90 @@ void ContactMesh::setNull()
     setAuthors("Peter Eastman");
 }
 
-void ContactMesh::setupProperties()
+void ContactMesh::constructProperties()
 {
-    _filenameProp.setName("filename");
-    _filenameProp.setComment("Filename that contain mesh geomtry (supports .obj, .stl, .vtp). Mesh should be closed and water-tight.");
-    _propertySet.append(&_filenameProp);
+    constructProperty_filename("");
+}
+
+void ContactMesh::extendFinalizeFromProperties() {
+    _geometry.reset();
+    _decorativeGeometry.reset();
 }
 
 const std::string& ContactMesh::getFilename() const
 {
-    return _filename;
+    return get_filename();
 }
 
 void ContactMesh::setFilename(const std::string& filename)
 {
-    _filename = filename;
-    _filenameProp.setValueIsDefault(false);
-    if (_geometry != NULL)
-        delete _geometry;
-    _geometry = NULL;
+    set_filename(filename);
+    _geometry.reset();
+    _decorativeGeometry.reset();
 }
 
-void ContactMesh::loadMesh(const std::string& filename)
+SimTK::ContactGeometry::TriangleMesh* ContactMesh::
+    loadMesh(const std::string& filename) const
 {
-    if (_geometry==NULL){
-        SimTK::PolygonalMesh mesh;
-        std::ifstream file;
-        assert (_model);
-        const std::string& savedCwd = IO::getCwd();
-        bool restoreDirectory = false;
-        if ((_model->getInputFileName()!="") && (_model->getInputFileName()!="Unassigned")) {
-            std::string parentDirectory = IO::getParentDirectory(_model->getInputFileName());
-            IO::chDir(parentDirectory);
-            restoreDirectory=true;
-        }
-        file.open(filename.c_str());
-        if (file.fail()){
-            if (restoreDirectory) IO::chDir(savedCwd);
-            throw Exception("Error loading mesh file: "+filename+". The file should exist in same folder with model.\n Loading is aborted.");
-        }
-        file.close();
-        mesh.loadFile(filename);
-        if (restoreDirectory) IO::chDir(savedCwd);
-        _geometry = new SimTK::ContactGeometry::TriangleMesh(mesh);
+    SimTK::PolygonalMesh mesh;
+    std::ifstream file;
+    assert (_model);
+
+    auto cwd = IO::CwdChanger::noop();
+    if ((_model->getInputFileName()!="")
+            && (_model->getInputFileName()!="Unassigned")) {
+        cwd = IO::CwdChanger::changeToParentOf(_model->getInputFileName());
     }
 
+    file.open(filename.c_str());
+    if (file.fail()){
+        throw Exception("Error loading mesh file: "+filename+". "
+                "The file should exist in same folder with model.\n "
+                "Loading is aborted.");
+    }
+    file.close();
+    mesh.loadFile(filename);
+    _decorativeGeometry.reset(new SimTK::DecorativeMesh(mesh));
+    return new SimTK::ContactGeometry::TriangleMesh(mesh);
 }
 
-SimTK::ContactGeometry ContactMesh::createSimTKContactGeometry()
+SimTK::ContactGeometry ContactMesh::createSimTKContactGeometry() const
 {
-    if (_geometry == NULL)
-        loadMesh(_filename);
+    if (!_geometry)
+        _geometry.reset(loadMesh(get_filename()));
     return *_geometry;
+}
+
+//=============================================================================
+// VISUALIZER GEOMETRY
+//=============================================================================
+void ContactMesh::generateDecorations(bool fixed, const ModelDisplayHints& hints,
+    const SimTK::State& s, SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
+{
+    Super::generateDecorations(fixed, hints, s, geometry);
+
+    // There is no fixed geometry to generate here.
+    if (fixed) { return; }
+
+    // Guard against the case where the Force was disabled or mesh failed to load.
+    if (_decorativeGeometry == nullptr) return;
+    if (!hints.get_show_contact_geometry()) return;
+    // B: base Frame (Body or Ground)
+    // F: PhysicalFrame that this ContactGeometry is connected to
+    // P: the frame defined (relative to F) by the location and orientation
+    //    properties.
+
+    const auto& X_BF = getFrame().findTransformInBaseFrame();
+    const auto& X_FP = getTransform();
+    const auto X_BP = X_BF * X_FP;
+    geometry.push_back(SimTK::DecorativeMesh(*_decorativeGeometry)
+        .setTransform(X_BP)
+        .setRepresentation(get_Appearance().get_representation())
+        .setBodyId(getFrame().getMobilizedBodyIndex())
+        .setColor(get_Appearance().get_color())
+        .setScale(1)
+        .setOpacity(get_Appearance().get_opacity()));
+    
 }
 
 } // end of namespace OpenSim

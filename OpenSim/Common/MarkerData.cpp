@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,7 +31,9 @@
 #include "MarkerData.h"
 #include "SimmIO.h"
 #include "SimmMacros.h"
-#include "SimTKcommon.h"
+#include "Storage.h"
+#include "OpenSim/Auxiliary/auxiliaryTestFunctions.h"
+#include "OpenSim/Common/STOFileAdapter.h"
 
 //=============================================================================
 // STATICS
@@ -39,6 +41,29 @@
 using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
+
+//=============================================================================
+// HELPER FUNCTIONS
+//=============================================================================
+// Add number of rows (nRows) and number of columns (nColumns) to the header of
+// the STO file. Note that nColumns will include time, so it will be number of
+// columns in the matrix plus 1 (for time).
+inline void addNumRowsNumColumns(const std::string& filenameOld,
+    const std::string& filenameNew) {
+    TimeSeriesTable table(filenameOld);
+    std::regex endheader{ R"( *endheader *)" };
+    std::ifstream fileOld{ filenameOld };
+    std::ofstream fileNew{ filenameNew };
+    std::string line{};
+    while (std::getline(fileOld, line)) {
+        if (std::regex_match(line, endheader))
+            fileNew << "nRows=" << table.getNumRows() << "\n"
+            << "nColumns=" << table.getNumColumns() + 1 << "\n"
+            << "endheader\n";
+        else
+            fileNew << line << "\n";
+    }
+}
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -88,7 +113,8 @@ MarkerData::MarkerData(const string& aFileName) :
 
    _fileName = aFileName;
 
-    cout << "Loaded marker file " << _fileName << " (" << _numMarkers << " markers, " << _numFrames << " frames)" << endl;
+   log_info("Loaded marker file {} ({} markers, {} frames)",
+           _fileName, _numMarkers, _numFrames);
 }
 
 //_____________________________________________________________________________
@@ -479,9 +505,16 @@ finish:
  */
 void MarkerData::readStoFile(const string& aFileName)
 {
-
     if (aFileName.empty())
         throw Exception("MarkerData.readStoFile: ERROR- Marker file name is empty",__FILE__,__LINE__);
+
+    // If the file was written by STOFileAdapter, make the file readable by
+    // Storage. Calls below have no effect otherwise.
+    std::string tmpFileName{"tmp.sto"};
+    bool versionChanged{revertToVersionNumber1(aFileName, tmpFileName)};
+    if(versionChanged)
+        addNumRowsNumColumns(tmpFileName, aFileName);
+    std::remove(tmpFileName.c_str());
 
     Storage store(aFileName);
 
@@ -496,7 +529,8 @@ void MarkerData::readStoFile(const string& aFileName)
 
     for (iter = markerIndices.begin(); iter != markerIndices.end(); iter++) {
         SimTK::String markerNameWithSuffix = iter->second;
-        size_t dotIndex = markerNameWithSuffix.toLower().find_last_of(".x");
+        size_t dotIndex =
+            SimTK::String::toLower(markerNameWithSuffix).find_last_of(".x");
         SimTK::String candidateMarkerName = markerNameWithSuffix.substr(0, dotIndex-1);
         _markerNames.append(candidateMarkerName);
     }
@@ -527,7 +561,6 @@ void MarkerData::readStoFile(const string& aFileName)
         }
         _frames.append(frame);
    }
-   
 }
 /**
  * Helper function to check column labels of passed in Storage for possibly being a MarkerName, and if true
@@ -735,8 +768,9 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
 
             if (pt.isNaN())
             {
-                cout << "___WARNING___: marker " << _markerNames[i] << " is missing in frames " << startUserIndex
-                      << " to " << endUserIndex << ". Coordinates will be set to NAN." << endl;
+                log_warn("Marker {} is missing in frames {} to {}. Coordinate "
+                         "will be set to NAN.", _markerNames[i], startUserIndex,
+                        endUserIndex);
             }
             else if (maxX[i] - minX[i] > aThreshold ||
                       maxY[i] - minY[i] > aThreshold ||
@@ -745,14 +779,14 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
                 double maxDim = maxX[i] - minX[i];
                 maxDim = MAX(maxDim, (maxY[i] - minY[i]));
                 maxDim = MAX(maxDim, (maxZ[i] - minZ[i]));
-                cout << "___WARNING___: movement of marker " << _markerNames[i] << " in " << _fileName
-                      << " is " << maxDim << " (threshold = " << aThreshold << ")" << endl;
+                log_warn("Movement of marker {} in {} is {} (threshold = {})",
+                        _markerNames[i], _fileName, maxDim, aThreshold);
             }
         }
     }
 
-    cout << "Averaged frames from time " << aStartTime << " to " << aEndTime << " in " << _fileName
-          << " (frames " << startUserIndex << " to " << endUserIndex << ")" << endl;
+    log_info("Averaged frames from time {} to {} in {} (frames {} to {})",
+            aStartTime, aEndTime, _fileName, startUserIndex, endUserIndex);
 
     if (aThreshold > 0.0)
     {

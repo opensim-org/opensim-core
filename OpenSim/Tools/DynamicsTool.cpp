@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,10 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "DynamicsTool.h"
-#include <string>
-#include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Storage.h>
 
@@ -175,21 +172,21 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
         //Check for keywords first starting with ALL
         if(IO::Uppercase(forcesByNameOrGroup[i]) == "ALL"){
             for(int i=0; i<modelForces.getSize(); i++){
-                modelForces[i].setDisabled(s, true);
+                modelForces[i].setAppliesForce(s, false);
             }
             return;
         }
         if(IO::Uppercase(forcesByNameOrGroup[i]) == "ACTUATORS"){
             Set<Actuator> &acts = model.updActuators();
             for(int i=0; i<acts.getSize(); i++){
-                acts[i].setDisabled(s, true);
+                acts[i].setAppliesForce(s, false);
             }
             continue;
         }
         if(IO::Uppercase(forcesByNameOrGroup[i]) == "MUSCLES"){
             Set<Muscle> &muscles = model.updMuscles();
             for(int i=0; i<muscles.getSize(); i++){
-                muscles[i].setDisabled(s, true);
+                muscles[i].setAppliesForce(s, false);
             }
             continue;
         }
@@ -203,104 +200,77 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
             k = groupNames.findIndex(forcesByNameOrGroup[i]);
             if(k > -1){ //found
                 const ObjectGroup* group = modelForces.getGroup(k);
-                Array<Object*> members = group->getMembers();
+                Array<const Object*> members = group->getMembers();
                 for(int j=0; j<members.getSize(); j++)
-                    ((Force *)(members[j]))->setDisabled(s, true);
+                    ((Force *)(members[j]))->setAppliesForce(s, false);
             }
         } //otherwise, check for individual forces
         else{
             k = modelForces.getIndex(forcesByNameOrGroup[i]);
             if(k > -1){ //found
-                modelForces[k].setDisabled(s, true);
+                modelForces[k].setAppliesForce(s, false);
             }
         }
         // No force or group was found
-        if(k < 0)
-            cout << "\nWARNING: Tool could not find force or group named '" << forcesByNameOrGroup[i] << "' to be excluded." << endl;
-
+        if(k < 0) {
+            log_warn("Could not find force or group named '{}' to be excluded.", 
+                forcesByNameOrGroup[i]);
+        }
     }
 }
 
-bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Model& aModel, const Storage *loadKinematics)
+
+// NOTE: The implementation here should be verbatim that of AbstractTool::
+// createExternalLoads to ensure consistent behavior of Tools in the GUI
+// TODO: Unify the code bases.
+bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
+                                        Model& aModel)
 {
-    if(aExternalLoadsFileName==""||aExternalLoadsFileName=="Unassigned") {
-        cout<<"No external loads will be applied (external loads file not specified)."<<endl;
+    if(aExternalLoadsFileName == "" || aExternalLoadsFileName == "Unassigned") {
+        log_info("No external loads will be applied (external loads file not "
+                 "specified).");
         return false;
     }
 
-    // This is required so that the references to other files inside ExternalLoads file are interpreted 
-    // as relative paths
-    std::string savedCwd = IO::getCwd();
-    IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
+    Model copyModel = aModel;
+    // speedup realize position calculations by removing all force elements
+    // including muscles whose path calculations are most intensive
+    copyModel.updForceSet().clearAndDestroy();
+    copyModel.updControllerSet().clearAndDestroy();
+
     // Create external forces
+    ExternalLoads* externalLoads = nullptr;
     try {
-        _externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
+        externalLoads = new ExternalLoads(aExternalLoadsFileName, true);
+        copyModel.addModelComponent(externalLoads);
     }
-     catch (const Exception& ex) {
+    catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
         // And then we can re-throw the exception
-         cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName
-             << ". Please make sure the file exists and that it contains an ExternalLoads object or create a fresh one." << endl;
-        if(getDocument()) IO::chDir(savedCwd);
+        log_error("Failed to construct ExternalLoads from file '{}'. Please "
+                  "make sure the file exists and that it contains an "
+                  "ExternalLoads object or create a fresh one.", 
+            aExternalLoadsFileName);
         throw(ex);
     }
-    _externalLoads.setMemoryOwner(false);
-    _externalLoads.invokeConnectToModel(aModel);
 
-    string loadKinematicsFileName = _externalLoads.getExternalLoadsModelKinematicsFileName();
-    
-    const Storage *loadKinematicsForPointTransformation = NULL;
-    
-    //If the Tool is already loading the storage allow it to pass it in for use rather than reloading and processing
-    if(loadKinematics && loadKinematics->getName() == loadKinematicsFileName){
-        loadKinematicsForPointTransformation = loadKinematics;
-    }
-    else{
-        IO::TrimLeadingWhitespace(loadKinematicsFileName);
-        Storage *temp = NULL;
-        // fine if there are no kinematics as long as it was not assigned
-        if(!(loadKinematicsFileName == "") && !(loadKinematicsFileName == "Unassigned")){
-            temp = new Storage(loadKinematicsFileName);
-            if(!temp){
-                IO::chDir(savedCwd);
-                throw Exception("DynamicsTool: could not find external loads kinematics file '"+loadKinematicsFileName+"'."); 
-            }
-        }
-        // if loading the data, do whatever filtering operations are also specified
-        if(temp && _externalLoads.getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
-            cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_externalLoads.getLowpassCutoffFrequencyForLoadKinematics()<<"."<<endl;
-            temp->pad(temp->getSize()/2);
-            temp->lowpassIIR(_externalLoads.getLowpassCutoffFrequencyForLoadKinematics());
-        }
-        loadKinematicsForPointTransformation = temp;
-    }
-    
-    // if load kinematics for performing re-expressing the point of application is provided
-    // then perform the transformations
-    if(loadKinematicsForPointTransformation){
-        SimTK::State& s = aModel.initSystem();
-        
-        // Form complete storage so that the kinematics match the state labels/ordering
-        Storage *qStore=NULL;
-        Storage *uStore=NULL;
-        aModel.getSimbodyEngine().formCompleteStorages(s, *loadKinematicsForPointTransformation,qStore,uStore);
-        // qStore should be in radians
-        if (qStore->isInDegrees()){
-            aModel.getSimbodyEngine().convertDegreesToRadians(*qStore);
-        }
-        _externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, _timeRange[0], _timeRange[1]);
-        delete qStore;
-        delete uStore;
-    }
-    
-    // Add external loads to the set of all model forces
-    for(int i=0; i<_externalLoads.getSize(); ++i){
-        aModel.updForceSet().adoptAndAppend(&_externalLoads[i]);
-    }
+    //Now add the ExternalLoads (transformed or not) to the Model to be analyzed
+    ExternalLoads* exLoadsClone = externalLoads->clone();
+    aModel.addModelComponent(exLoadsClone);
 
-    if(!loadKinematics)
-        delete loadKinematics;
+    // copy over created external loads to the external loads owned by the tool
+    _externalLoads = *externalLoads;
+    // tool holds on to a reference of the external loads in the model so it can
+    // be removed afterwards
+    _modelExternalLoads = exLoadsClone;
 
-    IO::chDir(savedCwd);
-    return(true);
+    return true;
+}
+
+void DynamicsTool::removeExternalLoadsFromModel()
+{
+    // If ExternalLoads were added to the model by the Tool, then remove them
+    if (modelHasExternalLoads()) {
+        _model->updMiscModelComponentSet().remove(_modelExternalLoads.release());
+    }
 }

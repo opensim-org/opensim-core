@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,7 +27,6 @@
 //=============================================================================
 #include <string>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include "PointKinematics.h"
 
 
@@ -51,7 +50,6 @@ const int PointKinematics::BUFFER_LENGTH = PointKinematicsBUFFER_LENGTH;
  */
 PointKinematics::~PointKinematics()
 {
-    if(_dy!=NULL) { delete[] _dy;  _dy=NULL; }
     deleteStorage();
 }
 //_____________________________________________________________________________
@@ -66,9 +64,9 @@ Analysis(aModel),
 _body(NULL),
 _relativeToBody(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
-_relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec()),
-_pointName(_pointNameProp.getValueStr())
+_pointName(_pointNameProp.getValueStr()),
+_relativeToBodyName(_relativeToBodyNameProp.getValueStr())
 {
     // NULL
     setNull();
@@ -102,9 +100,9 @@ Analysis(aFileName, false),
 _body(NULL),
 _relativeToBody(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
-_relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec()),
-_pointName(_pointNameProp.getValueStr())
+_pointName(_pointNameProp.getValueStr()),
+_relativeToBodyName(_relativeToBodyNameProp.getValueStr())
 {
     setNull();
 
@@ -132,9 +130,9 @@ Analysis(aPointKinematics),
 _body(aPointKinematics._body),
 _relativeToBody(aPointKinematics._relativeToBody),
 _bodyName(_bodyNameProp.getValueStr()),
-_relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec()),
-_pointName(_pointNameProp.getValueStr())
+_pointName(_pointNameProp.getValueStr()),
+_relativeToBodyName(_relativeToBodyNameProp.getValueStr())
 {
     setNull();
 
@@ -150,7 +148,6 @@ void PointKinematics::
 setNull()
 {
     // POINTERS
-    _dy = NULL;
     _kin = NULL;
     _pStore = NULL;
     _vStore = NULL;
@@ -226,12 +223,12 @@ constructDescription()
     strcat(descrip,"(position, velocity, or acceleration) of\n");
     
     if(_relativeToBody){
-        sprintf(tmp,"point (%lf, %lf, %lf) on body %s relative to body %s of model %s.\n",
+        snprintf(tmp, BUFFER_LENGTH, "point (%lf, %lf, %lf) on body %s relative to body %s of model %s.\n",
             _point[0],_point[1],_point[2],_body->getName().c_str(),
             _relativeToBody->getName().c_str(), _model->getName().c_str());
     }
     else{
-        sprintf(tmp,"point (%lf, %lf, %lf) on the %s of model %s.\n",
+        snprintf(tmp, BUFFER_LENGTH, "point (%lf, %lf, %lf) on the %s of model %s.\n",
             _point[0],_point[1],_point[2],_body->getName().c_str(),
             _model->getName().c_str());
     }
@@ -300,26 +297,26 @@ deleteStorage()
 // GET AND SET
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Set the model for which the point kinematics are to be computed.
- *
- * @param aModel Model pointer
- */
-void PointKinematics::
-setModel(Model& aModel)
+/* Set the model for which the point kinematics are to be computed. */
+void PointKinematics::setModel(Model& model)
 {
-    Analysis::setModel(aModel);
+    Analysis::setModel(model);
+
+    _body = nullptr;
+    _relativeToBody = nullptr;
 
     // Map name to index
-    _body = &aModel.updBodySet().get(_bodyName);
-    if (aModel.updBodySet().contains(_relativeToBodyName))
-        _relativeToBody = &aModel.updBodySet().get(_relativeToBodyName);
+    if (model.hasComponent<PhysicalFrame>(_bodyName))
+        _body = &model.getComponent<PhysicalFrame>(_bodyName);
+    else if (model.hasComponent<PhysicalFrame>("./bodyset/" + _bodyName))
+        _body = &model.getComponent<PhysicalFrame>("./bodyset/"+_bodyName);
 
-    // ALLOCATIONS
-    if (_dy != 0)
-        delete[] _dy;
-
-    _dy = new double[_model->getNumStateVariables()];
+    if (model.hasComponent<PhysicalFrame>(_relativeToBodyName))
+        _relativeToBody = &model.getComponent<PhysicalFrame>(
+            _relativeToBodyName);
+    else if(model.hasComponent<PhysicalFrame>("./bodyset/" + _relativeToBodyName))
+        _relativeToBody = &model.getComponent<PhysicalFrame>(
+            "./bodyset/" + _relativeToBodyName);
 
     // DESCRIPTION AND LABELS
     constructDescription();
@@ -352,12 +349,11 @@ setBodyPoint(const std::string& aBody, const SimTK::Vec3& aPoint)
  *
  * @param aBody Body ID
  */
-void PointKinematics::
-setBody(Body* aBody)
+void PointKinematics::setBody(const PhysicalFrame* aBody)
 {
     // CHECK
     if (aBody==NULL) {
-        printf("PointKinematics.setBody:  WARN- invalid body pointer %p.\n", aBody);
+        log_warn("PointKinematics.setBody: null body pointer.");
         _body = NULL;
         return;
     }
@@ -365,14 +361,13 @@ setBody(Body* aBody)
     // SET
     _body = aBody;
     _bodyName = _body->getName();
-    cout<<"PointKinematics.setBody: set body to "<<_bodyName<<endl;
+    log_info("PointKinematics.setBody: set body to {}.", _bodyName);
 }
-void PointKinematics::
-setRelativeToBody(Body* aBody)
+void PointKinematics::setRelativeToBody(const PhysicalFrame* aBody)
 {
     // CHECK
     if (aBody==NULL) {
-        printf("PointKinematics.setRelativeToBody:  WARN- invalid body pointer %p.\n", aBody);
+        log_warn("PointKinematics.setRelativeToBody: null body pointer.");
         _body = NULL;
         return;
     }
@@ -380,7 +375,8 @@ setRelativeToBody(Body* aBody)
     // SET
     _relativeToBody = aBody;
     _relativeToBodyName = aBody->getName();
-    cout<<"PointKinematics.setRelativeToBody: set relative-to body to "<<_bodyName<<endl;
+    log_info("PointKinematics.setRelativeToBody: set relative-to body to {}.",
+            _bodyName);
 }
 
 //_____________________________________________________________________________
@@ -389,12 +385,12 @@ setRelativeToBody(Body* aBody)
  *
  * @return Body pointer
  */
-Body* PointKinematics::getBody()
+const PhysicalFrame* PointKinematics::getBody() const
 {
     return(_body);
 }
 
-Body* PointKinematics::getRelativeToBody()
+const PhysicalFrame* PointKinematics::getRelativeToBody() const
 {
     return(_relativeToBody);
 }
@@ -492,24 +488,6 @@ getPositionStorage()
     return(_pStore);
 }
 
-//-----------------------------------------------------------------------------
-// STORAGE CAPACITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the capacity increments of all storage instances.
- *
- * @param aIncrement Increment by which storage capacities will be increased
- * when storage capacities run out.
- */
-void PointKinematics::
-setStorageCapacityIncrements(int aIncrement)
-{
-    _aStore->setCapacityIncrement(aIncrement);
-    _vStore->setCapacityIncrement(aIncrement);
-    _pStore->setCapacityIncrement(aIncrement);
-}
-
 
 
 //=============================================================================
@@ -522,34 +500,33 @@ setStorageCapacityIncrements(int aIncrement)
 int PointKinematics::
 record(const SimTK::State& s)
 {
-    const SimbodyEngine& de = _model->getSimbodyEngine();
-
     // VARIABLES
     SimTK::Vec3 vec;
 
     const double& time = s.getTime();
+    const Ground& ground = _model->getGround();
 
     // POSITION
-    de.getPosition(s, *_body,_point,vec);
+    vec = _body->findStationLocationInGround(s, _point);
     if(_relativeToBody){
-        de.transformPosition(s, _model->getGround(), vec, *_relativeToBody, vec);
+        vec = ground.findStationLocationInAnotherFrame(s, vec, *_relativeToBody);
     }
 
     _pStore->append(time, vec);
 
     // VELOCITY
-    de.getVelocity(s, *_body,_point,vec);
+    vec = _body->findStationVelocityInGround(s, _point);
     if(_relativeToBody){
-        de.transform(s, _model->getGround(), vec, *_relativeToBody, vec);
+        vec = ground.expressVectorInAnotherFrame(s, vec, *_relativeToBody);
     }
 
     _vStore->append(time, vec);
 
     // ACCELERATIONS
     _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
-    de.getAcceleration(s, *_body,_point,vec);
+    vec = _body->findStationAccelerationInGround(s, _point);
     if(_relativeToBody){
-        de.transform(s, _model->getGround(), vec, *_relativeToBody, vec);
+        vec = ground.expressVectorInAnotherFrame(s, vec, *_relativeToBody);
     }
 
     _aStore->append(time, vec);
@@ -573,7 +550,7 @@ record(const SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int PointKinematics::
-begin( SimTK::State& s)
+begin( const SimTK::State& s)
 {
     if(!proceed()) return(0);
 
@@ -629,12 +606,12 @@ step(const SimTK::State& s, int stepNumber)
  * @return -1 on error, 0 otherwise.
  */
 int PointKinematics::
-end( SimTK::State& s)
+end( const SimTK::State& s)
 {
     if(!proceed()) return(0);
     record(s);
-    cout<<"PointKinematics.end: Finalizing analysis "<<getName()<<".\n";
-    return(0);
+    log_info("PointKinematics.end: Finalizing analysis {}.", getName());
+    return 0 ;
 }
 
 

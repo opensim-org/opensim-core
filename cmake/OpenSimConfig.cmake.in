@@ -2,16 +2,39 @@
 # see SampleCMakeLists.txt.
 #
 # This config file defines the following variables:
-#   @CMAKE_PROJECT_NAME@_FOUND               True if search for libraries and headers
-#                               succeeds.
-#   @CMAKE_PROJECT_NAME@_ROOT_DIR            The installation directory.
-#   @CMAKE_PROJECT_NAME@_LIB_DIR             The directory containing libraries.
-#                               Suitable for link_directories().
-#   @CMAKE_PROJECT_NAME@_INCLUDE_DIRS        Suitable for include_directories().
-#   @CMAKE_PROJECT_NAME@_LIBRARIES           Suitable for target_link_libraries().
-#
-# Note that these variables also contain the Simbody include directories
-# and libraries that OpenSim was built with.
+#   @CMAKE_PROJECT_NAME@_FOUND
+#       True if search for libraries and headers succeeds.
+#   @CMAKE_PROJECT_NAME@_ROOT_DIR
+#       The installation directory.
+#   @CMAKE_PROJECT_NAME@_USE_FILE
+#       A file containing CMake macros and functions that may be useful for 
+#       client projects. 
+#   @CMAKE_PROJECT_NAME@_BIN_DIR
+#       The directory containing executables (and DLLs on Windows).
+#   @CMAKE_PROJECT_NAME@_LIB_DIR
+#       The directory containing libraries. Suitable for link_directories().
+#   @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
+#       Suitable for include_directories().
+#   @CMAKE_PROJECT_NAME@_LIBRARIES
+#       Suitable for target_link_libraries().
+#   @CMAKE_PROJECT_NAME@_JAVA_WRAPPING
+#       Boolean indicating whether or not OpenSim was built to include Java
+#       wrapping.
+#   @CMAKE_PROJECT_NAME@_JAR_FILE
+#       Path to Java wrapping's jar file.
+#   @CMAKE_PROJECT_NAME@_JAVA_FILES_DIR
+#       Directory containing the Java source files.
+#   @CMAKE_PROJECT_NAME@_PYTHON_WRAPPING
+#       Boolean indicating whether or not OpenSim was built to include Python
+#       wrapping.
+#   @CMAKE_PROJECT_NAME@_PYTHON_PACKAGE_DIR
+#       Directory containing the OpenSim Python package.
+#                                            
+# This file will also find Simbody; you do not
+# need to use `find_package(Simbody)` in your own project. If OpenSim's
+# installation does *not* contain Simbody (and ezc3d), you might need to set
+# CMAKE_PREFIX_PATH to the directory containing Simbody, and make sure that ezc3d
+# libraries are available during runtime.
 #
 # Adapted from SimbodyConfig.cmake
 #
@@ -20,30 +43,23 @@
 @PACKAGE_INIT@
 
 set_and_check(@CMAKE_PROJECT_NAME@_ROOT_DIR "@PACKAGE_CMAKE_INSTALL_PREFIX@")
+        
+set_and_check(@CMAKE_PROJECT_NAME@_USE_FILE
+    "@PACKAGE_OPENSIM_INSTALL_CMAKEDIR@/Use@CMAKE_PROJECT_NAME@.cmake")
+
+# BIN_DIR
+# -------
+set_and_check(@CMAKE_PROJECT_NAME@_BIN_DIR "@PACKAGE_CMAKE_INSTALL_BINDIR@")
 
 # LIB_DIR
 # -------
 set_and_check(@CMAKE_PROJECT_NAME@_LIB_DIR "@PACKAGE_CMAKE_INSTALL_LIBDIR@")
 
-if(NOT @OPENSIM_COPY_SIMBODY@)
-    list(APPEND @CMAKE_PROJECT_NAME@_LIB_DIR "@Simbody_LIB_DIR@")
-endif()
-
 # INCLUDE_DIRS
 # ------------
-list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
-    "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@"
-    "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@/Vendors/lepton/include"
-    )
+set_and_check(@CMAKE_PROJECT_NAME@_INCLUDE_DIRS
+    "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
 
-if(@OPENSIM_COPY_SIMBODY@)
-    # Simbody headers have been copied to OpenSim.
-    list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
-        "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@/Simbody")
-else()
-    # Refer to Simbody's own headers.
-    list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS "@Simbody_INCLUDE_DIR@")
-endif()
 
 # LIBRARIES
 # ---------
@@ -51,6 +67,41 @@ include("@PACKAGE_OPENSIM_INSTALL_CMAKEDIR@/@CMAKE_PROJECT_NAME@Targets.cmake")
 
 # The osimTools target uses all the other targets.
 # This makes a distinction between release and debug libraries.
-list(APPEND @CMAKE_PROJECT_NAME@_LIBRARIES osimTools)
+list(APPEND @CMAKE_PROJECT_NAME@_LIBRARIES osimTools osimExampleComponents osimMoco)
 
 check_required_components(OpenSim)
+
+# Python/Java Wrapping
+#---------------------
+set(@CMAKE_PROJECT_NAME@_PYTHON_WRAPPING @BUILD_PYTHON_WRAPPING@)
+set(@CMAKE_PROJECT_NAME@_PYTHON_PACKAGE_DIR
+    @PACKAGE_CMAKE_INSTALL_PREFIX@/@OPENSIM_INSTALL_PYTHONDIR@)
+
+set(@CMAKE_PROJECT_NAME@_JAVA_WRAPPING @BUILD_JAVA_WRAPPING@)
+set(@CMAKE_PROJECT_NAME@_JAVA_FILES_DIR 
+    @PACKAGE_CMAKE_INSTALL_PREFIX@/@OPENSIM_INSTALL_JAVASRCDIR@/org)
+set(@CMAKE_PROJECT_NAME@_JAR_FILE 
+    @PACKAGE_CMAKE_INSTALL_PREFIX@/@OPENSIM_INSTALL_JAVAJARDIR@/@SWIG_JAVA_JAR_NAME@)
+
+# Dependencies
+# ------------
+if (@OPENSIM_COPY_DEPENDENCIES@) # OPENSIM_COPY_DEPENDENCIES
+    # Find the copies of Simbody and spdlog within the OpenSim installation.
+    # We define _SIMBODY_PATH and _SPDLOG_PATH before find_package(Simbody)
+    # because finding Simbody redefines the PACKAGE_PREFIX_DIR variable
+    # that appears in this file after configuring, thereby incorrectly
+    # causing CMake to look for spdlog within Simbody's installation.
+    set(_SIMBODY_PATH "@PACKAGE_OPENSIM_INSTALL_SIMBODYDIR@")
+    set(_SPDLOG_PATH "@PACKAGE_OPENSIM_INSTALL_SPDLOGDIR@")
+    find_package(Simbody @SIMBODY_VERSION_TO_USE@ REQUIRED
+        PATHS "${_SIMBODY_PATH}" NO_MODULE NO_DEFAULT_PATH)
+    find_package(spdlog REQUIRED
+        PATHS "${_SPDLOG_PATH}" NO_MODULE NO_DEFAULT_PATH)
+else()
+    # Find the correct version anywhere on the machine.
+    include(CMakeFindDependencyMacro)
+    find_dependency(Simbody @SIMBODY_VERSION_TO_USE@)
+    find_dependency(spdlog)
+endif()
+
+

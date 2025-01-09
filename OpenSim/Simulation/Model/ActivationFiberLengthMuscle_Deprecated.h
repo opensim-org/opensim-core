@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Peter Loan, Frank C. Anderson                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -70,8 +70,6 @@ public:
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
 
-    virtual void equilibrate(SimTK::State& state) const;
-
     //--------------------------------------------------------------------------
     // GET
     //--------------------------------------------------------------------------
@@ -112,7 +110,7 @@ public:
     // COMPUTATIONS
     //--------------------------------------------------------------------------
     void computeInitialFiberEquilibrium(SimTK::State& s ) const override;
-    virtual double computeActuation( const SimTK::State& s ) const = 0;
+    virtual double computeActuation( const SimTK::State& s ) const override = 0;
     virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
     //virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const;
     
@@ -125,8 +123,14 @@ public:
     //--------------------------------------------------------------------------
     // SCALING
     //--------------------------------------------------------------------------
+
+    /** Adjust the properties of the muscle after the model has been scaled. The
+        optimal fiber length and tendon slack length are each multiplied by the
+        ratio of the current path length and the path length before scaling. */
+    void extendPostScale(const SimTK::State& s,
+                         const ScaleSet& scaleSet) override;
+
 protected:
-    void postScale(const SimTK::State& s, const ScaleSet& aScaleSet) override;
 
     //--------------------------------------------------------------------------
     // FORCE APPLICATION

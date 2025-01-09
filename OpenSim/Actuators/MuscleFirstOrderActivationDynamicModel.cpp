@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -77,18 +77,13 @@ clampActivation(double activation) const
 double MuscleFirstOrderActivationDynamicModel::
 calcDerivative(double activation, double excitation) const
 {
-    // This model respects a lower bound on activation while preserving the
-    // expected steady-state value.
-    double clampedExcitation = clamp(get_minimum_activation(), excitation, 1.0);
-    double clampedActivation = clamp(get_minimum_activation(), activation, 1.0);
-    double tau = SimTK::NaN;
+    activation = clamp(get_minimum_activation(), activation, 1.0);
 
-    if(clampedExcitation > clampedActivation) {
-        tau = get_activation_time_constant() * (0.5 + 1.5*clampedActivation);
-    } else {
-        tau = get_deactivation_time_constant() / (0.5 + 1.5*clampedActivation);
-    }
-    return (clampedExcitation - clampedActivation) / tau;
+    double tau = (excitation > activation) ?
+        get_activation_time_constant() * (0.5 + 1.5*activation) : 
+        get_deactivation_time_constant() / (0.5 + 1.5*activation);
+
+    return (excitation - activation) / tau;
 }
 
 //==============================================================================
@@ -102,15 +97,20 @@ void MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties()
         " MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties";
 
     // Ensure property values are within appropriate ranges.
-    SimTK_ERRCHK1_ALWAYS(get_activation_time_constant() > SimTK::SignificantReal,
-        "MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties",
-        "%s: Activation time constant must be greater than zero",
-        getName().c_str());
-    SimTK_ERRCHK1_ALWAYS(get_deactivation_time_constant() > SimTK::SignificantReal,
-        "MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties",
-        "%s: Deactivation time constant must be greater than zero",
-        getName().c_str());
-    SimTK_VALUECHECK_ALWAYS(0.0, get_minimum_activation(),
-        1.0-SimTK::SignificantReal, "minimum_activation",
-        errorLocation.c_str());
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_activation_time_constant() < SimTK::SignificantReal,
+        InvalidPropertyValue,
+        getProperty_activation_time_constant().getName(),
+        "Activation time constant must be greater than zero");
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_deactivation_time_constant() < SimTK::SignificantReal,
+        InvalidPropertyValue,
+        getProperty_deactivation_time_constant().getName(),
+        "Deactivation time constant must be greater than zero");
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_minimum_activation() < 0 ||
+        get_minimum_activation() > 1.0-SimTK::SignificantReal,
+        InvalidPropertyValue,
+        getProperty_minimum_activation().getName(),
+        "Minimum activation must be in the range [0, 1)");
 }

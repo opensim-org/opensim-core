@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -28,16 +28,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <string>
 #include "CMC_Task.h"
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyBoolArray.h>
-#include <OpenSim/Common/PropertyIntArray.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/Function.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -909,8 +901,8 @@ getAcceleration(int aWhich) const
 void CMC_Task::
 computeJacobian()
 {
-    printf("CMC_Task.computeJacobian: ERROR- this method should be ");
-    printf("overridden in derived classes.\n");
+    log_error("CMC_Task::computeJacobian: This method should be overridden in "
+        "derived classes.");
 }
 
 //-----------------------------------------------------------------------------
@@ -923,35 +915,6 @@ computeJacobian()
 void CMC_Task::
 computeEffectiveMassMatrix()
 {
-    printf("CMC_Task.computeEffectiveMassMatrix: ERROR- this method ");
-    printf("should be overridden in derived classes.\n");
-}
-
-
-//=============================================================================
-// XML
-//=============================================================================
-//-----------------------------------------------------------------------------
-// UPDATE FROM XML NODE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Update this object based on its XML node.
- */
-void CMC_Task::
-updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
-{
-    TrackingTask::updateFromXMLNode(aNode, versionNumber);
-
-    setWRTBodyName(_wrtBodyName);
-    setExpressBodyName(_expressBodyName);
-    //setOn(_on);
-    setActive(_active[0],_active[1],_active[2]);
-    //setWeight(_w[0],_w[1],_w[2]);
-    setKP(_kp[0],_kp[1],_kp[2]);
-    setKV(_kv[0],_kv[1],_kv[2]);
-    setKA(_ka[0],_ka[1],_ka[2]);
-    setDirection_0(_r0);
-    setDirection_1(_r1);
-    setDirection_2(_r2);
+    log_error("CMC_Task::computeEffectiveMassMatrix: This method should be "
+        "overridden in derived classes.");
 }
