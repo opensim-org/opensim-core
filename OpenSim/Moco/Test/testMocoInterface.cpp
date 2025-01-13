@@ -91,7 +91,7 @@ namespace {
         ms.set_transcription_scheme(transcriptionScheme);
         ms.set_enforce_constraint_derivatives(false);
         return study;
-	}
+    }
 }
 
 TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver) {
