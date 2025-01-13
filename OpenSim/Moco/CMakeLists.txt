@@ -139,20 +139,12 @@ if(OPENSIM_WITH_CASADI)
             MocoCasADiSolver/MocoCasOCProblem.cpp
             )
 endif()
-if(OPENSIM_WITH_TROPTER)
-    list(APPEND MOCO_SOURCES
-            tropter/TropterProblem.h
-            tropter/TropterProblem.cpp
-            )
-endif ()
+
 add_library(osimMoco SHARED ${MOCO_SOURCES})
 target_link_libraries(osimMoco PUBLIC osimTools)
 if (OPENSIM_WITH_CASADI)
     target_link_libraries(osimMoco PRIVATE casadi)
 endif()
-if (OPENSIM_WITH_TROPTER)
-    target_link_libraries(osimMoco PRIVATE tropter)
-endif ()
 
 target_include_directories(osimMoco INTERFACE
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
@@ -166,9 +158,7 @@ set_target_properties(osimMoco PROPERTIES
 if (OPENSIM_WITH_CASADI)
     target_compile_definitions(osimMoco PUBLIC OPENSIM_WITH_CASADI)
 endif ()
-if (OPENSIM_WITH_TROPTER)
-    target_compile_definitions(osimMoco PUBLIC OPENSIM_WITH_TROPTER)
-endif ()
+
 # TODO: Remove the concept of a separate Moco version.
 target_compile_definitions(osimMoco PRIVATE
     OPENSIM_MOCO_VERSION=${OPENSIM_QUALIFIED_VERSION}
@@ -177,9 +167,6 @@ target_compile_definitions(osimMoco PRIVATE
 OpenSimAddInstallRPATHSelf(TARGET osimMoco LOADER)
 OpenSimAddInstallRPATHSimbody(TARGET osimMoco LOADER
         FROM "${CMAKE_INSTALL_LIBDIR}")
-if (OPENSIM_WITH_TROPTER)
-    OpenSimAddInstallRPATHSelf(TARGET tropter LOADER)
-endif()
 install(TARGETS osimMoco EXPORT OpenSimTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
