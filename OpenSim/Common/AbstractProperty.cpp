@@ -24,14 +24,54 @@
 // INCLUDES
 //============================================================================
 #include "AbstractProperty.h"
+
 #include "Assertion.h"
+#include "Component.h"
 #include "Object.h"
 
 #include <limits>
+#include <sstream>
+#include <utility>
 
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
+
+namespace
+{
+    static std::string generateInvalidPropertyValueMessage(
+        const std::string& propertyName,
+        const std::string& errorMsg)
+    {
+        std::stringstream ss;
+        ss << "Property '" << propertyName << "' has an invalid property value.\n";
+        ss << "(details: " << errorMsg << ").\n";
+        return std::move(ss).str();
+    }
+}
+
+InvalidPropertyValue::InvalidPropertyValue(const std::string& file,
+    size_t line,
+    const std::string& func,
+    const Object& obj,
+    const std::string& propertyName,
+    const std::string& errorMsg) :
+    Exception(file, line, func, obj) {
+
+    addMessage(generateInvalidPropertyValueMessage(propertyName, errorMsg));
+}
+
+InvalidPropertyValue::InvalidPropertyValue(
+    const std::string& file,
+    size_t line,
+    const std::string& func,
+    const Component& component,
+    const std::string& propertyName,
+    const std::string& errorMsg) :
+    Exception(file, line, func, component) {
+
+    addMessage(generateInvalidPropertyValueMessage(propertyName, errorMsg));
+}
 
 
 //=============================================================================

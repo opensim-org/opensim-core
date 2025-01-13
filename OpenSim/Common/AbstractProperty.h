@@ -35,6 +35,7 @@
 namespace OpenSim {
 
 class Object;
+class Component;
 template <class T> class Property;
 
 //==============================================================================
@@ -42,17 +43,21 @@ template <class T> class Property;
 //==============================================================================
 class InvalidPropertyValue : public Exception {
 public:
-    InvalidPropertyValue(const std::string& file,
+    InvalidPropertyValue(
+        const std::string& file,
         size_t line,
         const std::string& func,
         const Object& obj,
         const std::string& propertyName,
-        const std::string& errorMsg) :
-        Exception(file, line, func, obj) {
-        std::string msg = "Property '" + propertyName;
-        msg += "' has an invalid value.\n(details: " + errorMsg + ").\n";
-        addMessage(msg);
-    }
+        const std::string& errorMsg);
+
+    InvalidPropertyValue(
+        const std::string& file,
+        size_t line,
+        const std::string& func,
+        const Component& component,
+        const std::string& propertyName,
+        const std::string& errorMsg);
 };
 
 
