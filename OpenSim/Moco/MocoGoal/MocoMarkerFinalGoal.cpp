@@ -40,6 +40,6 @@ void MocoMarkerFinalGoal::constructProperties() {
 }
 
 void MocoMarkerFinalGoal::printDescriptionImpl() const {
-    log_cout("        point name: {}", get_point_name());
-    log_cout("        reference location: {}", get_reference_location());
+    log_info("        point name: {}", get_point_name());
+    log_info("        reference location: {}", get_reference_location());
 }

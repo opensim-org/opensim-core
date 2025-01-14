@@ -19,6 +19,7 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 
 #include <OpenSim/Simulation/Model/Force.h>
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
 #include <OpenSim/Simulation/Model/ExternalForce.h>
@@ -103,6 +104,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 
 #include <OpenSim/Simulation/Model/Marker.h>
@@ -149,6 +151,7 @@
 #include <OpenSim/Simulation/OpenSense/IMU.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 
+#include <OpenSim/Simulation/StatesDocument.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 

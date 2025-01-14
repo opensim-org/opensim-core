@@ -97,6 +97,8 @@ MocoTropterSolver::createTropterSolver(
     // is set as the transcription scheme.
 
     if (getProblemRep().getNumKinematicConstraintEquations()) {
+        checkPropertyValueIsInSet(
+                getProperty_kinematic_constraint_method(), {"Posa2016"});
         OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
                                  get_enforce_constraint_derivatives(),
                 Exception,
@@ -143,7 +145,7 @@ MocoTropterSolver::createTropterSolver(
     std::unique_ptr<tropter::DirectCollocationSolver<double>> dircol;
 
     if (getProperty_mesh().empty()) {
-        dircol = OpenSim::make_unique<tropter::DirectCollocationSolver<double>>(
+        dircol = std::make_unique<tropter::DirectCollocationSolver<double>>(
                 ocp, get_transcription_scheme(), get_optim_solver(),
                 get_num_mesh_intervals());
     } else {
@@ -151,7 +153,7 @@ MocoTropterSolver::createTropterSolver(
         for (int i = 0; i < getProperty_mesh().size(); ++i) {
             mesh.push_back(get_mesh(i));
         }
-        dircol = OpenSim::make_unique<tropter::DirectCollocationSolver<double>>(
+        dircol = std::make_unique<tropter::DirectCollocationSolver<double>>(
                 ocp, get_transcription_scheme(), get_optim_solver(), mesh);
     }
 
@@ -370,6 +372,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
             !get_minimize_lagrange_multipliers()) {
         checkConstraintJacobianRank(mocoSolution);
     }
+    checkSlackVariables(mocoSolution);
 
     // TODO move this to convert():
     const long long elapsed = stopwatch.getElapsedTimeInNs();

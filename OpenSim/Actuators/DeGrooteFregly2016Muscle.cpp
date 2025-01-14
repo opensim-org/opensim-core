@@ -152,16 +152,7 @@ void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
             "Pennation angle at optimal fiber length must be in the range [0, "
             "Pi/2).");
 
-    using SimTK::square;
-    const auto normFiberWidth = sin(get_pennation_angle_at_optimal());
-    m_fiberWidth = get_optimal_fiber_length() * normFiberWidth;
-    m_squareFiberWidth = square(m_fiberWidth);
-    m_maxContractionVelocityInMetersPerSecond =
-            get_max_contraction_velocity() * get_optimal_fiber_length();
-    m_kT = log((1.0 + c3) / c1) /
-           (1.0 + get_tendon_strain_at_one_norm_force() - c2);
-    m_isTendonDynamicsExplicit =
-            get_tendon_compliance_dynamics_mode() == "explicit";
+    m_isTendonDynamicsExplicit = get_tendon_compliance_dynamics_mode() == "explicit";
 }
 
 void DeGrooteFregly2016Muscle::extendAddToSystem(
@@ -279,13 +270,13 @@ void DeGrooteFregly2016Muscle::calcMuscleLengthInfoHelper(
     // ------
     mli.fiberLengthAlongTendon = muscleTendonLength - mli.tendonLength;
     mli.fiberLength = sqrt(
-            SimTK::square(mli.fiberLengthAlongTendon) + m_squareFiberWidth);
+            SimTK::square(mli.fiberLengthAlongTendon) + getSquareFiberWidth());
     mli.normFiberLength = mli.fiberLength / get_optimal_fiber_length();
 
     // Pennation.
     // ----------
     mli.cosPennationAngle = mli.fiberLengthAlongTendon / mli.fiberLength;
-    mli.sinPennationAngle = m_fiberWidth / mli.fiberLength;
+    mli.sinPennationAngle = getFiberWidth() / mli.fiberLength;
     mli.pennationAngle = asin(mli.sinPennationAngle);
 
     // Multipliers.
@@ -311,7 +302,7 @@ void DeGrooteFregly2016Muscle::calcFiberVelocityInfoHelper(
         fvi.normFiberVelocity =
                 calcForceVelocityInverseCurve(fvi.fiberForceVelocityMultiplier);
         fvi.fiberVelocity = fvi.normFiberVelocity *
-                            m_maxContractionVelocityInMetersPerSecond;
+                            getMaxContractionVelocityInMetersPerSecond();
         fvi.fiberVelocityAlongTendon =
                 fvi.fiberVelocity / mli.cosPennationAngle;
         fvi.tendonVelocity =
@@ -331,13 +322,13 @@ void DeGrooteFregly2016Muscle::calcFiberVelocityInfoHelper(
         fvi.fiberVelocity =
                 fvi.fiberVelocityAlongTendon * mli.cosPennationAngle;
         fvi.normFiberVelocity =
-                fvi.fiberVelocity / m_maxContractionVelocityInMetersPerSecond;
+                fvi.fiberVelocity / getMaxContractionVelocityInMetersPerSecond();
         fvi.fiberForceVelocityMultiplier =
                 calcForceVelocityMultiplier(fvi.normFiberVelocity);
     }
 
     const SimTK::Real tanPennationAngle =
-            m_fiberWidth / mli.fiberLengthAlongTendon;
+            getFiberWidth() / mli.fiberLengthAlongTendon;
     fvi.pennationAngularVelocity =
             -fvi.fiberVelocity / mli.fiberLength * tanPennationAngle;
 }
@@ -953,7 +944,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
 
         // Pre-emptively create a default DeGrooteFregly2016Muscle
         // (TODO: not ideal to do this).
-        auto actu = OpenSim::make_unique<DeGrooteFregly2016Muscle>();
+        auto actu = std::make_unique<DeGrooteFregly2016Muscle>();
 
         // Perform muscle-model-specific mappings or throw exception if the
         // muscle is not supported.

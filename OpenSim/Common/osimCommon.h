@@ -29,6 +29,7 @@
 #include "CommonUtilities.h"
 #include "Constant.h"
 #include "DataTable.h"
+#include "ExpressionBasedFunction.h"
 #include "FunctionSet.h"
 #include "GCVSpline.h"
 #include "GCVSplineSet.h"

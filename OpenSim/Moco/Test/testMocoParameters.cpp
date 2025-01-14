@@ -35,7 +35,7 @@ const double STIFFNESS = 100.0; // N/m
 const double MASS = 5.0; // kg
 const double FINAL_TIME = SimTK::Pi * sqrt(MASS / STIFFNESS);
 std::unique_ptr<Model> createOscillatorModel() {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("oscillator");
     model->set_gravity(SimTK::Vec3(0, 0, 0));
     // We will optimize the mass of this body in the test below. Here, we'll set 
@@ -105,7 +105,7 @@ TEMPLATE_TEST_CASE("Oscillator mass", "", MocoCasADiSolver,
 }
 
 std::unique_ptr<Model> createOscillatorTwoSpringsModel() {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("oscillator_two_springs");
     model->set_gravity(SimTK::Vec3(0, 0, 0));
     auto* body = new Body("body", MASS, SimTK::Vec3(0), SimTK::Inertia(0));
@@ -174,7 +174,7 @@ TEMPLATE_TEST_CASE("One parameter two springs", "",
 const double L = 1; 
 const double xCOM = -0.25*L;
 std::unique_ptr<Model> createSeeSawModel() {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("seesaw");
     model->set_gravity(SimTK::Vec3(0, -9.81, 0));
     // Set body with z-rotational inertia and COM at the geometric center.

@@ -8,10 +8,61 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.6
 ====
+- The performance of `getStateVariableValue`, `getStateVariableDerivativeValue`, and `getModelingOption` was improved in
+  the case where provided string is just the name of the value, rather than a path to it (#3782)
+- Fixed bugs in `MocoStepTimeAsymmetryGoal::printDescriptionImpl()` where there were missing or incorrect values printed. (#3842)
+- Added `ModOpPrescribeCoordinateValues` which can prescribe motion of joints in a model given a table of data. (#3862)
+- Fixed bugs in `convertToMocoTrajectory()` and `MocoTrajectory::resampleWithFrequency()` by updating `interpolate()` to
+  allow extrapolation using the `extrapolate` flag. Combined with the `ignoreNaNs` flag, this prevents NaNs from
+  occurring in the output. (#3867)
+- Added `Output`s to `ExpressionBasedCoordinateForce`, `ExpressionBasedPointToPointForce`, and `ExpressionBasedBushingForce` for accessing force values. (#3872)
+- `PointForceDirection` no longer has a virtual destructor, is `final`, and its `scale` functionality
+  has been marked as `[[deprecated]]` (#3890)
+- Added `ExpressionBasedFunction` for creating `Function`s based on user-defined mathematical expressions. (#3892)
+- Added `ForceProducer`, `ForceConsumer`, and `ForceApplier`, which are fundamental APIs for force-producing
+  components. The `ForceProducer` API was also rolled out to a variety of existing `Force` components, which
+  means that API users can now now ask many `Force` components what forces they produce (see #3891 for a
+  comprehensive overview).
+- Made improvements to `MocoUtilities::createExternalLoadsTableForGait()`: center of pressure values are now set to zero, rather
+  than NaN, when vertical force is zero, and the vertical torque is returned in the torque columns (rather than the sum of the
+  sphere torques) to be consistent with the center of pressure GRF representation.
+- Fixed an issue where a copy of an `OpenSim::Model` containing a `OpenSim::ExternalLoads` could not be
+  finalized (#3926)
+- Updated all code examples to use c++14 (#3929)
+- Added class `OpenSim::StateDocument` as a systematic means of serializing and deserializing a complete trajectory
+  (i.e., time history) of all states in the `SimTK::State` to and from a single `.ostates` file. Prior to `StatesDocument`,
+  only the trajectories of continuous states (e.g., joint angles, joint speeds, muscle forces, and the like) could be systematically
+  written to file, either in the form of a `Storage` file or as a `TimeSeriesTable` file, leaving discrete states (e.g., muscle
+  excitations and contact model anchor points) and modeling options (e.g., joint clamps) unserialized. `StatesDocument`, on the
+  other hand, serializes all continuous states, discrete states, and modeling options registered with `OpenSim::Component`.
+  Whereas neither `Storage` files nor `TimeSeriesTable` files are currently able to handle mixed variable types, `StatesDocument`
+  is able to accommodate variables of type `bool`, `int`, `double`, `Vec2`, `Vec3`, `Vec4`, `Vec5`, and `Vec6` all in the same
+  `.ostates` file. `.ostate` files are written in `XML` format and internally carry the name of the OpenSim model to which the
+  states belong, a date/time stamp of when the file was written, and a user-specified note. `.ostate` files also support a
+  configurable output precision. At the highest ouput precsion (~20 significant figures), serialization/deserialization is
+  a lossless process. (#3902)
+- Improved `OpenSim::IO::stod` string-to-decimal parsing function by making it not-locale-dependant (#3943, #3924; thanks @alexbeattie42)
+- Improved the performance of `ComponentPath` traversal (e.g. as used by `Component::getComponent`, `Component::getStateVariableValue`)
+- Added Python and Java (Matlab) scripting support for `TimeSeriesTable_<SimTK::Rotation>`. (#3940)
+- Added the templatized `MocoStudy::analyze<T>()` and equivalent scripting counterparts: `analyzeVec3`, `analyzeSpatialVec`, `analyzeRotation`. (#3940)
+- Added `ConstantCurvatureJoint` to the SWIG bindings; it is now available in Matlab and Python (#3957). 
+- Added methods and `Output`s for calculating the angular momentum of a `Body`. (#3962)
+- Updated `TabOpLowPassFilter` so that by default the processed table is trimmed to the original time range after padding and filtering. 
+  The original behavior (no trimming) can be enabled via the new property `trim_to_original_time_range`. (#3969)
+- Make `InverseKinematicsSolver` methods to query for specific marker or orientation-sensor errors more robust to invalid names or names not 
+  in the intersection of names in the model and names in the provided referece/data. Remove methods that are index based from public interface.(#3951) 
+- Replace usages of `OpenSim::make_unique` with `std::make_unique` and remove wrapper function now that C++14 is used in OpenSim (#3979). 
+- Add utility method `createVectorLinspaceInterval` for the `std::vector` type and add unit tests. Utilize the new utility method to fix a bug (#3976) in creating the uniformly sampled time interval from the experimental data sampling frequency in `APDMDataReader` and `XsensDataReader` (#3977).
+- Fix Point Kinematics Reporter variable and initialization error and add unit tests (#3966)
+
+
+v4.5.1
+======
 - Added support for list `Socket`s via the macro `OpenSim_DECLARE_LIST_SOCKET`. The macro-generated method
   `appendSocketConnectee_*` can be used to connect `Object`s to a list `Socket`. In addition, `Component` and Socket have
   new `getConnectee` overloads that take an index to a desired object in the list `Socket` (#3652).
 - Added `ComponentPath::root()`, which returns a `ComponentPath` equivalent to "/"
+- Added `ComponentPath::separator()`, which returns the separator that's placed between elements of the path (i.e. `'/'`)
 - `ComponentPath` is now less-than (`<`) comparable, making it usable in (e.g.) `std::map`
 - `ComponentPath` now has a `std::hash<T>` implementation, making it usable in (e.g.) `std::unordered_map`
 - Added `.clear()` and `.empty()` to `ComponentPath` for more parity with `std::string`'s semantics
@@ -65,6 +116,9 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Exposed `TimeSeriesTable::trimToIndices` to public API. (#3824)
 - Fixed bug in `Logger::cout`, now it works at any logger level. (#3826)
 - Fixed bugs in `MocoCasOCProblem` and `CasOC::Problem` with incorrect string formatting. (#3828)
+- Fixed `MocoOrientationTrackingGoal::initializeOnModelImpl` to check for missing kinematic states, but allow other missing columns. (#3830)
+- Improved exception handling for internal errors in `MocoCasADiSolver`. Problems will now abort and print a descriptive error message (rather than fail due to an empty trajectory). (#3834)
+- Upgraded the Ipopt dependency Metis to version 5.1.0 on Unix and macOS to enable building on `osx-arm64` (#3874).
 
 
 v4.5

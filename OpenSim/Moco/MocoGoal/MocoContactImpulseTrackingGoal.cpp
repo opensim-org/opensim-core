@@ -116,7 +116,7 @@ void MocoContactImpulseTrackingGoal::initializeOnModelImpl(const Model& model) c
         extLoads = &get_external_loads();
     }
     else if (!get_external_loads_file().empty()) {
-        extLoadsFromFile = OpenSim::make_unique<ExternalLoads>(
+        extLoadsFromFile = std::make_unique<ExternalLoads>(
             get_external_loads_file(), true);
         extLoads = extLoadsFromFile.get();
     }
@@ -340,15 +340,15 @@ void MocoContactImpulseTrackingGoal::calcIntegrandImpl(
 }
 
 void MocoContactImpulseTrackingGoal::printDescriptionImpl() const {
-    log_cout("        impulse axis: {}", get_impulse_axis());
+    log_info("        impulse axis: {}", get_impulse_axis());
     for (int ig = 0; ig < getProperty_contact_groups().size(); ++ig) {
         const auto& group = get_contact_groups(ig);
-        log_cout("        group {}: ExternalForce: {}",
+        log_info("        group {}: ExternalForce: {}",
             ig, group.get_external_force_name());
-        log_cout("            forces:");
+        log_info("            forces:");
         for (int ic = 0; ic < group.getProperty_contact_force_paths().size();
                 ++ic) {
-            log_cout("                {}", group.get_contact_force_paths(ic));
+            log_info("                {}", group.get_contact_force_paths(ic));
         }
     }
 }

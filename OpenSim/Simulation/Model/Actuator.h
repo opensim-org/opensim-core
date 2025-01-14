@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "Force.h"
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 
 
 #ifdef SWIG
@@ -46,8 +46,8 @@ namespace OpenSim {
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API Actuator : public Force {
-OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator, Force);
+class OSIMSIMULATION_API Actuator : public ForceProducer {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator, ForceProducer);
 //=============================================================================
 // NO PROPERTIES
 //=============================================================================

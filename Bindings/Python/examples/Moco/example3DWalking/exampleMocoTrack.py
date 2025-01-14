@@ -279,18 +279,15 @@ def muscleDrivenJointMomentTracking():
     # Ignore coordinates that are locked, prescribed, or coupled to other
     # coordinates via CoordinateCouplerConstraints (true by default).
     jointMomentTracking.setIgnoreConstrainedCoordinates(True)
-    coordinateSet = model.getCoordinateSet()
-    for i in range(coordinateSet.getSize()):
-        coordinate = coordinateSet.get(i)
-        coordName = coordinate.getName()
-        # Don't track generalized forces associated with pelvis residuals.
-        if 'pelvis' in coordName:
-            jointMomentTracking.setWeightForCoordinate(coordName, 0)
-        
-        # Encourage better tracking of the ankle joint moments.
-        if 'ankle' in coordName:
-            jointMomentTracking.setWeightForCoordinate(coordName, 100)
-        
+
+    # Do not track generalized forces associated with pelvis residuals.
+    jointMomentTracking.setWeightForGeneralizedForcePattern('.*pelvis.*', 0)
+
+    # Encourage better tracking of the ankle joint moments.
+    jointMomentTracking.setWeightForGeneralizedForce('ankle_angle_r_moment', 100)
+    jointMomentTracking.setWeightForGeneralizedForce('ankle_angle_l_moment', 100)
+
+    # Add the joint moment tracking goal to the problem.
     problem.addGoal(jointMomentTracking)
 
     # Update the solver tolerances.

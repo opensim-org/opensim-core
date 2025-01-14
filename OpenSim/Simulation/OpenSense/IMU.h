@@ -23,6 +23,7 @@
 * limitations under the License.                                             *
 * -------------------------------------------------------------------------- */
 
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 

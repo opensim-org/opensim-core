@@ -187,7 +187,7 @@ void TableUtilities::pad(
 namespace {
 template <typename FunctionType>
 std::unique_ptr<FunctionSet> createFunctionSet(const TimeSeriesTable& table) {
-    auto set = make_unique<FunctionSet>();
+    auto set = std::make_unique<FunctionSet>();
     const auto& time = table.getIndependentColumn();
     const auto numRows = (int)table.getNumRows();
     for (int icol = 0; icol < (int)table.getNumColumns(); ++icol) {
@@ -202,7 +202,7 @@ template <>
 inline std::unique_ptr<FunctionSet> createFunctionSet<GCVSpline>(
         const TimeSeriesTable& table) {
     const auto& time = table.getIndependentColumn();
-    return OpenSim::make_unique<GCVSplineSet>(table, std::vector<std::string>{},
+    return std::make_unique<GCVSplineSet>(table, std::vector<std::string>{},
             std::min((int)time.size() - 1, 5));
 }
 } // namespace

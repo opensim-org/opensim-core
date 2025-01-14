@@ -194,13 +194,7 @@ double PathSpring::computeMomentArm(const SimTK::State& s,
     return getPath().computeMomentArm(s, aCoord);
 }
 
-
-
-void PathSpring::computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const
+void PathSpring::implProduceForces(const SimTK::State& s, ForceConsumer& forceConsumer) const
 {
-    const AbstractGeometryPath& path = getPath();
-    const double& tension = getTension(s);
-    path.addInEquivalentForces(s, tension, bodyForces, generalizedForces);
+    getPath().produceForces(s, getTension(s), forceConsumer);
 }

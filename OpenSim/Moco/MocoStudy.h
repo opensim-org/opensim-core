@@ -19,6 +19,8 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoSolver.h"
+#include "MocoProblem.h"
+#include "MocoUtilities.h"
 
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -162,14 +164,24 @@ public:
     /// ".*activation" gives the activation of all muscles.
     /// Constraints are not enforced but prescribed motion (e.g.,
     /// PositionMotion) is.
-    /// @see OpenSim::analyze()
+    /// @see OpenSim::analyze<T>() OpenSim::analyzeMocoTrajectory<T>()
     /// @note Parameters in the MocoTrajectory are **not** applied to the model.
     /// @note If the MocoTrajectory was generated from a MocoStudy with 
     ///       Controller%s in the model, first call 
     ///       MocoTrajectory::generateControlsFromModelControllers() to populate 
     ///       the trajectory with the correct model controls.
+    template <typename T>
+    TimeSeriesTable_<T> analyze(const MocoTrajectory& traj,
+            const std::vector<std::string>& outputPaths) const {
+        return OpenSim::analyzeMocoTrajectory<T>(
+            get_problem().createRep().getModelBase(), traj, outputPaths);
+    }
+
+    // @copydoc analyze()
     TimeSeriesTable analyze(const MocoTrajectory& traj,
-            const std::vector<std::string>& outputPaths) const;
+            const std::vector<std::string>& outputPaths) const {
+        return analyze<double>(traj, outputPaths);
+    }
 
     /// Compute the generalized coordinate forces for the provided trajectory 
     /// based on a set of applied model Force%s. This can be used to compute 

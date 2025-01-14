@@ -29,6 +29,8 @@
 // INCLUDES
 //==============================================================================
 #include "TorqueActuator.h"
+
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
@@ -144,12 +146,11 @@ double TorqueActuator::computeActuation(const State& s) const
 //==============================================================================
 //_____________________________________________________________________________
 /**
- * Apply the actuator force to BodyA and BodyB.
+ * Produce the actuator forces for BodyA and BodyB.
  */
-void TorqueActuator::computeForce(
-    const State& s,
-    Vector_<SpatialVec>& bodyForces,
-    Vector& generalizedForces) const
+void TorqueActuator::implProduceForces(
+    const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
     if (!_model || !_bodyA) {
         return;
@@ -168,11 +169,11 @@ void TorqueActuator::computeForce(
         torque = _bodyA->expressVectorInGround(s, torque);
     }
 
-    applyTorque(s, *_bodyA, torque, bodyForces);
+    forceConsumer.consumeTorque(s, *_bodyA, torque);
 
     // if bodyB is not specified, use the ground body by default
     if (_bodyB) {
-        applyTorque(s, *_bodyB, -torque, bodyForces);
+        forceConsumer.consumeTorque(s, *_bodyB, -torque);
     }
 }
 

@@ -97,14 +97,6 @@ private:
     void constructProperties();
 
     //--------------------------------------------------------------------------
-    // Implement Force interface
-    //--------------------------------------------------------------------------
-    void computeForce(const SimTK::State& state, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                      SimTK::Vector& mobilityForces) const override;
-
-
-    //--------------------------------------------------------------------------
     // Implement ModelComponent interface
     //--------------------------------------------------------------------------
     // Setup method initializes Body reference pointers to match the names.

@@ -22,7 +22,6 @@
 #include "CasOCFunction.h"
 #include <casadi/casadi.hpp>
 #include <string>
-#include <unordered_map>
 
 namespace OpenSim {
 class MocoCasADiSolver;
@@ -208,15 +207,17 @@ protected:
                 std::move(multInitialBounds), std::move(multFinalBounds),
                 kinLevel});
 
-        if (kinLevel == KinematicLevel::Position)
-            ++m_numHolonomicConstraintEquations;
-        else if (kinLevel == KinematicLevel::Velocity)
-            ++m_numNonHolonomicConstraintEquations;
-        else if (kinLevel == KinematicLevel::Acceleration)
-            ++m_numAccelerationConstraintEquations;
+        if (!isPrescribedKinematics()) {
+            if (kinLevel == KinematicLevel::Position)
+                ++m_numHolonomicConstraintEquations;
+            else if (kinLevel == KinematicLevel::Velocity)
+                ++m_numNonHolonomicConstraintEquations;
+            else if (kinLevel == KinematicLevel::Acceleration)
+                ++m_numAccelerationConstraintEquations;
+        }
     }
-    /// Add a slack velocity correction variable to the problem associated with
-    /// a kinematic constraint in the model.
+    /// Add a slack variable to the problem associated with a kinematic
+    /// constraint in the model.
     void addSlack(std::string name, Bounds bounds) {
         m_slackInfos.push_back({std::move(name), std::move(bounds)});
     }
@@ -240,6 +241,15 @@ protected:
     void setKinematicConstraintBounds(Bounds bounds) {
         m_kinematicConstraintBounds = std::move(bounds);
     }
+    /// Set the method used to enforce kinematic constraints.
+    void setKinematicConstraintMethod(std::string method) {
+        OPENSIM_THROW_IF(method != "Bordalba2023" && method != "Posa2016",
+                OpenSim::Exception,
+                "Invalid method kinematic constraint method.")
+        m_kinematicConstraintMethod = std::move(method);
+        m_isKinematicConstraintMethodBordalba2023 =
+                m_kinematicConstraintMethod == "Bordalba2023";
+    }
     /// Add a constant (time-invariant) variable to the optimization problem.
     void addParameter(std::string name, Bounds bounds) {
         m_paramInfos.push_back({std::move(name), std::move(bounds)});
@@ -250,11 +260,11 @@ protected:
                 OpenSim::Exception, "numIntegrals must be 0 or 1.");
         std::unique_ptr<CostIntegrand> integrand_function;
         if (numIntegrals) {
-            integrand_function = OpenSim::make_unique<CostIntegrand>();
+            integrand_function = std::make_unique<CostIntegrand>();
         }
         m_costInfos.emplace_back(std::move(name), numOutputs,
                 std::move(integrand_function),
-                OpenSim::make_unique<Cost>());
+                std::make_unique<Cost>());
     }
     /// Add an endpoint constraint to the problem.
     void addEndpointConstraint(
@@ -264,7 +274,7 @@ protected:
         std::unique_ptr<EndpointConstraintIntegrand> integrand_function;
         if (numIntegrals) {
             integrand_function =
-                    OpenSim::make_unique<EndpointConstraintIntegrand>();
+                    std::make_unique<EndpointConstraintIntegrand>();
         }
         casadi::DM lower(bounds.size(), 1);
         casadi::DM upper(bounds.size(), 1);
@@ -274,7 +284,7 @@ protected:
         }
         m_endpointConstraintInfos.emplace_back(std::move(name),
                 (int)bounds.size(), std::move(integrand_function),
-                OpenSim::make_unique<EndpointConstraint>(), std::move(lower),
+                std::make_unique<EndpointConstraint>(), std::move(lower),
                 std::move(upper));
     }
     /// The size of bounds must match the number of outputs in the function.
@@ -286,7 +296,7 @@ protected:
             upper(ibound, 0) = bounds[ibound].upper;
         }
         m_pathInfos.push_back({std::move(name), std::move(lower),
-                std::move(upper), OpenSim::make_unique<PathConstraint>()});
+                std::move(upper), std::make_unique<PathConstraint>()});
     }
     void setDynamicsMode(std::string dynamicsMode) {
         OPENSIM_THROW_IF(
@@ -316,7 +326,10 @@ public:
             const casadi::DM& multibody_states, const casadi::DM& slacks,
             const casadi::DM& parameters,
             casadi::DM& velocity_correction) const = 0;
-
+    virtual void calcStateProjection(const double& time,
+            const casadi::DM& multibody_states, const casadi::DM& slacks,
+            const casadi::DM& parameters,
+            casadi::DM& projection) const = 0;
     virtual void calcCostIntegrand(int /*costIndex*/,
             const ContinuousInput& /*input*/, double& /*integrand*/) const {}
     virtual void calcCost(int /*costIndex*/, const CostInput& /*input*/,
@@ -370,10 +383,31 @@ public:
                 }
             }
         }
+        if (getNumKinematicConstraintEquations() &&
+                isKinematicConstraintMethodBordalba2023()) {
+            for (const auto& info : m_stateInfos) {
+                if (info.type == StateType::Coordinate) {
+                    auto name = info.name;
+                    auto leafpos = name.find("/value");
+                    OPENSIM_THROW_IF(leafpos == std::string::npos,
+                            OpenSim::Exception, "Internal error.");
+                    name.replace(leafpos, 6, "/value/projection");
+                    it.projection_state_names.push_back(name);
+                }
+                if (info.type == StateType::Speed) {
+                    auto name = info.name;
+                    auto leafpos = name.find("/speed");
+                    OPENSIM_THROW_IF(leafpos == std::string::npos,
+                            OpenSim::Exception, "Internal error.");
+                    name.replace(leafpos, 6, "/speed/projection");
+                    it.projection_state_names.push_back(name);
+                }
+            }
+        }
         for (const auto& auxDerivName : m_auxiliaryDerivativeNames) {
             it.derivative_names.push_back(auxDerivName);
         }
-            
+
         for (const auto& info : m_paramInfos)
             it.parameter_names.push_back(info.name);
         return it;
@@ -429,7 +463,7 @@ public:
             // Construct a full implicit multibody system (i.e. including
             // kinematic constraints).
             mutThis->m_implicitMultibodyFunc =
-                    OpenSim::make_unique<MultibodySystemImplicit<true>>();
+                    std::make_unique<MultibodySystemImplicit<true>>();
             mutThis->m_implicitMultibodyFunc->constructFunction(this,
                     "implicit_multibody_system", finiteDiffScheme,
                     pointsForSparsityDetection);
@@ -437,31 +471,40 @@ public:
             // Construct an implicit multibody system ignoring kinematic
             // constraints.
             mutThis->m_implicitMultibodyFuncIgnoringConstraints =
-                    OpenSim::make_unique<MultibodySystemImplicit<false>>();
+                    std::make_unique<MultibodySystemImplicit<false>>();
             mutThis->m_implicitMultibodyFuncIgnoringConstraints
                     ->constructFunction(this,
                             "implicit_multibody_system_ignoring_constraints",
                             finiteDiffScheme, pointsForSparsityDetection);
         } else {
             mutThis->m_multibodyFunc =
-                    OpenSim::make_unique<MultibodySystemExplicit<true>>();
+                    std::make_unique<MultibodySystemExplicit<true>>();
             mutThis->m_multibodyFunc->constructFunction(this,
                     "explicit_multibody_system", finiteDiffScheme,
                     pointsForSparsityDetection);
 
             mutThis->m_multibodyFuncIgnoringConstraints =
-                    OpenSim::make_unique<MultibodySystemExplicit<false>>();
+                    std::make_unique<MultibodySystemExplicit<false>>();
             mutThis->m_multibodyFuncIgnoringConstraints->constructFunction(this,
                     "multibody_system_ignoring_constraints", finiteDiffScheme,
                     pointsForSparsityDetection);
         }
 
-        if (m_enforceConstraintDerivatives) {
-            mutThis->m_velocityCorrectionFunc =
-                    OpenSim::make_unique<VelocityCorrection>();
-            mutThis->m_velocityCorrectionFunc->constructFunction(this,
+        if (getEnforceConstraintDerivatives() &&
+                getNumKinematicConstraintEquations()) {
+            if (isKinematicConstraintMethodBordalba2023()) {
+                mutThis->m_stateProjectionFunc =
+                    std::make_unique<StateProjection>();
+                mutThis->m_stateProjectionFunc->constructFunction(this,
+                    "state_projection", finiteDiffScheme,
+                    pointsForSparsityDetection);
+            } else {
+                mutThis->m_velocityCorrectionFunc =
+                    std::make_unique<VelocityCorrection>();
+                mutThis->m_velocityCorrectionFunc->constructFunction(this,
                     "velocity_correction", finiteDiffScheme,
                     pointsForSparsityDetection);
+            }
         }
     }
 
@@ -476,6 +519,9 @@ public:
     int getNumDerivatives() const {
         return getNumAccelerations() + getNumAuxiliaryResidualEquations();
     }
+    int getNumProjectionStates() const {
+        return getNumProjectionConstraintEquations();
+    }
     int getNumSlacks() const { return (int)m_slackInfos.size(); }
     /// This is the number of generalized coordinates, which may be greater
     /// than the number of generalized speeds.
@@ -488,6 +534,7 @@ public:
             return 0;
         }
     }
+    int getNumMultibodyStates() const { return m_numCoordinates + m_numSpeeds; }
     int getNumAuxiliaryStates() const { return m_numAuxiliaryStates; }
     int getNumCosts() const { return (int)m_costInfos.size(); }
     bool isPrescribedKinematics() const { return m_prescribedKinematics; }
@@ -505,19 +552,32 @@ public:
     int getNumAuxiliaryResidualEquations() const {
         return m_numAuxiliaryResiduals;
     }
-    int getNumKinematicConstraintEquations() const {
+    int getNumQErr() const {
         // If all kinematics are prescribed, we assume that the prescribed
         // kinematics obey any kinematic constraints. Therefore, the kinematic
         // constraints would be redundant, and we need not enforce them.
         if (m_prescribedKinematics) return 0;
+        return m_numHolonomicConstraintEquations;
+    }
+    int getNumUErr() const {
+        if (m_prescribedKinematics) return 0;
         if (m_enforceConstraintDerivatives) {
-            return 3 * m_numHolonomicConstraintEquations +
-                   2 * m_numNonHolonomicConstraintEquations +
+            return m_numHolonomicConstraintEquations +
+                   m_numNonHolonomicConstraintEquations;
+        }
+        return m_numNonHolonomicConstraintEquations;
+    }
+    int getNumUDotErr() const {
+        if (m_prescribedKinematics) return 0;
+        if (m_enforceConstraintDerivatives) {
+            return m_numHolonomicConstraintEquations +
+                   m_numNonHolonomicConstraintEquations +
                    m_numAccelerationConstraintEquations;
         }
-        return m_numHolonomicConstraintEquations +
-               m_numNonHolonomicConstraintEquations +
-               m_numAccelerationConstraintEquations;
+        return m_numAccelerationConstraintEquations;
+    }
+    int getNumKinematicConstraintEquations() const {
+        return getNumQErr() + getNumUErr() + getNumUDotErr();
     }
     /// Create a vector of names for scalar kinematic constraint equations.
     /// The length of the vector is getNumKinematicConstraintEquations().
@@ -545,6 +605,21 @@ public:
     }
     const Bounds& getKinematicConstraintBounds() const {
         return m_kinematicConstraintBounds;
+    }
+    std::string getKinematicConstraintMethod() const {
+        return m_kinematicConstraintMethod;
+    }
+    bool isKinematicConstraintMethodBordalba2023() const {
+        return m_isKinematicConstraintMethodBordalba2023;
+    }
+    int getNumProjectionConstraintEquations() const {
+        if ((getNumQErr() + getNumUErr()) &&
+                isKinematicConstraintMethodBordalba2023()) {
+            return getNumMultibodyStates();
+        } else {
+            return 0;
+        }
+
     }
     const Bounds& getTimeInitialBounds() const { return m_timeInitialBounds; }
     const Bounds& getTimeFinalBounds() const { return m_timeFinalBounds; }
@@ -580,11 +655,17 @@ public:
         return *m_multibodyFuncIgnoringConstraints;
     }
     /// Get a function to compute the velocity correction to qdot when enforcing
-    /// kinematic constraints and their derivatives. We require a separate
-    /// function for this since we don't actually compute qdot within the
-    /// multibody system.
+    /// kinematic constraints and their derivatives using the method by
+    /// Posa et al. (2016). We require a separate function for this since we don't
+    /// actually compute qdot within the multibody system.
     const casadi::Function& getVelocityCorrection() const {
         return *m_velocityCorrectionFunc;
+    }
+    /// Get a function to compute the state projection term when enforcing
+    /// kinematic constraints and their derivatives using the method by
+    /// Bordalba et al. (2023).
+    const casadi::Function& getStateProjection() const {
+        return *m_stateProjectionFunc;
     }
     const casadi::Function& getImplicitMultibodySystem() const {
         return *m_implicitMultibodyFunc;
@@ -614,8 +695,10 @@ private:
     int m_numAccelerationConstraintEquations = 0;
     bool m_enforceConstraintDerivatives = false;
     std::string m_dynamicsMode = "explicit";
+    std::string m_kinematicConstraintMethod = "Posa2016";
     std::vector<std::string> m_auxiliaryDerivativeNames;
     bool m_isDynamicsModeImplicit = false;
+    bool m_isKinematicConstraintMethodBordalba2023 = false;
     bool m_prescribedKinematics = false;
     int m_numMultibodyDynamicsEquationsIfPrescribedKinematics = 0;
     Bounds m_kinematicConstraintBounds;
@@ -633,6 +716,7 @@ private:
     std::unique_ptr<MultibodySystemImplicit<false>>
             m_implicitMultibodyFuncIgnoringConstraints;
     std::unique_ptr<VelocityCorrection> m_velocityCorrectionFunc;
+    std::unique_ptr<StateProjection> m_stateProjectionFunc;
 };
 
 } // namespace CasOC

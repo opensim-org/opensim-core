@@ -29,21 +29,17 @@ class Trapezoidal : public Transcription {
 public:
     Trapezoidal(const Solver& solver, const Problem& problem)
             : Transcription(solver, problem) {
-
-        OPENSIM_THROW_IF(problem.getEnforceConstraintDerivatives(),
-                OpenSim::Exception,
-                "Enforcing kinematic constraint derivatives "
-                "not supported with trapezoidal transcription.");
         createVariablesAndSetBounds(m_solver.getMesh(),
-                m_problem.getNumStates());
+                m_problem.getNumStates(), 2);
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
 
-    void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
-            casadi::MX& defects) const override;
+    void calcDefectsImpl(const casadi::MXVector& x, 
+                         const casadi::MXVector& xdot,
+                         casadi::MX& defects) const override;
 };
 
 } // namespace CasOC

@@ -194,7 +194,7 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
 
         auto& solver = study.updSolver<MocoCasADiSolver>();
         solver.resetProblem(problem);
-        solver.set_enforce_path_constraint_midpoints(true);
+        solver.set_enforce_path_constraint_mesh_interior_points(true);
 
         MocoSolution solution = study.solve();
 
@@ -207,26 +207,35 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
             CHECK(med_gas_l_excitation[i] <=
                     Approx(0.1).margin(1e-6));
         }
+    }
 
+    SECTION("initializeKinematics") {
+        auto kinematics = inverse.initializeKinematics();
+        // check that some of the expected columns are there
+        CHECK_NOTHROW(kinematics.getColumnIndex(
+                "/jointset/hip_r/hip_rotation_r/value"));
+        CHECK_NOTHROW(kinematics.getColumnIndex(
+                "/jointset/ground_pelvis/pelvis_tilt/value"));
+        CHECK_NOTHROW(kinematics.getColumnIndex(
+                "/jointset/walker_knee_r/knee_angle_r/speed"));
+        CHECK_NOTHROW(kinematics.getColumnIndex(
+                "/jointset/back/lumbar_extension/speed"));
     }
 }
-// Next test_case fails on linux while parsing .sto file, disabling for now 
-#ifdef _WIN32
+
 TEST_CASE("Test IMUDataReporter for gait") {
 
     // Compute accelerometer signals from MocoInverse solution.
     ModelProcessor modelProcessor =
-        ModelProcessor("subject_walk_armless_18musc.osim") |
-        ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
-            "mtp_r", "mtp_l"}) |
-        ModOpReplaceMusclesWithDeGrooteFregly2016() |
-        ModOpIgnorePassiveFiberForcesDGF() |
-        ModOpTendonComplianceDynamicsModeDGF("implicit") |
-        ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
-    std::vector<std::string> paths = {"/bodyset/pelvis",
-                                       "/bodyset/femur_r",
-                                       "/bodyset/tibia_r",
-                                       "/bodyset/calcn_r"};
+            ModelProcessor("subject_walk_armless_18musc.osim") |
+            ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
+                "mtp_r", "mtp_l"}) |
+            ModOpReplaceMusclesWithDeGrooteFregly2016() |
+            ModOpIgnorePassiveFiberForcesDGF() |
+            ModOpTendonComplianceDynamicsModeDGF("implicit") |
+            ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
+    std::vector<std::string> paths = {"/bodyset/pelvis", "/bodyset/femur_r",
+            "/bodyset/tibia_r",  "/bodyset/calcn_r"};
     Model model = modelProcessor.process();
     OpenSenseUtilities().addModelIMUs(model, paths);
     model.initSystem();
@@ -235,7 +244,7 @@ TEST_CASE("Test IMUDataReporter for gait") {
             analyzeMocoTrajectory<SimTK::Vec3>(model, std,
                                                {".*accelerometer_signal"});
     STOFileAdapter_<SimTK::Vec3>::write(accelSignals,
-        "testMocoInverse_accelerometer_signals.sto");
+            "testMocoInverse_accelerometer_signals.sto");
 
     // Compute accelerometer signals with no forces and a PositionMotion created
     // from the model coordinates.
@@ -243,7 +252,9 @@ TEST_CASE("Test IMUDataReporter for gait") {
     // Create the coordinates table (in radians).
     auto tableProcessor =
             TableProcessor("subject_walk_armless_coordinates.mot") |
-            TabOpLowPassFilter(6) |
+            // Trimming to the original time range increases the acceleration
+            // error slightly, so we disable it here.
+            TabOpLowPassFilter(6, false) |
             TabOpUseAbsoluteStateNames();
     auto coordinatesRadians = tableProcessor.processAndConvertToRadians(model);
     for (const auto& label : coordinatesRadians.getColumnLabels()) {
@@ -260,11 +271,11 @@ TEST_CASE("Test IMUDataReporter for gait") {
                           "subject_walk_armless_coordinates_radians.sto");
     // Create a model with no muscles (or other forces) and add IMU components.
     ModelProcessor modelProcessorNoMuscles =
-        ModelProcessor("subject_walk_armless_18musc.osim") |
-        ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
-            "mtp_r", "mtp_l"}) |
-        ModOpRemoveMuscles() |
-        ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
+            ModelProcessor("subject_walk_armless_18musc.osim") |
+            ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
+                                         "mtp_r", "mtp_l"}) |
+            ModOpRemoveMuscles() |
+            ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
     Model modelNoMuscles = modelProcessorNoMuscles.process();
     modelNoMuscles.updForceSet().clearAndDestroy();
     OpenSenseUtilities().addModelIMUs(modelNoMuscles, paths);
@@ -273,7 +284,7 @@ TEST_CASE("Test IMUDataReporter for gait") {
 
     // Add a PositionMotion to the model based on the coordinate trajectories.
     auto statesTraj = StatesTrajectory::createFromStatesTable(model,
-          coordinatesRadians, true, true, true);
+            coordinatesRadians, true, true, true);
     auto posmot = PositionMotion::createFromStatesTrajectory(model, statesTraj);
     posmot->setName("position_motion");
     modelNoMuscles.addComponent(posmot.release());
@@ -307,12 +318,12 @@ TEST_CASE("Test IMUDataReporter for gait") {
     // Compute error in accelerometer signals.
     auto accelSignalsFlat = accelSignals.flatten();
     auto accelBlock = accelSignalsFlat.getMatrixBlock(0, 0,
-        accelSignalsFlat.getNumRows(),
-        accelSignalsFlat.getNumColumns());
+            accelSignalsFlat.getNumRows(),
+            accelSignalsFlat.getNumColumns());
     auto accelBlockNoMuscles =
-        accelSignalsNoMusclesDownSampledFlat.getMatrixBlock(0, 0,
-        accelSignalsNoMusclesDownSampledFlat.getNumRows(),
-        accelSignalsNoMusclesDownSampledFlat.getNumColumns());
+            accelSignalsNoMusclesDownSampledFlat.getMatrixBlock(0, 0,
+            accelSignalsNoMusclesDownSampledFlat.getNumRows(),
+            accelSignalsNoMusclesDownSampledFlat.getNumColumns());
     auto diff = accelBlock - accelBlockNoMuscles;
     auto diffSqr = diff.elementwiseMultiply(diff);
     auto sumSquaredError = diffSqr.rowSum();
@@ -379,4 +390,3 @@ TEST_CASE("Test IMUDataReporter for gait") {
     // TODO The error when using AnalyzeTool is slightly larger.
     SimTK_TEST_EQ_TOL(integratedSumSquaredErrorAnalyze, 0.0, 1e-3);
 }
-#endif

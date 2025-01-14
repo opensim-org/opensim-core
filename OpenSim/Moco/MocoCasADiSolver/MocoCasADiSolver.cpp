@@ -54,7 +54,10 @@ void MocoCasADiSolver::constructProperties() {
     constructProperty_minimize_implicit_auxiliary_derivatives(false);
     constructProperty_implicit_auxiliary_derivatives_weight(1.0);
 
-    constructProperty_enforce_path_constraint_midpoints(false);
+    constructProperty_enforce_path_constraint_mesh_interior_points(false);
+    constructProperty_minimize_state_projection_distance(true);
+    constructProperty_state_projection_distance_weight(1e-6);
+    constructProperty_projection_slack_variable_bounds({-1e-3, 1e-3});
 }
 
 bool MocoCasADiSolver::isAvailable() {
@@ -79,11 +82,11 @@ MocoTrajectory MocoCasADiSolver::createGuess(const std::string& type) const {
     auto casProblem = createCasOCProblem();
     auto casSolver = createCasOCSolver(*casProblem);
 
-    std::vector<int> inputControlIndexes = 
+    std::vector<int> inputControlIndexes =
             getProblemRep().getInputControlIndexes();
     if (type == "bounds") {
         return convertToMocoTrajectory(
-                casSolver->createInitialGuessFromBounds(), 
+                casSolver->createInitialGuessFromBounds(),
                 inputControlIndexes);
     } else if (type == "random") {
         return convertToMocoTrajectory(
@@ -180,8 +183,20 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
     OPENSIM_THROW_IF(!model.getMatterSubsystem().getUseEulerAngles(
                              model.getWorkingState()),
             Exception, "Quaternions are not supported.");
-    return OpenSim::make_unique<MocoCasOCProblem>(*this, problemRep,
-            createProblemRepJar(numThreads), get_multibody_dynamics_mode());
+
+    if (getProblemRep().getNumKinematicConstraintEquations()) {
+        checkPropertyValueIsInSet(getProperty_kinematic_constraint_method(),
+                                  {"Posa2016", "Bordalba2023"});
+        OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
+                     get_kinematic_constraint_method() == "Posa2016", Exception,
+            "Expected the 'hermite-simpson' transcription scheme when using "
+            "the Posa et al. 2016 method for enforcing kinematic constraints, "
+            "but received '{}'.", get_transcription_scheme());
+    }
+
+    return std::make_unique<MocoCasOCProblem>(*this, problemRep,
+            createProblemRepJar(numThreads), get_multibody_dynamics_mode(),
+            get_kinematic_constraint_method());
 #else
     OPENSIM_THROW(MocoCasADiSolverNotAvailable);
 #endif
@@ -190,7 +205,7 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
 std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         const MocoCasOCProblem& casProblem) const {
 #ifdef OPENSIM_WITH_CASADI
-    auto casSolver = OpenSim::make_unique<CasOC::Solver>(casProblem);
+    auto casSolver = std::make_unique<CasOC::Solver>(casProblem);
 
     // Set solver options.
     // -------------------
@@ -205,22 +220,6 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
              "legendre-gauss-radau-4", "legendre-gauss-radau-5",
              "legendre-gauss-radau-6", "legendre-gauss-radau-7",
              "legendre-gauss-radau-8", "legendre-gauss-radau-9"});
-    OPENSIM_THROW_IF(casProblem.getNumKinematicConstraintEquations() != 0 &&
-                             get_transcription_scheme() == "trapezoidal",
-            OpenSim::Exception,
-            "Kinematic constraints not supported with "
-            "trapezoidal transcription.");
-    // Enforcing constraint derivatives is not supported with trapezoidal
-    // transcription.
-    if (casProblem.getNumKinematicConstraintEquations() != 0) {
-        OPENSIM_THROW_IF(get_transcription_scheme() == "trapezoidal" &&
-                                 get_enforce_constraint_derivatives(),
-                Exception,
-                "The current transcription scheme is '{}', but enforcing "
-                "kinematic constraint derivatives is not supported with "
-                "trapezoidal transcription.",
-                get_transcription_scheme());
-    }
 
     checkPropertyValueIsInRangeOrSet(getProperty_num_mesh_intervals(), 0,
             std::numeric_limits<int>::max(), {});
@@ -335,11 +334,15 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     casSolver->setImplicitAuxiliaryDerivativesWeight(
             get_implicit_auxiliary_derivatives_weight());
 
+    casSolver->setMinimizeStateProjection(
+            get_minimize_state_projection_distance());
+    casSolver->setStateProjectionWeight(get_state_projection_distance_weight());
+
     casSolver->setOptimSolver(get_optim_solver());
-    casSolver->setInterpolateControlMidpoints(
-            get_interpolate_control_midpoints());
-    casSolver->setEnforcePathConstraintMidpoints(
-            get_enforce_path_constraint_midpoints());
+    casSolver->setInterpolateControlMeshInteriorPoints(
+            get_interpolate_control_mesh_interior_points());
+    casSolver->setEnforcePathConstraintMeshInteriorPoints(
+            get_enforce_path_constraint_mesh_interior_points());
     if (casProblem.getJarSize() > 1) {
         casSolver->setParallelism("thread", casProblem.getJarSize());
     }
@@ -368,14 +371,22 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         log_info("Number of threads: {}", casProblem->getJarSize());
     }
 
-    std::vector<int> inputControlIndexes = 
+    std::vector<int> inputControlIndexes =
             getProblemRep().getInputControlIndexes();
     MocoTrajectory guess = getGuess();
     CasOC::Iterate casGuess;
     if (guess.empty()) {
         casGuess = casSolver->createInitialGuessFromBounds();
     } else {
-        casGuess = convertToCasOCIterate(guess, inputControlIndexes);
+        std::vector<std::string> expectedSlackNames;
+        for (const auto& info : casProblem->getSlackInfos()) {
+            expectedSlackNames.push_back(info.name);
+        }
+        // We do not need to append projection states here since they will be
+        // appended later when the guess is resampled by the solver (if needed).
+        bool appendProjectionStates = false;
+        casGuess = convertToCasOCIterate(guess, expectedSlackNames,
+                appendProjectionStates, inputControlIndexes);
     }
 
     // Temporarily disable printing of negative muscle force warnings so the
@@ -385,8 +396,16 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     CasOC::Solution casSolution;
     try {
         casSolution = casSolver->solve(casGuess);
+    } catch(const Exception& ex) {
+        OPENSIM_THROW_FRMOBJ(Exception,
+            fmt::format("MocoCasADiSolver failed internally with message: {}",
+                ex.getMessage()));
+    } catch(const casadi::CasadiException& ex) {
+        OPENSIM_THROW_FRMOBJ(Exception,
+            fmt::format("MocoCasADiSolver failed internally with message: {}",
+                ex.what()));
     } catch (...) {
-        OpenSim::Logger::setLevel(origLoggerLevel);
+        OPENSIM_THROW_FRMOBJ(Exception, "MocoCasADiSolver failed internally.");
     }
     OpenSim::Logger::setLevel(origLoggerLevel);
 
@@ -401,6 +420,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
             !get_minimize_lagrange_multipliers()) {
         checkConstraintJacobianRank(mocoSolution);
     }
+    checkSlackVariables(mocoSolution);
 
     const long long elapsed = stopwatch.getElapsedTimeInNs();
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),

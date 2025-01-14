@@ -21,6 +21,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
+#include <OpenSim/Simulation/Model/ForceProducer.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 //#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Analyses/ForceReporter.h>
@@ -42,13 +44,15 @@
 using namespace OpenSim;
 using SimTK::Vec3;
 
-class CustomContactForce : public Force {
-    OpenSim_DECLARE_CONCRETE_OBJECT(CustomContactForce, Force);
+class CustomContactForce : public ForceProducer {
+    OpenSim_DECLARE_CONCRETE_OBJECT(CustomContactForce, ForceProducer);
 public:
     OpenSim_DECLARE_SOCKET(station, Station, "TODO");
-    void computeForce(const SimTK::State& s,
-            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-            SimTK::Vector& /*generalizedForces*/) const override {
+
+private:
+    void implProduceForces(const SimTK::State& s,
+            ForceConsumer& forceConsumer) const override {
+
         const auto& pt = getConnectee<Station>("station");
         const auto& pos = pt.getLocationInGround(s);
         const auto& vel = pt.getVelocityInGround(s);
@@ -65,10 +69,9 @@ public:
         }
         const SimTK::Real voidStiffness = 1.0; // N/m
         force[1] += voidStiffness * depth;
-        //applyGeneralizedForce(s, getModel().getCoordinateSet().get(0),
-        //        force, generalizedForces);
-        applyForceToPoint(s, pt.getParentFrame(), pt.get_location(), force,
-                bodyForces);
+        // forceConsumer.consumeGeneralizedForce(s, getModel().getCoordinateSet().get(0), force);
+
+        forceConsumer.consumePointForce(s, pt.getParentFrame(), pt.get_location(), force);
         // TODO equal and opposite force on ground.
     }
 };
@@ -101,7 +104,7 @@ Model createModel() {
 }
 
 std::unique_ptr<Model> createModel2D() {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("point_mass");
     auto* intermed = new Body("intermed", 0, Vec3(0), SimTK::Inertia(0));
     model->addComponent(intermed);
@@ -221,7 +224,7 @@ void ball2d() {
 
 std::unique_ptr<Model> createModelPendulum(double linkLength, double jointHeight,
         double dissipation, double frictionCoeff) {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("pendulum");
     auto* body = new Body("body", 50.0, Vec3(0), SimTK::Inertia(1));
     model->addComponent(body);
@@ -301,7 +304,7 @@ void pendulum() {
 std::unique_ptr<Model> createModelPendulumActivationCoordinateActuator() {
     const double jointHeight = 0.6;
     const double linkLength = 1.0;
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("pendulum");
     auto* body = new Body("body", 50.0, Vec3(0), SimTK::Inertia(1));
     model->addComponent(body);
@@ -438,7 +441,7 @@ void addResidualCoordinateActuators(Model& model) {
 }
 
 std::unique_ptr<Model> createModelSLIP() {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("SLIP");
     auto* foot = new Body("foot", 15.0, Vec3(0), SimTK::Inertia(1));
     model->addComponent(foot);
@@ -514,7 +517,7 @@ std::unique_ptr<Model> createModelSLIP() {
 }
 
 std::unique_ptr<Model>createModelSLIPActuated() {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("SLIP");
     auto* foot = new Body("foot", 15.0, Vec3(0), SimTK::Inertia(1));
     model->addComponent(foot);
