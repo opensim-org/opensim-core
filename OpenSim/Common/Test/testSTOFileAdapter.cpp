@@ -22,6 +22,7 @@
 
 #include "OpenSim/Common/Adapters.h"
 #include "OpenSim/Common/CommonUtilities.h"
+#include "OpenSim/Common/IO.h"
 #include <cstdio>
 #include <fstream>
 #include <unordered_set>
@@ -140,8 +141,8 @@ void compareFiles(const std::string& filenameA,
             double d_tokenA{};
             double d_tokenB{};
             try {
-                d_tokenA = std::stod(tokenA);
-                d_tokenB = std::stod(tokenB);
+                d_tokenA = OpenSim::IO::stod(tokenA);
+                d_tokenB = OpenSim::IO::stod(tokenB);
             } catch(std::invalid_argument&) {
                 testFailed(filenameA, tokenA, tokenB);
             }

@@ -31,53 +31,53 @@ namespace CasOC {
 std::unique_ptr<Transcription> Solver::createTranscription() const {
     std::unique_ptr<Transcription> transcription;
     if (m_transcriptionScheme == "trapezoidal") {
-        transcription = OpenSim::make_unique<Trapezoidal>(*this, m_problem);
+        transcription = std::make_unique<Trapezoidal>(*this, m_problem);
     } else if (m_transcriptionScheme == "hermite-simpson") {
-        transcription = OpenSim::make_unique<HermiteSimpson>(*this, m_problem);
+        transcription = std::make_unique<HermiteSimpson>(*this, m_problem);
     } else if (m_transcriptionScheme == "legendre-gauss-1") {
-        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 1);
+        transcription = std::make_unique<LegendreGauss>(*this, m_problem, 1);
     } else if (m_transcriptionScheme == "legendre-gauss-2") {
-        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 2);
+        transcription = std::make_unique<LegendreGauss>(*this, m_problem, 2);
     } else if (m_transcriptionScheme == "legendre-gauss-3") {
-        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 3);
+        transcription = std::make_unique<LegendreGauss>(*this, m_problem, 3);
     } else if (m_transcriptionScheme == "legendre-gauss-4") {
-        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 4);
+        transcription = std::make_unique<LegendreGauss>(*this, m_problem, 4);
     } else if (m_transcriptionScheme == "legendre-gauss-5") {
-        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 5);
+        transcription = std::make_unique<LegendreGauss>(*this, m_problem, 5);
     } else if (m_transcriptionScheme == "legendre-gauss-6") {
-        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 6);
+        transcription = std::make_unique<LegendreGauss>(*this, m_problem, 6);
     } else if (m_transcriptionScheme == "legendre-gauss-7") {
-        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 7);
+        transcription = std::make_unique<LegendreGauss>(*this, m_problem, 7);
     } else if (m_transcriptionScheme == "legendre-gauss-8") {
-        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 8);
+        transcription = std::make_unique<LegendreGauss>(*this, m_problem, 8);
     } else if (m_transcriptionScheme == "legendre-gauss-9") {
-        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 9);
+        transcription = std::make_unique<LegendreGauss>(*this, m_problem, 9);
     } else if (m_transcriptionScheme == "legendre-gauss-radau-1") {
-        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+        transcription = std::make_unique<LegendreGaussRadau>(
                 *this, m_problem, 1);
     } else if (m_transcriptionScheme == "legendre-gauss-radau-2") {
-        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+        transcription = std::make_unique<LegendreGaussRadau>(
                 *this, m_problem, 2);
     } else if (m_transcriptionScheme == "legendre-gauss-radau-3") {
-        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+        transcription = std::make_unique<LegendreGaussRadau>(
                 *this, m_problem, 3);
     } else if (m_transcriptionScheme == "legendre-gauss-radau-4") {
-        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+        transcription = std::make_unique<LegendreGaussRadau>(
                 *this, m_problem, 4);
     } else if (m_transcriptionScheme == "legendre-gauss-radau-5") {
-        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+        transcription = std::make_unique<LegendreGaussRadau>(
                 *this, m_problem, 5);
     } else if (m_transcriptionScheme == "legendre-gauss-radau-6") {
-        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+        transcription = std::make_unique<LegendreGaussRadau>(
                 *this, m_problem, 6);
     } else if (m_transcriptionScheme == "legendre-gauss-radau-7") {
-        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+        transcription = std::make_unique<LegendreGaussRadau>(
                 *this, m_problem, 7);
     } else if (m_transcriptionScheme == "legendre-gauss-radau-8") {
-        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+        transcription = std::make_unique<LegendreGaussRadau>(
                 *this, m_problem, 8);
     } else if (m_transcriptionScheme == "legendre-gauss-radau-9") {
-        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+        transcription = std::make_unique<LegendreGaussRadau>(
                 *this, m_problem, 9);
     } else {
         OPENSIM_THROW(Exception, "Unknown transcription scheme '{}'.",
@@ -125,11 +125,14 @@ Solution Solver::solve(const Iterate& guess) const {
         const auto guessTimes =
                 transcription->createTimes(guessCopy.variables.at(initial_time),
                         guessCopy.variables.at(final_time));
-        guessCopy = guessCopy.resample(guessTimes);
+        bool appendProjectionStates =
+                m_problem.getNumKinematicConstraintEquations() &&
+                m_problem.isKinematicConstraintMethodBordalba2023();
+        guessCopy = guessCopy.resample(guessTimes, appendProjectionStates);
         pointsForSparsityDetection->push_back(guessCopy.variables);
     } else if (m_sparsity_detection == "random") {
         // Make sure the exact same sparsity pattern is used every time.
-        auto randGen = OpenSim::make_unique<SimTK::Random::Uniform>(-1, 1);
+        auto randGen = std::make_unique<SimTK::Random::Uniform>(-1, 1);
         randGen->setSeed(0);
         for (int i = 0; i < m_sparsity_detection_random_count; ++i) {
             pointsForSparsityDetection->push_back(

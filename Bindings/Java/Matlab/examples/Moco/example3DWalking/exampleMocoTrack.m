@@ -324,19 +324,15 @@ jointMomentTracking.setNormalizeTrackingError(true);
 % Ignore coordinates that are locked, prescribed, or coupled to other
 % coordinates via CoordinateCouplerConstraints (true by default).
 jointMomentTracking.setIgnoreConstrainedCoordinates(true);
-coordinateSet = model.getCoordinateSet();
-for i = 0:coordinateSet.getSize()-1
-    coordinate = coordinateSet.get(i);
-    coordName = coordinate.getName();
-    % Don't track generalized forces associated with pelvis residuals.
-    if contains(string(coordName), "pelvis")
-        jointMomentTracking.setWeightForCoordinate(coordName, 0);
-    end
-    % Encourage better tracking of the ankle joint moments.
-    if contains(string(coordName), "ankle")
-        jointMomentTracking.setWeightForCoordinate(coordName, 100);
-    end
-end
+
+% Do not track generalized forces associated with pelvis residuals.
+jointMomentTracking.setWeightForGeneralizedForcePattern(".*pelvis.*", 0);
+
+% Encourage better tracking of the ankle joint moments.
+jointMomentTracking.setWeightForGeneralizedForce("ankle_angle_r_moment", 100);
+jointMomentTracking.setWeightForGeneralizedForce("ankle_angle_l_moment", 100);
+
+% Add the joint moment tracking goal to the problem.
 problem.addGoal(jointMomentTracking);
 
 % Update the solver problem and tolerances.

@@ -23,6 +23,9 @@
 
 #include "AbstractGeometryPath.h"
 
+#include <OpenSim/Simulation/Model/ForceApplier.h>
+#include <OpenSim/Simulation/Model/Model.h>
+
 using namespace OpenSim;
 
 //=============================================================================
@@ -49,6 +52,15 @@ AbstractGeometryPath::AbstractGeometryPath(
 
 AbstractGeometryPath& AbstractGeometryPath::operator=(
         AbstractGeometryPath&& other) = default;
+
+void AbstractGeometryPath::addInEquivalentForces(const SimTK::State& state,
+    const double& tension,
+    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+    SimTK::Vector& mobilityForces) const
+{
+    ForceApplier forceApplier{&getModel().getMatterSubsystem(), &bodyForces, &mobilityForces};
+    produceForces(state, tension, forceApplier);
+}
 
 //=============================================================================
 // DEFAULTED METHODS

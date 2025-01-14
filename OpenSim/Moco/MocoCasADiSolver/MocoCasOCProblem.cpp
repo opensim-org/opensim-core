@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoCasOCProblem.cpp                                         *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2018 Stanford University and the Authors                     *
+ * Copyright (c) 2024 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -22,6 +22,8 @@
 
 #include <OpenSim/Simulation/SimulationUtilities.h>
 
+#include <utility>
+
 using namespace OpenSim;
 
 thread_local SimTK::Vector_<SimTK::SpatialVec>
@@ -32,13 +34,14 @@ thread_local SimTK::Vector MocoCasOCProblem::m_pvaerr;
 MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         const MocoProblemRep& problemRep,
         std::unique_ptr<ThreadsafeJar<const MocoProblemRep>> jar,
-        std::string dynamicsMode)
+        std::string dynamicsMode, std::string kinematicConstraintMethod)
         : m_jar(std::move(jar)),
           m_paramsRequireInitSystem(
                   mocoCasADiSolver.get_parameters_require_initsystem()),
           m_formattedTimeString(getFormattedDateTime(true)) {
 
-    setDynamicsMode(dynamicsMode);
+    setDynamicsMode(std::move(dynamicsMode));
+    setKinematicConstraintMethod(std::move(kinematicConstraintMethod));
     const auto& model = problemRep.getModelBase();
 
     if (problemRep.isPrescribedKinematics()) {
@@ -78,6 +81,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     // dynamics in implicit form.
     const auto& implicitRefs = problemRep.getImplicitComponentReferencePtrs();
     std::vector<std::string> derivativeNames;
+    derivativeNames.reserve(implicitRefs.size());
     for (const auto& implicitRef : implicitRefs) {
         derivativeNames.push_back(implicitRef.second->getAbsolutePathString() +
                                   "/" + implicitRef.first);
@@ -87,9 +91,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
 
     // Add any scalar constraints associated with kinematic constraints in
     // the model as path constraints in the problem.
-    // Whether or not enabled kinematic constraints exist in the model,
-    // check that optional solver properties related to constraints are
-    // set properly.
+    // Whether enabled kinematic constraints exist in the model, check that
+    // optional solver properties related to constraints are set properly.
     const auto kcNames = problemRep.createKinematicConstraintNames();
     if (kcNames.empty()) {
         OPENSIM_THROW_IF(mocoCasADiSolver.get_minimize_lagrange_multipliers(),
@@ -112,21 +115,26 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
             ma = kc.getNumAccelerationEquations();
             kinLevels = kc.getKinematicLevels();
 
-            // TODO only add velocity correction variables for holonomic
-            // constraint derivatives? For now, disallow enforcing derivatives
-            // if non-holonomic or acceleration constraints present.
-            OPENSIM_THROW_IF(enforceConstraintDerivs && mv != 0, Exception,
-                    "Enforcing constraint derivatives is supported only for "
-                    "holonomic (position-level) constraints. There are {} "
-                    "velocity-level scalar constraints associated with the "
-                    "model Constraint at ConstraintIndex {}.",
-                    mv, cid);
-            OPENSIM_THROW_IF(enforceConstraintDerivs && ma != 0, Exception,
-                    "Enforcing constraint derivatives is supported only for "
-                    "holonomic (position-level) constraints. There are {} "
-                    "acceleration-level scalar constraints associated with the "
-                    "model Constraint at ConstraintIndex {}.",
-                    ma, cid);
+            if (isKinematicConstraintMethodBordalba2023()) {
+                OPENSIM_THROW_IF(!enforceConstraintDerivs, Exception,
+                        "The Bordalba et al. 2023 method for enforcing "
+                        "kinematic constraints requires that the solver "
+                        "property 'enforce_constraint_derivatives' be set to "
+                        "true.");
+            } else {
+                OPENSIM_THROW_IF(mv != 0, Exception,
+                        "The Posa et al. 2016 method is not compatible with "
+                        "velocity-level kinematic constraints. There are {} "
+                        "velocity-level scalar constraints associated with "
+                        "the model Constraint at ConstraintIndex {}.",
+                        mv, cid);
+                OPENSIM_THROW_IF(ma != 0, Exception,
+                        "The Posa et al. 2016 method is not compatible with "
+                        "acceleration-level kinematic constraints. There are "
+                        "{} acceleration-level scalar constraints associated "
+                        "with the model Constraint at ConstraintIndex {}.",
+                        ma, cid);
+            }
 
             // Loop through all scalar constraints associated with the model
             // constraint and corresponding path constraints to the optimal
@@ -145,8 +153,8 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                         kinLevels[i] == KinematicLevel::Velocity ||
                         kinLevels[i] == KinematicLevel::Acceleration) {
 
+                    // Grab the constraint information from the MocoProblem.
                     const auto& multInfo = multInfos[multIndexThisConstraint];
-
                     CasOC::KinematicLevel kinLevel;
                     if (kinLevels[i] == KinematicLevel::Position)
                         kinLevel = CasOC::KinematicLevel::Position;
@@ -156,20 +164,22 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                         kinLevel = CasOC::KinematicLevel::Acceleration;
                     else {
                         OPENSIM_THROW(OpenSim::Exception,
-                                "Unrecognized KinematicLevel");
+                                      "Unrecognized KinematicLevel");
                     }
 
+                    // This adds a Lagrange multiplier to the current problem,
+                    // and, if kinematics are not prescribed, increments the
+                    // number of scalar kinematic constraint equations added.
                     addKinematicConstraint(multInfo.getName(),
-                            convertBounds(multInfo.getBounds()),
-                            convertBounds(multInfo.getInitialBounds()),
-                            convertBounds(multInfo.getFinalBounds()), kinLevel);
+                           convertBounds(multInfo.getBounds()),
+                           convertBounds(multInfo.getInitialBounds()),
+                           convertBounds(multInfo.getFinalBounds()), kinLevel);
 
-                    // Add velocity correction variables if enforcing
-                    // constraint equation derivatives.
-                    if (enforceConstraintDerivs && !isPrescribedKinematics()) {
-                        // TODO this naming convention assumes that the
-                        // associated Lagrange multiplier name begins with
-                        // "lambda", which may change in the future.
+                    // If kinematics are not prescribed and we are enforcing
+                    // kinematic constraints explicitly, we need to add
+                    // additional "slack" variables to ensure the problem is not
+                    // over constrained.
+                    if (!isPrescribedKinematics()) {
                         OPENSIM_THROW_IF(
                                 multInfo.getName().substr(0, 6) != "lambda",
                                 Exception,
@@ -177,12 +187,39 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                                 "constraint to begin with 'lambda' but it "
                                 "begins with '{}'.",
                                 multInfo.getName().substr(0, 6));
-                        const auto vcBounds = convertBounds(
+                        if (isKinematicConstraintMethodBordalba2023()) {
+                            // Add "mu" variables for the projection method by
+                            // Bordalba et al. (2023).
+                            const auto muBounds = convertBounds(
                                 mocoCasADiSolver
-                                        .get_velocity_correction_bounds());
-                        addSlack(std::string(multInfo.getName())
-                                         .replace(0, 6, "gamma"),
-                                vcBounds);
+                                    .get_projection_slack_variable_bounds());
+                            if (kinLevel == CasOC::KinematicLevel::Position) {
+                                // For holonomic constraints, we need to add
+                                // two slack variables: one for the position
+                                // error and one for the derivative of the
+                                // position error.
+                                addSlack(std::string(multInfo.getName())
+                                                 .replace(0, 6, "mu"),
+                                         muBounds);
+                                addSlack(std::string(multInfo.getName())
+                                                 .replace(0, 6, "mu") + "_dot",
+                                         muBounds);
+                            } else if (kinLevel ==
+                                       CasOC::KinematicLevel::Velocity) {
+                                addSlack(std::string(multInfo.getName())
+                                                 .replace(0, 6, "mu"),
+                                         muBounds);
+                            }
+                        } else if (enforceConstraintDerivs) {
+                            // Add "gamma" variables for the method by
+                            // Posa et al. (2015).
+                            const auto vcBounds = convertBounds(
+                                    mocoCasADiSolver
+                                            .get_velocity_correction_bounds());
+                            addSlack(std::string(multInfo.getName())
+                                             .replace(0, 6, "gamma"),
+                                     vcBounds);
+                        }
                     }
                     ++multIndexThisConstraint;
                 }
@@ -191,6 +228,19 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
 
         // Set kinematic constraint information on the CasOC::Problem.
         setEnforceConstraintDerivatives(enforceConstraintDerivs);
+
+        // Set the kinematic constraint offsets, if not enforcing the 
+        // derivatives of the kinematic constraint equations.
+        m_uerrOffset = getEnforceConstraintDerivatives() ? 0 : 
+                       getNumHolonomicConstraintEquations();
+        m_uerrSize = getEnforceConstraintDerivatives() ? getNumUErr() : 
+                     getNumNonHolonomicConstraintEquations();
+        m_udoterrOffset = getEnforceConstraintDerivatives() ? 0 :
+                          getNumHolonomicConstraintEquations() + 
+                          getNumNonHolonomicConstraintEquations();
+        m_udoterrSize = getEnforceConstraintDerivatives() ? getNumUDotErr() :
+                        getNumAccelerationConstraintEquations();
+
         // The bounds are the same for all kinematic constraints in the
         // MocoProblem, so just grab the bounds from the first constraint.
         // TODO: This behavior may be unexpected for users.
@@ -231,7 +281,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         addPathConstraint(name, casBounds);
     }
 
-    m_fileDeletionThrower = OpenSim::make_unique<FileDeletionThrower>(
+    m_fileDeletionThrower = std::make_unique<FileDeletionThrower>(
             fmt::format("delete_this_to_stop_optimization_{}_{}.txt",
                     problemRep.getName(), m_formattedTimeString));
 }

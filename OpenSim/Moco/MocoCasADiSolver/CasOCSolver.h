@@ -104,26 +104,48 @@ public:
     void setImplicitAuxiliaryDerivativesWeight(double weight) {
         m_implicitAuxiliaryDerivativesWeight = weight;
     }
+    bool getMinimizeStateProjection() const {
+        return m_minimizeStateProjection;
+    }
+    void setMinimizeStateProjection(bool tf) {
+        m_minimizeStateProjection = tf;
+    }
+    double getStateProjectionWeight() const {
+        return m_stateProjectionWeight;
+    }
+    void setStateProjectionWeight(double weight) {
+        m_stateProjectionWeight = weight;
+    }
 
-    /// Whether or not to constrain control values at mesh interval midpoints
+    /// Whether or not to constrain control values interior to the mesh interval
     /// by linearly interpolating control values from mesh interval endpoints.
-    /// @note Only applies to Hermite-Simpson collocation.
-    void setInterpolateControlMidpoints(bool tf) {
-        m_interpolateControlMidpoints = tf;
+    ///
+    /// @note For Hermite-Simpson collocation, this applies to the time point
+    ///       at the midpoint of the mesh interval. For Legendre-Gauss and
+    ///       Legendre-Gauss-Radau collocation, this applies to all time points
+    ///       in the interior of the mesh interval.
+    void setInterpolateControlMeshInteriorPoints(bool tf) {
+        m_interpolateControlMeshInteriorPoints = tf;
     }
-    bool getInterpolateControlMidpoints() const {
-        return m_interpolateControlMidpoints;
+    /// @copydoc setInterpolateControlMidpoints()
+    bool getInterpolateControlMeshInteriorPoints() const {
+        return m_interpolateControlMeshInteriorPoints;
     }
 
-    /// Whether or not to enforce path constraints at mesh interval midpoints.
-    /// @note Only applies to Hermite-Simpson collocation.
+    /// Whether or not to enforce path constraints at points interior to the
+    /// mesh interval.
+    ///
+    /// @note For Hermite-Simpson collocation, this applies to the time point
+    ///       at the midpoint of the mesh interval. For Legendre-Gauss and
+    ///       Legendre-Gauss-Radau collocation, this applies to all time points
+    ///       in the interior of the mesh interval.
     /// @note Does not apply to implicit dynamics residuals, as these are
     ///       always enforced at mesh interval midpoints.
-    void setEnforcePathConstraintMidpoints(bool tf) {
-        m_enforcePathConstraintMidpoints = tf;
+    void setEnforcePathConstraintMeshInteriorPoints(bool tf) {
+        m_enforcePathConstraintMeshInteriorPoints = tf;
     }
-    bool getEnforcePathConstraintMidpoints() const {
-        return m_enforcePathConstraintMidpoints;
+    bool getEnforcePathConstraintMeshInteriorPoints() const {
+        return m_enforcePathConstraintMeshInteriorPoints;
     }
 
     void setOptimSolver(std::string optimSolver) {
@@ -201,8 +223,10 @@ private:
     double m_implicitMultibodyAccelerationsWeight = 1.0;
     bool m_minimizeImplicitAuxiliaryDerivatives = false;
     double m_implicitAuxiliaryDerivativesWeight = 1.0;
-    bool m_interpolateControlMidpoints = true;
-    bool m_enforcePathConstraintMidpoints = false;
+    bool m_minimizeStateProjection = true;
+    double m_stateProjectionWeight = 1e-6;
+    bool m_interpolateControlMeshInteriorPoints = true;
+    bool m_enforcePathConstraintMeshInteriorPoints = false;
     Bounds m_implicitMultibodyAccelerationBounds;
     Bounds m_implicitAuxiliaryDerivativeBounds;
     std::string m_finite_difference_scheme = "central";

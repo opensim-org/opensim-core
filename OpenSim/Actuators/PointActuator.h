@@ -110,12 +110,11 @@ private:
     /** Computes speed along force vector. */
     double calcSpeed(const SimTK::State& s) const;
 
-    //--------------------------------------------------------------------------
-    // Implement Force interface
-    //--------------------------------------------------------------------------
-    void computeForce(const SimTK::State& state, 
-                      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                      SimTK::Vector& mobilityForces) const override;
+    /**
+     * Implements the `ForceProducer` interface by applying the actuator force to
+     * BodyA and BodyB.
+     */
+    void implProduceForces(const SimTK::State&, ForceConsumer&) const override;
 
     //--------------------------------------------------------------------------
     // Implement Actuator interface (also see getOptimalForce() above)

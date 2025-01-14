@@ -25,24 +25,19 @@
 
 #include "osimCommonDLL.h"
 #include "Assertion.h"
+#include <algorithm>
+#include <cmath>
 #include <functional>
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <numeric>
 #include <stack>
 #include <condition_variable>
 
 #include <SimTKcommon/internal/BigMatrix.h>
 
 namespace OpenSim {
-
-/// Since OpenSim does not require C++14 (which contains std::make_unique()),
-/// here is an implementation of make_unique().
-/// @ingroup commonutil
-template <typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args&&... args) {
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
 
 /// Get a string with the current date and time formatted as %Y-%m-%dT%H%M%S
 /// (year, month, day, "T", hour, minute, second). You can change the datetime
@@ -81,6 +76,43 @@ private:
 OSIMCOMMON_API
 SimTK::Vector createVectorLinspace(int length, double start, double end);
 
+/**
+ * @brief Creates a vector of uniformly spaced values with a known interval.
+ *
+ * This function generates a vector of length `length`, where each element
+ * is calculated based on the starting value and the specified step size.
+ * The elements are computed as:
+ * 
+ * output[i] = start + i * step_size
+ * 
+ * for i = 0, 1, 2, ..., length-1.
+ *
+ * @tparam T The type of the elements in the output vector. This can be any
+ *            numeric type (e.g., int, float, double).
+ * @param length The number of elements in the output vector.
+ * @param start The starting value of the sequence.
+ * @param step_size The difference between consecutive elements in the output vector.
+ * @return A std::vector<T> containing `length` elements, uniformly spaced
+ *         starting from `start` with a step size of `step_size`.
+ *
+ * @example
+ * std::vector<double> vec = createVectorLinspaceInterval(5, 0.0, 2.0);
+ * // vec will contain: [0.0, 2.0, 4.0, 6.0, 8.0]
+ */
+ /// @ingroup commonutil
+template <typename T>
+std::vector<T> createVectorLinspaceInterval(
+        const int length, const T start, const T step_size) {
+    std::vector<int> ivec(length);
+    std::iota(ivec.begin(), ivec.end(), 0); // ivec will become: [0..length]
+    std::vector<T> output(ivec.size());
+    std::transform(ivec.begin(), ivec.end(), output.begin(),
+                    [step_size, start](int value) {
+                    return static_cast<T>(std::fma(static_cast<T>(value), step_size, start));
+                    });
+    return output;
+};
+
 #ifndef SWIG
 /// Create a SimTK::Vector using modern C++ syntax.
 /// @ingroup commonutil
@@ -91,13 +123,18 @@ SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
 /// Linearly interpolate y(x) at new values of x. The optional 'ignoreNaNs'
 /// argument will ignore any NaN values contained in the input vectors and
 /// create the interpolant from the non-NaN values only. Note that this option
-/// does not necessarily prevent NaN values from being returned in 'newX', which
-/// will have NaN for any values of newX outside of the range of x.
+/// does not necessarily prevent NaN values from being returned, which will
+/// have NaN for any values of newX outside of the range of x. This is done with
+/// the 'extrapolate' option. If the 'extrapolate' argument is true, then the
+/// interpolant values will be extrapolated based on a piecewise linear function.
+/// Setting both 'ignoreNaNs' and 'extrapolate' to true prevents NaN values from
+/// occurring in the interpolant.
 /// @throws Exception if x and y are different sizes, or x or y is empty.
 /// @ingroup commonutil
 OSIMCOMMON_API
 SimTK::Vector interpolate(const SimTK::Vector& x, const SimTK::Vector& y,
-        const SimTK::Vector& newX, const bool ignoreNaNs = false);
+        const SimTK::Vector& newX, const bool ignoreNaNs = false,
+        const bool extrapolate = false);
 
 /// An OpenSim XML file may contain file paths that are relative to the
 /// directory containing the XML file; use this function to convert that

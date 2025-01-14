@@ -26,6 +26,8 @@
 // INCLUDES
 //=============================================================================
 #include "CoordinateLimitForce.h"
+
+#include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
@@ -48,7 +50,7 @@ CoordinateLimitForce::CoordinateLimitForce()
 CoordinateLimitForce::CoordinateLimitForce
    (const string& coordName, double q_upper, 
     double K_upper, double q_lower, double K_lower, double damping, double dq, 
-    bool computeDissipationEnergy) : Force()
+    bool computeDissipationEnergy)
 {
     setNull();
     constructProperties();
@@ -250,11 +252,10 @@ void CoordinateLimitForce::extendAddToSystem(SimTK::MultibodySystem& system) con
  * Compute and apply the mobility force corresponding to the passive limit force
  *
  */
-void CoordinateLimitForce::computeForce( const SimTK::State& s, 
-                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                               SimTK::Vector& mobilityForces) const
+void CoordinateLimitForce::implProduceForces(const SimTK::State& s,
+    ForceConsumer& forceConsumer) const
 {
-    applyGeneralizedForce(s, *_coord, calcLimitForce(s), mobilityForces);
+    forceConsumer.consumeGeneralizedForce(s, *_coord, calcLimitForce(s));
 }
 
 double CoordinateLimitForce::calcLimitForce( const SimTK::State& s) const

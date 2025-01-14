@@ -140,9 +140,6 @@ public:
     /** Change the weighting of a marker, given the marker's name. Takes effect
         when assemble() or track() is called next. */
     void updateMarkerWeight(const std::string &markerName, double value);
-    /** Change the weighting of a marker, given the marker's index. Takes effect
-        when assemble() or track() is called next. */
-    void updateMarkerWeight(int markerIndex, double value);
     /** Change the weighting of all markers. Takes effect when assemble() or
         track() is called next. Marker weights are specified in the same order
         as they appear in the MarkersReference that was passed in when the
@@ -152,9 +149,6 @@ public:
     /** Change the weighting of an orientation sensor, given its name. Takes
     effect when assemble() or track() is called next. */
     void updateOrientationWeight(const std::string& orientationName, double value);
-    /** Change the weighting of an orientation sensor, given its index. Takes
-    effect when assemble() or track() is called next. */
-    void updateOrientationWeight(int orientationIndex, double value);
     /** Change the weighting of all orientation sensors. Takes effect when
     assemble() or track() is called next. Orientation weights are specified
     in the same order as they appear in the OrientationsReference that was
@@ -164,9 +158,6 @@ public:
     /** Compute and return a marker's spatial location in the ground frame,
         given the marker's name. */
     SimTK::Vec3 computeCurrentMarkerLocation(const std::string &markerName);
-    /** Compute and return a marker's spatial location in the ground frame,
-        given the marker's index. */
-    SimTK::Vec3 computeCurrentMarkerLocation(int markerIndex);
     /** Compute and return the spatial locations of all markers, expressed in
         the ground frame. */
     void computeCurrentMarkerLocations(SimTK::Array_<SimTK::Vec3> &markerLocations);
@@ -174,9 +165,6 @@ public:
     /** Compute and return the distance error between a model marker and its
         observation, given the marker's name. */
     double computeCurrentMarkerError(const std::string &markerName);
-    /** Compute and return the distance error between a model marker and its
-        observation, given the marker's index. */
-    double computeCurrentMarkerError(int markerIndex);
     /** Compute and return the distance errors between all model markers and
         their observations. */
     void computeCurrentMarkerErrors(SimTK::Array_<double> &markerErrors);
@@ -185,10 +173,7 @@ public:
         its observation, given the marker's name. This method is cheaper than
         squaring the value returned by computeCurrentMarkerError(). */
     double computeCurrentSquaredMarkerError(const std::string &markerName);
-    /** Compute and return the squared-distance error between a model marker and
-        its observation, given the marker's index. This method is cheaper than
-        squaring the value returned by computeCurrentMarkerError(). */
-    double computeCurrentSquaredMarkerError(int markerIndex);
+
     /** Compute and return the squared-distance errors between all model markers
         and their observations. This method is cheaper than squaring the values
         returned by computeCurrentMarkerErrors(). */
@@ -203,9 +188,7 @@ public:
     /** Compute and return an orientation sensor's spatial orientation in the
     ground frame, given the o-sensor's name. */
     SimTK::Rotation computeCurrentSensorOrientation(const std::string& osensorName);
-    /** Compute and return an orientation sensor's spatial orientation in the
-    ground frame, given the o-sensor's index. */
-    SimTK::Rotation computeCurrentSensorOrientation(int osensorIndex);
+
     /** Compute and return the spatial orientations of all o-sensors, expressed in
     the ground frame. */
     void computeCurrentSensorOrientations(
@@ -214,9 +197,6 @@ public:
     /** Compute and return the orientation error between the model orientation
     sensor and its observation, given the o-sensor's name. */
     double computeCurrentOrientationError(const std::string& osensorName);
-    /** Compute and return the orientation error between the model orientation
-    sensor and its observation, given the o-sensor's index. */
-    double computeCurrentOrientationError(int osensorIndex);
     /** Compute all the orientation errors between the model orientation
     sensors and their observations. */
     void computeCurrentOrientationErrors(SimTK::Array_<double>& osensorErrors);
@@ -247,6 +227,35 @@ private:
     /** Define and apply Orientations of Frames to be tracked to the
         assembly problem. */
     void setupOrientationsGoal(SimTK::State &s);
+
+    /** Compute and return a marker's spatial location in the ground frame,
+    given the marker's index. */
+    SimTK::Vec3 computeCurrentMarkerLocation(int markerIndex);
+
+    /** Compute and return the distance error between a model marker and its
+        observation, given the marker's index. */
+    double computeCurrentMarkerError(int markerIndex);
+
+    /** Compute and return the squared-distance error between a model marker and
+        its observation, given the marker's index. This method is cheaper than
+        squaring the value returned by computeCurrentMarkerError(). */
+    double computeCurrentSquaredMarkerError(int markerIndex);
+
+    /** Change the weighting of a marker, given the marker's index. Takes effect
+    when assemble() or track() is called next. */
+    void updateMarkerWeight(int markerIndex, double value);
+
+    /** Compute and return an orientation sensor's spatial orientation in the
+    ground frame, given the o-sensor's index. */
+    SimTK::Rotation computeCurrentSensorOrientation(int osensorIndex);
+
+    /** Compute and return the orientation error between the model orientation
+    sensor and its observation, given the o-sensor's index. */
+    double computeCurrentOrientationError(int osensorIndex);
+
+    /** Change the weighting of an orientation sensor, given its index. Takes
+    effect when assemble() or track() is called next. */
+    void updateOrientationWeight(int orientationIndex, double value);
 
     // The marker reference values and weightings
     std::shared_ptr<MarkersReference> _markersReference;

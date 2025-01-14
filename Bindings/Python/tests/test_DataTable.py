@@ -130,7 +130,7 @@ class TestDataTable(unittest.TestCase):
                 row[1] == 200 and
                 row[2] == 300 and
                 row[3] == 400)
-        row0 = table.getRowAtIndex(0)
+        row0 = table.updRowAtIndex(0)
         row0[0] = 10
         row0[1] = 10
         row0[2] = 10
@@ -140,7 +140,7 @@ class TestDataTable(unittest.TestCase):
                 row0[1] == 10 and
                 row0[2] == 10 and
                 row0[3] == 10)
-        row2 = table.getRow(0.3)
+        row2 = table.updRow(0.3)
         row2[0] = 20
         row2[1] = 20
         row2[2] = 20
@@ -152,7 +152,7 @@ class TestDataTable(unittest.TestCase):
                 row2[3] == 20)
         print(table)
         # Edit columns of the table.
-        col1 = table.getDependentColumnAtIndex(1)
+        col1 = table.updDependentColumnAtIndex(1)
         col1[0] = 30
         col1[1] = 30
         col1[2] = 30
@@ -160,7 +160,7 @@ class TestDataTable(unittest.TestCase):
         assert (col1[0] == 30 and
                 col1[1] == 30 and
                 col1[2] == 30)
-        col3 = table.getDependentColumn('3')
+        col3 = table.updDependentColumn('3')
         col3[0] = 40
         col3[1] = 40
         col3[2] = 40
@@ -298,6 +298,40 @@ class TestDataTable(unittest.TestCase):
         assert tableFlat.getColumnLabel(11) == 'col1_6'
         assert tableFlat.getNumRows()           == 3
         assert tableFlat.getNumColumns()        == 12
+        print(tableFlat)
+        table = osim.DataTable()
+        table.setColumnLabels(('col0_x', 'col0_y', 'col0_z',
+                               'col1_x', 'col1_y', 'col1_z',
+                               'col2_x', 'col2_y', 'col2_z',
+                               'col3_x', 'col3_y', 'col3_z',
+                               'col4_x', 'col4_y', 'col4_z',
+                               'col5_x', 'col5_y', 'col5_z'))
+        row = osim.RowVector([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+        table.appendRow(1, row)
+        row = osim.RowVector([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+        table.appendRow(2, row)
+        row = osim.RowVector([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3])
+        table.appendRow(3, row)
+        assert len(table.getColumnLabels()) == 18
+        assert table.getNumRows()           == 3
+        assert table.getNumColumns()        == 18
+        table.setColumnLabels(('col0_0', 'col0_1', 'col0_2',
+                               'col0_3', 'col0_4', 'col0_5',
+                               'col0_6', 'col0_7', 'col0_8',
+                               'col1_0', 'col1_1', 'col1_2',
+                               'col1_3', 'col1_4', 'col1_5',
+                               'col1_6', 'col1_7', 'col1_8'))
+        tableRot = table.packRotation()
+        tableRot.getColumnLabels() == ('col0', 'col1')
+        tableRot.getNumRows()    == 3
+        tableRot.getNumColumns() == 2
+        print(tableRot)
+        tableFlat = tableRot.flatten()
+        assert len(tableFlat.getColumnLabels()) == 18
+        assert tableFlat.getColumnLabel( 0) == 'col0_1'
+        assert tableFlat.getColumnLabel(15) == 'col1_7'
+        assert tableFlat.getNumRows()           == 3
+        assert tableFlat.getNumColumns()        == 18
         print(tableFlat)
 
     def test_TimeSeriesTable(self):
@@ -475,7 +509,7 @@ class TestDataTable(unittest.TestCase):
         print(tableDouble)
         
         # Edit rows of the table.
-        row0 = table.getRowAtIndex(0)
+        row0 = table.updRowAtIndex(0)
         row0[0] = osim.Vec3(10, 10, 10)
         row0[1] = osim.Vec3(10, 10, 10)
         row0[2] = osim.Vec3(10, 10, 10)
@@ -483,7 +517,7 @@ class TestDataTable(unittest.TestCase):
         assert (str(row0[0]) == str(osim.Vec3(10, 10, 10)) and
                 str(row0[1]) == str(osim.Vec3(10, 10, 10)) and
                 str(row0[2]) == str(osim.Vec3(10, 10, 10)))
-        row2 = table.getRow(0.3)
+        row2 = table.updRow(0.3)
         row2[0] = osim.Vec3(20, 20, 20)
         row2[1] = osim.Vec3(20, 20, 20)
         row2[2] = osim.Vec3(20, 20, 20)
@@ -493,7 +527,7 @@ class TestDataTable(unittest.TestCase):
                 str(row2[2]) == str(osim.Vec3(20, 20, 20)))
         print(table)
         # Edit columns of the table.
-        col1 = table.getDependentColumnAtIndex(1)
+        col1 = table.updDependentColumnAtIndex(1)
         col1[0] = osim.Vec3(30, 30, 30)
         col1[1] = osim.Vec3(30, 30, 30)
         col1[2] = osim.Vec3(30, 30, 30)
@@ -501,7 +535,7 @@ class TestDataTable(unittest.TestCase):
         assert (str(col1[0]) == str(osim.Vec3(30, 30, 30)) and
                 str(col1[1]) == str(osim.Vec3(30, 30, 30)) and
                 str(col1[2]) == str(osim.Vec3(30, 30, 30)))
-        col2 = table.getDependentColumn('2')
+        col2 = table.updDependentColumn('2')
         col2[0] = osim.Vec3(40, 40, 40)
         col2[1] = osim.Vec3(40, 40, 40)
         col2[2] = osim.Vec3(40, 40, 40)

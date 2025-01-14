@@ -154,15 +154,15 @@ void MocoJointReactionGoal::calcIntegrandImpl(
 }
 
 void MocoJointReactionGoal::printDescriptionImpl() const {
-    log_cout("        joint path: ", get_joint_path());
-    log_cout("        loads frame: ", get_loads_frame());
-    log_cout("        expressed: ", get_expressed_in_frame_path());
+    log_info("        joint path: ", get_joint_path());
+    log_info("        loads frame: ", get_loads_frame());
+    log_info("        expressed: ", get_expressed_in_frame_path());
 
     std::vector<std::string> measures(getProperty_reaction_measures().size());
     for (int i = 0; i < (int)measures.size(); i++) {
         measures[i] = get_reaction_measures(i);
     }
-    log_cout("        reaction measures: {}", fmt::join(measures, ", "));
+    log_info("        reaction measures: {}", fmt::join(measures, ", "));
 
-    log_cout("        reaction weights: {}", fmt::join(m_measureWeights, ", "));
+    log_info("        reaction weights: {}", fmt::join(m_measureWeights, ", "));
 }

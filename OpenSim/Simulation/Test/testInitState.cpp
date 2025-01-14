@@ -26,6 +26,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace std;
@@ -36,38 +37,14 @@ using namespace std;
 // are updated (after a simulation) that the defaults match the values in the 
 // new state.
 //==============================================================================
-void testStates(const string& modelFile);
 
-static const int MAX_N_TRIES = 100;
-
-int main()
-{
-    try {
-        LoadOpenSimLibrary("osimActuators");
-        testStates("arm26.osim");
-    }
-    catch (const Exception& e) {
-        cout << "testInitState failed: ";
-        e.print(cout); 
-        return 1;
-    }
-    catch (const std::exception& e) {
-        cout << "testInitState failed: " << e.what() << endl;
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
-}
-
-//==============================================================================
-// Test Cases
-//==============================================================================
-void testStates(const string& modelFile)
+TEST_CASE("testStates")
 {
     using namespace SimTK;
-
+    LoadOpenSimLibrary("osimActuators");
     //==========================================================================
     // Setup OpenSim model
+    std::string modelFile = "arm26.osim";
     Model model(modelFile);
     ControlSetController* controller = new ControlSetController();
     controller->setControlSetFileName("arm26_StaticOptimization_controls.xml");

@@ -140,7 +140,7 @@ void MocoParameter::printDescription() const {
                 fmt::format("{}", getProperty_property_element().getValue());
     }
 
-    log_cout("  {}. model property name: {}. component paths: {}. "
+    log_info("  {}. model property name: {}. component paths: {}. "
              "property element: {}. bounds: {}",
             getName(), getPropertyName(), fmt::join(componentPaths, ", "),
             propertyElementStr, getBounds());

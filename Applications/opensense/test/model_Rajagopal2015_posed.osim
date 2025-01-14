@@ -1095,7 +1095,7 @@
 					<!--The location (Vec3) of the mass center in the body frame.-->
 					<mass_center>0.045194398031267034 0.0089390420348554826 -0.017218832924826396</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>0.00010536482737565871 0.00021072965475131742 0.0010536482737565872 0 0 0</inertia>
+					<inertia>0.00010536482737565871 0.001159013101132246 0.0010536482737565872 0 0 0</inertia>
 				</Body>
 				<Body name="femur_l">
 					<!--The geometry used to display the axes of this Frame.-->
@@ -1797,7 +1797,7 @@
 					<!--The location (Vec3) of the mass center in the body frame.-->
 					<mass_center>0.043770381117720983 0.0087206439945598027 0.017499337630711414</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>0.00010536482737565871 0.00021072965475131742 0.0010536482737565872 0 0 0</inertia>
+					<inertia>0.00010536482737565871 0.001159013101132246 0.0010536482737565872 0 0 0</inertia>
 				</Body>
 				<Body name="torso">
 					<!--The geometry used to display the axes of this Frame.-->

@@ -66,7 +66,7 @@ function configureOpenSim()
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [openSimFolder] = uiGetOpenSimFolder()
+function [openSimFolder, api_distro] = uiGetOpenSimFolder()
     % Prompt user for OpenSim folder.
     startPath = '';
     
@@ -86,6 +86,7 @@ function [openSimFolder] = uiGetOpenSimFolder()
     if ~openSimFolder
         showMessage('You did not select a folder.', 'Error', true);
     end
+    api_distro = false
     if ismac
         [~, name, ext] = fileparts(openSimFolder);
         % If openSimFolder is '/Applications/OpenSim 4.0.1' then we'll get:
@@ -95,6 +96,10 @@ function [openSimFolder] = uiGetOpenSimFolder()
         appDir = fullfile(openSimFolder, [name ext '.app']);
         if exist(appDir, 'dir')
             openSimFolder = fullfile(appDir, 'Contents', 'Resources', 'OpenSim');
+        else 
+            % This could be an API install
+            api_distro = true
+            showMessage('Application not found, assuming API distribution.', 'Info', false);
         end
     end
 end
@@ -110,6 +115,7 @@ try
         % This function returns all but the leaf element of the provided path.
         openSimFolder = fileparts(openSimFolder);
     end
+    api_distro = false;
     % For this to be an OpenSim installation, there must be a buildinfo file.
     buildInfoFile = fullfile(openSimFolder, '@CMAKE_INSTALL_SYSCONFDIR@', ...
                 'OpenSim_buildinfo.txt');
@@ -118,10 +124,15 @@ try
         % installation; ask the user to choose an install directory.
         correctFolder = false;
         while ~correctFolder
-            openSimFolder = uiGetOpenSimFolder();
+            [openSimFolder, api_distro] = uiGetOpenSimFolder();
             % Check if the user selected a valid folder.
+            if api_distro
+                subfoldername = 'etc';
+            else
+                subfoldername = '@CMAKE_INSTALL_SYSCONFDIR@';
+            end
             buildInfoFile = fullfile(openSimFolder, ...
-                    '@CMAKE_INSTALL_SYSCONFDIR@', 'OpenSim_buildinfo.txt');
+                    subfoldername, 'OpenSim_buildinfo.txt');
             if exist(buildInfoFile)
                 correctFolder = true;
             else
@@ -137,8 +148,13 @@ try
 %% Edit the Java class path (need full path for print)
     toolboxLocal = fullfile(matlabroot, 'toolbox', 'local');
     % Create the string names used
+    if api_distro
+        jarPath = 'share/java'
+    else
+        jarPath = '@OPENSIM_INSTALL_JAVAJARDIR@'
+    end
     OpenSimJarPath =  fullfile(openSimFolder, ...
-            '@OPENSIM_INSTALL_JAVAJARDIR@', '@SWIG_JAVA_JAR_NAME@');
+            jarPath, '@SWIG_JAVA_JAR_NAME@');
     classFileTool = fullfile(toolboxLocal, 'classpath.txt');
     % Keep track of if (1) we detected existing OpenSim
     % and (2) if we had issues removing existing OpenSim entries.
@@ -162,8 +178,13 @@ try
     end
 
 %% Edit the Java library path.
+    if api_distro
+        libPath = 'lib'
+    else
+        libPath = '@OPENSIM_INSTALL_SHAREDLIBDIR@'
+    end
     % Create the string names used
-    OpenSimLibPath  = fullfile(openSimFolder, '@OPENSIM_INSTALL_SHAREDLIBDIR@');
+    OpenSimLibPath  = fullfile(openSimFolder, libPath);
     libraryFileTool = fullfile(toolboxLocal, 'librarypath.txt');
     if matlabOlderThan2012b
         rmPrev = rmPrev | editPathTxtFile(libraryFileTool, OpenSimLibPath);

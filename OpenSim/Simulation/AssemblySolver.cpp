@@ -196,12 +196,14 @@ void AssemblySolver::assemble(SimTK::State &state)
     _assembler->initialize(s);
     
     // Useful to include through debug message/log in the future
-    log_debug("UNASSEMBLED CONFIGURATION (normerr={}, maxerr={}, cost={})",
-        _assembler->calcCurrentErrorNorm(),
-        max(abs(_assembler->getInternalState().getQErr())),
-        _assembler->calcCurrentGoal());
-    log_debug("Model numQs: {} Assembler num freeQs: {}",  
-        _assembler->getInternalState().getNQ(),  _assembler->getNumFreeQs());
+    if (Logger::getLevel() <= Logger::Level::Debug) {
+        log_debug("UNASSEMBLED CONFIGURATION (normerr={}, maxerr={}, cost={})",
+            _assembler->calcCurrentErrorNorm(),
+            max(abs(_assembler->getInternalState().getQErr())),
+            _assembler->calcCurrentGoal());
+        log_debug("Model numQs: {} Assembler num freeQs: {}",  
+            _assembler->getInternalState().getNQ(),  _assembler->getNumFreeQs());
+    }
 
     try{
         // Now do the assembly and return the updated state.
@@ -219,16 +221,19 @@ void AssemblySolver::assemble(SimTK::State &state)
             if(isLocked)
                 modelCoordSet[i].setLocked(state, isLocked);
         }
-        // TODO: Useful to include through debug message/log in the future
-        log_debug("ASSEMBLED CONFIGURATION (acc={} tol={} normerr={}, maxerr={}, cost={})",
-            _assembler->getAccuracyInUse(), _assembler->getErrorToleranceInUse(), 
-            _assembler->calcCurrentErrorNorm(), max(abs(_assembler->getInternalState().getQErr())),
-            _assembler->calcCurrentGoal());
-        log_debug("# initializations={}", _assembler->getNumInitializations());
-        log_debug("# assembly steps: {}", _assembler->getNumAssemblySteps());
-        log_debug(" evals: goal={} grad={} error={} jac={}",
-            _assembler->getNumGoalEvals(), _assembler->getNumGoalGradientEvals(),
-            _assembler->getNumErrorEvals(), _assembler->getNumErrorJacobianEvals());
+
+        if (Logger::getLevel() <= Logger::Level::Debug) {
+            // TODO: Useful to include through debug message/log in the future
+            log_debug("ASSEMBLED CONFIGURATION (acc={} tol={} normerr={}, maxerr={}, cost={})",
+                _assembler->getAccuracyInUse(), _assembler->getErrorToleranceInUse(), 
+                _assembler->calcCurrentErrorNorm(), max(abs(_assembler->getInternalState().getQErr())),
+                _assembler->calcCurrentGoal());
+            log_debug("# initializations={}", _assembler->getNumInitializations());
+            log_debug("# assembly steps: {}", _assembler->getNumAssemblySteps());
+            log_debug(" evals: goal={} grad={} error={} jac={}",
+                _assembler->getNumGoalEvals(), _assembler->getNumGoalGradientEvals(),
+                _assembler->getNumErrorEvals(), _assembler->getNumErrorJacobianEvals());
+        }
     }
     catch (const std::exception& ex)
     {
@@ -258,12 +263,14 @@ void AssemblySolver::track(SimTK::State &s)
     }
 
     // TODO: Useful to include through debug message/log in the future
-    log_debug("UNASSEMBLED(track) CONFIGURATION (normerr={}, maxerr={}, cost={})",
-        _assembler->calcCurrentErrorNorm(), 
-        max(abs(_assembler->getInternalState().getQErr())), 
-        _assembler->calcCurrentGoal() );
-    log_debug("Model numQs: {}  Assembler num freeQs: {}",
-        _assembler->getInternalState().getNQ(), _assembler->getNumFreeQs());
+    if (Logger::getLevel() <= Logger::Level::Debug) {
+        log_debug("UNASSEMBLED(track) CONFIGURATION (normerr={}, maxerr={}, cost={})",
+            _assembler->calcCurrentErrorNorm(), 
+            max(abs(_assembler->getInternalState().getQErr())), 
+            _assembler->calcCurrentGoal() );
+        log_debug("Model numQs: {}  Assembler num freeQs: {}",
+            _assembler->getInternalState().getNQ(), _assembler->getNumFreeQs());
+    }
 
     try{
         // Now do the assembly and return the updated state.
@@ -273,11 +280,13 @@ void AssemblySolver::track(SimTK::State &s)
         _assembler->updateFromInternalState(s);
         
         // TODO: Useful to include through debug message/log in the future
-        log_debug("Tracking: t= {} (acc={} tol={} normerr={}, maxerr={}, cost={})", 
-            s.getTime(),
-            _assembler->getAccuracyInUse(), _assembler->getErrorToleranceInUse(), 
-            _assembler->calcCurrentErrorNorm(), max(abs(_assembler->getInternalState().getQErr())),
-            _assembler->calcCurrentGoal()); 
+        if (Logger::getLevel() <= Logger::Level::Debug) {
+            log_debug("Tracking: t= {} (acc={} tol={} normerr={}, maxerr={}, cost={})", 
+                s.getTime(),
+                _assembler->getAccuracyInUse(), _assembler->getErrorToleranceInUse(), 
+                _assembler->calcCurrentErrorNorm(), max(abs(_assembler->getInternalState().getQErr())),
+                _assembler->calcCurrentGoal()); 
+        }
     }
     catch (const std::exception& ex)
     {

@@ -51,7 +51,9 @@ MocoAddTest(NAME testMocoImplicit)
 
 MocoAddTest(NAME testMocoConstraints)
 
-MocoAddTest(NAME testMocoContact)
+MocoAddTest(NAME testMocoContact RESOURCES
+        subject_20dof18musc_running.osim
+        running_solution_full_stride.sto)
 
 MocoAddTest(NAME testMocoControllers)
 
@@ -75,7 +77,9 @@ MocoAddTest(NAME testMocoTrack RESOURCES
 
 MocoAddTest(NAME testMocoAnalytic)
 
-MocoAddTest(NAME testMocoMetabolics)
+MocoAddTest(NAME testMocoMetabolics RESOURCES
+        testMocoMetabolics_hanging_muscle.osim
+        )
 
 file(COPY subject_walk_armless_18musc.osim subject_walk_armless_coordinates.mot
      DESTINATION "${CMAKE_BINARY_DIR}/OpenSim/Tests/Wrapping")

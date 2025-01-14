@@ -33,9 +33,11 @@
 //      7. RotationalCoordinateLimitForce
 //      8. ExternalForce
 //      9. PathSpring
-//     10. ExpressionBasedPointToPointForce
-//     11. Blankevoort1991Ligament
-//     12. Smith2018ArticularContactForce
+//     10. ExpressionBasedCoordinateForce
+//     11. ExpressionBasedPointToPointForce
+//     12. ExpressionBasedBushingForce
+//     13. Blankevoort1991Ligament
+//     14. Smith2018ArticularContactForce
 //
 //     Add tests here as Forces are added to OpenSim
 //
@@ -47,160 +49,58 @@
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
- #include<math.h>
+#include<math.h>
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace std;
 
-//==============================================================================
-// Common Parameters for the simulations are just global.
-const static double integ_accuracy = 1.0e-4;
-const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
-//==============================================================================
+namespace {
+    // Common Parameters for the simulations are just global.
+    const static double integ_accuracy = 1.0e-4;
+    const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 
-void testPathSpring();
-void testExternalForce();
-void testSpringMass();
-void testBushingForce();
-void testTwoFrameLinkerUpdateFromXMLNode();
-void testFunctionBasedBushingForce();
-void testExpressionBasedBushingForceTranslational();
-void testExpressionBasedBushingForceRotational();
-void testElasticFoundation();
-void testHuntCrossleyForce();
-void testSmoothSphereHalfSpaceForce();
-void testCoordinateLimitForce();
-void testCoordinateLimitForceRotational();
-void testExpressionBasedPointToPointForce();
-void testExpressionBasedCoordinateForce();
-void testSerializeDeserialize();
-void testTranslationalDampingEffect(Model& osimModel, Coordinate& sliderCoord,
-        double start_h, Component& componentWithDamping);
-void testBlankevoort1991Ligament();
-void testSmith2018ArticularContactForce();
+    void testTranslationalDampingEffect(Model& osimModel, Coordinate& sliderCoord,
+            double start_h, Component& componentWithDamping) {
+        using namespace SimTK;
+        ASSERT(componentWithDamping.hasProperty("translational_damping"));
 
-int main() {
-    SimTK::Array_<std::string> failures;
-    /*
-    try { testPathSpring(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl; failures.push_back("testPathSpring");
+        AbstractProperty& aProp =
+                componentWithDamping.updPropertyByName("translational_damping");
+        Property<SimTK::Vec3>& aPropVec3 =
+                dynamic_cast<Property<SimTK::Vec3>&>(aProp);
+        aPropVec3.setValue(Vec3(100.));
+        SimTK::State& osim_state2 = osimModel.initSystem();
+
+        // set the initial height of the ball on slider
+        sliderCoord.setValue(osim_state2, start_h);
+        osimModel.getMultibodySystem().realize(osim_state2, Stage::Position);
+
+        //==========================================================================
+        // Compute the Energy to make sure it goes down due to damping
+        Manager manager2(osimModel);
+        manager2.setIntegratorAccuracy(1e-6);
+        osim_state2.setTime(0.0);
+        manager2.initialize(osim_state2);
+
+        double lastEnergy = 1E20; // Large
+        for (int i = 1; i <= 10; ++i) {
+            osim_state2 = manager2.integrate(0.2 * i);
+            osimModel.getMultibodySystem().realize(
+                    osim_state2, Stage::Acceleration);
+            double newEnergy = osimModel.calcKineticEnergy(osim_state2) +
+                               osimModel.calcPotentialEnergy(osim_state2);
+            ASSERT(newEnergy < lastEnergy);
+            lastEnergy = newEnergy;
+        }
     }
-
-    try { testExternalForce(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl; failures.push_back("testExternalForce");
-    }
-
-    try { testSpringMass(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl; failures.push_back("testP2PSpringMass");
-    }
-
-    try { testBushingForce(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl; failures.push_back("testBushingForce");
-    }
-
-    try { testTwoFrameLinkerUpdateFromXMLNode(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl;
-        failures.push_back("testTwoFrameLinkerUpdateFromXMLNode");
-    }
-
-    try { testFunctionBasedBushingForce(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl;
-        failures.push_back("testFunctionBasedBushingForce");
-    }
-
-    try { testExpressionBasedBushingForceTranslational(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl;
-        failures.push_back("testExpressionBasedBushingForceTranslational");
-    }
-
-    try { testExpressionBasedBushingForceRotational(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testExpressionBasedBushingForceRotational");
-    }
-
-    try { testElasticFoundation(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl; failures.push_back("testElasticFoundation");
-    }
-
-    try { testHuntCrossleyForce(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl; failures.push_back("testHuntCrossleyForce");
-    }
-
-    try { testSmoothSphereHalfSpaceForce(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl;
-        failures.push_back("testSmoothSphereHalfSpaceForce");
-    }
-
-    try { testCoordinateLimitForce(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl; failures.push_back("testCoordinateLimitForce");
-    }
-
-    try { testCoordinateLimitForceRotational(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl;
-        failures.push_back("testCoordinateLimitForceRotational");
-    }
-
-    try { testExpressionBasedPointToPointForce(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl;
-        failures.push_back("testExpressionBasedPointToPointForce");
-    }
-
-    try { testExpressionBasedCoordinateForce(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl;
-        failures.push_back("testExpressionBasedCoordinateForce");
-    }
-
-    try { testSerializeDeserialize(); }
-    catch (const std::exception& e){
-        cout << e.what() <<endl;
-        failures.push_back("testSerializeDeserialize");
-    }
-    
-    try {
-        testBlankevoort1991Ligament();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testBlankevoort1991Ligament");
-    }*/
-
-    try {
-        testSmith2018ArticularContactForce();
-    }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testSmith2018ArticularContactForce");
-    }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done. All cases passed." << endl;
-
-    return 0;
 }
 
 //==============================================================================
 // Test Cases
 //==============================================================================
 
-void testExpressionBasedCoordinateForce() {
+TEST_CASE("testExpressionBasedCoordinateForce") {
     using namespace SimTK;
 
     double mass = 1;
@@ -244,9 +144,10 @@ void testExpressionBasedCoordinateForce() {
     osimModel.setGravity(gravity_vec);
 
     // ode for basic mass-spring-dampener system
-    ExpressionBasedCoordinateForce spring("ball_h", "-10*q-5*qdot");
+    ExpressionBasedCoordinateForce* spring = 
+            new ExpressionBasedCoordinateForce("ball_h", "-10*q-5*qdot");
 
-    osimModel.addForce(&spring);
+    osimModel.addForce(spring);
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(&osimModel);
@@ -275,6 +176,7 @@ void testExpressionBasedCoordinateForce() {
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
 
+        // Check ball height against analytical solution.
         double height =
                 exp(-1 * zeta * omega * osim_state.getTime()) *
                         ((start_h - dh) *
@@ -285,21 +187,30 @@ void testExpressionBasedCoordinateForce() {
                                         sin(damp_freq *
                                                 osim_state.getTime()))) +
                 dh;
-
         ASSERT_EQUAL(height, pos(1), 1e-6);
+
+        // Check that the force reported by spring is correct.
+        double ball_h = sliderCoord.getValue(osim_state);
+        double ball_h_dot = sliderCoord.getSpeedValue(osim_state);
+        double analytical_force = -10*ball_h - 5*ball_h_dot;
+        double model_force = spring->getForceMagnitude(osim_state);
+        double output_force = 
+                spring->getOutputValue<double>(osim_state, "force_magnitude");
+        ASSERT_EQUAL(analytical_force, model_force, 1e-6);
+        ASSERT_EQUAL(analytical_force, output_force, 1e-6);
     }
 
     // Test copying
-    ExpressionBasedCoordinateForce* copyOfSpring = spring.clone();
+    ExpressionBasedCoordinateForce* copyOfSpring = spring->clone();
 
-    ASSERT(*copyOfSpring == spring);
+    ASSERT(*copyOfSpring == *spring);
 
     osimModel.print("ExpressionBasedCoordinateForceModel.osim");
 
     osimModel.disownAllComponents();
 }
 
-void testExpressionBasedPointToPointForce() {
+TEST_CASE("testExpressionBasedPointToPointForce") {
     using namespace SimTK;
 
     double mass = 100;
@@ -369,6 +280,8 @@ void testExpressionBasedPointToPointForce() {
 
     // Now check that the force reported by spring
     double model_force = p2pForce->getForceMagnitude(state);
+    double output_force = 
+            p2pForce->getOutputValue<double>(state, "force_magnitude");
 
     // Save the forces
     // reporter->getForceStorage().print("path_spring_forces.mot");
@@ -385,6 +298,7 @@ void testExpressionBasedPointToPointForce() {
 
     // something is wrong if the block does not reach equilibrium
     ASSERT_EQUAL(analytical_force, model_force, 1e-5);
+    ASSERT_EQUAL(analytical_force, output_force, 1e-5);
 
     // Before exiting lets see if copying the P2P force works
     ExpressionBasedPointToPointForce* copyOfP2pForce = p2pForce->clone();
@@ -393,7 +307,7 @@ void testExpressionBasedPointToPointForce() {
     model.disownAllComponents();
 }
 
-void testPathSpring() {
+TEST_CASE("testPathSpring") {
     using namespace SimTK;
 
     double mass = 1;
@@ -510,7 +424,7 @@ void testPathSpring() {
     osimModel.disownAllComponents();
 }
 
-void testSpringMass() {
+TEST_CASE("testSpringMass") {
     using namespace SimTK;
 
     double mass = 1;
@@ -610,7 +524,7 @@ void testSpringMass() {
     /*Vec3 comA =*/bouncer.calcMassCenterAcceleration(s);
 }
 
-void testBushingForce() {
+TEST_CASE("testBushingForce") {
     using namespace SimTK;
 
     double mass = 1;
@@ -727,10 +641,10 @@ void testBushingForce() {
     ASSERT(*copyOfSpring == *spring);
 }
 
-// testBushingForce() performs similar checks as does this test, but this test
+// testBushingForce performs similar checks as does this test, but this test
 // ensures intermediate offset frames are created correctly. This test still
 // uses BushingForce to test the TwoFrameLinker.
-void testTwoFrameLinkerUpdateFromXMLNode() {
+TEST_CASE("testTwoFrameLinkerUpdateFromXMLNode") {
     using namespace SimTK;
 
     double mass = 1;
@@ -803,7 +717,7 @@ void testTwoFrameLinkerUpdateFromXMLNode() {
             "model.");
 }
 
-void testFunctionBasedBushingForce() {
+TEST_CASE("testFunctionBasedBushingForce") {
     using namespace SimTK;
 
     double mass = 1;
@@ -910,7 +824,7 @@ void testFunctionBasedBushingForce() {
     ASSERT(*copyOfSpring == spring);
 }
 
-void testExpressionBasedBushingForceTranslational() {
+TEST_CASE("testExpressionBasedBushingForceTranslational") {
     using namespace SimTK;
 
     double mass = 1;
@@ -1020,6 +934,11 @@ void testExpressionBasedBushingForceTranslational() {
         // check analytical force corresponds to the force on the ball
         // in the Y direction, index = 7
         ASSERT_EQUAL(analytical_force, model_force[7], 2e-4);
+
+        // check that the force from the Output is correct
+        SimTK::Vec6 output_force = 
+                spring.getOutputValue<SimTK::Vec6>(osim_state, "bushing_force");
+        ASSERT_EQUAL(analytical_force, output_force[4], 2e-4);
     }
 
     manager.getStateStorage().print(
@@ -1043,7 +962,7 @@ void testExpressionBasedBushingForceTranslational() {
     ASSERT(*copyOfSpring == spring);
 }
 
-void testExpressionBasedBushingForceRotational() {
+TEST_CASE("testExpressionBasedBushingForceRotational") {
     using namespace SimTK;
 
     double mass = 5;
@@ -1151,6 +1070,11 @@ void testExpressionBasedBushingForceRotational() {
         // check analytical moment corresponds to the moment on the ball
         // in the Y direction, index = 4
         ASSERT_EQUAL(analytical_moment, model_forces[4], 2e-4);
+
+        // check that the force from the Output is correct
+        SimTK::Vec6 output_force = 
+                spring.getOutputValue<SimTK::Vec6>(osim_state, "bushing_force");
+        ASSERT_EQUAL(analytical_moment, -output_force[1], 2e-4);
     }
 
     manager.getStateStorage().print(
@@ -1194,10 +1118,9 @@ void testExpressionBasedBushingForceRotational() {
     ASSERT(*copyOfSpring == spring);
 }
 
-// Test our wrapping of elastic foundation in OpenSim
-// Simple simulation of bouncing ball with dissipation should generate contact
-// forces that settle to ball weight.
-void testElasticFoundation() {
+// Test our wrapping of elastic foundation in OpenSim. Simple simulation of bouncing
+// ball with dissipation should generate contact forces that settle to ball weight.
+TEST_CASE("testElasticFoundation") {
     using namespace SimTK;
 
     double start_h = 0.5;
@@ -1278,7 +1201,7 @@ void testElasticFoundation() {
 // Test our wrapping of Hunt-Crossley force in OpenSim
 // Simple simulation of bouncing ball with dissipation should generate contact
 // forces that settle to ball weight.
-void testHuntCrossleyForce() {
+TEST_CASE("testHuntCrossleyForce") {
     using namespace SimTK;
 
     double start_h = 0.5;
@@ -1356,9 +1279,8 @@ void testHuntCrossleyForce() {
 
 // Test our wrapping of SimTK::SmoothSphereHalfSpaceForce.
 // Simple simulation of bouncing ball with dissipation should generate contact
-// forces that settle to ball weight.
-void testSmoothSphereHalfSpaceForce()
-{
+// forces that settle to ball weight
+TEST_CASE("testSmoothSphereHalfSpaceForce") {
     using namespace SimTK;
 
     double start_h = 0.5;
@@ -1432,7 +1354,7 @@ void testSmoothSphereHalfSpaceForce()
     ASSERT(isEqual);
 }
 
-void testCoordinateLimitForce() {
+TEST_CASE("testCoordinateLimitForce") {
     using namespace SimTK;
 
     double mass = 1;
@@ -1580,7 +1502,7 @@ void testCoordinateLimitForce() {
     reporter->getForceStorage().print("limit_forces.mot");
 }
 
-void testCoordinateLimitForceRotational() {
+TEST_CASE("testCoordinateLimitForceRotational") {
     using namespace SimTK;
 
     double mass = 1;
@@ -1705,7 +1627,7 @@ void testCoordinateLimitForceRotational() {
     reporter->getForceStorage().print("rotational_limit_forces.mot");
 }
 
-void testExternalForce() {
+TEST_CASE("testExternalForce") {
     using namespace SimTK;
 
     // define a new model properties
@@ -1924,7 +1846,7 @@ void testExternalForce() {
     }
 }
 
-void testSerializeDeserialize() {
+TEST_CASE("testSerializeDeserialize") {
     std::cout << "Test serialize & deserialize." << std::endl;
 
     std::string origModelFile{"PushUpToesOnGroundWithMuscles.osim"};
@@ -1974,40 +1896,7 @@ void testSerializeDeserialize() {
     std::remove(newModelFile.c_str());
 }
 
-void testTranslationalDampingEffect(Model& osimModel, Coordinate& sliderCoord,
-        double start_h, Component& componentWithDamping) {
-    using namespace SimTK;
-    ASSERT(componentWithDamping.hasProperty("translational_damping"));
 
-    AbstractProperty& aProp =
-            componentWithDamping.updPropertyByName("translational_damping");
-    Property<SimTK::Vec3>& aPropVec3 =
-            dynamic_cast<Property<SimTK::Vec3>&>(aProp);
-    aPropVec3.setValue(Vec3(100.));
-    SimTK::State& osim_state2 = osimModel.initSystem();
-
-    // set the initial height of the ball on slider
-    sliderCoord.setValue(osim_state2, start_h);
-    osimModel.getMultibodySystem().realize(osim_state2, Stage::Position);
-
-    //==========================================================================
-    // Compute the Energy to make sure it goes down due to damping
-    Manager manager2(osimModel);
-    manager2.setIntegratorAccuracy(1e-6);
-    osim_state2.setTime(0.0);
-    manager2.initialize(osim_state2);
-
-    double lastEnergy = 1E20; // Large
-    for (int i = 1; i <= 10; ++i) {
-        osim_state2 = manager2.integrate(0.2 * i);
-        osimModel.getMultibodySystem().realize(
-                osim_state2, Stage::Acceleration);
-        double newEnergy = osimModel.calcKineticEnergy(osim_state2) +
-                           osimModel.calcPotentialEnergy(osim_state2);
-        ASSERT(newEnergy < lastEnergy);
-        lastEnergy = newEnergy;
-    }
-}
 
 /*
 =============
@@ -2050,7 +1939,7 @@ speeds.
 /|              |______|
 /|
 */
-void testBlankevoort1991Ligament() {
+TEST_CASE("testBlankevoort1991Ligament") {
     using namespace SimTK;
 
     //=========================================================================
@@ -2429,7 +2318,9 @@ T2.3: cylinder twists (rotation around vertical axis)
 
 
 */
-void testSmith2018ArticularContactForce() {
+
+TEST_CASE("testSmith2018ArticularContactForce") {
+    using namespace SimTK;
     Model model = Model();
     
     double gravity_acc = 9.8067;
