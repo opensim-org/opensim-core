@@ -307,6 +307,7 @@ DelimFileAdapter<T>::clone() const {
 template<typename T>
 typename DelimFileAdapter<T>::OutputTables
 DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
+#ifndef SWIG
     OPENSIM_THROW_IF(fileName.empty(),
                      EmptyFileName);
 
@@ -468,6 +469,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     output_tables.emplace(tableString(), table);
 
     return output_tables;
+#endif
 }
 
 template<typename T>
