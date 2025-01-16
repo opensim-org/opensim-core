@@ -193,7 +193,9 @@ void SpatialTransform::scale(const SimTK::Vec3 scaleFactors)
             }
             SimTK::Vec3 axis;
             transform.getAxis(axis);
-            double scaleFactor = ~axis * scaleFactors;
+            // we want weighted aggregate of scale factors but to ignore the sign
+            // ignoring sign due to issue #3991 resulting -ve scale factor
+            double scaleFactor = ~axis.abs() * scaleFactors;
             // If the function is already a MultiplierFunction, just update its scale factor.
             // Otherwise, make a MultiplierFunction from it and make the transform axis use
             // the new MultiplierFunction.
