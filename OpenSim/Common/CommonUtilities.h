@@ -143,8 +143,10 @@ SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
  *         - A boolean indicating whether the elements are uniformly spaced
  * (true) or not (false).
  *         - The calculated step size if the elements are uniform, or the
- * minimum step size found if they are not uniform. If the elements are uniform,
- * this value will be the mean step size.
+ * minimum positive step size found if they are not uniform. If the elements are
+ * uniform, this value will be the mean step size. If the input is a one element
+ * vector, the step size will be NaN since a valid step size cannot be
+ * calculated with only 1 element.
  *
  * @note The function uses a tolerance based on the maximum absolute value of
  * the first and last elements in the vector, scaled by machine epsilon. If the
@@ -190,7 +192,12 @@ std::pair<bool, T> isUniform(const std::vector<T>& x) {
     if (tf) {
         step = mean_step;
     } else {
-        step = *std::min_element(results.begin() + 1, results.end());
+         // Use std::remove_if to filter out non-positive numbers from the adjacent difference
+        auto end = std::remove_if(results.begin(), results.end(), [](T n) { return n <= 0; });
+        // Now find the minimum element among the positive numbers
+        if (end != results.begin()) { // Check if there are any positive numbers
+            step = *std::min_element(results.begin(), end);
+        } 
     }
 
     return {tf, step};
