@@ -144,6 +144,7 @@ void TableUtilities::filterLowpass(
 
     // Resample if the sampling interval is not uniform.
     if (!uniformlySampled) {
+        log_warn("Table not uniformly sampled! Resampling with interval: {}", dtMin);
         table = resampleWithInterval(table, dtMin);
     }
 
