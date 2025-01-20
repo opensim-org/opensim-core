@@ -41,7 +41,7 @@ template <class T> class Property;
 //==============================================================================
 /// Property Exceptions
 //==============================================================================
-class InvalidPropertyValue : public Exception {
+class OSIMCOMMON_API InvalidPropertyValue : public Exception {
 public:
     InvalidPropertyValue(
         const std::string& file,
