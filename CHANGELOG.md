@@ -53,6 +53,7 @@ v4.6
   in the intersection of names in the model and names in the provided referece/data. Remove methods that are index based from public interface.(#3951) 
 - Replace usages of `OpenSim::make_unique` with `std::make_unique` and remove wrapper function now that C++14 is used in OpenSim (#3979). 
 - Add utility method `createVectorLinspaceInterval` for the `std::vector` type and add unit tests. Utilize the new utility method to fix a bug (#3976) in creating the uniformly sampled time interval from the experimental data sampling frequency in `APDMDataReader` and `XsensDataReader` (#3977).
+- The message associated with `OpenSim::PropertyException` now includes the full absolute path to the component that threw the exception (#3987).
 
 
 v4.5.1
