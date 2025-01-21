@@ -368,7 +368,7 @@ void PointKinematics::setRelativeToBody(const PhysicalFrame* aBody)
     // CHECK
     if (aBody==NULL) {
         log_warn("PointKinematics.setRelativeToBody: null body pointer.");
-        _body = NULL;
+        _relativeToBody = NULL;
         return;
     }
 
@@ -376,7 +376,7 @@ void PointKinematics::setRelativeToBody(const PhysicalFrame* aBody)
     _relativeToBody = aBody;
     _relativeToBodyName = aBody->getName();
     log_info("PointKinematics.setRelativeToBody: set relative-to body to {}.",
-            _bodyName);
+            _relativeToBodyName);
 }
 
 //_____________________________________________________________________________
