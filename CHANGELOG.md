@@ -55,6 +55,7 @@ v4.6
 - Add utility method `createVectorLinspaceInterval` for the `std::vector` type and add unit tests. Utilize the new utility method to fix a bug (#3976) in creating the uniformly sampled time interval from the experimental data sampling frequency in `APDMDataReader` and `XsensDataReader` (#3977).
 - Fix Point Kinematics Reporter variable and initialization error and add unit tests (#3966)
 - `OpenSim::ContactHalfSpace`, `OpenSim::ContactMesh`, and `OpenSim::ContactSphere` now check their associated `Appearance`'s `is_visible` flag when deciding whether to emit their associated decorations (#3993).
+- The message associated with `OpenSim::PropertyException` now includes the full absolute path to the component that threw the exception (#3987).
 
 v4.5.1
 ======
