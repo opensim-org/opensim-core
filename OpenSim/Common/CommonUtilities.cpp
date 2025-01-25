@@ -72,8 +72,9 @@ std::string OpenSim::getFormattedDateTime(
 SimTK::Vector OpenSim::createVectorLinspace(
         int length, double start, double end) {
     SimTK::Vector v(length);
+    const double step_size = (end - start) / static_cast<double>((length - 1));
     for (int i = 0; i < length; ++i) {
-        v[i] = start + i * (end - start) / (length - 1);
+        v[i] = std::fma(i, step_size, start);
     }
     return v;
 }
