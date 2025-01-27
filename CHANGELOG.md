@@ -57,7 +57,14 @@ v4.6
 - `OpenSim::ContactHalfSpace`, `OpenSim::ContactMesh`, and `OpenSim::ContactSphere` now check their associated `Appearance`'s `is_visible` flag when deciding whether to emit their associated decorations (#3993).
 - The message associated with `OpenSim::PropertyException` now includes the full absolute path to the component that threw the exception (#3987).
 - Add an improved uniform sampling check for `std::vector` containers to `CommonUtilities` and use the implemented method in the `TableUtilities::filterLowpass` method (#3968, #3978).
-
+- Several bugs in `OpenSim::ExpressionBasedBushingForce::generateDecorations` were fixed:
+  - It will now check for `0.0` values for `visual_aspect_ratio`, `moment_visual_scale`,
+    and `force_visual_scale` when emitting decorations, skipping emission where `0.0` is
+    found (previously: it would emit objects scaled by 0.0, causing downstream issues).
+  - It will only emit decorations when called with `fixed` set to `false` (previously, frame
+    decorations were emitted for both `true` and `false`, resulting in double-emission).
+  - It will now check for NaNed vectors coming from the underlying expression, skipping emission
+    if one is detected (previously: it would emit decorations with `NaN`ed transforms).
 
 v4.5.1
 ======
