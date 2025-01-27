@@ -508,7 +508,7 @@ stod(const std::string& __str, std::size_t* __idx)
     iss >> result;
     if (iss.fail()) {
         result = std::numeric_limits<double>::quiet_NaN();
-        log_warn("Encountered non-numeric string value: {} ; parsed value:{}",__str, result);
+        log_debug("Encountered non-numeric string value: {} ; parsed value:{}",__str, result);
     }
     return result;
 }
