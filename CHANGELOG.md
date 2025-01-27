@@ -57,6 +57,7 @@ v4.6
 - `OpenSim::ContactHalfSpace`, `OpenSim::ContactMesh`, and `OpenSim::ContactSphere` now check their associated `Appearance`'s `is_visible` flag when deciding whether to emit their associated decorations (#3993).
 - The message associated with `OpenSim::PropertyException` now includes the full absolute path to the component that threw the exception (#3987).
 - Add an improved uniform sampling check for `std::vector` containers to `CommonUtilities` and use the implemented method in the `TableUtilities::filterLowpass` method (#3968, #3978).
+- Fix the default min_control value for the Thelen2003Muscle. Replace all instances of `<min_control> 0.00000000 </min_control>` with `<min_control> 0.01000000 </min_control>` in the default block (#3986).
 
 
 v4.5.1
