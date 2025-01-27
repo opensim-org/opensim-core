@@ -901,28 +901,6 @@ TEST_CASE("DoublePendulum tests, Posa2016 method - MocoCasADiSolver",
     }
 }
 
-TEST_CASE("DoublePendulum tests, Posa2016 method - MocoTropterSolver", 
-        "[tropter]") {
-    bool enforce_constraint_derivatives = GENERATE(true, false);
-    std::string section = fmt::format(
-            "enforce derivatives: {}", enforce_constraint_derivatives);
-
-    DYNAMIC_SECTION(section) {
-        SECTION("CoordinateCouplerConstraint") {
-            testDoublePendulumCoordinateCoupler<MocoTropterSolver>(
-                    enforce_constraint_derivatives, "explicit", "Posa2016");
-        }
-        SECTION("PrescribedMotion") {
-            testDoublePendulumPrescribedMotion<MocoTropterSolver>(
-                    enforce_constraint_derivatives, "explicit", "Posa2016");
-        }
-        SECTION("PointOnLine") {
-            testDoublePendulumPointOnLine<MocoTropterSolver>(
-                    enforce_constraint_derivatives, "explicit", "Posa2016");
-        }
-    }
-}
-
 TEST_CASE("DoublePendulum tests, Bordalba2023 method", "[casadi]") {
     std::string scheme = GENERATE(as<std::string>{},
             "trapezoidal", "hermite-simpson", "legendre-gauss-3", 
@@ -1028,7 +1006,7 @@ protected:
 /// specified final configuration while subject to a constraint that its
 /// actuators must produce an equal control trajectory.
 TEMPLATE_TEST_CASE("DoublePendulumEqualControl", "",
-        MocoCasADiSolver, MocoTropterSolver) {
+        MocoCasADiSolver) {
     OpenSim::Object::registerType(EqualControlConstraint());
     MocoStudy study;
     study.setName("double_pendulum_equal_control");
@@ -1092,7 +1070,7 @@ TEMPLATE_TEST_CASE("DoublePendulumEqualControl", "",
 /// Test that a problem that fails with path constraints does not return a zero
 /// time vector.
 TEMPLATE_TEST_CASE("FailWithPathConstraints", "",
-        MocoCasADiSolver, MocoTropterSolver) {
+        MocoCasADiSolver) {
     OpenSim::Object::registerType(EqualControlConstraint());
     MocoStudy study;
     study.setName("path_constraint_fail");
@@ -1112,35 +1090,6 @@ TEMPLATE_TEST_CASE("FailWithPathConstraints", "",
     ms.set_num_mesh_intervals(5);
     ms.set_verbosity(2);
     MocoSolution solution = study.solve().unseal();
-}
-
-// This problem is a point mass welded to ground, with gravity. We are
-// solving for the mass that allows the point mass to obey the constraint
-// of staying in place. This checks that the parameters are applied to both
-// ModelBase and ModelDisabledConstraints.
-TEMPLATE_TEST_CASE("Parameters are set properly", "[tropter]",
-        MocoTropterSolver /*, too damn slow: MocoCasADiSolver*/) {
-    Model model;
-    auto* body = new Body("b", 0.7, SimTK::Vec3(0), SimTK::Inertia(1));
-    model.addBody(body);
-
-    auto* joint = new PlanarJoint("j", model.getGround(), *body);
-    model.addJoint(joint);
-
-    auto* constraint = new PointConstraint(model.getGround(), SimTK::Vec3(0),
-                                           *body, SimTK::Vec3(0));
-    model.addConstraint(constraint);
-    model.finalizeConnections();
-
-    MocoStudy study;
-    auto& problem = study.updProblem();
-    problem.setModelAsCopy(model);
-    problem.setTimeBounds(0, 1);
-    problem.addParameter("mass", "/bodyset/b", "mass", MocoBounds(0.5, 1.5));
-    auto& solver = study.initSolver<TestType>();
-    solver.set_num_mesh_intervals(10);
-    MocoSolution solution = study.solve();
-    CHECK(solution.getParameter("mass") == Approx(1.0).epsilon(1e-3));
 }
 
 class MocoJointReactionComponentGoal : public MocoGoal {
@@ -1229,7 +1178,7 @@ void testDoublePendulumJointReactionGoal(std::string dynamics_mode) {
 }
 
 TEMPLATE_TEST_CASE("Joint reactions w/ constraint derivatives",
-        "[explicit]", MocoCasADiSolver, MocoTropterSolver) {
+        "[explicit]", MocoCasADiSolver) {
     testDoublePendulumJointReactionGoal<TestType>("explicit");
 }
 
@@ -1584,7 +1533,7 @@ TEST_CASE("Prescribed kinematics with kinematic constraints", "[casadi]") {
 }
 
 TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
-        MocoCasADiSolver, MocoTropterSolver) {
+        MocoCasADiSolver) {
     SECTION("Lower bound only") {
         MocoStudy study;
         auto& problem = study.updProblem();
@@ -1718,7 +1667,7 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
 }
 
 TEMPLATE_TEST_CASE("MocoOutputBoundConstraint", "",
-        MocoCasADiSolver, MocoTropterSolver) {
+        MocoCasADiSolver) {
     SECTION("Two outputs with equality bound") {
         MocoSolution solutionControl;
         MocoStudy study;
@@ -1862,7 +1811,7 @@ TEMPLATE_TEST_CASE("MocoOutputBoundConstraint", "",
 }
 
 TEMPLATE_TEST_CASE("MocoStateBoundConstraint", "",
-        MocoCasADiSolver, MocoTropterSolver) {
+        MocoCasADiSolver) {
     SECTION("Upper bounded speed") {
         MocoSolution solutionControl;
         MocoStudy study;
@@ -2017,7 +1966,7 @@ TEMPLATE_TEST_CASE("MocoStateBoundConstraint", "",
 }
 
 TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "",
-        MocoCasADiSolver, MocoTropterSolver) {
+        MocoCasADiSolver) {
     using SimTK::Pi;
 
     // Create a 3D pendulum model with a single body and a marker at the
@@ -2088,8 +2037,7 @@ TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "",
     }
 }
 
-TEMPLATE_TEST_CASE("Multiple MocoPathConstraints", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Multiple MocoPathConstraints", "", MocoCasADiSolver) {
     MocoStudy study;
     auto& problem = study.updProblem();
     problem.setModelAsCopy(ModelFactory::createDoublePendulum());

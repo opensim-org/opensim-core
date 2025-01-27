@@ -83,7 +83,7 @@ std::unique_ptr<Model> createDoubleSlidingMassModel() {
 
 /// Test the result of a sliding mass minimum effort problem.
 TEMPLATE_TEST_CASE("Test MocoControlGoal", "",
-        MocoCasADiSolver, MocoTropterSolver) {
+        MocoCasADiSolver) {
     const int N = 9;          // mesh intervals
     const int Nc = 2 * N + 1; // collocation points (Hermite-Simpson)
     MocoSolution sol1;
@@ -284,8 +284,7 @@ void testDoublePendulumTracking(MocoStudy study,
             solutionTracking.getStatesTrajectory(), 1e-1);
 }
 
-TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver) {
 
     // Start with double pendulum problem to minimize control effort to create
     // a trajectory to track.
@@ -551,92 +550,6 @@ TEST_CASE("Test MocoScaleFactor - MocoCasADiSolver", "[casadi]") {
     MocoStudy study = pair.first;
     study.updSolver<MocoCasADiSolver>().set_parameters_require_initsystem(false);
     evalTestMocoScaleFactor(study, pair.second);
-}
-
-TEST_CASE("Test MocoScaleFactor - MocoTropterSolver", "[tropter]") {
-    auto pair = configTestMocoScaleFactor<MocoTropterSolver>(true);
-    evalTestMocoScaleFactor(pair.first, pair.second);
-}
-
-TEMPLATE_TEST_CASE("Test MocoJointReactionGoal", "",
-        MocoCasADiSolver, MocoTropterSolver) {
-
-    using SimTK::Inertia;
-    using SimTK::Vec3;
-
-    // Create a model of a point mass welded to the ground.
-    Model model;
-    model.setName("welded_point_mass");
-    model.setGravity(Vec3(10, 0, 0));
-
-    auto* body = new Body("body", 1, Vec3(0), Inertia(0));
-    model.addBody(body);
-    auto* weldJoint = new WeldJoint("weld", model.getGround(), *body);
-    model.addJoint(weldJoint);
-    auto* actuator = new PointActuator("body");
-    actuator->setName("actu");
-    actuator->set_point(Vec3(0));
-    actuator->set_direction(Vec3(1, 0, 0));
-    model.addComponent(actuator);
-    model.finalizeConnections();
-
-    auto createStudy = [model]() {
-        MocoStudy study;
-        study.setName("counteract_gravity");
-        MocoProblem& problem = study.updProblem();
-        problem.setModelAsCopy(model);
-        problem.setTimeBounds(0, 1);
-        problem.setControlInfo("/actu", {-20, 20});
-        return study;
-    };
-
-    // Solve using joint reaction goal.
-    {
-        auto study = createStudy();
-        auto& problem = study.updProblem();
-        auto *reaction = problem.template addGoal<MocoJointReactionGoal>();
-        reaction->setJointPath("/jointset/weld");
-        reaction->setReactionMeasures({"force-x"});
-        reaction->setExpressedInFramePath("/ground");
-
-        auto &solver = study.template initSolver<TestType>();
-        int N = 5;
-        solver.set_num_mesh_intervals(N);
-        solver.set_optim_convergence_tolerance(1e-6);
-
-        MocoSolution solution = study.solve().unseal();
-        //solution.write("testMocoGoals_testMocoJointReactionGoal.sto");
-
-        // Check that the actuator "actu" is equal to gravity (i.e. supporting all
-        // of the weight).
-        CHECK(solution.getControl("/actu")[0] == Approx(-10).epsilon(1e-4));
-        // Check that the reaction force is zero.
-        CHECK(solution.getObjective() == Approx(0.0).margin(1e-6));
-    }
-
-    // Solve using Output goal.
-    {
-        auto study = createStudy();
-        auto& problem = study.updProblem();
-        auto *reaction = problem.template addGoal<MocoOutputGoal>();
-        reaction->setOutputPath("/jointset/weld|reaction_on_parent");
-        reaction->setOutputIndex(3);
-        reaction->setExponent(2);
-
-        auto &solver = study.template initSolver<TestType>();
-        int N = 5;
-        solver.set_num_mesh_intervals(N);
-        solver.set_optim_convergence_tolerance(1e-6);
-
-        MocoSolution solution = study.solve().unseal();
-        //solution.write("testMocoGoals_testMocoOutputGoal_joint_reactions.sto");
-
-        // Check that the actuator "actu" is equal to gravity (i.e. supporting all
-        // of the weight).
-        CHECK(solution.getControl("/actu")[0] == Approx(-10).epsilon(1e-4));
-        // Check that the reaction force is zero.
-        CHECK(solution.getObjective() == Approx(0.0).margin(1e-6));
-    }
 }
 
 TEST_CASE("Test MocoSumSquaredStateGoal") {
@@ -925,8 +838,7 @@ auto createStudy = [](
     return study;
 };
 
-TEMPLATE_TEST_CASE("MocoOutputGoal", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("MocoOutputGoal", "", MocoCasADiSolver) {
 
     MocoSolution solutionControl;
     SECTION("MocoOutputGoal") {
@@ -1006,8 +918,7 @@ TEMPLATE_TEST_CASE("MocoOutputGoal", "", MocoCasADiSolver,
     }
 }
 
-TEMPLATE_TEST_CASE("MocoOutputConstraint with two outputs", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("MocoOutputConstraint with two outputs", "", MocoCasADiSolver) {
     double bound = 2.0;
     MocoSolution solutionControl;
     MocoStudy study;
@@ -1054,8 +965,7 @@ TEMPLATE_TEST_CASE("MocoOutputConstraint with two outputs", "", MocoCasADiSolver
     }
 }
 
-TEMPLATE_TEST_CASE("MocoOutputGoal with two outputs", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("MocoOutputGoal with two outputs", "", MocoCasADiSolver) {
     MocoSolution solutionControl;
 
     SECTION("Subtraction of Vec3 (norm)") {
@@ -1284,8 +1194,7 @@ TEST_CASE("MocoOutputPeriodicityGoal", "[casadi]") {
     CHECK(initialSpeed == Approx(finalSpeed).margin(1e-6));
 }
 
-TEMPLATE_TEST_CASE("MocoOutputTrackingGoal", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("MocoOutputTrackingGoal", "", MocoCasADiSolver) {
 
     // Have a sliding mass track a sinusoidal function.
     // ------------------------------------------------
@@ -1440,65 +1349,6 @@ TEST_CASE("MocoFrameDistanceConstraint de/serialization") {
     {
         MocoStudy study(
                 "testMocoGoals_MocoFrameDistanceConstraint_study.omoco");
-    }
-}
-
-TEST_CASE("MocoExpressionBasedParameterGoal - MocoTropterSolver") {
-    SECTION("mass goal") {
-        MocoStudy study;
-        Model model = ModelFactory::createSlidingPointMass();
-        MocoProblem& mp = study.updProblem();
-        mp.setModelAsCopy(model);
-        mp.setTimeBounds(0, 1);
-        mp.setStateInfo("/slider/position/value", {-5, 5}, 0, {0.2, 0.3});
-        mp.setStateInfo("/slider/position/speed", {-20, 20}, 0, 0);
-
-        auto* parameter = mp.addParameter("sphere_mass", "body", "mass",
-                MocoBounds(0, 10));
-        auto* mass_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
-        mass_goal->setExpression("(q-4)^2");
-        mass_goal->addParameter(*parameter, "q");
-        auto* effort_goal = mp.addGoal<MocoControlGoal>();
-        effort_goal->setWeight(0.001);
-        effort_goal->setName("effort");
-
-        auto& ms = study.initTropterSolver();
-        ms.set_num_mesh_intervals(25);
-        MocoSolution sol = study.solve();
-
-        // 3.998
-        CHECK(sol.getParameter("sphere_mass") == Catch::Approx(4).epsilon(1e-2));
-    }
-
-    SECTION("two parameter mass goal") {
-        MocoStudy study;
-        auto model = createDoubleSlidingMassModel();
-        model->initSystem();
-        MocoProblem& mp = study.updProblem();
-        mp.setModelAsCopy(*model);
-        mp.setTimeBounds(0, 1);
-        mp.setStateInfo("/slider/position/value", {-5, 5}, 0, {0.2, 0.3});
-        mp.setStateInfo("/slider/position/speed", {-20, 20});
-        mp.setStateInfo("/slider2/position/value", {-5, 5}, 1, {1.2, 1.3});
-        mp.setStateInfo("/slider2/position/speed", {-20, 20});
-
-        auto* parameter = mp.addParameter("sphere_mass", "body", "mass",
-                MocoBounds(0, 10));
-        auto* parameter2 = mp.addParameter("sphere2_mass", "body2", "mass",
-                MocoBounds(0, 10));
-        int total_weight = 7;
-        auto* mass_goal = mp.addGoal<MocoExpressionBasedParameterGoal>();
-        mass_goal->setExpression(fmt::format("(p+q-{})^2", total_weight));
-        mass_goal->addParameter(*parameter, "p");
-        mass_goal->addParameter(*parameter2, "q");
-
-        auto& ms = study.initTropterSolver();
-        ms.set_num_mesh_intervals(25);
-        MocoSolution sol = study.solve();
-
-        // 3.7 and 3.3
-        CHECK(sol.getParameter("sphere_mass") + sol.getParameter("sphere2_mass")
-                == Catch::Approx(total_weight).epsilon(1e-9));
     }
 }
 

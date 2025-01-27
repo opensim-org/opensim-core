@@ -194,11 +194,6 @@ option(OPENSIM_WITH_CASADI
         "Build CasADi support for Moco (MocoCasADiSolver)." ON)
 add_feature_info(WITH_CASADI OPENSIM_WITH_CASADI
         "Build CasADi support for Moco (OPENSIM_WITH_CASADI)")
-option(OPENSIM_WITH_TROPTER
-        "Build the tropter optimal control library, for use in MocoTropterSolver." ON)
-add_feature_info(WITH_TROPTER OPENSIM_WITH_TROPTER
-        "Build the tropter optimal control library (OPENSIM_WITH_TROPTER)")
-
 
 # Configure installation directories across platforms.
 # ----------------------------------------------------
@@ -662,13 +657,10 @@ if(NOT CMAKE_PREFIX_PATH
     message(STATUS
             "Attempting to use dependencies from ${OPENSIM_DEPENDENCIES_ABSDIR}")
     set(deps_to_find)
-    if(OPENSIM_WITH_TROPTER)
-        list(APPEND deps_to_find colpack eigen)
-    endif()
     if(OPENSIM_WITH_CASADI)
         list(APPEND deps_to_find casadi)
     endif()
-    if(OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI)
+    if(OPENSIM_WITH_CASADI)
         list(APPEND deps_to_find ipopt)
     endif()
     set(dep_install_dirs)
@@ -827,7 +819,7 @@ if(UNIX)
     find_package(PkgConfig REQUIRED)
 endif()
 
-if (OPENSIM_WITH_CASADI OR OPENSIM_WITH_TROPTER)
+if (OPENSIM_WITH_CASADI)
     if(UNIX)
         pkg_check_modules(IPOPT REQUIRED ipopt IMPORTED_TARGET)
     else()

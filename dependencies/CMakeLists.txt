@@ -220,11 +220,8 @@ AddDependency(NAME       catch2
 # --------------
 option(OPENSIM_WITH_CASADI
         "Build CasADi support for Moco (MocoCasADiSolver)." OFF)
-option(OPENSIM_WITH_TROPTER
-        "Build the tropter optimal control library, for use in MocoTropterSolver." OFF)
 
-
-if(OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI)
+if(OPENSIM_WITH_CASADI)
 AddDependency(NAME    eigen
               DEFAULT ON
               URL     https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.zip)
@@ -241,10 +238,8 @@ AddDependency(NAME colpack
 
 mark_as_advanced(SUPERBUILD_colpack)
 
-CMAKE_DEPENDENT_OPTION(SUPERBUILD_adolc "Automatically download, configure, build and install adolc" ON
-                       "OPENSIM_WITH_TROPTER" OFF)
 CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
-                       "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
+                       "OPENSIM_WITH_CASADI" OFF)
 endif()
 
 if (OPENSIM_WITH_CASADI)
@@ -254,23 +249,6 @@ if (OPENSIM_WITH_CASADI)
 endif()
 
 if (WIN32)
-
-    if(SUPERBUILD_adolc)
-        # ADOL-C: Download pre-built binaries.
-        # TODO allow building from source, so we can use a Debug version of
-        # ADOL-C.
-        set(ADOLC_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
-            "${CMAKE_BINARY_DIR}/ADOLC-prefix/src/ADOLC"
-            "${CMAKE_INSTALL_PREFIX}/adol-c")
-        ExternalProject_Add(adolc
-            URL https://sourceforge.net/projects/myosin/files/adolc/adolc_sparse_x64.zip
-            CONFIGURE_COMMAND ""
-            BUILD_COMMAND ""
-            INSTALL_COMMAND ${ADOLC_INSTALL_CMD})
-
-        mark_as_advanced(SUPERBUILD_adolc)
-    endif()
-
 
     if(SUPERBUILD_ipopt)
         # Ipopt: Download pre-built binaries built by coin-or
@@ -292,32 +270,6 @@ else()
 
     if(NOT XCODE)
         set(BUILD_FLAGS "-j4")
-    endif()
-
-    if(SUPERBUILD_adolc)
-        # TODO copy source code into dependencies dir. OR make clean.
-        # TODO rename to adol-c
-        # TODO add debug symbols if building in Debug (but ADOL-C doesn't
-        # compile with debug symbols right now).
-        # TODO for macOS, will need to make ADOL-C change where it expects to
-        # find ColPack's libraries (lib, not lib64).
-        # https://github.com/Homebrew/homebrew-science/blob/master/adol-c.rb
-        # TODO must have autoreconf, glibtoolize (brew install autoconf,
-        # automake, libtool?)
-        ExternalProject_Add(adolc
-            DEPENDS           colpack
-            GIT_REPOSITORY    https://github.com/coin-or/ADOL-C.git
-            GIT_TAG           releases/2.6.3
-            #SOURCE_DIR        "${CMAKE_SOURCE_DIR}/adol-c"
-            #BINARY_DIR        "${CMAKE_SOURCE_DIR}/adol-c"
-            INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/adol-c"
-            CONFIGURE_COMMAND autoreconf -fi <SOURCE_DIR>
-                COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
-                                               --enable-sparse
-                                               --with-colpack=${CMAKE_INSTALL_PREFIX}/colpack
-                                               --with-boost=no
-            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
-            INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()
 
     if(SUPERBUILD_ipopt)

@@ -514,12 +514,6 @@ void testSmoothSphereHalfSpaceForce_FrictionForce(
     }
 }
 
-TEMPLATE_TEST_CASE("testStationPlaneContactForce", "[tropter]", 
-        AckermannVanDenBogert2010Force, EspositoMiller2018Force
-        /* TODO MeyerFregly2016Force */) {
-    testStationPlaneContactForce<TestType>();
-}
-
 TEST_CASE("testSmoothSphereHalfSpaceForce", "[casadi]") {
     const SimTK::Real equilibriumHeight =
         testSmoothSphereHalfSpaceForce_NormalForce();
