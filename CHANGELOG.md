@@ -28,7 +28,7 @@ v4.6
   sphere torques) to be consistent with the center of pressure GRF representation.
 - Fixed an issue where a copy of an `OpenSim::Model` containing a `OpenSim::ExternalLoads` could not be
   finalized (#3926)
-- Updated all code examples to use c++14 (#3929)
+- Updated all code examples to use C++17 (after a few months of compiling as C++14 : #3929).
 - Added class `OpenSim::StateDocument` as a systematic means of serializing and deserializing a complete trajectory
   (i.e., time history) of all states in the `SimTK::State` to and from a single `.ostates` file. Prior to `StatesDocument`,
   only the trajectories of continuous states (e.g., joint angles, joint speeds, muscle forces, and the like) could be systematically
