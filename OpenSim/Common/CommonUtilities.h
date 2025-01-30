@@ -34,6 +34,7 @@
 #include <numeric>
 #include <stack>
 #include <condition_variable>
+#include <utility>
 
 #include <SimTKcommon/internal/BigMatrix.h>
 
@@ -119,6 +120,88 @@ std::vector<T> createVectorLinspaceInterval(
 OSIMCOMMON_API
 SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
 #endif
+
+/**
+ * @brief Checks if the elements of a vector are uniformly spaced.
+ *
+ * This function determines whether the elements in the provided vector are
+ * uniformly spaced within a specified tolerance. It calculates the mean step
+ * size between adjacent elements and checks if the absolute difference between
+ * each step and the mean step is within the defined tolerance. If the vector
+ * contains only two elements, it is considered uniform by default. Specifically
+ * this verifies that the spacing between consecutive elements in numeric vector
+ * x does not deviate from the mean spacing by more than 4*eps(max(abs(x))),
+ * provided that the mean spacing is greater than that tolerance.
+ *
+ * @tparam T The type of the elements in the vector. Must support arithmetic
+ * operations and the std::abs function.
+ *
+ * @param x A constant reference to a vector of elements of type T. The vector
+ * should contain at least one element.
+ *
+ * @return A pair containing:
+ * - A boolean indicating whether the elements are uniformly spaced
+ * (true) or not (false).
+ * - The calculated step size if the elements are uniform, or the
+ * minimum positive step size found if they are not uniform. If the elements are
+ * uniform, this value will be the mean step size. If the input is a one element
+ * vector, the step size will be NaN since a valid step size cannot be
+ * calculated with only 1 element.
+ *
+ * @note The function uses a tolerance based on the maximum absolute value of
+ *       the first and last elements in the vector, scaled by machine epsilon.
+ *       If the vector is empty or contains only one element,
+ *       the behavior is undefined.
+ * @note The function implementation draws inspiration from Matlab's `isuniform`.
+ *       See https://mathworks.com/help/matlab/ref/isuniform.html for more details.
+ */
+/// @ingroup commonutil
+template <typename T> 
+std::pair<bool, T> isUniform(const std::vector<T>& x) {
+
+    // Initialize step as NaN
+    T step = std::numeric_limits<T>::quiet_NaN();
+    bool tf = false;
+
+    T maxElement = std::max(std::abs(x.front()), std::abs(x.back()));
+    T tol = 4 * std::numeric_limits<T>::epsilon() * maxElement;
+    size_t numSpaces = x.size() - 1;
+    T span = x.back() - x.front();
+    const T mean_step =
+            (std::isfinite(span))
+                    ? span / numSpaces
+                    : (x.back() / numSpaces - x.front() / numSpaces);
+
+    T stepAbs = std::abs(mean_step);
+    if (stepAbs < tol) {
+        tol = (stepAbs < std::numeric_limits<T>::epsilon() * maxElement)
+                      ? std::numeric_limits<T>::epsilon() * maxElement
+                      : stepAbs;
+    }
+    std::vector<T> results(x.size());
+    std::adjacent_difference(x.begin(), x.end(), results.begin());
+    // First value from adjacent_difference is the first input so it is skipped
+    tf = std::all_of(
+            results.begin() + 1, results.end(), [&mean_step, &tol](T val) {
+                return std::abs(val - mean_step) <= tol;
+            });
+
+    if (!tf && x.size() == 2) {
+        tf = true; // Handle special case for two elements
+    }
+    if (tf) {
+        step = mean_step;
+    } else {
+         // Use std::remove_if to filter out non-positive numbers from the adjacent difference
+        auto end = std::remove_if(results.begin(), results.end(), [](T n) { return n <= 0; });
+        // Now find the minimum element among the positive numbers
+        if (end != results.begin()) { // Check if there are any positive numbers
+            step = *std::min_element(results.begin(), end);
+        } 
+    }
+
+    return {tf, step};
+}
 
 /// Linearly interpolate y(x) at new values of x. The optional 'ignoreNaNs'
 /// argument will ignore any NaN values contained in the input vectors and

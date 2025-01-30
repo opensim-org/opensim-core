@@ -45,6 +45,7 @@
 
 namespace OpenSim {
 
+class Component;
 class Object;
 
 
@@ -175,6 +176,26 @@ public:
               const std::string& func,
               const Object& obj,
               const std::string& msg);
+
+    /** The message created by this constructor will contain the class name and
+    absolute path of the provided Component. Use this when throwing from derived
+    components. Use OPENSIM_THROW<> macros at throw sites.                    */
+    Exception(
+        const std::string& file,
+        size_t line,
+        const std::string& func,
+        const Component& component);
+
+    /** The message created by this constructor will contain the class name and
+    ansolute path of the provided Component, and also accepts a message. Use this
+    when throwing from derived components. Use OPENSIM_THROW<> macros at throw
+    sites.                                                                    */
+    Exception(
+        const std::string& file,
+        size_t line,
+        const std::string& func,
+        const Component& component,
+        const std::string& msg);
 
     /** Use this when you want to throw an Exception (with OPENSIM_THROW or
     OPENSIM_THROW_IF) and also provide a message that is formatted

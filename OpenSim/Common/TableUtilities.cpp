@@ -29,6 +29,9 @@
 #include "PiecewiseLinearFunction.h"
 #include "Signal.h"
 #include "Storage.h"
+#include <algorithm>
+#include <numeric>
+#include <vector>
 
 using namespace OpenSim;
 
@@ -132,18 +135,16 @@ void TableUtilities::filterLowpass(
 
     const auto& time = table.getIndependentColumn();
 
-    double dtMin = SimTK::Infinity;
-    for (int irow = 1; irow < numRows; ++irow) {
-        double dt = time[irow] - time[irow - 1];
-        if (dt < dtMin) dtMin = dt;
-    }
+    const auto uniform = isUniform(time);
+    const auto &uniformlySampled = uniform.first;
+    const auto &dtMin = uniform.second;
+
     OPENSIM_THROW_IF(
             dtMin < SimTK::Eps, Exception, "Storage cannot be resampled.");
 
-    double dtAvg = (time.back() - time.front()) / (numRows - 1);
-
     // Resample if the sampling interval is not uniform.
-    if (dtAvg - dtMin > SimTK::Eps) {
+    if (!uniformlySampled) {
+        log_warn("Table not uniformly sampled! Resampling with interval: {}", dtMin);
         table = resampleWithInterval(table, dtMin);
     }
 
