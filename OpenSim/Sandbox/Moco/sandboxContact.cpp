@@ -104,7 +104,7 @@ Model createModel() {
 }
 
 std::unique_ptr<Model> createModel2D() {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("point_mass");
     auto* intermed = new Body("intermed", 0, Vec3(0), SimTK::Inertia(0));
     model->addComponent(intermed);
@@ -224,7 +224,7 @@ void ball2d() {
 
 std::unique_ptr<Model> createModelPendulum(double linkLength, double jointHeight,
         double dissipation, double frictionCoeff) {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("pendulum");
     auto* body = new Body("body", 50.0, Vec3(0), SimTK::Inertia(1));
     model->addComponent(body);
@@ -304,7 +304,7 @@ void pendulum() {
 std::unique_ptr<Model> createModelPendulumActivationCoordinateActuator() {
     const double jointHeight = 0.6;
     const double linkLength = 1.0;
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("pendulum");
     auto* body = new Body("body", 50.0, Vec3(0), SimTK::Inertia(1));
     model->addComponent(body);
@@ -441,7 +441,7 @@ void addResidualCoordinateActuators(Model& model) {
 }
 
 std::unique_ptr<Model> createModelSLIP() {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("SLIP");
     auto* foot = new Body("foot", 15.0, Vec3(0), SimTK::Inertia(1));
     model->addComponent(foot);
@@ -517,7 +517,7 @@ std::unique_ptr<Model> createModelSLIP() {
 }
 
 std::unique_ptr<Model>createModelSLIPActuated() {
-    auto model = make_unique<Model>();
+    auto model = std::make_unique<Model>();
     model->setName("SLIP");
     auto* foot = new Body("foot", 15.0, Vec3(0), SimTK::Inertia(1));
     model->addComponent(foot);

@@ -385,7 +385,16 @@ void ExpressionBasedBushingForce::generateDecorations
         SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const
     {
         // invoke parent class method
-        Super::generateDecorations(fixed, hints ,s, geometryArray); 
+        Super::generateDecorations(fixed, hints ,s, geometryArray);
+
+        if (fixed) {
+            return;  // the remainder of this function only emits dynamic decorations
+        }
+
+        if (get_visual_aspect_ratio() == 0.0) {
+            return;  // model has explicitly zeroed the aspect ratio: the modeller's probably trying to hide the geometry
+        }
+
         // draw frame1 as red
         SimTK::Vec3 frame1color(1.0,0.0,0.0);
         // draw frame2 as blue
@@ -418,7 +427,7 @@ void ExpressionBasedBushingForce::generateDecorations
 
         // if the model is moving and the state is adequately realized,
         // calculate and draw the bushing forces.
-        if(!fixed && (s.getSystemStage() >= Stage::Dynamics)){
+        if (s.getSystemStage() >= Stage::Dynamics) {
             SpatialVec F_GM(Vec3(0.0), Vec3(0.0));
             SpatialVec F_GF(Vec3(0.0), Vec3(0.0));
 
@@ -432,24 +441,27 @@ void ExpressionBasedBushingForce::generateDecorations
             SimTK::Vec3 p_GM_G = frame2.getTransformInGround(s).p();
             
             // Add moment on frame2 as line vector starting at bushing location
-            SimTK::Vec3 scaled_M_GM(get_moment_visual_scale()*F_GM[0]);
-            SimTK::Real m_length(scaled_M_GM.norm());
-            SimTK::Real m_radius(m_length/get_visual_aspect_ratio()/2.0);
-            SimTK::Transform   X_m2cylinder( SimTK::Rotation( SimTK::UnitVec3(scaled_M_GM), SimTK::YAxis), p_GM_G + scaled_M_GM/2.0);
-            SimTK::DecorativeCylinder frame2Moment(m_radius, m_length/2.0);
-            frame2Moment.setTransform(X_m2cylinder);
-            frame2Moment.setColor(moment2color);
-            geometryArray.push_back(frame2Moment);
+            if (get_moment_visual_scale() != 0.0 && F_GM[0].normSqr() > 0.0) {
+                SimTK::Vec3 scaled_M_GM(get_moment_visual_scale()*F_GM[0]);
+                SimTK::Real m_length(scaled_M_GM.norm());
+                SimTK::Real m_radius(m_length/get_visual_aspect_ratio()/2.0);
+                SimTK::Transform   X_m2cylinder( SimTK::Rotation( SimTK::UnitVec3(scaled_M_GM), SimTK::YAxis), p_GM_G + scaled_M_GM/2.0);
+                SimTK::DecorativeCylinder frame2Moment(m_radius, m_length/2.0);
+                frame2Moment.setTransform(X_m2cylinder);
+                frame2Moment.setColor(moment2color);
+                geometryArray.push_back(frame2Moment);
+            }
 
             // Add force on frame2 as line vector starting at bushing location
-            SimTK::Vec3 scaled_F_GM(get_force_visual_scale()*F_GM[1]);
-            SimTK::Real f_length(scaled_F_GM.norm());
-            SimTK::Real f_radius(f_length/get_visual_aspect_ratio()/2.0);
-            SimTK::Transform   X_f2cylinder( SimTK::Rotation( SimTK::UnitVec3(scaled_F_GM), SimTK::YAxis), p_GM_G + scaled_F_GM/2.0);
-            SimTK::DecorativeCylinder frame2Force(f_radius, f_length/2.0);
-            frame2Force.setTransform(X_f2cylinder);
-            frame2Force.setColor(force2color);
-            
-            geometryArray.push_back(frame2Force);
+            if (get_force_visual_scale() != 0.0 && F_GM[1].normSqr() > 0.0) {
+                SimTK::Vec3 scaled_F_GM(get_force_visual_scale()*F_GM[1]);
+                SimTK::Real f_length(scaled_F_GM.norm());
+                SimTK::Real f_radius(f_length/get_visual_aspect_ratio()/2.0);
+                SimTK::Transform   X_f2cylinder( SimTK::Rotation( SimTK::UnitVec3(scaled_F_GM), SimTK::YAxis), p_GM_G + scaled_F_GM/2.0);
+                SimTK::DecorativeCylinder frame2Force(f_radius, f_length/2.0);
+                frame2Force.setTransform(X_f2cylinder);
+                frame2Force.setColor(force2color);
+                geometryArray.push_back(frame2Force);
+            }
         }
     }

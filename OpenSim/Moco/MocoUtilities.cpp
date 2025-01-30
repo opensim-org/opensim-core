@@ -46,14 +46,14 @@ template <typename FunctionType>
 std::unique_ptr<Function> createFunction(
         const SimTK::Vector& x, const SimTK::Vector& y) {
     OPENSIM_THROW_IF(x.size() != y.size(), Exception, "x.size() != y.size()");
-    return OpenSim::make_unique<FunctionType>(
+    return std::make_unique<FunctionType>(
             x.size(), x.getContiguousScalarData(), y.getContiguousScalarData());
 }
 template <>
 std::unique_ptr<Function> createFunction<GCVSpline>(
         const SimTK::Vector& x, const SimTK::Vector& y) {
     OPENSIM_THROW_IF(x.size() != y.size(), Exception, "x.size() != y.size()");
-    return OpenSim::make_unique<GCVSpline>(5, x.size(),
+    return std::make_unique<GCVSpline>(5, x.size(),
             x.getContiguousScalarData(), y.getContiguousScalarData());
 }
 } // anonymous namespace

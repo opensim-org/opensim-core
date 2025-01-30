@@ -98,7 +98,7 @@ ControlDistributor::addControlDistributorAndConnectInputControllers(
                 "present in the model, but found '{}'.",
                 controlDistributor.getAbsolutePathString());
     }
-    auto controlDistributorUPtr = make_unique<ControlDistributor>();
+    auto controlDistributorUPtr = std::make_unique<ControlDistributor>();
     controlDistributorUPtr->setName("control_distributor");
 
     const auto& output = controlDistributorUPtr->getOutput("controls");

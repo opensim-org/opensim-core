@@ -86,7 +86,12 @@ void ContactSphere::generateDecorations(bool fixed, const ModelDisplayHints& hin
     // There is no fixed geometry to generate here.
     if (fixed) { return; }
 
-    if (!hints.get_show_contact_geometry())  return;
+    // Model-wide hints indicate that contact geometry shouldn't be shown.
+    if (!hints.get_show_contact_geometry()) { return; }
+
+    // The decoration has been toggled off by its `Appearance` block.
+    if (!get_Appearance().get_visible())  { return; }
+
     // B: base Frame (Body or Ground)
     // F: PhysicalFrame that this ContactGeometry is connected to
     // P: the frame defined (relative to F) by the location and orientation

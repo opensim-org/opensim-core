@@ -51,8 +51,20 @@ v4.6
   The original behavior (no trimming) can be enabled via the new property `trim_to_original_time_range`. (#3969)
 - Make `InverseKinematicsSolver` methods to query for specific marker or orientation-sensor errors more robust to invalid names or names not 
   in the intersection of names in the model and names in the provided referece/data. Remove methods that are index based from public interface.(#3951) 
-
-
+- Replace usages of `OpenSim::make_unique` with `std::make_unique` and remove wrapper function now that C++14 is used in OpenSim (#3979). 
+- Add utility method `createVectorLinspaceInterval` for the `std::vector` type and add unit tests. Utilize the new utility method to fix a bug (#3976) in creating the uniformly sampled time interval from the experimental data sampling frequency in `APDMDataReader` and `XsensDataReader` (#3977).
+- Fix Point Kinematics Reporter variable and initialization error and add unit tests (#3966)
+- `OpenSim::ContactHalfSpace`, `OpenSim::ContactMesh`, and `OpenSim::ContactSphere` now check their associated `Appearance`'s `is_visible` flag when deciding whether to emit their associated decorations (#3993).
+- The message associated with `OpenSim::PropertyException` now includes the full absolute path to the component that threw the exception (#3987).
+- Add an improved uniform sampling check for `std::vector` containers to `CommonUtilities` and use the implemented method in the `TableUtilities::filterLowpass` method (#3968, #3978).
+- Several bugs in `OpenSim::ExpressionBasedBushingForce::generateDecorations` were fixed:
+  - It will now check for `0.0` values for `visual_aspect_ratio`, `moment_visual_scale`,
+    and `force_visual_scale` when emitting decorations, skipping emission where `0.0` is
+    found (previously: it would emit objects scaled by 0.0, causing downstream issues).
+  - It will only emit decorations when called with `fixed` set to `false` (previously, frame
+    decorations were emitted for both `true` and `false`, resulting in double-emission).
+  - It will now check for NaNed vectors coming from the underlying expression, skipping emission
+    if one is detected (previously: it would emit decorations with `NaN`ed transforms).
 
 v4.5.1
 ======

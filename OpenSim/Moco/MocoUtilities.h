@@ -117,7 +117,7 @@ OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& trajectory,
 OSIMMOCO_API MocoTrajectory simulateTrajectoryWithTimeStepping(
         const MocoTrajectory& trajectory, Model model,
         double integratorAccuracy = SimTK::NaN);
-
+#ifndef SWIG
 /// Convert a trajectory covering half the period of a symmetric motion into a
 /// trajectory over the full period. This is useful for simulations of half a
 /// gait cycle.
@@ -171,12 +171,23 @@ OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
                                             ".*lumbar_bending(?!/value).*",
                                             ".*lumbar_rotation.*"},
         std::vector<std::string> negateAndShiftPatterns = {
-                                                   ".*pelvis_list/value",
-                                                   ".*pelvis_tz/value",
-                                                   ".*lumbar_bending/value"},
+                                            ".*pelvis_list/value",
+                                            ".*pelvis_tz/value",
+                                            ".*lumbar_bending/value"},
         std::vector<std::pair<std::string, std::string>> symmetryPatterns =
                 {{R"(_r(\/|_|$))", "_l$1"}, {R"(_l(\/|_|$))", "_r$1"}});
-
+#else 
+// Variant that doesn't take symmetryPatterns which are unusable from scripting
+OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
+        const MocoTrajectory& halfPeriodTrajectory,
+        std::vector<std::string> addPatterns = {".*pelvis_tx/value"},
+        std::vector<std::string> negatePatterns = {".*pelvis_list(?!/value).*",
+                ".*pelvis_rotation.*", ".*pelvis_tz(?!/value).*",
+                ".*lumbar_bending(?!/value).*", ".*lumbar_rotation.*"},
+        std::vector<std::string> negateAndShiftPatterns = {
+                ".*pelvis_list/value", ".*pelvis_tz/value",
+                ".*lumbar_bending/value"});
+#endif
 /// This obtains the value of the OPENSIM_MOCO_PARALLEL environment variable.
 /// The value has the following meanings:
 /// - 0: run in series (not parallel).
