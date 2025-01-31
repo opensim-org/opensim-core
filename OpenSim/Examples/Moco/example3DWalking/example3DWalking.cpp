@@ -16,18 +16,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/// This example demonstrates how to use the MocoTrack tool to solve a 3D 
-/// walking optimization that tracks kinematics and ground reaction forces using 
-/// a foot-ground contact model. This example uses a sequential approach to 
-/// achieve the desired motion:
-///  - First, we update the model by attaching foot-ground contact elements and
-///    adding forces to the toe joints.
-///  - Second, we create an initial guess for the skeletal kinematics by solving
-///    a torque-driven problem tracking experimental coordinate data and ground
-///    reaction forces. 
-///  - Third, we solve a muscle-driven tracking problem (using the initial guess
-///    from the previous step) that again tracks the experimental data while 
-///    also enforcing periodicity constraints on the states and controls.
+/// This example demonstrates how to use the MocoTrack tool to solve 3D 
+/// walking optimization problems using a foot-ground contact model.
+///  - The first problem demonstrates how to track kinematics and ground
+///    reaction forces using a torque-driven model.
+///  - The second problem uses the solution from the first problem as an initial
+///    guess to solve a tracking optimization using a muscle-driven model.
 /// 
 /// See the README.txt next to this file for more information.
 
@@ -50,6 +44,72 @@ const std::vector<std::string> contactForcesLeft = {"/contactHeel_l",
             "/contactMedialMidfoot_l", "/contactLateralToe_l", 
             "/contactMedialToe_l"};
 
+// This helper function...
+// 1. TODO
+// 2. TODO
+Model loadAndUpdateModel() {
+
+    // Load the base model.
+    Model model("subject_walk_scaled.osim");
+    model.initSystem();
+
+    // Set minimum muscle controls to 0 (default is 0.01).
+    for (auto& muscle : model.updComponentList<Millard2012EquilibriumMuscle>()) {
+        muscle.setMinimumActivation(0.0);
+        muscle.setMinControl(0.0);
+    }
+
+    // Add stiffness and damping to the toes.
+    ExpressionBasedCoordinateForce* ebcf_toes_l = 
+        new ExpressionBasedCoordinateForce("mtp_angle_l", "-25.0*q-2.0*qdot");
+    ebcf_toes_l->setName("toe_damping_l");
+    model.addForce(ebcf_toes_l);
+    ExpressionBasedCoordinateForce* ebcf_toes_r = 
+        new ExpressionBasedCoordinateForce("mtp_angle_r", "-25.0*q-2.0*qdot");
+    ebcf_toes_r->setName("toe_damping_r");
+    model.addForce(ebcf_toes_r);
+
+    // Add CoordinateActuators to the toes.
+    CoordinateActuator* ca_toes_l = new CoordinateActuator("mtp_angle_l");
+    ca_toes_l->setName("mtp_angle_l_actuator");
+    ca_toes_l->setOptimalForce(25);
+    ca_toes_l->setMinControl(-1.0);
+    ca_toes_l->setMaxControl(1.0);
+    model.addForce(ca_toes_l);
+
+    CoordinateActuator* ca_toes_r = new CoordinateActuator("mtp_angle_r");
+    ca_toes_r->setName("mtp_angle_r_actuator");
+    ca_toes_r->setOptimalForce(25);
+    ca_toes_r->setMinControl(-1.0);
+    ca_toes_r->setMaxControl(1.0);
+    model.addForce(ca_toes_r);
+
+    // Add the contact geometry and forces to the model.
+    ContactGeometrySet contactGeometrySet(
+            "subject_walk_scaled_ContactGeometrySet.xml");
+    for (int i = 0; i < contactGeometrySet.getSize(); ++i) {
+        ContactGeometry* contactGeometry = contactGeometrySet.get(i).clone();
+        // Raise the ContactSpheres up by 2 cm so that the bottom of the spheres
+        // are better aligned with the ground.
+        if (contactGeometry->getName() != "floor") {
+            SimTK::Vec3& location = contactGeometry->upd_location();
+            location[1] += 0.02; 
+        }
+        model.addContactGeometry(contactGeometry);
+    }
+    model.finalizeConnections();
+
+    ForceSet contactForceSet("subject_walk_scaled_ContactForceSet.xml");
+    for (int i = 0; i < contactForceSet.getSize(); ++i) {
+        model.addComponent(contactForceSet.get(i).clone());
+    }
+    model.finalizeConnections();
+
+    return model;
+}
+
+
+// This helper function constructs...
 MocoStudy constructContactTrackingStudy(const std::string& studyName, 
         ModelProcessor modelProcessor,
         TableProcessor tableProcessor) {
@@ -110,9 +170,9 @@ MocoStudy constructContactTrackingStudy(const std::string& studyName,
 }
 
 
-void createInitialGuess(Model model) {
+void torqueDrivenTracking() {
 
-    ModelProcessor modelProcessor(model);
+    ModelProcessor modelProcessor(loadAndUpdateModel());
     modelProcessor.append(ModOpRemoveMuscles());
     modelProcessor.append(ModOpAddReserves(250.0, SimTK::Infinity, true, true));
 
@@ -125,7 +185,7 @@ void createInitialGuess(Model model) {
             TabOpAppendCoupledCoordinateValues() |
             TabOpAppendCoordinateValueDerivativesAsSpeeds();
 
-    MocoStudy study = constructContactTrackingStudy("create_initial_guess", 
+    MocoStudy study = constructContactTrackingStudy("torque_driven_tracking", 
             modelProcessor, tableProcessor);
 
     MocoProblem& problem = study.updProblem();
@@ -177,12 +237,9 @@ void createInitialGuess(Model model) {
 
 }
 
-void trackWalking(Model model) {
-
-    MocoTrack track;
-    track.setName("track_walking");
+void muscleDrivenTracking() {
     
-    ModelProcessor modelProcessor(model);
+    ModelProcessor modelProcessor(loadAndUpdateModel());
     modelProcessor.append(ModOpIgnoreTendonCompliance());
     modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
     modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
@@ -190,24 +247,24 @@ void trackWalking(Model model) {
     modelProcessor.append(ModOpReplacePathsWithFunctionBasedPaths(
             "subject_walk_scaled_FunctionBasedPathSet.xml"));
 
-    TimeSeriesTable coordinates("coordinates.sto");
-    coordinates.removeColumn("/jointset/patellofemoral_r/knee_angle_r_beta/value");
-    coordinates.removeColumn("/jointset/patellofemoral_l/knee_angle_l_beta/value");
-    TableProcessor tableProcessor = TableProcessor(coordinates) |
+    // TimeSeriesTable coordinates("coordinates.sto");
+    // coordinates.removeColumn("/jointset/patellofemoral_r/knee_angle_r_beta/value");
+    // coordinates.removeColumn("/jointset/patellofemoral_l/knee_angle_l_beta/value");
+    TableProcessor tableProcessor = TableProcessor("coordinates.sto") |
             TabOpUseAbsoluteStateNames() |
             TabOpAppendCoupledCoordinateValues() |
             TabOpAppendCoordinateValueDerivativesAsSpeeds();
     
-    MocoStudy study = constructContactTrackingStudy("track_walking",
+    MocoStudy study = constructContactTrackingStudy("muscle_driven_tracking",
             modelProcessor, tableProcessor);
 
     auto& problem = study.updProblem();
     problem.updGoal("state_tracking").setWeight(0.05);
     problem.updGoal("grf_tracking").setWeight(5e-3);
-    // problem.addGoal<MocoInitialActivationGoal>("initial_activation");
 
     // Constrain the states and controls to be periodic.
     auto* periodicityGoal = problem.addGoal<MocoPeriodicityGoal>("periodicity");
+    Model model = modelProcessor.process();
     model.initSystem();
     for (const auto& coord : model.getComponentList<Coordinate>()) {
 
@@ -238,19 +295,12 @@ void trackWalking(Model model) {
     // Solve!
     MocoSolution solution = study.solve().unseal();
     solution.write("example3DWalking_track_walking.sto");
-    // MocoTrajectory solution("example3DWalking_track_walking.sto");
-    // study.visualize(solution);
 
-    // Print the model.
-    // Model modelSolution = modelProcessor.process();
-    // modelSolution.initSystem();
-    // modelSolution.print("example3DWalking_track_walking_model.osim");
-
-    // // Extract the ground reaction forces.
-    // TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
-    //         modelSolution, solution, contactForcesRight, contactForcesLeft);
-    // STOFileAdapter::write(externalForcesTableFlat,
-    //         "example3DWalking_track_walking_ground_reactions.sto");
+    // Extract the ground reaction forces.
+    TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
+            model, solution, contactForcesRight, contactForcesLeft);
+    STOFileAdapter::write(externalForcesTableFlat,
+            "example3DWalking_track_walking_ground_reactions.sto");
 
     // Visualize the solution.
     // study.visualize(solution);
@@ -259,65 +309,14 @@ void trackWalking(Model model) {
 
 int main() {
 
-    // Load the base model.
-    Model model("subject_walk_scaled.osim");
-    model.initSystem();
+    // The estimated times below are based on a machine using a 4.7 GHz 
+    // processor with 24 threads.
+    
+    // This problem takes ~10 minutes to solve.
+    torqueDrivenTracking();
 
-    // Set minimum muscle controls to 0 (default is 0.01).
-    for (auto& muscle : model.updComponentList<Millard2012EquilibriumMuscle>()) {
-        muscle.setMinimumActivation(0.0);
-        muscle.setMinControl(0.0);
-    }
-
-    // Add stiffness and damping to the toes.
-    ExpressionBasedCoordinateForce* ebcf_toes_l = 
-        new ExpressionBasedCoordinateForce("mtp_angle_l", "-25.0*q-2.0*qdot");
-    ebcf_toes_l->setName("toe_damping_l");
-    model.addForce(ebcf_toes_l);
-    ExpressionBasedCoordinateForce* ebcf_toes_r = 
-        new ExpressionBasedCoordinateForce("mtp_angle_r", "-25.0*q-2.0*qdot");
-    ebcf_toes_r->setName("toe_damping_r");
-    model.addForce(ebcf_toes_r);
-
-    // Add CoordinateActuators to the toes.
-    CoordinateActuator* ca_toes_l = new CoordinateActuator("mtp_angle_l");
-    ca_toes_l->setName("mtp_angle_l_actuator");
-    ca_toes_l->setOptimalForce(50);
-    ca_toes_l->setMinControl(-1.0);
-    ca_toes_l->setMaxControl(1.0);
-    model.addForce(ca_toes_l);
-
-    CoordinateActuator* ca_toes_r = new CoordinateActuator("mtp_angle_r");
-    ca_toes_r->setName("mtp_angle_r_actuator");
-    ca_toes_r->setOptimalForce(50);
-    ca_toes_r->setMinControl(-1.0);
-    ca_toes_r->setMaxControl(1.0);
-    model.addForce(ca_toes_r);
-
-    // Add the contact geometry and forces to the model.
-    ContactGeometrySet contactGeometrySet("subject_walk_scaled_ContactGeometrySet.xml");
-    for (int i = 0; i < contactGeometrySet.getSize(); ++i) {
-        ContactGeometry* contactGeometry = contactGeometrySet.get(i).clone();
-        // Raise the ContactSpheres up by 2 cm so that the bottom of the spheres
-        // are better aligned with the ground.
-        if (contactGeometry->getName() != "floor") {
-            SimTK::Vec3& location = contactGeometry->upd_location();
-            location[1] += 0.02; 
-        }
-        model.addContactGeometry(contactGeometry);
-    }
-    model.finalizeConnections();
-
-    ForceSet contactForceSet("subject_walk_scaled_ContactForceSet.xml");
-    for (int i = 0; i < contactForceSet.getSize(); ++i) {
-        model.addComponent(contactForceSet.get(i).clone());
-    }
-    model.finalizeConnections();
-
-    createInitialGuess(model);
-
-    trackWalking(model);
-
+    // This problem takes ~70 minutes to solve.
+    muscleDrivenTracking();
 
     return EXIT_SUCCESS;
 }
