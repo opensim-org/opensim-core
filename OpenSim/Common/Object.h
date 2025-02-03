@@ -1406,19 +1406,13 @@ ObjectProperty<T>::readFromXMLElement
             Object::getDefaultInstanceOfType(objTypeTag);
 
         if (!registeredObj) {
-            std::cerr 
-                << "Encountered unrecognized Object typename " 
-                << objTypeTag << " while reading property " << this->getName()
-                << ". There is no registered Object of this type; ignoring.\n";
-            continue;                        
+            log_error("Encountered unrecognized Object typename {} while reading property {}. There is no registered Object of this type. Ignoring.", objTypeTag, this->getName());
+            continue;
         }
 
         // Check that the object type found is derived from T.
         if (!dynamic_cast<const T*>(registeredObj)) {
-            std::cerr << "Object type " << objTypeTag  
-                        << " wrong for " << objectClassName
-                        << " property " << this->getName()
-                        << "; ignoring.\n";
+            log_error("Object type {} wrong for {} property {} ignoring.", objTypeTag, objectClassName, this->getName());
             continue;                        
         }
         ++objectsFound;
@@ -1437,16 +1431,18 @@ ObjectProperty<T>::readFromXMLElement
     }
 
     if (objectsFound < this->getMinListSize()) {
-        std::cerr << "Got " << objectsFound 
-                    << " object values for Property "
-                    << this->getName() << " but the minimum is " 
-                    << this->getMinListSize() << ". Continuing anyway.\n"; 
+        log_error("Got {} object values for Property {} but the minimum is {}. Continuing anyway.",
+            objectsFound ,
+            this->getName() ,
+            this->getMinListSize()
+        );
     }
     if (objectsFound > this->getMaxListSize()) {
-        std::cerr << "Got " << objectsFound
-                    << " object values for Property "
-                    << this->getName() << " but the maximum is " 
-                    << this->getMaxListSize() << ". Ignoring the rest.\n"; 
+        log_error("Got {} object values for Property {} but the maximum is. Ignoring the rest.",
+            objectsFound,
+            this->getName(),
+            this->getMaxListSize()
+        );
     }
 }
 

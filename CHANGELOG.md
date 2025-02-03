@@ -66,6 +66,7 @@ v4.6
   - It will now check for NaNed vectors coming from the underlying expression, skipping emission
     if one is detected (previously: it would emit decorations with `NaN`ed transforms).
 - `PolynomialPathFitter` now allows fitting paths that depend on more than 6 coordinates, matching recent changes to `MultivariatePolynomialFunction` (#4001).
+- If a component cannot be found when loading a list property from XML, a warning will now be emitted to the log (previosly: it was emitted to `std::cerr`).
 
 v4.5.1
 ======
