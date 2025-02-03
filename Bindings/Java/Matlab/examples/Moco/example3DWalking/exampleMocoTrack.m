@@ -67,9 +67,9 @@ modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
 % Remove all the muscles in the model's ForceSet.
 modelProcessor.append(ModOpRemoveMuscles());
 % Add CoordinateActuators to the pelvis coordinates. 
-modelProcessor.append(osim.ModOpAddResiduals(250.0, 50.0, 1.0));
+modelProcessor.append(ModOpAddResiduals(250.0, 50.0, 1.0));
 % Add CoordinateActuators to the remaining degrees-of-freedom. 
-modelProcessor.append(osim.ModOpAddReserves(250.0, 1.0));
+modelProcessor.append(ModOpAddReserves(250.0, 1.0));
 track.setModel(modelProcessor);
 
 % Use this convenience function to set the MocoTrack markers reference
@@ -126,7 +126,7 @@ jointsToWeld.add("mtp_l");
 modelProcessor.append(ModOpReplaceJointsWithWelds(jointsToWeld));
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
 % Add CoordinateActuators to the pelvis coordinates. 
-modelProcessor.append(osim.ModOpAddResiduals(250.0, 50.0, 1.0));
+modelProcessor.append(ModOpAddResiduals(250.0, 50.0, 1.0));
 modelProcessor.append(ModOpIgnoreTendonCompliance());
 modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
 % Only valid for DeGrooteFregly2016Muscles.
@@ -228,7 +228,7 @@ jointsToWeld.add("mtp_r");
 jointsToWeld.add("mtp_l");
 modelProcessor.append(ModOpReplaceJointsWithWelds(jointsToWeld));
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
-modelProcessor.append(osim.ModOpAddResiduals(250.0, 50.0, 1.0));
+modelProcessor.append(ModOpAddResiduals(250.0, 50.0, 1.0));
 modelProcessor.append(ModOpIgnoreTendonCompliance());
 modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
 modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());

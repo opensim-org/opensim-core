@@ -96,7 +96,7 @@ def muscleDrivenStateTracking():
     modelProcessor.append(osim.ModOpReplaceJointsWithWelds(jointsToWeld))
     modelProcessor.append(osim.ModOpAddExternalLoads("grf_walk.xml"))
     # Add CoordinateActuators to the pelvis coordinates. 
-    modelProcessor.append(osim.ModOpAddResiduals(250.0, 50.0, 1.0));
+    modelProcessor.append(osim.ModOpAddResiduals(250.0, 50.0, 1.0))
     modelProcessor.append(osim.ModOpIgnoreTendonCompliance())
     modelProcessor.append(osim.ModOpReplaceMusclesWithDeGrooteFregly2016())
     # Only valid for DeGrooteFregly2016Muscles.
@@ -202,7 +202,7 @@ def muscleDrivenJointMomentTracking():
 
     # We will still track the coordinates trajectory, but with a lower weight.
     track.setStatesReference(osim.TableProcessor('coordinates.sto'))
-    track.set_states_global_tracking_weight(0.1)
+    track.set_states_global_tracking_weight(0.01)
     track.set_allow_unused_references(True)
     track.set_track_reference_position_derivatives(True)
 
