@@ -35,7 +35,7 @@ namespace OpenSim {
 //       might be slow.
 // TODO prohibit fiber length from going below 0.2.
 
-/** This muscle model was published in De Groote et al. 2016. 
+/** This muscle model was published in De Groote et al. (2016). 
 
 The parameters of the active force-length and force-velocity curves have
 been slightly modified from what was published to ensure the curves go
