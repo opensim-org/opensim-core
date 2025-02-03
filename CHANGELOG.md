@@ -70,7 +70,8 @@ v4.6
 - If an `Object` cannot be found when loading a list property from XML, a warning will now be emitted to the log (previously: it was emitted to `std::cerr`, #4009).
 - Added the property `activation_dynamics_smoothing` to `DeGrooteFregly2016Muscle`. This property uses the model's original value of 0.1 as a 
   default, but users may consider increasing this value (e.g., 10.0) so that the activation and deactivation speeds of the model better match the 
-  activation and deactivation time constants.
+- `OpenSim::Mesh` now retains a reference-counted copy of the mesh data when it's copied, which should make
+  copying + re-finalizing `OpenSim::Model`s faster (#4010).
 
 v4.5.1
 ======
