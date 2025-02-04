@@ -65,9 +65,9 @@ v4.6
     decorations were emitted for both `true` and `false`, resulting in double-emission).
   - It will now check for NaNed vectors coming from the underlying expression, skipping emission
     if one is detected (previously: it would emit decorations with `NaN`ed transforms).
-- Added the property `activation_dynamics_smoothing` to `DeGrooteFregly2016Muscle`. This
-property uses the model's original value of 0.1 as a default, but users may consider
-increasing this value (e.g., 10.0) so that the activation and deactivation speeds of the model better match the activation and deactivation time constants.
+- Added the property `activation_dynamics_smoothing` to `DeGrooteFregly2016Muscle`. This property uses the model's original 
+  value of 0.1 as a default, but users may consider increasing this value (e.g., 10.0) so that the activation and deactivation 
+  speeds of the model better match the activation and deactivation time constants.
 
 v4.5.1
 ======
