@@ -1412,7 +1412,7 @@ ObjectProperty<T>::readFromXMLElement
 
         // Check that the object type found is derived from T.
         if (!dynamic_cast<const T*>(registeredObj)) {
-            log_error("Object type {} wrong for {} property {} ignoring.", objTypeTag, objectClassName, this->getName());
+            log_error("Object type {} wrong for {} property {}. Ignoring.", objTypeTag, objectClassName, this->getName());
             continue;                        
         }
         ++objectsFound;
@@ -1438,7 +1438,7 @@ ObjectProperty<T>::readFromXMLElement
         );
     }
     if (objectsFound > this->getMaxListSize()) {
-        log_error("Got {} object values for Property {} but the maximum is. Ignoring the rest.",
+        log_error("Got {} object values for Property {} but the maximum is {}. Ignoring the rest.",
             objectsFound,
             this->getName(),
             this->getMaxListSize()
