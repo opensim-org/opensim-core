@@ -93,8 +93,7 @@ track.set_mesh_interval(0.02);
 
 % Solve! Use track.solve() to skip visualizing.
 solution = track.solveAndVisualize();
-
-solution.write('exampleMocoTrack_markertracking_solution.sto');
+solution.write("exampleMocoTrack_torque_driven_marker_tracking_solution.sto");
 
 % Generate a PDF report containing plots of the variables in the solution.
 % For details, see osimMocoTrajectoryReport.m in Moco's

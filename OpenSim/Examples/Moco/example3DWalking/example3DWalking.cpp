@@ -282,9 +282,9 @@ void muscleDrivenTracking() {
 
     // Set the guess to the solution from the torque-driven tracking problem,
     // if available.
-    if (IO::FileExists("exampleMocoTrack_torque_driven_tracking_solution.sto")) {
+    if (IO::FileExists("example3DWalking_torque_driven_tracking_solution.sto")) {
         MocoTrajectory torqueDrivenSolution(
-                "example3DWalking_torque_driven_tracking.sto");
+                "example3DWalking_torque_driven_tracking_solution.sto");
         MocoTrajectory guess = solver.createGuess();
         guess.insertStatesTrajectory(torqueDrivenSolution.exportToStatesTable());
         solver.setGuess(guess);
@@ -312,7 +312,8 @@ int main() {
     // This problem takes ~10 minutes to solve.
     torqueDrivenTracking();
 
-    // This problem takes ~70 minutes to solve.
+    // This problem takes ~70 minutes to solve, given the initial guess from the
+    // torque-driven tracking problem.
     muscleDrivenTracking();
 
     return EXIT_SUCCESS;

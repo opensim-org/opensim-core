@@ -78,6 +78,7 @@ def torqueDrivenMarkerTracking():
 
     # Solve! Use track.solve() to skip visualizing.
     solution = track.solveAndVisualize()
+    solution.write("exampleMocoTrack_torque_driven_marker_tracking_solution.sto")
 
 def muscleDrivenStateTracking():
 
