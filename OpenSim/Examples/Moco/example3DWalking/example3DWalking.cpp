@@ -75,14 +75,14 @@ Model loadAndUpdateModel() {
     // Add CoordinateActuators to the toes.
     CoordinateActuator* ca_toes_l = new CoordinateActuator("mtp_angle_l");
     ca_toes_l->setName("mtp_angle_l_actuator");
-    ca_toes_l->setOptimalForce(25);
+    ca_toes_l->setOptimalForce(50);
     ca_toes_l->setMinControl(-1.0);
     ca_toes_l->setMaxControl(1.0);
     model.addForce(ca_toes_l);
 
     CoordinateActuator* ca_toes_r = new CoordinateActuator("mtp_angle_r");
     ca_toes_r->setName("mtp_angle_r_actuator");
-    ca_toes_r->setOptimalForce(25);
+    ca_toes_r->setOptimalForce(50);
     ca_toes_r->setMinControl(-1.0);
     ca_toes_r->setMaxControl(1.0);
     model.addForce(ca_toes_r);
@@ -140,10 +140,10 @@ MocoStudy constructContactTrackingStudy(const std::string& studyName,
     statesWeightSet.cloneAndAppend(
             {"/jointset/ground_pelvis/pelvis_ty/speed", 0.1});
     // Let the toe coordinates be driven by the passive forces in the model.
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/value", 0.0});
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/speed", 0.0});
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/value", 0.0});
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/speed", 0.0});
+    statesWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/value", 1e-3});
+    statesWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/speed", 1e-3});
+    statesWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/value", 1e-3});
+    statesWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/speed", 1e-3});
     track.set_states_weight_set(statesWeightSet);
 
     // Get the underlying MocoStudy.
@@ -182,7 +182,7 @@ void torqueDrivenTracking() {
     // Construct a torque-driven model.
     ModelProcessor modelProcessor(loadAndUpdateModel());
     modelProcessor.append(ModOpRemoveMuscles());
-    modelProcessor.append(ModOpAddReserves(250.0, SimTK::Infinity, true, true));
+    modelProcessor.append(ModOpAddReserves(250.0, 1.0, true, true));
 
     // Construct the base tracking study.
     TableProcessor tableProcessor("coordinates.sto");
@@ -313,7 +313,7 @@ int main() {
     torqueDrivenTracking();
 
     // This problem takes ~70 minutes to solve.
-    // muscleDrivenTracking();
+    muscleDrivenTracking();
 
     return EXIT_SUCCESS;
 }
