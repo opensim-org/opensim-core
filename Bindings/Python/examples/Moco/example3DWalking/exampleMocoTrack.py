@@ -173,7 +173,7 @@ def muscleDrivenStateTracking():
     
     # Solve!
     solution = study.solve()
-    solution.write('exampleMocoTrack_state_tracking_solution.sto')
+    solution.write('exampleMocoTrack_muscle_driven_tracking_solution.sto')
 
     # Visualize the solution.
     study.visualize(solution)
@@ -282,6 +282,10 @@ def muscleDrivenJointMomentTracking():
     solver.set_optim_convergence_tolerance(1e-3)
     solver.set_optim_constraint_tolerance(1e-4)
     solver.resetProblem(problem)
+
+    # Set the guess, if available.
+    if os.path.exists('exampleMocoTrack_muscle_driven_tracking_solution.sto'):
+        solver.setGuessFile('exampleMocoTrack_muscle_driven_tracking_solution.sto')
     
     # Solve!
     solution = study.solve()

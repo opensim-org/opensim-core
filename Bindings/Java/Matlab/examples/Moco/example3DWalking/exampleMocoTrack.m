@@ -206,7 +206,7 @@ solver.resetProblem(problem);
 
 % Solve!
 solution = study.solve();
-solution.write("exampleMocoTrack_state_tracking_solution.sto");
+solution.write("exampleMocoTrack_muscle_driven_tracking_solution.sto");
 
 % Visualize the solution.
 study.visualize(solution);
@@ -324,8 +324,8 @@ solver.set_optim_constraint_tolerance(1e-4);
 solver.resetProblem(problem);
 
 % Set the guess, if available.
-if (exist("exampleMocoTrack_state_tracking_solution.sto", "file"))
-    study.setGuessFile("exampleMocoTrack_state_tracking_solution.sto");
+if (exist("exampleMocoTrack_muscle_driven_tracking_solution.sto", "file"))
+    study.setGuessFile("exampleMocoTrack_muscle_driven_tracking_solution.sto");
 end
 
 % Solve!

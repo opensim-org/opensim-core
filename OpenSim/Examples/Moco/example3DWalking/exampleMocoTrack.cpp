@@ -80,8 +80,9 @@ void torqueDrivenMarkerTracking() {
     track.set_final_time(1.61);
     track.set_mesh_interval(0.02);
 
-    // Solve! Use track.solve() to skip visualizing.
+    // Solve!
     MocoSolution solution = track.solveAndVisualize();
+    solution.write("exampleMocoTrack_torque_driven_marker_tracking_solution.sto");
 }
 
 void muscleDrivenStateTracking() {
@@ -177,7 +178,7 @@ void muscleDrivenStateTracking() {
 
     // Solve!
     MocoSolution solution = study.solve();
-    solution.write("exampleMocoTrack_state_tracking_solution.sto");
+    solution.write("exampleMocoTrack_muscle_driven_state_tracking_solution.sto");
 
     // Visualize the solution.
     study.visualize(solution);
@@ -292,8 +293,9 @@ void muscleDrivenJointMomentTracking() {
     solver.resetProblem(problem);
 
     // Set the guess, if available.
-    if (IO::FileExists("exampleMocoTrack_state_tracking_solution.sto")) {
-        solver.setGuessFile("exampleMocoTrack_state_tracking_solution.sto");
+    if (IO::FileExists("exampleMocoTrack_muscle_driven_tracking_solution.sto")) {
+        solver.setGuessFile(
+                "exampleMocoTrack_muscle_driven_tracking_solution.sto");
     }
 
     // Solve!
@@ -307,6 +309,8 @@ void muscleDrivenJointMomentTracking() {
     TimeSeriesTable jointMoments = study.calcGeneralizedForces(solution, 
             {".*externalloads.*"});
     STOFileAdapter::write(jointMoments, "exampleMocoTrack_joint_moments.sto");
+
+    model.print("exampleMocoTrack_joint_moment_tracking_model_cpp.osim");
 
     // Visualize the solution.
     study.visualize(solution);
