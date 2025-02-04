@@ -71,7 +71,6 @@ v4.6
   default, but users may consider increasing this value (e.g., 10.0) so that the activation and deactivation speeds of the model better match the 
   activation and deactivation time constants.
 
->>>>>>> 0fe06d6b198a11b9fbf321618d352fc9fb8a1c28
 
 v4.5.1
 ======
