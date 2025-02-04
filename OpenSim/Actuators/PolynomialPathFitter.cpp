@@ -842,10 +842,6 @@ void PolynomialPathFitter::filterSampledData(const Model& model,
                 momentArms.removeColumn(label);
             } else {
                 momentArmMap[path].push_back(coordinate);
-                OPENSIM_THROW_IF_FRMOBJ(momentArmMap[path].size() > 6,
-                        Exception,
-                        "The path '{}' depends on more than 6 coordinates. "
-                        "This is not supported.", path)
             }
         }
     }
