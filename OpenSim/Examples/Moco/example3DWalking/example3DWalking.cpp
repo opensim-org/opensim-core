@@ -244,10 +244,12 @@ void muscleDrivenTracking() {
     
     // Construct a muscle-driven model.
     ModelProcessor modelProcessor(loadAndUpdateModel());
+    // modelProcessor.append(ModOpAddReserves(250.0, SimTK::Infinity, true, true));
     modelProcessor.append(ModOpIgnoreTendonCompliance());
     modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
     modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
     modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
+    modelProcessor.append(ModOpScaleMaxIsometricForce(5.0));
     modelProcessor.append(ModOpReplacePathsWithFunctionBasedPaths(
             "subject_walk_scaled_FunctionBasedPathSet.xml"));
 
@@ -261,8 +263,9 @@ void muscleDrivenTracking() {
 
     // Update the weights on the state tracking and contact tracking goals. 
     auto& problem = study.updProblem();
-    problem.updGoal("state_tracking").setWeight(0.05);
-    problem.updGoal("grf_tracking").setWeight(5e-3);
+    // problem.updGoal("control_effort").setWeight(0.5);
+    // problem.updGoal("state_tracking").setWeight(0.05);
+    // problem.updGoal("grf_tracking").setWeight(5e-3);
 
     // Constrain the states and controls to be periodic.
     auto* periodicityGoal = problem.addGoal<MocoPeriodicityGoal>("periodicity");
@@ -293,7 +296,8 @@ void muscleDrivenTracking() {
         MocoTrajectory torqueDrivenSolution(
                 "example3DWalking_torque_driven_tracking_solution.sto");
         MocoTrajectory guess = solver.createGuess();
-        guess.insertStatesTrajectory(torqueDrivenSolution.exportToStatesTable());
+        guess.insertStatesTrajectory(
+                torqueDrivenSolution.exportToStatesTable(), true);
         solver.setGuess(guess);
     }
 
