@@ -39,7 +39,7 @@
 //         "/contactLateralRearfoot_r", "/contactLateralMidfoot_r", 
 //         "/contactMedialMidfoot_r", "/contactLateralToe_r", 
 //         "/contactMedialToe_r"};
-// static const std::vector<std::string> contactForcesLeft = {"/contactHeel_l", 
+// static const std::vector<std::string> contactForcesLeft = {"/contactPHeel_l", 
 //         "/contactLateralRearfoot_l", "/contactLateralMidfoot_l", 
 //         "/contactMedialMidfoot_l", "/contactLateralToe_l", 
 //         "/contactMedialToe_l"};
@@ -293,14 +293,14 @@
 
 //     // Set the guess to the solution from the torque-driven tracking problem,
 //     // if available.
-//     if (IO::FileExists("example3DWalking_torque_driven_tracking_solution.sto")) {
-//         MocoTrajectory torqueDrivenSolution(
-//                 "example3DWalking_torque_driven_tracking_solution.sto");
-//         MocoTrajectory guess = solver.createGuess();
-//         guess.insertStatesTrajectory(
-//                 torqueDrivenSolution.exportToStatesTable(), true);
-//         solver.setGuess(guess);
-//     }
+//     // if (IO::FileExists("example3DWalking_torque_driven_tracking_solution.sto")) {
+//     //     MocoTrajectory torqueDrivenSolution(
+//     //             "example3DWalking_torque_driven_tracking_solution.sto");
+//     //     MocoTrajectory guess = solver.createGuess();
+//     //     guess.insertStatesTrajectory(
+//     //             torqueDrivenSolution.exportToStatesTable(), true);
+//     //     solver.setGuess(guess);
+//     // }
 
 //     // Solve!
 //     MocoSolution solution = study.solve().unseal();
@@ -331,6 +331,10 @@
 //     return EXIT_SUCCESS;
 // }
 
+/// This example demonstrates how to use the MocoTrack tool to solve 3D 
+/// walking optimization problems using a foot-ground contact model.
+/// See the README.txt next to this file for more information.
+
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/VisualizerUtilities.h>
@@ -340,148 +344,22 @@
 
 using namespace OpenSim;
 
-const std::vector<std::string> contactForcesRight = {"/contactHeel_r", 
-            "/contactLateralRearfoot_r", "/contactLateralMidfoot_r", 
-            "/contactMedialMidfoot_r", "/contactLateralToe_r", 
-            "/contactMedialToe_r"};
+ // Paths to the contact forces in the model.
+static const std::vector<std::string> contactForcesRight = {"/contactHeel_r", 
+        "/contactLateralRearfoot_r", "/contactLateralMidfoot_r", 
+        "/contactMedialMidfoot_r", "/contactLateralToe_r",  
+        "/contactMedialToe_r"};
+static const std::vector<std::string> contactForcesLeft = {"/contactHeel_l", 
+        "/contactLateralRearfoot_l", "/contactLateralMidfoot_l", 
+        "/contactMedialMidfoot_l", "/contactLateralToe_l", 
+        "/contactMedialToe_l"};
 
-const std::vector<std::string> contactForcesLeft = {"/contactHeel_l", 
-            "/contactLateralRearfoot_l", "/contactLateralMidfoot_l", 
-            "/contactMedialMidfoot_l", "/contactLateralToe_l", 
-            "/contactMedialToe_l"};
-
-MocoStudy constructContactTrackingStudy(const std::string& studyName, 
-        ModelProcessor modelProcessor,
-        TableProcessor tableProcessor) {
-
-    MocoTrack track;
-    track.setName(studyName);
-    Model model = modelProcessor.process();
-    model.initSystem();
-    track.setModel(modelProcessor);
-
-    track.setStatesReference(tableProcessor);
-    track.set_states_global_tracking_weight(0.1);
-    track.set_allow_unused_references(true);
-    track.set_track_reference_position_derivatives(true);
-
-    MocoWeightSet statesWeightSet;
-    statesWeightSet.cloneAndAppend({"/jointset/ground_pelvis/pelvis_ty/value", 0.0});
-    statesWeightSet.cloneAndAppend({"/jointset/ground_pelvis/pelvis_ty/speed", 0.1});
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/value", 0.0});
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/speed", 0.0});
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/value", 0.0});
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/speed", 0.0});
-    track.set_states_weight_set(statesWeightSet);
-
-    track.set_initial_time(0.48);
-    track.set_final_time(1.61);
-    track.set_mesh_interval(0.02);
-
-    MocoStudy study = track.initialize();
-    MocoProblem& problem = study.updProblem();
-
-    // Get a reference to the MocoControlGoal that is added to every MocoTrack
-    // problem by default.
-    MocoControlGoal& effort =
-        dynamic_cast<MocoControlGoal&>(problem.updGoal("control_effort"));
-    effort.setWeight(0.1);
-
-    // Add a MocoContactTrackingGoal to the problem to track the ground reaction
-    // forces.
-    auto* contactTracking = problem.addGoal<MocoContactTrackingGoal>(
-            "grf_tracking", 1e-2);
-    contactTracking->setExternalLoadsFile("grf_walk.xml");
-    MocoContactTrackingGoalGroup rightContactGroup(contactForcesRight, 
-            "Right_GRF", {"/bodyset/toes_r"});
-    contactTracking->addContactGroup(rightContactGroup);
-    MocoContactTrackingGoalGroup leftContactGroup(contactForcesLeft, 
-            "Left_GRF", {"/bodyset/toes_l"});
-    contactTracking->addContactGroup(leftContactGroup);  
-
-    // Update the solver tolerances.
-    auto& solver = study.updSolver<MocoCasADiSolver>();
-    solver.set_transcription_scheme("legendre-gauss-radau-3");
-    solver.set_kinematic_constraint_method("Bordalba2023");
-    solver.set_optim_convergence_tolerance(1e-2);
-    solver.set_optim_constraint_tolerance(1e-4);
-
-    return study;
-}
-
-
-void createInitialGuess(Model model) {
-
-    ModelProcessor modelProcessor(model);
-    modelProcessor.append(ModOpRemoveMuscles());
-    modelProcessor.append(ModOpAddReserves(250.0, SimTK::Infinity, true, true));
-
-    TimeSeriesTable coordinates("coordinates.sto");
-    coordinates.removeColumn("/jointset/patellofemoral_r/knee_angle_r_beta/value");
-    coordinates.removeColumn("/jointset/patellofemoral_l/knee_angle_l_beta/value");
-    TableProcessor tableProcessor = 
-            TableProcessor(coordinates) |
-            TabOpUseAbsoluteStateNames() |
-            TabOpAppendCoupledCoordinateValues() |
-            TabOpAppendCoordinateValueDerivativesAsSpeeds();
-
-    MocoStudy study = constructContactTrackingStudy("create_initial_guess", 
-            modelProcessor, tableProcessor);
-
-    MocoProblem& problem = study.updProblem();
-
-    Model modelUpdated = modelProcessor.process();
-    modelUpdated.initSystem();
-
-    // Constrain the initial states to be close to the reference.
-    TimeSeriesTable coordinatesUpdated = tableProcessor.process(&modelUpdated);
-    const auto& labels = coordinatesUpdated.getColumnLabels();
-    for (const auto& label : labels) {
-        const auto& value = coordinatesUpdated.getDependentColumn(label);        
-        double lower = 0.0;
-        double upper = 0.0;
-        if (label.find("/speed") != std::string::npos) {
-            lower = value[0] - 0.1;
-            upper = value[0] + 0.1;
-        } else {
-            lower = value[0] - 0.05;
-            upper = value[0] + 0.05;
-        }
-
-        problem.setStateInfo(label, {}, {lower, upper});
-    }
-
-    // Update the solver tolerances.
-    auto& solver = study.updSolver<MocoCasADiSolver>();
-    solver.resetProblem(problem);
-
-    Model modelSolution = modelProcessor.process();
-    modelSolution.initSystem();
-    TimeSeriesTable initialStates = tableProcessor.process(&modelSolution);
-    MocoTrajectory guess = solver.createGuess();
-    guess.insertStatesTrajectory(initialStates);
-    solver.setGuess(guess);
-
-    // Solve!
-    MocoSolution solution = study.solve().unseal();
-    solution.write("example3DWalking_initial_guess.sto");
-
-    // Print the model.
-    modelSolution.print("example3DWalking_initial_guess_model.osim");
-
-    // Extract the ground reaction forces.
-    TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
-            modelSolution, solution, contactForcesRight, contactForcesLeft);
-    STOFileAdapter::write(externalForcesTableFlat,
-            "example3DWalking_initial_guess_ground_reactions.sto");
-
-}
-
+/// Solve a optimization problem tracking joint kinematics and ground reaction
+/// forces using a muscle-driven model with foot-ground contact elements.
 void trackWalking(Model model) {
-
-    MocoTrack track;
-    track.setName("track_walking");
     
+    // Modify the model to prepare it for tracking optimization.
+    model.initSystem();
     ModelProcessor modelProcessor(model);
     modelProcessor.append(ModOpIgnoreTendonCompliance());
     modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
@@ -490,29 +368,65 @@ void trackWalking(Model model) {
     modelProcessor.append(ModOpReplacePathsWithFunctionBasedPaths(
             "subject_walk_scaled_FunctionBasedPathSet.xml"));
 
-    TimeSeriesTable coordinates("coordinates.sto");
-    coordinates.removeColumn("/jointset/patellofemoral_r/knee_angle_r_beta/value");
-    coordinates.removeColumn("/jointset/patellofemoral_l/knee_angle_l_beta/value");
-    TableProcessor tableProcessor = TableProcessor(coordinates) |
+    // Construct the reference kinematics TableProcessor.
+    // TimeSeriesTable coordinates("coordinates.sto");
+    // coordinates.removeColumn("/jointset/patellofemoral_r/knee_angle_r_beta/value");
+    // coordinates.removeColumn("/jointset/patellofemoral_l/knee_angle_l_beta/value");
+    TableProcessor tableProcessor = TableProcessor("coordinates.sto") |
             TabOpUseAbsoluteStateNames() |
             TabOpAppendCoupledCoordinateValues() |
             TabOpAppendCoordinateValueDerivativesAsSpeeds();
     
-    MocoStudy study = constructContactTrackingStudy("track_walking",
-            modelProcessor, tableProcessor);
+    // Construct the MocoTrack tool.
+    MocoTrack track;
+    track.setName("track_walking");
+    track.setModel(modelProcessor);
+    track.setStatesReference(tableProcessor);
+    track.set_states_global_tracking_weight(0.05);
+    track.set_control_effort_weight(0.1);
+    track.set_allow_unused_references(true);
+    track.set_track_reference_position_derivatives(true);
+    track.set_initial_time(0.48);
+    track.set_final_time(1.61);
+    track.set_mesh_interval(0.02);
 
-    auto& problem = study.updProblem();
-    problem.updGoal("state_tracking").setWeight(0.05);
-    problem.updGoal("grf_tracking").setWeight(5e-3);
-    // problem.addGoal<MocoInitialActivationGoal>("initial_activation");
+    // Update individual state weights.
+    MocoWeightSet statesWeightSet;
+    // Don't track the veritcal position of the pelvis and only lightly track
+    // the speed. Let the optimization determine the vertical position of the
+    // model, which will make it easier to find the position of the feet that 
+    // leads to the best tracking of the kinematics and ground reaction forces.
+    statesWeightSet.cloneAndAppend(
+            {"/jointset/ground_pelvis/pelvis_ty/value", 0.0});
+    statesWeightSet.cloneAndAppend(
+            {"/jointset/ground_pelvis/pelvis_ty/speed", 0.1});
+    // Let the toe coordinates be driven by the passive forces in the model.
+    statesWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/value", 0.0});
+    statesWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/speed", 0.0});
+    statesWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/value", 0.0});
+    statesWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/speed", 0.0});
+    track.set_states_weight_set(statesWeightSet);
+
+    // Get the underlying MocoStudy.
+    MocoStudy study = track.initialize();
+    MocoProblem& problem = study.updProblem();
+
+    // Add a MocoContactTrackingGoal to the problem to track the ground reaction
+    // forces.
+    auto* contactTracking = problem.addGoal<MocoContactTrackingGoal>(
+            "grf_tracking", 5e-3);
+    contactTracking->setExternalLoadsFile("grf_walk.xml");
+    MocoContactTrackingGoalGroup rightContactGroup(contactForcesRight, 
+            "Right_GRF", {"/bodyset/toes_r"});
+    contactTracking->addContactGroup(rightContactGroup);
+    MocoContactTrackingGoalGroup leftContactGroup(contactForcesLeft, 
+            "Left_GRF", {"/bodyset/toes_l"});
+    contactTracking->addContactGroup(leftContactGroup);  
 
     // Constrain the states and controls to be periodic.
     auto* periodicityGoal = problem.addGoal<MocoPeriodicityGoal>("periodicity");
-    model.initSystem();
     for (const auto& coord : model.getComponentList<Coordinate>()) {
-
         if (IO::EndsWith(coord.getName(), "_beta")) { continue; }
-
         if (!IO::EndsWith(coord.getName(), "_tx")) {
             periodicityGoal->addStatePair(coord.getStateVariableNames()[0]);
         }
@@ -526,38 +440,41 @@ void trackWalking(Model model) {
         periodicityGoal->addControlPair(actu.getAbsolutePathString());
     }
 
-
+    // Update the solver with the modified MocoProblem.
     auto& solver = study.updSolver<MocoCasADiSolver>();
+    solver.set_transcription_scheme("legendre-gauss-radau-3");
+    solver.set_kinematic_constraint_method("Bordalba2023");
+    solver.set_optim_convergence_tolerance(1e-2);
+    solver.set_optim_constraint_tolerance(1e-4);
     solver.resetProblem(problem);
-
-    MocoTrajectory initialGuessSolution("example3DWalking_initial_guess.sto");
-    MocoTrajectory guess = solver.createGuess();
-    guess.insertStatesTrajectory(initialGuessSolution.exportToStatesTable());
-    solver.setGuess(guess);
+    solver.setGuess(solver.createGuess());
 
     // Solve!
     MocoSolution solution = study.solve().unseal();
     solution.write("example3DWalking_track_walking.sto");
-    // MocoTrajectory solution("example3DWalking_track_walking.sto");
-    // study.visualize(solution);
 
     // Print the model.
-    // Model modelSolution = modelProcessor.process();
-    // modelSolution.initSystem();
-    // modelSolution.print("example3DWalking_track_walking_model.osim");
+    Model modelSolution = modelProcessor.process();
+    modelSolution.initSystem();
+    modelSolution.print("example3DWalking_track_walking_model.osim");
 
-    // // Extract the ground reaction forces.
-    // TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
-    //         modelSolution, solution, contactForcesRight, contactForcesLeft);
-    // STOFileAdapter::write(externalForcesTableFlat,
-    //         "example3DWalking_track_walking_ground_reactions.sto");
+    // Extract the ground reaction forces.
+    TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
+            modelSolution, solution, contactForcesRight, contactForcesLeft);
+    STOFileAdapter::write(externalForcesTableFlat,
+            "example3DWalking_track_walking_ground_reactions.sto");
 
     // Visualize the solution.
     // study.visualize(solution);
 }
 
-
 int main() {
+
+    /// Update the model to prepare it for tracking optimization. The default 
+    /// minimimum muscle excitations and activations are set to 0; stiffness, 
+    /// damping, and light torque actuation are added to the toes; and contact 
+    /// geometry is added to the foot bodies in the model. The height of the 
+    /// contact geometry elements are adjusted to better align with the ground.
 
     // Load the base model.
     Model model("subject_walk_scaled.osim");
@@ -594,8 +511,9 @@ int main() {
     ca_toes_r->setMaxControl(1.0);
     model.addForce(ca_toes_r);
 
-    // Add the contact geometry and forces to the model.
-    ContactGeometrySet contactGeometrySet("subject_walk_scaled_ContactGeometrySet.xml");
+    // Add the contact geometry to the model.
+    ContactGeometrySet contactGeometrySet(
+            "subject_walk_scaled_ContactGeometrySet.xml");
     for (int i = 0; i < contactGeometrySet.getSize(); ++i) {
         ContactGeometry* contactGeometry = contactGeometrySet.get(i).clone();
         // Raise the ContactSpheres up by 2 cm so that the bottom of the spheres
@@ -608,18 +526,17 @@ int main() {
     }
     model.finalizeConnections();
 
+    // Add the contact forces to the model.
     ForceSet contactForceSet("subject_walk_scaled_ContactForceSet.xml");
     for (int i = 0; i < contactForceSet.getSize(); ++i) {
         model.addComponent(contactForceSet.get(i).clone());
     }
     model.finalizeConnections();
 
-    // createInitialGuess(model);
-
-    // createPeriodicInitialGuess(model);
-
+    /// Solve a tracking optimization problem using the modified model.
+    /// This problem takes ~70 minutes to solve on a machine using a 4.7 GHz
+    /// processor with 24 threads.
     trackWalking(model);
-
 
     return EXIT_SUCCESS;
 }
