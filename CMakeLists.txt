@@ -600,10 +600,10 @@ if (NOT OPENSIM_PYTHON_CONDA)
     include(InstallRequiredSystemLibraries)
 endif()
 
-# C++14
+# C++17
 # -----
-set(CMAKE_CXX_STANDARD 14)
-# Using c++14 is not optional.
+set(CMAKE_CXX_STANDARD 17)
+# Using C++17 is not optional.
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 

@@ -28,7 +28,7 @@ v4.6
   sphere torques) to be consistent with the center of pressure GRF representation.
 - Fixed an issue where a copy of an `OpenSim::Model` containing a `OpenSim::ExternalLoads` could not be
   finalized (#3926)
-- Updated all code examples to use c++14 (#3929)
+- Updated all code examples to use C++17 (after a few months of compiling as C++14 : #3929).
 - Added class `OpenSim::StateDocument` as a systematic means of serializing and deserializing a complete trajectory
   (i.e., time history) of all states in the `SimTK::State` to and from a single `.ostates` file. Prior to `StatesDocument`,
   only the trajectories of continuous states (e.g., joint angles, joint speeds, muscle forces, and the like) could be systematically
@@ -65,10 +65,11 @@ v4.6
     decorations were emitted for both `true` and `false`, resulting in double-emission).
   - It will now check for NaNed vectors coming from the underlying expression, skipping emission
     if one is detected (previously: it would emit decorations with `NaN`ed transforms).
+- `PolynomialPathFitter` now allows fitting paths that depend on more than 6 coordinates, matching recent changes to `MultivariatePolynomialFunction` (#4001).
+- If an `Object` cannot be found when loading a list property from XML, a warning will now be emitted to the log (previously: it was emitted to `std::cerr`, #4009).
 - Added `example3DWalking`, which demonstrates how to create a tracking simulation with foot-ground contact in Moco. (#4008)
 - Added `ModelFactory::createResidualActuators` and `ModOpAddResiduals` to make it easy to add a set of residual actuators to a model. (#4008)
 - Added convenience methods to `MocoTrack` to allow setting marker weights from a `Set<MarkerWeight>` or `IKTaskSet`. (#4008)
-
 
 v4.5.1
 ======
