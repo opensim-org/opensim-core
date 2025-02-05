@@ -65,6 +65,10 @@ v4.6
     decorations were emitted for both `true` and `false`, resulting in double-emission).
   - It will now check for NaNed vectors coming from the underlying expression, skipping emission
     if one is detected (previously: it would emit decorations with `NaN`ed transforms).
+- Added `example3DWalking`, which demonstrates how to create a tracking simulation with foot-ground contact in Moco. (#4008)
+- Added `ModelFactory::createResidualActuators` and `ModOpAddResiduals` to make it easy to add a set of residual actuators to a model. (#4008)
+- Added convenience methods to `MocoTrack` to allow setting marker weights from a `Set<MarkerWeight>` or `IKTaskSet`. (#4008)
+
 
 v4.5.1
 ======

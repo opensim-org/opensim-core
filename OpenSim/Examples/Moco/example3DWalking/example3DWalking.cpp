@@ -140,10 +140,10 @@ MocoStudy constructContactTrackingStudy(const std::string& studyName,
     statesWeightSet.cloneAndAppend(
             {"/jointset/ground_pelvis/pelvis_ty/speed", 0.1});
     // Let the toe coordinates be driven by the passive forces in the model.
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/value", 1e-3});
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/speed", 1e-3});
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/value", 1e-3});
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/speed", 1e-3});
+    statesWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/value", 0});
+    statesWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/speed", 0});
+    statesWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/value", 0});
+    statesWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/speed", 0});
     track.set_states_weight_set(statesWeightSet);
 
     // Get the underlying MocoStudy.
@@ -157,7 +157,7 @@ MocoStudy constructContactTrackingStudy(const std::string& studyName,
     // Add a MocoContactTrackingGoal to the problem to track the ground reaction
     // forces.
     auto* contactTracking = problem.addGoal<MocoContactTrackingGoal>(
-            "grf_tracking", 5e-2);
+            "grf_tracking", 1e-2);
     contactTracking->setExternalLoadsFile("grf_walk.xml");
     MocoContactTrackingGoalGroup rightContactGroup(contactForcesRight, 
             "Right_GRF", {"/bodyset/toes_r"});
@@ -182,10 +182,13 @@ void torqueDrivenTracking() {
     // Construct a torque-driven model.
     ModelProcessor modelProcessor(loadAndUpdateModel());
     modelProcessor.append(ModOpRemoveMuscles());
-    modelProcessor.append(ModOpAddReserves(250.0, 1.0, true, true));
+    modelProcessor.append(ModOpAddReserves(250.0, SimTK::Infinity, true, true));
 
     // Construct the base tracking study.
-    TableProcessor tableProcessor("coordinates.sto");
+    TableProcessor tableProcessor = TableProcessor("coordinates.sto") |
+            TabOpUseAbsoluteStateNames() |
+            TabOpAppendCoupledCoordinateValues() |
+            TabOpAppendCoordinateValueDerivativesAsSpeeds();
     MocoStudy study = constructContactTrackingStudy("torque_driven_tracking", 
             modelProcessor, tableProcessor);
 
@@ -197,6 +200,7 @@ void torqueDrivenTracking() {
     TimeSeriesTable coordinates = tableProcessor.process(&model);
     const auto& labels = coordinates.getColumnLabels();
     for (const auto& label : labels) {
+        if (IO::EndsWith(label, "_beta/value")) { continue; }
         const auto& value = coordinates.getDependentColumn(label);        
         double lower = 0.0;
         double upper = 0.0;
@@ -211,7 +215,7 @@ void torqueDrivenTracking() {
         problem.setStateInfo(label, {}, {lower, upper});
     }
 
-    // Update the solver with the modified MocoProblem
+    // Update the solver with the modified MocoProblem.
     auto& solver = study.updSolver<MocoCasADiSolver>();
     solver.resetProblem(problem);
 
@@ -248,7 +252,10 @@ void muscleDrivenTracking() {
             "subject_walk_scaled_FunctionBasedPathSet.xml"));
 
     // Construct the base tracking study.
-    TableProcessor tableProcessor("coordinates.sto");
+    TableProcessor tableProcessor = TableProcessor("coordinates.sto") |
+            TabOpUseAbsoluteStateNames() |
+            TabOpAppendCoupledCoordinateValues() |
+            TabOpAppendCoordinateValueDerivativesAsSpeeds();
     MocoStudy study = constructContactTrackingStudy("muscle_driven_tracking",
             modelProcessor, tableProcessor);
 
@@ -291,7 +298,7 @@ void muscleDrivenTracking() {
     }
 
     // Solve!
-    MocoSolution solution = study.solve();
+    MocoSolution solution = study.solve().unseal();
     solution.write("example3DWalking_muscle_driven_tracking_solution.sto");
 
     // Extract the ground reaction forces.
@@ -301,7 +308,7 @@ void muscleDrivenTracking() {
             "example3DWalking_muscle_driven_tracking_ground_reactions.sto");
 
     // Visualize the solution.
-    study.visualize(solution);
+    // study.visualize(solution);
 }
 
 int main() {
@@ -310,7 +317,7 @@ int main() {
     // processor with 24 threads.
     
     // This problem takes ~10 minutes to solve.
-    torqueDrivenTracking();
+    // torqueDrivenTracking();
 
     // This problem takes ~70 minutes to solve, given the initial guess from the
     // torque-driven tracking problem.
