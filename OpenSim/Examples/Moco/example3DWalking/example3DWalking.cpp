@@ -142,7 +142,9 @@ void trackWalking(Model model) {
     solver.resetProblem(problem);
     // When MocoTrack::initialize() is called, the solver is created with a
     // default guess. Since we've updated the problem and changed the 
-    // transcription scheme, it is a good idea to generate a new guess. 
+    // transcription scheme, it is a good idea to generate a new guess. In this 
+    // case, generating a new guess is crucial for the optimization to converge.
+    // Always check your initial guess before running an optimization!
     solver.setGuess(solver.createGuess());
 
     // Solve!
