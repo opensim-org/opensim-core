@@ -162,7 +162,7 @@ void trackWalking(Model model) {
             "example3DWalking_track_walking_ground_reactions.sto");
 
     // Visualize the solution.
-    // study.visualize(solution);
+    study.visualize(solution);
 }
 
 int main() {
