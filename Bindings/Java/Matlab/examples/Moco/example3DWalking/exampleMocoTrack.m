@@ -82,8 +82,8 @@ track.setMarkersReferenceFromTRC("markers_walk.trc");
 track.set_markers_global_tracking_weight(10);
 
 % Set the marker weights based on the IKTaskSet from the dataset.
-ikTaskSet = IKTaskSet("ik_tasks_walk.xml")
-track.setMarkerWeightsFromIKTaskSet(ikTaskSet)
+ikTaskSet = IKTaskSet("ik_tasks_walk.xml");
+track.setMarkerWeightsFromIKTaskSet(ikTaskSet);
 
 % Initial time, final time, and mesh interval. The number of mesh points
 % used to discretize the problem is computed internally using these values.
@@ -100,7 +100,7 @@ solution.write("exampleMocoTrack_torque_driven_marker_tracking_solution.sto");
 % Resources/Code/Matlab/Utilities folder.
 model = modelProcessor.process();
 report = osimMocoTrajectoryReport(model, ...
-            'exampleMocoTrack_markertracking_solution.sto');
+            'exampleMocoTrack_torque_driven_marker_tracking_solution.sto');
 reportFilepath = report.generate();
 open(reportFilepath);
 
