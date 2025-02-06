@@ -662,9 +662,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
         }
 
         SECTION("(active force width scale) = 1.2") {
-            auto& mutMuscle =
-                    model.updComponent<DeGrooteFregly2016Muscle>("muscle");
-            mutMuscle.set_active_force_width_scale(1.2);
+            muscle.set_active_force_width_scale(1.2);
             muscle.setActivation(state, 1.0);
             const double normFiberLength = 0.8;
             coord.setValue(
@@ -726,9 +724,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
         }
 
         SECTION("(activation dynamics smoothing) = 10.0") {
-            auto& mutMuscle =
-                    model.updComponent<DeGrooteFregly2016Muscle>("muscle");
-            mutMuscle.set_activation_dynamics_smoothing(10.0);
+            muscle.set_activation_dynamics_smoothing(10.0);
             muscle.setActivation(state, 1.0);
             const double normFiberLength = 0.8;
             coord.setValue(
@@ -790,11 +786,9 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
         }
 
         SECTION("pennation") {
-            auto& mutMuscle =
-                    model.updComponent<DeGrooteFregly2016Muscle>("muscle");
             const double pennOpt = 0.12;
             const double cosPenn = cos(pennOpt);
-            mutMuscle.set_pennation_angle_at_optimal(pennOpt);
+            muscle.set_pennation_angle_at_optimal(pennOpt);
             state = model.initSystem();
             muscle.setActivation(state, 1.0);
             coord.setValue(state, muscle.get_optimal_fiber_length() * cosPenn +
@@ -904,14 +898,12 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
         }
 
         SECTION("initial equilibrium") {
-            auto& mutMuscle =
-                    model.updComponent<DeGrooteFregly2016Muscle>("muscle");
-            mutMuscle.set_ignore_tendon_compliance(false);
-            mutMuscle.set_tendon_compliance_dynamics_mode("explicit");
+            muscle.set_ignore_tendon_compliance(false);
+            muscle.set_tendon_compliance_dynamics_mode("explicit");
 
             const double pennOpt = 0.12;
             double cosPenn = cos(pennOpt);
-            mutMuscle.set_pennation_angle_at_optimal(pennOpt);
+            muscle.set_pennation_angle_at_optimal(pennOpt);
             state = model.initSystem();
             muscle.setActivation(state, 1.0);
             const double muscleLength =
@@ -930,21 +922,19 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getNormalizedTendonForceDerivative(state) ==
                     Approx(0.0).margin(1e-6));
 
-            mutMuscle.set_tendon_compliance_dynamics_mode("implicit");
+            muscle.set_tendon_compliance_dynamics_mode("implicit");
             model.realizeDynamics(state);
             CHECK(muscle.getEquilibriumResidual(state) ==
                     Approx(0.0).margin(1e-6));
         }
 
         SECTION("tendon compliance") {
-            auto& mutMuscle =
-                    model.updComponent<DeGrooteFregly2016Muscle>("muscle");
-            mutMuscle.set_ignore_tendon_compliance(false);
-            mutMuscle.set_tendon_compliance_dynamics_mode("implicit");
+            muscle.set_ignore_tendon_compliance(false);
+            muscle.set_tendon_compliance_dynamics_mode("implicit");
 
             const double pennOpt = 0.12;
             double cosPenn = cos(pennOpt);
-            mutMuscle.set_pennation_angle_at_optimal(pennOpt);
+            muscle.set_pennation_angle_at_optimal(pennOpt);
             state = model.initSystem();
             muscle.setActivation(state, 1.0);
             const double muscleLength =
@@ -1100,10 +1090,8 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
 
         SECTION("calcEquilibriumResidual()") {
             // Check the value of the equilibrium residual for a given state.
-            auto& mutMuscle =
-                    model.updComponent<DeGrooteFregly2016Muscle>("muscle");
-            mutMuscle.set_ignore_tendon_compliance(false);
-            mutMuscle.set_tendon_compliance_dynamics_mode("implicit");
+            muscle.set_ignore_tendon_compliance(false);
+            muscle.set_tendon_compliance_dynamics_mode("implicit"); 
             const double muscleTendonLength = muscle.getOptimalFiberLength() +
                             muscle.getTendonSlackLength();
             const double normTendonForce = 0.7;
