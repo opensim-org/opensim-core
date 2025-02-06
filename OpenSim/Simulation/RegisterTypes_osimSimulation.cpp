@@ -146,7 +146,9 @@
 using namespace std;
 using namespace OpenSim;
 
-static osimSimulationInstantiator instantiator; 
+#ifndef OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION
+    static osimSimulationInstantiator instantiator;
+#endif
 
 //_____________________________________________________________________________
 /**
