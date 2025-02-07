@@ -222,27 +222,14 @@ option(OPENSIM_WITH_CASADI
         "Build CasADi support for Moco (MocoCasADiSolver)." OFF)
 
 if(OPENSIM_WITH_CASADI)
-AddDependency(NAME    eigen
-              DEFAULT ON
-              URL     https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.zip)
+    # AddDependency(NAME    eigen
+    #             DEFAULT ON
+    #             URL     https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.zip)
+    # mark_as_advanced(SUPERBUILD_eigen)
 
-mark_as_advanced(SUPERBUILD_eigen)
+    CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
+                        "OPENSIM_WITH_CASADI" OFF)
 
-AddDependency(NAME colpack
-              DEFAULT ON
-              GIT_URL https://github.com/opensim-org/colpack.git
-              GIT_TAG 72f691e91d59e8eb2123f258e67a4ddc72d105ee
-              CMAKE_ARGS -DCMAKE_DEBUG_POSTFIX:STRING=_d
-                         -DENABLE_EXAMPLES:BOOL=OFF
-                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
-
-mark_as_advanced(SUPERBUILD_colpack)
-
-CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
-                       "OPENSIM_WITH_CASADI" OFF)
-endif()
-
-if (OPENSIM_WITH_CASADI)
     CMAKE_DEPENDENT_OPTION(SUPERBUILD_casadi "Automatically download, configure, build and install casadi" ON
                            "OPENSIM_WITH_CASADI" OFF)
     mark_as_advanced(SUPERBUILD_casadi)

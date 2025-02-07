@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: ModelFactory.cpp                                             *
+ *                          ModelFactory.cpp                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *

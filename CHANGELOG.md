@@ -28,7 +28,7 @@ v4.6
   sphere torques) to be consistent with the center of pressure GRF representation.
 - Fixed an issue where a copy of an `OpenSim::Model` containing a `OpenSim::ExternalLoads` could not be
   finalized (#3926)
-- Updated all code examples to use c++14 (#3929)
+- Updated all code examples to use C++17 (after a few months of compiling as C++14 : #3929).
 - Added class `OpenSim::StateDocument` as a systematic means of serializing and deserializing a complete trajectory
   (i.e., time history) of all states in the `SimTK::State` to and from a single `.ostates` file. Prior to `StatesDocument`,
   only the trajectories of continuous states (e.g., joint angles, joint speeds, muscle forces, and the like) could be systematically
@@ -52,7 +52,8 @@ v4.6
 - Make `InverseKinematicsSolver` methods to query for specific marker or orientation-sensor errors more robust to invalid names or names not 
   in the intersection of names in the model and names in the provided referece/data. Remove methods that are index based from public interface.(#3951) 
 - Replace usages of `OpenSim::make_unique` with `std::make_unique` and remove wrapper function now that C++14 is used in OpenSim (#3979). 
-- Add utility method `createVectorLinspaceInterval` for the `std::vector` type and add unit tests. Utilize the new utility method to fix a bug (#3976) in creating the uniformly sampled time interval from the experimental data sampling frequency in `APDMDataReader` and `XsensDataReader` (#3977).
+- Add utility method `createVectorLinspaceInterval` for the `std::vector` type and add unit tests. Utilize the new utility method to fix a bug (#3976) 
+  in creating the uniformly sampled time interval from the experimental data sampling frequency in `APDMDataReader` and `XsensDataReader` (#3977).
 - Fix Point Kinematics Reporter variable and initialization error and add unit tests (#3966)
 - `OpenSim::ContactHalfSpace`, `OpenSim::ContactMesh`, and `OpenSim::ContactSphere` now check their associated `Appearance`'s `is_visible` flag when deciding whether to emit their associated decorations (#3993).
 - The message associated with `OpenSim::PropertyException` now includes the full absolute path to the component that threw the exception (#3987).
@@ -65,8 +66,16 @@ v4.6
     decorations were emitted for both `true` and `false`, resulting in double-emission).
   - It will now check for NaNed vectors coming from the underlying expression, skipping emission
     if one is detected (previously: it would emit decorations with `NaN`ed transforms).
+<<<<<<< HEAD
 - Remove Tropter as a separate solver for Moco, and remove references to it from build/test/make system.
 
+=======
+- `PolynomialPathFitter` now allows fitting paths that depend on more than 6 coordinates, matching recent changes to `MultivariatePolynomialFunction` (#4001).
+- If an `Object` cannot be found when loading a list property from XML, a warning will now be emitted to the log (previously: it was emitted to `std::cerr`, #4009).
+- Added the property `activation_dynamics_smoothing` to `DeGrooteFregly2016Muscle`. This property uses the model's original value of 0.1 as a 
+  default, but users may consider increasing this value (e.g., 10.0) so that the activation and deactivation speeds of the model better match the 
+  activation and deactivation time constants.
+>>>>>>> main
 
 v4.5.1
 ======

@@ -133,7 +133,7 @@ class TestInputsOutputs(unittest.TestCase):
 
         # AbstractChannel.
         coord = model.getCoordinateSet().get(0)
-        self.assertEquals(coord.getOutput('speed').getChannel('').getPathName(),
+        self.assertEqual(coord.getOutput('speed').getChannel('').getPathName(),
                 '/jointset/r_shoulder/r_shoulder_elev|speed')
 
         # Access the value of a concrete Channel.
