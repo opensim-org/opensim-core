@@ -35,7 +35,7 @@ namespace OpenSim {
 //       might be slow.
 // TODO prohibit fiber length from going below 0.2.
 
-/** This muscle model was published in De Groote et al. 2016. 
+/** This muscle model was published in De Groote et al. (2016). 
 
 The parameters of the active force-length and force-velocity curves have
 been slightly modified from what was published to ensure the curves go
@@ -85,6 +85,7 @@ The acceptable bounds for each property are enforced at model initialization.
 These bounds are:
  - activation_time_constant: (0, inf]
  - deactivation_time_constant: (0, inf]
+ - activation_dynamics_smoothing: (0, inf]
  - active_force_width_scale: [1, inf]
  - fiber_damping: [0, inf]
  - passive_fiber_strain_at_one_norm_force: (0, inf]
@@ -94,7 +95,13 @@ These bounds are:
  - default_normalized_tendon_force: [0, 5]
 
 @note The methods getMinNormalizedTendonForce() and
-   getMaxNormalizedTendonForce() provide these bounds for use in custom solvers.
+      getMaxNormalizedTendonForce() provide these bounds for use in custom 
+      solvers.
+
+@note The default value for activation_dynamics_smoothing is set to 0.1 to 
+      match the originally published model, but a value of 10 is recommended 
+      to achieve activation and deactivation speeds closer to the intended 
+      time constants.
 
 @note Muscle properties can be optimized using MocoParameter. The acceptable
 bounds for each property are **not** enforced during parameter optimization, so
@@ -155,6 +162,14 @@ public:
     OpenSim_DECLARE_PROPERTY(tendon_compliance_dynamics_mode, std::string,
             "The dynamics method used to enforce tendon compliance dynamics. "
             "Options: 'explicit' or 'implicit'. Default: 'explicit'. ");
+    OpenSim_DECLARE_PROPERTY(activation_dynamics_smoothing, double,
+            "The parameter that determines the smoothness of the transition "
+            "of the tanh function used to smooth the switch between muscle "
+            "activation (a-e < 0) and deactivation (a-e > 0). The default "
+            "value is 0.1 to match the originally published model, but a value "
+            "of 10 is recommended to to achieve activation and deactivation "
+            "speeds closer to the intended time constants. Larger values "
+            "steepen the transition, but may slow optimization convergence.");
 
     OpenSim_DECLARE_OUTPUT(passive_fiber_elastic_force, double,
             getPassiveFiberElasticForce, SimTK::Stage::Dynamics);
