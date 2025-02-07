@@ -6,7 +6,7 @@
 				<!--Flag indicating whether the force is disabled or not.  Disabled means that the force is not active in subsequent dynamics realizations.-->
 				<isDisabled>false</isDisabled>
 				<!--Minimum allowed value for control signal. Used primarily when solving for control values-->
-				<min_control>0</min_control>
+				<min_control> 0.01000000 </min_control>
 				<!--Maximum allowed value for control signal. Used primarily when solving for control values-->
 				<max_control>1</max_control>
 				<!--the set of points defining the path of the muscle-->
