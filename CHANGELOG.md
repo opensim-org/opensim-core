@@ -66,16 +66,12 @@ v4.6
     decorations were emitted for both `true` and `false`, resulting in double-emission).
   - It will now check for NaNed vectors coming from the underlying expression, skipping emission
     if one is detected (previously: it would emit decorations with `NaN`ed transforms).
-<<<<<<< HEAD
-- Remove Tropter as a separate solver for Moco, and remove references to it from build/test/make system.
-
-=======
 - `PolynomialPathFitter` now allows fitting paths that depend on more than 6 coordinates, matching recent changes to `MultivariatePolynomialFunction` (#4001).
 - If an `Object` cannot be found when loading a list property from XML, a warning will now be emitted to the log (previously: it was emitted to `std::cerr`, #4009).
 - Added the property `activation_dynamics_smoothing` to `DeGrooteFregly2016Muscle`. This property uses the model's original value of 0.1 as a 
   default, but users may consider increasing this value (e.g., 10.0) so that the activation and deactivation speeds of the model better match the 
   activation and deactivation time constants.
->>>>>>> main
+- Remove the Tropter solver in Moco, and remove references to it from build/test/make system.
 
 v4.5.1
 ======

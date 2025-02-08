@@ -55,7 +55,7 @@ if(APPLE AND OPENSIM_COPY_DEPENDENCIES AND (NOT (DEFINED OPENSIM_WITH_CASADI AND
     # TODO         DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
     # This command must be invoked from the cmake subdirectory so that the
-    # editing of libtropter's link libraries is done after libtropter.dylib
+    # editing of libcasadi's link libraries is done after libcasadi.dylib
     # is installed (add_subdirectory(cmake) must be after
     # add_subdirectory(Moco)).
     if (OPENSIM_WITH_CASADI)

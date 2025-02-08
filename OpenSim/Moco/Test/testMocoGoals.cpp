@@ -145,7 +145,7 @@ TEMPLATE_TEST_CASE("Test MocoControlGoal", "",
     //    effort.set
     //    mp.addGoal(effort);
 
-    //    MocoTropterSolver& ms = study.initSolver();
+    //    MocoCasADiSolver& ms = study.initSolver();
     //    ms.set_num_mesh_intervals(N);
 
     //    MocoSolution solution = study.solve();
@@ -307,8 +307,6 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver) {
                 solutionEffort.getControlNames());
         tracking->setReference(controlsRef);
 
-        // Finding a solution with Hermite-Simpson and Tropter requires a better
-        // initial guess.
         auto& solver = study.updSolver<TestType>();
         solver.resetProblem(problem);
         MocoTrajectory guessTracking = solutionEffort;
@@ -637,7 +635,6 @@ public:
 };
 
 TEMPLATE_TEST_CASE("Endpoint constraints", "[casadi]", MocoCasADiSolver) {
-    // TODO test with Tropter.
 
     MocoStudy study;
     auto& problem = study.updProblem();
@@ -1174,7 +1171,6 @@ TEMPLATE_TEST_CASE("MocoOutputGoal with two outputs", "", MocoCasADiSolver) {
 }
 
 TEST_CASE("MocoOutputPeriodicityGoal", "[casadi]") {
-    // TODO Tropter does not support endpoint constraints.
 
     // Sliding mass problem with periodic body linear velocity.
     // --------------------------------------------------------

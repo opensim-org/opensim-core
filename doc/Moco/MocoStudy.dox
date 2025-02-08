@@ -29,8 +29,7 @@ When building a MocoStudy programmatically (e.g., in C++), the workflow is as
 follows:
 
 1. Build the MocoProblem (set the model, constraints, etc.).
-2. Call MocoStudy::initTropterSolver() or MocoStudy::initCasADiSolver(), which
-   returns a reference to a MocoSolver.
+2. Call MocoStudy::initCasADiSolver(), which returns a reference to a MocoSolver.
 3. Edit the settings of the MocoSolver.
 4. Call MocoStudy::solve(). This returns the MocoSolution.
 5. (Optional) Postprocess the solution, perhaps using MocoStudy::visualize().
@@ -210,7 +209,7 @@ The solvers allow the user to choose whether to enforce kinematic constraint
 derivatives or minimize Lagrange multipliers in the problem.
 
 @code{.cpp}
-MocoTropterSolver& solver = moco.initTropterSolver();
+MocoCasADiSolver& solver = moco.initCasADiSolver();
 solver.set_enforce_constraint_derivatives(true);
 solver.set_lagrange_multiplier_weight(10);
 @endcode
@@ -290,15 +289,13 @@ MocoCasADiSolver& solver = moco.initCasADiSolver();
 solver.set_interpolate_control_mesh_interior_points(false);
 \endcode
 
-@section casadivstropter MocoCasADiSolver versus MocoTropterSolver
+@section casadisolver MocoCasADiSolver
 
-Moco provides two direct collocation solvers that transcribe continuous optimal
-control problems into finite-dimensional NLPs that are passed to
-well-established derivative-based NLP solvers. MocoCasADiSolver uses the
-third-party CasADi library, and MocoTropterSolver uses a
-direct collocation solver developed internally named Tropter. CasADi is an
-open-source package for algorithmic differentiation and is a bridge to NLP
-solvers IPOPT, SNOPT, and others.
+Moco provides a direct collocation solver, MocoCasADiSolver, that transcribes 
+continuous optimal control problems into finite-dimensional NLPs that are 
+passed to well-established derivative-based NLP solvers. MocoCasADiSolver uses 
+the third-party CasADi library; CasADi is an open-source package for algorithmic 
+differentiation and is a bridge to NLP solvers IPOPT, SNOPT, and others.
 
 Compared to MocoTropterSolver, MocoCasADiSolver supports parallelization,
 implicit auxiliary dynamics, and implicit multibody dynamics with kinematic

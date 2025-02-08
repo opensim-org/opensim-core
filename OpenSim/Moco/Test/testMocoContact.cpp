@@ -138,7 +138,7 @@ SimTK::Real testNormalForce() {
         mp.setStateInfo("/tx/tx/speed", {-10, 10}, 0);
         mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
 
-        auto& ms = study.initTropterSolver();
+        auto& ms = study.initCasADiSolver();
         ms.set_num_mesh_intervals(50);
         // TODO: Hermite-Simpson has trouble converging
         ms.set_transcription_scheme("trapezoidal");
@@ -234,7 +234,7 @@ void testFrictionForce(const SimTK::Real& equilibriumHeight) {
         mp.setStateInfo("/tx/tx/speed", {-10, 10}, vx0);
         mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
 
-        auto& ms = study.initTropterSolver();
+        auto& ms = study.initCasADiSolver();
         ms.set_num_mesh_intervals(25);
         // TODO: Hermite-Simpson has trouble converging
         ms.set_transcription_scheme("trapezoidal");

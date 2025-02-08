@@ -28,8 +28,6 @@ macro(install_name_tool_delete_rpath lib rpath)
             "${libdir}/lib${lib}.dylib")
 endmacro()
 
-
-# See tropter_install_mac_dependency_libraries.cmake.
 macro(install_name_tool_change_gfortran lib)
     execute_process(COMMAND bash "-c"
         "otool -L ${libdir}/lib${lib}.dylib | grep 'libgfortran.*version' | perl -pe 's/^\\s+(.*)\\/libg.*/\\1/gc'"

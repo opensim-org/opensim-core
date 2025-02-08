@@ -306,7 +306,6 @@ TEMPLATE_TEST_CASE("Ordering of calls", "", MocoCasADiSolver) {
 
 /// Test that we can read in a Moco setup file, solve, edit the setup,
 /// re-solve.
-// TODO tropter solutions are very slightly different between successive solves.
 TEMPLATE_TEST_CASE("Serializing a MocoStudy", "", MocoCasADiSolver) {
     std::string fname = "testMocoInterface_testOMOCOSerialization.omoco";
     
@@ -1786,7 +1785,7 @@ TEMPLATE_TEST_CASE("Solving an empty MocoProblem", "",
 }
 
 /// Ensure that using a joint that has an empty quaternion slot does not
-/// cause us to misalign states between OpenSim and Tropter/CasADi.
+/// cause us to misalign states between OpenSim and CasADi.
 /// Even when not using quaternions, Simbody has a slot in the state vector
 /// for the 4th quaternion coordinate.
 template <typename SolverType>
@@ -1871,15 +1870,6 @@ void testSkippingOverQuaternionSlots(
 //    testSkippingOverQuaternionSlots<MocoCasADiSolver>(false, false, mode);
 //    testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, false, mode);
 //    testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, true, mode);
-//}
-//
-//TEST_CASE("Skip over empty quaternion slots; Tropter.", "[tropter]") {
-//    testSkippingOverQuaternionSlots<MocoTropterSolver>(
-//            false, false, "explicit");
-//    testSkippingOverQuaternionSlots<MocoTropterSolver>(true, false, "explicit");
-//    testSkippingOverQuaternionSlots<MocoTropterSolver>(true, true, "explicit");
-//    testSkippingOverQuaternionSlots<MocoTropterSolver>(
-//            false, false, "implicit");
 //}
 
 /// Joints where the derivative of the generalized coordinates is not equal to
@@ -2135,13 +2125,6 @@ TEST_CASE("Solver isAvailable()") {
 #else
     CHECK(!MocoCasADiSolver::isAvailable());
 #endif
-
-#ifdef OPENSIM_WITH_TROPTER
-    CHECK(MocoTropterSolver::isAvailable());
-#else
-    CHECK(!MocoTropterSolver::isAvailable());
-#endif
-}
 
 TEMPLATE_TEST_CASE("Locked coordinates ", "",
         MocoCasADiSolver) {

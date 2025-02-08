@@ -651,7 +651,6 @@ set(OPENSIM_DEPENDENCIES_DIR
 get_filename_component(OPENSIM_DEPENDENCIES_ABSDIR "${OPENSIM_DEPENDENCIES_DIR}"
         ABSOLUTE)
 if(NOT CMAKE_PREFIX_PATH
-        AND NOT ADOLC_DIR AND NOT "$ENV{ADOLC_DIR}"
         AND NOT IPOPT_DIR AND NOT "$ENV{IPOPT_DIR}"
         AND EXISTS "${OPENSIM_DEPENDENCIES_ABSDIR}")
     message(STATUS
@@ -659,8 +658,6 @@ if(NOT CMAKE_PREFIX_PATH
     set(deps_to_find)
     if(OPENSIM_WITH_CASADI)
         list(APPEND deps_to_find casadi)
-    endif()
-    if(OPENSIM_WITH_CASADI)
         list(APPEND deps_to_find ipopt)
     endif()
     set(dep_install_dirs)
@@ -669,8 +666,6 @@ if(NOT CMAKE_PREFIX_PATH
     endforeach()
     set(CMAKE_PREFIX_PATH "${dep_install_dirs}" CACHE PATH
             "Directories containing dependencies.")
-    set(ADOLC_DIR "${OPENSIM_DEPENDENCIES_ABSDIR}/adol-c" CACHE PATH
-            "Path to ADOL-C install directory.")
 endif()
 
 
@@ -791,7 +786,7 @@ include_directories("${Simbody_INCLUDE_DIR}")
 # CasADi
 # ------
 if(OPENSIM_WITH_CASADI)
-    find_package(casadi 3.4.4 REQUIRED)
+    find_package(casadi 3.6.5 REQUIRED)
     set_package_properties(casadi PROPERTIES
             URL https://web.casadi.org
             TYPE REQUIRED
