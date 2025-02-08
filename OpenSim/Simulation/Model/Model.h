@@ -337,7 +337,20 @@ public:
     ModelVisualizer that provides visualization and interaction with the %Model
     as it is executing. The default is no visualization. 
     @see getModelVisualizer() **/
-    void setUseVisualizer(bool visualize) {_useVisualizer=visualize;}
+    void setUseVisualizer(bool visualize) {
+        _useVisualizer=visualize;
+        enableVisualization(visualize);
+    }
+    // Enable visualization overall, loading mesh files etc.
+    void enableVisualization(bool enable) {
+        // Propagate flag so that meshes are loaded (or not)
+        upd_ModelVisualPreferences().setVisualize(enable);
+        finalizeFromProperties();
+    }
+    // Return status if visualize flag (different from useVisualizer)
+    bool visualizationIsEnabled() const {
+        return get_ModelVisualPreferences().visualize();
+    }
     /** Return the current setting of the "use visualizer" flag, which will
     take effect at the next call to initSystem() on this %Model. **/
     bool getUseVisualizer() const {return _useVisualizer;}
@@ -1184,7 +1197,7 @@ public:
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const 
                                                                 override;
     /**@}**/
-    
+
     //--------------------------------------------------------------------------
 
 private:
