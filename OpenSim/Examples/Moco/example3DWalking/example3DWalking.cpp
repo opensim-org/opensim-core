@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: example3DWalking.cpp                                         *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2024 Stanford University and the Authors                     *
+ * Copyright (c) 2025 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
@@ -43,6 +43,115 @@ static const std::vector<std::string> contactForcesLeft = {"/contactHeel_l",
         "/contactMedialMidfoot_l", "/contactLateralToe_l", 
         "/contactMedialToe_l"};
 
+/// TODO
+void createInitialGuess(Model model) {
+    
+    // Modify the model to prepare it for tracking optimization.
+    model.initSystem();
+    ModelProcessor modelProcessor(model);
+    modelProcessor.append(ModOpRemoveMuscles());
+    modelProcessor.append(ModOpAddReserves(500, 1.0, true, true));
+
+    // Construct the reference kinematics TableProcessor.
+    TableProcessor tableProcessor = TableProcessor("coordinates.sto") |
+            TabOpUseAbsoluteStateNames() |
+            TabOpAppendCoupledCoordinateValues() |
+            TabOpAppendCoordinateValueDerivativesAsSpeeds();
+    
+    // Construct the MocoTrack tool.
+    MocoTrack track;
+    track.setName("initial_guess");
+    track.setModel(modelProcessor);
+    track.setStatesReference(tableProcessor);
+    track.set_states_global_tracking_weight(0.1);
+    track.set_control_effort_weight(0.1);
+    track.set_allow_unused_references(true);
+    track.set_track_reference_position_derivatives(true);
+    track.set_initial_time(0.48);
+    track.set_final_time(1.61);
+    track.set_mesh_interval(0.02);
+
+    // Don't track the veritcal position of the pelvis and only lightly track
+    // the speed. Let the optimization determine the vertical position of the
+    // model, which will make it easier to find the position of the feet that 
+    // leads to the best tracking of the kinematics and ground reaction forces.
+    MocoWeightSet statesWeightSet;
+    statesWeightSet.cloneAndAppend(
+            {"/jointset/ground_pelvis/pelvis_ty/value", 0.0});
+    statesWeightSet.cloneAndAppend(
+            {"/jointset/ground_pelvis/pelvis_ty/speed", 0.1});
+    track.set_states_weight_set(statesWeightSet);
+
+    // Get the underlying MocoStudy.
+    MocoStudy study = track.initialize();
+    MocoProblem& problem = study.updProblem();
+
+    // Add a MocoContactTrackingGoal to the problem to track the ground reaction
+    // forces.
+    auto* contactTracking = problem.addGoal<MocoContactTrackingGoal>(
+            "grf_tracking", 1e-2);
+    contactTracking->setExternalLoadsFile("grf_walk.xml");
+    MocoContactTrackingGoalGroup rightContactGroup(contactForcesRight, 
+            "Right_GRF", {"/bodyset/toes_r"});
+    contactTracking->addContactGroup(rightContactGroup);
+    MocoContactTrackingGoalGroup leftContactGroup(contactForcesLeft, 
+            "Left_GRF", {"/bodyset/toes_l"});
+    contactTracking->addContactGroup(leftContactGroup);  
+
+    // Constrain the initial states to be close to the reference.
+    TimeSeriesTable coordinatesUpdated = tableProcessor.process(&model);
+    const auto& labels = coordinatesUpdated.getColumnLabels();
+    int index = static_cast<int>(
+            coordinatesUpdated.getNearestRowIndexForTime(0.48));    
+    for (const auto& label : labels) {
+        const auto& value = coordinatesUpdated.getDependentColumn(label);        
+        double lower = 0.0;
+        double upper = 0.0;
+        if (label.find("/speed") != std::string::npos) {
+            lower = value[index] - 0.1;
+            upper = value[index] + 0.1;
+        } else {
+            lower = value[index] - 0.05;
+            upper = value[index] + 0.05;
+        }
+        problem.setStateInfo(label, {}, {lower, upper});
+    }
+
+    // Customize the solver settings.
+    // ------------------------------
+    auto& solver = study.updSolver<MocoCasADiSolver>();
+    // Use the Legnedre-Gauss-Radau transcription scheme, a psuedospectral 
+    // scheme with high integration accuracy.
+    solver.set_transcription_scheme("legendre-gauss-radau-3");
+    // Use the Bordalba et al. (2023) kinematic constraint method.
+    solver.set_kinematic_constraint_method("Bordalba2023");
+    // Set the solver's convergence and constraint tolerances.
+    solver.set_optim_convergence_tolerance(1e-2);
+    solver.set_optim_constraint_tolerance(1e-4);
+    // We've updated the MocoProblem, so call resetProblem() to pass the updated
+    // problem to the solver.
+    solver.resetProblem(problem);
+    // When MocoTrack::initialize() is called, the solver is created with a
+    // default guess. Since we've updated the problem and changed the 
+    // transcription scheme, it is a good idea to generate a new guess.
+    solver.setGuess(solver.createGuess());
+
+    // Solve!
+    // ------
+    MocoSolution solution = study.solve().unseal();
+    solution.write("example3DWalking_initial_guess.sto");
+
+    Model modelSolution = modelProcessor.process();
+    modelSolution.initSystem();
+    modelSolution.print("example3DWalking_initial_guess_model.osim");
+
+    // Extract the ground reaction forces.
+    TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
+            modelSolution, solution, contactForcesRight, contactForcesLeft);
+    STOFileAdapter::write(externalForcesTableFlat,
+            "example3DWalking_initial_guess_ground_reactions.sto");
+}
+
 /// Solve a optimization problem tracking joint kinematics and ground reaction
 /// forces using a muscle-driven model with foot-ground contact elements.
 void trackWalking(Model model) {
@@ -76,21 +185,15 @@ void trackWalking(Model model) {
     track.set_final_time(1.61);
     track.set_mesh_interval(0.02);
 
-    // Update individual state weights.
-    MocoWeightSet statesWeightSet;
     // Don't track the veritcal position of the pelvis and only lightly track
     // the speed. Let the optimization determine the vertical position of the
     // model, which will make it easier to find the position of the feet that 
     // leads to the best tracking of the kinematics and ground reaction forces.
+    MocoWeightSet statesWeightSet;
     statesWeightSet.cloneAndAppend(
             {"/jointset/ground_pelvis/pelvis_ty/value", 0.0});
     statesWeightSet.cloneAndAppend(
             {"/jointset/ground_pelvis/pelvis_ty/speed", 0.1});
-    // Let the toe coordinates be driven by the passive forces in the model.
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/value", 0.0});
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_r/mtp_angle_r/speed", 0.0});
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/value", 0.0});
-    statesWeightSet.cloneAndAppend({"/jointset/mtp_l/mtp_angle_l/speed", 0.0});
     track.set_states_weight_set(statesWeightSet);
 
     // Get the underlying MocoStudy.
@@ -109,6 +212,24 @@ void trackWalking(Model model) {
             "Left_GRF", {"/bodyset/toes_l"});
     contactTracking->addContactGroup(leftContactGroup);  
 
+    // Constrain the initial states to be close to the reference.
+    TimeSeriesTable coordinatesUpdated = tableProcessor.process(&model);
+    const auto& labels = coordinatesUpdated.getColumnLabels();
+    for (const auto& label : labels) {
+        int index = (int)coordinatesUpdated.getNearestRowIndexForTime(0.48);
+        const auto& value = coordinatesUpdated.getDependentColumn(label);        
+        double lower = 0.0;
+        double upper = 0.0;
+        if (label.find("/speed") != std::string::npos) {
+            lower = value[index] - 0.1;
+            upper = value[index] + 0.1;
+        } else {
+            lower = value[index] - 0.05;
+            upper = value[index] + 0.05;
+        }
+        problem.setStateInfo(label, {}, {lower, upper});
+    }
+
     // Constrain the states and controls to be periodic.
     auto* periodicityGoal = problem.addGoal<MocoPeriodicityGoal>("periodicity");
     for (const auto& coord : model.getComponentList<Coordinate>()) {
@@ -122,7 +243,7 @@ void trackWalking(Model model) {
         periodicityGoal->addStatePair(muscle.getStateVariableNames()[0]);
         periodicityGoal->addControlPair(muscle.getAbsolutePathString());
     }
-    for (const auto& actu : model.getComponentList<Actuator>()) {
+    for (const auto& actu : model.getComponentList<CoordinateActuator>()) {
         periodicityGoal->addControlPair(actu.getAbsolutePathString());
     }
 
@@ -130,7 +251,7 @@ void trackWalking(Model model) {
     // ------------------------------
     auto& solver = study.updSolver<MocoCasADiSolver>();
     // Use the Legnedre-Gauss-Radau transcription scheme, a psuedospectral 
-    // method scheme with integration accuracy.
+    // scheme with high integration accuracy.
     solver.set_transcription_scheme("legendre-gauss-radau-3");
     // Use the Bordalba et al. (2023) kinematic constraint method.
     solver.set_kinematic_constraint_method("Bordalba2023");
@@ -145,7 +266,13 @@ void trackWalking(Model model) {
     // transcription scheme, it is a good idea to generate a new guess. In this 
     // case, generating a new guess is crucial for the optimization to converge.
     // Always check your initial guess before running an optimization!
-    solver.setGuess(solver.createGuess());
+    MocoTrajectory guess = solver.createGuess();
+    MocoTrajectory initialGuess("example3DWalking_initial_guess.sto");
+    guess.insertStatesTrajectory(initialGuess.exportToStatesTable(), true);
+    TimeSeriesTable controls = guess.exportToControlsTable();
+    controls.updMatrix().setToZero();
+    guess.insertControlsTrajectory(controls, true);
+    solver.setGuess(guess);
 
     // Solve!
     // ------
@@ -164,7 +291,7 @@ void trackWalking(Model model) {
             "example3DWalking_track_walking_ground_reactions.sto");
 
     // Visualize the solution.
-    study.visualize(solution);
+    // study.visualize(solution);
 }
 
 int main() {
@@ -181,7 +308,7 @@ int main() {
     Model model("subject_walk_scaled.osim");
     model.initSystem();
 
-    // Set minimum muscle controls to 0 (default is 0.01).
+    // Set minimum muscle controls and activations to 0 (default is 0.01).
     for (auto& muscle : model.updComponentList<Millard2012EquilibriumMuscle>()) {
         muscle.setMinimumActivation(0.0);
         muscle.setMinControl(0.0);
@@ -234,11 +361,12 @@ int main() {
     }
     model.finalizeConnections();
 
-    // Tracking optimization.
-    // ---------------------
+    /// Tracking optimization.
+    /// ---------------------
     /// Solve a tracking optimization problem using the modified model.
     /// This problem takes ~70 minutes to solve on a machine using a 4.7 GHz
     /// processor with 24 threads.
+    createInitialGuess(model);
     trackWalking(model);
 
     return EXIT_SUCCESS;

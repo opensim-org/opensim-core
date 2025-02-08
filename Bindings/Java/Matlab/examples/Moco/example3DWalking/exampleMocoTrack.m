@@ -185,14 +185,14 @@ model.initSystem();
 for i = 0:model.getNumStateVariables()-1
     currentStateName = string(model.getStateVariableNames().getitem(i));
     if (~contains(currentStateName,'pelvis_tx/value'))
-        symmetryGoal.addStatePair(MocoPeriodicityGoalPair(currentStateName));
+        periodicityGoal.addStatePair(MocoPeriodicityGoalPair(currentStateName));
     end
 end
 
 forceSet = model.getForceSet();
 for i = 0:forceSet.getSize()-1
     forcePath = forceSet.get(i).getAbsolutePathString();
-    symmetryGoal.addControlPair(MocoPeriodicityGoalPair(forcePath));
+    periodicityGoal.addControlPair(MocoPeriodicityGoalPair(forcePath));
 end
 
 problem.addGoal(periodicityGoal);
@@ -324,7 +324,7 @@ solver.resetProblem(problem);
 
 % Set the guess, if available.
 if (exist("exampleMocoTrack_muscle_driven_tracking_solution.sto", "file"))
-    study.setGuessFile("exampleMocoTrack_muscle_driven_tracking_solution.sto");
+    solver.setGuessFile("exampleMocoTrack_muscle_driven_tracking_solution.sto");
 end
 
 % Solve!
