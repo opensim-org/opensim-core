@@ -71,6 +71,7 @@ v4.6
 - Added the property `activation_dynamics_smoothing` to `DeGrooteFregly2016Muscle`. This property uses the model's original value of 0.1 as a 
   default, but users may consider increasing this value (e.g., 10.0) so that the activation and deactivation speeds of the model better match the 
   activation and deactivation time constants.
+- Remove unused, legacy `<default>` blocks in `.osim` and `.xml` files which cause the `min_control` initialization error (#3986).
 
 v4.5.1
 ======
