@@ -173,8 +173,30 @@ By default, any application linking to osimCommon will create an
 written by OpenSim (incl. during static initialization) are written to
 both this file and the standard output streams." OFF)
 
+option(OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION
+"Disable OpenSim from registering bundled `Object` types at static
+initialization time.
+
+By default, the static initializer for each OpenSim library will
+call `RegisterTypes_osimCommon`. This has the handy side-effect of
+making all available `Object` types available at (post-static-init)
+runtime, so that (e.g.) downstream code can immediately load XML
+files. However, it has the drawback that downstream code cannot
+control when, or in which order, registration happens, which can
+(e.g.) prevent setting up application-level logging before registering
+things.
+
+If this is set to `ON` (i.e. disable static type registration) then
+downstream code *must* manually register the OpenSim types it plans
+on using by calling `RegisterTypes_osimLIBRARY` (e.g. `RegisterTypes_osimActuators`),
+or by manually registering each type (e.g. `Object::registerType(PhysicalOffsetFrame());`)." OFF)
+mark_as_advanced(OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION)
+
 if(OPENSIM_DISABLE_LOG_FILE)
     add_definitions(-DOPENSIM_DISABLE_LOG_FILE=1)
+endif()
+if(OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION)
+    add_definitions(-DOPENSIM_DISABLE_STATIC_TYPE_REGISTRATION=1)
 endif()
 
 set(OPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT OFF)
