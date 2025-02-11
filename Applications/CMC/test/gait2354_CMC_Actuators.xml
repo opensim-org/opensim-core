@@ -1,36 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ForceSet name="gait2354_CMC">
 
-	<defaults>
-
-		<Force name="default">
-			<max_force> 10000.000 </max_force>
-			<min_force> -10000.000 </min_force>
-			<optimal_force> 1000.0 </optimal_force>
-			<body_A> </body_A>
-			<point_A> 0.000 0.000 0.000 </point_A>
-			<direction_A> 1.000 0.000 0.000 </direction_A>
-			<body_B> </body_B>
-			<point_B> 0.000 0.000 0.000 </point_B>
-		</Force>
-
-		<Torque name="default">
-			<max_force> 10000.000 </max_force>
-			<min_force> -10000.000 </min_force>
-			<optimal_force> 1000.0 </optimal_force>
-			<body_A> </body_A>
-			<direction_A> 1.000 0.000 0.000 </direction_A>
-			<body_B> </body_B>
-		</Torque>
-
-		<CoordinateActuator name="default">
-			<max_force> 10000.0 </max_force>
-			<min_force> -10000.0 </min_force>
-			<optimal_force> 1000.0 </optimal_force>
-			<coordinate> </coordinate>
-		</CoordinateActuator>
-
-	</defaults>
 
 	<objects>
 

@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="20303">
   <SerializableObject name="TestObject">
-    <defaults>
-      <SerializableObject2 name="default">
-        <Test_DblArray2>7 8 9</Test_DblArray2>
-        <Test_Bool2>true</Test_Bool2>
-      </SerializableObject2>
-    </defaults>
       <!--Comment on a boolean-->
 		<Test_Bool>true</Test_Bool>
 		<!--Comment on a Int-->

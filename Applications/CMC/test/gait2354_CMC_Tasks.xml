@@ -1,47 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CMC_TaskSet name="gait2354_CMC">
 
-	<defaults>
-		<CMC_Joint name="default">
-			<!--Flag (true or false) indicating whether or not a task is on.-->
-			<on> false </on>
-			<!--Body frame with respect to which a tracking objective is specified.
-			    This property is not used for tracking joint angles.-->
-			<wrt_body> -1 </wrt_body>
-			<!--Specifies the body frame in which the tracking objectives are
-			    expressed.  This property is not used for tracking joint angles.-->
-			<express_body> -1 </express_body>
-			<!--Array of 3 flags (each true or false) specifying whether a component
-			    of a task is active.  For example, tracking the trajectory of a point
-			    in space could have three components (x,y,z).  This allows each of
-			    those to be made active (true) or inactive (false).  A task for
-			    tracking a joint coordinate only has one component.-->
-			<active> false false false </active>
-			<!--Weight with which a task is tracked relative to other tasks. To track
-			    a task more tightly, make the weight larger.-->
-			<weight> 1 1 1 </weight>
-			<!--Position error feedback gain (stiffness). To achieve critical damping
-			    of errors, choose kv = 2*sqrt(kp).-->
-			<kp> 1 1 1 </kp>
-			<!--Velocity error feedback gain (damping). To achieve critical damping of
-			    errors, choose kv = 2*sqrt(kp).-->
-			<kv> 1 1 1 </kv>
-			<!--Feedforward acceleration gain.  This is normally set to 1.0, so no
-			    gain.-->
-			<ka> 1 1 1 </ka>
-			<!--Direction vector[3] for component 0 of a task. Joint tasks do not use
-			    this propery.-->
-			<r0> 0 0 0 </r0>
-			<!--Direction vector[3] for component 1 of a task. Joint tasks do not use
-			    this property.-->
-			<r1> 0 0 0 </r1>
-			<!--Direction vector[3] for component 2 of a task. Joint tasks do not use
-			    this property.-->
-			<r2> 0 0 0 </r2>
-			<!--Name of the coordinate to be tracked.-->
-			<coordinate>  </coordinate>
-		</CMC_Joint>
-	</defaults>
 
 	<objects>
 

@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSimDocument Version="20001">
 	<Model name="pendulum">
-		<defaults>
-		</defaults>
 		<credits> Tim Dorn </credits>
 		<publications> List of publications related to model... </publications>
 		

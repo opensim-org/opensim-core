@@ -1,14 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ControlSet name="gait2354_CMC">
-	<defaults>
-		<ControlLinear name="default">
-			<is_model_control> true </is_model_control>
-			<extrapolate> true </extrapolate>
-			<default_min> 0.02 </default_min>
-			<default_max> 1.00 </default_max>
-			<use_steps> true </use_steps>
-		</ControlLinear>
-	</defaults>
 	<objects>
 		<ControlLinear name="FX.excitation">
 			<default_min> -1.0 </default_min>

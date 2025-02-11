@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ControlSet name="leg69_muscles_residuals_motor_control_limits">
-	<defaults>
-		<ControlLinear name="default">
-			<default_min> -10000.0 </default_min>
-			<default_max> 10000.0 </default_max>
-			<use_steps> false </use_steps>
-		</ControlLinear>
-	</defaults>
 	<objects>
 		<ControlLinear name="MZ.excitation"/>
 		<ControlLinear name="FX.excitation"/>

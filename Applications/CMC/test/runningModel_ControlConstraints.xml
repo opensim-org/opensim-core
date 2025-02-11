@@ -1,23 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ControlSet name="GIL01_fast1_CMC">
 	
-   <defaults>
-		
-      <ControlLinear name="default">
-			
-         <is_model_control> true </is_model_control>
-			
-         <extrapolate> false </extrapolate>
-			
-         <default_min> 0.02 </default_min>
-			
-         <default_max> 1.00 </default_max>
-			
-         <use_steps> true </use_steps>
-		
-      </ControlLinear>
-	
-   </defaults>
 	
    <objects>
 		
