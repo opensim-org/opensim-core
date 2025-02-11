@@ -79,6 +79,7 @@ void DeGrooteFregly2016Muscle::constructProperties() {
     constructProperty_tendon_strain_at_one_norm_force(0.049);
     constructProperty_ignore_passive_fiber_force(false);
     constructProperty_tendon_compliance_dynamics_mode("explicit");
+    constructProperty_activation_dynamics_smoothing(0.1);
 }
 
 void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
@@ -143,6 +144,22 @@ void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
             "but it is %g.",
             getName().c_str(), get_tendon_strain_at_one_norm_force());
 
+    SimTK_ERRCHK2_ALWAYS(get_activation_dynamics_smoothing() > 0,
+            "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
+            "%s: activation_dynamics_smoothing must be greater than zero, "
+            "but it is %g.",
+            getName().c_str(), get_activation_dynamics_smoothing());
+
+    if (get_activation_dynamics_smoothing() <= 0.1) {
+        log_warn("The activation_dynamics_smoothing property is set to {}, "
+                "which is equal or less than the original default value of "
+                "the model, but may produce activation and deactivation times "
+                "that are inconsistent with the activation dynamics time "
+                "constants. A value of 10 is recommended to achieve activation "
+                "and deactivation speeds closer to the intended time constants. ",
+                get_activation_dynamics_smoothing());
+    }
+
     OPENSIM_THROW_IF_FRMOBJ(
             get_pennation_angle_at_optimal() < 0 ||
                     get_pennation_angle_at_optimal() >
@@ -205,7 +222,7 @@ void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
         const auto& excitation = getControl(s);
         static const double actTimeConst = get_activation_time_constant();
         static const double deactTimeConst = get_deactivation_time_constant();
-        static const double tanhSteepness = 0.1;
+        static const double tanhSteepness = get_activation_dynamics_smoothing();
         //     f = 0.5 tanh(b(e - a))
         //     z = 0.5 + 1.5a
         // da/dt = [(f + 0.5)/(tau_a * z) + (-f + 0.5)*z/tau_d] * (e - a)

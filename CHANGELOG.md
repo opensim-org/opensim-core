@@ -52,7 +52,8 @@ v4.6
 - Make `InverseKinematicsSolver` methods to query for specific marker or orientation-sensor errors more robust to invalid names or names not 
   in the intersection of names in the model and names in the provided referece/data. Remove methods that are index based from public interface.(#3951) 
 - Replace usages of `OpenSim::make_unique` with `std::make_unique` and remove wrapper function now that C++14 is used in OpenSim (#3979). 
-- Add utility method `createVectorLinspaceInterval` for the `std::vector` type and add unit tests. Utilize the new utility method to fix a bug (#3976) in creating the uniformly sampled time interval from the experimental data sampling frequency in `APDMDataReader` and `XsensDataReader` (#3977).
+- Add utility method `createVectorLinspaceInterval` for the `std::vector` type and add unit tests. Utilize the new utility method to fix a bug (#3976) 
+  in creating the uniformly sampled time interval from the experimental data sampling frequency in `APDMDataReader` and `XsensDataReader` (#3977).
 - Fix Point Kinematics Reporter variable and initialization error and add unit tests (#3966)
 - `OpenSim::ContactHalfSpace`, `OpenSim::ContactMesh`, and `OpenSim::ContactSphere` now check their associated `Appearance`'s `is_visible` flag when deciding whether to emit their associated decorations (#3993).
 - The message associated with `OpenSim::PropertyException` now includes the full absolute path to the component that threw the exception (#3987).
@@ -67,9 +68,14 @@ v4.6
     if one is detected (previously: it would emit decorations with `NaN`ed transforms).
 - `PolynomialPathFitter` now allows fitting paths that depend on more than 6 coordinates, matching recent changes to `MultivariatePolynomialFunction` (#4001).
 - If an `Object` cannot be found when loading a list property from XML, a warning will now be emitted to the log (previously: it was emitted to `std::cerr`, #4009).
+- Added the property `activation_dynamics_smoothing` to `DeGrooteFregly2016Muscle`. This property uses the model's original value of 0.1 as a 
+  default, but users may consider increasing this value (e.g., 10.0) so that the activation and deactivation speeds of the model better match the 
+  activation and deactivation time constants.
+- Remove unused, legacy `<defaults>` blocks in `.osim` and `.xml` files (#3986).
 - Added `example3DWalking`, which demonstrates how to create a tracking simulation with foot-ground contact in Moco. (#4008)
 - Added `ModelFactory::createResidualActuators` and `ModOpAddResiduals` to make it easy to add a set of residual actuators to a model. (#4008)
 - Added convenience methods to `MocoTrack` to allow setting marker weights from a `Set<MarkerWeight>` or `IKTaskSet`. (#4008)
+
 
 v4.5.1
 ======
