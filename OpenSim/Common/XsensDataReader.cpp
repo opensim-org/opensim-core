@@ -128,7 +128,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
                 gyro_row_vector[imu_index] = SimTK::Vec3(OpenSim::IO::stod(nextRow[gyroIndex]),
                     OpenSim::IO::stod(nextRow[gyroIndex + 1]), OpenSim::IO::stod(nextRow[gyroIndex + 2]));
             // Create Mat33 then convert into Quaternion
-            SimTK::Mat33 imu_matrix(SimTK::NaN);
+            SimTK::Mat33 imu_matrix;
             int matrix_entry_index = 0;
             for (int mcol = 0; mcol < 3; mcol++) {
                 for (int mrow = 0; mrow < 3; mrow++) {
