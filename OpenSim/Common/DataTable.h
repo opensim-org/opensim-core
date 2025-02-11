@@ -505,7 +505,7 @@ public:
     DataTable<double, Vec3>       | Vec3         | 3
     DataTable<double, Quaternion> | Quaternion   | 4                          */
     unsigned numComponentsPerElement() const override {
-        return numComponentsPerElement_impl(ETY{});
+        return numComponentsPerElement_impl(ETY());
     }
 
     /// @name Row accessors/mutators.

@@ -1676,7 +1676,7 @@ std::string Object::dump() const {
     updateXMLNode(elem);
     Object::setSerializeAllDefaults(false);
     doc.getRootElement().node_begin()->writeToString(outString);
-    return std::move(outString);
+    return outString;
 }
 
 
