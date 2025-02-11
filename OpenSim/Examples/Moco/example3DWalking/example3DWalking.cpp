@@ -16,14 +16,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/// This example demonstrates how to solve 3D walking optimization problems 
-/// using a foot-ground contact model. Polynomial functions are used to 
-/// represent muscle geometry via the FunctionBasedPath class which 
-/// significantly improves convergence time.
-///
-/// See the README.txt next to this file for more information about the
-/// reference data used in this example.
-
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/VisualizerUtilities.h>
@@ -33,20 +25,28 @@
 
 using namespace OpenSim;
 
- // Paths to the contact forces in the model.
-static const std::vector<std::string> contactForcesRight = {"/contactHeel_r", 
-        "/contactLateralRearfoot_r", "/contactLateralMidfoot_r", 
-        "/contactMedialMidfoot_r", "/contactLateralToe_r",  
-        "/contactMedialToe_r"};
-static const std::vector<std::string> contactForcesLeft = {"/contactHeel_l", 
-        "/contactLateralRearfoot_l", "/contactLateralMidfoot_l", 
-        "/contactMedialMidfoot_l", "/contactLateralToe_l", 
-        "/contactMedialToe_l"};
+/// This example demonstrates how to solve 3D walking optimization problems 
+/// using a foot-ground contact model. Polynomial functions are used to 
+/// represent muscle geometry via the FunctionBasedPath class which 
+/// significantly improves convergence time.
+///
+/// See the README.txt next to this file for more information about the
+/// reference data used in this example.
 
 /// Construct a MocoStudy to track joint kinematics and ground reaction forces 
 /// using a torque-driven or muscle-driven model with foot-ground contact 
 /// elements.
 void runTrackingStudy(Model model, bool muscleDriven) {
+
+     // Paths to the contact forces in the model.
+    const std::vector<std::string> contactForcesRight = {
+            "/contactHeel_r", "/contactLateralRearfoot_r", 
+            "/contactLateralMidfoot_r", "/contactMedialMidfoot_r", 
+            "/contactLateralToe_r", "/contactMedialToe_r"};
+    const std::vector<std::string> contactForcesLeft = {
+            "/contactHeel_l", "/contactLateralRearfoot_l", 
+            "/contactLateralMidfoot_l", "/contactMedialMidfoot_l", 
+            "/contactLateralToe_l", "/contactMedialToe_l"};
 
     // Set the study name and weights.
     std::string study_name;
@@ -128,9 +128,9 @@ void runTrackingStudy(Model model, bool muscleDriven) {
 
     // Constrain the initial states to be close to the reference.
     TimeSeriesTable coordinatesUpdated = tableProcessor.process(&model);
+    int index = (int)coordinatesUpdated.getNearestRowIndexForTime(0.48);
     const auto& labels = coordinatesUpdated.getColumnLabels();
     for (const auto& label : labels) {
-        int index = (int)coordinatesUpdated.getNearestRowIndexForTime(0.48);
         const auto& value = coordinatesUpdated.getDependentColumn(label);        
         double lower = 0.0;
         double upper = 0.0;
@@ -167,7 +167,7 @@ void runTrackingStudy(Model model, bool muscleDriven) {
     // Customize the solver settings.
     // ------------------------------
     auto& solver = study.updSolver<MocoCasADiSolver>();
-    // Use the Legnedre-Gauss-Radau transcription scheme, a psuedospectral 
+    // Use the Legendre-Gauss-Radau transcription scheme, a psuedospectral 
     // scheme with high integration accuracy.
     solver.set_transcription_scheme("legendre-gauss-radau-3");
     // Use the Bordalba et al. (2023) kinematic constraint method.
@@ -184,9 +184,10 @@ void runTrackingStudy(Model model, bool muscleDriven) {
     // solving the muscle-driven problem, use the solution from the 
     // torque-driven problem as the initial guess.
     MocoTrajectory guess = solver.createGuess();
-    if (muscleDriven) {
-        MocoTrajectory initialGuess(
-                "example3DWalking_torque_driven_tracking_solution.sto");
+    std::string torqueDrivenSolutionFile =
+            "example3DWalking_torque_driven_tracking_solution.sto";
+    if (muscleDriven && IO::FileExists(torqueDrivenSolutionFile)) {
+        MocoTrajectory initialGuess(torqueDrivenSolutionFile);
         guess.insertStatesTrajectory(initialGuess.exportToStatesTable(), true);
         TimeSeriesTable controls = guess.exportToControlsTable();
         controls.updMatrix().setToZero();
@@ -196,7 +197,7 @@ void runTrackingStudy(Model model, bool muscleDriven) {
 
     // Solve!
     // ------
-    MocoSolution solution = study.solve().unseal();
+    MocoSolution solution = study.solve();
     solution.write(fmt::format("example3DWalking_{}_solution.sto", study_name));
 
     // Print the model.
@@ -295,7 +296,7 @@ int main() {
 
     // Solve a muscle-driven tracking problem using the kinematic trajectory
     // from the torque-driven problem as the initial guess.
-    // This problem takes ~70 minutes to solve.
+    // This problem takes ~100 minutes to solve.
     runTrackingStudy(model, true);
 
     return EXIT_SUCCESS;
