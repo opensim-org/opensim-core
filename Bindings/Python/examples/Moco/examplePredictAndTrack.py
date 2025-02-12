@@ -288,10 +288,7 @@ def solveMarkerTracking(markersRef, guess):
     solver = study.initCasADiSolver()
     solver.set_num_mesh_intervals(50)
     solver.set_verbosity(2)
-    solver.set_optim_solver("ipopt")
-    solver.set_optim_jacobian_approximation("exact")
     solver.set_optim_hessian_approximation("exact")
-    solver.set_exact_hessian_block_sparsity_mode("dense")
     
     solver.setGuess(guess)
 
