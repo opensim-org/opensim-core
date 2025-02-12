@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSimDocument Version="20001">
 	<Model name="PathOnConstrainedBodyMomentArmTest">
-		<defaults>
-		</defaults>
 		<credits>  </credits>
 		<publications>  </publications>
 		<ForceSet name="">
