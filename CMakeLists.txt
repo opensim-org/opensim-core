@@ -796,8 +796,8 @@ if(OPENSIM_WITH_CASADI)
     OpenSimCopyDependencyDLLsForWin(DEP_NAME casadi
             DEP_BIN_DIR "${CASADI_BIN_DIR}")
     if(OPENSIM_COPY_DEPENDENCIES AND NOT WIN32)
-        # MocoCopyDLLs() only copies DLLs for Windows, but we still need
-        # the CasADi shared libraries on other platforms.
+        # OpenSimCopyDependencyDLLsForWin() only copies DLLs for Windows, but 
+        # we still need the CasADi shared libraries on other platforms.
         install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
             DESTINATION "${CMAKE_INSTALL_PREFIX}/${OPENSIM_INSTALL_CASADIDIR}"
                 USE_SOURCE_PERMISSIONS)
@@ -817,6 +817,52 @@ endif()
 if (OPENSIM_WITH_CASADI)
     if(UNIX)
         pkg_check_modules(IPOPT REQUIRED ipopt IMPORTED_TARGET)
+
+        if(OPENSIM_COPY_DEPENDENCIES AND APPLE)
+            # Extract actual name of the library libgfortran, gcc, quadmath to install along on OSX.
+            # These show only as dependencies of libipopt, and libgcc is in same folder as libgfortran.
+            # Not very robust, but works for our artifacts.
+            execute_process(COMMAND bash "-c"
+                "otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libgfortran' | awk '{print $1}'"
+                OUTPUT_VARIABLE libgfortran_name
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+            string(REPLACE "libgfortran.5" "libgcc_s.1.1" libgcc_name ${libgfortran_name})
+
+            execute_process(COMMAND bash "-c"
+                "otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libquadmath' | awk '{print $1}'"
+                OUTPUT_VARIABLE libquadmath_name
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+            install(FILES
+                ${IPOPT_LIBDIR}/libipopt.3.dylib
+                ${IPOPT_LIBDIR}/libipopt.dylib
+                ${IPOPT_LIBDIR}/libcoinmumps.3.dylib
+                ${IPOPT_LIBDIR}/libcoinmumps.dylib
+                ${IPOPT_LIBDIR}/libmetis.dylib
+                ${libgfortran_name}
+                ${libquadmath_name}
+                ${libgcc_name}
+                DESTINATION ${CMAKE_INSTALL_LIBDIR})
+                
+        elseif(OPENSIM_COPY_DEPENDENCIES AND LINUX)
+            get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
+
+            file(GLOB gfortran "${gcc_libdir}/../../../x86_64-linux-gnu/libgfortran*.so*")
+            file(GLOB quadmath "${gcc_libdir}/../../../x86_64-linux-gnu/libquadmath*.so*")
+
+            install(FILES
+                ${IPOPT_LIBDIR}/libipopt.so.3.14.16
+                ${IPOPT_LIBDIR}/libipopt.so.3
+                ${IPOPT_LIBDIR}/libipopt.so
+                ${IPOPT_LIBDIR}/libcoinmumps.so.3.0.5
+                ${IPOPT_LIBDIR}/libcoinmumps.so.3
+                ${IPOPT_LIBDIR}/libcoinmumps.so
+                ${IPOPT_LIBDIR}/libmetis.so
+                ${gfortran}
+                ${quadmath}
+                DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        endif()
     else()
         set(Ipopt_ROOT_DIR ${OPENSIM_DEPENDENCIES_DIR}/ipopt)
         message("Ipopt_ROOT_DIR ${Ipopt_ROOT_DIR}")
