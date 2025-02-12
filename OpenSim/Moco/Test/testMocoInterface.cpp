@@ -2125,9 +2125,9 @@ TEST_CASE("Solver isAvailable()") {
 #else
     CHECK(!MocoCasADiSolver::isAvailable());
 #endif
+}
 
-TEMPLATE_TEST_CASE("Locked coordinates ", "",
-        MocoCasADiSolver) {
+TEST_CASE("Locked coordinates") {
     MocoStudy study;
     auto& problem = study.updProblem();
     auto model = createSlidingMassModel(10.0, true);

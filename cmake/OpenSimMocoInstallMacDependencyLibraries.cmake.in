@@ -54,9 +54,6 @@ execute_process(COMMAND bash "-c"
 endmacro()
 
 
-
-install_name_tool_change(osimMoco adolc.2 "@ADOLC_DIR@/lib64")
-
 if (OPENSIM_WITH_CASADI)
     install_name_tool_add_rpath(casadi.3.7)
     install_name_tool_delete_rpath(casadi.3.7 "@CASADI_LIBDIR@")
