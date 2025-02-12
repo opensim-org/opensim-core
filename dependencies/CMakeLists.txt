@@ -222,11 +222,6 @@ option(OPENSIM_WITH_CASADI
         "Build CasADi support for Moco (MocoCasADiSolver)." OFF)
 
 if(OPENSIM_WITH_CASADI)
-    # AddDependency(NAME    eigen
-    #             DEFAULT ON
-    #             URL     https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.zip)
-    # mark_as_advanced(SUPERBUILD_eigen)
-
     CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
                         "OPENSIM_WITH_CASADI" OFF)
 
