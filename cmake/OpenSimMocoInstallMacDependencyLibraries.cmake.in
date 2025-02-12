@@ -60,7 +60,7 @@ if (OPENSIM_WITH_CASADI)
 
     install_name_tool_change(casadi_nlpsol_ipopt.3.7 ipopt.3 "@IPOPT_LIBDIR@")
     install_name_tool_change(casadi_nlpsol_ipopt.3.7 coinmumps.3 "@IPOPT_LIBDIR@")
-    install_name_tool_change(casadi_nlpsol_ipopt.3.7 coinmetis.1 "@IPOPT_LIBDIR@")
+    install_name_tool_change(casadi_nlpsol_ipopt.3.7 metis "@IPOPT_LIBDIR@")
     install_name_tool_change_quadmath(casadi_nlpsol_ipopt.3.7)
     install_name_tool_add_rpath(casadi_nlpsol_ipopt.3.7)
     install_name_tool_delete_rpath(casadi_nlpsol_ipopt.3.7 "@CASADI_LIBDIR@")
