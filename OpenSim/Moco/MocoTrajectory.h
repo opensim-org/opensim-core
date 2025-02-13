@@ -94,8 +94,8 @@ trajectory.getStatesTrajectoryMat()
 
 @par Implicit dynamics model
 If the solver uses an implicit dynamics mode, then there are "control"
-variables ("adjunct" variables in tropter's terminology) for the generalized
-accelerations. These are stored in the trajectory as derivative variables.
+variables for the generalized accelerations. These are stored in the trajectory 
+as derivative variables.
 
 @par Sealed trajectories
 If the trajectory is obtained as the failed solution to a problem,

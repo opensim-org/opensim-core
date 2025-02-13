@@ -19,20 +19,20 @@ endfunction()
 MocoAddSandboxExecutable(NAME sandboxSandbox LIB_DEPENDS osimMoco)
 
 MocoAddSandboxExecutable(NAME sandboxTendonForceState
-        LIB_DEPENDS osimMoco tropter)
+        LIB_DEPENDS osimMoco)
 MocoAddSandboxExecutable(NAME sandboxImplicitActivationDynamics
-        LIB_DEPENDS osimMoco tropter)
+        LIB_DEPENDS osimMoco)
 
 
 # MocoStudy-related.
 MocoAddSandboxExecutable(NAME sandboxSlidingMass
-        LIB_DEPENDS osimMoco tropter)
+        LIB_DEPENDS osimMoco)
 MocoAddSandboxExecutable(NAME sandboxContact
-        LIB_DEPENDS osimMoco osimAnalyses tropter)
+        LIB_DEPENDS osimMoco osimAnalyses)
 MocoAddSandboxExecutable(NAME sandboxMuscle
         LIB_DEPENDS osimMoco)
 MocoAddSandboxExecutable(NAME sandboxCasADi
-        LIB_DEPENDS osimMoco casadi tropter)
+        LIB_DEPENDS osimMoco casadi)
 
 MocoAddSandboxExecutable(NAME sandboxCasADiParallelMap
         LIB_DEPENDS SimTKcommon casadi)

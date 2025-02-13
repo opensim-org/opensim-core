@@ -72,6 +72,8 @@ v4.6
   default, but users may consider increasing this value (e.g., 10.0) so that the activation and deactivation speeds of the model better match the 
   activation and deactivation time constants.
 - Remove unused, legacy `<defaults>` blocks in `.osim` and `.xml` files (#3986).
+- Remove the Tropter solver in Moco, and remove references to it from build/test/make system.
+
 
 v4.5.1
 ======

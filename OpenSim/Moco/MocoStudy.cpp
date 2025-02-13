@@ -19,7 +19,6 @@
 
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoProblem.h"
-#include "MocoTropterSolver.h"
 #include "MocoUtilities.h"
 #include <regex>
 
@@ -54,22 +53,10 @@ void MocoStudy::initSolverInternal() const {
 }
 
 template <>
-MocoTropterSolver& MocoStudy::initSolver<MocoTropterSolver>() {
-    set_solver(MocoTropterSolver());
-    initSolverInternal();
-    return dynamic_cast<MocoTropterSolver&>(upd_solver());
-}
-
-template <>
 MocoCasADiSolver& MocoStudy::initSolver<MocoCasADiSolver>() {
     set_solver(MocoCasADiSolver());
     initSolverInternal();
     return dynamic_cast<MocoCasADiSolver&>(upd_solver());
-}
-
-MocoTropterSolver& MocoStudy::initTropterSolver() {
-    set_solver(MocoTropterSolver());
-    return initSolver<MocoTropterSolver>();
 }
 
 MocoCasADiSolver& MocoStudy::initCasADiSolver() {

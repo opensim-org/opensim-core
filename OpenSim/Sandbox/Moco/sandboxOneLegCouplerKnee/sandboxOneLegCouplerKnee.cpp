@@ -178,7 +178,7 @@ MocoSolution minimizeControlEffortRightLeg(const Options& opt) {
 
     // Set solver options.
     // -------------------
-    auto& ms = study.initTropterSolver();
+    auto& ms = study.initCasADiSolver();
     ms.set_num_mesh_intervals(opt.num_mesh_intervals);
     ms.set_verbosity(2);
     ms.set_multibody_dynamics_mode(opt.dynamics_mode);
@@ -325,7 +325,7 @@ MocoSolution stateTrackingRightLeg(const Options& opt) {
 
     // Set solver options.
     // -------------------
-    auto& ms = study.initTropterSolver();
+    auto& ms = study.initCasADiSolver();
     ms.set_num_mesh_intervals(opt.num_mesh_intervals);
     ms.set_verbosity(2);
     ms.set_multibody_dynamics_mode(opt.dynamics_mode);
@@ -399,9 +399,6 @@ int main() {
     compareTrackingToPrediction(torqueSolTrackingCasADi, torqueSolEffortCasADi);
 
     // Other problems.
-
-    //MocoSolution torqueSolEffortTropter =
-    //    minimizeControlEffortRightLeg<MocoTropterSolver>(opt);
 
     //MocoSolution torqueSolEffort(
     //"sandboxRightLeg_weldedPelvis_torques_minimize_control_effort_solution.sto");
