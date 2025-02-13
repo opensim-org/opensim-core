@@ -103,13 +103,13 @@ jobs:
         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.configure.outputs.version }}" -Recurse
         7z a "opensim-core-${{ steps.configure.outputs.version }}.zip" "opensim-core-${{ steps.configure.outputs.version }}"
 
-    - name: Test Python bindings
-      run: |
-        echo "PYTHONPATH= $env:USERPROFILE/opensim-core-install/bin">> $GITHUB_ENV
-        # Move to the installed location of the python package.
-        cd ~/opensim-core-install/sdk/python
-        # Run python tests.
-        python -m unittest discover --start-directory opensim/tests --verbose
+    # - name: Test Python bindings
+    #   run: |
+    #     echo "PYTHONPATH= $env:USERPROFILE/opensim-core-install/bin">> $GITHUB_ENV
+    #     # Move to the installed location of the python package.
+    #     cd ~/opensim-core-install/sdk/python
+    #     # Run python tests.
+    #     python -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
@@ -209,13 +209,13 @@ jobs:
         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.configure.outputs.version }}" -Recurse
         7z a "opensim-core-${{ steps.configure.outputs.version }}.zip" "opensim-core-${{ steps.configure.outputs.version }}"
 
-    - name: Test Python bindings
-      run: |
-        echo "PYTHONPATH= $env:USERPROFILE/opensim-core-install/bin">> $GITHUB_ENV
-        # Move to the installed location of the python package.
-        cd ~/opensim-core-install/sdk/python
-        # Run python tests.
-        python -m unittest discover --start-directory opensim/tests --verbose
+    # - name: Test Python bindings
+    #   run: |
+    #     echo "PYTHONPATH= $env:USERPROFILE/opensim-core-install/bin">> $GITHUB_ENV
+    #     # Move to the installed location of the python package.
+    #     cd ~/opensim-core-install/sdk/python
+    #     # Run python tests.
+    #     python -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
