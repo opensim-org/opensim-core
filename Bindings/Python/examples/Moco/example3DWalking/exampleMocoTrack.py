@@ -140,13 +140,13 @@ def muscleDrivenStateTracking():
     study = track.initialize()
 
     # Get a reference to the MocoControlCost that is added to every MocoTrack
-    # problem by default.
+    # problem by default and set the overall weight to 0.1.
     problem = study.updProblem()
     effort = osim.MocoControlGoal.safeDownCast(problem.updGoal("control_effort"))
     effort.setWeight(0.1)
 
-    # Put a large weight on the pelvis CoordinateActuators, which act as the
-    # residual, or 'hand-of-god', forces which we would like to keep as small
+    # Put larger individual weights on the pelvis CoordinateActuators, which act 
+    # as the residual, or 'hand-of-god', forces which we would like to keep as small
     # as possible.
     effort.setWeightForControlPattern('.*pelvis.*', 10)
 
@@ -216,9 +216,14 @@ def muscleDrivenJointMomentTracking():
     study = track.initialize()
     problem = study.updProblem()
 
-    # Set the control effort weights.
+    # Get a reference to the MocoControlCost that is added to every MocoTrack
+    # problem by default and set the overall weight to 0.1.
     effort = osim.MocoControlGoal.safeDownCast(problem.updGoal("control_effort"))
     effort.setWeight(0.1)
+
+    # Put larger individual weights on the pelvis CoordinateActuators, which act 
+    # as the residual, or 'hand-of-god', forces which we would like to keep as small
+    # as possible.
     effort.setWeightForControlPattern('.*pelvis.*', 10)
 
     # Constrain the states and controls to be periodic.

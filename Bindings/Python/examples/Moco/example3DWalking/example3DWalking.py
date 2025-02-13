@@ -83,7 +83,7 @@ def runTrackingStudy(model, muscleDriven):
     
     # Construct the MocoTrack problem.
     track = osim.MocoTrack()
-    track.setName('track_walking')
+    track.setName(studyName)
     track.setModel(modelProcessor)
     track.setStatesReference(tableProcessor)
     track.set_states_global_tracking_weight(stateTrackingWeight)
@@ -234,12 +234,11 @@ model = osim.Model('subject_walk_scaled.osim')
 model.initSystem()
 
 # Set minimum muscle controls and activations to 0 (default is 0.01).
-actuators = model.updActuators()
-for iactu in range(actuators.getSize()):
-    muscle = osim.Millard2012EquilibriumMuscle.safeDownCast(actuators.get(iactu))
-    if muscle is not None:
-        muscle.setMinimumActivation(0.0)
-        muscle.setMinControl(0.0)
+muscles = model.updMuscles()
+for imuscle in range(muscles.getSize()):
+    muscle = osim.Millard2012EquilibriumMuscle.safeDownCast(muscles.get(imuscle))
+    muscle.setMinimumActivation(0.0)
+    muscle.setMinControl(0.0)
 
 # Add stiffness and damping to the toes.
 ebcf_toes_l = osim.ExpressionBasedCoordinateForce(

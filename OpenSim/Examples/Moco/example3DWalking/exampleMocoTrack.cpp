@@ -141,16 +141,16 @@ void muscleDrivenStateTracking() {
     // problem beyond the MocoTrack interface.
     MocoStudy study = track.initialize();
 
-    // Get a reference to the MocoControlGoal that is added to every MocoTrack
-    // problem by default.
+    // Get a reference to the MocoControlCost that is added to every MocoTrack
+    // problem by default and set the overall weight to 0.1.
     MocoProblem& problem = study.updProblem();
     MocoControlGoal& effort = 
             dynamic_cast<MocoControlGoal&>(problem.updGoal("control_effort"));
     effort.setWeight(0.1);
 
-    // Put a large weight on the pelvis CoordinateActuators, which act as the
-    // residual, or 'hand-of-god', forces which we would like to keep as small
-    // as possible.
+    // Put larger individual weights on the pelvis CoordinateActuators, which act 
+    // as the residual, or 'hand-of-god', forces which we would like to keep as 
+    // small as possible.
     effort.setWeightForControlPattern(".*pelvis.*", 10);
 
     // Constrain the states and controls to be periodic.
@@ -219,10 +219,15 @@ void muscleDrivenJointMomentTracking() {
     MocoStudy study = track.initialize();
     MocoProblem& problem = study.updProblem();
 
-    // Set the control effort weights.
+    // Get a reference to the MocoControlCost that is added to every MocoTrack
+    // problem by default and set the overall weight to 0.1.
     MocoControlGoal& effort = 
             dynamic_cast<MocoControlGoal&>(problem.updGoal("control_effort"));
     effort.setWeight(0.1);
+
+    // Put larger individual weights on the pelvis CoordinateActuators, which act 
+    // as the residual, or 'hand-of-god', forces which we would like to keep as small
+    // as possible.
     effort.setWeightForControlPattern(".*pelvis.*", 10);
 
     // Constrain the states and controls to be periodic.

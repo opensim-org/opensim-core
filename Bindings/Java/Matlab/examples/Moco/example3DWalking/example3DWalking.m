@@ -40,14 +40,12 @@ function example3DWalking()
     model.initSystem();
 
     % Set minimum muscle controls and activations to 0 (default is 0.01).
-    actuators = model.updActuators();
-    for iactu = 1:actuators.getSize()
+    muscles = model.updMuscles();
+    for imuscle = 1:muscles.getSize()
         muscle = Millard2012EquilibriumMuscle.safeDownCast(...
-            actuators.get(iactu-1));
-        if ~isempty(muscle)
-            muscle.setMinimumActivation(0.0);
-            muscle.setMinControl(0.0);
-        end
+            muscles.get(imuscle-1));
+        muscle.setMinimumActivation(0.0);
+        muscle.setMinControl(0.0);
     end
 
     % Add stiffness and damping to the toes.
@@ -175,7 +173,7 @@ function runTrackingStudy(model, muscleDriven)
     
     % Construct the MocoTrack problem.
     track = MocoTrack();
-    track.setName('track_walking');
+    track.setName(studyName);
     track.setModel(modelProcessor);
     track.setStatesReference(tableProcessor);
     track.set_states_global_tracking_weight(stateTrackingWeight);
