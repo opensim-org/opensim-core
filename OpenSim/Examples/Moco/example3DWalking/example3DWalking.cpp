@@ -48,7 +48,13 @@ void runTrackingStudy(Model model, bool muscleDriven) {
             "/contactLateralMidfoot_l", "/contactMedialMidfoot_l", 
             "/contactLateralToe_l", "/contactMedialToe_l"};
 
-    // Set the study name and weights.
+    // Set the study name and weights. In the torque-driven problem, we 
+    // choose weights to track the kinematics and ground reaction forces
+    // more closely. In the muscle-driven problem, we reduce the tracking
+    // weights slightly such that the muscles have a larger influence on
+    // the optimized motion. The scale of the weights was chosen such
+    // the optimized objective value falls roughly in the range [0.1, 10],
+    // which generally improves convergence.
     std::string study_name;
     double stateTrackingWeight;
     double controlEffortWeight;
@@ -149,6 +155,9 @@ void runTrackingStudy(Model model, bool muscleDriven) {
         auto* periodicityGoal = 
                 problem.addGoal<MocoPeriodicityGoal>("periodicity");
         for (const auto& coord : model.getComponentList<Coordinate>()) {
+            // Exclude the knee_angle_l/r_beta coordinates from the periodicity
+            // constraint because they are coupled to the knee_angle_l/r
+            // coordinates.
             if (IO::EndsWith(coord.getName(), "_beta")) { continue; }
             if (!IO::EndsWith(coord.getName(), "_tx")) {
                 periodicityGoal->addStatePair(coord.getStateVariableNames()[0]);
@@ -236,7 +245,9 @@ int main() {
         muscle.setMinControl(0.0);
     }
 
-    // Add stiffness and damping to the toes.
+    // Add stiffness and damping to the toes. Based on Falisse et al. (2022), 
+    // "Modeling toes contributes to realistic stance knee mechanics in 
+    // three-dimensional predictive simulations of walking."
     ExpressionBasedCoordinateForce* ebcf_toes_l = 
         new ExpressionBasedCoordinateForce("mtp_angle_l", "-25.0*q-2.0*qdot");
     ebcf_toes_l->setName("toe_damping_l");
@@ -246,7 +257,8 @@ int main() {
     ebcf_toes_r->setName("toe_damping_r");
     model.addForce(ebcf_toes_r);
 
-    // Add CoordinateActuators to the toes.
+    // Add relatively strong CoordinateActuators to the toes, since no muscles
+    // actuate the toes in this example
     CoordinateActuator* ca_toes_l = new CoordinateActuator("mtp_angle_l");
     ca_toes_l->setName("mtp_angle_l_actuator");
     ca_toes_l->setOptimalForce(50);
@@ -274,7 +286,6 @@ int main() {
         }
         model.addContactGeometry(contactGeometry);
     }
-    model.finalizeConnections();
 
     // Add the contact forces to the model.
     ForceSet contactForceSet("subject_walk_scaled_ContactForceSet.xml");

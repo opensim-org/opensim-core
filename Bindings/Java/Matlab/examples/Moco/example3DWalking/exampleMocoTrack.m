@@ -57,7 +57,8 @@ track.setName("torque_driven_marker_tracking");
 % appended to the model.
 % Create the base Model by passing in the model file.
 modelProcessor = ModelProcessor("subject_walk_scaled.osim");
-% Replace the PinJoints representing the model's toes with WeldJoints.
+% Replace the PinJoints representing the model's toes with WeldJoints, 
+% since we don't have any kinematic data for the toes.
 jointsToWeld = StdVectorString();
 jointsToWeld.add("mtp_r");
 jointsToWeld.add("mtp_l");
@@ -119,6 +120,8 @@ track.setName("muscle_driven_state_tracking");
 % DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
 % parameters.
 modelProcessor = ModelProcessor("subject_walk_scaled.osim");
+% Replace the PinJoints representing the model's toes with WeldJoints, 
+% since we don't have any kinematic data for the toes.
 jointsToWeld = StdVectorString();
 jointsToWeld.add("mtp_r");
 jointsToWeld.add("mtp_l");
@@ -222,6 +225,8 @@ track.setName("muscle_driven_joint_moment_tracking");
 
 % Construct a ModelProcessor and set it on the tool.
 modelProcessor = ModelProcessor("subject_walk_scaled.osim");
+% Replace the PinJoints representing the model's toes with WeldJoints, 
+% since we don't have any kinematic data for the toes.
 jointsToWeld = StdVectorString();
 jointsToWeld.add("mtp_r");
 jointsToWeld.add("mtp_l");

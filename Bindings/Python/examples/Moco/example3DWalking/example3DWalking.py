@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------- #
-# OpenSim Moco: example3DWalking.m                                           #
+# OpenSim Moco: example3DWalking.py                                          #
 # -------------------------------------------------------------------------- #
 # Copyright (c) 2025 Stanford University and the Authors                     #
 #                                                                            #
@@ -49,7 +49,13 @@ def runTrackingStudy(model, muscleDriven):
     contactForcesLeft.append('/contactLateralToe_l')
     contactForcesLeft.append('/contactMedialToe_l')
 
-    # Set the study name and weights.
+    # Set the study name and weights. In the torque-driven problem, we 
+    # choose weights to track the kinematics and ground reaction forces
+    # more closely. In the muscle-driven problem, we reduce the tracking
+    # weights slightly such that the muscles have a larger influence on
+    # the optimized motion. The scale of the weights was chosen such
+    # the optimized objective value falls roughly in the range [0.1, 10],
+    # which generally improves convergence.
     if muscleDriven:
         studyName = 'muscle_driven_tracking'
         stateTrackingWeight = 0.05
@@ -145,6 +151,10 @@ def runTrackingStudy(model, muscleDriven):
         for icoord in range(coordinates.getSize()):
             coordinate = coordinates.get(icoord)
             coordName = coordinate.getName()
+
+            # Exclude the knee_angle_l/r_beta coordinates from the periodicity
+            # constraint because they are coupled to the knee_angle_l/r
+            # coordinates.
             if 'beta' in coordName: continue 
     
             if not '_tx' in coordName:
@@ -240,7 +250,9 @@ for imuscle in range(muscles.getSize()):
     muscle.setMinimumActivation(0.0)
     muscle.setMinControl(0.0)
 
-# Add stiffness and damping to the toes.
+# Add stiffness and damping to the toes. Based on Falisse et al. (2022), 
+# "Modeling toes contributes to realistic stance knee mechanics in 
+# three-dimensional predictive simulations of walking."
 ebcf_toes_l = osim.ExpressionBasedCoordinateForce(
         'mtp_angle_l', '-25.0*q-2.0*qdot')
 ebcf_toes_l.setName('toe_damping_l')
@@ -250,7 +262,8 @@ ebcf_toes_r = osim.ExpressionBasedCoordinateForce(
 ebcf_toes_r.setName('toe_damping_r')
 model.addForce(ebcf_toes_r)
 
-# Add CoordinateActuators to the toes.
+# Add relatively strong CoordinateActuators to the toes, since no muscles
+# actuate the toes in this example.
 ca_toes_l = osim.CoordinateActuator('mtp_angle_l')
 ca_toes_l.setName('mtp_angle_l_actuator')
 ca_toes_l.setOptimalForce(50)
@@ -276,7 +289,6 @@ for i in range(contactGeometrySet.getSize()):
         location = contactGeometry.upd_location()
         location.set(1, location.get(1) + 0.02)
     model.addContactGeometry(contactGeometry)
-model.finalizeConnections()
 
 # Add the contact forces to the model.
 contactForceSet = osim.ForceSet('subject_walk_scaled_ContactForceSet.xml')
@@ -290,7 +302,7 @@ model.finalizeConnections()
 # convergence times below were estimated on a machine using a processor
 # with 4.7 GHz base clock speed and 12 CPU cores (12 threads).
 
-# Solve a torque-driven tracking problem to createa a kinematic 
+# Solve a torque-driven tracking problem to create a kinematic 
 # trajectory that is consistent with the ground reaction forces.
 # This problem takes ~10 minutes to solve.
 runTrackingStudy(model, False)

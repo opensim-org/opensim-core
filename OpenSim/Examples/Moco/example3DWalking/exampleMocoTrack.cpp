@@ -46,7 +46,8 @@ void torqueDrivenMarkerTracking() {
     // model by appending ModelOperators. Operations are performed in the order
     // that they are appended to the model.
     ModelProcessor modelProcessor("subject_walk_scaled.osim");
-    // Replace the PinJoints representing the model's toes with WeldJoints.
+    // Replace the PinJoints representing the model's toes with WeldJoints, 
+    // since we don't have any kinematic data for the toes.
     modelProcessor.append(ModOpReplaceJointsWithWelds({"mtp_r", "mtp_l"}));
     // Add ground reaction external loads in lieu of a ground-contact model.
     modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
@@ -96,6 +97,8 @@ void muscleDrivenStateTracking() {
     // DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
     // parameters.
     ModelProcessor modelProcessor("subject_walk_scaled.osim");
+    // Replace the PinJoints representing the model's toes with WeldJoints, 
+    // since we don't have any kinematic data for the toes.
     modelProcessor.append(ModOpReplaceJointsWithWelds({"mtp_r", "mtp_l"}));
     modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
     // Add CoordinateActuators to the pelvis coordinates. 
@@ -193,6 +196,8 @@ void muscleDrivenJointMomentTracking() {
 
     // Construct a ModelProcessor and set it on the tool. 
     ModelProcessor modelProcessor("subject_walk_scaled.osim");
+    // Replace the PinJoints representing the model's toes with WeldJoints, 
+    // since we don't have any kinematic data for the toes.
     modelProcessor.append(ModOpReplaceJointsWithWelds({"mtp_r", "mtp_l"}));
     modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
     modelProcessor.append(ModOpAddResiduals(250.0, 50.0, 1.0));

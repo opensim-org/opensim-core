@@ -42,7 +42,8 @@ def torqueDrivenMarkerTracking():
     # appended to the model.
     # Create the base Model by passing in the model file.
     modelProcessor = osim.ModelProcessor("subject_walk_scaled.osim")
-    # Replace the PinJoints representing the model's toes with WeldJoints.
+    # Replace the PinJoints representing the model's toes with WeldJoints, 
+    # since we don't have any kinematic data for the toes.
     jointsToWeld = osim.StdVectorString()
     jointsToWeld.append("mtp_r")
     jointsToWeld.append("mtp_l")
@@ -91,6 +92,8 @@ def muscleDrivenStateTracking():
     # DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
     # parameters.
     modelProcessor = osim.ModelProcessor("subject_walk_scaled.osim")
+    # Replace the PinJoints representing the model's toes with WeldJoints, 
+    # since we don't have any kinematic data for the toes.
     jointsToWeld = osim.StdVectorString()
     jointsToWeld.append("mtp_r")
     jointsToWeld.append("mtp_l")
@@ -187,6 +190,8 @@ def muscleDrivenJointMomentTracking():
 
     # Construct a ModelProcessor and set it on the tool.
     modelProcessor = osim.ModelProcessor('subject_walk_scaled.osim')
+    # Replace the PinJoints representing the model's toes with WeldJoints, 
+    # since we don't have any kinematic data for the toes.
     jointsToWeld = osim.StdVectorString()
     jointsToWeld.append("mtp_r")
     jointsToWeld.append("mtp_l")
