@@ -35,7 +35,9 @@ using namespace OpenSim;
 
 /// Construct a MocoStudy to track joint kinematics and ground reaction forces 
 /// using a torque-driven or muscle-driven model with foot-ground contact 
-/// elements.
+/// elements. The objective function weights were chosen such the optimized 
+/// objective value falls roughly in the range [0.1, 10], which generally 
+/// improves convergence.
 void runTrackingStudy(Model model, bool muscleDriven) {
 
      // Paths to the contact forces in the model.
@@ -48,27 +50,30 @@ void runTrackingStudy(Model model, bool muscleDriven) {
             "/contactLateralMidfoot_l", "/contactMedialMidfoot_l", 
             "/contactLateralToe_l", "/contactMedialToe_l"};
 
-    // Set the study name and weights. In the torque-driven problem, we 
-    // choose weights to track the kinematics and ground reaction forces
-    // more closely. In the muscle-driven problem, we reduce the tracking
-    // weights slightly such that the muscles have a larger influence on
-    // the optimized motion. The scale of the weights was chosen such
-    // the optimized objective value falls roughly in the range [0.1, 10],
-    // which generally improves convergence.
+    // Configure study-specific settings.
     std::string study_name;
-    double stateTrackingWeight;
-    double controlEffortWeight;
-    double contactTrackingWeight;
     if (muscleDriven) {
         study_name = "muscle_driven_tracking";
-        stateTrackingWeight = 0.05;
-        controlEffortWeight = 0.1;
-        contactTrackingWeight = 5e-3;
     } else {
         study_name = "torque_driven_tracking";
-        stateTrackingWeight = 0.1;
-        controlEffortWeight = 0.1;
-        contactTrackingWeight = 1e-2;
+
+        // Add weak CoordinateActuators to the toes. For the torque-driven 
+        // simulation, we do not want ModOpAddReserves() to add strong 
+        // actuators to the toes, since the toes will have no active actuation
+        // in the muscle-driven problem.
+        CoordinateActuator* ca_toes_l = new CoordinateActuator("mtp_angle_l");
+        ca_toes_l->setName("mtp_angle_l_actuator");
+        ca_toes_l->setOptimalForce(10);
+        ca_toes_l->setMinControl(-1.0);
+        ca_toes_l->setMaxControl(1.0);
+        model.addForce(ca_toes_l);
+
+        CoordinateActuator* ca_toes_r = new CoordinateActuator("mtp_angle_r");
+        ca_toes_r->setName("mtp_angle_r_actuator");
+        ca_toes_r->setOptimalForce(10);
+        ca_toes_r->setMinControl(-1.0);
+        ca_toes_r->setMaxControl(1.0);
+        model.addForce(ca_toes_r);
     }
     
     // Modify the model to prepare it for tracking optimization.
@@ -97,8 +102,8 @@ void runTrackingStudy(Model model, bool muscleDriven) {
     track.setName(study_name);
     track.setModel(modelProcessor);
     track.setStatesReference(tableProcessor);
-    track.set_states_global_tracking_weight(stateTrackingWeight);
-    track.set_control_effort_weight(controlEffortWeight);
+    track.set_states_global_tracking_weight(0.05);
+    track.set_control_effort_weight(0.1);
     track.set_allow_unused_references(true);
     track.set_track_reference_position_derivatives(true);
     track.set_initial_time(0.48);
@@ -123,7 +128,7 @@ void runTrackingStudy(Model model, bool muscleDriven) {
     // Add a MocoContactTrackingGoal to the problem to track the ground reaction
     // forces.
     auto* contactTracking = problem.addGoal<MocoContactTrackingGoal>(
-            "grf_tracking", contactTrackingWeight);
+            "grf_tracking", 5e-3);
     contactTracking->setExternalLoadsFile("grf_walk.xml");
     MocoContactTrackingGoalGroup rightContactGroup(contactForcesRight, 
             "Right_GRF", {"/bodyset/toes_r"});
@@ -245,33 +250,15 @@ int main() {
         muscle.setMinControl(0.0);
     }
 
-    // Add stiffness and damping to the toes. Based on Falisse et al. (2022), 
-    // "Modeling toes contributes to realistic stance knee mechanics in 
-    // three-dimensional predictive simulations of walking."
-    ExpressionBasedCoordinateForce* ebcf_toes_l = 
-        new ExpressionBasedCoordinateForce("mtp_angle_l", "-25.0*q-2.0*qdot");
-    ebcf_toes_l->setName("toe_damping_l");
-    model.addForce(ebcf_toes_l);
-    ExpressionBasedCoordinateForce* ebcf_toes_r = 
-        new ExpressionBasedCoordinateForce("mtp_angle_r", "-25.0*q-2.0*qdot");
-    ebcf_toes_r->setName("toe_damping_r");
-    model.addForce(ebcf_toes_r);
-
-    // Add relatively strong CoordinateActuators to the toes, since no muscles
-    // actuate the toes in this example
-    CoordinateActuator* ca_toes_l = new CoordinateActuator("mtp_angle_l");
-    ca_toes_l->setName("mtp_angle_l_actuator");
-    ca_toes_l->setOptimalForce(50);
-    ca_toes_l->setMinControl(-1.0);
-    ca_toes_l->setMaxControl(1.0);
-    model.addForce(ca_toes_l);
-
-    CoordinateActuator* ca_toes_r = new CoordinateActuator("mtp_angle_r");
-    ca_toes_r->setName("mtp_angle_r_actuator");
-    ca_toes_r->setOptimalForce(50);
-    ca_toes_r->setMinControl(-1.0);
-    ca_toes_r->setMaxControl(1.0);
-    model.addForce(ca_toes_r);
+    // Add stiffness and damping to the joints. Toe stiffness and damping values
+    // are based on Falisse et al. (2022), "Modeling toes contributes to 
+    // realistic stance knee mechanics in three-dimensional predictive 
+    // simulations of walking."
+    ForceSet expressionBasedForceSet(
+            "subject_walk_scaled_ExpressionBasedCoordinateForceSet.xml");
+    for (int i = 0; i < expressionBasedForceSet.getSize(); ++i) {
+        model.addComponent(expressionBasedForceSet.get(i).clone());
+    }
 
     // Add the contact geometry to the model.
     ContactGeometrySet contactGeometrySet(
@@ -307,7 +294,7 @@ int main() {
 
     // Solve a muscle-driven tracking problem using the kinematic trajectory
     // from the torque-driven problem as the initial guess.
-    // This problem takes ~100 minutes to solve.
+    // This problem takes ~35 minutes to solve.
     runTrackingStudy(model, true);
 
     return EXIT_SUCCESS;

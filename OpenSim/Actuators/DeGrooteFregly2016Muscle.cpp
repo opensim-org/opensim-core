@@ -151,7 +151,7 @@ void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
             getName().c_str(), get_activation_dynamics_smoothing());
 
     if (get_activation_dynamics_smoothing() <= 0.1) {
-        log_warn("The activation_dynamics_smoothing property is set to {}, "
+        log_debug("The activation_dynamics_smoothing property is set to {}, "
                 "which is equal or less than the original default value of "
                 "the model, but may produce activation and deactivation times "
                 "that are inconsistent with the activation dynamics time "
