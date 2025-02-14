@@ -36,6 +36,7 @@
 
 using namespace OpenSim;
 using namespace std;
+
 namespace {
     // Utility function to build a simple pendulum with markers attached.
     Model* constructPendulumWithMarkers() {
