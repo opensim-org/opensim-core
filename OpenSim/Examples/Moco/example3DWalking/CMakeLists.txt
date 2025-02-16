@@ -3,6 +3,7 @@ set(EXAMPLE_MOCO_TRACK_FILES
         subject_walk_scaled_FunctionBasedPathSet.xml
         subject_walk_scaled_ContactForceSet.xml
         subject_walk_scaled_ContactGeometrySet.xml
+        subject_walk_scaled_ExpressionBasedCoordinateForceSet.xml
         coordinates.sto
         grf_walk.mot
         grf_walk.xml
