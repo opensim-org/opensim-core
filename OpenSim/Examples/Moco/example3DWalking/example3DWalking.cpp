@@ -125,6 +125,10 @@ void runTrackingStudy(Model model, bool muscleDriven) {
     MocoStudy study = track.initialize();
     MocoProblem& problem = study.updProblem();
 
+    // Set bounds on the toe coordinate states.
+    problem.setStateInfoPattern("/jointset/mtp_.*/value", {-1.0, 1.0});
+    problem.setStateInfoPattern("/jointset/mtp_.*/speed", {-20.0, 20.0});
+
     // Add a MocoContactTrackingGoal to the problem to track the ground reaction
     // forces.
     auto* contactTracking = problem.addGoal<MocoContactTrackingGoal>(
