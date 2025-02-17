@@ -16,7 +16,7 @@
 % limitations under the License.                                             %
 % -------------------------------------------------------------------------- %
 
-% This example features two different tracking problems solved using the
+% This example features three different tracking problems solved using the
 % MocoTrack tool. 
 %  - The first problem demonstrates the basic usage of the tool interface
 %    to solve a torque-driven marker tracking problem. 
@@ -57,48 +57,34 @@ track.setName("torque_driven_marker_tracking");
 % appended to the model.
 % Create the base Model by passing in the model file.
 modelProcessor = ModelProcessor("subject_walk_scaled.osim");
+% Replace the PinJoints representing the model's toes with WeldJoints, 
+% since we don't have any kinematic data for the toes.
+jointsToWeld = StdVectorString();
+jointsToWeld.add("mtp_r");
+jointsToWeld.add("mtp_l");
+modelProcessor.append(ModOpReplaceJointsWithWelds(jointsToWeld));
 % Add ground reaction external loads in lieu of a ground-contact model.
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
 % Remove all the muscles in the model's ForceSet.
 modelProcessor.append(ModOpRemoveMuscles());
-% Add CoordinateActuators to the model degrees-of-freedom. This
-% ignores the pelvis coordinates which already have residual 
-% CoordinateActuators.
-modelProcessor.append(ModOpAddReserves(250, 1.0));
+% Add CoordinateActuators to the pelvis coordinates. 
+modelProcessor.append(ModOpAddResiduals(250.0, 50.0, 1.0));
+% Add CoordinateActuators to the remaining degrees-of-freedom. 
+modelProcessor.append(ModOpAddReserves(250.0, 1.0));
 track.setModel(modelProcessor);
 
 % Use this convenience function to set the MocoTrack markers reference
 % directly from a TRC file. By default, the markers data is filtered at
 % 6 Hz and if in millimeters, converted to meters.
-track.setMarkersReferenceFromTRC("marker_trajectories.trc");
-
-% There is marker data in the 'marker_trajectories.trc' associated with
-% model markers that no longer exists (i.e. markers on the arms). Set this
-% flag to avoid an exception from being thrown.
-track.set_allow_unused_references(true);
+track.setMarkersReferenceFromTRC("markers_walk.trc");
 
 % Increase the global marker tracking weight, which is the weight
 % associated with the internal MocoMarkerTrackingGoal term.
 track.set_markers_global_tracking_weight(10);
 
-% Increase the tracking weights for individual markers in the data set 
-% placed on bony landmarks compared to markers located on soft tissue.
-markerWeights = MocoWeightSet();
-markerWeights.cloneAndAppend(MocoWeight("R.ASIS", 20));
-markerWeights.cloneAndAppend(MocoWeight("L.ASIS", 20));
-markerWeights.cloneAndAppend(MocoWeight("R.PSIS", 20));
-markerWeights.cloneAndAppend(MocoWeight("L.PSIS", 20));
-markerWeights.cloneAndAppend(MocoWeight("R.Knee", 10));
-markerWeights.cloneAndAppend(MocoWeight("R.Ankle", 10));
-markerWeights.cloneAndAppend(MocoWeight("R.Heel", 10));
-markerWeights.cloneAndAppend(MocoWeight("R.MT5", 5));
-markerWeights.cloneAndAppend(MocoWeight("R.Toe", 2));
-markerWeights.cloneAndAppend(MocoWeight("L.Knee", 10));
-markerWeights.cloneAndAppend(MocoWeight("L.Ankle", 10));
-markerWeights.cloneAndAppend(MocoWeight("L.Heel", 10));
-markerWeights.cloneAndAppend(MocoWeight("L.MT5", 5));
-markerWeights.cloneAndAppend(MocoWeight("L.Toe", 2));
-track.set_markers_weight_set(markerWeights);
+% Set the marker weights based on the IKTaskSet from the dataset.
+ikTaskSet = IKTaskSet("ik_tasks_walk.xml");
+track.setMarkerWeightsFromIKTaskSet(ikTaskSet);
 
 % Initial time, final time, and mesh interval. The number of mesh points
 % used to discretize the problem is computed internally using these values.
@@ -108,15 +94,14 @@ track.set_mesh_interval(0.02);
 
 % Solve! Use track.solve() to skip visualizing.
 solution = track.solveAndVisualize();
-
-solution.write('exampleMocoTrack_markertracking_solution.sto');
+solution.write("exampleMocoTrack_torque_driven_marker_tracking_solution.sto");
 
 % Generate a PDF report containing plots of the variables in the solution.
 % For details, see osimMocoTrajectoryReport.m in Moco's
 % Resources/Code/Matlab/Utilities folder.
 model = modelProcessor.process();
 report = osimMocoTrajectoryReport(model, ...
-            'exampleMocoTrack_markertracking_solution.sto');
+            'exampleMocoTrack_torque_driven_marker_tracking_solution.sto');
 reportFilepath = report.generate();
 open(reportFilepath);
 
@@ -135,7 +120,15 @@ track.setName("muscle_driven_state_tracking");
 % DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
 % parameters.
 modelProcessor = ModelProcessor("subject_walk_scaled.osim");
+% Replace the PinJoints representing the model's toes with WeldJoints, 
+% since we don't have any kinematic data for the toes.
+jointsToWeld = StdVectorString();
+jointsToWeld.add("mtp_r");
+jointsToWeld.add("mtp_l");
+modelProcessor.append(ModOpReplaceJointsWithWelds(jointsToWeld));
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+% Add CoordinateActuators to the pelvis coordinates. 
+modelProcessor.append(ModOpAddResiduals(250.0, 50.0, 1.0));
 modelProcessor.append(ModOpIgnoreTendonCompliance());
 modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
 % Only valid for DeGrooteFregly2016Muscles.
@@ -177,38 +170,32 @@ track.set_mesh_interval(0.02);
 % problem beyond the MocoTrack interface.
 study = track.initialize();
 
-% Get a reference to the MocoControlGoal that is added to every MocoTrack
-% problem by default.
+% Get a reference to the MocoControlCost that is added to every MocoTrack
+% problem by default and set the overall weight to 0.1.
 problem = study.updProblem();
 effort = MocoControlGoal.safeDownCast(problem.updGoal("control_effort"));
 effort.setWeight(0.1);
 
-% Put a large weight on the pelvis CoordinateActuators, which act as the
-% residual, or 'hand-of-god', forces which we would like to keep as small
+% Put larger individual weights on the pelvis CoordinateActuators, which act 
+% as the residual, or 'hand-of-god', forces which we would like to keep as small
 % as possible.
-model = modelProcessor.process();
-model.initSystem();
-forceSet = model.getForceSet();
-for i = 0:forceSet.getSize()-1
-   forcePath = forceSet.get(i).getAbsolutePathString();
-   if contains(string(forcePath), 'pelvis')
-       effort.setWeightForControl(forcePath, 10);
-   end
-end
+effort.setWeightForControlPattern('.*pelvis.*', 10);
 
 % Constrain the states and controls to be periodic.
 periodicityGoal = MocoPeriodicityGoal("periodicity");
+model = modelProcessor.process();
+model.initSystem();
 for i = 0:model.getNumStateVariables()-1
     currentStateName = string(model.getStateVariableNames().getitem(i));
     if (~contains(currentStateName,'pelvis_tx/value'))
-        symmetryGoal.addStatePair(MocoPeriodicityGoalPair(currentStateName));
+        periodicityGoal.addStatePair(MocoPeriodicityGoalPair(currentStateName));
     end
 end
 
 forceSet = model.getForceSet();
 for i = 0:forceSet.getSize()-1
     forcePath = forceSet.get(i).getAbsolutePathString();
-    symmetryGoal.addControlPair(MocoPeriodicityGoalPair(forcePath));
+    periodicityGoal.addControlPair(MocoPeriodicityGoalPair(forcePath));
 end
 
 problem.addGoal(periodicityGoal);
@@ -221,7 +208,7 @@ solver.resetProblem(problem);
 
 % Solve!
 solution = study.solve();
-solution.write("exampleMocoTrack_state_tracking_solution.sto");
+solution.write("exampleMocoTrack_muscle_driven_tracking_solution.sto");
 
 % Visualize the solution.
 study.visualize(solution);
@@ -238,7 +225,14 @@ track.setName("muscle_driven_joint_moment_tracking");
 
 % Construct a ModelProcessor and set it on the tool.
 modelProcessor = ModelProcessor("subject_walk_scaled.osim");
+% Replace the PinJoints representing the model's toes with WeldJoints, 
+% since we don't have any kinematic data for the toes.
+jointsToWeld = StdVectorString();
+jointsToWeld.add("mtp_r");
+jointsToWeld.add("mtp_l");
+modelProcessor.append(ModOpReplaceJointsWithWelds(jointsToWeld));
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+modelProcessor.append(ModOpAddResiduals(250.0, 50.0, 1.0));
 modelProcessor.append(ModOpIgnoreTendonCompliance());
 modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
 modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
@@ -257,28 +251,25 @@ track.set_track_reference_position_derivatives(true);
 track.set_initial_time(0.48);
 track.set_final_time(1.61);
 track.set_mesh_interval(0.02);
-
-% Set the control effort weights.
-controlsWeightSet = MocoWeightSet();
-model = modelProcessor.process();
-model.initSystem();
-forceSet = model.getForceSet();
-for i = 0:forceSet.getSize()-1
-    forcePath = forceSet.get(i).getAbsolutePathString();
-    if contains(string(forcePath), "pelvis")
-        controlsWeightSet.cloneAndAppend(MocoWeight(forcePath, 10));
-    end
-end
-
-track.set_control_effort_weight(0.1);
-track.set_controls_weight_set(controlsWeightSet);
     
 % Get the underlying MocoStudy.
 study = track.initialize();
 problem = study.updProblem();
 
+% Get a reference to the MocoControlCost that is added to every MocoTrack
+% problem by default and set the overall weight to 0.1.
+effort = MocoControlGoal.safeDownCast(problem.updGoal("control_effort"));
+effort.setWeight(0.1);
+
+% Put larger individual weights on the pelvis CoordinateActuators, which act 
+% as the residual, or 'hand-of-god', forces which we would like to keep as small
+% as possible.
+effort.setWeightForControlPattern('.*pelvis.*', 10);
+
 % Constrain the states and controls to be periodic.
 periodicityGoal = MocoPeriodicityGoal("periodicity");
+model = modelProcessor.process();
+model.initSystem();
 for i = 0:model.getNumStateVariables()-1
     currentStateName = string(model.getStateVariableNames().getitem(i));
     if (~contains(currentStateName,"pelvis_tx/value"))
@@ -301,7 +292,7 @@ jointMomentTracking = MocoGeneralizedForceTrackingGoal(...
 % Set the reference joint moments from an inverse dynamics solution and
 % low-pass filter the data at 10 Hz. The reference data should use the 
 % same column label format as the output of the Inverse Dynamics Tool.
-jointMomentRef = TableProcessor("inverse_dynamics.sto");
+jointMomentRef = TableProcessor("id_walk.sto");
 jointMomentRef.append(TabOpLowPassFilter(10));
 jointMomentTracking.setReference(jointMomentRef);
 
@@ -342,8 +333,8 @@ solver.set_optim_constraint_tolerance(1e-4);
 solver.resetProblem(problem);
 
 % Set the guess, if available.
-if (exist("exampleMocoTrack_state_tracking_solution.sto", "file"))
-    study.setGuessFile("exampleMocoTrack_state_tracking_solution.sto");
+if (exist("exampleMocoTrack_muscle_driven_tracking_solution.sto", "file"))
+    solver.setGuessFile("exampleMocoTrack_muscle_driven_tracking_solution.sto");
 end
 
 % Solve!

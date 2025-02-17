@@ -86,10 +86,32 @@ public:
     /// forward slashes converted to underscores. The `bound` argument, if
     /// supplied, sets the min and max controls to `-bound` and `bound`,
     /// respectively.
-    /// The fourth (optional) argument
-    /// specifies whether or not to skip coordinates that already have
-    /// CoordinateActuator%s associated with them (default: true).
+    /// The fourth (optional) argument specifies whether or not to skip 
+    /// coordinates that already have CoordinateActuator%s associated with 
+    /// them (default: true).
+    /// The fifth (optional) argument specifies whether or not to skip
+    /// coordinates that are associated with joints whose parent body is Ground
+    /// (default: false).
     static void createReserveActuators(Model& model, double optimalForce,
+            double bound = SimTK::NaN,
+            bool skipCoordinatesWithExistingActuators = true,
+            bool skipResidualCoordinates = false);
+
+    /// Add CoordinateActuator%s for each unconstrained coordinate (e.g.,
+    /// `! Coordinate::isConstrained()`) in the model associated with joints 
+    /// whose parent body is Ground. The optimal force for rotational and 
+    /// translational coordinates can be set separately using the arguments
+    /// `rotationalOptimalForce` and `translationalOptimalForce`. The actuators
+    /// are added to the model's ForceSet and are named 
+    /// "residual_<coordinate-path>" with forward slashes converted to
+    /// underscores. The `bound` argument, if supplied, sets the min and max
+    /// controls to `-bound` and `bound`, respectively.
+    /// The fifth (optional) argument specifies whether or not to skip
+    /// coordinates that already have CoordinateActuator%s associated with them
+    /// (default: true).
+    static void createResidualActuators(Model& model, 
+            double rotationalOptimalForce,
+            double translationalOptimalForce,
             double bound = SimTK::NaN,
             bool skipCoordinatesWithExistingActuators = true);
     

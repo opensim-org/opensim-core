@@ -42,6 +42,13 @@ def solveMocoInverse():
     # parameters.
     modelProcessor = osim.ModelProcessor('subject_walk_scaled.osim')
     modelProcessor.append(osim.ModOpAddExternalLoads('grf_walk.xml'))
+    # Replace the PinJoints representing the model's toes with WeldJoints.
+    jointsToWeld = osim.StdVectorString()
+    jointsToWeld.append("mtp_r")
+    jointsToWeld.append("mtp_l")
+    modelProcessor.append(osim.ModOpReplaceJointsWithWelds(jointsToWeld))
+    # Add CoordinateActuators to the pelvis coordinates. 
+    modelProcessor.append(osim.ModOpAddResiduals(250.0, 50.0, 1.0))
     modelProcessor.append(osim.ModOpIgnoreTendonCompliance())
     modelProcessor.append(osim.ModOpReplaceMusclesWithDeGrooteFregly2016())
     # Only valid for DeGrooteFregly2016Muscles.
@@ -92,6 +99,13 @@ def solveMocoInverseWithEMG():
     inverse = osim.MocoInverse()
     modelProcessor = osim.ModelProcessor('subject_walk_scaled.osim')
     modelProcessor.append(osim.ModOpAddExternalLoads('grf_walk.xml'))
+    # Replace the PinJoints representing the model's toes with WeldJoints.
+    jointsToWeld = osim.StdVectorString()
+    jointsToWeld.append("mtp_r")
+    jointsToWeld.append("mtp_l")
+    modelProcessor.append(osim.ModOpReplaceJointsWithWelds(jointsToWeld))
+    # Add CoordinateActuators to the pelvis coordinates. 
+    modelProcessor.append(osim.ModOpAddResiduals(250.0, 50.0, 1.0))
     modelProcessor.append(osim.ModOpIgnoreTendonCompliance())
     modelProcessor.append(osim.ModOpReplaceMusclesWithDeGrooteFregly2016())
     modelProcessor.append(osim.ModOpIgnorePassiveFiberForcesDGF())
@@ -176,6 +190,13 @@ def solveMocoInverseWithSynergies(numSynergies=5):
     # simplify the problem given the muscle synergy controllers.
     modelProcessor = osim.ModelProcessor('subject_walk_scaled.osim')
     modelProcessor.append(osim.ModOpAddExternalLoads('grf_walk.xml'))
+    # Replace the PinJoints representing the model's toes with WeldJoints.
+    jointsToWeld = osim.StdVectorString()
+    jointsToWeld.append("mtp_r")
+    jointsToWeld.append("mtp_l")
+    modelProcessor.append(osim.ModOpReplaceJointsWithWelds(jointsToWeld))
+    # Add CoordinateActuators to the pelvis coordinates. 
+    modelProcessor.append(osim.ModOpAddResiduals(250.0, 50.0, 1.0))
     modelProcessor.append(osim.ModOpIgnoreTendonCompliance())
     modelProcessor.append(osim.ModOpIgnoreActivationDynamics())
     modelProcessor.append(osim.ModOpReplaceMusclesWithDeGrooteFregly2016())

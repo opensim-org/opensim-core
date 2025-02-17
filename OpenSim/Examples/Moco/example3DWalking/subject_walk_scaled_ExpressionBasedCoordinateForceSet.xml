@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40600">
+	<ForceSet name="expression_based_coordinate_force_set">
+		<objects>
+            <ExpressionBasedCoordinateForce name="PassiveShoulderDampingX_r">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>arm_flex_r</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-2.44*exp(5.05*(q-1.81))+1.51*exp(-11.88*(q+0.50))-1.0*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveShoulderDampingY_r">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>arm_add_r</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-15.03*exp(20.94*(q-0.10))+5.03*exp(-14.93*(q+1.57))-1.0*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveShoulderDampingZ_r">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>arm_rot_r</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-0.43*exp(14.94*(q-0.15))+0.43*exp(-14.93*(q+0.15))-1.0*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveElbowDamping_r">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>elbow_flex_r</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>6.09*exp(-6.94*(q-0.30))-11.03*exp(11.33*(q-2.40))-1.0*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveShoulderDampingX_l">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>arm_flex_l</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-2.44*exp(5.05*(q-1.81))+1.51*exp(-11.88*(q+0.50))-1.0*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveShoulderDampingY_l">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>arm_add_l</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-15.03*exp(20.94*(q-0.10))+5.03*exp(-14.93*(q+1.57))-1.0*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveShoulderDampingZ_l">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>arm_rot_l</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-0.43*exp(14.94*(q-0.15))+0.43*exp(-14.93*(q+0.15))-1.0*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveElbowDamping_l">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>elbow_flex_l</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>6.09*exp(-6.94*(q-0.30))-11.03*exp(11.33*(q-2.40))-1.0*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveHipDampingX_r">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>hip_flexion_r</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-2.44*exp(5.05*(q-1.81))+1.51*exp(-21.88*(q+0.47))-0.1*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveHipDampingY_r">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>hip_adduction_r</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-0.03*exp(14.94*(q-0.50))+0.03*exp(-14.94*(q+0.50))-0.1*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveHipDampingZ_r">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>hip_rotation_r</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-0.03*exp(14.94*(q-0.92))+0.03*exp(-14.94*(q+0.92))-0.1*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveHipDampingX_l">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>hip_flexion_l</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-2.44*exp(5.05*(q-1.81))+1.51*exp(-21.88*(q+0.47))-0.1*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveHipDampingY_l">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>hip_adduction_l</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-0.03*exp(14.94*(q-0.50))+0.03*exp(-14.94*(q+0.50))-0.1*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveHipDampingZ_l">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>hip_rotation_l</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-0.03*exp(14.94*(q-0.92))+0.03*exp(-14.94*(q+0.92))-0.1*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveKneeDamping_r">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>knee_angle_r</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>6.09*exp(33.94*(-q-0.13))-11.03*exp(-11.33*(-q+2.40))-0.1*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveKneeDamping_l">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>knee_angle_l</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>6.09*exp(33.94*(-q-0.13))-11.03*exp(-11.33*(-q+2.40))-0.1*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveAnkleDamping_r">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>ankle_angle_r</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-0.1*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveAnkleDamping_l">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>ankle_angle_l</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-0.1*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveToeDamping_r">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>mtp_angle_r</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-25.0*q-2.0*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+            <ExpressionBasedCoordinateForce name="PassiveToeDamping_l">
+                <!--Coordinate (name) to apply force to.-->
+                <coordinate>mtp_angle_l</coordinate>
+                <!--Expression of the force magnitude as a function of the coordinate value (q)and its time derivative (qdot). Note, expression cannot have any whitespaceseparating characters-->
+                <expression>-25.0*q-2.0*qdot</expression>
+            </ExpressionBasedCoordinateForce>
+        </objects>
+		<groups />
+	</ForceSet>
+</OpenSimDocument>
