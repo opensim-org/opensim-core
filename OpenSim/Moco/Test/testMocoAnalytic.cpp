@@ -92,15 +92,6 @@ MocoStudy createSecondOrderLinearMinimumEffortStudy(
     return study;
 }
 
-TEST_CASE("Second order linear min effort - MocoTropterSolver") {
-    MocoStudy study =
-            createSecondOrderLinearMinimumEffortStudy<MocoTropterSolver>(
-                    "hermite-simpson");
-    MocoSolution solution = study.solve();
-    const auto expected = expectedSolution(solution.getTime());
-    OpenSim_CHECK_MATRIX_ABSTOL(solution.getStatesTrajectory(), expected, 1e-5);
-}
-
 TEST_CASE("Second order linear min effort - MocoCasADiSolver") {
     auto transcription_scheme =
                 GENERATE(as<std::string>{}, "hermite-simpson",
@@ -121,7 +112,7 @@ TEST_CASE("Second order linear min effort - MocoCasADiSolver") {
 /// Bryson, A. E., Ho, Y.‐C., Applied Optimal Control, Optimization, Estimation,
 /// and Control. New York‐London‐Sydney‐Toronto. John Wiley & Sons. 1975.
 TEMPLATE_TEST_CASE("Linear tangent steering",
-        "[casadi]", /*MocoTropterSolver, TODO*/
+        "[casadi]", 
         MocoCasADiSolver) {
 
     // The pseudospectral schemes have higher accuracy and therefore require

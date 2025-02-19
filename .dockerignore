@@ -2,10 +2,7 @@
 .git
 opensim-models
 Moco
-tropter
 dependencies/casadi
-dependencies/colpack
 dependencies/docopt
-dependencies/eigen
 dependencies/opensim-core
 dependencies/simbody

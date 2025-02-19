@@ -1,2 +1,2 @@
 MocoAddSandboxExecutable(NAME sandboxMocoTrack
-        LIB_DEPENDS osimMoco tropter)
+        LIB_DEPENDS osimMoco)
