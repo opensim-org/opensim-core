@@ -4,7 +4,7 @@
 # for ease of comparison maintenance. Same with commented lines
 
 set(libdir "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@")
-message(STATUS "Editing RPATH of tropter dependency libraries")
+message(STATUS "Editing RPATH of CasADi dependency libraries")
 
 macro(install_name_tool_add_rpath lib)
     execute_process(COMMAND bash "-c" "patchelf --force-rpath --set-rpath '$ORIGIN/:$ORIGIN/../../sdk/Simbody/lib' '${libdir}/lib${lib}'"

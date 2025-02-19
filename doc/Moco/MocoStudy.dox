@@ -295,18 +295,14 @@ Moco provides a direct collocation solver, MocoCasADiSolver, that transcribes
 continuous optimal control problems into finite-dimensional NLPs that are 
 passed to well-established derivative-based NLP solvers. MocoCasADiSolver uses 
 the third-party CasADi library; CasADi is an open-source package for algorithmic 
-differentiation and is a bridge to NLP solvers IPOPT, SNOPT, and others.
+differentiation and is a bridge to NLP solvers IPOPT, SNOPT, and others. 
+MocoCasADiSolver supports parallelization, implicit auxiliary dynamics, and 
+implicit multibody dynamics with kinematic constraints.
 
-Compared to MocoTropterSolver, MocoCasADiSolver supports parallelization,
-implicit auxiliary dynamics, and implicit multibody dynamics with kinematic
-constraints. However, MocoTropterSolver may be able to solve parameter
-optimization problems more quickly that MocoCasADiSolver.
-
-CasADi is an ideal library for employing direct collocation, but two limitations
-led us to create Tropter: CasADi did not initially support finite differences,
-and CasADi’s open-source license is more restrictive than OpenSim’s.
-Those distributing Moco as a dependency of closed-source software may prefer
-distributing Moco without CasADi, as CasADi’s “weak copyleft” GNU Lesser General
+CasADi is an ideal library for employing direct collocation, but one limitation
+should be noted: CasADi’s open-source license is more restrictive than OpenSim’s.
+Those distributing OpenSim as a dependency of closed-source software may prefer
+distributing OpenSim without CasADi, as CasADi’s “weak copyleft” GNU Lesser General
 Public License 3.0 places requirements on how CasADi is redistributed.
 
 @section tips Tips for solving a custom problem
