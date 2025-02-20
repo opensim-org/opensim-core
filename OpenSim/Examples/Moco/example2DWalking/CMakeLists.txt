@@ -16,6 +16,6 @@ install(FILES ${EXAMPLE_2D_WALKING_FILES}
 
 file(COPY ${EXAMPLE_2D_WALKING_FILES}
         DESTINATION
-        "${CMAKE_BINARY_DIR}/Bindings/Java/Python/examples/Moco/example2DWalking")
+        "${CMAKE_BINARY_DIR}/Bindings/Python/examples/Moco/example2DWalking")
 install(FILES ${EXAMPLE_2D_WALKING_FILES}
     DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco/example2DWalking")
