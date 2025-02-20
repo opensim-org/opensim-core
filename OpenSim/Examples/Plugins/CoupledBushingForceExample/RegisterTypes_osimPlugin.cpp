@@ -30,7 +30,9 @@
 using namespace OpenSim;
 using namespace std;
 
-static dllObjectInstantiator instantiator; 
+#ifndef OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION
+    static dllObjectInstantiator instantiator;
+#endif
      
 //_____________________________________________________________________________
 /**
