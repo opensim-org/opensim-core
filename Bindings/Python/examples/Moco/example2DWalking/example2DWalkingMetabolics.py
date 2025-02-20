@@ -16,7 +16,7 @@
 # limitations under the License.                                             #
 # -------------------------------------------------------------------------- #
 
-# This is a Matlab implementation of an example optimal control
+# This is a Python implementation of an example optimal control
 # problem (2-D walking) orginally created in C++ by Antoine Falisse
 # (see: example2DWalkingMetabolics.cpp).
 #
@@ -60,36 +60,36 @@ import sys
 # actuator controls, and muscle activations.
 
 track = osim.MocoTrack()
-track.setName("gaitTrackingMetCost")
+track.setName('gaitTrackingMetCost')
 
 # Define the optimal control problem
 # ==================================
-model = osim.Model("2D_gait.osim")
+model = osim.Model('2D_gait.osim')
 
 # Add metabolic cost model
 metabolics = osim.Bhargava2004SmoothedMuscleMetabolics()
-metabolics.setName("metabolic_cost")
+metabolics.setName('metabolic_cost')
 metabolics.set_use_smoothing(True)
 
 # This next part can easily be put in a loop for models with more muscles
-metabolics.addMuscle("hamstrings_r", osim.Muscle.safeDownCast(model.getComponent("hamstrings_r")))
-metabolics.addMuscle("hamstrings_l", osim.Muscle.safeDownCast(model.getComponent("hamstrings_l")))
-metabolics.addMuscle("bifemsh_r", osim.Muscle.safeDownCast(model.getComponent("bifemsh_r")))
-metabolics.addMuscle("bifemsh_l", osim.Muscle.safeDownCast(model.getComponent("bifemsh_l")))
-metabolics.addMuscle("glut_max_r", osim.Muscle.safeDownCast(model.getComponent("glut_max_r")))
-metabolics.addMuscle("glut_max_l", osim.Muscle.safeDownCast(model.getComponent("glut_max_l")))
-metabolics.addMuscle("iliopsoas_r", osim.Muscle.safeDownCast(model.getComponent("iliopsoas_r")))
-metabolics.addMuscle("iliopsoas_l", osim.Muscle.safeDownCast(model.getComponent("iliopsoas_l")))
-metabolics.addMuscle("rect_fem_r", osim.Muscle.safeDownCast(model.getComponent("rect_fem_r")))
-metabolics.addMuscle("rect_fem_l", osim.Muscle.safeDownCast(model.getComponent("rect_fem_l")))
-metabolics.addMuscle("vasti_r", osim.Muscle.safeDownCast(model.getComponent("vasti_r")))
-metabolics.addMuscle("vasti_l", osim.Muscle.safeDownCast(model.getComponent("vasti_l")))
-metabolics.addMuscle("gastroc_r", osim.Muscle.safeDownCast(model.getComponent("gastroc_r")))
-metabolics.addMuscle("gastroc_l", osim.Muscle.safeDownCast(model.getComponent("gastroc_l")))
-metabolics.addMuscle("soleus_r", osim.Muscle.safeDownCast(model.getComponent("soleus_r")))
-metabolics.addMuscle("soleus_l", osim.Muscle.safeDownCast(model.getComponent("soleus_l")))
-metabolics.addMuscle("tib_ant_r", osim.Muscle.safeDownCast(model.getComponent("tib_ant_r")))
-metabolics.addMuscle("tib_ant_l", osim.Muscle.safeDownCast(model.getComponent("tib_ant_l")))
+metabolics.addMuscle('hamstrings_r', osim.Muscle.safeDownCast(model.getComponent('hamstrings_r')))
+metabolics.addMuscle('hamstrings_l', osim.Muscle.safeDownCast(model.getComponent('hamstrings_l')))
+metabolics.addMuscle('bifemsh_r', osim.Muscle.safeDownCast(model.getComponent('bifemsh_r')))
+metabolics.addMuscle('bifemsh_l', osim.Muscle.safeDownCast(model.getComponent('bifemsh_l')))
+metabolics.addMuscle('glut_max_r', osim.Muscle.safeDownCast(model.getComponent('glut_max_r')))
+metabolics.addMuscle('glut_max_l', osim.Muscle.safeDownCast(model.getComponent('glut_max_l')))
+metabolics.addMuscle('iliopsoas_r', osim.Muscle.safeDownCast(model.getComponent('iliopsoas_r')))
+metabolics.addMuscle('iliopsoas_l', osim.Muscle.safeDownCast(model.getComponent('iliopsoas_l')))
+metabolics.addMuscle('rect_fem_r', osim.Muscle.safeDownCast(model.getComponent('rect_fem_r')))
+metabolics.addMuscle('rect_fem_l', osim.Muscle.safeDownCast(model.getComponent('rect_fem_l')))
+metabolics.addMuscle('vasti_r', osim.Muscle.safeDownCast(model.getComponent('vasti_r')))
+metabolics.addMuscle('vasti_l', osim.Muscle.safeDownCast(model.getComponent('vasti_l')))
+metabolics.addMuscle('gastroc_r', osim.Muscle.safeDownCast(model.getComponent('gastroc_r')))
+metabolics.addMuscle('gastroc_l', osim.Muscle.safeDownCast(model.getComponent('gastroc_l')))
+metabolics.addMuscle('soleus_r', osim.Muscle.safeDownCast(model.getComponent('soleus_r')))
+metabolics.addMuscle('soleus_l', osim.Muscle.safeDownCast(model.getComponent('soleus_l')))
+metabolics.addMuscle('tib_ant_r', osim.Muscle.safeDownCast(model.getComponent('tib_ant_r')))
+metabolics.addMuscle('tib_ant_l', osim.Muscle.safeDownCast(model.getComponent('tib_ant_l')))
 
 model.addComponent(metabolics)
 model.finalizeConnections()
@@ -99,7 +99,7 @@ modelProcessor = osim.ModelProcessor(model)
 track.setModel(modelProcessor)
 
 # Reference data for tracking problem
-tableProcessor = osim.TableProcessor("referenceCoordinates.sto")
+tableProcessor = osim.TableProcessor('referenceCoordinates.sto')
 tableProcessor.append(osim.TabOpLowPassFilter(6))
 track.setStatesReference(tableProcessor)
 
@@ -123,7 +123,7 @@ problem = study.updProblem()
 # --------
 # This goal allows us to simulate only one step with left-right symmetry
 # that we can then double to create a full gait cycle.
-symmetryGoal = osim.MocoPeriodicityGoal("symmetryGoal")
+symmetryGoal = osim.MocoPeriodicityGoal('symmetryGoal')
 problem.addGoal(symmetryGoal)
 model = modelProcessor.process()
 model.initSystem()
@@ -134,64 +134,64 @@ model.initSystem()
 # value to be the same as the initial value.
 for i in range(model.getNumStateVariables()):
     currentStateName = model.getStateVariableNames().getitem(i)
-    if currentStateName.startswith("/jointset"):
-        if currentStateName.__contains__("_r"):
+    if currentStateName.startswith('/jointset'):
+        if currentStateName.__contains__('_r'):
             pair = osim.MocoPeriodicityGoalPair(currentStateName, 
-                                                re.sub(r"_r", "_l", currentStateName))
+                                                re.sub(r'_r', '_l', currentStateName))
             symmetryGoal.addStatePair(pair)
-        if currentStateName.__contains__("_l"):
+        if currentStateName.__contains__('_l'):
             pair = osim.MocoPeriodicityGoalPair(currentStateName, 
-                                                re.sub(r"_l", "_r", currentStateName))
+                                                re.sub(r'_l', '_r', currentStateName))
             symmetryGoal.addStatePair(pair)
-        if not (currentStateName.__contains__("_r") 
-                or currentStateName.__contains__("_l") 
-                or currentStateName.__contains__("pelvis_tx/value") 
-                or currentStateName.__contains__("/activation")):
+        if not (currentStateName.__contains__('_r') 
+                or currentStateName.__contains__('_l') 
+                or currentStateName.__contains__('pelvis_tx/value') 
+                or currentStateName.__contains__('/activation')):
             symmetryGoal.addStatePair(osim.MocoPeriodicityGoalPair(currentStateName))
 
 # Symmetric muscle activations. Here, we constrain final muscle activation 
 # values of one leg to match the initial activation values of the other leg.
 for i in range(model.getNumStateVariables()):
     currentStateName = model.getStateVariableNames().getitem(i)
-    if currentStateName.endswith("/activation"):
-        if currentStateName.__contains__("_r"):
+    if currentStateName.endswith('/activation'):
+        if currentStateName.__contains__('_r'):
             pair = osim.MocoPeriodicityGoalPair(currentStateName, 
-                                                re.sub(r"_r", "_l", currentStateName))
+                                                re.sub(r'_r', '_l', currentStateName))
             symmetryGoal.addStatePair(pair)
-        if currentStateName.__contains__("_l"):
+        if currentStateName.__contains__('_l'):
             pair = osim.MocoPeriodicityGoalPair(currentStateName, 
-                                                re.sub(r"_l", "_r", currentStateName))
+                                                re.sub(r'_l', '_r', currentStateName))
             symmetryGoal.addStatePair(pair)
 
 # The lumbar coordinate actuator control is symmetric.
-symmetryGoal.addControlPair(osim.MocoPeriodicityGoalPair("/lumbarAct"))
+symmetryGoal.addControlPair(osim.MocoPeriodicityGoalPair('/lumbarAct'))
 
 # Get a reference to the MocoControlGoal that is added to every MocoTrack
 # problem by default and change the weight
-effort = osim.MocoControlGoal.safeDownCast(problem.updGoal("control_effort"))
+effort = osim.MocoControlGoal.safeDownCast(problem.updGoal('control_effort'))
 effort.setWeight(0.1)
 
 # Metabolic cost; total metabolic rate includes activation heat rate,
 # maintenance heat rate, shortening heat rate, mechanical work rate, and
 # basal metabolic rate.
-metGoal = osim.MocoOutputGoal("met",0.1)
+metGoal = osim.MocoOutputGoal('met',0.1)
 problem.addGoal(metGoal)
-metGoal.setOutputPath("/metabolic_cost|total_metabolic_rate")
+metGoal.setOutputPath('/metabolic_cost|total_metabolic_rate')
 metGoal.setDivideByDisplacement(True)
 metGoal.setDivideByMass(True)
 
 # Bounds
 # ======
-problem.setStateInfo("/jointset/groundPelvis/pelvis_tilt/value", [-20*math.pi/180, -10*math.pi/180])
-problem.setStateInfo("/jointset/groundPelvis/pelvis_tx/value", [0, 1])
-problem.setStateInfo("/jointset/groundPelvis/pelvis_ty/value", [0.75, 1.25])
-problem.setStateInfo("/jointset/hip_l/hip_flexion_l/value", [-10*math.pi/180, 60*math.pi/180])
-problem.setStateInfo("/jointset/hip_r/hip_flexion_r/value", [-10*math.pi/180, 60*math.pi/180])
-problem.setStateInfo("/jointset/knee_l/knee_angle_l/value", [-50*math.pi/180, 0])
-problem.setStateInfo("/jointset/knee_r/knee_angle_r/value", [-50*math.pi/180, 0])
-problem.setStateInfo("/jointset/ankle_l/ankle_angle_l/value", [-15*math.pi/180, 25*math.pi/180])
-problem.setStateInfo("/jointset/ankle_r/ankle_angle_r/value", [-15*math.pi/180, 25*math.pi/180])
-problem.setStateInfo("/jointset/lumbar/lumbar/value", [0, 20*math.pi/180])
+problem.setStateInfo('/jointset/groundPelvis/pelvis_tilt/value', [-20*math.pi/180, -10*math.pi/180])
+problem.setStateInfo('/jointset/groundPelvis/pelvis_tx/value', [0, 1])
+problem.setStateInfo('/jointset/groundPelvis/pelvis_ty/value', [0.75, 1.25])
+problem.setStateInfo('/jointset/hip_l/hip_flexion_l/value', [-10*math.pi/180, 60*math.pi/180])
+problem.setStateInfo('/jointset/hip_r/hip_flexion_r/value', [-10*math.pi/180, 60*math.pi/180])
+problem.setStateInfo('/jointset/knee_l/knee_angle_l/value', [-50*math.pi/180, 0])
+problem.setStateInfo('/jointset/knee_r/knee_angle_r/value', [-50*math.pi/180, 0])
+problem.setStateInfo('/jointset/ankle_l/ankle_angle_l/value', [-15*math.pi/180, 25*math.pi/180])
+problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', [-15*math.pi/180, 25*math.pi/180])
+problem.setStateInfo('/jointset/lumbar/lumbar/value', [0, 20*math.pi/180])
 
 # Configure the solver.
 # =====================
@@ -199,7 +199,7 @@ solver = osim.MocoCasADiSolver.safeDownCast(study.updSolver())
 solver.resetProblem(problem)
 solver.set_num_mesh_intervals(50)
 solver.set_verbosity(2)
-solver.set_optim_solver("ipopt")
+solver.set_optim_solver('ipopt')
 solver.set_optim_convergence_tolerance(1e-4)
 solver.set_optim_constraint_tolerance(1e-4)
 solver.set_optim_max_iterations(10000)
@@ -211,13 +211,13 @@ solution = study.solve()
 # Create a full stride from the periodic single step solution.
 # For details, view the Doxygen documentation for createPeriodicTrajectory().
 fullStride = osim.createPeriodicTrajectory(solution)
-fullStride.write("gaitTrackingMetCost_solution_fullcycle.sto")
+fullStride.write('gaitTrackingMetCost_solution_fullcycle.sto')
 
 # To report the COT we multiply the metabolic cost objective term by 10 because
 # it had been scaled by 0.1
-print("   ")
-print(f"The metabolic cost of transport is: {10*solution.getObjectiveTerm('met')} J/kg/m")
-print("   ")
+print('   ')
+print(f'The metabolic cost of transport is: {10*solution.getObjectiveTerm('met'):.3f} J/kg/m')
+print('   ')
 
 # Visualize the result.
 study.visualize(fullStride)
@@ -226,10 +226,10 @@ study.visualize(fullStride)
 # ==============================
 contact_r = osim.StdVectorString()
 contact_l = osim.StdVectorString()
-contact_r.append("contactHeel_r")
-contact_r.append("contactFront_r")
-contact_l.append("contactHeel_l")
-contact_l.append("contactFront_l")
+contact_r.append('contactHeel_r')
+contact_r.append('contactFront_r')
+contact_l.append('contactHeel_l')
+contact_l.append('contactFront_l')
 
 # Create a conventional ground reaction forces file by summing the contact
 # forces of contact spheres on each foot.
@@ -238,4 +238,4 @@ contact_l.append("contactFront_l")
 externalForcesTableFlat = osim.createExternalLoadsTableForGait(model, 
                                                                fullStride, contact_r, contact_l)
 osim.STOFileAdapter.write(externalForcesTableFlat, 
-                     "gaitTrackingMetCost_solutionGRF_fullStride.sto")
+                     'gaitTrackingMetCost_solutionGRF_fullStride.sto')
