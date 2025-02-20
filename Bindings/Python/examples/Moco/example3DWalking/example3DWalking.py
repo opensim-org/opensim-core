@@ -29,7 +29,7 @@ import opensim as osim
 
 # Construct a MocoStudy to track joint kinematics and ground reaction forces
 # using a torque-driven or muscle-driven model with foot-ground contact
-# elements. The objective function weights were chosen such the optimized 
+# elements. The objective function weights were chosen such that the optimized 
 # objective value falls roughly in the range [0.1, 10], which generally 
 # improves convergence.
 def runTrackingStudy(model, muscleDriven):
