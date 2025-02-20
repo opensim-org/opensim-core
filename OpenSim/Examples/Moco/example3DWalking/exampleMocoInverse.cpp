@@ -44,6 +44,10 @@ void solveMocoInverse() {
     // parameters.
     ModelProcessor modelProcessor("subject_walk_scaled.osim");
     modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+    // Replace the PinJoints representing the model's toes with WeldJoints.
+    modelProcessor.append(ModOpReplaceJointsWithWelds({"mtp_r", "mtp_l"}));
+    // Add CoordinateActuators to the pelvis coordinates. 
+    modelProcessor.append(ModOpAddResiduals(250.0, 50.0, 1.0));
     modelProcessor.append(ModOpIgnoreTendonCompliance());
     modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
     // Only valid for DeGrooteFregly2016Muscles.
@@ -91,6 +95,9 @@ void solveMocoInverseWithEMG() {
     inverse.setName("example3DWalking_MocoInverseWithEMG");
     ModelProcessor modelProcessor("subject_walk_scaled.osim");
     modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+    // Replace the PinJoints representing the model's toes with WeldJoints.
+    modelProcessor.append(ModOpReplaceJointsWithWelds({"mtp_r", "mtp_l"}));
+    modelProcessor.append(ModOpAddResiduals(250.0, 50.0, 1.0));
     modelProcessor.append(ModOpIgnoreTendonCompliance());
     modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
     // Only valid for DeGrooteFregly2016Muscles.
@@ -163,6 +170,9 @@ void solveMocoInverseWithSynergies(int numSynergies = 5) {
     // simplify the problem given the muscle synergy controllers.
     ModelProcessor modelProcessor("subject_walk_scaled.osim");
     modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+    // Replace the PinJoints representing the model's toes with WeldJoints.
+    modelProcessor.append(ModOpReplaceJointsWithWelds({"mtp_r", "mtp_l"}));
+    modelProcessor.append(ModOpAddResiduals(250.0, 50.0, 1.0));
     modelProcessor.append(ModOpIgnoreTendonCompliance());
     modelProcessor.append(ModOpIgnoreActivationDynamics());
     modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
