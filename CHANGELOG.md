@@ -72,7 +72,13 @@ v4.6
   default, but users may consider increasing this value (e.g., 10.0) so that the activation and deactivation speeds of the model better match the 
   activation and deactivation time constants.
 - Remove unused, legacy `<defaults>` blocks in `.osim` and `.xml` files (#3986).
-- Remove the Tropter solver in Moco, and remove references to it from build/test/make system.
+- Added `example3DWalking`, which demonstrates how to create a tracking simulation with foot-ground contact in Moco. (#4008)
+- Added `ModelFactory::createResidualActuators` and `ModOpAddResiduals` to make it easy to add a set of residual actuators to a model. 
+  The default behavior of `ModOpAddReserves` remains the same, but a new constructor has been added to enable skipping coordinates associated 
+  with residual forces so that they can be set separately with `ModOpAddResiduals`. (#4008)
+- Added convenience methods to `MocoTrack` to allow setting marker weights from a `Set<MarkerWeight>` or `IKTaskSet`. (#4008)
+- Remove the `tropter` libraries, the Tropter solver in Moco, and all references to it from build system. As a result, the following 
+  Tropter-related dependencies have been removed: `adolc`, `colpack`, and `eigen`. (#3988)
 
 
 v4.5.1
