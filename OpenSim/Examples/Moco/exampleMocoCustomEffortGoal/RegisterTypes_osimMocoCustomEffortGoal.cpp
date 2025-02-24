@@ -20,7 +20,9 @@
 
 using namespace OpenSim;
 
-static osimMocoCustomEffortGoalInstantiator instantiator;
+#ifndef OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION
+    static osimMocoCustomEffortGoalInstantiator instantiator;
+#endif
 
 OSIMMOCOCUSTOMEFFORTGOAL_API void RegisterTypes_osimMocoCustomEffortGoal() {
     try {
