@@ -82,7 +82,10 @@ def computeStepAsymmetryValues(solutionFile, grfsFile):
     else: 
         rightStepTime = rightHeelStrike - leftHeelStrike
         leftStepTime = time[-1] - rightHeelStrike + leftHeelStrike
-    stepTimeAsymmetry = ((rightStepTime - leftStepTime) / (rightStepTime + leftStepTime)) * 100.0
+    stepTimeAsymmetry = (
+        (rightStepTime - leftStepTime) / 
+        (rightStepTime + leftStepTime)
+        ) * 100.0
 
     # Create StatesTrajectory from solution             
     statesTraj = osim.StatesTrajectory().createFromStatesTable(model, solution, 
@@ -94,7 +97,10 @@ def computeStepAsymmetryValues(solutionFile, grfsFile):
     rightStepLength = computeStepLength(model, stateRHS)
     leftStepLength = computeStepLength(model, stateLHS)
 
-    stepLengthAsymmetry = ((rightStepLength - leftStepLength) / (rightStepLength + leftStepLength)) * 100.0
+    stepLengthAsymmetry = (
+        (rightStepLength - leftStepLength) / 
+        (rightStepLength + leftStepLength)
+        ) * 100.0
     
     return stepTimeAsymmetry, stepLengthAsymmetry
 
