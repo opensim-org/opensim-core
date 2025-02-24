@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------- #
 # OpenSim Moco: example2DWalking.py                                          #
 # -------------------------------------------------------------------------- #
-# Copyright (c) 2019 Stanford University and the Authors                     #
+# Copyright (c) 2025 Stanford University and the Authors                     #
 #                                                                            #
 # Author(s): Brian Umberger                                                  #
 #                                                                            #
