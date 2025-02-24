@@ -29,7 +29,7 @@ v4.6
 - Fixed an issue where a copy of an `OpenSim::Model` containing a `OpenSim::ExternalLoads` could not be
   finalized (#3926)
 - Updated all code examples to use C++17 (after a few months of compiling as C++14 : #3929).
-- Added class `OpenSim::StateDocument` as a systematic means of serializing and deserializing a complete trajectory
+- Added class `OpenSim::StatesDocument` as a systematic means of serializing and deserializing a complete trajectory
   (i.e., time history) of all states in the `SimTK::State` to and from a single `.ostates` file. Prior to `StatesDocument`,
   only the trajectories of continuous states (e.g., joint angles, joint speeds, muscle forces, and the like) could be systematically
   written to file, either in the form of a `Storage` file or as a `TimeSeriesTable` file, leaving discrete states (e.g., muscle
