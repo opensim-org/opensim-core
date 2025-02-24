@@ -72,6 +72,8 @@ v4.6
   default, but users may consider increasing this value (e.g., 10.0) so that the activation and deactivation speeds of the model better match the 
   activation and deactivation time constants.
 - Remove unused, legacy `<defaults>` blocks in `.osim` and `.xml` files (#3986).
+- Updated `TableUtilities::filterLowpass` to apply padding after resampling, so that the 
+  initial time point of an input table is preserved. (#4020)
 
 v4.5.1
 ======
