@@ -29,7 +29,7 @@ v4.6
 - Fixed an issue where a copy of an `OpenSim::Model` containing a `OpenSim::ExternalLoads` could not be
   finalized (#3926)
 - Updated all code examples to use C++17 (after a few months of compiling as C++14 : #3929).
-- Added class `OpenSim::StateDocument` as a systematic means of serializing and deserializing a complete trajectory
+- Added class `OpenSim::StatesDocument` as a systematic means of serializing and deserializing a complete trajectory
   (i.e., time history) of all states in the `SimTK::State` to and from a single `.ostates` file. Prior to `StatesDocument`,
   only the trajectories of continuous states (e.g., joint angles, joint speeds, muscle forces, and the like) could be systematically
   written to file, either in the form of a `Storage` file or as a `TimeSeriesTable` file, leaving discrete states (e.g., muscle
@@ -77,6 +77,8 @@ v4.6
   The default behavior of `ModOpAddReserves` remains the same, but a new constructor has been added to enable skipping coordinates associated 
   with residual forces so that they can be set separately with `ModOpAddResiduals`. (#4008)
 - Added convenience methods to `MocoTrack` to allow setting marker weights from a `Set<MarkerWeight>` or `IKTaskSet`. (#4008)
+- Updated `TableUtilities::filterLowpass` to apply padding after resampling, so that the 
+  initial time point of an input table is preserved. (#4020)
 
 
 v4.5.1

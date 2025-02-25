@@ -78,11 +78,24 @@ TEST_CASE("TableProcessor") {
 }
 
 TEST_CASE("TabOpLowPassFilter retains original time range") {
-    TimeSeriesTable table(std::vector<double>{1, 2, 3, 4, 5, 6},
+    const auto time = createVectorLinspaceInterval<double>(6, 0, 1e-3);
+    TimeSeriesTable table(time,
             SimTK::Test::randMatrix(6, 2), std::vector<std::string>{"a", "b"});
     TableProcessor proc = TableProcessor(table) | TabOpLowPassFilter(6);
     TimeSeriesTable out = proc.process();
     CHECK(out.getNumRows() == 6);
-    CHECK(out.getIndependentColumn().front() == 1);
-    CHECK(out.getIndependentColumn().back() == 6);
+    CHECK(out.getIndependentColumn().front() == 0.0);
+    CHECK(out.getIndependentColumn().back() == 5e-3);
+}
+
+TEST_CASE("TabOpLowPassFilter retains initial time in non-uniform time series") {
+    auto time = createVectorLinspaceInterval<double>(6, 0, 1e-3);
+    // Add non-uniformity to the time series.
+    time[2] += 2e-4;
+    time[4] += 1e-4;
+    TimeSeriesTable table(time,
+            SimTK::Test::randMatrix(6, 2), std::vector<std::string>{"a", "b"});
+    TableProcessor proc = TableProcessor(table) | TabOpLowPassFilter(6);
+    TimeSeriesTable out = proc.process();
+    CHECK(out.getIndependentColumn().front() == 0);
 }
