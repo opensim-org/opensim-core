@@ -1248,6 +1248,69 @@ TEMPLATE_TEST_CASE("Guess", "", MocoCasADiSolver) {
     // after they get the mutable reference.
 }
 
+TEST_CASE("Guess time-stepping") {
+    // This problem is just a simulation (there are no costs), and so the
+    // forward simulation guess should reduce the number of iterations to
+    // converge, and the guess and solution should also match our own
+    // forward simulation.
+    MocoStudy study;
+    study.setName("pendulum");
+    study.set_write_solution("false");
+    auto& problem = study.updProblem();
+    problem.setModel(createPendulumModel());
+    const SimTK::Real initialAngle = 0.25 * SimTK::Pi;
+    const SimTK::Real initialSpeed = .5;
+    // Make the simulation interesting.
+    problem.setTimeBounds(0, 1);
+    problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, initialAngle);
+    problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, initialSpeed);
+    auto& solver = study.initCasADiSolver();
+    solver.set_num_mesh_intervals(20);
+    solver.setGuess("random");
+    // With MUMPS: 4 iterations.
+    const MocoSolution solutionRandom = study.solve();
+
+    solver.setGuess("time-stepping");
+    // With MUMPS: 2 iterations.
+    MocoSolution solutionSim = study.solve();
+
+    CHECK(solutionSim.getNumIterations() < solutionRandom.getNumIterations());
+
+    {
+        MocoTrajectory guess = solver.createGuess("time-stepping");
+        REQUIRE(solutionSim.compareContinuousVariablesRMS(guess) < 1e-2);
+
+        Model modelCopy(study.updProblem().getPhase().getModel());
+        SimTK::State state = modelCopy.initSystem();
+        modelCopy.setStateVariableValue(
+                state, "/jointset/j0/q0/value", initialAngle);
+        modelCopy.setStateVariableValue(
+                state, "/jointset/j0/q0/speed", initialSpeed);
+        Manager manager(modelCopy, state);
+        manager.integrate(1.0);
+
+        auto statesTable = manager.getStatesTable();
+        // No controls, create an empty controls table.
+        auto controlsTable = TimeSeriesTable(
+                statesTable.getIndependentColumn());
+        const auto trajectoryFromManager =
+                MocoTrajectory::createFromStatesControlsTables(
+                        study.getProblem().createRep(),
+                        statesTable, controlsTable);
+        SimTK_TEST(solutionSim.compareContinuousVariablesRMS(
+                        trajectoryFromManager) < 1e-2);
+    }
+
+    // Ensure the forward simulation guess uses the correct time bounds.
+    {
+        study.updProblem().setTimeBounds({-10, -5}, {6, 15});
+        auto& solver = study.initCasADiSolver();
+        MocoTrajectory guess = solver.createGuess("time-stepping");
+        SimTK_TEST(guess.getTime()[0] == -5);
+        SimTK_TEST(guess.getTime()[guess.getNumTimes() - 1] == 6);
+    }
+}
+
 TEMPLATE_TEST_CASE("MocoTrajectory", "", MocoCasADiSolver) {
     // Reading and writing.
     {
