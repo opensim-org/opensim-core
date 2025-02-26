@@ -86,7 +86,7 @@ endpointCost.setReferenceLocation(Vec3(0.5, 0, 0));
 
 problem.addGoal(endpointCost);
 
-solver = study.initTropterSolver();
+solver = study.initCasADiSolver();
 
 study.print('optimize_mass.omoco');
 

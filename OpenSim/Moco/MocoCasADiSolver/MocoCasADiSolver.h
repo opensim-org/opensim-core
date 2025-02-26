@@ -40,13 +40,7 @@ public:
 
 /** This solver uses the CasADi library (https://casadi.org) to convert the
 MocoProblem into a generic nonlinear programming problem. CasADi efficiently
-calculcates the derivatives required to solve MocoProblem%s, and may
-solve your MocoProblem more quickly that MocoTropterSolver. In general,
-we hope that the feature sets of MocoCasADiSolver and MocoTropterSolver
-are the same.
-Note, however, that parameter optimization problems are implemented much
-less efficiently in this solver; for parameter optimization, first try
-MocoTropterSolver.
+calculcates the derivatives required to solve MocoProblem%s.
 
 Sparsity
 ========
@@ -104,8 +98,7 @@ Parameter variables
 By default, MocoCasADiSolver is much slower than MocoTroperSolver at
 handling problems with MocoParameters. Many parameters require invoking
 Model::initSystem() to take effect, and this function is expensive (for
-CasADi, we must invoke this function for every time point, while in Tropter,
-we can invoke the function only once for every NLP iterate). However, if you
+CasADi, we must invoke this function for every time point). However, if you
 know that all parameters in your problem do not require Model::initSystem(),
 you can substantially speed up your optimization by setting the
 parameters_require_initsystem property to false. Be careful, though: you

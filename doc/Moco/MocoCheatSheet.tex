@@ -118,13 +118,12 @@ problem.addPathConstraint(pathCon);
 \vspace{-10pt}
 \begin{center}\textbf{\textcolor{oblue}{MocoSolver}}\end{center}
 \begin{multicols}{2}% 2-column layout
-\textbf{Initialize the CasADi or Tropter solver.}\\
+\textbf{Initialize the CasADi solver.}\\
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 solver = study.initCasADiSolver();
-% alternative: solver = study.initTropterSolver();
 \end{lstlisting}
 \vspace{5pt}
-\textbf{Settings for Tropter and CasADi solvers.}\\
+\textbf{Settings for the CasADi solver.}\\
 Solve the problem on a grid of 50 mesh intervals.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 solver.set_num_mesh_intervals(50);

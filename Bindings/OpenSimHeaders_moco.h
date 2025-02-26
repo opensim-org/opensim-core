@@ -40,7 +40,6 @@
 #include <OpenSim/Moco/MocoStudyFactory.h>
 #include <OpenSim/Moco/MocoTrack.h>
 #include <OpenSim/Moco/MocoTrajectory.h>
-#include <OpenSim/Moco/MocoTropterSolver.h>
 #include <OpenSim/Moco/MocoUtilities.h>
 #include <OpenSim/Moco/MocoWeightSet.h>
 #include <OpenSim/Moco/ModelOperatorsDGF.h>

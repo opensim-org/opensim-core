@@ -116,7 +116,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
 // TODO does not pass consistently on Mac
 //TEMPLATE_TEST_CASE("Two consecutive problems produce the same solution", "",
-//        MocoCasADiSolver /*, MocoTropterSolver*/) {
+//        MocoCasADiSolver) {
 //    auto dynamics_mode = GENERATE(as<std::string>{}, "implicit", "explicit");
 //    
 //    auto solution1 = solveDoublePendulumSwingup<TestType>(dynamics_mode);
@@ -137,9 +137,8 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 //    CHECK(controlError == Approx(0));   
 //}
 
-// TODO not passing consistently for MocoTropterSolver on Mac
 TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
-        "[linux/win][implicit]", MocoCasADiSolver /*,MocoTropterSolver*/) {
+        "[linux/win][implicit]", MocoCasADiSolver) {
     
     GIVEN("solutions to implicit and explicit problems") {
 
@@ -191,7 +190,7 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
 }
 
 TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
-        "[implicit]", MocoCasADiSolver, MocoTropterSolver) {
+        "[implicit]", MocoCasADiSolver) {
     class MyPathConstraint : public MocoPathConstraint {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyPathConstraint, MocoPathConstraint);
         void initializeOnModelImpl(
@@ -230,7 +229,7 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
 }
 
 TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
-        "[implicit][casadi]", /*MocoTropterSolver,*/ MocoCasADiSolver) {
+        "[implicit][casadi]", MocoCasADiSolver) {
     GIVEN("MocoProblem with a kinematic constraint") {
         MocoStudy study;
         auto& prob = study.updProblem();
@@ -428,8 +427,7 @@ TEST_CASE("Implicit auxiliary dynamics") {
         }
     }
 
-#ifdef OPENISM_WITH_CASADI
-    SECTION("Direct collocation implicit") {
+    SECTION("Direct collocation implicit", "[casadi]") {
        MocoStudy study;
        auto& problem = study.updProblem();
        auto model = std::make_unique<Model>();
@@ -442,20 +440,5 @@ TEST_CASE("Implicit auxiliary dynamics") {
        const double final = solution.getStatesTrajectory().getElt(N-1, 0);
        // Correct answer obtained from Matlab with ode45.
        CHECK(final == Approx(1.732).margin(1e-3));
-    }
-#endif
-
-    SECTION("MocoTropterSolver does not support implicit auxiliary dynamics") {
-        MocoStudy study;
-        auto& problem = study.updProblem();
-        auto model = std::make_unique<Model>();
-        model->addComponent(new MyAuxiliaryImplicitDynamics());
-        problem.setModel(std::move(model));
-        problem.setTimeBounds(0, 1);
-        problem.setStateInfo("/implicit_auxdyn/foo", {0, 3}, 1.0);
-        study.initTropterSolver();
-        CHECK_THROWS(study.solve(), Catch::Matchers::ContainsSubstring(
-                "MocoTropterSolver does not support problems "
-                "with implicit auxiliary dynamics."));
     }
 }

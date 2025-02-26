@@ -145,7 +145,7 @@ const MocoTrajectory& MocoCasADiSolver::getGuess() const {
             m_guessToUse.reset(&m_guessFromFile);
         } else {
             // This will either be a guess specified via the API, or empty to
-            // signal that tropter should use the default guess.
+            // signal that CasADi should use the default guess.
             m_guessToUse.reset(&m_guessFromAPI);
         }
     }

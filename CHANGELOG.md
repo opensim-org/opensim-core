@@ -77,6 +77,8 @@ v4.6
   The default behavior of `ModOpAddReserves` remains the same, but a new constructor has been added to enable skipping coordinates associated 
   with residual forces so that they can be set separately with `ModOpAddResiduals`. (#4008)
 - Added convenience methods to `MocoTrack` to allow setting marker weights from a `Set<MarkerWeight>` or `IKTaskSet`. (#4008)
+- Remove the `tropter` libraries, the Tropter solver in Moco, and all references to it from build system. As a result, the following 
+  Tropter-related dependencies have been removed: `adolc`, `colpack`, and `eigen`. (#3988)
 
 
 v4.5.1

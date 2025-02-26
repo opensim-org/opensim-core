@@ -99,7 +99,7 @@ problem.addGoal(endpointCost)
 
 # Configure the solver.
 # =====================
-solver = moco.initTropterSolver()
+solver = moco.initCasADiSolver()
 
 # Now that we've finished setting up the study, print it to a file.
 moco.printToXML('optimize_mass.omoco')

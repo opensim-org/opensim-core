@@ -23,7 +23,7 @@ function Help {
     Write-Output "                  RelWithDebInfo: Debugger symbols. Optimized. Bigger than Release, but not slower."
     Write-Output "                  MinSizeRel: No debugger symbols. Minimum size. Optimized."
     Write-Output "    -j        Number of jobs to use when building libraries (>=1)."
-    Write-Output "    -s        Simple build without moco (Tropter and Casadi disabled)."
+    Write-Output "    -s        Simple build without moco (Casadi disabled)."
     Write-Output "    -c        Branch for opensim-core repository."
     Write-Output ""
     exit
@@ -91,7 +91,7 @@ git.exe checkout $CORE_BRANCH
 # Generate dependencies project and build dependencies using superbuild
 md C:/opensim-workspace/opensim-core-dependencies-build
 chdir C:/opensim-workspace/opensim-core-dependencies-build
-cmake C:/opensim-workspace/opensim-core-source/dependencies/ -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX="C:/opensim-workspace/opensim-core-dependencies-install" -DSUPERBUILD_ezc3d:BOOL=on -DOPENSIM_WITH_CASADI:BOOL=$MOCO -DOPENSIM_WITH_TROPTER:BOOL=$MOCO
+cmake C:/opensim-workspace/opensim-core-source/dependencies/ -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX="C:/opensim-workspace/opensim-core-dependencies-install" -DSUPERBUILD_ezc3d:BOOL=on -DOPENSIM_WITH_CASADI:BOOL=$MOCO
 cmake . -LAH
 cmake --build . --config $DEBUG_TYPE -- /maxcpucount:$NUM_JOBS
 
@@ -99,7 +99,7 @@ cmake --build . --config $DEBUG_TYPE -- /maxcpucount:$NUM_JOBS
 md C:/opensim-workspace/opensim-core-build
 chdir C:/opensim-workspace/opensim-core-build
 $env:CXXFLAGS = "/W0"
-cmake C:/opensim-workspace/opensim-core-source/ -G"Visual Studio 17 2022" -A x64 -DOPENSIM_DEPENDENCIES_DIR="C:/opensim-workspace/opensim-core-dependencies-install" -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_TESTING=off -DCMAKE_INSTALL_PREFIX="C:/opensim-core" -DOPENSIM_WITH_CASADI:BOOL=$MOCO -DOPENSIM_WITH_TROPTER:BOOL=$MOCO
+cmake C:/opensim-workspace/opensim-core-source/ -G"Visual Studio 17 2022" -A x64 -DOPENSIM_DEPENDENCIES_DIR="C:/opensim-workspace/opensim-core-dependencies-install" -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_TESTING=off -DCMAKE_INSTALL_PREFIX="C:/opensim-core" -DOPENSIM_WITH_CASADI:BOOL=$MOCO
 cmake . -LAH
 cmake --build . --config $DEBUG_TYPE -- /maxcpucount:$NUM_JOBS
 cmake --install .
