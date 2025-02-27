@@ -56,7 +56,6 @@
 #include "MocoScaleFactor.h"
 #include "MocoStudy.h"
 #include "MocoTrack.h"
-#include "MocoTropterSolver.h"
 #include "MocoWeightSet.h"
 #include "ModelOperatorsDGF.h"
 #include <exception>
@@ -113,8 +112,6 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
 
         Object::registerType(MocoInverse());
         Object::registerType(MocoTrack());
-
-        Object::registerType(MocoTropterSolver());
 
         Object::registerType(MocoControlBoundConstraint());
         Object::registerType(MocoOutputBoundConstraint());

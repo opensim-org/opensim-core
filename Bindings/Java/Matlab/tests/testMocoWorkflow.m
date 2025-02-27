@@ -103,8 +103,8 @@ function testChangingTimeBounds(testCase)
     problem.setControlInfo('/actuator', [-10, 10]);
     problem.addGoal(MocoFinalTimeGoal());
 
-    if MocoTropterSolver.isAvailable()
-        solver = study.initTropterSolver();
+    if MocoCasADiSolver.isAvailable()
+        solver = study.initCasADiSolver();
         solver.set_transcription_scheme('trapezoidal')
         solver.set_num_mesh_intervals(19);
         guess = solver.createGuess('random');
@@ -133,8 +133,8 @@ function testChangingModel(testCase)
     problem.setStateInfo('/slider/position/value', [0, 1], 0, 1);
     problem.setStateInfo('/slider/position/speed', [-100, 100], 0, 0);
     problem.addGoal(MocoFinalTimeGoal());
-    if MocoTropterSolver.isAvailable()
-        solver = study.initTropterSolver();
+    if MocoCasADiSolver.isAvailable()
+        solver = study.initCasADiSolver();
         solver.set_num_mesh_intervals(20);
         finalTime0 = study.solve().getFinalTime();
 
@@ -157,8 +157,8 @@ function testOrder(testCase)
     problem.setStateInfo('/slider/position/speed', [-100, 100], 0, 0);
     problem.addGoal(MocoFinalTimeGoal());
     problem.setModel(createSlidingMassModel());
-    if MocoTropterSolver.isAvailable()
-        solver = study.initTropterSolver();
+    if MocoCasADiSolver.isAvailable()
+        solver = study.initCasADiSolver();
         solver.set_num_mesh_intervals(20);
         finalTime =  study.solve().getFinalTime();
 

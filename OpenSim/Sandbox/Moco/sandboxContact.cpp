@@ -188,7 +188,7 @@ void ball2d() {
 
     // Configure the solver.
 
-    MocoTropterSolver& ms = study.initSolver();
+    MocoCasADiSolver& ms = study.initSolver();
     ms.set_num_mesh_intervals(500);
 
     MocoTrajectory guess = ms.createGuess();
@@ -283,7 +283,7 @@ void pendulum() {
 
     // Configure the solver.
 
-    MocoTropterSolver& ms = study.initSolver();
+    MocoCasADiSolver& ms = study.initSolver();
     ms.set_num_mesh_intervals(500);
     MocoTrajectory guess = ms.createGuess();
     guess.setStatesTrajectory(statesTimeSteppingTable);
@@ -373,7 +373,7 @@ void pendulumActivationCoordinateActuator() {
 
     // Configure the solver.
 
-    MocoTropterSolver& ms = study.initSolver();
+    MocoCasADiSolver& ms = study.initSolver();
     ms.set_num_mesh_intervals(500);
     MocoTrajectory guess = ms.createGuess();
     guess.setStatesTrajectory(statesTimeSteppingTable);
@@ -622,7 +622,7 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     mp.setStateInfo("/planar/rz/speed", {-10, 10}, rzspeed0);
     mp.setStateInfo("/leg/length/speed", {-10, 10}, 0);
 
-    MocoTropterSolver& ms = study.initSolver();
+    MocoCasADiSolver& ms = study.initSolver();
     ms.set_num_mesh_intervals(500);
     //ms.set_optim_max_iterations(2);
     MocoTrajectory guess = ms.createGuess();
@@ -780,7 +780,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     grfTracking->append_forces("contact");
 
 
-    MocoTropterSolver& ms = moco.initSolver();
+    MocoCasADiSolver& ms = moco.initSolver();
     ms.set_multibody_dynamics_mode("implicit");
     ms.set_num_mesh_intervals(100);
     //ms.set_num_mesh_intervals(50);

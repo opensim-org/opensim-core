@@ -320,14 +320,11 @@ if(OPENSIM_WITH_CASADI)
     list(APPEND PYTHON_EXAMPLES_UNITTEST_ARGS
             Moco.exampleKinematicConstraints
             Moco.exampleSlidingMass
-            )
-endif()
-if(OPENSIM_WITH_TROPTER)
-    list(APPEND PYTHON_EXAMPLES_UNITTEST_ARGS
             Moco.exampleOptimizeMass
             Moco.examplePredictAndTrack
             )
 endif()
+
 # Similar as above, but for the example files. These files aren't named as
 # test_*.py, so we must specify a more general search pattern.
 add_test(NAME python_examples
