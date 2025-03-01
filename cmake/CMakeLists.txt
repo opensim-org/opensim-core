@@ -68,7 +68,7 @@ if(UNIX AND OPENSIM_COPY_DEPENDENCIES AND (NOT (DEFINED OPENSIM_WITH_CASADI AND 
             ${CMAKE_CURRENT_BINARY_DIR}/OpenSimMocoInstallMacDependencyLibraries.cmake)
         configure_file(OpenSimMocoInstallMacDependencyLibraries.cmake.in
                 "${script}" @ONLY)
-    elseif(LINUX)
+    else()
         set(script
             ${CMAKE_CURRENT_BINARY_DIR}/OpenSimMocoInstallLinuxDependencyLibraries.cmake)
         configure_file(OpenSimMocoInstallLinuxDependencyLibraries.cmake.in
