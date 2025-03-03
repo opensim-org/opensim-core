@@ -79,6 +79,8 @@ v4.6
 - Added convenience methods to `MocoTrack` to allow setting marker weights from a `Set<MarkerWeight>` or `IKTaskSet`. (#4008)
 - Remove the `tropter` libraries, the Tropter solver in Moco, and all references to it from build system. As a result, the following 
   Tropter-related dependencies have been removed: `adolc`, `colpack`, and `eigen`. (#3988)
+- `OpenSim::Mesh` now retains a reference-counted copy of the mesh data when it's copied, which should make
+  copying + re-finalizing `OpenSim::Model`s faster (#4010).
 
 
 v4.5.1
