@@ -1,5 +1,5 @@
 MocoAddSandboxExecutable(NAME sandboxMarkerTrackingWholeBody
-        LIB_DEPENDS osimMoco tropter
+        LIB_DEPENDS osimMoco
         SOURCE_FILES
             MuscleLikeCoordinateActuator.cpp
             MuscleLikeCoordinateActuator.h

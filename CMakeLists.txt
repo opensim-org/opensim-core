@@ -173,8 +173,21 @@ By default, any application linking to osimCommon will create an
 written by OpenSim (incl. during static initialization) are written to
 both this file and the standard output streams." OFF)
 
+option(OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION
+"Disable OpenSim from registering bundled `Object` types at static
+initialization time.
+
+If this is set to `ON` (i.e. disable static type registration) then
+downstream code *must* manually register the OpenSim types it plans
+on using by calling `RegisterTypes_osimLIBRARY` (e.g. `RegisterTypes_osimActuators`),
+or by manually registering each type (e.g. `Object::registerType(PhysicalOffsetFrame());`)." OFF)
+mark_as_advanced(OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION)
+
 if(OPENSIM_DISABLE_LOG_FILE)
     add_definitions(-DOPENSIM_DISABLE_LOG_FILE=1)
+endif()
+if(OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION)
+    add_definitions(-DOPENSIM_DISABLE_STATIC_TYPE_REGISTRATION=1)
 endif()
 
 set(OPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT OFF)
@@ -194,11 +207,6 @@ option(OPENSIM_WITH_CASADI
         "Build CasADi support for Moco (MocoCasADiSolver)." ON)
 add_feature_info(WITH_CASADI OPENSIM_WITH_CASADI
         "Build CasADi support for Moco (OPENSIM_WITH_CASADI)")
-option(OPENSIM_WITH_TROPTER
-        "Build the tropter optimal control library, for use in MocoTropterSolver." ON)
-add_feature_info(WITH_TROPTER OPENSIM_WITH_TROPTER
-        "Build the tropter optimal control library (OPENSIM_WITH_TROPTER)")
-
 
 # Configure installation directories across platforms.
 # ----------------------------------------------------
@@ -656,19 +664,13 @@ set(OPENSIM_DEPENDENCIES_DIR
 get_filename_component(OPENSIM_DEPENDENCIES_ABSDIR "${OPENSIM_DEPENDENCIES_DIR}"
         ABSOLUTE)
 if(NOT CMAKE_PREFIX_PATH
-        AND NOT ADOLC_DIR AND NOT "$ENV{ADOLC_DIR}"
         AND NOT IPOPT_DIR AND NOT "$ENV{IPOPT_DIR}"
         AND EXISTS "${OPENSIM_DEPENDENCIES_ABSDIR}")
     message(STATUS
             "Attempting to use dependencies from ${OPENSIM_DEPENDENCIES_ABSDIR}")
     set(deps_to_find)
-    if(OPENSIM_WITH_TROPTER)
-        list(APPEND deps_to_find colpack eigen)
-    endif()
     if(OPENSIM_WITH_CASADI)
         list(APPEND deps_to_find casadi)
-    endif()
-    if(OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI)
         list(APPEND deps_to_find ipopt)
     endif()
     set(dep_install_dirs)
@@ -677,8 +679,6 @@ if(NOT CMAKE_PREFIX_PATH
     endforeach()
     set(CMAKE_PREFIX_PATH "${dep_install_dirs}" CACHE PATH
             "Directories containing dependencies.")
-    set(ADOLC_DIR "${OPENSIM_DEPENDENCIES_ABSDIR}/adol-c" CACHE PATH
-            "Path to ADOL-C install directory.")
 endif()
 
 
@@ -799,7 +799,7 @@ include_directories("${Simbody_INCLUDE_DIR}")
 # CasADi
 # ------
 if(OPENSIM_WITH_CASADI)
-    find_package(casadi 3.4.4 REQUIRED)
+    find_package(casadi 3.6.5 REQUIRED)
     set_package_properties(casadi PROPERTIES
             URL https://web.casadi.org
             TYPE REQUIRED
@@ -809,8 +809,8 @@ if(OPENSIM_WITH_CASADI)
     OpenSimCopyDependencyDLLsForWin(DEP_NAME casadi
             DEP_BIN_DIR "${CASADI_BIN_DIR}")
     if(OPENSIM_COPY_DEPENDENCIES AND NOT WIN32)
-        # MocoCopyDLLs() only copies DLLs for Windows, but we still need
-        # the CasADi shared libraries on other platforms.
+        # OpenSimCopyDependencyDLLsForWin() only copies DLLs for Windows, but 
+        # we still need the CasADi shared libraries on other platforms.
         install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
             DESTINATION "${CMAKE_INSTALL_PREFIX}/${OPENSIM_INSTALL_CASADIDIR}"
                 USE_SOURCE_PERMISSIONS)
@@ -827,9 +827,55 @@ if(UNIX)
     find_package(PkgConfig REQUIRED)
 endif()
 
-if (OPENSIM_WITH_CASADI OR OPENSIM_WITH_TROPTER)
+if (OPENSIM_WITH_CASADI)
     if(UNIX)
         pkg_check_modules(IPOPT REQUIRED ipopt IMPORTED_TARGET)
+
+        if(OPENSIM_COPY_DEPENDENCIES AND APPLE)
+            # Extract actual name of the library libgfortran, gcc, quadmath to install along on OSX.
+            # These show only as dependencies of libipopt, and libgcc is in same folder as libgfortran.
+            # Not very robust, but works for our artifacts.
+            execute_process(COMMAND bash "-c"
+                "otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libgfortran' | awk '{print $1}'"
+                OUTPUT_VARIABLE libgfortran_name
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+            string(REPLACE "libgfortran.5" "libgcc_s.1.1" libgcc_name ${libgfortran_name})
+
+            execute_process(COMMAND bash "-c"
+                "otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libquadmath' | awk '{print $1}'"
+                OUTPUT_VARIABLE libquadmath_name
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+            install(FILES
+                ${IPOPT_LIBDIR}/libipopt.3.dylib
+                ${IPOPT_LIBDIR}/libipopt.dylib
+                ${IPOPT_LIBDIR}/libcoinmumps.3.dylib
+                ${IPOPT_LIBDIR}/libcoinmumps.dylib
+                ${IPOPT_LIBDIR}/libmetis.dylib
+                ${libgfortran_name}
+                ${libquadmath_name}
+                ${libgcc_name}
+                DESTINATION ${CMAKE_INSTALL_LIBDIR})
+                
+        elseif(OPENSIM_COPY_DEPENDENCIES AND LINUX)
+            get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
+
+            file(GLOB gfortran "${gcc_libdir}/../../../x86_64-linux-gnu/libgfortran*.so*")
+            file(GLOB quadmath "${gcc_libdir}/../../../x86_64-linux-gnu/libquadmath*.so*")
+
+            install(FILES
+                ${IPOPT_LIBDIR}/libipopt.so.3.14.16
+                ${IPOPT_LIBDIR}/libipopt.so.3
+                ${IPOPT_LIBDIR}/libipopt.so
+                ${IPOPT_LIBDIR}/libcoinmumps.so.3.0.5
+                ${IPOPT_LIBDIR}/libcoinmumps.so.3
+                ${IPOPT_LIBDIR}/libcoinmumps.so
+                ${IPOPT_LIBDIR}/libmetis.so
+                ${gfortran}
+                ${quadmath}
+                DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        endif()
     else()
         set(Ipopt_ROOT_DIR ${OPENSIM_DEPENDENCIES_DIR}/ipopt)
         message("Ipopt_ROOT_DIR ${Ipopt_ROOT_DIR}")

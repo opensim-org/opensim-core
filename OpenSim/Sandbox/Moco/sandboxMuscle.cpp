@@ -457,7 +457,7 @@ void testHangingMuscleMinimumTime(
     // TODO perform the tracking with INDYGO.
 
     // TODO support constraining initial fiber lengths to their equilibrium
-    // lengths in Tropter!!!!!!!!!!!!!! (in explicit mode).
+    // length (in explicit mode).
 }
 
 int main() {

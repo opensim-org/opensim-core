@@ -80,7 +80,7 @@ RUN echo "LOG: BUILDING OPENSIM-CORE DEPENDENCIES..."
 RUN mkdir -p ~/opensim-workspace/opensim-core-dependencies-build || true
 WORKDIR ~/opensim-workspace/opensim-core-dependencies-build
 RUN cd ~/opensim-workspace/opensim-core-dependencies-build && \
-	cmake ~/opensim-workspace/opensim-core-source/dependencies -DCMAKE_INSTALL_PREFIX=~/opensim-workspace/opensim-core-dependencies-install/ -DSUPERBUILD_ezc3d=on -DOPENSIM_WITH_CASADI=$MOCO -DOPENSIM_WITH_TROPTER=$MOCO && \
+	cmake ~/opensim-workspace/opensim-core-source/dependencies -DCMAKE_INSTALL_PREFIX=~/opensim-workspace/opensim-core-dependencies-install/ -DSUPERBUILD_ezc3d=on -DOPENSIM_WITH_CASADI=$MOCO && \
 	cmake . -LAH && \
 	cmake --build . --config $DEBUG_TYPE -j$NUM_JOBS
 RUN echo

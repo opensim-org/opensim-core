@@ -1747,7 +1747,8 @@ extern "C" OSIMCOMMON_API void RegisterTypes_osimCommon();
 void osimCommonInstantiator::registerDllClasses() 
 { 
         RegisterTypes_osimCommon(); 
-} 
-    
-static osimCommonInstantiator instantiator; 
+}
+#ifndef OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION
+    static osimCommonInstantiator instantiator;
+#endif
 /// @endcond
