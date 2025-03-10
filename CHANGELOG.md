@@ -37,6 +37,8 @@ performance and stability in wrapping solutions.
 - Updated required language level to C++20. (#3929)
 - Breaking: removed the `operator==` and `operator<` overloads in `ControlLinearNode` and replaced usages with the equivalent utility functions `isEqual()` and `isLessThan()`. (#4095)
 - Made various changes to support builds on Ubuntu 24.04 with GCC 13. (#4186)
+- Completed the implementation of the `MeyerFregly2016Force` class to support NMSM Pipeline-equivalent contact models in Moco. (#3877)
+- The experimental classes `AckermannVanDenBogert2010Force` and `EspositoMiller2018Force` have been removed. (#3877)
 
 
 v4.5.2
