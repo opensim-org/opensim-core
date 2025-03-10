@@ -20,7 +20,6 @@
 #include "Components/AccelerationMotion.h"
 #include "Components/ControlDistributor.h"
 #include "Components/DiscreteForces.h"
-#include "Components/StationPlaneContactForce.h"
 #include "MocoBounds.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoControlBoundConstraint.h"
@@ -125,10 +124,6 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(ModOpTendonComplianceDynamicsModeDGF());
         Object::registerType(ModOpIgnorePassiveFiberForcesDGF());
         Object::registerType(ModOpScaleActiveFiberForceCurveWidthDGF());
-
-        Object::registerType(AckermannVanDenBogert2010Force());
-        Object::registerType(MeyerFregly2016Force());
-        Object::registerType(EspositoMiller2018Force());
 
         Object::registerType(DiscreteForces());
         Object::registerType(AccelerationMotion());

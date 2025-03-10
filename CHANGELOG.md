@@ -101,6 +101,7 @@ v4.5.2
 - Exposed the "dissipated energy" state variable allocated by the `SimTK::Force::LinearBushing` that is internal to `BushingForce`. 
   This change fixed a bug in Moco where adding a `BushingForce` led to a segfault due to a mismatch between the size of the 
   auxiliary state vector reserved by Moco and `SimTK::State::getZ()`. (#4054)
+- Completed the implementation of the `MeyerFregly2016Force` included in the `StationPlaneContactForce` class to support NMSM Pipeline-equivalent contact models in Moco. (#3877)
 
 
 v4.5.1

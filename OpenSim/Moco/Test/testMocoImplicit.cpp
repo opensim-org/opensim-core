@@ -20,10 +20,10 @@
 #include <OpenSim/Moco/Components/AccelerationMotion.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 #include <OpenSim/Common/LinearFunction.h>
 
 #include <catch2/catch_all.hpp>
-#include "Testing.h"
 
 using namespace OpenSim;
 using namespace Catch;
