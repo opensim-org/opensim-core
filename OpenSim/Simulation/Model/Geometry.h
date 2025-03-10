@@ -26,6 +26,8 @@
 #include <OpenSim/Common/Component.h>
 #include "Appearance.h"
 
+#include <memory>
+
 namespace OpenSim { 
 
 class Frame;
@@ -557,43 +559,30 @@ public:
 
 public:
     /// Default constructor
-    Mesh() :
-        Geometry(),
-        cachedMesh(nullptr),
-        warningGiven(false)
-    {
-        constructProperty_mesh_file("");
-    }
+    Mesh();
+
     /// Constructor that takes a mesh file name
-    Mesh(const std::string& geomFile) :
-        Geometry(),
-        cachedMesh(nullptr),
-        warningGiven(false)
-    {
-        constructProperty_mesh_file("");
-        upd_mesh_file() = geomFile;
-    }
-    /// destructor
-    virtual ~Mesh() {};
+    Mesh(const std::string& geomFile);
+
     /// Retrieve file name
     const std::string&  getGeometryFilename() const
     {
         return get_mesh_file();
     };
 protected:
-    // ModelComponent interface.
     void extendFinalizeFromProperties() override;
 
 protected:
-    /// Method to map Mesh to Array of SimTK::DecorativeGeometry.
     void implementCreateDecorativeGeometry(
-        SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const override;
+        SimTK::Array_<SimTK::DecorativeGeometry>&) const override;
+
 private:
-    // We cache the DecorativeMeshFile if we successfully
-    // load the mesh from file so we don't try loading from disk every frame.
-    // This is mutable since it is not part of the public interface.
-    mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::DecorativeMeshFile>> cachedMesh;
-    mutable bool warningGiven;
+    // The mesh data is cached and reference-counted for copies of this `Mesh`
+    // until it's detected that its on-disk location, or scale factors, have
+    // changed.
+    class CachedDecorativeMeshFile;
+    std::shared_ptr<const CachedDecorativeMeshFile> _mesh;
+    bool _warningGiven = false;
 };
 
 /**

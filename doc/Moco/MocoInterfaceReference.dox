@@ -21,7 +21,6 @@ The following classes are used frequently:
   - MocoSolver
   - MocoProblemRep
 - MocoDirectCollocationSolver
-  - MocoTropterSolver
   - MocoCasADiSolver
 - ModelFactory
 

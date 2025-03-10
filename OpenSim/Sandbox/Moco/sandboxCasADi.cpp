@@ -1,10 +1,6 @@
 #include <casadi/casadi.hpp>
 
-#include <tropter/tropter.h>
-
 #include <Moco/osimMoco.h>
-
-using namespace tropter;
 
 using namespace casadi;
 
