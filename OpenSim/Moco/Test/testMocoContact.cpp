@@ -1,10 +1,10 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: testContact.cpp                                              *
+ * OpenSim Moco: testMocoContact.cpp                                          *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017-19 Stanford University and the Authors                  *
+ * Copyright (c) 2025 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Christopher Dembia                                              *
- * Contributors: Antoine Falisse                                              *
+ * Contributors: Antoine Falisse, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -18,500 +18,484 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Moco/osimMoco.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Actuators/ModelOperators.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Simulation/Model/MeyerFregly2016Force.h>
+#include <OpenSim/Simulation/Model/ContactHalfSpace.h>
+#include <OpenSim/Simulation/Model/ContactGeometry.h>
+#include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
+#include <OpenSim/Simulation/VisualizerUtilities.h>
 
 #include <catch2/catch_all.hpp>
 #include "Testing.h"
-
-using Catch::Approx;
 
 const double FRICTION_COEFFICIENT = 0.7;
 
 using namespace OpenSim;
 using SimTK::Vec3;
 
-template<typename T>
-Model create2DPointMassModel() {
-    Model model;
-    model.setName("point_mass");
-    auto* intermed = new Body("intermed", 0, Vec3(0), SimTK::Inertia(0));
-    model.addComponent(intermed);
-    auto* body = new Body("body", 50.0, Vec3(0), SimTK::Inertia(1));
-    model.addComponent(body);
+namespace {
+    // Create a simple 2D point mass model with a MeyerFregly2016Force.
+    Model create2DPointMassModel() {
+        Model model;
+        model.setName("point_mass");
+        auto* intermed = new Body("intermed", 0, Vec3(0), SimTK::Inertia(0));
+        model.addComponent(intermed);
+        auto* body = new Body("body", 50.0, Vec3(0), SimTK::Inertia(1));
+        model.addComponent(body);
 
-    // Allows translation along x.
-    auto* jointX = new SliderJoint();
-    jointX->setName("tx");
-    jointX->connectSocket_parent_frame(model.getGround());
-    jointX->connectSocket_child_frame(*intermed);
-    auto& coordX = jointX->updCoordinate(SliderJoint::Coord::TranslationX);
-    coordX.setName("tx");
-    model.addComponent(jointX);
+        // Allows translation along x.
+        auto* jointX = new SliderJoint();
+        jointX->setName("tx");
+        jointX->connectSocket_parent_frame(model.getGround());
+        jointX->connectSocket_child_frame(*intermed);
+        auto& coordX = jointX->updCoordinate(SliderJoint::Coord::TranslationX);
+        coordX.setName("tx");
+        model.addComponent(jointX);
 
-    // The joint's x axis must point in the global "+y" direction.
-    auto* jointY = new SliderJoint("ty",
-            *intermed, Vec3(0), Vec3(0, 0, 0.5 * SimTK::Pi),
-            *body, Vec3(0), Vec3(0, 0, 0.5 * SimTK::Pi));
-    auto& coordY = jointY->updCoordinate(SliderJoint::Coord::TranslationX);
-    coordY.setName("ty");
-    model.addComponent(jointY);
+        // The joint's x axis must point in the global "+y" direction.
+        auto* jointY = new SliderJoint("ty",
+                *intermed, Vec3(0), Vec3(0, 0, 0.5 * SimTK::Pi),
+                *body, Vec3(0), Vec3(0, 0, 0.5 * SimTK::Pi));
+        auto& coordY = jointY->updCoordinate(SliderJoint::Coord::TranslationX);
+        coordY.setName("ty");
+        model.addComponent(jointY);
 
-    auto* station = new Station();
-    station->setName("contact_point");
-    model.addComponent(station);
-    station->connectSocket_parent_frame(*body);
+        auto* station = new Station();
+        station->setName("contact_point");
+        model.addComponent(station);
+        station->connectSocket_parent_frame(*body);
 
-    auto* force = new T();
-    force->setName("contact");
-    force->set_stiffness(1e5);
-    force->set_dissipation(1.0);
-    force->set_friction_coefficient(FRICTION_COEFFICIENT);
-    force->connectSocket_station(*station);
-    model.addComponent(force);
+        auto* force = new MeyerFregly2016Force();
+        force->setName("contact");
+        force->set_stiffness(1e4);
+        force->set_dissipation(1.0);
+        force->set_viscous_friction(FRICTION_COEFFICIENT);
+        force->set_dynamic_friction(FRICTION_COEFFICIENT);
+        force->connectSocket_station(*station);
+        model.addComponent(force);
 
-    return model;
-}
-
-// Test that, with dissipation, the contact force settles to the weight of the
-// system. This is the same type of test done in OpenSim's testForces for
-// HuntCrossleyForce. The test is performed with both time stepping and direct
-// collocation.
-template<typename T>
-SimTK::Real testNormalForce() {
-    // TODO this copy breaks the contact force station socket path
-    Model modelTemp = create2DPointMassModel<T>();
-    modelTemp.finalizeConnections();
-    Model model(modelTemp);
-    model.finalizeConnections();
-    ModelProcessor modelProc(model);
-
-    SimTK::Real weight;
-    {
-        SimTK::State state = model.initSystem();
-        weight = model.getTotalMass(state) * (-model.getGravity()[1]);
+        return model;
     }
 
-    const SimTK::Real y0 = 0.5;
-    const SimTK::Real finalTime = 2.0;
+    // Test that, with dissipation, the MeyerFregly2016Force contact force 
+    // settles to the weight of the system. This is the same type of test done 
+    // in OpenSim's testForces for HuntCrossleyForce. The test is performed with 
+    // both time stepping and direct collocation.
+    SimTK::Real testMeyerFregly2016Force_NormalForce() {
+        Model model = create2DPointMassModel();
+        model.finalizeConnections();
 
-    // Time stepping.
-    // --------------
-    SimTK::Real finalHeightTimeStepping;
-    {
-        SimTK::State state = model.initSystem();
-        model.setStateVariableValue(state, "ty/ty/value", y0);
-        Manager manager(model);
-        manager.setIntegratorAccuracy(1e-6);
-        manager.initialize(state);
-        state = manager.integrate(finalTime);
+        SimTK::Real weight;
+        {
+            SimTK::State state = model.initSystem();
+            weight = model.getTotalMass(state) * (-model.getGravity()[1]);
+        }
 
-        // visualize(model, manager.getStateStorage());
+        const SimTK::Real y0 = 0.5;
+        const SimTK::Real finalTime = 3.0;
 
-        // https://stackoverflow.com/questions/34696351/template-dependent-typename
-        auto& contact = model.template getComponent<StationPlaneContactForce>("contact");
-        model.realizeVelocity(state);
-        const Vec3 contactForce = contact.calcContactForceOnStation(state);
-        // The horizontal force is not quite zero, maybe from a buildup of
-        // numerical error (tightening the accuracy reduces this force).
-        CHECK(contactForce[0] == Approx(0).margin(0.01));
-        CHECK(contactForce[1] == Approx(weight).epsilon(0.01));
-        // The system is planar, so there is no force in the z direction.
-        CHECK(contactForce[2] == 0);
+        // Time stepping.
+        // --------------
+        SimTK::Real finalHeightTimeStepping;
+        {
+            // Run time-stepping integration.
+            SimTK::State state = model.initSystem();
+            model.setStateVariableValue(state, "ty/ty/value", y0);
+            Manager manager(model);
+            manager.setIntegratorAccuracy(1e-6);
+            manager.initialize(state);
+            state = manager.integrate(finalTime);
 
-        finalHeightTimeStepping =
-                model.getStateVariableValue(state, "ty/ty/value");
+            // Extract the contact force.
+            TimeSeriesTable statesTable = manager.getStatesTable();
+            auto& contact = 
+                    model.template getComponent<MeyerFregly2016Force>("contact");
+            model.realizeVelocity(state);
+            const Vec3 contactForce = contact.getContactForceOnStation(state);
+
+            // Check that the contact force is the weight of the system.
+            // The horizontal force is not quite zero, maybe from a buildup of
+            // numerical error (tightening the accuracy reduces this force).
+            // The system is planar, so there is no force in the z direction.
+            CHECK_THAT(contactForce[0], Catch::Matchers::WithinAbs(0.0, 1e-6));
+            CHECK_THAT(contactForce[1], Catch::Matchers::WithinRel(weight, 1e-3));
+            CHECK_THAT(contactForce[2], Catch::Matchers::WithinRel(0.0, 1e-10));
+
+            finalHeightTimeStepping =
+                    model.getStateVariableValue(state, "ty/ty/value");
+        }
+
+        // Direct collocation.
+        // -------------------
+        // This is a simulation (initial value problem), not a trajectory
+        // optimization.
+        SimTK::Real finalHeightDircol;
+        {
+            MocoStudy study;
+            MocoProblem& problem = study.updProblem();
+            problem.setModelAsCopy(model);
+            problem.setTimeBounds(0, finalTime);
+            problem.setStateInfo("/tx/tx/value", {-1, 1}, 0);
+            problem.setStateInfo("/ty/ty/value", {-0.5, 1}, y0);
+            problem.setStateInfo("/tx/tx/speed", {-10, 10}, 0);
+            problem.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
+
+            auto& solver = study.initCasADiSolver();
+            solver.set_num_mesh_intervals(100);
+            solver.set_transcription_scheme("legendre-gauss-radau-3");
+
+            MocoSolution solution = study.solve();
+            // solution.write("testContact_solution_testNormalForce.sto");
+            // study.visualize(solution);
+
+            // Extract the contact force.
+            auto statesTraj = solution.exportToStatesTrajectory(problem);
+            const auto& finalState = statesTraj.back();
+            model.realizeVelocity(finalState);
+            auto& contact = 
+                    model.template getComponent<MeyerFregly2016Force>("contact");
+            const Vec3 contactForce = 
+                    contact.getContactForceOnStation(finalState);
+
+            // Check that the contact force is the weight of the system.
+            CHECK_THAT(contactForce[0], Catch::Matchers::WithinAbs(0.0, 1e-6));
+            CHECK_THAT(contactForce[1], 
+                    Catch::Matchers::WithinRel(weight, 1e-3));
+            CHECK_THAT(contactForce[2], Catch::Matchers::WithinRel(0.0, 1e-10));
+
+            finalHeightDircol =
+                    model.getStateVariableValue(finalState, "ty/ty/value");
+        }
+
+        // The two methods should produce the same result.
+        CHECK_THAT(finalHeightTimeStepping, 
+                Catch::Matchers::WithinAbs(finalHeightDircol, 1e-6));
+
+        return finalHeightTimeStepping;
     }
 
-    // Direct collocation.
-    // -------------------
-    // This is a simulation (initial value problem), not a trajectory
-    // optimization.
-    SimTK::Real finalHeightDircol;
-    {
-        MocoStudy study;
-        MocoProblem& mp = study.updProblem();
-        mp.setModelAsCopy(model);
-        mp.setTimeBounds(0, finalTime);
-        mp.setStateInfo("/tx/tx/value", {-1, 1}, 0);
-        mp.setStateInfo("/ty/ty/value", {-0.5, 1}, y0);
-        mp.setStateInfo("/tx/tx/speed", {-10, 10}, 0);
-        mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
+    // Test the friction component of the MeyerFregly2016Force contact force by 
+    // ensuring that the point mass comes to rest after sliding a certain 
+    // distance. To make the friction force roughly constant, we want the 
+    // equilibrium height of the mass (from 
+    // testMeyerFregly2016Force_NormalForce()).
+    void testMeyerFregly2016Force_FrictionForce(
+                const SimTK::Real& equilibriumHeight) {
+        auto model = create2DPointMassModel();
+        model.initSystem();
 
-        auto& ms = study.initCasADiSolver();
-        ms.set_num_mesh_intervals(50);
-        // TODO: Hermite-Simpson has trouble converging
-        ms.set_transcription_scheme("trapezoidal");
+        const SimTK::Real y0 = equilibriumHeight;
+        const SimTK::Real finalTime = 3.0;
+        const SimTK::Real vx0 = 1.0;
 
-        MocoSolution solution = study.solve();
-        // solution.write("testContact_solution_testNormalForce.sto");
-        // moco.visualize(solution);
+        // Time stepping.
+        // --------------
+        {
+            SimTK::State state = model.initSystem();
+            model.setStateVariableValue(state, "ty/ty/value", y0);
+            model.setStateVariableValue(state, "tx/tx/speed", vx0);
+            Manager manager(model, state);
+            state = manager.integrate(finalTime);
 
-        auto statesTraj = solution.exportToStatesTrajectory(mp);
-        const auto& finalState = statesTraj.back();
-        model.realizeVelocity(finalState);
-        // https://stackoverflow.com/questions/34696351/template-dependent-typename
-        auto& contact = model.template getComponent<StationPlaneContactForce>("contact");
-        const Vec3 contactForce = contact.calcContactForceOnStation(finalState);
-        // For some reason, direct collocation doesn't produce the same
-        // numerical issues with the x component of the force as seen above.
-        CHECK(contactForce[0] == Approx(0).margin(1e-15));
-        CHECK(contactForce[1] == Approx(weight).epsilon(0.01));
-        CHECK(contactForce[2] == 0);
+            // The system should be at rest.
+            OpenSim_CHECK_MATRIX_ABSTOL(state.getU(),
+                    SimTK::Vector(state.getNU(), 0.0), 1e-3);
+        }
 
-        finalHeightDircol =
-                model.getStateVariableValue(finalState, "ty/ty/value");
+        // Direct collocation.
+        // -------------------
+        // This is a simulation (initial value problem), not a trajectory
+        // optimization.
+        {
+            MocoStudy study;
+            MocoProblem& mp = study.updProblem();
+            mp.setModelAsCopy(model);
+            mp.setTimeBounds(0, finalTime);
+            mp.setStateInfo("/tx/tx/value", {-1, 1}, 0);
+            mp.setStateInfo("/ty/ty/value", {-0.5, 1}, y0);
+            mp.setStateInfo("/tx/tx/speed", {-10, 10}, vx0);
+            mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
+
+            auto& ms = study.initCasADiSolver();
+            ms.set_num_mesh_intervals(50);
+            ms.set_transcription_scheme("legendre-gauss-radau-3");
+
+            MocoSolution solution = study.solve();
+            // solution.write("testContact_testFrictionForce_solution.sto");
+            // study.visualize(solution);
+
+            auto statesTraj = solution.exportToStatesTrajectory(mp);
+            const auto& finalState = statesTraj.back();
+
+            // The system should be at rest.
+            OpenSim_CHECK_MATRIX_ABSTOL(finalState.getU(),
+                    SimTK::Vector(finalState.getNU(), 0.0), 1e-3);
+        }
     }
 
-    CHECK(finalHeightTimeStepping == Approx(finalHeightDircol).margin(1e-5));
+    // Test our wrapping of SmoothSphereHalfSpaceForce in Moco
+    // Create a model with SmoothSphereHalfSpaceForce
+    Model createBallHalfSpaceModel(
+            double frictionCoefficient = FRICTION_COEFFICIENT,
+            double dissipation = 1.0) {
+        // Setup model.
+        Model model;
+        model.setName("BouncingBall_SmoothSphereHalfSpaceForce");
+        auto* ball = new Body("ball", 1, Vec3(0), SimTK::Inertia(1));
+        model.addComponent(ball);
+        auto* groundBall = new PlanarJoint("groundBall", model.getGround(),
+            Vec3(0), Vec3(0), *ball, Vec3(0), Vec3(0));
+        auto& rz = groundBall->updCoordinate(PlanarJoint::Coord::RotationZ);
+        rz.setPrescribedFunction(Constant(0));
+        rz.setDefaultIsPrescribed(true);
+        model.addComponent(groundBall);
+        // Add display geometry.
+        double radius = 0.10;
+        Sphere bodyGeometry(radius);
+        bodyGeometry.setColor(SimTK::Gray);
+        ball->attachGeometry(bodyGeometry.clone());
+        // Setup contact.
+        double stiffness = 10000;
+        double staticFriction = frictionCoefficient;
+        double dynamicFriction = frictionCoefficient;
+        double viscousFriction = 0;
+        double transitionVelocity = 0.05;
+        double cf = 1e-5;
+        double bd = 300;
+        double bv = 50;
+        Vec3 sphereLocation(0);
+        Vec3 halfSpaceLocation(0);
+        // Set the plane parallel to the ground.
+        Vec3 halfSpaceOrientation(0, 0, -0.5 * SimTK::Pi);
+        auto* sphere = new ContactSphere(
+                radius, sphereLocation, *ball, "sphere");
+        model.addContactGeometry(sphere);
+        auto* halfSpace = new ContactHalfSpace(halfSpaceLocation,
+                halfSpaceOrientation, model.getGround(), "floor");
+        model.addContactGeometry(halfSpace);
+        auto* contactBallHalfSpace = new SmoothSphereHalfSpaceForce(
+            "contactBallHalfSpace", *sphere, *halfSpace);
+        contactBallHalfSpace->set_stiffness(stiffness);
+        contactBallHalfSpace->set_dissipation(dissipation);
+        contactBallHalfSpace->set_static_friction(staticFriction);
+        contactBallHalfSpace->set_dynamic_friction(dynamicFriction);
+        contactBallHalfSpace->set_viscous_friction(viscousFriction);
+        contactBallHalfSpace->set_transition_velocity(transitionVelocity);
+        contactBallHalfSpace->set_constant_contact_force(cf);
+        contactBallHalfSpace->set_hertz_smoothing(bd);
+        contactBallHalfSpace->set_hunt_crossley_smoothing(bv);
+        contactBallHalfSpace->setName("contactBallHalfSpace");
+        model.addComponent(contactBallHalfSpace);
 
-    return finalHeightTimeStepping;
-}
-
-// Test the friction component of the contact force by ensuring that the point
-// mass travels the expected horizontal distance if it starts in the ground.
-// To make the friction force roughly constant, we want the equilibrium height
-// of the mass (from testNormalForce()).
-template<typename T>
-void testFrictionForce(const SimTK::Real& equilibriumHeight) {
-    auto model = create2DPointMassModel<T>();
-
-    {
-        SimTK::State state = model.initSystem();
+        return model;
     }
 
-    const SimTK::Real y0 = equilibriumHeight;
-    const SimTK::Real finalTime = 0.5;
-    const SimTK::Real vx0 = 2.5;
+    // Simple simulation of bouncing ball with dissipation should generate 
+    // contact forces that settle to ball weight. This is the same type of test 
+    // done in OpenSim's testForces for HuntCrossleyForce. The test is performed 
+    // with both time stepping and direct collocation.
+    SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce() {
+        Model model(createBallHalfSpaceModel());
 
-    const SimTK::Real g = -model.getGravity()[1];
+        SimTK::Real weight;
+        {
+            SimTK::State state = model.initSystem();
+            weight = model.getTotalMass(state) * (-model.getGravity()[1]);
+        }
 
-    // Expected final x position.
-    // --------------------------
-    // m * vxdot = F = - mu * m * g
-    // vx(t) = -mu * g * t + vx0
-    // x(t) = -0.5 * mu * g * t^2 + vx0 * t
-    // The time at which the point reaches rest:
-    // t_rest = vx0 / (mu * g)
-    // Final position: x(t_rest)
-    const double& mu = FRICTION_COEFFICIENT;
-    const SimTK::Real restTime = vx0 / (mu * g);
-    CHECK(restTime < finalTime);
-    const SimTK::Real expectedFinalX =
-            -0.5 * mu * g * pow(restTime, 2) + vx0 * restTime;
+        const SimTK::Real y0 = 0.5;
+        const SimTK::Real finalTime = 2.0;
 
-    // Time stepping.
-    // --------------
-    {
-        SimTK::State state = model.initSystem();
-        model.setStateVariableValue(state, "ty/ty/value", y0);
-        model.setStateVariableValue(state, "tx/tx/speed", vx0);
-        Manager manager(model, state);
-        state = manager.integrate(finalTime);
+        // Time stepping.
+        // --------------
+        SimTK::Real finalHeightTimeStepping;
+        {
+            SimTK::State state = model.initSystem();
+            model.setStateVariableValue(state,
+                "groundBall/groundBall_coord_2/value", y0);
+            Manager manager(model);
+            manager.setIntegratorAccuracy(1e-6);
+            manager.initialize(state);
+            state = manager.integrate(finalTime);
 
-        // visualize(model, manager.getStateStorage());
+            model.realizeVelocity(state);
 
-        const SimTK::Real finalTX =
-                model.getStateVariableValue(state, "tx/tx/value");
-        CHECK(finalTX == Approx(expectedFinalX).margin(0.005));
-
-        // The system should be at rest.
-        OpenSim_CHECK_MATRIX_ABSTOL(state.getU(),
-                SimTK::Vector(state.getNU(), 0.0), 1e-3);
-    }
-
-    // Direct collocation.
-    // -------------------
-    // This is a simulation (initial value problem), not a trajectory
-    // optimization.
-    {
-        MocoStudy study;
-        MocoProblem& mp = study.updProblem();
-        mp.setModelAsCopy(model);
-        mp.setTimeBounds(0, finalTime);
-        mp.setStateInfo("/tx/tx/value", {-1, 1}, 0);
-        mp.setStateInfo("/ty/ty/value", {-0.5, 1}, y0);
-        mp.setStateInfo("/tx/tx/speed", {-10, 10}, vx0);
-        mp.setStateInfo("/ty/ty/speed", {-10, 10}, 0);
-
-        auto& ms = study.initCasADiSolver();
-        ms.set_num_mesh_intervals(25);
-        // TODO: Hermite-Simpson has trouble converging
-        ms.set_transcription_scheme("trapezoidal");
-
-        MocoSolution solution = study.solve();
-        // solution.write("testContact_testFrictionForce_solution.sto");
-        // study.visualize(solution);
-
-        auto statesTraj = solution.exportToStatesTrajectory(mp);
-        const auto& finalState = statesTraj.back();
-        const SimTK::Real finalTX =
-                model.getStateVariableValue(finalState, "tx/tx/value");
-
-        CHECK(finalTX == Approx(expectedFinalX).margin(0.005));
-
-        // The system should be at rest.
-        OpenSim_CHECK_MATRIX_ABSTOL(finalState.getU(),
-                SimTK::Vector(finalState.getNU(), 0.0), 1e-3);
-    }
-}
-
-template<typename T>
-void testStationPlaneContactForce() {
-    const SimTK::Real equilibriumHeight = testNormalForce<T>();
-    testFrictionForce<T>(equilibriumHeight);
-}
-
-// Test our wrapping of SmoothSphereHalfSpaceForce in Moco
-// Create a model with SmoothSphereHalfSpaceForce
-Model createBallHalfSpaceModel(double frictionCoefficient = FRICTION_COEFFICIENT,
-        double dissipation = 1.0) {
-    // Setup model.
-    Model model;
-    model.setName("BouncingBall_SmoothSphereHalfSpaceForce");
-    auto* ball = new Body("ball", 1, Vec3(0), SimTK::Inertia(1));
-    model.addComponent(ball);
-    auto* groundBall = new PlanarJoint("groundBall", model.getGround(),
-        Vec3(0), Vec3(0), *ball, Vec3(0), Vec3(0));
-    auto& rz = groundBall->updCoordinate(PlanarJoint::Coord::RotationZ);
-    rz.setPrescribedFunction(Constant(0));
-    rz.setDefaultIsPrescribed(true);
-    model.addComponent(groundBall);
-    // Add display geometry.
-    double radius = 0.10;
-    Sphere bodyGeometry(radius);
-    bodyGeometry.setColor(SimTK::Gray);
-    ball->attachGeometry(bodyGeometry.clone());
-    // Setup contact.
-    double stiffness = 10000;
-    double staticFriction = frictionCoefficient;
-    double dynamicFriction = frictionCoefficient;
-    double viscousFriction = 0;
-    double transitionVelocity = 0.05;
-    double cf = 1e-5;
-    double bd = 300;
-    double bv = 50;
-    Vec3 sphereLocation(0);
-    Vec3 halfSpaceLocation(0);
-    // Set the plane parallel to the ground.
-    Vec3 halfSpaceOrientation(0, 0, -0.5 * SimTK::Pi);
-    auto* sphere = new ContactSphere(radius, sphereLocation, *ball, "sphere");
-    model.addContactGeometry(sphere);
-    auto* halfSpace = new ContactHalfSpace(halfSpaceLocation,
-            halfSpaceOrientation, model.getGround(), "floor");
-    model.addContactGeometry(halfSpace);
-    auto* contactBallHalfSpace = new SmoothSphereHalfSpaceForce(
-        "contactBallHalfSpace", *sphere, *halfSpace);
-    contactBallHalfSpace->set_stiffness(stiffness);
-    contactBallHalfSpace->set_dissipation(dissipation);
-    contactBallHalfSpace->set_static_friction(staticFriction);
-    contactBallHalfSpace->set_dynamic_friction(dynamicFriction);
-    contactBallHalfSpace->set_viscous_friction(viscousFriction);
-    contactBallHalfSpace->set_transition_velocity(transitionVelocity);
-    contactBallHalfSpace->set_constant_contact_force(cf);
-    contactBallHalfSpace->set_hertz_smoothing(bd);
-    contactBallHalfSpace->set_hunt_crossley_smoothing(bv);
-    contactBallHalfSpace->setName("contactBallHalfSpace");
-    model.addComponent(contactBallHalfSpace);
-
-    return model;
-}
-
-// Simple simulation of bouncing ball with dissipation should generate contact
-// forces that settle to ball weight. This is the same type of test done in
-// OpenSim's testForces for HuntCrossleyForce. The test is performed with both
-// time stepping and direct collocation.
-SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
-{
-    Model model(createBallHalfSpaceModel());
-
-    SimTK::Real weight;
-    {
-        SimTK::State state = model.initSystem();
-        weight = model.getTotalMass(state) * (-model.getGravity()[1]);
-    }
-
-    const SimTK::Real y0 = 0.5;
-    const SimTK::Real finalTime = 2.0;
-
-    // Time stepping.
-    // --------------
-    SimTK::Real finalHeightTimeStepping;
-    {
-        SimTK::State state = model.initSystem();
-        model.setStateVariableValue(state,
-            "groundBall/groundBall_coord_2/value", y0);
-        Manager manager(model);
-        manager.setIntegratorAccuracy(1e-6);
-        manager.initialize(state);
-        state = manager.integrate(finalTime);
-
-        model.realizeVelocity(state);
-
-        auto& contactBallHalfSpace =
-            model.getComponent<SmoothSphereHalfSpaceForce>(
-            "contactBallHalfSpace");
-
-        Array<double> contactForces =
-            contactBallHalfSpace.getRecordValues(state);
-        // no horizontal force
-        CHECK(contactForces[0] == Approx(0.0).margin(1e-4));
-        // vertical force is weight
-        CHECK(contactForces[1] == Approx(weight).margin(1e-4));
-        // no horizontal force
-        CHECK(contactForces[2] == Approx(0.0).margin(1e-4));
-        CHECK(contactForces[3] == Approx(0.0).margin(1e-4)); // no torque
-        CHECK(contactForces[4] == Approx(0.0).margin(1e-4)); // no torque
-        CHECK(contactForces[5] == Approx(0.0).margin(1e-4)); // no torque
-
-        finalHeightTimeStepping = model.getStateVariableValue(state,
-            "groundBall/groundBall_coord_2/value");
-    }
-
-    // Direct collocation.
-    // -------------------
-    // This is a simulation (initial value problem), not a trajectory
-    // optimization.
-    SimTK::Real finalHeightDircol;
-    {
-        MocoStudy study;
-        MocoProblem& mp = study.updProblem();
-        mp.setModelAsCopy(model);
-        mp.setTimeBounds(0, finalTime);
-        mp.setStateInfo("/groundBall/groundBall_coord_0/value", {-1, 1}, 0);
-        mp.setStateInfo("/groundBall/groundBall_coord_1/value", {-1, 1}, 0);
-        mp.setStateInfo("/groundBall/groundBall_coord_2/value", {-1, 1}, y0);
-        mp.setStateInfo("/groundBall/groundBall_coord_0/speed", {-10, 10}, 0);
-        mp.setStateInfo("/groundBall/groundBall_coord_1/speed", {-10, 10}, 0);
-        mp.setStateInfo("/groundBall/groundBall_coord_2/speed", {-10, 10}, 0);
-
-        auto& ms = study.initCasADiSolver();
-        ms.set_num_mesh_intervals(50);
-        ms.set_verbosity(2);
-        ms.set_optim_solver("ipopt");
-
-        MocoSolution solution = study.solve();
-
-        auto statesTraj = solution.exportToStatesTrajectory(mp);
-        const auto& finalState = statesTraj.back();
-        model.realizeVelocity(finalState);
-
-        auto& contactBallHalfSpace =
-            model.getComponent<SmoothSphereHalfSpaceForce>(
+            auto& contactBallHalfSpace =
+                model.getComponent<SmoothSphereHalfSpaceForce>(
                 "contactBallHalfSpace");
 
-        Array<double> contactForces =
-        contactBallHalfSpace.getRecordValues(finalState);
-        // no horizontal force
-        CHECK(contactForces[0] == Approx(0.0).margin(1e-4));
-        // vertical force is weight
-        CHECK(contactForces[1] == Approx(weight).margin(1e-4));
-        // no horizontal force
-        CHECK(contactForces[2] == Approx(0.0).margin(1e-4));
-        CHECK(contactForces[3] == Approx(0.0).margin(1e-4)); // no torque
-        CHECK(contactForces[4] == Approx(0.0).margin(1e-4)); // no torque
-        CHECK(contactForces[5] == Approx(0.0).margin(1e-4)); // no torque
+            Array<double> contactForces =
+                contactBallHalfSpace.getRecordValues(state);
+            // no horizontal force
+            CHECK_THAT(contactForces[0], Catch::Matchers::WithinAbs(0.0, 1e-4));
+            // vertical force is weight
+            CHECK_THAT(contactForces[1], 
+                Catch::Matchers::WithinAbs(weight, 1e-4));
+            // no horizontal force
+            CHECK_THAT(contactForces[2], Catch::Matchers::WithinAbs(0.0, 1e-4));
+            // no torque
+            CHECK_THAT(contactForces[3], Catch::Matchers::WithinAbs(0.0, 1e-4));
+            CHECK_THAT(contactForces[4], Catch::Matchers::WithinAbs(0.0, 1e-4));
+            CHECK_THAT(contactForces[5], Catch::Matchers::WithinAbs(0.0, 1e-4));
 
-        finalHeightDircol = model.getStateVariableValue(finalState,
-            "groundBall/groundBall_coord_2/value");
+            finalHeightTimeStepping = model.getStateVariableValue(state,
+                "groundBall/groundBall_coord_2/value");
+        }
+
+        // Direct collocation.
+        // -------------------
+        // This is a simulation (initial value problem), not a trajectory
+        // optimization.
+        SimTK::Real finalHeightDircol;
+        {
+            MocoStudy study;
+            MocoProblem& mp = study.updProblem();
+            mp.setModelAsCopy(model);
+            mp.setTimeBounds(0, finalTime);
+            mp.setStateInfo("/groundBall/groundBall_coord_0/value", {-1, 1}, 0);
+            mp.setStateInfo("/groundBall/groundBall_coord_1/value", {-1, 1}, 0);
+            mp.setStateInfo("/groundBall/groundBall_coord_2/value", {-1, 1}, y0);
+            mp.setStateInfo("/groundBall/groundBall_coord_0/speed", {-10, 10}, 0);
+            mp.setStateInfo("/groundBall/groundBall_coord_1/speed", {-10, 10}, 0);
+            mp.setStateInfo("/groundBall/groundBall_coord_2/speed", {-10, 10}, 0);
+
+            auto& ms = study.initCasADiSolver();
+            ms.set_num_mesh_intervals(50);
+            ms.set_verbosity(2);
+            ms.set_optim_solver("ipopt");
+
+            MocoSolution solution = study.solve();
+
+            auto statesTraj = solution.exportToStatesTrajectory(mp);
+            const auto& finalState = statesTraj.back();
+            model.realizeVelocity(finalState);
+
+            auto& contactBallHalfSpace =
+                model.getComponent<SmoothSphereHalfSpaceForce>(
+                    "contactBallHalfSpace");
+
+            Array<double> contactForces =
+            contactBallHalfSpace.getRecordValues(finalState);
+            // no horizontal force
+            CHECK_THAT(contactForces[0],  Catch::Matchers::WithinAbs(0.0, 1e-4));
+            // vertical force is weight
+            CHECK_THAT(contactForces[1], 
+                    Catch::Matchers::WithinAbs(weight, 1e-4));
+            // no horizontal force
+            CHECK_THAT(contactForces[2], Catch::Matchers::WithinAbs(0.0, 1e-4));
+            // no torque
+            CHECK_THAT(contactForces[3], Catch::Matchers::WithinAbs(0.0, 1e-4)); 
+            CHECK_THAT(contactForces[4], Catch::Matchers::WithinAbs(0.0, 1e-4)); 
+            CHECK_THAT(contactForces[5], Catch::Matchers::WithinAbs(0.0, 1e-4));
+
+            finalHeightDircol = model.getStateVariableValue(finalState,
+                    "groundBall/groundBall_coord_2/value");
+        }
+
+        CHECK_THAT(finalHeightTimeStepping,
+                Catch::Matchers::WithinAbs(finalHeightDircol, 1e-5));
+
+        return finalHeightTimeStepping;
+
     }
 
-    CHECK(finalHeightTimeStepping == Approx(finalHeightDircol).margin(1e-5));
+    // Test the friction component of the contact force by ensuring that the 
+    // ball travels the expected horizontal distance if it starts in the ground.
+    // To make the friction force roughly constant, we want the equilibrium 
+    // height of the mass (from testSmoothSphereHalfSpaceForce_NormalForce()).
+    void testSmoothSphereHalfSpaceForce_FrictionForce(
+            const SimTK::Real& equilibriumHeight) {
 
-    return finalHeightTimeStepping;
+        Model model(createBallHalfSpaceModel());
 
+        const SimTK::Real y0 = equilibriumHeight;
+        const SimTK::Real finalTime = 0.5;
+        const SimTK::Real vx0 = 2.5;
+
+        const SimTK::Real g = -model.getGravity()[1];
+
+        // Expected final x position.
+        // --------------------------
+        // m * vxdot = F = - mu * m * g
+        // vx(t) = -mu * g * t + vx0
+        // x(t) = -0.5 * mu * g * t^2 + vx0 * t
+        // The time at which the point reaches rest:
+        // t_rest = vx0 / (mu * g)
+        // Final position: x(t_rest)
+        const double& mu = FRICTION_COEFFICIENT;
+        const SimTK::Real restTime = vx0 / (mu * g);
+        CHECK(restTime < finalTime);
+        const SimTK::Real expectedFinalX =
+                -0.5 * mu * g * pow(restTime, 2) + vx0 * restTime;
+
+        // Time stepping.
+        // --------------
+        {
+            SimTK::State state = model.initSystem();
+            model.setStateVariableValue(state,
+                "groundBall/groundBall_coord_2/value", y0);
+            model.setStateVariableValue(state,
+                "groundBall/groundBall_coord_1/speed", vx0);
+            Manager manager(model, state);
+            state = manager.integrate(finalTime);
+
+            const SimTK::Real finalX = model.getStateVariableValue(
+                    state, "groundBall/groundBall_coord_1/value");
+
+            CHECK_THAT(finalX, Catch::Matchers::WithinAbs(expectedFinalX, 0.005));
+
+            // The system should be at rest.
+            OpenSim_CHECK_MATRIX_ABSTOL(state.getU(),
+                    SimTK::Vector(state.getNU(), 0.0), 1e-3);
+        }
+
+        // Direct collocation.
+        // -------------------
+        // This is a simulation (initial value problem), not a trajectory
+        // optimization.
+        {
+            MocoStudy study;
+            MocoProblem& mp = study.updProblem();
+            mp.setModelAsCopy(model);
+            mp.setTimeBounds(0, finalTime);
+            mp.setStateInfo("/groundBall/groundBall_coord_0/value", {-1, 1}, 0);
+            mp.setStateInfo("/groundBall/groundBall_coord_1/value", {-1, 1}, 0);
+            mp.setStateInfo("/groundBall/groundBall_coord_2/value", {-1, 1}, y0);
+            mp.setStateInfo(
+                    "/groundBall/groundBall_coord_0/speed", {-10, 10}, 0);
+            mp.setStateInfo(
+                    "/groundBall/groundBall_coord_1/speed", {-10, 10},vx0);
+            mp.setStateInfo(
+                    "/groundBall/groundBall_coord_2/speed", {-10, 10}, 0);
+
+            auto& ms = study.initCasADiSolver();
+            ms.set_num_mesh_intervals(50);
+            ms.set_verbosity(2);
+            ms.set_optim_solver("ipopt");
+
+            MocoSolution solution = study.solve();
+
+            auto statesTraj = solution.exportToStatesTrajectory(mp);
+            const auto& finalState = statesTraj.back();
+            const SimTK::Real finalX = model.getStateVariableValue(
+                    finalState, "groundBall/groundBall_coord_1/value");
+
+            CHECK_THAT(finalX, Catch::Matchers::WithinAbs(expectedFinalX, 0.005));
+
+            // The system should be at rest.
+            OpenSim_CHECK_MATRIX_ABSTOL(finalState.getU(),
+                    SimTK::Vector(finalState.getNU(), 0.0), 1e-3);
+        }
+    }
 }
 
-// Test the friction component of the contact force by ensuring that the ball
-// travels the expected horizontal distance if it starts in the ground.
-// To make the friction force roughly constant, we want the equilibrium height
-// of the mass (from testSmoothSphereHalfSpaceForce_NormalForce()).
-void testSmoothSphereHalfSpaceForce_FrictionForce(
-    const SimTK::Real& equilibriumHeight) {
-
-    Model model(createBallHalfSpaceModel());
-
-    const SimTK::Real y0 = equilibriumHeight;
-    const SimTK::Real finalTime = 0.5;
-    const SimTK::Real vx0 = 2.5;
-
-    const SimTK::Real g = -model.getGravity()[1];
-
-    // Expected final x position.
-    // --------------------------
-    // m * vxdot = F = - mu * m * g
-    // vx(t) = -mu * g * t + vx0
-    // x(t) = -0.5 * mu * g * t^2 + vx0 * t
-    // The time at which the point reaches rest:
-    // t_rest = vx0 / (mu * g)
-    // Final position: x(t_rest)
-    const double& mu = FRICTION_COEFFICIENT;
-    const SimTK::Real restTime = vx0 / (mu * g);
-    CHECK(restTime < finalTime);
-    const SimTK::Real expectedFinalX =
-            -0.5 * mu * g * pow(restTime, 2) + vx0 * restTime;
-
-    // Time stepping.
-    // --------------
-    {
-        SimTK::State state = model.initSystem();
-        model.setStateVariableValue(state,
-            "groundBall/groundBall_coord_2/value", y0);
-        model.setStateVariableValue(state,
-            "groundBall/groundBall_coord_1/speed", vx0);
-        Manager manager(model, state);
-        state = manager.integrate(finalTime);
-
-        // visualize(model, manager.getStateStorage());
-
-        const SimTK::Real finalTX = model.getStateVariableValue(state,
-            "groundBall/groundBall_coord_1/value");
-
-        CHECK(finalTX == Approx(expectedFinalX).margin(0.005));
-
-        // The system should be at rest.
-        OpenSim_CHECK_MATRIX_ABSTOL(state.getU(),
-                SimTK::Vector(state.getNU(), 0.0), 1e-3);
-
-    }
-
-    // Direct collocation.
-    // -------------------
-    // This is a simulation (initial value problem), not a trajectory
-    // optimization.
-    {
-        MocoStudy study;
-        MocoProblem& mp = study.updProblem();
-        mp.setModelAsCopy(model);
-        mp.setTimeBounds(0, finalTime);
-        mp.setStateInfo("/groundBall/groundBall_coord_0/value", {-1, 1}, 0);
-        mp.setStateInfo("/groundBall/groundBall_coord_1/value", {-1, 1}, 0);
-        mp.setStateInfo("/groundBall/groundBall_coord_2/value", {-1, 1}, y0);
-        mp.setStateInfo("/groundBall/groundBall_coord_0/speed", {-10, 10}, 0);
-        mp.setStateInfo("/groundBall/groundBall_coord_1/speed", {-10, 10},vx0);
-        mp.setStateInfo("/groundBall/groundBall_coord_2/speed", {-10, 10}, 0);
-
-        auto& ms = study.initCasADiSolver();
-        ms.set_num_mesh_intervals(50);
-        ms.set_verbosity(2);
-        ms.set_optim_solver("ipopt");
-
-        MocoSolution solution = study.solve();
-        //solution.write("testContact_testFrictionForce_solution.sto");
-        //study.visualize(solution);
-
-        auto statesTraj = solution.exportToStatesTrajectory(mp);
-        const auto& finalState = statesTraj.back();
-        const SimTK::Real finalTX =
-            model.getStateVariableValue(finalState,
-            "groundBall/groundBall_coord_1/value");
-
-        CHECK(finalTX == Approx(expectedFinalX).margin(0.005));
-
-        // The system should be at rest.
-        OpenSim_CHECK_MATRIX_ABSTOL(finalState.getU(),
-                SimTK::Vector(finalState.getNU(), 0.0), 1e-3);
-    }
+TEST_CASE("testMeyerFregly2016Force", "[casadi]") {
+    const SimTK::Real equilibriumHeight = 
+            testMeyerFregly2016Force_NormalForce();
+    testMeyerFregly2016Force_FrictionForce(equilibriumHeight);
 }
 
 TEST_CASE("testSmoothSphereHalfSpaceForce", "[casadi]") {
@@ -594,14 +578,11 @@ TEST_CASE("MocoContactTrackingGoal", "[casadi]") {
 
         MocoSolution solution = study.solve();
 
-        // STOFileAdapter::write(externalLoadsDircol,
-        //         "testContact_MocoContactTrackingGoal_external_loads_dircol."
-        //         "sto");
-
         const double actualInitialHeight =
                 solution.getState("/groundBall/groundBall_coord_2/value").
                         getElt(0, 0);
-        CHECK(actualInitialHeight == Approx(initialHeight).margin(1e-2));
+        CHECK_THAT(actualInitialHeight, 
+                Catch::Matchers::WithinAbs(initialHeight, 1e-2));
 
         externalLoadsDircol = createExternalLoadsTableForGait(model, solution,
                 {"contactBallHalfSpace"}, {});
