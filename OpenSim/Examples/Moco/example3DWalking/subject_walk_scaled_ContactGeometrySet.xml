@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40600">
+	<ContactGeometrySet name="contactgeometryset">
+		<objects>
+            <ContactHalfSpace name="floor">
+                <!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+                <socket_frame>/ground</socket_frame>
+                <!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
+                <orientation>0 0 -1.5707963267948966</orientation>
+                <!--Default appearance for this Geometry-->
+                <Appearance>
+                    <!--Flag indicating whether the associated Geometry is visible or hidden.-->
+                    <visible>true</visible>
+                    <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+                    <color>0 1 1</color>
+                    <!--Visuals applied to surfaces associated with this Appearance.-->
+                    <SurfaceProperties>
+                        <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
+                        <representation>2</representation>
+                    </SurfaceProperties>
+                </Appearance>
+            </ContactHalfSpace>
+            <ContactSphere name="heel_r">
+                <!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+                <socket_frame>/bodyset/calcn_r</socket_frame>
+                <!--Location of geometry center in the PhysicalFrame.-->
+                <location>0.0146421 0.0 -0.0122799</location>
+                <!--Default appearance for this Geometry-->
+                <Appearance>
+                    <!--Flag indicating whether the associated Geometry is visible or hidden.-->
+                    <visible>true</visible>
+                    <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+                    <color>0 1 1</color>
+                    <!--Visuals applied to surfaces associated with this Appearance.-->
+                    <SurfaceProperties>
+                        <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
+                        <representation>2</representation>
+                    </SurfaceProperties>
+                </Appearance>
+                <!--Radius of the sphere (default: 0).-->
+                <radius>0.035000000000000003</radius>
+            </ContactSphere>
+            <ContactSphere name="lateralRearfoot_r">
+                <!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+                <socket_frame>/bodyset/calcn_r</socket_frame>
+                <!--Location of geometry center in the PhysicalFrame.-->
+                <location>0.084929099999999993 0.0 0.033864900000000003</location>
+                <!--Default appearance for this Geometry-->
+                <Appearance>
+                    <!--Flag indicating whether the associated Geometry is visible or hidden.-->
+                    <visible>true</visible>
+                    <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+                    <color>0 1 1</color>
+                    <!--Visuals applied to surfaces associated with this Appearance.-->
+                    <SurfaceProperties>
+                        <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
+                        <representation>2</representation>
+                    </SurfaceProperties>
+                </Appearance>
+                <!--Radius of the sphere (default: 0).-->
+                <radius>0.035000000000000003</radius>
+            </ContactSphere>
+            <ContactSphere name="lateralMidfoot_r">
+                <!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+                <socket_frame>/bodyset/calcn_r</socket_frame>
+                <!--Location of geometry center in the PhysicalFrame.-->
+                <location>0.153362 0.0 0.059482899999999998</location>
+                <!--Default appearance for this Geometry-->
+                <Appearance>
+                    <!--Flag indicating whether the associated Geometry is visible or hidden.-->
+                    <visible>true</visible>
+                    <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+                    <color>0 1 1</color>
+                    <!--Visuals applied to surfaces associated with this Appearance.-->
+                    <SurfaceProperties>
+                        <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
+                        <representation>2</representation>
+                    </SurfaceProperties>
+                </Appearance>
+                <!--Radius of the sphere (default: 0).-->
+                <radius>0.035000000000000003</radius>
+            </ContactSphere>
+            <ContactSphere name="lateralToe_r">
+                <!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+                <socket_frame>/bodyset/toes_r</socket_frame>
+                <!--Location of geometry center in the PhysicalFrame.-->
+                <location>0.023013999999999989 0.0 0.067046099999999997</location>
+                <!--Default appearance for this Geometry-->
+                <Appearance>
+                    <!--Flag indicating whether the associated Geometry is visible or hidden.-->
+                    <visible>true</visible>
+                    <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+                    <color>0 1 1</color>
+                    <!--Visuals applied to surfaces associated with this Appearance.-->
+                    <SurfaceProperties>
+                        <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
+                        <representation>2</representation>
+                    </SurfaceProperties>
+                </Appearance>
+                <!--Radius of the sphere (default: 0).-->
+                <radius>0.035000000000000003</radius>
+            </ContactSphere>
+            <ContactSphere name="medialToe_r">
+                <!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+                <socket_frame>/bodyset/toes_r</socket_frame>
+                <!--Location of geometry center in the PhysicalFrame.-->
+                <location>0.074363000000000026 0.0 -0.026039</location>
+                <!--Default appearance for this Geometry-->
+                <Appearance>
+                    <!--Flag indicating whether the associated Geometry is visible or hidden.-->
+                    <visible>true</visible>
+                    <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+                    <color>0 1 1</color>
+                    <!--Visuals applied to surfaces associated with this Appearance.-->
+                    <SurfaceProperties>
+                        <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
+                        <representation>2</representation>
+                    </SurfaceProperties>
+                </Appearance>
+                <!--Radius of the sphere (default: 0).-->
+                <radius>0.035000000000000003</radius>
+            </ContactSphere>
+            <ContactSphere name="medialMidfoot_r">
+                <!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+                <socket_frame>/bodyset/calcn_r</socket_frame>
+                <!--Location of geometry center in the PhysicalFrame.-->
+                <location>0.20363700000000001 0.0 -0.039868800000000003</location>
+                <!--Default appearance for this Geometry-->
+                <Appearance>
+                    <!--Flag indicating whether the associated Geometry is visible or hidden.-->
+                    <visible>true</visible>
+                    <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+                    <color>0 1 1</color>
+                    <!--Visuals applied to surfaces associated with this Appearance.-->
+                    <SurfaceProperties>
+                        <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
+                        <representation>2</representation>
+                    </SurfaceProperties>
+                </Appearance>
+                <!--Radius of the sphere (default: 0).-->
+                <radius>0.035000000000000003</radius>
+            </ContactSphere>
+            <ContactSphere name="heel_l">
+                <!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+                <socket_frame>/bodyset/calcn_l</socket_frame>
+                <!--Location of geometry center in the PhysicalFrame.-->
+                <location>0.0146421 0.0 0.0122799</location>
+                <!--Default appearance for this Geometry-->
+                <Appearance>
+                    <!--Flag indicating whether the associated Geometry is visible or hidden.-->
+                    <visible>true</visible>
+                    <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+                    <color>0 1 1</color>
+                    <!--Visuals applied to surfaces associated with this Appearance.-->
+                    <SurfaceProperties>
+                        <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
+                        <representation>2</representation>
+                    </SurfaceProperties>
+                </Appearance>
+                <!--Radius of the sphere (default: 0).-->
+                <radius>0.035000000000000003</radius>
+            </ContactSphere>
+            <ContactSphere name="lateralRearfoot_l">
+                <!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+                <socket_frame>/bodyset/calcn_l</socket_frame>
+                <!--Location of geometry center in the PhysicalFrame.-->
+                <location>0.084929099999999993 0.0 -0.033864900000000003</location>
+                <!--Default appearance for this Geometry-->
+                <Appearance>
+                    <!--Flag indicating whether the associated Geometry is visible or hidden.-->
+                    <visible>true</visible>
+                    <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+                    <color>0 1 1</color>
+                    <!--Visuals applied to surfaces associated with this Appearance.-->
+                    <SurfaceProperties>
+                        <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
+                        <representation>2</representation>
+                    </SurfaceProperties>
+                </Appearance>
+                <!--Radius of the sphere (default: 0).-->
+                <radius>0.035000000000000003</radius>
+            </ContactSphere>
+            <ContactSphere name="lateralMidfoot_l">
+                <!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+                <socket_frame>/bodyset/calcn_l</socket_frame>
+                <!--Location of geometry center in the PhysicalFrame.-->
+                <location>0.153362 0.0 -0.059482899999999998</location>
+                <!--Default appearance for this Geometry-->
+                <Appearance>
+                    <!--Flag indicating whether the associated Geometry is visible or hidden.-->
+                    <visible>true</visible>
+                    <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+                    <color>0 1 1</color>
+                    <!--Visuals applied to surfaces associated with this Appearance.-->
+                    <SurfaceProperties>
+                        <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
+                        <representation>2</representation>
+                    </SurfaceProperties>
+                </Appearance>
+                <!--Radius of the sphere (default: 0).-->
+                <radius>0.035000000000000003</radius>
+            </ContactSphere>
+            <ContactSphere name="lateralToe_l">
+                <!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+                <socket_frame>/bodyset/toes_l</socket_frame>
+                <!--Location of geometry center in the PhysicalFrame.-->
+                <location>0.023013999999999989 0.0 -0.067046099999999997</location>
+                <!--Default appearance for this Geometry-->
+                <Appearance>
+                    <!--Flag indicating whether the associated Geometry is visible or hidden.-->
+                    <visible>true</visible>
+                    <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+                    <color>0 1 1</color>
+                    <!--Visuals applied to surfaces associated with this Appearance.-->
+                    <SurfaceProperties>
+                        <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
+                        <representation>2</representation>
+                    </SurfaceProperties>
+                </Appearance>
+                <!--Radius of the sphere (default: 0).-->
+                <radius>0.035000000000000003</radius>
+            </ContactSphere>
+            <ContactSphere name="medialToe_l">
+                <!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+                <socket_frame>/bodyset/toes_l</socket_frame>
+                <!--Location of geometry center in the PhysicalFrame.-->
+                <location>0.074363000000000026 0.0 0.026039</location>
+                <!--Default appearance for this Geometry-->
+                <Appearance>
+                    <!--Flag indicating whether the associated Geometry is visible or hidden.-->
+                    <visible>true</visible>
+                    <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+                    <color>0 1 1</color>
+                    <!--Visuals applied to surfaces associated with this Appearance.-->
+                    <SurfaceProperties>
+                        <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
+                        <representation>2</representation>
+                    </SurfaceProperties>
+                </Appearance>
+                <!--Radius of the sphere (default: 0).-->
+                <radius>0.035000000000000003</radius>
+            </ContactSphere>
+            <ContactSphere name="medialMidfoot_l">
+                <!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
+                <socket_frame>/bodyset/calcn_l</socket_frame>
+                <!--Location of geometry center in the PhysicalFrame.-->
+                <location>0.20363700000000001 0.0 0.039868800000000003</location>
+                <!--Default appearance for this Geometry-->
+                <Appearance>
+                    <!--Flag indicating whether the associated Geometry is visible or hidden.-->
+                    <visible>true</visible>
+                    <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+                    <color>0 1 1</color>
+                    <!--Visuals applied to surfaces associated with this Appearance.-->
+                    <SurfaceProperties>
+                        <!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
+                        <representation>2</representation>
+                    </SurfaceProperties>
+                </Appearance>
+                <!--Radius of the sphere (default: 0).-->
+                <radius>0.035000000000000003</radius>
+            </ContactSphere>
+        </objects>	
+		<groups />
+	</ContactGeometrySet>
+</OpenSimDocument>

@@ -132,10 +132,6 @@ EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MocoFinalBounds);
 %include <OpenSim/Moco/MocoDirectCollocationSolver.h>
 
 
-namespace OpenSim {
-    %ignore MocoTropterSolver::MocoTropterSolver(const MocoProblem&);
-}
-%include <OpenSim/Moco/MocoTropterSolver.h>
 %include <OpenSim/Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 %include <OpenSim/Moco/MocoStudy.h>
 %template(analyzeVec3) OpenSim::MocoStudy::analyze<SimTK::Vec3>;

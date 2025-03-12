@@ -21,7 +21,7 @@ Help() {
     echo "                   RelWithDefInfo: Debugger symbols. Optimized. Bigger than Release, but not slower."
     echo "                   MinSizeRel: No debugger symbols. Minimum size. Optimized."
     echo "    -j         Number of jobs to use when building libraries (>=1)."
-    echo "    -s         Simple build without moco (Tropter and Casadi disabled)."
+    echo "    -s         Simple build without moco (Casadi disabled)."
     echo "    -c         Branch for opensim-core repository."
     echo "    -n         Use the Ninja generator to build opensim-core. If not set, Unix Makefiles is used."
     echo
@@ -103,7 +103,7 @@ echo
 echo "LOG: BUILDING OPENSIM-CORE DEPENDENCIES..."
 mkdir -p ~/opensim-workspace/opensim-core-dependencies-build || true
 cd ~/opensim-workspace/opensim-core-dependencies-build
-cmake ~/opensim-workspace/opensim-core-source/dependencies -DCMAKE_INSTALL_PREFIX=~/opensim-workspace/opensim-core-dependencies-install/ -DSUPERBUILD_ezc3d=on -DOPENSIM_WITH_CASADI=$MOCO -DOPENSIM_WITH_TROPTER=$MOCO
+cmake ~/opensim-workspace/opensim-core-source/dependencies -DCMAKE_INSTALL_PREFIX=~/opensim-workspace/opensim-core-dependencies-install/ -DSUPERBUILD_ezc3d=on -DOPENSIM_WITH_CASADI=$MOCO
 cmake . -LAH
 cmake --build . --config $DEBUG_TYPE -j$NUM_JOBS
 echo
@@ -112,7 +112,7 @@ echo
 echo "LOG: BUILDING OPENSIM-CORE..."
 mkdir -p ~/opensim-workspace/opensim-core-build || true
 cd ~/opensim-workspace/opensim-core-build
-cmake ~/opensim-workspace/opensim-core-source  -G"$GENERATOR" -DOPENSIM_DEPENDENCIES_DIR=~/opensim-workspace/opensim-core-dependencies-install/ -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_TESTING=off -DCMAKE_INSTALL_PREFIX=~/opensim-core -DOPENSIM_INSTALL_UNIX_FHS=off -DSWIG_DIR=~/swig/share/swig -DSWIG_EXECUTABLE=~/swig/bin/swig -DJAVA_HOME=$(/usr/libexec/java_home -v 1.8) -DJAVA_INCLUDE_PATH=$(/usr/libexec/java_home -v 1.8)/include -DJAVA_INCLUDE_PATH2=$(/usr/libexec/java_home -v 1.8)/include/darwin -DJAVA_AWT_INCLUDE_PATH=$(/usr/libexec/java_home -v 1.8)/include -DOPENSIM_WITH_CASADI=$MOCO -DOPENSIM_WITH_TROPTER=$MOCO
+cmake ~/opensim-workspace/opensim-core-source  -G"$GENERATOR" -DOPENSIM_DEPENDENCIES_DIR=~/opensim-workspace/opensim-core-dependencies-install/ -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_TESTING=off -DCMAKE_INSTALL_PREFIX=~/opensim-core -DOPENSIM_INSTALL_UNIX_FHS=off -DSWIG_DIR=~/swig/share/swig -DSWIG_EXECUTABLE=~/swig/bin/swig -DJAVA_HOME=$(/usr/libexec/java_home -v 1.8) -DJAVA_INCLUDE_PATH=$(/usr/libexec/java_home -v 1.8)/include -DJAVA_INCLUDE_PATH2=$(/usr/libexec/java_home -v 1.8)/include/darwin -DJAVA_AWT_INCLUDE_PATH=$(/usr/libexec/java_home -v 1.8)/include -DOPENSIM_WITH_CASADI=$MOCO
 cmake . -LAH
 cmake --build . --config $DEBUG_TYPE -j$NUM_JOBS
 echo

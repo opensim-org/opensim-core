@@ -24,10 +24,17 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <fstream>
-#include "Frame.h"
 #include "Geometry.h"
+
+#include "Frame.h"
 #include "Model.h"
+
+#include <filesystem>
+#include <fstream>
+#include <memory>
+#include <optional>
+#include <utility>
+
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -36,6 +43,69 @@ using namespace OpenSim;
 using namespace SimTK;
 
 OpenSim_DEFINE_SOCKET_FD(frame, Geometry);
+
+namespace
+{
+    // Returns a pointer to `c`'s owner, or `nullptr` if `c` does not have an owner.
+    const OpenSim::Component* tryGetOwner(const OpenSim::Component& c)
+    {
+        return c.hasOwner() ? &c.getOwner() : nullptr;
+    }
+
+    // Returns a pointer to the closest ancestor of `c` that has type `T`, or
+    // `nullptr` if no such owner exists.
+    template<typename T>
+    const T* findFirstOwnerOfType(const OpenSim::Component& c)
+    {
+        for (const OpenSim::Component* cur = tryGetOwner(c); cur; cur = tryGetOwner(*cur)) {
+            if (const T* downcasted = dynamic_cast<const T*>(cur)) {
+                return downcasted;
+            }
+        }
+        return nullptr;
+    }
+
+    // Returns `true` if `str` has a suffix of `suffix`, ignoring case.
+    bool hasSuffixCaseInsensitive(const std::string& str, const std::string& suffix)
+    {
+        if (str.size() < suffix.size()) {
+            return false;
+        }
+        for (std::string::size_type i = 0; i < suffix.size(); ++i) {
+            if (std::tolower(str.rbegin()[i]) != std::tolower(suffix.rbegin()[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Returns an absolute path to the underlying geometry file that can be
+    // associated with `file`; otherwise, returns `std::nullopt`.
+    //
+    // Prints search errors to the log if `warningGiven` is `false` and then
+    // flips `warningGiven` to `true` (i.e. it's a one-time flag).
+    std::optional<std::string> findGeometry(
+        const OpenSim::Model& model,
+        const std::string& file,
+        bool& warningGiven)
+    {
+        Array_<string> attempts;
+        bool isAbsolutePath = false;
+        if (ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts)) {
+            return std::move(attempts.back());
+        }
+
+        // Else: geometry file could not be found, print warning
+        if (!std::exchange(warningGiven, true)) {
+            log_warn("Couldn't find file '{}'.", file);
+            log_debug( "The following locations were tried:");
+            for (const auto& attempt : attempts) {
+                log_debug(attempt);
+            }
+        }
+        return std::nullopt;
+    }
+}
 
 Geometry::Geometry() {
     setNull();
@@ -216,106 +286,111 @@ void FrameGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::Decor
     decoGeoms.push_back(deco);
 }
 
-void Mesh::extendFinalizeFromProperties() {
+// Internal implementation of a cached mesh file that uses the file's
+// modification timestamp to figure out whether the mesh was modified.
+class OpenSim::Mesh::CachedDecorativeMeshFile final {
+public:
+    explicit CachedDecorativeMeshFile(
+        const std::filesystem::path& meshAbsPath,
+        const SimTK::Vec3& scaleFactors) :
 
-    if (!isObjectUpToDateWithProperties()) {
-        const Component* rootModel = nullptr;
-        if (!hasOwner()) {
-            log_error("Mesh {} not connected to model...ignoring",
-                    get_mesh_file());
-            return;   // Orphan Mesh not part of a model yet
-        }
-        const Component* owner = &getOwner();
-        while (owner != nullptr) {
-            if (dynamic_cast<const Model*>(owner) != nullptr) {
-                rootModel = owner;
-                break;
-            }
-            if (owner->hasOwner())
-                owner = &(owner->getOwner()); // traverse up Component tree
-            else
-                break; // can't traverse up.
-        }
+        _meshFileModificationTime{std::filesystem::last_write_time(meshAbsPath)},
+        _meshFile{meshAbsPath.string()}
+    {
+        _meshFile.getMesh();  // Eagerly load mesh data
+        _meshFile.setScaleFactors(scaleFactors);
+    }
 
-        if (rootModel == nullptr) {
-            log_error("Mesh {} not connected to model...ignoring",
-                    get_mesh_file());
-            return;   // Orphan Mesh not descendant of a model
-        }
+    const std::string& getMeshFilePath() const { return _meshFile.getMeshFile(); }
+    const std::filesystem::file_time_type& getModificationTime() const { return _meshFileModificationTime; }
+    const SimTK::Vec3& getScaleFactors() const { return _meshFile.getScaleFactors(); }
+    void setScaleFactors(const SimTK::Vec3& newScaleFactors) { _meshFile.setScaleFactors(newScaleFactors); }
+    const SimTK::DecorativeGeometry& getGeometry() const { return _meshFile; }
+private:
+    std::filesystem::file_time_type _meshFileModificationTime;
+    SimTK::DecorativeMeshFile _meshFile;
+};
 
-        // Current interface to Visualizer calls generateDecorations on every
-        // frame. On first time through, load file and create DecorativeMeshFile
-        // and cache it so we don't load files from disk during live rendering.
-        const Model* mdl = dynamic_cast<const Model*>(rootModel);
-        const std::string& file = get_mesh_file();
-        if (file.empty() || file.compare(PropertyStr::getDefaultStr()) == 0 ||
-            !mdl->getDisplayHints().isVisualizationEnabled())
-            return;  // Return immediately if no file has been specified
-                     // or display is disabled altogether.
+Mesh::Mesh()
+{
+    constructProperty_mesh_file("");
+}
 
-        bool isAbsolutePath; string directory, fileName, extension;
-        SimTK::Pathname::deconstructPathname(file,
-            isAbsolutePath, directory, fileName, extension);
-        const string lowerExtension = SimTK::String::toLower(extension);
-        if (lowerExtension != ".vtp" && lowerExtension != ".obj" && lowerExtension != ".stl") {
-            log_error("ModelVisualizer ignoring '{}'; only .vtp, .stl, and "
-                      ".obj files currently supported.",
-                    file);
-            return;
-        }
+Mesh::Mesh(const std::string& geomFile)
+{
+    constructProperty_mesh_file("");
+    upd_mesh_file() = geomFile;
+}
 
-        // File is a .vtp, .stl, or .obj; attempt to find it.
-        Array_<string> attempts;
-        const Model& model = dynamic_cast<const Model&>(*rootModel);
-        bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
+void Mesh::extendFinalizeFromProperties()
+{
+    if (isObjectUpToDateWithProperties()) {
+        return;  // No need to re-finalize.
+    }
 
-        if (!foundIt) {
-            if (!warningGiven) {
-                log_warn("Couldn't find file '{}'.", file);
-                warningGiven = true;
-            }
-            
-            log_debug( "The following locations were tried:");
-            for (unsigned i = 0; i < attempts.size(); ++i)
-                log_debug(attempts[i]);
-            
-        }
+    const std::string& meshPath = get_mesh_file();
+    if (meshPath.empty() || meshPath == PropertyStr::getDefaultStr()) {
+        _mesh.reset();
+        return;  // No mesh specified.
+    }
 
+    if (!(hasSuffixCaseInsensitive(meshPath, ".vtp") ||
+          hasSuffixCaseInsensitive(meshPath, ".obj") ||
+          hasSuffixCaseInsensitive(meshPath, ".stl"))) {
+
+        log_error("ModelVisualizer ignoring '{}'; only .vtp, .stl, and .obj files currently supported.", meshPath);
+        _mesh.reset();
+        return;  // Unsupported file format.
+    }
+
+    const auto* model = findFirstOwnerOfType<OpenSim::Model>(*this);
+    if (!model) {
+        log_error("Mesh {} not connected to a model...ignoring", get_mesh_file());
+        _mesh.reset();
+        return;  // This component isn't connected to a model.
+    }
+
+    if (!model->getDisplayHints().isVisualizationEnabled()) {
+        _mesh.reset();
+        return;  // Visualization is disabled.
+    }
+
+    const std::optional<std::string> meshAbsPath = findGeometry(*model, meshPath, _warningGiven);
+    if (!meshAbsPath) {
+        _mesh.reset();
+        return;  // Couldn't find the mesh.
+    }
+
+    // Completely reset the cached mesh if the underlying filepath/modification
+    // time has changed.
+    if (_mesh &&
+        (_mesh->getMeshFilePath() != *meshAbsPath ||
+         std::filesystem::last_write_time(*meshAbsPath) != _mesh->getModificationTime())) {
+
+        _mesh.reset();
+    }
+
+    if (!_mesh) {
+        // There is no cached mesh, load a new one from scratch.
         try {
-            std::ifstream objFile;
-            objFile.open(attempts.back().c_str());
-            // objFile closes when destructed
-            // if the file can be opened but had bad contents e.g. binary vtp 
-            // it will be handled downstream 
+            _mesh = std::make_shared<CachedDecorativeMeshFile>(*meshAbsPath, get_scale_factors());
         }
-        catch (const std::exception& e) {
-            log_warn("Visualizer couldn't open {} because: {}",
-                attempts.back(), e.what());
-            return;
+        catch (const std::exception& ex) {
+            log_warn("Visualizer couldn't open {} because: {}", get_mesh_file(), ex.what());
         }
-
-        cachedMesh.reset(new DecorativeMeshFile(attempts.back().c_str()));
+    }
+    else if (_mesh->getScaleFactors() != get_scale_factors()) {
+        // There is a cached mesh, but it has invalid scale factors, copy the mesh
+        // data, update the scale factors, but don't reload from the filesystem.
+        auto meshCopy = std::make_shared<CachedDecorativeMeshFile>(*_mesh);
+        meshCopy->setScaleFactors(get_scale_factors());
+        _mesh = std::move(meshCopy);
     }
 }
 
-
 void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    if (cachedMesh.get() != nullptr) {
-        try {
-            // Force the loading of the mesh to see if it has bad contents
-            // (e.g., binary vtp).
-            // We do not want to do this in extendFinalizeFromProperties b/c
-            // it's expensive to repeatedly load meshes.
-            cachedMesh->getMesh();
-        } catch (const std::exception& e) {
-            log_warn("Visualizer couldn't open {} because: {}",
-                get_mesh_file(), e.what());
-            // No longer try to visualize this mesh.
-            cachedMesh.reset();
-            return;
-        }
-        cachedMesh->setScaleFactors(get_scale_factors());
-        decoGeoms.push_back(*cachedMesh);
+    if (_mesh) {
+        decoGeoms.push_back(_mesh->getGeometry());
     }
 }

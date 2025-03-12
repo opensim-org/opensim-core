@@ -33,7 +33,9 @@
 using namespace std;
 using namespace OpenSim;
 
-static osimExampleComponentsInstantiator osimExampleComponentsInstantiator; 
+#ifndef OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION
+   static osimExampleComponentsInstantiator osimExampleComponentsInstantiator;
+#endif
 
 //_____________________________________________________________________________
 /**
