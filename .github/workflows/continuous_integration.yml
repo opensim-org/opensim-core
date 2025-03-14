@@ -15,107 +15,107 @@ on:
       - '*'
 
 jobs:
-  windows2019:
-    name: Windows 2019
-    runs-on: windows-2019
+#   windows2019:
+#     name: Windows 2019
+#     runs-on: windows-2019
 
-    steps:
-    - uses: actions/checkout@v4
+#     steps:
+#     - uses: actions/checkout@v4
 
-    - name: Install Doxygen
-      # choco install doxygen.portable # <-- too unreliable.
-      run: |
-        (New-Object System.Net.WebClient).DownloadFile("https://github.com/doxygen/doxygen/releases/download/Release_1_12_0/doxygen-1.12.0.windows.x64.bin.zip", "doxygen.zip")
-        7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
-        echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
+#     - name: Install Doxygen
+#       # choco install doxygen.portable # <-- too unreliable.
+#       run: |
+#         (New-Object System.Net.WebClient).DownloadFile("https://github.com/doxygen/doxygen/releases/download/Release_1_12_0/doxygen-1.12.0.windows.x64.bin.zip", "doxygen.zip")
+#         7z x $env:GITHUB_WORKSPACE/doxygen.zip -odoxygen
+#         echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
 
-    - name: Install Python packages
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+#     - name: Install Python packages
+#       uses: actions/setup-python@v4
+#       with:
+#         python-version: '3.10'
         
-    - name: Install numpy
-      #Need numpy to use SWIG numpy typemaps.
-      run: python3 -m pip install numpy==1.25
+#     - name: Install numpy
+#       #Need numpy to use SWIG numpy typemaps.
+#       run: python3 -m pip install numpy==1.25
 
-    - name: Install SWIG
-      run: |
-        choco install swig --version 4.1.1 --yes --limit-output --allow-downgrade
-        swig -swiglib
+#     - name: Install SWIG
+#       run: |
+#         choco install swig --version 4.1.1 --yes --limit-output --allow-downgrade
+#         swig -swiglib
 
-    - name: Cache dependencies
-      id: cache-dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/opensim_dependencies_install
-        # Every time a cache is created, it's stored with this key.
-        # In subsequent runs, if the key matches the key of an existing cache,
-        # then the cache is used. We chose for this key to depend on the
-        # operating system and a hash of the hashes of all files in the
-        # dependencies directory (non-recursive).
-        # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
-        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
+#     - name: Cache dependencies
+#       id: cache-dependencies
+#       uses: actions/cache@v3
+#       with:
+#         path: ~/opensim_dependencies_install
+#         # Every time a cache is created, it's stored with this key.
+#         # In subsequent runs, if the key matches the key of an existing cache,
+#         # then the cache is used. We chose for this key to depend on the
+#         # operating system and a hash of the hashes of all files in the
+#         # dependencies directory (non-recursive).
+#         # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
+#         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
-    - name: Build dependencies
-      if: steps.cache-dependencies.outputs.cache-hit != 'true'
-      run: |
-        echo $env:GITHUB_WORKSPACE\\build_deps
-        mkdir $env:GITHUB_WORKSPACE\\build_deps
-        chdir $env:GITHUB_WORKSPACE\\build_deps
-        # /W0 disables warnings.
-        # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
-        # TODO: CMake provides /W3, which overrides our /W0
-        cmake -E env CXXFLAGS="/W0" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_CASADI=ON
-        cmake --build . --config Release -- /maxcpucount:4
+#     - name: Build dependencies
+#       if: steps.cache-dependencies.outputs.cache-hit != 'true'
+#       run: |
+#         echo $env:GITHUB_WORKSPACE\\build_deps
+#         mkdir $env:GITHUB_WORKSPACE\\build_deps
+#         chdir $env:GITHUB_WORKSPACE\\build_deps
+#         # /W0 disables warnings.
+#         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
+#         # TODO: CMake provides /W3, which overrides our /W0
+#         cmake -E env CXXFLAGS="/W0" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_CASADI=ON
+#         cmake --build . --config Release -- /maxcpucount:4
 
-    - name: Configure opensim-core
-      id: configure
-      run: |
-        mkdir $env:GITHUB_WORKSPACE\\build
-        chdir $env:GITHUB_WORKSPACE\\build
-        # TODO: Can remove /WX when we use that in CMakeLists.txt.
-        # Set the CXXFLAGS environment variable to turn warnings into errors.
-        # Skip timing test section included by default.
-        cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DPython3_ROOT_DIR=C:\hostedtoolcache\windows\Python\3.10.11\x64 
-        $env:match = cmake -L . | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
-        $version = $env:match.split('=')[1]
-        echo $version
-        echo "VERSION=$version" >> $GITHUB_ENV
-        echo "version=$version" >> $env:GITHUB_OUTPUT
+#     - name: Configure opensim-core
+#       id: configure
+#       run: |
+#         mkdir $env:GITHUB_WORKSPACE\\build
+#         chdir $env:GITHUB_WORKSPACE\\build
+#         # TODO: Can remove /WX when we use that in CMakeLists.txt.
+#         # Set the CXXFLAGS environment variable to turn warnings into errors.
+#         # Skip timing test section included by default.
+#         cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DPython3_ROOT_DIR=C:\hostedtoolcache\windows\Python\3.10.11\x64 
+#         $env:match = cmake -L . | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
+#         $version = $env:match.split('=')[1]
+#         echo $version
+#         echo "VERSION=$version" >> $GITHUB_ENV
+#         echo "version=$version" >> $env:GITHUB_OUTPUT
 
-    - name: Build opensim-core
-      # Install now to avoid building bindings twice (issue when using Visual Studio 2019).
-      run: |
-        chdir $env:GITHUB_WORKSPACE\\build
-        cmake --build . --config Release --target doxygen -- /maxcpucount:4
-        cmake --build . --config Release --target install -- /maxcpucount:4
+#     - name: Build opensim-core
+#       # Install now to avoid building bindings twice (issue when using Visual Studio 2019).
+#       run: |
+#         chdir $env:GITHUB_WORKSPACE\\build
+#         cmake --build . --config Release --target doxygen -- /maxcpucount:4
+#         cmake --build . --config Release --target install -- /maxcpucount:4
 
-    - name: Test opensim-core
-      run: |
-        chdir $env:GITHUB_WORKSPACE\\build
-        ctest --parallel 4 --output-on-failure --build-config Release
+#     - name: Test opensim-core
+#       run: |
+#         chdir $env:GITHUB_WORKSPACE\\build
+#         ctest --parallel 4 --output-on-failure --build-config Release
 
-    - name: Install opensim-core
-      # TODO: This is where we wish to do the installing, but it's done above for now.
-      run: |
-        chdir $env:GITHUB_WORKSPACE\\build
-        chdir $env:GITHUB_WORKSPACE
-        Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.configure.outputs.version }}" -Recurse
-        7z a "opensim-core-${{ steps.configure.outputs.version }}.zip" "opensim-core-${{ steps.configure.outputs.version }}"
+#     - name: Install opensim-core
+#       # TODO: This is where we wish to do the installing, but it's done above for now.
+#       run: |
+#         chdir $env:GITHUB_WORKSPACE\\build
+#         chdir $env:GITHUB_WORKSPACE
+#         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.configure.outputs.version }}" -Recurse
+#         7z a "opensim-core-${{ steps.configure.outputs.version }}.zip" "opensim-core-${{ steps.configure.outputs.version }}"
 
-    # - name: Test Python bindings
-    #   run: |
-    #     echo "PYTHONPATH= $env:USERPROFILE/opensim-core-install/bin">> $GITHUB_ENV
-    #     # Move to the installed location of the python package.
-    #     cd ~/opensim-core-install/sdk/python
-    #     # Run python tests.
-    #     python -m unittest discover --start-directory opensim/tests --verbose
+#     - name: Test Python bindings
+#       run: |
+#         echo "PYTHONPATH= $env:USERPROFILE/opensim-core-install/bin">> $GITHUB_ENV
+#         # Move to the installed location of the python package.
+#         cd ~/opensim-core-install/sdk/python
+#         # Run python tests.
+#         python -m unittest discover --start-directory opensim/tests --verbose
 
-    - name: Upload opensim-core
-      uses: actions/upload-artifact@v4
-      with:
-        name: opensim-core-${{ steps.configure.outputs.version }}-win2019
-        path: opensim-core-${{ steps.configure.outputs.version }}.zip
+#     - name: Upload opensim-core
+#       uses: actions/upload-artifact@v4
+#       with:
+#         name: opensim-core-${{ steps.configure.outputs.version }}-win2019
+#         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
   windows2022:
     runs-on: windows-2022
