@@ -196,8 +196,8 @@ void MeyerFregly2016Muscle::calcMuscleLengthInfoHelper(
     // Tendon.
     // -------
     mli.normTendonLength = 1.0;
-    mli.tendonStrain = mli.normTendonLength - 1.0;
-    mli.tendonLength = get_tendon_slack_length() * mli.normTendonLength;
+    mli.tendonStrain = 0.0;
+    mli.tendonLength = get_tendon_slack_length();
 
     // Fiber.
     // ------
