@@ -132,7 +132,7 @@ macro(OpenSimAddPythonModule)
         # SWIG uses the register keyword, which is deprecated in C++17.
         set(_COMPILE_FLAGS "${_COMPILE_FLAGS} -Wno-deprecated-register")
     endif()
-	# SWIG_PYTHON was added to account for generated cxx files failing to compile
+    # SWIG_PYTHON was added to account for generated cxx files failing to compile
     # due to operators defined in simbody (removed by this symbol) -Ayman 3/25 
     set_source_files_properties("${_output_cxx_file}"
         PROPERTIES COMPILE_FLAGS "${_COMPILE_FLAGS} -DSWIG_PYTHON")
