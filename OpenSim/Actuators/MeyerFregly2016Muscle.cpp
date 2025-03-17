@@ -65,7 +65,6 @@ void MeyerFregly2016Muscle::constructProperties() {
     constructProperty_active_force_width_scale(1.0);
     constructProperty_fiber_damping(0.0);
     constructProperty_passive_fiber_strain_at_one_norm_force(0.6);
-    constructProperty_tendon_strain_at_one_norm_force(0.049);
     constructProperty_ignore_passive_fiber_force(false);
 }
 
@@ -118,12 +117,6 @@ void MeyerFregly2016Muscle::extendFinalizeFromProperties() {
             "than zero, but it is %g.",
             getName().c_str(), get_passive_fiber_strain_at_one_norm_force());
 
-    SimTK_ERRCHK2_ALWAYS(get_tendon_strain_at_one_norm_force() > 0,
-            "MeyerFregly2016Muscle::extendFinalizeFromProperties",
-            "%s: tendon_strain_at_one_norm_force must be greater than zero, "
-            "but it is %g.",
-            getName().c_str(), get_tendon_strain_at_one_norm_force());
-
     OPENSIM_THROW_IF_FRMOBJ(
             get_pennation_angle_at_optimal() < 0 ||
                     get_pennation_angle_at_optimal() >
@@ -139,9 +132,6 @@ void MeyerFregly2016Muscle::extendFinalizeFromProperties() {
     m_squareFiberWidth = square(m_fiberWidth);
     m_maxContractionVelocityInMetersPerSecond =
             get_max_contraction_velocity() * get_optimal_fiber_length();
-    m_kT = log((1.0 + c3) / c1) /
-           (1.0 + get_tendon_strain_at_one_norm_force() - c2);
-
 }
 
 void MeyerFregly2016Muscle::extendAddToSystem(
@@ -235,9 +225,8 @@ void MeyerFregly2016Muscle::calcFiberVelocityInfoHelper(
         const MuscleLengthInfo& mli, FiberVelocityInfo& fvi) const {
 
     fvi.normTendonVelocity = 0.0;
-    fvi.tendonVelocity = get_tendon_slack_length() * fvi.normTendonVelocity;
-    fvi.fiberVelocityAlongTendon =
-            muscleTendonVelocity - fvi.tendonVelocity;
+    fvi.tendonVelocity = 0.0;
+    fvi.fiberVelocityAlongTendon = muscleTendonVelocity;
     fvi.fiberVelocity =
             fvi.fiberVelocityAlongTendon * mli.cosPennationAngle;
     fvi.normFiberVelocity =
@@ -308,7 +297,7 @@ void MeyerFregly2016Muscle::calcMuscleDynamicsInfoHelper(
             mli.fiberLength, partialFiberForceAlongTendonPartialFiberLength,
             mli.sinPennationAngle, mli.cosPennationAngle,
             partialPennationAnglePartialFiberLength);
-    mdi.tendonStiffness = calcTendonStiffness(mli.normTendonLength);
+    mdi.tendonStiffness = SimTK::Infinity;
 
     const auto& partialTendonForcePartialFiberLength =
             calcPartialTendonForcePartialFiberLength(mdi.tendonStiffness,
@@ -472,30 +461,6 @@ DataTable MeyerFregly2016Muscle::exportFiberLengthCurvesToTable(
     return table;
 }
 
-DataTable MeyerFregly2016Muscle::exportTendonForceMultiplierToTable(
-        const SimTK::Vector& normTendonLengths) const {
-    SimTK::Vector def;
-    const SimTK::Vector* x = nullptr;
-    if (normTendonLengths.nrow()) {
-        x = &normTendonLengths;
-    } else {
-        // Evaluate the inverse of the tendon curve at y = 1.
-        def = createVectorLinspace(
-                200, 0.95, 1.0 + get_tendon_strain_at_one_norm_force());
-        x = &def;
-    }
-
-    DataTable table;
-    table.setColumnLabels({"tendon_force_multiplier"});
-    SimTK::RowVector row(1);
-    for (int irow = 0; irow < x->nrow(); ++irow) {
-        const auto& normTendonLength = x->get(irow);
-        row[0] = calcTendonForceMultiplier(normTendonLength);
-        table.appendRow(normTendonLength, row);
-    }
-    return table;
-}
-
 DataTable MeyerFregly2016Muscle::exportFiberVelocityMultiplierToTable(
         const SimTK::Vector& normFiberVelocities) const {
     SimTK::Vector def;
@@ -560,9 +525,6 @@ void MeyerFregly2016Muscle::replaceMuscles(
             actu->set_passive_fiber_strain_at_one_norm_force(
                     musc->get_FiberForceLengthCurve()
                             .get_strain_at_one_norm_force());
-            actu->set_tendon_strain_at_one_norm_force(
-                    musc->get_TendonForceLengthCurve()
-                            .get_strain_at_one_norm_force());
 
         } else if (auto musc = dynamic_cast<Thelen2003Muscle*>(&muscBase)) {
 
@@ -576,9 +538,6 @@ void MeyerFregly2016Muscle::replaceMuscles(
             actu->set_fiber_damping(0);
             actu->set_passive_fiber_strain_at_one_norm_force(
                     musc->get_FmaxMuscleStrain());
-
-            actu->set_tendon_strain_at_one_norm_force(
-                    musc->get_FmaxTendonStrain());
 
         } else {
             OPENSIM_THROW_IF(!allowUnsupportedMuscles, Exception,
