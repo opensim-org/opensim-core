@@ -290,14 +290,8 @@ void MeyerFregly2016Muscle::calcMuscleDynamicsInfoHelper(
     mdi.passiveFiberForce = passiveFiberForce;
     mdi.normFiberForce = mdi.fiberForce / maxIsometricForce;
     mdi.fiberForceAlongTendon = mdi.fiberForce * mli.cosPennationAngle;
-
-    if (ignoreTendonCompliance) {
-        mdi.normTendonForce = mdi.normFiberForce * mli.cosPennationAngle;
-        mdi.tendonForce = mdi.fiberForceAlongTendon;
-    } else {
-        mdi.normTendonForce = normTendonForce;
-        mdi.tendonForce = maxIsometricForce * mdi.normTendonForce;
-    }
+    mdi.normTendonForce = mdi.normFiberForce * mli.cosPennationAngle;
+    mdi.tendonForce = mdi.fiberForceAlongTendon;
 
     // Compute stiffness entries.
     // --------------------------
@@ -348,8 +342,7 @@ void MeyerFregly2016Muscle::calcMuscleDynamicsInfoHelper(
 }
 
 void MeyerFregly2016Muscle::calcMusclePotentialEnergyInfoHelper(
-        const bool& ignoreTendonCompliance, const MuscleLengthInfo& mli,
-        MusclePotentialEnergyInfo& mpei) const {
+        const MuscleLengthInfo& mli, MusclePotentialEnergyInfo& mpei) const {
 
     // Based on Millard2012EquilibriumMuscle::calcMusclePotentialEnergyInfo().
 
@@ -362,11 +355,6 @@ void MeyerFregly2016Muscle::calcMusclePotentialEnergyInfoHelper(
     // Tendon potential energy.
     // ------------------------
     mpei.tendonPotentialEnergy = 0;
-    if (!ignoreTendonCompliance) {
-        mpei.tendonPotentialEnergy =
-                calcTendonForceMultiplierIntegral(mli.normTendonLength) *
-                get_tendon_slack_length() * get_max_isometric_force();
-    }
 
     // Total potential energy.
     // -----------------------
@@ -378,12 +366,7 @@ void MeyerFregly2016Muscle::calcMuscleLengthInfo(
         const SimTK::State& s, MuscleLengthInfo& mli) const {
 
     const auto& muscleTendonLength = getLength(s);
-    SimTK::Real normTendonForce = SimTK::NaN;
-    if (!get_ignore_tendon_compliance()) {
-        normTendonForce = getNormalizedTendonForce(s);
-    }
-    calcMuscleLengthInfoHelper(muscleTendonLength,
-            get_ignore_tendon_compliance(), mli, normTendonForce);
+    calcMuscleLengthInfoHelper(muscleTendonLength, mli);
 
     if (mli.tendonLength < get_tendon_slack_length()) {
         // TODO the Millard model sets fiber velocity to zero when the
@@ -401,19 +384,7 @@ void MeyerFregly2016Muscle::calcFiberVelocityInfo(
     const auto& muscleTendonVelocity = getLengtheningSpeed(s);
     const auto& activation = getActivation(s);
 
-    SimTK::Real normTendonForce = SimTK::NaN;
-    SimTK::Real normTendonForceDerivative = SimTK::NaN;
-    if (!get_ignore_tendon_compliance()) {
-        if (m_isTendonDynamicsExplicit) {
-            normTendonForce = getNormalizedTendonForce(s);
-        } else {
-            normTendonForceDerivative = getNormalizedTendonForceDerivative(s);
-        }
-    }
-
-    calcFiberVelocityInfoHelper(muscleTendonVelocity, activation,
-            get_ignore_tendon_compliance(), m_isTendonDynamicsExplicit, mli,
-            fvi, normTendonForce, normTendonForceDerivative);
+    calcFiberVelocityInfoHelper(muscleTendonVelocity, activation, mli, fvi);
 
     if (fvi.normFiberVelocity < -1.0) {
         log_info("MeyerFregly2016Muscle '{}' is exceeding maximum "
@@ -425,22 +396,16 @@ void MeyerFregly2016Muscle::calcFiberVelocityInfo(
 void MeyerFregly2016Muscle::calcMuscleDynamicsInfo(
         const SimTK::State& s, MuscleDynamicsInfo& mdi) const {
     const auto& activation = getActivation(s);
-    SimTK::Real normTendonForce = SimTK::NaN;
-    if (!get_ignore_tendon_compliance()) {
-        normTendonForce = getNormalizedTendonForce(s);
-    }
     const auto& mli = getMuscleLengthInfo(s);
     const auto& fvi = getFiberVelocityInfo(s);
 
-    calcMuscleDynamicsInfoHelper(activation, get_ignore_tendon_compliance(),
-            mli, fvi, mdi, normTendonForce);
+    calcMuscleDynamicsInfoHelper(activation, mli, fvi, mdi);
 }
 
 void MeyerFregly2016Muscle::calcMusclePotentialEnergyInfo(
         const SimTK::State& s, MusclePotentialEnergyInfo& mpei) const {
     const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
-    calcMusclePotentialEnergyInfoHelper(
-            get_ignore_tendon_compliance(), mli, mpei);
+    calcMusclePotentialEnergyInfoHelper(mli, mpei);
 }
 
 double
@@ -451,17 +416,10 @@ OpenSim::MeyerFregly2016Muscle::calcInextensibleTendonActiveFiberForce(
     MuscleDynamicsInfo mdi;
     const double muscleTendonLength = getLength(s);
     const double muscleTendonVelocity = getLengtheningSpeed(s);
-
-    // We set the boolean arguments to ignore tendon compliance in all three
-    // function calls to true since we are computing rigid tendon fiber force.
-    calcMuscleLengthInfoHelper(muscleTendonLength, true, mli);
-    // The second boolean argument is to specify how to compute velocity
-    // information for either explicit or implicit tendon compliance dynamics.
-    // However, since we are already ignoring tendon compliance, velocity
-    // information will be computed whether this argument is true or false.
+    calcMuscleLengthInfoHelper(muscleTendonLength, mli);
     calcFiberVelocityInfoHelper(
-            muscleTendonVelocity, activation, true, true, mli, fvi);
-    calcMuscleDynamicsInfoHelper(activation, true, mli, fvi, mdi);
+            muscleTendonVelocity, activation, mli, fvi);
+    calcMuscleDynamicsInfoHelper(activation, mli, fvi, mdi);
 
     return mdi.activeFiberForce;
 }
@@ -487,24 +445,6 @@ double MeyerFregly2016Muscle::getPassiveFiberDampingForceAlongTendon(
     return getMuscleDynamicsInfo(s)
                    .userDefinedDynamicsExtras[m_mdi_passiveFiberDampingForce] *
            getMuscleLengthInfo(s).cosPennationAngle;
-}
-
-double MeyerFregly2016Muscle::getImplicitResidualNormalizedTendonForce(
-        const SimTK::State& s) const {
-    if (get_ignore_tendon_compliance()) { return 0; }
-    if (m_isTendonDynamicsExplicit) { return SimTK::NaN; }
-
-    // Recompute residual if cache is invalid.
-    if (!isCacheVariableValid(s, RESIDUAL_NORMALIZED_TENDON_FORCE_NAME)) {
-        // Compute muscle-tendon equilibrium residual value to update the
-        // cache variable.
-        setCacheVariableValue(s, RESIDUAL_NORMALIZED_TENDON_FORCE_NAME,
-                getEquilibriumResidual(s));
-        markCacheVariableValid(s, RESIDUAL_NORMALIZED_TENDON_FORCE_NAME);
-    }
-
-    return getCacheVariableValue<double>(
-            s, RESIDUAL_NORMALIZED_TENDON_FORCE_NAME);
 }
 
 DataTable MeyerFregly2016Muscle::exportFiberLengthCurvesToTable(
@@ -604,7 +544,7 @@ void MeyerFregly2016Muscle::replaceMuscles(
 
         // Pre-emptively create a default MeyerFregly2016Muscle
         // (TODO: not ideal to do this).
-        auto actu = OpenSim::make_unique<MeyerFregly2016Muscle>();
+        auto actu = std::make_unique<MeyerFregly2016Muscle>();
 
         // Perform muscle-model-specific mappings or throw exception if the
         // muscle is not supported.
