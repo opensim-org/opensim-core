@@ -83,6 +83,7 @@ v4.6
   copying + re-finalizing `OpenSim::Model`s faster (#4010).
 - Updated `TableUtilities::filterLowpass` to apply padding after resampling, so that the 
   initial time point of an input table is preserved. (#4020)
+- Support using swig version 4.2 to generate Java & Python bindings (#3758)
 
 
 v4.5.1
