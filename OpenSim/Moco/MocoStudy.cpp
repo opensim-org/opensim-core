@@ -19,7 +19,6 @@
 
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoProblem.h"
-#include "MocoTropterSolver.h"
 #include "MocoUtilities.h"
 #include <regex>
 
@@ -54,22 +53,10 @@ void MocoStudy::initSolverInternal() const {
 }
 
 template <>
-MocoTropterSolver& MocoStudy::initSolver<MocoTropterSolver>() {
-    set_solver(MocoTropterSolver());
-    initSolverInternal();
-    return dynamic_cast<MocoTropterSolver&>(upd_solver());
-}
-
-template <>
 MocoCasADiSolver& MocoStudy::initSolver<MocoCasADiSolver>() {
     set_solver(MocoCasADiSolver());
     initSolverInternal();
     return dynamic_cast<MocoCasADiSolver&>(upd_solver());
-}
-
-MocoTropterSolver& MocoStudy::initTropterSolver() {
-    set_solver(MocoTropterSolver());
-    return initSolver<MocoTropterSolver>();
 }
 
 MocoCasADiSolver& MocoStudy::initCasADiSolver() {
@@ -106,12 +93,6 @@ void MocoStudy::visualize(const MocoTrajectory& trajectory) const {
     // MocoProblem.
     const auto& model = get_problem().getPhase(0).getModelProcessor().process();
     VisualizerUtilities::showMotion(model, trajectory.exportToStatesTable());
-}
-
-TimeSeriesTable MocoStudy::analyze(const MocoTrajectory& trajectory,
-        const std::vector<std::string>& outputPaths) const {
-    return OpenSim::analyzeMocoTrajectory<double>(
-            get_problem().createRep().getModelBase(), trajectory, outputPaths);
 }
 
 TimeSeriesTable MocoStudy::calcGeneralizedForces(

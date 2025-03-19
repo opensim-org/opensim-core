@@ -19,6 +19,8 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoSolver.h"
+#include "MocoProblem.h"
+#include "MocoUtilities.h"
 
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -26,7 +28,6 @@
 namespace OpenSim {
 
 class MocoProblem;
-class MocoTropterSolver;
 class MocoCasADiSolver;
 
 /** The top-level class for solving a custom optimal control problem.
@@ -77,10 +78,7 @@ MocoStudy setup files have a `.omoco` extension.
 Solver
 ------
 The default solver, MocoCasADiSolver, uses the **CasADi** automatic
-differentiation and optimization library. Moco also provides the
-MocoTropterSolver, which uses the **tropter** optimal control library that is
-part of the OpenSim project. If you want to use MocoTropterSolver instead of
-MocoCasADiSolver, call initTropterSolver() before solve(). We would like to
+differentiation and optimization library. We would like to
 support users plugging in their own solvers, but there is no timeline for this.
 */
 class OSIMMOCO_API MocoStudy : public Object {
@@ -120,14 +118,6 @@ public:
     /// This deletes the previous solver if one exists.
     MocoCasADiSolver& initCasADiSolver();
 
-    /// Call this method once you have finished setting up your MocoProblem.
-    /// This returns a reference to the MocoSolver, which you can then edit.
-    /// If using this method in C++, make sure to include the "&" in the
-    /// return type; otherwise, you'll make a copy of the solver, and the copy
-    /// will have no effect on this MocoStudy.
-    /// This deletes the previous solver if one exists.
-    MocoTropterSolver& initTropterSolver();
-
     /// Access the solver. Make sure to call `initSolver()` beforehand.
     /// If using this method in C++, make sure to include the "&" in the
     /// return type; otherwise, you'll make a copy of the solver, and the copy
@@ -162,14 +152,24 @@ public:
     /// ".*activation" gives the activation of all muscles.
     /// Constraints are not enforced but prescribed motion (e.g.,
     /// PositionMotion) is.
-    /// @see OpenSim::analyze()
+    /// @see OpenSim::analyze<T>() OpenSim::analyzeMocoTrajectory<T>()
     /// @note Parameters in the MocoTrajectory are **not** applied to the model.
     /// @note If the MocoTrajectory was generated from a MocoStudy with 
     ///       Controller%s in the model, first call 
     ///       MocoTrajectory::generateControlsFromModelControllers() to populate 
     ///       the trajectory with the correct model controls.
+    template <typename T>
+    TimeSeriesTable_<T> analyze(const MocoTrajectory& traj,
+            const std::vector<std::string>& outputPaths) const {
+        return OpenSim::analyzeMocoTrajectory<T>(
+            get_problem().createRep().getModelBase(), traj, outputPaths);
+    }
+
+    // @copydoc analyze()
     TimeSeriesTable analyze(const MocoTrajectory& traj,
-            const std::vector<std::string>& outputPaths) const;
+            const std::vector<std::string>& outputPaths) const {
+        return analyze<double>(traj, outputPaths);
+    }
 
     /// Compute the generalized coordinate forces for the provided trajectory 
     /// based on a set of applied model Force%s. This can be used to compute 
@@ -198,8 +198,8 @@ public:
         set_solver(SolverType());
     }
 
-    /// @precondition If not using MocoTropterSolver or MocoCasADiSolver, you
-    /// must invoke setCustomSolver() first.
+    /// @precondition If not using MocoCasADiSolver, you must invoke 
+    /// setCustomSolver() first.
     template <typename SolverType>
     SolverType& initSolver() {
         return dynamic_cast<SolverType&>(initSolverInternal());
@@ -221,9 +221,6 @@ private:
     void initSolverInternal() const;
     void constructProperties();
 };
-
-template <>
-OSIMMOCO_API MocoTropterSolver& MocoStudy::initSolver<MocoTropterSolver>();
 
 template <>
 OSIMMOCO_API MocoCasADiSolver& MocoStudy::initSolver<MocoCasADiSolver>();

@@ -243,6 +243,9 @@ TEST_CASE("DataTable") {
     ASSERT((static_cast<AbstractDataTable&&>
             (DataTable_<double, SpatialVec>{})).
             numComponentsPerElement() == 6);
+    ASSERT((static_cast<AbstractDataTable&&>
+            (DataTable_<double, Rotation>{})).
+            numComponentsPerElement() == 9);
 
     {
         std::cout << "Test DataTable flattening constructor for Vec3."
@@ -366,6 +369,26 @@ TEST_CASE("DataTable") {
         std::cout << tableSpatialVec << std::endl;
 
         tableDouble = tableSpatialVec;
+        ASSERT(tableDouble.getColumnLabels().size() == 18);
+        ASSERT(tableDouble.getNumRows()             == 3);
+        ASSERT(tableDouble.getNumColumns()          == 18);
+
+        std::cout << tableDouble << std::endl;
+
+        std::cout << "Test DataTable flattening constructor for Rotation."
+                  << std::endl;
+        DataTable_<double, Rotation> tableRotation{};
+        tableRotation.setColumnLabels({"col0", "col1"});
+        tableRotation.appendRow(0.1, {Rotation(0.1, UnitVec3(1, 0, 0)),
+                                      Rotation(0.2, UnitVec3(0, 1, 0))});
+        tableRotation.appendRow(0.2, {Rotation(0.2, UnitVec3(0, 0, 1)),
+                                      Rotation(0.1, UnitVec3(0, 1, 0))});
+        tableRotation.appendRow(0.3, {Rotation(0.3, UnitVec3(0, 1, 0)),
+                                      Rotation(0.2, UnitVec3(1, 0, 0))});
+
+        std::cout << tableRotation << std::endl;
+
+        tableDouble = tableRotation;
         ASSERT(tableDouble.getColumnLabels().size() == 18);
         ASSERT(tableDouble.getNumRows()             == 3);
         ASSERT(tableDouble.getNumColumns()          == 18);
@@ -525,6 +548,43 @@ TEST_CASE("DataTable") {
         ASSERT(tableDouble.getNumColumns()          == 18);
 
         std::cout << tableDouble << std::endl;
+
+        std::cout << "Test TimeSeriesTable flattening constructor for "
+                     "Rotation" << std::endl;
+        DataTable_<double, Rotation> tableRotation{};
+        tableRotation.setColumnLabels({"col0", "col1"});
+        tableRotation.appendRow(0.1, {Rotation(0.1, UnitVec3(1, 0, 0)),
+                                      Rotation(0.2, UnitVec3(0, 1, 0))});
+        tableRotation.appendRow(0.2, {Rotation(0.2, UnitVec3(0, 0, 1)),
+                                      Rotation(0.1, UnitVec3(0, 1, 0))});
+        tableRotation.appendRow(0.3, {Rotation(0.3, UnitVec3(0, 1, 0)),
+                                      Rotation(0.2, UnitVec3(1, 0, 0))});
+
+        // TODO: RowVector_<Rotation> is not supported.
+        // const auto& avgRowRot = tableRotation.averageRow(0.1, 0.2);
+        // for(int i = 0; i < 3; ++i) {
+        //     OPENSIM_THROW_IF(std::abs(avgRowRot[0][0][i] - 2) > 1e-8/*eps*/,
+        //                      OpenSim::Exception,
+        //                      "Test failed: averageRow() failed.");
+        // }
+
+        // const auto& nearRowRot = tableRotation.getNearestRow(0.29);
+        // for(int i = 0; i < 3; ++i)
+        //     ASSERT(nearRowRot[0][0][i] == 2);
+
+        // tableRotation.updNearestRow(0.29) += Rotation(0.2, UnitVec3(0, 1, 0));
+        // tableRotation.updNearestRow(0.29) -= Rotation(0.2, UnitVec3(0, 1, 0));
+        // for(int i = 0; i < 3; ++i)
+        //     ASSERT(nearRowRot[0][0][i] == 2);
+
+        std::cout << tableRotation << std::endl;
+
+        tableDouble = tableRotation;
+        ASSERT(tableDouble.getColumnLabels().size() == 18);
+        ASSERT(tableDouble.getNumRows()             == 3);
+        ASSERT(tableDouble.getNumColumns()          == 18);
+
+        std::cout << tableDouble << std::endl;
     }
     {
         std::cout << "Test DataTable packing." << std::endl;
@@ -601,6 +661,32 @@ TEST_CASE("DataTable") {
         ASSERT(tableSVec.getTableMetaData<std::string>("string") == "string");
         ASSERT(tableSVec.getTableMetaData<int>("int")            == 10);
         std::cout << tableSVec << std::endl;
+
+        std::cout << "Test DataTable packing for Rotation" << std::endl;
+        DataTable_<double, double> table{};
+        table.setColumnLabels({"col0_0", "col0_1", "col0_2",
+                               "col0_3", "col0_4", "col0_5",
+                               "col0_6", "col0_7", "col0_8", 
+                               "col1_0", "col1_1", "col1_2",
+                               "col1_3", "col1_4", "col1_5",
+                               "col1_6", "col1_7", "col1_8"});
+        table.appendRow(1, RowVector(18, 1));
+        table.appendRow(2, RowVector(18, 2));
+        table.appendRow(3, RowVector(18, 3));
+        table.addTableMetaData("string", std::string{"string"});
+        table.addTableMetaData("int", 10);
+        ASSERT(table.getColumnLabels().size() == 18);
+        ASSERT(table.getNumRows()             == 3);
+        ASSERT(table.getNumColumns()          == 18);
+
+        auto tableRot = table.pack<SimTK::Rotation>();
+        expLabels = {"col0", "col1"};
+        ASSERT(tableRot.getColumnLabels() == expLabels);
+        ASSERT(tableRot.getNumRows()      == 3);
+        ASSERT(tableRot.getNumColumns()   == 2);
+        ASSERT(tableRot.getTableMetaData<std::string>("string") == "string");
+        ASSERT(tableRot.getTableMetaData<int>("int")            == 10);
+        std::cout << tableRot << std::endl;
     }
     {
         std::cout << "Test TimeSeriesTable packing." << std::endl;
@@ -692,6 +778,33 @@ TEST_CASE("DataTable") {
         ASSERT(tableSVec.getTableMetaData<std::string>("string") == "string");
         ASSERT(tableSVec.getTableMetaData<int>("int")            == 10);
         std::cout << tableSVec << std::endl;
+
+        std::cout << "Test TimeSeriesTable packing for Rotation" << std::endl;
+        TimeSeriesTable_<double> table{};
+        table.setColumnLabels({"col0_0", "col0_1", "col0_2",
+                               "col0_3", "col0_4", "col0_5",
+                               "col0_6", "col0_7", "col0_8", 
+                               "col1_0", "col1_1", "col1_2",
+                               "col1_3", "col1_4", "col1_5",
+                               "col1_6", "col1_7", "col1_8"});
+        table.appendRow(1, RowVector(18, 1));
+        table.appendRow(2, RowVector(18, 2));
+        table.appendRow(3, RowVector(18, 3));
+        table.addTableMetaData("string", std::string{"string"});
+        table.addTableMetaData("int", 10);
+        ASSERT(table.getColumnLabels().size() == 18);
+        ASSERT(table.getNumRows()             == 3);
+        ASSERT(table.getNumColumns()          == 18);
+
+        TimeSeriesTable_<SimTK::Rotation> tableRot = 
+            table.pack<SimTK::Rotation>();
+        expLabels = {"col0", "col1"};
+        ASSERT(tableRot.getColumnLabels() == expLabels);
+        ASSERT(tableRot.getNumRows()      == 3);
+        ASSERT(tableRot.getNumColumns()   == 2);
+        ASSERT(tableRot.getTableMetaData<std::string>("string") == "string");
+        ASSERT(tableRot.getTableMetaData<int>("int")            == 10);
+        std::cout << tableRot << std::endl;
     }
 
     {

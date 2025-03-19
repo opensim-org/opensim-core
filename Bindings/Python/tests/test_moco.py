@@ -338,8 +338,8 @@ class TestWorkflow(unittest.TestCase):
         problem.setControlInfo("/actuator", [-10, 10])
         problem.addGoal(osim.MocoFinalTimeGoal())
 
-        if osim.MocoTropterSolver.isAvailable():
-            solver = study.initTropterSolver()
+        if osim.MocoCasADiSolver.isAvailable():
+            solver = study.initCasADiSolver()
             solver.set_transcription_scheme("trapezoidal")
             solver.set_num_mesh_intervals(19)
             guess = solver.createGuess("random")
@@ -364,8 +364,8 @@ class TestWorkflow(unittest.TestCase):
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
         problem.addGoal(osim.MocoFinalTimeGoal())
-        if osim.MocoTropterSolver.isAvailable():
-            solver = study.initTropterSolver()
+        if osim.MocoCasADiSolver.isAvailable():
+            solver = study.initCasADiSolver()
             solver.set_num_mesh_intervals(19)
             solver.set_transcription_scheme("trapezoidal");
             finalTime0 = study.solve().getFinalTime()
@@ -386,8 +386,8 @@ class TestWorkflow(unittest.TestCase):
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
         problem.addGoal(osim.MocoFinalTimeGoal())
         problem.setModel(createSlidingMassModel())
-        if osim.MocoTropterSolver.isAvailable():
-            solver = study.initTropterSolver()
+        if osim.MocoCasADiSolver.isAvailable():
+            solver = study.initCasADiSolver()
             solver.set_num_mesh_intervals(19)
             solver.set_transcription_scheme("trapezoidal")
             finalTime =  study.solve().getFinalTime()
@@ -404,8 +404,8 @@ class TestWorkflow(unittest.TestCase):
         problem.updPhase().addGoal(osim.MocoFinalTimeGoal())
         effort = osim.MocoControlGoal("effort")
         problem.updPhase().addGoal(effort)
-        if osim.MocoTropterSolver.isAvailable():
-            solver = study.initTropterSolver()
+        if osim.MocoCasADiSolver.isAvailable():
+            solver = study.initCasADiSolver()
             solver.set_transcription_scheme("trapezoidal");
             finalTime0 = study.solve().getFinalTime()
 
@@ -436,7 +436,7 @@ class TestWorkflow(unittest.TestCase):
         mass_goal.addParameter(parameter, "p")
         mass_goal.addParameter(parameter2, "q")
 
-        ms = study.initTropterSolver()
+        ms = study.initCasADiSolver()
         ms.set_num_mesh_intervals(25)
         sol = study.solve()
 

@@ -41,7 +41,7 @@ namespace OpenSim {
  *
  * Constructing a ControlDistributor and adding controls:
  * @code
- * auto controlDistributor = make_unique<ControlDistributor>();
+ * auto controlDistributor = std::make_unique<ControlDistributor>();
  * controlDistributor->addControl("/forceset/soleus_r");
  * controlDistributor->addControl("/my_input_controller_value");
  * controlDistributor->addControl("/my_custom_component_input");

@@ -40,8 +40,8 @@ set(PLUGIN_NAME "osimExpressionReporter")
 
 # Settings.
 # ---------
-# OpenSim uses C++11 language features.
-set(CMAKE_CXX_STANDARD 11)
+# OpenSim uses C++17 language features.
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find and hook up to OpenSim.

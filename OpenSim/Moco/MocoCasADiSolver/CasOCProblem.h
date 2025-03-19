@@ -260,11 +260,11 @@ protected:
                 OpenSim::Exception, "numIntegrals must be 0 or 1.");
         std::unique_ptr<CostIntegrand> integrand_function;
         if (numIntegrals) {
-            integrand_function = OpenSim::make_unique<CostIntegrand>();
+            integrand_function = std::make_unique<CostIntegrand>();
         }
         m_costInfos.emplace_back(std::move(name), numOutputs,
                 std::move(integrand_function),
-                OpenSim::make_unique<Cost>());
+                std::make_unique<Cost>());
     }
     /// Add an endpoint constraint to the problem.
     void addEndpointConstraint(
@@ -274,7 +274,7 @@ protected:
         std::unique_ptr<EndpointConstraintIntegrand> integrand_function;
         if (numIntegrals) {
             integrand_function =
-                    OpenSim::make_unique<EndpointConstraintIntegrand>();
+                    std::make_unique<EndpointConstraintIntegrand>();
         }
         casadi::DM lower(bounds.size(), 1);
         casadi::DM upper(bounds.size(), 1);
@@ -284,7 +284,7 @@ protected:
         }
         m_endpointConstraintInfos.emplace_back(std::move(name),
                 (int)bounds.size(), std::move(integrand_function),
-                OpenSim::make_unique<EndpointConstraint>(), std::move(lower),
+                std::make_unique<EndpointConstraint>(), std::move(lower),
                 std::move(upper));
     }
     /// The size of bounds must match the number of outputs in the function.
@@ -296,7 +296,7 @@ protected:
             upper(ibound, 0) = bounds[ibound].upper;
         }
         m_pathInfos.push_back({std::move(name), std::move(lower),
-                std::move(upper), OpenSim::make_unique<PathConstraint>()});
+                std::move(upper), std::make_unique<PathConstraint>()});
     }
     void setDynamicsMode(std::string dynamicsMode) {
         OPENSIM_THROW_IF(
@@ -463,7 +463,7 @@ public:
             // Construct a full implicit multibody system (i.e. including
             // kinematic constraints).
             mutThis->m_implicitMultibodyFunc =
-                    OpenSim::make_unique<MultibodySystemImplicit<true>>();
+                    std::make_unique<MultibodySystemImplicit<true>>();
             mutThis->m_implicitMultibodyFunc->constructFunction(this,
                     "implicit_multibody_system", finiteDiffScheme,
                     pointsForSparsityDetection);
@@ -471,20 +471,20 @@ public:
             // Construct an implicit multibody system ignoring kinematic
             // constraints.
             mutThis->m_implicitMultibodyFuncIgnoringConstraints =
-                    OpenSim::make_unique<MultibodySystemImplicit<false>>();
+                    std::make_unique<MultibodySystemImplicit<false>>();
             mutThis->m_implicitMultibodyFuncIgnoringConstraints
                     ->constructFunction(this,
                             "implicit_multibody_system_ignoring_constraints",
                             finiteDiffScheme, pointsForSparsityDetection);
         } else {
             mutThis->m_multibodyFunc =
-                    OpenSim::make_unique<MultibodySystemExplicit<true>>();
+                    std::make_unique<MultibodySystemExplicit<true>>();
             mutThis->m_multibodyFunc->constructFunction(this,
                     "explicit_multibody_system", finiteDiffScheme,
                     pointsForSparsityDetection);
 
             mutThis->m_multibodyFuncIgnoringConstraints =
-                    OpenSim::make_unique<MultibodySystemExplicit<false>>();
+                    std::make_unique<MultibodySystemExplicit<false>>();
             mutThis->m_multibodyFuncIgnoringConstraints->constructFunction(this,
                     "multibody_system_ignoring_constraints", finiteDiffScheme,
                     pointsForSparsityDetection);
@@ -494,13 +494,13 @@ public:
                 getNumKinematicConstraintEquations()) {
             if (isKinematicConstraintMethodBordalba2023()) {
                 mutThis->m_stateProjectionFunc =
-                    OpenSim::make_unique<StateProjection>();
+                    std::make_unique<StateProjection>();
                 mutThis->m_stateProjectionFunc->constructFunction(this,
                     "state_projection", finiteDiffScheme,
                     pointsForSparsityDetection);
             } else {
                 mutThis->m_velocityCorrectionFunc =
-                    OpenSim::make_unique<VelocityCorrection>();
+                    std::make_unique<VelocityCorrection>();
                 mutThis->m_velocityCorrectionFunc->constructFunction(this,
                     "velocity_correction", finiteDiffScheme,
                     pointsForSparsityDetection);

@@ -19,16 +19,11 @@ different abstraction levels.
 lines.</i>
 
 MocoProblem describes a direct collocation problem using an OpenSim Model, and
-MocoSolver is an abstract class for solving MocoProblems. Moco provides two
-MocoSolvers: MocoTropterSolver and MocoCasADiSolver. MocoTropterSolver contains
-a problem-solver pair for optimal control problems: TropterProblem (which
-derives from tropter::Problem) and tropter::DirectCollocation (tropter is not
-exposed in Doxygen). To solve the optimal control problem,
-tropter::DirectCollocation employs a problem-solver pair for generic nonlinear
-optimization: tropter::Transcription (which derives from
-tropter::optimization::Problem) and tropter::optimization::Solver. The
-MocoCasADiSolver employs the problem-solver pair of MocoCasOCProblem (deriving
-from CasOC::Problem) and CasOC::Solver.
+MocoSolver is an abstract class for solving MocoProblems. Moco currently 
+provides one MocoSolver: MocoCasADiSolver. (Moco previously provided two
+solvers, but MocoTropterSolver has since been removed.) The MocoCasADiSolver 
+employs the problem-solver pair of MocoCasOCProblem (deriving from 
+CasOC::Problem) and CasOC::Solver.
 
 These pairs of classes allow a separation between how a user specifies a
 problem and the method used to solve the problem.
@@ -62,8 +57,6 @@ some of the key steps for you when using MocoCasADiSolver.
 11. casadi::nlpsol(): Create a CasADi Function for solving the nonlinear
    program. After this call, we invoke this function to solve the problem.
 12. MocoStudy returns a MocoSolution.
-
-The MocoTropterSolver follows similar steps.
 
 @subsection implmocoproblemrep The MocoProblemRep class
 

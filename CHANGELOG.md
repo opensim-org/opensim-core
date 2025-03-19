@@ -12,8 +12,8 @@ v4.6
   the case where provided string is just the name of the value, rather than a path to it (#3782)
 - Fixed bugs in `MocoStepTimeAsymmetryGoal::printDescriptionImpl()` where there were missing or incorrect values printed. (#3842)
 - Added `ModOpPrescribeCoordinateValues` which can prescribe motion of joints in a model given a table of data. (#3862)
-- Fixed bugs in `convertToMocoTrajectory()` and `MocoTrajectory::resampleWithFrequency()` by updating `interpolate()` to 
-  allow extrapolation using the `extrapolate` flag. Combined with the `ignoreNaNs` flag, this prevents NaNs from 
+- Fixed bugs in `convertToMocoTrajectory()` and `MocoTrajectory::resampleWithFrequency()` by updating `interpolate()` to
+  allow extrapolation using the `extrapolate` flag. Combined with the `ignoreNaNs` flag, this prevents NaNs from
   occurring in the output. (#3867)
 - Added `Output`s to `ExpressionBasedCoordinateForce`, `ExpressionBasedPointToPointForce`, and `ExpressionBasedBushingForce` for accessing force values. (#3872)
 - `PointForceDirection` no longer has a virtual destructor, is `final`, and its `scale` functionality
@@ -23,6 +23,71 @@ v4.6
   components. The `ForceProducer` API was also rolled out to a variety of existing `Force` components, which
   means that API users can now now ask many `Force` components what forces they produce (see #3891 for a
   comprehensive overview).
+- Made improvements to `MocoUtilities::createExternalLoadsTableForGait()`: center of pressure values are now set to zero, rather
+  than NaN, when vertical force is zero, and the vertical torque is returned in the torque columns (rather than the sum of the
+  sphere torques) to be consistent with the center of pressure GRF representation.
+- Fixed an issue where a copy of an `OpenSim::Model` containing a `OpenSim::ExternalLoads` could not be
+  finalized (#3926)
+- Updated all code examples to use C++17 (after a few months of compiling as C++14 : #3929).
+- Added class `OpenSim::StatesDocument` as a systematic means of serializing and deserializing a complete trajectory
+  (i.e., time history) of all states in the `SimTK::State` to and from a single `.ostates` file. Prior to `StatesDocument`,
+  only the trajectories of continuous states (e.g., joint angles, joint speeds, muscle forces, and the like) could be systematically
+  written to file, either in the form of a `Storage` file or as a `TimeSeriesTable` file, leaving discrete states (e.g., muscle
+  excitations and contact model anchor points) and modeling options (e.g., joint clamps) unserialized. `StatesDocument`, on the
+  other hand, serializes all continuous states, discrete states, and modeling options registered with `OpenSim::Component`.
+  Whereas neither `Storage` files nor `TimeSeriesTable` files are currently able to handle mixed variable types, `StatesDocument`
+  is able to accommodate variables of type `bool`, `int`, `double`, `Vec2`, `Vec3`, `Vec4`, `Vec5`, and `Vec6` all in the same
+  `.ostates` file. `.ostate` files are written in `XML` format and internally carry the name of the OpenSim model to which the
+  states belong, a date/time stamp of when the file was written, and a user-specified note. `.ostate` files also support a
+  configurable output precision. At the highest ouput precsion (~20 significant figures), serialization/deserialization is
+  a lossless process. (#3902)
+- Improved `OpenSim::IO::stod` string-to-decimal parsing function by making it not-locale-dependant (#3943, #3924; thanks @alexbeattie42)
+- Improved the performance of `ComponentPath` traversal (e.g. as used by `Component::getComponent`, `Component::getStateVariableValue`)
+- Added Python and Java (Matlab) scripting support for `TimeSeriesTable_<SimTK::Rotation>`. (#3940)
+- Added the templatized `MocoStudy::analyze<T>()` and equivalent scripting counterparts: `analyzeVec3`, `analyzeSpatialVec`, `analyzeRotation`. (#3940)
+- Added `ConstantCurvatureJoint` to the SWIG bindings; it is now available in Matlab and Python (#3957). 
+- Added methods and `Output`s for calculating the angular momentum of a `Body`. (#3962)
+- Updated `TabOpLowPassFilter` so that by default the processed table is trimmed to the original time range after padding and filtering. 
+  The original behavior (no trimming) can be enabled via the new property `trim_to_original_time_range`. (#3969)
+- Make `InverseKinematicsSolver` methods to query for specific marker or orientation-sensor errors more robust to invalid names or names not 
+  in the intersection of names in the model and names in the provided referece/data. Remove methods that are index based from public interface.(#3951) 
+- Replace usages of `OpenSim::make_unique` with `std::make_unique` and remove wrapper function now that C++14 is used in OpenSim (#3979). 
+- Add utility method `createVectorLinspaceInterval` for the `std::vector` type and add unit tests. Utilize the new utility method to fix a bug (#3976) 
+  in creating the uniformly sampled time interval from the experimental data sampling frequency in `APDMDataReader` and `XsensDataReader` (#3977).
+- Fix Point Kinematics Reporter variable and initialization error and add unit tests (#3966)
+- `OpenSim::ContactHalfSpace`, `OpenSim::ContactMesh`, and `OpenSim::ContactSphere` now check their associated `Appearance`'s `is_visible` flag when deciding whether to emit their associated decorations (#3993).
+- The message associated with `OpenSim::PropertyException` now includes the full absolute path to the component that threw the exception (#3987).
+- Add an improved uniform sampling check for `std::vector` containers to `CommonUtilities` and use the implemented method in the `TableUtilities::filterLowpass` method (#3968, #3978).
+- Several bugs in `OpenSim::ExpressionBasedBushingForce::generateDecorations` were fixed:
+  - It will now check for `0.0` values for `visual_aspect_ratio`, `moment_visual_scale`,
+    and `force_visual_scale` when emitting decorations, skipping emission where `0.0` is
+    found (previously: it would emit objects scaled by 0.0, causing downstream issues).
+  - It will only emit decorations when called with `fixed` set to `false` (previously, frame
+    decorations were emitted for both `true` and `false`, resulting in double-emission).
+  - It will now check for NaNed vectors coming from the underlying expression, skipping emission
+    if one is detected (previously: it would emit decorations with `NaN`ed transforms).
+- `PolynomialPathFitter` now allows fitting paths that depend on more than 6 coordinates, matching recent changes to `MultivariatePolynomialFunction` (#4001).
+- If an `Object` cannot be found when loading a list property from XML, a warning will now be emitted to the log (previously: it was emitted to `std::cerr`, #4009).
+- Added the property `activation_dynamics_smoothing` to `DeGrooteFregly2016Muscle`. This property uses the model's original value of 0.1 as a 
+  default, but users may consider increasing this value (e.g., 10.0) so that the activation and deactivation speeds of the model better match the 
+  activation and deactivation time constants.
+- Remove unused, legacy `<defaults>` blocks in `.osim` and `.xml` files (#3986).
+- Added `example3DWalking`, which demonstrates how to create a tracking simulation with foot-ground contact in Moco. (#4008)
+- Added `ModelFactory::createResidualActuators` and `ModOpAddResiduals` to make it easy to add a set of residual actuators to a model. 
+  The default behavior of `ModOpAddReserves` remains the same, but a new constructor has been added to enable skipping coordinates associated 
+  with residual forces so that they can be set separately with `ModOpAddResiduals`. (#4008)
+- Added convenience methods to `MocoTrack` to allow setting marker weights from a `Set<MarkerWeight>` or `IKTaskSet`. (#4008)
+- Remove the `tropter` libraries, the Tropter solver in Moco, and all references to it from build system. As a result, the following 
+  Tropter-related dependencies have been removed: `adolc`, `colpack`, and `eigen`. (#3988)
+- `OpenSim::Mesh` now retains a reference-counted copy of the mesh data when it's copied, which should make
+  copying + re-finalizing `OpenSim::Model`s faster (#4010).
+- Updated `TableUtilities::filterLowpass` to apply padding after resampling, so that the 
+  initial time point of an input table is preserved. (#4020)
+- Support using swig version 4.2 to generate Java & Python bindings. (#4028)
+- Added `ExpressionBasedPathForce`, which can be used to create non-linear path springs or 
+  other path-based force elements dependent on a user-provided expression. (#4035)
+
+
 
 v4.5.1
 ======
@@ -87,6 +152,7 @@ pointer to avoid crashes in scripting due to invalid pointer ownership (#3781).
 - Fixed `MocoOrientationTrackingGoal::initializeOnModelImpl` to check for missing kinematic states, but allow other missing columns. (#3830)
 - Improved exception handling for internal errors in `MocoCasADiSolver`. Problems will now abort and print a descriptive error message (rather than fail due to an empty trajectory). (#3834)
 - Upgraded the Ipopt dependency Metis to version 5.1.0 on Unix and macOS to enable building on `osx-arm64` (#3874).
+
 
 v4.5
 ====

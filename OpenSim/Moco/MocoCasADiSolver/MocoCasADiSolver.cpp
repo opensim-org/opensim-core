@@ -145,7 +145,7 @@ const MocoTrajectory& MocoCasADiSolver::getGuess() const {
             m_guessToUse.reset(&m_guessFromFile);
         } else {
             // This will either be a guess specified via the API, or empty to
-            // signal that tropter should use the default guess.
+            // signal that CasADi should use the default guess.
             m_guessToUse.reset(&m_guessFromAPI);
         }
     }
@@ -194,7 +194,7 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
             "but received '{}'.", get_transcription_scheme());
     }
 
-    return OpenSim::make_unique<MocoCasOCProblem>(*this, problemRep,
+    return std::make_unique<MocoCasOCProblem>(*this, problemRep,
             createProblemRepJar(numThreads), get_multibody_dynamics_mode(),
             get_kinematic_constraint_method());
 #else
@@ -205,7 +205,7 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
 std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         const MocoCasOCProblem& casProblem) const {
 #ifdef OPENSIM_WITH_CASADI
-    auto casSolver = OpenSim::make_unique<CasOC::Solver>(casProblem);
+    auto casSolver = std::make_unique<CasOC::Solver>(casProblem);
 
     // Set solver options.
     // -------------------

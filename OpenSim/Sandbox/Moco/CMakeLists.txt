@@ -18,21 +18,13 @@ endfunction()
 
 MocoAddSandboxExecutable(NAME sandboxSandbox LIB_DEPENDS osimMoco)
 
-MocoAddSandboxExecutable(NAME sandboxTendonForceState
-        LIB_DEPENDS osimMoco tropter)
-MocoAddSandboxExecutable(NAME sandboxImplicitActivationDynamics
-        LIB_DEPENDS osimMoco tropter)
-
-
 # MocoStudy-related.
-MocoAddSandboxExecutable(NAME sandboxSlidingMass
-        LIB_DEPENDS osimMoco tropter)
 MocoAddSandboxExecutable(NAME sandboxContact
-        LIB_DEPENDS osimMoco osimAnalyses tropter)
+        LIB_DEPENDS osimMoco osimAnalyses)
 MocoAddSandboxExecutable(NAME sandboxMuscle
         LIB_DEPENDS osimMoco)
 MocoAddSandboxExecutable(NAME sandboxCasADi
-        LIB_DEPENDS osimMoco casadi tropter)
+        LIB_DEPENDS osimMoco casadi)
 
 MocoAddSandboxExecutable(NAME sandboxCasADiParallelMap
         LIB_DEPENDS SimTKcommon casadi)
@@ -44,7 +36,6 @@ add_subdirectory(sandboxWholeBodyTracking)
 add_subdirectory(sandboxMarkerTrackingWholeBody)
 add_subdirectory(sandboxJointReaction)
 add_subdirectory(sandboxOneLegCouplerKnee)
-add_subdirectory(sandboxMarkerTrackingContactWholeBody)
 add_subdirectory(sandboxSquatToStand)
 add_subdirectory(sandboxMocoTrack)
 add_subdirectory(sandboxMocoUserControlCost)

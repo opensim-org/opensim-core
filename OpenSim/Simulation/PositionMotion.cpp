@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: PositionMotion.cpp                                           *
+ *                           PositionMotion.cpp                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -20,7 +20,6 @@
 
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Moco/MocoUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>

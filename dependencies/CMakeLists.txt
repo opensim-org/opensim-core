@@ -105,7 +105,6 @@ function(AddDependency)
             list(APPEND CMAKE_ARGS
                 -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE})
         endif()
-        list(APPEND CMAKE_ARGS ${DEP_CMAKE_ARGS})
 
         # Forward cmake arguments to dependencies.
         list(APPEND CMAKE_ARGS
@@ -139,6 +138,9 @@ function(AddDependency)
         if(SWIG_EXECUTABLE)
             list(APPEND CMAKE_ARGS -DSWIG_EXECUTABLE:FILEPATH=${SWIG_EXECUTABLE})
         endif()
+
+        # Append the dependency-specific CMake arguments.
+        list(APPEND CMAKE_ARGS ${DEP_CMAKE_ARGS})
 
         if(DEP_GIT_URL)
             ExternalProject_Add(${DEP_NAME}
@@ -183,7 +185,7 @@ AddDependency(NAME       ezc3d
 AddDependency(NAME       simbody
               DEFAULT    ON
               GIT_URL    https://github.com/simbody/simbody.git
-              GIT_TAG    d98f05fa1899633b544757e6c179562940f0849d
+              GIT_TAG    f260ff30381826728da721226151e733715d0df9
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
                          ${SIMBODY_EXTRA_CMAKE_ARGS})
@@ -193,6 +195,11 @@ AddDependency(NAME       docopt
               GIT_URL    https://github.com/docopt/docopt.cpp.git
               GIT_TAG    3dd23e3280f213bacefdf5fcb04857bf52e90917)
 
+set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+if(MSVC)
+    # `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
+    set(SPDLOG_CXX_FLAGS "${SPDLOG_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
+endif()
 
 AddDependency(NAME       spdlog
               DEFAULT    ON
@@ -201,7 +208,8 @@ AddDependency(NAME       spdlog
               CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
-                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
+                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
+                         -DCMAKE_CXX_FLAGS:STRING=${SPDLOG_CXX_FLAGS})
 
 AddDependency(NAME       catch2
               DEFAULT    ON
@@ -212,57 +220,17 @@ AddDependency(NAME       catch2
 # --------------
 option(OPENSIM_WITH_CASADI
         "Build CasADi support for Moco (MocoCasADiSolver)." OFF)
-option(OPENSIM_WITH_TROPTER
-        "Build the tropter optimal control library, for use in MocoTropterSolver." OFF)
 
+if(OPENSIM_WITH_CASADI)
+    CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
+                        "OPENSIM_WITH_CASADI" OFF)
 
-if(OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI)
-AddDependency(NAME    eigen
-              DEFAULT ON
-              URL     https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.zip)
-
-mark_as_advanced(SUPERBUILD_eigen)
-
-AddDependency(NAME colpack
-              DEFAULT ON
-              GIT_URL https://github.com/opensim-org/colpack.git
-              GIT_TAG 72f691e91d59e8eb2123f258e67a4ddc72d105ee
-              CMAKE_ARGS -DCMAKE_DEBUG_POSTFIX:STRING=_d
-                         -DENABLE_EXAMPLES:BOOL=OFF
-                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
-
-mark_as_advanced(SUPERBUILD_colpack)
-
-CMAKE_DEPENDENT_OPTION(SUPERBUILD_adolc "Automatically download, configure, build and install adolc" ON
-                       "OPENSIM_WITH_TROPTER" OFF)
-CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
-                       "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
-endif()
-
-if (OPENSIM_WITH_CASADI)
     CMAKE_DEPENDENT_OPTION(SUPERBUILD_casadi "Automatically download, configure, build and install casadi" ON
                            "OPENSIM_WITH_CASADI" OFF)
     mark_as_advanced(SUPERBUILD_casadi)
 endif()
 
 if (WIN32)
-
-    if(SUPERBUILD_adolc)
-        # ADOL-C: Download pre-built binaries.
-        # TODO allow building from source, so we can use a Debug version of
-        # ADOL-C.
-        set(ADOLC_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
-            "${CMAKE_BINARY_DIR}/ADOLC-prefix/src/ADOLC"
-            "${CMAKE_INSTALL_PREFIX}/adol-c")
-        ExternalProject_Add(adolc
-            URL https://sourceforge.net/projects/myosin/files/adolc/adolc_sparse_x64.zip
-            CONFIGURE_COMMAND ""
-            BUILD_COMMAND ""
-            INSTALL_COMMAND ${ADOLC_INSTALL_CMD})
-
-        mark_as_advanced(SUPERBUILD_adolc)
-    endif()
-
 
     if(SUPERBUILD_ipopt)
         # Ipopt: Download pre-built binaries built by coin-or
@@ -286,32 +254,6 @@ else()
         set(BUILD_FLAGS "-j4")
     endif()
 
-    if(SUPERBUILD_adolc)
-        # TODO copy source code into dependencies dir. OR make clean.
-        # TODO rename to adol-c
-        # TODO add debug symbols if building in Debug (but ADOL-C doesn't
-        # compile with debug symbols right now).
-        # TODO for macOS, will need to make ADOL-C change where it expects to
-        # find ColPack's libraries (lib, not lib64).
-        # https://github.com/Homebrew/homebrew-science/blob/master/adol-c.rb
-        # TODO must have autoreconf, glibtoolize (brew install autoconf,
-        # automake, libtool?)
-        ExternalProject_Add(adolc
-            DEPENDS           colpack
-            GIT_REPOSITORY    https://github.com/coin-or/ADOL-C.git
-            GIT_TAG           releases/2.6.3
-            #SOURCE_DIR        "${CMAKE_SOURCE_DIR}/adol-c"
-            #BINARY_DIR        "${CMAKE_SOURCE_DIR}/adol-c"
-            INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/adol-c"
-            CONFIGURE_COMMAND autoreconf -fi <SOURCE_DIR>
-                COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
-                                               --enable-sparse
-                                               --with-colpack=${CMAKE_INSTALL_PREFIX}/colpack
-                                               --with-boost=no
-            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
-            INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
-    endif()
-
     if(SUPERBUILD_ipopt)
         # TODO --enable-debug if building in Debug.
         # TODO must have gfortran for MUMPS (brew install gcc).
@@ -325,9 +267,9 @@ else()
         ExternalProject_Add(metis
             # URL    http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
             URL    https://sourceforge.net/projects/myosin/files/metis-5.1.0.tar.gz/download
-            CONFIGURE_COMMAND cd <SOURCE_DIR> && ${CMAKE_MAKE_PROGRAM} shared=1 config "prefix=${CMAKE_INSTALL_PREFIX}/metis" BUILDDIR=bdir
+            CONFIGURE_COMMAND cd <SOURCE_DIR> && ${CMAKE_MAKE_PROGRAM} shared=1 config "prefix=${CMAKE_INSTALL_PREFIX}/ipopt" BUILDDIR=bdir
             BUILD_COMMAND cd <SOURCE_DIR>/bdir && ${CMAKE_MAKE_PROGRAM}
-            INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/metis"
+            INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/ipopt"
             INSTALL_COMMAND cd <SOURCE_DIR>/bdir && ${CMAKE_MAKE_PROGRAM} install)
 
         # GCC 10 generates a warning when compling MUMPS that we must suppress using
@@ -338,7 +280,7 @@ else()
             PATCH_COMMAND cd <SOURCE_DIR> && ./get.Mumps
             CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch ADD_CFLAGS=-Wno-error=implicit-function-declaration
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
-            INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/mumps"
+            INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/ipopt"
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
 
         ExternalProject_Add(ipopt
@@ -346,7 +288,7 @@ else()
             URL https://github.com/coin-or/Ipopt/archive/refs/tags/releases/3.14.16.zip
             INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
             # Suppress warnings treated as errors in Clang/LLVM with -Wno-error=implicit-function-declaration
-            CONFIGURE_COMMAND <SOURCE_DIR>/configure --with-mumps --prefix=<INSTALL_DIR> --with-mumps-cflags="-I${CMAKE_INSTALL_PREFIX}/mumps/include/coin-or/mumps" --with-mumps-lflags="-L${CMAKE_INSTALL_PREFIX}/mumps/lib -lcoinmumps"
+            CONFIGURE_COMMAND <SOURCE_DIR>/configure --with-mumps --prefix=<INSTALL_DIR> --with-mumps-cflags="-I${CMAKE_INSTALL_PREFIX}/ipopt/include/coin-or/mumps" --with-mumps-lflags="-L${CMAKE_INSTALL_PREFIX}/ipopt/lib -lcoinmumps"
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()
@@ -356,20 +298,20 @@ endif()
 if(SUPERBUILD_casadi)
   if (WIN32)
       AddDependency(NAME       casadi
-                  DEFAULT    ON
-                  DEPENDS    ipopt
-                  GIT_URL    https://github.com/casadi/casadi.git
-                  GIT_TAG    3.6.5
-                  CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
-                             -DIPOPT_LIBRARIES:FILEPATH=ipopt.dll.lib
-                             -DIPOPT_INCLUDE_DIRS:PATH=${CMAKE_INSTALL_PREFIX}/ipopt/include/coin-or
-                             -DLIB_FULL_ipopt.dll.lib:FILEPATH=${CMAKE_INSTALL_PREFIX}/ipopt/lib/ipopt.dll.lib
-                             -DWITH_MUMPS:BOOL=OFF
-                             -DWITH_THREAD:BOOL=ON
-                             -DWITH_BUILD_MUMPS:BOOL=OFF
-                             -DWITH_EXAMPLES:BOOL=OFF
-                             -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
-                             -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt
+                    DEFAULT    ON
+                    DEPENDS    ipopt
+                    GIT_URL    https://github.com/casadi/casadi.git
+                    GIT_TAG    3.6.5
+                    CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
+                               -DIPOPT_LIBRARIES:FILEPATH=ipopt.dll.lib
+                               -DIPOPT_INCLUDE_DIRS:PATH=${CMAKE_INSTALL_PREFIX}/ipopt/include/coin-or
+                               -DLIB_FULL_ipopt.dll.lib:FILEPATH=${CMAKE_INSTALL_PREFIX}/ipopt/lib/ipopt.dll.lib
+                               -DWITH_MUMPS:BOOL=OFF
+                               -DWITH_THREAD:BOOL=ON
+                               -DWITH_BUILD_MUMPS:BOOL=OFF
+                               -DWITH_EXAMPLES:BOOL=OFF
+                               -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
+                               -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt
                   )
   else()
     AddDependency(NAME       casadi

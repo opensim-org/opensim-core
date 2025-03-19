@@ -70,6 +70,8 @@ OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %include <OpenSim/Simulation/Model/ConstraintSet.h>
 
 %include <OpenSim/Simulation/Model/Force.h>
+%include <OpenSim/Simulation/Model/ForceProducer.h>
+
 %template(SetForces) OpenSim::Set<OpenSim::Force, OpenSim::ModelComponent>;
 %template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
 %include <OpenSim/Simulation/Model/ForceSet.h>
@@ -77,7 +79,6 @@ OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %template(SetExternalForces) OpenSim::Set<OpenSim::ExternalForce, OpenSim::ModelComponent>;
 %template(ModelComponentSetExternalForces) OpenSim::ModelComponentSet<OpenSim::ExternalForce>;
 
-%include <OpenSim/Simulation/Model/ForceProducer.h>
 %include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 %template(TwoFrameLinkerForce) OpenSim::TwoFrameLinker<OpenSim::Force, OpenSim::PhysicalFrame>;
 %template(TwoFrameLinkerForceProducer) OpenSim::TwoFrameLinker<OpenSim::ForceProducer, OpenSim::PhysicalFrame>;
@@ -94,6 +95,7 @@ OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
+%include <OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 %include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
@@ -207,6 +209,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ExpressionBasedCoordinateForce.h>
 
 %include <OpenSim/Simulation/Model/PathSpring.h>
+%include <OpenSim/Simulation/Model/ExpressionBasedPathForce.h>
 %include <OpenSim/Simulation/Model/BushingForce.h>
 %include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>
 %include <OpenSim/Simulation/Model/ExpressionBasedBushingForce.h>
@@ -252,6 +255,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 
 %template(StdVectorIMUs) std::vector< OpenSim::IMU* >;
 
+%include <OpenSim/Simulation/StatesDocument.h>
 %include <OpenSim/Simulation/StatesTrajectory.h>
 // This enables iterating using the getBetween() method.
 %template(IteratorRangeStatesTrajectoryIterator)
@@ -262,6 +266,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %template(analyze) OpenSim::analyze<double>;
 %template(analyzeVec3) OpenSim::analyze<SimTK::Vec3>;
 %template(analyzeSpatialVec) OpenSim::analyze<SimTK::SpatialVec>;
+%template(analyzeRotation) OpenSim::analyze<SimTK::Rotation_<double>>;
 
 %include <OpenSim/Simulation/VisualizerUtilities.h>
 

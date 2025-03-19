@@ -70,6 +70,7 @@ public:
     SurfaceProperties() {
         // Surface shaded by default
         constructProperty_representation(VisualRepresentation::DrawSurface);
+        constructProperty_texture();
     }
     virtual ~SurfaceProperties() {};
 

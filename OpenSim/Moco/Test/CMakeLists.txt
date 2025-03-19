@@ -20,10 +20,6 @@ function(MocoAddTest)
         list(APPEND test_args "~*MocoCasADiSolver*")
         list(APPEND test_args "~[casadi]")
     endif()
-    if(NOT OPENSIM_WITH_TROPTER)
-        list(APPEND test_args "~*MocoTropterSolver*")
-        list(APPEND test_args "~[tropter]")
-    endif()
     if(APPLE)
         list(APPEND test_args "~[win]~[linux]~[win/linux]~[linux/win]")
     endif()
@@ -51,7 +47,9 @@ MocoAddTest(NAME testMocoImplicit)
 
 MocoAddTest(NAME testMocoConstraints)
 
-MocoAddTest(NAME testMocoContact)
+MocoAddTest(NAME testMocoContact RESOURCES
+        subject_20dof18musc_running.osim
+        running_solution_full_stride.sto)
 
 MocoAddTest(NAME testMocoControllers)
 

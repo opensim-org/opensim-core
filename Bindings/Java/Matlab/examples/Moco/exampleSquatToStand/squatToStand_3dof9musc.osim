@@ -1146,7 +1146,7 @@
 					<!--The location (Vec3) of the mass center in the body frame.-->
 					<mass_center>0.034599999999999999 0.0060000000000000001 -0.017500000000000002</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>0.0001 0.00020000000000000001 0.001 0 0 0</inertia>
+					<inertia>0.0001 0.00110000000000000001 0.001 0 0 0</inertia>
 				</Body>
 				<Body name="torso">
 					<!--The geometry used to display the axes of this Frame.-->

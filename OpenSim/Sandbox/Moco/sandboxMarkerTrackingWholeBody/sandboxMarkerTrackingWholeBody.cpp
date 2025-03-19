@@ -221,7 +221,7 @@ MocoSolution solveMarkerTrackingProblem(
 
     // Model(dynamics).
     // -----------------
-    auto model = make_unique<Model>("subject01.osim");
+    auto model = std::make_unique<Model>("subject01.osim");
     addCoordinateActuator(model, "lumbar_extension", 500);
     addCoordinateActuator(model, "pelvis_tilt", 500);
     addCoordinateActuator(model, "pelvis_tx", 1000);
@@ -264,7 +264,7 @@ MocoSolution solveMarkerTrackingProblem(
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = study.initTropterSolver();
+    MocoCasADiSolver& ms = study.initCasADiSolver();
     ms.set_num_mesh_intervals(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("snopt");

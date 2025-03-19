@@ -46,7 +46,7 @@ install(FILES OpenSimMacros.cmake
 
 install(EXPORT OpenSimTargets DESTINATION "${OPENSIM_INSTALL_CMAKEDIR}")
 
-if(APPLE AND OPENSIM_COPY_DEPENDENCIES AND (NOT (DEFINED OPENSIM_WITH_CASADI AND NOT ${OPENSIM_WITH_CASADI})))
+if(UNIX AND OPENSIM_COPY_DEPENDENCIES AND (NOT (DEFINED OPENSIM_WITH_CASADI AND NOT ${OPENSIM_WITH_CASADI})))
     # Temporary hack to package dependencies on Macs.
     # TODO if we're building a standalone binary distribution, we should
     # use superbuild to build the dependencies.
@@ -55,17 +55,25 @@ if(APPLE AND OPENSIM_COPY_DEPENDENCIES AND (NOT (DEFINED OPENSIM_WITH_CASADI AND
     # TODO         DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
     # This command must be invoked from the cmake subdirectory so that the
-    # editing of libtropter's link libraries is done after libtropter.dylib
+    # editing of libcasadi's link libraries is done after libcasadi.dylib
     # is installed (add_subdirectory(cmake) must be after
     # add_subdirectory(Moco)).
     if (OPENSIM_WITH_CASADI)
         get_target_property(CASADI_LIBRARY_LOCATION casadi LOCATION)
         get_filename_component(CASADI_LIBDIR "${CASADI_LIBRARY_LOCATION}" DIRECTORY)
     endif()
-    set(script
-        ${CMAKE_CURRENT_BINARY_DIR}/OpenSimMocoInstallMacDependencyLibraries.cmake)
-    configure_file(OpenSimMocoInstallMacDependencyLibraries.cmake.in
-            "${script}" @ONLY)
+
+    if(APPLE) 
+        set(script
+            ${CMAKE_CURRENT_BINARY_DIR}/OpenSimMocoInstallMacDependencyLibraries.cmake)
+        configure_file(OpenSimMocoInstallMacDependencyLibraries.cmake.in
+                "${script}" @ONLY)
+    else()
+        set(script
+            ${CMAKE_CURRENT_BINARY_DIR}/OpenSimMocoInstallLinuxDependencyLibraries.cmake)
+        configure_file(OpenSimMocoInstallLinuxDependencyLibraries.cmake.in
+                "${script}" @ONLY)
+    endif()
     # Variables are not forwarded to the install script, so add a line
     # to set the OPENSIM_WITH_CASADI variable during the install step.
     install(CODE "set(OPENSIM_WITH_CASADI \"${OPENSIM_WITH_CASADI}\")")
