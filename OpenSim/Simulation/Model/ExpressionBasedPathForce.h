@@ -96,18 +96,12 @@ public:
     /** Convenience constructor.
      * @param name          name of this %ExpressionBasedPathForce Object
      * @param restLength    the force's resting length
-     * @param expression    the expression used to compute path tension */
-    ExpressionBasedPathForce(const std::string& name, 
-            double restLength, const std::string& expression);
-
-    /** Convenience constructor.
-     * @param name          name of this %ExpressionBasedPathForce Object
-     * @param restLength    the force's resting length
      * @param expression    the expression used to compute force tension 
      * @param clampStretch  if true, the force will not apply tension when the
      *                      path is shorter than its resting length */
     ExpressionBasedPathForce(const std::string& name, 
-            double restLength, const std::string& expression, bool clampStretch);
+            double restLength, const std::string& expression, 
+            bool clampStretch = true);
 
     /** 
      * The resting length of the path force. The default value is 0. 
