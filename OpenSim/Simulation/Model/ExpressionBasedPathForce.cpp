@@ -36,14 +36,6 @@ ExpressionBasedPathForce::ExpressionBasedPathForce() {
 }
 
 ExpressionBasedPathForce::ExpressionBasedPathForce(const std::string& name, 
-        double restLength, const std::string& expression) {
-    constructProperties();
-    setName(name);
-    set_resting_length(restLength);
-    set_expression(expression);
-}
-
-ExpressionBasedPathForce::ExpressionBasedPathForce(const std::string& name, 
         double restLength, const std::string& expression, bool clampStretch) {
     constructProperties();
     setName(name);
