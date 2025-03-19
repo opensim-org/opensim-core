@@ -72,7 +72,7 @@ void ExpressionBasedPathForce::extendFinalizeFromProperties() {
     OPENSIM_THROW_IF_FRMOBJ(
         (SimTK::isNaN(get_resting_length()) || get_resting_length() < 0),
         Exception,
-        "Expected the 'resting_length' property to be less than zero, but "
+        "Expected the 'resting_length' property to be greater than zero, but "
         "received {}.", get_resting_length());
 
     // Remove whitespace from the expression.
