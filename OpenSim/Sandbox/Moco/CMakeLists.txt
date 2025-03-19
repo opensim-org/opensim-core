@@ -18,15 +18,7 @@ endfunction()
 
 MocoAddSandboxExecutable(NAME sandboxSandbox LIB_DEPENDS osimMoco)
 
-MocoAddSandboxExecutable(NAME sandboxTendonForceState
-        LIB_DEPENDS osimMoco)
-MocoAddSandboxExecutable(NAME sandboxImplicitActivationDynamics
-        LIB_DEPENDS osimMoco)
-
-
 # MocoStudy-related.
-MocoAddSandboxExecutable(NAME sandboxSlidingMass
-        LIB_DEPENDS osimMoco)
 MocoAddSandboxExecutable(NAME sandboxContact
         LIB_DEPENDS osimMoco osimAnalyses)
 MocoAddSandboxExecutable(NAME sandboxMuscle
@@ -44,7 +36,6 @@ add_subdirectory(sandboxWholeBodyTracking)
 add_subdirectory(sandboxMarkerTrackingWholeBody)
 add_subdirectory(sandboxJointReaction)
 add_subdirectory(sandboxOneLegCouplerKnee)
-add_subdirectory(sandboxMarkerTrackingContactWholeBody)
 add_subdirectory(sandboxSquatToStand)
 add_subdirectory(sandboxMocoTrack)
 add_subdirectory(sandboxMocoUserControlCost)
