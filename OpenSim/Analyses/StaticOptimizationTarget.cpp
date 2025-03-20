@@ -621,9 +621,6 @@ computeConstraintVector(SimTK::State& s, const Vector &parameters,Vector &constr
         }
 
 		// No longer use a function to calcDerivative, but instead use the _statesDerivativeSplineSet from SO FAST 
-		//Function& targetFunc = _statesSplineSet.get(ind);
-		//std::vector<int> derivComponents(1, 0); //take first derivative
-		//double targetAcceleration = targetFunc.calcDerivative(derivComponents, SimTK::Vector(1, s.getTime()));
 		double t = s.getTime();
 		int nq = _model->getNumCoordinates();
 		int nu = _model->getNumSpeeds();
