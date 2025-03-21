@@ -57,8 +57,9 @@ namespace {
         return processor;
     }
 
-    TableProcessor createCoordinatesTable(bool correctLabel, bool addMetaData) {
-        SimTK::Vector column = SimTK::Test::randVector(100);
+    TableProcessor createCoordinatesTable(bool correctLabel, bool addMetaData,
+            int numRows = 100) {
+        SimTK::Vector column = SimTK::Test::randVector(numRows);
         std::vector<double> times;
         times.reserve(column.size());
         for (int i = 0; i < column.size(); ++i) {
@@ -129,4 +130,18 @@ TEST_CASE("Invalid configurations") {
         REQUIRE_THROWS_WITH(fitter.run(), ContainsSubstring(
             "Expected 'maximum_polynomial_order' to be at most 9"));
     }
+}
+
+TEST_CASE("Number of rows less than the number of threads") {    
+    int numAvailableThreads = std::thread::hardware_concurrency();
+    int numRows = (numAvailableThreads == 1) ? 1 : numAvailableThreads - 1;
+    CAPTURE(numAvailableThreads);
+    CAPTURE(numRows);
+   
+    PolynomialPathFitter fitter;  
+    fitter.setModel(createHangingMuscleModel());
+    fitter.setCoordinateValues(createCoordinatesTable(true, true, numRows));
+    fitter.setNumParallelThreads(numAvailableThreads);
+    REQUIRE_THROWS_WITH(fitter.run(), ContainsSubstring(
+        "Expected the number of time points in the coordinate values table"));
 }
