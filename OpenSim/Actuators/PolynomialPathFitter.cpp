@@ -170,6 +170,12 @@ void PolynomialPathFitter::run() {
             "Expected 'num_parallel_threads' to be between 1 and {}, but "
             "received {}.", std::thread::hardware_concurrency(),
             get_num_parallel_threads())
+    OPENSIM_THROW_IF_FRMOBJ(
+            static_cast<int>(values.getNumRows()) < get_num_parallel_threads(), 
+            Exception, "Expected the number of time points in the coordinate "
+            "values table to be greater than 'num_parallel_threads', but "
+            "received {} and {}, respectively.", 
+            values.getNumRows(), get_num_parallel_threads())
     log_info("Number of parallel threads = {}", get_num_parallel_threads());
 
     // Number of samples per frame.
@@ -662,7 +668,8 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
     int timeIdx = 0;
     const auto& times = values.getIndependentColumn();
     TimeSeriesTable valuesSampled;
-    double dt = (times[1] - times[0]) / (get_num_samples_per_frame() + 2);
+    double dt = (times.size() < 2) ? 0.01 : 
+            (times[1] - times[0]) / (get_num_samples_per_frame() + 2);
     for (int i = 0; i < get_num_parallel_threads(); ++i) {
         int numTimeIndexes = outputs[i].nrow() / get_num_samples_per_frame();
         for (int j = 0; j < numTimeIndexes; ++j) {
