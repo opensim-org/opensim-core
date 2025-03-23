@@ -36,7 +36,8 @@
 //     10. ExpressionBasedCoordinateForce
 //     11. ExpressionBasedPointToPointForce
 //     12. ExpressionBasedBushingForce
-//     13. Blankevoort1991Ligament
+//     13. ExpressionBasedPathForce
+//     14. Blankevoort1991Ligament
 //
 //     Add tests here as Forces are added to OpenSim
 //
@@ -418,6 +419,104 @@ TEST_CASE("testPathSpring") {
     PathSpring* copyOfSpring = spring.clone();
     ASSERT(*copyOfSpring == spring);
 
+    osimModel.disownAllComponents();
+}
+
+TEST_CASE("testExpressionBasedPathForce") {
+    using namespace SimTK;
+
+    // Test parameters.
+    double mass = 1;
+    double restlength = 0.5;
+    string expression = "2/(s^2)-3.0*(s-0.2)*(1+0.0123456789*ldot)";
+    double start_h = 0.5;
+
+    // Set up the OpenSim model.
+    Model osimModel;
+    osimModel.setName("testExpressionBasedPathForce");
+    osimModel.setGravity(gravity_vec);
+
+    // Add bodies.
+    const Ground& ground = osimModel.getGround();
+    OpenSim::Body pulleyBody("PulleyBody", mass, Vec3(0),
+            mass * SimTK::Inertia::brick(0.1, 0.1, 0.1));
+    OpenSim::Body block("block", mass, Vec3(0),
+            mass * SimTK::Inertia::brick(0.2, 0.1, 0.1));
+    block.attachGeometry(new Brick(Vec3(0.2, 0.1, 0.1)));
+    block.scale(Vec3(0.2, 0.1, 0.1), false);
+
+    // Add a wrap cylinder to the pulley body.
+    WrapCylinder* pulley = new WrapCylinder();
+    pulley->set_radius(0.1);
+    pulley->set_length(0.05);
+    pulleyBody.addWrapObject(pulley);
+
+    // Add joints.
+    WeldJoint weld("pulley", ground, Vec3(0, 1.0, 0), Vec3(0), pulleyBody,
+            Vec3(0), Vec3(0));
+    SliderJoint slider("slider", ground, Vec3(0), Vec3(0, 0, Pi / 2), block,
+            Vec3(0), Vec3(0, 0, Pi / 2));
+
+    // Rename the slider joint coordinate.
+    auto& sliderCoord = slider.updCoordinate();
+    sliderCoord.setName("block_h");
+    double positionRange[2] = {-10, 10};
+    sliderCoord.setRange(positionRange);
+
+    // Add bodies and joints to the model.
+    osimModel.addBody(&block);
+    osimModel.addJoint(&weld);
+    osimModel.addBody(&pulleyBody);
+    osimModel.addJoint(&slider);
+
+    // Add the ExpressionBasedPathForce to the model.
+    ExpressionBasedPathForce force("spring", restlength, expression);
+    force.updGeometryPath().appendNewPathPoint(
+            "origin", block, Vec3(-0.1, 0.0, 0.0));
+
+    // Create a circular path for the pulley.
+    int N = 10;
+    for (int i = 1; i < N; ++i) {
+        double angle = i * Pi / N;
+        double x = 0.1 * cos(angle);
+        double y = 0.1 * sin(angle);
+        force.updGeometryPath().appendNewPathPoint(
+                "", pulleyBody, Vec3(-x, y, 0.0));
+    }
+    force.updGeometryPath().appendNewPathPoint(
+            "insertion", block, Vec3(0.1, 0.0, 0.0));
+
+    // Add the force to the model.
+    osimModel.addForce(&force);
+
+    // Finalize the system.
+    SimTK::State& osim_state = osimModel.initSystem();
+
+    // Set the initial height of the block on the slider.
+    sliderCoord.setValue(osim_state, start_h);
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Position);
+
+    // Run a forward simulation.
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1e-6);
+    osim_state.setTime(0.0);
+    manager.initialize(osim_state);
+    osim_state = manager.integrate(1.0);
+
+    // Check that the force reported by the ExpressionBasedPathForce at the 
+    // final state is correct. The force is velocity-dependent, but it is only
+    // computed after the system is realized to Stage::Dynamics.
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Dynamics);
+    double model_force = force.getTension(osim_state);
+    double stretch = force.getStretch(osim_state);
+    double ldot = force.getLengtheningSpeed(osim_state);
+    double analytical_force = 2.0 / (stretch * stretch) - 
+                              3.0 * (stretch - 0.2) * (1 + 0.0123456789 * ldot);
+    CHECK_THAT(analytical_force, Catch::Matchers::WithinAbs(model_force, 1e-6));
+
+    // Check that copying the force works.
+    ExpressionBasedPathForce* copyOfForce = force.clone();
+    CHECK(*copyOfForce == force);
     osimModel.disownAllComponents();
 }
 

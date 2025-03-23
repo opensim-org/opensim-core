@@ -29,7 +29,7 @@ v4.6
 - Fixed an issue where a copy of an `OpenSim::Model` containing a `OpenSim::ExternalLoads` could not be
   finalized (#3926)
 - Updated all code examples to use C++17 (after a few months of compiling as C++14 : #3929).
-- Added class `OpenSim::StateDocument` as a systematic means of serializing and deserializing a complete trajectory
+- Added class `OpenSim::StatesDocument` as a systematic means of serializing and deserializing a complete trajectory
   (i.e., time history) of all states in the `SimTK::State` to and from a single `.ostates` file. Prior to `StatesDocument`,
   only the trajectories of continuous states (e.g., joint angles, joint speeds, muscle forces, and the like) could be systematically
   written to file, either in the form of a `Storage` file or as a `TimeSeriesTable` file, leaving discrete states (e.g., muscle
@@ -81,6 +81,13 @@ v4.6
   Tropter-related dependencies have been removed: `adolc`, `colpack`, and `eigen`. (#3988)
 - `OpenSim::Mesh` now retains a reference-counted copy of the mesh data when it's copied, which should make
   copying + re-finalizing `OpenSim::Model`s faster (#4010).
+- Updated `TableUtilities::filterLowpass` to apply padding after resampling, so that the 
+  initial time point of an input table is preserved. (#4020)
+- Support using swig version 4.2 to generate Java & Python bindings. (#4028)
+- Added `ExpressionBasedPathForce`, which can be used to create non-linear path springs or 
+  other path-based force elements dependent on a user-provided expression. (#4035)
+- Fixed a bug where `DeGrooteFregly2016Muscle::getBoundsNormalizedFiberLength()` was returning
+  tendon force bounds rather than fiber length bounds. (#4040)
 
 
 v4.5.1
