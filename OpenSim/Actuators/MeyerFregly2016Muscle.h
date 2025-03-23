@@ -31,12 +31,15 @@
 
 namespace OpenSim {
 
-// TODO prohibit fiber length from going below 0.2.
+/** This muscle model was published in Meyer et al. 2016. The implementation is 
+based heavily on the previously implemented DeGrooteFregly2016Muscle.
 
-/** This muscle model was published in Meyer et al. 2016. 
-
-This muscle implementation is based on the previously implemented 
-DeGrooteFregly2016Muscle.
+This is a rigid-tendon muscle model. Therefore, the ignore_tendon_compliance
+property is ignored, and a warnign is issued if it is set to false. In the 
+Muscle class setIngoreActivationDynamics() controls a modeling option, meaning 
+this settings could theoretically be changed. However, for this class, the
+modeling option is ignored and the value of the ignore_activation_dynamics 
+property is used directly.
 
 This implementation introduces the property 'active_force_width_scale' as 
 an addition to the original model, which allows users to effectively make 
@@ -87,12 +90,6 @@ The documentation for Muscle::MuscleLengthInfo states that the
 optimalFiberLength of a muscle is also its resting length, but this is not
 true for this muscle: there is a non-zero passive fiber force at the
 optimal fiber length.
-
-In the Muscle class, setIgnoreTendonCompliance() and
-setIngoreActivationDynamics() control modeling options, meaning these
-settings could theoretically be changed. However, for this class, the
-modeling option is ignored and the values of the ignore_tendon_compliance
-and ignore_activation_dynamics properties are used directly.
 
 Meyer A. J., Eskinazi, I., Jackson, J. N., Rao, A. V., Patten, C., & Fregly,
 B. J. (2016). Muscle Synergies Facilitate Computational Prediction of
@@ -698,13 +695,6 @@ private:
 
     static const std::string STATE_ACTIVATION_NAME;
 
-    // Computed from properties.
-    // -------------------------
-
-    // The square of (fiber_width / optimal_fiber_length).
-    // SimTK::Real m_fiberWidth = SimTK::NaN;
-    // SimTK::Real m_squareFiberWidth = SimTK::NaN;
-    // SimTK::Real m_maxContractionVelocityInMetersPerSecond = SimTK::NaN;
 
     // Indices for MuscleDynamicsInfo::userDefinedDynamicsExtras.
     constexpr static int m_mdi_passiveFiberElasticForce = 0;
