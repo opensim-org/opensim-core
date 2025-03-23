@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2025 Stanford University and the Authors                *
- * Author(s): Spencer Williams, Christopher Dembia, Nicholas Bianco           *
+ * Author(s): Nicholas Bianco, Spencer Williams                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -491,8 +491,6 @@ void MeyerFregly2016Muscle::printCurvesToSTOFiles(
             prefix + "_fiber_length_curves.sto");
     STOFileAdapter::write(exportFiberVelocityMultiplierToTable(),
             prefix + "_fiber_velocity_multiplier.sto");
-    STOFileAdapter::write(exportTendonForceMultiplierToTable(),
-            prefix + "_tendon_force_multiplier.sto");
 }
 
 void MeyerFregly2016Muscle::replaceMuscles(
