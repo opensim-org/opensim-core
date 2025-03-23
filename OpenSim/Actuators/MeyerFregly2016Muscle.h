@@ -57,6 +57,30 @@ optimization, fiber damping is recommended as it can improve convergence.
    damping will be set to zero since there is no damping in that muscle
    model.
 
+@section property Property Bounds
+The acceptable bounds for each property are enforced at model initialization.
+These bounds are:
+ - activation_time_constant: (0, inf]
+ - deactivation_time_constant: (0, inf]
+ - activation_dynamics_smoothing: (0, inf]
+ - active_force_width_scale: [1, inf]
+ - fiber_damping: [0, inf]
+ - passive_fiber_strain_at_one_norm_force: (0, inf]
+ - pennation_angle_at_optimal: [0, Pi/2)
+ - default_activation: (0, inf]
+
+@note The default value for activation_dynamics_smoothing is set to 0.1 to 
+      match the originally published model, but a value of 10 is recommended 
+      to achieve activation and deactivation speeds closer to the intended 
+      time constants.
+
+@note Muscle properties can be optimized using MocoParameter. The acceptable
+bounds for each property are **not** enforced during parameter optimization, so
+the user must supply these bounds to MocoParameter.
+
+@note The properties `default_activation` and `default_normalized_tendon_force`
+cannot be optimized because they are applied during model initialization only.
+
 @section departures Departures from the Muscle base class
 
 The documentation for Muscle::MuscleLengthInfo states that the
@@ -100,6 +124,14 @@ public:
     OpenSim_DECLARE_PROPERTY(passive_fiber_strain_at_one_norm_force, double,
             "Fiber strain when the passive fiber force is 1 normalized force. "
             "Default: 0.6.");
+    OpenSim_DECLARE_PROPERTY(activation_dynamics_smoothing, double,
+            "The parameter that determines the smoothness of the transition "
+            "of the tanh function used to smooth the switch between muscle "
+            "activation (a-e < 0) and deactivation (a-e > 0). The default "
+            "value is 0.1 to match the originally published model, but a value "
+            "of 10 is recommended to to achieve activation and deactivation "
+            "speeds closer to the intended time constants. Larger values "
+            "steepen the transition, but may slow optimization convergence.");
 
     OpenSim_DECLARE_OUTPUT(passive_fiber_elastic_force, double,
             getPassiveFiberElasticForce, SimTK::Stage::Dynamics);
@@ -390,8 +422,10 @@ public:
         // pennationAngle = asin(fiberWidth/fiberLength)
         // d_pennationAngle/d_fiberLength =
         //          d/d_fiberLength (asin(fiberWidth/fiberLength))
-        return (-m_fiberWidth / square(fiberLength)) /
-               sqrt(1.0 - square(m_fiberWidth / fiberLength));
+        const auto normFiberWidth = sin(get_pennation_angle_at_optimal());
+        const auto fiberWidth = get_optimal_fiber_length() * normFiberWidth;
+        return (-fiberWidth / square(fiberLength)) /
+               sqrt(1.0 - square(fiberWidth / fiberLength));
     }
 
     /// The derivative of the fiber force along the tendon with respect to fiber
@@ -668,9 +702,9 @@ private:
     // -------------------------
 
     // The square of (fiber_width / optimal_fiber_length).
-    SimTK::Real m_fiberWidth = SimTK::NaN;
-    SimTK::Real m_squareFiberWidth = SimTK::NaN;
-    SimTK::Real m_maxContractionVelocityInMetersPerSecond = SimTK::NaN;
+    // SimTK::Real m_fiberWidth = SimTK::NaN;
+    // SimTK::Real m_squareFiberWidth = SimTK::NaN;
+    // SimTK::Real m_maxContractionVelocityInMetersPerSecond = SimTK::NaN;
 
     // Indices for MuscleDynamicsInfo::userDefinedDynamicsExtras.
     constexpr static int m_mdi_passiveFiberElasticForce = 0;

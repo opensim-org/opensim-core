@@ -66,10 +66,18 @@ void MeyerFregly2016Muscle::constructProperties() {
     constructProperty_fiber_damping(0.0);
     constructProperty_passive_fiber_strain_at_one_norm_force(0.6);
     constructProperty_ignore_passive_fiber_force(false);
+    constructProperty_activation_dynamics_smoothing(0.1);
 }
 
 void MeyerFregly2016Muscle::extendFinalizeFromProperties() {
     Super::extendFinalizeFromProperties();
+    if (!get_ignore_tendon_compliance()) {
+        log_warn("The ignore_tendon_compliance property is ignored for this "
+                "Muscle, but it is currently set to 'false'. "
+                "Setting to 'true'.");
+        set_ignore_tendon_compliance(true);
+    }
+
     OPENSIM_THROW_IF_FRMOBJ(!get_ignore_tendon_compliance(),
             Exception,
             "The ignore_tendon_compliance property must be 'true' for this "
@@ -117,6 +125,22 @@ void MeyerFregly2016Muscle::extendFinalizeFromProperties() {
             "than zero, but it is %g.",
             getName().c_str(), get_passive_fiber_strain_at_one_norm_force());
 
+    SimTK_ERRCHK2_ALWAYS(get_activation_dynamics_smoothing() > 0,
+            "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
+            "%s: activation_dynamics_smoothing must be greater than zero, "
+            "but it is %g.",
+            getName().c_str(), get_activation_dynamics_smoothing());
+
+    if (get_activation_dynamics_smoothing() <= 0.1) {
+        log_debug("The activation_dynamics_smoothing property is set to {}, "
+                "which is equal or less than the original default value of "
+                "the model, but may produce activation and deactivation times "
+                "that are inconsistent with the activation dynamics time "
+                "constants. A value of 10 is recommended to achieve activation "
+                "and deactivation speeds closer to the intended time constants. ",
+                get_activation_dynamics_smoothing());
+    }
+
     OPENSIM_THROW_IF_FRMOBJ(
             get_pennation_angle_at_optimal() < 0 ||
                     get_pennation_angle_at_optimal() >
@@ -125,13 +149,6 @@ void MeyerFregly2016Muscle::extendFinalizeFromProperties() {
             getProperty_pennation_angle_at_optimal().getName(),
             "Pennation angle at optimal fiber length must be in the range [0, "
             "Pi/2).");
-
-    using SimTK::square;
-    const auto normFiberWidth = sin(get_pennation_angle_at_optimal());
-    m_fiberWidth = get_optimal_fiber_length() * normFiberWidth;
-    m_squareFiberWidth = square(m_fiberWidth);
-    m_maxContractionVelocityInMetersPerSecond =
-            get_max_contraction_velocity() * get_optimal_fiber_length();
 }
 
 void MeyerFregly2016Muscle::extendAddToSystem(
@@ -168,7 +185,7 @@ void MeyerFregly2016Muscle::computeStateVariableDerivatives(
         const auto& excitation = getControl(s);
         static const double actTimeConst = get_activation_time_constant();
         static const double deactTimeConst = get_deactivation_time_constant();
-        static const double tanhSteepness = 0.1;
+        static const double tanhSteepness = get_activation_dynamics_smoothing();
         //     f = 0.5 tanh(b(e - a))
         //     z = 0.5 + 1.5a
         // da/dt = [(f + 0.5)/(tau_a * z) + (-f + 0.5)*z/tau_d] * (e - a)
@@ -201,15 +218,19 @@ void MeyerFregly2016Muscle::calcMuscleLengthInfoHelper(
 
     // Fiber.
     // ------
+    using SimTK::square;
+    const auto normFiberWidth = sin(get_pennation_angle_at_optimal());
+    const auto fiberWidth = get_optimal_fiber_length() * normFiberWidth;
+    const auto squareFiberWidth = square(fiberWidth);
     mli.fiberLengthAlongTendon = muscleTendonLength - mli.tendonLength;
     mli.fiberLength = sqrt(
-            SimTK::square(mli.fiberLengthAlongTendon) + m_squareFiberWidth);
+            SimTK::square(mli.fiberLengthAlongTendon) + squareFiberWidth);
     mli.normFiberLength = mli.fiberLength / get_optimal_fiber_length();
 
     // Pennation.
     // ----------
     mli.cosPennationAngle = mli.fiberLengthAlongTendon / mli.fiberLength;
-    mli.sinPennationAngle = m_fiberWidth / mli.fiberLength;
+    mli.sinPennationAngle = fiberWidth / mli.fiberLength;
     mli.pennationAngle = asin(mli.sinPennationAngle);
 
     // Multipliers.
@@ -229,12 +250,16 @@ void MeyerFregly2016Muscle::calcFiberVelocityInfoHelper(
     fvi.fiberVelocityAlongTendon = muscleTendonVelocity;
     fvi.fiberVelocity =
             fvi.fiberVelocityAlongTendon * mli.cosPennationAngle;
+    const auto maxContractionVelocityInMetersPerSecond =
+            get_max_contraction_velocity() * get_optimal_fiber_length();
     fvi.normFiberVelocity =
-            fvi.fiberVelocity / m_maxContractionVelocityInMetersPerSecond;
+            fvi.fiberVelocity / maxContractionVelocityInMetersPerSecond;
     fvi.fiberForceVelocityMultiplier =
             calcForceVelocityMultiplier(fvi.normFiberVelocity);
+    const auto normFiberWidth = sin(get_pennation_angle_at_optimal());
+    const auto fiberWidth = get_optimal_fiber_length() * normFiberWidth;
     const SimTK::Real tanPennationAngle =
-            m_fiberWidth / mli.fiberLengthAlongTendon;
+            fiberWidth / mli.fiberLengthAlongTendon;
     fvi.pennationAngularVelocity =
             -fvi.fiberVelocity / mli.fiberLength * tanPennationAngle;
 }
