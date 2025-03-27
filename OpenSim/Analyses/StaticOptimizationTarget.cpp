@@ -157,11 +157,6 @@ void StaticOptimizationTarget::setStatesSplineSet(
     _statesSplineSet = aStatesSplineSet;
 }
 
-void StaticOptimizationTarget::setStatesDerivativeSplineSet(
-        GCVSplineSet aStatesDerivativeSplineSet) {
-    _statesDerivativeSplineSet = aStatesDerivativeSplineSet;
-}
-
 //------------------------------------------------------------------------------
 // CONTROLS
 //------------------------------------------------------------------------------
@@ -496,8 +491,6 @@ void StaticOptimizationTarget::computeConstraintVector(
             }
         }
 
-        // No longer use a function to calcDerivative, but instead use the
-        // _statesDerivativeSplineSet from SO FAST
         double t = s.getTime();
         int nq = _model->getNumCoordinates();
         int nu = _model->getNumSpeeds();

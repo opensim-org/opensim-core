@@ -304,7 +304,6 @@ int StaticOptimization::record(const SimTK::State& s) {
     target.setStatesStore(_statesStore);
     target.setStatesSplineSet(_statesSplineSet);
     target.setStatesDerivativeStore(_statesDerivativeStore);
-    target.setStatesDerivativeSplineSet(_statesDerivativeSplineSet);
     target.setActivationExponent(_activationExponent);
     target.setDX(_numericalDerivativeStepSize);
 
@@ -581,7 +580,6 @@ int StaticOptimization::begin(const SimTK::State& s) {
 
     // Calculate and store state derivatives
     _statesDerivativeStore = _statesSplineSet.constructStorage(1);
-    _statesDerivativeSplineSet = GCVSplineSet(5, _statesDerivativeStore);
 
     // DESCRIPTION AND LABELS
     constructDescription();

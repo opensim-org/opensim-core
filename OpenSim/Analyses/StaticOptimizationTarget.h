@@ -72,7 +72,6 @@ private:
     const Storage* _statesStore;
     GCVSplineSet _statesSplineSet;
     const Storage* _statesDerivativeStore;
-    GCVSplineSet _statesDerivativeSplineSet;
 
 protected:
     double _activationExponent;
@@ -127,13 +126,6 @@ public:
      * @param aStatesSplineSet States spline set.
      */
     void setStatesSplineSet(GCVSplineSet aStatesSplineSet);
-
-    /**
-     * Set the states derivative spline set.
-     *
-     * @param aStatesDerivativeSplineSet States derivative spline set.
-     */
-    void setStatesDerivativeSplineSet(GCVSplineSet aStatesDerivativeSplineSet);
 
     /**
      * Set the number of parameters.
