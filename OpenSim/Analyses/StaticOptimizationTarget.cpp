@@ -135,29 +135,15 @@ bool StaticOptimizationTarget::prepareToOptimize(SimTK::State& s, double* x) {
 // MODEL
 //------------------------------------------------------------------------------
 ///______________________________________________________________________________
-/**
- * Set the model.
- *
- * @param aModel Model.
- */
 void StaticOptimizationTarget::setModel(Model& aModel) { _model = &aModel; }
 //------------------------------------------------------------------------------
 // STATES STORAGE
 //------------------------------------------------------------------------------
 ///______________________________________________________________________________
-/**
- * Set the states storage.
- *
- * @param aStatesStore States storage.
- */
 void StaticOptimizationTarget::setStatesStore(const Storage* aStatesStore) {
     _statesStore = aStatesStore;
 }
-/**
- * Set the states derivative storage.
- *
- * @param aStatesDerivativeStore States derivative storage.
- */
+
 void StaticOptimizationTarget::setStatesDerivativeStore(
         const Storage* aStatesDerivativeStore) {
     _statesDerivativeStore = aStatesDerivativeStore;
@@ -166,21 +152,11 @@ void StaticOptimizationTarget::setStatesDerivativeStore(
 // STATES SPLINE SET
 //------------------------------------------------------------------------------
 ///______________________________________________________________________________
-/**
- * Set the states spline set.
- *
- * @param aStatesSplineSet States spline set.
- */
 void StaticOptimizationTarget::setStatesSplineSet(
         GCVSplineSet aStatesSplineSet) {
     _statesSplineSet = aStatesSplineSet;
 }
 
-/**
- * Set the states derivative spline set.
- *
- * @param aStatesDerivativeSplineSet States derivative spline set.
- */
 void StaticOptimizationTarget::setStatesDerivativeSplineSet(
         GCVSplineSet aStatesDerivativeSplineSet) {
     _statesDerivativeSplineSet = aStatesDerivativeSplineSet;
@@ -190,16 +166,6 @@ void StaticOptimizationTarget::setStatesDerivativeSplineSet(
 // CONTROLS
 //------------------------------------------------------------------------------
 ///______________________________________________________________________________
-/**
- * Set the number of parameters.
- *
- * The number of parameters can be set at any time.  However, the perturbation
- * sizes for the parameters (i.e., _dx) is destroyed.  Therefore, the
- * perturbation sizes must be reset.
- *
- * @param aNP Number of parameters.
- * @see setDX()
- */
 void StaticOptimizationTarget::setNumParams(const int aNP) {
     setNumParameters(aNP);
     _dx.setSize(getNumParameters());
@@ -209,11 +175,6 @@ void StaticOptimizationTarget::setNumParams(const int aNP) {
 // CONSTRAINTS
 //------------------------------------------------------------------------------
 ///______________________________________________________________________________
-/**
- * Set the number of constraints.
- *
- * @param aNC Number of constraints.
- */
 void StaticOptimizationTarget::setNumConstraints(const int aNC) {
     // There are only linear equality constraints.
     setNumEqualityConstraints(aNC);
@@ -224,9 +185,7 @@ void StaticOptimizationTarget::setNumConstraints(const int aNC) {
 // DERIVATIVE PERTURBATION SIZES
 //------------------------------------------------------------------------------
 //______________________________________________________________________________
-/**
- * Set the derivative perturbation size.
- */
+
 void StaticOptimizationTarget::setDX(int aIndex, double aValue) {
     // VALIDATE VALUE
     validatePerturbationSize(aValue);
@@ -235,9 +194,7 @@ void StaticOptimizationTarget::setDX(int aIndex, double aValue) {
     _dx.updElt(aIndex) = aValue;
 }
 //______________________________________________________________________________
-/**
- * Set the derivative perturbation size for all controls.
- */
+
 void StaticOptimizationTarget::setDX(double aValue) {
     // VALIDATE VALUE
     validatePerturbationSize(aValue);
@@ -246,20 +203,14 @@ void StaticOptimizationTarget::setDX(double aValue) {
     for (int i = 0; i < getNumParameters(); i++) _dx.updElt(i) = aValue;
 }
 //______________________________________________________________________________
-/**
- * Get the derivative perturbation size.
- */
+
 double StaticOptimizationTarget::getDX(int aIndex) { return _dx.get(aIndex); }
 //______________________________________________________________________________
-/**
- * Get a pointer to the vector of derivative perturbation sizes.
- */
+
 double* StaticOptimizationTarget::getDXArray() { return &_dx[0]; }
 
 //______________________________________________________________________________
-/**
- * Get an optimal force.
- */
+
 void StaticOptimizationTarget::getActuation(SimTK::State& s,
         const SimTK::Vector& parameters, SimTK::Vector& forces) {
     // return(_optimalForce[aIndex]);
@@ -275,9 +226,7 @@ void StaticOptimizationTarget::getActuation(SimTK::State& s,
 // UTILITY
 //==============================================================================
 //______________________________________________________________________________
-/**
- * Ensure that a derivative perturbation is a valid size
- */
+
 void StaticOptimizationTarget::validatePerturbationSize(double& aSize) {
     if (aSize < SMALLDX) {
         log_warn("StaticOptimizationTarget.validatePerturbationSize: dx size "
@@ -322,17 +271,7 @@ void StaticOptimizationTarget::computeActuatorAreas(const SimTK::State& s) {
 // STATIC DERIVATIVES
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Compute derivatives of a constraint with respect to the
- * controls by central differences.
- *
- * @param dx An array of control perturbation values.
- * @param x Values of the controls at time t.
- * @param ic Index of the constraint.
- * @param dcdx The derivatives of the constraints.
- *
- * @return -1 if an error is encountered, 0 otherwise.
- */
+
 int StaticOptimizationTarget::CentralDifferencesConstraint(
         const StaticOptimizationTarget* aTarget, double* dx, const Vector& x,
         Matrix& jacobian) {
@@ -373,17 +312,7 @@ int StaticOptimizationTarget::CentralDifferencesConstraint(
     return (status);
 }
 //_____________________________________________________________________________
-/**
- * Compute derivatives of performance with respect to the
- * controls by central differences.  Note that the gradient array should
- * be allocated as dpdx[nx].
- *
- * @param dx An array of control perturbation values.
- * @param x Values of the controls at time t.
- * @param dpdx The derivatives of the performance criterion.
- *
- * @return -1 if an error is encountered, 0 otherwise.
- */
+
 int StaticOptimizationTarget::CentralDifferences(
         const StaticOptimizationTarget* aTarget, double* dx, const Vector& x,
         Vector& dpdx) {
@@ -431,13 +360,7 @@ int StaticOptimizationTarget::CentralDifferences(
 // PERFORMANCE
 //------------------------------------------------------------------------------
 //______________________________________________________________________________
-/**
- * Compute performance given parameters.
- *
- * @param parameters Vector of optimization parameters.
- * @param performance Value of the performance criterion.
- * @return Status (normal termination = 0, error < 0).
- */
+
 int StaticOptimizationTarget::objectiveFunc(const Vector& parameters,
         const bool new_parameters, Real& performance) const {
     // LARGE_INTEGER start;
@@ -468,13 +391,7 @@ int StaticOptimizationTarget::objectiveFunc(const Vector& parameters,
     return (0);
 }
 //______________________________________________________________________________
-/**
- * Compute the gradient of performance given parameters.
- *
- * @param parameters Vector of optimization parameters.
- * @param gradient Derivatives of performance with respect to the parameters.
- * @return Status (normal termination = 0, error < 0).
- */
+
 int StaticOptimizationTarget::gradientFunc(const Vector& parameters,
         const bool new_parameters, Vector& gradient) const {
     // LARGE_INTEGER start;
@@ -510,13 +427,7 @@ int StaticOptimizationTarget::gradientFunc(const Vector& parameters,
 // CONSTRAINT
 //------------------------------------------------------------------------------
 //______________________________________________________________________________
-/**
- * Compute acceleration constraints given parameters.
- *
- * @param parameters Vector of optimization parameters.
- * @param constraints Vector of optimization constraints.
- * @return Status (normal termination = 0, error < 0).
- */
+
 int StaticOptimizationTarget::constraintFunc(const SimTK::Vector& parameters,
         const bool new_parameters, SimTK::Vector& constraints) const {
     // LARGE_INTEGER start;
@@ -552,9 +463,7 @@ int StaticOptimizationTarget::constraintFunc(const SimTK::Vector& parameters,
 }
 
 //______________________________________________________________________________
-/**
- * Compute all constraints given parameters.
- */
+
 void StaticOptimizationTarget::computeConstraintVector(
         SimTK::State& s, const Vector& parameters, Vector& constraints) const {
     // LARGE_INTEGER start;
@@ -610,13 +519,7 @@ void StaticOptimizationTarget::computeConstraintVector(
     // 1.5 ms
 }
 //______________________________________________________________________________
-/**
- * Compute the gradient of constraint given parameters.
- *
- * @param parameters Vector of parameters.
- * @param jac Derivative of constraint with respect to the parameters.
- * @return Status (normal termination = 0, error < 0).
- */
+
 int StaticOptimizationTarget::constraintJacobian(
         const SimTK::Vector& parameters, const bool new_parameters,
         SimTK::Matrix& jac) const {
