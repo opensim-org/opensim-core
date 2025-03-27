@@ -39,8 +39,8 @@ namespace OpenSim {
 class Model;
 
 /**
- * This class implements static optimization to compute muscle forces and
- * activations without re-splining during the calculation of state derivatives.
+ * This class provides an interface specification for static optimization
+ * Objective Function.
  * @author Jeff Reinbolt
  */
 class OSIMANALYSES_API StaticOptimizationTarget
