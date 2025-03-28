@@ -5,7 +5,7 @@ set(EXAMPLE_2D_WALKING_FILES
         referenceGRF.xml)
 
 OpenSimAddExampleCXX(NAME example2DWalking SUBDIR Moco
-    EXECUTABLES example2DWalking example2DWalkingMetabolics
+    EXECUTABLES example2DWalking example2DWalkingMetabolics example2DWalking_Bushing
     RESOURCES "${EXAMPLE_2D_WALKING_FILES}")
 
 file(COPY ${EXAMPLE_2D_WALKING_FILES}
