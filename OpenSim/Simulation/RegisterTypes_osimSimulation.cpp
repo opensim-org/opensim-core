@@ -71,6 +71,7 @@
 #include "Model/BushingForce.h"
 #include "Model/FunctionBasedBushingForce.h"
 #include "Model/ExpressionBasedBushingForce.h"
+#include "Model/MocoBushingForce.h"
 #include "Model/ExternalLoads.h"
 #include "Model/PathActuator.h"
 #include "Model/ProbeSet.h"

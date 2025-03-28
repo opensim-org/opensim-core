@@ -67,6 +67,7 @@
 #include "Model/ExpressionBasedPathForce.h"
 #include "Model/BushingForce.h"
 #include "Model/FunctionBasedBushingForce.h"
+#include "Model/MocoBushingForce.h"
 #include "Model/ExpressionBasedBushingForce.h"
 #include "Model/CoordinateLimitForce.h"
 #include "Model/ExternalLoads.h"
