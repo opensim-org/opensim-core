@@ -50,9 +50,11 @@ fitter.setModel(ModelProcessor(model));
 %
 % The fitter will randomly sample around the coordinate values provided in the
 % table to generate model configurations for which to compute path lengths and
-% moment arms. This table has many more rows than are needed for the fitter to
-% generate a good fit, so we will remove some of the rows to speed up the
-% fitting process.
+% moment arms. In general, it is up to the user to decide how many sample points
+% are needed to adequately cover the range of motion of the model's coordinates. 
+% In this case, the table has many more rows than are needed for the fitter to
+% generate a good fit, so we will remove some of the rows to speed up the fitting 
+% process. 
 values = TimeSeriesTable('coordinates.sto');
 times = values.getIndependentColumn();
 for i = times.size():-1:1
@@ -60,6 +62,24 @@ for i = times.size():-1:1
         values.removeRowAtIndex(i);
     end
 end
+
+% Add columns for the toe joints. Use a sine function to generate the 
+% coordinate values.An amplitude of 0.5 keeps the values within the coordinate 
+% range of the MTP joints in the model.
+amplitude = 0.5;
+angular_frequency = 10.0; % rad/s
+phase = 0.0;
+sine = Sine(amplitude, angular_frequency, phase);
+mtp_values = Vector(values.getNumRows(), 0.0);
+time = Vector(1, 0.0);
+for i = 0:values.getNumRows()-1
+    time.set(0, times.get(i));
+    mtp_value = sine.calcValue(time);
+    mtp_values.set(i, mtp_value);
+end
+
+values.appendColumn('/jointset/mtp_r/mtp_angle_r/value', mtp_values);
+values.appendColumn('/jointset/mtp_l/mtp_angle_l/value', mtp_values);
 fitter.setCoordinateValues(TableProcessor(values));
 
 % Configure optional settings
