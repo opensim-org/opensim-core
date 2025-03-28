@@ -61,8 +61,8 @@ for i in range(len(times)):
     if i % 10 != 0:
         values.removeRow(times[i])
 
-# Add columns for the toe joints. Use a sine function to generate the 
-# coordinate values.An amplitude of 0.5 keeps the values within the coordinate 
+# Add columns for the toe joints. Use a sine function to generate the
+# coordinate values.An amplitude of 0.5 keeps the values within the coordinate
 # range of the MTP joints in the model.
 amplitude = 0.5
 angular_frequency = 10.0 # rad/s

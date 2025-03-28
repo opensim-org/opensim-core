@@ -63,8 +63,8 @@ for i = times.size():-1:1
     end
 end
 
-% Add columns for the toe joints. Use a sine function to generate the 
-% coordinate values.An amplitude of 0.5 keeps the values within the coordinate 
+% Add columns for the toe joints. Use a sine function to generate the
+% coordinate values.An amplitude of 0.5 keeps the values within the coordinate
 % range of the MTP joints in the model.
 amplitude = 0.5;
 angular_frequency = 10.0; % rad/s
@@ -74,8 +74,7 @@ mtp_values = Vector(values.getNumRows(), 0.0);
 time = Vector(1, 0.0);
 for i = 0:values.getNumRows()-1
     time.set(0, times.get(i));
-    mtp_value = sine.calcValue(time);
-    mtp_values.set(i, mtp_value);
+    mtp_values.set(i, sine.calcValue(time));
 end
 
 values.appendColumn('/jointset/mtp_r/mtp_angle_r/value', mtp_values);
