@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Matt S. DeMers                                                  *
+ * Author(s): Nicos Haralabidis and Jon Stingel adapted from Matt S. DeMers   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -32,9 +32,7 @@ using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
 
-
 // string formatting helper utility
-
 template <typename T>
 std::string to_string(T const& value) {
     stringstream sstr;
@@ -116,14 +114,7 @@ MocoBushingForce::MocoBushingForce(
         : MocoBushingForce(name, frame1, point1, orientation1,
                                       frame2, point2, orientation2)
 {
-    // populate moments and forces as linear (ramp) expressions based on
-    // stiffness
-    /*setMxExpression( to_string(rotStiffness[0]) + string("*theta_x") );
-    setMyExpression( to_string(rotStiffness[1]) + string("*theta_y") );
-    setMzExpression( to_string(rotStiffness[2]) + string("*theta_z") );
-    setFxExpression( to_string(transStiffness[0]) + string("*delta_x") );
-    setFyExpression( to_string(transStiffness[1]) + string("*delta_y") );
-    setFzExpression( to_string(transStiffness[2]) + string("*delta_z") );*/
+    // populate moments and forces as linear stiffness and damping
     set_rotational_damping(rotDamping);
     set_translational_damping(transDamping);
     set_rotational_stiffness(rotStiffness);
@@ -147,14 +138,7 @@ MocoBushingForce::MocoBushingForce(
                                    frame1Name, point1, orientation1,
                                    frame2Name, point2, orientation2)
 {
-    // populate moments and forces as linear (ramp) expressions based on
-    // stiffness
-    //setMxExpression( to_string(rotStiffness[0]) + string("*theta_x") );
-    //setMyExpression( to_string(rotStiffness[1]) + string("*theta_y") );
-    //setMzExpression( to_string(rotStiffness[2]) + string("*theta_z") );
-    //setFxExpression( to_string(transStiffness[0]) + string("*delta_x") );
-    //setFyExpression( to_string(transStiffness[1]) + string("*delta_y") );
-    //setFzExpression( to_string(transStiffness[2]) + string("*delta_z") );
+    // populate moments and forces as linear stiffness and damping
     set_rotational_damping(rotDamping);
     set_translational_damping(transDamping);
 }
@@ -163,28 +147,14 @@ MocoBushingForce::MocoBushingForce(
 // Set the data members of this MocoBushingForce to their null values.
 void MocoBushingForce::setNull()
 {
-    setAuthors("Matt DeMers - Nicos and Jon Testing");
+    setAuthors("Nicos Haralabidis and Jon Stingel adapted from Matt DeMurs");
 }
 
 //_____________________________________________________________________________
 // Allocate and initialize properties.
 void MocoBushingForce::constructProperties()
-{
-    //set all deflection functions to zero
-    /*std::string zero = "0.0";
-    constructProperty_Mx_expression( zero );
-    constructProperty_My_expression( zero );
-    constructProperty_Mz_expression( zero );
-    constructProperty_Fx_expression( zero );
-    constructProperty_Fy_expression( zero );
-    constructProperty_Fz_expression( zero );
-    setMxExpression( "0.0" );
-    setMyExpression( "0.0" );
-    setMzExpression( "0.0" );
-    setFxExpression( "0.0" );
-    setFyExpression( "0.0" );
-    setFzExpression( "0.0" );*/
-    
+{    
+    //Set all the damping and stiffness properties to zero
     constructProperty_rotational_damping(Vec3(0));
     constructProperty_translational_damping(Vec3(0));
     constructProperty_rotational_stiffness(Vec3(0));
@@ -204,14 +174,6 @@ void MocoBushingForce::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties(); // base class first
 
-    // must initialize the 6 force functions using the user provided expressions
-    /*setMxExpression(get_Mx_expression());
-    setMyExpression(get_My_expression());
-    setMzExpression(get_Mz_expression());
-    setFxExpression(get_Fx_expression());
-    setFyExpression(get_Fy_expression());
-    setFzExpression(get_Fz_expression());*/
-
     // fill damping matrix with damping from vector property
     for (int i = 0; i<3; i++) {
         _dampingMatrix[i][i] = get_rotational_damping(0)[i];
@@ -220,61 +182,6 @@ void MocoBushingForce::extendFinalizeFromProperties()
         _stiffnessMatrix[i + 3][i + 3] = get_translational_stiffness(0)[i];
     }
 }
-
-/** Set the expression for the Mx function and create it's lepton program */
-//void MocoBushingForce::setMxExpression(std::string expression) 
-//{
-//    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace), 
-//                        expression.end() );
-//    set_Mx_expression(expression);
-//    MxProg = Lepton::Parser::parse(expression).optimize().createProgram();
-//}
-
-/** Set the expression for the My function and create it's lepton program */
-//void MocoBushingForce::setMyExpression(std::string expression) 
-//{
-//    
-//    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace), 
-//                        expression.end() );
-//    set_My_expression(expression);
-//    MyProg = Lepton::Parser::parse(expression).optimize().createProgram();
-//}
-
-/** Set the expression for the Mz function and create it's lepton program */
-//void MocoBushingForce::setMzExpression(std::string expression) 
-//{
-//    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace), 
-//                        expression.end() );
-//    set_Mz_expression(expression);
-//    MzProg = Lepton::Parser::parse(expression).optimize().createProgram();
-//}
-
-/** Set the expression for the Fx function and create it's lepton program */
-//void MocoBushingForce::setFxExpression(std::string expression) 
-//{
-//    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace), 
-//                        expression.end() );
-//    set_Fx_expression(expression);
-//    FxProg = Lepton::Parser::parse(expression).optimize().createProgram();
-//}
-
-/** Set the expression for the Fy function and create it's lepton program */
-//void MocoBushingForce::setFyExpression(std::string expression) 
-//{
-//    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace), 
-//                        expression.end() );
-//    set_Fy_expression(expression);
-//    FyProg = Lepton::Parser::parse(expression).optimize().createProgram();
-//}
-
-/** Set the expression for the Fz function and create it's lepton program */
-//void MocoBushingForce::setFzExpression(std::string expression) 
-//{
-//    expression.erase( remove_if(expression.begin(), expression.end(), ::isspace), 
-//                        expression.end() );
-//    set_Fz_expression(expression);
-//    FzProg = Lepton::Parser::parse(expression).optimize().createProgram();
-//}
 
 //=============================================================================
 // COMPUTATION
@@ -286,25 +193,6 @@ SimTK::Vec6 MocoBushingForce::
     // Calculate stiffness generalized forces of bushing by first computing
     // the deviation of the two frames measured by dq
     Vec6 dq = computeDeflection(s);
-
-    //Vec6 fk = Vec6(0.0);
-
-    //std::map<std::string, double> deflectionVars;
-    //deflectionVars["theta_x"] = dq[0];
-    //deflectionVars["theta_y"] = dq[1];
-    //deflectionVars["theta_z"] = dq[2];
-    //deflectionVars["delta_x"] = dq[3];
-    //deflectionVars["delta_y"] = dq[4];
-    //deflectionVars["delta_z"] = dq[5];
-
-
-    //fk[0] = MxProg.evaluate(deflectionVars);
-    //fk[1] = MyProg.evaluate(deflectionVars);
-    //fk[2] = MzProg.evaluate(deflectionVars);
-    //fk[3] = FxProg.evaluate(deflectionVars);
-    //fk[4] = FyProg.evaluate(deflectionVars);
-    //fk[5] = FzProg.evaluate(deflectionVars);
-
     return -_stiffnessMatrix * dq;
 }
 
@@ -312,6 +200,8 @@ SimTK::Vec6 MocoBushingForce::
 SimTK::Vec6 MocoBushingForce::
     calcDampingForce(const SimTK::State& s) const
 {
+    // Calculate damping generalized forces of bushing by computing the deflection rate
+    // and multiply with the damping matrix
     Vec6 dqdot = computeDeflectionRate(s);
     return -_dampingMatrix * dqdot;
 }

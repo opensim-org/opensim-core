@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Matt S. DeMers                                                  *
+ * Author(s): Nicos Haralabidis and Jon Stingel adapted from Matt S. DeMers   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -31,23 +31,21 @@
 namespace OpenSim {
 
 //==============================================================================
-//                          EXPRESSION BASED BUSHING FORCE
+//                          MOCO BUSHING FORCE
 //==============================================================================
 /**
- * A class implementing a bushing force specified by expressions of the
- * deflection between two bushing frames. These expressions are user specified
- * as strings that are interpreted during a simulation.
- * Each expression is a function of the bushing's rotational deflections 
- * (theta_x, theta_y, theta_z) and translational deflections, (delta_x, delta_y,
- * delta_z). These user defined expressions can capture nonlinearities and 
- * coupling common in biologic structures.  
+ * A class implementing a simple linear bushing force specified by expressions 
+ * of the deflection between two bushing frames. The spring and damping 
+ * coefficients are specified by the user.
  *
  * A bushing force is the resistive force due to defection between two frames. 
  * One can think of the Bushing as being composed of 3 translational and 3 
  * torsional spring-dampers, which act along or about the bushing frame axes. 
- * Orientations are measured as x-y-z body-fixed Euler rotations.
+ * Orientations are measured as x-y-z body-fixed Euler rotations. Each bushing 
+ * force, spring or damper, is a function of the bushings translational and 
+ * rotational deflection and deflection rate.
  *
- * @author Matt DeMers
+ * @author Nicos Haralabidis and Jon Stingel adapted from Matt DeMers
  */
 class OSIMSIMULATION_API MocoBushingForce 
     : public TwoFrameLinker<ForceProducer, PhysicalFrame> {
@@ -56,30 +54,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    /*OpenSim_DECLARE_PROPERTY(Mx_expression, std::string,
-        "Expression defining the contribution of theta_x deflection to the "
-        "moment about body_2's x axis. The expression is a string and can not "
-        "have any whitespace separating characters.");
-    OpenSim_DECLARE_PROPERTY(My_expression, std::string,
-        "Expression defining the contribution of theta_y deflection to the "
-        "moment about body_2's y axis. The expression is a string and can not "
-        "have any whitespace separating characters.");
-    OpenSim_DECLARE_PROPERTY(Mz_expression, std::string,
-        "Expression defining the contribution of theta_z deflection to the "
-        "moment about body_2's z axis. The expression is a string and can not "
-        "have any whitespace separating characters.");
-    OpenSim_DECLARE_PROPERTY(Fx_expression, std::string,
-        "Expression defining the contribution of x deflection to the force in "
-        "the x direction. The expression is a string and can not have any "
-        "whitespace separating characters.");
-    OpenSim_DECLARE_PROPERTY(Fy_expression, std::string,
-        "Expression defining the contribution of y deflection to the force in "
-        "the y direction. The expression is a string and can not have any "
-        "whitespace separating characters.");
-    OpenSim_DECLARE_PROPERTY(Fz_expression, std::string,
-        "Expression defining the contribution of z deflection to the force in "
-        "the z direction. The expression is a string and can not have any "
-        "whitespace separating characters.");*/
     OpenSim_DECLARE_OPTIONAL_PROPERTY(visual_aspect_ratio, double,
         "Scalar number signifying the ratio of length/diameter used to display "
         "the force and moment vectors.");
@@ -178,7 +152,6 @@ public:
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.
 
-
     /** Set the value used to scale the bushing moment on body2 when drawing it to
         screen. A moment of magnitude |M| will be drawn on screen with a length of 
         (|M|*scale).  **/
@@ -190,42 +163,6 @@ public:
     /** Set the aspect ratio used to control the thickness of the bushing force
         and moment in drawn in the visualizer.  ratio = length/diameter.**/
     void setVisualAspectRatio(double ratio) {set_visual_aspect_ratio(ratio);}
-    /** Set the expression defining Mx as a function of the bushing deflections 
-        theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
-    //void setMxExpression(std::string expression);
-    ///** Set the expression defining My as a function of the bushing deflections
-    //    theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
-    //void setMyExpression(std::string expression);
-    ///** Set the expression defining Mz as a function of the bushing deflections
-    //    theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
-    //void setMzExpression(std::string expression);
-    ///** Set the expression defining Fx as a function of the bushing deflections
-    //    theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
-    //void setFxExpression(std::string expression);
-    ///** Set the expression defining Fy as a function of the bushing deflections
-    //    theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
-    //void setFyExpression(std::string expression);
-    ///** Set the expression defining Fz as a function of the bushing deflections
-    //    theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
-    //void setFzExpression(std::string expression);
-    ///** Get the expression defining Mx as a function of the bushing deflections
-    //    theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
-    //std::string getMxExpression() { return get_Mx_expression(); }
-    ///** Get the expression defining My as a function of the bushing deflections
-    //    theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
-    //std::string getMyExpression() { return get_My_expression(); }
-    ///** Get the expression defining Mz as a function of the bushing deflections
-    //    theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
-    //std::string getMzExpression() { return get_Mz_expression(); }
-    ///** Get the expression defining Fx as a function of the bushing deflections
-    //    theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
-    //std::string getFxExpression() { return get_Fx_expression(); }
-    ///** Get the expression defining Fy as a function of the bushing deflections
-    //    theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
-    //std::string getFyExpression() { return get_Fy_expression(); }
-    ///** Get the expression defining Fz as a function of the bushing deflections
-    //    theta_x, theta_y, theta_z, delta_x, delta_y, delta_z **/
-    //std::string getFzExpression() { return get_Fz_expression(); }
 
     //--------------------------------------------------------------------------
     // COMPUTATION
@@ -287,11 +224,7 @@ private:
     void constructProperties();
 
     SimTK::Mat66 _dampingMatrix{ 0.0 };
-
     SimTK::Mat66 _stiffnessMatrix{ 0.0 };
-
-    // parser programs for efficiently evaluating the expressions
-    //Lepton::ExpressionProgram MxProg, MyProg, MzProg, FxProg, FyProg, FzProg;
 
 //==============================================================================
 };  // END of class MocoBushingForce
