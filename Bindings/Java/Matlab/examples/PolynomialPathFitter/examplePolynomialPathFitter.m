@@ -51,10 +51,10 @@ fitter.setModel(ModelProcessor(model));
 % The fitter will randomly sample around the coordinate values provided in the
 % table to generate model configurations for which to compute path lengths and
 % moment arms. In general, it is up to the user to decide how many sample points
-% are needed to adequately cover the range of motion of the model's coordinates. 
+% are needed to adequately cover the range of motion of the model's coordinates.
 % In this case, the table has many more rows than are needed for the fitter to
-% generate a good fit, so we will remove some of the rows to speed up the fitting 
-% process. 
+% generate a good fit, so we will remove some of the rows to speed up the fitting
+% process.
 values = TimeSeriesTable('coordinates.sto');
 times = values.getIndependentColumn();
 for i = times.size():-1:1

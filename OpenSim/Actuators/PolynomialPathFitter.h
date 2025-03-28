@@ -151,9 +151,9 @@ private:
  * for the fitting process, or if the fit for a particular path did not meet the
  * specified tolerances.
  *
- * In general, it is up to the user to decide how many sample points are needed 
- * to adequately cover the range of motion of the model's coordinates. As the 
- * complexity of a muscle path increases, more sample points over a larger 
+ * In general, it is up to the user to decide how many sample points are needed
+ * to adequately cover the range of motion of the model's coordinates. As the
+ * complexity of a muscle path increases, more sample points over a larger
  * dimension of coordinate values are needed to achieve a good fit. Users may
  * consider manually creating the coordinates value table to ensure that the
  * sampling covers the fulle range of motion for the model.
