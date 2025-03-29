@@ -1,0 +1,2 @@
+OpenSimAddExampleCXX(NAME exampleSlidingMassWithBushing SUBDIR Moco)
+

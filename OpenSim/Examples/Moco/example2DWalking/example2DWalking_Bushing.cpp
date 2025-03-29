@@ -69,28 +69,21 @@ MocoSolution gaitTracking(double controlEffortWeight = 10,
     MocoTrack track;
     track.setName("gaitTracking");
 
+    // Open and edit the model.
     Model* myModel = new Model("2D_gait.osim");
-
     const PhysicalFrame& parentBody = myModel->getJointSet().get("knee_r").getParentFrame();
-
     const PhysicalFrame& childBody = myModel->getJointSet().get("knee_r").getChildFrame();
-
     SimTK::Vec3 p1(0, 0, 0);
     SimTK::Vec3 o1(0, 0, 0);
     SimTK::Vec3 p2(0, 0, 0);
     SimTK::Vec3 o2(0, 0, 0);
-
     SimTK::Vec3 ls(0, 0, 0);
     SimTK::Vec3 rs(0, 0, 1500);
     SimTK::Vec3 ld(0, 0, 0);
     SimTK::Vec3 rd(0, 0, 0);
-
     MocoBushingForce* mbf = new MocoBushingForce("mbf",parentBody, p1, o1, childBody, p2, o2, ls, rs, ld, rd);
-
     myModel->addForce(mbf);
-
     myModel->finalizeConnections();
-
     myModel->print("2D_gait_mbf.osim");
 
     // Define the optimal control problem.
