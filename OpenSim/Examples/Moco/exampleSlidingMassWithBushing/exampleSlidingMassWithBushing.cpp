@@ -66,31 +66,14 @@ std::unique_ptr<Model> createSlidingMassModel() {
 }
 
 std::unique_ptr<Model> createSlidingMassBushingModel() {
-    // auto model = std::make_unique<Model>();
-    // model->setName("sliding_mass");
-    // model->set_gravity(SimTK::Vec3(0, 0, 0));
-    // auto* body = new Body("body", 2.0, SimTK::Vec3(0), SimTK::Inertia(0));
-    // model->addComponent(body);
-
-    // // Allows translation along x.
-    // auto* joint = new SliderJoint("slider", model->getGround(), *body);
-    // auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
-    // coord.setName("position");
-    // model->addComponent(joint);
-
-    // auto* actu = new CoordinateActuator();
-    // actu->setCoordinate(&coord);
-    // actu->setName("actuator");
-    // actu->setOptimalForce(1);
-    // model->addComponent(actu);
-    // body->attachGeometry(new Sphere(0.05));
-    // model->finalizeConnections();
-    // model->print("sliding_mass.osim");
-
+    // Create a new model with a bushing damper.
     auto bushingmodel = std::make_unique<Model>("sliding_mass.osim");
     // create and add a bushing damper for the motion.
-    const PhysicalFrame& parentBody = bushingmodel->getJointSet().get("slider").getParentFrame();
-    const PhysicalFrame& childBody = bushingmodel->getJointSet().get("slider").getChildFrame();
+    SliderJoint* joint = &bushingmodel->updComponent<SliderJoint>("slider");
+    const PhysicalFrame& parentBody = joint->getParentFrame();
+    const PhysicalFrame& childBody = joint->getChildFrame();
+    // const PhysicalFrame& parentBody = bushingmodel->getComponent("slider").getParentFrame();
+    // const PhysicalFrame& childBody = bushingmodel->getComponent("slider").getChildFrame();
     SimTK::Vec3 p1(0, 0, 0);
     SimTK::Vec3 o1(0, 0, 0);
     SimTK::Vec3 p2(0, 0, 0);
