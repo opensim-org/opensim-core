@@ -98,20 +98,16 @@ int main() {
 
     MocoStudy study;
     study.setName("sliding_mass");
-
     // Define the optimal control problem.
     // ===================================
     MocoProblem& problem = study.updProblem();
-
     // Model (dynamics).
     // -----------------
     problem.setModel(createSlidingMassModel());
-
     // Bounds.
     // -------
     // Initial time must be 0, final time can be within [0, 5].
     problem.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(0, 5));
-
     // Position must be within [-5, 5] throughout the motion.
     // Initial position must be 0, final position must be 1.
     problem.setStateInfo("/slider/position/value", MocoBounds(-5, 5),
@@ -119,27 +115,21 @@ int main() {
     // Speed must be within [-50, 50] throughout the motion.
     // Initial and final speed must be 0. Use compact syntax.
     problem.setStateInfo("/slider/position/speed", {-50, 50}, 0, 0);
-
     // Applied force must be between -50 and 50.
     problem.setControlInfo("/actuator", MocoBounds(-50, 50));
-
     // Cost.
     // -----
     problem.addGoal<MocoFinalTimeGoal>();
-
     // Configure the solver.
     // =====================
     MocoCasADiSolver& solver = study.initCasADiSolver();
     solver.set_num_mesh_intervals(50);
-
     // Now that we've finished setting up the tool, print it to a file.
     study.print("sliding_mass.omoco");
-
     // Solve the problem.
     // ==================
     MocoSolution solution = study.solve();
     solution.write("sliding_mass_solution.sto");
-
     // Visualize.
     // ==========
     study.visualize(solution);
@@ -152,6 +142,26 @@ int main() {
     MocoSolution bushingSolution = study.solve();
     bushingSolution.write("sliding_mass_bushing_solution.sto");
     study.visualize(bushingSolution);
+
+    
+    // ==============
+    // Create a new model with a bushing damper and optimize the damping coefficient.
+    // ==============
+    problem.setModel(createSlidingMassBushingModel());
+    // Add MocoParameter for x component of translational_damping.
+    int propertyElt = 0; // y-position is the second element of the mass_center
+    std::vector<std::string> componentPaths = {
+        "/forceset/bushing"
+    };
+    MocoParameter mpbf("bushing_damping_x", componentPaths, "translational_damping",
+            MocoBounds(0, 100), propertyElt);
+    problem.addParameter(mpbf);
+
+    // Solve the problem with optimized damping coefficients.
+    MocoSolution bushingOptSolution = study.solve();
+    bushingOptSolution.write("sliding_mass_bushing_opt_solution.sto");
+    study.visualize(bushingOptSolution);
+
 
     return EXIT_SUCCESS;
 }
