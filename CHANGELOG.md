@@ -88,6 +88,7 @@ v4.6
   other path-based force elements dependent on a user-provided expression. (#4035)
 - Fixed a bug where `DeGrooteFregly2016Muscle::getBoundsNormalizedFiberLength()` was returning
   tendon force bounds rather than fiber length bounds. (#4040)
+- Fixed bugs in `PolynomialPathFitter` when too few coordinate samples were provided. (#4039)
 
 
 v4.5.1
