@@ -37,6 +37,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Common/STOFileAdapter.h>
 
 using namespace OpenSim;
 
@@ -78,7 +79,7 @@ std::unique_ptr<Model> createSlidingMassBushingModel() {
     SimTK::Vec3 o1(0, 0, 0);
     SimTK::Vec3 p2(0, 0, 0);
     SimTK::Vec3 o2(0, 0, 0);
-    SimTK::Vec3 ls(0, 0, 0);
+    SimTK::Vec3 ls(5, 5, 5);
     SimTK::Vec3 rs(0, 0, 0);
     SimTK::Vec3 ld(10, 10, 10);
     SimTK::Vec3 rd(0, 0, 0);
@@ -92,6 +93,33 @@ std::unique_ptr<Model> createSlidingMassBushingModel() {
     return bushingmodel;
 }
 
+
+std::unique_ptr<Model> createSlidingMassExpressionBushingModel() {
+    // Create a new model with a bushing damper.
+    auto bushingmodel = std::make_unique<Model>("sliding_mass.osim");
+    // create and add a bushing damper for the motion.
+    SliderJoint* joint = &bushingmodel->updComponent<SliderJoint>("slider");
+    const PhysicalFrame& parentBody = joint->getParentFrame();
+    const PhysicalFrame& childBody = joint->getChildFrame();
+    // const PhysicalFrame& parentBody = bushingmodel->getComponent("slider").getParentFrame();
+    // const PhysicalFrame& childBody = bushingmodel->getComponent("slider").getChildFrame();
+    SimTK::Vec3 p1(0, 0, 0);
+    SimTK::Vec3 o1(0, 0, 0);
+    SimTK::Vec3 p2(0, 0, 0);
+    SimTK::Vec3 o2(0, 0, 0);
+    SimTK::Vec3 ls(5, 5, 5);
+    SimTK::Vec3 rs(0, 0, 0);
+    SimTK::Vec3 ld(10, 10, 10);
+    SimTK::Vec3 rd(0, 0, 0);
+
+    ExpressionBasedBushingForce* mbf = new ExpressionBasedBushingForce("mbf", parentBody, p1, o1, childBody, p2, o2, ls, rs, ld, rd);
+    mbf->setName("bushing");
+    bushingmodel->addForce(mbf);
+    bushingmodel->finalizeConnections();
+    bushingmodel->print("sliding_mass_expression.osim");
+
+    return bushingmodel;
+}
 
 
 int main() {
@@ -145,6 +173,14 @@ int main() {
 
     
     // ==============
+    // Create a new model with an expresssion based bushing force to show that the forces are the same.
+    problem.setModel(createSlidingMassExpressionBushingModel());
+    MocoSolution expressionSolution = study.solve();
+    expressionSolution.write("sliding_mass_expression_solution.sto");
+    study.visualize(expressionSolution);
+
+
+    // ==============
     // Create a new model with a bushing damper and optimize the damping coefficient.
     // ==============
     problem.setModel(createSlidingMassBushingModel());
@@ -156,12 +192,31 @@ int main() {
     MocoParameter mpbf("bushing_damping_x", componentPaths, "translational_damping",
             MocoBounds(0, 100), propertyElt);
     problem.addParameter(mpbf);
-
     // Solve the problem with optimized damping coefficients.
     MocoSolution bushingOptSolution = study.solve();
     bushingOptSolution.write("sliding_mass_bushing_opt_solution.sto");
     study.visualize(bushingOptSolution);
 
+
+    // ==============
+    // Explore the outputs of the base bushing force. 
+    // create a force analysis to explore outputs. 
+    const MocoTrajectory& mt = MocoTrajectory("sliding_mass_bushing_solution.sto");
+    const std::vector<std::string>& analyze_output_names{".*forceset.*"};
+    OpenSim::Model myModel = Model("sliding_mass_bushing.osim");
+    std::cout << "Model loaded" << std::endl;
+    TimeSeriesTable_<SimTK::Vec6> analyze_outputs = analyzeMocoTrajectory<SimTK::Vec6>(myModel, mt, analyze_output_names);
+    STOFileAdapter::write(analyze_outputs.flatten(), "MocoBushingForce_analyze_outputs.sto");
+    // ==============
+    // create a force analysis to explore outputs of the expression based bushing force - for comparison.
+    const MocoTrajectory& mt2 = MocoTrajectory("sliding_mass_expression_solution.sto");
+    const std::vector<std::string>& analyze_output_names2{".*forceset.*"};
+    OpenSim::Model myModel2 = Model("sliding_mass_expression.osim");
+    std::cout << "Model loaded" << std::endl;
+    TimeSeriesTable_<SimTK::Vec6> analyze_outputs2 = analyzeMocoTrajectory<SimTK::Vec6>(myModel2, mt2, analyze_output_names2);
+    STOFileAdapter::write(analyze_outputs2.flatten(), "ExpressionBasedBushingForce_analyze_outputs.sto");
+
+    //
 
     return EXIT_SUCCESS;
 }

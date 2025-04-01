@@ -273,6 +273,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( BushingForce() );
     Object::registerType( FunctionBasedBushingForce() );
     Object::registerType( ExpressionBasedBushingForce() );
+    Object::registerType( MocoBushingForce() );
     Object::registerType( ExpressionBasedCoordinateForce() );
 
     Object::registerType( ControlSetController() );
