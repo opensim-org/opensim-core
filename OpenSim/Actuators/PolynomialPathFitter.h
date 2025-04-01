@@ -156,7 +156,7 @@ private:
  * complexity of a muscle path increases, more sample points over a larger
  * dimension of coordinate values are needed to achieve a good fit. Users may
  * consider manually creating the coordinates value table to ensure that the
- * sampling covers the fulle range of motion for the model.
+ * sampling covers the full range of motion for the model.
  *
  * It is highly recommended to use the files printed to the output directory to
  * evaluate the quality of the fitted paths (see `setOutputDirectory()` for more
