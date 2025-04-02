@@ -147,7 +147,7 @@ MocoBushingForce::MocoBushingForce(
 // Set the data members of this MocoBushingForce to their null values.
 void MocoBushingForce::setNull()
 {
-    setAuthors("Nicos Haralabidis and Jon Stingel adapted from Matt DeMurs");
+    setAuthors("Nicos Haralabidis and Jon Stingel adapted from Matt DeMers");
 }
 
 //_____________________________________________________________________________
@@ -174,7 +174,8 @@ void MocoBushingForce::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties(); // base class first
 
-    // fill damping matrix with damping from vector property
+    // fill damping and stiffness matrices with damping and stiffness from
+    // vector properties, respectively.
     for (int i = 0; i<3; i++) {
         _dampingMatrix[i][i] = get_rotational_damping(0)[i];
         _dampingMatrix[i + 3][i + 3] = get_translational_damping(0)[i];
