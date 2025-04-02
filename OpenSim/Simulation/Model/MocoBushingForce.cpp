@@ -139,6 +139,8 @@ MocoBushingForce::MocoBushingForce(
     // populate moments and forces as linear stiffness and damping
     set_rotational_damping(rotDamping);
     set_translational_damping(transDamping);
+    set_rotational_stiffness(rotStiffness);
+    set_translational_stiffness(transStiffness);
 }
 
 //_____________________________________________________________________________
