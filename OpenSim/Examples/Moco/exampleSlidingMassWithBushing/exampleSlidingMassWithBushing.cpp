@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: exampleSlidingMassWithBushing.cpp                                       *
+ * OpenSim Moco: exampleSlidingMassWithBushing.cpp                            *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Nicos Haralabidis and Jon Stingel                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -83,7 +83,6 @@ std::unique_ptr<Model> createSlidingMassBushingModel() {
     SimTK::Vec3 rs(0, 0, 0);
     SimTK::Vec3 ld(10, 10, 10);
     SimTK::Vec3 rd(0, 0, 0);
-
     MocoBushingForce* mbf = new MocoBushingForce("mbf", parentBody, p1, o1, childBody, p2, o2, ls, rs, ld, rd);
     mbf->setName("bushing");
     bushingmodel->addForce(mbf);
@@ -92,7 +91,6 @@ std::unique_ptr<Model> createSlidingMassBushingModel() {
 
     return bushingmodel;
 }
-
 
 std::unique_ptr<Model> createSlidingMassExpressionBushingModel() {
     // Create a new model with a bushing damper.
@@ -111,7 +109,6 @@ std::unique_ptr<Model> createSlidingMassExpressionBushingModel() {
     SimTK::Vec3 rs(0, 0, 0);
     SimTK::Vec3 ld(10, 10, 10);
     SimTK::Vec3 rd(0, 0, 0);
-
     ExpressionBasedBushingForce* mbf = new ExpressionBasedBushingForce("mbf", parentBody, p1, o1, childBody, p2, o2, ls, rs, ld, rd);
     mbf->setName("bushing");
     bushingmodel->addForce(mbf);
@@ -216,7 +213,6 @@ int main() {
     TimeSeriesTable_<SimTK::Vec6> analyze_outputs2 = analyzeMocoTrajectory<SimTK::Vec6>(myModel2, mt2, analyze_output_names2);
     STOFileAdapter::write(analyze_outputs2.flatten(), "ExpressionBasedBushingForce_analyze_outputs.sto");
 
-    //
 
     return EXIT_SUCCESS;
 }
