@@ -34,11 +34,11 @@ namespace OpenSim {
 //                          MOCO BUSHING FORCE
 //==============================================================================
 /**
- * A class implementing a simple linear bushing force specified by expressions 
- * of the deflection between two bushing frames. The spring and damping 
- * coefficients are specified by the user.
+ * A class implementing a simple linear bushing force specified by the 
+ * deflection and deflection rate between two bushing frames. The spring and 
+ * damping coefficients are specified by the user.
  *
- * A bushing force is the resistive force due to defection between two frames. 
+ * A bushing force is the resistive force due to deflection between two frames. 
  * One can think of the Bushing as being composed of 3 translational and 3 
  * torsional spring-dampers, which act along or about the bushing frame axes. 
  * Orientations are measured as x-y-z body-fixed Euler rotations. Each bushing 
@@ -65,13 +65,13 @@ public:
     OpenSim_DECLARE_PROPERTY(rotational_damping, SimTK::Vec3,
         "Damping parameters resisting angular deflection rate (theta_dot).");
     OpenSim_DECLARE_PROPERTY(translational_damping, SimTK::Vec3,
-        "Damping parameters resisting translational deflection (delta_dot) .");
+        "Damping parameters resisting translational deflection rate "
+        "(delta_dot) .");
 
     OpenSim_DECLARE_PROPERTY(rotational_stiffness, SimTK::Vec3,
-            "Damping parameters resisting angular deflection rate "
-            "(theta_dot).");
+            "Stiffness parameters resisting angular deflection (theta) .");
     OpenSim_DECLARE_PROPERTY(translational_stiffness, SimTK::Vec3,
-            "Damping parameters resisting translational deflection (delta_dot) "
+            "Stiffness parameters resisting translational deflection (delta) "
             ".");
 
 //==============================================================================
