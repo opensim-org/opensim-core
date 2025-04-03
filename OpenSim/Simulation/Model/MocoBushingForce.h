@@ -88,8 +88,8 @@ public:
     MocoBushingForce();
 
     /** Convenience Constructor.
-    Create a BushingForce between two PhysicalFrames, frame1 and frame2.
-    @param[in] name         the name of this BushingForce
+    Create a MocoBushingForce between two PhysicalFrames, frame1 and frame2.
+    @param[in] name         the name of this MocoBushingForce
     @param[in] frame1       the bushing's first PhysicalFrame
     @param[in] frame2       the bushing's second PhysicalFrame
     */
@@ -98,8 +98,8 @@ public:
                                 const PhysicalFrame& frame2);
 
     /** Convenience Constructor.
-    Create a BushingForce between two PhysicalFrames, frame1 and frame2.
-    @param[in] name         the name of this BushingForce
+    Create a MocoBushingForce between two PhysicalFrames, frame1 and frame2.
+    @param[in] name         the name of this MocoBushingForce
     @param[in] frame1Name   the name of the bushing's first PhysicalFrame
     @param[in] frame2Name   the name of the bushing's second PhysicalFrame
     */
