@@ -83,12 +83,16 @@ public:
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
-    /** Default constructor leaves bodies unspecified, sets the bushing frames
-      * to be at their body origins, and sets all bushing parameters to zero. **/
+    /** Default constructor leaves frames unspecified and sets all bushing
+       stiffness and damping properties to zero. **/
     MocoBushingForce();
 
-    /** This convenience constructor sets the bushing frames and sets all
-     * bushing functions to zero.  **/
+    /** Convenience Constructor.
+    Create a BushingForce between two PhysicalFrames, frame1 and frame2.
+    @param[in] name         the name of this BushingForce
+    @param[in] frame1       the bushing's first PhysicalFrame
+    @param[in] frame2       the bushing's second PhysicalFrame
+    */
     MocoBushingForce(const std::string& name,
                                 const PhysicalFrame& frame1,
                                 const PhysicalFrame& frame2);
