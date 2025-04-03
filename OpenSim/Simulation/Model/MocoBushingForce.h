@@ -149,9 +149,24 @@ public:
                  const SimTK::Vec3& point2, 
                  const SimTK::Vec3& orientation2);
 
-    /** This convenience constructor defines a bushing that behaves like a
-      * primitive bushing.  Stiffnesses are used to define linear functions for
-      * force deflection profiles.**/
+    /**Construct a MocoBushingForce where the bushing frames are specified in
+    terms of their location and orientation in their respective
+    PhysicalFrames. The physical properties (stiffness and damping) of the
+    bushing are also specified. See property declarations for more information.
+    @param[in] name                the name of this MocoBushingForce
+    @param[in] frame1              the first PhysicalFrame of the bushing
+    @param[in] point1              Vec3 location of the bushing in the first frame
+    @param[in] orientation1        Vec3 of the XYZ body-fixed Euler angles of the
+                                   bushing frame orientation in frame1
+    @param[in] frame2              the second PhysicalFrame of the bushing
+    @param[in] point2              Vec3 location of the bushing in the second frame
+    @param[in] orientation2        Vec3 of the XYZ body-fixed Euler angles of the
+                                   bushing frame orientation in frame2
+    @param[in] transStiffness      translational (dx, dy, dz) stiffnesses
+    @param[in] rotStiffness        rotational (dq_x, dq_y, dq_z) stiffnesses
+    @param[in] transDamping        translational (dx/dt, dy/dt, dz/dt) damping
+    @param[in] rotDamping          rotational (dq_x/dt, dq_y/dt, dq_z/dt) damping
+    */
     MocoBushingForce(const std::string& name,
                                 const PhysicalFrame& frame1,
                                 const SimTK::Vec3& point1,
@@ -164,9 +179,25 @@ public:
                                 const SimTK::Vec3& transDamping,
                                 const SimTK::Vec3& rotDamping);
 
-    /** This convenience constructor defines a bushing that behaves like a
-      * primitive bushing.  Stiffnesses are used to define linear functions for
-      * force deflection profiles.**/
+    /**Construct a MocoBushingForce where the bushing frames are specified in
+    terms of their location and orientation in their respective
+    PhysicalFrame names. The physical properties (stiffness and damping) of the
+    bushing are also specified. See property declarations for more information.
+    @param[in] name                the name of this MocoBushingForce
+    @param[in] frame1Name          name of the first PhysicalFrame of the bushing
+    @param[in] point1              Vec3 location of the bushing in the first frame
+    @param[in] orientation1        Vec3 of the XYZ body-fixed Euler angles of
+                                   the bushing frame orientation in frame1
+    @param[in] frame2Name          name of the second PhysicalFrame of the bushing
+    @param[in] point2              Vec3 location of the bushing in the second frame
+    @param[in] orientation2        Vec3 of the XYZ body-fixed Euler angles of
+                                   the bushing frame orientation in frame2
+    @param[in] transStiffness      translational (dx, dy, dz) stiffnesses
+    @param[in] rotStiffness        rotational (dq_x, dq_y, dq_z) stiffnesses
+    @param[in] transDamping        translational (dx/dt, dy/dt, dz/dt) damping
+    @param[in] rotDamping          rotational (dq_x/dt, dq_y/dt, dq_z/dt)
+    damping
+    */
     MocoBushingForce(const std::string& name,
                  const std::string& frame1Name,
                  const SimTK::Vec3& point1, 
