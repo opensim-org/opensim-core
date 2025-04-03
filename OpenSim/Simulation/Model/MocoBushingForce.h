@@ -107,8 +107,19 @@ public:
                                 const std::string& frame1Name,
                                 const std::string& frame2Name);
 
-    /** This convenience constructor defines and sets the bushing frames on
-      * each body, and sets all bushing functions to zero.  **/
+    /**Construct a MocoBushingForce where the bushing frames are specified in
+    terms of their location and orientation in their respective PhysicalFrames.
+    See property declarations for more information. 
+    @param[in] name                the name of this MocoBushingForce
+    @param[in] frame1              the first PhysicalFrame of the bushing
+    @param[in] point1              Vec3 location of the bushing in the first frame
+    @param[in] orientation1        Vec3 of the XYZ body-fixed Euler angles of the
+                                   bushing frame orientation in frame 1.
+    @param[in] frame2              the second PhysicalFrame of the bushing
+    @param[in] point2              Vec3 location of the bushing in the second frame
+    @param[in] orientation2        Vec3 of the XYZ body-fixed Euler angles of the
+                                   bushing frame orientation in frame2.
+    */
     MocoBushingForce(const std::string& name,
                                 const PhysicalFrame& frame1,
                                 const SimTK::Vec3& point1,
