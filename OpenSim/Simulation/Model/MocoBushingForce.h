@@ -97,8 +97,12 @@ public:
                                 const PhysicalFrame& frame1,
                                 const PhysicalFrame& frame2);
 
-    /** This convenience constructor defines and sets the bushing frames by name
-     * and sets all bushing functions to zero.  **/
+    /** Convenience Constructor.
+    Create a BushingForce between two PhysicalFrames, frame1 and frame2.
+    @param[in] name         the name of this BushingForce
+    @param[in] frame1Name   the name of the bushing's first PhysicalFrame
+    @param[in] frame2Name   the name of the bushing's second PhysicalFrame
+    */
     MocoBushingForce(const std::string& name,
                                 const std::string& frame1Name,
                                 const std::string& frame2Name);
