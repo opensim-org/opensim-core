@@ -304,18 +304,18 @@ int StaticOptimizationTarget::CentralDifferencesConstraint(
         xp[i] = x[i];
     }
 
-    return (status);
+    return status;
 }
 //_____________________________________________________________________________
 
 int StaticOptimizationTarget::CentralDifferences(
         const StaticOptimizationTarget* aTarget, double* dx, const Vector& x,
         Vector& dpdx) {
-    if (aTarget == NULL) return (-1);
+    if (aTarget == NULL) return -1;
 
     // CONTROLS
     int nx = aTarget->getNumParameters();
-    if (nx <= 0) return (-1);
+    if (nx <= 0) return -1;
     Vector xp = x;
 
     // PERFORMANCE
@@ -330,12 +330,12 @@ int StaticOptimizationTarget::CentralDifferences(
         // PERTURB FORWARD
         xp[i] = x[i] + dx[i];
         status = aTarget->objectiveFunc(xp, true, pf);
-        if (status < 0) return (status);
+        if (status < 0) return status;
 
         // PERTURB BACKWARD
         xp[i] = x[i] - dx[i];
         status = aTarget->objectiveFunc(xp, true, pb);
-        if (status < 0) return (status);
+        if (status < 0) return status;
 
         // DERIVATIVES OF PERFORMANCE
         double rdx = 0.5 / dx[i];
@@ -345,7 +345,7 @@ int StaticOptimizationTarget::CentralDifferences(
         xp[i] = x[i];
     }
 
-    return (status);
+    return status;
 }
 
 //==============================================================================
@@ -383,7 +383,7 @@ int StaticOptimizationTarget::objectiveFunc(const Vector& parameters,
 
     // 0.03 ms
 
-    return (0);
+    return 0;
 }
 //______________________________________________________________________________
 
@@ -415,7 +415,7 @@ int StaticOptimizationTarget::gradientFunc(const Vector& parameters,
 
     // 0.02 ms
 
-    return (0);
+    return 0;
 }
 
 //------------------------------------------------------------------------------

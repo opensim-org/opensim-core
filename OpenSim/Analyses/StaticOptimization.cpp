@@ -246,7 +246,7 @@ void StaticOptimization::setModel(Model& aModel) { Analysis::setModel(aModel); }
  * @return Activation storage.
  */
 Storage* StaticOptimization::getActivationStorage() {
-    return (_activationStorage);
+    return _activationStorage;
 }
 //_____________________________________________________________________________
 /**
@@ -256,7 +256,7 @@ Storage* StaticOptimization::getActivationStorage() {
  */
 Storage* StaticOptimization::getForceStorage() {
     if (_forceReporter)
-        return (&_forceReporter->updForceStorage());
+        return &_forceReporter->updForceStorage();
     else
         return nullptr;
 }
@@ -327,8 +327,7 @@ int StaticOptimization::record(const SimTK::State& s) {
     optimizer->useNumericalJacobian(false);
     if (algorithm == SimTK::InteriorPoint) {
         // Some IPOPT-specific settings
-        optimizer->setLimitedMemoryHistory(
-                500); // works well for our small systems
+        optimizer->setLimitedMemoryHistory(500);
         optimizer->setAdvancedBoolOption("warm_start", true);
         optimizer->setAdvancedRealOption("obj_scaling_factor", 1);
         optimizer->setAdvancedRealOption("nlp_scaling_max_gradient", 1);
@@ -489,7 +488,7 @@ int StaticOptimization::record(const SimTK::State& s) {
  * @return -1 on error, 0 otherwise.
  */
 int StaticOptimization::begin(const SimTK::State& s) {
-    if (!proceed()) return (0);
+    if (!proceed()) return 0;
 
     // Make a working copy of the model
     delete _modelWorkingCopy;
@@ -610,7 +609,7 @@ int StaticOptimization::begin(const SimTK::State& s) {
         }
     }
 
-    return (status);
+    return status;
 }
 //_____________________________________________________________________________
 /**
@@ -627,11 +626,11 @@ int StaticOptimization::begin(const SimTK::State& s) {
  * @return -1 on error, 0 otherwise.
  */
 int StaticOptimization::step(const SimTK::State& s, int stepNumber) {
-    if (!proceed(stepNumber)) return (0);
+    if (!proceed(stepNumber)) return 0;
 
     record(s);
 
-    return (0);
+    return 0;
 }
 //_____________________________________________________________________________
 /**
@@ -643,11 +642,11 @@ int StaticOptimization::step(const SimTK::State& s, int stepNumber) {
  * @return -1 on error, 0 otherwise.
  */
 int StaticOptimization::end(const SimTK::State& s) {
-    if (!proceed()) return (0);
+    if (!proceed()) return 0;
 
     record(s);
 
-    return (0);
+    return 0;
 }
 
 //=============================================================================
@@ -684,5 +683,5 @@ int StaticOptimization::printResults(const string& aBaseName,
     std::string name =
             path + "/" + aBaseName + "_" + getName() + "_controls.xml";
     cs.print(name);
-    return (0);
+    return 0;
 }

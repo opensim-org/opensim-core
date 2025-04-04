@@ -87,14 +87,14 @@ public:
     /**
      * Construct an optimization target.
      *
+     * @param s The current model state.
+     * @param aModel The model to use in optimization.
      * @param aNP The number of parameters.
      * @param aNC The number of constraints.
-     * @param aT Current time in the integration.
-     * @param aX Current control values.
-     * @param aY Current states.
-     * @param aDYDT Current state derivatives.
+     * @param useMusclePhysiology If false, ignores muscle force-length and
+     * force-velocity relationships as well as pennation angle
      */
-    StaticOptimizationTarget(const SimTK::State& s, Model* aModel, int aNX,
+    StaticOptimizationTarget(const SimTK::State& s, Model* aModel, int aNP,
             int aNC, const bool useMusclePhysiology = true);
 
     // SET AND GET
@@ -194,10 +194,10 @@ public:
      * Compute derivatives of a constraint with respect to the
      * controls by central differences.
      *
+     * @param aTarget Optimization target.
      * @param dx An array of control perturbation values.
      * @param x Values of the controls at time t.
-     * @param ic Index of the constraint.
-     * @param dcdx The derivatives of the constraints.
+     * @param jacobian System Jacobian matrix.
      *
      * @return -1 if an error is encountered, 0 otherwise.
      */
@@ -207,9 +207,10 @@ public:
 
     /**
      * Compute derivatives of performance with respect to the
-     * controls by central differences.  Note that the gradient array should
+     * controls by central differences. Note that the gradient array should
      * be allocated as dpdx[nx].
      *
+     * @param aTarget Optimization target.
      * @param dx An array of control perturbation values.
      * @param x Values of the controls at time t.
      * @param dpdx The derivatives of the performance criterion.
@@ -226,55 +227,59 @@ public:
     //--------------------------------------------------------------------------
 
     /**
-     * Compute performance given parameters.
+     * Compute the objective function given the optimization parameters.
      *
      * @param parameters Vector of optimization parameters.
+     * @param new_parameters Flag indicating if the parameters have changed.
      * @param performance Value of the performance criterion.
      * @return Status (normal termination = 0, error < 0).
      */
-    int objectiveFunc(const SimTK::Vector& x, bool new_coefficients,
-            SimTK::Real& rP) const override;
+    int objectiveFunc(const SimTK::Vector& parameters, bool new_parameters,
+            SimTK::Real& performance) const override;
 
     /**
      * Compute the gradient of performance given parameters.
      *
      * @param parameters Vector of optimization parameters.
-     * @param gradient Derivatives of performance with respect to the
+     * @param new_parameters Flag indicating if the parameters have changed.
+     * @param gradient Derivatives of the cost function with respect to the
      * parameters.
      * @return Status (normal termination = 0, error < 0).
      */
-    int gradientFunc(const SimTK::Vector& x, bool new_coefficients,
+    int gradientFunc(const SimTK::Vector& parameters, bool new_parameters,
             SimTK::Vector& gradient) const override;
 
     /**
-     * Compute acceleration constraints given parameters.
+     * Compute acceleration constraints given the optimization parameters.
      *
      * @param parameters Vector of optimization parameters.
+     * @param new_parameters Flag indicating if the parameters have changed.
      * @param constraints Vector of optimization constraints.
      * @return Status (normal termination = 0, error < 0).
      */
-    int constraintFunc(const SimTK::Vector& x, bool new_coefficients,
+    int constraintFunc(const SimTK::Vector& parameters, bool new_parameters,
             SimTK::Vector& constraints) const override;
 
     /**
-     * Compute the gradient of constraint given parameters.
+     * Compute the constraint Jacobian given the optimization parameters.
      *
      * @param parameters Vector of parameters.
-     * @param jac Derivative of constraint with respect to the parameters.
+     * @param new_parameters Flag indicating if the parameters have changed.
+     * @param jac The constraint Jacobian with respect to the optimization
+     * parameters.
      * @return Status (normal termination = 0, error < 0).
      */
-    int constraintJacobian(const SimTK::Vector& x, bool new_coefficients,
+    int constraintJacobian(const SimTK::Vector& parameters, bool new_parameters,
             SimTK::Matrix& jac) const override;
 
 private:
     /**
-     * Compute all constraints given parameters.
+     * Compute all constraints given the optimization parameters.
      */
-    void computeConstraintVector(
-            SimTK::State& s, const SimTK::Vector& x, SimTK::Vector& c) const;
-    void computeAcceleration(SimTK::State& s, const SimTK::Vector& aF,
+    void computeConstraintVector(SimTK::State& s,
+            const SimTK::Vector& parameters, SimTK::Vector& constraints) const;
+    void computeAcceleration(SimTK::State& s, const SimTK::Vector& parameters,
             SimTK::Vector& rAccel) const;
-    void cumulativeTime(double& aTime, double aIncrement);
 };
 
 }; // namespace OpenSim
