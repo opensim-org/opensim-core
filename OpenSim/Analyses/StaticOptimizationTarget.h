@@ -231,19 +231,20 @@ public:
      *
      * @param parameters Vector of optimization parameters.
      * @param new_parameters Flag indicating if the parameters have changed.
-     * @param performance Value of the performance criterion.
+     * @param performance Value of the objective function.
      * @return Status (normal termination = 0, error < 0).
      */
     int objectiveFunc(const SimTK::Vector& parameters, bool new_parameters,
             SimTK::Real& performance) const override;
 
     /**
-     * Compute the gradient of performance given parameters.
+     * Compute the gradient of the objective function given the optimization
+     * parameters.
      *
      * @param parameters Vector of optimization parameters.
      * @param new_parameters Flag indicating if the parameters have changed.
-     * @param gradient Derivatives of the cost function with respect to the
-     * parameters.
+     * @param gradient Derivatives of the objective function with respect to the
+     * optimization parameters.
      * @return Status (normal termination = 0, error < 0).
      */
     int gradientFunc(const SimTK::Vector& parameters, bool new_parameters,
