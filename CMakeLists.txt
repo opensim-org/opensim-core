@@ -835,18 +835,19 @@ if (OPENSIM_WITH_CASADI)
             # Extract actual name of the library libgfortran, gcc, quadmath to install along on OSX.
             # These show only as dependencies of libipopt, and libgcc is in same folder as libgfortran.
             # Not very robust, but works for our artifacts.
+            #In the case of conda builds we let it handle the the copy/install of gfortran and gcc
             execute_process(COMMAND bash "-c"
                 "otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libgfortran' | awk '{print $1}'"
                 OUTPUT_VARIABLE libgfortran_name
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-            string(REPLACE "libgfortran.5" "libgcc_s.1.1" libgcc_name ${libgfortran_name})
-
+            if (NOT ${libgfortran_name} STREQUAL "")
+                string(REPLACE "libgfortran.5" "libgcc_s.1.1" libgcc_name ${libgfortran_name})
+            endif()
             execute_process(COMMAND bash "-c"
                 "otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libquadmath' | awk '{print $1}'"
                 OUTPUT_VARIABLE libquadmath_name
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
-
+            
             install(FILES
                 ${IPOPT_LIBDIR}/libipopt.3.dylib
                 ${IPOPT_LIBDIR}/libipopt.dylib
