@@ -383,7 +383,7 @@ public:
     /// bounds cannot be enforced directly. It is upon the user to ensure the
     /// muscle fiber is operating within the specified domain.
     SimTK::Vec2 getBoundsNormalizedFiberLength() const {
-        return {getMinNormalizedTendonForce(), getMaxNormalizedTendonForce()};
+        return {getMinNormalizedFiberLength(), getMaxNormalizedFiberLength()};
     }
     /// @}
 
