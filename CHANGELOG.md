@@ -86,6 +86,7 @@ v4.6
 - Support using swig version 4.2 to generate Java & Python bindings. (#4028)
 - Added `ExpressionBasedPathForce`, which can be used to create non-linear path springs or 
   other path-based force elements dependent on a user-provided expression. (#4035)
+- Pre-calculate state derivatives in static optimization to reduce computational time by as much as 25% (#4037)
 
 
 

@@ -79,8 +79,8 @@ protected:
     Storage *_activationStorage;
     Storage *_forceStorage;
     GCVSplineSet _statesSplineSet;
-	Storage *_statesDerivativeStore;
-	GCVSplineSet _statesDerivativeSplineSet;
+    Storage *_statesDerivativeStore;
+    GCVSplineSet _statesDerivativeSplineSet;
 
     Array<int> _accelerationIndices;
 
