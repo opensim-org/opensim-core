@@ -66,6 +66,13 @@ public:
         "Damping parameters resisting angular deviation rate. (Nm/(rad/s))");
     OpenSim_DECLARE_PROPERTY(translational_damping, SimTK::Vec3,
         "Damping parameters resisting relative translational velocity. (N/(m/s))");
+
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(statebounds_dissipated_energy, SimTK::Vec2,
+        getBoundsDissipatedEnergy, SimTK::Stage::Model);   
+
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
@@ -202,6 +209,15 @@ public:
 
     double getPowerDissipation(const SimTK::State& state) const;
 
+    /// The first element of the Vec2 is the lower bound, and the second is the
+    /// upper bound.
+    /// This function is intended primarily for the model Output 
+    /// 'statebounds_dissipated_energy'. We don't need the state, but the 
+    /// state parameter is a requirement of Output functions.
+    SimTK::Vec2 getBoundsDissipatedEnergy(const SimTK::State&) const {
+         return {0, SimTK::Infinity}; 
+    }
+
     //--------------------------------------------------------------------------
     // Reporting
     //--------------------------------------------------------------------------
@@ -227,9 +243,7 @@ private:
                     int index) : 
                 StateVariable(name, owner, subSysIndex, index, false) {}
 
-        const BushingForce& getBushingForce() const {
-            return static_cast<const BushingForce&>(getOwner());
-        }
+        const BushingForce& getBushingForce() const;
         double getValue(const SimTK::State& state) const override;
         void setValue(SimTK::State& state, double value) const override;
         double getDerivative(const SimTK::State& state) const override;

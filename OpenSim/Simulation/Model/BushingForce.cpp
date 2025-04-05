@@ -306,6 +306,11 @@ getRecordValues(const SimTK::State& state) const
 //-----------------------------------------------------------------------------
 // BushingForce::DissipatedEnergyStateVariable
 //-----------------------------------------------------------------------------
+const BushingForce& 
+BushingForce::DissipatedEnergyStateVariable::getBushingForce() const {
+    return static_cast<const BushingForce&>(getOwner());
+}
+
 double BushingForce::DissipatedEnergyStateVariable::getValue(
         const SimTK::State& state) const {
     return getBushingForce().getDissipatedEnergy(state);
