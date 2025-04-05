@@ -29,6 +29,8 @@
 #include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
+#include "simbody/internal/Force_LinearBushing.h"
+
 namespace OpenSim {
 
 //==============================================================================
@@ -195,6 +197,11 @@ public:
     /** Potential energy is the elastic energy stored in the bushing. */
     double computePotentialEnergy(const SimTK::State& s) const final override;
 
+    double getDissipatedEnergy(const SimTK::State& state) const;
+    void setDissipatedEnergy(SimTK::State& state, double value) const;
+
+    double getPowerDissipation(const SimTK::State& state) const;
+
     //--------------------------------------------------------------------------
     // Reporting
     //--------------------------------------------------------------------------
@@ -207,9 +214,29 @@ public:
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
 private:
+    const SimTK::Force::LinearBushing& getSimTKLinearBushing() const;
+
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface.
     //--------------------------------------------------------------------------
+    class DissipatedEnergyStateVariable : public StateVariable {
+    public:
+        explicit DissipatedEnergyStateVariable(const std::string& name,
+                    const Component& owner, 
+                    SimTK::SubsystemIndex subSysIndex,
+                    int index) : 
+                StateVariable(name, owner, subSysIndex, index, false) {}
+
+        const BushingForce& getBushingForce() const {
+            return static_cast<const BushingForce&>(getOwner());
+        }
+        double getValue(const SimTK::State& state) const override;
+        void setValue(SimTK::State& state, double value) const override;
+        double getDerivative(const SimTK::State& state) const override;
+        void setDerivative(const SimTK::State& state, 
+                double deriv) const override;
+    };
+
     // Create a SimTK::Force::LinearBushing which implements this BushingForce.
     void extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) 
                                                                     const override;

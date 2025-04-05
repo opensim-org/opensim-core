@@ -48,6 +48,7 @@ std::unique_ptr<Model> createSlidingMassModel() {
     model->addComponent(body);
 
     // Allows translation along x.
+    std::cout << "ground name: " << model->getGround().getName() << std::endl;
     auto* joint = new SliderJoint("slider", model->getGround(), *body);
     auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
     coord.setName("position");
@@ -59,6 +60,9 @@ std::unique_ptr<Model> createSlidingMassModel() {
     actu->setOptimalForce(1);
     model->addComponent(actu);
 
+    auto* force = new BushingForce("bushing", model->getGround(), *body);
+    model->addComponent(force);
+
     body->attachGeometry(new Sphere(0.05));
 
     model->finalizeConnections();
@@ -67,6 +71,22 @@ std::unique_ptr<Model> createSlidingMassModel() {
 }
 
 int main() {
+
+    // Create the model.
+    // ================
+    // std::unique_ptr<Model> model = createSlidingMassModel();
+    // SimTK::State state = model->initSystem();
+    // std::cout << "state.getY() = " << state.getY() << std::endl;
+    // std::cout << "state.getQ() = " << state.getQ() << std::endl;
+    // std::cout << "state.getU() = " << state.getU() << std::endl;
+    // std::cout << "state.getZ() = " << state.getZ() << std::endl;
+
+    // auto stateNames = model->getStateVariableNames();
+    // for (int i = 0; i < stateNames.size(); ++i) {
+    //     const auto& name = stateNames[i];
+    //     std::cout << "state name: " << name << std::endl;
+    // }
+    // std::cout << "num state variables: " << model->getNumStateVariables() << std::endl;
 
     MocoStudy study;
     study.setName("sliding_mass");
@@ -91,6 +111,9 @@ int main() {
     // Speed must be within [-50, 50] throughout the motion.
     // Initial and final speed must be 0. Use compact syntax.
     problem.setStateInfo("/slider/position/speed", {-50, 50}, 0, 0);
+
+    problem.setStateInfo("/bushing/dissipated_energy", 
+            {-SimTK::Infinity, SimTK::Infinity});
 
     // Applied force must be between -50 and 50.
     problem.setControlInfo("/actuator", MocoBounds(-50, 50));

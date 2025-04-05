@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
-#include "simbody/internal/Force_LinearBushing.h"
 
 #include "BushingForce.h"
 
@@ -203,20 +202,41 @@ void BushingForce::
     // SimTK::Force later.
     BushingForce* mutableThis = const_cast<BushingForce *>(this);
     mutableThis->_index = simtkForce.getForceIndex();
+
+    // Add a StateVariable to the system to expose the energy dissipation state
+    // variable allocated internally by Simbody.
+    StateVariable* sv = new DissipatedEnergyStateVariable("dissipated_energy", 
+        *this, _model->getForceSubsystem().getMySubsystemIndex(),
+        mutableThis->_index);
+    addStateVariable(sv);
 }
 
 //=============================================================================
-// SET
+// GET AND SET
 //=============================================================================
-//_____________________________________________________________________________
-// The following methods set properties of the bushing Force.
-
 
 /* Potential energy is computed by underlying SimTK::Force. */
 double BushingForce::computePotentialEnergy(const SimTK::State& s) const
 {
     return _model->getForceSubsystem().getForce(_index)
                                       .calcPotentialEnergyContribution(s);
+}
+
+const SimTK::Force::LinearBushing& BushingForce::getSimTKLinearBushing() const {
+    return static_cast<const SimTK::Force::LinearBushing&>
+            (_model->getForceSubsystem().getForce(_index));
+}
+
+double BushingForce::getDissipatedEnergy(const SimTK::State& state) const {
+    return getSimTKLinearBushing().getDissipatedEnergy(state);
+}
+
+void BushingForce::setDissipatedEnergy(SimTK::State& state, double value) const {
+    getSimTKLinearBushing().setDissipatedEnergy(state, value);
+}
+
+double BushingForce::getPowerDissipation(const SimTK::State& state) const {
+    return getSimTKLinearBushing().getPowerDissipation(state);
 }
 
 //=============================================================================
@@ -261,8 +281,7 @@ getRecordValues(const SimTK::State& state) const
     
     OpenSim::Array<double> values(1);
 
-    const SimTK::Force::LinearBushing &simtkSpring = 
-        (SimTK::Force::LinearBushing &)(_model->getForceSubsystem().getForce(_index));
+    const SimTK::Force::LinearBushing& simtkSpring = getSimTKLinearBushing();
 
     SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
     SimTK::Vector_<SimTK::Vec3> particleForces(0);
@@ -282,4 +301,30 @@ getRecordValues(const SimTK::State& state) const
     values.append(3, &torques[0]);
 
     return values;
+}
+
+//-----------------------------------------------------------------------------
+// BushingForce::DissipatedEnergyStateVariable
+//-----------------------------------------------------------------------------
+double BushingForce::DissipatedEnergyStateVariable::getValue(
+        const SimTK::State& state) const {
+    return getBushingForce().getDissipatedEnergy(state);
+}
+
+void BushingForce::DissipatedEnergyStateVariable::setValue(
+        SimTK::State& state, double value) const {
+    getBushingForce().setDissipatedEnergy(state, value);
+}
+
+double BushingForce::DissipatedEnergyStateVariable::getDerivative(
+        const SimTK::State& state) const {
+    return getBushingForce().getPowerDissipation(state);
+}
+
+void BushingForce::DissipatedEnergyStateVariable::setDerivative(
+        const SimTK::State& state, double deriv) const {
+    OPENSIM_THROW(Exception,
+        "BushingForce::DissipatedEnergyStateVariable::setDerivative(): "
+        "The derivative of dissipated energy (power dissipation) can only be "
+        "computed by the ForceSubsystem.");
 }
