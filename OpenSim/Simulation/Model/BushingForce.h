@@ -29,6 +29,8 @@
 #include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
+#include "simbody/internal/Force_LinearBushing.h"
+
 namespace OpenSim {
 
 //==============================================================================
@@ -36,15 +38,19 @@ namespace OpenSim {
 //==============================================================================
 /**
  * A class implementing a Bushing Force.
+ *
  * A Bushing Force is the force proportional to the deviation of two frames.
  * One can think of the Bushing as being composed of 3 linear and 3 torsional
  * spring-dampers, which act along or about the bushing frames. Orientations
  * are measured as x-y-z body-fixed Euler rotations, which are treated as
  * though they were uncoupled. Damping is proportional to the deflection rate of 
- * change (e.g. Euler angle derivatives) which is NOT the angular velocity between
- * the two frames. That makes this bushing model suitable only for relatively
- * small relative orientation deviations between the frames.
- * The underlying Force in Simbody is a SimtK::Force::LinearBushing.
+ * change (e.g. Euler angle derivatives) which is NOT the angular velocity 
+ * between the two frames. That makes this bushing model suitable only for 
+ * relatively small relative orientation deviations between the frames.
+ *
+ * The underlying Force in Simbody is a SimtK::Force::LinearBushing. This 
+ * implementation exposes the state variable for the dissipated energy of the 
+ * bushing force allocated internally by Simbody.
  *
  * @author Ajay Seth
  */
@@ -64,6 +70,13 @@ public:
         "Damping parameters resisting angular deviation rate. (Nm/(rad/s))");
     OpenSim_DECLARE_PROPERTY(translational_damping, SimTK::Vec3,
         "Damping parameters resisting relative translational velocity. (N/(m/s))");
+
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(statebounds_dissipated_energy, SimTK::Vec2,
+        getBoundsDissipatedEnergy, SimTK::Stage::Model);   
+
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
@@ -195,6 +208,43 @@ public:
     /** Potential energy is the elastic energy stored in the bushing. */
     double computePotentialEnergy(const SimTK::State& s) const final override;
 
+    /** 
+     * Obtain the total amount of energy dissipated by this BushingForce since 
+     * some arbitrary starting point, in joules.
+     * 
+     * This is the time integral of the power dissipation. For a system whose 
+     * only non-conservative forces are Bushings, the sum of potential, kinetic, 
+     * and dissipated energies should be conserved.
+     */
+    double getDissipatedEnergy(const SimTK::State& state) const;
+    
+    /** 
+     * Set the accumulated dissipated energy to an arbitrary value, in joules.
+     * 
+     * Typically this is used only to reset the dissipated energy to zero, but 
+     * non-zero values can be useful if you are trying to match some existing 
+     * data or continuing a simulation.
+     */
+    void setDissipatedEnergy(SimTK::State& state, double value) const;
+
+    /** 
+     * Obtain the rate at which energy is being dissipated by this BushingForce, 
+     * that is, the power being lost, in watts.
+     */
+    double getPowerDissipation(const SimTK::State& state) const;
+
+    /** 
+     * The first element of the Vec2 is the lower bound, and the second is the
+     * upper bound.
+     * 
+     * This function is intended primarily for the model Output 
+     * 'statebounds_dissipated_energy'. We don't need the state, but the state 
+     * parameter is a requirement of Output functions.
+     */
+    SimTK::Vec2 getBoundsDissipatedEnergy(const SimTK::State&) const {
+         return {0, SimTK::Infinity}; 
+    }
+
     //--------------------------------------------------------------------------
     // Reporting
     //--------------------------------------------------------------------------
@@ -211,8 +261,34 @@ private:
     // Implement ModelComponent interface.
     //--------------------------------------------------------------------------
     // Create a SimTK::Force::LinearBushing which implements this BushingForce.
-    void extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) 
-                                                                    const override;
+    void extendAddToSystemAfterSubcomponents(
+            SimTK::MultibodySystem& system) const override;
+
+    /** 
+     * Get the underlying SimTK::Force::LinearBushing force.
+     */
+    const SimTK::Force::LinearBushing& getSimTKLinearBushing() const;
+
+    /** 
+     * Concrete implementation of `StateVariable` to expose the "dissipated 
+     * energy" state variable allocated internally by the 
+     * SimTK::Force::LinearBushing.
+     */
+    class DissipatedEnergyStateVariable : public StateVariable {
+    public:
+        explicit DissipatedEnergyStateVariable(const std::string& name,
+                    const Component& owner, 
+                    SimTK::SubsystemIndex subSysIndex,
+                    int index) : 
+                StateVariable(name, owner, subSysIndex, index, false) {}
+
+        const BushingForce& getBushingForce() const;
+        double getValue(const SimTK::State& state) const override;
+        void setValue(SimTK::State& state, double value) const override;
+        double getDerivative(const SimTK::State& state) const override;
+        void setDerivative(const SimTK::State& state, 
+                double deriv) const override;
+    };
 
     void setNull();
     void constructProperties();
