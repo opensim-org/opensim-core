@@ -38,15 +38,19 @@ namespace OpenSim {
 //==============================================================================
 /**
  * A class implementing a Bushing Force.
+ *
  * A Bushing Force is the force proportional to the deviation of two frames.
  * One can think of the Bushing as being composed of 3 linear and 3 torsional
  * spring-dampers, which act along or about the bushing frames. Orientations
  * are measured as x-y-z body-fixed Euler rotations, which are treated as
  * though they were uncoupled. Damping is proportional to the deflection rate of 
- * change (e.g. Euler angle derivatives) which is NOT the angular velocity between
- * the two frames. That makes this bushing model suitable only for relatively
- * small relative orientation deviations between the frames.
- * The underlying Force in Simbody is a SimtK::Force::LinearBushing.
+ * change (e.g. Euler angle derivatives) which is NOT the angular velocity 
+ * between the two frames. That makes this bushing model suitable only for 
+ * relatively small relative orientation deviations between the frames.
+ *
+ * The underlying Force in Simbody is a SimtK::Force::LinearBushing. This 
+ * implementation exposes the state variable for the dissipated energy of the 
+ * bushing force allocated internally by Simbody.
  *
  * @author Ajay Seth
  */
@@ -214,7 +218,6 @@ public:
      */
     double getDissipatedEnergy(const SimTK::State& state) const;
     
-
     /** 
      * Set the accumulated dissipated energy to an arbitrary value, in joules.
      * 
@@ -257,10 +260,9 @@ private:
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface.
     //--------------------------------------------------------------------------
-
     // Create a SimTK::Force::LinearBushing which implements this BushingForce.
     void extendAddToSystemAfterSubcomponents(
-        SimTK::MultibodySystem& system) const override;
+            SimTK::MultibodySystem& system) const override;
 
     /** 
      * Get the underlying SimTK::Force::LinearBushing force.
