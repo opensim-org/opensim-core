@@ -89,6 +89,7 @@ v4.6
 - Fixed a bug where `DeGrooteFregly2016Muscle::getBoundsNormalizedFiberLength()` was returning
   tendon force bounds rather than fiber length bounds. (#4040)
 - Fixed bugs in `PolynomialPathFitter` when too few coordinate samples were provided. (#4039)
+- Pre-calculate state derivatives in static optimization to reduce computational time by as much as 25% (#4037)
 
 
 v4.5.1
