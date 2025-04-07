@@ -242,7 +242,7 @@ public:
      * parameter is a requirement of Output functions.
      */
     SimTK::Vec2 getBoundsDissipatedEnergy(const SimTK::State&) const {
-         return {-SimTK::Infinity, SimTK::Infinity}; 
+         return {0, SimTK::Infinity}; 
     }
 
     //--------------------------------------------------------------------------

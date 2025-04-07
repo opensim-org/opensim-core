@@ -740,11 +740,12 @@ TEST_CASE("testBushingForce") {
             Catch::Matchers::WithinAbs(0.0, 1e-9));
 
     // Update the energy dissipation to be non-zero.
-    Real energyDissipation = SimTK::Test::randReal();
+    Random::Uniform rand(0, 1);
+    Real energyDissipation = rand.getValue();
     osim_state.updZ()[0] = energyDissipation;
     CHECK_THAT(bushingForce.getDissipatedEnergy(osim_state), 
             Catch::Matchers::WithinAbs(energyDissipation, 1e-9));
-    energyDissipation = SimTK::Test::randReal();
+    energyDissipation = rand.getValue();
     bushingForce.setDissipatedEnergy(osim_state, energyDissipation);
     CHECK_THAT(bushingForce.getDissipatedEnergy(osim_state), 
             Catch::Matchers::WithinAbs(energyDissipation, 1e-9));
