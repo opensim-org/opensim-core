@@ -166,3 +166,12 @@ TEST_CASE("Array initializer list works with doubles and alternate syntax")
     REQUIRE_THAT(vals.get(1), Catch::Matchers::WithinAbs(2.2,tol));
     REQUIRE_THAT(vals.get(2), Catch::Matchers::WithinAbs(4.6,tol));
 }
+
+TEST_CASE("Array initializer list works with booleans")
+{
+    Array<bool> vals{true, false, true};
+
+    REQUIRE(vals.get(0) == true);
+    REQUIRE(vals.get(1) == false);
+    REQUIRE(vals.get(2) == true);
+}

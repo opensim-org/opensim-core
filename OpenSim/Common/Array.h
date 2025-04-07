@@ -62,7 +62,7 @@ public:
     ~Array() noexcept = default;
 
     Array(std::initializer_list<T> initList) :
-    _defaultValue{}, _storage(initList)
+    _defaultValue{}, _storage(initList.begin(), initList.end())
     {}
 
     explicit Array(T aDefaultValue = T(), int aSize = 0, int aCapacity = 1) :
