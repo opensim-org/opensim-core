@@ -60,9 +60,6 @@ std::unique_ptr<Model> createSlidingMassModel() {
     actu->setOptimalForce(1);
     model->addComponent(actu);
 
-    auto* force = new BushingForce("bushing", model->getGround(), *body);
-    model->addComponent(force);
-
     body->attachGeometry(new Sphere(0.05));
 
     model->finalizeConnections();

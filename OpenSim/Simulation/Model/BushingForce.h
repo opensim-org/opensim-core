@@ -204,9 +204,29 @@ public:
     /** Potential energy is the elastic energy stored in the bushing. */
     double computePotentialEnergy(const SimTK::State& s) const final override;
 
+    /** 
+     * Obtain the total amount of energy dissipated by this BushingForce since 
+     * some arbitrary starting point, in joules.
+     * 
+     * This is the time integral of the power dissipation. For a system whose 
+     * only non-conservative forces are Bushings, the sum of potential, kinetic, 
+     * and dissipated energies should be conserved.
+     */
     double getDissipatedEnergy(const SimTK::State& state) const;
+    
+
+    /** Set the accumulated dissipated energy to an arbitrary value, in joules.
+      * 
+      * Typically this is used only to reset the dissipated energy to zero, but 
+      * non-zero values can be useful if you are trying to match some existing 
+      * data or continuing a simulation.
+      */
     void setDissipatedEnergy(SimTK::State& state, double value) const;
 
+    /** 
+     * Obtain the rate at which energy is being dissipated by this BushingForce, 
+     * that is, the power being lost, in watts.
+     */
     double getPowerDissipation(const SimTK::State& state) const;
 
     /// The first element of the Vec2 is the lower bound, and the second is the
@@ -230,11 +250,24 @@ public:
     OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
 
 private:
-    const SimTK::Force::LinearBushing& getSimTKLinearBushing() const;
-
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface.
     //--------------------------------------------------------------------------
+
+    // Create a SimTK::Force::LinearBushing which implements this BushingForce.
+    void extendAddToSystemAfterSubcomponents(
+        SimTK::MultibodySystem& system) const override;
+
+    /** 
+     * Get the underlying SimTK::Force::LinearBushing force.
+     */
+    const SimTK::Force::LinearBushing& getSimTKLinearBushing() const;
+
+    /** 
+     * Concrete implementation of `StateVariable` to expose the "dissipated 
+     * energy" state variable allocated internally by the 
+     * SimTK::Force::LinearBushing.
+     */
     class DissipatedEnergyStateVariable : public StateVariable {
     public:
         explicit DissipatedEnergyStateVariable(const std::string& name,
@@ -250,10 +283,6 @@ private:
         void setDerivative(const SimTK::State& state, 
                 double deriv) const override;
     };
-
-    // Create a SimTK::Force::LinearBushing which implements this BushingForce.
-    void extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) 
-                                                                    const override;
 
     void setNull();
     void constructProperties();
