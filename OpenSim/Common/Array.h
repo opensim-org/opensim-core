@@ -34,6 +34,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <initializer_list>
 #include <iostream>
 #include <iterator>
 #include <sstream>
@@ -59,6 +60,10 @@ public:
     Array& operator=(Array const&) = default;
     Array& operator=(Array&&) noexcept = default;
     ~Array() noexcept = default;
+
+    Array(std::initializer_list<T> initList) :
+    _defaultValue{}, _storage(initList)
+    {}
 
     explicit Array(T aDefaultValue = T(), int aSize = 0, int aCapacity = 1) :
         _defaultValue{std::move(aDefaultValue)}
