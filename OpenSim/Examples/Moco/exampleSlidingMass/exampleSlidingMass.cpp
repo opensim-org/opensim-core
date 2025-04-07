@@ -48,7 +48,6 @@ std::unique_ptr<Model> createSlidingMassModel() {
     model->addComponent(body);
 
     // Allows translation along x.
-    std::cout << "ground name: " << model->getGround().getName() << std::endl;
     auto* joint = new SliderJoint("slider", model->getGround(), *body);
     auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
     coord.setName("position");

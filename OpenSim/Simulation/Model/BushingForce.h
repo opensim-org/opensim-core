@@ -215,12 +215,13 @@ public:
     double getDissipatedEnergy(const SimTK::State& state) const;
     
 
-    /** Set the accumulated dissipated energy to an arbitrary value, in joules.
-      * 
-      * Typically this is used only to reset the dissipated energy to zero, but 
-      * non-zero values can be useful if you are trying to match some existing 
-      * data or continuing a simulation.
-      */
+    /** 
+     * Set the accumulated dissipated energy to an arbitrary value, in joules.
+     * 
+     * Typically this is used only to reset the dissipated energy to zero, but 
+     * non-zero values can be useful if you are trying to match some existing 
+     * data or continuing a simulation.
+     */
     void setDissipatedEnergy(SimTK::State& state, double value) const;
 
     /** 
@@ -229,13 +230,16 @@ public:
      */
     double getPowerDissipation(const SimTK::State& state) const;
 
-    /// The first element of the Vec2 is the lower bound, and the second is the
-    /// upper bound.
-    /// This function is intended primarily for the model Output 
-    /// 'statebounds_dissipated_energy'. We don't need the state, but the 
-    /// state parameter is a requirement of Output functions.
+    /** 
+     * The first element of the Vec2 is the lower bound, and the second is the
+     * upper bound.
+     * 
+     * This function is intended primarily for the model Output 
+     * 'statebounds_dissipated_energy'. We don't need the state, but the state 
+     * parameter is a requirement of Output functions.
+     */
     SimTK::Vec2 getBoundsDissipatedEnergy(const SimTK::State&) const {
-         return {0, SimTK::Infinity}; 
+         return {-SimTK::Infinity, SimTK::Infinity}; 
     }
 
     //--------------------------------------------------------------------------
