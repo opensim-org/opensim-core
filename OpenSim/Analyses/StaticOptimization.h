@@ -80,7 +80,6 @@ protected:
     Storage *_forceStorage;
     GCVSplineSet _statesSplineSet;
     Storage *_statesDerivativeStore;
-    GCVSplineSet _statesDerivativeSplineSet;
 
     Array<int> _accelerationIndices;
 
@@ -138,6 +137,7 @@ public:
     double getConvergenceCriterion() { return _convergenceCriterion; }
     void setMaxIterations( const int maxIt) { _maximumIterations = maxIt; }
     int getMaxIterations() {return _maximumIterations; }
+    Storage* getStatesDerivativeStore() {return _statesDerivativeStore; }
     //--------------------------------------------------------------------------
     // ANALYSIS
     //--------------------------------------------------------------------------
