@@ -3,7 +3,7 @@
 # OpenSim does not use this file directly.
 
 # We require a version of CMake that supports Visual Studio 2015.
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15)
 
 project(OpenSimDependencies)
 
