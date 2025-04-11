@@ -193,7 +193,8 @@ AddDependency(NAME       simbody
 AddDependency(NAME       docopt
               DEFAULT    ON
               GIT_URL    https://github.com/docopt/docopt.cpp.git
-              GIT_TAG    3dd23e3280f213bacefdf5fcb04857bf52e90917)
+              GIT_TAG    3dd23e3280f213bacefdf5fcb04857bf52e90917
+              CMAKE_ARGS -DCMAKE_POLICY_VERSION_MINIMUM=3.5)
 
 set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 if(MSVC)
