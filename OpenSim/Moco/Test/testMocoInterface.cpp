@@ -2198,3 +2198,39 @@ TEST_CASE("Locked coordinates") {
     CHECK_THROWS_WITH(problem.createRep(),
             ContainsSubstring("Coordinate '/slider/position' is locked"));
 }
+
+TEST_CASE("BushingForce does not cause segfault") {
+
+    // Previously, a segfault occurred in Moco when a BushingForce was added to 
+    // a model. This was because the "dissipated energy" state variable
+    // allocated by the internal SimTK::Force::LinearBushing was not exposed by
+    // BushingForce, leading to a mismatch in the size of the auxiliary state
+    // vector between OpenSim and CasADi. This test ensures that this segfault 
+    // no longer occurs, since BushingForce now exposes the dissipated energy
+    // state variable.
+
+    // Create a model with a BushingForce.
+    std::unique_ptr<Model> model = createSlidingMassModel();
+    const auto& body = model->getComponent<Body>("/body");
+    auto* force = new BushingForce("bushing", model->getGround(), body);
+    model->addComponent(force);
+    model->finalizeConnections();
+
+    // Create a "sliding mass" MocoStudy.
+    MocoStudy study;
+    study.setName("sliding_mass");
+    study.set_write_solution("false");
+    MocoProblem& mp = study.updProblem();
+    mp.setModel(std::move(model));
+    mp.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(0, 10));
+    mp.setStateInfo("/slider/position/value", MocoBounds(0, 1),
+            MocoInitialBounds(0), MocoFinalBounds(1));
+    mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
+    mp.addGoal<MocoFinalTimeGoal>();
+    auto& ms = study.initSolver<MocoCasADiSolver>();
+    ms.set_num_mesh_intervals(25);
+    
+    // Confirm that no segfault occurs (i.e., the energy dissipation state 
+    // variable is acccounted for by Moco).
+    REQUIRE_NOTHROW(study.solve());
+}

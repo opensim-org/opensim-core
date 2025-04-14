@@ -637,7 +637,7 @@ TEST_CASE("testBushingForce") {
     osimModel.setName("BushingTest");
     // OpenSim bodies
     const Ground& ground = osimModel.getGround();
-    ;
+    
     auto* ball = new OpenSim::Body(
             "ball", mass, Vec3(0), mass * SimTK::Inertia::sphere(0.1));
     ball->attachGeometry(new Sphere{0.1});
@@ -730,6 +730,25 @@ TEST_CASE("testBushingForce") {
 
     // Save the forces
     reporter->getForceStorage().print("bushing_forces.mot");
+
+    // Check that the energy dissipation is zero (i.e., no damping).
+    CHECK(osim_state.getNZ() == 1);
+    CHECK_THAT(osim_state.getZ()[0], Catch::Matchers::WithinAbs(0.0, 1e-9));
+    CHECK_THAT(bushingForce.getDissipatedEnergy(osim_state), 
+            Catch::Matchers::WithinAbs(0.0, 1e-9));
+    CHECK_THAT(bushingForce.getPowerDissipation(osim_state), 
+            Catch::Matchers::WithinAbs(0.0, 1e-9));
+
+    // Update the energy dissipation to be non-zero.
+    Random::Uniform rand(0, 1);
+    Real energyDissipation = rand.getValue();
+    osim_state.updZ()[0] = energyDissipation;
+    CHECK_THAT(bushingForce.getDissipatedEnergy(osim_state), 
+            Catch::Matchers::WithinAbs(energyDissipation, 1e-9));
+    energyDissipation = rand.getValue();
+    bushingForce.setDissipatedEnergy(osim_state, energyDissipation);
+    CHECK_THAT(bushingForce.getDissipatedEnergy(osim_state), 
+            Catch::Matchers::WithinAbs(energyDissipation, 1e-9));
 
     // Before exiting lets see if copying the spring works
     BushingForce* copyOfSpring = spring->clone();

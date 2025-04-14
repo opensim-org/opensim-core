@@ -90,6 +90,9 @@ v4.6
   tendon force bounds rather than fiber length bounds. (#4040)
 - Fixed bugs in `PolynomialPathFitter` when too few coordinate samples were provided. (#4039)
 - In `StaticOptimization`, state derivatives are now pre-calculated at the time points of the original data, rather than calculated during optimization from splines. This change reduces computational time by as much as 25%. (#4037)
+- Exposed the "dissipated energy" state variable allocated by the `SimTK::Force::LinearBushing` that is internal to `BushingForce`. 
+  This change fixed a bug in Moco where adding a `BushingForce` led to a segfault due to a mismatch between the size of the 
+  auxiliary state vector reserved by Moco and `SimTK::State::getZ()`. (#4054)
 
 
 v4.5.1
