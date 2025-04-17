@@ -728,7 +728,7 @@ std::string AbstractTool::getControlsFileName() const
  */
 void AbstractTool::setControlsFileName(const std::string& controlsFilename)
 {
-    if (controlsFilename=="" || controlsFilename=="Unassigned") return;
+    bool disableControlSetController = (controlsFilename=="" || controlsFilename=="Unassigned");
 
     int numControllers = _controllerSet.getSize();
 
@@ -738,8 +738,11 @@ void AbstractTool::setControlsFileName(const std::string& controlsFilename)
             continue;
         OpenSim::ControlSetController& dController = (OpenSim::ControlSetController&)_controllerSet[i];
         dController.setControlSetFileName(controlsFilename);
+        if (disableControlSetController) 
+            dController.setEnabled(false);
         return;
     }
+    if (disableControlSetController) return;
     // Create a new controlsetController and add it to the tool
     ControlSetController* csc = new ControlSetController();
     csc->setControlSetFileName(controlsFilename);
