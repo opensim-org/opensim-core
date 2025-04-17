@@ -265,4 +265,14 @@ void testArm26DisabledMuscles() {
     ASSERT_EQUAL(forces.getColumnLabels().findIndex("TRIlat"), -1);
     ASSERT_EQUAL(forces.getColumnLabels().findIndex("TRImed"), -1);
 
+    StaticOptimization& statOpt =(StaticOptimization&)model.getAnalysisSet().get("StaticOptimization");
+    Storage* statesDerivativeStore = statOpt.getStatesDerivativeStore();
+    const Storage* statesStore = statOpt._statesStore;
+    Array<double> time;
+    Array<double> time_d;
+    int nt = statesStore->getTimeColumn(time);
+    int nt_d = statesDerivativeStore->getTimeColumn(time_d);
+    ASSERT_EQUAL(nt, nt_d);
+    ASSERT_EQUAL<Array<double>>(time, time_d, std::numeric_limits<double>::epsilon());
+
 }

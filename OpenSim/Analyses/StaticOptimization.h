@@ -79,6 +79,7 @@ protected:
     Storage *_activationStorage;
     Storage *_forceStorage;
     GCVSplineSet _statesSplineSet;
+    Storage *_statesDerivativeStore;
 
     Array<int> _accelerationIndices;
 
@@ -123,6 +124,7 @@ public:
     void setStorageCapacityIncrements(int) {}
     Storage* getActivationStorage();
     Storage* getForceStorage();
+    Storage* getStatesDerivativeStore() {return _statesDerivativeStore; }
 
     bool getUseModelForceSet() { return _useModelForceSet; }
     void setUseModelForceSet(bool aUseModelActuatorSet) { _useModelForceSet = aUseModelActuatorSet; }
@@ -136,6 +138,7 @@ public:
     double getConvergenceCriterion() { return _convergenceCriterion; }
     void setMaxIterations( const int maxIt) { _maximumIterations = maxIt; }
     int getMaxIterations() {return _maximumIterations; }
+    
     //--------------------------------------------------------------------------
     // ANALYSIS
     //--------------------------------------------------------------------------
