@@ -360,11 +360,9 @@ record(const SimTK::State& s)
     
     target.setParameterLimits(lowerBounds, upperBounds);
 
-    _parameters = 0; // Set initial guess to zeros
-
     // Static optimization
     _modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy,SimTK::Stage::Velocity);
-    target.prepareToOptimize(sWorkingCopy, &_parameters[0]);
+    target.prepareToOptimize(sWorkingCopy, &_parameters[0]); // Use previous solution as initial guess
 
     //LARGE_INTEGER start;
     //LARGE_INTEGER stop;
@@ -431,7 +429,7 @@ record(const SimTK::State& s)
             double tolConstraints = 1e-6;
             bool incompleteModel = false;
             string msgIncomplete = "The model appears unsuitable for static optimization.\nTry appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):\n";
-            SimTK::Vector constraints;
+            SimTK::Vector constraints(target.getNumConstraints());
             target.constraintFunc(_parameters,true,constraints);
 
             auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
@@ -572,8 +570,20 @@ int StaticOptimization::begin(const SimTK::State& s )
         _forceReporter->begin(sWorkingCopy);
         _forceReporter->updForceStorage().reset();
 
+        // Set initial guess to highest activation
+        // This is necessary because previous activation is used for determining
+        // the force of the muscle (therefore cannot be zero)
         _parameters.resize(_modelWorkingCopy->getNumControls());
-        _parameters = 0;
+        const Set<Actuator>& fs = _modelWorkingCopy->getActuators();
+        for(int i=0,j=0;i<fs.getSize();i++) {
+            ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fs.get(i));
+            if (act) {
+                if (act->getMinControl() != -INFINITY)
+                    _parameters[j++] = act->getMaxControl();
+                else
+                    _parameters[j++] = 1.;
+            }
+        }
     }
 
     _statesSplineSet=GCVSplineSet(5,_statesStore);

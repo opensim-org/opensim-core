@@ -599,6 +599,7 @@ programmatically in MATLAB or python.
   variable `OPENSIM_HOME`. OpenSim uses `PATH` instead.
 - The Thelen2003Muscle now depend on separate components for modeling pennation,
   and activation dynamics.
+- Static optimization now solves for muscle equilibrium. 
 
 Documentation
 -------------
