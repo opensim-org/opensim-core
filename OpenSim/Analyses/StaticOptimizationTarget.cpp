@@ -495,17 +495,6 @@ void StaticOptimizationTarget::computeConstraintVector(
         int nq = _model->getNumCoordinates();
         int nu = _model->getNumSpeeds();
         Array<double> targetStateArray(0.0, nq + nu);
-        
-        //Ensure state time matches stored time associated with derivative
-        int idx = _statesDerivativeStore->findIndex(t);
-        double tstore;
-        _statesDerivativeStore->getTime(idx, tstore);
-        OPENSIM_THROW_IF(
-            abs(t - tstore) > FLT_EPSILON,
-            OpenSim::Exception,
-            "State time " + std::to_string(t) + " does not match storage time" +
-            std::to_string(tstore)
-        )
 
         _statesDerivativeStore->getDataAtTime(t, nq + nu, targetStateArray);
         double targetAcceleration = targetStateArray[ind];

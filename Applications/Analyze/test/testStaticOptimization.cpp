@@ -265,6 +265,7 @@ void testArm26DisabledMuscles() {
     ASSERT_EQUAL(forces.getColumnLabels().findIndex("TRIlat"), -1);
     ASSERT_EQUAL(forces.getColumnLabels().findIndex("TRImed"), -1);
 
+    // Ensure time values in the stored state derivatives match the times in the state
     StaticOptimization& statOpt =(StaticOptimization&)model.getAnalysisSet().get("StaticOptimization");
     Storage* statesDerivativeStore = statOpt.getStatesDerivativeStore();
     const Storage* statesStore = statOpt._statesStore;
