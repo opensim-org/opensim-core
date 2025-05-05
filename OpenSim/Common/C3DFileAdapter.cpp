@@ -112,8 +112,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         SimTK::Matrix_<SimTK::Vec3> marker_matrix(marker_nrow, marker_ncol);
 
         std::vector<std::string> marker_labels{};
-        for (auto label : c3d.parameters().group("POINT")
-                .parameter("LABELS").valuesAsString()) {
+        for (auto label : c3d.pointNames()) {
             marker_labels.push_back(SimTK::Value<std::string>(label));
         }
 
