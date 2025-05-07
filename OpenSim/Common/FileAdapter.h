@@ -166,9 +166,12 @@ class TableMissingHeader : public Exception {
 public:
     TableMissingHeader(const std::string& file,
                        size_t line,
-                       const std::string& func) :
+                       const std::string& func,
+                       const std::string& message = "") :
         Exception(file, line, func) {
         std::string msg = "Table does not have metadata for 'header'.";
+        if(!message.empty())
+            msg += " " + message;
 
         addMessage(msg);
     }
