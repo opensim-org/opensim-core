@@ -27,14 +27,15 @@
 #include "Assertion.h"
 #include <algorithm>
 #include <cmath>
+#include <condition_variable>
 #include <functional>
 #include <iostream>
 #include <memory>
 #include <mutex>
 #include <numeric>
 #include <stack>
-#include <condition_variable>
 #include <utility>
+#include <vector>
 
 #include <SimTKcommon/internal/BigMatrix.h>
 
@@ -120,6 +121,25 @@ std::vector<T> createVectorLinspaceInterval(
 OSIMCOMMON_API
 SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
 #endif
+
+/**
+ * @brief Detects the most likely string delimiter in an input string.
+ *
+ * This function identifies the most frequent delimiter from a predefined list
+ * of common delimiters based on occurrences in the input string.
+ *
+ * @param input The string to analyze.
+ * @param delimiters A vector of candidate delimiters.
+ *
+ * @return: The most likely delimiter (as an std::string),
+ * or an empty string if none was found.
+ *
+ * @note Supports single-character delimiters.
+ */
+ /// @ingroup commonutil
+OSIMCOMMON_API
+std::string detectDelimiter(
+        const std::string& input, const std::vector<std::string>& delimiters);
 
 /**
  * @brief Checks if the elements of a vector are uniformly spaced.
