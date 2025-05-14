@@ -8,6 +8,9 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.6
 =====
+- Improvements for the `XsensDataReader`. Add a configuration option to XSensDataReaderSettings to specify a known data rate (sampling frequency). Automatically detect the delimiter used in the file. Support the new Xsens export rotations formats (Rotation Matrix, Quaternion, or Euler angles) values from Xsens files. Update the parser to handle the path separator for data_folder and fix a memory leak. Verify integrity and uniformity of all files. Add tests with additional new and old Xsens formats. (#4063)
+
+
 
 
 v4.5.2
