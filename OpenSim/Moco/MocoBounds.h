@@ -134,6 +134,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalBounds, MocoBounds);
 
 } // namespace OpenSim
 
+#ifndef SWIG
 template <>
 struct fmt::formatter<OpenSim::MocoBounds> {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
@@ -172,5 +173,6 @@ struct fmt::formatter<OpenSim::MocoFinalBounds> {
         return fmt::format_to(ctx.out(), "{}", out);
     }
 };
+#endif
 
 #endif // OPENSIM_MOCOBOUNDS_H

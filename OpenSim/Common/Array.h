@@ -598,6 +598,7 @@ private:
 
 }; //namespace
 
+#ifndef SWIG
 template <>
 struct fmt::formatter<OpenSim::Array<double>> {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
@@ -610,5 +611,6 @@ struct fmt::formatter<OpenSim::Array<double>> {
         return fmt::format_to(ctx.out(), "{}", out);
     }
 };
+#endif
 
 #endif // OPENSIM_ARRAY_H_

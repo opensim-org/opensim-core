@@ -34,6 +34,7 @@
 #include "SimTKcommon/internal/BigMatrix.h"
 #include "SimTKcommon/internal/MassProperties.h"
 
+#ifndef SWIG
 template <>
 struct fmt::formatter<SimTK::Vec3> {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
@@ -84,6 +85,7 @@ struct fmt::formatter<SimTK::Inertia> {
         return fmt::format_to(ctx.out(), "{}", out);
     }
 };
+#endif
 
 namespace OpenSim {
 
