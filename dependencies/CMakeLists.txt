@@ -204,7 +204,7 @@ endif()
 AddDependency(NAME       spdlog
               DEFAULT    ON
               GIT_URL    https://github.com/gabime/spdlog.git
-              GIT_TAG    v1.14.0
+              GIT_TAG    v1.14.1
               CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
