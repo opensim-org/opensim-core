@@ -911,31 +911,31 @@ public:
 
         std::string typeName = SimTK::NiceTypeName<T>::namestr();
         if (!readSimplePropertyFromStream(valstream)) {
-            log_warn("Failed to read '{}': property '{}' with input '{}': the data has been ignored",
-                typeName,
-                this->getName(),
-                valstream.str().substr(0, 50)  // limit displayed length
-            );
+            // log_warn("Failed to read '{}': property '{}' with input '{}': the data has been ignored",
+            //     typeName,
+            //     this->getName(),
+            //     valstream.str().substr(0, 50)  // limit displayed length
+            // );
             shouldRollback = true;
         }
         if (values.size() < this->getMinListSize()) {
-            log_warn("Failed to read '{}': property '{}' with input '{}': does not contain enough values (minimum: {}, got: {}): the data (all fields) have been ignored",
-                typeName,
-                this->getName(),
-                valstream.str().substr(0,50),  // limit displayed length
-                this->getMinListSize(),
-                values.size()
-            );
+            // log_warn("Failed to read '{}': property '{}' with input '{}': does not contain enough values (minimum: {}, got: {}): the data (all fields) have been ignored",
+            //     typeName,
+            //     this->getName(),
+            //     valstream.str().substr(0,50),  // limit displayed length
+            //     this->getMinListSize(),
+            //     values.size()
+            // );
             shouldRollback = true;
         }
         if (values.size() > this->getMaxListSize()) {
-            log_warn("Truncated '{}': property '{}' with input '{}': contains too many values (maximum: {}, got: {}): the data has been truncated",
-                typeName,
-                this->getName(),
-                valstream.str().substr(0,50),  // limit displayed length
-                this->getMaxListSize(),
-                values.size()
-            );
+            // log_warn("Truncated '{}': property '{}' with input '{}': contains too many values (maximum: {}, got: {}): the data has been truncated",
+            //     typeName,
+            //     this->getName(),
+            //     valstream.str().substr(0,50),  // limit displayed length
+            //     this->getMaxListSize(),
+            //     values.size()
+            // );
 
             values.resize(this->getMaxListSize());  // truncate
         }
