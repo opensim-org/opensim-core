@@ -134,4 +134,43 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalBounds, MocoBounds);
 
 } // namespace OpenSim
 
+template <>
+struct fmt::formatter<OpenSim::MocoBounds> {
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template <typename FormatContext>
+    auto format(const OpenSim::MocoBounds& b, FormatContext& ctx) {
+        std::stringstream ss;
+        ss << b;
+        std::string out = ss.str();
+        return fmt::format_to(ctx.out(), "{}", out);
+    }
+};
+
+template <>
+struct fmt::formatter<OpenSim::MocoInitialBounds> {
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template <typename FormatContext>
+    auto format(const OpenSim::MocoInitialBounds& b, FormatContext& ctx) {
+        std::stringstream ss;
+        ss << b;
+        std::string out = ss.str();
+        return fmt::format_to(ctx.out(), "{}", out);
+    }
+};
+
+template <>
+struct fmt::formatter<OpenSim::MocoFinalBounds> {
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template <typename FormatContext>
+    auto format(const OpenSim::MocoFinalBounds& b, FormatContext& ctx) {
+        std::stringstream ss;
+        ss << b;
+        std::string out = ss.str();
+        return fmt::format_to(ctx.out(), "{}", out);
+    }
+};
+
 #endif // OPENSIM_MOCOBOUNDS_H
