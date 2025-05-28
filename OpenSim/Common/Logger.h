@@ -28,6 +28,7 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <string>
 #include <spdlog/fmt/ostr.h> 
+#include <spdlog/fmt/fmt.h>
 
 #include "SimTKcommon/SmallMatrix.h"
 #include "SimTKcommon/internal/BigMatrix.h"
