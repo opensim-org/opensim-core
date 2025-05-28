@@ -1406,13 +1406,15 @@ ObjectProperty<T>::readFromXMLElement
             Object::getDefaultInstanceOfType(objTypeTag);
 
         if (!registeredObj) {
-            log_error("Encountered unrecognized Object typename {} while reading property {}. There is no registered Object of this type. Ignoring.", objTypeTag, this->getName());
+            log_error("Encountered unrecognized Object typename {} while reading property {}. There is no registered Object of this type. Ignoring.", 
+                    objTypeTag.convertTo<std::string>(), this->getName());
             continue;
         }
 
         // Check that the object type found is derived from T.
         if (!dynamic_cast<const T*>(registeredObj)) {
-            log_error("Object type {} wrong for {} property {}. Ignoring.", objTypeTag, objectClassName, this->getName());
+            log_error("Object type {} wrong for {} property {}. Ignoring.", 
+                    objTypeTag.convertTo<std::string>(), objectClassName, this->getName());
             continue;                        
         }
         ++objectsFound;
