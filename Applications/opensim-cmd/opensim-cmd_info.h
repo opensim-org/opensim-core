@@ -25,7 +25,7 @@
 
 #include <iostream>
 
-#include <docopt.h>
+#include <Vendors/docopt/docopt.h>
 #include "parse_arguments.h"
 
 static const char HELP_INFO[] =

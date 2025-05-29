@@ -190,11 +190,6 @@ AddDependency(NAME       simbody
                          -DBUILD_TESTING:BOOL=OFF
                          ${SIMBODY_EXTRA_CMAKE_ARGS})
 
-AddDependency(NAME       docopt
-              DEFAULT    ON
-              GIT_URL    https://github.com/docopt/docopt.cpp.git
-              GIT_TAG    3dd23e3280f213bacefdf5fcb04857bf52e90917)
-
 set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 if(MSVC)
     # `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
@@ -204,7 +199,7 @@ endif()
 AddDependency(NAME       spdlog
               DEFAULT    ON
               GIT_URL    https://github.com/gabime/spdlog.git
-              GIT_TAG    v1.4.1
+              GIT_TAG    v1.9.0
               CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
