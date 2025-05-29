@@ -263,9 +263,11 @@ void Component::finalizeFromProperties()
 
         if (count > 0) { // if a duplicate
             // Warn of the problem
+            std::string concreteClassName = getConcreteClassName();
+            std::string componentName = getName();
             log_warn("{} '{}' has subcomponents with duplicate name '{}'. "
                      "The duplicate is being renamed to '{}'.",
-                     getConcreteClassName(), getName(), name, uniqueName);
+                     concreteClassName, componentName, name, uniqueName);
 
             // Now rename the subcomponent with its verified unique name
             sub.setName(uniqueName);
@@ -1277,12 +1279,12 @@ void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
                 auto name = node.getRequiredAttribute("name").getValue();
                 if (name.find_first_of("\n\t ") < std::string::npos) {
                     log_warn("{} name '{}' contains whitespace.",
-                            getConcreteClassName(), name);
+                            getConcreteClassName(), std::string(name));
                     name.erase(
                         std::remove_if(name.begin(), name.end(), ::isspace),
                         name.end());
                     node.setAttributeValue("name", name);
-                    log_warn("It was renamed to '{}'.", name);
+                    log_warn("It was renamed to '{}'.", std::string(name));
                 }
             }
             else { // As 4.0 all Components must have a name. If none, assign one.
@@ -1885,9 +1887,10 @@ void Component::AddedStateVariable::
 
 
 void Component::printSocketInfo() const {
+    const std::string& name = getName();
+    const std::string& className = getConcreteClassName();
     std::string str = fmt::format("Sockets for component {} of type [{}] along "
-                                  "with connectee paths:", getName(),
-                                  getConcreteClassName());
+                                  "with connectee paths:", name, className);
     if (getNumSockets() == 0)
         str += " none";
     log_cout(str);
@@ -1906,10 +1909,14 @@ void Component::printSocketInfo() const {
     for (const auto& it : _socketsTable) {
         const auto& socket = it.second;
         // Right-justify the connectee type names and socket names.
+        std::string connecteeTypeName = socket->getConnecteeTypeName();
+        std::string connecteeTypeNameFormatted =
+            fmt::format("[{}]", connecteeTypeName);
+        std::string socketName = socket->getName();
         str = fmt::format("{:>{}} {:>{}} : ",
-                          fmt::format("[{}]", socket->getConnecteeTypeName()),
+                          connecteeTypeNameFormatted,
                           maxlenTypeName,
-                          socket->getName(), maxlenSockName);
+                          socketName, maxlenSockName);
         if (socket->getNumConnectees() == 0) {
             str += "no connectees";
         } else {
@@ -1974,9 +1981,10 @@ void Component::printOutputInfo(const bool includeDescendants) const {
 
     // Do not display header for Components with no outputs.
     if (getNumOutputs() > 0) {
+        std::string absolutePath = getAbsolutePathString();
+        const std::string& className = getConcreteClassName();
         std::string msg = fmt::format("Outputs from {} [{}]",
-                                      getAbsolutePathString(),
-                                      getConcreteClassName());
+                                      absolutePath, className);
         msg += "\n" + std::string(msg.size(), '=');
         log_cout(msg);
 
@@ -1987,10 +1995,10 @@ void Component::printOutputInfo(const bool includeDescendants) const {
         maxlen += 6;
 
         for(const auto& output : outputs) {
-            const auto& name = output.second->getTypeName();
-            log_cout("{:>{}}  {}",
-                     fmt::format("[{}]", output.second->getTypeName()),
-                     maxlen, output.first);
+            const std::string& name = output.second->getTypeName();
+            std::string nameFormatted = fmt::format("[{}]", name);
+            log_cout("{:>{}}  {}", nameFormatted,
+                     maxlen, std::string(output.first));
         }
         log_cout("");
     }

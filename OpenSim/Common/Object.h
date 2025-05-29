@@ -1406,15 +1406,28 @@ ObjectProperty<T>::readFromXMLElement
             Object::getDefaultInstanceOfType(objTypeTag);
 
         if (!registeredObj) {
-            // log_error("Encountered unrecognized Object typename {} while reading property {}. There is no registered Object of this type. Ignoring.", 
-            //         objTypeTag.convertTo<std::string>(), this->getName());
+            std::string objTypeTagStr = objTypeTag.convertTo<std::string>();
+            std::string msg = fmt::format(
+                "Encountered unrecognized Object typename '{}' while reading "
+                "property '{}'. There is no registered Object of this type. "
+                "Ignoring.", objTypeTagStr, std::string(this->getName()));
+            log_error(msg);
             continue;
         }
 
         // Check that the object type found is derived from T.
         if (!dynamic_cast<const T*>(registeredObj)) {
-            // log_error("Object type {} wrong for {} property {}. Ignoring.", 
-            //         objTypeTag.convertTo<std::string>(), objectClassName, this->getName());
+            std::string objTypeTagStr = objTypeTag.convertTo<std::string>();
+            std::string msg = fmt::format(
+                "Object type '{}' is not derived from {}. "
+                "Property '{}' can only contain objects of type {}. "
+                "Ignoring this object.", 
+                objTypeTagStr, 
+                std::string(SimTK::NiceTypeName<T>::namestr()),
+                std::string(this->getName()), 
+                std::string(SimTK::NiceTypeName<T>::namestr()));
+
+            log_error(msg);
             continue;                        
         }
         ++objectsFound;
@@ -1432,20 +1445,22 @@ ObjectProperty<T>::readFromXMLElement
         adoptAndAppendValueVirtual(objectT); // don't copy
     }
 
-    // if (objectsFound < this->getMinListSize()) {
-    //     log_error("Got {} object values for Property {} but the minimum is {}. Continuing anyway.",
-    //         objectsFound ,
-    //         this->getName() ,
-    //         this->getMinListSize()
-    //     );
-    // }
-    // if (objectsFound > this->getMaxListSize()) {
-    //     log_error("Got {} object values for Property {} but the maximum is {}. Ignoring the rest.",
-    //         objectsFound,
-    //         this->getName(),
-    //         this->getMaxListSize()
-    //     );
-    // }
+    if (objectsFound < this->getMinListSize()) {
+        std::string msg = fmt::format(
+            "Got {} object values for Property '{}' but the minimum is {}. "
+            "Continuing anyway.", objectsFound, 
+            std::string(this->getName()),
+            this->getMinListSize());
+        log_error(msg);
+    }
+    if (objectsFound > this->getMaxListSize()) {
+        std::string msg = fmt::format(
+            "Got {} object values for Property '{}' but the maximum is {}. "
+            "Ignoring the rest.", objectsFound, 
+            std::string(this->getName()),
+            this->getMaxListSize());
+        log_error(msg);
+    }
 }
 
 // Each object value serializes itself into a subelement of the given
