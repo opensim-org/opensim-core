@@ -8,6 +8,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.6
 =====
+- Updated the dependency `spdlog` to `v1.14.0`. (#4067)
 
 
 v4.5.2
@@ -97,7 +98,6 @@ v4.5.2
 - Exposed the "dissipated energy" state variable allocated by the `SimTK::Force::LinearBushing` that is internal to `BushingForce`. 
   This change fixed a bug in Moco where adding a `BushingForce` led to a segfault due to a mismatch between the size of the 
   auxiliary state vector reserved by Moco and `SimTK::State::getZ()`. (#4054)
-- Updated the dependency `spdlog` to `v1.9.0`. (#4067)
 
 
 v4.5.1

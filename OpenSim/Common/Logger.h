@@ -22,7 +22,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
- #include "osimCommonDLL.h"
+#include "osimCommonDLL.h"
 #include <set>
 #include <string>
 

@@ -26,10 +26,6 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 
-#include <spdlog/fmt/fmt.h>
-
-
-
 namespace OpenSim {
 
 /**
