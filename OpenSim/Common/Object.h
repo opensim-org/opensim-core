@@ -1406,26 +1406,26 @@ ObjectProperty<T>::readFromXMLElement
             Object::getDefaultInstanceOfType(objTypeTag);
 
         if (!registeredObj) {
-            std::string objTypeTagStr = objTypeTag.convertTo<std::string>();
-            std::string msg = fmt::format(
-                "Encountered unrecognized Object typename '{}' while reading "
-                "property '{}'. There is no registered Object of this type. "
-                "Ignoring.", objTypeTagStr, std::string(this->getName()));
-            log_error(msg);
+            // std::string objTypeTagStr = objTypeTag.convertTo<std::string>();
+            // std::string msg = fmt::format(
+            //     "Encountered unrecognized Object typename '{}' while reading "
+            //     "property '{}'. There is no registered Object of this type. "
+            //     "Ignoring.", objTypeTagStr, std::string(this->getName()));
+            // log_error(msg);
             continue;
         }
 
         // Check that the object type found is derived from T.
         if (!dynamic_cast<const T*>(registeredObj)) {
-            std::string objTypeTagStr = objTypeTag.convertTo<std::string>();
-            std::string msg = fmt::format(
-                "Object type '{}' is not derived from {}. "
-                "Property '{}' can only contain objects of type {}. "
-                "Ignoring this object.", 
-                objTypeTagStr, 
-                std::string(SimTK::NiceTypeName<T>::namestr()),
-                std::string(this->getName()), 
-                std::string(SimTK::NiceTypeName<T>::namestr()));
+            // std::string objTypeTagStr = objTypeTag.convertTo<std::string>();
+            // std::string msg = fmt::format(
+            //     "Object type '{}' is not derived from {}. "
+            //     "Property '{}' can only contain objects of type {}. "
+            //     "Ignoring this object.", 
+            //     objTypeTagStr, 
+            //     std::string(SimTK::NiceTypeName<T>::namestr()),
+            //     std::string(this->getName()), 
+            //     std::string(SimTK::NiceTypeName<T>::namestr()));
 
             log_error(msg);
             continue;                        
@@ -1445,22 +1445,22 @@ ObjectProperty<T>::readFromXMLElement
         adoptAndAppendValueVirtual(objectT); // don't copy
     }
 
-    if (objectsFound < this->getMinListSize()) {
-        std::string msg = fmt::format(
-            "Got {} object values for Property '{}' but the minimum is {}. "
-            "Continuing anyway.", objectsFound, 
-            std::string(this->getName()),
-            this->getMinListSize());
-        log_error(msg);
-    }
-    if (objectsFound > this->getMaxListSize()) {
-        std::string msg = fmt::format(
-            "Got {} object values for Property '{}' but the maximum is {}. "
-            "Ignoring the rest.", objectsFound, 
-            std::string(this->getName()),
-            this->getMaxListSize());
-        log_error(msg);
-    }
+    // if (objectsFound < this->getMinListSize()) {
+    //     std::string msg = fmt::format(
+    //         "Got {} object values for Property '{}' but the minimum is {}. "
+    //         "Continuing anyway.", objectsFound, 
+    //         std::string(this->getName()),
+    //         this->getMinListSize());
+    //     log_error(msg);
+    // }
+    // if (objectsFound > this->getMaxListSize()) {
+    //     std::string msg = fmt::format(
+    //         "Got {} object values for Property '{}' but the maximum is {}. "
+    //         "Ignoring the rest.", objectsFound, 
+    //         std::string(this->getName()),
+    //         this->getMaxListSize());
+    //     log_error(msg);
+    // }
 }
 
 // Each object value serializes itself into a subelement of the given
