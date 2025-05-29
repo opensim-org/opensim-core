@@ -22,6 +22,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+ #include "osimCommonDLL.h"
 #include <set>
 #include <string>
 
@@ -29,8 +30,6 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/fmt/ostr.h> 
 #include <spdlog/fmt/fmt.h>
-
-#include "osimCommonDLL.h"
 
 #include "SimTKcommon/SmallMatrix.h"
 #include "SimTKcommon/internal/BigMatrix.h"
