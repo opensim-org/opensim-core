@@ -1,6 +1,10 @@
 file(GLOB INCLUDE_FILES *.h)
 file(GLOB SOURCE_FILES *.cpp)
 
+if(WIN32)
+    add_definitions("-DDOCOPT_BUILDING_SHARED_LIBRARY")
+endif(WIN32)
+
 OpenSimAddLibrary(VENDORLIB LOWERINCLUDEDIRNAME
     KIT docopt
     AUTHORS "Jared_Grubb"
