@@ -43,9 +43,9 @@
  */
 
 // INCLUDES
-#include "Logger.h"
 #include "ComponentList.h"
 #include "ComponentPath.h"
+#include "Logger.h"
 #include "OpenSim/Common/Array.h"
 #include "OpenSim/Common/ComponentOutput.h"
 #include "OpenSim/Common/ComponentSocket.h"
@@ -2770,11 +2770,12 @@ public:
         for (const C& thisComp : compList) {
             const std::string thisClass = thisComp.getConcreteClassName();
             auto path = thisComp.getAbsolutePath();
-            std::string classTag = fmt::format("[{}]", thisClass);
-            std::string indent((path.getNumPathLevels() - 1) * 4, ' ');
-            std::string msg = fmt::format("{:>{}}  {}/{}", 
-                    classTag, maxlen, indent, path.getComponentName());
-            log_cout(msg);
+            log_cout(fmt::format(
+                    "{:>{}}  {}/{}",
+                    fmt::format("[{}]", thisClass),
+                    maxlen,
+                    std::string((path.getNumPathLevels() - 1) * 4, ' '),
+                    path.getComponentName()));
         }
         log_cout("");
     }
