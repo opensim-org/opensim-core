@@ -26,29 +26,24 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-
-
+ 
 // INCLUDES
 #include <OpenSim/Common/Array.h>
 #include "OpenSim/Common/TimeSeriesTable.h"
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <SimTKcommon/internal/ReferencePtr.h>
-
 namespace SimTK {
 class Integrator;
 class State;
 class System;
 class TimeStepper;
 }
-
 namespace OpenSim { 
 
 class Model;
 class Storage;
 class ControllerSet;
 
-//=============================================================================
-//=============================================================================
 /**
  * A class that manages the execution of a simulation. This class uses a
  * SimTK::Integrator and SimTK::TimeStepper to perform the simulation. By
@@ -66,8 +61,7 @@ class ControllerSet;
  * If you make changes to the SimTK::State, a new Manager must be created
  * before integrating again.
  */
-class OSIMSIMULATION_API Manager
-{
+class OSIMSIMULATION_API Manager {
 
 //=============================================================================
 // DATA
@@ -77,6 +71,7 @@ private:
     std::string _sessionName;
     /** Model for which the simulation is performed. */
     SimTK::ReferencePtr<Model> _model;
+    SimTK::State _state;
 
     /** Integrator. */
     std::unique_ptr<SimTK::Integrator> _integ;
@@ -147,15 +142,26 @@ public:
     void operator=(const Manager&) = delete;
 
 private:
+    /** Set all member variables to their null values. */
     void setNull();
+
+    /** Construct the storage utility. */
     bool constructStorage();
-    //--------------------------------------------------------------------------
-    // GET AND SET
-    //--------------------------------------------------------------------------
+    
 public:
-    void setSessionName(const std::string &name);
+    // GET AND SET
+    /** Set the model. and initializes other entities that depend on it. */
     void setModel(Model& model);
+
+    /** Set the session name of this Manager instance. */
+    void setSessionName(const std::string &name);
+
+    /** Get the session name of this Manager instance. */
     const std::string& getSessionName() const;
+
+    /**
+     * Get the name to be shown for this object in Simtk-model tree
+     */
     const std::string& toString() const;
 
     void setPerformAnalyses(bool performAnalyses)
@@ -164,12 +170,12 @@ public:
     { _writeToStorage =  writeToStorage; }
 
     /** @name Configure the Integrator
-      * @note Call these functions before calling `Manager::initialize()`.
-      * @{ */
+     * @note Call these functions before calling `Manager::initialize()`.
+     * @{ */
 
     // Integrator
     /** Supported integrator methods. For MATLAB, int's must be used rather
-        than enum's (see example in setIntegratorMethod(IntegratorMethod)). */
+     *  than enum's (see example in setIntegratorMethod(IntegratorMethod)). */
     enum class IntegratorMethod {
         ExplicitEuler      = 0, ///< 0 : For details, see SimTK::ExplicitEulerIntegrator.
         RungeKutta2        = 1, ///< 1 : For details, see SimTK::RungeKutta2Integrator.
@@ -177,17 +183,17 @@ public:
         RungeKuttaFeldberg = 3, ///< 3 : For details, see SimTK::RungeKuttaFeldbergIntegrator.
         RungeKuttaMerson   = 4, ///< 4 : For details, see SimTK::RungeKuttaMersonIntegrator.
         SemiExplicitEuler2 = 5, ///< 5 : For details, see SimTK::SemiExplicitEuler2Integrator.
-        Verlet             = 6  ///< 6 : For details, see SimTK::VerletIntegrator.
+        Verlet             = 6, ///< 6 : For details, see SimTK::VerletIntegrator.
+        CPodes             = 7, ///< 7 : For details, see SimTK::CPodesIntegrator.
 
         // Not included
-        //CPodes, stochastic segfaults when destructed via unique_ptr::reset()
         //SemiExplicitEuler, no error ctrl, requires fixed stepSize arg on construction
     };
 
     /** Sets the integrator method used via IntegratorMethod enum. The 
-      * integrator will be set to its default options, even if the caller
-      * requests the same integrator method. Note that this function must
-      * be called before `Manager::initialize()`.
+     * integrator will be set to its default options, even if the caller
+     * requests the same integrator method. Note that this function must
+     * be called before `Manager::initialize()`.
       
       <b>C++ example</b>
       \code{.cpp}
@@ -211,164 +217,320 @@ public:
       */
     void setIntegratorMethod(IntegratorMethod integMethod);
 
+    /** Get the integrator. */
     SimTK::Integrator& getIntegrator() const;
 
     /** Sets the accuracy of the integrator. 
-      * For more details, see `SimTK::Integrator::setAccuracy(SimTK::Real)`. */
+     * For more details, see `SimTK::Integrator::setAccuracy(SimTK::Real)`. */
     void setIntegratorAccuracy(double accuracy);
 
     /** Sets the minimum step size of the integrator.
-    * For more details, see `SimTK::Integrator::setMinimumStepSize(SimTK::Real)`. */
+     * For more details, see `SimTK::Integrator::setMinimumStepSize(SimTK::Real)`. */
     void setIntegratorMinimumStepSize(double hmin);
 
     /** Sets the maximum step size of the integrator.
-    * For more details, see `SimTK::Integrator::setMaximumStepSize(SimTK::Real)`. */
+     * For more details, see `SimTK::Integrator::setMaximumStepSize(SimTK::Real)`. */
     void setIntegratorMaximumStepSize(double hmax);
 
     /** Sets the limit of steps the integrator can take per call of `stepTo()`.
-      * Note that Manager::integrate() calls `stepTo()` for each interval when a fixed
-      * step size is used.
-      * For more details, see SimTK::Integrator::setInternalStepLimit(int). */
+     * Note that Manager::integrate() calls `stepTo()` for each interval when a fixed
+     * step size is used.
+     * For more details, see SimTK::Integrator::setInternalStepLimit(int). */
     void setIntegratorInternalStepLimit(int nSteps);
 
     //void setIntegratorFixedStepSize(double stepSize);
    
     /** @} */
 
-    // SPECIFIED TIME STEP
+    // SPECIFIED DT
+    /**
+     * Set whether or not to take a specified sequence of deltas during an
+     * integration. The time deltas are obtained from what's stored in the
+     * vector dt vector (@see setDTVector()).  In order to execute an
+     * integration in this manner, the sum of the deltas must cover any
+     * requested integration interval.  If not, an exception will be thrown
+     * at the beginning of an integration.
+     *
+     * @param aTrueFalse If true, a specified dt's will be used.
+     * If set to false, a variable-step integration or a constant step integration
+     * will be used.
+     * When set to true, the flag used to indicate whether or not a constant
+     * time step is used is set to false.
+     *
+     * @see setDTVector()
+     * @see getUseConstantDT()
+     */
     void setUseSpecifiedDT(bool aTrueFalse);
+
+    /**
+     * Get whether or not to take a specified sequence of deltas during an
+     * integration.
+     * The time deltas are obtained from what's stored in the dt vector
+     * (@see setDTVector()).  In order to execute an
+     * integration in this manner, the sum of the deltas must cover any
+     * requested integration interval.  If not, an exception will be thrown
+     * at the beginning of an integration.
+     *
+     * @return If true, a specified time step will be used if possible.
+     * If false, a variable-step integration will be performed or a constant
+     * time step will be taken.
+     *
+     * @see getUseConstantDT()
+     * @see getDT()
+     * @see getTimeVector()
+     */
     bool getUseSpecifiedDT() const;
-    // CONSTANT TIME STEP
+
+    // CONSTANT DT
+    /**
+     * Set whether or not to take a constant integration time step. The size of
+     * the constant integration time step can be set using setDT().
+     *
+     * @param aTrueFalse If true, constant time steps are used.
+     * When set to true, the flag used to indicate whether or not to take
+     * specified time steps is set to false.
+     * If set to false, a variable-step integration or a constant integration
+     * time step will be used.
+     *
+     * @see setDT()
+     * @see setUseSpecifiedDT()
+     * @see getUseSpecifiedDT();
+     */
     void setUseConstantDT(bool aTrueFalse);
+
+    // DT ARRAY
+    /**
+     * Get whether or not to use a constant integration time step. The
+     * constant integration time step can be set using setDT().
+     *
+     * @return If true, constant time steps are used.  If false, either specified
+     * or variable time steps are used.
+     *
+     * @see setDT()
+     * @see getUseSpecifiedDTs();
+     */
     bool getUseConstantDT() const;
-    // DT VECTOR
+
+    /**
+     * Get the time deltas used in the last integration.
+     *
+     * @return Constant reference to the dt array.
+     */
     const Array<double>& getDTArray();
+
+    /**
+     * Set the deltas held in the dt array.  These deltas will be used
+     * if the integrator is set to take a specified set of deltas.  In order to
+     * integrate using a specified set of deltas, the sum of deltas must cover
+     * the requested integration time interval, otherwise an exception will be
+     * thrown at the beginning of an integration.
+     *
+     * Note that the time vector is reconstructed in order to check that the
+     * sum of the deltas covers a requested integration interval.
+     *
+     * @param aN Number of deltas.
+     * @param aDT Array of deltas.
+     * @param aTI Initial time.  If not specified, 0.0 is assumed.
+     * @see getUseSpecifiedDT()
+     */
     void setDTArray(const SimTK::Vector_<double>& aDT, double aTI = 0.0);
+
+    /**
+     * Get the delta used for a specified integration step.
+     * For step aStep, the delta returned is the delta used to go from
+     * step aStep to step aStep+1.
+     *
+     * @param aStep Index of the desired step.
+     * @return Delta.  SimTK::Nan is returned on error.
+     */
     double getDTArrayDT(int aStep);
+
+    /**
+     * Return the step size when the integrator is taking fixed step sizes.
+     *
+     * @param tArrayStep Step number
+     */
+    double getFixedStepSize(int tArrayStep) const;
+
+    /**
+     * Print the dt array.
+     */
     void printDTArray(const char *aFileName=NULL);
+
     // TIME VECTOR
+    /**
+     * Get the sequence of time steps taken in the last integration.
+     */
     const Array<double>& getTimeArray();
-    double getTimeArrayTime(int aStep);
+
+    /**
+     * Get the integration step (index) that occurred prior to or at
+     * a specified time.
+     *
+     * @param aTime Time of the integration step.
+     * @return Step that occurred prior to or at aTime.  0 is returned if there
+     * is no such time stored.
+     */
     int getTimeArrayStep(double aTime);
-    void printTimeArray(const char *aFileName=NULL);
-    void resetTimeAndDTArrays(double aTime);
+
+    /**
+     * Get the next time in the time array
+     *
+     * @param aTime Time of the integration step.
+     * @return next time
+     */
     double getNextTimeArrayTime(double aTime);
 
-
-
-    //--------------------------------------------------------------------------
-    // EXECUTION
-    //--------------------------------------------------------------------------
     /**
-    * Initializes the Manager by creating and initializing the underlying 
-    * SimTK::TimeStepper. This must be called before calling 
-    * Manager::integrate() Subsequent changes to the State object passed in 
-    * here will not affect the simulation. Calling this function multiple 
-    * times with the same Manager will trigger an Exception.
-    *
-    * Changes to the integrator (e.g., setIntegratorAccuracy()) after calling
-    * initialize() may not have any effect.
-    */
+     * Get the time of a specified integration step.
+     *
+     * @param aStep Index of the desired step.
+     * @return Time of integration step aStep. SimTK::NaN is returned on error.
+     */
+    double getTimeArrayTime(int aStep);
+
+    /**
+     * Print the time array.
+     *
+     * @param aFileName Name of the file to which to print.  If the time array
+     * cannot be written to a file of the specified name, the time array is
+     * written to standard out.
+     */
+    void printTimeArray(const char *aFileName=NULL);
+
+    /**
+     * Reset the time and dt arrays so that all times after the specified time
+     * and the corresponding deltas are erased.
+     *
+     * @param aTime Time after which to erase the entries in the time and dt
+     * vectors.
+     */
+    void resetTimeAndDTArrays(double aTime);
+
+    // EXECUTION
+    /**
+     * Initializes the Manager by creating and initializing the underlying 
+     * SimTK::TimeStepper. This must be called before calling 
+     * Manager::integrate() Subsequent changes to the State object passed in 
+     * here will not affect the simulation. Calling this function multiple 
+     * times with the same Manager will trigger an Exception.
+     *
+     * Changes to the integrator (e.g., setIntegratorAccuracy()) after calling
+     * initialize() may not have any effect.
+     */
     void initialize(const SimTK::State& s);
     
     /**
-    * Integrate the equations of motion for the specified model, given the current
-    * state (at which the integration will start) and a finalTime. You must call
-    * Manager::initialize() before calling this function.
-    *
-    * If you must update states or controls in a loop, you must recreate the 
-    * manager within the loop (such discontinuous changes are considered "events"
-    * and cannot be handled during integration of the otherwise continuous system).
-    * The proper way to handle this situation is to create a SimTK::EventHandler.
-    *
-    * Example: Integrating from time = 1s to time = 2s
-    * @code
-    * SimTK::State state = model.initSystem();
-    * Manager manager(model);
-    * state.setTime(1.0);
-    * manager.initialize(state);
-    * state = manager.integrate(2.0);
-    * @endcode
-    *
-    * Example: Integrating from time = 1s to time = 2s using the
-    *          convenience constructor
-    * @code
-    * SimTK::State state = model.initSystem();
-    * state.setTime(1.0);
-    * Manager manager(model, state);
-    * state = manager.integrate(2.0);
-    * @endcode
-    *
-    * Example: Integrate from time = 0s to time = 10s, in 2s increments
-    * @code
-    * dTime = 2.0;
-    * finalTime = 10.0;
-    * int n = int(round(finalTime/dTime));
-    * state.setTime(0.0);
-    * manager.initialize(state);
-    * for (int i = 1; i <= n; ++i) {
-    *     state = manager.integrate(i*dTime);
-    * }
-    * @endcode
-    *
-    * Example: Integrate from time = 0s to time = 10s, updating the state
-    *          (e.g., the model's first coordinate value) every 2s
-    * @code
-    * dTime = 2.0;
-    * finalTime = 10.0;
-    * int n = int(round(finalTime/dTime));
-    * state.setTime(0.0);
-    * for (int i = 0; i < n; ++i) {
-    *     model.getCoordinateSet().get(0).setValue(state, 0.1*i);
-    *     Manager manager(model);
-    *     state.setTime(i*dTime);
-    *     manager.initialize(state);
-    *     state = manager.integrate((i+1)*dTime);
-    * }
-    * @endcode
-    *
-    */
-    const SimTK::State& integrate(double finalTime);
+     * Integrate the equations of motion for the specified model, given the current
+     * state (at which the integration will start) and a finalTime. You must call
+     * Manager::initialize() before calling this function.
+     *
+     * If you must update states or controls in a loop, you must recreate the 
+     * manager within the loop (such discontinuous changes are considered "events"
+     * and cannot be handled during integration of the otherwise continuous system).
+     * The proper way to handle this situation is to create a SimTK::EventHandler.
+     *
+     * Example: Integrating from time = 1s to time = 2s
+     * @code
+     * SimTK::State state = model.initSystem();
+     * Manager manager(model);
+     * state.setTime(1.0);
+     * manager.initialize(state);
+     * state = manager.integrate(2.0);
+     * @endcode
+     *
+     * Example: Integrating from time = 1s to time = 2s using the
+     *          convenience constructor
+     * @code
+     * SimTK::State state = model.initSystem();
+     * state.setTime(1.0);
+     * Manager manager(model, state);
+     * state = manager.integrate(2.0);
+     * @endcode
+     *
+     * Example: Integrate from time = 0s to time = 10s, in 2s increments
+     * @code
+     * dTime = 2.0;
+     * finalTime = 10.0;
+     * int n = int(round(finalTime/dTime));
+     * state.setTime(0.0);
+     * manager.initialize(state);
+     * for (int i = 1; i <= n; ++i) {
+     *     state = manager.integrate(i*dTime);
+     * }
+     * @endcode
+     *
+     * Example: Integrate from time = 0s to time = 10s, updating the state
+     *          (e.g., the model's first coordinate value) every 2s
+     * @code
+     * dTime = 2.0;
+     * finalTime = 10.0;
+     * int n = int(round(finalTime/dTime));
+     * state.setTime(0.0);
+     * for (int i = 0; i < n; ++i) {
+     *     model.getCoordinateSet().get(0).setValue(state, 0.1*i);
+     *     Manager manager(model);
+     *     state.setTime(i*dTime);
+     *     manager.initialize(state);
+     *     state = manager.integrate((i+1)*dTime);
+     * }
+     * @endcode
+     *
+     */
+    SimTK::State integrate(double finalTime);
 
     /** Get the current State from the Integrator associated with this 
       * Manager. */
     const SimTK::State& getState() const;
     
-    double getFixedStepSize(int tArrayStep) const;
 
     // STATE STORAGE
-    bool hasStateStorage() const;
     /** Set the Storage object to be used for storing states. The Manager takes
-    ownership of the passed-in Storage. */
+     * ownership of the passed-in Storage. */
     void setStateStorage(Storage& aStorage);
+
+    /** Get the Storage object containing the integration states. */
     Storage& getStateStorage() const;
+
+    /** Get whether there is a Storage object for the integration states. */
+    bool hasStateStorage() const;
+    
+    /** Get a TimeSeriesTable containing the integration states. */
     TimeSeriesTable getStatesTable() const;
 
-   //--------------------------------------------------------------------------
-   //  INTERRUPT
-   //--------------------------------------------------------------------------
+   // INTERRUPT
+   /**
+    * Halt an integration.
+    *
+    * If an integration is pending or executing, the value of the interrupt
+    * flag is set to true.
+    */
    void halt();
+
+   /**
+    * Clear the halt flag.
+    *
+    * The value of the interrupt flag is set to false.
+    */
    void clearHalt();
+
+   /**
+    * Check for a halt request.
+    *
+    * The value of the halt flag is simply returned.
+    */
    bool checkHalt();
 
 private:
-
-    // Handles common tasks of some of the other constructors.
-    Manager(Model& model, bool dummyVar);
-
-    // Helper functions during initialization of integration
+    // Helper to initialize storage and analyses.
     void initializeStorageAndAnalyses(const SimTK::State& s);
 
     // Helper to record state and analysis values at integration steps.
     // step = 0 is the beginning, step = -1 used to denote the end/final step
     void record(const SimTK::State& s, const int& step);
 
-//=============================================================================
 };  // END of class Manager
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // namespace OpenSim
 
-#endif  // OPENSIM_MANAGER_H_
-
+#endif // OPENSIM_MANAGER_H_
