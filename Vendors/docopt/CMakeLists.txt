@@ -1,9 +1,9 @@
 file(GLOB INCLUDE_FILES *.h)
 file(GLOB SOURCE_FILES *.cpp)
 
-if(WIN32)
-    add_definitions("-DDOCOPT_BUILDING_SHARED_LIBRARY")
-endif(WIN32)
+if(MSVC)
+    add_definitions("-DDOCOPT_DLL -DDOCOPT_EXPORTS")
+endif(MSVC)
 
 OpenSimAddLibrary(VENDORLIB LOWERINCLUDEDIRNAME
     KIT docopt

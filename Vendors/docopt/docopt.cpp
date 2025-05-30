@@ -23,7 +23,6 @@
 
 using namespace docopt;
 
-DOCOPT_INLINE
 std::ostream& docopt::operator<<(std::ostream& os, value const& val)
 {
     if (val.isBool()) {
@@ -608,7 +607,6 @@ static std::pair<Required, std::vector<Option>> create_pattern_tree(std::string 
     return { std::move(pattern), std::move(options) };
 }
 
-DOCOPT_INLINE
 docopt::Options
 docopt::docopt_parse(std::string const& doc,
              std::vector<std::string> const& argv,
@@ -658,7 +656,6 @@ docopt::docopt_parse(std::string const& doc,
     throw DocoptArgumentError("Arguments did not match expected patterns"); // BLEH. Bad error.
 }
 
-DOCOPT_INLINE
 docopt::Options
 docopt::docopt(std::string const& doc,
            std::vector<std::string> const& argv,
