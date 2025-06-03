@@ -224,6 +224,8 @@ public:
     void setIntegratorInternalStepLimit(int nSteps);
 
     void setIntegratorFixedStepSize(double stepSize);
+
+    // void setIntegratorReturnEveryInternalStep(bool tf)
    
     /** @} */
 

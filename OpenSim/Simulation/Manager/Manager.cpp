@@ -298,57 +298,25 @@ SimTK::State Manager::integrate(double finalTime) {
 
     // Set the final time on the integrator so it can signal EndOfSimulation
     // _integ->setFinalTime(finalTime);
+    _integ->setReturnEveryInternalStep(true);
 
-    // CLEAR ANY INTERRUPT
-    // Halts must arrive during an integration.
-    clearHalt();
-
+ 
     // CHECK SPECIFIED DT STEPPING
     double initialTime = s.getTime();
-    if (_specifiedDT) {
-        if (_tArray.getSize() <= 0) {
-            std::string msg = "IntegRKF.integrate: ERR- specified dt stepping not";
-            msg += "possible-- empty time array.";
-            throw(Exception(msg));
-        }
-        double first = _tArray[0];
-        double last = _tArray.getLast();
-        if ((getTimeArrayStep(initialTime)<0) || (initialTime<first) || (finalTime>last)) {
-            std::string msg = "IntegRKF.integrate: ERR- specified dt stepping not";
-            msg += "possible-- time array does not cover the requested";
-            msg += " integration interval.";
-            throw(Exception(msg));
-        }
-    }
+
 
     // RECORD FIRST TIME STEP
-    if (!_specifiedDT) {
-        resetTimeAndDTArrays(initialTime);
-        if (_tArray.getSize() <= 0) {
-            _tArray.append(initialTime);
-        }
-    }
-    bool fixedStep = false;
-    if (_constantDT || _specifiedDT) fixedStep = true;
-
     auto status = SimTK::Integrator::InvalidSuccessfulStepStatus;
 
-    if (!fixedStep) {
-        _integ->setReturnEveryInternalStep(true);
-    }
 
     _model->realizeVelocity(s);
     initializeStorageAndAnalyses(s);
+    record(s, 0);
 
-    if (fixedStep) {
-        _model->realizeAcceleration(s);
-        record(s, step);
-    }
 
     double time = initialTime;
-    double stepToTime = finalTime;
 
-    if (time >= stepToTime) {
+    if (time >= finalTime) {
         // No integration can be performed.
         return getState();
     }
@@ -357,39 +325,26 @@ SimTK::State Manager::integrate(double finalTime) {
     // but if we do that then repeated calls to integrate (and thus stepTo)
     // fail to continue on integrating. This seems to be a bug in TimeStepper
     // status. - aseth
-    while (time < finalTime) {
-        double fixedStepSize;
-        if (fixedStep) {
-            fixedStepSize = getNextTimeArrayTime(time) - time;
-            if (fixedStepSize + time >= finalTime)  fixedStepSize = finalTime - time;
-            _integ->setFixedStepSize(fixedStepSize);
-            stepToTime = time + fixedStepSize;
-        } 
- 
-        status = _timeStepper->stepTo(stepToTime);
+    while (time < finalTime) { 
+        status = _timeStepper->stepTo(finalTime);
 
-        if ( (status == SimTK::Integrator::TimeHasAdvanced) ||
-             (status == SimTK::Integrator::ReachedScheduledEvent) ) {
+        if (status == SimTK::Integrator::TimeHasAdvanced ||
+                status == SimTK::Integrator::ReachedScheduledEvent) {
             const SimTK::State& s = _integ->getState();
             record(s, step);
             step++;
         }
         // Check if simulation has terminated for some reason
-        else if (_integ->isSimulationOver() &&
-                    _integ->getTerminationReason() !=
-                        SimTK::Integrator::ReachedFinalTime) {
+        else if(_integ->isSimulationOver() &&
+                _integ->getTerminationReason() != 
+                    SimTK::Integrator::ReachedFinalTime) {
             log_error("Integration failed due to the following reason: {}",
                 _integ->getTerminationReasonString(_integ->getTerminationReason()));
             return getState();
         }
 
         time = _integ->getState().getTime();
-        // CHECK FOR INTERRUPT
-        if (checkHalt()) break;
     }
-
-    // CLEAR ANY INTERRUPT
-    clearHalt();
 
     record(_integ->getState(), -1);
 
@@ -411,8 +366,6 @@ void Manager::initializeStorageAndAnalyses(const SimTK::State& s) {
             "Manager::initializeStorageAndAnalyses(): "
             "Expected a Storage to write states into, but none provided.");
     }
-
-    record(s, 0);
 }
 
 void Manager::record(const SimTK::State& s, const int& step) {
