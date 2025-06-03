@@ -26,18 +26,20 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
- 
+
 // INCLUDES
 #include <OpenSim/Common/Array.h>
 #include "OpenSim/Common/TimeSeriesTable.h"
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <SimTKcommon/internal/ReferencePtr.h>
+
 namespace SimTK {
 class Integrator;
 class State;
 class System;
 class TimeStepper;
 }
+
 namespace OpenSim { 
 
 class Model;
@@ -62,6 +64,22 @@ class ControllerSet;
  * before integrating again.
  */
 class OSIMSIMULATION_API Manager {
+public:
+    /** Supported integrator methods. For MATLAB, int's must be used rather
+     *  than enum's (see example in setIntegratorMethod(IntegratorMethod)). */
+    enum class IntegratorMethod {
+        ExplicitEuler      = 0, ///< 0 : For details, see SimTK::ExplicitEulerIntegrator.
+        RungeKutta2        = 1, ///< 1 : For details, see SimTK::RungeKutta2Integrator.
+        RungeKutta3        = 2, ///< 2 : For details, see SimTK::RungeKutta3Integrator. 
+        RungeKuttaFeldberg = 3, ///< 3 : For details, see SimTK::RungeKuttaFeldbergIntegrator.
+        RungeKuttaMerson   = 4, ///< 4 : For details, see SimTK::RungeKuttaMersonIntegrator.
+        SemiExplicitEuler2 = 5, ///< 5 : For details, see SimTK::SemiExplicitEuler2Integrator.
+        Verlet             = 6, ///< 6 : For details, see SimTK::VerletIntegrator.
+        CPodes             = 7, ///< 7 : For details, see SimTK::CPodesIntegrator.
+
+        // Not included
+        //SemiExplicitEuler, no error ctrl, requires fixed stepSize arg on construction
+    };
 
 //=============================================================================
 // DATA
@@ -71,35 +89,16 @@ private:
     std::string _sessionName;
     /** Model for which the simulation is performed. */
     SimTK::ReferencePtr<Model> _model;
-    SimTK::State _state;
 
     /** Integrator. */
     std::unique_ptr<SimTK::Integrator> _integ;
+    IntegratorMethod _integratorMethod = IntegratorMethod::RungeKuttaMerson;
 
     /** TimeStepper */
     std::unique_ptr<SimTK::TimeStepper> _timeStepper;
 
     /** Storage for the states. */
     std::unique_ptr<Storage> _stateStore;
-
-    /** Flag for signaling a desired halt. */
-    bool _halt;
-
-    /** Flag to indicate whether or not specified integration time steps
-    should be used.  The specified integration time steps are held in _tVec.
-    If _tVec does not contain time steps appropriate for the integration,
-    an exception is thrown. */
-    bool _specifiedDT;
-    /** Flag to indicate whether or not constant (fixed) integration time
-    steps should be used.  The constant integration time step is set using
-    setDT(). */
-    bool _constantDT;
-    /** Constant integration time step. */
-    double _dt;
-    /** Vector of integration time steps. */
-    Array<double> _tArray;
-    /** Vector of integration time step deltas. */
-    Array<double> _dtArray;
 
     /** Name to be shown by the UI */
     static std::string _displayName;
@@ -150,7 +149,7 @@ private:
     
 public:
     // GET AND SET
-    /** Set the model. and initializes other entities that depend on it. */
+    /** Set the model and initialize other entities that depend on it. */
     void setModel(Model& model);
 
     /** Set the session name of this Manager instance. */
@@ -174,22 +173,6 @@ public:
      * @{ */
 
     // Integrator
-    /** Supported integrator methods. For MATLAB, int's must be used rather
-     *  than enum's (see example in setIntegratorMethod(IntegratorMethod)). */
-    enum class IntegratorMethod {
-        ExplicitEuler      = 0, ///< 0 : For details, see SimTK::ExplicitEulerIntegrator.
-        RungeKutta2        = 1, ///< 1 : For details, see SimTK::RungeKutta2Integrator.
-        RungeKutta3        = 2, ///< 2 : For details, see SimTK::RungeKutta3Integrator. 
-        RungeKuttaFeldberg = 3, ///< 3 : For details, see SimTK::RungeKuttaFeldbergIntegrator.
-        RungeKuttaMerson   = 4, ///< 4 : For details, see SimTK::RungeKuttaMersonIntegrator.
-        SemiExplicitEuler2 = 5, ///< 5 : For details, see SimTK::SemiExplicitEuler2Integrator.
-        Verlet             = 6, ///< 6 : For details, see SimTK::VerletIntegrator.
-        CPodes             = 7, ///< 7 : For details, see SimTK::CPodesIntegrator.
-
-        // Not included
-        //SemiExplicitEuler, no error ctrl, requires fixed stepSize arg on construction
-    };
-
     /** Sets the integrator method used via IntegratorMethod enum. The 
      * integrator will be set to its default options, even if the caller
      * requests the same integrator method. Note that this function must
@@ -217,10 +200,12 @@ public:
       */
     void setIntegratorMethod(IntegratorMethod integMethod);
 
+    IntegratorMethod getIntegratorMethod() const;
+
     /** Get the integrator. */
     SimTK::Integrator& getIntegrator() const;
 
-    /** Sets the accuracy of the integrator. 
+    /** Set the accuracy of the integrator. 
      * For more details, see `SimTK::Integrator::setAccuracy(SimTK::Real)`. */
     void setIntegratorAccuracy(double accuracy);
 
@@ -238,174 +223,9 @@ public:
      * For more details, see SimTK::Integrator::setInternalStepLimit(int). */
     void setIntegratorInternalStepLimit(int nSteps);
 
-    //void setIntegratorFixedStepSize(double stepSize);
+    void setIntegratorFixedStepSize(double stepSize);
    
     /** @} */
-
-    // SPECIFIED DT
-    /**
-     * Set whether or not to take a specified sequence of deltas during an
-     * integration. The time deltas are obtained from what's stored in the
-     * vector dt vector (@see setDTVector()).  In order to execute an
-     * integration in this manner, the sum of the deltas must cover any
-     * requested integration interval.  If not, an exception will be thrown
-     * at the beginning of an integration.
-     *
-     * @param aTrueFalse If true, a specified dt's will be used.
-     * If set to false, a variable-step integration or a constant step integration
-     * will be used.
-     * When set to true, the flag used to indicate whether or not a constant
-     * time step is used is set to false.
-     *
-     * @see setDTVector()
-     * @see getUseConstantDT()
-     */
-    void setUseSpecifiedDT(bool aTrueFalse);
-
-    /**
-     * Get whether or not to take a specified sequence of deltas during an
-     * integration.
-     * The time deltas are obtained from what's stored in the dt vector
-     * (@see setDTVector()).  In order to execute an
-     * integration in this manner, the sum of the deltas must cover any
-     * requested integration interval.  If not, an exception will be thrown
-     * at the beginning of an integration.
-     *
-     * @return If true, a specified time step will be used if possible.
-     * If false, a variable-step integration will be performed or a constant
-     * time step will be taken.
-     *
-     * @see getUseConstantDT()
-     * @see getDT()
-     * @see getTimeVector()
-     */
-    bool getUseSpecifiedDT() const;
-
-    // CONSTANT DT
-    /**
-     * Set whether or not to take a constant integration time step. The size of
-     * the constant integration time step can be set using setDT().
-     *
-     * @param aTrueFalse If true, constant time steps are used.
-     * When set to true, the flag used to indicate whether or not to take
-     * specified time steps is set to false.
-     * If set to false, a variable-step integration or a constant integration
-     * time step will be used.
-     *
-     * @see setDT()
-     * @see setUseSpecifiedDT()
-     * @see getUseSpecifiedDT();
-     */
-    void setUseConstantDT(bool aTrueFalse);
-
-    // DT ARRAY
-    /**
-     * Get whether or not to use a constant integration time step. The
-     * constant integration time step can be set using setDT().
-     *
-     * @return If true, constant time steps are used.  If false, either specified
-     * or variable time steps are used.
-     *
-     * @see setDT()
-     * @see getUseSpecifiedDTs();
-     */
-    bool getUseConstantDT() const;
-
-    /**
-     * Get the time deltas used in the last integration.
-     *
-     * @return Constant reference to the dt array.
-     */
-    const Array<double>& getDTArray();
-
-    /**
-     * Set the deltas held in the dt array.  These deltas will be used
-     * if the integrator is set to take a specified set of deltas.  In order to
-     * integrate using a specified set of deltas, the sum of deltas must cover
-     * the requested integration time interval, otherwise an exception will be
-     * thrown at the beginning of an integration.
-     *
-     * Note that the time vector is reconstructed in order to check that the
-     * sum of the deltas covers a requested integration interval.
-     *
-     * @param aN Number of deltas.
-     * @param aDT Array of deltas.
-     * @param aTI Initial time.  If not specified, 0.0 is assumed.
-     * @see getUseSpecifiedDT()
-     */
-    void setDTArray(const SimTK::Vector_<double>& aDT, double aTI = 0.0);
-
-    /**
-     * Get the delta used for a specified integration step.
-     * For step aStep, the delta returned is the delta used to go from
-     * step aStep to step aStep+1.
-     *
-     * @param aStep Index of the desired step.
-     * @return Delta.  SimTK::Nan is returned on error.
-     */
-    double getDTArrayDT(int aStep);
-
-    /**
-     * Return the step size when the integrator is taking fixed step sizes.
-     *
-     * @param tArrayStep Step number
-     */
-    double getFixedStepSize(int tArrayStep) const;
-
-    /**
-     * Print the dt array.
-     */
-    void printDTArray(const char *aFileName=NULL);
-
-    // TIME VECTOR
-    /**
-     * Get the sequence of time steps taken in the last integration.
-     */
-    const Array<double>& getTimeArray();
-
-    /**
-     * Get the integration step (index) that occurred prior to or at
-     * a specified time.
-     *
-     * @param aTime Time of the integration step.
-     * @return Step that occurred prior to or at aTime.  0 is returned if there
-     * is no such time stored.
-     */
-    int getTimeArrayStep(double aTime);
-
-    /**
-     * Get the next time in the time array
-     *
-     * @param aTime Time of the integration step.
-     * @return next time
-     */
-    double getNextTimeArrayTime(double aTime);
-
-    /**
-     * Get the time of a specified integration step.
-     *
-     * @param aStep Index of the desired step.
-     * @return Time of integration step aStep. SimTK::NaN is returned on error.
-     */
-    double getTimeArrayTime(int aStep);
-
-    /**
-     * Print the time array.
-     *
-     * @param aFileName Name of the file to which to print.  If the time array
-     * cannot be written to a file of the specified name, the time array is
-     * written to standard out.
-     */
-    void printTimeArray(const char *aFileName=NULL);
-
-    /**
-     * Reset the time and dt arrays so that all times after the specified time
-     * and the corresponding deltas are erased.
-     *
-     * @param aTime Time after which to erase the entries in the time and dt
-     * vectors.
-     */
-    void resetTimeAndDTArrays(double aTime);
 
     // EXECUTION
     /**
@@ -479,10 +299,8 @@ public:
      */
     SimTK::State integrate(double finalTime);
 
-    /** Get the current State from the Integrator associated with this 
-      * Manager. */
+    /** Get the current State from the Integrator associated with this Manager. */
     const SimTK::State& getState() const;
-    
 
     // STATE STORAGE
     /** Set the Storage object to be used for storing states. The Manager takes
@@ -498,27 +316,157 @@ public:
     /** Get a TimeSeriesTable containing the integration states. */
     TimeSeriesTable getStatesTable() const;
 
-   // INTERRUPT
+    // DEPRECATED
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: set whether or not to take a specified sequence of
+     * times during an integration.
+     */
+    [[deprecated("Using a specified sequence of timesteps is no longer supported.")]]
+    void setUseSpecifiedDT(bool aTrueFalse);
+
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: get whether or not to take a specified sequence of
+     * times during an integration.
+     */
+    [[deprecated("Using a specified sequence of timesteps is no longer supported.")]]
+    bool getUseSpecifiedDT() const;
+
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: set the sequence of time steps used during integration.
+     */
+    [[deprecated("Using a specified sequence of timesteps is no longer supported.")]]
+    void setDTArray(const SimTK::Vector_<double>& aDT, double aTI = 0.0);
+
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: get the sequence of time steps used during integration.
+     */
+    [[deprecated("Using a specified sequence of timesteps is no longer supported.")]]
+    Array<double> getDTArray();
+
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: get the time step used for a specified integration step.
+     */
+    [[deprecated("Using a specified sequence of timesteps is no longer supported.")]]
+    double getDTArrayDT(int aStep);
+
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: print the array of time steps.
+     */
+    [[deprecated("Using a specified sequence of timesteps is no longer supported.")]]
+    void printDTArray(const char *aFileName=NULL);
+
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: get the sequence of integration times.
+     */
+    [[deprecated("Using a specified sequence of timesteps is no longer supported.")]]
+    Array<double> getTimeArray();
+
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: get the integration step (index) that occurred prior to or 
+     * at a specified time.
+     */
+    [[deprecated("Using a specified sequence of timesteps is no longer supported.")]]
+    int getTimeArrayStep(double aTime);
+
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: get the next time in the sequence of integration times.
+     */
+    [[deprecated("Using a specified sequence of timesteps is no longer supported.")]]
+    double getNextTimeArrayTime(double aTime);
+
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: get the time of a specified integration step.
+     */
+    [[deprecated("Using a specified sequence of timesteps is no longer supported.")]]
+    double getTimeArrayTime(int aStep);
+
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: print the sequence of integration times.
+     */
+    [[deprecated("Using a specified sequence of timesteps is no longer supported.")]]
+    void printTimeArray(const char *aFileName=NULL);
+
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: reset the sequence of times and time stpes so that all 
+     * times after the specified time and the corresponding time stpes are 
+     * erased.
+     */
+    [[deprecated("Using a specified sequence of timesteps is no longer supported.")]]
+    void resetTimeAndDTArrays(double aTime);
+
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: set whether or not to use a constant time step during
+     * integration.
+     */
+    [[deprecated("No longer supported. Use setIntegratorFixedStepSize() instead.")]]
+    void setUseConstantDT(bool aTrueFalse);
+
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: get whether or not to use a constant time step during
+     * integration.
+     */
+    [[deprecated("No longer supported. Use setIntegratorFixedStepSize() instead.")]]
+    bool getUseConstantDT() const;
+
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: get the step size when the integrator is taking fixed 
+     * step sizes.
+     */
+    [[deprecated("No longer supported. Use setIntegratorFixedStepSize() instead.")]]
+    double getFixedStepSize(int tArrayStep) const;
+
    /**
-    * Halt an integration.
-    *
-    * If an integration is pending or executing, the value of the interrupt
-    * flag is set to true.
-    */
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: halt an integration.
+     */
+   [[deprecated("Halting an integration is no longer supported.")]]
    void halt();
 
    /**
-    * Clear the halt flag.
-    *
-    * The value of the interrupt flag is set to false.
-    */
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: clear the integration halt status.
+     */
+   [[deprecated("Halting an integration is no longer supported.")]]
    void clearHalt();
 
-   /**
-    * Check for a halt request.
-    *
-    * The value of the halt flag is simply returned.
-    */
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: check the integration halt status.
+     */
+   [[deprecated("Halting an integration is no longer supported.")]]
    bool checkHalt();
 
 private:
