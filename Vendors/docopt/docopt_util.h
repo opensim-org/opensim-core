@@ -9,20 +9,7 @@
 #ifndef docopt_docopt_util_h
 #define docopt_docopt_util_h
 
-#if DOCTOPT_USE_BOOST_REGEX
-#include <boost/regex.hpp>
-namespace std {
-    using boost::regex;
-    using boost::sregex_token_iterator;
-}
-#else
 #include <regex>
-#endif
-
-#if 0
-#pragma mark -
-#pragma mark General utility
-#endif
 
 namespace {
     bool starts_with(std::string const& str, std::string const& prefix)
