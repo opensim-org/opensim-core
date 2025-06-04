@@ -27,7 +27,7 @@
 #include "opensim-cmd_update-file.h"
 #include "opensim-cmd_viz.h"
 #include "parse_arguments.h"
-#include <docopt.h>
+#include <Vendors/docopt/docopt.h>
 #include <iostream>
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/version.h>
