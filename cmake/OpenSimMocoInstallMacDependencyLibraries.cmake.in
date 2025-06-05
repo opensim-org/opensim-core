@@ -56,7 +56,7 @@ execute_process(COMMAND bash "-c"
 endmacro()
 
 
-if (OPENSIM_WITH_CASADI2)
+if (OPENSIM_WITH_CASADI)
     install_name_tool_add_rpath(casadi.3.7)
     install_name_tool_delete_rpath(casadi.3.7 "@CASADI_LIBDIR@")
     install_name_tool_delete_rpath(casadi_nlpsol_ipopt.3.7 "@CASADI_LIBDIR@")
