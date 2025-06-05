@@ -210,6 +210,12 @@ public:
     /// @{
     /** Clear all the states in the trajectory. */
     void clear();
+    /** Increase the capacity of the trajectory to hold at least
+     * `new_cap` states. This does not change the size of the trajectory.
+     * If `new_cap` is less than or equal to the current capacity, this function
+     * does nothing.
+     */
+    void reserve(size_t new_cap);
     /** Append a SimTK::State to this trajectory.
      * This function ensures that the time in the new SimTK::State is greater
      * than or equal to the time in the last SimTK::State in the trajectory.

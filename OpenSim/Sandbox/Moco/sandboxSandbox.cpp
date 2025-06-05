@@ -21,56 +21,141 @@
 
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Actuators/ModelFactory.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Common/Constant.h>
+#include <OpenSim/Analyses/BodyKinematics.h>
 
 using namespace OpenSim;
 
-int main() {
-    Model pendulum = ModelFactory::createNLinkPendulum(10);
-    SimTK::State state = pendulum.initSystem();
-    state.updY() = SimTK::Test::randVector(state.getNY());
+std::unique_ptr<Model> createSlidingMassModel() {
+    auto model = std::make_unique<Model>();
+    model->setName("sliding_mass");
+    model->set_gravity(SimTK::Vec3(0, 0, 0));
+    auto* body = new Body("body", 2.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    model->addBody(body);
 
-    std::cout << "Using SimTK::TimeStepper directly: " << std::endl;
-    const SimTK::MultibodySystem& system = pendulum.getMultibodySystem();
-    SimTK::CPodesIntegrator integ(system);
-    SimTK::TimeStepper ts(system, integ);
-    ts.initialize(state);
+    // Allows translation along x.
+    auto* joint = new SliderJoint("slider", model->getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("position");
+    model->addJoint(joint);
+
+    auto* actu = new CoordinateActuator();
+    actu->setCoordinate(&coord);
+    actu->setName("actuator");
+    actu->setOptimalForce(1);
+    model->addForce(actu);
+
+    PrescribedController* controller = new PrescribedController();
+    controller->setName("controller");
+    controller->addActuator(*actu);
+    controller->prescribeControlForActuator(actu->getName(),
+        Constant(1.7));
+    model->addController(controller);
+
+    BodyKinematics* bodyKinematics = new BodyKinematics();
+    model->addAnalysis(bodyKinematics);
+
+    body->attachGeometry(new Sphere(0.05));
+
+    model->finalizeConnections();
+
+    return model;
+}
+
+int main() {
+    auto model = createSlidingMassModel();
+    model->initSystem();
+
+    double finalTime = 5.0;
+    Manager manager(*model);
+    manager.setReportStates(false);
+    manager.setPerformAnalyses(false);
+    manager.setWriteToStorage(false);
+    SimTK::State state = model->initSystem();
+    state.updTime() = 0.0;
+    state.updY() = SimTK::Test::randVector(state.getNY());
+    manager.setIntegratorMethod(Manager::IntegratorMethod::RungeKuttaMerson);
+    manager.initialize(state);
     double cpuStart = SimTK::cpuTime();
     double realStart = SimTK::realTime();
-    double finalTime = 10.0;
-    ts.stepTo(finalTime);
+    SimTK::State s = manager.integrate(finalTime);
+    // manager.integrate(finalTime);
     double cpu_time = SimTK::cpuTime()-cpuStart;
     double real_time = SimTK::realTime()-realStart;
     double realTimeFactor = finalTime/(real_time);
+    std::cout << std::endl;
     std::cout << "cpu time:  "        << cpu_time << std::endl;
     std::cout << "real time: "        << real_time << std::endl;
     std::cout << "real time factor: " << realTimeFactor << std::endl;
+
+    // manager.initialize(s);
+    // cpuStart = SimTK::cpuTime();
+    // realStart = SimTK::realTime();
+    // s = manager.integrate(finalTime + finalTime);
+    // cpu_time = SimTK::cpuTime()-cpuStart;
+    // real_time = SimTK::realTime()-realStart;
+    // realTimeFactor = finalTime/(real_time);
+    // std::cout << "Second integration:" << std::endl;
+    // std::cout << "cpu time:  "        << cpu_time << std::endl;
+    // std::cout << "real time: "        << real_time << std::endl;
+    // std::cout << "real time factor: " << realTimeFactor << std::endl;
+
+
+    TimeSeriesTable statesTable = manager.getStatesTable();
+    std::cout << "States table:" << std::endl;
+    std::cout << "rows = " << statesTable.getNumRows() << std::endl;
+    std::cout << "columns = " << statesTable.getNumColumns() << std::endl;
+    auto statesTimes = statesTable.getIndependentColumn();
+    std::cout << "times = ";
+    for (const auto& time : statesTimes) {
+        std::cout << time << " ";
+    }
     std::cout << std::endl;
 
-    std::cout << "Using OpenSim::Manager: " << std::endl;
-    Manager manager(pendulum);
-    state = pendulum.initSystem();
-    state.updTime() = 0.0;
-    state.updY() = SimTK::Test::randVector(state.getNY());
-    manager.setIntegratorMethod(Manager::IntegratorMethod::CPodes);
-    manager.initialize(state);
-    cpuStart = SimTK::cpuTime();
-    realStart = SimTK::realTime();
-    SimTK::State s = manager.integrate(finalTime);
-    cpu_time = SimTK::cpuTime()-cpuStart;
-    real_time = SimTK::realTime()-realStart;
-    realTimeFactor = finalTime/(real_time);
-    std::cout << "cpu time:  "        << cpu_time << std::endl;
-    std::cout << "real time: "        << real_time << std::endl;
-    std::cout << "real time factor: " << realTimeFactor << std::endl;
+    TimeSeriesTable controlsTable = manager.getControlsTable();
+    std::cout << "Controls table:" << std::endl;
+    std::cout << "rows = " << controlsTable.getNumRows() << std::endl;
+    std::cout << "columns = " << controlsTable.getNumColumns() << std::endl;
+    auto controlsTimes = controlsTable.getIndependentColumn();
+    std::cout << "times = ";
+    for (const auto& time : controlsTimes) {
+        std::cout << time << " ";
+    }
+    std::cout << std::endl;
 
-    state.updTime() = 0.0;
-    state.updY() = SimTK::Test::randVector(state.getNY());
-    manager.initialize(state);
-    manager.integrate(20.0);
+    Storage statesStorage = manager.getStateStorage();
+    std::cout << "States storage: " << statesStorage << std::endl;
+    std::cout << "rows = " << statesStorage.getSize() << std::endl;
+    std::cout << "columns = " << statesStorage.getColumnLabels().size() << std::endl;
+    Array<double> statesStorageTimes;
+    statesStorage.getTimeColumn(statesStorageTimes);
+    std::cout << "times = ";
+    for (int i = 0; i < statesStorageTimes.getSize(); ++i) {
+        std::cout << statesStorageTimes[i] << " ";
+    }
+    std::cout << std::endl;
 
+    StatesTrajectory statesTrajectory = manager.getStatesTrajectory();
+    std::cout << "States trajectory: " << std::endl;
+    std::cout << "size = " << statesTrajectory.getSize() << std::endl;
+    std::cout << "times = ";    
+    for (const auto& state : statesTrajectory) {
+        std::cout << state.getTime() << " ";
+    }
+    std::cout << std::endl;
 
-    // TimeSeriesTable statesTable = manager.getStatesTable();
-    // std::cout << "States table:\n" << statesTable << std::endl;
+    model->getAnalysisSet().get(0).printResults("body_kin");
+    TimeSeriesTable posTable("body_kin_BodyKinematics_acc_global.sto");
+    std::cout << "Body kinematics table:" << std::endl;
+    std::cout << "rows = " << posTable.getNumRows() << std::endl;
+    std::cout << "columns = " << posTable.getNumColumns() << std::endl;
+    auto posTimes = posTable.getIndependentColumn();
+    std::cout << "times = ";
+    for (const auto& time : posTimes) {
+        std::cout << time << " ";
+    }
+    std::cout << std::endl;
 
     return EXIT_SUCCESS;
 }

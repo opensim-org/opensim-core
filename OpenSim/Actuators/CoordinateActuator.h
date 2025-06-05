@@ -68,7 +68,7 @@ public:
 
     /** %Set the 'optimal_force' property. **/
     void setOptimalForce(double optimalForce);
-    /** Get the current setting of the 'optimal_force' property. **/
+    /** Get the current setting of the '    ' property. **/
     double getOptimalForce() const override; // part of Actuator interface
 
     //--------------------------------------------------------------------------

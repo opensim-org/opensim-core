@@ -29,7 +29,8 @@
 
 // INCLUDES
 #include <OpenSim/Common/Array.h>
-#include "OpenSim/Common/TimeSeriesTable.h"
+#include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <SimTKcommon/internal/ReferencePtr.h>
 
@@ -65,6 +66,44 @@ class ControllerSet;
  */
 class OSIMSIMULATION_API Manager {
 public:
+    // CONSTRUCTION
+    /** Constructor that takes a model only and internally uses a
+     * SimTK::RungeKuttaMersonIntegrator with default settings (accuracy,
+     * constraint tolerance, etc.). */
+    Manager(Model& model);
+
+    /** Convenience constructor for creating and initializing a Manager (by
+     * calling initialize()).
+     * Do not use this constructor if you intend to change integrator settings;
+     * changes to the integrator may not take effect after initializing. */
+    Manager(Model& model, const SimTK::State& state);
+
+    // The default constructor, previously deprecated, is now explicitly deleted 
+    // to prevent accidental use. The Manager must be constructed with a Model.
+    Manager() = delete;
+
+    // This class would not behave properly if copied (we would need to write a
+    // complex custom copy constructor, etc.), so don't allow copies.
+    Manager(const Manager&) = delete;
+    void operator=(const Manager&) = delete;
+
+    // GET AND SET
+    /** Set the session name of this Manager instance. */
+    void setSessionName(const std::string &name);
+
+    /** Get the session name of this Manager instance. */
+    const std::string& getSessionName() const;
+
+    void setReportStates(bool reportStates);
+
+    void setPerformAnalyses(bool performAnalyses);
+
+    void setWriteToStorage(bool writeToStorage);
+
+    /** @name Configure the Integrator
+     * @note Call these functions before calling `Manager::initialize()`.
+     * @{ */
+
     /** Supported integrator methods. For MATLAB, int's must be used rather
      *  than enum's (see example in setIntegratorMethod(IntegratorMethod)). */
     enum class IntegratorMethod {
@@ -81,98 +120,6 @@ public:
         //SemiExplicitEuler, no error ctrl, requires fixed stepSize arg on construction
     };
 
-//=============================================================================
-// DATA
-//=============================================================================
-private:
-    /** Simulation session name. */
-    std::string _sessionName;
-    /** Model for which the simulation is performed. */
-    SimTK::ReferencePtr<Model> _model;
-
-    /** Integrator. */
-    std::unique_ptr<SimTK::Integrator> _integ;
-    IntegratorMethod _integratorMethod = IntegratorMethod::RungeKuttaMerson;
-
-    /** TimeStepper */
-    std::unique_ptr<SimTK::TimeStepper> _timeStepper;
-
-    /** Storage for the states. */
-    std::unique_ptr<Storage> _stateStore;
-
-    /** Name to be shown by the UI */
-    static std::string _displayName;
-
-    /** flag indicating if manager should call Analyses after each step */
-    bool _performAnalyses;
-
-    /** flag indicating if manager should write to storage  each step */
-    bool _writeToStorage;
-
-    /** controllerSet used for the integration */
-    SimTK::ReferencePtr<ControllerSet> _controllerSet;
-
-
-//=============================================================================
-// METHODS
-//=============================================================================
-public:
-    /** Constructor that takes a model only and internally uses a
-     * SimTK::RungeKuttaMersonIntegrator with default settings (accuracy,
-     * constraint tolerance, etc.). */
-    Manager(Model& model);
-
-    /** Convenience constructor for creating and initializing a Manager (by
-     * calling initialize()).
-     * Do not use this constructor if you intend to change integrator settings;
-     * changes to the integrator may not take effect after initializing. */
-    Manager(Model& model, const SimTK::State& state);
-
-    /** <b>(Deprecated)</b> A Constructor that does not take a model or
-     * controllerSet. This constructor also does not set an integrator; you
-     * must call setIntegrator() on your own. You should use one of the other
-     * constructors. */
-    DEPRECATED_14("There will be no replacement for this constructor.")
-    Manager();
-
-    // This class would not behave properly if copied (we would need to write a
-    // complex custom copy constructor, etc.), so don't allow copies.
-    Manager(const Manager&) = delete;
-    void operator=(const Manager&) = delete;
-
-private:
-    /** Set all member variables to their null values. */
-    void setNull();
-
-    /** Construct the storage utility. */
-    bool constructStorage();
-    
-public:
-    // GET AND SET
-    /** Set the model and initialize other entities that depend on it. */
-    void setModel(Model& model);
-
-    /** Set the session name of this Manager instance. */
-    void setSessionName(const std::string &name);
-
-    /** Get the session name of this Manager instance. */
-    const std::string& getSessionName() const;
-
-    /**
-     * Get the name to be shown for this object in Simtk-model tree
-     */
-    const std::string& toString() const;
-
-    void setPerformAnalyses(bool performAnalyses)
-    { _performAnalyses =  performAnalyses; }
-    void setWriteToStorage(bool writeToStorage)
-    { _writeToStorage =  writeToStorage; }
-
-    /** @name Configure the Integrator
-     * @note Call these functions before calling `Manager::initialize()`.
-     * @{ */
-
-    // Integrator
     /** Sets the integrator method used via IntegratorMethod enum. The 
      * integrator will be set to its default options, even if the caller
      * requests the same integrator method. Note that this function must
@@ -200,9 +147,10 @@ public:
       */
     void setIntegratorMethod(IntegratorMethod integMethod);
 
+    /** Get the integrator method. */
     IntegratorMethod getIntegratorMethod() const;
 
-    /** Get the integrator. */
+    /** Get the SimTK::Integrator. */
     SimTK::Integrator& getIntegrator() const;
 
     /** Set the accuracy of the integrator. 
@@ -225,7 +173,9 @@ public:
 
     void setIntegratorFixedStepSize(double stepSize);
 
-    // void setIntegratorReturnEveryInternalStep(bool tf)
+    void setIntegratorUseInfinityNorm(bool tf);
+
+    void setIntegratorConstraintTolerance(double tol);
    
     /** @} */
 
@@ -301,24 +251,31 @@ public:
      */
     SimTK::State integrate(double finalTime);
 
+
+    // RESULTS
     /** Get the current State from the Integrator associated with this Manager. */
     const SimTK::State& getState() const;
 
-    // STATE STORAGE
-    /** Set the Storage object to be used for storing states. The Manager takes
-     * ownership of the passed-in Storage. */
-    void setStateStorage(Storage& aStorage);
+    /** Get a Storage object containing the integration states. */
+    Storage getStateStorage() const;
 
-    /** Get the Storage object containing the integration states. */
-    Storage& getStateStorage() const;
-
-    /** Get whether there is a Storage object for the integration states. */
-    bool hasStateStorage() const;
-    
-    /** Get a TimeSeriesTable containing the integration states. */
+     /** Get a TimeSeriesTable containing the integration states. */
     TimeSeriesTable getStatesTable() const;
+    TimeSeriesTable getControlsTable() const;
+
+    StatesTrajectory getStatesTrajectory() const;
+
+
 
     // DEPRECATED
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: set the model. This updates the session name and initializes
+     * the storage for the states.
+     */
+    void setModel(Model& model);
+
     /**
      * deprecated (legacy): now has no effect
      *
@@ -471,13 +428,41 @@ public:
    [[deprecated("Halting an integration is no longer supported.")]]
    bool checkHalt();
 
-private:
-    // Helper to initialize storage and analyses.
-    void initializeStorageAndAnalyses(const SimTK::State& s);
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: get the name to be shown for this object in Simtk-model tree.
+     */
+   [[deprecated("No longer supported.")]]
+    std::string toString() const;
 
-    // Helper to record state and analysis values at integration steps.
-    // step = 0 is the beginning, step = -1 used to denote the end/final step
-    void record(const SimTK::State& s, const int& step);
+    /** Get whether there is a Storage object for the integration states. */
+    bool hasStateStorage() const;
+
+    /** Set the Storage object to be used for storing states. The Manager takes
+     * ownership of the passed-in Storage. */
+    void setStateStorage(Storage& aStorage);
+
+private:
+    // MEMBER VARIABLES
+    std::string _sessionName;
+    bool _reportStates;
+    bool _performAnalyses;
+    bool _writeToStorage;
+
+    SimTK::ReferencePtr<Model> _model;
+
+    std::unique_ptr<SimTK::Integrator> _integ;
+    IntegratorMethod _integratorMethod = IntegratorMethod::RungeKuttaMerson;
+
+    std::unique_ptr<SimTK::TimeStepper> _timeStepper;
+
+    std::unique_ptr<StatesTrajectory> _states;
+    std::unique_ptr<Storage> _stateStore;
+
+    // HELPER METHODS
+    void writeToStorage();
+    void performAnalyses();
 
 };  // END of class Manager
 
