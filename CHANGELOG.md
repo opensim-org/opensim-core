@@ -8,6 +8,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.6
 =====
+- Updated the dependency `spdlog` to `v1.14.0`. (#4067)
 
 
 v4.5.2
