@@ -41,6 +41,13 @@ public:
         "Name of folder containing data files.");
     OpenSim_DECLARE_PROPERTY(trial_prefix, std::string,
         "Name of trial (Common prefix of txt files representing trial).");
+    OpenSim_DECLARE_PROPERTY(trial_extension, std::string, 
+        "File extension for the trial files. Defaults to \".txt\"");
+    OpenSim_DECLARE_PROPERTY(sampling_rate, double,
+        "Sampling Rate (frequency in Hz) for the trials. Defaults to 40Hz if no value provided."
+        "This is used in calculating the time interval (1/frequency) for the resultant tables."
+        "Newer versions of the Xsens software do not specify the recording data rate."
+        "See #3956 for details.");
     OpenSim_DECLARE_LIST_PROPERTY(ExperimentalSensors, ExperimentalSensor,
         "List of Experimental sensors and desired associated names in resulting tables");
 
@@ -61,6 +68,8 @@ private:
     void constructProperties() {
         constructProperty_data_folder("");
         constructProperty_trial_prefix("");
+        constructProperty_trial_extension(".txt");
+        constructProperty_sampling_rate(40.0);
         constructProperty_ExperimentalSensors();
     }
 };
