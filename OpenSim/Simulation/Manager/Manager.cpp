@@ -36,7 +36,7 @@ using namespace OpenSim;
 // CONSTRUCTOR(S)
 //=============================================================================
 Manager::Manager(Model& model) : _reportStates(true), _performAnalyses(true),
-        _writeToStorage(true), _model(&model) {
+        _writeToStorage(true), _fixedStepSize(SimTK::NaN), _model(&model) {
     _sessionName = _model->getName();
     _integ.reset(new SimTK::RungeKuttaMersonIntegrator(
             _model->getMultibodySystem()));
@@ -103,9 +103,14 @@ void Manager::setIntegratorMethod(IntegratorMethod integMethod) {
             _integ.reset(new SimTK::RungeKuttaMersonIntegrator(sys));
             break;
 
-        //case Integrator::SemiExplicitEuler:
-        //    _integ.reset(SimTK::SemiExplicitEulerIntegrator(sys, stepSize));
-        //    break;
+        case IntegratorMethod::SemiExplicitEuler:
+            OPENSIM_THROW_IF(SimTK::isNaN(_fixedStepSize), Exception,
+                "The SemiExplicitEuler integrator requires a fixed step size. "
+                "Call Manager::setIntegratorFixedStepSize() before calling "
+                "Manager::setIntegratorMethod() for this integrator.");
+
+           _integ.reset(new SimTK::SemiExplicitEulerIntegrator(sys, _fixedStepSize));
+           break;
 
         case IntegratorMethod::SemiExplicitEuler2:
             _integ.reset(new SimTK::SemiExplicitEuler2Integrator(sys));
@@ -148,6 +153,7 @@ void Manager::setIntegratorMaximumStepSize(double hmax) {
 }
 
 void Manager::setIntegratorFixedStepSize(double stepSize) {
+   _fixedStepSize = stepSize;
    _integ->setFixedStepSize(stepSize);
 }
 
@@ -167,8 +173,6 @@ void Manager::setIntegratorConstraintTolerance(double tol) {
 // RESULTS
 //=============================================================================
 Storage Manager::getStateStorage() const {
-    OPENSIM_THROW_IF(!_stateStore, Exception,
-            "Manager::getStateStorage(): Storage has not been set. ");
 
     // TODO: copy safely.
     return *_stateStore;
@@ -195,88 +199,68 @@ StatesTrajectory Manager::getStatesTrajectory() const {
 //=============================================================================
 // EXECUTION
 //=============================================================================
-void Manager::writeToStorage() {
+void Manager::record(const SimTK::State& state, int step) {
     if (_writeToStorage) {
-        _stateStore.reset(new Storage(
-                static_cast<int>(_states->getSize()), "states"));
-            Array<std::string> stateNames = _model->getStateVariableNames();
-        Array<std::string> columnLabels;
-        columnLabels.setSize(0);
-        columnLabels.append("time");
-        for (int i = 0; i < stateNames.getSize(); i++) {
-            columnLabels.append(stateNames[i]);
-        }
-        _stateStore->setColumnLabels(columnLabels);
-
-        ControllerSet& controllerSet = _model->updControllerSet();
+        SimTK::Vector stateValues = _model->getStateVariableValues(state);
+        StateVector vec;
+        vec.setStates(state.getTime(), stateValues);
+        _stateStore->append(vec);
         if (_model->isControlled()) {
-            controllerSet.constructStorage();
-        }
-
-        for (int i = 0; i < static_cast<int>(_states->getSize()); ++i) {
-            const SimTK::State& state = _states->get(i);
-            SimTK::Vector stateValues = _model->getStateVariableValues(state);
-            StateVector vec;
-            vec.setStates(state.getTime(), stateValues);
-            _stateStore->append(vec);
-            if (_model->isControlled()) {
-                _model->realizeVelocity(state);
-                controllerSet.storeControls(state, i);
-            }
+            _model->realizeVelocity(state);
+            _model->updControllerSet().storeControls(state, 
+                    (step < 0) ? getStateStorage().getSize() : step);
         }
     }
-}
 
-void Manager::performAnalyses() {
-    // TODO: if analyses are decoupled from the integration, what functionality
-    // do we lose?
     if (_performAnalyses) {
         AnalysisSet& analysisSet = _model->updAnalysisSet();
-        for (int i = 0; i < static_cast<int>(_states->getSize()); ++i) {
-            const SimTK::State& state = _states->get(i);
-            if (i == 0) {
-                analysisSet.begin(state);
-            } else if (i == static_cast<int>(_states->getSize()) - 1) {
-                analysisSet.end(state);
-            } else {
-                analysisSet.step(state, i);
-            }
+        if (step == 0) {
+            analysisSet.begin(state);
+        } else if (step < 0) {
+            analysisSet.end(state);
+        } else {
+            analysisSet.step(state, step);
         }
+    }
+
+    if (_reportStates) {
+        if (step == 0 && _states->getSize() > 0) { return; }
+        _states->append(state);
     }
 }
 
 void Manager::initialize(const SimTK::State& s) {
-    OPENSIM_THROW_IF(!_reportStates && _writeToStorage, Exception,
-        "Expected state reporting to be enabled when writing to storage, but "
-        "it is not. Please enable state reporting by calling "
-        "Manager::setReportStates(true).");
-
-    OPENSIM_THROW_IF(!_reportStates && _performAnalyses, Exception,
-        "Expected state reporting to be enabled when performing analyses, but "
-        "it is not. Please enable state reporting by calling "
-        "Manager::setReportStates(true).");
-
     _timeStepper->initialize(s);
     _timeStepper->setReportAllSignificantStates(true);
-
-    // TODO only enable if reporting is enabled.
-    // TODO: better way to set this default and handle user options.
-    _integ->setReturnEveryInternalStep(true);
-}
-
-SimTK::State Manager::integrate(double finalTime) {
-
+    if (_reportStates || _writeToStorage || _performAnalyses) {
+        _integ->setReturnEveryInternalStep(true);
+    } 
+    
     // Initialize the states trajectory.
     // TODO: find a smarter way to handle this.
     _states->clear();
     _states->reserve(1024);
 
-    OPENSIM_THROW_IF(_integ->isSimulationOver(), Exception,
-        "Manager::integrate(): Simulation is already complete. "
-        "Call Manager::initialize() before calling integrate() again."); 
+    _stateStore.reset(new Storage(1024, "states"));
+    Array<std::string> stateNames = _model->getStateVariableNames();
+    Array<std::string> columnLabels;
+    columnLabels.setSize(0);
+    columnLabels.append("time");
+    for (int i = 0; i < stateNames.getSize(); i++) {
+        columnLabels.append(stateNames[i]);
+    }
+    _stateStore->setColumnLabels(columnLabels);
+
+    if (_model->isControlled()) {
+        _model->updControllerSet().constructStorage();
+    }
+}
+
+SimTK::State Manager::integrate(double finalTime) {
 
     // Initial state.
     const SimTK::State& s = _integ->getState();
+    std::cout << "Initial time: " << s.getTime() << std::endl;
     if (s.getTime() >= finalTime) {
         log_warn(
             "Initial time ({}) is greater than or equal to final time ({}). "
@@ -284,26 +268,20 @@ SimTK::State Manager::integrate(double finalTime) {
             s.getTime(), finalTime);
         return getState();
     }
-    if (_reportStates) { _states->append(s); }
 
-    _integ->setFinalTime(finalTime);
-
-    // We need to re-initialize here to support the CPodes integrator.
-    initialize(s);
-
-    // Main time-stepping loop.
-    // ------------------------
+    // Integrate.
+    int step = 0;
+    record(s, step++);
     auto status = SimTK::Integrator::InvalidSuccessfulStepStatus;
-    while (status != SimTK::Integrator::EndOfSimulation) { 
-        // status = _integ->stepBy(0.05);
-        status = _timeStepper->stepTo(finalTime);
-        // std::cout << "Step status: " << _integ->getSuccessfulStepStatusString(status) << std::endl;
+    while (status != SimTK::Integrator::SuccessfulStepStatus::ReachedReportTime) { 
+        std::cout << "Current step: " << step << ", time: " << _integ->getState().getTime() << std::endl;
 
-        // Record the state for each succesful step.
-        if (_reportStates && 
-                (status == SimTK::Integrator::TimeHasAdvanced ||
-                 status == SimTK::Integrator::ReachedScheduledEvent)) {
-            _states->append(_integ->getState());
+        status = _timeStepper->stepTo(finalTime);
+
+        if (status == SimTK::Integrator::TimeHasAdvanced ||
+                status == SimTK::Integrator::ReachedScheduledEvent) {
+            const SimTK::State& s = _integ->getState();
+            record(s, step++);
         }
 
         if (_integ->isSimulationOver()) {
@@ -312,25 +290,16 @@ SimTK::State Manager::integrate(double finalTime) {
                 log_error("Integration failed due to the following reason: {}",
                     _integ->getTerminationReasonString(
                             _integ->getTerminationReason()));
-            } else if (_reportStates) {
-                // Record the
-                _states->append(_integ->getState());
-            }
+                return _integ->getState();
+            } 
         }
     }
-    // -------------------------
-
-    std::cout << "isSimulationOver: " 
-              << (_integ->isSimulationOver() ? "true" : "false") << std::endl;
+    record(_integ->getState(), -1);
 
     std::printf("\nDone. Used %s with %d function calls.\n",
             _integ->getMethodName(), _integ->getNumRealizations());
     std::printf("  %d steps taken out of %d attempted.\n", 
             _integ->getNumStepsTaken(), _integ->getNumStepsAttempted());
-
-    // Write results.
-    writeToStorage();
-    performAnalyses();
 
     return _timeStepper->getState();
 }
@@ -343,7 +312,7 @@ const SimTK::State& Manager::getState() const {
 // DEPRECATED
 //=============================================================================
 void Manager::setModel(Model& model) {
-    log_warn("Manager::setModel() is deprecated and no longer does anything. "
+    log_error("Manager::setModel() is deprecated and no longer does anything. "
              "Set the model using one of the supported constructor instead.");
 }
 

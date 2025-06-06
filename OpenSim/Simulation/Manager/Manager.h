@@ -94,11 +94,12 @@ public:
     /** Get the session name of this Manager instance. */
     const std::string& getSessionName() const;
 
-    void setReportStates(bool reportStates);
 
     void setPerformAnalyses(bool performAnalyses);
 
     void setWriteToStorage(bool writeToStorage);
+
+    void setReportStates(bool reportStates);
 
     /** @name Configure the Integrator
      * @note Call these functions before calling `Manager::initialize()`.
@@ -115,9 +116,7 @@ public:
         SemiExplicitEuler2 = 5, ///< 5 : For details, see SimTK::SemiExplicitEuler2Integrator.
         Verlet             = 6, ///< 6 : For details, see SimTK::VerletIntegrator.
         CPodes             = 7, ///< 7 : For details, see SimTK::CPodesIntegrator.
-
-        // Not included
-        //SemiExplicitEuler, no error ctrl, requires fixed stepSize arg on construction
+        SemiExplicitEuler  = 8  ///< 8 : For details, see SimTK::SemiExplicitEulerIntegrator.
     };
 
     /** Sets the integrator method used via IntegratorMethod enum. The 
@@ -450,19 +449,19 @@ private:
     bool _performAnalyses;
     bool _writeToStorage;
 
+    SimTK::Real _fixedStepSize;
+
     SimTK::ReferencePtr<Model> _model;
 
+    std::unique_ptr<SimTK::TimeStepper> _timeStepper;
     std::unique_ptr<SimTK::Integrator> _integ;
     IntegratorMethod _integratorMethod = IntegratorMethod::RungeKuttaMerson;
-
-    std::unique_ptr<SimTK::TimeStepper> _timeStepper;
 
     std::unique_ptr<StatesTrajectory> _states;
     std::unique_ptr<Storage> _stateStore;
 
     // HELPER METHODS
-    void writeToStorage();
-    void performAnalyses();
+    void record(const SimTK::State& state, int step);
 
 };  // END of class Manager
 

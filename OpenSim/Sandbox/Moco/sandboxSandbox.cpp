@@ -67,20 +67,20 @@ int main() {
     auto model = createSlidingMassModel();
     model->initSystem();
 
-    double finalTime = 5.0;
+    double finalTime = 10.0;
     Manager manager(*model);
-    manager.setReportStates(false);
-    manager.setPerformAnalyses(false);
-    manager.setWriteToStorage(false);
+    manager.setReportStates(true);
+    manager.setPerformAnalyses(true);
+    manager.setWriteToStorage(true);
     SimTK::State state = model->initSystem();
     state.updTime() = 0.0;
-    state.updY() = SimTK::Test::randVector(state.getNY());
+    state.updY()[0] = SimTK::Pi/4; // Set initial angle to 45 degrees
     manager.setIntegratorMethod(Manager::IntegratorMethod::RungeKuttaMerson);
     manager.initialize(state);
     double cpuStart = SimTK::cpuTime();
     double realStart = SimTK::realTime();
-    SimTK::State s = manager.integrate(finalTime);
-    // manager.integrate(finalTime);
+    SimTK::State s = manager.integrate(finalTime/2.0);
+    manager.integrate(finalTime);
     double cpu_time = SimTK::cpuTime()-cpuStart;
     double real_time = SimTK::realTime()-realStart;
     double realTimeFactor = finalTime/(real_time);
@@ -88,19 +88,6 @@ int main() {
     std::cout << "cpu time:  "        << cpu_time << std::endl;
     std::cout << "real time: "        << real_time << std::endl;
     std::cout << "real time factor: " << realTimeFactor << std::endl;
-
-    // manager.initialize(s);
-    // cpuStart = SimTK::cpuTime();
-    // realStart = SimTK::realTime();
-    // s = manager.integrate(finalTime + finalTime);
-    // cpu_time = SimTK::cpuTime()-cpuStart;
-    // real_time = SimTK::realTime()-realStart;
-    // realTimeFactor = finalTime/(real_time);
-    // std::cout << "Second integration:" << std::endl;
-    // std::cout << "cpu time:  "        << cpu_time << std::endl;
-    // std::cout << "real time: "        << real_time << std::endl;
-    // std::cout << "real time factor: " << realTimeFactor << std::endl;
-
 
     TimeSeriesTable statesTable = manager.getStatesTable();
     std::cout << "States table:" << std::endl;
