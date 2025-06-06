@@ -44,6 +44,8 @@
 
 namespace OpenSim {
 
+// Not intended for end users => private
+namespace detail {
 // backwards-compat hack: the original implementation allows for references
 // to booleans, which won't work if using std::vector<bool> specialization
 // Moved outside the template class to ensure linking works properly in VS 17.14
@@ -56,6 +58,7 @@ public:
 private:
     bool value;
 };
+}
 
 /**
  * A class for storing an array of values of type T.  The capacity of the class
@@ -590,7 +593,7 @@ private:
 
     using storage = std::conditional_t<
         std::is_same<T, bool>::value,
-        std::vector<OpenSim::BoolLike>,
+        std::vector<detail::BoolLike>,
         std::vector<T>
     >;
 
