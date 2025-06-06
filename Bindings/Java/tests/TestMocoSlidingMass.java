@@ -80,19 +80,18 @@ class TestMocoSlidingMass {
 
     // Configure the solver.
     // =====================
-    if (MocoCasADiSolver.isAvailable()) {
-      MocoCasADiSolver ms = study.initCasADiSolver();
-      ms.set_num_mesh_intervals(50);
 
-      // Now that we've finished setting up the tool, print it to a file.
-      study.print("sliding_mass.omoco");
+    MocoCasADiSolver ms = study.initCasADiSolver();
+    ms.set_num_mesh_intervals(50);
 
-      // Solve the problem.
-      // ==================
-      MocoSolution solution = study.solve();
+    // Now that we've finished setting up the tool, print it to a file.
+    study.print("sliding_mass.omoco");
 
-      solution.write("sliding_mass_solution.sto");
-    }
+    // Solve the problem.
+    // ==================
+    MocoSolution solution = study.solve();
+
+    solution.write("sliding_mass_solution.sto");
   }
   
   public static void testMarkersReference() throws Exception {
