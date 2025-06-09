@@ -261,3 +261,49 @@ TEST_CASE("isUniform tests with createVectorLinspace(SimTK::Vector) and createVe
         REQUIRE_THAT(result_simtk.second, Catch::Matchers::WithinAbs(rate, tol));
     }
 }
+
+TEST_CASE("detectDelimiter") {
+    const std::vector<std::string> delimiters = {",", ";", "|", "\t", ":", " "};
+    SECTION("Comma") {
+        std::string input = "a,b,c,d";
+        auto delim = detectDelimiter(input, delimiters);
+        REQUIRE(delim == ",");
+    }
+    
+    SECTION("Pipe") {
+        std::string input = "a|b|c|d";
+        auto delim = detectDelimiter(input, delimiters);
+        REQUIRE(delim == "|");
+    }
+    
+    SECTION("Tab") {
+        std::string input = "a\tb\tc\td";
+        auto delim = detectDelimiter(input, delimiters);
+        REQUIRE(delim == "\t");
+    }
+    
+    SECTION("Semicolon") {
+        std::string input = "a;b;c;d";
+        auto delim = detectDelimiter(input, delimiters);
+        REQUIRE(delim == ";");
+    }
+    
+    SECTION("Space") {
+        std::string input = "a b c d";
+        auto delim = detectDelimiter(input, delimiters);
+        REQUIRE(delim == " ");
+    }
+    
+    SECTION("No Valid Delimiter") {
+        std::string input = "abcd";
+        auto delim = detectDelimiter(input, delimiters);
+        REQUIRE(delim == "");
+    }
+    
+    SECTION("Delimiter Exclusion") {
+        std::vector<std::string> small_delimiters = {",", ";"};
+        std::string input = "a|b|c|d";
+        auto delim = detectDelimiter(input, small_delimiters);
+        REQUIRE(delim == "");
+    }    
+}
