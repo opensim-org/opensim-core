@@ -44,6 +44,22 @@
 
 namespace OpenSim {
 
+// Not intended for end users => private
+namespace detail {
+// backwards-compat hack: the original implementation allows for references
+// to booleans, which won't work if using std::vector<bool> specialization
+// Moved outside the template class to ensure linking works properly in VS 17.14
+// See issue (#4081) for details.
+class BoolLike final {
+public:
+    BoolLike(bool value_) : value{value_} {}
+    operator bool& () { return value; }
+    operator const bool& () const { return value; }
+private:
+    bool value;
+};
+}
+
 /**
  * A class for storing an array of values of type T.  The capacity of the class
  * grows as needed.  To use this template for a class of type T, class T should
@@ -575,19 +591,9 @@ public:
 private:
     T _defaultValue;
 
-    // backwards-compat hack: the original implementation allows for references
-    // to booleans, which won't work if using std::vector<bool> specialization
-    class BoolLike final {
-    public:
-        BoolLike(bool value_) : value{value_} {}
-        operator bool& () { return value; }
-        operator const bool& () const { return value; }
-    private:
-        bool value;
-    };
     using storage = std::conditional_t<
         std::is_same<T, bool>::value,
-        std::vector<BoolLike>,
+        std::vector<detail::BoolLike>,
         std::vector<T>
     >;
 

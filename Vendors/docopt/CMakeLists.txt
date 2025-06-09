@@ -1,0 +1,14 @@
+file(GLOB INCLUDE_FILES *.h)
+file(GLOB SOURCE_FILES *.cpp)
+
+if(MSVC)
+    add_definitions("-DDOCOPT_DLL -DDOCOPT_EXPORTS")
+endif(MSVC)
+
+OpenSimAddLibrary(VENDORLIB LOWERINCLUDEDIRNAME
+    KIT docopt
+    AUTHORS "Jared_Grubb"
+    LINKLIBS ""
+    INCLUDES ${INCLUDE_FILES}
+    SOURCES ${SOURCE_FILES}
+    )
