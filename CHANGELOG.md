@@ -8,6 +8,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.6
 =====
+- Move BoolLike class outside of template Array class for the `VS 17.14` linker (#4081)
 - Updated the dependency `spdlog` to `v1.14.0`. (#4067)
 
 
