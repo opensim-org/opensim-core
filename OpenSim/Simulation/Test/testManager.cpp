@@ -7,8 +7,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2018 Stanford University and the Authors                *
+ * Copyright (c) 2005-2025 Stanford University and the Authors                *
  * Author(s): Carmichael Ong                                                  *
+ * Contributor(s): Nicholas Bianco                                            *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -39,84 +40,59 @@ Manager Tests:
 6. testExceptions: Test that misuse actually triggers exceptions.
 
 //=============================================================================*/
+#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
+#include <OpenSim/Analyses/BodyKinematics.h>
 #include <OpenSim/Common/Constant.h>
 
+#include <catch2/catch_all.hpp>
+using Catch::Matchers::ContainsSubstring;
+
 using namespace OpenSim;
-using namespace std;
-void testStationCalcWithManager();
-void testStateChangesBetweenIntegration();
-void testExcitationUpdatesWithManager();
-void testConstructors();
-void testIntegratorInterface();
-void testExceptions();
+namespace {
+    Model createBallModel(bool prescribedActuator = false) {
+        Model model;
+        model.setName("ball");
+        model.setGravity(SimTK::Vec3(0, -9.81, 0));
 
-int main()
-{
-    SimTK::Array_<std::string> failures;
+        auto ball = new Body("ball", 0.7, SimTK::Vec3(0.1),
+            SimTK::Inertia::sphere(0.5));
+        model.addBody(ball);
 
-    try { testStationCalcWithManager(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testStationCalcWithManager");
+        auto freeJoint = new FreeJoint("freeJoint", 
+            model.getGround(), SimTK::Vec3(0), SimTK::Vec3(0),
+            *ball, SimTK::Vec3(0), SimTK::Vec3(0));
+        model.addJoint(freeJoint);
+        Coordinate& sliderCoord = 
+            freeJoint->updCoordinate(FreeJoint::Coord::TranslationY);
+
+        if (prescribedActuator) {
+            CoordinateActuator* actu = new CoordinateActuator();
+            actu->setCoordinate(&sliderCoord);
+            actu->setName("actuator");
+            actu->setOptimalForce(1);
+            model.addForce(actu);
+
+            PrescribedController* controller = new PrescribedController();
+            controller->setName("controller");
+            controller->addActuator(*actu);
+            controller->prescribeControlForActuator(actu->getName(),
+                Constant(1.7));
+            model.addController(controller);
+        }
+
+        BodyKinematics* bodyKinematics = new BodyKinematics();
+        model.addAnalysis(bodyKinematics);
+
+        return model;
     }
-
-    try { testStateChangesBetweenIntegration(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testStateChangesBetweenIntegration");
-    }
-
-    try { testExcitationUpdatesWithManager(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testExcitationUpdatesWithManager");
-    }
-
-    try { testConstructors(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testConstructors");
-    }
-
-    try { testIntegratorInterface(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testIntegratorInterface");
-    }
-
-    try { testExceptions(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testExceptions");
-    }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done. All cases passed." << endl;
-
-    return 0;
 }
 
-//==============================================================================
-// Test Cases
-//==============================================================================
-
-void testStationCalcWithManager()
-{
-    using SimTK::Vec3;
-
-    cout << "Running testStationCalcWithManager" << endl;
-
+TEST_CASE("Station calculations with Manager") {
     Model pendulum;
     pendulum.setName("pendulum");
 
@@ -124,8 +100,9 @@ void testStationCalcWithManager()
         SimTK::Inertia::cylinderAlongY(0.025, 0.55));
     pendulum.addBody(rod);
 
-    auto pin = new PinJoint("pin", pendulum.getGround(), Vec3(0), Vec3(0), 
-        *rod, Vec3(0), Vec3(0));
+    auto pin = new PinJoint("pin", 
+        pendulum.getGround(), SimTK::Vec3(0), SimTK::Vec3(0), 
+        *rod, SimTK::Vec3(0), SimTK::Vec3(0));
     pendulum.addJoint(pin);
 
     // Create station in the extra frame
@@ -175,8 +152,8 @@ void testStationCalcWithManager()
         vo = myStation->getVelocityInGround(state);
         ao = myStation->getAccelerationInGround(state);
 
-        cout << "t = " << state.getTime() << ": os_a = " << ao;
-        cout << " | sb_a = " << a << endl;
+        INFO("t = " << state.getTime() << ": os_a = " << ao << " | sb_a = " 
+            << a);
 
         // Compare Simbody values to values from Station
         SimTK_TEST_EQ(l, lo);
@@ -185,36 +162,19 @@ void testStationCalcWithManager()
     }
 }
 
-void testStateChangesBetweenIntegration()
-{
-    cout << "Running testStateChangesBetweenIntegration" << endl;
-
-    using SimTK::Vec3;
-
-    Model model;
-    model.setName("ball");
-
-    auto ball = new Body("ball", 0.7, Vec3(0.1),
-        SimTK::Inertia::sphere(0.5));
-    model.addBody(ball);
-
-    auto freeJoint = new FreeJoint("freeJoint", model.getGround(), Vec3(0), Vec3(0),
-        *ball, Vec3(0), Vec3(0));
-    model.addJoint(freeJoint);
-
-    double g = 9.81;
-    model.setGravity(Vec3(0, -g, 0));
-
+TEST_CASE("State changes between integration") {
+    Model model = createBallModel();
     Station* myStation = new Station();
     const SimTK::Vec3 point(0);
     myStation->set_location(point);
-    myStation->setParentFrame(*ball);
+    myStation->setParentFrame(model.getComponent<Body>("/bodyset/ball"));
     model.addModelComponent(myStation);
 
     SimTK::State& state = model.initSystem();
 
     const Coordinate& sliderCoord = 
-        freeJoint->getCoordinate(FreeJoint::Coord::TranslationY);
+            model.getComponent<FreeJoint>("/jointset/freeJoint")
+            .getCoordinate(FreeJoint::Coord::TranslationY);
 
     std::vector<double> integInitTimes = {0.0, 1.0, 3.0};
     std::vector<double> integFinalTimes = {1.0, 3.0, 6.0};
@@ -248,14 +208,15 @@ void testStateChangesBetweenIntegration()
         model.realizeVelocity(state);
 
         double duration = integFinalTimes[i] - integInitTimes[i];
+        const auto& g = -model.getGravity()[1];
         double finalHeight = 
             initHeights[i] + initSpeeds[i]*duration - 0.5*g*duration*duration;
         double finalSpeed = initSpeeds[i] - g*duration;
         double sliderHeight = sliderCoord.getValue(state);
         double sliderSpeed = sliderCoord.getSpeedValue(state);
-        cout << "Slider: t = " << state.getTime() << ", h = " << sliderHeight
+        INFO("Slider: t = " << state.getTime() << ", h = " << sliderHeight
             << ", v = " << sliderSpeed << " | Eq: t = " << integFinalTimes[i]
-            << ", h = " << finalHeight << ", v = " << finalSpeed;
+            << ", h = " << finalHeight << ", v = " << finalSpeed);
 
         SimTK_TEST_EQ(state.getTime(), integFinalTimes[i]);
         SimTK_TEST_EQ(sliderHeight, finalHeight);
@@ -265,8 +226,8 @@ void testStateChangesBetweenIntegration()
         stationHeight = myStation->getLocationInGround(state)[1];
         stationSpeed = myStation->getVelocityInGround(state)[1];
 
-        cout << " | Station: t = " << state.getTime() << ", h = " 
-            << stationHeight << ", v = " << stationSpeed << endl;
+        INFO("Station: t = " << state.getTime() << ", h = " 
+            << stationHeight << ", v = " << stationSpeed);
 
         // Compare Station values with equation values
         SimTK_TEST_EQ(stationHeight, finalHeight);
@@ -275,10 +236,7 @@ void testStateChangesBetweenIntegration()
 
 }
 
-void testExcitationUpdatesWithManager()
-{
-    cout << "Running testExcitationUpdatesWithManager" << endl;
-    LoadOpenSimLibrary("osimActuators");
+TEST_CASE("Excitation updates with Manager") {
     Model arm("arm26.osim");
 
     const Set<Muscle> &muscleSet = arm.getMuscles();
@@ -292,8 +250,7 @@ void testExcitationUpdatesWithManager()
     state.setTime(0);
     double stepsize = 0.01;
     
-    for (int i = 0; i < 3; ++i)
-    {
+    for (int i = 0; i < 3; ++i) {
         double initAct = 0.2 + i*0.2; // 0.2, 0.4, 0.6
         double excitation = initAct + 0.1; // 0.3, 0.5, 0.7
         
@@ -313,8 +270,9 @@ void testExcitationUpdatesWithManager()
         arm.realizeDynamics(state);
         double finalAct = muscleSet.get(0).getActivation(state);
         double finalExcitation = muscleSet.get(0).getExcitation(state);
-        cout << state.getTime() << " " << initAct << " " << excitation;
-        cout << " " << finalAct << endl;
+        INFO("t = " << state.getTime() << ", initial_act = " << initAct 
+            << ", initial_exc = " << excitation << ", final_act = " << finalAct);
+
         // Check if excitation is correct
         SimTK_TEST_EQ(excitation, finalExcitation);
         // Also check if the final activation is between the initial
@@ -324,28 +282,12 @@ void testExcitationUpdatesWithManager()
     }
 }
 
-void testConstructors()
-{
-    cout << "Running testConstructors" << endl;
-
-    using SimTK::Vec3;
-
-    Model model;
-    model.setName("ball");
-
-    auto ball = new Body("ball", 0.7, Vec3(0.1),
-        SimTK::Inertia::sphere(0.5));
-    model.addBody(ball);
-
-    auto freeJoint = new FreeJoint("freeJoint", model.getGround(), Vec3(0), Vec3(0),
-        *ball, Vec3(0), Vec3(0));
-    model.addJoint(freeJoint);
-
-    double g = 9.81;
-    model.setGravity(Vec3(0, -g, 0));
-
-    const Coordinate& sliderCoord =
-        freeJoint->getCoordinate(FreeJoint::Coord::TranslationY);
+TEST_CASE("Constructors") {
+    Model model = createBallModel();
+    SimTK::State& state = model.initSystem();
+    const Coordinate& sliderCoord = 
+            model.getComponent<FreeJoint>("/jointset/freeJoint")
+            .getCoordinate(FreeJoint::Coord::TranslationY);
 
     double initHeight = -0.5;
     double initSpeed = 0.3;
@@ -355,49 +297,54 @@ void testConstructors()
     initState.setTime(0.0);
 
     double duration = 0.7;
+    const auto& g = -model.getGravity()[1];
     double finalHeight = 
         initHeight + initSpeed*duration - 0.5*g*duration*duration;
     double finalSpeed = initSpeed - g*duration;
 
-    Manager manager1(model);
-    manager1.initialize(initState);
-    SimTK::State outState1 = manager1.integrate(duration);
-    SimTK_TEST_EQ(sliderCoord.getValue(outState1), finalHeight);
-    SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState1), finalSpeed);
+    SECTION("Primary constructor") {
+        Manager manager1(model);
+        CHECK_THROWS_AS(manager1.integrate(duration), Exception);
+        manager1.initialize(initState);
+        SimTK::State outState1 = manager1.integrate(duration);
+        SimTK_TEST_EQ(sliderCoord.getValue(outState1), finalHeight);
+        SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState1), finalSpeed);
 
-    Manager manager2(model);
-    manager2.initialize(initState);
-    SimTK::State outState2 = manager2.integrate(duration);
-    SimTK_TEST_EQ(sliderCoord.getValue(outState2), finalHeight);
-    SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState2), finalSpeed);
+        Manager manager2(model);
+        CHECK_THROWS_AS(manager2.integrate(duration), Exception);
+        manager2.initialize(initState);
+        SimTK::State outState2 = manager2.integrate(duration);
+        SimTK_TEST_EQ(sliderCoord.getValue(outState2), finalHeight);
+        SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState2), finalSpeed);
+    }
+    
 
-    Manager manager3(model, initState);
-    SimTK::State outState3 = manager3.integrate(duration);
-    SimTK_TEST_EQ(sliderCoord.getValue(outState3), finalHeight);
-    SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState3), finalSpeed);
+    SECTION("Convenience constructor") {
+        Manager manager1(model, initState);
+        SimTK::State outState1 = manager1.integrate(duration);
+        SimTK_TEST_EQ(sliderCoord.getValue(outState1), finalHeight);
+        SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState1), finalSpeed);
 
-    Manager manager4(model, initState);
-    SimTK::State outState4 = manager4.integrate(duration);
-    SimTK_TEST_EQ(sliderCoord.getValue(outState4), finalHeight);
-    SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState4), finalSpeed);
+        Manager manager2(model, initState);
+        SimTK::State outState2 = manager2.integrate(duration);
+        SimTK_TEST_EQ(sliderCoord.getValue(outState2), finalHeight);
+        SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState2), finalSpeed);
+    }
+
+    SECTION("Changing the integrator with the convenience constructor") {
+        Manager manager(model, initState);
+        manager.setIntegratorMethod(Manager::IntegratorMethod::RungeKutta2);
+        CHECK_THROWS_AS(manager.integrate(duration), Exception);
+        manager.initialize(initState);
+        SimTK::State outState = manager.integrate(duration);
+        SimTK_TEST_EQ(sliderCoord.getValue(outState), finalHeight);
+        SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState), finalSpeed);
+    }
 }
 
-void testIntegratorInterface()
-{
-    cout << "Running testIntegratorInterface" << endl;
-
-    using SimTK::Vec3;
-    const double gravity = 9.81;
-
-    // Create a simple model consisting of an unconstrained ball.
-    Model model;
-    model.setGravity(Vec3(0, -gravity, 0));
-    auto ball = new Body("ball", 1., Vec3(0), SimTK::Inertia::sphere(1.));
-    model.addBody(ball);
-    auto freeJoint = new FreeJoint("freeJoint", model.getGround(), *ball);
-    model.addJoint(freeJoint);
-    auto state = model.initSystem();
-
+TEST_CASE("Integrator interface") {
+    Model model = createBallModel();
+    model.initSystem();
     Manager manager(model);
 
     // getMethodName returns char* so convert to string first for tests
@@ -406,10 +353,6 @@ void testIntegratorInterface()
     SimTK_TEST(method == "RungeKuttaMerson");
     
     // Test setIntegratorMethod()
-    //manager.setIntegratorMethod(Manager::IntegratorMethod::CPodes);
-    //method = manager.getIntegrator().getMethodName();
-    //SimTK_TEST(method == "CPodesBDF");
-
     manager.setIntegratorMethod(Manager::IntegratorMethod::ExplicitEuler);
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "ExplicitEuler");
@@ -438,43 +381,236 @@ void testIntegratorInterface()
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "Verlet");
 
+    manager.setIntegratorMethod(Manager::IntegratorMethod::CPodes);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "CPodesBDF");
+
+    // SemiExplicitEuler requires a fixed step size.
+    // CHECK_THROWS_AS(manager.setIntegratorMethod(
+    //         Manager::IntegratorMethod::SemiExplicitEuler), Exception);
+    // manager.setIntegratorFixedStepSize(0.01);
+    // manager.setIntegratorMethod(Manager::IntegratorMethod::SemiExplicitEuler);
+    // method = manager.getIntegrator().getMethodName();
+    // SimTK_TEST(method == "SemiExplicitEuler");
+    // CHECK_THROWS_WITH(manager.setIntegratorAccuracy(0.01), 
+    //         ContainsSubstring("Integrator method SemiExplicitEuler does not "
+    //                           "support error control."));
+
     // Make some changes to the settings. We can't check to see if these 
     // actually changed because IntegratorRep is not exposed.
-    double accuracy = 0.314;
-    double hmin = 0.11;
-    double hmax = 0.22;
-    int nSteps = 999;
-    manager.setIntegratorAccuracy(accuracy);
-    manager.setIntegratorMinimumStepSize(hmin);
-    manager.setIntegratorMaximumStepSize(hmax);
-    manager.setIntegratorInternalStepLimit(nSteps);
+     manager.setIntegratorMethod(Manager::IntegratorMethod::ExplicitEuler);
+    CHECK_NOTHROW(manager.setIntegratorAccuracy(0.314));
+    CHECK_NOTHROW(manager.setIntegratorMinimumStepSize(0.11));
+    CHECK_NOTHROW(manager.setIntegratorMaximumStepSize(0.22));
+    CHECK_NOTHROW(manager.setIntegratorInternalStepLimit(999));
 }
 
-void testExceptions()
-{
-    cout << "Running testExceptions" << endl;
-    LoadOpenSimLibrary("osimActuators");
+TEST_CASE("Exceptions") {
     Model arm1("arm26.osim");
-    Model arm2("arm26.osim");
 
     // model must have initSystem() called first
-    ASSERT_THROW(Exception, Manager manager(arm1));
+    CHECK_THROWS_AS(Manager(arm1), Exception);
     SimTK::State s1 = arm1.initSystem();
-    SimTK::State s2 = arm2.initSystem();
     Manager manager(arm1);
 
-    // ok to switch models
-    manager.setModel(arm2);
-
     // can't integrate if not initialized
-    ASSERT_THROW(Exception, manager.integrate(1.0));
-    manager.initialize(s2);
+    CHECK_THROWS_AS(manager.integrate(0.1), Exception);
+    manager.initialize(s1);
+    CHECK_NOTHROW(manager.integrate(0.1));
 
     // can't change model or integrator method now
-    ASSERT_THROW(Exception, manager.setModel(arm1));
-    ASSERT_THROW(Exception, manager.setIntegratorMethod(Manager::IntegratorMethod::ExplicitEuler));
+    manager.setIntegratorMethod(Manager::IntegratorMethod::ExplicitEuler);
+    CHECK_THROWS_AS(manager.integrate(0.1), Exception);
+    manager.initialize(s1);
 
     // but integrator options can change
     manager.setIntegratorAccuracy(1e-4);
     manager.setIntegratorMinimumStepSize(0.01);
+    CHECK_NOTHROW(manager.integrate(0.1));
+}
+
+TEST_CASE("Reporting") {
+    SECTION("Reporting disabled") {
+        Model model = createBallModel(true);
+        SimTK::State state = model.initSystem();
+        Manager manager(model);
+        manager.setWriteToStorage(false);
+        manager.setPerformAnalyses(false);
+        manager.setRecordStatesTrajectory(false);
+        manager.initialize(state);
+        manager.integrate(1.0);
+        // storage
+        CHECK(manager.getStatesTable().getNumRows() == 0);
+        CHECK(manager.getStatesTable().getNumColumns() == 0);
+        auto controlsTable = model.getControlsTable();
+        CHECK(controlsTable.getNumRows() == 0);
+        CHECK(controlsTable.getNumColumns() == 0);
+        // analyses
+        BodyKinematics& bodyKin = dynamic_cast<BodyKinematics&>(
+            model.getAnalysisSet().get(0));
+        auto* positionStorage = bodyKin.getPositionStorage();
+        CHECK(positionStorage->getSize() == 0);
+        CHECK(positionStorage->getColumnLabels().getSize() == 10);
+        // states trajectory
+        CHECK(manager.getStatesTrajectory().getSize() == 0);
+    }
+    SECTION("Defaults") {
+        Model model = createBallModel(true);
+        SimTK::State state = model.initSystem();
+        Manager manager(model);
+        manager.initialize(state);
+        manager.integrate(1.0);
+        // storage
+        CHECK(manager.getStatesTable().getNumRows() == 6);
+        CHECK(manager.getStatesTable().getNumColumns() == 12);
+        auto controlsTable = model.getControlsTable();
+        CHECK(controlsTable.getNumRows() == 6);
+        CHECK(controlsTable.getNumColumns() == 1);
+        // analyses
+        BodyKinematics& bodyKin = dynamic_cast<BodyKinematics&>(
+            model.getAnalysisSet().get(0));
+        auto* positionStorage = bodyKin.getPositionStorage();
+        CHECK(positionStorage->getSize() == 6);
+        CHECK(positionStorage->getColumnLabels().getSize() == 10);
+        // states trajectory
+        CHECK(manager.getStatesTrajectory().getSize() == 0);
+    }
+    SECTION("Write to storage") {
+        Model model = createBallModel(true);
+        SimTK::State state = model.initSystem();
+        Manager manager(model);
+        manager.setWriteToStorage(true);
+        manager.setPerformAnalyses(false);
+        manager.setRecordStatesTrajectory(false);
+        manager.initialize(state);
+        manager.integrate(1.0);
+        // storage
+        CHECK(manager.getStatesTable().getNumRows() == 6);
+        CHECK(manager.getStatesTable().getNumColumns() == 12);
+        auto controlsTable = model.getControlsTable();
+        CHECK(controlsTable.getNumRows() == 6);
+        CHECK(controlsTable.getNumColumns() == 1);
+        // analyses
+        BodyKinematics& bodyKin = dynamic_cast<BodyKinematics&>(
+            model.getAnalysisSet().get(0));
+        auto* positionStorage = bodyKin.getPositionStorage();
+        CHECK(positionStorage->getSize() == 0);
+        CHECK(positionStorage->getColumnLabels().getSize() == 10);
+        // states trajectory
+        CHECK(manager.getStatesTrajectory().getSize() == 0);
+    }
+    SECTION("Perform analyses") {
+        Model model = createBallModel(true);
+        SimTK::State state = model.initSystem();
+        Manager manager(model);
+        manager.setWriteToStorage(false);
+        manager.setPerformAnalyses(true);
+        manager.setRecordStatesTrajectory(false);
+        manager.initialize(state);
+        manager.integrate(1.0);
+        // storage
+        CHECK(manager.getStatesTable().getNumRows() == 0);
+        CHECK(manager.getStatesTable().getNumColumns() == 0);
+        auto controlsTable = model.getControlsTable();
+        CHECK(controlsTable.getNumRows() == 0);
+        CHECK(controlsTable.getNumColumns() == 0);
+        // analyses
+        BodyKinematics& bodyKin = dynamic_cast<BodyKinematics&>(
+            model.getAnalysisSet().get(0));
+        auto* positionStorage = bodyKin.getPositionStorage();
+        CHECK(positionStorage->getSize() == 6);
+        CHECK(positionStorage->getColumnLabels().getSize() == 10);
+        // states trajectory
+        CHECK(manager.getStatesTrajectory().getSize() == 0);
+    }
+    SECTION("Record states trajectory") {
+        Model model = createBallModel(true);
+        SimTK::State state = model.initSystem();
+        Manager manager(model);
+        manager.setWriteToStorage(false);
+        manager.setPerformAnalyses(false);
+        manager.setRecordStatesTrajectory(true);
+        manager.initialize(state);
+        manager.integrate(1.0);
+        // storage
+        CHECK(manager.getStatesTable().getNumRows() == 0);
+        CHECK(manager.getStatesTable().getNumColumns() == 0);
+        auto controlsTable = model.getControlsTable();
+        CHECK(controlsTable.getNumRows() == 0);
+        CHECK(controlsTable.getNumColumns() == 0);
+        // analyses
+        BodyKinematics& bodyKin = dynamic_cast<BodyKinematics&>(
+            model.getAnalysisSet().get(0));
+        auto* positionStorage = bodyKin.getPositionStorage();
+        CHECK(positionStorage->getSize() == 0);
+        CHECK(positionStorage->getColumnLabels().getSize() == 10);
+        // states trajectory
+        CHECK(manager.getStatesTrajectory().getSize() == 6);
+    } 
+    SECTION("All enabled") {
+        Model model = createBallModel(true);
+        SimTK::State state = model.initSystem();
+        Manager manager(model);
+        manager.setWriteToStorage(true);
+        manager.setPerformAnalyses(true);
+        manager.setRecordStatesTrajectory(true);
+        manager.initialize(state);
+        manager.integrate(1.0);
+        // storage
+        CHECK(manager.getStatesTable().getNumRows() == 6);
+        CHECK(manager.getStatesTable().getNumColumns() == 12);
+        auto controlsTable = model.getControlsTable();
+        CHECK(controlsTable.getNumRows() == 6);
+        CHECK(controlsTable.getNumColumns() == 1);
+        // analyses
+        BodyKinematics& bodyKin = dynamic_cast<BodyKinematics&>(
+            model.getAnalysisSet().get(0));
+        auto* positionStorage = bodyKin.getPositionStorage();
+        CHECK(positionStorage->getSize() == 6);
+        CHECK(positionStorage->getColumnLabels().getSize() == 10);
+        // states trajectory
+        CHECK(manager.getStatesTrajectory().getSize() == 6);
+    }    
+}
+
+TEST_CASE("Reinitializing Manager") {
+    Model model = createBallModel(true);
+    SimTK::State state = model.initSystem();
+    Manager manager(model);
+    manager.setRecordStatesTrajectory(true);
+    manager.initialize(state);
+    manager.integrate(1.0);
+    CHECK(manager.getState().getTime() == 1.0);
+    CHECK(manager.getStatesTable().getNumRows() == 6);
+    CHECK(manager.getStatesTable().getNumColumns() == 12);
+    CHECK(manager.getStatesTrajectory().getSize() == 6);
+    
+    // re-initializing does not fail and clears reporting data structures
+    state.updTime() = 0.0;
+    state.updQ() = SimTK::Test::randVector(state.getNQ());
+    state.updU() = SimTK::Test::randVector(state.getNU());
+    CHECK_THROWS_AS(manager.integrate(2.0), Exception);
+    CHECK_NOTHROW(manager.initialize(state));
+    CHECK(manager.getState().getTime() == 0.0);
+    CHECK(manager.getStatesTable().getNumRows() == 0);
+    CHECK(manager.getStatesTable().getNumColumns() == 0);
+    CHECK(manager.getStatesTrajectory().getSize() == 0);
+
+    // re-running simulation succeeds
+    CHECK_NOTHROW(manager.integrate(1.0));
+    CHECK(manager.getState().getTime() == 1.0);
+    CHECK(manager.getStatesTable().getNumRows() == 6);
+    CHECK(manager.getStatesTable().getNumColumns() == 12);
+    CHECK(manager.getStatesTrajectory().getSize() == 6);
+
+    // re-run with a different initial and final time
+    state.updTime() = 0.5;
+    state.updQ() = SimTK::Test::randVector(state.getNQ());
+    state.updU() = SimTK::Test::randVector(state.getNU());
+    CHECK_NOTHROW(manager.initialize(state));
+    CHECK_NOTHROW(manager.integrate(5.0));
+    CHECK(manager.getState().getTime() == 5.0);
+    CHECK(manager.getStatesTable().getNumRows() == 44);
+    CHECK(manager.getStatesTable().getNumColumns() == 12);
+    CHECK(manager.getStatesTrajectory().getSize() == 44);
 }

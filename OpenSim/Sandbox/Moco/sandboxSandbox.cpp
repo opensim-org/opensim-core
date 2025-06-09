@@ -69,13 +69,15 @@ int main() {
 
     double finalTime = 10.0;
     Manager manager(*model);
-    manager.setReportStates(true);
-    manager.setPerformAnalyses(true);
+    manager.setRecordStatesTrajectory(true);
+    manager.setPerformAnalyses(false);
     manager.setWriteToStorage(true);
     SimTK::State state = model->initSystem();
     state.updTime() = 0.0;
     state.updY()[0] = SimTK::Pi/4; // Set initial angle to 45 degrees
     manager.setIntegratorMethod(Manager::IntegratorMethod::RungeKuttaMerson);
+    manager.setIntegratorFinalTime(5.0);    
+
     manager.initialize(state);
     double cpuStart = SimTK::cpuTime();
     double realStart = SimTK::realTime();
@@ -96,17 +98,6 @@ int main() {
     auto statesTimes = statesTable.getIndependentColumn();
     std::cout << "times = ";
     for (const auto& time : statesTimes) {
-        std::cout << time << " ";
-    }
-    std::cout << std::endl;
-
-    TimeSeriesTable controlsTable = manager.getControlsTable();
-    std::cout << "Controls table:" << std::endl;
-    std::cout << "rows = " << controlsTable.getNumRows() << std::endl;
-    std::cout << "columns = " << controlsTable.getNumColumns() << std::endl;
-    auto controlsTimes = controlsTable.getIndependentColumn();
-    std::cout << "times = ";
-    for (const auto& time : controlsTimes) {
         std::cout << time << " ";
     }
     std::cout << std::endl;

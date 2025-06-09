@@ -9,8 +9,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2025 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
+ * Contributor(s): Ajay Seth, Carmichael Ong, Nicholas Bianco                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -27,12 +28,10 @@
  * Author: Frank C. Anderson 
  */
 
-// INCLUDES
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <SimTKcommon/internal/ReferencePtr.h>
 
 namespace SimTK {
 class Integrator;
@@ -67,15 +66,23 @@ class ControllerSet;
 class OSIMSIMULATION_API Manager {
 public:
     // CONSTRUCTION
-    /** Constructor that takes a model only and internally uses a
-     * SimTK::RungeKuttaMersonIntegrator with default settings (accuracy,
-     * constraint tolerance, etc.). */
+    /** 
+     * Model-only constructor.
+     *
+     * You must call `Model::initSystem()` before passing the model to this 
+     * constructor. The internal `SimTK::Integrator` is initialized to 
+     * `SimTK:RungeKuttaMersonIntegrator` with default settings 
+     * (accuracy, constraint tolerance, etc.).
+     */
     Manager(Model& model);
 
-    /** Convenience constructor for creating and initializing a Manager (by
-     * calling initialize()).
-     * Do not use this constructor if you intend to change integrator settings;
-     * changes to the integrator may not take effect after initializing. */
+    /** 
+     * Convenience constructor for creating and initializing a Manager. 
+     * 
+     * `Manager::initialize()` is be called internally using the provided
+     * SimTK::State. If integrator settings are changed after construction
+     * (e.g., via `Manager::setIntegratorMethod`).
+     */
     Manager(Model& model, const SimTK::State& state);
 
     // The default constructor, previously deprecated, is now explicitly deleted 
@@ -88,10 +95,14 @@ public:
     void operator=(const Manager&) = delete;
 
     // GET AND SET
-    /** Set the session name of this Manager instance. */
+    /** 
+     * Set the session name of this Manager instance. 
+     */
     void setSessionName(const std::string &name);
 
-    /** Get the session name of this Manager instance. */
+    /** 
+     * Get the session name of this Manager instance. 
+     */
     const std::string& getSessionName() const;
 
 
@@ -99,14 +110,18 @@ public:
 
     void setWriteToStorage(bool writeToStorage);
 
-    void setReportStates(bool reportStates);
+    void setRecordStatesTrajectory(bool recordStatesTrajectory);
 
-    /** @name Configure the Integrator
+    /** 
+     * @name Configure the Integrator
      * @note Call these functions before calling `Manager::initialize()`.
      * @{ */
 
-    /** Supported integrator methods. For MATLAB, int's must be used rather
-     *  than enum's (see example in setIntegratorMethod(IntegratorMethod)). */
+    /** 
+     * Supported integrator methods. 
+     *
+     * @note For MATLAB, int's must be used rather than enum's (see example in 
+     * setIntegratorMethod(IntegratorMethod)). */
     enum class IntegratorMethod {
         ExplicitEuler      = 0, ///< 0 : For details, see SimTK::ExplicitEulerIntegrator.
         RungeKutta2        = 1, ///< 1 : For details, see SimTK::RungeKutta2Integrator.
@@ -116,13 +131,16 @@ public:
         SemiExplicitEuler2 = 5, ///< 5 : For details, see SimTK::SemiExplicitEuler2Integrator.
         Verlet             = 6, ///< 6 : For details, see SimTK::VerletIntegrator.
         CPodes             = 7, ///< 7 : For details, see SimTK::CPodesIntegrator.
-        SemiExplicitEuler  = 8  ///< 8 : For details, see SimTK::SemiExplicitEulerIntegrator.
+        // SemiExplicitEuler  = 8  ///< 8 : For details, see SimTK::SemiExplicitEulerIntegrator.
     };
 
-    /** Sets the integrator method used via IntegratorMethod enum. The 
-     * integrator will be set to its default options, even if the caller
-     * requests the same integrator method. Note that this function must
-     * be called before `Manager::initialize()`.
+    /** 
+     * Sets the integrator method used via the IntegratorMethod enum. 
+     *   
+     * A new `SimTK::Integrator` and `SimTK::TimeStepper` with default values are 
+     * created after each call to this method. Therefore, integrator settings 
+     * (e.g., `setIntegratorAccuracy`) should be set after calling this method, 
+     * and you should call this method before `Manager::initialize()`.
       
       <b>C++ example</b>
       \code{.cpp}
@@ -143,38 +161,108 @@ public:
       manager = Manager(model);
       manager.setIntegratorMethod(5);
       \endcode
-      */
+     */
     void setIntegratorMethod(IntegratorMethod integMethod);
 
-    /** Get the integrator method. */
+    /** 
+     * Get the IntegratorMethod enum. 
+     */
     IntegratorMethod getIntegratorMethod() const;
 
-    /** Get the SimTK::Integrator. */
-    SimTK::Integrator& getIntegrator() const;
-
-    /** Set the accuracy of the integrator. 
-     * For more details, see `SimTK::Integrator::setAccuracy(SimTK::Real)`. */
+    /** 
+     * Set the accuracy of the internal `SimTK::Integrator`.
+     *  
+     * @see `SimTK::Integrator::setAccuracy(SimTK::Real)`
+     * @note If a new integrator is set via `setIntegratorMethod()`, this 
+     *       setting will be cleared and set to the default value.
+     */
     void setIntegratorAccuracy(double accuracy);
 
-    /** Sets the minimum step size of the integrator.
-     * For more details, see `SimTK::Integrator::setMinimumStepSize(SimTK::Real)`. */
+    /** 
+     * Set the minimum step size of the internal `SimTK::Integrator`.
+     *
+     * @see `SimTK::Integrator::setMinimumStepSize(SimTK::Real)`
+     * @note If a new integrator is set via `setIntegratorMethod()`, this
+     *       setting will be cleared and set to the default value. 
+     */
     void setIntegratorMinimumStepSize(double hmin);
 
-    /** Sets the maximum step size of the integrator.
-     * For more details, see `SimTK::Integrator::setMaximumStepSize(SimTK::Real)`. */
+    /** 
+     * Set the maximum step size of the internal `SimTK::Integrator`.
+     *
+     * @see `SimTK::Integrator::setMaximumStepSize(SimTK::Real)`
+     * @note If a new integrator is set via `setIntegratorMethod()`, this
+     *       setting will be cleared and set to the default value.
+     */
     void setIntegratorMaximumStepSize(double hmax);
 
-    /** Sets the limit of steps the integrator can take per call of `stepTo()`.
-     * Note that Manager::integrate() calls `stepTo()` for each interval when a fixed
-     * step size is used.
-     * For more details, see SimTK::Integrator::setInternalStepLimit(int). */
+    /** 
+     * Set the limit of steps the integrator can take per call of `stepTo()`.
+     *
+     * @see SimTK::Integrator::setInternalStepLimit(int). 
+     * @note If a new integrator is set via `setIntegratorMethod()`, this
+     *       setting will be cleared and set to the default value.
+     */
     void setIntegratorInternalStepLimit(int nSteps);
 
+    /** 
+     * Set a fixed step size for the internal `SimTK::Integrator`.
+     *      
+     * @see `SimTK::Integrator::setFixedStepSize(SimTK::Real)`
+     * @note If a new integrator is set via `setIntegratorMethod()`, this
+     *       setting will be cleared and set to the default value.
+     * @note The integrators supported by `Manager` by default error-controlled 
+     *       adaptive stepping, meaning that the step size is adjusted
+     *       automatically during integration to maintain the desired accuracy. 
+     *       By calling this method, you override this behavior and set a fixed 
+     *       step size for the integrator, which may degrade performance and 
+     *       accuracy. If you need a fixed reporting interval, consider using 
+     *       repeated calls to `Manager::integrate()` with the desired time 
+     *       steps which will preserve internal adaptive stepping.
+     */
     void setIntegratorFixedStepSize(double stepSize);
 
+    /** 
+     * (Advanced) Set the final time for the internal `SimTK::Integrator`.
+     * 
+     * This setting causes the integration to stop when the final time is 
+     * reached, even if the integrator has not reached the final time provided
+     * to `Manager::integrate()`.
+     *      
+     * @see `SimTK::Integrator::setFinalTime(SimTK::Real)`
+     * @note If a new integrator is set via `setIntegratorMethod()`, this
+     *       setting will be cleared and set to the default value.
+     */
+    void setIntegratorFinalTime(double finalTime);
+
+    /** 
+     * (Advanced) Use infinity norm (maximum absolute value) instead of default 
+     * RMS norm to evaluate whether accuracy has been achieved for states and 
+     * for constraint tolerance for the internal `SimTK::Integrator`.
+     *
+     * The infinity norm is more strict but may permit use of a looser accuracy 
+     * request.
+     *      
+     * @see `SimTK::Integrator::setUseInfinityNorm(bool)`
+     * @note If a new integrator is set via `setIntegratorMethod()`, this
+     *       setting will be cleared and set to the default value.
+     */
     void setIntegratorUseInfinityNorm(bool tf);
+    /** 
+     * (Advanced) Set the tolerance within which constraints must be satisfied 
+     * for the internal `SimTK::Integrator`. 
+     *      
+     * @see `SimTK::Integrator::setConstraintTolerance(SimTK::Real)`
+     * @note If a new integrator is set via `setIntegratorMethod()`, this
+     *       setting will be cleared and set to the default value.
+     */
 
     void setIntegratorConstraintTolerance(double tol);
+
+    /** 
+     * Get the internal `SimTK::Integrator`. 
+     */
+    SimTK::Integrator& getIntegrator() const;
    
     /** @} */
 
@@ -246,25 +334,30 @@ public:
      *     state = manager.integrate((i+1)*dTime);
      * }
      * @endcode
-     *
      */
     SimTK::State integrate(double finalTime);
 
-
     // RESULTS
-    /** Get the current State from the Integrator associated with this Manager. */
+    /** 
+     * Get the current SimTK::State from the SimTK::Integrator associated with 
+     * this Manager. 
+     */
     const SimTK::State& getState() const;
 
-    /** Get a Storage object containing the integration states. */
+    /** 
+     * Get a Storage object containing the integration states. 
+     */
     Storage getStateStorage() const;
 
-     /** Get a TimeSeriesTable containing the integration states. */
+     /** 
+      * Get a TimeSeriesTable containing the integration states. 
+      */
     TimeSeriesTable getStatesTable() const;
-    TimeSeriesTable getControlsTable() const;
 
+    /**
+     * Get a StatesTrajectory containing the integration states.
+     */
     StatesTrajectory getStatesTrajectory() const;
-
-
 
     // DEPRECATED
     /**
@@ -445,19 +538,17 @@ public:
 private:
     // MEMBER VARIABLES
     std::string _sessionName;
-    bool _reportStates;
+    bool _recordStatesTrajectory;
     bool _performAnalyses;
     bool _writeToStorage;
-
-    SimTK::Real _fixedStepSize;
 
     SimTK::ReferencePtr<Model> _model;
 
     std::unique_ptr<SimTK::TimeStepper> _timeStepper;
     std::unique_ptr<SimTK::Integrator> _integ;
-    IntegratorMethod _integratorMethod = IntegratorMethod::RungeKuttaMerson;
+    IntegratorMethod _integMethod = IntegratorMethod::RungeKuttaMerson;
 
-    std::unique_ptr<StatesTrajectory> _states;
+    std::unique_ptr<StatesTrajectory> _statesTraj;
     std::unique_ptr<Storage> _stateStore;
 
     // HELPER METHODS
