@@ -35,7 +35,47 @@
 #include "SimTKcommon/internal/BigMatrix.h"
 #include "SimTKcommon/internal/MassProperties.h"
 
+// Utility to convert SimTK::String to std::string, others pass through.
+inline const std::string& to_string_ref(const std::string& s) {
+    return s;
+}
+
+inline std::string to_string_ref(const SimTK::String& s) {
+    return std::string(s);
+}
+
+template <typename T>
+inline const T& to_string_ref(const T& t) {
+    return t;
+}
+
+// Variadic transformer: packs all args through to_string_ref.
+template <typename... Args>
+auto transformArgs(const Args&... args) {
+    return std::make_tuple(to_string_ref(args)...);
+}
+template <typename Func, typename Tuple, std::size_t... I>
+auto apply_transformed(Func&& func, const Tuple& t, std::index_sequence<I...>) {
+    return func(std::get<I>(t)...);
+}
+
+template <typename Func, typename... Args>
+auto apply_transformed(Func&& func, const Args&... args) {
+    auto t = transformArgs(args...);
+    return apply_transformed(std::forward<Func>(func), t, std::index_sequence_for<Args...>{});
+}
+
 #ifndef SWIG
+template <>
+struct fmt::formatter<SimTK::String> {
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template <typename FormatContext>
+    auto format(const SimTK::String& s, FormatContext& ctx) {
+        return fmt::format_to(ctx.out(), "{}", std::string(s));
+    }
+};
+
 template <>
 struct fmt::formatter<SimTK::Vec3> {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
@@ -161,59 +201,68 @@ public:
     /// Use these functions instead of using spdlog directly.
     /// @{
 
-    template <typename... Args>
-    static void critical(spdlog::string_view_t fmt, const Args&... args) {
-        if (shouldLog(Level::Critical)) {
-            getDefaultLogger().critical(fmt, args...);
-        }
+   template <typename... Args>
+static void critical(spdlog::string_view_t fmt, const Args&... args) {
+    if (shouldLog(Level::Critical)) {
+        apply_transformed([&](auto&&... converted) {
+            getDefaultLogger().critical(fmt, std::forward<decltype(converted)>(converted)...);
+        }, args...);
     }
+}
 
-    template <typename... Args>
-    static void error(spdlog::string_view_t fmt, const Args&... args) {
-        if (shouldLog(Level::Error)) {
-            getDefaultLogger().error(fmt, args...);
-        }
+template <typename... Args>
+static void error(spdlog::string_view_t fmt, const Args&... args) {
+    if (shouldLog(Level::Error)) {
+        apply_transformed([&](auto&&... converted) {
+            getDefaultLogger().error(fmt, std::forward<decltype(converted)>(converted)...);
+        }, args...);
     }
+}
 
-    template <typename... Args>
-    static void warn(spdlog::string_view_t fmt, const Args&... args) {
-        if (shouldLog(Level::Warn)) {
-            getDefaultLogger().warn(fmt, args...);
-        }
+template <typename... Args>
+static void warn(spdlog::string_view_t fmt, const Args&... args) {
+    if (shouldLog(Level::Warn)) {
+        apply_transformed([&](auto&&... converted) {
+            getDefaultLogger().warn(fmt, std::forward<decltype(converted)>(converted)...);
+        }, args...);
     }
+}
 
-    template <typename... Args>
-    static void info(spdlog::string_view_t fmt, const Args&... args) {
-        if (shouldLog(Level::Info)) {
-            getDefaultLogger().info(fmt, args...);
-        }
+template <typename... Args>
+static void info(spdlog::string_view_t fmt, const Args&... args) {
+    if (shouldLog(Level::Info)) {
+        apply_transformed([&](auto&&... converted) {
+            getDefaultLogger().info(fmt, std::forward<decltype(converted)>(converted)...);
+        }, args...);
     }
+}
 
-    template <typename... Args>
-    static void debug(spdlog::string_view_t fmt, const Args&... args) {
-        if (shouldLog(Level::Debug)) {
-            getDefaultLogger().debug(fmt, args...);
-        }
+template <typename... Args>
+static void debug(spdlog::string_view_t fmt, const Args&... args) {
+    if (shouldLog(Level::Debug)) {
+        apply_transformed([&](auto&&... converted) {
+            getDefaultLogger().debug(fmt, std::forward<decltype(converted)>(converted)...);
+        }, args...);
     }
+}
 
-    template <typename... Args>
-    static void trace(spdlog::string_view_t fmt, const Args&... args) {
-        if (shouldLog(Level::Trace)) {
-            getDefaultLogger().trace(fmt, args...);
-        }
+template <typename... Args>
+static void trace(spdlog::string_view_t fmt, const Args&... args) {
+    if (shouldLog(Level::Trace)) {
+        apply_transformed([&](auto&&... converted) {
+            getDefaultLogger().trace(fmt, std::forward<decltype(converted)>(converted)...);
+        }, args...);
     }
+}
 
-    /// Use this function to log messages that would normally be sent to
-    /// std::cout. These messages always appear, and are also logged to the
-    /// filesink (addFileSink()) and any sinks added via addSink().
-    /// The main use case for this function is inside of functions whose intent
-    /// is to print information (e.g., Component::printSubcomponentInfo()).
-    /// Besides such use cases, this function should be used sparingly to
-    /// give users control over what gets logged.
-    template <typename... Args>
-    static void cout(spdlog::string_view_t fmt, const Args&... args) {
-        getCoutLogger().log(getCoutLogger().level(), fmt, args...);
-    }
+// This one always logs, so no shouldLog() check.
+template <typename... Args>
+static void cout(spdlog::string_view_t fmt, const Args&... args) {
+    apply_transformed([&](auto&&... converted) {
+        getCoutLogger().log(getCoutLogger().level(), fmt, std::forward<decltype(converted)>(converted)...);
+    }, args...);
+}
+
 
     /// @}
 

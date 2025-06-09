@@ -22,13 +22,13 @@
 
 #include "Logger.h"
 
-#include "Exception.h"
-#include "IO.h"
+// #include "Exception.h"
+// #include "IO.h"
 #include "LogSink.h"
 
 #include "spdlog/sinks/stdout_color_sinks.h"
 
-using namespace OpenSim;
+// using namespace OpenSim;
 
 static void initializeLogger(spdlog::logger& l, const char* pattern) {
     l.set_level(spdlog::level::info);
@@ -147,7 +147,8 @@ void Logger::setLevel(Level level) {
         spdlog::set_level(spdlog::level::trace);
         break;
     default:
-        OPENSIM_THROW(Exception, "Internal error.");
+        break;
+        // OPENSIM_THROW(Exception, "Internal error.");
     }
     Logger::info("Set log level to {}.", getLevelString());
 }
@@ -162,13 +163,14 @@ Logger::Level Logger::getLevel() {
     case spdlog::level::debug: return Level::Debug;
     case spdlog::level::trace: return Level::Trace;
     default:
-        OPENSIM_THROW(Exception, "Internal error.");
+        break;
+        // OPENSIM_THROW(Exception, "Internal error.");
     }
 }
 
 void Logger::setLevelString(std::string str) {
     Level level;
-    str = IO::Lowercase(str);
+    // str = IO::Lowercase(str);
     if (str == "off") level = Level::Off;
     else if (str == "critical") level = Level::Critical;
     else if (str == "error") level = Level::Error;
@@ -177,10 +179,11 @@ void Logger::setLevelString(std::string str) {
     else if (str == "debug") level = Level::Debug;
     else if (str == "trace") level = Level::Trace;
     else {
-        OPENSIM_THROW(Exception,
-                "Expected log level to be Off, Critical, Error, "
-                "Warn, Info, Debug, or Trace; got {}.",
-                str);
+
+        // OPENSIM_THROW(Exception,
+        //         "Expected log level to be Off, Critical, Error, "
+        //         "Warn, Info, Debug, or Trace; got {}.",
+        //         str);
     }
     setLevel(level);
 }
@@ -196,7 +199,8 @@ std::string Logger::getLevelString() {
     case Level::Debug: return "Debug";
     case Level::Trace: return "Trace";
     default:
-        OPENSIM_THROW(Exception, "Internal error.");
+        // OPENSIM_THROW(Exception, "Internal error.");
+        break;
     }
 }
 
@@ -211,7 +215,8 @@ bool Logger::shouldLog(Level level) {
     case Level::Debug: spdlogLevel = spdlog::level::debug; break;
     case Level::Trace: spdlogLevel = spdlog::level::trace; break;
     default:
-        OPENSIM_THROW(Exception, "Internal error.");
+        // OPENSIM_THROW(Exception, "Internal error.");
+        break;
     }
     return defaultLogger->should_log(spdlogLevel);
 }
