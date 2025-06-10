@@ -22,35 +22,17 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*=============================================================================
-
-Manager Tests:
-1. testStationCalcWithManager: Calculate the location, velocity, and
-   acceleration of a Station with the same Manager many times. Previously, this
-   would fail as repeated calls of TimeStepper::initialize() would trigger cache
-   validation improperly.
-2. testStateChangesBetweenIntegration: Change the initial value and speed of a
-   falling ball between integrating using the same State. This ensures that
-   integrating with the same State with different Managers triggers the cache
-   updates correctly.
-3. testExcitationUpdatesWithManager: Update the excitation of a muscle in the
-   arm26 model between subsequent integrations.
-4. testConstructors: Ensure different constructors work as intended.
-5. testIntegratorInterface: Ensure setting integrator options works as intended.
-6. testExceptions: Test that misuse actually triggers exceptions.
-
-//=============================================================================*/
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Analyses/BodyKinematics.h>
 #include <OpenSim/Common/Constant.h>
 
 #include <catch2/catch_all.hpp>
-using Catch::Matchers::ContainsSubstring;
+using Catch::Matchers::WithinAbs;
 
 using namespace OpenSim;
 namespace {
@@ -70,13 +52,13 @@ namespace {
         Coordinate& sliderCoord = 
             freeJoint->updCoordinate(FreeJoint::Coord::TranslationY);
 
+        CoordinateActuator* actu = new CoordinateActuator();
+        actu->setCoordinate(&sliderCoord);
+        actu->setName("actuator");
+        actu->setOptimalForce(1);
+        model.addForce(actu);
+    
         if (prescribedActuator) {
-            CoordinateActuator* actu = new CoordinateActuator();
-            actu->setCoordinate(&sliderCoord);
-            actu->setName("actuator");
-            actu->setOptimalForce(1);
-            model.addForce(actu);
-
             PrescribedController* controller = new PrescribedController();
             controller->setName("controller");
             controller->addActuator(*actu);
@@ -90,6 +72,48 @@ namespace {
 
         return model;
     }
+
+    class DiscreteController : public Controller {
+    OpenSim_DECLARE_CONCRETE_OBJECT(DiscreteController, Controller);
+    public:
+        DiscreteController() = default;
+
+        void setDiscreteControls(SimTK::State& s, 
+                const SimTK::Vector& controls) const {
+            const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
+            auto& dv = subSys.updDiscreteVariable(s, m_discreteVarIndex);
+            auto& discreteControls = 
+                    SimTK::Value<SimTK::Vector>::updDowncast(dv).upd();
+            discreteControls = controls;
+        }
+        
+        void computeControls(const SimTK::State& s, 
+                    SimTK::Vector& controls) const override {
+            const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
+            const auto& dv = subSys.getDiscreteVariable(s, m_discreteVarIndex) ;
+            const auto& discreteControls =
+                    SimTK::Value<SimTK::Vector>::downcast(dv).get();
+            controls += discreteControls;
+        }
+    protected:
+        void extendRealizeTopology(SimTK::State& state) const override {
+            Super::extendRealizeTopology(state);
+            const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
+            m_discreteVarIndex = subSys.allocateDiscreteVariable(
+                    state, SimTK::Stage::Dynamics,
+                    new SimTK::Value<SimTK::Vector>(
+                            SimTK::Vector(getModel().getNumControls(), 0.0)));
+        }
+        mutable SimTK::DiscreteVariableIndex m_discreteVarIndex;
+    }; 
+
+    #define CHECK_STATE_VALUES(state, q, u, tol) \
+        for (int i = 0; i < state.getNQ(); ++i) { \
+            CHECK_THAT(state.getQ()[i], WithinAbs(q[i], tol)); \
+        } \
+        for (int i = 0; i < state.getNU(); ++i) { \
+            CHECK_THAT(state.getU()[i], WithinAbs(u[i], tol)); \
+        }
 }
 
 TEST_CASE("Station calculations with Manager") {
@@ -317,7 +341,6 @@ TEST_CASE("Constructors") {
         SimTK_TEST_EQ(sliderCoord.getValue(outState2), finalHeight);
         SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState2), finalSpeed);
     }
-    
 
     SECTION("Convenience constructor") {
         Manager manager1(model, initState);
@@ -385,16 +408,9 @@ TEST_CASE("Integrator interface") {
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "CPodesBDF");
 
-    // SemiExplicitEuler requires a fixed step size.
-    // CHECK_THROWS_AS(manager.setIntegratorMethod(
-    //         Manager::IntegratorMethod::SemiExplicitEuler), Exception);
-    // manager.setIntegratorFixedStepSize(0.01);
     // manager.setIntegratorMethod(Manager::IntegratorMethod::SemiExplicitEuler);
     // method = manager.getIntegrator().getMethodName();
     // SimTK_TEST(method == "SemiExplicitEuler");
-    // CHECK_THROWS_WITH(manager.setIntegratorAccuracy(0.01), 
-    //         ContainsSubstring("Integrator method SemiExplicitEuler does not "
-    //                           "support error control."));
 
     // Make some changes to the settings. We can't check to see if these 
     // actually changed because IntegratorRep is not exposed.
@@ -589,7 +605,6 @@ TEST_CASE("Reinitializing Manager") {
     state.updTime() = 0.0;
     state.updQ() = SimTK::Test::randVector(state.getNQ());
     state.updU() = SimTK::Test::randVector(state.getNU());
-    CHECK_THROWS_AS(manager.integrate(2.0), Exception);
     CHECK_NOTHROW(manager.initialize(state));
     CHECK(manager.getState().getTime() == 0.0);
     CHECK(manager.getStatesTable().getNumRows() == 0);
@@ -613,4 +628,68 @@ TEST_CASE("Reinitializing Manager") {
     CHECK(manager.getStatesTable().getNumRows() == 44);
     CHECK(manager.getStatesTable().getNumColumns() == 12);
     CHECK(manager.getStatesTrajectory().getSize() == 44);
+}
+
+TEST_CASE("Updating states") {
+    Model model = createBallModel(false);
+    SimTK::State state = model.initSystem();
+    SimTK::Vector defaultQ = state.getQ();
+    SimTK::Vector defaultU = state.getU();
+    Manager manager(model);
+    manager.setRecordStatesTrajectory(true); 
+
+    manager.initialize(state);
+    state = manager.integrate(1.0);
+    StatesTrajectory states = manager.getStatesTrajectory();
+    const double tol = 10 * state.getNU() * SimTK::Test::defTol<double>(); 
+    CHECK_STATE_VALUES(states.front(), defaultQ, defaultU, tol);
+
+    SimTK::Vector newQ = SimTK::Test::randVector(state.getNQ());
+    SimTK::Vector newU = SimTK::Test::randVector(state.getNU());
+    state.updQ() = newQ;
+    state.updU() = newU;
+
+    // we didn't call initialize(), so the initial states should not have changed
+    manager.integrate(2.0);
+    states = manager.getStatesTrajectory();
+    CHECK_STATE_VALUES(states.front(), defaultQ, defaultU, tol);
+    
+    // now initialize the manager and integrate again
+    manager.initialize(state);
+    manager.integrate(2.0);
+    states = manager.getStatesTrajectory();
+    CHECK_STATE_VALUES(states.front(), newQ, newU, tol);
+}
+
+TEST_CASE("Updating controls") {
+    Model model = createBallModel(false);
+    // this custom controller allows us update the controls with the state
+    DiscreteController* controller = new DiscreteController();
+    controller->setName("discrete_controller");
+    model.addController(controller);
+    SimTK::State state = model.initSystem();
+    Manager manager(model); 
+
+    // default controls are zero
+    manager.initialize(state);
+    state = manager.integrate(1.0);
+    auto controlsTable = model.getControlsTable();
+    CHECK(controlsTable.getDependentColumnAtIndex(0)[0] == 0.0);
+
+    // update the controls
+    SimTK::Vector controls = SimTK::Test::randVector(model.getNumControls());
+    controller->setDiscreteControls(state, controls);
+
+    // we didn't call initialize(), so the controls should not have changed
+    manager.integrate(2.0);
+    controlsTable = model.getControlsTable();
+    int nrow = static_cast<int>(controlsTable.getNumRows());
+    CHECK(controlsTable.getDependentColumnAtIndex(0)[nrow - 1] == 0.0);
+    
+    // now initialize the manager and integrate again
+    manager.initialize(state);
+    manager.integrate(2.0);
+    controlsTable = model.getControlsTable();
+    nrow = static_cast<int>(controlsTable.getNumRows());
+    CHECK(controlsTable.getDependentColumnAtIndex(0)[nrow - 1] == controls[0]);
 }

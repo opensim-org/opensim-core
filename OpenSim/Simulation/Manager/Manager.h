@@ -105,11 +105,41 @@ public:
      */
     const std::string& getSessionName() const;
 
-
+    /** 
+     * Set whether to perform analyses during the simulation.
+     * 
+     * Enabling this setting will trigger the execution of all analyses
+     * registered with the Model during the simulation via `AnalysisSet::step()`.
+     *
+     * @see AnalysisSet::step()
+     * @note This setting is enabled by default. If you do not need to perform
+     *       analyses, you can disable this setting to improve performance.
+     */
     void setPerformAnalyses(bool performAnalyses);
 
+    /** 
+     * Set whether to write the simulation results to a Storage object.
+     *
+     * If this setting is enabled, the Manager will create a Storage object
+     * and write the states and controls to it during the simulation.
+     *
+     * @note This setting is enabled by default. If you do not need to write
+     *       results to a Storage object, you can disable this setting to 
+     *       improve performance.
+     */
     void setWriteToStorage(bool writeToStorage);
 
+    /** 
+     * Set whether to record each SimTK::State from the integration into a
+     * StatesTrajectory trajectory.
+     *
+     * @note This setting is disabled by default. Enabling this setting will
+     *       have a significant impact on performance, greater than the speed
+     *       reduction incurred from `setWriteToStorage()`. Therefore, it is 
+     *       recommend to disable this setting when generating many simulations
+     *       (e.g., optimizing a controller), and should only be enabled
+     *       when you need to analyze the trajectory of the states.
+     */
     void setRecordStatesTrajectory(bool recordStatesTrajectory);
 
     /** 
@@ -248,6 +278,7 @@ public:
      *       setting will be cleared and set to the default value.
      */
     void setIntegratorUseInfinityNorm(bool tf);
+    
     /** 
      * (Advanced) Set the tolerance within which constraints must be satisfied 
      * for the internal `SimTK::Integrator`. 
@@ -256,7 +287,6 @@ public:
      * @note If a new integrator is set via `setIntegratorMethod()`, this
      *       setting will be cleared and set to the default value.
      */
-
     void setIntegratorConstraintTolerance(double tol);
 
     /** 
@@ -268,11 +298,12 @@ public:
 
     // EXECUTION
     /**
-     * Initializes the Manager by creating and initializing the underlying 
+     * Initialize the Manager.
+     * 
+     * by creating and initializing the underlying 
      * SimTK::TimeStepper. This must be called before calling 
      * Manager::integrate() Subsequent changes to the State object passed in 
-     * here will not affect the simulation. Calling this function multiple 
-     * times with the same Manager will trigger an Exception.
+     * here will not affect the simulation.
      *
      * Changes to the integrator (e.g., setIntegratorAccuracy()) after calling
      * initialize() may not have any effect.
@@ -280,14 +311,19 @@ public:
     void initialize(const SimTK::State& s);
     
     /**
-     * Integrate the equations of motion for the specified model, given the current
-     * state (at which the integration will start) and a finalTime. You must call
-     * Manager::initialize() before calling this function.
+     * Integrate the equations of motion for the specified model, given the 
+     * current state (at which the integration will start) and a final time. You 
+     * must call Manager::initialize() before calling this function.
      *
-     * If you must update states or controls in a loop, you must recreate the 
-     * manager within the loop (such discontinuous changes are considered "events"
-     * and cannot be handled during integration of the otherwise continuous system).
-     * The proper way to handle this situation is to create a SimTK::EventHandler.
+     * If you must update the SimTK::State in a loop, you must call 
+     * Manager::initialize() before each call to integrate(). This is because 
+     * discontinuous changes are considered "events" and cannot be handled 
+     * during integration of the otherwise continuous system. If make changes to
+     * the model or state and continuing integrating without re-initializing, 
+     * these changes may be ignored.
+     * 
+     * @note The proper way to handle the simulation of a discontinuous system 
+     *       is to create a SimTK::EventHandler.
      *
      * Example: Integrating from time = 1s to time = 2s
      * @code
@@ -328,7 +364,6 @@ public:
      * state.setTime(0.0);
      * for (int i = 0; i < n; ++i) {
      *     model.getCoordinateSet().get(0).setValue(state, 0.1*i);
-     *     Manager manager(model);
      *     state.setTime(i*dTime);
      *     manager.initialize(state);
      *     state = manager.integrate((i+1)*dTime);
@@ -345,17 +380,26 @@ public:
     const SimTK::State& getState() const;
 
     /** 
-     * Get a Storage object containing the integration states. 
+     * Get a Storage object containing the integration states.
+     * 
+     * @note If `setWriteToStorage(false)` was called, this will return an empty
+     *       Storage object. 
      */
     Storage getStateStorage() const;
 
-     /** 
-      * Get a TimeSeriesTable containing the integration states. 
-      */
+    /** 
+     * Get a TimeSeriesTable containing the integration states. 
+     *
+     * @note If `setWriteToStorage(false)` was called, this will return an empty
+     *       TimeSeriesTable.
+     */
     TimeSeriesTable getStatesTable() const;
 
     /**
      * Get a StatesTrajectory containing the integration states.
+     *
+     * @note If `setRecordStatesTrajectory(false)` was called, this will return
+     *       an empty StatesTrajectory.
      */
     StatesTrajectory getStatesTrajectory() const;
 
@@ -528,11 +572,22 @@ public:
    [[deprecated("No longer supported.")]]
     std::string toString() const;
 
-    /** Get whether there is a Storage object for the integration states. */
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: get whether there is a Storage object for the integration 
+     * states.
+     */
+    [[deprecated("No longer supported.")]]
     bool hasStateStorage() const;
 
-    /** Set the Storage object to be used for storing states. The Manager takes
-     * ownership of the passed-in Storage. */
+    /**
+     * deprecated (legacy): now has no effect
+     *
+     * OLD BEHAVIOR: set the Storage object to be used for storing states. The 
+     * Manager takes ownership of the passed-in Storage.
+     */
+    [[deprecated("No longer supported.")]]
     void setStateStorage(Storage& aStorage);
 
 private:

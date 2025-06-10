@@ -226,17 +226,18 @@ void Manager::record(const SimTK::State& state, int step) {
 }
 
 void Manager::initialize(const SimTK::State& s) {
-    _timeStepper->initialize(s);
     _timeStepper->setReportAllSignificantStates(true);
     if (_recordStatesTrajectory || _writeToStorage || _performAnalyses) {
         _integ->setReturnEveryInternalStep(true);
     } 
+    _timeStepper->initialize(s);
     
     // Initialize the states trajectory.
-    // TODO: find a smarter way to handle this.
+    // TODO: find a better way to intialize capacity.
     _statesTraj->clear();
     _statesTraj->reserve(1024);
 
+    // Initialize the state storage.
     _stateStore.reset(new Storage(1024, "states"));
     Array<std::string> stateNames = _model->getStateVariableNames();
     Array<std::string> columnLabels;
@@ -247,6 +248,7 @@ void Manager::initialize(const SimTK::State& s) {
     }
     _stateStore->setColumnLabels(columnLabels);
 
+    // Initialize the controls storage.
     if (_model->isControlled()) {
         _model->updControllerSet().constructStorage();
     }
@@ -268,6 +270,12 @@ SimTK::State Manager::integrate(double finalTime) {
     }
 
     // Integrate.
+    log_info("-------");
+    log_info("Manager");
+    log_info("-------");
+    log_info("Starting integration at initial time {:.2f} s...", s.getTime());
+    double cpuTime = SimTK::cpuTime();
+    double realTime = SimTK::realTime();
     int step = 0;
     record(s, step++);
     auto status = SimTK::Integrator::InvalidSuccessfulStepStatus;
@@ -294,10 +302,19 @@ SimTK::State Manager::integrate(double finalTime) {
         }
     }
     record(_integ->getState(), -1);
+    cpuTime = SimTK::cpuTime() - cpuTime;
+    realTime = SimTK::realTime() - realTime;
 
-    log_info("Done. Used {} with {} function calls. {} steps taken out of {} attempted.", 
-            _integ->getMethodName(), _integ->getNumRealizations(),
+    log_info("Integration complete at final time {:.2f} s.", 
+            _timeStepper->getState().getTime());
+    log_info(" - CPU time elapsed: {:.6f} s", cpuTime);
+    log_info(" - real time elapsed: {:.6f} s", realTime);
+    log_info(" - integrator method: {}", _integ->getMethodName());
+    log_info(" - number of realizations: {}", _integ->getNumRealizations());
+    log_info(" - number of steps taken / attempted: {} / {}", 
             _integ->getNumStepsTaken(), _integ->getNumStepsAttempted());
+    log_info(" - number of projections: {}", _integ->getNumProjections());
+    log_info(" - number of iterations: {}", _integ->getNumIterations());
 
     return _timeStepper->getState();
 }
