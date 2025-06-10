@@ -27,6 +27,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
+#include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Analyses/BodyKinematics.h>
 #include <OpenSim/Common/Constant.h>
@@ -107,12 +108,15 @@ namespace {
         mutable SimTK::DiscreteVariableIndex m_discreteVarIndex;
     }; 
 
-    #define CHECK_STATE_VALUES(state, q, u, tol) \
-        for (int i = 0; i < state.getNQ(); ++i) { \
-            CHECK_THAT(state.getQ()[i], WithinAbs(q[i], tol)); \
+    #define COMPARE_STATES(state1, state2, tol) \
+        CHECK(state1.getNQ() == state2.getNQ()); \
+        CHECK(state1.getNU() == state2.getNU()); \
+        CHECK_THAT(state2.getTime(), WithinAbs(state1.getTime(), tol)); \
+        for (int i = 0; i < state1.getNQ(); ++i) { \
+            CHECK_THAT(state2.getQ()[i], WithinAbs(state1.getQ()[i], tol)); \
         } \
-        for (int i = 0; i < state.getNU(); ++i) { \
-            CHECK_THAT(state.getU()[i], WithinAbs(u[i], tol)); \
+        for (int i = 0; i < state1.getNU(); ++i) { \
+            CHECK_THAT(state2.getU()[i], WithinAbs(state1.getU()[i], tol)); \
         }
 }
 
@@ -632,33 +636,31 @@ TEST_CASE("Reinitializing Manager") {
 
 TEST_CASE("Updating states") {
     Model model = createBallModel(false);
-    SimTK::State state = model.initSystem();
-    SimTK::Vector defaultQ = state.getQ();
-    SimTK::Vector defaultU = state.getU();
+    SimTK::State defaultState = model.initSystem();
     Manager manager(model);
     manager.setRecordStatesTrajectory(true); 
 
-    manager.initialize(state);
-    state = manager.integrate(1.0);
+    manager.initialize(defaultState);
+    SimTK::State newState = manager.integrate(1.0);
     StatesTrajectory states = manager.getStatesTrajectory();
-    const double tol = 10 * state.getNU() * SimTK::Test::defTol<double>(); 
-    CHECK_STATE_VALUES(states.front(), defaultQ, defaultU, tol);
+    const double tol = 10 * defaultState.getNU() * SimTK::Test::defTol<double>(); 
+    COMPARE_STATES(states.front(), defaultState, tol);
 
-    SimTK::Vector newQ = SimTK::Test::randVector(state.getNQ());
-    SimTK::Vector newU = SimTK::Test::randVector(state.getNU());
-    state.updQ() = newQ;
-    state.updU() = newU;
+    SimTK::Random::Uniform rand(0, 1);
+    newState.updTime() = rand.getValue();
+    newState.updQ() = SimTK::Test::randVector(newState.getNQ());
+    newState.updU() = SimTK::Test::randVector(newState.getNU());
 
     // we didn't call initialize(), so the initial states should not have changed
     manager.integrate(2.0);
     states = manager.getStatesTrajectory();
-    CHECK_STATE_VALUES(states.front(), defaultQ, defaultU, tol);
+    COMPARE_STATES(states.front(), defaultState, tol);
     
     // now initialize the manager and integrate again
-    manager.initialize(state);
+    manager.initialize(newState);
     manager.integrate(2.0);
     states = manager.getStatesTrajectory();
-    CHECK_STATE_VALUES(states.front(), newQ, newU, tol);
+    COMPARE_STATES(states.front(), newState, tol);
 }
 
 TEST_CASE("Updating controls") {
@@ -692,4 +694,36 @@ TEST_CASE("Updating controls") {
     controlsTable = model.getControlsTable();
     nrow = static_cast<int>(controlsTable.getNumRows());
     CHECK(controlsTable.getDependentColumnAtIndex(0)[nrow - 1] == controls[0]);
+}
+
+TEST_CASE("Manager is compatible with StatesTrajectoryReporter") {
+    Model model = createBallModel(false);
+    StatesTrajectoryReporter* reporter =
+        new StatesTrajectoryReporter();
+    reporter->setName("states_reporter");
+    double interval = 0.1;
+    reporter->set_report_time_interval(interval);
+    model.addComponent(reporter);
+    SimTK::State state = model.initSystem();
+    const double tol = 10 * state.getNU() * SimTK::Test::defTol<double>(); 
+
+    Manager manager(model);
+    manager.setRecordStatesTrajectory(true);
+    manager.initialize(state);
+    manager.integrate(2.0);
+
+    StatesTrajectory statesFromReporter = reporter->getStates();
+    StatesTrajectory statesFromManager = manager.getStatesTrajectory();
+
+    // Manager will record internal steps between the reporter's intervals,
+    // so the reporter's states should be a subset of the manager's states.
+    CHECK(statesFromReporter.getSize() <= statesFromManager.getSize());
+    for (const auto& stateFromReporter : statesFromReporter) {
+        for (const auto& stateFromManager : statesFromManager) {
+            if (stateFromReporter.getTime() == stateFromManager.getTime()) {
+                COMPARE_STATES(stateFromReporter, stateFromManager, tol);
+                break;
+            }
+        }
+    }
 }

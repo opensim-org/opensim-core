@@ -32,6 +32,7 @@
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
+#include <OpenSim/Common/Component.h>
 
 using namespace OpenSim;
 
@@ -226,11 +227,16 @@ void Manager::record(const SimTK::State& state, int step) {
 }
 
 void Manager::initialize(const SimTK::State& s) {
+    OPENSIM_THROW_IF(!_model->hasSystem(), Exception,
+        "Model has no System. You must call Model::initSystem() before "
+        "calling Manager::initialize().");
+
     _timeStepper->setReportAllSignificantStates(true);
     if (_recordStatesTrajectory || _writeToStorage || _performAnalyses) {
         _integ->setReturnEveryInternalStep(true);
     } 
     _timeStepper->initialize(s);
+    _model->realizeVelocity(s);
     
     // Initialize the states trajectory.
     // TODO: find a better way to intialize capacity.
@@ -278,12 +284,14 @@ SimTK::State Manager::integrate(double finalTime) {
     double realTime = SimTK::realTime();
     int step = 0;
     record(s, step++);
+    double time = s.getTime();
     auto status = SimTK::Integrator::InvalidSuccessfulStepStatus;
-    while (status != SimTK::Integrator::ReachedReportTime) { 
+    while (time < finalTime) { 
         status = _timeStepper->stepTo(finalTime);
 
         if (status == SimTK::Integrator::TimeHasAdvanced ||
-                status == SimTK::Integrator::ReachedScheduledEvent) {
+                status == SimTK::Integrator::ReachedScheduledEvent ||
+                status == SimTK::Integrator::ReachedReportTime) {
             const SimTK::State& s = _integ->getState();
             record(s, step++);
         }
@@ -300,6 +308,7 @@ SimTK::State Manager::integrate(double finalTime) {
                 return _integ->getState();
             } 
         }
+        time = _integ->getState().getTime();
     }
     record(_integ->getState(), -1);
     cpuTime = SimTK::cpuTime() - cpuTime;

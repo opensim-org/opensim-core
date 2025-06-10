@@ -28,7 +28,7 @@
  * Author: Frank C. Anderson 
  */
 
-#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Array.h>   
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
