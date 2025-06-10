@@ -606,7 +606,7 @@ private:
     std::unique_ptr<StatesTrajectory> _statesTraj;
     std::unique_ptr<Storage> _stateStore;
 
-    // HELPER METHODS
+    // HELPER METHOD
     void record(const SimTK::State& state, int step);
 
 };  // END of class Manager
