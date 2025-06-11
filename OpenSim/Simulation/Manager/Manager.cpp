@@ -236,7 +236,6 @@ void Manager::initialize(const SimTK::State& s) {
         _integ->setReturnEveryInternalStep(true);
     } 
     _timeStepper->initialize(s);
-    _model->realizeVelocity(s);
     
     // Initialize the states trajectory.
     // TODO: find a better way to intialize capacity.
@@ -288,12 +287,17 @@ SimTK::State Manager::integrate(double finalTime) {
     auto status = SimTK::Integrator::InvalidSuccessfulStepStatus;
     while (time < finalTime) { 
         status = _timeStepper->stepTo(finalTime);
+        const SimTK::State& s = _integ->getState();
 
         if (status == SimTK::Integrator::TimeHasAdvanced ||
                 status == SimTK::Integrator::ReachedScheduledEvent ||
                 status == SimTK::Integrator::ReachedReportTime) {
-            const SimTK::State& s = _integ->getState();
-            record(s, step++);
+            if (s.getTime() <  finalTime) {
+                record(s, step++);
+            } else {
+                record(s, -1);
+                break;
+            }
         }
 
         if (_integ->isSimulationOver()) {
@@ -305,12 +309,11 @@ SimTK::State Manager::integrate(double finalTime) {
                 log_error("Integration failed due to the following reason: {}",
                     _integ->getTerminationReasonString(
                             _integ->getTerminationReason()));
-                return _integ->getState();
+                return s;
             } 
         }
-        time = _integ->getState().getTime();
+        time = s.getTime();
     }
-    record(_integ->getState(), -1);
     cpuTime = SimTK::cpuTime() - cpuTime;
     realTime = SimTK::realTime() - realTime;
 
