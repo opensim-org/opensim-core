@@ -305,15 +305,6 @@ bool ForwardTool::run()
         }
 
         _yOut = Storage();
-        Array<std::string> stateNames = _model->getStateVariableNames();
-        Array<std::string> columnLabels;
-        columnLabels.setSize(0);
-        columnLabels.append("time");
-        for (int i = 0; i < stateNames.getSize(); i++) {
-            columnLabels.append(stateNames[i]);
-        }
-        _yOut.setColumnLabels(columnLabels);
-
         s.setTime(_ti);
         manager.initialize(s);
         if (_useSpecifiedDt && _dtArray.size() > 0) {
@@ -334,8 +325,17 @@ bool ForwardTool::run()
             manager.integrate(_tf);
             Storage sto = manager.getStateStorage();
             _yOut = sto;
-            _yOut.setColumnLabels(columnLabels);
         }
+
+        Array<std::string> stateNames = _model->getStateVariableNames();
+        Array<std::string> columnLabels;
+        columnLabels.setSize(0);
+        columnLabels.append("time");
+        for (int i = 0; i < stateNames.getSize(); i++) {
+            columnLabels.append(stateNames[i]);
+        }
+        _yOut.setColumnLabels(columnLabels);
+        _yOut.setName("states");
 
     } catch(const std::exception& x) {
         log_error("ForwardTool::run() caught an exception: \n {}", x.what());
@@ -377,7 +377,7 @@ void ForwardTool::printResultsInternal()
         _model->printControlStorage(getResultsDir() + "/" + getName() + "_controls.sto");
         _yOut.print(getResultsDir() + "/" + getName() + "_states.sto");
 
-        Storage statesDegrees(getManager().getStateStorage());
+        Storage statesDegrees(_yOut);
         _model->getSimbodyEngine().convertRadiansToDegrees(statesDegrees);
         statesDegrees.setWriteSIMMHeader(true);
         statesDegrees.print(getResultsDir() + "/" + getName() + "_states_degrees.mot");

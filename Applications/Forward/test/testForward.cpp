@@ -276,17 +276,7 @@ TEST_CASE("testForwardToolVersusManager") {
 
         Storage managerStates("testForwardToolVersusManager_manager_states.sto");
         Storage forwardStates("testForwardToolVersusManager_forward_states.sto");
-
-        Array<double> managerTimes;
-        managerStates.getTimeColumn(managerTimes);
-        std::cout << "Manager times: " << managerTimes << std::endl;
-
-        Array<double> forwardTimes;
-        forwardStates.getTimeColumn(forwardTimes);
-        std::cout << "Forward times: " << forwardTimes << std::endl;
-
-        CHECK(managerStates.getSize() == forwardStates.getSize());
-        
+        CHECK(managerStates.getSize() == forwardStates.getSize());    
         std::vector<double> rms_tols(state.getNY(), 
                 10*state.getNY()*SimTK::SqrtEps);
         CHECK_STORAGE_AGAINST_STANDARD(forwardStates, managerStates, rms_tols,
