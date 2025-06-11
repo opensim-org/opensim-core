@@ -192,6 +192,8 @@ StatesTrajectory Manager::getStatesTrajectory() const {
 // EXECUTION
 //=============================================================================
 void Manager::record(const SimTK::State& state, int step) {
+    std::cout << "Manager::record() called at time: " 
+              << state.getTime() << " s, step: " << step << std::endl;
     if (_writeToStorage) {
         SimTK::Vector stateValues = _model->getStateVariableValues(state);
         StateVector vec;
@@ -274,11 +276,13 @@ SimTK::State Manager::integrate(double finalTime) {
         return getState();
     }
 
+    _model->realizeVelocity(s);
+
     // Integrate.
-    log_info("-------");
-    log_info("Manager");
-    log_info("-------");
-    log_info("Starting integration at initial time {:.2f} s...", s.getTime());
+    // log_info("-------");
+    // log_info("Manager");
+    // log_info("-------");
+    // log_info("Starting integration at initial time {:.2f} s...", s.getTime());
     double cpuTime = SimTK::cpuTime();
     double realTime = SimTK::realTime();
     int step = 0;
@@ -317,16 +321,16 @@ SimTK::State Manager::integrate(double finalTime) {
     cpuTime = SimTK::cpuTime() - cpuTime;
     realTime = SimTK::realTime() - realTime;
 
-    log_info("Integration complete at final time {:.2f} s.", 
-            _timeStepper->getState().getTime());
-    log_info(" - CPU time elapsed: {:.6f} s", cpuTime);
-    log_info(" - real time elapsed: {:.6f} s", realTime);
-    log_info(" - integrator method: {}", _integ->getMethodName());
-    log_info(" - number of realizations: {}", _integ->getNumRealizations());
-    log_info(" - number of steps taken / attempted: {} / {}", 
-            _integ->getNumStepsTaken(), _integ->getNumStepsAttempted());
-    log_info(" - number of projections: {}", _integ->getNumProjections());
-    log_info(" - number of iterations: {}", _integ->getNumIterations());
+    // log_info("Integration complete at final time {:.2f} s.", 
+    //         _timeStepper->getState().getTime());
+    // log_info(" - CPU time elapsed: {:.6f} s", cpuTime);
+    // log_info(" - real time elapsed: {:.6f} s", realTime);
+    // log_info(" - integrator method: {}", _integ->getMethodName());
+    // log_info(" - number of realizations: {}", _integ->getNumRealizations());
+    // log_info(" - number of steps taken / attempted: {} / {}", 
+    //         _integ->getNumStepsTaken(), _integ->getNumStepsAttempted());
+    // log_info(" - number of projections: {}", _integ->getNumProjections());
+    // log_info(" - number of iterations: {}", _integ->getNumIterations());
 
     return _timeStepper->getState();
 }

@@ -20,50 +20,20 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-// forward.cpp
-// author:  Frank C. Anderson, Ajay Seth
 
-// INCLUDE
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Tools/ForwardTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include "SimTKmath.h"
+#include <OpenSim/Actuators/ModelFactory.h>
+
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace std;
 
-void testPendulum();
-void testPendulumExternalLoad();
-void testPendulumExternalLoadWithPointInGround();
-void testArm26();
-void testGait2354();
-void testGait2354WithController();
-void testGait2354WithControllerGUI();
-
-
-int main() {
-    Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
-
-    SimTK_START_TEST("testForward");
-        // test manager/integration process
-        SimTK_SUBTEST(testPendulum);
-        // test application of external loads point in pendulum
-        SimTK_SUBTEST(testPendulumExternalLoad);
-        // test application of external loads with point moving in ground
-        SimTK_SUBTEST(testPendulumExternalLoadWithPointInGround);
-        // now add computation of controls and generation of muscle forces
-        SimTK_SUBTEST(testArm26);
-        // controlled muscles and ground reactions forces
-        SimTK_SUBTEST(testGait2354);
-        // included additional controller
-        SimTK_SUBTEST(testGait2354WithController);
-        // implements steps GUI takes to provide a model
-        SimTK_SUBTEST(testGait2354WithControllerGUI);
-    SimTK_END_TEST();
-}
-
-void testPendulum() {
+TEST_CASE("testPendulum") {
     ForwardTool forward("pendulum_Setup_Forward.xml");
     forward.run();
     Storage storage("Results/pendulum_states.sto");
@@ -86,8 +56,7 @@ void testPendulum() {
     ASSERT(previousTime == 1.0);
 }
 
-
-void testPendulumExternalLoad() {
+TEST_CASE("testPendulumExternalLoad") {
     ForwardTool forward("pendulum_ext_gravity_Setup_Forward.xml");
     forward.run();
     Storage results("Results/pendulum_ext_gravity_states.sto");
@@ -115,8 +84,7 @@ void testPendulumExternalLoad() {
     }
 }
 
-
-void testPendulumExternalLoadWithPointInGround() {
+TEST_CASE("testPendulumExternalLoadWithPointInGround") {
     ForwardTool forward("pendulum_ext_point_in_ground_Setup_Forward.xml");
     forward.run();
 
@@ -143,8 +111,7 @@ void testPendulumExternalLoadWithPointInGround() {
     }
 }
 
-
-void testArm26() {
+TEST_CASE("testArm26") {
     ForwardTool forward("arm26_Setup_Forward.xml");
     forward.run();
 
@@ -179,8 +146,7 @@ void testArm26() {
     }
 }
 
-void testGait2354()
-{
+TEST_CASE("testGait2354") {
     ForwardTool forward("subject01_Setup_Forward.xml");
     forward.run();
     Storage results("Results/subject01_states.sto");
@@ -203,8 +169,7 @@ void testGait2354()
         __FILE__, __LINE__, "testGait2354 failed");
 }
 
-
-void testGait2354WithController() {
+TEST_CASE("testGait2354WithController") {
     ForwardTool forward("subject01_Setup_Forward_Controller.xml");
     forward.run();
     Storage results("ResultsCorrectionController/subject01_states.sto");
@@ -226,7 +191,7 @@ void testGait2354WithController() {
         __FILE__, __LINE__, "testGait2354WithController failed");
 }
 
-void testGait2354WithControllerGUI() {
+TEST_CASE("testGait2354WithControllerGUI") {
 
     // The following lines are the steps from ForwardToolModel.java that
     // associates the a previous (orgiModel) model with the ForwardTool
@@ -258,4 +223,73 @@ void testGait2354WithControllerGUI() {
         __FILE__, __LINE__, "testGait2354WithControllerGUI failed");
 
     delete model;
+}
+
+TEST_CASE("testForwardToolVersusManager") {
+    Model model = ModelFactory::createNLinkPendulum(3);
+    SimTK::State state = model.initSystem();
+
+    SECTION("Variable time-stepping") {
+        Manager manager(model);
+        manager.setIntegratorMinimumStepSize(1e-8);
+        manager.setIntegratorMaximumStepSize(10.0);
+        manager.setIntegratorAccuracy(1e-4);
+        manager.initialize(state);
+        manager.integrate(1.0);
+        manager.getStateStorage().print(
+                "testForwardToolVersusManager_manager_states.sto");
+
+        ForwardTool forward;
+        forward.setModel(model);
+        forward.setName("testForwardToolVersusManager_forward");
+        forward.setMinDT(1e-8);
+        forward.setMaxDT(10.0);
+        forward.setErrorTolerance(1e-4);
+        forward.run();
+
+        Storage managerStates("testForwardToolVersusManager_manager_states.sto");
+        Storage forwardStates("testForwardToolVersusManager_forward_states.sto");
+        CHECK(managerStates.getSize() == forwardStates.getSize());
+
+        std::vector<double> rms_tols(state.getNY(), SimTK::SqrtEps);
+        CHECK_STORAGE_AGAINST_STANDARD(forwardStates, managerStates, rms_tols,
+            __FILE__, __LINE__, "testForwardToolVersusManager failed");
+    }
+
+    SECTION("Specified time-stepping") {
+        state.updQ() = SimTK::Test::randVector(state.getNQ());
+        state.updU() = SimTK::Test::randVector(state.getNU());
+
+        Manager manager(model);
+        manager.initialize(state);
+        manager.integrate(1.0);
+        manager.getStateStorage().print(
+                "testForwardToolVersusManager_manager_states.sto");
+
+        ForwardTool forward;
+        forward.setModel(model);
+        forward.setName("testForwardToolVersusManager_forward");
+        forward.setStatesFileName(
+                "testForwardToolVersusManager_manager_states.sto");
+        forward.setUseSpecifiedDt(true);
+        forward.run();
+
+        Storage managerStates("testForwardToolVersusManager_manager_states.sto");
+        Storage forwardStates("testForwardToolVersusManager_forward_states.sto");
+
+        Array<double> managerTimes;
+        managerStates.getTimeColumn(managerTimes);
+        std::cout << "Manager times: " << managerTimes << std::endl;
+
+        Array<double> forwardTimes;
+        forwardStates.getTimeColumn(forwardTimes);
+        std::cout << "Forward times: " << forwardTimes << std::endl;
+
+        CHECK(managerStates.getSize() == forwardStates.getSize());
+        
+        std::vector<double> rms_tols(state.getNY(), 
+                10*state.getNY()*SimTK::SqrtEps);
+        CHECK_STORAGE_AGAINST_STANDARD(forwardStates, managerStates, rms_tols,
+            __FILE__, __LINE__, "testForwardToolVersusManager failed");
+    }
 }

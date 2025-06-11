@@ -143,12 +143,14 @@ void ForwardTool::setNull()
     // BASIC
     _statesFileName = "";
     _useSpecifiedDt = false;
+    _dtArray = SimTK::Vector_<double>();
     _printResultFiles = true;
 
     _replaceForceSet = false;   // default should be false for Forward.
 
     // INTERNAL WORK VARIABLES
     _yStore = NULL;
+    _yOut = Storage();
 
     // Start parsing log as empty. 
     _parsingLog="";
@@ -302,10 +304,39 @@ bool ForwardTool::run()
             _model->printDetailedInfo(s, std::cout);
         }
 
-        log_info("Integrating from {} to {}.", _ti, _tf);
+        _yOut = Storage();
+        Array<std::string> stateNames = _model->getStateVariableNames();
+        Array<std::string> columnLabels;
+        columnLabels.setSize(0);
+        columnLabels.append("time");
+        for (int i = 0; i < stateNames.getSize(); i++) {
+            columnLabels.append(stateNames[i]);
+        }
+        _yOut.setColumnLabels(columnLabels);
+
         s.setTime(_ti);
         manager.initialize(s);
-        manager.integrate(_tf);
+        if (_useSpecifiedDt && _dtArray.size() > 0) {
+            for (int i = 0; i < _dtArray.size(); ++i) {
+                manager.setIntegratorFixedStepSize(_dtArray[i]);
+                manager.initialize(s);
+                s = manager.integrate(s.getTime() + _dtArray[i]);
+                Storage sto = manager.getStateStorage();
+                for (int j = 0; j < sto.getSize(); ++j) {
+                SimTK::Vector stateValues(s.getNY(), 0.0);
+                    double time;
+                    sto.getData(j, s.getNY(), stateValues);
+                    sto.getTime(j, time);
+                    _yOut.append(time, stateValues, true);
+                }
+            }
+        } else {
+            manager.integrate(_tf);
+            Storage sto = manager.getStateStorage();
+            _yOut = sto;
+            _yOut.setColumnLabels(columnLabels);
+        }
+
     } catch(const std::exception& x) {
         log_error("ForwardTool::run() caught an exception: \n {}", x.what());
         completed = false;
@@ -344,7 +375,7 @@ void ForwardTool::printResultsInternal()
     AbstractTool::printResults(getName(),getResultsDir()); // this will create results directory if necessary
     if (_model) {
         _model->printControlStorage(getResultsDir() + "/" + getName() + "_controls.sto");
-        getManager().getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
+        _yOut.print(getResultsDir() + "/" + getName() + "_states.sto");
 
         Storage statesDegrees(getManager().getStateStorage());
         _model->getSimbodyEngine().convertRadiansToDegrees(statesDegrees);
@@ -413,15 +444,12 @@ void ForwardTool::InitializeSpecifiedTimeStepping(Storage *aYStore, Manager& aMa
     if(aYStore) {
         log_info("Using dt specified from storage {}.", aYStore->getName());
         Array<double> tArray(0.0,aYStore->getSize());
-        Array<double> dtArray(0.0,aYStore->getSize());
         aYStore->getTimeColumn(tArray);
-        for(int i=0;i<aYStore->getSize()-1;i++) dtArray[i]=tArray[i+1]-tArray[i];
-        aManager.setUseSpecifiedDT(true);
-        aManager.setDTArray(SimTK::Vector_<double>(aYStore->getSize() - 1,
-                                                   &dtArray[0]),
-                            tArray[0]);
-        //std::cout << "ForwardTool.InitializeSpecifiedTimeStepping: " << tArray << endl;
-
+        _dtArray.clear();
+        _dtArray.resize(aYStore->getSize() - 1);
+        for(int i = 0; i < aYStore->getSize() - 1; i++) {
+            _dtArray[i] = tArray[i+1] - tArray[i];
+        }
     // NO AVAILABLE STATES FILE
     } else {
         log_warn("Ignoring 'use_specified_dt' property because no initial "
