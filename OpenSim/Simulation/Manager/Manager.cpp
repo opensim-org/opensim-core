@@ -230,11 +230,12 @@ void Manager::initialize(const SimTK::State& s) {
         "Model has no System. You must call Model::initSystem() before "
         "calling Manager::initialize().");
 
-    // Initialize the time stepper.
-    _timeStepper->setReportAllSignificantStates(true);
     if (_recordStatesTrajectory || _writeToStorage || _performAnalyses) {
         _integ->setReturnEveryInternalStep(true);
     } 
+
+    // Initialize the time stepper.
+    _timeStepper->setReportAllSignificantStates(true);
     _timeStepper->initialize(s);
     
     // TODO: find a better way to intialize capacity.
@@ -242,7 +243,9 @@ void Manager::initialize(const SimTK::State& s) {
         // Initialize the states trajectory.
         _statesTraj->clear();
         _statesTraj->reserve(1024);
-    } else if (_writeToStorage) {
+    }
+    
+    if (_writeToStorage) {
         // Initialize the states storage.
         _stateStore.reset(new Storage(1024, "states"));
         Array<std::string> stateNames = _model->getStateVariableNames();

@@ -199,6 +199,7 @@ TEST_CASE("testGait2354WithController") {
 }
 
 TEST_CASE("testGait2354WithControllerGUI") {
+    Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 
     // The following lines are the steps from ForwardToolModel.java that
     // associates the a previous (orgiModel) model with the ForwardTool
