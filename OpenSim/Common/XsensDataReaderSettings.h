@@ -41,6 +41,17 @@ public:
         "Name of folder containing data files.");
     OpenSim_DECLARE_PROPERTY(trial_prefix, std::string,
         "Name of trial (Common prefix of txt files representing trial).");
+    OpenSim_DECLARE_PROPERTY(trial_extension, std::string, 
+        "File extension for the trial files. Defaults to \".txt\"");
+    OpenSim_DECLARE_PROPERTY(sampling_rate, double,
+        "Sampling Rate (frequency in Hz) for the trials. Xsens MT Manager sets this value when the data is recorded. "
+        "This parser defaults to 40Hz if no value is provided. "
+        "Newer versions of the Xsens software do not specify the recording sampling rate. "
+        "If you know the sampling rate of your data and it is not included in the header of the IMUs, input the value here. "
+        "The default behavior for MTw Awinda sensors (and possibly others) is to set the sampling rate "
+        "at one value less than the maximum (e.g., 40 Hz for 11-20 sensors)."
+        "This value is used in calculating the time interval (1/frequency) for the resultant tables. "
+        "See issue (#3956) for details.");
     OpenSim_DECLARE_LIST_PROPERTY(ExperimentalSensors, ExperimentalSensor,
         "List of Experimental sensors and desired associated names in resulting tables");
 
@@ -61,6 +72,8 @@ private:
     void constructProperties() {
         constructProperty_data_folder("");
         constructProperty_trial_prefix("");
+        constructProperty_trial_extension(".txt");
+        constructProperty_sampling_rate(40.0);
         constructProperty_ExperimentalSensors();
     }
 };
