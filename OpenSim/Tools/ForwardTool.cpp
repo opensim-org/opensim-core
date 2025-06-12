@@ -303,7 +303,6 @@ bool ForwardTool::run()
         if (Logger::shouldLog(Logger::Level::Info)) {
             _model->printDetailedInfo(s, std::cout);
         }
-
         _yOut = Storage();
         s.setTime(_ti);
         manager.initialize(s);

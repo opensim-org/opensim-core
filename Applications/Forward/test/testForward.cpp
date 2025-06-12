@@ -112,6 +112,8 @@ TEST_CASE("testPendulumExternalLoadWithPointInGround") {
 }
 
 TEST_CASE("testArm26") {
+    Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
+    
     ForwardTool forward("arm26_Setup_Forward.xml");
     forward.run();
 
@@ -124,6 +126,7 @@ TEST_CASE("testArm26") {
     Array<double> data;
     data.setSize(state->getSize());
     standard->getDataAtTime(time, state->getSize(), data);
+
     for (int j = 0; j < state->getSize(); ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
@@ -147,6 +150,8 @@ TEST_CASE("testArm26") {
 }
 
 TEST_CASE("testGait2354") {
+    Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
+
     ForwardTool forward("subject01_Setup_Forward.xml");
     forward.run();
     Storage results("Results/subject01_states.sto");
@@ -170,6 +175,8 @@ TEST_CASE("testGait2354") {
 }
 
 TEST_CASE("testGait2354WithController") {
+    Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
+
     ForwardTool forward("subject01_Setup_Forward_Controller.xml");
     forward.run();
     Storage results("ResultsCorrectionController/subject01_states.sto");

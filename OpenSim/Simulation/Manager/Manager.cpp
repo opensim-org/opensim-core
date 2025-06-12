@@ -192,15 +192,12 @@ StatesTrajectory Manager::getStatesTrajectory() const {
 // EXECUTION
 //=============================================================================
 void Manager::record(const SimTK::State& state, int step) {
-    std::cout << "Manager::record() called at time: " 
-              << state.getTime() << " s, step: " << step << std::endl;
     if (_writeToStorage) {
         SimTK::Vector stateValues = _model->getStateVariableValues(state);
         StateVector vec;
         vec.setStates(state.getTime(), stateValues);
         _stateStore->append(vec);
         if (_model->isControlled()) {
-            if (step == 0) _model->realizeVelocity(state);
             _model->updControllerSet().storeControls(state, 
                     (step < 0) ? getStateStorage().getSize() : step);
         }
@@ -233,41 +230,46 @@ void Manager::initialize(const SimTK::State& s) {
         "Model has no System. You must call Model::initSystem() before "
         "calling Manager::initialize().");
 
+    // Initialize the time stepper.
     _timeStepper->setReportAllSignificantStates(true);
     if (_recordStatesTrajectory || _writeToStorage || _performAnalyses) {
         _integ->setReturnEveryInternalStep(true);
     } 
     _timeStepper->initialize(s);
     
-    // Initialize the states trajectory.
     // TODO: find a better way to intialize capacity.
-    _statesTraj->clear();
-    _statesTraj->reserve(1024);
+    if (_recordStatesTrajectory) {
+        // Initialize the states trajectory.
+        _statesTraj->clear();
+        _statesTraj->reserve(1024);
+    } else if (_writeToStorage) {
+        // Initialize the states storage.
+        _stateStore.reset(new Storage(1024, "states"));
+        Array<std::string> stateNames = _model->getStateVariableNames();
+        Array<std::string> columnLabels;
+        columnLabels.setSize(0);
+        columnLabels.append("time");
+        for (int i = 0; i < stateNames.getSize(); i++) {
+            columnLabels.append(stateNames[i]);
+        }
+        _stateStore->setColumnLabels(columnLabels);
 
-    // Initialize the state storage.
-    _stateStore.reset(new Storage(1024, "states"));
-    Array<std::string> stateNames = _model->getStateVariableNames();
-    Array<std::string> columnLabels;
-    columnLabels.setSize(0);
-    columnLabels.append("time");
-    for (int i = 0; i < stateNames.getSize(); i++) {
-        columnLabels.append(stateNames[i]);
-    }
-    _stateStore->setColumnLabels(columnLabels);
-
-    // Initialize the controls storage.
-    if (_model->isControlled()) {
-        _model->updControllerSet().constructStorage();
+        // Initialize the controls storage.
+        if (_model->isControlled()) {
+            _model->updControllerSet().constructStorage();
+        }
     }
 }
 
-SimTK::State Manager::integrate(double finalTime) {
-    OPENSIM_THROW_IF(SimTK::isNaN(_integ->getState().getTime()), Exception,
-        "The initial state time is NaN. You must call Manager::initialize() "
-        "before calling Manager::integrate().");
+const SimTK::State& Manager::integrate(double finalTime) {
 
     // Initial state.
     const SimTK::State& s = _integ->getState();
+
+    OPENSIM_THROW_IF(SimTK::isNaN(s.getTime()), Exception,
+        "The initial state time is NaN. You must call Manager::initialize() "
+        "before calling Manager::integrate().");
+
     if (s.getTime() >= finalTime) {
         log_warn(
             "Initial time ({}) is greater than or equal to final time ({}). "
@@ -276,13 +278,11 @@ SimTK::State Manager::integrate(double finalTime) {
         return getState();
     }
 
-    _model->realizeVelocity(s);
-
     // Integrate.
-    // log_info("-------");
-    // log_info("Manager");
-    // log_info("-------");
-    // log_info("Starting integration at initial time {:.2f} s...", s.getTime());
+    log_info("-------");
+    log_info("Manager");
+    log_info("-------");
+    log_info("Starting integration at initial time {:.2f} s...", s.getTime());
     double cpuTime = SimTK::cpuTime();
     double realTime = SimTK::realTime();
     int step = 0;
@@ -321,16 +321,16 @@ SimTK::State Manager::integrate(double finalTime) {
     cpuTime = SimTK::cpuTime() - cpuTime;
     realTime = SimTK::realTime() - realTime;
 
-    // log_info("Integration complete at final time {:.2f} s.", 
-    //         _timeStepper->getState().getTime());
-    // log_info(" - CPU time elapsed: {:.6f} s", cpuTime);
-    // log_info(" - real time elapsed: {:.6f} s", realTime);
-    // log_info(" - integrator method: {}", _integ->getMethodName());
-    // log_info(" - number of realizations: {}", _integ->getNumRealizations());
-    // log_info(" - number of steps taken / attempted: {} / {}", 
-    //         _integ->getNumStepsTaken(), _integ->getNumStepsAttempted());
-    // log_info(" - number of projections: {}", _integ->getNumProjections());
-    // log_info(" - number of iterations: {}", _integ->getNumIterations());
+    log_info("Integration complete at final time {:.2f} s.", 
+            _timeStepper->getState().getTime());
+    log_info(" - CPU time elapsed: {:.6f} s", cpuTime);
+    log_info(" - real time elapsed: {:.6f} s", realTime);
+    log_info(" - integrator method: {}", _integ->getMethodName());
+    log_info(" - number of realizations: {}", _integ->getNumRealizations());
+    log_info(" - number of steps taken / attempted: {} / {}", 
+            _integ->getNumStepsTaken(), _integ->getNumStepsAttempted());
+    log_info(" - number of projections: {}", _integ->getNumProjections());
+    log_info(" - number of iterations: {}", _integ->getNumIterations());
 
     return _timeStepper->getState();
 }

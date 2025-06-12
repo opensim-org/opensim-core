@@ -370,7 +370,7 @@ public:
      * }
      * @endcode
      */
-    SimTK::State integrate(double finalTime);
+    const SimTK::State& integrate(double finalTime);
 
     // RESULTS
     /** 
