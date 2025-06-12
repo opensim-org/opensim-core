@@ -147,10 +147,7 @@ DataAdapter::OutputTables XsensDataReader::extendRead(
                 const bool found_euler = is_group_complete(euler_h, imu.header);
                 const bool found_rot_mat =
                         is_group_complete(rot_mat_h, imu.header);
-
-                int rotation_reps_found =
-                        found_quat + found_euler + found_rot_mat;
-
+                        
                 // Determine the rotation format to be used in the order:
                 // 1. Quaternion => (best for OpenSim)
                 // 2. Rotation Matrix
