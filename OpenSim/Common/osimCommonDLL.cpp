@@ -27,10 +27,6 @@
 
 // INCLUDES
 #include "osimCommonDLL.h"
-#include <iostream>
-#include "RegisterTypes_osimCommon.h"
-
-using namespace std;
 
 //
 // Define Plugin_Attach and Plugin_Detach below to be called by both Windows and Linux

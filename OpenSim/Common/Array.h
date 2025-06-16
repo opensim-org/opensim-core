@@ -29,7 +29,6 @@
 
 #include "Assertion.h"
 #include "Exception.h"
-#include "osimCommonDLL.h"
 
 #include <algorithm>
 #include <cstddef>

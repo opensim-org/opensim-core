@@ -25,7 +25,6 @@
 
 // INCLUDES
 #include <iostream>
-#include "osimCommonDLL.h"
 #include "Object.h"
 #include "ArrayPtrs.h"
 #include "ObjectGroup.h"

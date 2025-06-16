@@ -29,8 +29,6 @@
 
 #include "Component.h"
 #include "IO.h"
-#include "Object.h"
-#include "osimCommonDLL.h"
 
 #include <iostream>
 #include <string>

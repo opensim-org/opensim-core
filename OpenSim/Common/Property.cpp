@@ -24,12 +24,10 @@
 // INCLUDES
 //============================================================================
 #include "Property.h"
-#include "Object.h"
 #include <string>
 
 
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
 
 //=============================================================================
@@ -110,5 +108,4 @@ namespace OpenSim {
 template class SimpleProperty<int>;
 template class SimpleProperty<double>;
 template class SimpleProperty<std::string>;
-template class ObjectProperty<Object>;
 }

@@ -29,7 +29,6 @@
 
 
 // INCLUDES
-#include "osimCommonDLL.h"
 #include <string>
 #include "ArrayPtrs.h"
 #include "Property_Deprecated.h"

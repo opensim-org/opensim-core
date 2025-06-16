@@ -37,7 +37,6 @@
 #include "IO.h"
 #include "Logger.h"
 #include "PropertyTransform.h"
-#include "Property_Deprecated.h"
 #include "XMLDocument.h"
 #include <fstream>
 

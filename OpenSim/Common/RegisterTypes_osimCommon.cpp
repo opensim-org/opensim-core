@@ -21,10 +21,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "RegisterTypes_osimCommon.h"
 
 #include "Object.h"
 #include "Component.h"
-#include "RegisterTypes_osimCommon.h"
 #include "FunctionSet.h"
 #include "GCVSplineSet.h"
 #include "ScaleSet.h"
@@ -59,7 +59,6 @@
 #include <exception>
 
 using namespace OpenSim;
-using namespace std;
 
 
 //_____________________________________________________________________________

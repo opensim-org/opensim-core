@@ -25,7 +25,6 @@
 #include <queue>
 #include <condition_variable>
 #include <SimTKcommon.h>
-#include <OpenSim/Common/osimCommonDLL.h>
 
 namespace OpenSim {
 

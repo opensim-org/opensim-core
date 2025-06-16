@@ -45,8 +45,6 @@
 // INCLUDES
 #include "ComponentList.h"
 #include "ComponentPath.h"
-// #include "Logger.h"
-#include "OpenSim/Common/Array.h"
 #include "OpenSim/Common/ComponentOutput.h"
 #include "OpenSim/Common/ComponentSocket.h"
 #include "OpenSim/Common/Object.h"

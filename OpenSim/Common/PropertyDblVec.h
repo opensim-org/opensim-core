@@ -28,7 +28,6 @@
 #endif
 
 #include "Assertion.h"
-#include "osimCommonDLL.h"
 #include <string>
 #include "Property_Deprecated.h"
 #include "OpenSim/Common/Array.h"

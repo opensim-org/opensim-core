@@ -22,8 +22,6 @@
 
 #include "Logger.h"
 
-// #include "Exception.h"
-// #include "IO.h"
 #include "LogSink.h"
 
 #include "spdlog/sinks/stdout_color_sinks.h"
