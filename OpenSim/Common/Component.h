@@ -49,10 +49,12 @@
 #include "OpenSim/Common/ComponentSocket.h"
 #include "OpenSim/Common/Object.h"
 #include "simbody/internal/MultibodySystem.h"
+#include "Exception.h"
 
 #include <OpenSim/Common/osimCommonDLL.h>
 
 #include <functional>
+#include <string>
 #include <unordered_map>
 #include <utility>
 

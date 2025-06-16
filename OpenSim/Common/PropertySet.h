@@ -33,7 +33,6 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include "ArrayPtrs.h"
-//#include "Property_Deprecated.h"
 #include "PropertyDblVec.h"
 
 

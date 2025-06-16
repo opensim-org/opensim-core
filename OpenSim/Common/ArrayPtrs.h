@@ -30,7 +30,6 @@
 
 #include <iostream>
 #include "Exception.h"
-#include "Logger.h"
 
 
 //=============================================================================
@@ -365,8 +364,8 @@ bool computeNewCapacity(int aMinCapacity,int &rNewCapacity)
 
     // CHECK FOR ZERO INCREMENT
     if(_capacityIncrement == 0) {
-        log_warn("ArrayPtrs.computeNewCapacity: capacity is set not to "
-                 "increase (i.e., _capacityIncrement==0).");
+        // log_warn("ArrayPtrs.computeNewCapacity: capacity is set not to "
+        //          "increase (i.e., _capacityIncrement==0).");
         return(false);
     }
 
@@ -399,7 +398,7 @@ bool ensureCapacity(int aCapacity)
     int i;
     T **newArray = new T*[aCapacity];
     if(newArray==NULL) {
-        log_error("ArrayPtrs.ensureCapacity: failed to increase capacity.");
+        // log_error("ArrayPtrs.ensureCapacity: failed to increase capacity.");
         return(false);
     }
 
@@ -440,7 +439,7 @@ void trim()
     // ALLOCATE NEW ARRAY
     _array = new T*[newCapacity];
     if(_array==NULL) {
-        log_error("ArrayPtrs.trim: unable to allocate array.");
+        // log_error("ArrayPtrs.trim: unable to allocate array.");
         return;
     }
 
@@ -621,7 +620,7 @@ int getIndex(const std::string &aName,int aStartIndex=0) const
 bool append(T *aObject)
 {
     if(aObject==NULL) {
-        log_error("ArrayPtrs.append: NULL pointer.");
+        // log_error("ArrayPtrs.append: NULL pointer.");
         return(false);
     }
 
@@ -684,13 +683,13 @@ bool insert(int aIndex,T *aObject)
 {
     // NULL POINTER
     if(aObject==NULL) {
-        log_error("ArrayPtrs.insert: NULL pointer.");
+        // log_error("ArrayPtrs.insert: NULL pointer.");
         return(false);
     }
 
     // NEGATIVE INDEX
     if(aIndex<0) {
-        log_error("ArrayPtrs.insert: aIndex was less than 0.");
+        // log_error("ArrayPtrs.insert: aIndex was less than 0.");
         return(false);
     }
 

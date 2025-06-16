@@ -20,8 +20,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "DataAdapter.h"
-#include "FileAdapter.h"
 #include "TRCFileAdapter.h"
 #include "DelimFileAdapter.h"
 #include "STOFileAdapter.h"

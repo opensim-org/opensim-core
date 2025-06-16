@@ -26,8 +26,8 @@
 * This file defines an abstract FileAdapter class, which implements the 
   OpenSim::DataAdpater interface for reading or writing data files.
 */
+#include "Exception.h"
 #include "DataAdapter.h"
-
 #include <vector>
 
 namespace OpenSim {
