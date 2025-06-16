@@ -31,7 +31,6 @@
 #include "GCVSpline.h"
 #include "Constant.h"
 #include "gcvspl.h"
-#include "XYFunctionInterface.h"
 
 
 
@@ -273,52 +272,52 @@ init(Function* aFunction)
     if (gcv != NULL) {
         setEqual(*gcv);
     } else {
-        XYFunctionInterface xyFunc(aFunction);
-        if (xyFunc.getNumberOfPoints() == 0) {
-            // A GCVSpline must have at least getOrder() data points.
-            // If aFunction is a Constant, use its Y value for all data points.
-            // If it is not, make up the data points.
-            double* x = new double[order];
-            double* y = new double[order];
-            for (int i=0; i<order; i++)
-                x[i] = i;
-            Constant* cons = dynamic_cast<Constant*>(aFunction);
-            if (cons != NULL) {
-                for (int i=0; i<order; i++)
-                    y[i] = cons->calcValue(SimTK::Vector(0));
-            } else {
-                for (int i=0; i<order; i++)
-                    y[i] = 1.0;
-            }
-            *this = GCVSpline(degree, order, x, y);
-            delete [] x;
-            delete [] y;
-        } else if (xyFunc.getNumberOfPoints() < order) {
-            // A GCVSpline must have at least getOrder() data points.
-            // Use as many data points as aFunction has, and then fill
-            // in the rest by copying the last Y value, and incrementing
-            // the X value by the step between the last two real data points.
-            double* x = new double[order];
-            double* y = new double[order];
-            double step = 1.0;
-            if (xyFunc.getNumberOfPoints() >= 2)
-                step = xyFunc.getXValues()[xyFunc.getNumberOfPoints()-1] -
-                xyFunc.getXValues()[xyFunc.getNumberOfPoints()-2];
-            for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
-                x[i] = xyFunc.getXValues()[i];
-                y[i] = xyFunc.getYValues()[i];
-            }
-            for (int i=xyFunc.getNumberOfPoints(); i<order; i++) {
-                x[i] = x[i-1] + step;
-                y[i] = y[i-1];
-            }
-            *this = GCVSpline(degree, order, x, y);
-            delete [] x;
-            delete [] y;
-        } else {
-            *this = GCVSpline(degree, xyFunc.getNumberOfPoints(),
-                xyFunc.getXValues(), xyFunc.getYValues());
-        }
+        // XYFunctionInterface xyFunc(aFunction);
+        // if (xyFunc.getNumberOfPoints() == 0) {
+        //     // A GCVSpline must have at least getOrder() data points.
+        //     // If aFunction is a Constant, use its Y value for all data points.
+        //     // If it is not, make up the data points.
+        //     double* x = new double[order];
+        //     double* y = new double[order];
+        //     for (int i=0; i<order; i++)
+        //         x[i] = i;
+        //     Constant* cons = dynamic_cast<Constant*>(aFunction);
+        //     if (cons != NULL) {
+        //         for (int i=0; i<order; i++)
+        //             y[i] = cons->calcValue(SimTK::Vector(0));
+        //     } else {
+        //         for (int i=0; i<order; i++)
+        //             y[i] = 1.0;
+        //     }
+        //     *this = GCVSpline(degree, order, x, y);
+        //     delete [] x;
+        //     delete [] y;
+        // } else if (xyFunc.getNumberOfPoints() < order) {
+        //     // A GCVSpline must have at least getOrder() data points.
+        //     // Use as many data points as aFunction has, and then fill
+        //     // in the rest by copying the last Y value, and incrementing
+        //     // the X value by the step between the last two real data points.
+        //     double* x = new double[order];
+        //     double* y = new double[order];
+        //     double step = 1.0;
+        //     if (xyFunc.getNumberOfPoints() >= 2)
+        //         step = xyFunc.getXValues()[xyFunc.getNumberOfPoints()-1] -
+        //         xyFunc.getXValues()[xyFunc.getNumberOfPoints()-2];
+        //     for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
+        //         x[i] = xyFunc.getXValues()[i];
+        //         y[i] = xyFunc.getYValues()[i];
+        //     }
+        //     for (int i=xyFunc.getNumberOfPoints(); i<order; i++) {
+        //         x[i] = x[i-1] + step;
+        //         y[i] = y[i-1];
+        //     }
+        //     *this = GCVSpline(degree, order, x, y);
+        //     delete [] x;
+        //     delete [] y;
+        // } else {
+        //     *this = GCVSpline(degree, xyFunc.getNumberOfPoints(),
+        //         xyFunc.getXValues(), xyFunc.getYValues());
+        // }
     }
 }
 

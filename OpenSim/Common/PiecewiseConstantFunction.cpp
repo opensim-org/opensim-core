@@ -27,7 +27,6 @@
 #include "Constant.h"
 #include "FunctionAdapter.h"
 #include "SimmMacros.h"
-#include "XYFunctionInterface.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -176,29 +175,29 @@ void PiecewiseConstantFunction::init(Function* aFunction)
        if (sf != NULL) {
              setEqual(*sf);
        } else {
-             XYFunctionInterface xyFunc(aFunction);
-             if (xyFunc.getNumberOfPoints() == 0) {
-                  // A PiecewiseConstantFunction must have at least 2 data points.
-                  // If aFunction is a Constant, use its Y value for both data points.
-                  // If it is not, make up two data points.
-                  double x[2] = {0.0, 1.0}, y[2];
-                  Constant* cons = dynamic_cast<Constant*>(aFunction);
-                  if (cons != NULL) {
-                      y[0] = y[1] = cons->calcValue(SimTK::Vector(1, 0.));
-                  } else {
-                      y[0] = y[1] = 1.0;
-                  }
-                  *this = PiecewiseConstantFunction(2, x, y);
-             } else if (xyFunc.getNumberOfPoints() == 1) {
-                  double x[2], y[2];
-                  x[0] = xyFunc.getXValues()[0];
-                  x[1] = x[0] + 1.0;
-                  y[0] = y[1] = xyFunc.getYValues()[0];
-                  *this = PiecewiseConstantFunction(2, x, y);
-             } else {
-                  *this = PiecewiseConstantFunction(xyFunc.getNumberOfPoints(),
-                      xyFunc.getXValues(), xyFunc.getYValues());
-             }
+       //       XYFunctionInterface xyFunc(aFunction);
+       //       if (xyFunc.getNumberOfPoints() == 0) {
+       //            // A PiecewiseConstantFunction must have at least 2 data points.
+       //            // If aFunction is a Constant, use its Y value for both data points.
+       //            // If it is not, make up two data points.
+       //            double x[2] = {0.0, 1.0}, y[2];
+       //            Constant* cons = dynamic_cast<Constant*>(aFunction);
+       //            if (cons != NULL) {
+       //                y[0] = y[1] = cons->calcValue(SimTK::Vector(1, 0.));
+       //            } else {
+       //                y[0] = y[1] = 1.0;
+       //            }
+       //            *this = PiecewiseConstantFunction(2, x, y);
+       //       } else if (xyFunc.getNumberOfPoints() == 1) {
+       //            double x[2], y[2];
+       //            x[0] = xyFunc.getXValues()[0];
+       //            x[1] = x[0] + 1.0;
+       //            y[0] = y[1] = xyFunc.getYValues()[0];
+       //            *this = PiecewiseConstantFunction(2, x, y);
+       //       } else {
+       //            *this = PiecewiseConstantFunction(xyFunc.getNumberOfPoints(),
+       //                xyFunc.getXValues(), xyFunc.getYValues());
+       //       }
        }
 }
 

@@ -26,7 +26,6 @@
 #include "SimmSpline.h"
 #include "Constant.h"
 #include "SimmMacros.h"
-#include "XYFunctionInterface.h"
 #include "FunctionAdapter.h"
 
 
@@ -185,29 +184,29 @@ void SimmSpline::init(Function* aFunction)
     if (ncs != NULL) {
         setEqual(*ncs);
     } else {
-        XYFunctionInterface xyFunc(aFunction);
-        if (xyFunc.getNumberOfPoints() == 0) {
-            // A SimmSpline must have at least 2 data points.
-            // If aFunction is a Constant, use its Y value for both data points.
-            // If it is not, make up two data points.
-            double x[2] = {0.0, 1.0}, y[2];
-            Constant* cons = dynamic_cast<Constant*>(aFunction);
-            if (cons != NULL) {
-                y[0] = y[1] = cons->calcValue(SimTK::Vector(0));
-            } else {
-                y[0] = y[1] = 1.0;
-            }
-            *this = SimmSpline(2, x, y);
-        } else if (xyFunc.getNumberOfPoints() == 1) {
-            double x[2], y[2];
-            x[0] = xyFunc.getXValues()[0];
-            x[1] = x[0] + 1.0;
-            y[0] = y[1] = xyFunc.getYValues()[0];
-            *this = SimmSpline(2, x, y);
-        } else {
-            *this = SimmSpline(xyFunc.getNumberOfPoints(),
-                xyFunc.getXValues(), xyFunc.getYValues());
-        }
+        // XYFunctionInterface xyFunc(aFunction);
+        // if (xyFunc.getNumberOfPoints() == 0) {
+        //     // A SimmSpline must have at least 2 data points.
+        //     // If aFunction is a Constant, use its Y value for both data points.
+        //     // If it is not, make up two data points.
+        //     double x[2] = {0.0, 1.0}, y[2];
+        //     Constant* cons = dynamic_cast<Constant*>(aFunction);
+        //     if (cons != NULL) {
+        //         y[0] = y[1] = cons->calcValue(SimTK::Vector(0));
+        //     } else {
+        //         y[0] = y[1] = 1.0;
+        //     }
+        //     *this = SimmSpline(2, x, y);
+        // } else if (xyFunc.getNumberOfPoints() == 1) {
+        //     double x[2], y[2];
+        //     x[0] = xyFunc.getXValues()[0];
+        //     x[1] = x[0] + 1.0;
+        //     y[0] = y[1] = xyFunc.getYValues()[0];
+        //     *this = SimmSpline(2, x, y);
+        // } else {
+        //     *this = SimmSpline(xyFunc.getNumberOfPoints(),
+        //         xyFunc.getXValues(), xyFunc.getYValues());
+        // }
     }
 }
 

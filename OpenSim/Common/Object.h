@@ -589,10 +589,10 @@ protected:
 
     /** Get a const pointer to the document (if any) associated with this
     object. **/
-    const XMLDocument* getDocument() const {return _document.get();}
+    const XMLDocument* getDocument() const {return nullptr;}
     /** Get a writable pointer to the document (if any) associated with this
     object. **/
-    XMLDocument* updDocument() {return _document.get();}
+    XMLDocument* updDocument() {return nullptr;}
 public:
     /** If there is a document associated with this object then return the
     file name maintained by the document. Otherwise return an empty string. **/
@@ -915,7 +915,7 @@ private:
     // This is mutable since it's cached on deserialization and is 
     // kept up to date to maintain "defaults" and document file path
     //TODO: why does an Object need to know where it was last written? Seems flaky and should be revisited
-    mutable std::shared_ptr<XMLDocument>     _document;
+    // mutable std::shared_ptr<XMLDocument>     _document;
     // Flag indicating whether the object is serialized to this _document or 
     // to another fresh document, also cached for subsequent printing/writing.
     mutable bool            _inlined;

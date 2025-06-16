@@ -22,21 +22,20 @@
  * -------------------------------------------------------------------------- */
 
 #include "ComponentSocket.h"
-#include "Component.h"
 
 using namespace OpenSim;
 
 const Property<std::string>&
 AbstractSocket::getConnecteePathProp() const {
-    return _owner->getProperty<std::string>(_connecteePathIndex);
+    // return _owner->getProperty<std::string>(_connecteePathIndex);
 }
 
 Property<std::string>&
 AbstractSocket::updConnecteePathProp() {
     auto* owner = const_cast<Component*>(_owner.get());
     // We do not want to flip the isObjectUpToDateWithProperties flag.
-    const auto& prop = owner->getProperty<std::string>(_connecteePathIndex);
-    return const_cast<Property<std::string>&>(prop);
+    // const auto& prop = owner->getProperty<std::string>(_connecteePathIndex);
+    // return const_cast<Property<std::string>&>(prop);
 }
 
 void AbstractSocket::prependComponentPathToConnecteePath(

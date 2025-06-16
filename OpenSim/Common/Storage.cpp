@@ -38,7 +38,6 @@
 #include "SimTKcommon.h"
 #include "SimmMacros.h"
 #include "StateVector.h"
-#include "TableUtilities.h"
 #include "TimeSeriesTable.h"
 #include <iostream>
 
@@ -519,14 +518,16 @@ getHeaderToken() const
 int Storage::
 getStateIndex(const std::string &aColumnName, int startIndex) const
 {
-    int thisColumnIndex =
-            TableUtilities::findStateLabelIndex(_columnLabels, aColumnName);
-    if (thisColumnIndex == -1) {
-        return -1;
-    }
-    // Subtract 1 because time is included in the labels but not
-    // in the "state vector".
-    return thisColumnIndex - 1;
+
+    // int thisColumnIndex =
+    //         TableUtilities::findStateLabelIndex(_columnLabels, aColumnName);
+    // if (thisColumnIndex == -1) {
+    //     return -1;
+    // }
+    // // Subtract 1 because time is included in the labels but not
+    // // in the "state vector".
+    // return thisColumnIndex - 1;
+    return -1;
 }
 
 
