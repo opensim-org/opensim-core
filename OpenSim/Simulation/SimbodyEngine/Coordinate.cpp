@@ -35,7 +35,6 @@
 // STATICS
 //=============================================================================
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 /** @cond **/ // hide from Doxygen
@@ -242,10 +241,10 @@ void Coordinate::extendRealizeInstance(const SimTK::State& state) const
     /* Set the YIndex on the StateVariable */
 }
 
-void Coordinate::extendInitStateFromProperties(State& s) const
+void Coordinate::extendInitStateFromProperties(SimTK::State& s) const
 {
     // Cannot enforce the constraint, since state of constraints may still be undefined
-    const MobilizedBody& mb=_model->getMatterSubsystem().getMobilizedBody(_bodyIndex);
+    const SimTK::MobilizedBody& mb=_model->getMatterSubsystem().getMobilizedBody(_bodyIndex);
     int nq=mb.getNumQ(s);
     if (_mobilizerQIndex>=nq){
         //Something is wrong/inconsistent with model definition. Abort
@@ -359,7 +358,7 @@ void Coordinate::setValue(SimTK::State& s, double aValue , bool enforceConstrain
             _model->assemble(s, this, weight);
         }
         else
-            _model->getMultibodySystem().realize(s, Stage::Position );
+            _model->getMultibodySystem().realize(s, SimTK::Stage::Position );
     }
 }
 
@@ -678,7 +677,7 @@ double Coordinate::SpeedStateVariable::
     getDerivative(const SimTK::State& state) const
 {
     const Coordinate& owner = *((Coordinate *)&getOwner());
-    const MobilizedBody& mb = owner.getModel().getMatterSubsystem()
+    const SimTK::MobilizedBody& mb = owner.getModel().getMatterSubsystem()
                                 .getMobilizedBody(owner.getBodyIndex());
 
     return mb.getUDotAsVector(state)[owner.getMobilizerQIndex()];

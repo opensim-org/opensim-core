@@ -82,7 +82,7 @@ return true;
         if (fileSinkAutoInitDisabled) {
             return true;
         }
-        Logger::addFileSink();
+        OpenSim::Logger::addFileSink();
         return true;
     }();
 
@@ -92,14 +92,14 @@ return true;
 
 // this function is only called when the caller is about to log something, so
 // it should perform lazy initialization of the file sink
-spdlog::logger& Logger::getCoutLogger() {
+spdlog::logger& OpenSim::Logger::getCoutLogger() {
     initFileLoggingAsNeeded();
     return *coutLogger;
 }
 
 // this function is only called when the caller is about to log something, so
 // it should perform lazy initialization of the file sink
-spdlog::logger& Logger::getDefaultLogger() {
+spdlog::logger& OpenSim::Logger::getDefaultLogger() {
     initFileLoggingAsNeeded();
     return *defaultLogger;
 }
@@ -123,7 +123,7 @@ static void removeSinkInternal(const std::shared_ptr<spdlog::sinks::sink> sink)
     }
 }
 
-void Logger::setLevel(Level level) {
+void OpenSim::Logger::setLevel(Level level) {
     switch (level) {
     case Level::Off:
         spdlog::set_level(spdlog::level::off);
@@ -153,7 +153,7 @@ void Logger::setLevel(Level level) {
     Logger::info("Set log level to {}.", getLevelString());
 }
 
-Logger::Level Logger::getLevel() {
+OpenSim::Logger::Level OpenSim::Logger::getLevel() {
     switch (defaultLogger->level()) {
     case spdlog::level::off: return Level::Off;
     case spdlog::level::critical: return Level::Critical;
@@ -168,7 +168,7 @@ Logger::Level Logger::getLevel() {
     }
 }
 
-void Logger::setLevelString(std::string str) {
+void OpenSim::Logger::setLevelString(std::string str) {
     Level level;
     // str = IO::Lowercase(str);
     if (str == "off") level = Level::Off;
@@ -188,7 +188,7 @@ void Logger::setLevelString(std::string str) {
     setLevel(level);
 }
 
-std::string Logger::getLevelString() {
+std::string OpenSim::Logger::getLevelString() {
     const auto level = getLevel();
     switch (level) {
     case Level::Off: return "Off";
@@ -204,7 +204,7 @@ std::string Logger::getLevelString() {
     }
 }
 
-bool Logger::shouldLog(Level level) {
+bool OpenSim::Logger::shouldLog(Level level) {
     spdlog::level::level_enum spdlogLevel;
     switch (level) {
     case Level::Off: spdlogLevel = spdlog::level::off; break;
@@ -221,7 +221,7 @@ bool Logger::shouldLog(Level level) {
     return defaultLogger->should_log(spdlogLevel);
 }
 
-void Logger::addFileSink(const std::string& filepath) {
+void OpenSim::Logger::addFileSink(const std::string& filepath) {
     // this method is either called by the file log auto-initializer, which
     // should now be disabled, or by downstream code trying to manually specify
     // a file sink
@@ -251,7 +251,7 @@ void Logger::addFileSink(const std::string& filepath) {
     addSinkInternal(m_filesink);
 }
 
-void Logger::removeFileSink() {
+void OpenSim::Logger::removeFileSink() {
     // if this method is called, then we are probably at a point in the
     // application's lifetime where automatic log allocation is going to cause
     // confusion.
@@ -270,11 +270,11 @@ void Logger::removeFileSink() {
     m_filesink.reset();
 }
 
-void Logger::addSink(const std::shared_ptr<LogSink> sink) {
+void OpenSim::Logger::addSink(const std::shared_ptr<LogSink> sink) {
     addSinkInternal(std::static_pointer_cast<spdlog::sinks::sink>(sink));
 }
 
-void Logger::removeSink(const std::shared_ptr<LogSink> sink) {
+void OpenSim::Logger::removeSink(const std::shared_ptr<LogSink> sink) {
     removeSinkInternal(std::static_pointer_cast<spdlog::sinks::sink>(sink));
 }
 

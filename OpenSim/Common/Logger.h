@@ -31,6 +31,7 @@
 #include <spdlog/fmt/ostr.h> 
 #include <spdlog/fmt/fmt.h>
 
+#include "Array.h"
 #include "SimTKcommon/SmallMatrix.h"
 #include "SimTKcommon/internal/BigMatrix.h"
 #include "SimTKcommon/internal/MassProperties.h"
@@ -66,6 +67,18 @@ auto apply_transformed(Func&& func, const Args&... args) {
 }
 
 #ifndef SWIG
+template <>
+struct fmt::formatter<OpenSim::Array<double>> {
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template <typename FormatContext>
+    auto format(const OpenSim::Array<double>& a, FormatContext& ctx) {
+        std::stringstream ss;
+        ss << a;
+        std::string out = ss.str();
+        return fmt::format_to(ctx.out(), "{}", out);
+    }
+};
 template <>
 struct fmt::formatter<SimTK::String> {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }

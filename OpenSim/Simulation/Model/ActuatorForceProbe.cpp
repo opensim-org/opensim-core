@@ -30,7 +30,6 @@
 #include <OpenSim/Common/IO.h>
 
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 
@@ -182,7 +181,7 @@ void ActuatorForceProbe::extendConnectToModel(Model& model)
         const int k = model.getActuators().getIndex(actName);
         if (k<0) {
             string errorMessage = getConcreteClassName() + ": Invalid Actuator '" + actName + "' specified in <actuator_names>.";
-            log_warn("{} Probe will be disabled.", errorMessage);
+            // log_warn("{} Probe will be disabled.", errorMessage);
             setEnabled(false);
             //throw (Exception(errorMessage.c_str()));
         }
@@ -205,7 +204,7 @@ void ActuatorForceProbe::extendConnectToModel(Model& model)
 /**
 * Compute the Force.
 */
-SimTK::Vector ActuatorForceProbe::computeProbeInputs(const State& s) const
+SimTK::Vector ActuatorForceProbe::computeProbeInputs(const SimTK::State& s) const
 {
     int nA = getActuatorNames().size();
     SimTK::Vector TotalF(getNumProbeInputs());

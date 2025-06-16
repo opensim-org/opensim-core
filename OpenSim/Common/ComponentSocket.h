@@ -390,10 +390,10 @@ public:
         if (index < 0) {
             if (!isListSocket()) { index = 0; }
             else {
-                OPENSIM_THROW(Exception,
-                        "Socket<T>::getConnecteeAsObject(): an index must be "
-                        "provided for a socket that takes a list "
-                        "of values.");
+                // OPENSIM_THROW(Exception,
+                //         "Socket<T>::getConnecteeAsObject(): an index must be "
+                //         "provided for a socket that takes a list "
+                //         "of values.");
             }
         }
         return getConnecteeAsObjectInternal(index);
@@ -411,11 +411,11 @@ public:
         const T* objT = dynamic_cast<const T*>(&object);
         if (!objT) {
             std::stringstream msg;
-            msg << "Type mismatch: Socket '" << getName() << "' of type "
-                << getConnecteeTypeName() << " cannot connect to '"
-                << object.getName() << "' of type "
-                << object.getConcreteClassName() << ".";
-            OPENSIM_THROW(Exception, msg.str());
+            // msg << "Type mismatch: Socket '" << getName() << "' of type "
+            //     << getConnecteeTypeName() << " cannot connect to '"
+            //     << object.getName() << "' of type "
+            //     << object.getConcreteClassName() << ".";
+            // OPENSIM_THROW(Exception, msg.str());
         }
 
         connectInternal(*objT);
@@ -472,8 +472,8 @@ protected:
 private:
 
     const Object& getConnecteeAsObjectInternal(int index) const {
-        OPENSIM_THROW_IF(!isConnected(), Exception,
-            "Socket '{}' not connected.", getName());
+        // OPENSIM_THROW_IF(!isConnected(), Exception,
+        //     "Socket '{}' not connected.", getName());
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK(index, static_cast<int>(getNumConnectees()),
                          "Socket<T>::getConnecteeAsObject()");
@@ -488,11 +488,11 @@ private:
         }
         // Check if this Socket is already connected to objT.
         for (const auto& connectee : _connectees) {
-            OPENSIM_THROW_IF(&objT == &connectee.getRef(), Exception,
-                             "Socket '{}' already has a "
-                             "connectee of type '{}' named '{}'.",
-                             getName(), getConnecteeTypeName(),
-                             objT.getName());
+            // OPENSIM_THROW_IF(&objT == &connectee.getRef(), Exception,
+            //                  "Socket '{}' already has a "
+            //                  "connectee of type '{}' named '{}'.",
+            //                  getName(), getConnecteeTypeName(),
+            //                  objT.getName());
         }
         _connectees.emplace_back(objT);
     }

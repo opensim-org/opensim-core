@@ -42,7 +42,6 @@
 
 using namespace OpenSim;
 using namespace std;
-using namespace SimTK;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -180,7 +179,7 @@ bool InverseKinematicsTool::run()
         // corresponding model marker for each reference.
         int nm = ikSolver.getNumMarkersInUse();
         SimTK::Array_<double> squaredMarkerErrors(nm, 0.0);
-        SimTK::Array_<Vec3> markerLocations(nm, Vec3(0));
+        SimTK::Array_<SimTK::Vec3> markerLocations(nm, SimTK::Vec3(0));
         
         Storage *modelMarkerLocations = get_report_marker_locations() ?
             new Storage(Nframes, "ModelMarkerLocations") : nullptr;
@@ -328,31 +327,31 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
         if (versionNumber <= 20201){
             // get filename and use SimTK::Xml to parse it
             SimTK::Xml::Document doc = SimTK::Xml::Document(newFileName);
-            Xml::Element root = doc.getRootElement();
+            SimTK::Xml::Element root = doc.getRootElement();
             if (root.getElementTag()=="OpenSimDocument"){
                 int curVersion = root.getRequiredAttributeValueAs<int>("Version");
                 if (curVersion <= 20201) root.setAttributeValue("Version", "20300");
-                Xml::element_iterator iter(root.element_begin("IKTool"));
+                SimTK::Xml::element_iterator iter(root.element_begin("IKTool"));
                 iter->setElementTag("InverseKinematicsTool");
-                Xml::element_iterator toolIter(iter->element_begin("IKTrialSet"));
+                SimTK::Xml::element_iterator toolIter(iter->element_begin("IKTrialSet"));
                 // No optimizer_algorithm specification anymore
-                Xml::element_iterator optIter(iter->element_begin("optimizer_algorithm"));
+                SimTK::Xml::element_iterator optIter(iter->element_begin("optimizer_algorithm"));
                 if (optIter!= iter->element_end())
                     iter->eraseNode(optIter);
 
-                Xml::element_iterator objIter(toolIter->element_begin("objects")); 
-                Xml::element_iterator trialIter(objIter->element_begin("IKTrial")); 
+                SimTK::Xml::element_iterator objIter(toolIter->element_begin("objects")); 
+                SimTK::Xml::element_iterator trialIter(objIter->element_begin("IKTrial")); 
                 // Move children of (*trialIter) to root
-                Xml::node_iterator p = trialIter->node_begin();
+                SimTK::Xml::node_iterator p = trialIter->node_begin();
                 for (; p!= trialIter->node_end(); ++p) {
                     iter->insertNodeAfter( iter->node_end(), p->clone());
                 }
-                iter->insertNodeAfter( iter->node_end(), Xml::Element("constraint_weight", "20.0"));
-                iter->insertNodeAfter( iter->node_end(), Xml::Element("accuracy", "1e-4"));
+                iter->insertNodeAfter( iter->node_end(), SimTK::Xml::Element("constraint_weight", "20.0"));
+                iter->insertNodeAfter( iter->node_end(), SimTK::Xml::Element("accuracy", "1e-4"));
                 // erase node for IKTrialSet
                 iter->eraseNode(toolIter);  
-                Xml::Document newDocument;
-                Xml::Element docElement= newDocument.getRootElement();
+                SimTK::Xml::Document newDocument;
+                SimTK::Xml::Element docElement= newDocument.getRootElement();
                 docElement.setAttributeValue("Version", "20300");
                 docElement.setElementTag("OpenSimDocument");
                 // Copy all children of root to newRoot
@@ -364,29 +363,29 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
             else { 
                 if (root.getElementTag()=="IKTool"){
                     root.setElementTag("InverseKinematicsTool");
-                    Xml::element_iterator toolIter(root.element_begin("IKTrialSet"));
+                    SimTK::Xml::element_iterator toolIter(root.element_begin("IKTrialSet"));
                     if (toolIter== root.element_end())
                         throw (Exception("Old IKTool setup file doesn't have required IKTrialSet element.. Aborting"));
                     // No optimizer_algorithm specification anymore
-                    Xml::element_iterator optIter(root.element_begin("optimizer_algorithm"));
+                    SimTK::Xml::element_iterator optIter(root.element_begin("optimizer_algorithm"));
                     if (optIter!= root.element_end())
                     root.eraseNode(optIter);
 
-                    Xml::element_iterator objIter(toolIter->element_begin("objects")); 
-                    Xml::element_iterator trialIter(objIter->element_begin("IKTrial")); 
+                    SimTK::Xml::element_iterator objIter(toolIter->element_begin("objects")); 
+                    SimTK::Xml::element_iterator trialIter(objIter->element_begin("IKTrial")); 
                     // Move children of (*trialIter) to root
-                    Xml::node_iterator p = trialIter->node_begin();
+                    SimTK::Xml::node_iterator p = trialIter->node_begin();
                     for (; p!= trialIter->node_end(); ++p) {
                         root.insertNodeAfter( root.node_end(), p->clone());
                     }
-                    root.insertNodeAfter( root.node_end(), Xml::Element("constraint_weight", "20.0"));
-                    root.insertNodeAfter( root.node_end(), Xml::Element("accuracy", "1e-5"));
+                    root.insertNodeAfter( root.node_end(), SimTK::Xml::Element("constraint_weight", "20.0"));
+                    root.insertNodeAfter( root.node_end(), SimTK::Xml::Element("accuracy", "1e-5"));
                     // erase node for IKTrialSet
                     root.eraseNode(toolIter);
                     
                     // Create an OpenSimDocument node and move root inside it
-                    Xml::Document newDocument;
-                    Xml::Element docElement= newDocument.getRootElement();
+                    SimTK::Xml::Document newDocument;
+                    SimTK::Xml::Element docElement= newDocument.getRootElement();
                     docElement.setAttributeValue("Version", "20300");
                     docElement.setElementTag("OpenSimDocument");
                     // Copy all children of root to newRoot

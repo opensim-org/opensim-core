@@ -32,7 +32,6 @@
 //#define DEBUG_METABOLICS
 
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 
@@ -174,7 +173,7 @@ void Umberger2010MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
             log_warn("{} Probe will be disabled.", errorMessage.str());
             setEnabled(false);
         }
-        else if (isNaN(mm.get_provided_muscle_mass())) {
+        else if (SimTK::isNaN(mm.get_provided_muscle_mass())) {
             errorMessage << "ERROR: No <provided_muscle_mass> specified for " 
                 << mm.getName() 
                 << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
@@ -232,12 +231,12 @@ void Umberger2010MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
  * Units = W.
  * Note: for muscle velocities, Vm, we define Vm<0 as shortening and Vm>0 as lengthening.
  */
-SimTK::Vector Umberger2010MuscleMetabolicsProbe::computeProbeInputs(const State& s) const
+SimTK::Vector Umberger2010MuscleMetabolicsProbe::computeProbeInputs(const SimTK::State& s) const
 {
     // Initialize metabolic energy rate values.
     double AMdot, Sdot, Bdot, Wdot;
     AMdot = Sdot = Bdot = Wdot = 0;
-    Vector EdotOutput(getNumProbeInputs());
+    SimTK::Vector EdotOutput(getNumProbeInputs());
     EdotOutput = 0;
 
 
@@ -248,7 +247,7 @@ SimTK::Vector Umberger2010MuscleMetabolicsProbe::computeProbeInputs(const State&
     if (get_basal_rate_on()) {
         Bdot = get_basal_coefficient() 
             * pow(_model->getMatterSubsystem().calcSystemMass(s), get_basal_exponent());
-        if (isNaN(Bdot)) 
+        if (SimTK::isNaN(Bdot)) 
             log_warn("{} : Bdot = NaN!", getName());
     }
     EdotOutput(0) += Bdot;       // TOTAL metabolic power storage
@@ -319,9 +318,9 @@ SimTK::Vector Umberger2010MuscleMetabolicsProbe::computeProbeInputs(const State&
         // -----------------------------------------------------------------------
         double slowTwitchRatio = mm.get_ratio_slow_twitch_fibers();
         if (get_use_Bhargava_recruitment_model()) {
-            const double uSlow = slowTwitchRatio * sin(0.5*Pi * excitation);
+            const double uSlow = slowTwitchRatio * sin(0.5*SimTK::Pi * excitation);
             const double uFast = (1 - slowTwitchRatio)
-                                 * (1 - cos(0.5*Pi * excitation));
+                                 * (1 - cos(0.5*SimTK::Pi * excitation));
             slowTwitchRatio = (excitation == 0) ? 1.0 : uSlow / (uSlow + uFast);
         }
 
@@ -418,11 +417,11 @@ SimTK::Vector Umberger2010MuscleMetabolicsProbe::computeProbeInputs(const State&
 
         // NAN CHECKING
         // ------------------------------------------
-        if (isNaN(AMdot))
+        if (SimTK::isNaN(AMdot))
             log_warn("{}  : AMdot ({}) = NaN!", getName(), m->getName());
-        if (isNaN(Sdot))
+        if (SimTK::isNaN(Sdot))
             log_warn("{}  : Sdot ({}) = NaN!", getName(), m->getName());
-        if (isNaN(Wdot))
+        if (SimTK::isNaN(Wdot))
             log_warn("{}  : Wdot ({}) = NaN!", getName(), m->getName());
 
         // This check is from Umberger(2003), page 104: the total heat rate 
@@ -811,7 +810,7 @@ Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter(
     constructProperties();
     setName(muscleName);
     set_ratio_slow_twitch_fibers(ratio_slow_twitch_fibers);
-    if (isNaN(muscle_mass)) {
+    if (SimTK::isNaN(muscle_mass)) {
         set_use_provided_muscle_mass(false);
     }
     else {

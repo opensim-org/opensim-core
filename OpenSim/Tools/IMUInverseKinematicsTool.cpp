@@ -14,7 +14,6 @@
 
 
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
 
 
@@ -273,7 +272,7 @@ bool IMUInverseKinematicsTool::run(bool visualizeResults)
 TimeSeriesTable_<SimTK::Vec3> 
     IMUInverseKinematicsTool::loadMarkersFile(const std::string& markerFile)
 {
-    TimeSeriesTable_<Vec3> markers(markerFile);
+    TimeSeriesTable_<SimTK::Vec3> markers(markerFile);
     log_info("'{}' loaded {} markers and {} rows of data.", markerFile,
         markers.getNumColumns(), markers.getNumRows());
 

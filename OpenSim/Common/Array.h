@@ -30,7 +30,6 @@
 #include "Assertion.h"
 #include "Exception.h"
 #include "osimCommonDLL.h"
-#include "Logger.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -41,8 +40,6 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-
-#include <spdlog/fmt/fmt.h>
 
 namespace OpenSim {
 
@@ -603,20 +600,5 @@ private:
 };
 
 }; //namespace
-
-#ifndef SWIG
-template <>
-struct fmt::formatter<OpenSim::Array<double>> {
-    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
-
-    template <typename FormatContext>
-    auto format(const OpenSim::Array<double>& a, FormatContext& ctx) {
-        std::stringstream ss;
-        ss << a;
-        std::string out = ss.str();
-        return fmt::format_to(ctx.out(), "{}", out);
-    }
-};
-#endif
 
 #endif // OPENSIM_ARRAY_H_

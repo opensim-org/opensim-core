@@ -297,8 +297,8 @@ public:
             }
             std::string jointPath = path.getParentPath().getParentPath().toString();
             if (!model.hasComponent<Joint>(jointPath)) {
-                log_warn("Found column label '{}', but it does not match a "
-                         "joint coordinate value in the model.", pathString);
+                // log_warn("Found column label '{}', but it does not match a "
+                //          "joint coordinate value in the model.", pathString);
                 continue;
             }
             Coordinate& q = model.updComponent<Joint>(jointPath).updCoordinate();

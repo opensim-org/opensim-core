@@ -29,7 +29,6 @@
 #include <OpenSim/Common/IO.h>
 
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 
@@ -193,7 +192,7 @@ void ActuatorPowerProbe::extendConnectToModel(Model& model)
 /**
 * Compute the Actuator power.
 */
-SimTK::Vector ActuatorPowerProbe::computeProbeInputs(const State& s) const
+SimTK::Vector ActuatorPowerProbe::computeProbeInputs(const SimTK::State& s) const
 {
     int nA = getActuatorNames().size();
     SimTK::Vector TotalP(getNumProbeInputs());

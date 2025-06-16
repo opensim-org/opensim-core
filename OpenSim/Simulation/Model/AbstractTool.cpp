@@ -33,7 +33,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Control/ControlSetController.h>
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
 
 
@@ -644,15 +643,15 @@ void AbstractTool::removeExternalLoadsFromModel()
 
                     SimTK::Xml::Document doc(fileName);
                     doc.setIndentString("\t");
-                    Xml::Element root = doc.getRootElement();
+                    SimTK::Xml::Element root = doc.getRootElement();
                     if (root.getElementTag()=="OpenSimDocument"){
                         //int curVersion = root.getRequiredAttributeValueAs<int>("Version");
-                        Xml::element_iterator rootIter(root.element_begin("ForceSet"));
+                        SimTK::Xml::element_iterator rootIter(root.element_begin("ForceSet"));
                         if (rootIter!=root.element_end()){
                             rootIter->setElementTag("ExternalLoads");
                         }
-                        Xml::element_iterator iter(root.element_begin("ExternalLoads"));
-                        Xml::Element extLoadsElem = *iter;
+                        SimTK::Xml::element_iterator iter(root.element_begin("ExternalLoads"));
+                        SimTK::Xml::Element extLoadsElem = *iter;
 
                         SimTK::Xml::element_iterator kIter = aNode.element_begin("external_loads_model_kinematics_file");
                         if (kIter !=aNode.element_end()){
@@ -660,9 +659,9 @@ void AbstractTool::removeExternalLoadsFromModel()
                             kIter->getValueAs(kinFileName);
                             aNode.removeNode(kIter);
                             // Make sure no node already exist
-                            Xml::element_iterator iter2(extLoadsElem.element_begin("external_loads_model_kinematics_file"));
+                            SimTK::Xml::element_iterator iter2(extLoadsElem.element_begin("external_loads_model_kinematics_file"));
                             if (iter2 == extLoadsElem.element_end())
-                                iter->insertNodeAfter(iter->element_end(), Xml::Element("external_loads_model_kinematics_file", kinFileName));
+                                iter->insertNodeAfter(iter->element_end(), SimTK::Xml::Element("external_loads_model_kinematics_file", kinFileName));
                             else
                                 iter2->setValue(kinFileName);
                         }
@@ -670,9 +669,9 @@ void AbstractTool::removeExternalLoadsFromModel()
                         if (fIter !=aNode.element_end()){
                             SimTK::String freq;
                             fIter->getValueAs(freq);
-                            Xml::element_iterator iter2(extLoadsElem.element_begin("lowpass_cutoff_frequency_for_load_kinematics"));
+                            SimTK::Xml::element_iterator iter2(extLoadsElem.element_begin("lowpass_cutoff_frequency_for_load_kinematics"));
                             if (iter2 == extLoadsElem.element_end())
-                                iter->insertNodeAfter(iter->element_end(), Xml::Element("lowpass_cutoff_frequency_for_load_kinematics", freq));
+                                iter->insertNodeAfter(iter->element_end(), SimTK::Xml::Element("lowpass_cutoff_frequency_for_load_kinematics", freq));
                             else
                                 iter2->setValue(freq);
                         }

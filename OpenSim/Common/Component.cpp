@@ -24,14 +24,13 @@
 
 // INCLUDES
 #include "Component.h"
+#include "Logger.h"
 #include "OpenSim/Common/IO.h"
 #include "XMLDocument.h"
 
 #include <regex>
 #include <unordered_map>
 #include <unordered_set>
-
-using namespace SimTK;
 
 namespace OpenSim {
 
@@ -516,8 +515,8 @@ void Component::addStateVariable(const std::string&  stateVariableName,
                                  const SimTK::Stage& invalidatesStage,
                                  bool isHidden) const
 {
-    if( (invalidatesStage < Stage::Position) ||
-        (invalidatesStage > Stage::Dynamics)) {
+    if( (invalidatesStage < SimTK::Stage::Position) ||
+        (invalidatesStage > SimTK::Stage::Dynamics)) {
         throw Exception("Component::addStateVariable: invalidatesStage "
                         "must be Position, Velocity or Dynamics.");
     }
@@ -555,7 +554,7 @@ void Component::addStateVariable(Component::StateVariable*  stateVariable) const
     // to enable a similar interface for setting and getting the derivatives
     // based on the creator specified state name
     if(asv){
-        addCacheVariable(stateVariableName+"_deriv", 0.0, Stage::Dynamics);
+        addCacheVariable(stateVariableName+"_deriv", 0.0, SimTK::Stage::Dynamics);
     }
 
 }
@@ -973,7 +972,7 @@ double Component::
 // Set the value of a state variable allocated by this Component given its name
 // for this component.
 void Component::
-    setStateVariableValue(State& s, const std::string& name, double value) const
+    setStateVariableValue(SimTK::State& s, const std::string& name, double value) const
 {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
@@ -1039,7 +1038,7 @@ SimTK::Vector Component::
             _allStateVariables[i].reset(traverseToStateVariable(names[i]));
     }
 
-    Vector stateVariableValues(nsv, SimTK::NaN);
+    SimTK::Vector stateVariableValues(nsv, SimTK::NaN);
     for(int i=0; i<nsv; ++i){
         stateVariableValues[i]= _allStateVariables[i]->getValue(state);
     }
@@ -1079,7 +1078,7 @@ void Component::
 
 // Set the derivative of a state variable computed by this Component by name.
 void Component::
-    setStateVariableDerivativeValue(const State& state,
+    setStateVariableDerivativeValue(const SimTK::State& state,
                                const std::string& name, double value) const
 {
     std::map<std::string, StateVariableInfo>::const_iterator it;
@@ -1796,7 +1795,7 @@ void Component::extendRealizeAcceleration(const SimTK::State& s) const
             if(asv)
                 // set corresponding system derivative value from
                 // cached value
-                subSys.updZDot(s)[ZIndex(asv->getVarIndex())] =
+                subSys.updZDot(s)[SimTK::ZIndex(asv->getVarIndex())] =
                     asv->getDerivative(s);
         }
     }
@@ -1826,10 +1825,10 @@ void Component::extendRealizeReport(const SimTK::State& state) const {}
 //override virtual methods
 double Component::AddedStateVariable::getValue(const SimTK::State& state) const
 {
-    ZIndex zix(getVarIndex());
+    SimTK::ZIndex zix(getVarIndex());
     if(getSubsysIndex().isValid() && zix.isValid()){
         const SimTK::Vector& z = getOwner().getDefaultSubsystem().getZ(state);
-        return z[ZIndex(zix)];
+        return z[SimTK::ZIndex(zix)];
     }
 
     std::stringstream msg;
@@ -1842,10 +1841,10 @@ double Component::AddedStateVariable::getValue(const SimTK::State& state) const
 
 void Component::AddedStateVariable::setValue(SimTK::State& state, double value) const
 {
-    ZIndex zix(getVarIndex());
+    SimTK::ZIndex zix(getVarIndex());
     if(getSubsysIndex().isValid() && zix.isValid()){
         SimTK::Vector& z = getOwner().getDefaultSubsystem().updZ(state);
-        z[ZIndex(zix)] = value;
+        z[SimTK::ZIndex(zix)] = value;
         return;
     }
 
@@ -1885,12 +1884,12 @@ void Component::AddedStateVariable::
 
 
 void Component::printSocketInfo() const {
-    std::string str = fmt::format("Sockets for component {} of type [{}] along "
-                                  "with connectee paths:", getName(),
-                                  getConcreteClassName());
-    if (getNumSockets() == 0)
-        str += " none";
-    log_cout(str);
+    // std::string str = fmt::format("Sockets for component {} of type [{}] along "
+    //                               "with connectee paths:", getName(),
+    //                               getConcreteClassName());
+    // if (getNumSockets() == 0)
+    //     str += " none";
+    // log_cout(str);
 
 
     size_t maxlenTypeName{}, maxlenSockName{};
@@ -1906,21 +1905,21 @@ void Component::printSocketInfo() const {
     for (const auto& it : _socketsTable) {
         const auto& socket = it.second;
         // Right-justify the connectee type names and socket names.
-        str = fmt::format("{:>{}} {:>{}} : ",
-                          fmt::format("[{}]", socket->getConnecteeTypeName()),
-                          maxlenTypeName,
-                          socket->getName(), maxlenSockName);
-        if (socket->getNumConnectees() == 0) {
-            str += "no connectees";
-        } else {
-            std::vector<std::string> connecteePaths;
-            for (unsigned i = 0; i < socket->getNumConnectees(); ++i) {
-                connecteePaths.push_back(socket->getConnecteePath(i));
-            }
-            // Join the connectee paths with spaces in between.
-            str += fmt::format("{}", fmt::join(connecteePaths, " "));
-        }
-        log_cout(str);
+        // str = fmt::format("{:>{}} {:>{}} : ",
+        //                   fmt::format("[{}]", socket->getConnecteeTypeName()),
+        //                   maxlenTypeName,
+        //                   socket->getName(), maxlenSockName);
+        // if (socket->getNumConnectees() == 0) {
+        //     str += "no connectees";
+        // } else {
+        //     std::vector<std::string> connecteePaths;
+        //     for (unsigned i = 0; i < socket->getNumConnectees(); ++i) {
+        //         connecteePaths.push_back(socket->getConnecteePath(i));
+        //     }
+        //     // Join the connectee paths with spaces in between.
+        //     str += fmt::format("{}", fmt::join(connecteePaths, " "));
+        // }
+        // log_cout(str);
     }
 }
 
@@ -1945,24 +1944,24 @@ void Component::printInputInfo() const {
     for (const auto& it : _inputsTable) {
         const auto& input = it.second;
         // Right-justify the connectee type names and input names.
-        str = fmt::format("{:>{}} {:>{}} : ",
-                          fmt::format("[{}]", input->getConnecteeTypeName()),
-                          maxlenTypeName,
-                          input->getName(), maxlenInputName);
-        if (input->getNumConnectees() == 0 ||
-            (input->getNumConnectees() == 1 && input->getConnecteePath().empty())) {
-            str += "no connectees";
-        } else {
-            std::vector<std::string> connecteePaths;
-            for (unsigned i = 0; i < input->getNumConnectees(); ++i) {
-                connecteePaths.push_back(input->getConnecteePath(i));
-                // TODO as is, requires the input connections to be satisfied.
-                // std::cout << " (alias: " << input.getAlias(i) << ") ";
-            }
-            // Join the connectee paths with spaces in between.
-            str += fmt::format("{}", fmt::join(connecteePaths, " "));
-        }
-        log_cout(str);
+        // str = fmt::format("{:>{}} {:>{}} : ",
+        //                   fmt::format("[{}]", input->getConnecteeTypeName()),
+        //                   maxlenTypeName,
+        //                   input->getName(), maxlenInputName);
+        // if (input->getNumConnectees() == 0 ||
+        //     (input->getNumConnectees() == 1 && input->getConnecteePath().empty())) {
+        //     str += "no connectees";
+        // } else {
+        //     std::vector<std::string> connecteePaths;
+        //     for (unsigned i = 0; i < input->getNumConnectees(); ++i) {
+        //         connecteePaths.push_back(input->getConnecteePath(i));
+        //         // TODO as is, requires the input connections to be satisfied.
+        //         // std::cout << " (alias: " << input.getAlias(i) << ") ";
+        //     }
+        //     // Join the connectee paths with spaces in between.
+        //     str += fmt::format("{}", fmt::join(connecteePaths, " "));
+        // }
+        // log_cout(str);
     }
 }
 
@@ -1974,24 +1973,24 @@ void Component::printOutputInfo(const bool includeDescendants) const {
 
     // Do not display header for Components with no outputs.
     if (getNumOutputs() > 0) {
-        std::string msg = fmt::format("Outputs from {} [{}]",
-                                      getAbsolutePathString(),
-                                      getConcreteClassName());
-        msg += "\n" + std::string(msg.size(), '=');
-        log_cout(msg);
+        // std::string msg = fmt::format("Outputs from {} [{}]",
+        //                               getAbsolutePathString(),
+        //                               getConcreteClassName());
+        // msg += "\n" + std::string(msg.size(), '=');
+        // log_cout(msg);
 
-        const auto& outputs = getOutputs();
-        size_t maxlen{};
-        for(const auto& output : outputs)
-            maxlen = std::max(maxlen, output.second->getTypeName().length());
-        maxlen += 6;
+        // const auto& outputs = getOutputs();
+        // size_t maxlen{};
+        // for(const auto& output : outputs)
+        //     maxlen = std::max(maxlen, output.second->getTypeName().length());
+        // maxlen += 6;
 
-        for(const auto& output : outputs) {
-            const auto& name = output.second->getTypeName();
-            log_cout("{:>{}}  {}",
-                     fmt::format("[{}]", output.second->getTypeName()),
-                     maxlen, output.first);
-        }
+        // for(const auto& output : outputs) {
+        //     const auto& name = output.second->getTypeName();
+        //     log_cout("{:>{}}  {}",
+        //              fmt::format("[{}]", output.second->getTypeName()),
+        //              maxlen, output.first);
+        // }
         log_cout("");
     }
 

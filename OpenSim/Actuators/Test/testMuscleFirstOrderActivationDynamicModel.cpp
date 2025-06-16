@@ -483,7 +483,8 @@ TEST_CASE("Test MuscleFirstOrderDynamicModel") {
                 boundsRespected = false;
             }
         }
-        INFO(fmt::format("PASSED: with a tolerance of {:f}e-16", SimTK::Eps * 1e16));
+        INFO("PASSED: with a tolerance of "
+            << std::fixed << std::setprecision(16) << SimTK::Eps * 1e16 << "e-16");
         CHECK(boundsRespected);
     }
 
@@ -493,7 +494,7 @@ TEST_CASE("Test MuscleFirstOrderDynamicModel") {
         msg << "         90%-10% Fall time 2.17*tau_dact  +/- 10%" <<endl;
         msg << "         And causality" << endl;
         msg << endl;
-        log_cout(msg.str());
+        INFO(msg.str());
         double rt10 = 0;
         double rt90 = 0;
         double ft90 = 0;
@@ -525,9 +526,8 @@ TEST_CASE("Test MuscleFirstOrderDynamicModel") {
         SimTK_TEST_EQ_TOL(normRiseTime,3,0.3);
         SimTK_TEST_EQ_TOL(normFallTime,2.17,0.2);
 
-        log_cout("PASSED: with a normalized 10-90 percent rise time of {} "
-                "and a normalized 90-10 percent fall time of {}",
-                normRiseTime, normFallTime);
+        INFO("PASSED: with a normalized 10-90 percent rise time of " << normRiseTime
+        << " and a normalized 90-10 percent fall time of " << normFallTime);
     }
 
     //Generate a range of activation values
@@ -579,11 +579,11 @@ TEST_CASE("Test MuscleFirstOrderDynamicModel") {
                     minTol,taylorMult);
             SimTK_TEST(continuous);
         }
-        log_cout("PASSED: with an allowable error of minTol of {} "
-                "or %f x the next Taylor series term. These values "
-                "are reasonable given the elbow in the function and "
-                "the maximum difference in slope of {}.",
-                minTol, taylorMult, maxDxDiff);
+
+        INFO("PASSED: with an allowable error of minTol of " << minTol
+            << " or " << taylorMult << " x the next Taylor series term. "
+            << "These values are reasonable given the elbow in the function and "
+            << "the maximum difference in slope of " << maxDxDiff << ".");
     }
 
     SECTION("Continuity of d/dt activation w.r.t. activation and constant excitation") {
@@ -620,10 +620,10 @@ TEST_CASE("Test MuscleFirstOrderDynamicModel") {
                     minTol,taylorMult);
             SimTK_TEST(continuous);
         }
-        log_cout("PASSED: with an allowable error of minTol of {} "
-                "or %f x the next Taylor series term. These values "
-                "are reasonable given the elbow in the function and "
-                "the maximum difference in slope of {}.",
-                minTol, taylorMult, maxDxDiff);
+        INFO("PASSED: with an allowable error of minTol of " << minTol
+            << " or " << taylorMult << " x the next Taylor series term. "
+            << "These values are reasonable given the elbow in the function and "
+            << "the maximum difference in slope of " << maxDxDiff << ".");
+
     }
 }

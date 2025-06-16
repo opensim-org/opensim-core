@@ -28,6 +28,7 @@
 
 // INCLUDES
 #include <math.h>
+#include "Logger.h"
 #include "Signal.h"
 #include "Array.h"
 #include "SimTKcommon/Constants.h"

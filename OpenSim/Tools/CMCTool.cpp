@@ -38,7 +38,6 @@
 
 
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 
@@ -438,7 +437,7 @@ bool CMCTool::run()
 
     //Make sure system is up-to-date with model (i.e. added actuators, etc...)
     SimTK::State& s = _model->initSystem();
-    _model->getMultibodySystem().realize(s, Stage::Position );
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Position );
      taskSet.setModel(*_model);
     if (_solveForEquilibriumForAuxiliaryStates) {
          _model->equilibrateMuscles(s);
@@ -564,7 +563,7 @@ bool CMCTool::run()
     Storage *uStore=NULL;
 
     if(desiredKinFlag) {
-        _model->getMultibodySystem().realize(s, Stage::Time );
+        _model->getMultibodySystem().realize(s, SimTK::Stage::Time );
         // qStore and uStore returned are in radians
         _model->getSimbodyEngine().formCompleteStorages(s, *desiredKinStore,
             qStore, uStore);
@@ -812,7 +811,7 @@ bool CMCTool::run()
         cmcActSubsystem.setCompleteState( s );
         actuatorSystemState.updTime() = _ti; 
         s.updTime() = _ti;
-        actuatorSystem.realize(actuatorSystemState, Stage::Time );
+        actuatorSystem.realize(actuatorSystemState, SimTK::Stage::Time );
         controller->setTargetDT(1.0e-8);
         controller->computeControls( s, controller->updControlSet() );
         controller->setTargetDT(_targetDT);
@@ -830,7 +829,7 @@ bool CMCTool::run()
     log_info("--------------------------------------------");
     log_info("");
 
-    _model->getMultibodySystem().realize(s, Stage::Acceleration );
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration );
 
     controller->updTaskSet().computeAccelerations(s);
 

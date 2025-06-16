@@ -47,7 +47,6 @@
 
 using namespace std;
 using namespace OpenSim;
-using namespace SimTK;
 
 void addImuFramesFromMarkers(const string& modelFile, const string& markerFile);
 
@@ -345,7 +344,7 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
 
     model.setUseVisualizer(true);
 
-    State& s = model.initSystem();
+    SimTK::State& s = model.initSystem();
     model.realizePosition(s);
 
     auto& times = table.getIndependentColumn();
@@ -375,7 +374,7 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
     std::vector<PhysicalFrame*> bodies;
 
     size_t index = 0;
-    Vec3 op, xp, yp, dp;
+    SimTK::Vec3 op, xp, yp, dp;
 
     for (auto& marker : markers) {
         const PhysicalFrame& parent = marker.getParentFrame();
@@ -389,7 +388,7 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
         string base = marker.getName().substr(0, ix);
         cout << "Processing marker " << marker.getName() << endl;
 
-        op = xp = yp = dp = Vec3{ SimTK::NaN };
+        op = xp = yp = dp = SimTK::Vec3{ SimTK::NaN };
         for (auto& label : labels) {
             if (table.hasColumn(base + "_IMU_O")) {
                 index = table.getColumnIndex(base + "_IMU_O");
@@ -434,7 +433,7 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
             auto imuOffset =
                 new PhysicalOffsetFrame(IO::Lowercase(base) + "_imu",
                     marker.getParentFrame(), X_FB);
-            auto* brick = new Brick(Vec3(0.02, 0.01, 0.005));
+            auto* brick = new Brick(SimTK::Vec3(0.02, 0.01, 0.005));
             brick->setColor(SimTK::Orange);
             imuOffset->attachGeometry(brick);
 

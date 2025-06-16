@@ -30,7 +30,6 @@
 #include "CorrectionController.h"
 
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 

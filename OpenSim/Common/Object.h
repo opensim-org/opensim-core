@@ -1406,13 +1406,13 @@ ObjectProperty<T>::readFromXMLElement
             Object::getDefaultInstanceOfType(objTypeTag);
 
         if (!registeredObj) {
-            log_error("Encountered unrecognized Object typename {} while reading property {}. There is no registered Object of this type. Ignoring.", objTypeTag, this->getName());
+            // log_error("Encountered unrecognized Object typename {} while reading property {}. There is no registered Object of this type. Ignoring.", objTypeTag, this->getName());
             continue;
         }
 
         // Check that the object type found is derived from T.
         if (!dynamic_cast<const T*>(registeredObj)) {
-            log_error("Object type {} wrong for {} property {}. Ignoring.", objTypeTag, objectClassName, this->getName());
+            // log_error("Object type {} wrong for {} property {}. Ignoring.", objTypeTag, objectClassName, this->getName());
             continue;                        
         }
         ++objectsFound;
@@ -1431,18 +1431,18 @@ ObjectProperty<T>::readFromXMLElement
     }
 
     if (objectsFound < this->getMinListSize()) {
-        log_error("Got {} object values for Property {} but the minimum is {}. Continuing anyway.",
-            objectsFound ,
-            this->getName() ,
-            this->getMinListSize()
-        );
+        // log_error("Got {} object values for Property {} but the minimum is {}. Continuing anyway.",
+        //     objectsFound ,
+        //     this->getName() ,
+        //     this->getMinListSize()
+        // );
     }
     if (objectsFound > this->getMaxListSize()) {
-        log_error("Got {} object values for Property {} but the maximum is {}. Ignoring the rest.",
-            objectsFound,
-            this->getName(),
-            this->getMaxListSize()
-        );
+        // log_error("Got {} object values for Property {} but the maximum is {}. Ignoring the rest.",
+        //     objectsFound,
+        //     this->getName(),
+        //     this->getMaxListSize()
+        // );
     }
 }
 

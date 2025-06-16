@@ -237,10 +237,10 @@ protected:
         if (!labels.empty()) {
             const_cast<Self*>(this)->_outputTable.setColumnLabels(labels);
         } else {
-            std::cout << "Warning: No outputs were connected to '"
-                      << this->getName() << "' of type "
-                      << getConcreteClassName() << ". You can connect outputs "
-                      "by calling addToReport()." << std::endl;
+            // std::cout << "Warning: No outputs were connected to '"
+            //           << this->getName() << "' of type "
+            //           << getConcreteClassName() << ". You can connect outputs "
+            //           "by calling addToReport()." << std::endl;
 
         }
     }
@@ -287,7 +287,7 @@ private:
 
         // Periodically display column headers.
         if (_printCount % 40 == 0) {
-            log_cout("[{}]", this->getName());
+            // log_cout("[{}]", this->getName());
 
             // Split labels over multiple lines.
             // Round up to the nearest multiple of _width to determine the
@@ -300,10 +300,10 @@ private:
                 std::string msg;
 
                 // Time column.
-                if (row == numHeaderRows-1)
-                    msg += fmt::format("{:>{}}| ", "time", _width);
-                else
-                    msg += fmt::format("{:>{}}| ", "", _width);
+                // if (row == numHeaderRows-1)
+                    // msg += fmt::format("{:>{}}| ", "time", _width);
+                // else
+                    // msg += fmt::format("{:>{}}| ", "", _width);
 
                 // Data columns.
                 for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
@@ -311,29 +311,29 @@ private:
                     const std::string lbl =
                         std::string(numHeaderRows*_width - outName.size(), ' ')
                         + outName;
-                    msg += fmt::format("{}| ", lbl.substr(_width*row, _width));
+                    // msg += fmt::format("{}| ", lbl.substr(_width*row, _width));
                 }
-                log_cout(msg);
+                // log_cout(msg);
             }
 
             // Horizontal rule.
             std::string msg;
             for (auto idx = 0u; idx <= input.getNumConnectees(); ++idx)
                 msg += std::string(_width, '-') + "| ";
-            log_cout(msg);
+            // log_cout(msg);
         }
 
         // TODO set width based on number of significant digits.
         std::string msg;
-        msg += fmt::format("{:>{}}| ", state.getTime(), _width);
+        // msg += fmt::format("{:>{}}| ", state.getTime(), _width);
         for (const auto& chan : input.getChannels()) {
             const auto& value = chan->getValue(state);
             const auto& nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
             // Print `value` right-justified in a column with width `_width`,
             // using `nSigFigs`: {:>{_width}.{nSigFigs}g}
-            msg += fmt::format("{:>{}.{}g}| ", value, _width, nSigFigs);
+            // msg += fmt::format("{:>{}.{}g}| ", value, _width, nSigFigs);
         }
-        log_cout(msg);
+        // log_cout(msg);
 
         const_cast<ConsoleReporter_<T>*>(this)->_printCount++;
     }
