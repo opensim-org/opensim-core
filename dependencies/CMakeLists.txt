@@ -184,8 +184,8 @@ AddDependency(NAME       ezc3d
 
 AddDependency(NAME       simbody
               DEFAULT    ON
-              GIT_URL    https://github.com/simbody/simbody.git
-              GIT_TAG    f260ff30381826728da721226151e733715d0df9
+              GIT_URL    https://github.com/nickbianco/simbody.git
+              GIT_TAG    9de871a1154c8ccfe3a2decb2e427a4fb1f123c2
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
                          ${SIMBODY_EXTRA_CMAKE_ARGS})
@@ -199,7 +199,7 @@ endif()
 AddDependency(NAME       spdlog
               DEFAULT    ON
               GIT_URL    https://github.com/gabime/spdlog.git
-              GIT_TAG    v1.4.1
+              GIT_TAG    v1.9.0
               CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
