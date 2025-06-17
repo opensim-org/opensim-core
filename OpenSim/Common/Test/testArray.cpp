@@ -99,7 +99,7 @@ TEST_CASE("Array searchBinary Behaves Similarly to Legacy Implementation")
     for (int probe = -arraySize-1; probe < arraySize+1; ++probe) {
         int legacyOutput = SearchBinaryLegacyImplementation(vals, probe);
         int newOutput = vals.searchBinary(probe);
-        log_info("index = {}, legacyOutput = {}, newOutput = {}", probe, legacyOutput, newOutput);
+        INFO("index = " << probe << ", legacyOutput = " << legacyOutput << ", newOutput = " << newOutput);
         REQUIRE(legacyOutput == newOutput);
     }
 }

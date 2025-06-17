@@ -47,7 +47,7 @@ namespace {
         Model& model)
     {
         const std::string& className = instance->getConcreteClassName();
-        log_info("Adding {} to the model.", className);
+        INFO("Adding " << className << " to the model.");
 
         if (Object::isObjectTypeDerivedFrom<Analysis>(className)) {
             OPENSIM_THROW(Exception, "Analysis is not a Component.");
@@ -156,15 +156,15 @@ void testComponentEquivalence(
 
     int ns_a = a.getNumSockets();
     int ns_b = b.getNumSockets();
-    log_info("{} getNumSockets: a == {}, b == {}", className, ns_a, ns_b);
+    INFO(className << " getNumSockets: a == " << ns_a << ", b == " << ns_b);
 
     int nin_a = a.getNumInputs();
     int nin_b = b.getNumInputs();
-    log_info("{} getNumInputs: a == {}, b == {}", className, nin_a, nin_b);
+    INFO(className << " getNumInputs: a == " << nin_a << ", b == " << nin_b);
 
     int nout_a = a.getNumOutputs();
     int nout_b = b.getNumOutputs();
-    log_info("{} getNumOutputs: a == {}, b == {}", className, nout_a, nout_b);
+    INFO(className << " getNumOutputs: a == " << nout_a << ", b == " << nout_b);
 
     CHECK((a == b && "components must have same properties"));
     CHECK((ns_a == ns_b && "components must have same number of sockets"));
@@ -192,22 +192,22 @@ void testComponentEquivalence(
             // continue, because the test is blind to whether Components
             // should have any subcomponents as part of its generic
             // processing.
-            log_warn("(ignored exception): {}", ex.what());
+            WARN("(ignored exception): " << ex.what());
         }
     }
 }
 
 void testCloning(Component& instance)
 {
-    log_info("Cloning the component.");
+    INFO("Cloning the component.");
 
     std::unique_ptr<Component> copyInstance{instance.clone()};
     if (!(*copyInstance == instance))
     {
-        log_info("XML serialization for the first instance:");
-        log_info("{}", instance.dump());
-        log_info("XML serialization for the clone:");
-        log_info("{}", copyInstance->dump());
+        INFO("XML serialization for the first instance:");
+        INFO(instance.dump());
+        INFO("XML serialization for the clone:");
+        INFO(copyInstance->dump());
 
         const std::string& className = instance.getConcreteClassName();
         OPENSIM_THROW(Exception, "testComponents: for " + className + ", clone() did not produce an identical object.");
@@ -229,10 +229,10 @@ void testSerialization(Component& instance)
 
     if (!(*deserializedInstance == instance))
     {
-        log_info("XML for serialized instance:");
-        log_info("{}", instance.dump());
-        log_info("XML for serialization of deserialized instance:");
-        log_info("{}", deserializedInstance->dump());
+        INFO("XML for serialized instance:");
+        INFO(instance.dump());
+        INFO("XML for serialization of deserialized instance:");
+        INFO(deserializedInstance->dump());
         OPENSIM_THROW(Exception, "testComponents: for " + className + ", deserialization did not produce an identical object.");
     }
 
@@ -246,7 +246,7 @@ void testSerialization(Component& instance)
 
 void testComponentInAggregate(std::unique_ptr<Component> p)
 {
-    log_info("Test if {} works in a higher-level aggregate Model", p->getConcreteClassName());
+    INFO("Test if " << p->getConcreteClassName() << " works in a higher-level aggregate Model");
 
     Model model;
     model.setName("TheModel");
@@ -260,12 +260,12 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
     auto componentsCur = components.begin();
     auto componentsEnd = components.end();
     while (sub) {
-        log_info("Traversing to {}", sub->getConcreteClassName());
+        INFO("Traversing to " << sub->getConcreteClassName());
         for (const auto& socketName : sub->getSocketNames()) {
             AbstractSocket& socket = sub->updSocket(socketName);
             std::string dependencyTypeName = socket.getConnecteeTypeName();
 
-            log_info("Socket '{}' has dependency on: {}", socket.getName(), dependencyTypeName);
+            INFO("Socket '" << socket.getName() << "' has dependency on: " << dependencyTypeName);
 
             // Dependency on a Coordinate needs special treatment.
             // A Coordinate is defined by a Joint and cannot stand on its own.
@@ -311,7 +311,7 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
             }
         }
 
-        log_info("Traversed {}", sub->getConcreteClassName());
+        INFO("Traversed " << sub->getConcreteClassName());
 
         // keep checking the remaining subcomponents
         if (componentsCur != componentsEnd) {
@@ -340,7 +340,7 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
             }
 
             std::string dependencyTypeName = input.getConnecteeTypeName();
-            log_info("Input '{}' has dependency on: Output<{}>", input.getName(), dependencyTypeName);
+            INFO("Input '" << input.getName() << "' has dependency on: Output<" << dependencyTypeName << ">");
 
             // Find an output of the correct type.
             bool foundAnOutput = false;
@@ -358,14 +358,14 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
     }
 
     // This method calls connect().
-    log_info("Calling Model::setup().");
+    INFO("Calling Model::setup().");
     try{
         model.setup();
     }
     catch (const std::exception& x) {
-        log_info("testComponents::{} unable to connect to model:", instance.getConcreteClassName());
-        log_info(" '{}'", x.what());
-        log_info("Error is likely due to {} having structural dependencies that are not specified as Sockets.", instance.getConcreteClassName());
+        INFO("testComponents::" << instance.getConcreteClassName() << " unable to connect to model:");
+        INFO(x.what());
+        INFO("Error is likely due to " << instance.getConcreteClassName() << " having structural dependencies that are not specified as Sockets.");
     }
 
     // 7. Build the system.
@@ -375,9 +375,9 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
         initState = model.initSystem();
     }
     catch (const std::exception &x) {
-        log_info("testComponents::{} unable to initialize the system:", instance.getConcreteClassName());
-        log_info(" '{}'", x.what());
-        log_info("Skipping ... ");
+        INFO("testComponents::" << instance.getConcreteClassName() << " unable to initialize the system:");
+        INFO(x.what());
+        INFO("Skipping ... ");
     }
 
     // Verify that the Model (and its System) remains up-to-date with its
@@ -387,12 +387,12 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
 
     // Outputs.
     // --------
-    log_info("Invoking Output's.");
+    INFO("Invoking Output's.");
     for (const auto& entry : instance.getOutputs()) {
         const std::string thisName = entry.first;
         const AbstractOutput* thisOutput = entry.second.get();
 
-        log_info("Testing Output {}, dependent on {}", thisName, thisOutput->getDependsOnStage().getName());
+        INFO("Testing Output " << thisName << ", dependent on " << thisOutput->getDependsOnStage().getName());
 
         // Start fresh.
         SimTK::State state(initState);
@@ -413,23 +413,22 @@ void testComponentInAggregate(std::unique_ptr<Component> p)
         // Doesn't matter what the value is; just want to make sure the output
         // is wired.
         model.getSystem().realize(state, thisOutput->getDependsOnStage());
-        log_info("Component {}, output {}: {}", instance.getConcreteClassName(), thisName, thisOutput->getValueAsString(state));
+        INFO("Component " <<  instance.getConcreteClassName() << ", output: " << thisOutput->getValueAsString(state));
     }
 }
 
 void testComponent(const Component& instanceToTest)
 {
-    log_info("");
-    log_info("**********************************************************");
-    log_info("* Testing {}", instanceToTest.getConcreteClassName());
-    log_info("**********************************************************");
+    INFO("\n**********************************************************\n* Testing " 
+     << instanceToTest.getConcreteClassName() 
+     << "\n**********************************************************");
 
     // Make a copy so that we can modify the instance.
     std::unique_ptr<Component> instance{instanceToTest.clone()};
 
     // 1. Set properties to random values.
     // -----------------------------------
-    log_info("Randomizing the component's properties.");
+    INFO("Randomizing the component's properties.");
     randomize(instance.get());
 
     // 2. Ensure that cloning produces an exact copy.
@@ -441,7 +440,7 @@ void testComponent(const Component& instanceToTest)
     // ------------------------------
     // This will find issues with de/serialization, after giving the
     // component opportunity to validate the properties via finalizeFromProperties
-    log_info("Serializing and deserializing component.");
+    INFO("Serializing and deserializing component.");
     instance->finalizeFromProperties();
     testSerialization(*instance);
 

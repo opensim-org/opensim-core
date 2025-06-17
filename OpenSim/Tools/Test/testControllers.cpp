@@ -149,8 +149,7 @@ TEST_CASE("testControlSetControllerOnBlock") {
     // Integrate from initial time to final time
     si.setTime(initialTime);
     manager.initialize(si);
-    log_info("");
-    log_info("Integrating from {} to {}", initialTime, finalTime);
+    INFO("\nIntegrating from " << initialTime << " to " << finalTime);
     si = manager.integrate(finalTime);
 
     si.getQ().dump("Final position:");
@@ -244,8 +243,7 @@ TEST_CASE("testPrescribedControllerOnBlock") {
     // Integrate from initial time to final time
     si.setTime(initialTime);
     manager.initialize(si);
-    log_info("");
-    log_info("Integrating from {} to {}", initialTime, finalTime);
+    INFO("\nIntegrating from " << initialTime << " to " << finalTime);
     si = manager.integrate(finalTime);
 
     si.getQ().dump("Final position:");
@@ -329,7 +327,7 @@ TEST_CASE("testPrescribedControllerFromFile") {
         osimModel.updForceSet().append(*forceSet);
     }
     catch(const std::exception& e){
-        log_error("Actuators not loaded: {}", e.what());
+        WARN("Actuators not loaded: " << e.what());
     }
 
     ControlSetController csc;
@@ -348,8 +346,7 @@ TEST_CASE("testPrescribedControllerFromFile") {
     // Integrate from initial time to final time
     si.setTime(initialTime);
     manager.initialize(si);
-    log_info("");
-    log_info("Integrating from {} to {}", initialTime, finalTime);
+    INFO("\nIntegrating from " << initialTime << " to " << finalTime);
     si = manager.integrate(finalTime);
 
     string modelName = osimModel.getName();
@@ -368,7 +365,7 @@ TEST_CASE("testPrescribedControllerFromFile") {
 
     // remove previous controllers
     osimModel.updControllerSet().remove(0);
-    log_info("Number of Controllers should be 0 is {}", 
+    INFO("Number of Controllers should be 0 is " <<
         osimModel.getControllerSet().getSize());
     
     //************* Rerun with a PrescribedController ***********************/
@@ -389,8 +386,7 @@ TEST_CASE("testPrescribedControllerFromFile") {
     // Integrate from initial time to final time
     s2.setTime(initialTime);
     manager2.initialize(s2);
-    log_info("");
-    log_info("Integrating from {} to {}", initialTime, finalTime);
+    INFO("\nIntegrating from " << initialTime << " to " << finalTime);
     s2 = manager2.integrate(finalTime);
 
     // Save the simulation results
