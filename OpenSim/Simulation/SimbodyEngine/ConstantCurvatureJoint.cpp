@@ -36,7 +36,6 @@
 #include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
-using namespace SimTK;
 
 // We use this definition of PI to exactly numerically match the Nimble
 // implementation, so that the precomputed values for the unit tests are
@@ -45,9 +44,9 @@ using namespace SimTK;
 #    define M_PI 3.14159
 #endif
 
-Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
-    Vec3 pos = q;
-    double bound = (M_PI / 2) - 0.01;
+SimTK::Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
+    SimTK::Vec3 pos = q;
+    const double bound = (M_PI / 2) - 0.01;
     if (pos(0) > bound) {
         log_warn(fmt::format(
                 "WARNING! ConstantCurvatureJoint position outside of "
@@ -117,14 +116,14 @@ Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
     return pos;
 }
 
-Rotation OpenSim::ConstantCurvatureJoint::eulerXZYToMatrix(const Vec3& _angle) {
+SimTK::Rotation OpenSim::ConstantCurvatureJoint::eulerXZYToMatrix(const SimTK::Vec3& _angle) {
     // +-           -+   +-                                        -+
     // | r00 r01 r02 |   |  cy*cz           -sz      cz*sy          |
     // | r10 r11 r12 | = |  sx*sy+cx*cy*sz   cx*cz  -cy*sx+cx*sy*sz |
     // | r20 r21 r22 |   | -cx*sy+cy*sx*sz   cz*sx   cx*cy+sx*sy*sz |
     // +-           -+   +-                                        -+
 
-    Mat33 ret;
+    SimTK::Mat33 ret;
 
     const double cx = cos(_angle(0));
     const double sx = sin(_angle(0));
@@ -145,13 +144,13 @@ Rotation OpenSim::ConstantCurvatureJoint::eulerXZYToMatrix(const Vec3& _angle) {
     ret(1, 2) = -cy * sx + cx * sy * sz;
     ret(2, 2) = cx * cy + sx * sy * sz;
 
-    return Rotation(ret, true);
+    return SimTK::Rotation(ret, true);
 }
 
 /// This gives the gradient of an XZY rotation matrix with respect to the
 /// specific index (0, 1, or 2)
-Mat33 OpenSim::ConstantCurvatureJoint::eulerXZYToMatrixGrad(
-        const Vec3& _angle, int index) {
+SimTK::Mat33 OpenSim::ConstantCurvatureJoint::eulerXZYToMatrixGrad(
+        const SimTK::Vec3& _angle, int index) {
     // Original
     // +-           -+   +-                                        -+
     // | r00 r01 r02 |   |  cy*cz           -sz      cz*sy          |
@@ -159,7 +158,7 @@ Mat33 OpenSim::ConstantCurvatureJoint::eulerXZYToMatrixGrad(
     // | r20 r21 r22 |   | -cx*sy+cy*sx*sz   cz*sx   cx*cy+sx*sy*sz |
     // +-           -+   +-                                        -+
 
-    Mat33 ret;
+    SimTK::Mat33 ret;
 
     const double cx = cos(_angle(0));
     const double sx = sin(_angle(0));
@@ -211,8 +210,8 @@ Mat33 OpenSim::ConstantCurvatureJoint::eulerXZYToMatrixGrad(
     return ret;
 }
 
-Mat63 OpenSim::ConstantCurvatureJoint::getEulerJacobian(const Vec3& q) {
-    Mat63 J;
+SimTK::Mat63 OpenSim::ConstantCurvatureJoint::getEulerJacobian(const SimTK::Vec3& q) {
+    SimTK::Mat63 J;
     J.setToZero();
 
     // s_t q0 = _positions[0];
@@ -245,11 +244,11 @@ Mat63 OpenSim::ConstantCurvatureJoint::getEulerJacobian(const Vec3& q) {
     return J;
 }
 
-Mat63 OpenSim::ConstantCurvatureJoint::getEulerJacobianDerivWrtPos(
-        const Vec3& q, int index) {
+SimTK::Mat63 OpenSim::ConstantCurvatureJoint::getEulerJacobianDerivWrtPos(
+        const SimTK::Vec3& q, int index) {
     OPENSIM_ASSERT(index < 3);
 
-    Mat63 DJ_Dq;
+    SimTK::Mat63 DJ_Dq;
     DJ_Dq.setToZero();
 
     const double q1 = q[1];
@@ -303,11 +302,11 @@ Mat63 OpenSim::ConstantCurvatureJoint::getEulerJacobianDerivWrtPos(
     return DJ_Dq;
 }
 
-Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobian(
-        const Vec3& pos, double d) {
+SimTK::Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobian(
+        const SimTK::Vec3& pos, double d) {
     // 1. Do the euler rotation
-    Rotation rot = eulerXZYToMatrix(pos);
-    Mat63 J = getEulerJacobian(pos);
+    SimTK::Rotation rot = eulerXZYToMatrix(pos);
+    SimTK::Mat63 J = getEulerJacobian(pos);
 
     // Remember, this is X,*Z*,Y
 
@@ -316,11 +315,11 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobian(
     double cz = cos(pos(1));
     double sz = sin(pos(1));
 
-    Vec3 linearAngle = Vec3(-sz, cx * cz, cz * sx);
-    Mat33 dLinearAngle;
-    dLinearAngle.col(0) = Vec3(0, -sx * cz, cz * cx);
-    dLinearAngle.col(1) = Vec3(-cz, -cx * sz, -sz * sx);
-    dLinearAngle.col(2) = Vec3(0, 0, 0);
+    SimTK::Vec3 linearAngle = SimTK::Vec3(-sz, cx * cz, cz * sx);
+    SimTK::Mat33 dLinearAngle;
+    dLinearAngle.col(0) = SimTK::Vec3(0, -sx * cz, cz * cx);
+    dLinearAngle.col(1) = SimTK::Vec3(-cz, -cx * sz, -sz * sx);
+    dLinearAngle.col(2) = SimTK::Vec3(0, 0, 0);
 
     double sinTheta = sqrt(
             linearAngle(0) * linearAngle(0) + linearAngle(2) * linearAngle(2));
@@ -330,7 +329,7 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobian(
         // approximate with an euler joint
 
         // 2. Computing translation from vertical
-        Vec3 translation = rot * Vec3(0, d, 0);
+        SimTK::Vec3 translation = rot * SimTK::Vec3(0, d, 0);
 
         J.col(0).updSubVec<3>(3) =
                 0.5 * SimTK::cross(J.col(0).getSubVec<3>(0), translation);
@@ -340,7 +339,7 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobian(
                 0.5 * SimTK::cross(J.col(2).getSubVec<3>(0), translation);
     } else {
         // Compute the bend as a function of the angle from vertical
-        Vec3 dSinTheta;
+        SimTK::Vec3 dSinTheta;
         for (int i = 0; i < 3; i++) {
             dSinTheta(i) = (0.5 / sqrt(linearAngle(0) * linearAngle(0) +
                                           linearAngle(2) * linearAngle(2))) *
@@ -349,17 +348,17 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobian(
         }
 
         double theta = asin(sinTheta);
-        Vec3 dTheta = (1.0 / sqrt(1.0 - (sinTheta * sinTheta))) * dSinTheta;
+        SimTK::Vec3 dTheta = (1.0 / sqrt(1.0 - (sinTheta * sinTheta))) * dSinTheta;
 
         double r = (d / theta);
-        Vec3 dR = (-d / (theta * theta)) * dTheta;
+        SimTK::Vec3 dR = (-d / (theta * theta)) * dTheta;
 
         double horizontalDist = r - r * cos(theta);
 
-        Vec3 dHorizontalDist = dR + r * sin(theta) * dTheta - dR * cos(theta);
-        Vec3 dVerticalDist = r * cos(theta) * dTheta + dR * sinTheta;
+        SimTK::Vec3 dHorizontalDist = dR + r * sin(theta) * dTheta - dR * cos(theta);
+        SimTK::Vec3 dVerticalDist = r * cos(theta) * dTheta + dR * sinTheta;
 
-        Mat33 dTranslation;
+        SimTK::Mat33 dTranslation;
         dTranslation.row(0) =
                 (linearAngle(0) / sinTheta) * dHorizontalDist.transpose() +
                 (horizontalDist / sinTheta) * dLinearAngle.row(0) +
@@ -380,13 +379,13 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobian(
     return J;
 }
 
-Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtPosition(
-        const Vec3& pos, double d, int index) {
+SimTK::Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtPosition(
+        const SimTK::Vec3& pos, double d, int index) {
     // 1. Do the euler rotation
-    const Rotation rot = eulerXZYToMatrix(pos);
-    const Mat33 rot_dFirst = eulerXZYToMatrixGrad(pos, index);
+    const SimTK::Rotation rot = eulerXZYToMatrix(pos);
+    const SimTK::Mat33 rot_dFirst = eulerXZYToMatrixGrad(pos, index);
 
-    Mat63 J_dFirst = getEulerJacobianDerivWrtPos(pos, index);
+    SimTK::Mat63 J_dFirst = getEulerJacobianDerivWrtPos(pos, index);
 
     // Remember, this is X,*Z*,Y
 
@@ -395,26 +394,26 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtPosition(
     const double cz = cos(pos(1));
     const double sz = sin(pos(1));
 
-    const Vec3 linearAngle(-sz, cx * cz, cz * sx);
+    const SimTK::Vec3 linearAngle(-sz, cx * cz, cz * sx);
 
-    Mat33 dLinearAngle;
-    dLinearAngle.col(0) = Vec3(0, -sx * cz, cz * cx);
-    dLinearAngle.col(1) = Vec3(-cz, -cx * sz, -sz * sx);
+    SimTK::Mat33 dLinearAngle;
+    dLinearAngle.col(0) = SimTK::Vec3(0, -sx * cz, cz * cx);
+    dLinearAngle.col(1) = SimTK::Vec3(-cz, -cx * sz, -sz * sx);
     dLinearAngle.col(2).setToZero();
 
-    Mat33 dLinearAngle_dFirst;
+    SimTK::Mat33 dLinearAngle_dFirst;
     dLinearAngle_dFirst.setToZero();
 
-    Vec3 linearAngle_dFirst = Vec3(0, 0, 0);
+    SimTK::Vec3 linearAngle_dFirst = SimTK::Vec3(0, 0, 0);
     if (index == 0) {
-        linearAngle_dFirst = Vec3(0, -sx * cz, cz * cx);
-        dLinearAngle_dFirst.col(0) = Vec3(0, -cx * cz, cz * -sx);
-        dLinearAngle_dFirst.col(1) = Vec3(0, sx * sz, -sz * cx);
+        linearAngle_dFirst = SimTK::Vec3(0, -sx * cz, cz * cx);
+        dLinearAngle_dFirst.col(0) = SimTK::Vec3(0, -cx * cz, cz * -sx);
+        dLinearAngle_dFirst.col(1) = SimTK::Vec3(0, sx * sz, -sz * cx);
         dLinearAngle_dFirst.col(2).setToZero();
     } else if (index == 1) {
-        linearAngle_dFirst = Vec3(-cz, cx * -sz, -sz * sx);
-        dLinearAngle_dFirst.col(0) = Vec3(0, -sx * -sz, -sz * cx);
-        dLinearAngle_dFirst.col(1) = Vec3(sz, -cx * cz, -cz * sx);
+        linearAngle_dFirst = SimTK::Vec3(-cz, cx * -sz, -sz * sx);
+        dLinearAngle_dFirst.col(0) = SimTK::Vec3(0, -sx * -sz, -sz * cx);
+        dLinearAngle_dFirst.col(1) = SimTK::Vec3(sz, -cx * cz, -cz * sx);
         dLinearAngle_dFirst.col(2).setToZero();
     }
 
@@ -424,12 +423,12 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtPosition(
     if (sinTheta < 0.001 || sinTheta > 0.999) {
         // Near very vertical angles, don't worry about the bend, just
         // approximate with an euler joint
-        const Mat63 J = getEulerJacobian(pos);
+        const SimTK::Mat63 J = getEulerJacobian(pos);
 
         // 2. Computing translation from vertical
-        Vec3 translation = rot * Vec3(0, d, 0);
+        SimTK::Vec3 translation = rot * SimTK::Vec3(0, d, 0);
 
-        const Vec3 translation_dFirst =
+        const SimTK::Vec3 translation_dFirst =
                 rot * SimTK::cross(J.col(index).getSubVec<3>(0), translation);
 
         J_dFirst.col(0).updSubVec<3>(3) =
@@ -448,8 +447,8 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtPosition(
                         SimTK::cross(
                                 J.col(2).getSubVec<3>(0), translation_dFirst));
     } else {
-        Vec3 dSinTheta;
-        Vec3 dSinTheta_dFirst;
+        SimTK::Vec3 dSinTheta;
+        SimTK::Vec3 dSinTheta_dFirst;
         for (int i = 0; i < 3; i++) {
             const double part1 =
                     (0.5 / sqrt(linearAngle(0) * linearAngle(0) +
@@ -486,9 +485,9 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtPosition(
                 (1.0 / sqrt(1.0 - (sinTheta * sinTheta))) * sinTheta_dFirst;
         (void)theta_dFirst;
 
-        const Vec3 dTheta =
+        const SimTK::Vec3 dTheta =
                 (1.0 / sqrt(1.0 - (sinTheta * sinTheta))) * dSinTheta;
-        const Vec3 dTheta_dFirst =
+        const SimTK::Vec3 dTheta_dFirst =
                 (1.0 / pow(1.0 - (sinTheta * sinTheta), 1.5)) * sinTheta *
                         sinTheta_dFirst * dSinTheta +
                 (1.0 / sqrt(1.0 - (sinTheta * sinTheta))) * dSinTheta_dFirst;
@@ -498,8 +497,8 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtPosition(
         const double r_dFirst = (-d / (theta * theta)) * theta_dFirst;
         (void)r_dFirst;
 
-        const Vec3 dR = (-d / (theta * theta)) * dTheta;
-        const Vec3 dR_dFirst =
+        const SimTK::Vec3 dR = (-d / (theta * theta)) * dTheta;
+        const SimTK::Vec3 dR_dFirst =
                 (2 * d / (theta * theta * theta)) * theta_dFirst * dTheta +
                 (-d / (theta * theta)) * dTheta_dFirst;
         (void)dR_dFirst;
@@ -510,9 +509,9 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtPosition(
                 (r_dFirst * cos(theta) - r * sin(theta) * theta_dFirst);
         (void)horizontalDist_dFirst;
 
-        const Vec3 dHorizontalDist =
+        const SimTK::Vec3 dHorizontalDist =
                 dR + r * sin(theta) * dTheta - dR * cos(theta);
-        const Vec3 dHorizontalDist_dFirst =
+        const SimTK::Vec3 dHorizontalDist_dFirst =
                 dR_dFirst +
                 (r_dFirst * sin(theta) * dTheta +
                         r * cos(theta) * theta_dFirst * dTheta +
@@ -520,15 +519,15 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtPosition(
                 (dR_dFirst * cos(theta) - dR * sin(theta) * theta_dFirst);
         (void)dHorizontalDist_dFirst;
 
-        const Vec3 dVerticalDist = r * cos(theta) * dTheta + dR * sinTheta;
-        const Vec3 dVerticalDist_dFirst =
+        const SimTK::Vec3 dVerticalDist = r * cos(theta) * dTheta + dR * sinTheta;
+        const SimTK::Vec3 dVerticalDist_dFirst =
                 (r_dFirst * cos(theta) * dTheta -
                         r * sin(theta) * theta_dFirst * dTheta +
                         r * cos(theta) * dTheta_dFirst) +
                 (dR_dFirst * sinTheta + dR * sinTheta_dFirst);
         (void)dVerticalDist_dFirst;
 
-        Mat33 dTranslation;
+        SimTK::Mat33 dTranslation;
         dTranslation.row(0) =
                 (linearAngle(0) / sinTheta) * dHorizontalDist.transpose() +
                 (horizontalDist / sinTheta) * dLinearAngle.row(0) +
@@ -541,7 +540,7 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtPosition(
                 (horizontalDist * linearAngle(2)) *
                         (-1.0 / (sinTheta * sinTheta)) * dSinTheta.transpose();
 
-        Mat33 dTranslation_dFirst;
+        SimTK::Mat33 dTranslation_dFirst;
         dTranslation_dFirst.row(0) =
                 ((linearAngle_dFirst(0) / sinTheta) *
                                 dHorizontalDist.transpose() -
@@ -606,9 +605,9 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtPosition(
     return J_dFirst;
 }
 
-Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtTime(
-        const Vec3& pos, const Vec3& dPos, double d) {
-    Mat63 dJ;
+SimTK::Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtTime(
+        const SimTK::Vec3& pos, const SimTK::Vec3& dPos, double d) {
+    SimTK::Mat63 dJ;
     dJ.setToZero();
     for (int i = 0; i < 3; i++) {
         dJ += dPos(i) * getConstantCurveJacobianDerivWrtPosition(pos, d, i);
@@ -616,9 +615,9 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtTime(
     return dJ;
 }
 
-Transform OpenSim::ConstantCurvatureJoint::getTransform(Vec3 pos, double d) {
+SimTK::Transform OpenSim::ConstantCurvatureJoint::getTransform(SimTK::Vec3 pos, double d) {
     // 1. Do the euler rotation
-    Rotation rot = eulerXZYToMatrix(pos);
+    SimTK::Rotation rot = eulerXZYToMatrix(pos);
 
     // 2. Computing translation from vertical
     double cx = cos(pos(0));
@@ -626,11 +625,11 @@ Transform OpenSim::ConstantCurvatureJoint::getTransform(Vec3 pos, double d) {
     double cz = cos(pos(1));
     double sz = sin(pos(1));
 
-    Vec3 linearAngle = Vec3(-sz, cx * cz, cz * sx); // rot.linear().col(1);
+    SimTK::Vec3 linearAngle = SimTK::Vec3(-sz, cx * cz, cz * sx); // rot.linear().col(1);
 
     double sinTheta = sqrt(
             linearAngle(0) * linearAngle(0) + linearAngle(2) * linearAngle(2));
-    Vec3 translation(0, d, 0);
+    SimTK::Vec3 translation(0, d, 0);
     if (sinTheta < 0.001 || sinTheta > 0.999) {
         // Near very vertical angles, don't worry about the bend, just
         // approximate with an euler joint
@@ -642,85 +641,85 @@ Transform OpenSim::ConstantCurvatureJoint::getTransform(Vec3 pos, double d) {
         double horizontalDist = r - r * cos(theta);
         double verticalDist = r * sinTheta;
 
-        translation = Vec3(horizontalDist * (linearAngle(0) / sinTheta),
+        translation = SimTK::Vec3(horizontalDist * (linearAngle(0) / sinTheta),
                 verticalDist, horizontalDist * (linearAngle(2) / sinTheta));
     }
 
-    return Transform(rot, translation);
+    return SimTK::Transform(rot, translation);
 }
 
 //==============================================================================
 // IMPLEMENTATION
 //==============================================================================
 class ConstantCurvatureJointImpl
-        : public MobilizedBody::Custom::Implementation {
+        : public SimTK::MobilizedBody::Custom::Implementation {
 public:
-    ConstantCurvatureJointImpl(SimbodyMatterSubsystem& matter)
-            : MobilizedBody::Custom::Implementation(matter, 3, 3, 0),
+    ConstantCurvatureJointImpl(SimTK::SimbodyMatterSubsystem& matter)
+            : SimTK::MobilizedBody::Custom::Implementation(matter, 3, 3, 0),
               neutralPos(0, 0, 0), length(1.0) {}
 
-    MobilizedBody::Custom::Implementation* clone() const {
+    SimTK::MobilizedBody::Custom::Implementation* clone() const {
         return new ConstantCurvatureJointImpl(*this);
     };
 
-    Transform calcMobilizerTransformFromQ(
-            const State& s, int nq, const Real* q) const {
+    SimTK::Transform calcMobilizerTransformFromQ(
+            const SimTK::State& s, int nq, const SimTK::Real* q) const {
         return OpenSim::ConstantCurvatureJoint::getTransform(
                 OpenSim::ConstantCurvatureJoint::clamp(
-                        Vec3::getAs(q) + neutralPos),
+                        SimTK::Vec3::getAs(q) + neutralPos),
                 length);
     }
 
-    SpatialVec multiplyByHMatrix(const State& s, int nu, const Real* u) const {
+    SimTK::SpatialVec multiplyByHMatrix(const SimTK::State& s, int nu, const SimTK::Real* u) const {
         auto rawQ = getQ(s);
-        Vec3 q = Vec3(rawQ(0), rawQ(1), rawQ(2));
-        Mat63 J = OpenSim::ConstantCurvatureJoint::getConstantCurveJacobian(
+        SimTK::Vec3 q = SimTK::Vec3(rawQ(0), rawQ(1), rawQ(2));
+        SimTK::Mat63 J = OpenSim::ConstantCurvatureJoint::getConstantCurveJacobian(
                 OpenSim::ConstantCurvatureJoint::clamp(q + neutralPos), length);
-        Vec6 result = J * Vec3(u[0], u[1], u[2]);
+        SimTK::Vec6 result = J * SimTK::Vec3(u[0], u[1], u[2]);
 
         OPENSIM_ASSERT(!q.isNaN());
         OPENSIM_ASSERT(!J.isNaN());
         OPENSIM_ASSERT(!J.isInf());
         OPENSIM_ASSERT(!result.isNaN());
 
-        return SpatialVec(result.getSubVec<3>(0), result.getSubVec<3>(3));
+        return SimTK::SpatialVec(result.getSubVec<3>(0), result.getSubVec<3>(3));
     }
 
     void multiplyByHTranspose(
-            const State& s, const SpatialVec& F, int nu, Real* f) const {
+            const SimTK::State& s, const SimTK::SpatialVec& F, int nu, SimTK::Real* f) const {
         auto rawQ = getQ(s);
-        Vec3 q = Vec3(rawQ(0), rawQ(1), rawQ(2));
-        Mat63 J = OpenSim::ConstantCurvatureJoint::getConstantCurveJacobian(
+        SimTK::Vec3 q = SimTK::Vec3(rawQ(0), rawQ(1), rawQ(2));
+        SimTK::Mat63 J = OpenSim::ConstantCurvatureJoint::getConstantCurveJacobian(
                 OpenSim::ConstantCurvatureJoint::clamp(q + neutralPos), length);
 
-        Vec6 rawSpatial;
+        SimTK::Vec6 rawSpatial;
         rawSpatial.updSubVec<3>(0) = F[0];
         rawSpatial.updSubVec<3>(3) = F[1];
 
-        Vec3 result = J.transpose() * rawSpatial;
+        SimTK::Vec3 result = J.transpose() * rawSpatial;
 
         OPENSIM_ASSERT(!q.isNaN());
         OPENSIM_ASSERT(!J.isNaN());
         OPENSIM_ASSERT(!J.isInf());
         OPENSIM_ASSERT(!result.isNaN());
 
-        Vec3::updAs(f) = result;
+        SimTK::Vec3::updAs(f) = result;
     }
 
 
-    SpatialVec multiplyByHDotMatrix(
-            const State& s, int nu, const Real* u) const {
+    SimTK::SpatialVec multiplyByHDotMatrix(
+            const SimTK::State& s, int nu, const SimTK::Real* u) const {
         // TODO: Revisit this method is necessary.
-        return SpatialVec(Vec3(0), Vec3(0));
+        return SimTK::SpatialVec(SimTK::Vec3(0), SimTK::Vec3(0));
         auto rawQ = getQ(s);
         auto rawQDot = getQDot(s);
-        Vec3 q = Vec3(rawQ(0), rawQ(1), rawQ(2));
-        Vec3 dq = Vec3(rawQDot(0), rawQDot(1), rawQDot(2));
-        Mat63 dJ = OpenSim::ConstantCurvatureJoint::
+        SimTK::Vec3 q = SimTK::Vec3(rawQ(0), rawQ(1), rawQ(2));
+        SimTK::Vec3 dq = SimTK::Vec3(rawQDot(0), rawQDot(1), rawQDot(2));
+        SimTK::Mat63 dJ = OpenSim::ConstantCurvatureJoint::
                 getConstantCurveJacobianDerivWrtTime(
                         OpenSim::ConstantCurvatureJoint::clamp(q + neutralPos),
                         dq, length);
-        Vec6 result = dJ * Vec3(u[0], u[1], u[2]);
+        SimTK::Vec6 result = dJ * SimTK::Vec3(u[0], u[1], u[2]);
 
         OPENSIM_ASSERT(!q.isNaN());
         OPENSIM_ASSERT(!dq.isNaN());
@@ -728,25 +727,25 @@ public:
         OPENSIM_ASSERT(!dJ.isInf());
         OPENSIM_ASSERT(!result.isNaN());
 
-        return SpatialVec(result.getSubVec<3>(0), result.getSubVec<3>(3));
+        return SimTK::SpatialVec(result.getSubVec<3>(0), result.getSubVec<3>(3));
     }
 
     void multiplyByHDotTranspose(
-            const State& s, const SpatialVec& F, int nu, Real* f) const {
+            const SimTK::State& s, const SimTK::SpatialVec& F, int nu, SimTK::Real* f) const {
         auto rawQ = getQ(s);
         auto rawQDot = getQDot(s);
-        Vec3 q = Vec3(rawQ(0), rawQ(1), rawQ(2));
-        Vec3 dq = Vec3(rawQDot(0), rawQDot(1), rawQDot(2));
-        Mat63 dJ = OpenSim::ConstantCurvatureJoint::
+        SimTK::Vec3 q = SimTK::Vec3(rawQ(0), rawQ(1), rawQ(2));
+        SimTK::Vec3 dq = SimTK::Vec3(rawQDot(0), rawQDot(1), rawQDot(2));
+        SimTK::Mat63 dJ = OpenSim::ConstantCurvatureJoint::
                 getConstantCurveJacobianDerivWrtTime(
                         OpenSim::ConstantCurvatureJoint::clamp(q + neutralPos),
                         dq, length);
 
-        Vec6 rawSpatial;
+        SimTK::Vec6 rawSpatial;
         rawSpatial.updSubVec<3>(0) = F[0];
         rawSpatial.updSubVec<3>(3) = F[1];
 
-        Vec3 result = dJ.transpose() * rawSpatial;
+        SimTK::Vec3 result = dJ.transpose() * rawSpatial;
 
         OPENSIM_ASSERT(!q.isNaN());
         OPENSIM_ASSERT(!dq.isNaN());
@@ -754,43 +753,43 @@ public:
         OPENSIM_ASSERT(!dJ.isInf());
         OPENSIM_ASSERT(!result.isNaN());
 
-        Vec3::updAs(f) = result;
+        SimTK::Vec3::updAs(f) = result;
     }
 
     void setQToFitTransform(
-            const State&, const Transform& X_FM, int nq, Real* q) const {
+            const SimTK::State&, const SimTK::Transform& X_FM, int nq, SimTK::Real* q) const {
         OPENSIM_ASSERT(false);
-        Vec3::updAs(q) = X_FM.p();
+        SimTK::Vec3::updAs(q) = X_FM.p();
     }
 
     void setUToFitVelocity(
-            const State&, const SpatialVec& V_FM, int nu, Real* u) const {
+            const SimTK::State&, const SimTK::SpatialVec& V_FM, int nu, SimTK::Real* u) const {
         OPENSIM_ASSERT(false);
-        Vec3::updAs(u) = V_FM[1];
+        SimTK::Vec3::updAs(u) = V_FM[1];
     }
 
     void setLength(double l) { length = l; }
 
-    void setNeutralPos(Vec3 neutral) { neutralPos = neutral; }
+    void setNeutralPos(SimTK::Vec3 neutral) { neutralPos = neutral; }
 
 protected:
-    Vec3 neutralPos;
+    SimTK::Vec3 neutralPos;
     double length;
 };
 
-class ConstantCurvatureJointWrapper : public MobilizedBody::Custom {
+class ConstantCurvatureJointWrapper : public SimTK::MobilizedBody::Custom {
 public:
-    ConstantCurvatureJointWrapper(MobilizedBody& parent, const Transform& X_PF,
-            const SimTK::Body& bodyInfo, const Transform& X_BM,
+    ConstantCurvatureJointWrapper(SimTK::MobilizedBody& parent, const SimTK::Transform& X_PF,
+            const SimTK::Body& bodyInfo, const SimTK::Transform& X_BM,
             Direction direction = Forward)
             : MobilizedBody::Custom(parent,
                       new ConstantCurvatureJointImpl(
                               parent.updMatterSubsystem()),
                       X_PF, bodyInfo, X_BM, direction){};
 
-    ConstantCurvatureJointWrapper(MobilizedBody& parent,
+    ConstantCurvatureJointWrapper(SimTK::MobilizedBody& parent,
             const SimTK::Body& bodyInfo, Direction direction = Forward)
-            : MobilizedBody::Custom(parent,
+            : SimTK::MobilizedBody::Custom(parent,
                       new ConstantCurvatureJointImpl(
                               parent.updMatterSubsystem()),
                       bodyInfo, direction){};
@@ -800,20 +799,19 @@ public:
                 .setLength(l);
     }
 
-    void setNeutralPos(Vec3 neutral) {
+    void setNeutralPos(SimTK::Vec3 neutral) {
         static_cast<ConstantCurvatureJointImpl&>(updImplementation())
                 .setNeutralPos(neutral);
     }
 
-    // Returns (Vec4,Vec3) where the Vec4 is a normalized quaternion.
-    const Vec3 getDefaultQ() const { return Vec3(Zero); }
+    // Returns (Vec4,SimTK::Vec3) where the Vec4 is a normalized quaternion.
+    const SimTK::Vec3 getDefaultQ() const { return SimTK::Vec3(SimTK::Zero); }
 };
 
 //==============================================================================
 // STATICS
 //==============================================================================
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 //==============================================================================
@@ -855,7 +853,7 @@ ConstantCurvatureJoint::ConstantCurvatureJoint(const std::string& name,
  */
 void ConstantCurvatureJoint::constructProperties() {
     setAuthors("Keenon Werling");
-    SimTK::Vec3 neutralAngleXZY(Zero);
+    SimTK::Vec3 neutralAngleXZY(SimTK::Zero);
     constructProperty_neutral_angle_x_z_y(neutralAngleXZY);
     constructProperty_length(1.0);
 }
@@ -868,7 +866,7 @@ void ConstantCurvatureJoint::constructProperties() {
  * Set the ConstantCurvatureJoint's neutral angle, which it will bend to when
  * its DOFs are set to zero.
  *
- * @param Vec3 of radii: X, Y, Z in the parent frame.
+ * @param SimTK::Vec3 of radii: X, Y, Z in the parent frame.
  */
 void ConstantCurvatureJoint::setNeutralAngleXZY(
         const SimTK::Vec3& neutralAngleXZY) {
@@ -887,7 +885,7 @@ void ConstantCurvatureJoint::extendScale(
     Super::extendScale(s, scaleSet);
 
     // Get scale factors (if an entry for the parent Frame's base Body exists).
-    const Vec3& scaleFactors = getScaleFactors(scaleSet, getChildFrame());
+    const SimTK::Vec3& scaleFactors = getScaleFactors(scaleSet, getChildFrame());
     if (scaleFactors == ModelComponent::InvalidScaleFactors) return;
 
     // TODO: Need to scale transforms appropriately, given an arbitrary axis.
@@ -965,27 +963,27 @@ void ConstantCurvatureJoint::generateDecorations(bool fixed,
 
     // Construct the visible line
     double length = get_length();
-    Vec3 neutralPos = get_neutral_angle_x_z_y();
+    SimTK::Vec3 neutralPos = get_neutral_angle_x_z_y();
     auto rawQ = getChildFrame().getMobilizedBody().getQAsVector(state);
-    Vec3 q = Vec3(rawQ(0), rawQ(1), rawQ(2));
-    Vec3 pos = clamp(neutralPos + q);
+    SimTK::Vec3 q = SimTK::Vec3(rawQ(0), rawQ(1), rawQ(2));
+    SimTK::Vec3 pos = clamp(neutralPos + q);
 
-    std::vector<Vec3> points;
+    std::vector<SimTK::Vec3> points;
     const int numPoints = 10;
     for (int i = 0; i <= numPoints; i++) {
         double percentage = ((double)i) / numPoints;
 
-        Transform t =
+        SimTK::Transform t =
                 getTransform(clamp(pos * percentage), length * percentage);
         points.push_back(t.p());
     }
 
     for (int i = 1; i < (int)points.size(); i++) {
-        Vec3 lastPoint = points[i - 1];
-        Vec3 thisPoint = points[i];
+        SimTK::Vec3 lastPoint = points[i - 1];
+        SimTK::Vec3 thisPoint = points[i];
         SimTK::DecorativeLine line(lastPoint, thisPoint);
         const OpenSim::PhysicalFrame& frame = getParentFrame();
-        line.setColor(Vec3(1.0, 0.0, 0.0));
+        line.setColor(SimTK::Vec3(1.0, 0.0, 0.0));
         line.setBodyId(frame.getMobilizedBodyIndex());
         line.setTransform(frame.findTransformInBaseFrame());
         geometryArray.push_back(line);

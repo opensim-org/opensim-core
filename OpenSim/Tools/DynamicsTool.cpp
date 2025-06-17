@@ -31,7 +31,6 @@
 
 using namespace OpenSim;
 using namespace std;
-using namespace SimTK;
 
 
 //=============================================================================

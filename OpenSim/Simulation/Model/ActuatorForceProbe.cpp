@@ -30,7 +30,6 @@
 #include <OpenSim/Common/IO.h>
 
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 
@@ -205,7 +204,7 @@ void ActuatorForceProbe::extendConnectToModel(Model& model)
 /**
 * Compute the Force.
 */
-SimTK::Vector ActuatorForceProbe::computeProbeInputs(const State& s) const
+SimTK::Vector ActuatorForceProbe::computeProbeInputs(const SimTK::State& s) const
 {
     int nA = getActuatorNames().size();
     SimTK::Vector TotalF(getNumProbeInputs());

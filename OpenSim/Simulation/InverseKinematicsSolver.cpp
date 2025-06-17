@@ -29,7 +29,6 @@
 #include "simbody/internal/AssemblyCondition_OrientationSensors.h"
 
 using namespace std;
-using namespace SimTK;
 
 namespace OpenSim {
 
@@ -131,7 +130,7 @@ int InverseKinematicsSolver::getNumMarkersInUse() const
    Update a marker's weight by name. */
 void InverseKinematicsSolver::updateMarkerWeight(const std::string& markerName, double value)
 {
-    const Array_<std::string> &names = _markersReference->getNames();
+    const SimTK::Array_<std::string> &names = _markersReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), markerName);
     if (p == names.end())
         throw Exception(
@@ -177,7 +176,7 @@ int InverseKinematicsSolver::getNumOrientationSensorsInUse() const
 track is called next. Update an orientation sensor's weight by name. */
 void InverseKinematicsSolver::updateOrientationWeight(const std::string& orientationName, double value)
 {
-    const Array_<std::string> &names = _orientationsReference->getNames();
+    const SimTK::Array_<std::string> &names = _orientationsReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), orientationName);
     if (p == names.end())
         throw Exception("InverseKinematicsSolver::updateOrientationWeight: "
@@ -218,7 +217,7 @@ void InverseKinematicsSolver::updateOrientationWeights(const SimTK::Array_<doubl
 /* Compute and return the spatial location of a marker in ground. */
 SimTK::Vec3 InverseKinematicsSolver::computeCurrentMarkerLocation(const std::string &markerName)
 {
-    const Array_<std::string> &names = _markersReference->getNames();
+    const SimTK::Array_<std::string> &names = _markersReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), markerName);
     if (p == names.end())
         throw Exception("InverseKinematicsSolver::computeCurrentMarkerLocation: "
@@ -249,7 +248,7 @@ void InverseKinematicsSolver::computeCurrentMarkerLocations(SimTK::Array_<SimTK:
 /* Compute and return the distance error between model marker and observation. */
 double InverseKinematicsSolver::computeCurrentMarkerError(const std::string &markerName)
 {
-    const Array_<std::string>& names = _markersReference->getNames();
+    const SimTK::Array_<std::string>& names = _markersReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), markerName);
     if (p == names.end())
         throw Exception("InverseKinematicsSolver::computeCurrentMarkerError: "
@@ -279,7 +278,7 @@ void InverseKinematicsSolver::computeCurrentMarkerErrors(SimTK::Array_<double> &
 /* Compute and return the squared-distance error between model marker and observation. */
 double InverseKinematicsSolver::computeCurrentSquaredMarkerError(const std::string &markerName)
 {
-    const Array_<std::string>& names = _markersReference->getNames();
+    const SimTK::Array_<std::string>& names = _markersReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), markerName);
     if (p == names.end())
         throw Exception("InverseKinematicsSolver::computeCurrentSquaredMarkerError: "
@@ -318,7 +317,7 @@ std::string InverseKinematicsSolver::getMarkerNameForIndex(int markerIndex) cons
 SimTK::Rotation InverseKinematicsSolver::
     computeCurrentSensorOrientation(const std::string& osensorName)
 {
-    const Array_<std::string>& names = _orientationsReference->getNames();
+    const SimTK::Array_<std::string>& names = _orientationsReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), osensorName);
     if (p == names.end())
         throw Exception("InverseKinematicsSolver::computeCurrentSensorOrientation: "
@@ -351,7 +350,7 @@ void InverseKinematicsSolver::computeCurrentSensorOrientations(
 double InverseKinematicsSolver::
     computeCurrentOrientationError(const std::string& osensorName)
 {
-    const Array_<std::string>& names = _orientationsReference->getNames();
+    const SimTK::Array_<std::string>& names = _orientationsReference->getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), osensorName);
     if (p == names.end())
         throw Exception("InverseKinematicsSolver::computeCurrentOrientationError: "
@@ -381,7 +380,7 @@ void InverseKinematicsSolver::computeCurrentOrientationErrors(
     osensorErrors.resize(_orientationAssemblyCondition->getNumOSensors());
     for (unsigned int i = 0; i<osensorErrors.size(); i++)
         osensorErrors[i] = _orientationAssemblyCondition->
-        findCurrentOSensorError(OrientationSensors::OSensorIx(i));
+        findCurrentOSensorError(SimTK::OrientationSensors::OSensorIx(i));
 }
 
 /* Orientation errors may be reported in an order that may be different from
@@ -503,7 +502,7 @@ void InverseKinematicsSolver::updateGoals(SimTK::State &s)
     int x = 0;
 
     if (_advanceTimeFromReference) {
-        double nextTime = NaN;
+        double nextTime = SimTK::NaN;
         if (_orientationsReference &&
                 _orientationsReference->getNumRefs() > 0) {
             SimTK::Array_<SimTK::Rotation> orientationValues;

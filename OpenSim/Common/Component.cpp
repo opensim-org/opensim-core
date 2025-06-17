@@ -31,8 +31,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-using namespace SimTK;
-
 namespace OpenSim {
 
 //==============================================================================
@@ -516,8 +514,8 @@ void Component::addStateVariable(const std::string&  stateVariableName,
                                  const SimTK::Stage& invalidatesStage,
                                  bool isHidden) const
 {
-    if( (invalidatesStage < Stage::Position) ||
-        (invalidatesStage > Stage::Dynamics)) {
+    if( (invalidatesStage < SimTK::Stage::Position) ||
+        (invalidatesStage > SimTK::Stage::Dynamics)) {
         throw Exception("Component::addStateVariable: invalidatesStage "
                         "must be Position, Velocity or Dynamics.");
     }
@@ -555,7 +553,7 @@ void Component::addStateVariable(Component::StateVariable*  stateVariable) const
     // to enable a similar interface for setting and getting the derivatives
     // based on the creator specified state name
     if(asv){
-        addCacheVariable(stateVariableName+"_deriv", 0.0, Stage::Dynamics);
+        addCacheVariable(stateVariableName+"_deriv", 0.0, SimTK::Stage::Dynamics);
     }
 
 }
@@ -973,7 +971,7 @@ double Component::
 // Set the value of a state variable allocated by this Component given its name
 // for this component.
 void Component::
-    setStateVariableValue(State& s, const std::string& name, double value) const
+    setStateVariableValue(SimTK::State& s, const std::string& name, double value) const
 {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
@@ -1039,7 +1037,7 @@ SimTK::Vector Component::
             _allStateVariables[i].reset(traverseToStateVariable(names[i]));
     }
 
-    Vector stateVariableValues(nsv, SimTK::NaN);
+    SimTK::Vector stateVariableValues(nsv, SimTK::NaN);
     for(int i=0; i<nsv; ++i){
         stateVariableValues[i]= _allStateVariables[i]->getValue(state);
     }
@@ -1079,7 +1077,7 @@ void Component::
 
 // Set the derivative of a state variable computed by this Component by name.
 void Component::
-    setStateVariableDerivativeValue(const State& state,
+    setStateVariableDerivativeValue(const SimTK::State& state,
                                const std::string& name, double value) const
 {
     std::map<std::string, StateVariableInfo>::const_iterator it;
@@ -1796,7 +1794,7 @@ void Component::extendRealizeAcceleration(const SimTK::State& s) const
             if(asv)
                 // set corresponding system derivative value from
                 // cached value
-                subSys.updZDot(s)[ZIndex(asv->getVarIndex())] =
+                subSys.updZDot(s)[SimTK::ZIndex(asv->getVarIndex())] =
                     asv->getDerivative(s);
         }
     }
@@ -1826,10 +1824,10 @@ void Component::extendRealizeReport(const SimTK::State& state) const {}
 //override virtual methods
 double Component::AddedStateVariable::getValue(const SimTK::State& state) const
 {
-    ZIndex zix(getVarIndex());
+    SimTK::ZIndex zix(getVarIndex());
     if(getSubsysIndex().isValid() && zix.isValid()){
         const SimTK::Vector& z = getOwner().getDefaultSubsystem().getZ(state);
-        return z[ZIndex(zix)];
+        return z[SimTK::ZIndex(zix)];
     }
 
     std::stringstream msg;
@@ -1842,10 +1840,10 @@ double Component::AddedStateVariable::getValue(const SimTK::State& state) const
 
 void Component::AddedStateVariable::setValue(SimTK::State& state, double value) const
 {
-    ZIndex zix(getVarIndex());
+    SimTK::ZIndex zix(getVarIndex());
     if(getSubsysIndex().isValid() && zix.isValid()){
         SimTK::Vector& z = getOwner().getDefaultSubsystem().updZ(state);
-        z[ZIndex(zix)] = value;
+        z[SimTK::ZIndex(zix)] = value;
         return;
     }
 

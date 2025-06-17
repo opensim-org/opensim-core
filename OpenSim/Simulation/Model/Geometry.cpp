@@ -40,7 +40,6 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
-using namespace SimTK;
 
 OpenSim_DEFINE_SOCKET_FD(frame, Geometry);
 
@@ -89,7 +88,7 @@ namespace
         const std::string& file,
         bool& warningGiven)
     {
-        Array_<string> attempts;
+        SimTK::Array_<string> attempts;
         bool isAbsolutePath = false;
         if (ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts)) {
             return std::move(attempts.back());
@@ -216,8 +215,8 @@ void Geometry::setDecorativeGeometryTransform(
 void Sphere::implementCreateDecorativeGeometry(
     SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    const Vec3 netScale = get_scale_factors();
-    DecorativeSphere deco(get_radius());
+    const SimTK::Vec3 netScale = get_scale_factors();
+    SimTK::DecorativeSphere deco(get_radius());
     deco.setScaleFactors(netScale);
     decoGeoms.push_back(deco);
 }
@@ -225,24 +224,24 @@ void Sphere::implementCreateDecorativeGeometry(
 void Cylinder::implementCreateDecorativeGeometry(
     SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    const Vec3 netScale = get_scale_factors();
-    DecorativeCylinder deco(get_radius(), get_half_height());
+    const SimTK::Vec3 netScale = get_scale_factors();
+    SimTK::DecorativeCylinder deco(get_radius(), get_half_height());
     deco.setScaleFactors(netScale);
     decoGeoms.push_back(deco);
 }
 
 void Cone::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    const Vec3 netScale = get_scale_factors();
-    DecorativeCone deco(get_origin(), SimTK::UnitVec3(get_direction()), get_height(), get_base_radius());
+    const SimTK::Vec3 netScale = get_scale_factors();
+    SimTK::DecorativeCone deco(get_origin(), SimTK::UnitVec3(get_direction()), get_height(), get_base_radius());
     deco.setScaleFactors(netScale);
     decoGeoms.push_back(deco);
 }
 
 void LineGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    const Vec3 netScale = get_scale_factors();
-    DecorativeLine deco(get_start_point(), get_end_point());
+    const SimTK::Vec3 netScale = get_scale_factors();
+    SimTK::DecorativeLine deco(get_start_point(), get_end_point());
     deco.setScaleFactors(netScale);
     decoGeoms.push_back(deco);
 }
@@ -250,12 +249,12 @@ void LineGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::Decora
 
 void Arrow::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    const Vec3 netScale = get_scale_factors();
+    const SimTK::Vec3 netScale = get_scale_factors();
 
-    const Vec3 start = get_start_point();
-    const Vec3 end = start + get_length()*get_direction().normalize();
+    const SimTK::Vec3 start = get_start_point();
+    const SimTK::Vec3 end = start + get_length()*get_direction().normalize();
 
-    DecorativeArrow deco(start, end);
+    SimTK::DecorativeArrow deco(start, end);
     deco.setLineThickness(0.05);
     deco.setScaleFactors(netScale);
     decoGeoms.push_back(deco);
@@ -263,24 +262,24 @@ void Arrow::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeo
 
 void Ellipsoid::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    const Vec3 netScale = get_scale_factors();
-    DecorativeEllipsoid deco(get_radii());
+    const SimTK::Vec3 netScale = get_scale_factors();
+    SimTK::DecorativeEllipsoid deco(get_radii());
     deco.setScaleFactors(netScale);
     decoGeoms.push_back(deco);
 }
 
 void Brick::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    const Vec3 netScale = get_scale_factors();
-    DecorativeBrick deco(get_half_lengths());
+    const SimTK::Vec3 netScale = get_scale_factors();
+    SimTK::DecorativeBrick deco(get_half_lengths());
     deco.setScaleFactors(netScale);
     decoGeoms.push_back(deco);
 }
 
 void FrameGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    const Vec3 netScale = get_scale_factors();
-    DecorativeFrame deco(1.0);
+    const SimTK::Vec3 netScale = get_scale_factors();
+    SimTK::DecorativeFrame deco(1.0);
     deco.setLineThickness(get_display_radius());
     deco.setScaleFactors(netScale);
     decoGeoms.push_back(deco);

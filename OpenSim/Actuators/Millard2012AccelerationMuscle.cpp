@@ -35,7 +35,6 @@
 
 using namespace std;
 using namespace OpenSim;
-using namespace SimTK;
 
 ///@cond  
 const string Millard2012AccelerationMuscle::

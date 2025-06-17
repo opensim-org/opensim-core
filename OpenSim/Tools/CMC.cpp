@@ -42,9 +42,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace std;
-using SimTK::Vector;
 using namespace OpenSim;
-using namespace SimTK;
 
 #define MIN_CMC_CONTROL_VALUE 0.02
 #define MAX_CMC_CONTROL_VALUE 1.00
@@ -52,20 +50,20 @@ using namespace SimTK;
 #define MAX_CONTROLS_FOR_RRA 10000
 // Excluding this from Doxygen until it has better documentation! -Sam Hamner
     /// @cond
-class ComputeControlsEventHandler : public PeriodicEventHandler {
+class ComputeControlsEventHandler : public SimTK::PeriodicEventHandler {
 public:
     ComputeControlsEventHandler( CMC *controller) :
-        PeriodicEventHandler(Stage::Time),
+        PeriodicEventHandler(SimTK::Stage::Time),
         _controller( controller ) {
     }
 
-    void handleEvent (SimTK::State& s, Real accuracy, bool& terminate) const override {
+    void handleEvent (SimTK::State& s, SimTK::Real accuracy, bool& terminate) const override {
         terminate = false;
         _controller->computeControls( s, _controller->updControlSet() );
         _controller->setTargetTime(s.getTime() + _controller->getTargetDT());
     }
 
-    Real getNextEventTime( const State& s, bool includeCurrent) const override {
+    SimTK::Real getNextEventTime( const SimTK::State& s, bool includeCurrent) const override {
 
         if( _controller->getCheckTargetTime() ) {
             return( _controller->getTargetTime() );
@@ -763,7 +761,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 
     // realize to Velocity because some tasks (eg. CMC_Point) need to be
     // at velocity to compute errors
-    _model->getMultibodySystem().realize(s, Stage::Velocity );
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
 
     // ERRORS
     _taskSet->computeErrors(s, tiReal);
@@ -906,7 +904,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 
     if(!_target->prepareToOptimize(newState, &_f[0])) {
         // No direct solution, need to run optimizer
-        Vector fVector(N,&_f[0],true);
+        SimTK::Vector fVector(N,&_f[0],true);
 
         try {
             _optimizer->optimize(fVector);
