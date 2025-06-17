@@ -20,7 +20,6 @@
 
 #include "ModelProcessor.h"
 #include <OpenSim/Actuators/ModelFactory.h>
-#include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include "OpenSim/Simulation/TableProcessor.h"
 
@@ -285,27 +284,7 @@ public:
     ModOpPrescribeCoordinateValues(TableProcessor table) {
         constructProperty_coordinate_values(table);
     }
-    void operate(Model& model, const std::string&) const override {
-        model.finalizeFromProperties();
-        TimeSeriesTable table = get_coordinate_values().process();
-        GCVSplineSet statesSpline(table);
-
-        for (const std::string& pathString: table.getColumnLabels()) {
-            ComponentPath path = ComponentPath(pathString);
-            if (path.getNumPathLevels() < 3) {
-                continue;
-            }
-            std::string jointPath = path.getParentPath().getParentPath().toString();
-            if (!model.hasComponent<Joint>(jointPath)) {
-                log_warn("Found column label '{}', but it does not match a "
-                         "joint coordinate value in the model.", pathString);
-                continue;
-            }
-            Coordinate& q = model.updComponent<Joint>(jointPath).updCoordinate();
-            q.setPrescribedFunction(statesSpline.get(pathString));
-            q.setDefaultIsPrescribed(true);
-        }
-    }
+    void operate(Model& model, const std::string&) const override;
 };
 
 } // namespace OpenSim

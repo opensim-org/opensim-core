@@ -286,12 +286,7 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
                         thisOutputPath, std::regex(outputPathArg))) {
                     // Make sure the output type agrees with the template.
                     if (dynamic_cast<const Output<T>*>(&output)) {
-                        log_debug("Adding output {} of type {}.",
-                                output.getPathName(), output.getTypeName());
                         reporter->addToReport(output);
-                    } else {
-                        log_warn("Ignoring output {} of type {}.",
-                                output.getPathName(), output.getTypeName());
                     }
                 }
             }
