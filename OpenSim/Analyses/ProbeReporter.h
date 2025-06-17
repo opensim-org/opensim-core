@@ -150,20 +150,7 @@ protected:
     virtual int
         record(const SimTK::State& s );
 public:
-    void disableIntegrationOnlyProbes() {
-        ProbeSet& probes = _model->updProbeSet();
-        int nP = probes.getSize();
-
-        for(int i=0 ; i<nP ; i++) {
-            Probe& nextProbe = (Probe&)probes[i];
-            if (nextProbe.getOperation()=="integrate" || nextProbe.getOperation()=="min" || nextProbe.getOperation()=="max"){
-                nextProbe.setEnabled(false);
-                log_warn("Disabling probe {} as invalid for non-integration "
-                         "context.",
-                        nextProbe.getName());
-            }
-        }
-    }
+    void disableIntegrationOnlyProbes();
     //--------------------------------------------------------------------------
     // IO
     //--------------------------------------------------------------------------

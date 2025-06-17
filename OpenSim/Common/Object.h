@@ -1405,16 +1405,11 @@ ObjectProperty<T>::readFromXMLElement
         const Object* registeredObj = 
             Object::getDefaultInstanceOfType(objTypeTag);
 
-        if (!registeredObj) {
-            log_error("Encountered unrecognized Object typename {} while reading property {}. There is no registered Object of this type. Ignoring.", objTypeTag, this->getName());
+        // Check that the object type found is derived from T.
+        if (!registeredObj || !dynamic_cast<const T*>(registeredObj)) {
             continue;
         }
 
-        // Check that the object type found is derived from T.
-        if (!dynamic_cast<const T*>(registeredObj)) {
-            log_error("Object type {} wrong for {} property {}. Ignoring.", objTypeTag, objectClassName, this->getName());
-            continue;                        
-        }
         ++objectsFound;
 
         if (objectsFound > this->getMaxListSize())
@@ -1428,21 +1423,6 @@ ObjectProperty<T>::readFromXMLElement
         T* objectT = dynamic_cast<T*>(object);
         OPENSIM_ASSERT(objectT); // should have worked by construction
         adoptAndAppendValueVirtual(objectT); // don't copy
-    }
-
-    if (objectsFound < this->getMinListSize()) {
-        log_error("Got {} object values for Property {} but the minimum is {}. Continuing anyway.",
-            objectsFound ,
-            this->getName() ,
-            this->getMinListSize()
-        );
-    }
-    if (objectsFound > this->getMaxListSize()) {
-        log_error("Got {} object values for Property {} but the maximum is {}. Ignoring the rest.",
-            objectsFound,
-            this->getName(),
-            this->getMaxListSize()
-        );
     }
 }
 
