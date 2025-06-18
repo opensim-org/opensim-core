@@ -409,14 +409,15 @@ bool InverseDynamicsTool::run()
         Stopwatch watch;
 
         int nt = final_index-start_index+1;
-        
+
         SimTK::Array_<double> times(nt, 0.0);
         for(int i=0; i<nt; i++){
             times[i]=_coordinateValues->getStateVector(start_index+i)->getTime();
         }
 
         // Preallocate results
-        SimTK::Array_<SimTK::Vector> genForceTraj(nt, SimTK::Vector(nCoords, 0.0));
+        SimTK::Array_<SimTK::Vector> genForceTraj(
+                nt, SimTK::Vector(nCoords, 0.0));
 
         // solve for the trajectory of generalized forces that correspond to the 
         // coordinate trajectories provided
@@ -462,15 +463,15 @@ bool InverseDynamicsTool::run()
             genForceResults.append(genForceVec);
 
             // if there are joints requested for equivalent body forces then calculate them
-            if(nj>0){
-                SimTK::Vector forces(6*nj, 0.0);
+            if (nj > 0) {
+                SimTK::Vector forces(6 * nj, 0.0);
                 StateVector bodyForcesVec(times[i],
                                           SimTK::Vector_<double>(6*nj,
                                                                  &forces[0]));
 
                 s.updTime() = times[i];
-                SimTK::Vector &q = s.updQ();
-                SimTK::Vector &u = s.updU();
+                SimTK::Vector& q = s.updQ();
+                SimTK::Vector& u = s.updU();
 
                 // Account for cases where qdot != u with coordinatesToSpeedsIndexMap
                 for( int j = 0; j < nq; ++j) {
@@ -492,7 +493,6 @@ bool InverseDynamicsTool::run()
                     }
                 }
                 bodyForcesResults.append(bodyForcesVec);
-
             }
         }
 
@@ -573,47 +573,60 @@ void InverseDynamicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int vers
             if (root.getElementTag()=="OpenSimDocument"){
                 int curVersion = root.getRequiredAttributeValueAs<int>("Version");
                 if (curVersion <= 20201) root.setAttributeValue("Version", "20300");
-                SimTK::Xml::element_iterator iterTool(root.element_begin("AnalyzeTool"));
+                SimTK::Xml::element_iterator iterTool(
+                        root.element_begin("AnalyzeTool"));
                 iterTool->setElementTag("InverseDynamicsTool");
                 prefix = iterTool->getRequiredAttributeValueAs<string>("name");
-                // Remove children <output_precision>, <initial_time>, <final_time>
-                SimTK::Xml::element_iterator initTimeIter(iterTool->element_begin("initial_time"));
+                // Remove children <output_precision>, <initial_time>,
+                // <final_time>
+                SimTK::Xml::element_iterator initTimeIter(
+                        iterTool->element_begin("initial_time"));
                 double tool_initial_time = initTimeIter->getValueAs<double>();
                 if (initTimeIter->isValid()) iterTool->eraseNode(initTimeIter);
-                SimTK::Xml::element_iterator finalTimeIter(iterTool->element_begin("final_time"));
+                SimTK::Xml::element_iterator finalTimeIter(
+                        iterTool->element_begin("final_time"));
                 double tool_final_time = finalTimeIter->getValueAs<double>();
-                if (finalTimeIter->isValid()) iterTool->eraseNode(finalTimeIter);
-                SimTK::Xml::element_iterator precisionIter(iterTool->element_begin("output_precision"));
-                if (precisionIter->isValid()) iterTool->eraseNode(precisionIter);
-                bool use_model_forces=false;
-                // Handle missing or uninitialized values after parsing the old InverseDynamics "Analysis"
-                // Find Analyses underneath it AnalyzeTool
-                SimTK::Xml::element_iterator iterAnalysisSet(iterTool->element_begin("AnalysisSet"));
-                SimTK::Xml::element_iterator iterObjects(iterAnalysisSet->element_begin("objects"));
-                SimTK::Xml::element_iterator iterAnalysis(iterObjects->element_begin("InverseDynamics"));
-                if (iterAnalysis!= iterObjects->element_end()){
+                if (finalTimeIter->isValid())
+                    iterTool->eraseNode(finalTimeIter);
+                SimTK::Xml::element_iterator precisionIter(
+                        iterTool->element_begin("output_precision"));
+                if (precisionIter->isValid())
+                    iterTool->eraseNode(precisionIter);
+                bool use_model_forces = false;
+                // Handle missing or uninitialized values after parsing the old
+                // InverseDynamics "Analysis" Find Analyses underneath it
+                // AnalyzeTool
+                SimTK::Xml::element_iterator iterAnalysisSet(
+                        iterTool->element_begin("AnalysisSet"));
+                SimTK::Xml::element_iterator iterObjects(
+                        iterAnalysisSet->element_begin("objects"));
+                SimTK::Xml::element_iterator iterAnalysis(
+                        iterObjects->element_begin("InverseDynamics"));
+                if (iterAnalysis != iterObjects->element_end()) {
                     // move children to top level
-                    SimTK::Xml::element_iterator p = iterAnalysis->element_begin();
-                    //std::vector<std::string> deprecated({"on", "in_degrees", "step_interval"});
-                    for (; p!= iterAnalysis->element_end(); ++p) {
+                    SimTK::Xml::element_iterator p =
+                            iterAnalysis->element_begin();
+                    // std::vector<std::string> deprecated({"on", "in_degrees",
+                    // "step_interval"});
+                    for (; p != iterAnalysis->element_end(); ++p) {
                         // skip <on>, <step_interval>, <in_degrees>
-                        if (p->getElementTag()=="on" ||
-                            p->getElementTag()=="in_degrees" ||
-                            p->getElementTag()=="step_interval" ||
-                            p->getElementTag()=="start_time" ||
-                            p->getElementTag()=="end_time")
+                        if (p->getElementTag() == "on" ||
+                                p->getElementTag() == "in_degrees" ||
+                                p->getElementTag() == "step_interval" ||
+                                p->getElementTag() == "start_time" ||
+                                p->getElementTag() == "end_time")
                             continue;
-                        else if (p->getElementTag()=="use_model_force_set"){
+                        else if (p->getElementTag() == "use_model_force_set") {
                             SimTK::String use_model_forcesStr = p->getValueAs<SimTK::String>();
                             use_model_forces = (use_model_forcesStr=="true");
-                        }
-                        else
+                        } else
                             iterTool->insertNodeAfter( iterTool->node_end(), p->clone());
                     }
                     // insert elements for "forces_to_exclude" & "time_range"
                     std::ostringstream stream;
                     stream << tool_initial_time << " " << tool_final_time;
-                    iterTool->insertNodeAfter( iterTool->node_end(), SimTK::Xml::Element("time_range", stream.str()));
+                    iterTool->insertNodeAfter(iterTool->node_end(),
+                            SimTK::Xml::Element("time_range", stream.str()));
                     iterTool->insertNodeAfter( iterTool->node_end(), SimTK::Xml::Element("forces_to_exclude", use_model_forces?"":"Muscles"));
                     iterTool->insertNodeAfter( iterTool->node_end(), SimTK::Xml::Element("output_gen_force_file", prefix+"_InverseDynamics.sto"));
                     iterTool->insertNodeAfter( iterTool->node_end(), SimTK::Xml::Element("coordinates_in_degrees", "true"));

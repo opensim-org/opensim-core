@@ -86,8 +86,8 @@ void ToyReflexController::extendConnectToModel(Model &model)
  * @param s         current state of the system
  * @param controls  system wide controls to which this controller can add
  */
-void ToyReflexController::computeControls(const SimTK::State& s,
-                                          SimTK::Vector &controls) const {
+void ToyReflexController::computeControls(
+        const SimTK::State& s, SimTK::Vector& controls) const {
 
     // Get the Socket to the list of actuators assigned to the reflex controller.
     const auto& socket = getSocket<Actuator>("actuators");
@@ -113,4 +113,3 @@ void ToyReflexController::computeControls(const SimTK::State& s,
         musc->addInControls(actControls, controls);
     }
 }
-

@@ -129,8 +129,8 @@ void MuscleActiveFiberPowerProbe::extendConnectToModel(Model& model)
 /**
 Compute the muscle fiber power upon which the Probe operation will be based on.
  */
-SimTK::Vector MuscleActiveFiberPowerProbe::computeProbeInputs(const SimTK::State& s) const
-{
+SimTK::Vector MuscleActiveFiberPowerProbe::computeProbeInputs(
+        const SimTK::State& s) const {
     int nA = getMuscleNames().size();
     SimTK::Vector TotalP(1, 0.0);       // Initialize at zero
  
@@ -149,7 +149,6 @@ SimTK::Vector MuscleActiveFiberPowerProbe::computeProbeInputs(const SimTK::State
 
     return TotalP;
 }
-
 
 //_____________________________________________________________________________
 /** 

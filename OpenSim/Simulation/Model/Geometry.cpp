@@ -233,26 +233,26 @@ void Cylinder::implementCreateDecorativeGeometry(
 void Cone::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const SimTK::Vec3 netScale = get_scale_factors();
-    SimTK::DecorativeCone deco(get_origin(), SimTK::UnitVec3(get_direction()), get_height(), get_base_radius());
+    SimTK::DecorativeCone deco(get_origin(), SimTK::UnitVec3(get_direction()),
+            get_height(), get_base_radius());
     deco.setScaleFactors(netScale);
     decoGeoms.push_back(deco);
 }
 
-void LineGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
-{
+void LineGeometry::implementCreateDecorativeGeometry(
+        SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const {
     const SimTK::Vec3 netScale = get_scale_factors();
     SimTK::DecorativeLine deco(get_start_point(), get_end_point());
     deco.setScaleFactors(netScale);
     decoGeoms.push_back(deco);
 }
 
-
 void Arrow::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const SimTK::Vec3 netScale = get_scale_factors();
 
     const SimTK::Vec3 start = get_start_point();
-    const SimTK::Vec3 end = start + get_length()*get_direction().normalize();
+    const SimTK::Vec3 end = start + get_length() * get_direction().normalize();
 
     SimTK::DecorativeArrow deco(start, end);
     deco.setLineThickness(0.05);

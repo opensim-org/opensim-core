@@ -389,8 +389,8 @@ bool RRATool::run()
 
     //Make sure system is up-to-date with model (i.e. added actuators, etc...)
     SimTK::State& s = _model->initSystem();
-    _model->getMultibodySystem().realize(s, SimTK::Stage::Position );
-     taskSet.setModel(*_model);
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Position);
+    taskSet.setModel(*_model);
     _model->equilibrateMuscles(s);
   
     // ---- INPUT ----
@@ -514,7 +514,7 @@ bool RRATool::run()
     Storage *uStore=NULL;
 
     if(desiredKinFlag) {
-        _model->getMultibodySystem().realize(s, SimTK::Stage::Time );
+        _model->getMultibodySystem().realize(s, SimTK::Stage::Time);
         // qStore and uStore returned are in radians
         _model->getSimbodyEngine().formCompleteStorages(s, *desiredKinStore,
             qStore, uStore);
@@ -783,7 +783,7 @@ bool RRATool::run()
         cmcActSubsystem.setCompleteState( s );
         actuatorSystemState.updTime() = _ti; 
         s.updTime() = _ti;
-        actuatorSystem.realize(actuatorSystemState, SimTK::Stage::Time );
+        actuatorSystem.realize(actuatorSystemState, SimTK::Stage::Time);
         controller->setTargetDT(1.0e-8);
         controller->computeControls( s, controller->updControlSet() );
         controller->setTargetDT(_targetDT);
@@ -801,7 +801,7 @@ bool RRATool::run()
     log_info("--------------------------------------------");
     log_info("");
 
-    _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration );
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
 
     controller->updTaskSet().computeAccelerations(s);
 
@@ -1026,8 +1026,8 @@ adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage
     SimTK::State &si = _model->initSystem();
 
     si.updY() = restoreStates;
-    _model->getMultibodySystem().realize(si, SimTK::Stage::Position );
-    
+    _model->getMultibodySystem().realize(si, SimTK::Stage::Position);
+
     computeAverageResiduals(si, *_model, ti, tf, *statesStore, FAve, MAve);
 
     resMsg <<  "* Average residuals after adjusting "<<_adjustedCOMBody<<" COM:"<<endl;
@@ -1062,8 +1062,8 @@ computeAverageResiduals(SimTK::State& s, Model &aModel,double aTi,double aTf,con
     int iFinal = aStatesStore.findIndex(aTf);
     aStatesStore.getTime(iInitial,aTi);
     aStatesStore.getTime(iFinal,aTf);
-   
-    aModel.getMultibodySystem().realize(s, SimTK::Stage::Position );
+
+    aModel.getMultibodySystem().realize(s, SimTK::Stage::Position);
 
     log_info("Computing average residuals between {} and {}...", aTi, aTf);
     AnalyzeTool::run(s, aModel, iInitial, iFinal, aStatesStore, false);
@@ -1309,7 +1309,8 @@ void RRATool::setOriginalForceSet(const ForceSet &aForceSet) {
             SimTK::Xml::Element toolNode;
             bool isCMCTool = true;
             if (oldRoot.getElementTag()=="OpenSimDocument"){
-                SimTK::Xml::element_iterator iterTool(oldRoot.element_begin("CMCTool"));
+                SimTK::Xml::element_iterator iterTool(
+                        oldRoot.element_begin("CMCTool"));
                 if (iterTool==oldRoot.element_end()){
                     isCMCTool = false;
                 }
@@ -1320,10 +1321,12 @@ void RRATool::setOriginalForceSet(const ForceSet &aForceSet) {
                 toolNode = oldRoot;
                 isCMCTool = (oldRoot.getElementTag()=="CMCTool");
             }
-            if (isCMCTool){
-                SimTK::Xml::element_iterator replace_force_setIter(toolNode.element_begin("replace_force_set"));
-                if (replace_force_setIter != toolNode.element_end()){
-                    SimTK::String replace_forcesStr = replace_force_setIter->getValueAs<SimTK::String>();
+            if (isCMCTool) {
+                SimTK::Xml::element_iterator replace_force_setIter(
+                        toolNode.element_begin("replace_force_set"));
+                if (replace_force_setIter != toolNode.element_end()) {
+                    SimTK::String replace_forcesStr =
+                            replace_force_setIter->getValueAs<SimTK::String>();
                     if (replace_forcesStr.toLower() != "true") {
                         log_warn("Old RRA setup file has replace_force_set set "
                             " to false, will be ignored.");

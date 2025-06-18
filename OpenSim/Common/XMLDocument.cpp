@@ -548,12 +548,11 @@ SimTK::Xml::Element XMLDocument::findElementWithName(
     Element root = current;
 
     // This will be a recursive lambda function.
-    std::function<Element(Element&, const std::string&)>
-        searchForElement;
+    std::function<Element(Element&, const std::string&)> searchForElement;
     // For recursion, must capture the function itself.
     // Returns an invalid Element if no element with `name` could be found.
-    searchForElement = [&searchForElement](
-            Element& elem, const std::string& name) -> Element {
+    searchForElement = [&searchForElement](Element& elem,
+                               const std::string& name) -> Element {
         // This is a depth-first search.
         for (auto it = elem.element_begin(); it != elem.element_end();
                 ++it) {
@@ -561,8 +560,7 @@ SimTK::Xml::Element XMLDocument::findElementWithName(
             if (elemName == name)
                 return elem;
             Element foundElem = searchForElement(*it, name);
-            if (foundElem.isValid())
-                return foundElem;
+            if (foundElem.isValid()) return foundElem;
             // Keep searching other branches.
         }
         return Element(); // Did not find.

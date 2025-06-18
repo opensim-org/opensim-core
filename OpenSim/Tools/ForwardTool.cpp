@@ -247,7 +247,7 @@ bool ForwardTool::run()
 
     // Re create the system with forces above and Realize the topology
     SimTK::State& s = _model->initSystem();
-    _model->getMultibodySystem().realize(s, SimTK::Stage::Position );
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Position);
 
     loadStatesStorage(_statesFileName, _yStore);
 

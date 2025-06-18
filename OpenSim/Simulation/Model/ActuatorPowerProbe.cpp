@@ -192,8 +192,8 @@ void ActuatorPowerProbe::extendConnectToModel(Model& model)
 /**
 * Compute the Actuator power.
 */
-SimTK::Vector ActuatorPowerProbe::computeProbeInputs(const SimTK::State& s) const
-{
+SimTK::Vector ActuatorPowerProbe::computeProbeInputs(
+        const SimTK::State& s) const {
     int nA = getActuatorNames().size();
     SimTK::Vector TotalP(getNumProbeInputs());
     TotalP = 0;
@@ -213,7 +213,6 @@ SimTK::Vector ActuatorPowerProbe::computeProbeInputs(const SimTK::State& s) cons
 
     return TotalP;
 }
-
 
 //_____________________________________________________________________________
 /**

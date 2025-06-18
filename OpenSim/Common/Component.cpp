@@ -514,8 +514,8 @@ void Component::addStateVariable(const std::string&  stateVariableName,
                                  const SimTK::Stage& invalidatesStage,
                                  bool isHidden) const
 {
-    if( (invalidatesStage < SimTK::Stage::Position) ||
-        (invalidatesStage > SimTK::Stage::Dynamics)) {
+    if ((invalidatesStage < SimTK::Stage::Position) ||
+            (invalidatesStage > SimTK::Stage::Dynamics)) {
         throw Exception("Component::addStateVariable: invalidatesStage "
                         "must be Position, Velocity or Dynamics.");
     }
@@ -553,7 +553,8 @@ void Component::addStateVariable(Component::StateVariable*  stateVariable) const
     // to enable a similar interface for setting and getting the derivatives
     // based on the creator specified state name
     if(asv){
-        addCacheVariable(stateVariableName+"_deriv", 0.0, SimTK::Stage::Dynamics);
+        addCacheVariable(
+                stateVariableName + "_deriv", 0.0, SimTK::Stage::Dynamics);
     }
 
 }
@@ -970,9 +971,8 @@ double Component::
 
 // Set the value of a state variable allocated by this Component given its name
 // for this component.
-void Component::
-    setStateVariableValue(SimTK::State& s, const std::string& name, double value) const
-{
+void Component::setStateVariableValue(
+        SimTK::State& s, const std::string& name, double value) const {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
@@ -1076,10 +1076,8 @@ void Component::
 }
 
 // Set the derivative of a state variable computed by this Component by name.
-void Component::
-    setStateVariableDerivativeValue(const SimTK::State& state,
-                               const std::string& name, double value) const
-{
+void Component::setStateVariableDerivativeValue(const SimTK::State& state,
+        const std::string& name, double value) const {
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.find(name);
 
@@ -1096,7 +1094,6 @@ void Component::
         throw Exception(msg.str(),__FILE__,__LINE__);
     }
 }
-
 
 Array<std::string> Component::getDiscreteVariableNames() const {
     // Must have already called initSystem.
@@ -1795,7 +1792,7 @@ void Component::extendRealizeAcceleration(const SimTK::State& s) const
                 // set corresponding system derivative value from
                 // cached value
                 subSys.updZDot(s)[SimTK::ZIndex(asv->getVarIndex())] =
-                    asv->getDerivative(s);
+                        asv->getDerivative(s);
         }
     }
 }

@@ -388,7 +388,7 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
         string base = marker.getName().substr(0, ix);
         cout << "Processing marker " << marker.getName() << endl;
 
-        op = xp = yp = dp = SimTK::Vec3{ SimTK::NaN };
+        op = xp = yp = dp = SimTK::Vec3{SimTK::NaN};
         for (auto& label : labels) {
             if (table.hasColumn(base + "_IMU_O")) {
                 index = table.getColumnIndex(base + "_IMU_O");

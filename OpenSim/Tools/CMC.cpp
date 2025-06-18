@@ -52,18 +52,19 @@ using namespace OpenSim;
     /// @cond
 class ComputeControlsEventHandler : public SimTK::PeriodicEventHandler {
 public:
-    ComputeControlsEventHandler( CMC *controller) :
-        PeriodicEventHandler(SimTK::Stage::Time),
-        _controller( controller ) {
-    }
+    ComputeControlsEventHandler(CMC* controller)
+            : PeriodicEventHandler(SimTK::Stage::Time),
+              _controller(controller) {}
 
-    void handleEvent (SimTK::State& s, SimTK::Real accuracy, bool& terminate) const override {
+    void handleEvent(SimTK::State& s, SimTK::Real accuracy,
+            bool& terminate) const override {
         terminate = false;
         _controller->computeControls( s, _controller->updControlSet() );
         _controller->setTargetTime(s.getTime() + _controller->getTargetDT());
     }
 
-    SimTK::Real getNextEventTime( const SimTK::State& s, bool includeCurrent) const override {
+    SimTK::Real getNextEventTime(
+            const SimTK::State& s, bool includeCurrent) const override {
 
         if( _controller->getCheckTargetTime() ) {
             return( _controller->getTargetTime() );

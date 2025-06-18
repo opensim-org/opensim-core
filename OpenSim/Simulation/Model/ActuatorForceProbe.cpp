@@ -204,8 +204,8 @@ void ActuatorForceProbe::extendConnectToModel(Model& model)
 /**
 * Compute the Force.
 */
-SimTK::Vector ActuatorForceProbe::computeProbeInputs(const SimTK::State& s) const
-{
+SimTK::Vector ActuatorForceProbe::computeProbeInputs(
+        const SimTK::State& s) const {
     int nA = getActuatorNames().size();
     SimTK::Vector TotalF(getNumProbeInputs());
     TotalF = 0;
@@ -225,7 +225,6 @@ SimTK::Vector ActuatorForceProbe::computeProbeInputs(const SimTK::State& s) cons
     }
     return TotalF;
 }
-
 
 //_____________________________________________________________________________
 /**

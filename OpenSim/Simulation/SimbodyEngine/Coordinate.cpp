@@ -241,11 +241,11 @@ void Coordinate::extendRealizeInstance(const SimTK::State& state) const
     /* Set the YIndex on the StateVariable */
 }
 
-void Coordinate::extendInitStateFromProperties(SimTK::State& s) const
-{
+void Coordinate::extendInitStateFromProperties(SimTK::State& s) const {
     // Cannot enforce the constraint, since state of constraints may still be undefined
-    const SimTK::MobilizedBody& mb=_model->getMatterSubsystem().getMobilizedBody(_bodyIndex);
-    int nq=mb.getNumQ(s);
+    const SimTK::MobilizedBody& mb =
+            _model->getMatterSubsystem().getMobilizedBody(_bodyIndex);
+    int nq = mb.getNumQ(s);
     if (_mobilizerQIndex>=nq){
         //Something is wrong/inconsistent with model definition. Abort
         throw(Exception("Coordinate: "+getName()+" is not consistent with owner Joint. Aborting."));
@@ -356,9 +356,8 @@ void Coordinate::setValue(SimTK::State& s, double aValue , bool enforceConstrain
             double weight = isDependent(s) ? 0.0  : 10;
             // assemble model so that states satisfy ALL constraints
             _model->assemble(s, this, weight);
-        }
-        else
-            _model->getMultibodySystem().realize(s, SimTK::Stage::Position );
+        } else
+            _model->getMultibodySystem().realize(s, SimTK::Stage::Position);
     }
 }
 
@@ -677,8 +676,9 @@ double Coordinate::SpeedStateVariable::
     getDerivative(const SimTK::State& state) const
 {
     const Coordinate& owner = *((Coordinate *)&getOwner());
-    const SimTK::MobilizedBody& mb = owner.getModel().getMatterSubsystem()
-                                .getMobilizedBody(owner.getBodyIndex());
+    const SimTK::MobilizedBody& mb =
+            owner.getModel().getMatterSubsystem().getMobilizedBody(
+                    owner.getBodyIndex());
 
     return mb.getUDotAsVector(state)[owner.getMobilizerQIndex()];
 }

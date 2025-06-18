@@ -580,21 +580,23 @@ record(const SimTK::State& s)
     /* retrieved desired joint reactions, convert to desired bodies, and convert
     *  to desired reference frames*/
     int numOutputJoints = _reactionList.getSize();
-    SimTK::Vector_<SimTK::Vec3> forcesVec(numOutputJoints), momentsVec(numOutputJoints), pointsVec(numOutputJoints);
+    SimTK::Vector_<SimTK::Vec3> forcesVec(numOutputJoints),
+            momentsVec(numOutputJoints), pointsVec(numOutputJoints);
     for(int i=0; i<numOutputJoints; i++) {
         JointReactionKey currentKey = _reactionList[i];
         const Joint& joint = *currentKey.joint;
         const Frame& expressedInBody = *currentKey.expressedInFrame;
         SimTK::SpatialVec jointReaction;
         SimTK::Vec3 pointOfApplication;
-        
+
         // check if the load requested is on the parent or child
         if(!currentKey.isAppliedOnChild){
             jointReaction = joint.calcReactionOnParentExpressedInGround(s_analysis);
 
             // find the point of application in immediate parent frame, then
             // transform to the base frame of the parent (expressedInBody)
-            SimTK::Vec3 parentLocationInGlobal = joint.getParentFrame().getTransformInGround(s_analysis).p();
+            SimTK::Vec3 parentLocationInGlobal =
+                    joint.getParentFrame().getTransformInGround(s_analysis).p();
             pointOfApplication = 
                 ground.findStationLocationInAnotherFrame(s_analysis, parentLocationInGlobal, expressedInBody);
         }
@@ -603,14 +605,16 @@ record(const SimTK::State& s)
 
             // find the point of application in immediate child frame, then
             // transform to the base frame of the child (expressedInBody)
-            SimTK::Vec3 childLocationInGlobal = joint.getChildFrame().getTransformInGround(s_analysis).p();
+            SimTK::Vec3 childLocationInGlobal =
+                    joint.getChildFrame().getTransformInGround(s_analysis).p();
             pointOfApplication =
                 ground.findStationLocationInAnotherFrame(s_analysis, childLocationInGlobal, expressedInBody);
         }
 
         // transform SpatialVec of reaction forces and moments to the
         // requested base frame (expressedInBody)
-        SimTK::Vec3 force = ground.expressVectorInAnotherFrame(s_analysis, jointReaction[1], expressedInBody);
+        SimTK::Vec3 force = ground.expressVectorInAnotherFrame(
+                s_analysis, jointReaction[1], expressedInBody);
         SimTK::Vec3 moment = ground.expressVectorInAnotherFrame(s_analysis, jointReaction[0], expressedInBody);
 
         /* place results in the truncated loads vectors*/

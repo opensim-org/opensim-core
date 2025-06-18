@@ -182,8 +182,7 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
              log_warn("{} Probe will be disabled.", errorMessage.str());
              setEnabled(false);
             //throw (Exception(errorMessage.c_str()));
-        }
-        else if (SimTK::isNaN(mm.get_provided_muscle_mass())) {
+        } else if (SimTK::isNaN(mm.get_provided_muscle_mass())) {
             errorMessage << "ERROR: No <provided_muscle_mass> specified for " 
                 << mm.getName() 
                 << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
@@ -244,15 +243,13 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
  * Units = W.
  * Note: for muscle velocities, Vm, we define Vm<0 as shortening and Vm>0 as lengthening.
  */
-SimTK::Vector Bhargava2004MuscleMetabolicsProbe::
-computeProbeInputs(const SimTK::State& s) const
-{
+SimTK::Vector Bhargava2004MuscleMetabolicsProbe::computeProbeInputs(
+        const SimTK::State& s) const {
     // Initialize metabolic energy rate values
     double Adot, Mdot, Sdot, Bdot, Wdot;
     Adot = Mdot = Sdot = Bdot = Wdot = 0;
     SimTK::Vector EdotOutput(getNumProbeInputs());
     EdotOutput = 0;
-
 
     // BASAL METABOLIC RATE (W) (based on whole body mass, not muscle mass)
     // so do outside of muscle loop.
@@ -261,11 +258,10 @@ computeProbeInputs(const SimTK::State& s) const
     if (get_basal_rate_on()) {
         Bdot = get_basal_coefficient() 
             * pow(_model->getMatterSubsystem().calcSystemMass(s), get_basal_exponent());
-        if (SimTK::isNaN(Bdot)) 
-            log_warn("{}: Bdot = NaN!", getName());
+        if (SimTK::isNaN(Bdot)) log_warn("{}: Bdot = NaN!", getName());
     }
-    EdotOutput(0) += Bdot;       // TOTAL metabolic power storage
-    
+    EdotOutput(0) += Bdot; // TOTAL metabolic power storage
+
     if (!get_report_total_metabolics_only())
         EdotOutput(1) = Bdot;    // BASAL metabolic power storage
 
@@ -297,12 +293,17 @@ computeProbeInputs(const SimTK::State& s) const
         const double fiber_length_normalized = m->getNormalizedFiberLength(s);
         const double fiber_velocity = m->getFiberVelocity(s);
         //const double fiber_velocity_normalized = m->getNormalizedFiberVelocity(s);
-        const double slow_twitch_excitation = mm.get_ratio_slow_twitch_fibers() * sin(SimTK::Pi/2 * excitation);
-        const double fast_twitch_excitation = (1 - mm.get_ratio_slow_twitch_fibers()) * (1 - cos(SimTK::Pi/2 * excitation));
+        const double slow_twitch_excitation =
+                mm.get_ratio_slow_twitch_fibers() *
+                sin(SimTK::Pi / 2 * excitation);
+        const double fast_twitch_excitation =
+                (1 - mm.get_ratio_slow_twitch_fibers()) *
+                (1 - cos(SimTK::Pi / 2 * excitation));
         double alpha, fiber_length_dependence;
 
-        // Get the unnormalized total active force, F_iso that 'would' be developed at the current activation
-        // and fiber length under isometric conditions (i.e. Vm=0)
+        // Get the unnormalized total active force, F_iso that 'would' be
+        // developed at the current activation and fiber length under isometric
+        // conditions (i.e. Vm=0)
         const double F_iso = activation * m->getActiveForceLengthMultiplier(s) * max_isometric_force;
 
         // Warnings
@@ -324,20 +325,15 @@ computeProbeInputs(const SimTK::State& s) const
                 ( (mm.get_activation_constant_slow_twitch() * slow_twitch_excitation) + (mm.get_activation_constant_fast_twitch() * fast_twitch_excitation) );
         }
 
-
-
         // MAINTENANCE HEAT RATE for muscle i (W)
         // ------------------------------------------
-        if (get_forbid_negative_total_power() || get_maintenance_rate_on())
-        {
+        if (get_forbid_negative_total_power() || get_maintenance_rate_on()) {
             SimTK::Vector tmp(1, fiber_length_normalized);
             fiber_length_dependence = get_normalized_fiber_length_dependence_on_maintenance_rate().calcValue(tmp);
-            
+
             Mdot = mm.getMuscleMass() * fiber_length_dependence * 
                 ( (mm.get_maintenance_constant_slow_twitch() * slow_twitch_excitation) + (mm.get_maintenance_constant_fast_twitch() * fast_twitch_excitation) );
         }
-
-
 
         // SHORTENING HEAT RATE for muscle i (W)
         // --> note that we define Vm<0 as shortening and Vm>0 as lengthening
@@ -385,7 +381,6 @@ computeProbeInputs(const SimTK::State& s) const
             log_warn("{} : Sdot ({}) = NaN!", getName(), m->getName());
         if (SimTK::isNaN(Wdot))
             log_warn("{} : Wdot ({}) = NaN!", getName(), m->getName());
-
 
         // If necessary, increase the shortening heat rate so that the total
         // power is non-negative.
@@ -473,7 +468,6 @@ computeProbeInputs(const SimTK::State& s) const
 
     return EdotOutput;
 }
-
 
 //_____________________________________________________________________________
 /** 
@@ -902,12 +896,10 @@ Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter(
 
     if (SimTK::isNaN(muscle_mass)) {
         set_use_provided_muscle_mass(false);
-    }
-    else {
+    } else {
         set_use_provided_muscle_mass(true);
         set_provided_muscle_mass(muscle_mass);
     }
-    
 }
 
 
@@ -932,12 +924,10 @@ Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter(
 
     if (SimTK::isNaN(muscle_mass)) {
         set_use_provided_muscle_mass(false);
-    }
-    else {
+    } else {
         set_use_provided_muscle_mass(true);
         set_provided_muscle_mass(muscle_mass);
     }
-    
 }
 
 

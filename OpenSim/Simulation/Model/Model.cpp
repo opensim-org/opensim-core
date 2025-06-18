@@ -613,7 +613,8 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
     if (!_assemblySolver){
         createAssemblySolver(s);
     }
-    const SimTK::Array_<CoordinateReference>& coordRefs = _assemblySolver->getCoordinateReferences();
+    const SimTK::Array_<CoordinateReference>& coordRefs =
+            _assemblySolver->getCoordinateReferences();
 
     for(unsigned int i=0; i<coordRefs.size(); i++){
         const string &coordName = coordRefs[i].getName();
@@ -653,7 +654,6 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 
     // Have a new working configuration so should realize to velocity
     getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-
 }
 
 void Model::invalidateSystem()
@@ -936,8 +936,8 @@ void Model::extendConnectToModel(Model &model)
     for (int m = 0; m < _multibodyTree.getNumMobilizers(); ++m) {
         // Get a mobilizer from the tree, then extract its corresponding
         // joint and bodies. Note that these should have equivalents in OpenSim.
-        const SimTK::MultibodyGraphMaker::Mobilizer& mob 
-            = _multibodyTree.getMobilizer(m);
+        const SimTK::MultibodyGraphMaker::Mobilizer& mob =
+                _multibodyTree.getMobilizer(m);
 
         if (mob.isSlaveMobilizer()){
             // add the slave body and joint
@@ -1001,7 +1001,7 @@ void Model::extendConnectToModel(Model &model)
     // Add the loop joints if any.
     for (int lcx = 0; lcx < _multibodyTree.getNumLoopConstraints(); ++lcx) {
         const SimTK::MultibodyGraphMaker::LoopConstraint& loop =
-            _multibodyTree.getLoopConstraint(lcx);
+                _multibodyTree.getLoopConstraint(lcx);
 
         Joint& joint = *MultibodyGraphMakerPtrCast<Joint>(loop.getJointRef());
         Body&  parent = *MultibodyGraphMakerPtrCast<Body>(loop.getParentBodyRef());
@@ -1097,11 +1097,12 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 
     // Create the shared cache that will hold all model controls
     // This must be created before Actuator.extendAddToSystem() since Actuator
-    // will append its "slots" and retain its index by accessing this cached Vector.
-    // Value depends on velocity and invalidates dynamics BUT should not trigger
-    // re-computation of the controls which are necessary for dynamics
-    SimTK::Measure_<SimTK::Vector>::Result modelControls(system.updDefaultSubsystem(),
-        SimTK::Stage::Velocity, SimTK::Stage::Acceleration);
+    // will append its "slots" and retain its index by accessing this cached
+    // Vector. Value depends on velocity and invalidates dynamics BUT should not
+    // trigger re-computation of the controls which are necessary for dynamics
+    SimTK::Measure_<SimTK::Vector>::Result modelControls(
+            system.updDefaultSubsystem(), SimTK::Stage::Velocity,
+            SimTK::Stage::Acceleration);
 
     mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
 }
@@ -1244,8 +1245,10 @@ void Model::extendInitStateFromProperties(SimTK::State& state) const
     Super::extendInitStateFromProperties(state);
     // Allocate the size and default values for controls
     // Actuators will have a const view into the cache
-    SimTK::Measure_<SimTK::Vector>::Result controlsCache = 
-        SimTK::Measure_<SimTK::Vector>::Result::getAs(updSystem().updDefaultSubsystem().getMeasure(_modelControlsIndex));
+    SimTK::Measure_<SimTK::Vector>::Result controlsCache =
+            SimTK::Measure_<SimTK::Vector>::Result::getAs(
+                    updSystem().updDefaultSubsystem().getMeasure(
+                            _modelControlsIndex));
     controlsCache.updValue(state).resize(_defaultControls.size());
     controlsCache.updValue(state) = _defaultControls;
 }
@@ -1272,8 +1275,7 @@ void Model::generateDecorations
     }
 }
 
-void Model::equilibrateMuscles(SimTK::State& state)
-{
+void Model::equilibrateMuscles(SimTK::State& state) {
     getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 
     bool failed = false;
@@ -1947,17 +1949,17 @@ int Model::getNumControls() const
 
 /** Update the controls for this the model at a given state.
  * Throws an exception if called before Model::initSystem() */
-SimTK::Vector& Model::updControls(const SimTK::State &s) const
-{
+SimTK::Vector& Model::updControls(const SimTK::State& s) const {
     if( (!_system) || (!_modelControlsIndex.isValid()) ){
         throw Exception("Model::updControls() requires an initialized Model./n" 
             "Prior call to Model::initSystem() is required.");
     }
 
-    // direct the system shared cache 
-    SimTK::Measure_<SimTK::Vector>::Result controlsCache = 
-        SimTK::Measure_<SimTK::Vector>::Result::getAs(_system->updDefaultSubsystem()
-            .getMeasure(_modelControlsIndex));
+    // direct the system shared cache
+    SimTK::Measure_<SimTK::Vector>::Result controlsCache =
+            SimTK::Measure_<SimTK::Vector>::Result::getAs(
+                    _system->updDefaultSubsystem().getMeasure(
+                            _modelControlsIndex));
     return controlsCache.updValue(s);
 }
 
@@ -1968,9 +1970,10 @@ void Model::markControlsAsValid(const SimTK::State& s) const
             "Prior call to Model::initSystem() is required.");
     }
 
-    SimTK::Measure_<SimTK::Vector>::Result controlsCache = 
-        SimTK::Measure_<SimTK::Vector>::Result::getAs(_system->updDefaultSubsystem()
-            .getMeasure(_modelControlsIndex));
+    SimTK::Measure_<SimTK::Vector>::Result controlsCache =
+            SimTK::Measure_<SimTK::Vector>::Result::getAs(
+                    _system->updDefaultSubsystem().getMeasure(
+                            _modelControlsIndex));
     controlsCache.markAsValid(s);
 }
 
@@ -1981,9 +1984,10 @@ void Model::markControlsAsInvalid(const SimTK::State& s) const
             "Prior call to Model::initSystem() is required.");
     }
 
-    SimTK::Measure_<SimTK::Vector>::Result controlsCache = 
-        SimTK::Measure_<SimTK::Vector>::Result::getAs(_system->updDefaultSubsystem()
-            .getMeasure(_modelControlsIndex));
+    SimTK::Measure_<SimTK::Vector>::Result controlsCache =
+            SimTK::Measure_<SimTK::Vector>::Result::getAs(
+                    _system->updDefaultSubsystem().getMeasure(
+                            _modelControlsIndex));
     controlsCache.markAsNotValid(s);
 }
 
@@ -1994,15 +1998,16 @@ void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) co
             "Prior call to Model::initSystem() is required.");
     }
 
-    // direct the system shared cache 
-    SimTK::Measure_<SimTK::Vector>::Result controlsCache = 
-        SimTK::Measure_<SimTK::Vector>::Result::getAs(_system->updDefaultSubsystem()
-        .getMeasure(_modelControlsIndex));
+    // direct the system shared cache
+    SimTK::Measure_<SimTK::Vector>::Result controlsCache =
+            SimTK::Measure_<SimTK::Vector>::Result::getAs(
+                    _system->updDefaultSubsystem().getMeasure(
+                            _modelControlsIndex));
     controlsCache.setValue(s, controls);
 
     // Make sure to re-realize dynamics to make sure controls can affect forces
     // and not just derivatives
-    if(s.getSystemStage() == SimTK::Stage::Dynamics)
+    if (s.getSystemStage() == SimTK::Stage::Dynamics)
         s.invalidateAllCacheAtOrAbove(SimTK::Stage::Dynamics);
 }
 
@@ -2014,7 +2019,7 @@ const SimTK::Vector& Model::getControls(const SimTK::State &s) const
             "Prior call to Model::initSystem() is required.");
     }
 
-    // direct the system shared cache 
+    // direct the system shared cache
     SimTK::Measure_<SimTK::Vector>::Result controlsCache = SimTK::Measure_<SimTK::Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
 
     if(!controlsCache.isValid(s)){
@@ -2221,28 +2226,23 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
 //------------------------------------------------------------------------------
 //          REALIZE THE SYSTEM TO THE REQUIRED COMPUTATIONAL STAGE
 //------------------------------------------------------------------------------
-void Model::realizeTime(const SimTK::State& state) const
-{
+void Model::realizeTime(const SimTK::State& state) const {
     getSystem().realize(state, SimTK::Stage::Time);
 }
 
-void Model::realizePosition(const SimTK::State& state) const
-{
+void Model::realizePosition(const SimTK::State& state) const {
     getSystem().realize(state, SimTK::Stage::Position);
 }
 
-void Model::realizeVelocity(const SimTK::State& state) const
-{
+void Model::realizeVelocity(const SimTK::State& state) const {
     getSystem().realize(state, SimTK::Stage::Velocity);
 }
 
-void Model::realizeDynamics(const SimTK::State& state) const
-{
+void Model::realizeDynamics(const SimTK::State& state) const {
     getSystem().realize(state, SimTK::Stage::Dynamics);
 }
 
-void Model::realizeAcceleration(const SimTK::State& state) const
-{
+void Model::realizeAcceleration(const SimTK::State& state) const {
     getSystem().realize(state, SimTK::Stage::Acceleration);
 }
 
