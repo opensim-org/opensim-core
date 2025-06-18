@@ -37,7 +37,6 @@
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Common/DebugUtilities.h>
 
-
 using namespace std;
 using namespace OpenSim;
 

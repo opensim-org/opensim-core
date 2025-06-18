@@ -729,7 +729,9 @@ void SimbodyEngine::convertDirectionCosinesToAngles(
  */
 void SimbodyEngine::convertDirectionCosinesToQuaternions(double aDirCos[3][3],
         double* rQ1, double* rQ2, double* rQ3, double* rQ4) const {
-    SimTK::Quaternion quat = SimTK::Rotation(SimTK::Rotation::getAs(&aDirCos[0][0])).convertRotationToQuaternion();
+    SimTK::Quaternion quat =
+            SimTK::Rotation(SimTK::Rotation::getAs(&aDirCos[0][0]))
+                    .convertRotationToQuaternion();
     *rQ1 = quat[0];
     *rQ2 = quat[1];
     *rQ3 = quat[2];
@@ -748,7 +750,8 @@ void SimbodyEngine::convertDirectionCosinesToQuaternions(double aDirCos[3][3],
 void SimbodyEngine::convertDirectionCosinesToQuaternions(double* aDirCos,
         double* rQ1, double* rQ2, double* rQ3, double* rQ4) const {
     if (aDirCos == NULL) return;
-    SimTK::Quaternion quat = SimTK::Rotation(SimTK::Rotation::getAs(aDirCos)).convertRotationToQuaternion();
+    SimTK::Quaternion quat = SimTK::Rotation(SimTK::Rotation::getAs(aDirCos))
+                                     .convertRotationToQuaternion();
     *rQ1 = quat[0];
     *rQ2 = quat[1];
     *rQ3 = quat[2];
@@ -786,7 +789,8 @@ void SimbodyEngine::convertQuaternionsToDirectionCosines(
         double aQ1, double aQ2, double aQ3, double aQ4, double* rDirCos) const {
     if (rDirCos == NULL) return;
     SimTK::Rotation R;
-    R.setRotationFromQuaternion(SimTK::Quaternion(SimTK::Vec4(aQ1, aQ2, aQ3, aQ4)));
+    R.setRotationFromQuaternion(
+            SimTK::Quaternion(SimTK::Vec4(aQ1, aQ2, aQ3, aQ4)));
 
     SimTK::Mat33::updAs(rDirCos) = R.asMat33();
 }

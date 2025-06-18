@@ -12,7 +12,6 @@
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Simulation/OrientationsReference.h>
 
-
 using namespace OpenSim;
 using namespace std;
 
