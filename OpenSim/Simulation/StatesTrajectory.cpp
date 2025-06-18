@@ -38,6 +38,10 @@ void StatesTrajectory::clear() {
     m_states.clear();
 }
 
+void StatesTrajectory::reserve(size_t new_cap) {
+    m_states.reserve(new_cap);
+}
+
 void StatesTrajectory::append(const SimTK::State& state) {
     if (!m_states.empty()) {
 
