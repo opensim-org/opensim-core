@@ -27,6 +27,8 @@
 #include "OpenSim/Simulation/Model/AbstractGeometryPath.h"
 #include "OpenSim/Simulation/Model/Station.h"
 #include <simbody/internal/CableSpan.h>
+#include <OpenSim/Simulation/MomentArmSolver.h>
+
 
 namespace OpenSim {
 
@@ -53,8 +55,6 @@ public:
     
     // CONSTRUCTION AND DESTRUCTION
     Scholz2015GeometryPathSegment();
-    Scholz2015GeometryPathSegment(const std::string& name,
-            const Station& origin, const Station& insertion);
 
     // GET AND SET
     const Station& getOrigin() const;
@@ -63,13 +63,18 @@ public:
     SimTK::Real getLength(const SimTK::State& s) const;
     SimTK::Real getLengtheningSpeed(const SimTK::State& s) const;
 
-     void applyBodyForces(const SimTK::State& state, SimTK::Real tension, 
-            SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
-    
+    void calcOriginUnitForce(const SimTK::State& state, 
+            SimTK::SpatialVec& unitForce_G) const;
+    void calcInsertionUnitForce(const SimTK::State& state, 
+            SimTK::SpatialVec& unitForce_G) const;
+    // TODO: Add method to calculate forces exerted by obstacles.
 
 private:
     // MODEL COMPONENT INTERFACE
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+            const SimTK::State& s,
+            SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override;
 
     const SimTK::CableSpan& getCableSpan() const;
     
@@ -137,6 +142,11 @@ private:
     // CACHE VARIABLES
     mutable CacheVariable<double> _lengthCV;
     mutable CacheVariable<double> _lengtheningSpeedCV;
+
+    // Solver used to compute moment-arms. The Scholz2015GeometryPath owns this 
+    // object, but we cannot simply use a unique_ptr because we want the pointer    
+    // to be cleared on copy.
+    SimTK::ResetOnCopy<std::unique_ptr<MomentArmSolver>> _maSolver;
 };
 
 } // namespace OpenSim

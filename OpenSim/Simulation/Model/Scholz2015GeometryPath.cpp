@@ -37,14 +37,6 @@ using namespace OpenSim;
 Scholz2015GeometryPathSegment::Scholz2015GeometryPathSegment() : 
         ModelComponent() { }
 
-Scholz2015GeometryPathSegment::Scholz2015GeometryPathSegment(
-        const std::string& name, const Station& origin, 
-        const Station& insertion) : Scholz2015GeometryPathSegment() {
-    setName(name);
-    connectSocket_origin(origin);
-    connectSocket_insertion(insertion);
-}
-
 const Station& Scholz2015GeometryPathSegment::getOrigin() const {
     return getSocket<Station>("origin").getConnectee();
 }
@@ -63,11 +55,14 @@ SimTK::Real Scholz2015GeometryPathSegment::getLengtheningSpeed(
     return getCableSpan().calcLengthDot(s);
 }
 
-void Scholz2015GeometryPathSegment::applyBodyForces(
-        const SimTK::State& state,
-        SimTK::Real tension,
-        SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const {
-    getCableSpan().applyBodyForces(state, tension, bodyForces);
+void Scholz2015GeometryPathSegment::calcOriginUnitForce(
+        const SimTK::State& state, SimTK::SpatialVec& unitForce_G) const {
+    getCableSpan().calcOriginUnitForce(state, unitForce_G);
+}   
+
+void Scholz2015GeometryPathSegment::calcInsertionUnitForce(
+        const SimTK::State& state, SimTK::SpatialVec& unitForce_G) const {
+    getCableSpan().calcTerminationUnitForce(state, unitForce_G);
 }
 
 void Scholz2015GeometryPathSegment::extendAddToSystem(
@@ -90,6 +85,13 @@ void Scholz2015GeometryPathSegment::extendAddToSystem(
 
 const SimTK::CableSpan& Scholz2015GeometryPathSegment::getCableSpan() const {
     return getModel().getMultibodySystem().getCableSubsystem().getCable(_index);
+}
+
+void Scholz2015GeometryPathSegment::generateDecorations(
+        bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const {
+    Super::generateDecorations(fixed, hints, s, geoms);
 }
 
 //=============================================================================
@@ -115,7 +117,11 @@ void Scholz2015GeometryPath::createInitialPathSegment(const std::string& name,
         Exception, "A path segment with the name '{}' already exists. Please "
         "choose a different name.", name);
 
-    append_path_segments(Scholz2015GeometryPathSegment(name, origin, insertion));
+    append_path_segments(Scholz2015GeometryPathSegment());
+    auto& segment = upd_path_segments(getProperty_path_segments().size() - 1);
+    segment.setName(name);
+    segment.connectSocket_origin(origin);
+    segment.connectSocket_insertion(insertion);
     _segmentNameToIndexMap[name] = 0;
 }
 
@@ -129,7 +135,11 @@ void Scholz2015GeometryPath::appendPathSegment(const std::string& name,
 
     int numSegments = getProperty_path_segments().size();
     const Station& origin = get_path_segments(numSegments - 1).getInsertion();
-    append_path_segments(Scholz2015GeometryPathSegment(name, origin, insertion));
+    append_path_segments(Scholz2015GeometryPathSegment());
+    auto& segment = upd_path_segments(getProperty_path_segments().size() - 1);
+    segment.setName(name);
+    segment.connectSocket_origin(origin);
+    segment.connectSocket_insertion(insertion);
     _segmentNameToIndexMap[name] = numSegments;
 }
 
@@ -143,20 +153,35 @@ double Scholz2015GeometryPath::getLength(const SimTK::State& s) const {
 
 double Scholz2015GeometryPath::computeMomentArm(const SimTK::State& s,
         const Coordinate& coord) const {
-    // TODO: Only valid when u = qdot.
-    SimTK::State state = s;
-    state.updQ() = s.getQ();
-    state.updU() = SimTK::Vector(s.getNU(), 0.0);
-    coord.setSpeedValue(state, 1.0);
-    return getLengtheningSpeed(state);
+
+    if (!_maSolver)
+        const_cast<Self*>(this)->_maSolver.reset(new MomentArmSolver(*_model));
+
+    return _maSolver->solve(s, coord,  *this);
 }
 
 void Scholz2015GeometryPath::produceForces(const SimTK::State& state,
-        double tension, ForceConsumer& forceConsumer) const{
+        double tension, ForceConsumer& forceConsumer) const {
+
+    if (tension <= 0.) {
+        return;
+    }
+
+    SimTK::SpatialVec unitBodyForce;
     for (int i = 0; i < getProperty_path_segments().size(); ++i) {
-        const Station& origin = get_path_segments(i).getOrigin();
-        const Station& insertion = get_path_segments(i).getInsertion();
-        
+        const auto& segment = get_path_segments(i);
+        const Station& origin = segment.getOrigin();
+        const Station& insertion = segment.getInsertion();
+
+        segment.calcOriginUnitForce(state, unitBodyForce);
+        forceConsumer.consumeBodySpatialVec(state, origin.getParentFrame(), 
+                unitBodyForce * tension);
+
+        // TODO: Add forces exerted by obstacles.
+
+        segment.calcInsertionUnitForce(state, unitBodyForce);
+        forceConsumer.consumeBodySpatialVec(state, insertion.getParentFrame(), 
+                unitBodyForce * tension);
     }
 }
 

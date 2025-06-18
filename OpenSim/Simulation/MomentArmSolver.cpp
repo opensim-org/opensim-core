@@ -59,7 +59,7 @@ Refer to Moment-arm Theory document by Michael Sherman for details.
 
 **********************************************************************************/
 double MomentArmSolver::solve(const State &state, const Coordinate &aCoord,
-                              const GeometryPath &path) const
+                              const AbstractGeometryPath &path) const
 {
     //Local modifiable copy of the state
     State& s_ma = _stateCopy;
