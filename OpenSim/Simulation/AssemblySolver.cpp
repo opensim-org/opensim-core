@@ -27,7 +27,6 @@
 #include "simbody/internal/AssemblyCondition_QValue.h"
 
 using namespace std;
-using namespace SimTK;
 
 namespace OpenSim {
 
@@ -102,9 +101,9 @@ void AssemblySolver::setupGoals(SimTK::State &s)
     for(int i=0; i<modelCoordSet.getSize(); ++i){
         const Coordinate& coord = modelCoordSet[i];
         if(coord.getClamped(s)){
-            _assembler->restrictQ(coord.getBodyIndex(), 
-                MobilizerQIndex(coord.getMobilizerQIndex()),
-                coord.getRangeMin(), coord.getRangeMax());
+            _assembler->restrictQ(coord.getBodyIndex(),
+                    SimTK::MobilizerQIndex(coord.getMobilizerQIndex()),
+                    coord.getRangeMin(), coord.getRangeMax());
         }
     }
 

@@ -25,7 +25,6 @@
 
 using namespace std;
 using namespace OpenSim;
-using namespace SimTK;
 
 const string Millard2012EquilibriumMuscle::
     STATE_ACTIVATION_NAME = "activation";
@@ -389,7 +388,8 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
 
     } else { 
         const double min_activation = get_minimum_activation();
-        const double min_activation_clamped = clamp(0, min_activation, 1);
+        const double min_activation_clamped =
+                SimTK::clamp(0, min_activation, 1);
         if (min_activation > 0. && 
             std::abs(min_activation_clamped -min_activation) > SimTK::Eps) {
             log_info("'{}': Parameter update for the damped-model: "
@@ -1646,7 +1646,7 @@ Millard2012EquilibriumMuscle::MuscleStateEstimate
             else {
                 // We've stagnated or hit a limit; assume we are hitting local
                 // minimum and attempt to approach from the other direction.
-                lce = lcePrev - sign(delta_lce)*SimTK::SqrtEps;
+                lce = lcePrev - SimTK::sign(delta_lce) * SimTK::SqrtEps;
                 // Force a break, which will update the derivatives of
                 // the muscle force and estimate of the fiber-velocity
                 h = 0;

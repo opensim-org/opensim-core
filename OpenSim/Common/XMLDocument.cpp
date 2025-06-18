@@ -537,35 +537,33 @@ string XMLDocument::updateConnecteePath30517(
 
 SimTK::Xml::Element XMLDocument::findElementWithName(
         SimTK::Xml::Element& element, const std::string& name) {
-    using namespace SimTK;
+    using namespace SimTK::Xml;
 
-    if (name.empty()) return Xml::Element();
+    if (name.empty()) return Element();
 
     // First, get to the root of the XML document.
-    Xml::Element current = element;
+    Element current = element;
     while (current.hasParentElement())
         current = current.getParentElement();
-    Xml::Element root = current;
+    Element root = current;
 
     // This will be a recursive lambda function.
-    std::function<Xml::Element(Xml::Element&, const std::string&)>
-        searchForElement;
+    std::function<Element(Element&, const std::string&)> searchForElement;
     // For recursion, must capture the function itself.
     // Returns an invalid Element if no element with `name` could be found.
-    searchForElement = [&searchForElement](
-            Xml::Element& elem, const std::string& name) -> Xml::Element {
+    searchForElement = [&searchForElement](Element& elem,
+                               const std::string& name) -> Element {
         // This is a depth-first search.
         for (auto it = elem.element_begin(); it != elem.element_end();
                 ++it) {
             std::string elemName = it->getOptionalAttributeValue("name");
             if (elemName == name)
                 return elem;
-            Xml::Element foundElem = searchForElement(*it, name);
-            if (foundElem.isValid())
-                return foundElem;
+            Element foundElem = searchForElement(*it, name);
+            if (foundElem.isValid()) return foundElem;
             // Keep searching other branches.
         }
-        return Xml::Element(); // Did not find.
+        return Element(); // Did not find.
     };
     return searchForElement(root, name);
 }
