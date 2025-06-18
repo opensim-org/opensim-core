@@ -762,7 +762,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 
     // realize to Velocity because some tasks (eg. CMC_Point) need to be
     // at velocity to compute errors
-    _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
     // ERRORS
     _taskSet->computeErrors(s, tiReal);
@@ -905,7 +905,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 
     if(!_target->prepareToOptimize(newState, &_f[0])) {
         // No direct solution, need to run optimizer
-        SimTK::Vector fVector(N,&_f[0],true);
+        SimTK::Vector fVector(N, &_f[0], true);
 
         try {
             _optimizer->optimize(fVector);

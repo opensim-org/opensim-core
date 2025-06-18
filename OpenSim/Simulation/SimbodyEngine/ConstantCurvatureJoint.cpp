@@ -155,8 +155,8 @@ SimTK::Rotation OpenSim::ConstantCurvatureJoint::eulerXZYToMatrix(
 
 /// This gives the gradient of an XZY rotation matrix with respect to the
 /// specific index (0, 1, or 2)
-Mat33 OpenSim::ConstantCurvatureJoint::eulerXZYToMatrixGrad(
-        const Vec3& _angle, int index) {
+SimTK::Mat33 OpenSim::ConstantCurvatureJoint::eulerXZYToMatrixGrad(
+        const SimTK::Vec3& _angle, int index) {
     // Original
     // +-           -+   +-                                        -+
     // | r00 r01 r02 |   |  cy*cz           -sz      cz*sy          |
@@ -680,7 +680,8 @@ public:
                 length);
     }
 
-    SimTK::SpatialVec multiplyByHMatrix(const SimTK::State& s, int nu, const SimTK::Real* u) const {
+    SimTK::SpatialVec multiplyByHMatrix(
+            const SimTK::State& s, int nu, const SimTK::Real* u) const {
         auto rawQ = getQ(s);
         Vec3 q = Vec3(rawQ(0), rawQ(1), rawQ(2));
         Mat63 J = OpenSim::ConstantCurvatureJoint::getConstantCurveJacobian(
@@ -692,7 +693,8 @@ public:
         OPENSIM_ASSERT(!J.isInf());
         OPENSIM_ASSERT(!result.isNaN());
 
-        return SimTK::SpatialVec(result.getSubVec<3>(0), result.getSubVec<3>(3));
+        return SimTK::SpatialVec(
+                result.getSubVec<3>(0), result.getSubVec<3>(3));
     }
 
     void multiplyByHTranspose(const SimTK::State& s, const SimTK::SpatialVec& F,
@@ -736,7 +738,8 @@ public:
         OPENSIM_ASSERT(!dJ.isInf());
         OPENSIM_ASSERT(!result.isNaN());
 
-        return SimTK::SpatialVec(result.getSubVec<3>(0), result.getSubVec<3>(3));
+        return SimTK::SpatialVec(
+                result.getSubVec<3>(0), result.getSubVec<3>(3));
     }
 
     void multiplyByHDotTranspose(const SimTK::State& s,

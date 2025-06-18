@@ -617,8 +617,9 @@ void InverseDynamicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int vers
                                 p->getElementTag() == "end_time")
                             continue;
                         else if (p->getElementTag() == "use_model_force_set") {
-                            SimTK::String use_model_forcesStr = p->getValueAs<SimTK::String>();
-                            use_model_forces = (use_model_forcesStr=="true");
+                            SimTK::String use_model_forcesStr =
+                                    p->getValueAs<SimTK::String>();
+                            use_model_forces = (use_model_forcesStr == "true");
                         } else
                             iterTool->insertNodeAfter( iterTool->node_end(), p->clone());
                     }
@@ -627,9 +628,15 @@ void InverseDynamicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int vers
                     stream << tool_initial_time << " " << tool_final_time;
                     iterTool->insertNodeAfter(iterTool->node_end(),
                             SimTK::Xml::Element("time_range", stream.str()));
-                    iterTool->insertNodeAfter( iterTool->node_end(), SimTK::Xml::Element("forces_to_exclude", use_model_forces?"":"Muscles"));
-                    iterTool->insertNodeAfter( iterTool->node_end(), SimTK::Xml::Element("output_gen_force_file", prefix+"_InverseDynamics.sto"));
-                    iterTool->insertNodeAfter( iterTool->node_end(), SimTK::Xml::Element("coordinates_in_degrees", "true"));
+                    iterTool->insertNodeAfter(iterTool->node_end(),
+                            SimTK::Xml::Element("forces_to_exclude",
+                                    use_model_forces ? "" : "Muscles"));
+                    iterTool->insertNodeAfter(iterTool->node_end(),
+                            SimTK::Xml::Element("output_gen_force_file",
+                                    prefix + "_InverseDynamics.sto"));
+                    iterTool->insertNodeAfter(iterTool->node_end(),
+                            SimTK::Xml::Element(
+                                    "coordinates_in_degrees", "true"));
                     iterTool->eraseNode(iterAnalysisSet);
                 }
                 newDoc.writeToFile(newFileName);

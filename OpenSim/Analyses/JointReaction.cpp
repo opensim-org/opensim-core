@@ -615,7 +615,8 @@ record(const SimTK::State& s)
         // requested base frame (expressedInBody)
         SimTK::Vec3 force = ground.expressVectorInAnotherFrame(
                 s_analysis, jointReaction[1], expressedInBody);
-        SimTK::Vec3 moment = ground.expressVectorInAnotherFrame(s_analysis, jointReaction[0], expressedInBody);
+        SimTK::Vec3 moment = ground.expressVectorInAnotherFrame(
+                s_analysis, jointReaction[0], expressedInBody);
 
         /* place results in the truncated loads vectors*/
         forcesVec[i] = force;

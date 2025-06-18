@@ -1332,7 +1332,8 @@ void RRATool::setOriginalForceSet(const ForceSet &aForceSet) {
                             " to false, will be ignored.");
                     }
                 }
-                SimTK::Xml::element_iterator timeWindowIter(toolNode.element_begin("cmc_time_window"));
+                SimTK::Xml::element_iterator timeWindowIter(
+                        toolNode.element_begin("cmc_time_window"));
                 if (timeWindowIter != toolNode.element_end()){
                     double timeWindow = timeWindowIter->getValueAs<double>();
                     if (timeWindow != .001) {

@@ -390,13 +390,15 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
                     }
                     root.insertNodeAfter(root.node_end(),
                             SimTK::Xml::Element("constraint_weight", "20.0"));
-                    root.insertNodeAfter( root.node_end(), SimTK::Xml::Element("accuracy", "1e-5"));
+                    root.insertNodeAfter(root.node_end(),
+                            SimTK::Xml::Element("accuracy", "1e-5"));
                     // erase node for IKTrialSet
                     root.eraseNode(toolIter);
 
                     // Create an OpenSimDocument node and move root inside it
                     SimTK::Xml::Document newDocument;
-                    SimTK::Xml::Element docElement= newDocument.getRootElement();
+                    SimTK::Xml::Element docElement =
+                            newDocument.getRootElement();
                     docElement.setAttributeValue("Version", "20300");
                     docElement.setElementTag("OpenSimDocument");
                     // Copy all children of root to newRoot

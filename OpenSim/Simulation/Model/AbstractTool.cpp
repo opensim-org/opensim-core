@@ -685,7 +685,11 @@ void AbstractTool::removeExternalLoadsFromModel()
                                             "lowpass_cutoff_frequency_for_load_"
                                             "kinematics"));
                             if (iter2 == extLoadsElem.element_end())
-                                iter->insertNodeAfter(iter->element_end(), SimTK::Xml::Element("lowpass_cutoff_frequency_for_load_kinematics", freq));
+                                iter->insertNodeAfter(iter->element_end(),
+                                        SimTK::Xml::Element(
+                                                "lowpass_cutoff_frequency_for_"
+                                                "load_kinematics",
+                                                freq));
                             else
                                 iter2->setValue(freq);
                         }

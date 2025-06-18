@@ -2012,15 +2012,17 @@ void Model::setControls(const SimTK::State& s, const SimTK::Vector& controls) co
 }
 
 /** Const access to controls does not invalidate dynamics */
-const SimTK::Vector& Model::getControls(const SimTK::State &s) const
-{
+const SimTK::Vector& Model::getControls(const SimTK::State& s) const {
     if( (!_system) || (!_modelControlsIndex.isValid()) ){
         throw Exception("Model::getControls() requires an initialized Model./n" 
             "Prior call to Model::initSystem() is required.");
     }
 
     // direct the system shared cache
-    SimTK::Measure_<SimTK::Vector>::Result controlsCache = SimTK::Measure_<SimTK::Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
+    SimTK::Measure_<SimTK::Vector>::Result controlsCache =
+            SimTK::Measure_<SimTK::Vector>::Result::getAs(
+                    _system->updDefaultSubsystem().getMeasure(
+                            _modelControlsIndex));
 
     if(!controlsCache.isValid(s)){
         // Always reset controls to their default values before computing controls
@@ -2033,7 +2035,6 @@ const SimTK::Vector& Model::getControls(const SimTK::State &s) const
 
     return controlsCache.getValue(s);
 }
-
 
 /** Compute the controls the model */
 void Model::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
@@ -2246,8 +2247,7 @@ void Model::realizeAcceleration(const SimTK::State& state) const {
     getSystem().realize(state, SimTK::Stage::Acceleration);
 }
 
-void Model::realizeReport(const SimTK::State& state) const
-{
+void Model::realizeReport(const SimTK::State& state) const {
     getSystem().realize(state, SimTK::Stage::Report);
 }
 
