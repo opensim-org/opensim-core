@@ -12,7 +12,8 @@ v4.6
 - Improvements for the `XsensDataReader`. Add a configuration option to XSensDataReaderSettings to specify a known data rate (sampling frequency). Automatically detect the delimiter used in the file. Support the new Xsens export rotations formats (Rotation Matrix, Quaternion, or Euler angles) values from Xsens files. Update the parser to handle the path separator for data_folder and fix a memory leak. Verify integrity and uniformity of all files. Add tests with additional new and old Xsens formats. (#4063)
 - Remove `using namespace SimTK;` from core OpenSim files to prevent namespace conflicts and operator overshadowing (#4066)
 - Use catch2 `INFO` logging macros in tests instead of OpenSim `log_info` (#4066)
-
+- Completed the implementation of the `MeyerFregly2016Force` class to support NMSM Pipeline-equivalent contact models in Moco. (#3877)
+- The experimental classes `AckermannVanDenBogert2010Force` and `EspositoMiller2018Force` have been removed. (#3877)
 
 v4.5.2
 ======
@@ -101,7 +102,6 @@ v4.5.2
 - Exposed the "dissipated energy" state variable allocated by the `SimTK::Force::LinearBushing` that is internal to `BushingForce`. 
   This change fixed a bug in Moco where adding a `BushingForce` led to a segfault due to a mismatch between the size of the 
   auxiliary state vector reserved by Moco and `SimTK::State::getZ()`. (#4054)
-- Completed the implementation of the `MeyerFregly2016Force` included in the `StationPlaneContactForce` class to support NMSM Pipeline-equivalent contact models in Moco. (#3877)
 
 
 v4.5.1

@@ -138,7 +138,7 @@
 #include <OpenSim/Simulation/Model/BushingForce.h>
 #include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>
 #include <OpenSim/Simulation/Model/ExpressionBasedBushingForce.h>
-#include <OpenSim/Simulation/Model/StationPlaneContactForce.h>
+#include <OpenSim/Simulation/Model/MeyerFregly2016Force.h>
 
 #include <OpenSim/Simulation/Solver.h>
 #include <OpenSim/Simulation/AssemblySolver.h>

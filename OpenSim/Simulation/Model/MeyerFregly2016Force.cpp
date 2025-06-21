@@ -1,13 +1,18 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim: StationPlaneContactForce.cpp                                      *
+ *                    OpenSim:  MeyerFregly2016Force.cpp                      *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2025 Stanford University and the Authors                     *
+ * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
+ * See http://opensim.stanford.edu and the NOTICE file for more information.  *
+ * OpenSim is developed at Stanford University and supported by the US        *
+ * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
+ * through the Warrior Web program.                                           *
  *                                                                            *
+ * Copyright (c) 2005-2025 Stanford University and the Authors                *
  * Author(s): Nicholas Bianco, Christopher Dembia, Spencer Williams           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
- * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
  *                                                                            *
  * Unless required by applicable law or agreed to in writing, software        *
  * distributed under the License is distributed on an "AS IS" BASIS,          *
@@ -16,20 +21,33 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "StationPlaneContactForce.h"
+#include "MeyerFregly2016Force.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 
 //=============================================================================
-// STATION PLANE CONTACT FORCE
+// CONSTRUCTION
 //=============================================================================
-StationPlaneContactForce::StationPlaneContactForce() {
+MeyerFregly2016Force::MeyerFregly2016Force() {
+    constructProperties();
+}
+
+void MeyerFregly2016Force::constructProperties() {
+    constructProperty_stiffness(1.0e4);
+    constructProperty_dissipation(1.0e-2);
+    constructProperty_spring_resting_length(0);
+    constructProperty_dynamic_friction(0);
+    constructProperty_viscous_friction(5.0);
+    constructProperty_latch_velocity(0.05);
     constructProperty_force_visualization_scale_factor();
 }
 
-SimTK::Vec3 StationPlaneContactForce::getContactForceOnStation(
+//=============================================================================
+// GET AND SET
+//=============================================================================
+SimTK::Vec3 MeyerFregly2016Force::getContactForceOnStation(
         const SimTK::State& s) const {
     if (!isCacheVariableValid(s, _forceOnStationCV)) {
         setContactForceOnStation(s, calcContactForceOnStation(s));
@@ -37,12 +55,15 @@ SimTK::Vec3 StationPlaneContactForce::getContactForceOnStation(
     return getCacheVariableValue<SimTK::Vec3>(s, _forceOnStationCV);
 }
 
-void StationPlaneContactForce::setContactForceOnStation(const SimTK::State& s,
+void MeyerFregly2016Force::setContactForceOnStation(const SimTK::State& s,
         const SimTK::Vec3& force) const {
     setCacheVariableValue(s, _forceOnStationCV, force);
 }
 
-OpenSim::Array<std::string> StationPlaneContactForce::getRecordLabels() const {
+//=============================================================================
+// FORCE INTERFACE
+//=============================================================================
+OpenSim::Array<std::string> MeyerFregly2016Force::getRecordLabels() const {
     OpenSim::Array<std::string> labels;
     const auto stationName = getConnectee("station").getName();
     labels.append(getName() + "." + stationName + ".force.X");
@@ -51,7 +72,7 @@ OpenSim::Array<std::string> StationPlaneContactForce::getRecordLabels() const {
     return labels;
 }
 
-OpenSim::Array<double> StationPlaneContactForce::getRecordValues(
+OpenSim::Array<double> MeyerFregly2016Force::getRecordValues(
         const SimTK::State& s) const {
     OpenSim::Array<double> values;
     const SimTK::Vec3& force = getContactForceOnStation(s);
@@ -59,76 +80,6 @@ OpenSim::Array<double> StationPlaneContactForce::getRecordValues(
     values.append(force[1]);
     values.append(force[2]);
     return values;
-}
-
-void StationPlaneContactForce::generateDecorations(bool fixed, 
-        const ModelDisplayHints& hints, const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const {
-    Super::generateDecorations(fixed, hints, s, geoms);
-    const auto& station = getConnectee<Station>("station");
-
-    // Station visualization.
-    SimTK::DecorativeSphere sphere;
-    sphere.setColor(SimTK::Green);
-    sphere.setRadius(0.01);
-    sphere.setBodyId(station.getParentFrame().getMobilizedBodyIndex());
-    sphere.setRepresentation(SimTK::DecorativeGeometry::DrawWireframe);
-    sphere.setTransform(SimTK::Transform(station.get_location()));
-    geoms.push_back(sphere);
-
-    if (fixed) return;
-
-    // Contact force visualization.
-    getModel().realizeVelocity(s);
-    const auto point1 = station.getLocationInGround(s);
-    const SimTK::Vec3& force = getContactForceOnStation(s);
-    const SimTK::Vec3 point2 = point1 + force * m_forceVizScaleFactor;
-    SimTK::DecorativeLine line(point1, point2);
-    line.setColor(SimTK::Green);
-    line.setLineThickness(1.0);
-    geoms.push_back(line);   
-}
-
-void StationPlaneContactForce::extendRealizeInstance(
-        const SimTK::State& state) const {
-    Super::extendRealizeInstance(state);
-    if (!getProperty_force_visualization_scale_factor().empty()) {
-        m_forceVizScaleFactor = get_force_visualization_scale_factor();
-    } else {
-        const Model& model = getModel();
-        const double mass = model.getTotalMass(state);
-        const double weight = mass * model.getGravity().norm();
-        m_forceVizScaleFactor = 1 / weight;
-    }
-}
-
-void StationPlaneContactForce::extendAddToSystem(
-        SimTK::MultibodySystem& system) const {
-    Super::extendAddToSystem(system);
-
-    this->_forceOnStationCV = addCacheVariable<SimTK::Vec3>(
-            "force_on_station", SimTK::Vec3(0),
-            SimTK::Stage::Velocity);
-}
-
-void StationPlaneContactForce::implProduceForces(const SimTK::State& s, 
-        ForceConsumer& forceConsumer) const {
-
-    const SimTK::Vec3& force = getContactForceOnStation(s);
-    const auto& station = getConnectee<Station>("station");
-    const auto& pos = station.getLocationInGround(s);
-    const auto& frame = station.getParentFrame();
-
-    forceConsumer.consumePointForce(s, frame, station.get_location(), force);
-    forceConsumer.consumePointForce(s, getModel().getGround(), pos, -force);
-}
-
-//=============================================================================
-// MEYER FREGLY 2016 FORCE
-//=============================================================================
-
-MeyerFregly2016Force::MeyerFregly2016Force() : StationPlaneContactForce() {
-    constructProperties();
 }
 
 SimTK::Vec3 MeyerFregly2016Force::calcContactForceOnStation(
@@ -198,11 +149,70 @@ SimTK::Vec3 MeyerFregly2016Force::calcContactForceOnStation(
     return force;
 }
 
-void MeyerFregly2016Force::constructProperties() {
-    constructProperty_stiffness(1.0e4);
-    constructProperty_dissipation(1.0e-2);
-    constructProperty_spring_resting_length(0);
-    constructProperty_dynamic_friction(0);
-    constructProperty_viscous_friction(5.0);
-    constructProperty_latch_velocity(0.05);
+//=============================================================================
+// COMPONENT INTERFACE
+//=============================================================================
+void MeyerFregly2016Force::generateDecorations(bool fixed, 
+        const ModelDisplayHints& hints, const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const {
+    Super::generateDecorations(fixed, hints, s, geoms);
+    const auto& station = getConnectee<Station>("station");
+
+    // Station visualization.
+    SimTK::DecorativeSphere sphere;
+    sphere.setColor(SimTK::Green);
+    sphere.setRadius(0.01);
+    sphere.setBodyId(station.getParentFrame().getMobilizedBodyIndex());
+    sphere.setRepresentation(SimTK::DecorativeGeometry::DrawWireframe);
+    sphere.setTransform(SimTK::Transform(station.get_location()));
+    geoms.push_back(sphere);
+
+    if (fixed) return;
+
+    // Contact force visualization.
+    getModel().realizeVelocity(s);
+    const auto point1 = station.getLocationInGround(s);
+    const SimTK::Vec3& force = getContactForceOnStation(s);
+    const SimTK::Vec3 point2 = point1 + force * m_forceVizScaleFactor;
+    SimTK::DecorativeLine line(point1, point2);
+    line.setColor(SimTK::Green);
+    line.setLineThickness(1.0);
+    geoms.push_back(line);   
+}
+
+void MeyerFregly2016Force::extendRealizeInstance(
+        const SimTK::State& state) const {
+    Super::extendRealizeInstance(state);
+    if (!getProperty_force_visualization_scale_factor().empty()) {
+        m_forceVizScaleFactor = get_force_visualization_scale_factor();
+    } else {
+        const Model& model = getModel();
+        const double mass = model.getTotalMass(state);
+        const double weight = mass * model.getGravity().norm();
+        m_forceVizScaleFactor = 1 / weight;
+    }
+}
+
+void MeyerFregly2016Force::extendAddToSystem(
+        SimTK::MultibodySystem& system) const {
+    Super::extendAddToSystem(system);
+
+    this->_forceOnStationCV = addCacheVariable<SimTK::Vec3>(
+            "force_on_station", SimTK::Vec3(0),
+            SimTK::Stage::Velocity);
+}
+
+//=============================================================================
+// FORCE PRODUCER INTERFACE
+//=============================================================================
+void MeyerFregly2016Force::implProduceForces(const SimTK::State& s, 
+        ForceConsumer& forceConsumer) const {
+
+    const SimTK::Vec3& force = getContactForceOnStation(s);
+    const auto& station = getConnectee<Station>("station");
+    const auto& pos = station.getLocationInGround(s);
+    const auto& frame = station.getParentFrame();
+
+    forceConsumer.consumePointForce(s, frame, station.get_location(), force);
+    forceConsumer.consumePointForce(s, getModel().getGround(), pos, -force);
 }
