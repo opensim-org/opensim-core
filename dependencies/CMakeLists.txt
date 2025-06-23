@@ -191,10 +191,6 @@ AddDependency(NAME       simbody
                          ${SIMBODY_EXTRA_CMAKE_ARGS})
 
 set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-if(MSVC)
-    # `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
-    set(SPDLOG_CXX_FLAGS "${SPDLOG_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
-endif()
 
 AddDependency(NAME       spdlog
               DEFAULT    ON
@@ -204,7 +200,6 @@ AddDependency(NAME       spdlog
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
                          -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
-                         -DSPDLOG_BUILD_SHARED=OFF
                          -DCMAKE_CXX_FLAGS:STRING=${SPDLOG_CXX_FLAGS})
 
 AddDependency(NAME       catch2
