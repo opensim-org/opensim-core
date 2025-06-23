@@ -20,6 +20,9 @@ install
 # OpenSim
 err.log
 out.log
+logs/*.log
+logs/*.dot
+logs/*.svg
 
 # Mac
 .DS_Store
