@@ -25,6 +25,7 @@
 #include <OpenSim/Common/Object.h>
 #include "RegisterTypes_osimTools.h"
 
+#include "OpenSim/Common/Logger.h"
 #include "ScaleTool.h"
 //#include "IKTool.h"
 //#include "FIKSTool.h"

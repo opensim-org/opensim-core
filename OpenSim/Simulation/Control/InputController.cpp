@@ -22,6 +22,8 @@
  * -------------------------------------------------------------------------- */
 
 #include "InputController.h"
+#include "OpenSim/Common/Logger.h"
+#include <spdlog/fmt/bundled/core.h>
 
 using namespace OpenSim;
 

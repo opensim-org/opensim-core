@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <numeric>
 #include <vector>
+#include "Logger.h"
 
 using namespace OpenSim;
 

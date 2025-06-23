@@ -36,6 +36,7 @@
 #include "SimTKcommon/SmallMatrix.h"
 #include "simmath/internal/Spline.h"
 #include "simmath/internal/SplineFitter.h"
+#include "Logger.h"
 
 #include <vector>
 

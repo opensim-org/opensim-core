@@ -32,6 +32,7 @@
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
+#include <OpenSim/Common/Logger.h>
 
 using namespace OpenSim;
 

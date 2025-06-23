@@ -30,6 +30,7 @@
 // INCLUDES
 //=============================================================================
 #include "CMC.h"
+#include "OpenSim/Common/Logger.h"
 #include "VectorFunctionForActuators.h"
 #include <OpenSim/Common/RootSolver.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>

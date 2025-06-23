@@ -22,20 +22,31 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimCommonDLL.h"
-#include <set>
-#include <string>
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/fmt/ostr.h> 
-#include <spdlog/fmt/fmt.h>
-
+#include "OpenSim/Common/Array.h"
+#include <memory>                     // for shared_ptr
+#include <spdlog/common.h>
+#include <spdlog/logger.h>
+#include <string>                     // for basic_string, allocator, string
+#include "osimCommonDLL.h"            // for OSIMCOMMON_API
 #include "SimTKcommon/SmallMatrix.h"
 #include "SimTKcommon/internal/BigMatrix.h"
 #include "SimTKcommon/internal/MassProperties.h"
 
+
 #ifndef SWIG
+template <>
+struct fmt::formatter<OpenSim::Array<double>> {
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template <typename FormatContext>
+    auto format(const OpenSim::Array<double>& a, FormatContext& ctx) {
+        std::stringstream ss;
+        ss << a;
+        std::string out = ss.str();
+        return fmt::format_to(ctx.out(), "{}", out);
+    }
+};
 template <>
 struct fmt::formatter<SimTK::Vec3> {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }

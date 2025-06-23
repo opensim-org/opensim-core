@@ -50,7 +50,6 @@
 
 using namespace std;
 using namespace OpenSim;
-using namespace SimTK;
 
 
 /**
@@ -564,7 +563,7 @@ TEST_CASE("All MuscleFixedWidthPennationModel tests") {
             //The isNaN check needs to be in place because the numerical
             //derivative might be NAN - the denominator of the numerical
             //difference can and does go to zero.
-            if(abs(DpenAngDfibLen(i)) > bigTol && !isNaN(DpenAngDfibLenNUM(i))){
+            if(abs(DpenAngDfibLen(i)) > bigTol && !SimTK::isNaN(DpenAngDfibLenNUM(i))){
                 DpenAngDfibLenERR(i) = abs( (DpenAngDfibLenNUM(i)-
                                              DpenAngDfibLen(i))
                                              /DpenAngDfibLen(i));
@@ -605,7 +604,7 @@ TEST_CASE("All MuscleFixedWidthPennationModel tests") {
             //The isNaN check needs to be in place because the numerical
             //derivative might be NAN - the denominator of the numerical
             //difference can and does go to zero.
-            if(abs(DtdnLenDfibLen(i)) > bigTol && !isNaN(DtdnLenDfibLenNUM(i))){
+            if(abs(DtdnLenDfibLen(i)) > bigTol && !SimTK::isNaN(DtdnLenDfibLenNUM(i))){
                 DtdnLenDfibLenERR(i) = abs( (DtdnLenDfibLenNUM(i)-
                                              DtdnLenDfibLen(i))
                                              /DtdnLenDfibLen(i) );

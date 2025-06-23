@@ -34,7 +34,6 @@ using std::string;
 using std::cerr; using std::clog; using std::endl;
 
 using namespace OpenSim;
-using namespace SimTK;
 
 //==============================================================================
 //                       OPENSIM INPUT LISTENER
@@ -57,7 +56,7 @@ standard OpenSim-provided interface, such as turning on and off display of wrap
 objects. Anything we don't handle here will just get passed on to the
 Visualizer's InputSilo where it will remain until the user's program goes
 looking for it. */
-class OpenSimInputListener : public Visualizer::InputListener {
+class OpenSimInputListener : public SimTK::Visualizer::InputListener {
 public:
     OpenSimInputListener(Model& model) : _model(model) {}
 
@@ -88,7 +87,7 @@ public:
             hints.set_show_markers(!hints.get_show_markers());
             return true;
         case ToggleDefaultGeometry: {
-            SimbodyMatterSubsystem& matter = 
+            SimTK::SimbodyMatterSubsystem& matter = 
                 _model.updMatterSubsystem();
             matter.setShowDefaultGeometry(!matter.getShowDefaultGeometry());
             return true;
@@ -106,7 +105,7 @@ private:
 
 // Draw a path point with a small body-axis-aligned cross centered on
 // the point.
-void DefaultGeometry::drawPathPoint(const MobilizedBodyIndex&             body,
+void SimTK::DefaultGeometry::drawPathPoint(const MobilizedBodyIndex&             body,
                           const Vec3&                           pt_B,
                           const Vec3&                           color,
                           Array_<SimTK::DecorativeGeometry>&    geometry)
@@ -118,7 +117,7 @@ void DefaultGeometry::drawPathPoint(const MobilizedBodyIndex&             body,
                 .setOpacity(0.8));
 }
 
-void DefaultGeometry::generateDecorations
+void SimTK::DefaultGeometry::generateDecorations
    (const State&                         state, 
     Array_<SimTK::DecorativeGeometry>&   geometry) 
 {
@@ -161,12 +160,12 @@ findGeometryFile(const Model& aModel,
     bool foundIt = false;
     if (geoFileIsAbsolute) {
         attempts.push_back(geoFile);
-        foundIt = Pathname::fileExists(attempts.back());
+        foundIt = SimTK::Pathname::fileExists(attempts.back());
     } else {
-        const string geoDir = "Geometry" + Pathname::getPathSeparator();
+        const string geoDir = "Geometry" + SimTK::Pathname::getPathSeparator();
         string modelDir;
         if (aModel.getInputFileName() == "Unassigned") 
-            modelDir = Pathname::getCurrentWorkingDirectory();
+            modelDir = SimTK::Pathname::getCurrentWorkingDirectory();
         else {
             bool isAbsolutePath; string directory, fileName, extension; 
             SimTK::Pathname::deconstructPathname(
@@ -174,15 +173,15 @@ findGeometryFile(const Model& aModel,
                 isAbsolutePath, directory, fileName, extension);
             modelDir = isAbsolutePath 
                 ? directory
-                : Pathname::getCurrentWorkingDirectory() + directory;
+                : SimTK::Pathname::getCurrentWorkingDirectory() + directory;
         }
 
         attempts.push_back(modelDir + geoFile);
-        foundIt = Pathname::fileExists(attempts.back());
+        foundIt = SimTK::Pathname::fileExists(attempts.back());
 
         if (!foundIt) {
             attempts.push_back(modelDir + geoDir + geoFile); 
-            foundIt = Pathname::fileExists(attempts.back());
+            foundIt = SimTK::Pathname::fileExists(attempts.back());
         }
 
         if (!foundIt) {
@@ -190,7 +189,7 @@ findGeometryFile(const Model& aModel,
                 dir != dirsToSearch.crend();
                 ++dir) {
                 attempts.push_back(*dir + geoFile);
-                if(Pathname::fileExists(attempts.back())) {
+                if(SimTK::Pathname::fileExists(attempts.back())) {
                     foundIt = true;
                     break;
                 }
@@ -206,10 +205,10 @@ SimTK::Array_<std::string> ModelVisualizer::dirsToSearch{};
 
 void ModelVisualizer::addDirToGeometrySearchPaths(const std::string& dir) {
     // Make sure to add trailing path-separator if one is not present.
-    if(dir.back() == Pathname::getPathSeparator().back())
+    if(dir.back() == SimTK::Pathname::getPathSeparator().back())
         dirsToSearch.push_back(dir);
     else
-        dirsToSearch.push_back(dir + Pathname::getPathSeparator());
+        dirsToSearch.push_back(dir + SimTK::Pathname::getPathSeparator());
 }
 
 // Call this on a newly-constructed ModelVisualizer (typically from the Model's
@@ -224,7 +223,7 @@ void ModelVisualizer::createVisualizer() {
     // follows: first look in the same directory as the currently-
     // executing executable; then look at all the paths in the environment
     // variable PATH, then look in various default Simbody places.
-    Array_<String> searchPath;
+    SimTK::Array_<SimTK::String> searchPath;
     if (SimTK::Pathname::environmentVariableExists("PATH")) {
         const auto& path = SimTK::Pathname::getEnvironmentVariable("PATH");
         std::string buffer{};
@@ -270,7 +269,7 @@ void ModelVisualizer::createVisualizer() {
 
     // Add a DecorationGenerator to dispatch runtime generateDecorations()
     // calls.
-    _decoGen = new DefaultGeometry(_model);
+    _decoGen = new SimTK::DefaultGeometry(_model);
     _viz->addDecorationGenerator(_decoGen);
 
     // Add an input listener to handle display menu picks.
@@ -288,15 +287,15 @@ void ModelVisualizer::createVisualizer() {
 
 // We also rummage through the model to find fixed geometry that should be part
 // of every frame. The supplied State must be realized through Instance stage.
-void ModelVisualizer::collectFixedGeometry(const State& state) const {
+void ModelVisualizer::collectFixedGeometry(const SimTK::State& state) const {
     // Collect any fixed geometry from the ModelComponents.
-    Array_<DecorativeGeometry> fixedGeometry;
+    SimTK::Array_<SimTK::DecorativeGeometry> fixedGeometry;
     _model.generateDecorations
        (true, _model.getDisplayHints(), state, fixedGeometry);
 
     for (unsigned i=0; i < fixedGeometry.size(); ++i) {
-        const DecorativeGeometry& dgeo = fixedGeometry[i];
-        _viz->addDecoration(MobilizedBodyIndex(dgeo.getBodyId()), 
-                            Transform(), dgeo);
+        const SimTK::DecorativeGeometry& dgeo = fixedGeometry[i];
+        _viz->addDecoration(SimTK::MobilizedBodyIndex(dgeo.getBodyId()), 
+                            SimTK::Transform(), dgeo);
     }
 }

@@ -36,6 +36,7 @@
 
 #include "SimbodyEngine.h"
 #include "Coordinate.h"
+#include "OpenSim/Common/Logger.h"
 
 //=============================================================================
 // STATICS

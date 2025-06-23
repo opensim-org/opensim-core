@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "SynergyController.h"
+#include <spdlog/fmt/bundled/core.h>
 
 using namespace OpenSim;
 
@@ -94,8 +95,8 @@ void SynergyController::extendConnectToModel(Model& model) {
 //=============================================================================
 void SynergyController::addSynergyVector(const SimTK::Vector& vector) {
     int index = getProperty_synergy_vectors().size();
-    append_synergy_vectors(
-            SynergyVector(fmt::format("synergy_vector_{}", index), vector));
+    // append_synergy_vectors(
+    //         SynergyVector(fmt::format("synergy_vector_{}", index), vector));
 }
 
 void SynergyController::updSynergyVector(int index, 

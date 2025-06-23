@@ -24,6 +24,7 @@
 #include "GCVSplineSet.h"
 #include "GCVSpline.h"
 #include "Storage.h"
+#include "Logger.h"
 
 
 using namespace OpenSim;

@@ -26,8 +26,10 @@
 #include "Component.h"
 #include "OpenSim/Common/IO.h"
 #include "XMLDocument.h"
+#include "Logger.h"
 
 #include <regex>
+#include <spdlog/fmt/bundled/format.h>
 #include <unordered_map>
 #include <unordered_set>
 

@@ -26,7 +26,9 @@
 //==============================================================================
 #include "ConstantCurvatureJoint.h"
 
+#include "OpenSim/Common/Logger.h"
 #include "simbody/internal/MobilizedBody_Custom.h"
+#include <spdlog/fmt/bundled/core.h>
 
 #include <SimTKcommon/Scalar.h>
 #include <SimTKcommon/SmallMatrix.h>

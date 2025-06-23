@@ -36,6 +36,7 @@
 #include <OpenSim/Simulation/CoordinateReference.h>
 #include "IKCoordinateTask.h"
 #include "IKTaskSet.h"
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Analyses/StatesReporter.h>
 #include <OpenSim/Common/IO.h>
 //=============================================================================

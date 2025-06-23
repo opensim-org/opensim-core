@@ -25,6 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "ModelScaler.h"
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/IO.h>

@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "ControlDistributor.h"
+#include <spdlog/fmt/bundled/core.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/InputController.h>

@@ -39,7 +39,6 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
-using namespace SimTK;
 using SimTK::Vec3;
 
 // this is what is stored in a cache variable at runtime. It's a value-type that's safe to
@@ -244,11 +243,11 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
     OPENSIM_ASSERT_FRMOBJ(pathPoints.size() > 1);
 
     const AbstractPathPoint* lastPoint = pathPoints[0];
-    MobilizedBodyIndex mbix(0);
+    SimTK::MobilizedBodyIndex mbix(0);
 
     Vec3 lastPos = lastPoint->getLocationInGround(state);
     if (hints.get_show_path_points())
-        DefaultGeometry::drawPathPoint(mbix, lastPos, getColor(state), appendToThis);
+        SimTK::DefaultGeometry::drawPathPoint(mbix, lastPos, getColor(state), appendToThis);
 
     Vec3 pos;
 
@@ -262,16 +261,16 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
             // The surface points are expressed w.r.t. the wrap surface's body frame.
             // Transform the surface points into the ground reference frame to draw
             // the surface point as the wrapping portion of the GeometryPath
-            const Transform& X_BG = pwp->getParentFrame().getTransformInGround(state);
+            const SimTK::Transform& X_BG = pwp->getParentFrame().getTransformInGround(state);
             // Cycle through each surface point and draw it the Ground frame
             for (int j = 0; j<surfacePoints.getSize(); ++j) {
                 // transform the surface point into the Ground reference frame
                 pos = X_BG*surfacePoints[j];
                 if (hints.get_show_path_points())
-                    DefaultGeometry::drawPathPoint(mbix, pos, getColor(state),
+                    SimTK::DefaultGeometry::drawPathPoint(mbix, pos, getColor(state),
                         appendToThis);
                 // Line segments will be in ground frame
-                appendToThis.push_back(DecorativeLine(lastPos, pos)
+                appendToThis.push_back(SimTK::DecorativeLine(lastPos, pos)
                     .setLineThickness(4)
                     .setColor(getColor(state)).setBodyId(0).setIndexOnBody(j));
                 lastPos = pos;
@@ -280,10 +279,10 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
         else { // otherwise a regular PathPoint so just draw its location
             pos = point->getLocationInGround(state);
             if (hints.get_show_path_points())
-                DefaultGeometry::drawPathPoint(mbix, pos, getColor(state),
+                SimTK::DefaultGeometry::drawPathPoint(mbix, pos, getColor(state),
                     appendToThis);
             // Line segments will be in ground frame
-            appendToThis.push_back(DecorativeLine(lastPos, pos)
+            appendToThis.push_back(SimTK::DecorativeLine(lastPos, pos)
                 .setLineThickness(4)
                 .setColor(getColor(state)).setBodyId(0).setIndexOnBody(i));
             lastPos = pos;
@@ -408,14 +407,14 @@ void GeometryPath::produceForces(const SimTK::State& s,
     // and the previous direction between the previous point and the current
     // one (if applicable). This is used to ensure that only one point force
     // is produced per path point (#3903, #3891).
-    MobilizedBodyIndex previousBodyIndex = MobilizedBodyIndex::Invalid();
+    SimTK::MobilizedBodyIndex previousBodyIndex = SimTK::MobilizedBodyIndex::Invalid();
     SimTK::Vec3 previousDirection(0.0);
 
     const Array<AbstractPathPoint*>& currentPath = getCurrentPath(s);
     for (int i = 0; i < currentPath.getSize(); ++i) {
 
         const AbstractPathPoint& currentPoint = *currentPath[i];
-        const MobilizedBodyIndex currentBodyIndex = currentPoint.getParentFrame().getMobilizedBodyIndex();
+        const SimTK::MobilizedBodyIndex currentBodyIndex = currentPoint.getParentFrame().getMobilizedBodyIndex();
 
         SimTK::Vec3 force(0.0);
         if (previousBodyIndex.isValid() && currentBodyIndex != previousBodyIndex) {
@@ -445,7 +444,7 @@ void GeometryPath::produceForces(const SimTK::State& s,
             previousDirection = currentDirection;
         }
         else {
-            previousBodyIndex = MobilizedBodyIndex::Invalid();
+            previousBodyIndex = SimTK::MobilizedBodyIndex::Invalid();
             previousDirection = SimTK::Vec3(0.0f);
         }
 

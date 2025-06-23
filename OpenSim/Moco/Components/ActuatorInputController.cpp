@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "ActuatorInputController.h"
+#include <spdlog/fmt/bundled/core.h>
 
 using namespace OpenSim;
 

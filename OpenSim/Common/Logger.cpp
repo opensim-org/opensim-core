@@ -21,12 +21,22 @@
  * -------------------------------------------------------------------------- */
 
 #include "Logger.h"
+#include <spdlog/common.h>            // for string_view_t
+#include <spdlog/logger.h>            // for logger
+#include <spdlog/fmt/bundled/format.h>        // for format_to, vformat
+#include <spdlog/sinks/basic_file_sink.h>     // for basic_file_sink_mt, bas...
+#include <spdlog/sinks/sink.h>                // for sink
+#include <spdlog/sinks/stdout_color_sinks.h>  // for stdout_color_mt
+#include <spdlog/spdlog.h>                    // for set_level, default_logger
+#include <algorithm>                          // for remove
+#include <vector>                             // for vector
+#include "LogSink.h"                          // for LogSink
 
-#include "Exception.h"
-#include "IO.h"
-#include "LogSink.h"
-
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include <spdlog/fmt/bundled/core.h>  // for error_handler, format_parse_con...
+#include <SimTKcommon/Orientation.h>  // for Rotation, operator<<
+#include <SimTKcommon/Scalar.h>       // for NTraits<>::NActualScalars
+#include <SimTKcommon/internal/BigMatrix.h>
+#include <SimTKcommon/internal/MassProperties.h>
 
 using namespace OpenSim;
 
@@ -147,7 +157,7 @@ void Logger::setLevel(Level level) {
         spdlog::set_level(spdlog::level::trace);
         break;
     default:
-        OPENSIM_THROW(Exception, "Internal error.");
+        break;
     }
     Logger::info("Set log level to {}.", getLevelString());
 }
@@ -162,13 +172,13 @@ Logger::Level Logger::getLevel() {
     case spdlog::level::debug: return Level::Debug;
     case spdlog::level::trace: return Level::Trace;
     default:
-        OPENSIM_THROW(Exception, "Internal error.");
+        return Level::Debug;
     }
 }
 
 void Logger::setLevelString(std::string str) {
-    Level level;
-    str = IO::Lowercase(str);
+    Level level = Level::Debug;
+    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
     if (str == "off") level = Level::Off;
     else if (str == "critical") level = Level::Critical;
     else if (str == "error") level = Level::Error;
@@ -177,10 +187,10 @@ void Logger::setLevelString(std::string str) {
     else if (str == "debug") level = Level::Debug;
     else if (str == "trace") level = Level::Trace;
     else {
-        OPENSIM_THROW(Exception,
-                "Expected log level to be Off, Critical, Error, "
-                "Warn, Info, Debug, or Trace; got {}.",
-                str);
+        Logger::error(
+        "Expected log level to be Off, Critical, Error, "
+        "Warn, Info, Debug, or Trace; got {}.",
+        str);
     }
     setLevel(level);
 }
@@ -196,12 +206,13 @@ std::string Logger::getLevelString() {
     case Level::Debug: return "Debug";
     case Level::Trace: return "Trace";
     default:
-        OPENSIM_THROW(Exception, "Internal error.");
+        return "Unknown";
     }
+
 }
 
 bool Logger::shouldLog(Level level) {
-    spdlog::level::level_enum spdlogLevel;
+    spdlog::level::level_enum spdlogLevel = spdlog::level::debug;;
     switch (level) {
     case Level::Off: spdlogLevel = spdlog::level::off; break;
     case Level::Critical: spdlogLevel = spdlog::level::critical; break;
@@ -210,8 +221,6 @@ bool Logger::shouldLog(Level level) {
     case Level::Info: spdlogLevel = spdlog::level::info; break;
     case Level::Debug: spdlogLevel = spdlog::level::debug; break;
     case Level::Trace: spdlogLevel = spdlog::level::trace; break;
-    default:
-        OPENSIM_THROW(Exception, "Internal error.");
     }
     return defaultLogger->should_log(spdlogLevel);
 }

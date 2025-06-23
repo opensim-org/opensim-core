@@ -29,6 +29,7 @@
 // INCLUDES
 //=============================================================================
 #include "CMC_Task.h"
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Common/Function.h>
 
 using namespace std;

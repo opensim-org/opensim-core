@@ -27,6 +27,7 @@
 #include "Constraint.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include "simbody/internal/Constraint.h"
+#include <spdlog/fmt/bundled/core.h>
 
 //=============================================================================
 // STATICS

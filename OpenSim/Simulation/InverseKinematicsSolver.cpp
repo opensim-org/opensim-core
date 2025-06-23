@@ -25,6 +25,7 @@
 #include "Model/Model.h"
 #include "Model/MarkerSet.h"
 
+#include "OpenSim/Common/Logger.h"
 #include "simbody/internal/AssemblyCondition_Markers.h"
 #include "simbody/internal/AssemblyCondition_OrientationSensors.h"
 

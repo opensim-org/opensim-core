@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "ZerothOrderMuscleActivationDynamics.h"
+#include "OpenSim/Common/Logger.h"
 
 using namespace std;
 using namespace OpenSim;

@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimMocoDLL.h"
+#include <spdlog/fmt/bundled/core.h>
 
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Property.h>

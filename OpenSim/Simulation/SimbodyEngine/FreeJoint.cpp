@@ -32,7 +32,6 @@
 // STATICS
 //=============================================================================
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 //=============================================================================
@@ -42,26 +41,26 @@ using namespace OpenSim;
 void FreeJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
-    createMobilizedBody<MobilizedBody::Free>(system);
+    createMobilizedBody<SimTK::MobilizedBody::Free>(system);
 }
 
 void FreeJoint::extendInitStateFromProperties(SimTK::State& s) const
 {
     Super::extendInitStateFromProperties(s);
 
-    const MultibodySystem& system = _model->getMultibodySystem();
-    const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
+    const SimTK::MultibodySystem& system = _model->getMultibodySystem();
+    const SimTK::SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(s)){
         double xangle = getCoordinate(FreeJoint::Coord::Rotation1X).getDefaultValue();
         double yangle = getCoordinate(FreeJoint::Coord::Rotation2Y).getDefaultValue();
         double zangle = getCoordinate(FreeJoint::Coord::Rotation3Z).getDefaultValue();
-        Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
-        Vec3 t(getCoordinate(FreeJoint::Coord::TranslationX).getDefaultValue(),
+        SimTK::Rotation r(SimTK::BodyRotationSequence, xangle, SimTK::XAxis, yangle, SimTK::YAxis, zangle, SimTK::ZAxis);
+        SimTK::Vec3 t(getCoordinate(FreeJoint::Coord::TranslationX).getDefaultValue(),
                getCoordinate(FreeJoint::Coord::TranslationY).getDefaultValue(),
                getCoordinate(FreeJoint::Coord::TranslationZ).getDefaultValue());
 
         //FreeJoint* mutableThis = const_cast<FreeJoint*>(this);
-        getChildFrame().getMobilizedBody().setQToFitTransform(s, Transform(r, t));
+        getChildFrame().getMobilizedBody().setQToFitTransform(s, SimTK::Transform(r, t));
     }
 }
 
@@ -70,13 +69,13 @@ void FreeJoint::extendSetPropertiesFromState(const SimTK::State& state)
     Super::extendSetPropertiesFromState(state);
 
     // Override default behavior in case of quaternions.
-    const MultibodySystem& system = _model->getMultibodySystem();
-    const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
+    const SimTK::MultibodySystem& system = _model->getMultibodySystem();
+    const SimTK::SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        Rotation r = getChildFrame().getMobilizedBody().getMobilizerTransform(state).R();
-        Vec3 t = getChildFrame().getMobilizedBody().getMobilizerTransform(state).p();
+        SimTK::Rotation r = getChildFrame().getMobilizedBody().getMobilizerTransform(state).R();
+        SimTK::Vec3 t = getChildFrame().getMobilizedBody().getMobilizerTransform(state).p();
 
-        Vec3 angles = r.convertRotationToBodyFixedXYZ();
+        SimTK::Vec3 angles = r.convertRotationToBodyFixedXYZ();
         updCoordinate(FreeJoint::Coord::Rotation1X).setDefaultValue(angles[0]);
         updCoordinate(FreeJoint::Coord::Rotation2Y).setDefaultValue(angles[1]);
         updCoordinate(FreeJoint::Coord::Rotation3Z).setDefaultValue(angles[2]);

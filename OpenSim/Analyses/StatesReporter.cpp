@@ -27,6 +27,7 @@
 //=============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
 #include "StatesReporter.h"
+#include "OpenSim/Common/Logger.h"
 
 using namespace OpenSim;
 using namespace std;

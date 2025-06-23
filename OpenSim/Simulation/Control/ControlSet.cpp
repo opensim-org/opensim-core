@@ -33,7 +33,7 @@
 #include "ControlLinear.h"
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/XMLDocument.h>
-
+#include <OpenSim/Common/Logger.h>
 
 using namespace OpenSim;
 using namespace std;

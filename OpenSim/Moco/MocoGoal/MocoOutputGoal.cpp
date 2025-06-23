@@ -103,10 +103,10 @@ void MocoOutputBase::initializeOnModelBase() const {
         m_useCompositeOutputValue = true;
         initializeComposite();
     } else if (get_operation() != "") {
-        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("An operation was provided "
+        OPENSIM_THROW_FRMOBJ(Exception, "An operation was provided "
                 "but a second Output path was not provided. Either provide no "
                 "operation with a single Output, or provide a value to both "
-                "setOperation() and setSecondOutputPath()."));
+                "setOperation() and setSecondOutputPath().");
     }
 }
 
@@ -120,13 +120,13 @@ void MocoOutputBase::initializeComposite() const {
     } else if (get_operation() == "division") {
         m_operation = Division;
     } else if (get_operation() == "") {
-        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("A second Output path was "
+        OPENSIM_THROW_FRMOBJ(Exception, "A second Output path was "
                 "provided, but no operation was provided. Use setOperation() to"
-                "provide an operation"));
+                "provide an operation");
     } else {
-        OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Invalid operation: '{}', must "
+        OPENSIM_THROW_FRMOBJ(Exception, "Invalid operation: '{}', must "
                 "be 'addition', 'subtraction', 'multiplication', or 'division'.",
-                get_operation()));
+                get_operation());
     }
 
     std::string componentPath, outputName, channelName, alias;

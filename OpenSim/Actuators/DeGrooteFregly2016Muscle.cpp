@@ -27,6 +27,7 @@
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "OpenSim/Common/Logger.h"
 #include "OpenSim/Common/STOFileAdapter.h"
 
 using namespace OpenSim;

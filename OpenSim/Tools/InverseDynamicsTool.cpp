@@ -25,6 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "InverseDynamicsTool.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/FunctionSet.h>

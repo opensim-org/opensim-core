@@ -23,6 +23,7 @@
 
 #include "FunctionBasedPath.h"
 #include "Model.h"
+#include <spdlog/fmt/bundled/core.h>
 
 #include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/ForceConsumer.h>
@@ -104,9 +105,8 @@ const Function& FunctionBasedPath::getMomentArmFunction(
         const std::string& coordinatePath) const
 {
     auto it = _coordinateIndices.find(coordinatePath);
-    OPENSIM_THROW_IF_FRMOBJ(it == _coordinateIndices.end(), Exception,
-            fmt::format("Path does not depend on Coordinate '{}'.",
-                    coordinatePath))
+    OPENSIM_THROW_IF_FRMOBJ(it == _coordinateIndices.end(), Exception, "Path does not depend on Coordinate '{}'.",
+                    coordinatePath)
     return get_moment_arm_functions(it->second);
 }
 
@@ -353,9 +353,8 @@ void FunctionBasedPath::extendConnectToModel(Model& model) {
     for (int i = 0; i < getProperty_coordinate_paths().size(); ++i) {
         const auto& coordinatePath = get_coordinate_paths(i);
         OPENSIM_THROW_IF_FRMOBJ(!model.hasComponent<Coordinate>(coordinatePath),
-                Exception,
-                fmt::format("Coordinate '{}' does not exist in the model.",
-                        coordinatePath))
+                Exception,"Coordinate '{}' does not exist in the model.",
+                        coordinatePath)
 
         _coordinates.emplace_back(
                 &model.getComponent<const Coordinate>(coordinatePath));

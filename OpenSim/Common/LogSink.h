@@ -23,7 +23,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimCommonDLL.h"
-#include <iostream>
 #include <spdlog/sinks/base_sink.h>
 #include <mutex>
 

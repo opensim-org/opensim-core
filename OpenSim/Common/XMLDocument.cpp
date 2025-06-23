@@ -33,7 +33,7 @@
 #include "XMLDocument.h"
 #include "Object.h"
 #include <functional>
-
+#include "Logger.h"
 
 using namespace OpenSim;
 using namespace std;

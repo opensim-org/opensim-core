@@ -25,6 +25,7 @@
 #include "CMC_TaskSet.h"
 #include "ActuatorForceTarget.h"
 #include "ActuatorForceTargetFast.h"
+#include "OpenSim/Common/Logger.h"
 #include "VectorFunctionForActuators.h"
 #include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/IO.h>

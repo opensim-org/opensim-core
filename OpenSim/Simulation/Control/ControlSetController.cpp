@@ -37,6 +37,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/Logger.h>
 
 //=============================================================================
 // STATICS

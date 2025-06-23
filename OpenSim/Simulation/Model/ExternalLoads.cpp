@@ -28,6 +28,7 @@
 #include "ExternalLoads.h"
 #include "Model.h"
 #include "BodySet.h"
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Common/IO.h>
 

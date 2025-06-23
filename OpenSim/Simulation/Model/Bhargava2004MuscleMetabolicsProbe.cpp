@@ -28,6 +28,7 @@
 //=============================================================================
 #include "Bhargava2004MuscleMetabolicsProbe.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/Logger.h>
 //#define DEBUG_METABOLICS
 
 using namespace std;

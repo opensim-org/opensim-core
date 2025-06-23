@@ -32,6 +32,7 @@
 #include "Constant.h"
 #include "gcvspl.h"
 #include "XYFunctionInterface.h"
+#include "Logger.h"
 
 
 

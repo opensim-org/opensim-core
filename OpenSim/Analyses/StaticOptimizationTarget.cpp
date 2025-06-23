@@ -29,6 +29,7 @@
 // INCLUDES
 //=============================================================================
 #include "StaticOptimizationTarget.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
 

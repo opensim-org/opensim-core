@@ -28,7 +28,7 @@
 #include "SimmMacros.h"
 #include "XYFunctionInterface.h"
 #include "FunctionAdapter.h"
-
+#include "Logger.h"
 
 using namespace OpenSim;
 using namespace std;

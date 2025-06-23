@@ -23,6 +23,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include "OpenSim/Common/Logger.h"
 #include <fstream>
 #include <OpenSim/Simulation/Model/Model.h>
 #include "Thelen2003Muscle.h"

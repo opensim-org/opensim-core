@@ -29,6 +29,7 @@
 #include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+#include "OpenSim/Common/Logger.h"
 #include "simbody/internal/Constraint.h"
 
 //=============================================================================

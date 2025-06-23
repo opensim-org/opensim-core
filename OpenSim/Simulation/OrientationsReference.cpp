@@ -27,7 +27,6 @@
 #include <SimTKcommon/internal/State.h>
 
 using namespace std;
-using namespace SimTK;
 
 namespace OpenSim {
 
@@ -45,7 +44,7 @@ OrientationsReference::OrientationsReference(const std::string& orientationFile,
 
 
 OrientationsReference::OrientationsReference(
-    const TimeSeriesTable_<Rotation>& orientationData,
+    const TimeSeriesTable_<SimTK::Rotation>& orientationData,
     const Set<OrientationWeight>* orientationWeightSet) 
         : OrientationsReference()
 {
@@ -61,7 +60,7 @@ void OrientationsReference::loadOrientationsEulerAnglesFile(
 {
     upd_orientation_file() = orientationFile;
 
-    auto xyzEulerData = TimeSeriesTable_<Vec3>(orientationFile);
+    auto xyzEulerData = TimeSeriesTable_<SimTK::Vec3>(orientationFile);
 
     _orientationData.updTableMetaData() = xyzEulerData.getTableMetaData();
     _orientationData.setDependentsMetaData(xyzEulerData.getDependentsMetaData());
@@ -71,14 +70,14 @@ void OrientationsReference::loadOrientationsEulerAnglesFile(
     size_t nt = xyzEulerData.getNumRows();
     int nc = int(xyzEulerData.getNumColumns());
 
-    RowVector_<Rotation> row(nc);
+    SimTK::RowVector_<SimTK::Rotation> row(nc);
 
     for (size_t i = 0; i < nt; ++i) {
         const auto& xyzRow = xyzEulerData.getRowAtIndex(i);
         for (int j = 0; j < nc; ++j) {
-            const Vec3& xyzO = xyzRow[j];
-            row[j] = Rotation(BodyOrSpaceType::BodyRotationSequence,
-                xyzO[0], XAxis, xyzO[1], YAxis, xyzO[2], ZAxis);
+            const SimTK::Vec3& xyzO = xyzRow[j];
+            row[j] = SimTK::Rotation(SimTK::BodyOrSpaceType::BodyRotationSequence,
+                xyzO[0], SimTK::XAxis, xyzO[1], SimTK::YAxis, xyzO[2], SimTK::ZAxis);
         }
         _orientationData.appendRow(times[i], row);
     }
@@ -130,7 +129,7 @@ double OrientationsReference::getSamplingFrequency() const
 SimTK::Vec2 OrientationsReference::getValidTimeRange() const
 {
     auto& times = _orientationData.getIndependentColumn();
-    return Vec2(*times.begin(), *(--times.end()));
+    return SimTK::Vec2(*times.begin(), *(--times.end()));
 }
 
 const std::vector<double>& OrientationsReference::getTimes() const
@@ -156,11 +155,11 @@ const SimTK::Array_<std::string>& OrientationsReference::getNames() const
 
 /** get the values of the OrientationsReference */
 void OrientationsReference::getValuesAtTime(
-        double time, SimTK::Array_<Rotation> &values) const
+        double time, SimTK::Array_<SimTK::Rotation> &values) const
 {
 
     // get values for time
-    SimTK::RowVector_<Rotation> row = _orientationData.getRow(time);
+    SimTK::RowVector_<SimTK::Rotation> row = _orientationData.getRow(time);
 
     int n = row.size();
     values.resize(n);

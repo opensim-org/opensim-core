@@ -26,6 +26,7 @@
 // INCLUDES and STATICS
 //=============================================================================
 #include "ProbeReporter.h"
+#include "OpenSim/Common/Logger.h"
 
 using namespace OpenSim;
 using namespace std;

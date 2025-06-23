@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "ModelFactory.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>

@@ -32,6 +32,7 @@
 #include <memory>
 #include <sstream>
 #include <unordered_map>
+#include "Logger.h"
 
 #include <SimTKcommon/internal/Pathname.h>
 

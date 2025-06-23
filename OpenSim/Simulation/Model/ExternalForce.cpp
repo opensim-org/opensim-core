@@ -32,6 +32,7 @@
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/GCVSpline.h>
+#include <OpenSim/Common/Logger.h>
 
 #include "ExternalForce.h"
 

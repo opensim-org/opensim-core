@@ -23,6 +23,7 @@
 
 #include "PolynomialPathFitter.h"
 
+#include "OpenSim/Common/Logger.h"
 #include <future>
 #include <OpenSim/Actuators/ModelOperators.h>
 
@@ -33,6 +34,7 @@
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
+#include <spdlog/fmt/bundled/core.h>
 
 using namespace OpenSim;
 

@@ -23,7 +23,6 @@
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
 
 void CMCActuatorSubsystemRep::setCompleteState(const SimTK::State& state) {
@@ -103,11 +102,11 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
 
   CMCActuatorSubsystemRep::~CMCActuatorSubsystemRep() { }
 
-  int CMCActuatorSubsystemRep::realizeSubsystemTopologyImpl(State& s) const {
+  int CMCActuatorSubsystemRep::realizeSubsystemTopologyImpl(SimTK::State& s) const {
      // Make sure the CMC Actuator subsystem has the same number of Z's as
      // the model as a whole so we don't miss any of them. This will include
      // some that aren't muscle states, but who cares?
-     Vector z(_model->getMultibodySystem().getDefaultState().getNZ());
+     SimTK::Vector z(_model->getMultibodySystem().getDefaultState().getNZ());
      s.allocateZ( getMySubsystemIndex(), z );
      return 0;
   }
@@ -122,7 +121,7 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
        return( _model);
   }
 
-  int CMCActuatorSubsystemRep::realizeSubsystemDynamicsImpl(const State& s) const
+  int CMCActuatorSubsystemRep::realizeSubsystemDynamicsImpl(const SimTK::State& s) const
   {
      /* set generalized coordinates and speeds from spline sets */
     int nq = _model->getNumCoordinates();
@@ -142,7 +141,7 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
     }
 
     /* Hack to obtain a mutable state in a const method */
-    State& mutableCompState = const_cast<SimTK::State&>(_completeState);
+    SimTK::State& mutableCompState = const_cast<SimTK::State&>(_completeState);
 
     // Update the coordinate values to pose the model while computing muscle
     // controls

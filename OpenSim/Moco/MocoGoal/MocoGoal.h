@@ -517,10 +517,9 @@ private:
     void checkMode(const std::string& mode) const {
         OPENSIM_THROW_IF_FRMOBJ(mode != "cost" && mode != "endpoint_constraint",
                 Exception,
-                fmt::format(
                         "Expected mode to be 'cost' or 'endpoint_constraint' "
                         "but got {}.",
-                        mode));
+                        mode);
     }
 
     mutable SimTK::ReferencePtr<const Model> m_model;

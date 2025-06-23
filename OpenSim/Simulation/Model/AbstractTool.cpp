@@ -30,6 +30,8 @@
 
 #include "ForceSet.h"
 #include "Model.h"
+#include "OpenSim/Common/Logger.h"
+#include <spdlog/fmt/bundled/core.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Control/ControlSetController.h>
 using namespace OpenSim;

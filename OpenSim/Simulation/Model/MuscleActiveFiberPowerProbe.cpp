@@ -25,6 +25,7 @@
 //=============================================================================
 #include "MuscleActiveFiberPowerProbe.h"
 #include "Model.h"
+#include "OpenSim/Common/Logger.h"
 
 using namespace std;
 using namespace OpenSim;

@@ -34,7 +34,7 @@
 #include "Storage.h"
 #include "OpenSim/Auxiliary/auxiliaryTestFunctions.h"
 #include "OpenSim/Common/STOFileAdapter.h"
-
+#include "Logger.h"
 //=============================================================================
 // STATICS
 //=============================================================================

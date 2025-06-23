@@ -1,4 +1,5 @@
 #include "ModelOperators.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Common/GCVSplineSet.h>
 

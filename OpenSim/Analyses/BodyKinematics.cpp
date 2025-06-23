@@ -26,6 +26,7 @@
 // INCLUDES
 //=============================================================================
 #include "BodyKinematics.h"
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;

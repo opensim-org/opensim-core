@@ -24,6 +24,7 @@
 // INCLUDES
 //=============================================================================
 #include "Millard2012AccelerationMuscle.h"
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
 

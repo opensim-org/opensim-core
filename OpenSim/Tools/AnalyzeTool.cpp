@@ -21,6 +21,7 @@
  * -------------------------------------------------------------------------- */
 #include <OpenSim/Common/XMLDocument.h>
 #include "AnalyzeTool.h"
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 

@@ -27,7 +27,6 @@
 #include "AbstractProperty.h"
 #include "Assertion.h"
 #include "Exception.h"
-#include "Logger.h"
 
 #include "SimTKcommon/SmallMatrix.h"
 #include "SimTKcommon/internal/BigMatrix.h"

@@ -30,6 +30,7 @@
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/ControllerSet.h>
 #include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Logger.h>
 
 
 using namespace OpenSim;

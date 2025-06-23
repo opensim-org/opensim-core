@@ -25,6 +25,7 @@
 
 #include <lepton/Parser.h>
 #include <lepton/ParsedExpression.h>
+#include <spdlog/fmt/bundled/core.h>
 
 using namespace OpenSim;
 

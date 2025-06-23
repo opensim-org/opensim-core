@@ -25,6 +25,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include "OpenSim/Common/Logger.h"
 #include <string>
 #include <OpenSim/Simulation/Model/Model.h>
 #include "PointKinematics.h"
