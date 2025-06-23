@@ -158,21 +158,11 @@ void MocoJointReactionGoal::printDescriptionImpl() const {
     log_info("        loads frame: {}", get_loads_frame());
     log_info("        expressed: {}", get_expressed_in_frame_path());
 
-    std::stringstream measuresStream;
-    for (int i = 0; i < getProperty_reaction_measures().size(); i++) {
-        if (i > 0) {
-            measuresStream << ", ";
-        }
-        measuresStream << get_reaction_measures(i);
+    std::vector<std::string> measures(getProperty_reaction_measures().size());
+    for (int i = 0; i < (int)measures.size(); i++) {
+        measures[i] = get_reaction_measures(i);
     }
-    log_info("        reaction measures: {}", measuresStream.str());
+    log_info("        reaction measures: {}", fmt::format("{}",fmt::join(measures, ", ")));
 
-    std::stringstream weightsStream;
-    for (int i = 0; i < static_cast<int>(m_measureWeights.size()); i++) {
-        if (i > 0) {
-            weightsStream << ", ";
-        }
-        weightsStream << m_measureWeights[i];
-    }
-    log_info("        reaction weights: {}", weightsStream.str());
+    log_info("        reaction weights: {}", fmt::format("{}",fmt::join(m_measureWeights, ", ")));
 }

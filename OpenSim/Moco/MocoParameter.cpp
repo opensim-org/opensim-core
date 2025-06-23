@@ -131,13 +131,6 @@ void MocoParameter::initializeOnModel(Model& model) const {
 
 void MocoParameter::printDescription() const {
     const std::vector<std::string> componentPaths = getComponentPaths();
-    std::stringstream componentPathsStream;
-    for (int i = 0; i < (int)componentPaths.size(); ++i) {
-        componentPathsStream << componentPaths[i];
-        if (i < (int)componentPaths.size() - 1) {
-            componentPathsStream << ", ";
-        }
-    }
 
     std::string propertyElementStr;
     if (getProperty_property_element().empty()) {
@@ -149,7 +142,7 @@ void MocoParameter::printDescription() const {
 
     log_info("  {}. model property name: {}. component paths: {}. "
              "property element: {}. bounds: {}",
-            getName(), getPropertyName(), componentPathsStream.str(),
+            getName(), getPropertyName(), fmt::format("{}", fmt::join(componentPaths, ", ")),
             propertyElementStr, getBounds());
 }
 
