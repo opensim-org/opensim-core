@@ -324,10 +324,11 @@ const SimTK::State& Manager::integrate(double finalTime) {
     cpuTime = SimTK::cpuTime() - cpuTime;
     realTime = SimTK::realTime() - realTime;
 
-    log_info("Integration complete at final time {:.2f} s.", 
-            _timeStepper->getState().getTime());
+    SimTK::Real simFinalTime = _timeStepper->getState().getTime();
+    log_info("Integration complete at final time {:.2f} s.", simFinalTime);
     log_info(" - CPU time elapsed: {:.6f} s", cpuTime);
     log_info(" - real time elapsed: {:.6f} s", realTime);
+    log_info(" - ratio sim-to-real time: {:.3f}", simFinalTime / realTime);
     log_info(" - integrator method: {}", _integ->getMethodName());
     log_info(" - number of realizations: {}", _integ->getNumRealizations());
     log_info(" - number of steps taken / attempted: {} / {}", 
