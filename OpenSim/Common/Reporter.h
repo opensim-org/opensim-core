@@ -25,6 +25,7 @@
 // INCLUDE
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <iostream>
 
 namespace OpenSim {
 
@@ -236,12 +237,6 @@ protected:
         }
         if (!labels.empty()) {
             const_cast<Self*>(this)->_outputTable.setColumnLabels(labels);
-        } else {
-            std::cout << "Warning: No outputs were connected to '"
-                      << this->getName() << "' of type "
-                      << getConcreteClassName() << ". You can connect outputs "
-                      "by calling addToReport()." << std::endl;
-
         }
     }
 
@@ -287,7 +282,7 @@ private:
 
         // Periodically display column headers.
         if (_printCount % 40 == 0) {
-            log_cout("[{}]", this->getName());
+            std::cout << "[" << this->getName() << "]" << std::endl;
 
             // Split labels over multiple lines.
             // Round up to the nearest multiple of _width to determine the
@@ -313,14 +308,14 @@ private:
                         + outName;
                     msg += fmt::format("{}| ", lbl.substr(_width*row, _width));
                 }
-                log_cout(msg);
+                std::cout << msg << std::endl;
             }
 
             // Horizontal rule.
             std::string msg;
             for (auto idx = 0u; idx <= input.getNumConnectees(); ++idx)
                 msg += std::string(_width, '-') + "| ";
-            log_cout(msg);
+            std::cout << msg << std::endl;
         }
 
         // TODO set width based on number of significant digits.
@@ -333,7 +328,7 @@ private:
             // using `nSigFigs`: {:>{_width}.{nSigFigs}g}
             msg += fmt::format("{:>{}.{}g}| ", value, _width, nSigFigs);
         }
-        log_cout(msg);
+        std::cout << msg << std::endl;
 
         const_cast<ConsoleReporter_<T>*>(this)->_printCount++;
     }
