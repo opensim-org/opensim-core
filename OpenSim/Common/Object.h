@@ -1081,10 +1081,10 @@ void Object::checkPropertyValueIsInSet(
     for (int i = 0; i < p.size(); ++i) {
         const auto& value = p.getValue(i);
         if (set.find(value) == set.end()) {
-            std::string str = fmt::format("{}", fmt::join(set, ", "));
-            OPENSIM_THROW_FRMOBJ(Exception,
-                    "Property '{}' has invalid value {}; expected one of the "
-                    "following: {}.", p.getName(), value, str);
+            std::ostringstream msg;
+            msg << "Property '" << p.getName() << "' has invalid value "
+                << value;
+            OPENSIM_THROW_FRMOBJ(Exception, msg.str());
         }
     }
 }
@@ -1104,11 +1104,10 @@ void Object::checkPropertyValueIsInRangeOrSet(const Property<T>& p,
     for (int i = 0; i < p.size(); ++i) {
         const auto& value = p.getValue(i);
         if ((value < lower || value > upper) && set.find(value) == set.end()) {
-            std::string str = fmt::format("{}", fmt::join(set, ", "));
             OPENSIM_THROW_FRMOBJ(Exception,
                     "Property '{}' has invalid value {}; expected value to be "
-                    "in range [{}, {}], or one of the following: {}.",
-                    p.getName(), value, lower, upper, str);
+                    "in range [{}, {}].",
+                    p.getName(), value, lower, upper);
         }
     }
 }
