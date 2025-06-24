@@ -36,7 +36,6 @@
 
 using namespace std;
 using namespace OpenSim;
-using namespace SimTK;
 
 void VisualizerUtilities::showModel(Model model) {
     model.setUseVisualizer(true);
@@ -313,7 +312,7 @@ void VisualizerUtilities::showOrientationData(
     auto& times = quatTable.getIndependentColumn();
     SimTK::Array_<FreeJoint*> joints;
     SimTK::Array_<Body*> bodies;
-    SimTK::Array_<MobilizedBodyIndex> mobis;
+    SimTK::Array_<SimTK::MobilizedBodyIndex> mobis;
 
     for (int i = 0; i < (int)numOrientations; ++i) {
         auto name = quatTable.getColumnLabel(i);
@@ -321,7 +320,8 @@ void VisualizerUtilities::showOrientationData(
         std::string::size_type pos = name.find("_imu");
         if (pos != string::npos) name = name.substr(0, pos);
         // Create Body
-        OpenSim::Body* body = new OpenSim::Body(name, 1, Vec3(0), Inertia(0));
+        OpenSim::Body* body =
+                new OpenSim::Body(name, 1, SimTK::Vec3(0), SimTK::Inertia(0));
         world.addBody(body);
         bodies.push_back(body);
         // Create FreeJoint
@@ -359,7 +359,7 @@ void VisualizerUtilities::showOrientationData(
         case 2:
             OPENSIM_THROW_IF(!modelForPose, Exception,
                     "Expected a model for layout 'model', but none provided.");
-            State s = modelForPose->getWorkingState();
+            SimTK::State s = modelForPose->getWorkingState();
             modelForPose->realizePosition(s);
             OpenSim::Array<std::string> bNames;
             modelForPose->getBodySet().getNames(bNames);
@@ -412,8 +412,9 @@ void VisualizerUtilities::showOrientationData(
 
     // Will add text on screen corresponding to Body names
     for (unsigned b = 0; b < bodies.size(); ++b) {
-        MobilizedBodyIndex mbi = bodies.getElt(b)->getMobilizedBodyIndex();
-        DecorativeText bodyNameText(bodies.getElt(b)->getName());
+        SimTK::MobilizedBodyIndex mbi =
+                bodies.getElt(b)->getMobilizedBodyIndex();
+        SimTK::DecorativeText bodyNameText(bodies.getElt(b)->getName());
         bodyNameText.setScale(0.05);
         bodyNameText.setColor(SimTK::Blue);
         world.updVisualizer().updSimbodyVisualizer().addDecoration(
@@ -428,9 +429,9 @@ void VisualizerUtilities::showOrientationData(
         state.setTime(times[frameI]);
         for (int iOrient = 0; iOrient < (int)numOrientations; ++iOrient) {
 
-            Quaternion quat = dataMatrix(frameI, iOrient);
-            Rotation rot(quat);
-            Vec3 angles = rot.convertRotationToBodyFixedXYZ();
+            SimTK::Quaternion quat = dataMatrix(frameI, iOrient);
+            SimTK::Rotation rot(quat);
+            SimTK::Vec3 angles = rot.convertRotationToBodyFixedXYZ();
             joints.updElt(iOrient)
                     ->updCoordinate(FreeJoint::Coord::Rotation1X)
                     .setValue(state, angles[0]);
