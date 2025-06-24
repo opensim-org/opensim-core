@@ -32,7 +32,6 @@
 // STATICS
 //=============================================================================
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 //=============================================================================
@@ -42,22 +41,23 @@ using namespace OpenSim;
 void BallJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
-    createMobilizedBody<MobilizedBody::Ball>(system);
+    createMobilizedBody<SimTK::MobilizedBody::Ball>(system);
 }
 
 void BallJoint::extendInitStateFromProperties(SimTK::State& s) const
 {
     Super::extendInitStateFromProperties(s);
 
-    const MultibodySystem& system = getModel().getMultibodySystem();
-    const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
+    const SimTK::MultibodySystem& system = getModel().getMultibodySystem();
+    const SimTK::SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (matter.getUseEulerAngles(s))
         return;
 
     double xangle = getCoordinate(BallJoint::Coord::Rotation1X).getDefaultValue();
     double yangle = getCoordinate(BallJoint::Coord::Rotation2Y).getDefaultValue();
     double zangle = getCoordinate(BallJoint::Coord::Rotation3Z).getDefaultValue();
-    Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
+    SimTK::Rotation r(SimTK::BodyRotationSequence, xangle, SimTK::XAxis, yangle,
+            SimTK::YAxis, zangle, SimTK::ZAxis);
     //BallJoint* mutableThis = const_cast<BallJoint*>(this);
     getChildFrame().getMobilizedBody().setQToFitRotation(s, r);
 }
@@ -67,12 +67,13 @@ void BallJoint::extendSetPropertiesFromState(const SimTK::State& state)
     Super::extendSetPropertiesFromState(state);
 
     // Override default behavior in case of quaternions.
-    const MultibodySystem&        system = _model->getMultibodySystem();
-    const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
+    const SimTK::MultibodySystem& system = _model->getMultibodySystem();
+    const SimTK::SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
-        Rotation r = getChildFrame().getMobilizedBody().getBodyRotation(state);
-        Vec3 angles = r.convertRotationToBodyFixedXYZ();
-    
+        SimTK::Rotation r =
+                getChildFrame().getMobilizedBody().getBodyRotation(state);
+        SimTK::Vec3 angles = r.convertRotationToBodyFixedXYZ();
+
         updCoordinate(BallJoint::Coord::Rotation1X).setDefaultValue(angles[0]);
         updCoordinate(BallJoint::Coord::Rotation2Y).setDefaultValue(angles[1]);
         updCoordinate(BallJoint::Coord::Rotation3Z).setDefaultValue(angles[2]);
