@@ -135,12 +135,11 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalBounds, MocoBounds);
 } // namespace OpenSim
 
 #ifndef SWIG
-template <>
-struct fmt::formatter<OpenSim::MocoBounds> {
+template <> struct fmt::formatter<OpenSim::MocoBounds> {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
     template <typename FormatContext>
-    auto format(const OpenSim::MocoBounds& b, FormatContext& ctx) {
+    auto format(const OpenSim::MocoBounds& b, FormatContext& ctx) const {
         std::stringstream ss;
         ss << b;
         std::string out = ss.str();
@@ -148,12 +147,11 @@ struct fmt::formatter<OpenSim::MocoBounds> {
     }
 };
 
-template <>
-struct fmt::formatter<OpenSim::MocoInitialBounds> {
+template <> struct fmt::formatter<OpenSim::MocoInitialBounds> {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
     template <typename FormatContext>
-    auto format(const OpenSim::MocoInitialBounds& b, FormatContext& ctx) {
+    auto format(const OpenSim::MocoInitialBounds& b, FormatContext& ctx) const {
         std::stringstream ss;
         ss << b;
         std::string out = ss.str();
@@ -161,12 +159,11 @@ struct fmt::formatter<OpenSim::MocoInitialBounds> {
     }
 };
 
-template <>
-struct fmt::formatter<OpenSim::MocoFinalBounds> {
+template <> struct fmt::formatter<OpenSim::MocoFinalBounds> {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
     template <typename FormatContext>
-    auto format(const OpenSim::MocoFinalBounds& b, FormatContext& ctx) {
+    auto format(const OpenSim::MocoFinalBounds& b, FormatContext& ctx) const {
         std::stringstream ss;
         ss << b;
         std::string out = ss.str();

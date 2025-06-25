@@ -179,7 +179,7 @@ SetDefaultCMakeBuildType()
 AddDependency(NAME       ezc3d
               DEFAULT    OFF
               GIT_URL    https://github.com/pyomeca/ezc3d.git
-              GIT_TAG    Release_1.5.19
+              GIT_TAG    Release_1.5.8
               CMAKE_ARGS -DBUILD_EXAMPLE:BOOL=OFF)
 
 AddDependency(NAME       simbody
@@ -191,15 +191,11 @@ AddDependency(NAME       simbody
                          ${SIMBODY_EXTRA_CMAKE_ARGS})
 
 set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-if(MSVC)
-    # `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
-    set(SPDLOG_CXX_FLAGS "${SPDLOG_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
-endif()
 
 AddDependency(NAME       spdlog
               DEFAULT    ON
               GIT_URL    https://github.com/gabime/spdlog.git
-              GIT_TAG    v1.14.1
+              GIT_TAG    v1.15.3
               CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF

@@ -22,26 +22,23 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimCommonDLL.h"
-#include <set>
-#include <string>
-
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/fmt/ostr.h> 
-#include <spdlog/fmt/fmt.h>
-
 #include "SimTKcommon/SmallMatrix.h"
 #include "SimTKcommon/internal/BigMatrix.h"
 #include "SimTKcommon/internal/MassProperties.h"
+#include "osimCommonDLL.h"
+#include <set>
+#include <spdlog/fmt/fmt.h>
+#include <spdlog/fmt/ostr.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/spdlog.h>
+#include <string>
 
 #ifndef SWIG
-template <>
-struct fmt::formatter<SimTK::Vec3> {
+template <> struct fmt::formatter<SimTK::Vec3> {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
     template <typename FormatContext>
-    auto format(const SimTK::Vec3& v, FormatContext& ctx) {
+    auto format(const SimTK::Vec3& v, FormatContext& ctx) const {
         std::stringstream ss;
         ss << v;
         std::string out = ss.str();
@@ -49,12 +46,11 @@ struct fmt::formatter<SimTK::Vec3> {
     }
 };
 
-template <>
-struct fmt::formatter<SimTK::Vector> {
+template <> struct fmt::formatter<SimTK::Vector> {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
     template <typename FormatContext>
-    auto format(const SimTK::Vector& v, FormatContext& ctx) {
+    auto format(const SimTK::Vector& v, FormatContext& ctx) const {
         std::stringstream ss;
         ss << v;
         std::string out = ss.str();
@@ -62,11 +58,10 @@ struct fmt::formatter<SimTK::Vector> {
     }
 };
 
-template <>
-struct fmt::formatter<SimTK::Rotation> {
+template <> struct fmt::formatter<SimTK::Rotation> {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
     template <typename FormatContext>
-    auto format(const SimTK::Rotation& R, FormatContext& ctx) {
+    auto format(const SimTK::Rotation& R, FormatContext& ctx) const {
         std::stringstream ss;
         ss << R;
         std::string out = ss.str();
@@ -74,12 +69,11 @@ struct fmt::formatter<SimTK::Rotation> {
     }
 };
 
-template <>
-struct fmt::formatter<SimTK::Inertia> {
+template <> struct fmt::formatter<SimTK::Inertia> {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
     template <typename FormatContext>
-    auto format(const SimTK::Inertia& I, FormatContext& ctx) {
+    auto format(const SimTK::Inertia& I, FormatContext& ctx) const {
         std::stringstream ss;
         ss << I;
         std::string out = ss.str();
