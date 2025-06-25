@@ -37,9 +37,7 @@
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Common/DebugUtilities.h>
 
-
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 
@@ -390,8 +388,8 @@ bool RRATool::run()
 
     //Make sure system is up-to-date with model (i.e. added actuators, etc...)
     SimTK::State& s = _model->initSystem();
-    _model->getMultibodySystem().realize(s, Stage::Position );
-     taskSet.setModel(*_model);
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Position);
+    taskSet.setModel(*_model);
     _model->equilibrateMuscles(s);
   
     // ---- INPUT ----
@@ -515,7 +513,7 @@ bool RRATool::run()
     Storage *uStore=NULL;
 
     if(desiredKinFlag) {
-        _model->getMultibodySystem().realize(s, Stage::Time );
+        _model->getMultibodySystem().realize(s, SimTK::Stage::Time);
         // qStore and uStore returned are in radians
         _model->getSimbodyEngine().formCompleteStorages(s, *desiredKinStore,
             qStore, uStore);
@@ -784,7 +782,7 @@ bool RRATool::run()
         cmcActSubsystem.setCompleteState( s );
         actuatorSystemState.updTime() = _ti; 
         s.updTime() = _ti;
-        actuatorSystem.realize(actuatorSystemState, Stage::Time );
+        actuatorSystem.realize(actuatorSystemState, SimTK::Stage::Time);
         controller->setTargetDT(1.0e-8);
         controller->computeControls( s, controller->updControlSet() );
         controller->setTargetDT(_targetDT);
@@ -802,7 +800,7 @@ bool RRATool::run()
     log_info("--------------------------------------------");
     log_info("");
 
-    _model->getMultibodySystem().realize(s, Stage::Acceleration );
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
 
     controller->updTaskSet().computeAccelerations(s);
 
@@ -1027,8 +1025,8 @@ adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage
     SimTK::State &si = _model->initSystem();
 
     si.updY() = restoreStates;
-    _model->getMultibodySystem().realize(si, Stage::Position );
-    
+    _model->getMultibodySystem().realize(si, SimTK::Stage::Position);
+
     computeAverageResiduals(si, *_model, ti, tf, *statesStore, FAve, MAve);
 
     resMsg <<  "* Average residuals after adjusting "<<_adjustedCOMBody<<" COM:"<<endl;
@@ -1063,8 +1061,8 @@ computeAverageResiduals(SimTK::State& s, Model &aModel,double aTi,double aTf,con
     int iFinal = aStatesStore.findIndex(aTf);
     aStatesStore.getTime(iInitial,aTi);
     aStatesStore.getTime(iFinal,aTf);
-   
-    aModel.getMultibodySystem().realize(s, Stage::Position );
+
+    aModel.getMultibodySystem().realize(s, SimTK::Stage::Position);
 
     log_info("Computing average residuals between {} and {}...", aTi, aTf);
     AnalyzeTool::run(s, aModel, iInitial, iFinal, aStatesStore, false);
@@ -1095,7 +1093,7 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
     OPENSIM_ASSERT_FRMOBJ(aFAve.getSize()==3 && aMAve.getSize()==3);
 
     // GRAVITY
-    Vec3 g = _model->getGravity();
+    SimTK::Vec3 g = _model->getGravity();
 
     // COMPUTE SEGMENT WEIGHT
     Body *body = &_model->updBodySet().get(_adjustedCOMBody);
@@ -1306,11 +1304,12 @@ void RRATool::setOriginalForceSet(const ForceSet &aForceSet) {
             // solve_for_equilibrium_for_auxiliary_states is off
             // ControllerSet is empty
             SimTK::Xml::Document doc = SimTK::Xml::Document(getDocumentFileName());
-            Xml::Element oldRoot = doc.getRootElement();
-            Xml::Element toolNode;
+            SimTK::Xml::Element oldRoot = doc.getRootElement();
+            SimTK::Xml::Element toolNode;
             bool isCMCTool = true;
             if (oldRoot.getElementTag()=="OpenSimDocument"){
-                Xml::element_iterator iterTool(oldRoot.element_begin("CMCTool"));
+                SimTK::Xml::element_iterator iterTool(
+                        oldRoot.element_begin("CMCTool"));
                 if (iterTool==oldRoot.element_end()){
                     isCMCTool = false;
                 }
@@ -1321,16 +1320,19 @@ void RRATool::setOriginalForceSet(const ForceSet &aForceSet) {
                 toolNode = oldRoot;
                 isCMCTool = (oldRoot.getElementTag()=="CMCTool");
             }
-            if (isCMCTool){
-                Xml::element_iterator replace_force_setIter(toolNode.element_begin("replace_force_set"));
-                if (replace_force_setIter != toolNode.element_end()){
-                    String replace_forcesStr = replace_force_setIter->getValueAs<String>();
+            if (isCMCTool) {
+                SimTK::Xml::element_iterator replace_force_setIter(
+                        toolNode.element_begin("replace_force_set"));
+                if (replace_force_setIter != toolNode.element_end()) {
+                    SimTK::String replace_forcesStr =
+                            replace_force_setIter->getValueAs<SimTK::String>();
                     if (replace_forcesStr.toLower() != "true") {
                         log_warn("Old RRA setup file has replace_force_set set "
                             " to false, will be ignored.");
                     }
                 }
-                Xml::element_iterator timeWindowIter(toolNode.element_begin("cmc_time_window"));
+                SimTK::Xml::element_iterator timeWindowIter(
+                        toolNode.element_begin("cmc_time_window"));
                 if (timeWindowIter != toolNode.element_end()){
                     double timeWindow = timeWindowIter->getValueAs<double>();
                     if (timeWindow != .001) {

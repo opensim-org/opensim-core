@@ -28,7 +28,6 @@
 #include "IMUPlacer.h"
 
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
 
 TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
@@ -43,15 +42,15 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
     size_t nt = int(quaternionsTable.getNumRows());
 
     std::vector<double> newTimes(nt, SimTK::NaN);
-    SimTK::Matrix_<SimTK::Rotation> matrix(int(nt), nc, Rotation());
+    SimTK::Matrix_<SimTK::Rotation> matrix(int(nt), nc, SimTK::Rotation());
 
     int cnt = 0;
     for (size_t i = 0; i < nt; ++i) {
         newTimes[cnt] = times[i];
         const auto& quatRow = quaternionsTable.getRowAtIndex(i);
         for (int j = 0; j < nc; ++j) {
-            const Quaternion& quatO = quatRow[j];
-            matrix.updElt(cnt, j) = Rotation(quatO);
+            const SimTK::Quaternion& quatO = quatRow[j];
+            matrix.updElt(cnt, j) = SimTK::Rotation(quatO);
         }
         cnt++;
     }
@@ -80,27 +79,26 @@ void OpenSim::OpenSenseUtilities::rotateOrientationTable(
         auto quatRow = quaternionsTable.updRowAtIndex(i);
         for (int j = 0; j < nc; ++j) {
             // This can be done completely in Quaternions but this is easier to debug for now
-            Quaternion quatO = (R_XG * Rotation(quatRow[j])).convertRotationToQuaternion();
+            SimTK::Quaternion quatO = (R_XG * SimTK::Rotation(quatRow[j]))
+                                              .convertRotationToQuaternion();
             quatRow[j] = quatO;
         }
     }
     return;
 }
 
-SimTK::Transform OpenSenseUtilities::formTransformFromPoints(const Vec3& op,
-    const Vec3& xp,
-    const Vec3& yp)
-{
+SimTK::Transform OpenSenseUtilities::formTransformFromPoints(
+        const SimTK::Vec3& op, const SimTK::Vec3& xp, const SimTK::Vec3& yp) {
     OPENSIM_THROW_IF(op.isNaN() || xp.isNaN() || yp.isNaN(),
         OpenSim::Exception,
         "formTransformFromPoints: An input point is NaN.");
 
-    UnitVec3 ux{ xp - op };
-    UnitVec3 uy{ yp - op };
-    UnitVec3 uz{ ux % uy };
+    SimTK::UnitVec3 ux{xp - op};
+    SimTK::UnitVec3 uy{yp - op};
+    SimTK::UnitVec3 uz{ux % uy};
 
-    Mat33 nearRot{ ux, uy, uz };
-    Rotation R{ nearRot };
+    SimTK::Mat33 nearRot{ux, uy, uz};
+    SimTK::Rotation R{nearRot};
 
     SimTK::Transform X{ R, op };
 
@@ -161,12 +159,12 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
     const auto& markerData = table.getMatrix();
     SimTK::Matrix_<SimTK::Quaternion> quatData{ markerData.nrow(), int(imuLabels.size()) };
 
-    Vec3 op, xp, yp, dp;
-    SimTK::Quaternion quat{ SimTK::NaN, SimTK::NaN, SimTK::NaN, SimTK::NaN };
+    SimTK::Vec3 op, xp, yp, dp;
+    SimTK::Quaternion quat{SimTK::NaN, SimTK::NaN, SimTK::NaN, SimTK::NaN};
 
     for (int row = 0; row < markerData.nrow(); ++row) {
         // reset marker and quaternion to NaN
-        op = xp = yp = dp = Vec3{ SimTK::NaN };
+        op = xp = yp = dp = SimTK::Vec3{SimTK::NaN};
         quat *= SimTK::NaN;
 
         for (size_t i = 0; i < imuLabels.size(); ++i) {
@@ -224,11 +222,12 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
         }
 
         auto startRow = quaternionsTable.getRowAtIndex(0);
-        Rotation base_R = Rotation(startRow.getElt(0, int(pix)));
+        SimTK::Rotation base_R = SimTK::Rotation(startRow.getElt(0, int(pix)));
 
         // Heading direction of the base IMU in this case the pelvis_imu heading
         // is its ZAxis
-        UnitVec3 baseSegmentXHeading = base_R(baseHeadingDirection.getAxis());
+        SimTK::UnitVec3 baseSegmentXHeading =
+                base_R(baseHeadingDirection.getAxis());
         if (baseHeadingDirection.getDirection() < 0)
             baseSegmentXHeading = baseSegmentXHeading.negate();
         bool baseFrameFound = false;
@@ -245,11 +244,12 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
         }
         OPENSIM_THROW_IF(!baseFrameFound, Exception,
                 "No base segment was found, disable heading correction and retry.");
-       
-        Vec3 baseFrameX = UnitVec3(1, 0, 0);
+
+        SimTK::Vec3 baseFrameX = SimTK::UnitVec3(1, 0, 0);
         const SimTK::Transform& baseXform =
                 baseFrame->getTransformInGround(state);
-        Vec3 baseFrameXInGround = baseXform.xformFrameVecToBase(baseFrameX);
+        SimTK::Vec3 baseFrameXInGround =
+                baseXform.xformFrameVecToBase(baseFrameX);
         SimTK::Real angularDifference =
                 acos(~baseSegmentXHeading * baseFrameXInGround);
         // Compute the sign of the angular correction.

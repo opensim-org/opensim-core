@@ -32,7 +32,6 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
-using namespace SimTK;
 
 //=============================================================================
 // CONSTRUCTORS
@@ -899,7 +898,7 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
             else {
                 // We've stagnated or hit a limit; assume we are hitting local
                 // minimum and attempt to approach from the other direction.
-                lce = lcePrev - sign(delta_lce)*SimTK::SqrtEps;
+                lce = lcePrev - SimTK::sign(delta_lce) * SimTK::SqrtEps;
                 // Force a break, which will update the derivatives of
                 // the muscle force and estimate of the fiber-velocity 
                 h = 0;

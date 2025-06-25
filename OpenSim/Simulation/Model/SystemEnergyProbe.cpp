@@ -28,7 +28,6 @@
 #include "Model.h"
 
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 
@@ -124,8 +123,8 @@ void SystemEnergyProbe::extendConnectToModel(Model& aModel)
 /** 
  * Compute the System energy which the Probe operation will be based on.
  */
-SimTK::Vector SystemEnergyProbe::computeProbeInputs(const State& s) const
-{
+SimTK::Vector SystemEnergyProbe::computeProbeInputs(
+        const SimTK::State& s) const {
     SimTK::Vector TotalE(1, 0.0);       // Initialize at zero
     
     if (getComputeKineticEnergy())
@@ -136,7 +135,6 @@ SimTK::Vector SystemEnergyProbe::computeProbeInputs(const State& s) const
     
     return TotalE;
 }
-
 
 //_____________________________________________________________________________
 /** 

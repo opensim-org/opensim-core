@@ -29,7 +29,6 @@
 #include "BushingForce.h"
 
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 //=============================================================================
@@ -162,10 +161,10 @@ void BushingForce::setNull()
 void BushingForce::constructProperties()
 {
     // default bushing material properties
-    constructProperty_rotational_stiffness(Vec3(0));
-    constructProperty_translational_stiffness(Vec3(0));
-    constructProperty_rotational_damping(Vec3(0));
-    constructProperty_translational_damping(Vec3(0));
+    constructProperty_rotational_stiffness(SimTK::Vec3(0));
+    constructProperty_translational_stiffness(SimTK::Vec3(0));
+    constructProperty_rotational_damping(SimTK::Vec3(0));
+    constructProperty_translational_damping(SimTK::Vec3(0));
 }
 
 // Add underly Simbody elements to the System after subcomponents
@@ -187,10 +186,10 @@ void BushingForce::
     const SimTK::MobilizedBody& b1 = frame1.getMobilizedBody();
     const SimTK::MobilizedBody& b2 = frame2.getMobilizedBody();
 
-    Vec6 stiffness(rotStiffness[0], rotStiffness[1], rotStiffness[2], 
-                   transStiffness[0], transStiffness[1], transStiffness[2]);
-    Vec6 damping(rotDamping[0], rotDamping[1], rotDamping[2], 
-                 transDamping[0], transDamping[1], transDamping[2]);
+    SimTK::Vec6 stiffness(rotStiffness[0], rotStiffness[1], rotStiffness[2],
+            transStiffness[0], transStiffness[1], transStiffness[2]);
+    SimTK::Vec6 damping(rotDamping[0], rotDamping[1], rotDamping[2],
+            transDamping[0], transDamping[1], transDamping[2]);
 
     // Now create a Simbody Force::LinearBushing
     SimTK::Force::LinearBushing simtkForce

@@ -59,12 +59,12 @@ RUN wget -nc -q --show-progress https://github.com/Kitware/CMake/releases/downlo
 RUN source ~/.bashrc && cmake --version
 RUN echo
 
-# Download and install SWIG 4.0.2.
+# Download and install SWIG 4.1.1.
 RUN mkdir -p ~/opensim-workspace/swig-source || true
 WORKDIR ~/opensim-workspace/swig-source
-RUN wget -nc -q --show-progress https://github.com/swig/swig/archive/refs/tags/rel-4.0.2.tar.gz
-RUN tar xzf rel-4.0.2.tar.gz
-WORKDIR ./swig-rel-4.0.2
+RUN wget -nc -q --show-progress https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
+RUN tar xzf v4.1.1.tar.gz
+WORKDIR ./swig-4.1.1
 RUN ./autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
 RUN make && make -j$NUM_JOBS install  
 
