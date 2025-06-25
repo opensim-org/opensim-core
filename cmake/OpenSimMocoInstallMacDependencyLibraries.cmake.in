@@ -8,7 +8,6 @@ macro(install_name_tool_change lib dep_name dep_oldpath)
             -change ${dep_oldpath}/lib${dep_name}.dylib
             @rpath/lib${dep_name}.dylib
             "${libdir}/lib${lib}.dylib")
-    # message(STATUS, "install_name_tool_change1" "${dep_oldpath}/lib${dep_name}.dylib" " 2 " "@rpath/lib${dep_name}.dylib" " 3 " "${libdir}/lib${lib}.dylib")
 endmacro()
 
 macro(install_name_tool_id lib)
@@ -27,7 +26,6 @@ macro(install_name_tool_delete_rpath lib rpath)
     execute_process(COMMAND install_name_tool
             -delete_rpath ${rpath}
             "${libdir}/lib${lib}.dylib")
-    message(STATUS, "install_name_tool_delete_rpath1" ${rpath} " 2 " "${libdir}/lib${lib}.dylib")
 endmacro()
 
 macro(install_name_tool_change_gfortran lib)
@@ -71,7 +69,6 @@ if (OPENSIM_WITH_CASADI)
     install_name_tool_change_gfortran(casadi_nlpsol_ipopt.3.7)
     install_name_tool_change_quadmath(casadi_nlpsol_ipopt.3.7)
     install_name_tool_add_rpath(casadi_nlpsol_ipopt.3.7)
-    # install_name_tool_delete_rpath(casadi_nlpsol_ipopt.3.7 "@IPOPT_LIBDIR@")
 
 endif()
 
