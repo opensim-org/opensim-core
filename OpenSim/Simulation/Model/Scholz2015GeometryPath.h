@@ -28,7 +28,7 @@
 #include "OpenSim/Simulation/Model/Station.h"
 #include <simbody/internal/CableSpan.h>
 #include <OpenSim/Simulation/MomentArmSolver.h>
-
+#include <OpenSim/Simulation/Model/ContactGeometry.h>
 
 namespace OpenSim {
 
@@ -48,17 +48,28 @@ public:
             "The origin station of the path segment.");
     OpenSim_DECLARE_SOCKET(insertion, Station,
             "The insertion station of the path segment.");
+    OpenSim_DECLARE_LIST_SOCKET(obstacles, ContactGeometry,
+            "The list of obstacles that the path segment may intersect.");
+
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    OpenSim_DECLARE_LIST_PROPERTY(contact_hints, SimTK::Vec3,
+            "The list of contact hints for the path segment.");
 
 //=============================================================================
 // METHODS
 //=============================================================================
     
-    // CONSTRUCTION AND DESTRUCTION
+    // CONSTRUCTION
     Scholz2015GeometryPathSegment();
 
     // GET AND SET
     const Station& getOrigin() const;
     const Station& getInsertion() const;
+
+    int getNumObstacles() const;
+    const ContactGeometry& getObstacle(int index) const;
 
     SimTK::Real getLength(const SimTK::State& s) const;
     SimTK::Real getLengtheningSpeed(const SimTK::State& s) const;
@@ -67,7 +78,13 @@ public:
             SimTK::SpatialVec& unitForce_G) const;
     void calcInsertionUnitForce(const SimTK::State& state, 
             SimTK::SpatialVec& unitForce_G) const;
-    // TODO: Add method to calculate forces exerted by obstacles.
+    void calcCurveSegmentUnitForce(
+            const SimTK::State& state,
+            SimTK::CableSpanObstacleIndex ix,
+            SimTK::SpatialVec& unitForce_G) const;
+
+    bool isInContactWithObstacle(const SimTK::State& state,
+            SimTK::CableSpanObstacleIndex ix) const;
 
 private:
     // MODEL COMPONENT INTERFACE
@@ -76,6 +93,8 @@ private:
             const SimTK::State& s,
             SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override;
 
+    // CONVENIENCE METHODS
+    void constructProperties();
     const SimTK::CableSpan& getCableSpan() const;
     
     mutable SimTK::ResetOnCopy<SimTK::CableSpanIndex> _index;
@@ -93,25 +112,21 @@ OpenSim_DECLARE_CONCRETE_OBJECT(Scholz2015GeometryPath, AbstractGeometryPath);
 
 public:
 //=============================================================================
-// PROPERTIES
-//=============================================================================
-    OpenSim_DECLARE_LIST_PROPERTY(path_segments, Scholz2015GeometryPathSegment,
-            "The list of path segments.");
-
-//=============================================================================
 // METHODS
 //=============================================================================
 
-    // CONSTRUCTION AND DESTRUCTION
+    // CONSTRUCTION
     Scholz2015GeometryPath();
 
     // GET AND SET
     void createInitialPathSegment(const std::string& name,
             const Station& origin, const Station& insertion);
-
     void appendPathSegment(const std::string& name,
             const Station& insertion);
 
+    void addObstacleToPathSegment(const std::string& segmentName,
+            const ContactGeometry& obstacle, 
+            const SimTK::Vec3& contactHint = SimTK::Vec3{SimTK::NaN});
 
     // ABSTRACT PATH INTERFACE
     double getLength(const SimTK::State& s) const override;
@@ -119,20 +134,23 @@ public:
     double computeMomentArm(const SimTK::State& s,
             const Coordinate& coord) const override;
 
+    // FORCE PRODUCER INTERFACE
     void produceForces(const SimTK::State& s, double tension,
             ForceConsumer& consumer) const override;
 
     bool isVisualPath() const override { return true; }
 
 private:
+    // PROPERTIES
+    OpenSim_DECLARE_LIST_PROPERTY(path_segments, Scholz2015GeometryPathSegment,
+            "The list of path segments.");
+
     // MODEL COMPONENT INTERFACE
     void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     // CONVENIENCE METHODS
     void constructProperties();
-
-    // HELPER METHODS
     void computeLength(const SimTK::State& s) const;
     void computeSpeed(const SimTK::State& s) const;
 
