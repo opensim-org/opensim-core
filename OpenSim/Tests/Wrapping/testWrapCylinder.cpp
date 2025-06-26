@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                         OpenSim:  testWrapCylinder.cpp                     *
+ *                       OpenSim:  testWrapCylinder.cpp                       *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,7 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2022 Stanford University and the Authors                *
+ * Copyright (c) 2005-2025 Stanford University and the Authors                *
+ * Author(s): Pepijn van den Bos                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -20,15 +21,18 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/OpenSim.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PathSpring.h>
+#include <OpenSim/Simulation/Wrap/WrapCylinder.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 #include <string>
 #include <iostream>
 #include <cmath>
 #include <sstream>
-#include <functional>
 #include <memory>
+
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 
@@ -615,8 +619,8 @@ namespace {
 
 }
 
-int main()
-{
+TEST_CASE("testWrapCylinder") {
+
     struct TestCase
     {
         std::string name{};
@@ -692,37 +696,18 @@ int main()
     // =========================== Run all tests ===============================
     // =========================================================================
 
-    std::vector<std::string> failLog;
     WrappingTolerances tolerance;
-
+    std::string log;
     for (size_t i = 0; i < testCaseList.size(); ++i) {
-        failLog.push_back(TestWrapping(
-            testCaseList[i].input,
-            testCaseList[i].expected,
-            tolerance,
-            testCaseList[i].name,
-            testCaseList[i].visualize));
-    }
-
-    // =========================================================================
-    // ====================== Handling of Test Results =========================
-    // =========================================================================
-
-    size_t failedCount = 0;
-    for (size_t i = 0; i < failLog.size(); ++i) {
-        if (!failLog[i].empty()) {
-            ++failedCount;
-            std::cout << failLog[i] << std::endl;
+        DYNAMIC_SECTION(testCaseList[i].name) {
+            log = TestWrapping(
+                testCaseList[i].input,
+                testCaseList[i].expected,
+                tolerance,
+                testCaseList[i].name,
+                testCaseList[i].visualize);
+            CAPTURE(log);
+            CHECK(log.empty());
         }
     }
-
-    if (failedCount > 0) {
-        std::cout << "Wrap Cylinder Test: Failed " << failedCount << " out of "
-            << failLog.size() << " tests." << std::endl;
-        return 1;
-    }
-
-    std::cout << "Wrap Cylinder Test: Passed " << failLog.size() << " tests."
-        << std::endl;
-    return 0;
 }

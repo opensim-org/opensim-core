@@ -27,7 +27,6 @@
 #include <SimTKcommon/internal/State.h>
 
 using namespace std;
-using namespace SimTK;
 
 namespace OpenSim {
 
@@ -38,8 +37,7 @@ BufferedOrientationsReference::BufferedOrientationsReference()
 
 /** get the values of the OrientationsReference */
 void BufferedOrientationsReference::getValuesAtTime(
-        double time, SimTK::Array_<Rotation> &values) const
-{
+        double time, SimTK::Array_<SimTK::Rotation>& values) const {
     auto& times = _orientationData.getIndependentColumn();
     SimTK::RowVector_<SimTK::Rotation> nextRow;
 

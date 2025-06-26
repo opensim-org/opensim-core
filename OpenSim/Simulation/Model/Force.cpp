@@ -25,9 +25,6 @@
 #include "Model.h"
 #include <OpenSim/Simulation/Model/ForceAdapter.h>
 
-
-using namespace SimTK;
-
 namespace OpenSim {
 
 //=============================================================================
@@ -176,10 +173,9 @@ double Force::computePotentialEnergy(const SimTK::State& state) const
 //-----------------------------------------------------------------------------
 // METHODS TO APPLY FORCES AND TORQUES
 //-----------------------------------------------------------------------------
-void Force::applyForceToPoint(const SimTK::State &s, const PhysicalFrame &frame,
-                              const Vec3& point, const Vec3& forceInG, 
-                              Vector_<SpatialVec> &bodyForces) const
-{
+void Force::applyForceToPoint(const SimTK::State& s, const PhysicalFrame& frame,
+        const SimTK::Vec3& point, const SimTK::Vec3& forceInG,
+        SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const {
     // get the point expressed in frame, F, expressed in the base, B.
     auto p_B = frame.findTransformInBaseFrame()*point;
 
@@ -188,21 +184,20 @@ void Force::applyForceToPoint(const SimTK::State &s, const PhysicalFrame &frame,
                                     p_B, forceInG, bodyForces);
 }
 
-void Force::applyTorque(const SimTK::State &s, const PhysicalFrame& frame, 
-                        const Vec3& torque, Vector_<SpatialVec> &bodyForces) const
-{
+void Force::applyTorque(const SimTK::State& s, const PhysicalFrame& frame,
+        const SimTK::Vec3& torque,
+        SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const {
     _model->getMatterSubsystem().addInBodyTorque(s, frame.getMobilizedBodyIndex(),
                                                  torque, bodyForces);
 }
 
-void Force::applyGeneralizedForce(const SimTK::State &s, const Coordinate &coord, 
-                                        double force, Vector &mobilityForces) const
-{
+void Force::applyGeneralizedForce(const SimTK::State& s,
+        const Coordinate& coord, double force,
+        SimTK::Vector& mobilityForces) const {
     _model->getMatterSubsystem().addInMobilityForce(s, 
                                  SimTK::MobilizedBodyIndex(coord.getBodyIndex()), 
                                  SimTK::MobilizerUIndex(coord.getMobilizerQIndex()),
                                  force, mobilityForces);
 }
-
 
 } // end of namespace OpenSim

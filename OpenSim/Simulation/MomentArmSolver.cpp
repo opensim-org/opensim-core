@@ -26,7 +26,6 @@
 #include "Model/Model.h"
 
 using namespace std;
-using namespace SimTK;
 
 namespace OpenSim {
 
@@ -41,8 +40,8 @@ MomentArmSolver::MomentArmSolver(const Model &model) : Solver(model)
     _stateCopy = model.getWorkingState();
 
     // Get the body forces equivalent of the point forces of the path
-    _bodyForces = getModel().getSystem()
-        .getRigidBodyForces(_stateCopy, Stage::Instance);
+    _bodyForces = getModel().getSystem().getRigidBodyForces(
+            _stateCopy, SimTK::Stage::Instance);
     // get the right size coupling vector
     _coupling = _stateCopy.getU();
 }
@@ -58,11 +57,10 @@ especially for complex paths involving wrapping.
 Refer to Moment-arm Theory document by Michael Sherman for details.
 
 **********************************************************************************/
-double MomentArmSolver::solve(const State &state, const Coordinate &aCoord,
-                              const AbstractGeometryPath &path) const
-{
+double MomentArmSolver::solve(const SimTK::State& state, 
+        const Coordinate& aCoord, const AbstractGeometryPath& path) const {
     //Local modifiable copy of the state
-    State& s_ma = _stateCopy;
+    SimTK::State& s_ma = _stateCopy;
     s_ma.updQ() = state.getQ();
 
     // compute the coupling between coordinates due to constraints
@@ -76,7 +74,7 @@ double MomentArmSolver::solve(const State &state, const Coordinate &aCoord,
     _generalizedForces = 0;
 
     // apply a tension of unity to the bodies of the path
-    Vector pathDependentMobilityForces(s_ma.getNU(), 0.0);
+    SimTK::Vector pathDependentMobilityForces(s_ma.getNU(), 0.0);
     path.addInEquivalentForces(s_ma, 1.0, _bodyForces, pathDependentMobilityForces);
 
     //_bodyForces.dump("bodyForces from addInEquivalentForcesOnBodies");
@@ -93,15 +91,13 @@ double MomentArmSolver::solve(const State &state, const Coordinate &aCoord,
     return ~_coupling*_generalizedForces;
 }
 
-
-
-double MomentArmSolver::solve(const State &state, const Coordinate &aCoord,
-                              const Array<PointForceDirection *> &pfds) const
-{
+double MomentArmSolver::solve(const SimTK::State& state,
+        const Coordinate& aCoord,
+        const Array<PointForceDirection*>& pfds) const {
     //const clock_t start = clock();
 
     //Local modifiable copy of the state
-    State& s_ma = _stateCopy;
+    SimTK::State& s_ma = _stateCopy;
     s_ma.updQ() = state.getQ();
 
     // compute the coupling between coordinates due to constraints

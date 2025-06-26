@@ -25,7 +25,6 @@
 
 using namespace std;
 using namespace OpenSim;
-using namespace SimTK;
 
 //==============================================================================
 // CONSTRUCTORS

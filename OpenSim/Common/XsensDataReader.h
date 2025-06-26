@@ -23,16 +23,17 @@
  * -------------------------------------------------------------------------- */
 
 // For definition of Exceptions to be used
-#include "Object.h"
-#include "ExperimentalSensor.h"
 #include "DataAdapter.h"
-#include "XsensDataReaderSettings.h"
-#include "TimeSeriesTable.h"
+#include "ExperimentalSensor.h"
 #include "IMUDataReader.h"
+#include "Object.h"
+#include "TimeSeriesTable.h"
+#include "XsensDataReaderSettings.h"
+
 /** @file
-* This file defines class for reading data files from IMU maker Xsens and 
-* producing in memory tables to be consumed by the OpenSim tools/pipelines
-*/
+ * This file defines class for reading data files from IMU maker Xsens and
+ * producing in memory tables to be consumed by the OpenSim tools/pipelines
+ */
 
 namespace OpenSim {
 
@@ -50,53 +51,56 @@ public:
     virtual ~XsensDataReader() = default;
 
     XsensDataReader* clone() const override;
+
 protected:
-    /** Typically, Xsens can export a trial as one .mtb file (binary that we 
-    can't parse) or as collection of ASCII text files that are tab delimited, 
-    one per sensor. All of these files have a common prefix that indicates the 
+    /** Typically, Xsens can export a trial as one .mtb file (binary that we
+    can't parse) or as collection of ASCII text files that are tab delimited,
+    one per sensor. All of these files have a common prefix that indicates the
     trial, and a suffix that indicates the sensor (fixed across trials).
-    Example: MT_012005D6_031-000_00B421AF.txt, MT_012005D6_031-000_00B4227B.txt 
+    Example: MT_012005D6_031-000_00B421AF.txt, MT_012005D6_031-000_00B4227B.txt
     for trial MT_012005D6_031-000_and sensors 00B421AF, 00B4227B respectively.
-    The function below reads all files in the given folder name, with common 
-    prefix (same trial). It produces a list of tables depending on the contents 
-    of the files read. 
-    - One table for Orientations, 
+    The function below reads all files in the given folder name, with common
+    prefix (same trial). It produces a list of tables depending on the contents
+    of the files read.
+    - One table for Orientations,
     - one table for LinearAccelerations
-    - one table for MagneticHeading data, 
-    - one table for AngularVelocity data. 
-    If data is missing, an empty table is returned. 
+    - one table for MagneticHeading data,
+    - one table for AngularVelocity data.
+    If data is missing, an empty table is returned.
     */
-    DataAdapter::OutputTables extendRead(const std::string& folderName) const override;
+    DataAdapter::OutputTables extendRead(
+            const std::string& folderName) const override;
 
     /** Implements writing functionality, not implemented. */
     virtual void extendWrite(const DataAdapter::InputTables& tables,
-        const std::string& sinkName) const override {};
+            const std::string& sinkName) const override {};
+
 public:
     /**
-     * Method to get const reference to the internal XsensDataReaderSettings object
-     * maintained by this reader.
+     * Method to get const reference to the internal XsensDataReaderSettings
+     * object maintained by this reader.
      */
-    const XsensDataReaderSettings& getSettings() const {
-        return _settings; 
-    }
-   /**
-    * Method to get writable reference to the internal XsensDataReaderSettings object
-    * maintained by this reader, to allow modification after construction.
-    */
-    XsensDataReaderSettings& updSettings() {
-        return _settings;
-    }
- private:
+    const XsensDataReaderSettings& getSettings() const { return _settings; }
     /**
-     * Find index of searchString in tokens
+     * Method to get writable reference to the internal XsensDataReaderSettings
+     * object maintained by this reader, to allow modification after
+     * construction.
      */
-    static int find_index(std::vector<std::string>& tokens, const std::string& searchString);
+    XsensDataReaderSettings& updSettings() { return _settings; }
+
+private:
     /**
-     * This data member encapsulates all the serializable settings for the Reader;
+     * This data member encapsulates all the serializable settings for
+     * the Reader;
      */
     XsensDataReaderSettings _settings;
+
+    /**
+     * This data member encapsulates all the data for a single Xsens IMU
+     */
+    struct XsensIMU;
 };
 
-} // OpenSim namespace
+} // namespace OpenSim
 
 #endif // OPENSIM_XSENS_DATA_READER_H_
