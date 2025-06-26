@@ -29,15 +29,13 @@
 
 #include "Assertion.h"
 #include "Exception.h"
-#include "osimCommonDLL.h"
 #include "Logger.h"
-
+#include "osimCommonDLL.h"
 #include <algorithm>
-#include <cstddef>
 #include <initializer_list>
 #include <iostream>
 #include <iterator>
-#include <sstream>
+#include <spdlog/fmt/bundled/ostream.h>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -601,5 +599,11 @@ private:
 };
 
 }; //namespace
+
+#ifndef SWIG
+// fmt library serializers for OpenSim Array objects
+template <>
+struct fmt::formatter<OpenSim::Array<double>> : ostream_formatter {};
+#endif
 
 #endif // OPENSIM_ARRAY_H_

@@ -36,16 +36,16 @@
 // INCLUDES
 
 #include "Assertion.h"
-#include "osimCommonDLL.h"
+#include "Property.h"
 #include "PropertySet.h"
 #include "PropertyTable.h"
-#include "Property.h"
-
+#include "osimCommonDLL.h"
 #include <cstring>
 #include <map>
 #include <memory>
 #include <ostream>
 #include <set>
+#include <spdlog/fmt/ranges.h> // for fmt::join
 #include <string>
 
 // DISABLES MULTIPLE INSTANTIATION WARNINGS

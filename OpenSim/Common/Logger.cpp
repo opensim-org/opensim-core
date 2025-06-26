@@ -22,11 +22,16 @@
 
 #include "Logger.h"
 
-#include "Exception.h"
-#include "IO.h"
-#include "LogSink.h"
-
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include "Exception.h"                       // for Exception, OPENSIM_THROW
+#include "IO.h"                              // for IO
+#include "LogSink.h"                         // for LogSink
+#include <algorithm>                         // for remove
+#include <spdlog/fmt/bundled/format.h>       // for format
+#include <spdlog/sinks/basic_file_sink.h>    // for basic_file_sink_mt, bas...
+#include <spdlog/sinks/sink.h>               // for sink
+#include <spdlog/sinks/stdout_color_sinks.h> // for stdout_color_mt
+#include <spdlog/spdlog.h>                   // for set_level, default_logger
+#include <vector>                            // for vector
 
 using namespace OpenSim;
 

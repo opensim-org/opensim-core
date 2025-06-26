@@ -160,6 +160,7 @@ endif ()
 # TODO: Remove the concept of a separate Moco version.
 target_compile_definitions(osimMoco PRIVATE
     OPENSIM_MOCO_VERSION=${OPENSIM_QUALIFIED_VERSION}
+    SWIG_PYTHON
     )
 
 OpenSimAddInstallRPATHSelf(TARGET osimMoco LOADER)

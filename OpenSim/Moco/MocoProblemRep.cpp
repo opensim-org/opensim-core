@@ -358,21 +358,24 @@ void MocoProblemRep::initialize() {
             // TODO how to name multiplier variables?
             std::vector<MocoVariableInfo> multInfos;
             for (int i = 0; i < mp; ++i) {
-                std::string name = fmt::format("cid{}_p{}", cid, i);
+                std::string name =
+                        fmt::format("cid{}_p{}", static_cast<int>(cid), i);
                 kc_perr_names.push_back(name);
                 MocoVariableInfo info("lambda_" + name, multBounds,
                         multInitBounds, multFinalBounds);
                 multInfos.push_back(info);
             }
             for (int i = 0; i < mv; ++i) {
-                std::string name = fmt::format("cid{}_v{}", cid, i);
+                std::string name =
+                        fmt::format("cid{}_v{}", static_cast<int>(cid), i);
                 MocoVariableInfo info("lambda_" + name, multBounds,
                         multInitBounds, multFinalBounds);
                 kc_verr_names.push_back(name);
                 multInfos.push_back(info);
             }
             for (int i = 0; i < ma; ++i) {
-                std::string name = fmt::format("cid{}_a{}", cid, i);
+                std::string name =
+                        fmt::format("cid{}_a{}", static_cast<int>(cid), i);
                 MocoVariableInfo info("lambda_" + name, multBounds,
                         multInitBounds, multFinalBounds);
                 kc_aerr_names.push_back(name);
