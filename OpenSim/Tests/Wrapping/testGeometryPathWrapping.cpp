@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                        OpenSim:  testGeometryPath.cpp                      *
+ *                   OpenSim:  testGeometryPathWrapping.cpp                   *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -21,9 +21,19 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/OpenSim.h>
+#include <OpenSim/Common/Constant.h> 
+#include <OpenSim/Simulation/StatesTrajectory.h>
+#include <OpenSim/Simulation/TableProcessor.h>
+#include <OpenSim/Simulation/Control/PrescribedController.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PathSpring.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/Wrap/WrapObject.h>
+#include <OpenSim/Simulation/Wrap/WrapCylinder.h>
+#include <OpenSim/Simulation/Wrap/WrapSphere.h>
+#include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-
 #include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
@@ -352,85 +362,11 @@ TEST_CASE("PathSpring with WrapCylinder") {
 TEST_CASE("Shoulder wrapping performance") {
     // Test the performance of multiple paths with wrapping in the 
     // upper-extremity.
-    simulateModelWithMuscles("testGeometryPath_ShoulderWrapping.osim", 0.1, 0.5);
-}
-
-TEST_CASE("WrapObject update from XMLNode version 30515") {
-    // In XMLDocument version 30515, we converted VisibleObject, color and
-    // display_preference properties to Appearance properties.
-    XMLDocument doc("testGeometryPath_WrapObjectUpdateFromXMLNode30515.osim");
-
-    // Make sure this test is not weakened by the model in the repository being
-    // updated.
-    SimTK_TEST(doc.getDocumentVersion() == 20302);
-    Model model("testGeometryPath_WrapObjectUpdateFromXMLNode30515.osim");
-    model.print("testGeometryPath_WrapObjectUpdateFromXMLNode30515_updated.osim");
-    const auto& wrapObjSet = model.getGround().getWrapObjectSet();
-
-    // WrapSphere has:
-    //   display_preference = 1
-    //   color = default
-    //   VisibleObject display_preference = 0
-    {
-        const auto& sphere = wrapObjSet.get("wrapsphere");
-        SimTK_TEST(!sphere.get_Appearance().get_visible());
-        SimTK_TEST_EQ(sphere.get_Appearance().get_color(), SimTK::Cyan);
-        SimTK_TEST(sphere.get_Appearance().get_representation() == 
-                VisualRepresentation::DrawPoints /* == 1 */);
-    }
-
-    // WrapCylinder has:
-    //   display_preference = 0
-    //   color = default
-    //   VisibleObject display_preference = 4 
-    {
-        const auto& cyl = wrapObjSet.get("wrapcylinder");
-        // The outer display_preference overrides the inner one.
-        SimTK_TEST(!cyl.get_Appearance().get_visible());
-        SimTK_TEST_EQ(cyl.get_Appearance().get_color(), SimTK::Cyan);
-        SimTK_TEST(cyl.get_Appearance().get_representation() == 
-                VisualRepresentation::DrawSurface /* == 3 */);
-    }
-
-    // WrapEllipsoid has:
-    //   display_preference = 2
-    //   color = 1 0.5 0
-    //   VisibleObject display_preference = 3
-    {
-        const auto& ellipsoid = wrapObjSet.get("wrapellipsoid");
-        SimTK_TEST(ellipsoid.get_Appearance().get_visible());
-        SimTK_TEST_EQ(ellipsoid.get_Appearance().get_color(), 
-                SimTK::Vec3(1, 0.5, 0));
-        // Outer display_preference overrides inner one.
-        SimTK_TEST(ellipsoid.get_Appearance().get_representation() == 
-                VisualRepresentation::DrawWireframe /* == 2 */);
-    }
-}
-
-TEST_CASE("Model scaling with frameless WrapObjects does not segfault") {
-    // reproduction for #3465
-    //
-    // effectively, if code tries to use a `WrapObject` outside
-    // of a `PhysicalFrame` then the code in this test will segfault
-    // without the fix because `WrapObject` will contain nullptrs
-    // that are usually "fixed" by the parent `PhysicalFrame`
-    //
-    // the "proper" fix for this is to (e.g.) use the socket API but
-    // this was avoided in #3465, which just focuses on downgrading
-    // the segfault
-
-    try {
-        OpenSim::Model m;
-        m.addComponent(new OpenSim::WrapCylinder{});
-        m.buildSystem();
-        SimTK::State& state = m.initializeState();
-        m.scale(state, OpenSim::ScaleSet{}, true);
-    } catch (const OpenSim::Exception&) {
-        // the fix in #3465 only ensures no runtime segfaults may
-        // occur - it does not guarantee that `WrapObject`s are
-        // usable outside of their usual usage (i.e. as children
-        // of `PhysicalFrame`s)
-    }
+    const double finalTime = 0.1;
+    const double activation = 0.5;
+    simulateModelWithMuscles(
+            "testGeometryPathWrapping_ShoulderWrappingWithPathSprings.osim", 
+            finalTime, activation);
 }
 
 TEST_CASE("Muscle lengths") {
@@ -448,7 +384,7 @@ TEST_CASE("Muscle lengths") {
         TimeSeriesTable lengths = createMuscleLengthsTable(model, coordinates);
 
         TimeSeriesTable stdLengths(
-                "std_testGeometryPath_subject_walk_armless_muscle_lengths.sto");
+                "std_testGeometryPathWrapping_subject_walk_armless_muscle_lengths.sto");
         CHECK(SimTK::Test::numericallyEqual(
                 lengths.getMatrix(), stdLengths.getMatrix(),
                 static_cast<int>(lengths.getNumColumns()), 1e-6));
@@ -467,7 +403,7 @@ TEST_CASE("Muscle lengths") {
         TimeSeriesTable lengths = createMuscleLengthsTable(model, coordinates);
 
         TimeSeriesTable stdLengths(
-                "std_testGeometryPath_walk_gait1018_muscle_lengths.sto");
+                "std_testGeometryPathWrapping_walk_gait1018_muscle_lengths.sto");
         CHECK(SimTK::Test::numericallyEqual(lengths.getMatrix(),
                 stdLengths.getMatrix(),
                 static_cast<int>(lengths.getNumColumns()), 1e-6));
