@@ -22,64 +22,25 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "SimTKcommon/SmallMatrix.h"
-#include "SimTKcommon/internal/BigMatrix.h"
-#include "SimTKcommon/internal/MassProperties.h"
-#include "osimCommonDLL.h"
-#include <set>
-#include <spdlog/fmt/fmt.h>
-#include <spdlog/fmt/ostr.h>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/spdlog.h>
-#include <string>
+#include "osimCommonDLL.h"              // for OSIMCOMMON_API
+#include <memory>                       // for shared_ptr
+#include <spdlog/common.h>              // for string_view_t
+#include <spdlog/fmt/bundled/base.h>    // for formatter
+#include <spdlog/fmt/bundled/ostream.h> // for ostream_formatter
+#include <spdlog/logger.h>              // for logger
+#include <string>                       // for basic_string, string
 
 #ifndef SWIG
-template <> struct fmt::formatter<SimTK::Vec3> {
-    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+#    include <SimTKcommon/SmallMatrix.h>             // for Vec3
+#    include <SimTKcommon/internal/BigMatrix.h>      // for Vector
+#    include <SimTKcommon/internal/MassProperties.h> // for Inertia
+#    include <SimTKcommon/internal/Rotation.h>       // for Rotation
 
-    template <typename FormatContext>
-    auto format(const SimTK::Vec3& v, FormatContext& ctx) const {
-        std::stringstream ss;
-        ss << v;
-        std::string out = ss.str();
-        return fmt::format_to(ctx.out(), "{}", out);
-    }
-};
-
-template <> struct fmt::formatter<SimTK::Vector> {
-    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
-
-    template <typename FormatContext>
-    auto format(const SimTK::Vector& v, FormatContext& ctx) const {
-        std::stringstream ss;
-        ss << v;
-        std::string out = ss.str();
-        return fmt::format_to(ctx.out(), "{}", out);
-    }
-};
-
-template <> struct fmt::formatter<SimTK::Rotation> {
-    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
-    template <typename FormatContext>
-    auto format(const SimTK::Rotation& R, FormatContext& ctx) const {
-        std::stringstream ss;
-        ss << R;
-        std::string out = ss.str();
-        return fmt::format_to(ctx.out(), "{}", out);
-    }
-};
-
-template <> struct fmt::formatter<SimTK::Inertia> {
-    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
-
-    template <typename FormatContext>
-    auto format(const SimTK::Inertia& I, FormatContext& ctx) const {
-        std::stringstream ss;
-        ss << I;
-        std::string out = ss.str();
-        return fmt::format_to(ctx.out(), "{}", out);
-    }
-};
+// fmt library serializers for custom SimTK objects
+template <> struct fmt::formatter<SimTK::Vec3> : ostream_formatter {};
+template <> struct fmt::formatter<SimTK::Vector> : ostream_formatter {};
+template <> struct fmt::formatter<SimTK::Rotation> : ostream_formatter {};
+template <> struct fmt::formatter<SimTK::Inertia> : ostream_formatter {};
 #endif
 
 namespace OpenSim {

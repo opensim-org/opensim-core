@@ -45,7 +45,7 @@
 #include <memory>
 #include <ostream>
 #include <set>
-#include <spdlog/fmt/ranges.h>
+#include <spdlog/fmt/ranges.h> // for fmt::join
 #include <string>
 
 // DISABLES MULTIPLE INSTANTIATION WARNINGS
