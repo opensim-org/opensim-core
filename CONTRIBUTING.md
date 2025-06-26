@@ -173,11 +173,6 @@ cmake --build ../osim-build/
 ```
 
 
-Checking for Memory Leaks through GitHub
-----------------------------------------
-If you want to check memory leaks, you can have Travis-CI run valgrind on the test cases. Just put `[ci valgrind]` in your commit message.
-
-
 Coding Standards
 ----------------
 - [Header guards](#header-guards)
