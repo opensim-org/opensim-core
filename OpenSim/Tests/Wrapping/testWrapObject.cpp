@@ -21,7 +21,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/OpenSim.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Wrap/WrapObject.h>
+#include <OpenSim/Simulation/Wrap/WrapCylinder.h>
+#include <OpenSim/Simulation/Wrap/WrapSphere.h>
+#include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
 
 #include <catch2/catch_all.hpp>
 

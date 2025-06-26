@@ -21,18 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Common/Constant.h> 
-#include <OpenSim/Simulation/StatesTrajectory.h>
-#include <OpenSim/Simulation/TableProcessor.h>
-#include <OpenSim/Simulation/Control/PrescribedController.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PathSpring.h>
-#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
-#include <OpenSim/Simulation/Wrap/WrapCylinder.h>
-#include <OpenSim/Simulation/Wrap/WrapSphere.h>
-#include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
+#include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <catch2/catch_all.hpp>
 
