@@ -859,7 +859,7 @@ if (OPENSIM_WITH_CASADI)
                 ${libgcc_name}
                 DESTINATION ${CMAKE_INSTALL_LIBDIR})
                 
-        elseif(OPENSIM_COPY_DEPENDENCIES AND LINUX)
+        elseif(OPENSIM_COPY_DEPENDENCIES)
             get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
 
             file(GLOB gfortran "${gcc_libdir}/../../../x86_64-linux-gnu/libgfortran*.so*")

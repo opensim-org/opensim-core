@@ -13,7 +13,6 @@ v4.6
 - Remove `using namespace SimTK;` from core OpenSim files to prevent namespace conflicts and operator overshadowing (#4066)
 - Use catch2 `INFO` logging macros in tests instead of OpenSim `log_info` (#4066)
 
-
 v4.5.2
 ======
 - The performance of `getStateVariableValue`, `getStateVariableDerivativeValue`, and `getModelingOption` was improved in
