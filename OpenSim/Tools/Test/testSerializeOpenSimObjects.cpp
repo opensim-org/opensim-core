@@ -159,6 +159,11 @@ int main()
                 // changing the the optimal_force property inherited by
                 // PathActuator leads to an invalid configuration.
                 continue;
+            } else if (dynamic_cast<MeyerFregly2016Muscle*>(clone)) {
+                // TODO: we can't randomize MeyerFregly2016Muscle, since
+                // changing the the optimal_force property inherited by
+                // PathActuator leads to an invalid configuration.
+                continue;
             } else if (dynamic_cast<ControlSetController*>(clone)) {
                 // TODO: randomizing ControlSetController fails because it is
                 // unable to load nonexistent file 'ABCXYZ'.
