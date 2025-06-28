@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
+#include <OpenSim/Actuators/MeyerFregly2016Muscle.h>
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Moco/osimMoco.h>
@@ -38,10 +39,11 @@ using Catch::Approx;
 // Function to compute fiber force (or fiber force along tendon) versus fiber
 // length (or fiber length along tendon). This checks fiber stiffness
 // calculations in DeGrooteFregly2016Muscle.
+template <typename MuscleType>
 class FiberForceFunction : public SimTK::Differentiator::ScalarFunction {
 
 public:
-    FiberForceFunction(const DeGrooteFregly2016Muscle& muscle,
+    FiberForceFunction(const MuscleType& muscle,
             const SimTK::State& state, bool alongTendon)
             : SimTK::Differentiator::ScalarFunction(), m_muscle(&muscle),
               m_state(&state), m_alongTendon(alongTendon) {}
@@ -96,7 +98,7 @@ public:
     }
 
 private:
-    SimTK::ReferencePtr<const DeGrooteFregly2016Muscle> m_muscle;
+    SimTK::ReferencePtr<const MuscleType> m_muscle;
     SimTK::ReferencePtr<const SimTK::State> m_state;
     bool m_alongTendon = false;
 };
@@ -1116,6 +1118,776 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             const double normFiberForce = normActiveForce + normPassiveForce;
             CHECK(residual ==
                     Approx(normTendonForce - normFiberForce).margin(1e-6));
+        }
+    }
+
+    SECTION("Force-velocity curve inverse") {
+
+        // Test that the force-velocity curve inverse is correct.
+        // ------------------------------------------------------
+        const auto normFiberVelocity = createVectorLinspace(100, -1, 1);
+        for (int i = 0; i < normFiberVelocity.nrow(); ++i) {
+            const SimTK::Real& vMTilde = normFiberVelocity[i];
+            CHECK(muscle.calcForceVelocityInverseCurve(
+                          muscle.calcForceVelocityMultiplier(vMTilde)) ==
+                    Approx(vMTilde));
+        }
+    }
+
+    // getActivation(), setActivation()
+    // --------------------------------
+    SECTION("getActivation(), setActivation()") {
+        SimTK::State state = model.initSystem();
+        CHECK(muscle.getActivation(state) == muscle.get_default_activation());
+        muscle.setActivation(state, 0.451);
+        CHECK(muscle.getActivation(state) == Approx(0.451));
+        CHECK(state.getY()[2] == Approx(0.451));
+    }
+}
+
+TEST_CASE("MeyerFregly2016Muscle basics") {
+
+    Model model;
+    model.setName("muscle");
+    auto* body = new Body("body", 0.5, SimTK::Vec3(0), SimTK::Inertia(0));
+    model.addComponent(body);
+    auto* joint = new SliderJoint("joint", model.getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("x");
+    model.addComponent(joint);
+    auto* musclePtr = new MeyerFregly2016Muscle();
+    musclePtr->set_ignore_tendon_compliance(true);
+    musclePtr->set_fiber_damping(0);
+    musclePtr->setName("muscle");
+    musclePtr->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
+    musclePtr->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
+    model.addComponent(musclePtr);
+    auto& muscle = model.updComponent<MeyerFregly2016Muscle>("muscle");
+
+    SECTION("Property value bounds") {
+        MeyerFregly2016Muscle musc = muscle;
+
+        SECTION("optimal_force") {
+            musc.set_optimal_force(1.5);
+            REQUIRE_THROWS_AS(musc.finalizeFromProperties(), Exception);
+        }
+        SECTION("activation_time_constant") {
+            musc.set_activation_time_constant(0);
+            REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
+                    SimTK::Exception::ErrorCheck);
+        }
+        SECTION("deactivation_time_constant") {
+            musc.set_deactivation_time_constant(0);
+            REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
+                    SimTK::Exception::ErrorCheck);
+        }
+        SECTION("default_activation") {
+            musc.set_default_activation(-0.0001);
+            REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
+                    SimTK::Exception::ErrorCheck);
+        }
+        SECTION("active_force_width_scale") {
+            MeyerFregly2016Muscle musc = muscle;
+            musc.set_active_force_width_scale(0.99999999);
+            SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                    SimTK::Exception::ErrorCheck);
+        }
+        SECTION("fiber_damping") {
+            MeyerFregly2016Muscle musc = muscle;
+            musc.set_fiber_damping(-0.0001);
+            REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
+                    SimTK::Exception::ErrorCheck);
+        }
+    }
+
+    SECTION("printCurvesToSTOFiles") { muscle.printCurvesToSTOFiles(); }
+
+    SECTION("Curve values") {
+        CHECK(muscle.calcPassiveForceMultiplier(1) ==
+                Approx(0.00382044).epsilon(1e-4));
+        CHECK(muscle.calcPassiveForceMultiplier(0.2) ==
+                Approx(0.0000001837).epsilon(1e-4));
+
+        CHECK(muscle.calcActiveForceLengthMultiplier(1) == 1.0);
+        CHECK(muscle.calcForceVelocityMultiplier(-1) == 
+                Approx(0.0).margin(1e-9));
+        CHECK(muscle.calcForceVelocityMultiplier(0) == Approx(1.0));
+        CHECK(muscle.calcForceVelocityMultiplier(1) ==
+                Approx(1.501928).epsilon(1e-4));
+    }
+
+    SECTION("Verify computed values") {
+        auto state = model.initSystem();
+        SECTION("(length) = (optimal fiber length) + (tendon slack length)") {
+
+            double activation = 1.0;
+            double fiberLength = muscle.get_optimal_fiber_length();
+            double tendonLength = muscle.get_tendon_slack_length();
+            double speed = 0.0;
+
+            muscle.setActivation(state, activation);
+            coord.setValue(state, fiberLength + tendonLength);
+            coord.setSpeedValue(state, speed);
+
+            model.realizePosition(state);
+            CHECK(muscle.getFiberLength(state) ==
+                    Approx(muscle.get_optimal_fiber_length()));
+            CHECK(muscle.getNormalizedFiberLength(state) == Approx(1.0));
+            CHECK(muscle.getPennationAngle(state) == Approx(0.0));
+            CHECK(muscle.getCosPennationAngle(state) == 1.0);
+            CHECK(muscle.getTendonLength(state) ==
+                    muscle.get_tendon_slack_length());
+            CHECK(muscle.getFiberLengthAlongTendon(state) ==
+                    Approx(muscle.get_optimal_fiber_length()));
+            CHECK(muscle.getTendonStrain(state) == 0.0);
+            CHECK(muscle.getPassiveForceMultiplier(state) ==
+                    Approx(muscle.calcPassiveForceMultiplier(1.0)));
+            CHECK(muscle.getActiveForceLengthMultiplier(state) == 1.0);
+            const auto fiberPotentialEnergy =
+                    muscle.calcPassiveForceMultiplierIntegral(1.0) *
+                    muscle.get_optimal_fiber_length() *
+                    muscle.get_max_isometric_force();
+            CHECK(muscle.getFiberPotentialEnergy(state) ==
+                    Approx(fiberPotentialEnergy));
+            const auto tendonPotentialEnergy = 0.0;
+            CHECK(muscle.getTendonPotentialEnergy(state) ==
+                    Approx(tendonPotentialEnergy));
+            CHECK(muscle.getMusclePotentialEnergy(state) ==
+                    Approx(fiberPotentialEnergy + tendonPotentialEnergy));
+
+            model.realizeVelocity(state);
+            CHECK(muscle.getFiberVelocity(state) == 0);
+            CHECK(muscle.getNormalizedFiberVelocity(state) == 0);
+            CHECK(muscle.getFiberVelocityAlongTendon(state) == 0);
+            CHECK(muscle.getPennationAngularVelocity(state) == 0);
+            CHECK(muscle.getTendonVelocity(state) == 0);
+            CHECK(muscle.getForceVelocityMultiplier(state) == Approx(1.0));
+
+            model.realizeDynamics(state);
+            const auto Fmax = muscle.getMaxIsometricForce();
+            const auto fpass = muscle.calcPassiveForceMultiplier(1.0);
+            CHECK(muscle.getActiveFiberForce(state) == Approx(Fmax));
+            CHECK(muscle.getActiveFiberForceAlongTendon(state) == Approx(Fmax));
+            CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
+            const auto fiberForce = Fmax * (1 + fpass);
+            CHECK(muscle.getFiberForce(state) == Approx(fiberForce));
+            CHECK(muscle.getFiberForceAlongTendon(state) ==
+                    Approx(Fmax * (1 + fpass)));
+            CHECK(muscle.getTendonForce(state) ==
+                    Approx(Fmax * (1 + fpass)));
+
+            FiberForceFunction fiberForceFunc(muscle, state, false);
+            SimTK::Differentiator diffFiberStiffness(fiberForceFunc);
+            SimTK::Real fiberStiffness = diffFiberStiffness.calcDerivative(
+                    muscle.get_optimal_fiber_length());
+            CHECK(muscle.getFiberStiffness(state) == Approx(fiberStiffness));
+
+            FiberForceFunction fiberForceFuncAlongTendon(muscle, state, true);
+            SimTK::Differentiator diffFiberStiffnessAlongTendon(
+                    fiberForceFuncAlongTendon);
+            SimTK::Real fiberStiffnessAlongTendon =
+                    diffFiberStiffnessAlongTendon.calcDerivative(
+                            muscle.get_optimal_fiber_length());
+            CHECK(muscle.getFiberStiffnessAlongTendon(state) ==
+                    Approx(fiberStiffnessAlongTendon));
+
+            SimTK::Real tendonStiffness = SimTK::Infinity;
+            CHECK(muscle.getTendonStiffness(state) == SimTK::Infinity);
+            CHECK(muscle.getMuscleStiffness(state) ==
+                    Approx(muscle.calcMuscleStiffness(
+                            tendonStiffness, fiberStiffnessAlongTendon)));
+
+            CHECK(muscle.getFiberActivePower(state) == Approx(0.0));
+            CHECK(muscle.getFiberPassivePower(state) == Approx(0.0));
+            CHECK(muscle.getTendonPower(state) == Approx(0.0));
+            CHECK(muscle.getMusclePower(state) == Approx(0.0));
+            CHECK(muscle.getStress(state) == Approx(1 + fpass));
+
+            activation = 0.38;
+            muscle.setActivation(state, activation);
+            model.realizeDynamics(state);
+            CHECK(muscle.getActiveFiberForce(state) ==
+                    Approx(activation * Fmax));
+            CHECK(muscle.getActiveFiberForceAlongTendon(state) ==
+                    Approx(activation * Fmax));
+            CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getFiberForce(state) ==
+                    Approx(Fmax * (activation + fpass)));
+            CHECK(muscle.getFiberForceAlongTendon(state) ==
+                    Approx(Fmax * (activation + fpass)));
+            CHECK(muscle.getTendonForce(state) ==
+                    Approx(Fmax * (activation + fpass)));
+        }
+
+        SECTION("(length) = 0.5*(optimal fiber length) + (tendon slack "
+                "length)") {
+            double activation = 1.0;
+            double fiberLength = 0.5 * muscle.get_optimal_fiber_length();
+            double tendonLength = muscle.get_tendon_slack_length();
+            double speed = 0.0;
+
+            muscle.setActivation(state, activation);
+            coord.setValue(state, fiberLength + tendonLength);
+            coord.setSpeedValue(state, speed);
+
+            model.realizePosition(state);
+            CHECK(muscle.getFiberLength(state) ==
+                    Approx(0.5 * muscle.get_optimal_fiber_length()));
+            CHECK(muscle.getNormalizedFiberLength(state) == Approx(0.5));
+            CHECK(muscle.getPennationAngle(state) == 0.0);
+            CHECK(muscle.getCosPennationAngle(state) == Approx(1.0));
+            CHECK(muscle.getTendonLength(state) ==
+                    muscle.get_tendon_slack_length());
+            CHECK(muscle.getFiberLengthAlongTendon(state) ==
+                    Approx(0.5 * muscle.get_optimal_fiber_length()));
+            CHECK(muscle.getTendonStrain(state) == 0.0);
+            CHECK(muscle.getPassiveForceMultiplier(state) ==
+                    Approx(muscle.calcPassiveForceMultiplier(0.5)));
+            CHECK(muscle.getActiveForceLengthMultiplier(state) ==
+                    Approx(muscle.calcActiveForceLengthMultiplier(0.5)));
+            const auto fiberPotentialEnergy =
+                    muscle.calcPassiveForceMultiplierIntegral(0.5) *
+                    muscle.get_optimal_fiber_length() *
+                    muscle.get_max_isometric_force();
+            CHECK(muscle.getFiberPotentialEnergy(state) ==
+                    Approx(fiberPotentialEnergy));
+            const auto tendonPotentialEnergy = 0.0;
+            CHECK(muscle.getTendonPotentialEnergy(state) ==
+                    Approx(tendonPotentialEnergy));
+            CHECK(muscle.getMusclePotentialEnergy(state) ==
+                    Approx(fiberPotentialEnergy + tendonPotentialEnergy));
+
+            model.realizeVelocity(state);
+            CHECK(muscle.getFiberVelocity(state) == 0);
+            CHECK(muscle.getNormalizedFiberVelocity(state) == 0);
+            CHECK(muscle.getFiberVelocityAlongTendon(state) == 0);
+            CHECK(muscle.getPennationAngularVelocity(state) == 0);
+            CHECK(muscle.getTendonVelocity(state) == 0);
+            CHECK(muscle.getForceVelocityMultiplier(state) == Approx(1.0));
+
+            model.realizeDynamics(state);
+            const auto Fmax = muscle.getMaxIsometricForce();
+            const auto fl = muscle.calcActiveForceLengthMultiplier(0.5);
+            const auto fpass = muscle.calcPassiveForceMultiplier(0.5);
+            CHECK(muscle.getActiveFiberForce(state) == Approx(Fmax * fl));
+            CHECK(muscle.getActiveFiberForceAlongTendon(state) ==
+                    Approx(Fmax * fl));
+            CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getFiberForce(state) == Approx(Fmax * (fl + fpass)));
+            CHECK(muscle.getFiberForceAlongTendon(state) ==
+                    Approx(Fmax * (fl + fpass)));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
+            CHECK(muscle.getTendonForce(state) == Approx(Fmax * (fl + fpass)));
+
+            FiberForceFunction fiberForceFunc(muscle, state, false);
+            SimTK::Differentiator diffFiberStiffness(fiberForceFunc);
+            SimTK::Real fiberStiffness = diffFiberStiffness.calcDerivative(
+                    0.5 * muscle.get_optimal_fiber_length());
+            CHECK(muscle.getFiberStiffness(state) == Approx(fiberStiffness));
+
+            FiberForceFunction fiberForceFuncAlongTendon(muscle, state, true);
+            SimTK::Differentiator diffFiberStiffnessAlongTendon(
+                    fiberForceFuncAlongTendon);
+            SimTK::Real fiberStiffnessAlongTendon =
+                    diffFiberStiffnessAlongTendon.calcDerivative(
+                            0.5 * muscle.get_optimal_fiber_length());
+            CHECK(muscle.getFiberStiffnessAlongTendon(state) ==
+                    Approx(fiberStiffnessAlongTendon));
+
+            SimTK::Real tendonStiffness = SimTK::Infinity;
+            CHECK(muscle.getTendonStiffness(state) == SimTK::Infinity);
+            CHECK(muscle.getMuscleStiffness(state) ==
+                    Approx(muscle.calcMuscleStiffness(
+                            tendonStiffness, fiberStiffnessAlongTendon)));
+
+            CHECK(muscle.getFiberActivePower(state) == Approx(0.0));
+            CHECK(muscle.getFiberPassivePower(state) == Approx(0.0));
+            CHECK(muscle.getTendonPower(state) == Approx(0.0));
+            CHECK(muscle.getMusclePower(state) == Approx(0.0));
+
+            CHECK(muscle.getStress(state) == Approx(fl + fpass));
+        }
+
+        SECTION("(normalized fiber velocity) = 0.21") {
+            muscle.setActivation(state, 1.0);
+            coord.setValue(state, muscle.get_optimal_fiber_length() +
+                                          muscle.get_tendon_slack_length());
+            const double Vmax = muscle.get_optimal_fiber_length() *
+                                muscle.get_max_contraction_velocity();
+            coord.setSpeedValue(state, 0.21 * Vmax);
+            model.realizePosition(state);
+            CHECK(muscle.getFiberLength(state) ==
+                    Approx(muscle.get_optimal_fiber_length()));
+            CHECK(muscle.getNormalizedFiberLength(state) == Approx(1.0));
+            CHECK(muscle.getPennationAngle(state) == 0.0);
+            CHECK(muscle.getCosPennationAngle(state) == Approx(1.0));
+            CHECK(muscle.getTendonLength(state) ==
+                    muscle.get_tendon_slack_length());
+            CHECK(muscle.getFiberLengthAlongTendon(state) ==
+                    Approx(muscle.get_optimal_fiber_length()));
+            CHECK(muscle.getTendonStrain(state) == 0.0);
+            CHECK(muscle.getPassiveForceMultiplier(state) ==
+                    Approx(muscle.calcPassiveForceMultiplier(1.0)));
+            CHECK(muscle.getActiveForceLengthMultiplier(state) == Approx(1.0));
+            const auto fiberPotentialEnergy =
+                    muscle.calcPassiveForceMultiplierIntegral(1.0) *
+                    muscle.get_optimal_fiber_length() *
+                    muscle.get_max_isometric_force();
+            CHECK(muscle.getFiberPotentialEnergy(state) ==
+                    Approx(fiberPotentialEnergy));
+            const auto tendonPotentialEnergy = 0.0;
+            CHECK(muscle.getTendonPotentialEnergy(state) ==
+                    Approx(tendonPotentialEnergy));
+            CHECK(muscle.getMusclePotentialEnergy(state) ==
+                    Approx(fiberPotentialEnergy + tendonPotentialEnergy));
+
+            model.realizeVelocity(state);
+            CHECK(muscle.getFiberVelocity(state) == 0.21 * Vmax);
+            CHECK(muscle.getNormalizedFiberVelocity(state) == 0.21);
+            CHECK(muscle.getFiberVelocityAlongTendon(state) == 0.21 * Vmax);
+            CHECK(muscle.getPennationAngularVelocity(state) == 0);
+            CHECK(muscle.getTendonVelocity(state) == 0);
+            CHECK(muscle.getForceVelocityMultiplier(state) ==
+                    Approx(muscle.calcForceVelocityMultiplier(0.21)));
+
+            model.realizeDynamics(state);
+            const auto Fmax = muscle.getMaxIsometricForce();
+            const auto fv = muscle.calcForceVelocityMultiplier(0.21);
+            const auto fpass = muscle.calcPassiveForceMultiplier(1.0);
+            CHECK(muscle.getActiveFiberForce(state) == Approx(Fmax * fv));
+            CHECK(muscle.getActiveFiberForceAlongTendon(state) ==
+                    Approx(Fmax * fv));
+            CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
+            CHECK(muscle.getFiberForce(state) == Approx(Fmax * (fv + fpass)));
+            CHECK(muscle.getFiberForceAlongTendon(state) ==
+                    Approx(Fmax * (fv + fpass)));
+            CHECK(muscle.getTendonForce(state) == Approx(Fmax * (fv + fpass)));
+
+            FiberForceFunction fiberForceFunc(muscle, state, false);
+            SimTK::Differentiator diffFiberStiffness(fiberForceFunc);
+            SimTK::Real fiberStiffness = diffFiberStiffness.calcDerivative(
+                    muscle.get_optimal_fiber_length());
+            CHECK(muscle.getFiberStiffness(state) == Approx(fiberStiffness));
+
+            FiberForceFunction fiberForceFuncAlongTendon(muscle, state, true);
+            SimTK::Differentiator diffFiberStiffnessAlongTendon(
+                    fiberForceFuncAlongTendon);
+            SimTK::Real fiberStiffnessAlongTendon =
+                    diffFiberStiffnessAlongTendon.calcDerivative(
+                            muscle.get_optimal_fiber_length());
+            CHECK(muscle.getFiberStiffnessAlongTendon(state) ==
+                    Approx(fiberStiffnessAlongTendon));
+
+            SimTK::Real tendonStiffness = SimTK::Infinity;
+            CHECK(muscle.getTendonStiffness(state) == SimTK::Infinity);
+            CHECK(muscle.getMuscleStiffness(state) ==
+                    Approx(muscle.calcMuscleStiffness(
+                            tendonStiffness, fiberStiffnessAlongTendon)));
+
+            CHECK(muscle.getFiberActivePower(state) ==
+                    Approx(-0.21 * Vmax * Fmax * fv));
+            CHECK(muscle.getFiberPassivePower(state) ==
+                    Approx(-0.21 * Vmax * Fmax * fpass));
+            CHECK(muscle.getTendonPower(state) == Approx(0.0));
+            CHECK(muscle.getMusclePower(state) ==
+                    Approx(-0.21 * Vmax * Fmax * (fv + fpass)));
+            CHECK(muscle.getStress(state) == Approx(fv + fpass));
+
+            double a = 0.38;
+            muscle.setActivation(state, a);
+            model.realizeDynamics(state);
+            CHECK(muscle.getActiveFiberForce(state) == Approx(a * fv * Fmax));
+            CHECK(muscle.getActiveFiberForceAlongTendon(state) ==
+                    Approx(a * fv * Fmax));
+            CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
+            CHECK(muscle.getFiberForce(state) ==
+                    Approx(Fmax * (a * fv + fpass)));
+            CHECK(muscle.getFiberForceAlongTendon(state) ==
+                    Approx(Fmax * (a * fv + fpass)));
+            CHECK(muscle.getTendonForce(state) ==
+                    Approx(Fmax * (a * fv + fpass)));
+
+            double damping = 0.03;
+            muscle.set_fiber_damping(damping);
+            auto stateDamped = model.initSystem();
+            stateDamped.updY() = state.getY();
+            model.realizeDynamics(stateDamped);
+            CHECK(muscle.getPassiveFiberDampingForce(stateDamped) ==
+                    Approx(Fmax * damping * 0.21));
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(stateDamped) ==
+                    Approx(Fmax * damping * 0.21));
+        }
+
+        SECTION("(normalized fiber velocity) = -1") {
+            muscle.setActivation(state, 1.0);
+            coord.setValue(state, muscle.get_optimal_fiber_length() +
+                                          muscle.get_tendon_slack_length());
+            const double Vmax = muscle.get_optimal_fiber_length() *
+                                muscle.get_max_contraction_velocity();
+            coord.setSpeedValue(state, -1.0 * Vmax);
+            model.realizePosition(state);
+            CHECK(muscle.getFiberLength(state) ==
+                    Approx(muscle.get_optimal_fiber_length()));
+            CHECK(muscle.getNormalizedFiberLength(state) == Approx(1.0));
+            CHECK(muscle.getPennationAngle(state) == 0.0);
+            CHECK(muscle.getCosPennationAngle(state) == 1.0);
+            CHECK(muscle.getTendonLength(state) ==
+                    muscle.get_tendon_slack_length());
+            CHECK(muscle.getFiberLengthAlongTendon(state) ==
+                    Approx(muscle.get_optimal_fiber_length()));
+            CHECK(muscle.getTendonStrain(state) == 0.0);
+            CHECK(muscle.getPassiveForceMultiplier(state) ==
+                    Approx(muscle.calcPassiveForceMultiplier(1.0)));
+            CHECK(muscle.getActiveForceLengthMultiplier(state) == Approx(1.0));
+            const auto fiberPotentialEnergy =
+                    muscle.calcPassiveForceMultiplierIntegral(1.0) *
+                    muscle.get_optimal_fiber_length() *
+                    muscle.get_max_isometric_force();
+            CHECK(muscle.getFiberPotentialEnergy(state) ==
+                    Approx(fiberPotentialEnergy));
+            const auto tendonPotentialEnergy = 0.0;
+            CHECK(muscle.getTendonPotentialEnergy(state) ==
+                    Approx(tendonPotentialEnergy));
+            CHECK(muscle.getMusclePotentialEnergy(state) ==
+                    Approx(fiberPotentialEnergy + tendonPotentialEnergy));
+
+            model.realizeVelocity(state);
+            CHECK(muscle.getFiberVelocity(state) == -1.0 * Vmax);
+            CHECK(muscle.getNormalizedFiberVelocity(state) == -1);
+            CHECK(muscle.getFiberVelocityAlongTendon(state) == -1 * Vmax);
+            CHECK(muscle.getPennationAngularVelocity(state) == 0);
+            CHECK(muscle.getTendonVelocity(state) == 0);
+            CHECK_THAT(muscle.getForceVelocityMultiplier(state),
+                    Catch::Matchers::WithinAbs(0.0, 1e-10));
+
+            model.realizeDynamics(state);
+            const auto Fmax = muscle.getMaxIsometricForce();
+            const auto fpass = muscle.calcPassiveForceMultiplier(1.0);
+            CHECK_THAT(muscle.getActiveFiberForce(state),
+                    Catch::Matchers::WithinAbs(0.0, 1e-10));
+            CHECK_THAT(muscle.getActiveFiberForceAlongTendon(state),
+                    Catch::Matchers::WithinAbs(0.0, 1e-10));
+            CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
+            CHECK(muscle.getFiberForce(state) == Approx(Fmax * fpass));
+            CHECK(muscle.getFiberForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getTendonForce(state) == Approx(Fmax * fpass));
+
+            FiberForceFunction fiberForceFunc(muscle, state, false);
+            SimTK::Differentiator diffFiberStiffness(fiberForceFunc);
+            SimTK::Real fiberStiffness = diffFiberStiffness.calcDerivative(
+                    muscle.get_optimal_fiber_length());
+            CHECK(muscle.getFiberStiffness(state) == Approx(fiberStiffness));
+
+            FiberForceFunction fiberForceFuncAlongTendon(muscle, state, true);
+            SimTK::Differentiator diffFiberStiffnessAlongTendon(
+                    fiberForceFuncAlongTendon);
+            SimTK::Real fiberStiffnessAlongTendon =
+                    diffFiberStiffnessAlongTendon.calcDerivative(
+                            muscle.get_optimal_fiber_length());
+            CHECK_THAT(muscle.getFiberStiffnessAlongTendon(state),
+                    Catch::Matchers::WithinRel(fiberStiffnessAlongTendon, 1e-6));
+
+            SimTK::Real tendonStiffness = SimTK::Infinity;
+            CHECK(muscle.getTendonStiffness(state) == SimTK::Infinity);
+            SimTK::Real muscleStiffness = muscle.calcMuscleStiffness(
+                    tendonStiffness, fiberStiffnessAlongTendon);
+            CHECK_THAT(muscle.getMuscleStiffness(state),
+                    Catch::Matchers::WithinRel(muscleStiffness, 1e-6));
+            CHECK_THAT(muscle.getFiberActivePower(state),
+                    Catch::Matchers::WithinAbs(0.0, 1e-10));
+            CHECK(muscle.getFiberPassivePower(state) ==
+                    Approx(Vmax * Fmax * fpass));
+            CHECK(muscle.getTendonPower(state) == Approx(0.0));
+            CHECK(muscle.getMusclePower(state) == Approx(Vmax * Fmax * fpass));
+            CHECK(muscle.getStress(state) == Approx(fpass));
+
+            double damping = 0.03;
+            muscle.set_fiber_damping(damping);
+            auto stateDamped = model.initSystem();
+            stateDamped.updY() = state.getY();
+            model.realizeDynamics(stateDamped);
+            CHECK(muscle.getPassiveFiberDampingForce(stateDamped) ==
+                    Approx(Fmax * damping * -1.0));
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(stateDamped) ==
+                    Approx(Fmax * damping * -1.0));
+        }
+
+        SECTION("(active force width scale) = 1.2") {
+            muscle.set_active_force_width_scale(1.2);
+            muscle.setActivation(state, 1.0);
+            const double normFiberLength = 0.8;
+            coord.setValue(
+                    state, normFiberLength * muscle.get_optimal_fiber_length() +
+                                   muscle.get_tendon_slack_length());
+            coord.setSpeedValue(state, 0.0);
+            model.realizePosition(state);
+
+            model.realizeDynamics(state);
+            const auto Fmax = muscle.getMaxIsometricForce();
+            const auto fpass =
+                    muscle.calcPassiveForceMultiplier(normFiberLength);
+            const auto fal =
+                    muscle.calcActiveForceLengthMultiplier(normFiberLength);
+            CHECK(muscle.getActiveFiberForce(state) == Approx(Fmax * fal));
+            CHECK(muscle.getActiveFiberForceAlongTendon(state) ==
+                    Approx(Fmax * fal));
+            CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
+            CHECK(muscle.getFiberForce(state) == Approx(Fmax * (fal + fpass)));
+            CHECK(muscle.getFiberForceAlongTendon(state) ==
+                    Approx(Fmax * (fal + fpass)));
+            CHECK(muscle.getTendonForce(state) == Approx(Fmax * (fal + fpass)));
+
+            FiberForceFunction fiberForceFunc(muscle, state, false);
+            SimTK::Differentiator diffFiberStiffness(fiberForceFunc);
+            SimTK::Real fiberStiffness = diffFiberStiffness.calcDerivative(
+                    normFiberLength * muscle.get_optimal_fiber_length());
+            CHECK(muscle.getFiberStiffness(state) == Approx(fiberStiffness));
+
+            FiberForceFunction fiberForceFuncAlongTendon(muscle, state, true);
+            SimTK::Differentiator diffFiberStiffnessAlongTendon(
+                    fiberForceFuncAlongTendon);
+            SimTK::Real fiberStiffnessAlongTendon =
+                    diffFiberStiffnessAlongTendon.calcDerivative(
+                            normFiberLength *
+                            muscle.get_optimal_fiber_length());
+            CHECK(muscle.getFiberStiffnessAlongTendon(state) ==
+                    Approx(fiberStiffnessAlongTendon));
+
+            SimTK::Real tendonStiffness = SimTK::Infinity;
+            CHECK(muscle.getTendonStiffness(state) == SimTK::Infinity);
+            CHECK(muscle.getMuscleStiffness(state) ==
+                    Approx(muscle.calcMuscleStiffness(
+                            tendonStiffness, fiberStiffnessAlongTendon)));
+
+            CHECK(muscle.getFiberActivePower(state) == Approx(0.0));
+            CHECK(muscle.getFiberPassivePower(state) == Approx(0.0));
+            CHECK(muscle.getTendonPower(state) == Approx(0.0));
+            CHECK(muscle.getMusclePower(state) == Approx(0.0));
+            CHECK(muscle.getStress(state) == Approx(fal + fpass));
+        }
+
+        SECTION("(activation dynamics smoothing) = 10.0") {
+            muscle.set_activation_dynamics_smoothing(10.0);
+            muscle.setActivation(state, 1.0);
+            const double normFiberLength = 0.8;
+            coord.setValue(
+                    state, normFiberLength * muscle.get_optimal_fiber_length() +
+                                   muscle.get_tendon_slack_length());
+            coord.setSpeedValue(state, 0.0);
+            model.realizePosition(state);
+
+            model.realizeDynamics(state);
+            const auto Fmax = muscle.getMaxIsometricForce();
+            const auto fpass =
+                    muscle.calcPassiveForceMultiplier(normFiberLength);
+            const auto fal =
+                    muscle.calcActiveForceLengthMultiplier(normFiberLength);
+            CHECK(muscle.getActiveFiberForce(state) == Approx(Fmax * fal));
+            CHECK(muscle.getActiveFiberForceAlongTendon(state) ==
+                    Approx(Fmax * fal));
+            CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
+            CHECK(muscle.getFiberForce(state) == Approx(Fmax * (fal + fpass)));
+            CHECK(muscle.getFiberForceAlongTendon(state) ==
+                    Approx(Fmax * (fal + fpass)));
+            CHECK(muscle.getTendonForce(state) == Approx(Fmax * (fal + fpass)));
+
+            FiberForceFunction fiberForceFunc(muscle, state, false);
+            SimTK::Differentiator diffFiberStiffness(fiberForceFunc);
+            SimTK::Real fiberStiffness = diffFiberStiffness.calcDerivative(
+                    normFiberLength * muscle.get_optimal_fiber_length());
+            CHECK(muscle.getFiberStiffness(state) == Approx(fiberStiffness));
+
+            FiberForceFunction fiberForceFuncAlongTendon(muscle, state, true);
+            SimTK::Differentiator diffFiberStiffnessAlongTendon(
+                    fiberForceFuncAlongTendon);
+            SimTK::Real fiberStiffnessAlongTendon =
+                    diffFiberStiffnessAlongTendon.calcDerivative(
+                            normFiberLength *
+                            muscle.get_optimal_fiber_length());
+            CHECK(muscle.getFiberStiffnessAlongTendon(state) ==
+                    Approx(fiberStiffnessAlongTendon));
+
+            SimTK::Real tendonStiffness = SimTK::Infinity;
+            CHECK(muscle.getTendonStiffness(state) == SimTK::Infinity);
+            CHECK(muscle.getMuscleStiffness(state) ==
+                    Approx(muscle.calcMuscleStiffness(
+                            tendonStiffness, fiberStiffnessAlongTendon)));
+
+            CHECK(muscle.getFiberActivePower(state) == Approx(0.0));
+            CHECK(muscle.getFiberPassivePower(state) == Approx(0.0));
+            CHECK(muscle.getTendonPower(state) == Approx(0.0));
+            CHECK(muscle.getMusclePower(state) == Approx(0.0));
+            CHECK(muscle.getStress(state) == Approx(fal + fpass));
+        }
+
+        SECTION("pennation") {
+            const double pennOpt = 0.12;
+            const double cosPenn = cos(pennOpt);
+            muscle.set_pennation_angle_at_optimal(pennOpt);
+            state = model.initSystem();
+            muscle.setActivation(state, 1.0);
+            coord.setValue(state, muscle.get_optimal_fiber_length() * cosPenn +
+                                          muscle.get_tendon_slack_length());
+            const double Vmax = muscle.get_optimal_fiber_length() *
+                                muscle.get_max_contraction_velocity();
+            coord.setSpeedValue(state, -1.0 * Vmax);
+
+            model.realizePosition(state);
+            CHECK(muscle.getFiberLength(state) ==
+                    muscle.get_optimal_fiber_length());
+            CHECK(muscle.getNormalizedFiberLength(state) == 1.0);
+            CHECK(muscle.getPennationAngle(state) == Approx(pennOpt));
+            CHECK(muscle.getCosPennationAngle(state) == Approx(cosPenn));
+            CHECK(muscle.getTendonLength(state) ==
+                    muscle.get_tendon_slack_length());
+            CHECK(muscle.getFiberLengthAlongTendon(state) ==
+                    Approx(muscle.get_optimal_fiber_length() * cosPenn));
+            CHECK(muscle.getTendonStrain(state) == 0.0);
+            CHECK(muscle.getPassiveForceMultiplier(state) ==
+                    Approx(muscle.calcPassiveForceMultiplier(1.0)));
+            CHECK(muscle.getActiveForceLengthMultiplier(state) == Approx(1.0));
+            const auto fiberPotentialEnergy =
+                    muscle.calcPassiveForceMultiplierIntegral(1.0) *
+                    muscle.get_optimal_fiber_length() *
+                    muscle.get_max_isometric_force();
+            CHECK(muscle.getFiberPotentialEnergy(state) ==
+                    Approx(fiberPotentialEnergy));
+            const auto tendonPotentialEnergy = 0.0;
+            CHECK(muscle.getTendonPotentialEnergy(state) ==
+                    Approx(tendonPotentialEnergy));
+            CHECK(muscle.getMusclePotentialEnergy(state) ==
+                    Approx(fiberPotentialEnergy + tendonPotentialEnergy));
+
+            model.realizeVelocity(state);
+            CHECK(muscle.getFiberVelocity(state) == -Vmax * cosPenn);
+            CHECK(muscle.getNormalizedFiberVelocity(state) == -cosPenn);
+            CHECK(muscle.getFiberVelocityAlongTendon(state) == -Vmax); // VMT
+            CHECK(muscle.getPennationAngularVelocity(state) ==
+                    Approx(muscle.get_max_contraction_velocity() * cosPenn *
+                            tan(pennOpt)));
+            CHECK(muscle.getTendonVelocity(state) == 0);
+            CHECK(muscle.getForceVelocityMultiplier(state) ==
+                    Approx(muscle.calcForceVelocityMultiplier(-cosPenn)));
+
+            model.realizeDynamics(state);
+            const auto Fmax = muscle.getMaxIsometricForce();
+            const auto fv = muscle.calcForceVelocityMultiplier(-cosPenn);
+            const auto fpass = muscle.calcPassiveForceMultiplier(1.0);
+            CHECK(muscle.getActiveFiberForce(state) == Approx(Fmax * fv));
+            CHECK(muscle.getActiveFiberForceAlongTendon(state) ==
+                    Approx(Fmax * fv * cosPenn));
+            CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
+                    Approx(Fmax * fpass * cosPenn));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(Fmax * fpass * cosPenn));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
+            CHECK(muscle.getFiberForce(state) == Approx(Fmax * (fv + fpass)));
+            CHECK(muscle.getFiberForceAlongTendon(state) ==
+                    Approx(Fmax * (fv + fpass) * cosPenn));
+            CHECK(muscle.getTendonForce(state) ==
+                    Approx(Fmax * (fv + fpass) * cosPenn));
+
+            FiberForceFunction fiberForceFunc(muscle, state, false);
+            SimTK::Differentiator diffFiberStiffness(fiberForceFunc);
+            SimTK::Real fiberStiffness = diffFiberStiffness.calcDerivative(
+                    muscle.get_optimal_fiber_length());
+            CHECK(muscle.getFiberStiffness(state) == Approx(fiberStiffness));
+
+            FiberForceFunction fiberForceFuncAlongTendon(muscle, state, true);
+            SimTK::Differentiator diffFiberStiffnessAlongTendon(
+                    fiberForceFuncAlongTendon);
+            SimTK::Real fiberStiffnessAlongTendon =
+                    diffFiberStiffnessAlongTendon.calcDerivative(
+                            muscle.get_optimal_fiber_length() * cosPenn);
+            CHECK(muscle.getFiberStiffnessAlongTendon(state) ==
+                    Approx(fiberStiffnessAlongTendon));
+
+            SimTK::Real tendonStiffness = SimTK::Infinity;
+            CHECK(muscle.getTendonStiffness(state) == SimTK::Infinity);
+            CHECK(muscle.getMuscleStiffness(state) ==
+                    Approx(muscle.calcMuscleStiffness(
+                            tendonStiffness, fiberStiffnessAlongTendon)));
+
+            CHECK(muscle.getFiberActivePower(state) ==
+                    Approx(Vmax * cosPenn * Fmax * fv));
+            CHECK(muscle.getFiberPassivePower(state) ==
+                    Approx(Vmax * cosPenn * Fmax * fpass));
+            CHECK(muscle.getTendonPower(state) == Approx(0.0));
+            CHECK(muscle.getMusclePower(state) ==
+                    Approx(Vmax * cosPenn * Fmax * (fv + fpass)));
+            CHECK(muscle.getStress(state) == Approx((fv + fpass) * cosPenn));
+
+            double damping = 0.015;
+            muscle.set_fiber_damping(damping);
+            auto stateDamped = model.initSystem();
+            stateDamped.updY() = state.getY();
+            model.realizeDynamics(stateDamped);
+            CHECK(muscle.getPassiveFiberDampingForce(stateDamped) ==
+                    Approx(Fmax * damping * -cosPenn));
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(stateDamped) ==
+                    Approx(Fmax * damping * -cosPenn * cosPenn));
         }
     }
 
