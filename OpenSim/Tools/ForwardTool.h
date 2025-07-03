@@ -70,9 +70,13 @@ protected:
     current integration. */
     OpenSim::PropertyBool _useSpecifiedDtProp;
     bool &_useSpecifiedDt;
+    SimTK::Vector_<double> _dtArray;
 
     /** Storage for the input states. */
     Storage *_yStore;
+    /** Storage for the output states. */
+    Storage _yOut;
+
     /** Flag indicating whether or not to write to the results (GUI will set this to false). */
     bool _printResultFiles;
 
