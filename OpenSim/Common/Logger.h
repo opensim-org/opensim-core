@@ -31,10 +31,10 @@
 #include <string>                       // for basic_string, string
 
 #ifndef SWIG
-#    include <SimTKcommon/SmallMatrix.h>             // for Vec3
-#    include <SimTKcommon/internal/BigMatrix.h>      // for Vector
-#    include <SimTKcommon/internal/MassProperties.h> // for Inertia
-#    include <SimTKcommon/internal/Rotation.h>       // for Rotation
+#include <SimTKcommon/SmallMatrix.h>             // for Vec3
+#include <SimTKcommon/internal/BigMatrix.h>      // for Vector
+#include <SimTKcommon/internal/MassProperties.h> // for Inertia
+#include <SimTKcommon/internal/Rotation.h>       // for Rotation
 
 // fmt library serializers for custom SimTK objects
 template <> struct fmt::formatter<SimTK::Vec3> : ostream_formatter {};
