@@ -14,7 +14,6 @@ v4.6
 - Use catch2 `INFO` logging macros in tests instead of OpenSim `log_info` (#4066)
 - Updated the dependency `spdlog` to `v1.15.3`. (#4067)
 
-
 v4.5.2
 ======
 - The performance of `getStateVariableValue`, `getStateVariableDerivativeValue`, and `getModelingOption` was improved in
