@@ -40,7 +40,8 @@ class COMAKCostFunctionParameterSet;
 The Concurrent Optimization of Muscle Activations and Kinematics (COMAK) 
 algorithm enables the calculatation of muscle forces, ligament forces, 
 articular contact pressures, and secondary kinematics throughout a measured 
-movement. An optimization is performed that minimizes
+movement. An optimization is performed that minimizes a muscle activation
+based cost function.
 
 As inputs, COMAK requires a .osim model, measured joint kinematics (motion 
  capture etc.), and the ExternalLoads experienced by the model during the 
