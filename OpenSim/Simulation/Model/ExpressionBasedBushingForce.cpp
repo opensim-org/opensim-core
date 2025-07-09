@@ -29,7 +29,6 @@
 #include "ExpressionBasedBushingForce.h"
 
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 
@@ -90,18 +89,12 @@ ExpressionBasedBushingForce::ExpressionBasedBushingForce(
 }
 
 // Convenience constructor for zero value force functions.
-ExpressionBasedBushingForce::
-ExpressionBasedBushingForce(const string&   name,
-                            const string&   frame1Name,
-                            const Vec3&     point1, 
-                            const Vec3&     orientation1,
-                            const string&   frame2Name,
-                            const Vec3&     point2, 
-                            const Vec3&     orientation2)
-    : Super(name,
-            frame1Name, point1, orientation1,
-            frame2Name, point2, orientation2)
-{
+ExpressionBasedBushingForce::ExpressionBasedBushingForce(const string& name,
+        const string& frame1Name, const SimTK::Vec3& point1,
+        const SimTK::Vec3& orientation1, const string& frame2Name,
+        const SimTK::Vec3& point2, const SimTK::Vec3& orientation2)
+        : Super(name, frame1Name, point1, orientation1, frame2Name, point2,
+                  orientation2) {
     setNull();
     constructProperties();
 }
@@ -130,21 +123,14 @@ ExpressionBasedBushingForce::ExpressionBasedBushingForce(
 
 // Convenience constructor for linear functions.
 ExpressionBasedBushingForce::ExpressionBasedBushingForce(
-                                        const std::string& name,
-                                        const string&    frame1Name,
-                                        const Vec3&      point1, 
-                                        const Vec3&      orientation1,
-                                        const string&    frame2Name,
-                                        const Vec3&      point2, 
-                                        const Vec3&      orientation2,
-                                        const Vec3&      transStiffness,
-                                        const Vec3&      rotStiffness,
-                                        const Vec3&      transDamping,
-                                        const Vec3&      rotDamping)
-    : ExpressionBasedBushingForce( name,
-                                   frame1Name, point1, orientation1,
-                                   frame2Name, point2, orientation2)
-{
+        const std::string& name, const string& frame1Name,
+        const SimTK::Vec3& point1, const SimTK::Vec3& orientation1,
+        const string& frame2Name, const SimTK::Vec3& point2,
+        const SimTK::Vec3& orientation2, const SimTK::Vec3& transStiffness,
+        const SimTK::Vec3& rotStiffness, const SimTK::Vec3& transDamping,
+        const SimTK::Vec3& rotDamping)
+        : ExpressionBasedBushingForce(name, frame1Name, point1, orientation1,
+                  frame2Name, point2, orientation2) {
     // populate moments and forces as linear (ramp) expressions based on
     // stiffness
     setMxExpression( to_string(rotStiffness[0]) + string("*theta_x") );
@@ -182,10 +168,10 @@ void ExpressionBasedBushingForce::constructProperties()
     setFxExpression( "0.0" );
     setFyExpression( "0.0" );
     setFzExpression( "0.0" );
-    
-    constructProperty_rotational_damping(Vec3(0));
-    constructProperty_translational_damping(Vec3(0));
-    
+
+    constructProperty_rotational_damping(SimTK::Vec3(0));
+    constructProperty_translational_damping(SimTK::Vec3(0));
+
     constructProperty_moment_visual_scale( 1.0 );
     constructProperty_force_visual_scale( 1.0 );
     constructProperty_visual_aspect_ratio(1.0);
@@ -279,9 +265,9 @@ SimTK::Vec6 ExpressionBasedBushingForce::
 {
     // Calculate stiffness generalized forces of bushing by first computing
     // the deviation of the two frames measured by dq
-    Vec6 dq = computeDeflection(s);
+    SimTK::Vec6 dq = computeDeflection(s);
 
-    Vec6 fk = Vec6(0.0);
+    SimTK::Vec6 fk = SimTK::Vec6(0.0);
 
     std::map<std::string, double> deflectionVars;
     deflectionVars["theta_x"] = dq[0];
@@ -306,7 +292,7 @@ SimTK::Vec6 ExpressionBasedBushingForce::
 SimTK::Vec6 ExpressionBasedBushingForce::
     calcDampingForce(const SimTK::State& s) const
 {
-    Vec6 dqdot = computeDeflectionRate(s);
+    SimTK::Vec6 dqdot = computeDeflectionRate(s);
     return -_dampingMatrix * dqdot;
 }
 
@@ -360,11 +346,11 @@ OpenSim::Array<std::string> ExpressionBasedBushingForce::getRecordLabels() const
 OpenSim::Array<double> ExpressionBasedBushingForce::
     getRecordValues(const SimTK::State& s) const 
 {
-    SpatialVec F_GM( Vec3(0.0),Vec3(0.0) );
-    SpatialVec F_GF( Vec3(0.0),Vec3(0.0) );
-    
-    // total bushing force in the internal basis of the deflection (dq) 
-    Vec6 f = calcBushingForce(s);
+    SimTK::SpatialVec F_GM(SimTK::Vec3(0.0), SimTK::Vec3(0.0));
+    SimTK::SpatialVec F_GF(SimTK::Vec3(0.0), SimTK::Vec3(0.0));
+
+    // total bushing force in the internal basis of the deflection (dq)
+    SimTK::Vec6 f = calcBushingForce(s);
 
     convertInternalForceToForcesOnFrames(s, f, F_GF, F_GM);
 
@@ -427,12 +413,12 @@ void ExpressionBasedBushingForce::generateDecorations
 
         // if the model is moving and the state is adequately realized,
         // calculate and draw the bushing forces.
-        if (s.getSystemStage() >= Stage::Dynamics) {
-            SpatialVec F_GM(Vec3(0.0), Vec3(0.0));
-            SpatialVec F_GF(Vec3(0.0), Vec3(0.0));
+        if (s.getSystemStage() >= SimTK::Stage::Dynamics) {
+            SimTK::SpatialVec F_GM(SimTK::Vec3(0.0), SimTK::Vec3(0.0));
+            SimTK::SpatialVec F_GF(SimTK::Vec3(0.0), SimTK::Vec3(0.0));
 
-            // total bushing force in the internal basis of the deflection (dq) 
-            Vec6 f = calcBushingForce(s);
+            // total bushing force in the internal basis of the deflection (dq)
+            SimTK::Vec6 f = calcBushingForce(s);
 
             convertInternalForceToForcesOnFrames(s, f, F_GF, F_GM);
 

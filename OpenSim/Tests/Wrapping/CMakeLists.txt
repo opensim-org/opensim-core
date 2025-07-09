@@ -2,10 +2,9 @@ find_package(Catch2 REQUIRED
         HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
 
 set(TEST_PROGS
-        testWrapping.cpp
-        # testWrapping_Deprecated.cpp
+        testWrapObject.cpp
         testWrapCylinder.cpp
-        testWrappingAlgorithm.cpp
+        testGeometryPathWrapping.cpp
 )
 file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 

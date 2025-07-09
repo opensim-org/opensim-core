@@ -61,6 +61,15 @@ This is Moco's simplest example.
 This example conducts a 2-D prediction of walking, employing a
 MocoPerodicityGoal.
 
+@example example2DWalkingMetabolics.m
+This is an example using the MocoTrack tool that also shows how to
+minimize the total metabolic rate employing the
+Bhargava2004SmoothedMuscleMetabolics.
+
+@example example3DWalking.m
+This example demonstrates how to track kinematics and ground reaction
+forces to generate a 3-D walking simulation.
+
 @example examplePolynomialPathFitter.m
 This example demonstrates how to use PolynomialPathFitter to 
 create a set of FunctionBasedPaths for a model.
@@ -125,6 +134,19 @@ MocoSolution.
 This example demonstrates how Moco solves problems with kinematic constraints
 and includes a visualization of the Lagrange multipliers that Moco solves for.
 
+@example example2DWalking.py
+This example conducts a 2-D prediction of walking, employing a
+MocoPerodicityGoal.
+
+@example example2DWalkingMetabolics.py
+This is an example using the MocoTrack tool that also shows how to
+minimize the total metabolic rate employing the
+Bhargava2004SmoothedMuscleMetabolics.
+
+@example example3DWalking.py
+This example demonstrates how to track kinematics and ground reaction
+forces to generate a 3-D walking simulation.
+
 @example examplePolynomialPathFitter.py
 This example demonstrates how to use PolynomialPathFitter to 
 create a set of FunctionBasedPaths for a model.
@@ -139,6 +161,10 @@ MocoPerodicityGoal.
 This is an example using the MocoTrack tool that also shows how to
 minimize the total metabolic rate employing the
 Bhargava2004SmoothedMuscleMetabolics.
+
+@example example3DWalking.cpp
+This example demonstrates how to track kinematics and ground reaction
+forces to generate a 3-D walking simulation.
 
 @example exampleCustomImplicitAuxiliaryDynamics.cpp
 This example shows how to define dynamics with an implicit differential
@@ -208,8 +234,8 @@ name | model/motion | description | interfaces
 ---- | ------------ | ----------- | ----------
 MocoTrack | lower-limb | Using the MocoTrack tool for walking with marker tracking and state tracking; generating a PDF report | [MATLAB](@ref exampleMocoTrack.m), [Python](@ref exampleMocoTrack.py), [C++](@ref exampleMocoTrack.cpp)
 MocoInverse | lower-limb | Using the MocoInverse tool for walking; MocoControlTrackingGoal; generating a PDF report | [MATLAB](@ref exampleMocoInverse.m), [Python](@ref exampleMocoInverse.py), [C++](@ref exampleMocoInverse.cpp)
-2DWalking | walking | MocoTrack, MocoStudy prediction, MocoControlGoal, MocoAverageSpeedGoal, MocoPeriodicityGoal, MocoContactTrackingGoal, createPeriodicSolution | [MATLAB](@ref example2DWalking.m), [C++](@ref example2DWalking.cpp)
-2DWalkingMetabolics | walking | MocoTrack, MocoControlGoal, MocoPeriodicityGoal, Bhargava2004SmoothedMuscleMetabolics | [C++](@ref example2DWalkingMetabolics.cpp)
+2DWalking | walking | MocoTrack, MocoStudy prediction, MocoControlGoal, MocoAverageSpeedGoal, MocoPeriodicityGoal, MocoContactTrackingGoal, createPeriodicSolution | [MATLAB](@ref example2DWalking.m), [Python](@ref example2DWalking.py), [C++](@ref example2DWalking.cpp)
+2DWalkingMetabolics | walking | MocoTrack, MocoControlGoal, MocoPeriodicityGoal, Bhargava2004SmoothedMuscleMetabolics | [MATLAB](@ref example2DWalkingMetabolics.m), [Python](@ref example2DWalkingMetabolics.cpp), [C++](@ref example2DWalkingMetabolics.cpp)
 MarkerTracking10DOF | walking | MocoControlGoal, MocoMarkerTrackingGoal | [MATLAB](@ref exampleMarkerTracking10DOF.m)
 SquatToStand | torque-driven single leg | MocoStudy motion prediction, MocoInverse | [MATLAB](@ref exampleSquatToStand_answers.m) [Python](@ref exampleSquatToStand_answers.py)
 IMUTracking | torque-driven single leg | MocoStudy motion prediction, MocoAccelerationTrackingGoal | [MATLAB](@ref exampleIMUTracking_answers.m) [Python](@ref exampleIMUTracking_answers.py)
@@ -222,6 +248,7 @@ PolynomialPathFitter | N/A | Fit FunctionBasedPath%s to a model | [MATLAB](@ref 
 
 name | model/motion | description | interfaces
 ---- | ------------ | ----------- | ----------
+3DWalking | walking | MocoTrack, MocoControlGoal, MocoPeriodicityGoal, MocoContactTrackingGoal | [MATLAB](@ref example3DWalking.m), [Python](@ref example3DWalking.py), [C++](@ref example3DWalking.cpp)
 CustomImplicitAuxiliaryDynamics | N/A | Creating a component with implicit auxiliary dynamics (like muscle tendon compliance) | [C++](@ref exampleCustomImplicitAuxiliaryDynamics.cpp)
 CustomEffortGoal | N/A | Creating a plugin for a custom goal | [C++](@ref exampleMocoCustomEffortGoal.cpp)
 

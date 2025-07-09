@@ -175,7 +175,7 @@ function(OpenSimAddLibrary)
     # ----------------
     # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
     set(options VENDORLIB LOWERINCLUDEDIRNAME EXCLUDEFROMPYTHON)
-    set(oneValueArgs KIT AUTHORS INCLUDEINSTALLREL)
+    set(oneValueArgs KIT AUTHORS INCLUDEINSTALLREL EXTERNAL_DEPENDENCY_SYMBOL)
     set(multiValueArgs LINKLIBS INCLUDES SOURCES TESTDIRS INCLUDEDIRS)
     cmake_parse_arguments(
         OSIMADDLIB "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -221,10 +221,11 @@ function(OpenSimAddLibrary)
     # This target links to the libraries provided as arguments to this func.
     target_link_libraries(${OSIMADDLIB_LIBRARY_NAME} ${OSIMADDLIB_LINKLIBS})
 
-    target_compile_definitions(${OSIMADDLIB_LIBRARY_NAME} PUBLIC
-        # `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
-        $<$<CXX_COMPILER_ID:MSVC>:_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING>
-    )
+    if(OSIMADDLIB_EXTERNAL_DEPENDENCY_SYMBOL)
+        target_compile_definitions(${OSIMADDLIB_LIBRARY_NAME} PUBLIC
+            ${OSIMADDLIB_EXTERNAL_DEPENDENCY_SYMBOL}
+        )
+    endif()
 
     # This is for exporting classes on Windows.
     if(OSIMADDLIB_VENDORLIB)

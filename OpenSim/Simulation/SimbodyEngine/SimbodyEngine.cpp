@@ -42,7 +42,6 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
-using namespace SimTK;
 
 //=============================================================================
 // EXCEPTIONS
@@ -202,8 +201,8 @@ void SimbodyEngine::getUnlockedCoordinates(const SimTK::State &s, CoordinateSet&
  * @param rPos Position of the point in the inertial frame.
  */
 void SimbodyEngine::getPosition(const SimTK::State& s,
-        const PhysicalFrame& aBody, const Vec3& aPoint, Vec3& rPos) const
-{
+        const PhysicalFrame& aBody, const SimTK::Vec3& aPoint,
+        SimTK::Vec3& rPos) const {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
         PhysicalOffsetFrameIsInvalidArgument);
@@ -223,8 +222,8 @@ void SimbodyEngine::getPosition(const SimTK::State& s,
  * @param rVel Velocity of the point in the inertial frame.
  */
 void SimbodyEngine::getVelocity(const SimTK::State& s,
-        const PhysicalFrame& aBody, const Vec3& aPoint, Vec3& rVel) const
-{
+        const PhysicalFrame& aBody, const SimTK::Vec3& aPoint,
+        SimTK::Vec3& rVel) const {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
         PhysicalOffsetFrameIsInvalidArgument);
@@ -247,8 +246,8 @@ void SimbodyEngine::getVelocity(const SimTK::State& s,
  * @see computeAccelerations()
  */
 void SimbodyEngine::getAcceleration(const SimTK::State& s,
-        const PhysicalFrame& aBody, const Vec3& aPoint, Vec3& rAcc) const
-{
+        const PhysicalFrame& aBody, const SimTK::Vec3& aPoint,
+        SimTK::Vec3& rAcc) const {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
         PhysicalOffsetFrameIsInvalidArgument);
@@ -270,8 +269,8 @@ void SimbodyEngine::getDirectionCosines(const SimTK::State& s,
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
         PhysicalOffsetFrameIsInvalidArgument);
 
-    Mat33::updAs(&rDirCos[0][0]) =
-        aBody.getMobilizedBody().getBodyRotation(s).asMat33();
+    SimTK::Mat33::updAs(&rDirCos[0][0]) =
+            aBody.getMobilizedBody().getBodyRotation(s).asMat33();
 }
 
 //_____________________________________________________________________________
@@ -288,8 +287,8 @@ void SimbodyEngine::getDirectionCosines(const SimTK::State& s,
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
         PhysicalOffsetFrameIsInvalidArgument);
 
-    Mat33::updAs(rDirCos) =
-        aBody.getMobilizedBody().getBodyRotation(s).asMat33();
+    SimTK::Mat33::updAs(rDirCos) =
+            aBody.getMobilizedBody().getBodyRotation(s).asMat33();
 }
 
 //_____________________________________________________________________________
@@ -300,8 +299,7 @@ void SimbodyEngine::getDirectionCosines(const SimTK::State& s,
  * @param rAngVel Angular velocity of the body.
  */
 void SimbodyEngine::getAngularVelocity(const SimTK::State& s,
-        const PhysicalFrame& aBody, Vec3& rAngVel) const
-{
+        const PhysicalFrame& aBody, SimTK::Vec3& rAngVel) const {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
         PhysicalOffsetFrameIsInvalidArgument);
@@ -317,8 +315,7 @@ void SimbodyEngine::getAngularVelocity(const SimTK::State& s,
  * @param rAngVel Angular velocity of the body.
  */
 void SimbodyEngine::getAngularVelocityBodyLocal(const SimTK::State& s,
-        const PhysicalFrame& aBody, Vec3& rAngVel) const
-{
+        const PhysicalFrame& aBody, SimTK::Vec3& rAngVel) const {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
         PhysicalOffsetFrameIsInvalidArgument);
@@ -335,11 +332,9 @@ void SimbodyEngine::getAngularVelocityBodyLocal(const SimTK::State& s,
  * @param rAngAcc Angular acceleration of the body.
  */
 void SimbodyEngine::getAngularAcceleration(const SimTK::State& s,
-        const PhysicalFrame& aBody, Vec3& rAngAcc) const
-{
-    OPENSIM_THROW_IF_FRMOBJ(
-        dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
-        PhysicalOffsetFrameIsInvalidArgument);
+        const PhysicalFrame& aBody, SimTK::Vec3& rAngAcc) const {
+    OPENSIM_THROW_IF_FRMOBJ(dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
+            PhysicalOffsetFrameIsInvalidArgument);
 
     rAngAcc = aBody.getMobilizedBody().getBodyAngularAcceleration(s);
 }
@@ -352,11 +347,9 @@ void SimbodyEngine::getAngularAcceleration(const SimTK::State& s,
  * @param rAngAcc Angular acceleration of the body.
  */
 void SimbodyEngine::getAngularAccelerationBodyLocal(const SimTK::State& s,
-        const PhysicalFrame &aBody, Vec3& rAngAcc) const
-{
-    OPENSIM_THROW_IF_FRMOBJ(
-        dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
-        PhysicalOffsetFrameIsInvalidArgument);
+        const PhysicalFrame& aBody, SimTK::Vec3& rAngAcc) const {
+    OPENSIM_THROW_IF_FRMOBJ(dynamic_cast<const PhysicalOffsetFrame*>(&aBody),
+            PhysicalOffsetFrameIsInvalidArgument);
 
     rAngAcc = aBody.getMobilizedBody().getBodyAngularAcceleration(s);
 }
@@ -397,11 +390,13 @@ SimTK::Transform SimbodyEngine::getTransform(const SimTK::State& s,
  * @param rTorques Matrix of reaction torques.  The size should be
  * at least NumberOfJoints x 3.
  */
-void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForces, Vector_<Vec3>& rTorques) const
-{
-    // get the number of mobilized bodies in the underlying SimbodyMatterSubsystem
-    //int nmb = _model->getMatterSubsystem().getNumBodies();
-    
+void SimbodyEngine::computeReactions(const SimTK::State& s,
+        SimTK::Vector_<SimTK::Vec3>& rForces,
+        SimTK::Vector_<SimTK::Vec3>& rTorques) const {
+    // get the number of mobilized bodies in the underlying
+    // SimbodyMatterSubsystem
+    // int nmb = _model->getMatterSubsystem().getNumBodies();
+
     // get the number of bodies in the OpenSim model
     int nj = _model->getNumJoints();
 
@@ -414,12 +409,11 @@ void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForc
     OPENSIM_ASSERT_FRMOBJ(nj == rForces.size());
     OPENSIM_ASSERT_FRMOBJ(rForces.size() == rTorques.size());
 
-    SimTK::Vector_<SpatialVec> reactionForces(nj);
+    SimTK::Vector_<SimTK::SpatialVec> reactionForces(nj);
 
     // Systems must be realized to acceleration stage
-    _model->getMultibodySystem().realize(s, Stage::Acceleration);
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
     _model->getMatterSubsystem().calcMobilizerReactionForces(s, reactionForces);
-
 
     const JointSet &joints = _model->getJointSet();
 
@@ -460,8 +454,15 @@ void SimbodyEngine::transform(const SimTK::State& s, const PhysicalFrame &aBodyF
     const Body* bFrom = (const Body*)&aBodyFrom;
     const Body* bTo = (const Body*)&aBodyTo;
 
-    //Get input vector as a Vec3 to make the call down to Simbody and update the output vector 
-    Vec3::updAs(rVec) = _model->getMatterSubsystem().getMobilizedBody(bFrom->getMobilizedBodyIndex()).expressVectorInAnotherBodyFrame(s, Vec3::getAs(aVec), _model->getMatterSubsystem().getMobilizedBody(bTo->getMobilizedBodyIndex()));
+    // Get input vector as a Vec3 to make the call down to Simbody and update
+    // the output vector
+    SimTK::Vec3::updAs(rVec) =
+            _model->getMatterSubsystem()
+                    .getMobilizedBody(bFrom->getMobilizedBodyIndex())
+                    .expressVectorInAnotherBodyFrame(s,
+                            SimTK::Vec3::getAs(aVec),
+                            _model->getMatterSubsystem().getMobilizedBody(
+                                    bTo->getMobilizedBodyIndex()));
 }
 
 //_____________________________________________________________________________
@@ -473,8 +474,9 @@ void SimbodyEngine::transform(const SimTK::State& s, const PhysicalFrame &aBodyF
  * @param aBodyTo the body the vector will be transformed into
  * @param rPos the vector in the aBodyTo frame is returned here
  */
-void SimbodyEngine::transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const Vec3& aVec, const PhysicalFrame &aBodyTo, Vec3& rVec) const
-{
+void SimbodyEngine::transform(const SimTK::State& s,
+        const PhysicalFrame& aBodyFrom, const SimTK::Vec3& aVec,
+        const PhysicalFrame& aBodyTo, SimTK::Vec3& rVec) const {
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBodyFrom),
         PhysicalOffsetFrameIsInvalidArgument);
@@ -513,15 +515,15 @@ transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const
         PhysicalOffsetFrameIsInvalidArgument);
 
     if(&aBodyFrom == &aBodyTo) {
-       for (int i=0; i<3; i++) rPos[i] = aPos[i];
+        for (int i = 0; i < 3; i++) rPos[i] = aPos[i];
         return;
     }
 
     // Get input vector as a Vec3 to make the call down to Simbody and update
     // the output vector.
-    Vec3::updAs(rPos) =
-        aBodyFrom.getMobilizedBody().findStationLocationInAnotherBody(s,
-                Vec3::getAs(aPos), aBodyTo.getMobilizedBody());
+    SimTK::Vec3::updAs(rPos) =
+            aBodyFrom.getMobilizedBody().findStationLocationInAnotherBody(
+                    s, SimTK::Vec3::getAs(aPos), aBodyTo.getMobilizedBody());
 }
 
 //_____________________________________________________________________________
@@ -531,15 +533,15 @@ transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const
  * @param aBodyFrom the body in which the point is currently expressed
  * @param aPos the XYZ coordinates of the point
  * @param aBodyTo the body the point will be transformed into
- * @param rPos the XYZ coordinates of the point in the aBodyTo frame are returned here
+ * @param rPos the XYZ coordinates of the point in the aBodyTo frame are
+ * returned here
  */
-void SimbodyEngine::
-transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const
-        Vec3& aPos, const PhysicalFrame &aBodyTo, Vec3& rPos) const
-{
+void SimbodyEngine::transformPosition(const SimTK::State& s,
+        const PhysicalFrame& aBodyFrom, const SimTK::Vec3& aPos,
+        const PhysicalFrame& aBodyTo, SimTK::Vec3& rPos) const {
     OPENSIM_THROW_IF_FRMOBJ(
-        dynamic_cast<const PhysicalOffsetFrame*>(&aBodyFrom),
-        PhysicalOffsetFrameIsInvalidArgument);
+            dynamic_cast<const PhysicalOffsetFrame*>(&aBodyFrom),
+            PhysicalOffsetFrameIsInvalidArgument);
 
     OPENSIM_THROW_IF_FRMOBJ(
         dynamic_cast<const PhysicalOffsetFrame*>(&aBodyTo),
@@ -567,16 +569,16 @@ transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const
 void SimbodyEngine::transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aPos[3], double rPos[3]) const
 {
     OPENSIM_THROW_IF_FRMOBJ(
-        dynamic_cast<const PhysicalOffsetFrame*>(&aBodyFrom),
-        PhysicalOffsetFrameIsInvalidArgument);
+            dynamic_cast<const PhysicalOffsetFrame*>(&aBodyFrom),
+            PhysicalOffsetFrameIsInvalidArgument);
 
-    //const Body* bFrom = (const Body*)&aBodyFrom;
+    // const Body* bFrom = (const Body*)&aBodyFrom;
 
     // Get input vector as a Vec3 to make the call down to Simbody and update
     // the output vector.
-    Vec3::updAs(rPos) =
-        aBodyFrom.getMobilizedBody().findStationLocationInGround(s,
-                Vec3::getAs(aPos));
+    SimTK::Vec3::updAs(rPos) =
+            aBodyFrom.getMobilizedBody().findStationLocationInGround(
+                    s, SimTK::Vec3::getAs(aPos));
 }
 
 //_____________________________________________________________________________
@@ -585,15 +587,15 @@ void SimbodyEngine::transformPosition(const SimTK::State& s, const PhysicalFrame
  *
  * @param aBodyFrom the body in which the point is currently expressed
  * @param aPos the XYZ coordinates of the point
- * @param rPos the XYZ coordinates of the point in the ground frame are returned here
+ * @param rPos the XYZ coordinates of the point in the ground frame are returned
+ * here
  */
-void SimbodyEngine::
-transformPosition(const SimTK::State& s, const PhysicalFrame& aBodyFrom,
-        const Vec3& aPos, Vec3& rPos) const
-{
+void SimbodyEngine::transformPosition(const SimTK::State& s,
+        const PhysicalFrame& aBodyFrom, const SimTK::Vec3& aPos,
+        SimTK::Vec3& rPos) const {
     OPENSIM_THROW_IF_FRMOBJ(
-        dynamic_cast<const PhysicalOffsetFrame*>(&aBodyFrom),
-        PhysicalOffsetFrameIsInvalidArgument);
+            dynamic_cast<const PhysicalOffsetFrame*>(&aBodyFrom),
+            PhysicalOffsetFrameIsInvalidArgument);
 
     _model->getMultibodySystem().realize(s, SimTK::Stage::Position);
     rPos = aBodyFrom.getMobilizedBody().findStationLocationInGround(s, aPos);
@@ -601,7 +603,8 @@ transformPosition(const SimTK::State& s, const PhysicalFrame& aBodyFrom,
 
 //_____________________________________________________________________________
 /**
- * Calculate the distance between a point on one body and a point on another body
+ * Calculate the distance between a point on one body and a point on another
+ * body
  *
  * @param aBody1 the body that the first point is expressed in
  * @param aPoint1 the XYZ coordinates of the first point
@@ -609,18 +612,14 @@ transformPosition(const SimTK::State& s, const PhysicalFrame& aBodyFrom,
  * @param aPoint2 the XYZ coordinates of the second point
  * @return the distance between aPoint1 and aPoint2
  */
-double SimbodyEngine::
-calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1,
-const Vec3& aPoint1, const PhysicalFrame& aBody2, const Vec3& aPoint2)
-    const
-{
-    OPENSIM_THROW_IF_FRMOBJ(
-        dynamic_cast<const PhysicalOffsetFrame*>(&aBody1),
-        PhysicalOffsetFrameIsInvalidArgument);
+double SimbodyEngine::calcDistance(const SimTK::State& s,
+        const PhysicalFrame& aBody1, const SimTK::Vec3& aPoint1,
+        const PhysicalFrame& aBody2, const SimTK::Vec3& aPoint2) const {
+    OPENSIM_THROW_IF_FRMOBJ(dynamic_cast<const PhysicalOffsetFrame*>(&aBody1),
+            PhysicalOffsetFrameIsInvalidArgument);
 
-    OPENSIM_THROW_IF_FRMOBJ(
-        dynamic_cast<const PhysicalOffsetFrame*>(&aBody2),
-        PhysicalOffsetFrameIsInvalidArgument);
+    OPENSIM_THROW_IF_FRMOBJ(dynamic_cast<const PhysicalOffsetFrame*>(&aBody2),
+            PhysicalOffsetFrameIsInvalidArgument);
 
     return aBody1.getMobilizedBody().calcStationToStationDistance(s, aPoint1,
             aBody2.getMobilizedBody(), aPoint2);
@@ -636,21 +635,18 @@ const Vec3& aPoint1, const PhysicalFrame& aBody2, const Vec3& aPoint2)
  * @param aPoint2 the XYZ coordinates of the second point
  * @return the distance between aPoint1 and aPoint2
  */
-double SimbodyEngine::calcDistance(const SimTK::State& s, const PhysicalFrame&
-        aBody1, const double aPoint1[3], const PhysicalFrame& aBody2, const
-        double aPoint2[3]) const
-{
-    OPENSIM_THROW_IF_FRMOBJ(
-        dynamic_cast<const PhysicalOffsetFrame*>(&aBody1),
-        PhysicalOffsetFrameIsInvalidArgument);
+double SimbodyEngine::calcDistance(const SimTK::State& s,
+        const PhysicalFrame& aBody1, const double aPoint1[3],
+        const PhysicalFrame& aBody2, const double aPoint2[3]) const {
+    OPENSIM_THROW_IF_FRMOBJ(dynamic_cast<const PhysicalOffsetFrame*>(&aBody1),
+            PhysicalOffsetFrameIsInvalidArgument);
 
-    OPENSIM_THROW_IF_FRMOBJ(
-        dynamic_cast<const PhysicalOffsetFrame*>(&aBody2),
-        PhysicalOffsetFrameIsInvalidArgument);
+    OPENSIM_THROW_IF_FRMOBJ(dynamic_cast<const PhysicalOffsetFrame*>(&aBody2),
+            PhysicalOffsetFrameIsInvalidArgument);
 
     return aBody1.getMobilizedBody().calcStationToStationDistance(s,
-            Vec3::getAs(aPoint1), aBody2.getMobilizedBody(),
-            Vec3::getAs(aPoint2));
+            SimTK::Vec3::getAs(aPoint1), aBody2.getMobilizedBody(),
+            SimTK::Vec3::getAs(aPoint2));
 }
 
 //_____________________________________________________________________________
@@ -661,12 +657,12 @@ double SimbodyEngine::calcDistance(const SimTK::State& s, const PhysicalFrame&
  * @param aE3 3rd Euler angle.
  * @param rDirCos Vector of direction cosines.
  */
-void SimbodyEngine::convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double rDirCos[3][3]) const
-{
-    Vec3 angs(aE1, aE2, aE3);
-    Rotation aRot; 
+void SimbodyEngine::convertAnglesToDirectionCosines(
+        double aE1, double aE2, double aE3, double rDirCos[3][3]) const {
+    SimTK::Vec3 angs(aE1, aE2, aE3);
+    SimTK::Rotation aRot;
     aRot.setRotationToBodyFixedXYZ(angs);
-    Mat33::updAs(&rDirCos[0][0]) = aRot.asMat33();
+    SimTK::Mat33::updAs(&rDirCos[0][0]) = aRot.asMat33();
 }
 
 //_____________________________________________________________________________
@@ -677,14 +673,14 @@ void SimbodyEngine::convertAnglesToDirectionCosines(double aE1, double aE2, doub
  * @param aE3 3rd Euler angle.
  * @param rDirCos Vector of direction cosines.
  */
-void SimbodyEngine::convertAnglesToDirectionCosines(double aE1, double aE2, double aE3, double *rDirCos) const
-{
-    if(rDirCos==NULL) return;
-    
-    Vec3 angs(aE1, aE2, aE3);
-    Rotation aRot; 
+void SimbodyEngine::convertAnglesToDirectionCosines(
+        double aE1, double aE2, double aE3, double* rDirCos) const {
+    if (rDirCos == NULL) return;
+
+    SimTK::Vec3 angs(aE1, aE2, aE3);
+    SimTK::Rotation aRot;
     aRot.setRotationToBodyFixedXYZ(angs);
-    Mat33::updAs(&rDirCos[0]) = aRot.asMat33();
+    SimTK::Mat33::updAs(&rDirCos[0]) = aRot.asMat33();
 }
 
 //_____________________________________________________________________________
@@ -695,9 +691,10 @@ void SimbodyEngine::convertAnglesToDirectionCosines(double aE1, double aE2, doub
  * @param rE2 2nd Euler angle.
  * @param rE3 3rd Euler angle.
  */
-void SimbodyEngine::convertDirectionCosinesToAngles(double aDirCos[3][3], double *rE1, double *rE2, double *rE3) const
-{
-    Vec3 ang = Rotation(Rotation::getAs(&aDirCos[0][0])).convertRotationToBodyFixedXYZ();
+void SimbodyEngine::convertDirectionCosinesToAngles(
+        double aDirCos[3][3], double* rE1, double* rE2, double* rE3) const {
+    SimTK::Vec3 ang = SimTK::Rotation(SimTK::Rotation::getAs(&aDirCos[0][0]))
+                              .convertRotationToBodyFixedXYZ();
     *rE1 = ang[0];
     *rE2 = ang[1];
     *rE3 = ang[2];
@@ -711,10 +708,11 @@ void SimbodyEngine::convertDirectionCosinesToAngles(double aDirCos[3][3], double
  * @param rE2 2nd Euler angle.
  * @param rE3 3rd Euler angle.
  */
-void SimbodyEngine::convertDirectionCosinesToAngles(double *aDirCos, double *rE1, double *rE2, double *rE3) const
-{
-    if(!aDirCos) return;
-    Vec3 ang = Rotation(Rotation::getAs(aDirCos)).convertRotationToBodyFixedXYZ();
+void SimbodyEngine::convertDirectionCosinesToAngles(
+        double* aDirCos, double* rE1, double* rE2, double* rE3) const {
+    if (!aDirCos) return;
+    SimTK::Vec3 ang = SimTK::Rotation(SimTK::Rotation::getAs(aDirCos))
+                              .convertRotationToBodyFixedXYZ();
     *rE1 = ang[0];
     *rE2 = ang[1];
     *rE3 = ang[2];
@@ -729,9 +727,11 @@ void SimbodyEngine::convertDirectionCosinesToAngles(double *aDirCos, double *rE1
  * @param rQ3 3rd Quaternion.
  * @param rQ4 4th Quaternion.
  */
-void SimbodyEngine::convertDirectionCosinesToQuaternions(double aDirCos[3][3], double *rQ1, double *rQ2, double *rQ3, double *rQ4) const
-{
-    Quaternion quat = Rotation(Rotation::getAs(&aDirCos[0][0])).convertRotationToQuaternion();
+void SimbodyEngine::convertDirectionCosinesToQuaternions(double aDirCos[3][3],
+        double* rQ1, double* rQ2, double* rQ3, double* rQ4) const {
+    SimTK::Quaternion quat =
+            SimTK::Rotation(SimTK::Rotation::getAs(&aDirCos[0][0]))
+                    .convertRotationToQuaternion();
     *rQ1 = quat[0];
     *rQ2 = quat[1];
     *rQ3 = quat[2];
@@ -747,10 +747,11 @@ void SimbodyEngine::convertDirectionCosinesToQuaternions(double aDirCos[3][3], d
  * @param rQ3 3rd Quaternion.
  * @param rQ4 4th Quaternion.
  */
-void SimbodyEngine::convertDirectionCosinesToQuaternions(double *aDirCos, double *rQ1, double *rQ2, double *rQ3, double *rQ4) const
-{
-    if(aDirCos==NULL) return;
-    Quaternion quat = Rotation(Rotation::getAs(aDirCos)).convertRotationToQuaternion();
+void SimbodyEngine::convertDirectionCosinesToQuaternions(double* aDirCos,
+        double* rQ1, double* rQ2, double* rQ3, double* rQ4) const {
+    if (aDirCos == NULL) return;
+    SimTK::Quaternion quat = SimTK::Rotation(SimTK::Rotation::getAs(aDirCos))
+                                     .convertRotationToQuaternion();
     *rQ1 = quat[0];
     *rQ2 = quat[1];
     *rQ3 = quat[2];
@@ -766,12 +767,13 @@ void SimbodyEngine::convertDirectionCosinesToQuaternions(double *aDirCos, double
  * @param aQ4 4th Quaternion.
  * @param rDirCos Vector of direction cosines.
  */
-void SimbodyEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double rDirCos[3][3]) const
-{
-    Rotation R;
-    R.setRotationFromQuaternion(Quaternion(Vec4(aQ1, aQ2, aQ3, aQ4)));
+void SimbodyEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2,
+        double aQ3, double aQ4, double rDirCos[3][3]) const {
+    SimTK::Rotation R;
+    R.setRotationFromQuaternion(
+            SimTK::Quaternion(SimTK::Vec4(aQ1, aQ2, aQ3, aQ4)));
 
-    Mat33::updAs(&rDirCos[0][0]) = R.asMat33();
+    SimTK::Mat33::updAs(&rDirCos[0][0]) = R.asMat33();
 }
 
 //_____________________________________________________________________________
@@ -783,18 +785,17 @@ void SimbodyEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2,
  * @param aQ4 4th Quaternion.
  * @param rDirCos Vector of direction cosines.
  */
-void SimbodyEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2, double aQ3, double aQ4, double *rDirCos) const
-{
-    if(rDirCos==NULL) return;
-    Rotation R;
-    R.setRotationFromQuaternion(Quaternion(Vec4(aQ1, aQ2, aQ3, aQ4)));
+void SimbodyEngine::convertQuaternionsToDirectionCosines(
+        double aQ1, double aQ2, double aQ3, double aQ4, double* rDirCos) const {
+    if (rDirCos == NULL) return;
+    SimTK::Rotation R;
+    R.setRotationFromQuaternion(
+            SimTK::Quaternion(SimTK::Vec4(aQ1, aQ2, aQ3, aQ4)));
 
-    Mat33::updAs(rDirCos) = R.asMat33();
+    SimTK::Mat33::updAs(rDirCos) = R.asMat33();
 }
-
 
 //--- Private Utility Methods Below Here ---
-
 
 //=============================================================================
 // CONFIGURATION
@@ -862,34 +863,34 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
         convertDegreesToRadians(*qStore);
 
     // Compute generalized speeds
-    GCVSplineSet tempQset(5,qStore);
+    GCVSplineSet tempQset(5, qStore);
     std::unique_ptr<Storage> uStore{tempQset.constructStorage(1)};
 
     // Compute constraints
-    Array<double> qu(0.0,nq+nu);
+    Array<double> qu(0.0, nq + nu);
     rQComplete = new Storage();
     rUComplete = new Storage();
-    State constrainedState = s;
-     _model->getMultibodySystem().realize(constrainedState, s.getSystemStage());
-    for(i=0;i<size;i++) {
-        qStore->getTime(i,time);
-        qStore->getData(i,nq,&qu[0]);
-        uStore->getData(i,nu,&qu[nq]);
+    SimTK::State constrainedState = s;
+    _model->getMultibodySystem().realize(constrainedState, s.getSystemStage());
+    for (i = 0; i < size; i++) {
+        qStore->getTime(i, time);
+        qStore->getData(i, nq, &qu[0]);
+        uStore->getData(i, nu, &qu[nq]);
         for (int j = 0; j < nq; j++) {
             Coordinate& coord = coordinateSet.get(j);
             coord.setValue(constrainedState, qu[j], false);
-            coord.setSpeedValue(constrainedState, qu[nq+j]);
+            coord.setSpeedValue(constrainedState, qu[nq + j]);
         }
         _model->assemble(constrainedState);
         for (int j = 0; j < nq; j++) {
             Coordinate& coord = coordinateSet.get(j);
             qu[j] = coord.getValue(constrainedState);
-            qu[nq+j] = coord.getSpeedValue(constrainedState);
+            qu[nq + j] = coord.getSpeedValue(constrainedState);
         }
-        rQComplete->append(time,nq,&qu[0]);
-        rUComplete->append(time,nu,&qu[nq]);
+        rQComplete->append(time, nq, &qu[0]);
+        rUComplete->append(time, nu, &qu[nq]);
     }
-    
+
     delete qStore;
     
     // Set column labels before returning
