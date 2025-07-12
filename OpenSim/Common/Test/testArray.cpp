@@ -26,6 +26,8 @@
 
 using namespace OpenSim;
 
+constexpr double tol = std::numeric_limits<double>::epsilon() * 10;
+
 namespace
 {
     template<typename T>
@@ -97,7 +99,8 @@ TEST_CASE("Array searchBinary Behaves Similarly to Legacy Implementation")
     for (int probe = -arraySize-1; probe < arraySize+1; ++probe) {
         int legacyOutput = SearchBinaryLegacyImplementation(vals, probe);
         int newOutput = vals.searchBinary(probe);
-        log_info("index = {}, legacyOutput = {}, newOutput = {}", probe, legacyOutput, newOutput);
+        INFO("index = " << probe << ", legacyOutput = " << legacyOutput
+                        << ", newOutput = " << newOutput);
         REQUIRE(legacyOutput == newOutput);
     }
 }
@@ -128,4 +131,48 @@ TEST_CASE("Array set keeps size if within bounds")
     vals.set(0, 4);
     REQUIRE(vals.size() == 1);
     REQUIRE(vals.get(0) == 4);  
+}
+
+TEST_CASE("Array initializer list works with integers")
+{
+    Array<int> vals{-1, 2, 4};
+
+    REQUIRE(vals.get(0) == -1);
+    REQUIRE(vals.get(1) == 2);
+    REQUIRE(vals.get(2) == 4);
+}
+
+TEST_CASE("Array constructor initialization works")
+{
+    Array<int> vals(-1, 2);
+
+    REQUIRE(vals.get(0) == -1);
+    REQUIRE(vals.get(1) == -1);
+}
+
+TEST_CASE("Array initializer list works with doubles")
+{
+    Array<double> vals{-1.5, 2.2, 4.6};
+
+    REQUIRE_THAT(vals.get(0), Catch::Matchers::WithinAbs(-1.5,tol));
+    REQUIRE_THAT(vals.get(1), Catch::Matchers::WithinAbs(2.2,tol));
+    REQUIRE_THAT(vals.get(2), Catch::Matchers::WithinAbs(4.6,tol));
+}
+
+TEST_CASE("Array initializer list works with doubles and alternate syntax")
+{
+    Array<double> vals = {-1.5, 2.2, 4.6};
+
+    REQUIRE_THAT(vals.get(0), Catch::Matchers::WithinAbs(-1.5,tol));
+    REQUIRE_THAT(vals.get(1), Catch::Matchers::WithinAbs(2.2,tol));
+    REQUIRE_THAT(vals.get(2), Catch::Matchers::WithinAbs(4.6,tol));
+}
+
+TEST_CASE("Array initializer list works with booleans")
+{
+    Array<bool> vals{true, false, true};
+
+    REQUIRE(vals.get(0) == true);
+    REQUIRE(vals.get(1) == false);
+    REQUIRE(vals.get(2) == true);
 }

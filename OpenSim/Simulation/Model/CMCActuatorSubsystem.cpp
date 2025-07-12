@@ -23,7 +23,6 @@
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
 
 void CMCActuatorSubsystemRep::setCompleteState(const SimTK::State& state) {
@@ -103,13 +102,14 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
 
   CMCActuatorSubsystemRep::~CMCActuatorSubsystemRep() { }
 
-  int CMCActuatorSubsystemRep::realizeSubsystemTopologyImpl(State& s) const {
-     // Make sure the CMC Actuator subsystem has the same number of Z's as
-     // the model as a whole so we don't miss any of them. This will include
-     // some that aren't muscle states, but who cares?
-     Vector z(_model->getMultibodySystem().getDefaultState().getNZ());
-     s.allocateZ( getMySubsystemIndex(), z );
-     return 0;
+  int CMCActuatorSubsystemRep::realizeSubsystemTopologyImpl(
+          SimTK::State& s) const {
+      // Make sure the CMC Actuator subsystem has the same number of Z's as
+      // the model as a whole so we don't miss any of them. This will include
+      // some that aren't muscle states, but who cares?
+      SimTK::Vector z(_model->getMultibodySystem().getDefaultState().getNZ());
+      s.allocateZ(getMySubsystemIndex(), z);
+      return 0;
   }
   void CMCActuatorSubsystemRep::holdCoordinatesConstant( double t ) {
       _holdCoordinatesConstant = true;
@@ -122,65 +122,70 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
        return( _model);
   }
 
-  int CMCActuatorSubsystemRep::realizeSubsystemDynamicsImpl(const State& s) const
-  {
-     /* set generalized coordinates and speeds from spline sets */
-    int nq = _model->getNumCoordinates();
-    double t;
+  int CMCActuatorSubsystemRep::realizeSubsystemDynamicsImpl(
+          const SimTK::State& s) const {
+      /* set generalized coordinates and speeds from spline sets */
+      int nq = _model->getNumCoordinates();
+      double t;
 
-    if(_holdCoordinatesConstant) {
-         t = _holdTime;
-    } else  {
-         t = s.getTime();
-    }
+      if (_holdCoordinatesConstant) {
+          t = _holdTime;
+      } else {
+          t = s.getTime();
+      }
 
-    _qSet->evaluate(_qWork,0,t);
-    if(_uSet!=NULL) {
-        _uSet->evaluate(_uWork,0,t);
-    } else {
-        _qSet->evaluate(_uWork,1,t);
-    }
+      _qSet->evaluate(_qWork, 0, t);
+      if (_uSet != NULL) {
+          _uSet->evaluate(_uWork, 0, t);
+      } else {
+          _qSet->evaluate(_uWork, 1, t);
+      }
 
-    /* Hack to obtain a mutable state in a const method */
-    State& mutableCompState = const_cast<SimTK::State&>(_completeState);
+      /* Hack to obtain a mutable state in a const method */
+      SimTK::State& mutableCompState =
+              const_cast<SimTK::State&>(_completeState);
 
-    // Update the coordinate values to pose the model while computing muscle
-    // controls
-    const CoordinateSet& coords = _model->getCoordinateSet();
-    for (int i = 0; i < nq; ++i) {
-        // the last argument to setValue, a bool to enforce constraints,
-        // is false since values come from a _qSet of splined desired
-        // kinematics formed from formCompleteStorages, which enforces
-        // model constraints.
-        coords[i].setValue(mutableCompState, _qWork[i] + _qCorrections[i], false);
-        coords[i].setSpeedValue(mutableCompState, _uWork[i] + _uCorrections[i]);
-    }
-    // project() to satisfy constraints perturbed by _q/_uCorrections
-    _model->getMultibodySystem().projectQ(mutableCompState,
-        getModel()->get_assembly_accuracy() / 10);
-    _model->getMultibodySystem().projectU(mutableCompState,
-        getModel()->get_assembly_accuracy() / 10);
+      // Update the coordinate values to pose the model while computing muscle
+      // controls
+      const CoordinateSet& coords = _model->getCoordinateSet();
+      for (int i = 0; i < nq; ++i) {
+          // the last argument to setValue, a bool to enforce constraints,
+          // is false since values come from a _qSet of splined desired
+          // kinematics formed from formCompleteStorages, which enforces
+          // model constraints.
+          coords[i].setValue(
+                  mutableCompState, _qWork[i] + _qCorrections[i], false);
+          coords[i].setSpeedValue(
+                  mutableCompState, _uWork[i] + _uCorrections[i]);
+      }
+      // project() to satisfy constraints perturbed by _q/_uCorrections
+      _model->getMultibodySystem().projectQ(
+              mutableCompState, getModel()->get_assembly_accuracy() / 10);
+      _model->getMultibodySystem().projectU(
+              mutableCompState, getModel()->get_assembly_accuracy() / 10);
 
-    /* copy  muscle states computed from the actuator system to the muscle states
-       for the complete system  then compute forces*/
-    mutableCompState.updZ() = s.getZ();
-    mutableCompState.updTime() = t;
+      /* copy  muscle states computed from the actuator system to the muscle
+         states for the complete system  then compute forces*/
+      mutableCompState.updZ() = s.getZ();
+      mutableCompState.updTime() = t;
 
-    _model->getMultibodySystem().realize(_completeState, SimTK::Stage::Acceleration);
+      _model->getMultibodySystem().realize(
+              _completeState, SimTK::Stage::Acceleration);
 
-    /* copy 1st derivatives of muscle states from complete system to actuator system */ 
-    s.updZDot() = _completeState.getZDot();
+      /* copy 1st derivatives of muscle states from complete system to actuator
+       * system */
+      s.updZDot() = _completeState.getZDot();
 
-/*
-    cout << "_qWork=" << _qWork << endl;
-    cout << "_uWork=" << _uWork << endl;
-    cout << "actuatorStates=" << s.getZ() << endl;
-    cout << " CMCrealize:Dynamics  time=" <<  s.getTime(); 
-    cout << " Actuator dydt=" << _completeState.getZDot() << endl;
-  
-*/
-     return 0;
-  }      
+      /*
+          cout << "_qWork=" << _qWork << endl;
+          cout << "_uWork=" << _uWork << endl;
+          cout << "actuatorStates=" << s.getZ() << endl;
+          cout << " CMCrealize:Dynamics  time=" <<  s.getTime();
+          cout << " Actuator dydt=" << _completeState.getZDot() << endl;
+
+      */
+      return 0;
+  }
 
    CMCActuatorSubsystem::CMCActuatorSubsystem(CMCActuatorSystem& system, Model* model) {
        adoptSubsystemGuts( rep = new CMCActuatorSubsystemRep(model) );

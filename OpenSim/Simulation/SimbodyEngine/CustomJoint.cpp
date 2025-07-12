@@ -37,7 +37,6 @@
 // STATICS
 //=============================================================================
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 //=============================================================================
@@ -131,7 +130,8 @@ void CustomJoint::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
     Super::extendScale(s, scaleSet);
 
     // Get scale factors (if an entry for the parent Frame's base Body exists).
-    const Vec3& scaleFactors = getScaleFactors(scaleSet, getParentFrame());
+    const SimTK::Vec3& scaleFactors =
+            getScaleFactors(scaleSet, getParentFrame());
     if (scaleFactors == ModelComponent::InvalidScaleFactors)
         return;
 
@@ -335,7 +335,7 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
         getSpatialTransform().getCoordinateIndices();
     std::vector<const SimTK::Function*> functions =
         getSpatialTransform().getFunctions();
-    std::vector<Vec3> axes = getSpatialTransform().getAxes();
+    std::vector<SimTK::Vec3> axes = getSpatialTransform().getAxes();
 
     SimTK_ASSERT1(numCoords == coordNames.getSize(),
         "%s list of coordinates does not match number of mobilities.",

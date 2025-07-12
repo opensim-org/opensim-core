@@ -264,7 +264,7 @@ MocoSolution solveMarkerTrackingProblem(
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver& ms = study.initTropterSolver();
+    MocoCasADiSolver& ms = study.initCasADiSolver();
     ms.set_num_mesh_intervals(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("snopt");

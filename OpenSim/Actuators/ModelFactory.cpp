@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: ModelFactory.cpp                                             *
+ *                          ModelFactory.cpp                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *
@@ -24,6 +24,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Common/CommonUtilities.h>
+#include <OpenSim/Simulation/Model/Ground.h>
 
 using namespace OpenSim;
 
@@ -255,11 +256,11 @@ void ModelFactory::removeMuscles(Model& model) {
 
 void ModelFactory::createReserveActuators(Model& model, double optimalForce,
         double bound,
-        bool skipCoordinatesWithExistingActuators) {
+        bool skipCoordinatesWithExistingActuators,
+        bool skipResidualCoordinates) {
     OPENSIM_THROW_IF(optimalForce <= 0, Exception,
-            "Invalid value ({}) for create_reserve_actuators; should be -1 or "
-            "positive.",
-            optimalForce);
+            "Expected a positive value for the 'optimalForce' argument, but "
+            "receieved {}.", optimalForce);
 
     log_info("Adding reserve actuators with an optimal force of {}...",
             optimalForce);
@@ -280,6 +281,12 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
                     break;
                 }
             }
+        }
+        // Don't add a reserve if the Joint's parent body is Ground.
+        if (!skipCoord && skipResidualCoordinates) {
+            const Joint& joint = coord.getJoint();
+            const Frame& frame = joint.getParentFrame().findBaseFrame();
+            skipCoord = dynamic_cast<const Ground*>(&frame) != nullptr;
         }
 
         if (!coord.isConstrained(state) && !skipCoord) {
@@ -304,6 +311,75 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
     // Re-make the system, since there are new actuators.
     model.initSystem();
     log_info("Added {} reserve actuator(s), for each of the following "
+             "coordinates:", coordPaths.size());
+    for (const auto& name : coordPaths) {
+        log_info("  {}", name);
+    }
+}
+
+void ModelFactory::createResidualActuators(Model& model, 
+        double rotationalOptimalForce, double translationalOptimalForce,
+        double bound, bool skipCoordinatesWithExistingActuators) {
+    OPENSIM_THROW_IF(rotationalOptimalForce <= 0, Exception,
+            "Expected a positive value for the 'rotationalOptimalForce' "
+            "argument, but receieved {}.", rotationalOptimalForce);
+    OPENSIM_THROW_IF(translationalOptimalForce <= 0, Exception,
+            "Expected a positive value for the 'translationalOptimalForce' "
+            "argument, but receieved {}.", translationalOptimalForce);
+
+    Model modelCopy(model);
+    auto state = modelCopy.initSystem();
+    std::vector<std::string> coordPaths;
+    // Borrowed from
+    // CoordinateActuator::CreateForceSetOfCoordinateAct...
+    for (const auto& coord : modelCopy.getComponentList<Coordinate>()) {
+        // Don't add a residual if a CoordinateActuator already exists.
+        bool skipCoord = false;
+        if (skipCoordinatesWithExistingActuators) {
+            for (const auto& coordAct :
+                    modelCopy.getComponentList<CoordinateActuator>()) {
+                if (coordAct.getCoordinate() == &coord) {
+                    skipCoord = true;
+                    break;
+                }
+            }
+        }
+
+        // Only add residuals for coordinates whose parent body is Ground.
+        const Joint& joint = coord.getJoint();
+        const Frame& frame = joint.getParentFrame().findBaseFrame();
+        bool residualCoord = dynamic_cast<const Ground*>(&frame) != nullptr;
+
+        if (!coord.isConstrained(state) && !skipCoord && residualCoord) {
+            auto* actu = new CoordinateActuator();
+            actu->setCoordinate(&model.updComponent<Coordinate>(
+                    coord.getAbsolutePathString()));
+            auto path = coord.getAbsolutePathString();
+            coordPaths.push_back(path);
+            // Get rid of slashes in the path; slashes not allowed in names.
+            std::replace(path.begin(), path.end(), '/', '_');
+            actu->setName("residual" + path);
+            if (coord.getMotionType() == Coordinate::MotionType::Rotational) {
+                actu->setOptimalForce(rotationalOptimalForce);
+            } else if (coord.getMotionType() == 
+                    Coordinate::MotionType::Translational) {
+                actu->setOptimalForce(translationalOptimalForce);
+            } else {
+                OPENSIM_THROW(Exception, "Coordinate '{}' has an unsupported "
+                        "motion type.", coord.getAbsolutePathString());
+            }
+            if (!SimTK::isNaN(bound)) {
+                OPENSIM_THROW_IF(bound < 0, Exception,
+                        "Expected a non-negative bound but got {}.", bound);
+                actu->setMinControl(-bound);
+                actu->setMaxControl(bound);
+            }
+            model.addForce(actu);
+        }
+    }
+    // Re-make the system, since there are new actuators.
+    model.initSystem();
+    log_info("Added {} residual actuator(s), for each of the following "
              "coordinates:", coordPaths.size());
     for (const auto& name : coordPaths) {
         log_info("  {}", name);

@@ -7,7 +7,16 @@ request related to the change, then we may provide the commit.
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
 v4.6
-====
+=====
+- Move BoolLike class outside of template Array class for the `VS 17.14` linker (#4081)
+- Improvements for the `XsensDataReader`. Add a configuration option to XSensDataReaderSettings to specify a known data rate (sampling frequency). Automatically detect the delimiter used in the file. Support the new Xsens export rotations formats (Rotation Matrix, Quaternion, or Euler angles) values from Xsens files. Update the parser to handle the path separator for data_folder and fix a memory leak. Verify integrity and uniformity of all files. Add tests with additional new and old Xsens formats. (#4063)
+- Remove `using namespace SimTK;` from core OpenSim files to prevent namespace conflicts and operator overshadowing (#4066)
+- Use catch2 `INFO` logging macros in tests instead of OpenSim `log_info` (#4066)
+- Updated the dependency `spdlog` to `v1.15.3`. (#4067)
+
+
+v4.5.2
+======
 - The performance of `getStateVariableValue`, `getStateVariableDerivativeValue`, and `getModelingOption` was improved in
   the case where provided string is just the name of the value, rather than a path to it (#3782)
 - Fixed bugs in `MocoStepTimeAsymmetryGoal::printDescriptionImpl()` where there were missing or incorrect values printed. (#3842)
@@ -28,8 +37,8 @@ v4.6
   sphere torques) to be consistent with the center of pressure GRF representation.
 - Fixed an issue where a copy of an `OpenSim::Model` containing a `OpenSim::ExternalLoads` could not be
   finalized (#3926)
-- Updated all code examples to use c++14 (#3929)
-- Added class `OpenSim::StateDocument` as a systematic means of serializing and deserializing a complete trajectory
+- Updated all code examples to use C++17 (after a few months of compiling as C++14 : #3929).
+- Added class `OpenSim::StatesDocument` as a systematic means of serializing and deserializing a complete trajectory
   (i.e., time history) of all states in the `SimTK::State` to and from a single `.ostates` file. Prior to `StatesDocument`,
   only the trajectories of continuous states (e.g., joint angles, joint speeds, muscle forces, and the like) could be systematically
   written to file, either in the form of a `Storage` file or as a `TimeSeriesTable` file, leaving discrete states (e.g., muscle
@@ -52,8 +61,47 @@ v4.6
 - Make `InverseKinematicsSolver` methods to query for specific marker or orientation-sensor errors more robust to invalid names or names not 
   in the intersection of names in the model and names in the provided referece/data. Remove methods that are index based from public interface.(#3951) 
 - Replace usages of `OpenSim::make_unique` with `std::make_unique` and remove wrapper function now that C++14 is used in OpenSim (#3979). 
-- Add utility method `createVectorLinspaceInterval` for the `std::vector` type and add unit tests. Utilize the new utility method to fix a bug (#3976) in creating the uniformly sampled time interval from the experimental data sampling frequency in `APDMDataReader` and `XsensDataReader` (#3977).
+- Add utility method `createVectorLinspaceInterval` for the `std::vector` type and add unit tests. Utilize the new utility method to fix a bug (#3976) 
+  in creating the uniformly sampled time interval from the experimental data sampling frequency in `APDMDataReader` and `XsensDataReader` (#3977).
 - Fix Point Kinematics Reporter variable and initialization error and add unit tests (#3966)
+- `OpenSim::ContactHalfSpace`, `OpenSim::ContactMesh`, and `OpenSim::ContactSphere` now check their associated `Appearance`'s `is_visible` flag when deciding whether to emit their associated decorations (#3993).
+- The message associated with `OpenSim::PropertyException` now includes the full absolute path to the component that threw the exception (#3987).
+- Add an improved uniform sampling check for `std::vector` containers to `CommonUtilities` and use the implemented method in the `TableUtilities::filterLowpass` method (#3968, #3978).
+- Several bugs in `OpenSim::ExpressionBasedBushingForce::generateDecorations` were fixed:
+  - It will now check for `0.0` values for `visual_aspect_ratio`, `moment_visual_scale`,
+    and `force_visual_scale` when emitting decorations, skipping emission where `0.0` is
+    found (previously: it would emit objects scaled by 0.0, causing downstream issues).
+  - It will only emit decorations when called with `fixed` set to `false` (previously, frame
+    decorations were emitted for both `true` and `false`, resulting in double-emission).
+  - It will now check for NaNed vectors coming from the underlying expression, skipping emission
+    if one is detected (previously: it would emit decorations with `NaN`ed transforms).
+- `PolynomialPathFitter` now allows fitting paths that depend on more than 6 coordinates, matching recent changes to `MultivariatePolynomialFunction` (#4001).
+- If an `Object` cannot be found when loading a list property from XML, a warning will now be emitted to the log (previously: it was emitted to `std::cerr`, #4009).
+- Added the property `activation_dynamics_smoothing` to `DeGrooteFregly2016Muscle`. This property uses the model's original value of 0.1 as a 
+  default, but users may consider increasing this value (e.g., 10.0) so that the activation and deactivation speeds of the model better match the 
+  activation and deactivation time constants.
+- Remove unused, legacy `<defaults>` blocks in `.osim` and `.xml` files (#3986).
+- Added `example3DWalking`, which demonstrates how to create a tracking simulation with foot-ground contact in Moco. (#4008)
+- Added `ModelFactory::createResidualActuators` and `ModOpAddResiduals` to make it easy to add a set of residual actuators to a model. 
+  The default behavior of `ModOpAddReserves` remains the same, but a new constructor has been added to enable skipping coordinates associated 
+  with residual forces so that they can be set separately with `ModOpAddResiduals`. (#4008)
+- Added convenience methods to `MocoTrack` to allow setting marker weights from a `Set<MarkerWeight>` or `IKTaskSet`. (#4008)
+- Remove the `tropter` libraries, the Tropter solver in Moco, and all references to it from build system. As a result, the following 
+  Tropter-related dependencies have been removed: `adolc`, `colpack`, and `eigen`. (#3988)
+- `OpenSim::Mesh` now retains a reference-counted copy of the mesh data when it's copied, which should make
+  copying + re-finalizing `OpenSim::Model`s faster (#4010).
+- Updated `TableUtilities::filterLowpass` to apply padding after resampling, so that the 
+  initial time point of an input table is preserved. (#4020)
+- Support using swig version 4.2 to generate Java & Python bindings. (#4028)
+- Added `ExpressionBasedPathForce`, which can be used to create non-linear path springs or 
+  other path-based force elements dependent on a user-provided expression. (#4035)
+- Fixed a bug where `DeGrooteFregly2016Muscle::getBoundsNormalizedFiberLength()` was returning
+  tendon force bounds rather than fiber length bounds. (#4040)
+- Fixed bugs in `PolynomialPathFitter` when too few coordinate samples were provided. (#4039)
+- In `StaticOptimization`, state derivatives are now pre-calculated at the time points of the original data, rather than calculated during optimization from splines. This change reduces computational time by as much as 25%. (#4037)
+- Exposed the "dissipated energy" state variable allocated by the `SimTK::Force::LinearBushing` that is internal to `BushingForce`. 
+  This change fixed a bug in Moco where adding a `BushingForce` led to a segfault due to a mismatch between the size of the 
+  auxiliary state vector reserved by Moco and `SimTK::State::getZ()`. (#4054)
 
 
 v4.5.1

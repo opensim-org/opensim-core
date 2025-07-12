@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "parse_arguments.h"
-#include <docopt.h>
+#include <Vendors/docopt/docopt.h>
 #include <iostream>
 
 #include <OpenSim/OpenSim.h>

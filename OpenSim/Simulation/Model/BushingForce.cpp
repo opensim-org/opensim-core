@@ -25,12 +25,10 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
-#include "simbody/internal/Force_LinearBushing.h"
 
 #include "BushingForce.h"
 
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 //=============================================================================
@@ -163,10 +161,10 @@ void BushingForce::setNull()
 void BushingForce::constructProperties()
 {
     // default bushing material properties
-    constructProperty_rotational_stiffness(Vec3(0));
-    constructProperty_translational_stiffness(Vec3(0));
-    constructProperty_rotational_damping(Vec3(0));
-    constructProperty_translational_damping(Vec3(0));
+    constructProperty_rotational_stiffness(SimTK::Vec3(0));
+    constructProperty_translational_stiffness(SimTK::Vec3(0));
+    constructProperty_rotational_damping(SimTK::Vec3(0));
+    constructProperty_translational_damping(SimTK::Vec3(0));
 }
 
 // Add underly Simbody elements to the System after subcomponents
@@ -188,10 +186,10 @@ void BushingForce::
     const SimTK::MobilizedBody& b1 = frame1.getMobilizedBody();
     const SimTK::MobilizedBody& b2 = frame2.getMobilizedBody();
 
-    Vec6 stiffness(rotStiffness[0], rotStiffness[1], rotStiffness[2], 
-                   transStiffness[0], transStiffness[1], transStiffness[2]);
-    Vec6 damping(rotDamping[0], rotDamping[1], rotDamping[2], 
-                 transDamping[0], transDamping[1], transDamping[2]);
+    SimTK::Vec6 stiffness(rotStiffness[0], rotStiffness[1], rotStiffness[2],
+            transStiffness[0], transStiffness[1], transStiffness[2]);
+    SimTK::Vec6 damping(rotDamping[0], rotDamping[1], rotDamping[2],
+            transDamping[0], transDamping[1], transDamping[2]);
 
     // Now create a Simbody Force::LinearBushing
     SimTK::Force::LinearBushing simtkForce
@@ -203,20 +201,41 @@ void BushingForce::
     // SimTK::Force later.
     BushingForce* mutableThis = const_cast<BushingForce *>(this);
     mutableThis->_index = simtkForce.getForceIndex();
+
+    // Add a StateVariable to the system to expose the energy dissipation state
+    // variable allocated internally by Simbody.
+    StateVariable* sv = new DissipatedEnergyStateVariable("dissipated_energy", 
+        *this, _model->getForceSubsystem().getMySubsystemIndex(),
+        mutableThis->_index);
+    addStateVariable(sv);
 }
 
 //=============================================================================
-// SET
+// GET AND SET
 //=============================================================================
-//_____________________________________________________________________________
-// The following methods set properties of the bushing Force.
-
 
 /* Potential energy is computed by underlying SimTK::Force. */
 double BushingForce::computePotentialEnergy(const SimTK::State& s) const
 {
     return _model->getForceSubsystem().getForce(_index)
                                       .calcPotentialEnergyContribution(s);
+}
+
+const SimTK::Force::LinearBushing& BushingForce::getSimTKLinearBushing() const {
+    return static_cast<const SimTK::Force::LinearBushing&>
+            (_model->getForceSubsystem().getForce(_index));
+}
+
+double BushingForce::getDissipatedEnergy(const SimTK::State& state) const {
+    return getSimTKLinearBushing().getDissipatedEnergy(state);
+}
+
+void BushingForce::setDissipatedEnergy(SimTK::State& state, double value) const {
+    getSimTKLinearBushing().setDissipatedEnergy(state, value);
+}
+
+double BushingForce::getPowerDissipation(const SimTK::State& state) const {
+    return getSimTKLinearBushing().getPowerDissipation(state);
 }
 
 //=============================================================================
@@ -261,8 +280,7 @@ getRecordValues(const SimTK::State& state) const
     
     OpenSim::Array<double> values(1);
 
-    const SimTK::Force::LinearBushing &simtkSpring = 
-        (SimTK::Force::LinearBushing &)(_model->getForceSubsystem().getForce(_index));
+    const SimTK::Force::LinearBushing& simtkSpring = getSimTKLinearBushing();
 
     SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
     SimTK::Vector_<SimTK::Vec3> particleForces(0);
@@ -282,4 +300,35 @@ getRecordValues(const SimTK::State& state) const
     values.append(3, &torques[0]);
 
     return values;
+}
+
+//-----------------------------------------------------------------------------
+// BushingForce::DissipatedEnergyStateVariable
+//-----------------------------------------------------------------------------
+const BushingForce& 
+BushingForce::DissipatedEnergyStateVariable::getBushingForce() const {
+    return static_cast<const BushingForce&>(getOwner());
+}
+
+double BushingForce::DissipatedEnergyStateVariable::getValue(
+        const SimTK::State& state) const {
+    return getBushingForce().getDissipatedEnergy(state);
+}
+
+void BushingForce::DissipatedEnergyStateVariable::setValue(
+        SimTK::State& state, double value) const {
+    getBushingForce().setDissipatedEnergy(state, value);
+}
+
+double BushingForce::DissipatedEnergyStateVariable::getDerivative(
+        const SimTK::State& state) const {
+    return getBushingForce().getPowerDissipation(state);
+}
+
+void BushingForce::DissipatedEnergyStateVariable::setDerivative(
+        const SimTK::State& state, double deriv) const {
+    OPENSIM_THROW(Exception,
+        "BushingForce::DissipatedEnergyStateVariable::setDerivative(): "
+        "The derivative of dissipated energy (power dissipation) can only be "
+        "computed by the ForceSubsystem.");
 }
