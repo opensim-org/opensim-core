@@ -29,6 +29,9 @@
 #include "PiecewiseLinearFunction.h"
 #include "Signal.h"
 #include "Storage.h"
+#include <algorithm>
+#include <numeric>
+#include <vector>
 
 using namespace OpenSim;
 
@@ -124,28 +127,29 @@ void TableUtilities::filterLowpass(
     OPENSIM_THROW_IF(cutoffFreq < 0, Exception,
             "Cutoff frequency must be non-negative; got {}.", cutoffFreq);
 
+    const auto& time = table.getIndependentColumn();
+    const auto uniform = isUniform(time);
+    const auto& uniformlySampled = uniform.first;
+    const auto& dtMin = uniform.second;
+
+    OPENSIM_THROW_IF(
+            dtMin < SimTK::Eps, Exception, "Storage cannot be resampled.");
+
+    // Resample if the sampling interval is not uniform.
+    if (!uniformlySampled) {
+        log_warn("Table not uniformly sampled! Resampling with interval: {}", dtMin);
+        table = resampleWithInterval(table, dtMin);
+    }
+
+    // Apply padding after resampling, so we preserve the original initial time.
     if (padData) { pad(table, (int)table.getNumRows() / 2); }
+    // Uniform sampling should be preserved after padding.
+    OPENSIM_THROW_IF(!isUniform(table.getIndependentColumn()).first, Exception,
+            "Internal error: non-uniform sampling after padding.");
 
     const int numRows = (int)table.getNumRows();
     OPENSIM_THROW_IF(numRows < 4, Exception,
             "Expected at least 4 rows to filter, but got {} rows.", numRows);
-
-    const auto& time = table.getIndependentColumn();
-
-    double dtMin = SimTK::Infinity;
-    for (int irow = 1; irow < numRows; ++irow) {
-        double dt = time[irow] - time[irow - 1];
-        if (dt < dtMin) dtMin = dt;
-    }
-    OPENSIM_THROW_IF(
-            dtMin < SimTK::Eps, Exception, "Storage cannot be resampled.");
-
-    double dtAvg = (time.back() - time.front()) / (numRows - 1);
-
-    // Resample if the sampling interval is not uniform.
-    if (dtAvg - dtMin > SimTK::Eps) {
-        table = resampleWithInterval(table, dtMin);
-    }
 
     SimTK::Vector filtered(numRows);
     for (int icol = 0; icol < (int)table.getNumColumns(); ++icol) {

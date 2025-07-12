@@ -33,7 +33,6 @@
 // STATICS
 //=============================================================================
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 //=============================================================================
@@ -146,14 +145,12 @@ void ConstantDistanceConstraint::setBody2ByName(const std::string& aBodyName)
 }
 
 /** Set the location for point on body 1*/
-void ConstantDistanceConstraint::setBody1PointLocation(Vec3 location)
-{
+void ConstantDistanceConstraint::setBody1PointLocation(SimTK::Vec3 location) {
     set_location_body_1(location);
 }
 
 /** Set the location for point on body 2*/
-void ConstantDistanceConstraint::setBody2PointLocation(Vec3 location)
-{
+void ConstantDistanceConstraint::setBody2PointLocation(SimTK::Vec3 location) {
     set_location_body_2(location);
 }
 
@@ -206,11 +203,13 @@ void ConstantDistanceConstraint::generateDecorations(
 {
     Super::generateDecorations(fixed, hints, state, appendToThis);
     if (fixed) return;
-    const Vec3 pink(1, .6, .8);
+    const SimTK::Vec3 pink(1, .6, .8);
     const OpenSim::PhysicalFrame& frame1 = getBody1();
-    const Vec3& p_B1 = frame1.getTransformInGround(state)*get_location_body_1();
+    const SimTK::Vec3& p_B1 =
+            frame1.getTransformInGround(state) * get_location_body_1();
     const OpenSim::PhysicalFrame& frame2 = getBody2();
-    const Vec3& p_B2 = frame2.getTransformInGround(state)*get_location_body_2();
+    const SimTK::Vec3& p_B2 =
+            frame2.getTransformInGround(state) * get_location_body_2();
     appendToThis.push_back(
         SimTK::DecorativeLine(p_B1, p_B2).setBodyId(0)
         .setColor(pink).setOpacity(1.0).setLineThickness(.05));

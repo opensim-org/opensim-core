@@ -953,7 +953,7 @@ try {
 
         // NOT RECOGNIZED
         default :
-            cout<<"Object.UpdateObject: WARN- unrecognized property type."<<endl;
+            log_warn("Object.UpdateObject: WARN- unrecognized property type.");
             break;
         }
     }
@@ -1033,7 +1033,7 @@ void Object::updateXMLNode(SimTK::Xml::Element& aParent,
         // If object is not inlined we don't want to generate node in original document
         // Handle not-inlined objects first.
         if (!aParent.isValid()) {
-            cout<<"Root node must be inlined"<<*this<<endl;
+            log_warn("Root node of an OpenSim::Object must be inlined, skipping XML reading.");
         }
         else {
         // Can we make this more efficient than recreating the node again?
@@ -1211,8 +1211,8 @@ void Object::updateXMLNode(SimTK::Xml::Element& aParent,
             break; 
 
         // NOT RECOGNIZED
-        default :
-            cout<<"Object.UpdateObject: WARN- unrecognized property type."<<endl;
+        default:
+            log_warn("Object.UpdateObject: WARN- unrecognized property type.");
             break;
         }
     }
@@ -1747,7 +1747,8 @@ extern "C" OSIMCOMMON_API void RegisterTypes_osimCommon();
 void osimCommonInstantiator::registerDllClasses() 
 { 
         RegisterTypes_osimCommon(); 
-} 
-    
-static osimCommonInstantiator instantiator; 
+}
+#ifndef OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION
+    static osimCommonInstantiator instantiator;
+#endif
 /// @endcond

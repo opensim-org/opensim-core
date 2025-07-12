@@ -25,14 +25,15 @@
  * Author: Frank C. Anderson 
  */
 
-
-// INCLUDES
-#include <iostream>
-#include <string>
-#include "osimCommonDLL.h"
 #include "Exception.h"
+
+#include "Component.h"
 #include "IO.h"
 #include "Object.h"
+#include "osimCommonDLL.h"
+
+#include <iostream>
+#include <string>
 
 
 using namespace OpenSim;
@@ -101,6 +102,29 @@ Exception::Exception(const std::string& file,
                      const Object& obj,
                      const std::string& msg) 
     : Exception{file, line, func, obj} {
+    addMessage(msg);
+}
+
+Exception::Exception(
+    const std::string& file,
+    size_t line,
+    const std::string& func,
+    const Component& component)
+    : Exception{file, line, func} {
+
+    const std::string className = component.getConcreteClassName();
+    const std::string absolutePath = component.getAbsolutePathString();
+    addMessage("\tIn Component '" + absolutePath +  "' of type " + className + ".");
+}
+
+Exception::Exception(
+    const std::string& file,
+    size_t line,
+    const std::string& func,
+    const Component& component,
+    const std::string& msg)
+    : Exception{file, line, func, component} {
+
     addMessage(msg);
 }
 

@@ -29,19 +29,34 @@
 
 #include "Assertion.h"
 #include "Exception.h"
-#include "osimCommonDLL.h"
 #include "Logger.h"
-
+#include "osimCommonDLL.h"
 #include <algorithm>
-#include <cstddef>
+#include <initializer_list>
 #include <iostream>
 #include <iterator>
-#include <sstream>
+#include <spdlog/fmt/bundled/ostream.h>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 namespace OpenSim {
+
+// Not intended for end users => private
+namespace detail {
+// backwards-compat hack: the original implementation allows for references
+// to booleans, which won't work if using std::vector<bool> specialization
+// Moved outside the template class to ensure linking works properly in VS 17.14
+// See issue (#4081) for details.
+class BoolLike final {
+public:
+    BoolLike(bool value_) : value{value_} {}
+    operator bool& () { return value; }
+    operator const bool& () const { return value; }
+private:
+    bool value;
+};
+}
 
 /**
  * A class for storing an array of values of type T.  The capacity of the class
@@ -59,6 +74,10 @@ public:
     Array& operator=(Array const&) = default;
     Array& operator=(Array&&) noexcept = default;
     ~Array() noexcept = default;
+
+    Array(std::initializer_list<T> initList) :
+    _defaultValue{}, _storage(initList.begin(), initList.end())
+    {}
 
     explicit Array(T aDefaultValue = T(), int aSize = 0, int aCapacity = 1) :
         _defaultValue{std::move(aDefaultValue)}
@@ -570,19 +589,9 @@ public:
 private:
     T _defaultValue;
 
-    // backwards-compat hack: the original implementation allows for references
-    // to booleans, which won't work if using std::vector<bool> specialization
-    class BoolLike final {
-    public:
-        BoolLike(bool value_) : value{value_} {}
-        operator bool& () { return value; }
-        operator const bool& () const { return value; }
-    private:
-        bool value;
-    };
     using storage = std::conditional_t<
         std::is_same<T, bool>::value,
-        std::vector<BoolLike>,
+        std::vector<detail::BoolLike>,
         std::vector<T>
     >;
 
@@ -590,5 +599,11 @@ private:
 };
 
 }; //namespace
+
+#ifndef SWIG
+// fmt library serializers for OpenSim Array objects
+template <>
+struct fmt::formatter<OpenSim::Array<double>> : ostream_formatter {};
+#endif
 
 #endif // OPENSIM_ARRAY_H_

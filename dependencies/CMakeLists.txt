@@ -3,7 +3,7 @@
 # OpenSim does not use this file directly.
 
 # We require a version of CMake that supports Visual Studio 2015.
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15)
 
 project(OpenSimDependencies)
 
@@ -185,26 +185,17 @@ AddDependency(NAME       ezc3d
 AddDependency(NAME       simbody
               DEFAULT    ON
               GIT_URL    https://github.com/simbody/simbody.git
-              GIT_TAG    f16651cbf52695442159202099971b4fc4f5d3bd
+              GIT_TAG    f260ff30381826728da721226151e733715d0df9
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
                          ${SIMBODY_EXTRA_CMAKE_ARGS})
 
-AddDependency(NAME       docopt
-              DEFAULT    ON
-              GIT_URL    https://github.com/docopt/docopt.cpp.git
-              GIT_TAG    3dd23e3280f213bacefdf5fcb04857bf52e90917)
-
 set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-if(MSVC)
-    # `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
-    set(SPDLOG_CXX_FLAGS "${SPDLOG_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
-endif()
 
 AddDependency(NAME       spdlog
               DEFAULT    ON
               GIT_URL    https://github.com/gabime/spdlog.git
-              GIT_TAG    v1.4.1
+              GIT_TAG    v1.15.3
               CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
@@ -230,63 +221,17 @@ AddDependency(NAME       catch2
 # --------------
 option(OPENSIM_WITH_CASADI
         "Build CasADi support for Moco (MocoCasADiSolver)." OFF)
-option(OPENSIM_WITH_TROPTER
-        "Build the tropter optimal control library, for use in MocoTropterSolver." OFF)
 
+if(OPENSIM_WITH_CASADI)
+    CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
+                        "OPENSIM_WITH_CASADI" OFF)
 
-if(OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI)
-AddDependency(NAME    eigen
-              DEFAULT ON
-              URL     https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.zip)
-
-mark_as_advanced(SUPERBUILD_eigen)
-
-AddDependency(NAME colpack
-              DEFAULT ON
-              GIT_URL https://github.com/opensim-org/colpack.git
-              GIT_TAG 72f691e91d59e8eb2123f258e67a4ddc72d105ee
-              CMAKE_ARGS -DCMAKE_DEBUG_POSTFIX:STRING=_d
-                         -DENABLE_EXAMPLES:BOOL=OFF
-                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
-
-
-mark_as_advanced(SUPERBUILD_colpack)
-
-set(SUPERBUILD_adolc ON CACHE BOOL 
-    "Automatically download, configure, build and install adolc")
-set(SUPERBUILD_ipopt ON CACHE BOOL 
-    "Automatically download, configure, build and install ipopt")
-
-CMAKE_DEPENDENT_OPTION(SUPERBUILD_adolc "Automatically download, configure, build and install adolc" ON
-                       "OPENSIM_WITH_TROPTER" OFF)
-CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
-                       "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
-endif()
-
-if (OPENSIM_WITH_CASADI)
     CMAKE_DEPENDENT_OPTION(SUPERBUILD_casadi "Automatically download, configure, build and install casadi" ON
                            "OPENSIM_WITH_CASADI" OFF)
     mark_as_advanced(SUPERBUILD_casadi)
 endif()
 
 if (WIN32)
-
-    if(SUPERBUILD_adolc)
-        # ADOL-C: Download pre-built binaries.
-        # TODO allow building from source, so we can use a Debug version of
-        # ADOL-C.
-        set(ADOLC_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
-            "${CMAKE_BINARY_DIR}/ADOLC-prefix/src/ADOLC"
-            "${CMAKE_INSTALL_PREFIX}/adol-c")
-        ExternalProject_Add(adolc
-            URL https://sourceforge.net/projects/myosin/files/adolc/adolc_sparse_x64.zip
-            CONFIGURE_COMMAND ""
-            BUILD_COMMAND ""
-            INSTALL_COMMAND ${ADOLC_INSTALL_CMD})
-
-        mark_as_advanced(SUPERBUILD_adolc)
-    endif()
-
 
     if(SUPERBUILD_ipopt)
         # Ipopt: Download pre-built binaries built by coin-or
@@ -308,32 +253,6 @@ else()
 
     if(NOT XCODE)
         set(BUILD_FLAGS "-j4")
-    endif()
-
-    if(SUPERBUILD_adolc)
-        # TODO copy source code into dependencies dir. OR make clean.
-        # TODO rename to adol-c
-        # TODO add debug symbols if building in Debug (but ADOL-C doesn't
-        # compile with debug symbols right now).
-        # TODO for macOS, will need to make ADOL-C change where it expects to
-        # find ColPack's libraries (lib, not lib64).
-        # https://github.com/Homebrew/homebrew-science/blob/master/adol-c.rb
-        # TODO must have autoreconf, glibtoolize (brew install autoconf,
-        # automake, libtool?)
-        ExternalProject_Add(adolc
-            DEPENDS           colpack
-            GIT_REPOSITORY    https://github.com/coin-or/ADOL-C.git
-            GIT_TAG           releases/2.6.3
-            #SOURCE_DIR        "${CMAKE_SOURCE_DIR}/adol-c"
-            #BINARY_DIR        "${CMAKE_SOURCE_DIR}/adol-c"
-            INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/adol-c"
-            CONFIGURE_COMMAND autoreconf -fi <SOURCE_DIR>
-                COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
-                                               --enable-sparse
-                                               --with-colpack=${CMAKE_INSTALL_PREFIX}/colpack
-                                               --with-boost=no
-            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
-            INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()
 
     if(SUPERBUILD_ipopt)
@@ -380,20 +299,20 @@ endif()
 if(SUPERBUILD_casadi)
   if (WIN32)
       AddDependency(NAME       casadi
-                  DEFAULT    ON
-                  DEPENDS    ipopt
-                  GIT_URL    https://github.com/casadi/casadi.git
-                  GIT_TAG    3.6.5
-                  CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
-                             -DIPOPT_LIBRARIES:FILEPATH=ipopt.dll.lib
-                             -DIPOPT_INCLUDE_DIRS:PATH=${CMAKE_INSTALL_PREFIX}/ipopt/include/coin-or
-                             -DLIB_FULL_ipopt.dll.lib:FILEPATH=${CMAKE_INSTALL_PREFIX}/ipopt/lib/ipopt.dll.lib
-                             -DWITH_MUMPS:BOOL=OFF
-                             -DWITH_THREAD:BOOL=ON
-                             -DWITH_BUILD_MUMPS:BOOL=OFF
-                             -DWITH_EXAMPLES:BOOL=OFF
-                             -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
-                             -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt
+                    DEFAULT    ON
+                    DEPENDS    ipopt
+                    GIT_URL    https://github.com/casadi/casadi.git
+                    GIT_TAG    3.6.5
+                    CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
+                               -DIPOPT_LIBRARIES:FILEPATH=ipopt.dll.lib
+                               -DIPOPT_INCLUDE_DIRS:PATH=${CMAKE_INSTALL_PREFIX}/ipopt/include/coin-or
+                               -DLIB_FULL_ipopt.dll.lib:FILEPATH=${CMAKE_INSTALL_PREFIX}/ipopt/lib/ipopt.dll.lib
+                               -DWITH_MUMPS:BOOL=OFF
+                               -DWITH_THREAD:BOOL=ON
+                               -DWITH_BUILD_MUMPS:BOOL=OFF
+                               -DWITH_EXAMPLES:BOOL=OFF
+                               -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON
+                               -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/ipopt
                   )
   else()
     AddDependency(NAME       casadi

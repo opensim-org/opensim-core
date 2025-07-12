@@ -1,0 +1,18 @@
+// General information: 
+//  MT Manager version: 2022.2.0 
+//  XDA version: 2022.2.0 build 7381 rev 124627 built on 2023-07-19
+// Device information: 
+//  DeviceId: 00B42D4B
+//  ProductCode: MTW2-3A7G6
+//  Firmware Version: 4.4.0
+//  Hardware Version: 1.1.0
+// Device settings: 
+//  Filter Profile: human(46.1)
+//  Option Flags: Orientation Smoother Disabled, Position/Velocity Smoother Disabled, Continuous Zero Rotation Update Disabled, AHS Disabled, ICC Disabled
+// Coordinate system: ENU
+PacketCounter	SampleTimeFine	Year	Month	Day	Second	Acc_X	Acc_Y	Acc_Z
+51400	NaN	NaN	NaN	NaN	NaN	0.074225	-0.040975	9.922524
+51401	NaN	NaN	NaN	NaN	NaN	0.057993	0.007234	9.938693
+51402	NaN	NaN	NaN	NaN	NaN	0.040451	0.014429	9.928879
+51403	NaN	NaN	NaN	NaN	NaN	0.045482	-0.009840	9.967645
+51404	NaN	NaN	NaN	NaN	NaN	0.061840	-0.013683	9.956912

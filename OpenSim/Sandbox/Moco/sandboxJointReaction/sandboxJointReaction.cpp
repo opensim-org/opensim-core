@@ -94,7 +94,7 @@ void minimizePendulumReactionLoads() {
     reactionNormCost.setJointPath("j0");
     mp.addGoal(reactionNormCost);
 
-    MocoTropterSolver& ms = moco.initSolver();
+    MocoCasADiSolver& ms = moco.initSolver();
     ms.set_num_mesh_intervals(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
@@ -121,7 +121,7 @@ void minimizeControlEffort() {
     MocoControlGoal effort;
     mp.addGoal(effort);
 
-    MocoTropterSolver& ms = study.initSolver();
+    MocoCasADiSolver& ms = study.initSolver();
     ms.set_num_mesh_intervals(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");

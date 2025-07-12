@@ -20,15 +20,15 @@
 
 #include "MocoStudy.h"
 #include "MocoTool.h"
-#include "ModelOperatorsDGF.h"
-#include "OpenSim/Simulation/TableProcessor.h"
+#include "MocoWeightSet.h"
 #include "osimMocoDLL.h"
 
+#include <OpenSim/Simulation/TableProcessor.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Tools/IKTaskSet.h>
 
 namespace OpenSim {
 
-class MocoWeightSet;
 class MocoProblem;
 class MocoTrajectory;
 
@@ -260,6 +260,25 @@ public:
         TimeSeriesTable markersFlat = markers.flatten();
         set_markers_reference(TableProcessor(markersFlat) |
                               TabOpLowPassFilter(lowpassFilterFreq));
+    }
+
+    /// Set the marker weights based on a Set of MarkerWeight objects.
+    void setMarkerWeightsFromMarkerWeightSet(
+            const Set<MarkerWeight>& markerWeightSet) {
+        MocoWeightSet mocoMarkerWeightSet;
+        for (int i = 0; i < markerWeightSet.getSize(); ++i) {
+            const auto& markerWeight = markerWeightSet.get(i);
+            mocoMarkerWeightSet.cloneAndAppend(
+                    {markerWeight.getName(), markerWeight.getWeight()});
+        }
+        set_markers_weight_set(mocoMarkerWeightSet);
+    }
+
+    /// Set the marker weights based on the IKMarkerTask objects of an IKTaskSet. 
+    void setMarkerWeightsFromIKTaskSet(const IKTaskSet& ikTaskSet) {
+        Set<MarkerWeight> markerWeightSet;
+        ikTaskSet.createMarkerWeightSet(markerWeightSet);
+        setMarkerWeightsFromMarkerWeightSet(markerWeightSet);
     }
 
     MocoStudy initialize();

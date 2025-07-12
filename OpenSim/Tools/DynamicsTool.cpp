@@ -31,8 +31,6 @@
 
 using namespace OpenSim;
 using namespace std;
-using namespace SimTK;
-
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR

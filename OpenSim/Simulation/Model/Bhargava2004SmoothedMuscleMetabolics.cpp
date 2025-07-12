@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: Bhargava2004Metabolics.cpp                                   *
+ *               Bhargava2004SmoothedMuscleMetabolics.cpp                     *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2020 Stanford University and the Authors                     *
  *                                                                            *

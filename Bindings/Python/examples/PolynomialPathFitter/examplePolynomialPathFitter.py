@@ -50,15 +50,33 @@ fitter.setModel(osim.ModelProcessor(model))
 #
 # The fitter will randomly sample around the coordinate values provided in the
 # table to generate model configurations for which to compute path lengths and
-# moment arms. This table has many more rows than are needed for the fitter to
-# generate a good fit, so we will remove some of the rows to speed up the
-# fitting process.
+# moment arms. In general, it is up to the user to decide how many sample points
+# are needed to adequately cover the range of motion of the model's coordinates.
+# In this case, the table has many more rows than are needed for the fitter to
+# generate a good fit, so we will remove some of the rows to speed up the fitting
+# process.
 values = osim.TimeSeriesTable('coordinates.sto')
 times = values.getIndependentColumn()
 for i in range(len(times)):
     if i % 10 != 0:
         values.removeRow(times[i])
 
+# Add columns for the toe joints. Use a sine function to generate the
+# coordinate values. An amplitude of 0.5 keeps the values within the coordinate
+# range of the MTP joints in the model.
+amplitude = 0.5
+angular_frequency = 10.0 # rad/s
+phase = 0.0
+sine = osim.Sine(amplitude, angular_frequency, phase)
+mtp_values = osim.Vector(values.getNumRows(), 0.0)
+times = values.getIndependentColumn()
+time = osim.Vector(1, 0.0)
+for i in range(values.getNumRows()):
+    time.set(0, times[i])
+    mtp_values.set(i, sine.calcValue(time))
+
+values.appendColumn('/jointset/mtp_r/mtp_angle_r/value', mtp_values)
+values.appendColumn('/jointset/mtp_l/mtp_angle_l/value', mtp_values)
 fitter.setCoordinateValues(osim.TableProcessor(values))
 
 # Configure optional settings

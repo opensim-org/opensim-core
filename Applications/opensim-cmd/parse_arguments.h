@@ -23,8 +23,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <docopt.h>
-
+#include <Vendors/docopt/docopt.h>
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/JAM/osimJAM.h>

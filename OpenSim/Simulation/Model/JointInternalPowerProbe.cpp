@@ -29,7 +29,6 @@
 #include <OpenSim/Common/IO.h>
 
 using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
 
 
@@ -196,8 +195,8 @@ void JointInternalPowerProbe::extendConnectToModel(Model& aModel)
 /**
  * Compute the Joint power.
  */
-SimTK::Vector JointInternalPowerProbe::computeProbeInputs(const State& s) const
-{
+SimTK::Vector JointInternalPowerProbe::computeProbeInputs(
+        const SimTK::State& s) const {
     int nJ = getJointNames().size();
     SimTK::Vector TotalP(getNumProbeInputs());
     TotalP = 0;
@@ -217,7 +216,6 @@ SimTK::Vector JointInternalPowerProbe::computeProbeInputs(const State& s) const
 
     return TotalP;
 }
-
 
 //_____________________________________________________________________________
 /** 
