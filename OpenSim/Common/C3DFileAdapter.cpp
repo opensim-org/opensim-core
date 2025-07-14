@@ -136,6 +136,12 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
                 non_marker_points.push_back(label);
             }
         }
+        // SCALARS
+        if (c3d.parameters().group("POINT").isParameter("SCALARS")) {
+            for (const std::string& label : c3d.parameters().group("POINT").parameter("SCALARS").valuesAsString()) {
+                non_marker_points.push_back(label);
+            }
+        }
         // Store the indices and names of markers only
         std::vector<size_t> marker_indices;
         std::vector<std::string> marker_labels;
