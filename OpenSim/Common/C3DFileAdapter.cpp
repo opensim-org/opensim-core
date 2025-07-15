@@ -114,33 +114,28 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         std::vector<std::string> non_marker_points;
         // ANGLES
         if (c3d.parameters().group("POINT").isParameter("ANGLES")) {
-            for (const std::string& label : c3d.parameters().group("POINT").parameter("ANGLES").valuesAsString()) {
-                non_marker_points.push_back(label);
-            }
+            auto labels = c3d.parameters().group("POINT").parameter("ANGLES").valuesAsString();
+            non_marker_points.insert(non_marker_points.end(), labels.begin(), labels.end());
         }
         // FORCES
         if (c3d.parameters().group("POINT").isParameter("FORCES")) {
-            for (const std::string& label : c3d.parameters().group("POINT").parameter("FORCES").valuesAsString()) {
-                non_marker_points.push_back(label);
-            }
+            auto labels = c3d.parameters().group("POINT").parameter("FORCES").valuesAsString();
+            non_marker_points.insert(non_marker_points.end(), labels.begin(), labels.end());
         }
         // MOMENTS
         if (c3d.parameters().group("POINT").isParameter("MOMENTS")) {
-            for (const std::string& label : c3d.parameters().group("POINT").parameter("MOMENTS").valuesAsString()) {
-                non_marker_points.push_back(label);
-            }
+            auto labels = c3d.parameters().group("POINT").parameter("MOMENTS").valuesAsString();
+            non_marker_points.insert(non_marker_points.end(), labels.begin(), labels.end());
         }
         // POWERS
         if (c3d.parameters().group("POINT").isParameter("POWERS")) {
-            for (const std::string& label : c3d.parameters().group("POINT").parameter("POWERS").valuesAsString()) {
-                non_marker_points.push_back(label);
-            }
+            auto labels = c3d.parameters().group("POINT").parameter("POWERS").valuesAsString();
+            non_marker_points.insert(non_marker_points.end(), labels.begin(), labels.end());
         }
         // SCALARS
         if (c3d.parameters().group("POINT").isParameter("SCALARS")) {
-            for (const std::string& label : c3d.parameters().group("POINT").parameter("SCALARS").valuesAsString()) {
-                non_marker_points.push_back(label);
-            }
+            auto labels = c3d.parameters().group("POINT").parameter("SCALARS").valuesAsString();
+            non_marker_points.insert(non_marker_points.end(), labels.begin(), labels.end());
         }
         // Store the indices and names of markers only
         std::vector<size_t> marker_indices;
