@@ -10,8 +10,8 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2025 Stanford University and the Authors                *
- * Author(s): Andreas Scholz, Pepijn van den Bos                              *
- * Contributor(s): Nicholas Bianco                                            *
+ * Author(s): Nicholas Bianco                                                 *
+ * Contributor(s): Pepijn van den Bos, Andreas Scholz                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -27,77 +27,71 @@
 #include "OpenSim/Simulation/Model/AbstractGeometryPath.h"
 #include "OpenSim/Simulation/Model/Station.h"
 #include <simbody/internal/CableSpan.h>
-#include <OpenSim/Simulation/MomentArmSolver.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 
 namespace OpenSim {
 
-//=============================================================================
-//                    SCHOLZ 2015 GEOMETRY PATH SEGMENT
-//=============================================================================
-/**
- * TODO
- */
-class OSIMSIMULATION_API Scholz2015GeometryPathSegment : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT(Scholz2015GeometryPathSegment, ModelComponent);
+class OSIMSIMULATION_API Scholz2015GeometryPathObstacle : public Component {
+OpenSim_DECLARE_CONCRETE_OBJECT(Scholz2015GeometryPathObstacle, Component);
 public:
 //=============================================================================
 // SOCKETS
 //=============================================================================
-    OpenSim_DECLARE_SOCKET(origin, Station, 
-            "The origin station of the path segment.");
-    OpenSim_DECLARE_SOCKET(insertion, Station,
-            "The insertion station of the path segment.");
-    OpenSim_DECLARE_LIST_SOCKET(obstacles, ContactGeometry,
+    OpenSim_DECLARE_SOCKET(obstacle, ContactGeometry,
             "The list of obstacles that the path segment may intersect.");
 
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_LIST_PROPERTY(contact_hints, SimTK::Vec3,
-            "The list of contact hints for the path segment.");
+    OpenSim_DECLARE_PROPERTY(contact_hint, SimTK::Vec3,
+            "The contact hint for the obstacle.");
 
 //=============================================================================
 // METHODS
 //=============================================================================
-    
+
+    // CONSTRUCTION
+    Scholz2015GeometryPathObstacle();
+
+    // ACCESSORS
+    const ContactGeometry& getObstacle() const;
+
+private:
+    void constructProperties();
+};
+
+class OSIMSIMULATION_API Scholz2015GeometryPathSegment : public Component {
+OpenSim_DECLARE_CONCRETE_OBJECT(Scholz2015GeometryPathSegment, Component);
+public:
+//=============================================================================
+// SOCKETS
+//=============================================================================
+    OpenSim_DECLARE_SOCKET(origin, Station,
+            "The origin station of the path segment.");
+    OpenSim_DECLARE_SOCKET(insertion, Station,
+            "The insertion station of the path segment.");
+
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    OpenSim_DECLARE_LIST_PROPERTY(obstacles, Scholz2015GeometryPathObstacle,
+            "The list of obstacles that the path segment may intersect.");
+
+//=============================================================================
+// METHODS
+//=============================================================================
+
     // CONSTRUCTION
     Scholz2015GeometryPathSegment();
 
-    // GET AND SET
+    // ACCESSORS
+    int getNumObstacles() const;
     const Station& getOrigin() const;
     const Station& getInsertion() const;
 
-    int getNumObstacles() const;
-    const ContactGeometry& getObstacle(int index) const;
-
-    SimTK::Real getLength(const SimTK::State& s) const;
-    SimTK::Real getLengtheningSpeed(const SimTK::State& s) const;
-
-    void calcOriginUnitForce(const SimTK::State& state, 
-            SimTK::SpatialVec& unitForce_G) const;
-    void calcInsertionUnitForce(const SimTK::State& state, 
-            SimTK::SpatialVec& unitForce_G) const;
-    void calcCurveSegmentUnitForce(
-            const SimTK::State& state,
-            SimTK::CableSpanObstacleIndex ix,
-            SimTK::SpatialVec& unitForce_G) const;
-
-    bool isInContactWithObstacle(const SimTK::State& state,
-            SimTK::CableSpanObstacleIndex ix) const;
-
 private:
-    // MODEL COMPONENT INTERFACE
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
-            const SimTK::State& s,
-            SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override;
-
     // CONVENIENCE METHODS
     void constructProperties();
-    const SimTK::CableSpan& getCableSpan() const;
-    
-    mutable SimTK::ResetOnCopy<SimTK::CableSpanIndex> _index;
 };
 
 //=============================================================================
@@ -112,21 +106,44 @@ OpenSim_DECLARE_CONCRETE_OBJECT(Scholz2015GeometryPath, AbstractGeometryPath);
 
 public:
 //=============================================================================
+// SOCKETS
+//=============================================================================
+    OpenSim_DECLARE_SOCKET(origin, Station,
+        "The origin station of the path.");
+    OpenSim_DECLARE_SOCKET(insertion, Station,
+        "The insertion station of the path.");
+
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    OpenSim_DECLARE_LIST_PROPERTY(via_points, Station,
+        "The list of via points that the path may pass through.");
+    OpenSim_DECLARE_LIST_PROPERTY(segments, Scholz2015GeometryPathSegment,
+        "The list of segments that the path may pass through.");
+    OpenSim_DECLARE_PROPERTY(algorithm, SimTK::CableSpanAlgorithm,
+        "The algorithm used to compute the path.");
+
+//=============================================================================
 // METHODS
 //=============================================================================
 
     // CONSTRUCTION
     Scholz2015GeometryPath();
+    Scholz2015GeometryPath(const Station& origin, const Station& insertion);
 
     // GET AND SET
-    void createInitialPathSegment(const std::string& name,
-            const Station& origin, const Station& insertion);
-    void appendPathSegment(const std::string& name,
-            const Station& insertion);
+    void setOrigin(const Station& origin);
+    const Station& getOrigin() const;
 
-    void addObstacleToPathSegment(const std::string& segmentName,
-            const ContactGeometry& obstacle, 
-            const SimTK::Vec3& contactHint = SimTK::Vec3{SimTK::NaN});
+    void setInsertion(const Station& insertion);
+    const Station& getInsertion() const;
+
+    void addObstacle(const ContactGeometry& obstacle,
+            const SimTK::Vec3& contactHint);
+    void addViaPoint(const Station& viaPoint);
+
+    void setAlgorithm(SimTK::CableSpanAlgorithm algorithm);
+    SimTK::CableSpanAlgorithm getAlgorithm() const;
 
     // ABSTRACT PATH INTERFACE
     double getLength(const SimTK::State& s) const override;
@@ -141,31 +158,39 @@ public:
     bool isVisualPath() const override { return true; }
 
 private:
-    // PROPERTIES
-    OpenSim_DECLARE_LIST_PROPERTY(path_segments, Scholz2015GeometryPathSegment,
-            "The list of path segments.");
-
     // MODEL COMPONENT INTERFACE
-    void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+            const SimTK::State& s,
+            SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override;
 
     // CONVENIENCE METHODS
+    const SimTK::CableSpan& getCableSpan() const;
+    SimTK::CableSpan& updCableSpan();
     void constructProperties();
-    void computeLength(const SimTK::State& s) const;
-    void computeSpeed(const SimTK::State& s) const;
 
     // MEMBER VARIABLES
-    std::unordered_map<std::string, int> _segmentNameToIndexMap;
+    mutable SimTK::ResetOnCopy<SimTK::CableSpanIndex> _index;
+    mutable SimTK::ResetOnCopy<SimTK::Array_<SimTK::CableSpanObstacleIndex>>
+    _obstacleIndexes;
+    mutable SimTK::ResetOnCopy<SimTK::Array_<SimTK::CableSpanViaPointIndex>>
+    _viaPointIndexes;
 
-    // CACHE VARIABLES
-    mutable CacheVariable<double> _lengthCV;
-    mutable CacheVariable<double> _lengtheningSpeedCV;
+    class MomentArmSolver {
+    public:
+        MomentArmSolver(const Model& model);
+        double solve(const SimTK::State& state, const Coordinate& coordinate,
+            const Scholz2015GeometryPath& path) const;
 
-    // Solver used to compute moment-arms. The Scholz2015GeometryPath owns this 
-    // object, but we cannot simply use a unique_ptr because we want the pointer    
-    // to be cleared on copy.
+        const Model& getModel() const { return *_model; }
+
+    private:
+        SimTK::ReferencePtr<const Model> _model;
+        mutable SimTK::State _state;
+    };
     SimTK::ResetOnCopy<std::unique_ptr<MomentArmSolver>> _maSolver;
 };
+
 
 } // namespace OpenSim
 

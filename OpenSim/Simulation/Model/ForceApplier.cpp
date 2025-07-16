@@ -7,13 +7,14 @@
 
 void OpenSim::ForceApplier::implConsumeGeneralizedForce(
     const SimTK::State& state,
-    const Coordinate& coord,
+    SimTK::MobilizedBodyIndex mobodIndex,
+    SimTK::MobilizerUIndex uIndex,
     double force)
 {
     _matter->addInMobilityForce(
         state,
-        SimTK::MobilizedBodyIndex(coord.getBodyIndex()),
-        SimTK::MobilizerUIndex(coord.getMobilizerQIndex()),
+        mobodIndex,
+        uIndex,
         force,
         *_generalizedForces
     );
@@ -21,24 +22,24 @@ void OpenSim::ForceApplier::implConsumeGeneralizedForce(
 
 void OpenSim::ForceApplier::implConsumeBodySpatialVec(
     const SimTK::State& state,
-    const PhysicalFrame& body,
+    SimTK::MobilizedBodyIndex mobodIndex,
     const SimTK::SpatialVec& spatialVec)
 {
-    const auto mobilizedBodyIndex = body.getMobilizedBodyIndex();
-    OPENSIM_ASSERT_ALWAYS(0 <= mobilizedBodyIndex && mobilizedBodyIndex < _bodyForces->size() && "the provided mobilized body index is out-of-bounds");
-    (*_bodyForces)[mobilizedBodyIndex] += spatialVec;
+    OPENSIM_ASSERT_ALWAYS(0 <= mobodIndex && mobodIndex < _bodyForces->size() && "the provided mobilized body index is out-of-bounds");
+    (*_bodyForces)[mobodIndex] += spatialVec;
 }
 
 void OpenSim::ForceApplier::implConsumePointForce(
     const SimTK::State& state,
-    const PhysicalFrame& frame,
+    SimTK::MobilizedBodyIndex mobodIndex,
+    const SimTK::Transform& X_BF,
     const SimTK::Vec3& point,
     const SimTK::Vec3& force)
 {
     _matter->addInStationForce(
         state,
-        frame.getMobilizedBodyIndex(),
-        frame.findTransformInBaseFrame() * point,
+        mobodIndex,
+        X_BF * point,
         force,
         *_bodyForces
     );

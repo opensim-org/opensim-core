@@ -27,8 +27,6 @@
 
 namespace OpenSim {
 
-// TODO update doxygen comments to mention socket.
-
 /**
  * This class represents a polygonal mesh for use in contact modeling.
  *
@@ -95,9 +93,9 @@ public:
     void setFilename(const std::string& filename);
 
     // VISUALIZATION
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
+    // void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+    //     const SimTK::State& s,
+    //     SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 private:
     // INITIALIZATION
     void setNull();

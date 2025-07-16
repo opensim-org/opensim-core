@@ -23,69 +23,63 @@
 
 #include "ContactGeometry.h"
 
+#include <OpenSim/Common/ModelDisplayHints.h>
+
 using namespace OpenSim;
-using SimTK::Vec3;
-using SimTK::Rotation;
 
 //=============================================================================
-// CONSTRUCTOR
+// CONSTRUCTION
 //=============================================================================
-// Uses default (compiler-generated) destructor, copy constructor, copy 
-// assignment operator.
-
-//_____________________________________________________________________________
-// Default constructor.
-ContactGeometry::ContactGeometry() : ModelComponent()
-{
+ContactGeometry::ContactGeometry() : ModelComponent() {
     setNull();
     constructProperties();
 }
 
-//_____________________________________________________________________________
-// Convenience constructor.
-ContactGeometry::ContactGeometry(const PhysicalFrame& frame) :
-    ContactGeometry()
-{
+ContactGeometry::ContactGeometry(const PhysicalFrame& frame) : 
+    ContactGeometry() {
     setFrame(frame);
 }
 
-ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, 
-    const PhysicalFrame& frame) : ContactGeometry(frame)
-{
+ContactGeometry::ContactGeometry(const SimTK::Vec3& location, 
+    const SimTK::Vec3& orientation, 
+    const PhysicalFrame& frame) : ContactGeometry(frame) {
     set_location(location);
     set_orientation(orientation);
 }
 
-void ContactGeometry::setNull()
-{
+void ContactGeometry::setNull() {
     setAuthors("Peter Eastman");
 }
 
-void ContactGeometry::constructProperties()
-{
-    constructProperty_location(Vec3(0));
-    constructProperty_orientation(Vec3(0));
+void ContactGeometry::constructProperties() {
+    constructProperty_location(SimTK::Vec3(0));
+    constructProperty_orientation(SimTK::Vec3(0));
     Appearance defaultAppearance;
     defaultAppearance.set_color(SimTK::Cyan);
     defaultAppearance.set_representation(VisualRepresentation::DrawWireframe);
     constructProperty_Appearance(defaultAppearance);
-
 }
 
-const Vec3& ContactGeometry::getLocation() const
-{ return get_location(); }
+//=============================================================================
+// ACCESSORS
+//=============================================================================
+const SimTK::Vec3& ContactGeometry::getLocation() const { 
+    return get_location(); 
+}
 
-void ContactGeometry::setLocation(const Vec3& location)
-{ set_location(location); }
+void ContactGeometry::setLocation(const SimTK::Vec3& location) {
+    set_location(location); 
+}
 
-const Vec3& ContactGeometry::getOrientation() const
-{ return get_orientation(); }
+const SimTK::Vec3& ContactGeometry::getOrientation() const {
+    return get_orientation(); 
+}
 
-void ContactGeometry::setOrientation(const Vec3& orientation)
-{ set_orientation(orientation); }
+void ContactGeometry::setOrientation(const SimTK::Vec3& orientation) {
+    set_orientation(orientation); 
+}
 
-SimTK::Transform ContactGeometry::getTransform() const
-{
+SimTK::Transform ContactGeometry::getTransform() const {
     return SimTK::Transform(
             SimTK::Rotation(SimTK::BodyRotationSequence,
                 get_orientation()[0], SimTK::XAxis,
@@ -94,29 +88,73 @@ SimTK::Transform ContactGeometry::getTransform() const
             get_location());
 }
 
-const PhysicalFrame& ContactGeometry::getFrame() const
-{
+const PhysicalFrame& ContactGeometry::getFrame() const {
     return getSocket<PhysicalFrame>("frame").getConnectee();
 }
 
-void ContactGeometry::setFrame(const PhysicalFrame& frame)
-{
+void ContactGeometry::setFrame(const PhysicalFrame& frame) {
     connectSocket_frame(frame);
 }
 
-const PhysicalFrame& ContactGeometry::getBody() const
-{ return getFrame(); }
+const PhysicalFrame& ContactGeometry::getBody() const { 
+    return getFrame(); 
+}
 
-void ContactGeometry::setBody(const PhysicalFrame& frame)
-{ setFrame(frame); }
+void ContactGeometry::setBody(const PhysicalFrame& frame) {
+    setFrame(frame); 
+}
 
-void ContactGeometry::scale(const ScaleSet& aScaleSet)
-{
+//=============================================================================
+// SCALING INTERFACE
+//=============================================================================
+void ContactGeometry::scale(const ScaleSet& aScaleSet) {
     throw Exception("ContactGeometry::scale is not implemented");
 }
 
+//=============================================================================
+// COMPONENT INTERFACE
+//=============================================================================
+void ContactGeometry::generateDecorations(
+        bool fixed,
+        const ModelDisplayHints& hints, 
+        const SimTK::State& s, 
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {
+
+    Super::generateDecorations(fixed, hints, s, geometry); 
+
+    // There is no fixed geometry to generate here.
+    if (fixed) { return; }
+
+    // Model-wide hints indicate that contact geometry shouldn't be shown.
+    if (!hints.get_show_contact_geometry()) { return; }
+
+    // The decoration has been toggled off by its `Appearance` block.
+    if (!get_Appearance().get_visible())  { return; }
+
+    // Create a SimTK::DecorativeGeometry object for this ContactGeometry.
+    SimTK::DecorativeGeometry decoration = 
+        createSimTKContactGeometry().createDecorativeGeometry();
+
+    // B: base Frame (Body or Ground)
+    // F: PhysicalFrame that this ContactGeometry is connected to
+    // P: the frame defined (relative to F) by the location and orientation
+    //    properties defined in ContactGeometry.
+    // D: the frame defined (relative to P) by the decoration's location and
+    //    orientation properties defined by the SimTK::DecorativeGeometry object.
+    const auto& X_BF = getFrame().findTransformInBaseFrame();
+    const auto& X_FP = getTransform();
+    const auto& X_PD = decoration.getTransform();
+    const auto X_BD = X_BF.compose(X_FP).compose(X_PD);
+    geometry.push_back(decoration
+                           .setTransform(X_BD)
+                           .setRepresentation(get_Appearance().get_representation())
+                           .setBodyId(getFrame().getMobilizedBodyIndex())
+                           .setColor(get_Appearance().get_color())
+                           .setOpacity(get_Appearance().get_opacity()));
+}
+
 void ContactGeometry::updateFromXMLNode(SimTK::Xml::Element& node,
-                                        int versionNumber) {
+        int versionNumber) {
     if (versionNumber < XMLDocument::getLatestVersion()) {
         if (versionNumber < 30505) {
             SimTK::Xml::element_iterator bodyElement =
@@ -195,14 +233,3 @@ void ContactGeometry::updateFromXMLNode(SimTK::Xml::Element& node,
     }
     Super::updateFromXMLNode(node, versionNumber);
 }
-
-
-
-
-
-
-
-
-
-
-

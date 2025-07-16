@@ -80,9 +80,9 @@ public:
     SimTK::ContactGeometry createSimTKContactGeometry() const override;
 
     // VISUALIZATION
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
+    // void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+    //     const SimTK::State& s,
+    //     SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 private:
     // INITIALIZATION
     void setNull();

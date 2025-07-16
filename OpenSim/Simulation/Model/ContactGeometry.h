@@ -91,15 +91,11 @@ public:
                     const SimTK::Vec3& orientation,
                     const PhysicalFrame& frame);
 
-
     // ACCESSORS
     /** Get the PhysicalFrame this geometry is attached to. */
     const PhysicalFrame& getFrame() const;
     /** %Set the PhysicalFrame this geometry is attached to. */
     void setFrame(const PhysicalFrame& frame);
-
-    /** Create a new SimTK::ContactGeometry based on this object. */
-    virtual SimTK::ContactGeometry createSimTKContactGeometry() const = 0;
 
     /** Get a Transform representing the position and orientation of the
      * geometry relative to the PhysicalFrame `F` to which this geometry is
@@ -118,12 +114,22 @@ public:
      * this method essentially returned `X_BP`. */
     SimTK::Transform getTransform() const;
 
+    // CONTACT GEOMETRY INTERFACE
+    /** Create a new SimTK::ContactGeometry based on this object. */
+    virtual SimTK::ContactGeometry createSimTKContactGeometry() const = 0;
+
+    // SCALING INTERFACE
     /**
-    * Scale a ContactGeometry based on XYZ scale factors for the bodies.
-    * 
-    * @param aScaleSet Set of XYZ scale factors for the bodies.
-    */
+     * Scale a ContactGeometry based on XYZ scale factors for the bodies.
+     * 
+     * @param aScaleSet Set of XYZ scale factors for the bodies.
+     */
     virtual void scale(const ScaleSet& aScaleSet);
+
+    // COMPONENT INTERFACE
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 
     /** @name Deprecated */
     // @{

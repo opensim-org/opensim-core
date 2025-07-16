@@ -128,39 +128,39 @@ SimTK::ContactGeometry ContactMesh::createSimTKContactGeometry() const
 //=============================================================================
 // VISUALIZER GEOMETRY
 //=============================================================================
-void ContactMesh::generateDecorations(bool fixed, const ModelDisplayHints& hints,
-    const SimTK::State& s, SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
-{
-    Super::generateDecorations(fixed, hints, s, geometry);
+// void ContactMesh::generateDecorations(bool fixed, const ModelDisplayHints& hints,
+//     const SimTK::State& s, SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
+// {
+//     Super::generateDecorations(fixed, hints, s, geometry);
 
-    // There is no fixed geometry to generate here.
-    if (fixed) { return; }
+//     // There is no fixed geometry to generate here.
+//     if (fixed) { return; }
 
-    // Model-wide hints indicate that contact geometry shouldn't be shown.
-    if (!hints.get_show_contact_geometry()) { return; }
+//     // Model-wide hints indicate that contact geometry shouldn't be shown.
+//     if (!hints.get_show_contact_geometry()) { return; }
 
-    // The decoration has been toggled off by its `Appearance` block.
-    if (!get_Appearance().get_visible())  { return; }
+//     // The decoration has been toggled off by its `Appearance` block.
+//     if (!get_Appearance().get_visible())  { return; }
 
-    // Guard against the case where the Force was disabled or mesh failed to load.
-    if (_decorativeGeometry == nullptr) { return; }
+//     // Guard against the case where the Force was disabled or mesh failed to load.
+//     if (_decorativeGeometry == nullptr) { return; }
 
-    // B: base Frame (Body or Ground)
-    // F: PhysicalFrame that this ContactGeometry is connected to
-    // P: the frame defined (relative to F) by the location and orientation
-    //    properties.
+//     // B: base Frame (Body or Ground)
+//     // F: PhysicalFrame that this ContactGeometry is connected to
+//     // P: the frame defined (relative to F) by the location and orientation
+//     //    properties.
 
-    const auto& X_BF = getFrame().findTransformInBaseFrame();
-    const auto& X_FP = getTransform();
-    const auto X_BP = X_BF * X_FP;
-    geometry.push_back(SimTK::DecorativeMesh(*_decorativeGeometry)
-        .setTransform(X_BP)
-        .setRepresentation(get_Appearance().get_representation())
-        .setBodyId(getFrame().getMobilizedBodyIndex())
-        .setColor(get_Appearance().get_color())
-        .setScale(1)
-        .setOpacity(get_Appearance().get_opacity()));
+//     const auto& X_BF = getFrame().findTransformInBaseFrame();
+//     const auto& X_FP = getTransform();
+//     const auto X_BP = X_BF * X_FP;
+//     geometry.push_back(SimTK::DecorativeMesh(*_decorativeGeometry)
+//         .setTransform(X_BP)
+//         .setRepresentation(get_Appearance().get_representation())
+//         .setBodyId(getFrame().getMobilizedBodyIndex())
+//         .setColor(get_Appearance().get_color())
+//         .setScale(1)
+//         .setOpacity(get_Appearance().get_opacity()));
     
-}
+// }
 
 } // end of namespace OpenSim

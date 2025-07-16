@@ -22,9 +22,64 @@
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/Scholz2015GeometryPath.h>
 #include <OpenSim/Simulation/VisualizerUtilities.h>
+#include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Common/Sine.h>
 
 using namespace OpenSim;
+
+class ContactEllipsoid : public ContactGeometry {
+OpenSim_DECLARE_CONCRETE_OBJECT(ContactEllipsoid, ContactGeometry);
+public:
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    OpenSim_DECLARE_PROPERTY(radii, SimTK::Vec3, "Radii of Ellipsoid."); 
+
+
+    ContactEllipsoid(const SimTK::Vec3& radii, const SimTK::Vec3& location, 
+        const SimTK::Vec3& orientation, const PhysicalFrame& frame) : 
+        ContactGeometry(location, orientation, frame) {
+        constructProperties();
+        set_radii(radii);
+    }
+
+    SimTK::ContactGeometry createSimTKContactGeometry() const override {
+        return SimTK::ContactGeometry::Ellipsoid(get_radii());
+    }
+
+    void constructProperties() {
+        constructProperty_radii(SimTK::Vec3(0.5));
+    }
+};
+
+class ContactCylinder : public ContactGeometry {
+OpenSim_DECLARE_CONCRETE_OBJECT(ContactCylinder, ContactGeometry);
+public:
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    OpenSim_DECLARE_PROPERTY(radius, double, "Radius of the cylinder");
+    OpenSim_DECLARE_PROPERTY(height, double, "Height of the cylinder");
+
+
+    ContactCylinder(const double radius, const double height, const SimTK::Vec3& location, 
+        const SimTK::Vec3& orientation, const PhysicalFrame& frame) : 
+        ContactGeometry(location, orientation, frame) {
+        constructProperties();
+        set_radius(radius);
+        set_height(height);
+    }
+
+    SimTK::ContactGeometry createSimTKContactGeometry() const override {
+        return SimTK::ContactGeometry::Cylinder(get_radius());
+    }
+
+    void constructProperties() {
+        constructProperty_radius(0.5);
+        constructProperty_height(1.0);
+    }
+};
+
 
 int main() {
     // Create a new model
@@ -32,17 +87,16 @@ int main() {
     model.setName("BlockWithPath");
 
     // Create first block body
-    double blockMass = 1.0;
-    SimTK::Vec3 blockDims(0.1, 0.1, 0.1);
-    auto* block1 = new OpenSim::Body("block1", blockMass, SimTK::Vec3(0), 
-            blockMass * SimTK::Inertia::brick(blockDims[0], blockDims[1], blockDims[2]));
-    block1->attachGeometry(new Brick(blockDims));
+    double sphereMass = 1.0;
+    auto* block1 = new OpenSim::Body("block1", sphereMass, SimTK::Vec3(0), 
+            sphereMass * SimTK::Inertia::sphere(0.05));
+    block1->attachGeometry(new Sphere(0.05));
     model.addBody(block1);
 
     // Create second block body
-    auto* block2 = new OpenSim::Body("block2", blockMass, SimTK::Vec3(0), 
-            blockMass * SimTK::Inertia::brick(blockDims[0], blockDims[1], blockDims[2]));
-    block2->attachGeometry(new Brick(blockDims));
+    auto* block2 = new OpenSim::Body("block2", sphereMass, SimTK::Vec3(0), 
+            sphereMass * SimTK::Inertia::sphere(0.05));
+    block2->attachGeometry(new Sphere(0.05));
     model.addBody(block2);
 
     // Add first block to model with slider joint
@@ -50,7 +104,7 @@ int main() {
     auto slider1ToGround = new SliderJoint("slider1", model.getGround(), SimTK::Vec3(0),
                         sliderOrientation, *block1, SimTK::Vec3(0), sliderOrientation);
     slider1ToGround->updCoordinate().setName("height1");
-    slider1ToGround->updCoordinate().setDefaultValue(0.5);
+    slider1ToGround->updCoordinate().setDefaultValue(1.0);
     slider1ToGround->updCoordinate().set_prescribed(true);
     const Sine& function = Sine(0.05, 2.0, 0.0, 0.55);
     slider1ToGround->updCoordinate().setPrescribedFunction(function);
@@ -66,10 +120,18 @@ int main() {
     slider2ToGround->updCoordinate().setPrescribedFunction(function2);
     model.addJoint(slider2ToGround);
 
-    // Create wrap obstacle
-    auto* sphere = new ContactSphere(0.1, SimTK::Vec3(0.5, 0.5, 0), 
-            model.getGround(), "wrap_sphere");
+    // Create wrap obstacles
+    auto* ellipsoid = new ContactEllipsoid(SimTK::Vec3(0.1, 0.1, 0.3), 
+            SimTK::Vec3(0., 0.2, 0), SimTK::Vec3(0), model.getGround());
+    model.addComponent(ellipsoid);
+
+    auto* sphere = new ContactSphere(0.15, SimTK::Vec3(0.25, 0.6, 0), 
+        model.getGround(), "wrap_sphere");
     model.addComponent(sphere);
+
+    auto* cylinder = new ContactCylinder(0.1, 0.2, SimTK::Vec3(0.75, 0.4, 0), 
+            SimTK::Vec3(0.), model.getGround());
+    model.addComponent(cylinder);
 
     // Create stations for path endpoints and intermediate point
     auto* origin = new Station(model.getGround(), SimTK::Vec3(0));
@@ -85,28 +147,26 @@ int main() {
     model.addComponent(insertion);
 
     // Create and add geometry path with two segments
-    auto* path = new Scholz2015GeometryPath();
+    auto* path = new Scholz2015GeometryPath(*origin, *insertion);
     path->setName("test_path");
-    path->createInitialPathSegment("segment1", 
-        model.getComponent<Station>("/origin"), 
-        model.getComponent<Station>("/mid"));
-    path->appendPathSegment("segment2",
-        model.getComponent<Station>("/insertion"));
-    path->addObstacleToPathSegment("segment2", *sphere, SimTK::Vec3(0.5, 0.5, 0));
+    path->addObstacle(*ellipsoid, SimTK::Vec3(0.1, 0., 0.));
+    path->addViaPoint(*mid);
+    path->addObstacle(*sphere, SimTK::Vec3(0., 0.5, 0.));
+    path->addObstacle(*cylinder, SimTK::Vec3(0., -0.1, 0.));
     model.addComponent(path);
 
-    // Initialize system
+    // Initialize systemå
     SimTK::State state = model.initSystem();
 
-    VisualizerUtilities::showModel(model);
+    // VisualizerUtilities::showModel(model);
 
-    // Manager manager(model);
-    // manager.initialize(state);
-    // manager.integrate(10.0);
+    Manager manager(model);
+    manager.initialize(state);
+    manager.integrate(10.0);
 
-    // // Visualize   
-    // TimeSeriesTable table = manager.getStatesTable();
-    // VisualizerUtilities::showMotion(model, table);
+    // Visualize   
+    TimeSeriesTable table = manager.getStatesTable();
+    VisualizerUtilities::showMotion(model, table);
 
     return EXIT_SUCCESS;
 }

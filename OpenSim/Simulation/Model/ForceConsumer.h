@@ -26,6 +26,9 @@
 
 #include <SimTKcommon/SmallMatrix.h>              // for `SimTK::Vec3`
 #include <SimTKcommon/internal/MassProperties.h>  // for `SimTK::SpatialVec`
+#include <simbody/internal/common.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 namespace OpenSim { class Coordinate; }
 namespace OpenSim { class PhysicalFrame; }
@@ -71,7 +74,9 @@ public:
         const Coordinate& coord,
         double force)
     {
-        implConsumeGeneralizedForce(state, coord, force);
+        // TODO: this conversion is not always valid.
+        SimTK::MobilizerUIndex uIndex = SimTK::MobilizerUIndex(coord.getMobilizerQIndex());
+        implConsumeGeneralizedForce(state, coord.getBodyIndex(), uIndex, force);
     }
 
     /**
@@ -92,7 +97,22 @@ public:
         const PhysicalFrame& body,
         const SimTK::SpatialVec& spatialVec)
     {
-        implConsumeBodySpatialVec(state, body, spatialVec);
+        implConsumeBodySpatialVec(state, body.getMobilizedBodyIndex(), spatialVec);
+    }
+
+    /**
+     * Consumes a body torque (index 0) and force (index 1) as a `SimTK::SpatialVec`
+     *
+     * @param state         the state that was used to evaluate the force
+     * @param mobodIndex    the mobilized body index to which the force applies
+     * @param spatialVec    a `SimTK::SpatialVector` that contains the torque at index 0 and force at index 1
+     */
+    void consumeBodySpatialVec(
+        const SimTK::State& state,
+        SimTK::MobilizedBodyIndex mobodIndex,
+        const SimTK::SpatialVec& spatialVec)
+    {
+        implConsumeBodySpatialVec(state, mobodIndex, spatialVec);
     }
 
     /**
@@ -132,7 +152,7 @@ public:
         const SimTK::Vec3& point,
         const SimTK::Vec3& force)
     {
-        implConsumePointForce(state, frame, point, force);
+        implConsumePointForce(state, frame.getMobilizedBodyIndex(), frame.findTransformInBaseFrame(), point, force);
     }
 
 private:
@@ -140,13 +160,15 @@ private:
      * Subclasses of `ForceConsumer` may implement this method. There are no expectations
      * on how an implementation should handle a call to this function.
      *
-     * @param state    the state that was used to evaluate the force
-     * @param coord    the generalized coordinate to which the force applies
-     * @param force    the (scalar) force change in the generalized coordinate
+     * @param state       the state that was used to evaluate the force
+     * @param mobodIndex  the mobilized body index to which the force applies
+     * @param uIndex      the mobilizer index to which the force applies
+     * @param force       the (scalar) force change in the generalized coordinate
      */
     virtual void implConsumeGeneralizedForce(
         const SimTK::State& state,
-        const Coordinate& coord,
+        SimTK::MobilizedBodyIndex mobodIndex,
+        SimTK::MobilizerUIndex uIndex,
         double force)
     {}
 
@@ -155,12 +177,12 @@ private:
     * on how an implementation should handle a call to this function.
     *
     * @param state         the state that was used to evaluate the force
-    * @param body          the body (frame) to which the force applies (at its center)
+    * @param mobodIndex    the mobilized body index to which the force applies
     * @param spatialVec    a `SimTK::SpatialVector` that contains the torque at index 0 and force at index 1
     */
     virtual void implConsumeBodySpatialVec(
         const SimTK::State& state,
-        const PhysicalFrame& body,
+        SimTK::MobilizedBodyIndex mobodIndex,
         const SimTK::SpatialVec& spatialVec)
     {}
 
@@ -168,14 +190,16 @@ private:
      * Subclasses of `ForceConsumer` may implement this method. There are no expectations
      * on how an implementation should handle a call to this function.
      *
-     * @param state    the state that was used to evaluate the force
-     * @param frame    the frame in which `point` is defined
-     * @param point    a point in `frame` where `force` applies
-     * @param force    the force vector, specified in the inertial (ground) frame
+     * @param state       the state that was used to evaluate the force
+     * @param mobodIndex  the mobilized body index to which the force applies
+     * @param X_BF        the transform from the mobilized body frame to the inertial (ground) frame
+     * @param point       a point in the mobilized body frame where `force` applies
+     * @param force       the force vector, specified in the inertial (ground) frame
      */
     virtual void implConsumePointForce(
         const SimTK::State& state,
-        const PhysicalFrame& frame,
+        SimTK::MobilizedBodyIndex mobodIndex,
+        const SimTK::Transform& X_BF,
         const SimTK::Vec3& point,
         const SimTK::Vec3& force)
     {}

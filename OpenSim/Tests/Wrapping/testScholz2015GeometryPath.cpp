@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                        OpenSim:  ContactSphere.cpp                         *
+ *                  OpenSim:  testScholz2015GeometryPath.cpp                  *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Peter Eastman                                                   *
+ * Copyright (c) 2005-2025 Stanford University and the Authors                *
+ * Author(s): Ajay Seth, Ayman Habib, Nicholas Bianco                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -21,55 +21,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
- #include "ContactSphere.h"
-namespace OpenSim {
+#include <OpenSim/Simulation/Model/Scholz2015GeometryPath.h>
 
-ContactSphere::ContactSphere() : ContactGeometry()
-{
-    setNull();
-    constructProperties();
+#include <catch2/catch_all.hpp>
+
+using namespace OpenSim;
+
+TEST_CASE("Scholz2015GeometryPath") {
+   
 }
-
-ContactSphere::ContactSphere(double radius, const SimTK::Vec3& location,
-        const PhysicalFrame& frame) :
-    ContactGeometry(location, SimTK::Vec3(0.0), frame)
-{
-    setNull();
-    constructProperties();
-    set_radius(radius);
-}
-
-ContactSphere::ContactSphere(double radius, const SimTK::Vec3& location,
-        const PhysicalFrame& frame, const std::string& name) :
-    ContactSphere(radius, location, frame)
-{
-    setName(name);
-}
-
-void ContactSphere::setNull()
-{
-    setAuthors("Peter Eastman");
-}
-
-void ContactSphere::constructProperties()
-{
-    constructProperty_radius(0);
-}
-
-
-double ContactSphere::getRadius() const
-{
-    return get_radius();
-}
-
-void ContactSphere::setRadius(double radius)
-{
-    set_radius(radius);
-}
-
-SimTK::ContactGeometry ContactSphere::createSimTKContactGeometry() const
-{
-    return SimTK::ContactGeometry::Sphere(get_radius());
-}
-
-} // end of namespace OpenSim
