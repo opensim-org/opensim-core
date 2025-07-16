@@ -38,7 +38,7 @@ int main() {
 
 void testCOMAK() {
     bool useVisualizer = true;
-    std::string model_dir = "C:/github/jam-resources/models/knee_healthy";
+    std::string model_dir = "C:\\Users\\csmith\\github\\jam-resources\\models\\knee_healthy";
     std::string model_file = model_dir + "/lenhart2015/lenhart2015.osim";
     std::string external_loads_xml_file = model_dir + "/experimental_data/motion_analysis/overground_17_ext_loads.xml";
 
@@ -256,7 +256,7 @@ void testCOMAK() {
 
     comak_ik.set_IKTaskSet(ik_task_set);
     //comak_ik.print("./inputs/comak_inverse_kinematics_settings.xml");
-    //comak_ik.run();
+    comak_ik.run();
 
     InverseDynamicsTool id = InverseDynamicsTool();
     id.setResultsDir(id_result_dir);

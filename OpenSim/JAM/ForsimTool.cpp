@@ -441,7 +441,7 @@ void ForsimTool::initializeActuators() {
                     SimTK::Vector values = _actuator_table.getDependentColumn(labels[i]);
                     SimmSpline* frc_function = new SimmSpline(nDataPt, &time[0], &values[0], actuator_path + "_frc");
 
-                    _frc_functions.adoptAndAppend(frc_function); 
+                    _frc_functions.cloneAndAppend(*frc_function); 
                 }
                 catch (ComponentNotFoundOnSpecifiedPath const&) {
                     

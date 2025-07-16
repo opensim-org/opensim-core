@@ -280,7 +280,7 @@ bool COMAKInverseKinematicsTool::initialize()
         log_info(_secondary_coord_name[i]);
     }
     
-    log_info("Secondary Coupled Coordinate: ",
+    log_info("Secondary Coupled Coordinate: {}",
         get_secondary_coupled_coordinate());
 
     if (get_perform_secondary_constraint_sim()) {
@@ -621,7 +621,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
         
         //GCVSpline* spline = new GCVSpline(5, npts, &ind_data[0], &dep_interp_pts[0], path, -1);
 
-        _secondary_constraint_functions.adoptAndAppend(spline);
+        _secondary_constraint_functions.cloneAndAppend(*spline);
     }
 
     //Print Secondardy Constraint Functions to file
