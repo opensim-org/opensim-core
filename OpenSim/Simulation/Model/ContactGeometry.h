@@ -118,6 +118,10 @@ public:
     /** Create a new SimTK::ContactGeometry based on this object. */
     virtual SimTK::ContactGeometry createSimTKContactGeometry() const = 0;
 
+    /** Get a shared pointer to a SimTK::ContactGeometry based on this object. */
+    std::shared_ptr<const SimTK::ContactGeometry> 
+    getSimTKContactGeometry() const;
+
     // SCALING INTERFACE
     /**
      * Scale a ContactGeometry based on XYZ scale factors for the bodies.
@@ -169,6 +173,8 @@ private:
     // INITIALIZATION
     void setNull();
     void constructProperties();
+
+    mutable std::shared_ptr<const SimTK::ContactGeometry> _simtkContactGeometry;
 //=============================================================================
 };  // END of class ContactGeometry
 //=============================================================================

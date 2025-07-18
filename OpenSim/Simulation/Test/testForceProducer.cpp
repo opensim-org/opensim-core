@@ -90,17 +90,17 @@ namespace
 
     private:
 
-        void implConsumeGeneralizedForce(const SimTK::State&, const Coordinate&, double) final
+        void implConsumeGeneralizedForce(const SimTK::State&, SimTK::MobilizedBodyIndex, SimTK::MobilizerUIndex, double) final
         {
             ++_numGeneralizedForcesConsumed;
         }
 
-        void implConsumeBodySpatialVec(const SimTK::State&, const PhysicalFrame&, const SimTK::SpatialVec&) final
+        void implConsumeBodySpatialVec(const SimTK::State&, SimTK::MobilizedBodyIndex, const SimTK::SpatialVec&) final
         {
             ++_numBodySpatialVectorsConsumed;
         }
 
-        void implConsumePointForce(const SimTK::State&, const PhysicalFrame&, const SimTK::Vec3&, const SimTK::Vec3&) final
+        void implConsumePointForce(const SimTK::State&, SimTK::MobilizedBodyIndex, const SimTK::Transform&, const SimTK::Vec3&, const SimTK::Vec3&) final
         {
             ++_numPointForcesConsumed;
         }

@@ -82,7 +82,7 @@ private:
     /* Calculate the velocity of this Station with respect to and expressed in
        Ground as a function of the state. */
     SimTK::Vec3 calcVelocityInGround(const SimTK::State& state) const override;
-    /* Calculate the acceleration of this Station with respect to and 
+    /* Calculate the acceleration of this Station with respect to and
         expressed in ground as a function of the state. */
     SimTK::Vec3 calcAccelerationInGround(const SimTK::State& state) const override;
 

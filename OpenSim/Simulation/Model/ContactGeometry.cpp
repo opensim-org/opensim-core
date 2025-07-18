@@ -88,6 +88,15 @@ SimTK::Transform ContactGeometry::getTransform() const {
             get_location());
 }
 
+std::shared_ptr<const SimTK::ContactGeometry>
+ContactGeometry::getSimTKContactGeometry() const {
+    if (!_simtkContactGeometry) {
+        _simtkContactGeometry = std::make_shared<const SimTK::ContactGeometry>(
+                createSimTKContactGeometry());
+    }
+    return _simtkContactGeometry;
+}
+
 const PhysicalFrame& ContactGeometry::getFrame() const {
     return getSocket<PhysicalFrame>("frame").getConnectee();
 }

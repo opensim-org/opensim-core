@@ -55,7 +55,6 @@ public:
 
     // ACCESSORS
     const ContactGeometry& getObstacle() const;
-
 private:
     void constructProperties();
 };
@@ -112,16 +111,19 @@ public:
         "The origin station of the path.");
     OpenSim_DECLARE_SOCKET(insertion, Station,
         "The insertion station of the path.");
+    OpenSim_DECLARE_LIST_SOCKET(via_points, Station,
+        "The list of via points that the path may pass through.");
 
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_LIST_PROPERTY(via_points, Station,
-        "The list of via points that the path may pass through.");
+    OpenSim_DECLARE_LIST_PROPERTY(stations, Station,
+        "The list of stations defining the path.");
     OpenSim_DECLARE_LIST_PROPERTY(segments, Scholz2015GeometryPathSegment,
         "The list of segments that the path may pass through.");
-    OpenSim_DECLARE_PROPERTY(algorithm, SimTK::CableSpanAlgorithm,
-        "The algorithm used to compute the path.");
+    OpenSim_DECLARE_PROPERTY(algorithm, std::string,
+        "The algorithm used to compute the path. Options: 'Scholz2015' "
+        "(default) or 'MinimumLength'.");
 
 //=============================================================================
 // METHODS
@@ -129,21 +131,27 @@ public:
 
     // CONSTRUCTION
     Scholz2015GeometryPath();
-    Scholz2015GeometryPath(const Station& origin, const Station& insertion);
+    Scholz2015GeometryPath(
+            const PhysicalFrame& originFrame,
+            const SimTK::Vec3& originLocation,
+            const PhysicalFrame& insertionFrame,
+            const SimTK::Vec3& insertionLocation);
 
     // GET AND SET
-    void setOrigin(const Station& origin);
+    void setOrigin(const PhysicalFrame& frame, const SimTK::Vec3& location);
     const Station& getOrigin() const;
 
-    void setInsertion(const Station& insertion);
+    void setInsertion(const PhysicalFrame& frame, const SimTK::Vec3& location);
     const Station& getInsertion() const;
 
     void addObstacle(const ContactGeometry& obstacle,
             const SimTK::Vec3& contactHint);
-    void addViaPoint(const Station& viaPoint);
 
-    void setAlgorithm(SimTK::CableSpanAlgorithm algorithm);
-    SimTK::CableSpanAlgorithm getAlgorithm() const;
+    void addViaPoint(const PhysicalFrame& frame, const SimTK::Vec3& location);
+    const Station& getViaPoint(int index) const;
+
+    void setAlgorithm(std::string algorithm);
+    const std::string& getAlgorithm() const;
 
     // ABSTRACT PATH INTERFACE
     double getLength(const SimTK::State& s) const override;

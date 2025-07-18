@@ -33,11 +33,10 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_PROPERTY(radii, SimTK::Vec3, "Radii of Ellipsoid."); 
+    OpenSim_DECLARE_PROPERTY(radii, SimTK::Vec3, "Radii of Ellipsoid.");
 
-
-    ContactEllipsoid(const SimTK::Vec3& radii, const SimTK::Vec3& location, 
-        const SimTK::Vec3& orientation, const PhysicalFrame& frame) : 
+    ContactEllipsoid(const SimTK::Vec3& radii, const SimTK::Vec3& location,
+        const SimTK::Vec3& orientation, const PhysicalFrame& frame) :
         ContactGeometry(location, orientation, frame) {
         constructProperties();
         set_radii(radii);
@@ -62,8 +61,8 @@ public:
     OpenSim_DECLARE_PROPERTY(height, double, "Height of the cylinder");
 
 
-    ContactCylinder(const double radius, const double height, const SimTK::Vec3& location, 
-        const SimTK::Vec3& orientation, const PhysicalFrame& frame) : 
+    ContactCylinder(const double radius, const double height, const SimTK::Vec3& location,
+        const SimTK::Vec3& orientation, const PhysicalFrame& frame) :
         ContactGeometry(location, orientation, frame) {
         constructProperties();
         set_radius(radius);
@@ -88,13 +87,13 @@ int main() {
 
     // Create first block body
     double sphereMass = 1.0;
-    auto* block1 = new OpenSim::Body("block1", sphereMass, SimTK::Vec3(0), 
+    auto* block1 = new OpenSim::Body("block1", sphereMass, SimTK::Vec3(0),
             sphereMass * SimTK::Inertia::sphere(0.05));
     block1->attachGeometry(new Sphere(0.05));
     model.addBody(block1);
 
     // Create second block body
-    auto* block2 = new OpenSim::Body("block2", sphereMass, SimTK::Vec3(0), 
+    auto* block2 = new OpenSim::Body("block2", sphereMass, SimTK::Vec3(0),
             sphereMass * SimTK::Inertia::sphere(0.05));
     block2->attachGeometry(new Sphere(0.05));
     model.addBody(block2);
@@ -114,48 +113,36 @@ int main() {
     sliderOrientation = SimTK::Vec3(0);
     auto slider2ToGround = new SliderJoint("slider2", *block1, SimTK::Vec3(1.0, 0, 0),
                         sliderOrientation, *block2, SimTK::Vec3(0), sliderOrientation);
-    slider2ToGround->updCoordinate().setName("height2"); 
+    slider2ToGround->updCoordinate().setName("height2");
     slider2ToGround->updCoordinate().set_prescribed(true);
     const Sine& function2 = Sine(0.05, 5.0, 0.2, 0.0);
     slider2ToGround->updCoordinate().setPrescribedFunction(function2);
     model.addJoint(slider2ToGround);
 
     // Create wrap obstacles
-    auto* ellipsoid = new ContactEllipsoid(SimTK::Vec3(0.1, 0.1, 0.3), 
+    auto* ellipsoid = new ContactEllipsoid(SimTK::Vec3(0.1, 0.1, 0.3),
             SimTK::Vec3(0., 0.2, 0), SimTK::Vec3(0), model.getGround());
     model.addComponent(ellipsoid);
 
-    auto* sphere = new ContactSphere(0.15, SimTK::Vec3(0.25, 0.6, 0), 
+    auto* sphere = new ContactSphere(0.15, SimTK::Vec3(0.25, 0.6, 0),
         model.getGround(), "wrap_sphere");
     model.addComponent(sphere);
 
-    auto* cylinder = new ContactCylinder(0.1, 0.2, SimTK::Vec3(0.75, 0.4, 0), 
+    auto* cylinder = new ContactCylinder(0.1, 0.2, SimTK::Vec3(0.75, 0.4, 0),
             SimTK::Vec3(0.), model.getGround());
     model.addComponent(cylinder);
 
-    // Create stations for path endpoints and intermediate point
-    auto* origin = new Station(model.getGround(), SimTK::Vec3(0));
-    origin->setName("origin");
-    model.addComponent(origin);
-
-    auto* mid = new Station(*block1, SimTK::Vec3(0));
-    mid->setName("mid");
-    model.addComponent(mid);
-
-    auto* insertion = new Station(*block2, SimTK::Vec3(0));
-    insertion->setName("insertion");
-    model.addComponent(insertion);
-
     // Create and add geometry path with two segments
-    auto* path = new Scholz2015GeometryPath(*origin, *insertion);
+    auto* path = new Scholz2015GeometryPath(model.getGround(), SimTK::Vec3(0),
+            *block2, SimTK::Vec3(0));
     path->setName("test_path");
     path->addObstacle(*ellipsoid, SimTK::Vec3(0.1, 0., 0.));
-    path->addViaPoint(*mid);
+    path->addViaPoint(*block1, SimTK::Vec3(0));
     path->addObstacle(*sphere, SimTK::Vec3(0., 0.5, 0.));
     path->addObstacle(*cylinder, SimTK::Vec3(0., -0.1, 0.));
     model.addComponent(path);
 
-    // Initialize systemå
+    // Initialize system
     SimTK::State state = model.initSystem();
 
     // VisualizerUtilities::showModel(model);
@@ -164,7 +151,7 @@ int main() {
     manager.initialize(state);
     manager.integrate(10.0);
 
-    // Visualize   
+    // Visualize
     TimeSeriesTable table = manager.getStatesTable();
     VisualizerUtilities::showMotion(model, table);
 
