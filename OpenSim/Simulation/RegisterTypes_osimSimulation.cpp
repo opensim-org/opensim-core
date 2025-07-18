@@ -44,7 +44,6 @@
 #include "Model/ContactGeometrySet.h"
 #include "Model/ContactHalfSpace.h"
 #include "Model/ContactMesh.h"
-#include "Model/ContactSphere.h"
 #include "Model/CoordinateLimitForce.h"
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
