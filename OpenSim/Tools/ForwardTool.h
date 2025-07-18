@@ -66,13 +66,9 @@ protected:
     PropertyStr _statesFileNameProp;
     std::string &_statesFileName;
 
-    /** If true, the time steps from the states file are used during
-    current integration. */
-    OpenSim::PropertyBool _useSpecifiedDtProp;
-    bool &_useSpecifiedDt;
-
     /** Storage for the input states. */
     Storage *_yStore;
+
     /** Flag indicating whether or not to write to the results (GUI will set this to false). */
     bool _printResultFiles;
 
@@ -117,8 +113,10 @@ public:
     const std::string &getStatesFileName() const { return _statesFileName; }
     void setStatesFileName(const std::string &aFileName) { _statesFileName = aFileName; }
 
-    bool getUseSpecifiedDt() const { return _useSpecifiedDt; }
-    void setUseSpecifiedDt(bool aUseSpecifiedDt) { _useSpecifiedDt = aUseSpecifiedDt; }
+    [[deprecated("Specified time stepping is no longer supported.")]]
+    bool getUseSpecifiedDt() const { return false; }
+    [[deprecated("Specified time stepping is no longer supported.")]]
+    void setUseSpecifiedDt(bool aUseSpecifiedDt) {}
 
     void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
 
@@ -145,7 +143,6 @@ public:
 protected:
     void setDesiredStatesForControllers(Storage& rYStore);
     int determineInitialTimeFromStatesStorage(double &rTI);
-    void InitializeSpecifiedTimeStepping(Storage *aYStore, Manager& aManager);
 private:
 
 //=============================================================================
