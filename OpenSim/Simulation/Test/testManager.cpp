@@ -634,6 +634,19 @@ TEST_CASE("Reinitializing Manager") {
     CHECK(manager.getStatesTrajectory().getSize() == 44);
 }
 
+TEST_CASE("Updating the integrator") {
+    Model model = createBallModel(true);
+    SimTK::State state = model.initSystem();
+    Manager manager(model);
+    manager.initialize(state);
+    manager.integrate(1.0);
+    
+    manager.setIntegratorMethod(Manager::IntegratorMethod::SemiExplicitEuler2);
+    CHECK_THROWS(manager.integrate(2.0));
+    manager.initialize(state);
+    CHECK_NOTHROW(manager.integrate(2.0));
+}
+
 TEST_CASE("Updating states") {
     Model model = createBallModel(false);
     SimTK::State defaultState = model.initSystem();

@@ -268,6 +268,11 @@ public:
      * @see SimTK::Integrator::setMinimumStepSize(SimTK::Real)
      * @note If a new integrator is set via setIntegratorMethod(), this
      *       setting will be cleared and set to the default value.
+     * @note The integrators supported by Manager by default use error-controlled
+     *       adaptive stepping, meaning that the step size is adjusted
+     *       automatically during integration to maintain the desired accuracy.
+     *       By calling this method, you set a lower bound on the step size,
+     *       which may degrade performance and accuracy.
      */
     void setIntegratorMinimumStepSize(double hmin);
 
@@ -277,6 +282,11 @@ public:
      * @see SimTK::Integrator::setMaximumStepSize(SimTK::Real)
      * @note If a new integrator is set via setIntegratorMethod(), this
      *       setting will be cleared and set to the default value.
+     * @note The integrators supported by Manager by default use error-controlled
+     *       adaptive stepping, meaning that the step size is adjusted
+     *       automatically during integration to maintain the desired accuracy.
+     *       By calling this method, you set an upper bound on the step size,
+     *       which may degrade performance and accuracy.
      */
     void setIntegratorMaximumStepSize(double hmax);
 
@@ -295,7 +305,7 @@ public:
      * @see SimTK::Integrator::setFixedStepSize(SimTK::Real)
      * @note If a new integrator is set via setIntegratorMethod(), this
      *       setting will be cleared and set to the default value.
-     * @note The integrators supported by Manager by default error-controlled
+     * @note The integrators supported by Manager by default use error-controlled
      *       adaptive stepping, meaning that the step size is adjusted
      *       automatically during integration to maintain the desired accuracy.
      *       By calling this method, you override this behavior and set a fixed
@@ -357,8 +367,11 @@ public:
     /**
      * Initialize the Manager.
      *
-     * This must be called before calling Manager::integrate(). Subsequent
-     * changes to the State object passed in here will not affect the simulation.
+     * This must be called after configuring the integrator and before calling
+     * Manager::integrate(). If the integrator is changed via
+     * setIntegratorMethod(), this method must be called again, otherwise an
+     * exception is thrown. Subsequent changes to the State object passed in
+     * here will not affect the simulation.
      *
      * Changes to the integrator (e.g., setIntegratorAccuracy()) after calling
      * initialize() may not have any effect.
