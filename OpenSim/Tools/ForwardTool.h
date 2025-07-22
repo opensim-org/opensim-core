@@ -113,11 +113,6 @@ public:
     const std::string &getStatesFileName() const { return _statesFileName; }
     void setStatesFileName(const std::string &aFileName) { _statesFileName = aFileName; }
 
-    [[deprecated("Specified time stepping is no longer supported.")]]
-    bool getUseSpecifiedDt() const { return false; }
-    [[deprecated("Specified time stepping is no longer supported.")]]
-    void setUseSpecifiedDt(bool aUseSpecifiedDt) {}
-
     void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
 
     //--------------------------------------------------------------------------
