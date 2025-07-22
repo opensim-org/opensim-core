@@ -61,6 +61,14 @@ void ContactGeometry::constructProperties()
     defaultAppearance.set_color(SimTK::Cyan);
     defaultAppearance.set_representation(VisualRepresentation::DrawWireframe);
     constructProperty_Appearance(defaultAppearance);
+<<<<<<< HEAD
+}
+
+//=============================================================================
+// ACCESSORS
+//=============================================================================
+const PhysicalFrame& ContactGeometry::getFrame() const
+=======
 }
 
 //=============================================================================
@@ -76,6 +84,33 @@ void ContactGeometry::setFrame(const PhysicalFrame& frame)
     connectSocket_frame(frame);
 }
 
+SimTK::Transform ContactGeometry::getTransform() const
+{
+    return SimTK::Transform(
+            SimTK::Rotation(SimTK::BodyRotationSequence,
+                get_orientation()[0], SimTK::XAxis,
+                get_orientation()[1], SimTK::YAxis,
+                get_orientation()[2], SimTK::ZAxis),
+            get_location());
+}
+
+SimTK::ContactGeometry ContactGeometry::createSimTKContactGeometry() const
+>>>>>>> contact_geometry_updates
+{
+    return createSimTKContactGeometryImpl();
+}
+
+std::shared_ptr<const SimTK::ContactGeometry>
+ContactGeometry::getSimTKContactGeometryPtr() const
+{
+    if (!_simTKContactGeometry) {
+        _simTKContactGeometry = std::make_shared<SimTK::ContactGeometry>(
+            createSimTKContactGeometry());   
+    }
+    return _simTKContactGeometry;
+}
+
+<<<<<<< HEAD
 SimTK::Transform ContactGeometry::getTransform() const {
     return SimTK::Transform(
             SimTK::Rotation(SimTK::BodyRotationSequence,
@@ -112,6 +147,20 @@ void ContactGeometry::generateDecorations(
     generateDecorationsImpl(fixed, hints, s, geometry);
 }
 
+=======
+//=============================================================================
+// VISUALIZATION
+//=============================================================================
+void ContactGeometry::generateDecorations(
+        bool fixed,
+        const ModelDisplayHints& hints, 
+        const SimTK::State& s, 
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {
+    Super::generateDecorations(fixed, hints, s, geometry); 
+    generateDecorationsImpl(fixed, hints, s, geometry);
+}
+
+>>>>>>> contact_geometry_updates
 void ContactGeometry::generateDecorationsImpl(
         bool fixed,
         const ModelDisplayHints& hints, 
@@ -315,8 +364,13 @@ ContactCylinder::ContactCylinder() : ContactGeometry()
 }
 
 ContactCylinder::ContactCylinder(double radius, const SimTK::Vec3& location,
+<<<<<<< HEAD
         const PhysicalFrame& frame) :
     ContactGeometry(location, SimTK::Vec3(0.0), frame)
+=======
+        const SimTK::Vec3& orientation, const PhysicalFrame& frame) :
+    ContactGeometry(location, orientation, frame)
+>>>>>>> contact_geometry_updates
 {
     constructProperty_radius(0);
     set_radius(radius);
@@ -346,8 +400,14 @@ ContactEllipsoid::ContactEllipsoid() : ContactGeometry()
 }
 
 ContactEllipsoid::ContactEllipsoid(const SimTK::Vec3& radii,
+<<<<<<< HEAD
         const SimTK::Vec3& location, const PhysicalFrame& frame) :
     ContactGeometry(location, SimTK::Vec3(0.0), frame)
+=======
+        const SimTK::Vec3& location, const SimTK::Vec3& orientation, 
+        const PhysicalFrame& frame) :
+    ContactGeometry(location, orientation, frame)
+>>>>>>> contact_geometry_updates
 {
     constructProperty_radii(SimTK::Vec3(0));
     set_radii(radii);
@@ -378,8 +438,14 @@ ContactTorus::ContactTorus() : ContactGeometry()
 }
 
 ContactTorus::ContactTorus(double torus_radius, double tube_radius,
+<<<<<<< HEAD
         const SimTK::Vec3& location, const PhysicalFrame& frame) :
     ContactGeometry(location, SimTK::Vec3(0.0), frame)
+=======
+        const SimTK::Vec3& location, const SimTK::Vec3& orientation, 
+        const PhysicalFrame& frame) :
+    ContactGeometry(location, orientation, frame)
+>>>>>>> contact_geometry_updates
 {
     constructProperty_torus_radius(0);
     constructProperty_tube_radius(0);

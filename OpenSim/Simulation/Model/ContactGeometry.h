@@ -137,11 +137,14 @@ public:
         const SimTK::State& s,
         SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
     // @}
+<<<<<<< HEAD
 
     // COMPONENT INTERFACE
     void generateDecorations(bool fixed, const ModelDisplayHints& hints,
         const SimTK::State& s,
         SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
+=======
+>>>>>>> contact_geometry_updates
 
     /** @name Deprecated */
     // @{
@@ -311,12 +314,20 @@ public:
      * @param radius       the radius of the cylinder.
      * @param location     the location of the center of the cylinder expressed
      *                     in `frame`.
+<<<<<<< HEAD
+=======
+     * @param orientation  the orientation of the cylinder expressed in `frame`.
+>>>>>>> contact_geometry_updates
      * @param frame        the PhysicalFrame this geometry is attached to;
      *                     this constructor connects this ContactCylinder to
      *                     the provided `frame`.
      */
     ContactCylinder(double radius, const SimTK::Vec3& location,
+<<<<<<< HEAD
             const PhysicalFrame& frame);
+=======
+            const SimTK::Vec3& orientation, const PhysicalFrame& frame);
+>>>>>>> contact_geometry_updates
 
     /** @name Accessors */
     // @{
@@ -366,16 +377,28 @@ public:
     /**
      * Construct a ContactEllipsoid.
      *
+<<<<<<< HEAD
      * @param radii       the radii of the ellipsoid.
      * @param location     the location of the center of the ellipsoid expressed
      *                     in `frame`.
+=======
+     * @param radii        the radii of the ellipsoid.
+     * @param location     the location of the center of the ellipsoid expressed
+     *                     in `frame`.
+     * @param orientation  the orientation of the ellipsoid expressed in `frame`.
+>>>>>>> contact_geometry_updates
      * @param frame        the PhysicalFrame this geometry is attached to;
      *                     this constructor connects this ContactEllipsoid to
      *                     the provided `frame`.
      */
     ContactEllipsoid(const SimTK::Vec3& radii, const SimTK::Vec3& location,
+<<<<<<< HEAD
             const PhysicalFrame& frame);
             
+=======
+            const SimTK::Vec3& orientation, const PhysicalFrame& frame);
+
+>>>>>>> contact_geometry_updates
     /** @name Accessors */
     // @{
     /**
@@ -438,12 +461,21 @@ public:
      * @param tube_radius   the radius of the torus cross-section.
      * @param location      the location of the center of the torus expressed
      *                      in `frame`.
+<<<<<<< HEAD
+=======
+     * @param orientation   the orientation of the torus expressed in `frame`.
+>>>>>>> contact_geometry_updates
      * @param frame         the PhysicalFrame this geometry is attached to;
      *                      this constructor connects this ContactTorus to
      *                      the provided `frame`.
      */
     ContactTorus(double torus_radius, double tube_radius, 
+<<<<<<< HEAD
             const SimTK::Vec3& location, const PhysicalFrame& frame);
+=======
+            const SimTK::Vec3& location, const SimTK::Vec3& orientation, 
+            const PhysicalFrame& frame);
+>>>>>>> contact_geometry_updates
 
     /** @name Accessors */
     // @{

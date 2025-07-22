@@ -317,7 +317,7 @@ void Scholz2015GeometryPath::extendAddToSystem(
             SimTK::CableSpanObstacleIndex ix = cable.addObstacle(
                 obstacle.getObstacle().getFrame().getMobilizedBodyIndex(),
                 obstacle.getObstacle().getTransform(),
-                obstacle.getObstacle().getSimTKContactGeometry(),
+                obstacle.getObstacle().getSimTKContactGeometryPtr(),
                 obstacle.get_contact_hint());
             _obstacleIndexes.push_back(ix);
         }

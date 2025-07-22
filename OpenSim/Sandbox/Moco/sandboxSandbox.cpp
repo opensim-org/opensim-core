@@ -27,59 +27,6 @@
 
 using namespace OpenSim;
 
-class ContactEllipsoid : public ContactGeometry {
-OpenSim_DECLARE_CONCRETE_OBJECT(ContactEllipsoid, ContactGeometry);
-public:
-//=============================================================================
-// PROPERTIES
-//=============================================================================
-    OpenSim_DECLARE_PROPERTY(radii, SimTK::Vec3, "Radii of Ellipsoid.");
-
-    ContactEllipsoid(const SimTK::Vec3& radii, const SimTK::Vec3& location,
-        const SimTK::Vec3& orientation, const PhysicalFrame& frame) :
-        ContactGeometry(location, orientation, frame) {
-        constructProperties();
-        set_radii(radii);
-    }
-
-    SimTK::ContactGeometry createSimTKContactGeometry() const override {
-        return SimTK::ContactGeometry::Ellipsoid(get_radii());
-    }
-
-    void constructProperties() {
-        constructProperty_radii(SimTK::Vec3(0.5));
-    }
-};
-
-class ContactCylinder : public ContactGeometry {
-OpenSim_DECLARE_CONCRETE_OBJECT(ContactCylinder, ContactGeometry);
-public:
-//=============================================================================
-// PROPERTIES
-//=============================================================================
-    OpenSim_DECLARE_PROPERTY(radius, double, "Radius of the cylinder");
-    OpenSim_DECLARE_PROPERTY(height, double, "Height of the cylinder");
-
-
-    ContactCylinder(const double radius, const double height, const SimTK::Vec3& location,
-        const SimTK::Vec3& orientation, const PhysicalFrame& frame) :
-        ContactGeometry(location, orientation, frame) {
-        constructProperties();
-        set_radius(radius);
-        set_height(height);
-    }
-
-    SimTK::ContactGeometry createSimTKContactGeometry() const override {
-        return SimTK::ContactGeometry::Cylinder(get_radius());
-    }
-
-    void constructProperties() {
-        constructProperty_radius(0.5);
-        constructProperty_height(1.0);
-    }
-};
-
-
 int main() {
     // Create a new model
     Model model;
