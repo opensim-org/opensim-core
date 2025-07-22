@@ -2,8 +2,9 @@ find_package(Catch2 REQUIRED
         HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
 
 set(TEST_PROGS
+        testWrapObject.cpp
         testWrapCylinder.cpp
-        testGeometryPath.cpp
+        testGeometryPathWrapping.cpp
         testFunctionBasedPath.cpp
         testScholz2015GeometryPath.cpp
 )
