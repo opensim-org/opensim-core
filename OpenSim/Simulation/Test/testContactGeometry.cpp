@@ -584,13 +584,13 @@ TEST_CASE("ContactEllipsoid") {
     Model model;
     Body* body = new Body("body", mass, Vec3(0), SimTK::Inertia(1.0));
     FreeJoint* free = new FreeJoint("free", 
-        model.getGround(), Vec3(0), Vec3(0), *body, Vec3(0), Vec3(0));
+            model.getGround(), Vec3(0), Vec3(0), *body, Vec3(0), Vec3(0));
     model.addBody(body);
     model.addJoint(free);
 
     // Add a ContactEllipsoid and ContactHalfSpace to the model.
     ContactEllipsoid* ellipsoid = new ContactEllipsoid(
-        Vec3(0.1, 0.05, 0.03), Vec3(0), *body);
+            Vec3(0.1, 0.05, 0.03), Vec3(0), Vec3(0), *body);
     ellipsoid->setName("ellipsoid");
     model.addContactGeometry(ellipsoid);
 
@@ -599,9 +599,9 @@ TEST_CASE("ContactEllipsoid") {
     model.addContactGeometry(floor);
 
     // Add a Hertz HuntCrossleyForce.
-    auto* contactParams =
-        new HuntCrossleyForce::ContactParameters(
-                1.0e6, 1.0, 0.5, 0.5, 0.5);
+
+    auto* contactParams = new HuntCrossleyForce::ContactParameters(
+            1.0e6, 1.0, 0.5, 0.5, 0.5);
     contactParams->addGeometry("ellipsoid");
     contactParams->addGeometry("floor");
     HuntCrossleyForce* force = new HuntCrossleyForce(contactParams);
