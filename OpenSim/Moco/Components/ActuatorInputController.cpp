@@ -94,7 +94,7 @@ void ActuatorInputController::extendConnectToModel(Model& model) {
 
     const auto& controlNames = getControlNames();
     const auto& controlIndexes = getControlIndexes();
-    OPENSIM_ASSERT(getNumControls() == static_cast<int>(controlNames.size()))
+    OPENSIM_ASSERT(getNumControls() == static_cast<int>(controlNames.size()));
 
     const auto& input = getInput<double>("controls");
     const auto inputControlLabels = getInputControlLabels();
