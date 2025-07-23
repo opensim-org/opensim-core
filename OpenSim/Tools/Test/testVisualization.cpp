@@ -141,6 +141,7 @@ int main()
         composedTransformsModel.updDisplayHints().set_show_frames(true);
         populate_composedTransformPrimitives(standard);
         testVisModelAgainstStandard(composedTransformsModel, standard);
+
         // Model with contacts
         Model modelWithContacts("visualize_contacts.osim");
         modelWithContacts.updDisplayHints().set_show_frames(true);
