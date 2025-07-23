@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2025 Stanford University and the Authors                *
- * Author(s): Ajay Seth, Ayman Habib, Nicholas Bianco                         *
+ * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -22,11 +22,36 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/Model/Scholz2015GeometryPath.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
 #include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 
-TEST_CASE("Scholz2015GeometryPath") {
-   
+TEST_CASE("Scholz2015GeometryPath interface") {
+    Model model;
+    Body* body = new OpenSim::Body("body", 1.0, SimTK::Vec3(0), 
+        SimTK::Inertia(1.0));
+    model.addBody(body);
+
+    SliderJoint* slider = new SliderJoint("slider1", 
+            model.getGround(), SimTK::Vec3(0),  SimTK::Vec3(0, 0, SimTK::Pi/2.), 
+            *body, SimTK::Vec3(0), SimTK::Vec3(0, 0, SimTK::Pi/2.));
+    slider->updCoordinate().setDefaultValue(1.0);
+    model.addJoint(slider);
+
+    auto* path = new Scholz2015GeometryPath(model.getGround(),
+            SimTK::Vec3(0), *body, SimTK::Vec3(0));
+    model.addComponent(path);
+
+    SECTION("Origin is already connected") {
+        CHECK_THROWS_AS(path->setOrigin(model.getGround(), SimTK::Vec3(0)),
+            Exception);
+    }
+
+    SECTION("Insertion is already connected") {
+        CHECK_THROWS_AS(path->setInsertion(*body, SimTK::Vec3(0)),
+            Exception);
+    }
 }

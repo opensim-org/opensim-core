@@ -34,25 +34,18 @@ using namespace OpenSim;
 // SCHOLZ 2015 GEOMETRY PATH OBSTACLE
 //=============================================================================
 Scholz2015GeometryPathObstacle::Scholz2015GeometryPathObstacle() : Component() {
-    constructProperties();
-}
-
-void Scholz2015GeometryPathObstacle::constructProperties() {
     constructProperty_contact_hint(SimTK::Vec3(SimTK::NaN));
 }
 
-const ContactGeometry& Scholz2015GeometryPathObstacle::getObstacle() const {
-    return getSocket<ContactGeometry>("obstacle").getConnectee();
+const ContactGeometry& 
+Scholz2015GeometryPathObstacle::getContactGeometry() const {
+    return getSocket<ContactGeometry>("contact_geometry").getConnectee();
 }
 
 //=============================================================================
 // SCHOLZ 2015 GEOMETRY PATH SEGMENT
 //=============================================================================
 Scholz2015GeometryPathSegment::Scholz2015GeometryPathSegment() : Component() {
-    constructProperties();
-}
-
-void Scholz2015GeometryPathSegment::constructProperties() {
     constructProperty_obstacles();
 }
 
@@ -88,6 +81,11 @@ Scholz2015GeometryPath::Scholz2015GeometryPath(
 
 void Scholz2015GeometryPath::setOrigin(const PhysicalFrame& frame,
         const SimTK::Vec3& location) {
+    OPENSIM_THROW_IF_FRMOBJ(
+        getSocket<Station>("origin").isConnected(), Exception,
+        "Tried to set the origin of this Scholz2015GeometryPath, "
+        "but the origin socket is already connected.");
+
     // Create the origin station.
     int oix = append_stations(Station());
     Station& origin = upd_stations(oix);
@@ -109,6 +107,11 @@ void Scholz2015GeometryPath::setOrigin(const PhysicalFrame& frame,
 
 void Scholz2015GeometryPath::setInsertion(const PhysicalFrame& frame,
         const SimTK::Vec3& location) {
+    OPENSIM_THROW_IF_FRMOBJ(
+        getSocket<Station>("insertion").isConnected(), Exception,
+        "Tried to set the insertion of this Scholz2015GeometryPath, "
+        "but the insertion socket is already connected.");
+    
     // Create the insertion station.
     int iix = append_stations(Station());
     Station& insertion = upd_stations(iix);
@@ -128,15 +131,23 @@ void Scholz2015GeometryPath::setInsertion(const PhysicalFrame& frame,
     segment.connectSocket_insertion(upd_stations(iix));
 }
 
-void Scholz2015GeometryPath::addObstacle(const ContactGeometry& obstacle,
+void Scholz2015GeometryPath::addObstacle(const ContactGeometry& contactGeometry,
         const SimTK::Vec3& contactHint) {
     // Add the obstacle to the last path segment.
     auto& segment = upd_segments(getProperty_segments().size() - 1);
     segment.append_obstacles(Scholz2015GeometryPathObstacle());
     auto& ob = segment.upd_obstacles(segment.getNumObstacles() - 1);
     ob.setName("path_obstacle_" + std::to_string(segment.getNumObstacles() - 1));
-    ob.connectSocket_obstacle(obstacle);
+    ob.connectSocket_contact_geometry(contactGeometry);
     ob.set_contact_hint(contactHint);
+}
+
+int Scholz2015GeometryPath::getNumObstacles() const {
+    int numObstacles = 0;
+    for (int i = 0; i < getProperty_segments().size(); ++i) {
+        numObstacles += get_segments(i).getNumObstacles();
+    }
+    return numObstacles;
 }
 
 void Scholz2015GeometryPath::addViaPoint(const PhysicalFrame& frame,
@@ -170,8 +181,8 @@ void Scholz2015GeometryPath::addViaPoint(const PhysicalFrame& frame,
     nextSegment.connectSocket_insertion(getInsertion());
 }
 
-const Station& Scholz2015GeometryPath::getViaPoint(int index) const {
-    return getSocket<Station>("via_points") .getConnectee(index);
+int Scholz2015GeometryPath::getNumViaPoints() const {
+    return getSocket<Station>("via_points").getNumConnectees();
 }
 
 void Scholz2015GeometryPath::setAlgorithm(std::string algorithm) {
@@ -204,42 +215,12 @@ double Scholz2015GeometryPath::getLengtheningSpeed(const SimTK::State& s) const 
     return getCableSpan().calcLengthDot(s);
 }
 
-Scholz2015GeometryPath::MomentArmSolver::MomentArmSolver(
-        const Model& model) : _model(&model) {
-    _state = model.getWorkingState();
-}
-
-double Scholz2015GeometryPath::MomentArmSolver::solve(const SimTK::State& state,
-        const Coordinate& coordinate,
-        const Scholz2015GeometryPath& path) const {
-
-    SimTK::State& s = _state;
-    SimTK::MobilizerQIndex qIndex = coordinate.getMobilizerQIndex();
-
-    s.updQ() = state.getQ();
-    SimTK::Vector qdot = s.getQDot();
-    qdot = 0.;
-    qdot[qIndex] = 1.;
-
-    SimTK::Vector u = s.getU();
-    u = 0.;
-
-    const SimTK::SimbodyMatterSubsystem& matter =
-        getModel().getMultibodySystem().getMatterSubsystem();
-    matter.multiplyByNInv(s, false, qdot, u);
-
-    s.updU() = u;
-
-    getModel().realizeVelocity(s);
-    return path.getLengtheningSpeed(s);
-}
-
 double Scholz2015GeometryPath::computeMomentArm(const SimTK::State& s,
         const Coordinate& coord) const {
 
     if (!_maSolver) {
         const_cast<Self*>(this)->_maSolver.reset(
-                new Scholz2015GeometryPath::MomentArmSolver(getModel()));
+            new MomentArmSolver(getModel()));
     }
 
     return _maSolver->solve(s, coord,  *this);
@@ -315,9 +296,9 @@ void Scholz2015GeometryPath::extendAddToSystem(
         for (int iobs = 0; iobs < segment.getNumObstacles(); ++iobs) {
             auto& obstacle = segment.get_obstacles(iobs);
             SimTK::CableSpanObstacleIndex ix = cable.addObstacle(
-                obstacle.getObstacle().getFrame().getMobilizedBodyIndex(),
-                obstacle.getObstacle().getTransform(),
-                obstacle.getObstacle().getSimTKContactGeometryPtr(),
+                obstacle.getContactGeometry().getFrame().getMobilizedBodyIndex(),
+                obstacle.getContactGeometry().getTransform(),
+                obstacle.getContactGeometry().getSimTKContactGeometryPtr(),
                 obstacle.get_contact_hint());
             _obstacleIndexes.push_back(ix);
         }
@@ -336,7 +317,9 @@ void Scholz2015GeometryPath::extendAddToSystem(
     } else if (get_algorithm() == "MinimumLength") {
         cable.setAlgorithm(SimTK::CableSpanAlgorithm::MinimumLength);
     } else {
-        throw Exception("Invalid algorithm: " + get_algorithm());
+        OPENSIM_THROW_FRMOBJ(Exception,
+            "Unknown algorithm '{}'. Supported algorithms are 'Scholz2015' "
+            "and 'MinimumLength'.", get_algorithm());
     }
     _index = cable.getIndex();
 }

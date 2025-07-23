@@ -75,7 +75,7 @@ int main() {
         model.getGround(), "wrap_sphere");
     model.addComponent(sphere);
 
-    auto* cylinder = new ContactCylinder(0.1, 0.2, SimTK::Vec3(0.75, 0.4, 0),
+    auto* cylinder = new ContactCylinder(0.1, SimTK::Vec3(0.75, 0.4, 0),
             SimTK::Vec3(0.), model.getGround());
     model.addComponent(cylinder);
 
@@ -91,6 +91,7 @@ int main() {
 
     // Initialize system
     SimTK::State state = model.initSystem();
+    model.print("Scholz2015GeometryPathModel.osim");
 
     // VisualizerUtilities::showModel(model);
 
