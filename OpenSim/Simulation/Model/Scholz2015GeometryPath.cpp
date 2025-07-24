@@ -236,6 +236,7 @@ void Scholz2015GeometryPath::produceForces(const SimTK::State& state,
     }
 
     const SimTK::CableSpan& cable = getCableSpan();
+    cable.calcLength(state);
     SimTK::SpatialVec unitBodyForce;
 
     // Force applied at cable origin point.

@@ -201,19 +201,93 @@ runtime evaluation. **/
 
 
 /**
- * A concrete class representing a path for muscles, ligaments, etc., based on
- * the wrapping algorithm described in the following publication:
+ * \section Scholz2015GeometryPath
+ * A concrete class representing a path object that begins at an origin point
+ * fixed to a body, wraps over geometric obstacles and passes through
+ * frictionless via points fixed to other bodies, and terminates at an insertion
+ * point.
  *
- *    Scholz, A., Sherman, M., Stavness, I. et al (2015). A fast multi-obstacle
- *    muscle wrapping method using natural geodesic variations. Multibody System
- *    Dynamics 36, 195–219, DOI https://doi.org/10.1007/s11044-015-9451-1.
+ * The path consists of straight line segments and curved line segments: a 
+ * curved segment over each obstacle, and straight segments connecting them to 
+ * each other and to via points and the end points. Each curved segment is 
+ * computed as a geodesic to give (in some sense) a shortest path over the 
+ * surface. During a simulation the cable can slide freely over the obstacle 
+ * surfaces. It can lose contact with a surface and miss that obstacle in a 
+ * straight line. Similarly the cable can touchdown on the obstacle if the
+ * surface obstructs the straight line segment again. The cable will always
+ * slide freely through any via points present in the path.
  *
- * The path begins at an origin point fixed to a body, wraps over geometric
- * obstacles and passes through frictionless via points fixed to other bodies,
- * and terminates at an insertion point fixed to a body. This implementation
- * is a wrapper around the `SimTK::CableSpan` class...
+ * The path is computed as an optimization problem using the previous optimal
+ * path as the warm start. This is done by computing natural geodesic
+ * corrections for each curve segment to compute the locally shortest path,
+ * as described in the following publication:
  *
- * See `SimTK::CableSpan` for more details on the underlying implementation.
+ *     Scholz, A., Sherman, M., Stavness, I. et al (2015). A fast multi-obstacle
+ *     muscle wrapping method using natural geodesic variations. Multibody
+ *     System Dynamics 36, 195–219.
+ *
+ * The overall path is locally the shortest, allowing winding over an obstacle
+ * multiple times, without flipping to the other side.
+ *
+ * This class encapsulates `SimTK::CableSpan`, the Simbody implementation of
+ * this algorithm. For the full details concerning this class, see the Simbody 
+ * API documentation.
+ * 
+ * ## Constructing a Scholz2015GeometryPath
+ * 
+ * The simplest path consists of a single line segment from an origin to an
+ * insertion point. 
+ *
+ * \code{.cpp}
+ * Model model = ModelFactory::createDoublePendulum();
+ * Scholz2015GeometryPath* path = new Scholz2015GeometryPath(
+ *           model.getGround(), SimTK::Vec3(0.25, 0, 0),
+ *           model.getComponent<Body>("/bodyset/b1"), SimTK::Vec3(-0.5, 0.1, 0));
+ * model.addComponent(path);
+ * \endcode
+ *
+ * \code{.cpp}
+ * auto* actu = new PathActuator();
+ * actu->set_path(Scholz2015GeometryPath());
+ * model.addComponent(actu);
+ *
+ * auto& path = actu->updPath<Scholz2015GeometryPath>();
+ * path.setOrigin(model.getGround(), SimTK::Vec3(0.25, 0, 0));
+ * path.setInsertion(model.getComponent<Body>("/bodyset/b1"), 
+ *                   SimTK::Vec3(-0.5, 0.1, 0));
+ * model.addComponent(path);
+ * \endcode
+ *
+ * ## Adding Wrap Obstacles
+ * 
+ * \code{.cpp}
+ * auto* ellipsoid = new ContactEllipsoid(SimTK::Vec3(0.1, 0.1, 0.3),
+ *         SimTK::Vec3(0., 0.2, 0), SimTK::Vec3(0), model.getGround());
+ * model.addComponent(ellipsoid);
+ *
+ * path.addObstacle(*ellipsoid, SimTK::Vec3(0.1, 0., 0.));
+ * \endcode
+ *
+ * ## Adding Via Points
+ *
+ * \code{.cpp}
+ * path.addViaPoint(model.getComponent<Body>("/bodyset/body"), 
+ *         SimTK::Vec3(0.1, 0., 0.));
+ * \endcode
+ *
+ * ## Path Ordering
+ * 
+ * \code{.cpp}
+ * path.addObstacle(*ellipsoid, SimTK::Vec3(0.1, 0., 0.));
+ * path.addViaPoint(model.getComponent<Body>("/bodyset/body"), SimTK::Vec3(0));
+ * path.addObstacle(*sphere, SimTK::Vec3(0., 0.5, 0.));
+ * \endcode
+ *
+ * \code{.cpp}
+ * path.addObstacle(*ellipsoid, SimTK::Vec3(0.1, 0., 0.));
+ * path.addObstacle(*sphere, SimTK::Vec3(0., 0.5, 0.));
+ * path.addViaPoint(model.getComponent<Body>("/bodyset/body"), SimTK::Vec3(0));
+ * \endcode
  *
  * @see Scholz2015GeometryPathSegment
  * @see Scholz2015GeometryPathObstacle
@@ -230,15 +304,16 @@ public:
     OpenSim_DECLARE_SOCKET(insertion, Station,
         "The insertion station of the path.");
     OpenSim_DECLARE_LIST_SOCKET(via_points, Station,
-        "The list of via points that the path may pass through.");
+        "The list of via points that the path passes through.");
 
 //=============================================================================
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_LIST_PROPERTY(stations, Station,
-        "The list of stations defining the path.");
+        "The list of stations defining the path including the origin, "
+        "insertion, and any via points.");
     OpenSim_DECLARE_LIST_PROPERTY(segments, Scholz2015GeometryPathSegment,
-        "The list of segments that the path may pass through.");
+        "The list of path segments.");
     OpenSim_DECLARE_PROPERTY(algorithm, std::string,
         "The algorithm used to compute the path. Options: 'Scholz2015' "
         "(default) or 'MinimumLength'.");
@@ -254,10 +329,10 @@ public:
      * Construct a Scholz2015GeometryPath with the specified origin and
      * insertion.
      *
-     * @param originFrame       the PhysicalFrame that the origin is attached to.
-     * @param originLocation    the location of the origin in `originFrame`.
-     * @param insertionFrame    the PhysicalFrame that the insertion is attached to.
-     * @param insertionLocation the location of the insertion in `insertionFrame`.
+     * @param originFrame       the origin's PhysicalFrame.
+     * @param originLocation    the origin location of in `originFrame`.
+     * @param insertionFrame    the insertion's PhysicalFrame.
+     * @param insertionLocation the insertion location in `insertionFrame`.
      */
     Scholz2015GeometryPath(
             const PhysicalFrame& originFrame,
