@@ -91,6 +91,9 @@ private:
     //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
+    using Object::operator=;
+    using Object::operator==;
+    using Object::operator<;
     ControlLinearNode& operator=(const ControlLinearNode &aControl);
     bool operator==(const ControlLinearNode &aControl) const;
     bool operator<(const ControlLinearNode &aControl) const;
