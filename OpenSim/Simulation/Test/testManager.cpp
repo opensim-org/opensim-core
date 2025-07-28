@@ -765,14 +765,3 @@ TEST_CASE("Manager is compatible with StatesTrajectoryReporter") {
         }
     }
 }
-
-TEST_CASE("Stepping to a past time should throw") {
-    Model model = createBallModel(true);
-    SimTK::State state = model.initSystem();
-    Manager manager(model);
-    manager.initialize(state);
-
-    CHECK_NOTHROW(manager.integrate(0.05));
-    CHECK_NOTHROW(manager.integrate(0.1));
-    CHECK_THROWS_AS(manager.integrate(0.08), Exception);
-}
