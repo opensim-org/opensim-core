@@ -88,9 +88,6 @@ class ControllerSet;
  * SimTK::TimeStepper is reinitialized and the internal data structures are
  * cleared.
  *
- * @note Data structures associated with an Analysis in the Model will **not**
- *       be cleared when reinitializing a Manager.
- *
  * \subsection man_results Obtaining simulation results
  * Results from a simulation can be obtained by enabling the appropriate
  * settings before calling Manager::integrate(). Manager::setPerformAnalyses()
@@ -102,9 +99,10 @@ class ControllerSet;
  * StatesTrajectory during a simulation; this setting is disabled by default
  * since it can have a significant impact on performance.
  *
- * When setWriteToStorage() is enabled, use getStateStorage() or getStatesTable()
- * to obtain the simulation trajectory. When setRecordStatesTrajectory() is
- * enabled, use getStatesTrajectory() to obtain the simulation trajectory.
+ * When setWriteToStorage(true) is called, use getStateStorage() or
+ * getStatesTable() to obtain the simulation trajectory. When
+ * setRecordStatesTrajectory(true) is called, use getStatesTrajectory() to
+ * obtain the simulation trajectory.
  */
 class OSIMSIMULATION_API Manager {
 public:
@@ -122,15 +120,15 @@ public:
     /**
      * Convenience constructor for creating and initializing a Manager.
      *
-     * Manager::initialize() is be called internally using the provided
+     * Manager::initialize() is called internally using the provided
      * SimTK::State. If integrator settings are changed after construction
-     * (e.g., via Manager::setIntegratorMethod).
+     * (e.g., via setIntegratorMethod()), then initialize() must be called
+     * again before calling integrate().
      */
     Manager(Model& model, const SimTK::State& state);
 
-    // The default constructor, previously deprecated, is now explicitly deleted
-    // to prevent accidental use. The Manager must be constructed with a Model
-    // using one of the convenient constructors above.
+    // The default constructor is explicitly deleted. The Manager must be
+    // constructed with a Model using one of the convenience constructors above.
     Manager() = delete;
 
     // This class would not behave properly if copied (we would need to write a
@@ -166,6 +164,8 @@ public:
      * @see AnalysisSet::step()
      * @note This setting is enabled by default. If you do not need to perform
      *       analyses, you can disable this setting to improve performance.
+     * @note When a Manager is reinitialized, the internal step count used for
+     *       calling AnalysisSet::step() is reset to zero.
      */
     void setPerformAnalyses(bool performAnalyses);
 
@@ -185,12 +185,16 @@ public:
      * %Set whether to record each SimTK::State from the integration into a
      * StatesTrajectory trajectory.
      *
+     * This option provides an alternative to setWriteToStorage(), which records
+     * state variable values at each step of the integration but not other 
+     * information contained in the SimTK::State (e.g., Lagrange multipliers,
+     * constraint errors, etc.).
+     *
      * @note This setting is disabled by default. Enabling this setting will
      *       have a significant impact on performance, greater than the speed
      *       reduction incurred from setWriteToStorage(). Therefore, it is
      *       recommend to disable this setting when generating many simulations
-     *       (e.g., optimizing a controller), and should only be enabled
-     *       when you need to analyze the trajectory of the states.
+     *       (e.g., optimizing a controller).
      */
     void setRecordStatesTrajectory(bool recordStatesTrajectory);
 
@@ -210,6 +214,8 @@ public:
         SemiExplicitEuler2 = 5, ///< 5 : For details, see SimTK::SemiExplicitEuler2Integrator.
         Verlet             = 6, ///< 6 : For details, see SimTK::VerletIntegrator.
         CPodes             = 7, ///< 7 : For details, see SimTK::CPodesIntegrator.
+
+        // No error control, reqiures a fixed step size argument on construction.
         // SemiExplicitEuler  = 8  ///< 8 : For details, see SimTK::SemiExplicitEulerIntegrator.
     };
 
@@ -223,28 +229,28 @@ public:
      *
      * A new SimTK::Integrator and SimTK::TimeStepper with default values are
      * created after each call to this method. Therefore, integrator settings
-     * (e.g., setIntegratorAccuracy) should be set after calling this method,
+     * (e.g., setIntegratorAccuracy()) must be set _after_ calling this method,
      * and you should call this method before Manager::initialize().
-
-      <b>C++ example</b>
-      \code{.cpp}
-      auto manager = Manager(model);
-      manager.setIntegratorMethod(Manager::IntegratorMethod::SemiExplicitEuler2);
-      \endcode
-
-      <b>Python example</b>
-      \code{.py}
-      import opensim
-      manager = opensim.Manager(model)
-      manager.setIntegratorMethod(opensim.Manager.IntegratorMethod_SemiExplicitEuler2)
-      \endcode
-
-      <b>MATLAB example</b>
-      \code{.m}
-      import org.opensim.modeling.*
-      manager = Manager(model);
-      manager.setIntegratorMethod(5);
-      \endcode
+     *
+     * <b>C++ example</b>
+     * \code{.cpp}
+     * auto manager = Manager(model);
+     * manager.setIntegratorMethod(Manager::IntegratorMethod::SemiExplicitEuler2);
+     * \endcode
+     *
+     * <b>Python example</b>
+     * \code{.py}
+     * import opensim
+     * manager = opensim.Manager(model)
+     * manager.setIntegratorMethod(opensim.Manager.IntegratorMethod_SemiExplicitEuler2)
+     * \endcode
+     *
+     * <b>MATLAB example</b>
+     * \code{.m}
+     * import org.opensim.modeling.*
+     * manager = Manager(model);
+     * manager.setIntegratorMethod(5);
+     * \endcode
      */
     void setIntegratorMethod(IntegratorMethod integMethod);
 
@@ -272,7 +278,7 @@ public:
      *       adaptive stepping, meaning that the step size is adjusted
      *       automatically during integration to maintain the desired accuracy.
      *       By calling this method, you set a lower bound on the step size,
-     *       which may degrade performance and accuracy.
+     *       which may degrade accuracy and even perfomance.
      */
     void setIntegratorMinimumStepSize(double hmin);
 
@@ -286,7 +292,7 @@ public:
      *       adaptive stepping, meaning that the step size is adjusted
      *       automatically during integration to maintain the desired accuracy.
      *       By calling this method, you set an upper bound on the step size,
-     *       which may degrade performance and accuracy.
+     *       which may degrade performance.
      */
     void setIntegratorMaximumStepSize(double hmax);
 
@@ -311,8 +317,7 @@ public:
      *       By calling this method, you override this behavior and set a fixed
      *       step size for the integrator, which may degrade performance and
      *       accuracy. If you need a fixed reporting interval, consider using
-     *       repeated calls to Manager::integrate() with the desired time
-     *       steps which will preserve internal adaptive stepping.
+     *       a Reporter which will preserve internal adaptive stepping.
      */
     void setIntegratorFixedStepSize(double stepSize);
 
@@ -341,7 +346,7 @@ public:
      * @note If a new integrator is set via setIntegratorMethod(), this
      *       setting will be cleared and set to the default value.
      */
-    void setIntegratorUseInfinityNorm(bool tf);
+    void setIntegratorUseInfinityNorm(bool useInfinityNorm);
 
     /**
      * (Advanced) %Set the tolerance within which constraints must be satisfied
@@ -372,9 +377,6 @@ public:
      * setIntegratorMethod(), this method must be called again, otherwise an
      * exception is thrown. Subsequent changes to the State object passed in
      * here will not affect the simulation.
-     *
-     * Changes to the integrator (e.g., setIntegratorAccuracy()) after calling
-     * initialize() may not have any effect.
      */
     void initialize(const SimTK::State& s);
 
@@ -386,9 +388,14 @@ public:
      * If you must update the SimTK::State in a loop, you must call
      * Manager::initialize() before each call to integrate(). This is because
      * discontinuous changes are considered "events" and cannot be handled
-     * during integration of the otherwise continuous system. If make changes to
-     * the model or state and continuing integrating without re-initializing,
-     * these changes may be ignored.
+     * during integration of the otherwise continuous system. If you make
+     * changes to the state and continue integrating without re-initializing,
+     * these changes will be ignored. If you make changes to the model and
+     * continue integrating without re-initializing, an exception will be thrown.
+     *
+     * If the provided final time is greater than or equal to the current time, 
+     * a warning will be logged and the current state will be returned without
+     * integration.
      *
      * @note The proper way to handle the simulation of a discontinuous system
      *       is to create a SimTK::EventHandler.
@@ -439,7 +446,6 @@ public:
      * @endcode
      *
      * Example: Integrate using a specified sequence of time steps
-
      * @code
      * state.setTime(0.0);
      * std::vector<double> times = {0.02, 0.04, 0.05, 0.06, 0.08, 0.1, 0.2};
@@ -509,6 +515,8 @@ private:
     std::unique_ptr<Storage> _stateStore;
 
     // HELPER METHOD
+    // Helper method to record state and analysis values at integration steps.
+    // `step = 0` denotes the first step, and `step = -1` denotes the final step.
     void record(const SimTK::State& state, int step);
 
 };  // END of class Manager

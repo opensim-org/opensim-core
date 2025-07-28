@@ -161,8 +161,8 @@ void Manager::setIntegratorInternalStepLimit(int nSteps) {
     _integ->setInternalStepLimit(nSteps);
 }
 
-void Manager::setIntegratorUseInfinityNorm(bool tf) {
-    _integ->setUseInfinityNorm(tf);
+void Manager::setIntegratorUseInfinityNorm(bool useInfinityNorm) {
+    _integ->setUseInfinityNorm(useInfinityNorm);
 }
 
 void Manager::setIntegratorConstraintTolerance(double tol) {
@@ -217,11 +217,14 @@ void Manager::record(const SimTK::State& state, int step) {
     }
 
     if (_recordStatesTrajectory) {
-        if (_statesTraj->getSize() > 0 &&
-                _statesTraj->back().getTime() == state.getTime()) {
-            return;
+        // This check is needed to avoid reappending the same state when
+        // integrate() is called multiple times (since the initial state of a
+        // subsequent call to integrate() is the last state of the previous
+        // call). Note that Storage::append() automatically checks for duplicate
+        // time values, so a similar check is not needed above.
+        if (!(_statesTraj->getSize() > 0 && step == 0)) {
+            _statesTraj->append(state);
         }
-        _statesTraj->append(state);
     }
 }
 
@@ -272,13 +275,10 @@ const SimTK::State& Manager::integrate(double finalTime) {
         "The initial state time is NaN. You must call Manager::initialize() "
         "before calling Manager::integrate().");
 
-    if (s.getTime() >= finalTime) {
-        log_warn(
-            "Initial time ({}) is greater than or equal to final time ({}). "
-            "Returning current state without integration.",
-            s.getTime(), finalTime);
-        return getState();
-    }
+    OPENSIM_THROW_IF(s.getTime() >= finalTime, Exception,
+        "Expected the final time to be greater than the current time "
+        "({:.2f} s), but the provided final time is ({:.2f} s).",
+        s.getTime(), finalTime);
 
     // Integrate.
     log_info("-------");

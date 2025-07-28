@@ -120,6 +120,9 @@ namespace {
         }
 }
 
+// Calculate the location, velocity, and acceleration of a Station with the same 
+// Manager many times. Previously, this would fail as repeated calls of 
+// TimeStepper::initialize() would trigger cache validation improperly.
 TEST_CASE("Station calculations with Manager") {
     Model pendulum;
     pendulum.setName("pendulum");
@@ -190,6 +193,9 @@ TEST_CASE("Station calculations with Manager") {
     }
 }
 
+// Change the initial value and speed of a falling ball between integrating 
+// using the same State. This ensures that integrating with the same State with 
+// different Managers triggers the cache updates correctly.
 TEST_CASE("State changes between integration") {
     Model model = createBallModel();
     Station* myStation = new Station();
@@ -264,6 +270,8 @@ TEST_CASE("State changes between integration") {
 
 }
 
+// Update the excitation of a muscle in the arm26 model between subsequent 
+// integrations.
 TEST_CASE("Excitation updates with Manager") {
     Model arm("arm26.osim");
 
@@ -310,6 +318,7 @@ TEST_CASE("Excitation updates with Manager") {
     }
 }
 
+// Ensure different constructors work as intended.
 TEST_CASE("Constructors") {
     Model model = createBallModel();
     SimTK::State& state = model.initSystem();
@@ -369,6 +378,7 @@ TEST_CASE("Constructors") {
     }
 }
 
+// Ensure setting integrator options works as intended.
 TEST_CASE("Integrator interface") {
     Model model = createBallModel();
     model.initSystem();
@@ -418,13 +428,14 @@ TEST_CASE("Integrator interface") {
 
     // Make some changes to the settings. We can't check to see if these 
     // actually changed because IntegratorRep is not exposed.
-     manager.setIntegratorMethod(Manager::IntegratorMethod::ExplicitEuler);
+    manager.setIntegratorMethod(Manager::IntegratorMethod::ExplicitEuler);
     CHECK_NOTHROW(manager.setIntegratorAccuracy(0.314));
     CHECK_NOTHROW(manager.setIntegratorMinimumStepSize(0.11));
     CHECK_NOTHROW(manager.setIntegratorMaximumStepSize(0.22));
     CHECK_NOTHROW(manager.setIntegratorInternalStepLimit(999));
 }
 
+// Test that misuse actually triggers exceptions.
 TEST_CASE("Exceptions") {
     Model arm1("arm26.osim");
 
@@ -647,6 +658,20 @@ TEST_CASE("Updating the integrator") {
     CHECK_NOTHROW(manager.integrate(2.0));
 }
 
+TEST_CASE("Updating the integrator settings after initializing") {
+    Model model = createBallModel(true);
+    SimTK::State state = model.initSystem();
+    Manager manager(model);
+    manager.initialize(state);
+    manager.setIntegratorFixedStepSize(0.001);
+    manager.integrate(1.0);
+    CHECK(manager.getState().getTime() == 1.0);
+    
+    TimeSeriesTable statesTable = manager.getStatesTable();
+    CHECK(statesTable.getNumRows() == 1001);
+    CHECK(manager.getStatesTable().getNumColumns() == 12);
+}
+
 TEST_CASE("Updating states") {
     Model model = createBallModel(false);
     SimTK::State defaultState = model.initSystem();
@@ -678,7 +703,7 @@ TEST_CASE("Updating states") {
 
 TEST_CASE("Updating controls") {
     Model model = createBallModel(false);
-    // this custom controller allows us update the controls with the state
+    // this custom controller allows us to update the controls with the state
     DiscreteController* controller = new DiscreteController();
     controller->setName("discrete_controller");
     model.addController(controller);
@@ -739,4 +764,15 @@ TEST_CASE("Manager is compatible with StatesTrajectoryReporter") {
             }
         }
     }
+}
+
+TEST_CASE("Stepping to a past time should throw") {
+    Model model = createBallModel(true);
+    SimTK::State state = model.initSystem();
+    Manager manager(model);
+    manager.initialize(state);
+
+    CHECK_NOTHROW(manager.integrate(0.05));
+    CHECK_NOTHROW(manager.integrate(0.1));
+    CHECK_THROWS_AS(manager.integrate(0.08), Exception);
 }
