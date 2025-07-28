@@ -112,46 +112,92 @@ using namespace OpenSim;
 //     return EXIT_SUCCESS;
 // }
 
-int main() {
-    Model model = ModelFactory::createDoublePendulum();
-    // model.setUseVisualizer(true);
-    // model.updComponent<Coordinate>("/jointset/j0/q0").setDefaultValue(-1.2);
-    // model.updComponent<Coordinate>("/jointset/j1/q1").setDefaultValue(0.4);
+void simulateGeometryPath() {
 
-    // Create a PathActuator with a Scholz2015GeometryPath.
-    // auto* actu = new PathActuator();
-    // actu->set_path(Scholz2015GeometryPath());
-    // model.addComponent(actu);   
+    Model model = ModelFactory::createDoublePendulum();
+    // model.updComponent<Coordinate>("/jointset/j0/q0").setDefaultValue(-1.0);
+    // model.updComponent<Coordinate>("/jointset/j1/q1").setDefaultValue(0.25);
+    model.setUseVisualizer(true);
+
+    // Create a PathActuator with a GeometryPath.
+    auto* actu = new PathActuator();
+    actu->set_path(GeometryPath());
+    model.addComponent(actu);   
 
     // Set the path's origin and insertion.
-    // Scholz2015GeometryPath& path = actu->updPath<Scholz2015GeometryPath>();
-    Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
-    path->setOrigin(model.getGround(), SimTK::Vec3(0.25, 0, 0));
-    path->setInsertion(model.getComponent<Body>("/bodyset/b1"), 
+    GeometryPath& path = actu->updPath<GeometryPath>();
+    path.appendNewPathPoint("origin", model.getGround(), SimTK::Vec3(0.25, 0, 0));
+    path.appendNewPathPoint("insertion", model.getComponent<Body>("/bodyset/b1"), 
             SimTK::Vec3(-0.5, 0.1, 0));
 
-    auto* ellipsoid = new ContactEllipsoid(SimTK::Vec3(0.1, 0.1, 0.3),
-        SimTK::Vec3(0., 0.2, 0), SimTK::Vec3(0), model.getComponent<Body>("/bodyset/b0"));
-    model.addComponent(ellipsoid);
-    path->addObstacle(*ellipsoid, SimTK::Vec3(0.5, 0.5, 0.));
-    
-    model.addComponent(path);
+    auto wrapFrame = new PhysicalOffsetFrame("patellaFrame",
+        model.getComponent<Body>("/bodyset/b0"), SimTK::Transform(SimTK::Vec3(0, 0.05, 0)));
+    // auto obstacle = new WrapEllipsoid();
+    // obstacle->set_dimensions(SimTK::Vec3(0.2, 0.2, 0.5));
+    // obstacle->set_quadrant("x");
+    auto obstacle = new WrapCylinder();
+    obstacle->set_radius(0.2);
+    obstacle->set_length(0.5);
+    obstacle->set_quadrant("x");
 
-    // Add a via point.
-    // path.addViaPoint(model.getComponent<Body>("/bodyset/b0"), 
-    //         SimTK::Vec3(-0.5, 0.1, 0));
+    wrapFrame->addWrapObject(obstacle);
+    model.updComponent<Body>("/bodyset/b0").addComponent(wrapFrame);
 
+    path.addPathWrap(*obstacle);
 
 
     SimTK::State state = model.initSystem();
-    // VisualizerUtilities::showModel(model);
-
     Manager manager(model);
+    manager.setIntegratorMethod(Manager::IntegratorMethod::SemiExplicitEuler2);
     manager.initialize(state);
-    manager.integrate(10.0);
 
-    // Visualize
-    TimeSeriesTable table = manager.getStatesTable();
-    VisualizerUtilities::showMotion(model, table);
+    auto start = std::chrono::high_resolution_clock::now();
+    manager.integrate(10.0);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "Integration took " << elapsed.count() << " seconds." << std::endl;
+}
+
+void simulateScholz2015GeometryPath() {
+
+    Model model = ModelFactory::createDoublePendulum();
+    // model.updComponent<Coordinate>("/jointset/j0/q0").setDefaultValue(-1.0);
+    // model.updComponent<Coordinate>("/jointset/j1/q1").setDefaultValue(0.25);
+    model.setUseVisualizer(true);
+
+    // Create a PathActuator with a Scholz2015GeometryPath.
+    auto* actu = new PathActuator();
+    actu->set_path(Scholz2015GeometryPath());
+    model.addComponent(actu);   
+
+    // Set the path's origin and insertion.
+    Scholz2015GeometryPath& path = actu->updPath<Scholz2015GeometryPath>();
+    path.setOrigin(model.getGround(), SimTK::Vec3(0.25, 0, 0));
+    path.setInsertion(model.getComponent<Body>("/bodyset/b1"), 
+            SimTK::Vec3(-0.5, 0.1, 0));
+
+    auto* obstacle = new ContactEllipsoid(SimTK::Vec3(0.2, 0.2, 0.5),
+        SimTK::Vec3(0., 0.05, 0), SimTK::Vec3(0), model.getComponent<Body>("/bodyset/b0"));
+    // auto* obstacle = new ContactCylinder(0.2,
+    //     SimTK::Vec3(0., 0.05, 0), SimTK::Vec3(0), model.getComponent<Body>("/bodyset/b0"));
+    model.addComponent(obstacle);
+    path.addObstacle(*obstacle, SimTK::Vec3(0.5, 0.5, 0.));
+
+    SimTK::State state = model.initSystem();
+    Manager manager(model);
+    manager.setIntegratorMethod(Manager::IntegratorMethod::SemiExplicitEuler2);
+    manager.initialize(state);
+
+    auto start = std::chrono::high_resolution_clock::now();
+    manager.integrate(10.0);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "Integration took " << elapsed.count() << " seconds." << std::endl;
+}
+
+int main() {
+    // simulateGeometryPath();
+    simulateScholz2015GeometryPath();
+    return 0;
 }
 
