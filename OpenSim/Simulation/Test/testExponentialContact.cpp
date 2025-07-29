@@ -9,7 +9,7 @@
  *                                                                            *
  * Copyright (c) 2025 Stanford University and the Authors                     *
  * Author(s): F. C. Anderson                                                  *
- * Contributor(s): Nicholas Bianco.                                           *
+ * Contributor(s): Nicholas Bianco                                            *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -572,6 +572,8 @@ TEST_CASE("Discrete State Accessors")
     CHECK(vecf[0] == veci[0]);
     // vecf[1] won't be equal because the anchor point is always on the contact
     // plane while the body station is usually located above the contact plane.
+    CHECK_THAT(veci[1], 
+            Catch::Matchers::WithinAbs(tester.defaultFloorOrigin[1], 1e-10));
     CHECK(vecf[2] == veci[2]);
 }
 
@@ -760,10 +762,10 @@ TEST_CASE("Spring Parameters")
     spr.setParameters(pi);
     CHECK_NOTHROW( spr.assertPropertiesAndParametersEqual() );
 
-    // Make a change to musk that should also change mus
+    // Make a change to muk that should also change mus
     musi = pi.getInitialMuStatic();
     muki = pi.getInitialMuKinetic();
-    pf.setInitialMuKinetic(musi + delta);  // this should enforce mus >= musk
+    pf.setInitialMuKinetic(musi + delta);  // this should enforce mus >= muk
     musf = pf.getInitialMuStatic();
     mukf = pf.getInitialMuKinetic();
     CHECK(mukf == musi + delta);
