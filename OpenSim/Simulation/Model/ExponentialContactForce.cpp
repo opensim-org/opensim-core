@@ -359,8 +359,8 @@ getMuStatic(const SimTK::State& state) const {
 
 void
 ExponentialContactForce::
-setMuKinetic(SimTK::State& state, SimTK::Real mus) {
-    updExponentialSpringForce().setMuKinetic(state, mus);
+setMuKinetic(SimTK::State& state, SimTK::Real muk) {
+    updExponentialSpringForce().setMuKinetic(state, muk);
 }
 
 SimTK::Real
@@ -507,7 +507,6 @@ getRecordValues(const SimTK::State& state) const  {
             .getMobilizedBodyIndex();
     SimTK::SpatialVec& bodyForce = bForces(bodyIndex);
     force = bodyForce[1];
-    double fy = force[1];
     torque = bodyForce[0];
     values.append(3, &force[0]);
     values.append(3, &torque[0]);
