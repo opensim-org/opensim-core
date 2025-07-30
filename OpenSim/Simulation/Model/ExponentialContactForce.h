@@ -81,14 +81,15 @@ A value of 0.0 indicates that p₀ is "static" or fixed in place, in which case
 μ = μₖ. A value between 0.0 and 1.0 indicates that a transition from fixed to
 sliding or from sliding to fixed is underway, in which case μₖ ≤ μ ≤ μₛ.
 Sliding is also used to blend between friction Model 1 and Model 2 (see
-above).
+below).
 
 ### Computations and Coordinate Frames
-The positive z-axis of the contact plane defines its normal. The positive
-z-axis is the axis along which the repelling normal force (modeled using an
-exponential) is applied. The x-axis and y-axis of the contact plane together
-define the tangent plane. Friction forces will always be tangent to the x-y
-plane.
+The positive z-axis of the contact plane frame defines the normal direction.
+The positive z-axis is the axis along which the repelling normal force
+(modeled using an exponential) is applied. The x-axis and y-axis of the
+contact plane frame together define the plane in which any friction force
+acts. The friction force can be properly thought of as the tangent component
+of the total contact force.
 
 In the equations below, all quantities are expressed in the frame of the
 contact plane. A variable with a "z" suffix (e.g., pz, vz, or cz) refers
@@ -126,6 +127,11 @@ which has the form of the Hunt & Crossley damping model:
         K. H. Hunt and F. R. E. Crossley (1975). Coefficient of Restitution
         Interpreted as Damping in Vibroimpact. ASME Journal of Applied
         Mechanics, pp. 440-445.
+
+The terms 'contact plane', 'friction plane', and 'tangent plane' are synonymous
+with one another. They all refer to the plane defined by the x-axis and y-axis
+of the contact plane frame. Throughout the documentation, the term 
+'contact plane' is preferentially used.
 
 ### Friction Force (x-y plane)
 

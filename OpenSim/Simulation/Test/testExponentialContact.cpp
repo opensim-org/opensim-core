@@ -563,18 +563,17 @@ TEST_CASE("Discrete State Accessors")
     // exactly to the position of the body station of its spring.
     // Note - this is also a good check for 1) resetAnchorPoint(),
     // 2) getAnchorPointPosition(), and 3) getStationPosition().
+    Vec3 vecAnch{NaN}, vecSta{NaN};
     state.setTime(0.0); // Resets the system to Stage::Time
-    CHECK_THROWS(veci = spr.getAnchorPointPosition(state));
+    // Check that an exception is thrown if stage is not Stage::Dynamics.
+    CHECK_THROWS(vecAnch = spr.getAnchorPointPosition(state));
     spr.resetAnchorPoint(state);
     tester.model->getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
-    veci = spr.getAnchorPointPosition(state);
-    vecf = spr.getStationPosition(state);
-    CHECK(vecf[0] == veci[0]);
-    // vecf[1] won't be equal because the anchor point is always on the contact
-    // plane while the body station is usually located above the contact plane.
-    CHECK_THAT(veci[1], 
-            Catch::Matchers::WithinAbs(tester.defaultFloorOrigin[1], 1e-10));
-    CHECK(vecf[2] == veci[2]);
+    vecAnch = spr.getAnchorPointPosition(state, false);
+    vecSta = spr.getStationPosition(state, false);
+    CHECK(vecAnch[0] == vecSta[0]);
+    CHECK(vecAnch[1] == vecSta[1]);
+    CHECK(vecAnch[2] == 0.0);
 }
 
 
