@@ -98,6 +98,11 @@ calculation of the normal force. A variable with an "xy" suffix
 (e.g., pxy, vxy, or cxy) refers to a quantity that lies in or is tangent to
 the contact plane or that pertains to calculation of the friction force.
 
+The terms 'contact plane', 'friction plane', and 'tangent plane' are synonymous
+with one another. They all refer to the plane defined by the x-axis and y-axis
+of the contact plane frame. Throughout the documentation, the term 
+'contact plane' is preferentially used.
+
 ### Normal Force (positive z-axis)
 
 The elastic part of the normal force is computed using an exponential
@@ -127,11 +132,6 @@ which has the form of the Hunt & Crossley damping model:
         K. H. Hunt and F. R. E. Crossley (1975). Coefficient of Restitution
         Interpreted as Damping in Vibroimpact. ASME Journal of Applied
         Mechanics, pp. 440-445.
-
-The terms 'contact plane', 'friction plane', and 'tangent plane' are synonymous
-with one another. They all refer to the plane defined by the x-axis and y-axis
-of the contact plane frame. Throughout the documentation, the term 
-'contact plane' is preferentially used.
 
 ### Friction Force (x-y plane)
 
