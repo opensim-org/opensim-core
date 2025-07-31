@@ -95,9 +95,6 @@
 #include "Wrap/WrapSphere.h"
 #include "Wrap/WrapTorus.h"
 #include "Wrap/WrapObjectSet.h"
-#include "Wrap/WrapCylinderObst.h"
-#include "Wrap/WrapSphereObst.h"
-#include "Wrap/WrapDoubleCylinderObst.h"
 
 #include "SimbodyEngine/SimbodyEngine.h"
 #include "SimbodyEngine/Body.h"

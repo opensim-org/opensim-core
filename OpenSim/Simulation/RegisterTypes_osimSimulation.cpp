@@ -103,9 +103,6 @@
 #include "Wrap/WrapSphere.h"
 #include "Wrap/WrapTorus.h"
 #include "Wrap/WrapObjectSet.h"
-#include "Wrap/WrapCylinderObst.h"
-#include "Wrap/WrapSphereObst.h"
-#include "Wrap/WrapDoubleCylinderObst.h"
 
 #include "SimbodyEngine/SimbodyEngine.h"
 #include "SimbodyEngine/Body.h"
@@ -215,9 +212,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( WrapSphere() );
     Object::registerType( WrapTorus() );
     Object::registerType( WrapObjectSet() );
-    Object::registerType( WrapCylinderObst() );
-    Object::registerType( WrapSphereObst() );
-    Object::registerType( WrapDoubleCylinderObst() );
 
     // CURRENT RELEASE
     Object::registerType( SimbodyEngine() );

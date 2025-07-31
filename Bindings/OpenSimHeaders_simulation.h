@@ -74,9 +74,6 @@
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include <OpenSim/Simulation/Wrap/PathWrapSet.h>
-#include <OpenSim/Simulation/Wrap/WrapCylinderObst.h>
-#include <OpenSim/Simulation/Wrap/WrapSphereObst.h>
-#include <OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.h>
 
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
