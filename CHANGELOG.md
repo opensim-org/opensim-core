@@ -15,6 +15,7 @@ v4.6
 - Updated the dependency `spdlog` to `v1.15.3`. (#4067)
 - Fixed bug in `C3DFileAdapter` where there was an error when reading C3D files with more than 255 markers. It now excludes non-marker points (POINT:ANGLES, POINT:POWERS, POINT:FORCES, POINT:MOMENTS, and POINT:SCALARS). (#3606)
 - updated `ezc3d` version to `1.5.19`.
+- Removed `WrapCylinderObst`, `WrapDoubleCylinderObst`, and `WrapSphereObst`. (#4120)
 
 v4.5.2
 ======

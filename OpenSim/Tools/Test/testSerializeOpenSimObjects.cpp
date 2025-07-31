@@ -121,17 +121,6 @@ int main()
                 wrap->set_inner_radius(0.01);
                 wrap->set_quadrant("+x");
                 randClone = wrap;
-            } else if (auto* wrap = dynamic_cast<WrapCylinderObst*>(clone)) {
-                randomize(wrap);
-                wrap->set_wrapDirection("righthand");
-                wrap->set_quadrant("+x");
-                randClone = wrap;
-            } else if (auto* wrap = dynamic_cast<WrapDoubleCylinderObst*>(clone)) {
-                randomize(wrap);
-                wrap->set_wrapUcylDirection("righthand");
-                wrap->set_wrapVcylDirection("righthand");
-                wrap->set_quadrant("+x");
-                randClone = wrap;
             } else if (auto* wrap = dynamic_cast<WrapObject*>(clone)) {
                 randomize(wrap);
                 wrap->set_quadrant("+x");
