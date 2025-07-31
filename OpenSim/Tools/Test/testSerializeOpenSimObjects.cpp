@@ -35,7 +35,7 @@ void testPropertiesDump(const OpenSim::Object& aObject);
 
 int testUnrecognizedTypes() {
     try {
-        Object* newObject = Object::newInstanceOfType("Unreccognized");
+        Object* newObject = Object::newInstanceOfType("Unrecognized");
     } catch (Exception&) {
         return 0;
     }
@@ -91,18 +91,51 @@ int main()
         for (int i=0; i< availableComponentTypes.getSize(); i++){
             Object* clone = availableComponentTypes[i]->clone();
             Object* randClone;
-            // FunctionBasedPath requires that its properties follow specific
-            // requirements. For example, `length_function` must have the same
-            // number arguments as `coordinate_paths` and the coordinate paths
-            // must match a 'Coordinate' in the model. Therefore, we must make
-            // sure we obey these requirements before randomizing the Function
-            // property value.
+    
             if (auto* path = dynamic_cast<FunctionBasedPath*>(clone)){
+                // FunctionBasedPath requires that its properties follow specific
+                // requirements. For example, `length_function` must have the same
+                // number arguments as `coordinate_paths` and the coordinate paths
+                // must match a 'Coordinate' in the model. Therefore, we must make
+                // sure we obey these requirements before randomizing the Function
+                // property value.
                 path->setCoordinatePaths({"/jointset/slider/position"});
                 LinearFunction f = LinearFunction(1.0, 0.0);
                 randomize(&f);
                 path->setLengthFunction(f);
                 randClone = path;
+            } else if (dynamic_cast<Coordinate*>(clone)) {
+                // TODO: randomizing Coordinate leads to invalid range property
+                // values. But even with the fix below, further randomization
+                // leads to a segfault due to invalid Property indexes when
+                // Joints try to access Coordinates.
+                // randomize(coord);
+                // Array<double> defaultRange(-10.0, 2); 
+                // defaultRange[1] = 10.0; 
+                // coord->set_range(defaultRange); 
+                // randClone = coord;
+                continue;
+            } else if (auto* wrap = dynamic_cast<WrapTorus*>(clone)) {
+                randomize(wrap);
+                wrap->set_outer_radius(0.05);
+                wrap->set_inner_radius(0.01);
+                wrap->set_quadrant("+x");
+                randClone = wrap;
+            } else if (auto* wrap = dynamic_cast<WrapCylinderObst*>(clone)) {
+                randomize(wrap);
+                wrap->set_wrapDirection("righthand");
+                wrap->set_quadrant("+x");
+                randClone = wrap;
+            } else if (auto* wrap = dynamic_cast<WrapDoubleCylinderObst*>(clone)) {
+                randomize(wrap);
+                wrap->set_wrapUcylDirection("righthand");
+                wrap->set_wrapVcylDirection("righthand");
+                wrap->set_quadrant("+x");
+                randClone = wrap;
+            } else if (auto* wrap = dynamic_cast<WrapObject*>(clone)) {
+                randomize(wrap);
+                wrap->set_quadrant("+x");
+                randClone = wrap;
             } else {
                 randClone = randomize(clone);
             }
