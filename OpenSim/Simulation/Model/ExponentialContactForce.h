@@ -486,14 +486,6 @@ public:
     Component::getDiscreteVariableValue(). */
     std::string getSlidingDiscreteStateName() const { return "sliding"; }
 
-    // 0.0 ≤ Sliding ≤ 1.0.
-    // A value of 0.0 indicates that p₀ is "static" or fixed in place, in which case
-    // μ = μₛ. A value of 1.0 indicates that p₀ is "kinetic" or sliding, in which case
-    // μ = μₖ. A value between 0.0 and 1.0 indicates that a transition from fixed to
-    // sliding or from sliding to fixed is underway, in which case μₖ ≤ μ ≤ μₛ.
-    // Sliding is also used to blend between friction Model 1 and Model 2 (see
-    // above).
-
     /** Get the Sliding state of this exponential contact instance after it
     has been updated to be consistent with the System State. The Sliding state
     lies between 0.0 and 1.0, where 0.0 indicates that p₀ (the elastic anchor)
