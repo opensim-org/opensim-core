@@ -71,8 +71,8 @@ TEST_CASE("Suspended pendulum") {
     auto* actu = new PathSpring();
     actu->setName("path_spring");
     actu->setRestingLength(0.0);
-    actu->setDissipation(2.0);
-    actu->setStiffness(50.0);
+    actu->setDissipation(5.0);
+    actu->setStiffness(10.0);
     actu->set_path(Scholz2015GeometryPath());
     model.addComponent(actu);   
 
@@ -94,17 +94,11 @@ TEST_CASE("Suspended pendulum") {
 
         // Simulate.
         Manager manager(model);
-        manager.setIntegratorMethod(Manager::IntegratorMethod::SemiExplicitEuler2);
         manager.initialize(state);
+        state = manager.integrate(10.0);
 
-        auto start = std::chrono::high_resolution_clock::now();
-        manager.integrate(10.0);
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = end - start;
-        std::cout << "Integration took " << elapsed.count() << " seconds." << std::endl;
-    
-        TimeSeriesTable table = manager.getStatesTable();
-        VisualizerUtilities::showMotion(model, table);
-
+        model.realizePosition(state);
+        std::cout << "final length: " << path.getLength(state) << std::endl;
+        std::cout << "final speed: " << state.getU() << std::endl;
     }
 }

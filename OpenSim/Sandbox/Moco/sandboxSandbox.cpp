@@ -339,8 +339,8 @@ void simulateContactCylinder() {
     auto* actu = new PathSpring();
     actu->setName("path_spring");
     actu->setRestingLength(0.0);
-    actu->setDissipation(2.0);
-    actu->setStiffness(50.0);
+    actu->setDissipation(5.0);
+    actu->setStiffness(10.0);
     actu->set_path(Scholz2015GeometryPath());
     model.addComponent(actu);   
 
