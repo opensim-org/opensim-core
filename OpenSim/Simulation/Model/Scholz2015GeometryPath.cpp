@@ -157,7 +157,7 @@ void Scholz2015GeometryPath::addViaPoint(const PhysicalFrame& frame,
     int vix = append_stations(Station());
     Station& viaPoint = upd_stations(vix);
     viaPoint.setName("via_point_" + 
-        std::to_string(getSocket<Station>("via_points").getNumConnectees()));
+        std::to_string(getSocket<Station>("via_points").getConnectees().size()));
     viaPoint.set_location(location);
     viaPoint.setParentFrame(frame);
 

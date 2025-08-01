@@ -24,14 +24,14 @@ function(SetDefaultCMakeInstallPrefix)
     get_filename_component(BASE_DIR ${BASE_DIR} DIRECTORY)
     # Default install prefix for OpenSim dependencies. If user changes
     # CMAKE_INSTALL_PREFIX, this directory will be removed.
-    set(DEFAULT_CMAKE_INSTALL_PREFIX 
+    set(DEFAULT_CMAKE_INSTALL_PREFIX
         ${BASE_DIR}/opensim_dependencies_install
         CACHE
         INTERNAL
         "Default CMAKE_INSTALL_PREFIX for OpenSim dependencies.")
 
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-        set(CMAKE_INSTALL_PREFIX 
+        set(CMAKE_INSTALL_PREFIX
             ${DEFAULT_CMAKE_INSTALL_PREFIX}
             CACHE
             PATH

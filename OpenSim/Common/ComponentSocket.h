@@ -402,6 +402,18 @@ public:
     /** Return a const reference to the object connected to this Socket. */
     const T& getConnectee(int index = -1) const;
 
+    /** Get const access to the connectees in this Socket.
+        You can use this to iterate through the connectees.
+        @code{.cpp}
+        for (const auto& connectee : getConnectees()) {
+            std::cout << connectee.getName() << std::endl;
+        }
+        @endcode
+    */
+    const ConnecteeList& getConnectees() const {
+        return _connectees;
+    }
+
     bool canConnectTo(const Object& object) const override {
         return dynamic_cast<const T*>(&object) != nullptr;
     }

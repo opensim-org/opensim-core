@@ -24,6 +24,9 @@
 #include <OpenSim/Simulation/Model/Scholz2015GeometryPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Actuators/ModelFactory.h>
+#include <OpenSim/Simulation/Model/PathSpring.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
 
 #include <catch2/catch_all.hpp>
 
@@ -53,5 +56,55 @@ TEST_CASE("Scholz2015GeometryPath interface") {
     SECTION("Insertion is already connected") {
         CHECK_THROWS_AS(path->setInsertion(*body, SimTK::Vec3(0)),
             Exception);
+    }
+}
+
+
+TEST_CASE("Suspended pendulum") {
+
+    // Create a single pendulum model.
+    Model model = ModelFactory::createPendulum();
+
+    // Add a path spring that will wrap over each ContactGeometry, suspending 
+    // the pendulum. We use a relatively large dissipation coefficient to ensure
+    // that the pendulum comes to rest quickly.
+    auto* actu = new PathSpring();
+    actu->setName("path_spring");
+    actu->setRestingLength(0.0);
+    actu->setDissipation(2.0);
+    actu->setStiffness(50.0);
+    actu->set_path(Scholz2015GeometryPath());
+    model.addComponent(actu);   
+
+    // Set the path's origin and insertion.
+    Scholz2015GeometryPath& path = actu->updPath<Scholz2015GeometryPath>();
+    path.setOrigin(model.getGround(), SimTK::Vec3(-0.1, 0, 0));
+    path.setInsertion(model.getComponent<Body>("/bodyset/b0"), 
+            SimTK::Vec3(-0.5, 0.1, 0));
+
+
+    SECTION("ContactCylinder") {
+        auto* obstacle = new ContactCylinder(0.1,
+        SimTK::Vec3(0.25, 0, 0), SimTK::Vec3(0), model.getGround());
+        model.addComponent(obstacle);
+        path.addObstacle(*obstacle, SimTK::Vec3(0.0, 0.1, 0.0));
+
+        // Initialize the system.
+        SimTK::State state = model.initSystem();
+
+        // Simulate.
+        Manager manager(model);
+        manager.setIntegratorMethod(Manager::IntegratorMethod::SemiExplicitEuler2);
+        manager.initialize(state);
+
+        auto start = std::chrono::high_resolution_clock::now();
+        manager.integrate(10.0);
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
+        std::cout << "Integration took " << elapsed.count() << " seconds." << std::endl;
+    
+        TimeSeriesTable table = manager.getStatesTable();
+        VisualizerUtilities::showMotion(model, table);
+
     }
 }
