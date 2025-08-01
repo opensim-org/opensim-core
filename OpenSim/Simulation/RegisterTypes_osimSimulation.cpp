@@ -48,6 +48,7 @@
 #include "Model/CoordinateLimitForce.h"
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
+#include "Model/ExponentialContactForce.h"
 #include "Model/HuntCrossleyForce.h"
 #include "Model/SmoothSphereHalfSpaceForce.h"
 #include "Model/Ligament.h"
@@ -248,6 +249,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ContactSphere() );
     Object::registerType( CoordinateLimitForce() );
     Object::registerType( SmoothSphereHalfSpaceForce() );
+    Object::registerType( ExponentialContactForce() );
+    Object::registerType( ExponentialContactForce::Parameters() );
     Object::registerType( HuntCrossleyForce() );
     Object::registerType( ElasticFoundationForce() );
     Object::registerType( HuntCrossleyForce::ContactParameters() );
@@ -311,30 +314,30 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::renameType("MovingMusclePoint", "MovingPathPoint");
     Object::renameType("MusclePointSet",    "PathPointSet");
 
-    Object::renameType("MuscleMetabolicPowerProbeUmberger2010",  
+    Object::renameType("MuscleMetabolicPowerProbeUmberger2010",
         "Umberger2010MuscleMetabolicsProbe");
 
-    Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter",  
+    Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameter",
         "Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter");
 
-    Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet",  
+    Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet",
         "Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet");
 
   } catch (const std::exception& e) {
-    std::cerr 
+    std::cerr
         << "ERROR during osimSimulation Object registration:\n"
         << e.what() << "\n";
   }
 }
 
 
-osimSimulationInstantiator::osimSimulationInstantiator() 
-{ 
-        registerDllClasses(); 
-} 
-    
-void osimSimulationInstantiator::registerDllClasses() 
-{ 
-        RegisterTypes_osimSimulation(); 
-} 
-    
+osimSimulationInstantiator::osimSimulationInstantiator()
+{
+        registerDllClasses();
+}
+
+void osimSimulationInstantiator::registerDllClasses()
+{
+        RegisterTypes_osimSimulation();
+}
+

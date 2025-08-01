@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 #include "Assertion.h"
@@ -69,7 +69,7 @@ template<class T>
 class Array {
 
 public:
-    Array(Array const&) = default;;
+    Array(Array const&) = default;
     Array(Array&&) noexcept = default;
     Array& operator=(Array const&) = default;
     Array& operator=(Array&&) noexcept = default;
