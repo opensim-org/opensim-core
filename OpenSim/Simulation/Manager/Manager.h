@@ -186,7 +186,7 @@ public:
      * StatesTrajectory trajectory.
      *
      * This option provides an alternative to setWriteToStorage(), which records
-     * state variable values at each step of the integration but not other 
+     * state variable values at each step of the integration but not other
      * information contained in the SimTK::State (e.g., Lagrange multipliers,
      * constraint errors, etc.).
      *
@@ -393,7 +393,7 @@ public:
      * these changes will be ignored. If you make changes to the model and
      * continue integrating without re-initializing, an exception will be thrown.
      *
-     * If the provided final time is greater than or equal to the current time, 
+     * If the provided final time is greater than or equal to the current time,
      * an exception is thrown.
      *
      * @note The proper way to handle the simulation of a discontinuous system
