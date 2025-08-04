@@ -275,12 +275,10 @@ const SimTK::State& Manager::integrate(double finalTime) {
         "The initial state time is NaN. You must call Manager::initialize() "
         "before calling Manager::integrate().");
 
-    if (s.getTime() >= finalTime) {
-        log_warn("Initial time ({:.2f}) is greater than or equal to final time "
-            "({:.2f}). Returning current state without integration.",
-            s.getTime(), finalTime);
-        return getState();
-    }
+    OPENSIM_THROW_IF(finalTime <= s.getTime(), Exception,
+        "Expected the final time to be greater than initial time, but received "
+        "a final time of {:.2f} and an initial time of {:.2f}.",
+        finalTime, s.getTime());
 
     // Integrate.
     log_info("-------");

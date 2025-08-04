@@ -394,8 +394,7 @@ public:
      * continue integrating without re-initializing, an exception will be thrown.
      *
      * If the provided final time is greater than or equal to the current time, 
-     * a warning will be logged and the current state will be returned without
-     * integration.
+     * an exception is thrown.
      *
      * @note The proper way to handle the simulation of a discontinuous system
      *       is to create a SimTK::EventHandler.

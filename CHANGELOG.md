@@ -13,6 +13,12 @@ v4.6
 - Remove `using namespace SimTK;` from core OpenSim files to prevent namespace conflicts and operator overshadowing (#4066)
 - Use catch2 `INFO` logging macros in tests instead of OpenSim `log_info` (#4066)
 - Updated the dependency `spdlog` to `v1.15.3`. (#4067)
+- The `Manager` class has been overhauled to add new useful features and improve documentation while largely preserving original behavior (#4110). A few key changes include:
+    - `Manager` now supports `SimTK::CPodesIntegrator`, an implicit integration scheme, which can be set via the enum `Manager::IntegratorMethod::CPodes` when calling `setIntegratorMethod`.
+    - `Manager` can now be reinitialized given a new `SimTK::State` without needing to construct a new `Manager` object.
+    - Added an option to record a full `StatesTrajectory` (via `Manager::setRecordStatesTrajectory`).
+    - Support for user-specified time step sequences (e.g., `setUseSpecifiedDT`, `useContactDT`, etc.) has been removed.
+    - Convenience methods for a few advanced `SimTK::Integrator` settings have been added (e.g., `Manager::setIntegratorFinalTime`).
 
 
 v4.5.2

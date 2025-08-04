@@ -171,15 +171,9 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     // Compute the force and torque at the specified times.
 
     const OpenSim::Body& body = osimModel->getBodySet().get("ball");
-    osim_state.setTime(0.0);
-    Manager manager(*osimModel);
-    manager.initialize(osim_state);
-
     for (unsigned int i = 0; i < times.size(); ++i)
     {
-        osim_state = manager.integrate(times[i]);
-        ASSERT_EQUAL(osim_state.getTime(), times[i], SimTK::Eps);
-
+        osim_state.updTime() = times[i];
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 accel = body.findStationAccelerationInGround(osim_state, Vec3(0));
         Vec3 angularAccel = body.getAccelerationInGround(osim_state)[0];
