@@ -179,7 +179,7 @@ SetDefaultCMakeBuildType()
 AddDependency(NAME       ezc3d
               DEFAULT    OFF
               GIT_URL    https://github.com/pyomeca/ezc3d.git
-              GIT_TAG    Release_1.5.8
+              GIT_TAG    Release_1.5.19
               CMAKE_ARGS -DBUILD_EXAMPLE:BOOL=OFF)
 
 AddDependency(NAME       simbody
@@ -258,7 +258,7 @@ else()
         ExternalProject_Add(metis
             # URL    http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
             URL    https://sourceforge.net/projects/myosin/files/metis-5.1.0.tar.gz/download
-            CONFIGURE_COMMAND cd <SOURCE_DIR> && ${CMAKE_MAKE_PROGRAM} shared=1 config "prefix=${CMAKE_INSTALL_PREFIX}/ipopt" BUILDDIR=bdir
+            CONFIGURE_COMMAND cd <SOURCE_DIR> && ${CMAKE_MAKE_PROGRAM} CMAKE_POLICY_VERSION_MINIMUM=4.0 shared=1 config "prefix=${CMAKE_INSTALL_PREFIX}/ipopt" BUILDDIR=bdir
             BUILD_COMMAND cd <SOURCE_DIR>/bdir && ${CMAKE_MAKE_PROGRAM}
             INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/ipopt"
             INSTALL_COMMAND cd <SOURCE_DIR>/bdir && ${CMAKE_MAKE_PROGRAM} install)

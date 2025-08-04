@@ -13,6 +13,10 @@ v4.6
 - Remove `using namespace SimTK;` from core OpenSim files to prevent namespace conflicts and operator overshadowing (#4066)
 - Use catch2 `INFO` logging macros in tests instead of OpenSim `log_info` (#4066)
 - Updated the dependency `spdlog` to `v1.15.3`. (#4067)
+- Fixed bug in `C3DFileAdapter` where there was an error when reading C3D files with more than 255 markers. It now excludes non-marker points (POINT:ANGLES, POINT:POWERS, POINT:FORCES, POINT:MOMENTS, and POINT:SCALARS). (#3606)
+- updated `ezc3d` version to `1.5.19`.
+- Removed `WrapCylinderObst`, `WrapDoubleCylinderObst`, and `WrapSphereObst`. (#4120)
+- Added `ExponentialContactForce`, a class that models forces between a point and a contact plane using exponential springs. Improved computational performance over the Hunt-Crossley contact model is achieved in non-slip conditions through the use of an elastic frictional force component which reduces system stiffness (enabling larger integration step sizes) and eliminates drift velocity. (#4117)
 - The `Manager` class has been overhauled to add new useful features and improve documentation while largely preserving original behavior (#4110). A few key changes include:
     - `Manager` now supports `SimTK::CPodesIntegrator`, an implicit integration scheme, which can be set via the enum `Manager::IntegratorMethod::CPodes` when calling `setIntegratorMethod`.
     - `Manager` can now be reinitialized given a new `SimTK::State` without needing to construct a new `Manager` object.
