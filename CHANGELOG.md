@@ -17,6 +17,7 @@ v4.6
 - updated `ezc3d` version to `1.5.19`.
 - Removed `WrapCylinderObst`, `WrapDoubleCylinderObst`, and `WrapSphereObst`. (#4120)
 - Added `ExponentialContactForce`, a class that models forces between a point and a contact plane using exponential springs. Improved computational performance over the Hunt-Crossley contact model is achieved in non-slip conditions through the use of an elastic frictional force component which reduces system stiffness (enabling larger integration step sizes) and eliminates drift velocity. (#4117)
+- Added a suite of Jupyter notebooks containing OpenSim API Python tutorials. (#4124)
 
 
 v4.5.2
