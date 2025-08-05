@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Frank C. Anderson, Ajay Seth                                    *
+ * Copyright (c) 2005-2025 Stanford University and the Authors                *
+ * Author(s): Frank C. Anderson, Ajay Seth, Nicholas Bianco                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -20,50 +20,20 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-// forward.cpp
-// author:  Frank C. Anderson, Ajay Seth
 
-// INCLUDE
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Tools/ForwardTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include "SimTKmath.h"
+#include <OpenSim/Actuators/ModelFactory.h>
+
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace std;
 
-void testPendulum();
-void testPendulumExternalLoad();
-void testPendulumExternalLoadWithPointInGround();
-void testArm26();
-void testGait2354();
-void testGait2354WithController();
-void testGait2354WithControllerGUI();
-
-
-int main() {
-    Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
-
-    SimTK_START_TEST("testForward");
-        // test manager/integration process
-        SimTK_SUBTEST(testPendulum);
-        // test application of external loads point in pendulum
-        SimTK_SUBTEST(testPendulumExternalLoad);
-        // test application of external loads with point moving in ground
-        SimTK_SUBTEST(testPendulumExternalLoadWithPointInGround);
-        // now add computation of controls and generation of muscle forces
-        SimTK_SUBTEST(testArm26);
-        // controlled muscles and ground reactions forces
-        SimTK_SUBTEST(testGait2354);
-        // included additional controller
-        SimTK_SUBTEST(testGait2354WithController);
-        // implements steps GUI takes to provide a model
-        SimTK_SUBTEST(testGait2354WithControllerGUI);
-    SimTK_END_TEST();
-}
-
-void testPendulum() {
+TEST_CASE("testPendulum") {
     ForwardTool forward("pendulum_Setup_Forward.xml");
     forward.run();
     Storage storage("Results/pendulum_states.sto");
@@ -86,8 +56,7 @@ void testPendulum() {
     ASSERT(previousTime == 1.0);
 }
 
-
-void testPendulumExternalLoad() {
+TEST_CASE("testPendulumExternalLoad") {
     ForwardTool forward("pendulum_ext_gravity_Setup_Forward.xml");
     forward.run();
     Storage results("Results/pendulum_ext_gravity_states.sto");
@@ -115,8 +84,7 @@ void testPendulumExternalLoad() {
     }
 }
 
-
-void testPendulumExternalLoadWithPointInGround() {
+TEST_CASE("testPendulumExternalLoadWithPointInGround") {
     ForwardTool forward("pendulum_ext_point_in_ground_Setup_Forward.xml");
     forward.run();
 
@@ -143,8 +111,9 @@ void testPendulumExternalLoadWithPointInGround() {
     }
 }
 
+TEST_CASE("testArm26") {
+    Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 
-void testArm26() {
     ForwardTool forward("arm26_Setup_Forward.xml");
     forward.run();
 
@@ -157,6 +126,7 @@ void testArm26() {
     Array<double> data;
     data.setSize(state->getSize());
     standard->getDataAtTime(time, state->getSize(), data);
+
     for (int j = 0; j < state->getSize(); ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
@@ -179,8 +149,9 @@ void testArm26() {
     }
 }
 
-void testGait2354()
-{
+TEST_CASE("testGait2354") {
+    Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
+
     ForwardTool forward("subject01_Setup_Forward.xml");
     forward.run();
     Storage results("Results/subject01_states.sto");
@@ -203,8 +174,9 @@ void testGait2354()
         __FILE__, __LINE__, "testGait2354 failed");
 }
 
+TEST_CASE("testGait2354WithController") {
+    Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 
-void testGait2354WithController() {
     ForwardTool forward("subject01_Setup_Forward_Controller.xml");
     forward.run();
     Storage results("ResultsCorrectionController/subject01_states.sto");
@@ -226,7 +198,8 @@ void testGait2354WithController() {
         __FILE__, __LINE__, "testGait2354WithController failed");
 }
 
-void testGait2354WithControllerGUI() {
+TEST_CASE("testGait2354WithControllerGUI") {
+    Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 
     // The following lines are the steps from ForwardToolModel.java that
     // associates the a previous (orgiModel) model with the ForwardTool
@@ -258,4 +231,35 @@ void testGait2354WithControllerGUI() {
         __FILE__, __LINE__, "testGait2354WithControllerGUI failed");
 
     delete model;
+}
+
+TEST_CASE("testForwardToolVersusManager") {
+    Model model = ModelFactory::createNLinkPendulum(3);
+    SimTK::State state = model.initSystem();
+
+    Manager manager(model);
+    manager.setIntegratorMinimumStepSize(1e-8);
+    manager.setIntegratorMaximumStepSize(10.0);
+    manager.setIntegratorAccuracy(1e-4);
+    manager.initialize(state);
+    manager.integrate(1.0);
+    manager.getStateStorage().print(
+            "testForwardToolVersusManager_manager_states.sto");
+
+    ForwardTool forward;
+    forward.setModel(model);
+    forward.setName("testForwardToolVersusManager_forward");
+    forward.setMinDT(1e-8);
+    forward.setMaxDT(10.0);
+    forward.setErrorTolerance(1e-4);
+    forward.run();
+
+    Storage managerStates("testForwardToolVersusManager_manager_states.sto");
+    Storage forwardStates("testForwardToolVersusManager_forward_states.sto");
+    CHECK(managerStates.getSize() == forwardStates.getSize());
+
+    std::vector<double> rms_tols(state.getNY(), SimTK::SqrtEps);
+    CHECK_STORAGE_AGAINST_STANDARD(forwardStates, managerStates, rms_tols,
+        __FILE__, __LINE__, "testForwardToolVersusManager failed");
+
 }

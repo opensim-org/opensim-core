@@ -17,6 +17,12 @@ v4.6
 - updated `ezc3d` version to `1.5.19`.
 - Removed `WrapCylinderObst`, `WrapDoubleCylinderObst`, and `WrapSphereObst`. (#4120)
 - Added `ExponentialContactForce`, a class that models forces between a point and a contact plane using exponential springs. Improved computational performance over the Hunt-Crossley contact model is achieved in non-slip conditions through the use of an elastic frictional force component which reduces system stiffness (enabling larger integration step sizes) and eliminates drift velocity. (#4117)
+- The `Manager` class has been overhauled to add new useful features and improve documentation while largely preserving original behavior (#4110). A few key changes include:
+    - `Manager` now supports `SimTK::CPodesIntegrator`, an implicit integration scheme, which can be set via the enum `Manager::IntegratorMethod::CPodes` when calling `setIntegratorMethod`.
+    - `Manager` can now be reinitialized given a new `SimTK::State` without needing to construct a new `Manager` object.
+    - Added an option to record a full `StatesTrajectory` (via `Manager::setRecordStatesTrajectory`).
+    - Support for user-specified time step sequences (e.g., `setUseSpecifiedDT`, `useContactDT`, etc.) has been removed.
+    - Convenience methods for a few advanced `SimTK::Integrator` settings have been added (e.g., `Manager::setIntegratorFinalTime`).
 
 
 v4.5.2
