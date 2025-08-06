@@ -198,6 +198,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
 %include <OpenSim/Simulation/Model/GeometryPath.h>
 %include <OpenSim/Simulation/Model/FunctionBasedPath.h>
+%include <OpenSim/Simulation/Model/Scholz2015GeometryPath.h>
 %include <OpenSim/Simulation/Model/Ligament.h>
 %include <OpenSim/Simulation/Model/Blankevoort1991Ligament.h>
 %include <OpenSim/Simulation/Model/PathActuator.h>

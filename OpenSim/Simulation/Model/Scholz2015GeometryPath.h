@@ -255,7 +255,6 @@ runtime evaluation. **/
  * path.setOrigin(model.getGround(), SimTK::Vec3(0.25, 0, 0));
  * path.setInsertion(model.getComponent<Body>("/bodyset/b1"), 
  *                   SimTK::Vec3(-0.5, 0.1, 0));
- * model.addComponent(path);
  * \endcode
  *
  * ## Adding Wrap Obstacles

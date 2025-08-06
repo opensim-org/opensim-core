@@ -72,7 +72,7 @@ TEST_CASE("Suspended pendulum") {
     actu->setName("path_spring");
     actu->setRestingLength(0.0);
     actu->setDissipation(5.0);
-    actu->setStiffness(10.0);
+    actu->setStiffness(25.0);
     actu->set_path(Scholz2015GeometryPath());
     model.addComponent(actu);   
 
@@ -82,23 +82,56 @@ TEST_CASE("Suspended pendulum") {
     path.setInsertion(model.getComponent<Body>("/bodyset/b0"), 
             SimTK::Vec3(-0.5, 0.1, 0));
 
-
-    SECTION("ContactCylinder") {
-        auto* obstacle = new ContactCylinder(0.1,
-        SimTK::Vec3(0.25, 0, 0), SimTK::Vec3(0), model.getGround());
-        model.addComponent(obstacle);
-        path.addObstacle(*obstacle, SimTK::Vec3(0.0, 0.1, 0.0));
-
-        // Initialize the system.
+    // Check that pendulum is at rest with the expected length.
+    auto simulateHangingPendulum = [&](Model& model,
+            double expectedLength) {
         SimTK::State state = model.initSystem();
-
-        // Simulate.
         Manager manager(model);
         manager.initialize(state);
-        state = manager.integrate(10.0);
+        state = manager.integrate(20.0);
 
-        model.realizePosition(state);
-        std::cout << "final length: " << path.getLength(state) << std::endl;
-        std::cout << "final speed: " << state.getU() << std::endl;
+        model.realizeVelocity(state);
+        CHECK_THAT(path.getLength(state),
+            Catch::Matchers::WithinRel(expectedLength, 1e-3));
+        CHECK_THAT(path.getLengtheningSpeed(state),
+            Catch::Matchers::WithinAbs(0.0, 1e-3));
+        CHECK_THAT(state.getU()[0], 
+            Catch::Matchers::WithinAbs(0.0, 1e-3));
+    };
+
+    // 
+    const double expectedLength = 0.81268778;
+    SECTION("ContactCylinder") {
+        auto* obstacle = new ContactCylinder(0.1,
+            SimTK::Vec3(0.25, 0, 0), SimTK::Vec3(0), model.getGround());
+        model.addComponent(obstacle);
+        path.addObstacle(*obstacle, SimTK::Vec3(0.0, 0.1, 0.0));
+        simulateHangingPendulum(model, expectedLength);
+    }
+
+    SECTION("ContactEllipsoid") {
+        auto* obstacle = new ContactEllipsoid(SimTK::Vec3(0.1, 0.1, 0.3),
+            SimTK::Vec3(0.25, 0, 0), SimTK::Vec3(0), model.getGround());
+        model.addComponent(obstacle);
+        path.addObstacle(*obstacle, SimTK::Vec3(0.0, 0.1, 0.0));
+        simulateHangingPendulum(model, expectedLength);
+    }
+
+    SECTION("ContactSphere") {
+        auto* obstacle = new ContactSphere(0.1,
+            SimTK::Vec3(0.25, 0, 0), model.getGround());
+        model.addComponent(obstacle);
+        path.addObstacle(*obstacle, SimTK::Vec3(0.0, 0.1, 0.0));
+        simulateHangingPendulum(model, expectedLength);
+    }
+
+    SECTION("ContactTorus") {
+        auto* obstacle = new ContactTorus(0.4, 0.1,
+            SimTK::Vec3(0.25, 0.4, 0), 
+            SimTK::Vec3(0, 0.5*SimTK::Pi, 0), 
+            model.getGround());
+        model.addComponent(obstacle);
+        path.addObstacle(*obstacle, SimTK::Vec3(0.0, -0.3, 0.0));
+        simulateHangingPendulum(model, expectedLength);
     }
 }
