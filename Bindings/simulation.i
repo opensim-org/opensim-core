@@ -163,9 +163,6 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Wrap/PathWrap.h>
 %template(SetPathWrap) OpenSim::Set<OpenSim::PathWrap, OpenSim::Object>;
 %include <OpenSim/Simulation/Wrap/PathWrapSet.h>
-%include <OpenSim/Simulation/Wrap/WrapCylinderObst.h>
-%include <OpenSim/Simulation/Wrap/WrapSphereObst.h>
-%include <OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.h>
 
 %include <OpenSim/Simulation/Model/Probe.h>
 %template(SetProbes) OpenSim::Set<OpenSim::Probe, OpenSim::ModelComponent>;
