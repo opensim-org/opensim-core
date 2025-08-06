@@ -145,60 +145,6 @@ public:
 //=============================================================================
 //                       SCHOLZ 2015 GEOMETRY PATH
 //=============================================================================
-/** This class represents the path of a frictionless cable from an origin point
-fixed to a body, over geometric obstacles and through via points fixed to other 
-bodies, to a final termination point.
-
-The CableSpan's path can be seen as consisting of straight line segments and
-curved line segments: A curved segment over each obstacle, and straight segments
-connecting them to each other and to via points and the end points. Each curved 
-segment is computed as a geodesic to give (in some sense) a shortest path over 
-the surface. During a simulation the cable can slide freely over the obstacle 
-surfaces. It can lose contact with a surface and miss that obstacle in a 
-straight line. Similarly the cable can touchdown on the obstacle if the surface 
-obstructs the straight line segment again. The cable will always slide freely 
-through any via points present in the path.
-
-The path is computed as an optimization problem using the previous optimal path
-as the warm start. This is done by computing natural geodesic corrections for
-each curve segment to compute the locally shortest path, as described in the
-following publication:
-
-    Scholz, A., Sherman, M., Stavness, I. et al (2015). A fast multi-obstacle
-    muscle wrapping method using natural geodesic variations. Multibody System
-    Dynamics 36, 195–219.
-
-The overall path is locally the shortest, allowing winding over an obstacle
-multiple times, without flipping to the other side.
-
-During initialization the path is assumed to be in contact with each obstacle at
-the user defined contact-point-hint. At each contact point a
-zero-length-geodesic is computed with the tangent estimated as pointing from the
-previous path point to the next path point. From this configuration, the solver
-is started, and the geodesics will be corrected until the entire path is smooth.
-
-Important to note is that the cable's interaction with the obstacles is ordered
-based on the order in which they were added. That is, if three obstacles are
-added to a cable, then, the cable can wrap over the first, then the second, and
-then the third. If the first obstacle spatially collides with the path twice it
-will not actually wrap over it twice. Use CablePath if this is not the desired
-behavior.
-
-When via points are present in the cable, the cable is internally divided into 
-cable segments separated by the via points. Obstacles separated by via points 
-have no interaction when geodesic corrections are applied during optimization,
-and therefore the path for each cable segment is solved independently. This 
-approach is advantageous since cable segments with different sets of wrap 
-obstacles may require a different number of optimization iterations to converge.
-
-Note that a CableSpan is a geometric object, not a force or constraint element.
-That is, a CableSpan alone will not influence the behavior of a simulation.
-However, forces and constraint elements can be constructed that make use of a
-CableSpan to generate forces.
-
-A CableSpan must be registered with a CableSubsystem which manages their
-runtime evaluation. **/
-
 
 /**
  * \section Scholz2015GeometryPath
@@ -236,7 +182,7 @@ runtime evaluation. **/
  * ## Constructing a Scholz2015GeometryPath
  * 
  * The simplest path consists of a single line segment from an origin to an
- * insertion point. 
+ * insertion point:
  *
  * \code{.cpp}
  * Model model = ModelFactory::createDoublePendulum();
@@ -246,19 +192,49 @@ runtime evaluation. **/
  * model.addComponent(path);
  * \endcode
  *
- * \code{.cpp}
- * auto* actu = new PathActuator();
- * actu->set_path(Scholz2015GeometryPath());
- * model.addComponent(actu);
+ * Typically, a Scholz2015GeometryPath will be used to define the geometry of
+ * path-based force generating elements, e.g., `PathSpring`, `PathActuator`,
+ * `Muscle`, etc. This example shows how to create a `PathSpring` and set the 
+ * 'path' property to a Scholz2015GeometryPath: 
  *
- * auto& path = actu->updPath<Scholz2015GeometryPath>();
+ * \code{.cpp}
+ * auto* spring = new PathSpring();
+ * spring->setName("path_spring");
+ * spring->setRestingLength(0.5);
+ * spring->setDissipation(0.5);
+ * spring->setStiffness(25.0);
+ * spring->set_path(Scholz2015GeometryPath());
+ * model.addComponent(spring);
+ *
+ * auto& path = spring->updPath<Scholz2015GeometryPath>();
+ * path.setName("path");
  * path.setOrigin(model.getGround(), SimTK::Vec3(0.25, 0, 0));
  * path.setInsertion(model.getComponent<Body>("/bodyset/b1"), 
  *                   SimTK::Vec3(-0.5, 0.1, 0));
  * \endcode
  *
+ * The origin and insertion points are stored using `Station` properties.
+ * Therefore, we update these properties *after* the `Scholz2015GeometryPath`
+ * has been added to the `PathSpring`, so that the `Socket` connections in each
+ * `Station` remain valid. If we called `set_path()` after each `Station`
+ * property was set, the `Socket` connections would be broken when
+ * the `Scholz2015GeometryPath` is copied into the `PathSpring`.
+ *
  * ## Adding Wrap Obstacles
- * 
+ *
+ * Wrap obstacles are defined by `ContactGeometry` objects which encapsulate
+ * a wrapping geometry, the `PhysicalFrame` that the geometry is attached to,
+ * and the location and orientation of the geometry in that frame. The following
+ * concrete implementations of `ContactGeometry` are recommended for use with
+ * Scholz2015GeometryPath:
+ * - `ContactSphere`
+ * - `ContactCylinder`
+ * - `ContactEllipsoid`
+ * - `ContactTorus`
+ *
+ * Use `addObstacle()` to add a `ContactGeometry` wrapping obstacle to path, 
+ * along with a "contact hint" that is used to initialize the wrapping solver:
+ *
  * \code{.cpp}
  * auto* ellipsoid = new ContactEllipsoid(SimTK::Vec3(0.1, 0.1, 0.3),
  *         SimTK::Vec3(0., 0.2, 0), SimTK::Vec3(0), model.getGround());
@@ -267,26 +243,60 @@ runtime evaluation. **/
  * path.addObstacle(*ellipsoid, SimTK::Vec3(0.1, 0., 0.));
  * \endcode
  *
+ * The contact hint is a `SimTK::Vec3` defining a point on the surface in local
+ * surface frame coordinates. The point will be used as a starting point when
+ * computing the initial cable path. As such, it does not have to lie on the
+ * contact geometry's surface, nor does it have to belong to a valid cable path.
+ *
  * ## Adding Via Points
+ *
+ * Via points are `Station`s owned by `Scholz2015GeometryPath` that the path
+ * will freely slide through. Use the `addViaPoint()` method to provide both the
+ * `PhysicalFrame` and body-fixed location of a new via point in the path:
  *
  * \code{.cpp}
  * path.addViaPoint(model.getComponent<Body>("/bodyset/body"), 
  *         SimTK::Vec3(0.1, 0., 0.));
  * \endcode
+ * 
+ * The full set of via points is stored in the `via_points` list property.
+ *
+ * When via points are present, the path is internally divided into
+ * multiple path segments. The origin and insertion of each segment are defined 
+ * by `Socket`s which are connected to either the `origin` or `insertion` 
+ * properties of `Scholz2015GeometryPath`, or to the `Station` of a via point.
+ * Path segments are automatically created and managed internally using
+ * `Scholz2015GeometryPathSegment`, which also provides the means for
+ * serializing and deserializing `Scholz2015GeometryPath` objects while
+ * preserving the correct order of wrapping obstacles and via points. Users need
+ * not create or manage `Scholz2015GeometryPathSegment` objects directly.
  *
  * ## Path Ordering
- * 
+ *
+ * The order in which obstacles and via points are added to the path is
+ * important. For example, a `Scholz2015GeometryPath` could be constructed with
+ * two wrapping obstacles separated by a via point, as follows:
+ *
  * \code{.cpp}
  * path.addObstacle(*ellipsoid, SimTK::Vec3(0.1, 0., 0.));
  * path.addViaPoint(model.getComponent<Body>("/bodyset/body"), SimTK::Vec3(0));
  * path.addObstacle(*sphere, SimTK::Vec3(0., 0.5, 0.));
  * \endcode
  *
+ * By changing the order of the `addObstacle()` and `addViaPoint()` calls, we 
+ * could define a different path where the two wrap obstacles exist in the same
+ * path segment: 
+ *
  * \code{.cpp}
  * path.addObstacle(*ellipsoid, SimTK::Vec3(0.1, 0., 0.));
  * path.addObstacle(*sphere, SimTK::Vec3(0., 0.5, 0.));
  * path.addViaPoint(model.getComponent<Body>("/bodyset/body"), SimTK::Vec3(0));
  * \endcode
+ *
+ * Both paths will have two internal path segments since one via point was
+ * added in each. However, in the first path, each segment will have one wrap
+ * obstacle, while in the second path, the first segment will have two wrap
+ * obstacles and the second segment will have no wrap obstacles.
  *
  * @see Scholz2015GeometryPathSegment
  * @see Scholz2015GeometryPathObstacle
@@ -296,21 +306,14 @@ OpenSim_DECLARE_CONCRETE_OBJECT(Scholz2015GeometryPath, AbstractGeometryPath);
 
 public:
 //=============================================================================
-// SOCKETS
-//=============================================================================
-    OpenSim_DECLARE_SOCKET(origin, Station,
-        "The origin station of the path.");
-    OpenSim_DECLARE_SOCKET(insertion, Station,
-        "The insertion station of the path.");
-    OpenSim_DECLARE_LIST_SOCKET(via_points, Station,
-        "The list of via points that the path passes through.");
-
-//=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_LIST_PROPERTY(stations, Station,
-        "The list of stations defining the path including the origin, "
-        "insertion, and any via points.");
+    OpenSim_DECLARE_PROPERTY(origin, Station,
+        "The origin station of the path.");
+    OpenSim_DECLARE_PROPERTY(insertion, Station,
+        "The insertion station of the path.");
+    OpenSim_DECLARE_LIST_PROPERTY(via_points, Station,
+        "The list of via points that the path passes through.");
     OpenSim_DECLARE_LIST_PROPERTY(segments, Scholz2015GeometryPathSegment,
         "The list of path segments.");
     OpenSim_DECLARE_PROPERTY(algorithm, std::string,
@@ -344,9 +347,6 @@ public:
     /**
      * %Set the origin `Station` of the path.
      *
-     * An exception is thrown if the origin `Socket` is already connected, i.e.,
-     * if the origin was previously set by this method or by a constructor.
-     *
      * @param frame        the PhysicalFrame that the origin is attached to.
      * @param location     the location of the origin in `frame`.
      */
@@ -359,10 +359,6 @@ public:
 
     /**
      * %Set the insertion `Station` of the path.
-     *
-     * An exception is thrown if the insertion `Socket` is already connected,
-     * i.e., if the insertion was previously set by this method or by a
-     * constructor.
      *
      * @param frame        the PhysicalFrame that the insertion is attached to.
      * @param location     the location of the insertion in `frame`.

@@ -81,14 +81,9 @@ Scholz2015GeometryPath::Scholz2015GeometryPath(
 
 void Scholz2015GeometryPath::setOrigin(const PhysicalFrame& frame,
         const SimTK::Vec3& location) {
-    OPENSIM_THROW_IF_FRMOBJ(
-        getSocket<Station>("origin").isConnected(), Exception,
-        "Tried to set the origin of this Scholz2015GeometryPath, "
-        "but the origin socket is already connected.");
-
     // Create the origin station.
-    int oix = append_stations(Station());
-    Station& origin = upd_stations(oix);
+    set_origin(Station());
+    Station& origin = upd_origin();
     origin.setName("origin");
     origin.set_location(location);
     origin.setParentFrame(frame);
@@ -97,24 +92,16 @@ void Scholz2015GeometryPath::setOrigin(const PhysicalFrame& frame,
     // as a subcomponent.
     finalizeFromProperties();
 
-    // Connect the station to the path's origin.
-    connectSocket_origin(upd_stations(oix));
-
     // Connect the station to the origin of the first path segment.
     auto& segment = upd_segments(0);
-    segment.connectSocket_origin(upd_stations(oix));
+    segment.connectSocket_origin(upd_origin());
 }
 
 void Scholz2015GeometryPath::setInsertion(const PhysicalFrame& frame,
         const SimTK::Vec3& location) {
-    OPENSIM_THROW_IF_FRMOBJ(
-        getSocket<Station>("insertion").isConnected(), Exception,
-        "Tried to set the insertion of this Scholz2015GeometryPath, "
-        "but the insertion socket is already connected.");
-    
     // Create the insertion station.
-    int iix = append_stations(Station());
-    Station& insertion = upd_stations(iix);
+    set_insertion(Station());
+    Station& insertion = upd_insertion();
     insertion.setName("insertion");
     insertion.set_location(location);
     insertion.setParentFrame(frame);
@@ -123,12 +110,9 @@ void Scholz2015GeometryPath::setInsertion(const PhysicalFrame& frame,
     // as a subcomponent.
     finalizeFromProperties();
 
-    // Connect the station to the path's insertion.
-    connectSocket_insertion(upd_stations(iix));
-
     // Connect the station to the insertion of the last path segment.
     auto& segment = upd_segments(getProperty_segments().size() - 1);
-    segment.connectSocket_insertion(upd_stations(iix));
+    segment.connectSocket_insertion(upd_insertion());
 }
 
 void Scholz2015GeometryPath::addObstacle(const ContactGeometry& contactGeometry,
@@ -154,10 +138,9 @@ void Scholz2015GeometryPath::addViaPoint(const PhysicalFrame& frame,
         const SimTK::Vec3& location) {
 
     // Create the via point station.
-    int vix = append_stations(Station());
-    Station& viaPoint = upd_stations(vix);
-    viaPoint.setName("via_point_" + 
-        std::to_string(getSocket<Station>("via_points").getConnectees().size()));
+    int vix = append_via_points(Station());
+    Station& viaPoint = upd_via_points(vix);
+    viaPoint.setName(fmt::format("via_point_{}", vix));
     viaPoint.set_location(location);
     viaPoint.setParentFrame(frame);
 
@@ -165,24 +148,21 @@ void Scholz2015GeometryPath::addViaPoint(const PhysicalFrame& frame,
     // as a subcomponent.
     finalizeFromProperties();
 
-    // Connect the via point to the list of via point sockets.
-    appendSocketConnectee_via_points(upd_stations(vix));
-
     // Update the insertion of the last path segment.
     auto& currSegment = upd_segments(getProperty_segments().size() - 1);
-    currSegment.connectSocket_insertion(upd_stations(vix));
+    currSegment.connectSocket_insertion(upd_via_points(vix));
 
     // Create a new path segment.
     append_segments(Scholz2015GeometryPathSegment());
     auto& nextSegment = upd_segments(getProperty_segments().size() - 1);
-    nextSegment.setName(
-        "path_segment_" + std::to_string(getProperty_segments().size() - 1));
-    nextSegment.connectSocket_origin(upd_stations(vix));
+    nextSegment.setName(fmt::format("path_segment_{}", 
+            getProperty_segments().size() - 1));
+    nextSegment.connectSocket_origin(upd_via_points(vix));
     nextSegment.connectSocket_insertion(getInsertion());
 }
 
 int Scholz2015GeometryPath::getNumViaPoints() const {
-    return getSocket<Station>("via_points").getNumConnectees();
+    return getProperty_via_points().size();
 }
 
 void Scholz2015GeometryPath::setAlgorithm(std::string algorithm) {
@@ -197,11 +177,11 @@ const std::string& Scholz2015GeometryPath::getAlgorithm() const {
 // GET AND SET METHODS
 //=============================================================================
 const Station& Scholz2015GeometryPath::getOrigin() const {
-    return getSocket<Station>("origin").getConnectee();
+    return get_origin();
 }
 
 const Station& Scholz2015GeometryPath::getInsertion() const {
-    return getSocket<Station>("insertion").getConnectee();
+    return get_insertion();
 }
 
 //=============================================================================
@@ -341,7 +321,9 @@ void Scholz2015GeometryPath::generateDecorations(bool fixed,
 // CONVENIENCE METHODS
 //=============================================================================
 void Scholz2015GeometryPath::constructProperties() {
-    constructProperty_stations();
+    constructProperty_origin(Station());
+    constructProperty_insertion(Station());
+    constructProperty_via_points();
     constructProperty_segments();
     constructProperty_algorithm("Scholz2015");
 }

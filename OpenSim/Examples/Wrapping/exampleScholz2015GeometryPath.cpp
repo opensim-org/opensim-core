@@ -29,32 +29,47 @@ int main() {
 
     Model model = ModelFactory::createDoublePendulum();
     model.setUseVisualizer(true);
+    
+    // Create a PathSpring with a Scholz2015GeometryPath.
+    auto* spring = new PathSpring();
+    spring->setName("path_spring");
+    spring->setRestingLength(0.5);
+    spring->setDissipation(0.5);
+    spring->setStiffness(25.0);
+    spring->set_path(Scholz2015GeometryPath());
+    model.addComponent(spring);
 
-    // Create a PathActuator with a Scholz2015GeometryPath.
-    auto* actu = new PathActuator();
-    actu->set_path(Scholz2015GeometryPath());
-    model.addComponent(actu);   
-
-    // Set the path's origin and insertion.
-    Scholz2015GeometryPath& path = actu->updPath<Scholz2015GeometryPath>();
-    path.setOrigin(model.getGround(), SimTK::Vec3(0.25, 0, 0));
+    // Configure the Scholz2015GeometryPath.
+    Scholz2015GeometryPath& path = spring->updPath<Scholz2015GeometryPath>();
+    path.setName("path");
+    
+    // The origin and insertion points are stored using the 'origin' and 
+    // 'insertion' properties of Scholz2015GeometryPath, which are of type
+    // Station. We must update these properties after the Scholz2015GeometryPath
+    // has been added to the PathSpring, so that the Socket connections in each
+    // Station remain valid.
+    path.setOrigin(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
     path.setInsertion(model.getComponent<Body>("/bodyset/b1"), 
-            SimTK::Vec3(-0.5, 0.1, 0));
+            SimTK::Vec3(-0.25, 0.1, 0.));
+    
+    // Add a ContactCylinder wrapping obstacle to the path.
+    auto* obstacle = new ContactCylinder(0.1,
+        SimTK::Vec3(-0.5, 0.1, 0.), SimTK::Vec3(0), 
+        model.getComponent<Body>("/bodyset/b0"));
+    model.addComponent(obstacle);
+    path.addObstacle(*obstacle, SimTK::Vec3(0., 0.1, 0.));
 
-    // auto* obstacle = new ContactEllipsoid(SimTK::Vec3(0.1, 0.1, 0.3),
-        // SimTK::Vec3(0.5, -0.05, 0), SimTK::Vec3(0), model.getComponent<Body>("/bodyset/root"));
-    // auto* obstacle = new ContactCylinder(0.3,
-    //     SimTK::Vec3(0.5, -0.05, 0), SimTK::Vec3(0), model.getComponent<Body>("/bodyset/root"));
-    // model.addComponent(obstacle);
-    // path.addObstacle(*obstacle, SimTK::Vec3(0.0, -0.3, 0.0));
+    // Add a via point to the path.
+    path.addViaPoint(model.getComponent<Body>("/bodyset/b1"), 
+            SimTK::Vec3(-0.75, 0.1, 0.));
 
     // Initialize the system.
     SimTK::State state = model.initSystem();
-
+    model.updVisualizer().updSimbodyVisualizer().setBackgroundType(
+        SimTK::Visualizer::SolidColor);
 
     // Simulate.
     Manager manager(model);
-    manager.setIntegratorMaximumStepSize(1e-3);
     manager.initialize(state);
-    manager.integrate(10.0);
+    manager.integrate(20.0);
 }
