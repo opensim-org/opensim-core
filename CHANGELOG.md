@@ -23,6 +23,8 @@ v4.6
     - Added an option to record a full `StatesTrajectory` (via `Manager::setRecordStatesTrajectory`).
     - Support for user-specified time step sequences (e.g., `setUseSpecifiedDT`, `useContactDT`, etc.) has been removed.
     - Convenience methods for a few advanced `SimTK::Integrator` settings have been added (e.g., `Manager::setIntegratorFinalTime`).
+- Added a suite of Jupyter notebooks containing OpenSim API Python tutorials. (#4124)
+
 
 
 v4.5.2
