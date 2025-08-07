@@ -73,9 +73,9 @@ public:
 
 private:
 
-    void implConsumeGeneralizedForce(const SimTK::State&, const Coordinate&, double) final;
-    void implConsumeBodySpatialVec(const SimTK::State&, const PhysicalFrame&, const SimTK::SpatialVec&) final;
-    void implConsumePointForce(const SimTK::State&, const PhysicalFrame&, const SimTK::Vec3&, const SimTK::Vec3&) final;
+    void implConsumeGeneralizedForce(const SimTK::State&, SimTK::MobilizedBodyIndex, SimTK::MobilizerUIndex, double) final;
+    void implConsumeBodySpatialVec(const SimTK::State&, SimTK::MobilizedBodyIndex, const SimTK::SpatialVec&) final;
+    void implConsumePointForce(const SimTK::State&, SimTK::MobilizedBodyIndex, const SimTK::Transform&, const SimTK::Vec3&, const SimTK::Vec3&) final;
 
     const SimTK::SimbodyMatterSubsystem* _matter;
     SimTK::Vector_<SimTK::SpatialVec>* _bodyForces;

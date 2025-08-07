@@ -1291,6 +1291,8 @@ private:
         _forceSubsystem;
     SimTK::ResetOnCopy<std::unique_ptr<SimTK::GeneralContactSubsystem>>
         _contactSubsystem;
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::CableSubsystem>>
+        _cableSubsystem;
 
     // We place this after the subsystems so that during copy construction and
     // copy assignment, the subsystem handles are copied first. If the system

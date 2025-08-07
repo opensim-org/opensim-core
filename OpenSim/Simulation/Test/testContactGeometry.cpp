@@ -599,6 +599,7 @@ TEST_CASE("ContactEllipsoid") {
     model.addContactGeometry(floor);
 
     // Add a Hertz HuntCrossleyForce.
+
     auto* contactParams = new HuntCrossleyForce::ContactParameters(
             1.0e6, 1.0, 0.5, 0.5, 0.5);
     contactParams->addGeometry("ellipsoid");
