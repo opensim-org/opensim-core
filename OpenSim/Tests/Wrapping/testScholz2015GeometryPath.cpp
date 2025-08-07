@@ -47,6 +47,9 @@ TEST_CASE("Scholz2015GeometryPath interface") {
     auto* path = new Scholz2015GeometryPath(model.getGround(),
             SimTK::Vec3(0), *body, SimTK::Vec3(0));
     model.addComponent(path);
+    
+    CHECK(path->getNumViaPoints() == 0);
+    CHECK(path->getNumObstacles() == 0);
 }
 
 

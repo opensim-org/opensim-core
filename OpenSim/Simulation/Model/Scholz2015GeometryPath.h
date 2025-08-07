@@ -415,7 +415,7 @@ public:
     int getNumViaPoints() const;
 
     /**
-     * &Set the algorithm used to optimize the path.
+     * %Set the algorithm used to optimize the path.
      *
      * The choice of algorithm changes the cost function and the computed 
      * descending direction for reaching the optimal path.
