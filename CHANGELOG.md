@@ -14,7 +14,6 @@ v4.6
 - Use catch2 `INFO` logging macros in tests instead of OpenSim `log_info` (#4066)
 - Updated the dependency `spdlog` to `v1.15.3`. (#4067)
 - Fixed bug in `C3DFileAdapter` where there was an error when reading C3D files with more than 255 markers. It now excludes non-marker points (POINT:ANGLES, POINT:POWERS, POINT:FORCES, POINT:MOMENTS, and POINT:SCALARS). (#3606)
-- updated `ezc3d` version to `1.5.19`.
 - Removed `WrapCylinderObst`, `WrapDoubleCylinderObst`, and `WrapSphereObst`. (#4120)
 - Added `ExponentialContactForce`, a class that models forces between a point and a contact plane using exponential springs. Improved computational performance over the Hunt-Crossley contact model is achieved in non-slip conditions through the use of an elastic frictional force component which reduces system stiffness (enabling larger integration step sizes) and eliminates drift velocity. (#4117)
 - The `Manager` class has been overhauled to add new useful features and improve documentation while largely preserving original behavior (#4110). A few key changes include:
@@ -23,6 +22,7 @@ v4.6
     - Added an option to record a full `StatesTrajectory` (via `Manager::setRecordStatesTrajectory`).
     - Support for user-specified time step sequences (e.g., `setUseSpecifiedDT`, `useContactDT`, etc.) has been removed.
     - Convenience methods for a few advanced `SimTK::Integrator` settings have been added (e.g., `Manager::setIntegratorFinalTime`).
+- Added new concrete implementations of `ContactGeometry`: `ContactCylinder`, `ContactEllipsoid`, and `ContactTorus`. (#4115)
 
 
 v4.5.2
