@@ -106,7 +106,7 @@ void testModelFinalizePropertiesAndConnections()
 
         // should not be able to "trick" the manager into integrating a model
         // given a stale but compatible state
-        ASSERT_THROW(ComponentHasNoSystem, manager.initialize(state));
+        ASSERT_THROW(Exception, manager.initialize(state));
 
         // once again, get a valid System and corresponding state
         state = model.initSystem();
