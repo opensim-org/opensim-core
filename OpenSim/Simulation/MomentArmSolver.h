@@ -28,7 +28,7 @@
 
 namespace OpenSim {
 
-class GeometryPath;
+class AbstractGeometryPath;
 class PointForceDirection;
 class Coordinate;
 
@@ -63,14 +63,16 @@ public:
     virtual ~MomentArmSolver() {}
 
     /** Solve for the effective moment-arm about the all coordinates (q) based 
-        on the geometric distribution of forces described by a GeometryPath. 
+        on the geometric distribution of forces described by an 
+        AbstractGeometryPath. 
     @param  state               current state of the model
     @param  coordinate          Coordinate about which we want the moment-arm
-    @param  path                GeometryPath for which to calculate a moment-arm
+    @param  path                AbstractGeometryPath for which to calculate a 
+                                moment-arm
     @return ma                  resulting moment-arm as a double
     */
     double solve(const SimTK::State& state, const Coordinate &coordinate,
-        const GeometryPath &path) const;
+        const AbstractGeometryPath &path) const;
 
     /** Solve for the effective moment-arm about the specified coordinate based 
         on the geometric distribution of forces described by the list of 

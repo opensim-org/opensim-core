@@ -93,7 +93,7 @@ int main()
         for (int i=0; i< availableComponentTypes.getSize(); i++){
             Object* clone = availableComponentTypes[i]->clone();
             Object* randClone;
-    
+
             if (auto* path = dynamic_cast<FunctionBasedPath*>(clone)){
                 // FunctionBasedPath requires that its properties follow specific
                 // requirements. For example, `length_function` must have the same
@@ -112,9 +112,9 @@ int main()
                 // leads to a segfault due to invalid Property indexes when
                 // Joints try to access Coordinates.
                 // randomize(coord);
-                // Array<double> defaultRange(-10.0, 2); 
-                // defaultRange[1] = 10.0; 
-                // coord->set_range(defaultRange); 
+                // Array<double> defaultRange(-10.0, 2);
+                // defaultRange[1] = 10.0;
+                // coord->set_range(defaultRange);
                 // randClone = coord;
                 continue;
             } else if (auto* wrap = dynamic_cast<WrapTorus*>(clone)) {
@@ -154,13 +154,17 @@ int main()
                 muscle->set_FiberForceLengthCurve(FiberForceLengthCurve());
                 muscle->set_min_control(0.01);
                 randClone = muscle;
+             } else if (auto* path = dynamic_cast<Scholz2015GeometryPath*>(clone)) {
+                randomize(path);
+                path->set_algorithm("Scholz2015");
+                randClone = path;
             } else if (dynamic_cast<DeGrooteFregly2016Muscle*>(clone)) {
-                // TODO: we can't randomize DeGrooteFregly2016Muscle, since 
-                // changing the the optimal_force property inherited by 
+                // TODO: we can't randomize DeGrooteFregly2016Muscle, since
+                // changing the the optimal_force property inherited by
                 // PathActuator leads to an invalid configuration.
                 continue;
             } else if (dynamic_cast<ControlSetController*>(clone)) {
-                // TODO: randomizing ControlSetController fails because it is 
+                // TODO: randomizing ControlSetController fails because it is
                 // unable to load nonexistent file 'ABCXYZ'.
                 continue;
             } else if (dynamic_cast<StationDefinedFrame*>(clone)) {
@@ -168,7 +172,7 @@ int main()
                 // exception message "failed to match original model".
                 continue;
             } else if (dynamic_cast<ExponentialContactForce*>(clone)) {
-                // TODO: randomizing ExponentialContactForce sporadically fails 
+                // TODO: randomizing ExponentialContactForce sporadically fails
                 // with exception message "failed to match original model".
                 continue;
             } else {

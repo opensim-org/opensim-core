@@ -27,6 +27,10 @@ v4.6
 - Added new concrete implementations of `ContactGeometry`: `ContactCylinder`, `ContactEllipsoid`, and `ContactTorus`. (#4115)
 - Removed the following deprecated methods from `ContactGeometry`: `getLocation()`, `setLocation()`, `getOrientation()`, `setOrientation()`, `getBody()`, and `setBody()`. (#4115)
 - Fixed `OpenSim::Marker::generateDecorations` to account for markers that are attached to bodies via other frames (#4144).
+- Added `Scholz2015GeometryPath`, a geometry-based path wrapping algorithm based on the publication "A fast multi-obstacle muscle wrapping method using natural geodesic variations" by
+Scholz et al. (2015). This class encapsulates `SimTK::CableSpan`, the Simbody implementation of the core wrapping algorithm, and provides support for using this method to define the
+geometry for path-based OpenSim components (e.g., `Muscle`, `PathSpring`, etc.). This class can be used as a replacement for `GeometryPath`, providing improved computational
+performance and stabilityin wrapping solutions.
 
 
 v4.5.2
