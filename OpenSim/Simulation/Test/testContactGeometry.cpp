@@ -39,7 +39,6 @@
 #include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>
 #include <OpenSim/Simulation/Model/ContactMesh.h>
-#include <OpenSim/Simulation/Model/ContactSphere.h>
 #include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -52,9 +51,7 @@
 #include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
-using namespace SimTK;
-using namespace std;
-
+using SimTK::Vec3;
 
 namespace {
     // Common Parameters for the simulations
@@ -65,9 +62,9 @@ namespace {
     const static double mass = 1.0;
     const static double radius = 0.10;
     const static double height = 1.0;
-    const static string mesh_files[] = {"sphere_10cm_radius.obj",
-                                        "sphere_10cm_radius.stl",
-                                        "sphere_10cm_radius.vtp"};
+    const static std::string mesh_files[] = {"sphere_10cm_radius.obj",
+                                             "sphere_10cm_radius.stl",
+                                             "sphere_10cm_radius.vtp"};
     //"10_5_cm_sphere_47700.obj";
 
     int testBouncingBall(bool useMesh, const std::string mesh_filename="")
@@ -79,11 +76,11 @@ namespace {
         Ground& ground = osimModel->updGround();
 
         // Add Body
-        OpenSim::Body ball;
+        Body ball;
         ball.setName("ball");
         ball.set_mass(mass);
         ball.set_mass_center(Vec3(0));
-        ball.setInertia(Inertia(1.0));
+        ball.setInertia(SimTK::Inertia(1.0));
 
         // Add joints
         FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0));
@@ -96,7 +93,7 @@ namespace {
                                                        ground,
                                                        "floor");
         osimModel->addContactGeometry(floor);
-        OpenSim::ContactGeometry* geometry;
+        ContactGeometry* geometry;
         if (useMesh){
             geometry = new ContactMesh(mesh_filename, Vec3(0), Vec3(0),
                                        ball, "sphere");
@@ -105,27 +102,27 @@ namespace {
             geometry = new ContactSphere(radius, Vec3(0), ball, "sphere");
         osimModel->addContactGeometry(geometry);
 
-        OpenSim::Force* force;
+        Force* force;
         if (useMesh)
         {
             // Add an ElasticFoundationForce.
             auto* contactParams =
-                new OpenSim::ElasticFoundationForce::ContactParameters(
+                new ElasticFoundationForce::ContactParameters(
                         1.0e6/radius, 1e-5, 0.0, 0.0, 0.0);
             contactParams->addGeometry("sphere");
             contactParams->addGeometry("floor");
-            force = new OpenSim::ElasticFoundationForce(contactParams);
+            force = new ElasticFoundationForce(contactParams);
             osimModel->addForce(force);
         }
         else
         {
             // Add a HuntCrossleyForce.
             auto* contactParams =
-                new OpenSim::HuntCrossleyForce::ContactParameters(
+                new HuntCrossleyForce::ContactParameters(
                         1.0e6, 1e-5, 0.0, 0.0, 0.0);
             contactParams->addGeometry("sphere");
             contactParams->addGeometry("floor");
-            force = new OpenSim::HuntCrossleyForce(contactParams);
+            force = new HuntCrossleyForce(contactParams);
             osimModel->addForce(force);
         }
 
@@ -139,14 +136,14 @@ namespace {
 
         SimTK::State& osim_state = osimModel->initSystem();
         osim_state.updQ()[4] = height;
-        osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
+        osimModel->getMultibodySystem().realize(osim_state, SimTK::Stage::Position);
 
         //Initial system energy is all potential
         double Etot_orig = mass*(-gravity_vec[1])*height;
 
         //==========================================================================
         // Simulate it and see if it bounces correctly.
-        cout << "stateY=" << osim_state.getY() << std::endl;
+        std::cout << "stateY=" << osim_state.getY() << std::endl;
 
         Manager manager(*osimModel);
         manager.setIntegratorAccuracy(integ_accuracy);
@@ -158,22 +155,19 @@ namespace {
             osim_state = manager.integrate((i + 1)*interval);
             double time = osim_state.getTime();
 
-            osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
+            osimModel->getMultibodySystem().realize(osim_state, 
+                    SimTK::Stage::Acceleration);
             Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
             Vec3 vel = ball.findStationVelocityInGround(osim_state, Vec3(0));
 
             double Etot = mass*((-gravity_vec[1])*pos[1] + 0.5*vel[1]*vel[1]);
 
-            //cout << "starting system energy = " << Etot_orig << " versus current energy = " << Etot << endl;
             // contact absorbs and returns energy so make sure not in contact
-            if (pos[1] > 2*radius)
-            {
+            if (pos[1] > 2*radius) {
                 ASSERT_EQUAL(Etot_orig, Etot, 1e-2, __FILE__, __LINE__,
-                        "Bouncing ball on plane Failed: energy was not conserved.");
-            }
-            else
-            {
-                cout << "In contact at time = " << time << endl;
+                    "Bouncing ball on plane Failed: energy was not conserved.");
+            } else {
+                std::cout << "In contact at time = " << time << std::endl;
                 ASSERT(pos[1] < 5.0 && pos[1] > 0);
             }
             ASSERT_EQUAL(0.0, pos[0], 1e-4);
@@ -204,11 +198,11 @@ namespace {
         Ground& ground = osimModel->updGround();
 
         // Add Body
-        OpenSim::Body ball;
+        Body ball;
         ball.setName("ball");
         ball.setMass(mass);
         ball.setMassCenter(Vec3(0));
-        ball.setInertia(Inertia(1.0));
+        ball.setInertia(SimTK::Inertia(1.0));
 
         // Add joints
         FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0));
@@ -217,7 +211,7 @@ namespace {
         osimModel->addJoint(&free);
 
         // Create ContactGeometry.
-        OpenSim::ContactGeometry *ball1, *ball2;
+        ContactGeometry *ball1, *ball2;
 
         if (useElasticFoundation && useMesh1)
             ball1 = new ContactMesh(mesh_files[0], Vec3(0), Vec3(0), ground, "ball1");
@@ -232,18 +226,18 @@ namespace {
         osimModel->addContactGeometry(ball1);
         osimModel->addContactGeometry(ball2);
 
-        OpenSim::Force* force;
+        Force* force;
 
         std::string prefix;
         if (useElasticFoundation)
         {
             // Add an ElasticFoundationForce.
             auto* contactParams =
-                new OpenSim::ElasticFoundationForce::ContactParameters(
+                new ElasticFoundationForce::ContactParameters(
                         1.0e6/(2*radius), 0.001, 0.0, 0.0, 0.0);
             contactParams->addGeometry("ball1");
             contactParams->addGeometry("ball2");
-            force = new OpenSim::ElasticFoundationForce(contactParams);
+            force = new ElasticFoundationForce(contactParams);
             prefix = "EF_";
             prefix += useMesh1 ?"Mesh":"noMesh";
             prefix += useMesh2 ? "_to_Mesh":"_to_noMesh";
@@ -253,11 +247,11 @@ namespace {
         {
             // Add a Hertz HuntCrossleyForce.
             auto* contactParams =
-                new OpenSim::HuntCrossleyForce::ContactParameters(
+                new HuntCrossleyForce::ContactParameters(
                         1.0e6, 0.001, 0.0, 0.0, 0.0);
             contactParams->addGeometry("ball1");
             contactParams->addGeometry("ball2");
-            force = new OpenSim::HuntCrossleyForce(contactParams);
+            force = new HuntCrossleyForce(contactParams);
             prefix = "Hertz";
 
         }
@@ -277,11 +271,12 @@ namespace {
 
         SimTK::State& osim_state = osimModel->initSystem();
         osim_state.updQ()[4] = height;
-        osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
+        osimModel->getMultibodySystem().realize(osim_state, 
+                SimTK::Stage::Position);
 
         //==========================================================================
         // Simulate it and see if it bounces correctly.
-        cout << "stateY=" << osim_state.getY() << std::endl;
+        std::cout << "stateY=" << osim_state.getY() << std::endl;
 
         Manager manager(*osimModel);
         manager.setIntegratorAccuracy(integ_accuracy);
@@ -340,7 +335,7 @@ namespace {
 
     // Specialize for Hunt-Crossley.
     template<>
-    void addContactComponents<OpenSim::HuntCrossleyForce>(Model& model,
+    void addContactComponents<HuntCrossleyForce>(Model& model,
             PhysicalFrame& frameForBall, Vec3 locForBall,
             PhysicalFrame& frameForPlatform, Vec3 orientationForPlatform) {
 
@@ -354,17 +349,17 @@ namespace {
         model.addContactGeometry(geometry);
 
         // Force.
-        auto* contactParams = new OpenSim::HuntCrossleyForce::ContactParameters(
+        auto* contactParams = new HuntCrossleyForce::ContactParameters(
                 1.0e6, 1e-5, 0.0, 0.0, 0.0);
         contactParams->addGeometry("ball");
         contactParams->addGeometry("platform");
-        auto* force = new OpenSim::HuntCrossleyForce(contactParams);
+        auto* force = new HuntCrossleyForce(contactParams);
         model.addForce(force);
     }
 
     // Specialize for Elastic Foundation.
     template<>
-    void addContactComponents<OpenSim::ElasticFoundationForce>(Model& model,
+    void addContactComponents<ElasticFoundationForce>(Model& model,
             PhysicalFrame& frameForBall, Vec3 locForBall,
             PhysicalFrame& frameForPlatform, Vec3 orientationForPlatform) {
 
@@ -379,11 +374,11 @@ namespace {
 
         // Force.
         auto* contactParams =
-            new OpenSim::ElasticFoundationForce::ContactParameters(
+            new ElasticFoundationForce::ContactParameters(
                 1.0e6, 1e-5, 0.0, 0.0, 0.0);
         contactParams->addGeometry("ball");
         contactParams->addGeometry("platform");
-        auto* force = new OpenSim::ElasticFoundationForce(contactParams);
+        auto* force = new ElasticFoundationForce(contactParams);
         model.addForce(force);
     }
 
@@ -393,8 +388,9 @@ namespace {
 
         // Body and Joint.
         const Ground& ground = model.getGround();
-        auto* point = new OpenSim::Body("point", mass, Vec3(0), Inertia(1.0));
-        auto* hinge = new OpenSim::PinJoint("hinge",
+        auto* point = new Body("point", mass, Vec3(0), 
+                SimTK::Inertia(1.0));
+        auto* hinge = new PinJoint("hinge",
                                    ground, Vec3(0), Vec3(0),
                                    *point, Vec3(-1, 0, 0), Vec3(0));
 
@@ -425,8 +421,8 @@ namespace {
             return state;
         };
 
-        const Real deg90 = 0.5 * SimTK::Pi;
-        const Real deg45 = 0.25 * SimTK::Pi;
+        const SimTK::Real deg90 = 0.5 * SimTK::Pi;
+        const SimTK::Real deg45 = 0.25 * SimTK::Pi;
 
         // Achieve transforms with weld joints and massless bodies.
         SimTK::State stateWeld;
@@ -435,9 +431,9 @@ namespace {
 
             // Scaffolding for the ball.
             const auto& point = model.getBodySet().get("point");
-            auto* linkOffset = new OpenSim::Body("link_offset",
-                                                 0, Vec3(0), Inertia(0.0));
-            auto* linkWeld = new OpenSim::WeldJoint("link_weld",
+            auto* linkOffset = new Body("link_offset", 0, Vec3(0), 
+                    SimTK::Inertia(0.0));
+            auto* linkWeld = new WeldJoint("link_weld",
                                        point, Vec3(0), Vec3(0),
                                        // Body is 0.5m to the right and 1m up.
                                        *linkOffset, Vec3(-0.5, -1, 0), Vec3(0));
@@ -445,9 +441,9 @@ namespace {
             model.addJoint(linkWeld);
 
             // Scaffolding for the platform.
-            auto* platformOffset = new OpenSim::Body("platform_offset",
-                                                     0, Vec3(0), Inertia(0));
-            auto* platformWeld = new OpenSim::WeldJoint("platform_weld",
+            auto* platformOffset = new Body("platform_offset", 0, 
+                Vec3(0), SimTK::Inertia(0));
+            auto* platformWeld = new WeldJoint("platform_weld",
                                        model.getGround(), Vec3(0), Vec3(0),
                                        *platformOffset, Vec3(0), Vec3(0));
             model.addBody(platformOffset);
@@ -578,15 +574,49 @@ TEST_CASE("Compare Hertz and Mesh Contact Results") {
 }
 
 TEST_CASE("Intermediate Frames") {
-    testIntermediateFrames<OpenSim::HuntCrossleyForce>();
-    testIntermediateFrames<OpenSim::ElasticFoundationForce>();
+    testIntermediateFrames<HuntCrossleyForce>();
+    testIntermediateFrames<ElasticFoundationForce>();
 }
 
+TEST_CASE("ContactEllipsoid") {
 
+    // Create a model with a single body and a FreeJoint.
+    Model model;
+    Body* body = new Body("body", mass, Vec3(0), SimTK::Inertia(1.0));
+    FreeJoint* free = new FreeJoint("free", 
+            model.getGround(), Vec3(0), Vec3(0), *body, Vec3(0), Vec3(0));
+    model.addBody(body);
+    model.addJoint(free);
 
+    // Add a ContactEllipsoid and ContactHalfSpace to the model.
+    ContactEllipsoid* ellipsoid = new ContactEllipsoid(
+            Vec3(0.1, 0.05, 0.03), Vec3(0), Vec3(0), *body);
+    ellipsoid->setName("ellipsoid");
+    model.addContactGeometry(ellipsoid);
 
+    auto* floor = new ContactHalfSpace(Vec3(0), Vec3(0, 0, -0.5 * SimTK::Pi),
+            model.getGround(), "floor");
+    model.addContactGeometry(floor);
 
+    // Add a Hertz HuntCrossleyForce.
+    auto* contactParams = new HuntCrossleyForce::ContactParameters(
+            1.0e6, 1.0, 0.5, 0.5, 0.5);
+    contactParams->addGeometry("ellipsoid");
+    contactParams->addGeometry("floor");
+    HuntCrossleyForce* force = new HuntCrossleyForce(contactParams);
+    force->setName("contact");
+    model.addForce(force);
 
+    // Build the system and set the initial height.
+    SimTK::State state = model.initSystem();
+    state.updQ()[4] = 1.0;
 
+    // Simulate the model for 2 seconds.
+    Manager manager(model);
+    state.setTime(0.0);
+    manager.initialize(state);
+    state = manager.integrate(5.0);
 
-
+    // Check that the system is at rest.
+    REQUIRE_THAT(state.getU()[4], Catch::Matchers::WithinAbs(0.0, 1e-6));
+}
