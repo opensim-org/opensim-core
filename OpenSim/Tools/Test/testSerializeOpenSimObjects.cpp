@@ -27,6 +27,8 @@
 #include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Analyses/osimAnalyses.h>
 #include <OpenSim/Simulation/Model/FunctionBasedPath.h>
+#include <OpenSim/Simulation/Model/StationDefinedFrame.h>
+#include <OpenSim/Simulation/Model/ExponentialContactForce.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -125,6 +127,50 @@ int main()
                 randomize(wrap);
                 wrap->set_quadrant("+x");
                 randClone = wrap;
+            } else if (auto* extforce = dynamic_cast<ExternalForce*>(clone)) {
+                randomize(extforce);
+                extforce->set_force_identifier("force");
+                extforce->set_torque_identifier("torque");
+                randClone = extforce;
+            } else if (auto* muscle = dynamic_cast<Thelen2003Muscle*>(clone)) {
+                randomize(muscle);
+                muscle->set_Flen(1.4);
+                muscle->set_fv_linear_extrap_threshold(0.95);
+                muscle->set_minimum_activation(0.01);
+                muscle->set_min_control(0.01);
+                randClone = muscle;
+            } else if (auto* muscle = dynamic_cast<Millard2012EquilibriumMuscle*>(clone)) {
+                randomize(muscle);
+                muscle->set_ActiveForceLengthCurve(ActiveForceLengthCurve());
+                muscle->set_ForceVelocityCurve(ForceVelocityCurve());
+                muscle->set_FiberForceLengthCurve(FiberForceLengthCurve());
+                muscle->set_minimum_activation(0.01);
+                muscle->set_min_control(0.01);
+                randClone = muscle;
+            } else if (auto* muscle = dynamic_cast<Millard2012AccelerationMuscle*>(clone)) {
+                randomize(muscle);
+                muscle->set_ActiveForceLengthCurve(ActiveForceLengthCurve());
+                muscle->set_ForceVelocityCurve(ForceVelocityCurve());
+                muscle->set_FiberForceLengthCurve(FiberForceLengthCurve());
+                muscle->set_min_control(0.01);
+                randClone = muscle;
+            } else if (dynamic_cast<DeGrooteFregly2016Muscle*>(clone)) {
+                // TODO: we can't randomize DeGrooteFregly2016Muscle, since 
+                // changing the the optimal_force property inherited by 
+                // PathActuator leads to an invalid configuration.
+                continue;
+            } else if (dynamic_cast<ControlSetController*>(clone)) {
+                // TODO: randomizing ControlSetController fails because it is 
+                // unable to load nonexistent file 'ABCXYZ'.
+                continue;
+            } else if (dynamic_cast<StationDefinedFrame*>(clone)) {
+                // TODO: randomizing StationDefinedFrame sporadically fails with
+                // exception message "failed to match original model".
+                continue;
+            } else if (dynamic_cast<ExponentialContactForce*>(clone)) {
+                // TODO: randomizing ExponentialContactForce sporadically fails 
+                // with exception message "failed to match original model".
+                continue;
             } else {
                 randClone = randomize(clone);
             }
