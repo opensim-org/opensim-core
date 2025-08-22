@@ -43,34 +43,30 @@ using namespace OpenSim;
 // completely initialized before that happens the first time.
 
 // Initialize a logger
-static void initializeLogger(spdlog::logger& l, const char* pattern) {
-    l.set_level(spdlog::level::info);
-    l.flush_on(spdlog::level::info);
-    l.set_pattern(pattern);
+static std::shared_ptr<spdlog::logger> initializeLogger(
+    std::shared_ptr<spdlog::logger> l,
+    const char* pattern)
+{
+    l->set_level(spdlog::level::info);
+    l->flush_on(spdlog::level::info);
+    l->set_pattern(pattern);
+    return l;
 }
 
 // Return a reference to the static cout logger object, allocating and
 // initializing it on the first call.
 static spdlog::logger& coutLoggerInternal() {
-  static std::shared_ptr<spdlog::logger> l = spdlog::stdout_color_mt("cout");
-  static bool first = true;
-  if (first) {
-    initializeLogger(*l, "%v");
-    first = false;
-  }
-  return *l;
+    static std::shared_ptr<spdlog::logger> l =
+      initializeLogger(spdlog::stdout_color_mt("cout"), "%v");
+    return *l;
 }
 
 // Return a reference to the static default logger object, allocating and
 // initializing it on the first call.
 static spdlog::logger& defaultLoggerInternal() {
-  static std::shared_ptr<spdlog::logger> l = spdlog::default_logger();
-  static bool first = true;
-  if (first) {
-    initializeLogger(*l, "[%l] %v");
-    first = false;
-  }
-  return *l;
+    static std::shared_ptr<spdlog::logger> l =
+      initializeLogger(spdlog::default_logger(), "[%l] %v");
+    return *l;
 }
 
 // the file log sink (e.g. `opensim.log`) is lazily initialized.
