@@ -49,6 +49,12 @@ class LogSink;
 
 /// This is a singleton class (single instance) for logging messages and
 /// controlling how those messages are presented to the user.
+///
+/// @note Do not use this class (or any of the free functions) from the
+/// destructor of any object with static storage duration. It accesses static
+/// objects that are destructed in an undetermined order during static
+/// de-initialization.
+///
 class OSIMCOMMON_API Logger {
 public:
     ///  This is a static singleton class: there is no way of constructing it
