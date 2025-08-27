@@ -35,31 +35,39 @@
 
 using namespace OpenSim;
 
-static void initializeLogger(spdlog::logger& l, const char* pattern) {
-    l.set_level(spdlog::level::info);
-    l.set_pattern(pattern);
+// Static initialization of default and cout loggers.
+//
+// There are objects from other compilation units that call into the default
+// (and probably cout) logger objects during static initialization so use the
+// "Construct On First Use" idiom to ensure that each logger is allocated and
+// completely initialized before that happens the first time.
+
+// Initialize a logger
+static std::shared_ptr<spdlog::logger> initializeLogger(
+    std::shared_ptr<spdlog::logger> l,
+    const char* pattern)
+{
+    l->set_level(spdlog::level::info);
+    l->flush_on(spdlog::level::info);
+    l->set_pattern(pattern);
+    return l;
 }
 
-// cout logger will be initialized during static initialization time
-static std::shared_ptr<spdlog::logger> coutLogger =
-        spdlog::stdout_color_mt("cout");
-
-// default logger will be initialized during static initialization time
-static std::shared_ptr<spdlog::logger> defaultLogger =
-        spdlog::default_logger();
-
-// this function returns a dummy value so that it can be used in an assignment
-// expression (below) that *must* be executed in-order at static init time
-static bool initializeLogging() {
-    initializeLogger(*coutLogger, "%v");
-    initializeLogger(*defaultLogger, "[%l] %v");
-    spdlog::flush_on(spdlog::level::info);
-    return true;
+// Return a reference to the static cout logger object, allocating and
+// initializing it on the first call.
+static spdlog::logger& coutLoggerInternal() {
+    static std::shared_ptr<spdlog::logger> l =
+      initializeLogger(spdlog::stdout_color_mt("cout"), "%v");
+    return *l;
 }
 
-// initialization of this variable will have the side-effect of completing the
-// initialization of logging
-static bool otherStaticInit = initializeLogging();
+// Return a reference to the static default logger object, allocating and
+// initializing it on the first call.
+static spdlog::logger& defaultLoggerInternal() {
+    static std::shared_ptr<spdlog::logger> l =
+      initializeLogger(spdlog::default_logger(), "[%l] %v");
+    return *l;
+}
 
 // the file log sink (e.g. `opensim.log`) is lazily initialized.
 //
@@ -99,30 +107,30 @@ return true;
 // it should perform lazy initialization of the file sink
 spdlog::logger& Logger::getCoutLogger() {
     initFileLoggingAsNeeded();
-    return *coutLogger;
+    return coutLoggerInternal();
 }
 
 // this function is only called when the caller is about to log something, so
 // it should perform lazy initialization of the file sink
 spdlog::logger& Logger::getDefaultLogger() {
     initFileLoggingAsNeeded();
-    return *defaultLogger;
+    return defaultLoggerInternal();
 }
 
 static void addSinkInternal(std::shared_ptr<spdlog::sinks::sink> sink) {
-    coutLogger->sinks().push_back(sink);
-    defaultLogger->sinks().push_back(sink);
+    coutLoggerInternal().sinks().push_back(sink);
+    defaultLoggerInternal().sinks().push_back(sink);
 }
 
 static void removeSinkInternal(const std::shared_ptr<spdlog::sinks::sink> sink)
 {
     {
-        auto& sinks = defaultLogger->sinks();
+        auto& sinks = defaultLoggerInternal().sinks();
         auto new_end = std::remove(sinks.begin(), sinks.end(), sink);
         sinks.erase(new_end, sinks.end());
     }
     {
-        auto& sinks = coutLogger->sinks();
+        auto& sinks = coutLoggerInternal().sinks();
         auto new_end = std::remove(sinks.begin(), sinks.end(), sink);
         sinks.erase(new_end, sinks.end());
     }
@@ -158,7 +166,7 @@ void Logger::setLevel(Level level) {
 }
 
 Logger::Level Logger::getLevel() {
-    switch (defaultLogger->level()) {
+    switch (defaultLoggerInternal().level()) {
     case spdlog::level::off: return Level::Off;
     case spdlog::level::critical: return Level::Critical;
     case spdlog::level::err: return Level::Error;
@@ -218,7 +226,7 @@ bool Logger::shouldLog(Level level) {
     default:
         OPENSIM_THROW(Exception, "Internal error.");
     }
-    return defaultLogger->should_log(spdlogLevel);
+    return defaultLoggerInternal().should_log(spdlogLevel);
 }
 
 void Logger::addFileSink(const std::string& filepath) {
@@ -229,10 +237,11 @@ void Logger::addFileSink(const std::string& filepath) {
     // downstream callers would find it quite surprising if the auto-initializer
     // runs *after* they manually specify a log, so just disable it
     fileSinkAutoInitDisabled = true;
+    spdlog::logger& logger = defaultLoggerInternal();
 
     if (m_filesink) {
-        defaultLogger->warn("Already logging to file '{}'; log file not added. Call "
-             "removeFileSink() first.", m_filesink->filename());
+        logger.warn("Already logging to file '{}'; log file not added. Call "
+                    "removeFileSink() first.", m_filesink->filename());
         return;
     }
 
@@ -243,9 +252,9 @@ void Logger::addFileSink(const std::string& filepath) {
                 std::make_shared<spdlog::sinks::basic_file_sink_mt>(filepath);
     }
     catch (...) {
-        defaultLogger->warn("Can't open file '{}' for writing. Log file will not be created. "
-             "Check that you have write permissions to the specified path.",
-                filepath);
+        logger.warn("Can't open file '{}' for writing. Log file will not be created. "
+                    "Check that you have write permissions to the specified path.",
+                    filepath);
         return;
     }
     addSinkInternal(m_filesink);
