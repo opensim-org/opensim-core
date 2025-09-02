@@ -338,7 +338,7 @@ public:
      */
     int remove(int aIndex)
     {
-        OPENSIM_ASSERT(0 < aIndex && aIndex <= size() && "Array::remove received an out-of-bounds index");
+        OPENSIM_ASSERT(0 <= aIndex && aIndex < size() && "Array::remove received an out-of-bounds index");
         _storage.erase(_storage.begin() + aIndex);
         return size();
     }
