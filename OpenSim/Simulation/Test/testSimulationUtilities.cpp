@@ -25,7 +25,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Actuators/PointActuator.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -33,7 +33,12 @@ using namespace std;
 void testUpdatePre40KinematicsFor40MotionType();
 
 int main() {
-    LoadOpenSimLibrary("osimActuators");
+    // The following model(s) contains Actuators that are registered when the
+    // osimActuators library is loaded. But unless we call at least one
+    // function defined in the osimActuators library, some linkers will omit
+    // its dependency from the executable and it will not be loaded at
+    // startup.
+    { PointActuator t; }
 
     SimTK_START_TEST("testSimulationUtilities");
         SimTK_SUBTEST(testUpdatePre40KinematicsFor40MotionType);

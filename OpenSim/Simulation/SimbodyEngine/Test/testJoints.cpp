@@ -47,7 +47,6 @@
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Common/LinearFunction.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
@@ -69,6 +68,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Simulation/Test/SimulationComponentsForTesting.h>
+#include <OpenSim/Actuators/PointActuator.h>
 
 #include <memory>
 #include <catch2/catch_all.hpp>
@@ -2059,9 +2059,12 @@ TEST_CASE("testEquivalentBodyForceFromGeneralizedForce") {
             "==="
          << endl;
 
-    // Need to load osim actuators because the following model has
-    // Actuators that will fail to register and the model will not load.
-    LoadOpenSimLibrary("osimActuators");
+    // The following model(s) contains Actuators that are registered when the
+    // osimActuators library is loaded. But unless we call at least one
+    // function defined in the osimActuators library, some linkers will omit
+    // its dependency from the executable and it will not be loaded at
+    // startup.
+    { PointActuator t; }
 
     Model gaitModel("testJointConstraints.osim");
 
