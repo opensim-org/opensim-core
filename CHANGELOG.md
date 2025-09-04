@@ -26,6 +26,7 @@ v4.6
 - Added a suite of Jupyter notebooks containing OpenSim API Python tutorials. (#4124)
 - Added new concrete implementations of `ContactGeometry`: `ContactCylinder`, `ContactEllipsoid`, and `ContactTorus`. (#4115)
 - Removed the following deprecated methods from `ContactGeometry`: `getLocation()`, `setLocation()`, `getOrientation()`, `setOrientation()`, `getBody()`, and `setBody()`. (#4115)
+- Fixed `OpenSim::Marker::generateDecorations` to account for markers that are attached to bodies via other frames (#4144).
 
 
 v4.5.2
