@@ -1,0 +1,70 @@
+diff --git a/OpenSim/Common/Exception.h b/OpenSim/Common/Exception.h
+index 44059fd94..677256734 100644
+--- a/OpenSim/Common/Exception.h
++++ b/OpenSim/Common/Exception.h
+@@ -30,8 +30,9 @@
+ 
+ // INCLUDES
+ #include "osimCommonDLL.h"
+-#include <spdlog/common.h>
++#include <sstream>
+ #include <string>
++#include <stdexcept>
+ 
+ #ifdef SWIG
+     #ifdef OSIMCOMMON_API
+@@ -42,6 +43,30 @@
+ 
+ //=============================================================================
+ //=============================================================================
++inline void replace_next_placeholder(std::ostringstream& oss, std::string& format) {
++    size_t pos = format.find("{}");
++    if (pos == std::string::npos)
++        throw std::runtime_error("Too many arguments for format string.");
++    oss << format.substr(0, pos);
++    format.erase(0, pos + 2);
++}
++
++template<typename T>
++void append_format(std::ostringstream& oss, std::string& format, const T& arg) {
++    replace_next_placeholder(oss, format);
++    oss << arg;
++}
++
++template<typename... Args>
++std::string stringify_args(const std::string& format, const Args&... args) {
++    std::ostringstream oss;
++    std::string fmt_copy = format;
++
++    (append_format(oss, fmt_copy, args), ...);  // Fold expression
++
++    oss << fmt_copy;  // Append any trailing text
++    return oss.str();
++}
+ 
+ namespace OpenSim {
+ 
+@@ -204,9 +229,9 @@ public:
+     Exception(const std::string& file,
+               size_t line,
+               const std::string& func,
+-              spdlog::string_view_t fmt,
++              const std::string& msg,
+               const Args&... args)
+-            : Exception{file, line, func, fmt::format(fmt, args...)} {}
++            : Exception{file, line, func, stringify_args(msg, args...)} {}
+ 
+     /** The message created by this constructor will contain the class name and
+     instance name of the provided Object, and also accepts a message formatted
+@@ -218,9 +243,9 @@ public:
+               size_t line,
+               const std::string& func,
+               const Object& obj,
+-              spdlog::string_view_t fmt,
++              const std::string& msg,
+               const Args&... args)
+-            : Exception{file, line, func, obj, fmt::format(fmt, args...)} {}
++            : Exception{file, line, func, obj, stringify_args(msg, args...)} {}
+ 
+     virtual ~Exception() throw() {}
+ 

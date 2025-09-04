@@ -1,0 +1,2161 @@
+diff --git a/Applications/ID/test/testID.cpp b/Applications/ID/test/testID.cpp
+index 0f73828af..8e9ec2c91 100644
+--- a/Applications/ID/test/testID.cpp
++++ b/Applications/ID/test/testID.cpp
+@@ -21,6 +21,7 @@
+  * limitations under the License.                                             *
+  * -------------------------------------------------------------------------- */
+ // INCLUDE
++#include "OpenSim/Common/Logger.h"
+ #include <string>
+ #include <iostream>
+ #include <OpenSim/version.h>
+diff --git a/Applications/opensense/opensense.cpp b/Applications/opensense/opensense.cpp
+index f27765abb..64cf82a8a 100644
+--- a/Applications/opensense/opensense.cpp
++++ b/Applications/opensense/opensense.cpp
+@@ -29,6 +29,7 @@
+ * -------------------------------------------------------------------------- */
+ 
+ // INCLUDES
++#include "OpenSim/Common/Logger.h"
+ #include <cctype>
+ #include <string>
+ #include <OpenSim/version.h>
+diff --git a/Applications/opensim-cmd/opensim-cmd.cpp b/Applications/opensim-cmd/opensim-cmd.cpp
+index 355466c28..3208594e0 100644
+--- a/Applications/opensim-cmd/opensim-cmd.cpp
++++ b/Applications/opensim-cmd/opensim-cmd.cpp
+@@ -21,6 +21,7 @@
+  * limitations under the License.                                             *
+  * -------------------------------------------------------------------------- */
+ 
++#include "OpenSim/Common/Logger.h"
+ #include "opensim-cmd_info.h"
+ #include "opensim-cmd_print-xml.h"
+ #include "opensim-cmd_run-tool.h"
+diff --git a/OpenSim/Actuators/CoordinateActuator.cpp b/OpenSim/Actuators/CoordinateActuator.cpp
+index debe365ee..8e71d0466 100644
+--- a/OpenSim/Actuators/CoordinateActuator.cpp
++++ b/OpenSim/Actuators/CoordinateActuator.cpp
+@@ -23,6 +23,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "CoordinateActuator.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Common/Assertion.h>
+ #include <OpenSim/Simulation/Model/Model.h>
+diff --git a/OpenSim/Actuators/DeGrooteFregly2016Muscle.cpp b/OpenSim/Actuators/DeGrooteFregly2016Muscle.cpp
+index e4c51ae37..8d9542fd9 100644
+--- a/OpenSim/Actuators/DeGrooteFregly2016Muscle.cpp
++++ b/OpenSim/Actuators/DeGrooteFregly2016Muscle.cpp
+@@ -27,6 +27,7 @@
+ #include <OpenSim/Actuators/Thelen2003Muscle.h>
+ #include <OpenSim/Common/CommonUtilities.h>
+ #include <OpenSim/Simulation/Model/Model.h>
++#include "OpenSim/Common/Logger.h"
+ #include "OpenSim/Common/STOFileAdapter.h"
+ 
+ using namespace OpenSim;
+diff --git a/OpenSim/Actuators/Millard2012AccelerationMuscle.cpp b/OpenSim/Actuators/Millard2012AccelerationMuscle.cpp
+index bc60f4b4e..211ee25a3 100644
+--- a/OpenSim/Actuators/Millard2012AccelerationMuscle.cpp
++++ b/OpenSim/Actuators/Millard2012AccelerationMuscle.cpp
+@@ -24,6 +24,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "Millard2012AccelerationMuscle.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/Model.h>
+ 
+ 
+diff --git a/OpenSim/Actuators/Millard2012EquilibriumMuscle.cpp b/OpenSim/Actuators/Millard2012EquilibriumMuscle.cpp
+index 35be55169..ffb31569b 100644
+--- a/OpenSim/Actuators/Millard2012EquilibriumMuscle.cpp
++++ b/OpenSim/Actuators/Millard2012EquilibriumMuscle.cpp
+@@ -21,6 +21,7 @@
+  * limitations under the License.                                             *
+  * -------------------------------------------------------------------------- */
+ #include "Millard2012EquilibriumMuscle.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/Model.h>
+ 
+ using namespace std;
+diff --git a/OpenSim/Actuators/ModelFactory.cpp b/OpenSim/Actuators/ModelFactory.cpp
+index e81217c98..d5c5f4276 100644
+--- a/OpenSim/Actuators/ModelFactory.cpp
++++ b/OpenSim/Actuators/ModelFactory.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "ModelFactory.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Actuators/CoordinateActuator.h>
+ #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+diff --git a/OpenSim/Actuators/ModelOperators.cpp b/OpenSim/Actuators/ModelOperators.cpp
+new file mode 100644
+index 000000000..020de0faf
+--- /dev/null
++++ b/OpenSim/Actuators/ModelOperators.cpp
+@@ -0,0 +1,27 @@
++#include "ModelOperators.h"
++#include "OpenSim/Common/Logger.h"
++
++#include <OpenSim/Common/GCVSplineSet.h>
++
++using namespace OpenSim;
++
++void ModOpPrescribeCoordinateValues::operate(
++        Model& model, const std::string&) const {
++    model.finalizeFromProperties();
++    TimeSeriesTable table = get_coordinate_values().process();
++    GCVSplineSet statesSpline(table);
++
++    for (const std::string& pathString : table.getColumnLabels()) {
++        ComponentPath path = ComponentPath(pathString);
++        if (path.getNumPathLevels() < 3) { continue; }
++        std::string jointPath = path.getParentPath().getParentPath().toString();
++        if (!model.hasComponent<Joint>(jointPath)) {
++            log_warn("Found column label '{}', but it does not match a "
++                     "joint coordinate value in the model.", pathString);
++            continue;
++        }
++        Coordinate& q = model.updComponent<Joint>(jointPath).updCoordinate();
++        q.setPrescribedFunction(statesSpline.get(pathString));
++        q.setDefaultIsPrescribed(true);
++    }
++}
+diff --git a/OpenSim/Actuators/ModelOperators.h b/OpenSim/Actuators/ModelOperators.h
+index 386764aba..127996cd8 100644
+--- a/OpenSim/Actuators/ModelOperators.h
++++ b/OpenSim/Actuators/ModelOperators.h
+@@ -20,7 +20,6 @@
+ 
+ #include "ModelProcessor.h"
+ #include <OpenSim/Actuators/ModelFactory.h>
+-#include <OpenSim/Common/GCVSplineSet.h>
+ #include <OpenSim/Simulation/Model/ExternalLoads.h>
+ #include "OpenSim/Simulation/TableProcessor.h"
+ 
+@@ -285,27 +284,7 @@ public:
+     ModOpPrescribeCoordinateValues(TableProcessor table) {
+         constructProperty_coordinate_values(table);
+     }
+-    void operate(Model& model, const std::string&) const override {
+-        model.finalizeFromProperties();
+-        TimeSeriesTable table = get_coordinate_values().process();
+-        GCVSplineSet statesSpline(table);
+-
+-        for (const std::string& pathString: table.getColumnLabels()) {
+-            ComponentPath path = ComponentPath(pathString);
+-            if (path.getNumPathLevels() < 3) {
+-                continue;
+-            }
+-            std::string jointPath = path.getParentPath().getParentPath().toString();
+-            if (!model.hasComponent<Joint>(jointPath)) {
+-                log_warn("Found column label '{}', but it does not match a "
+-                         "joint coordinate value in the model.", pathString);
+-                continue;
+-            }
+-            Coordinate& q = model.updComponent<Joint>(jointPath).updCoordinate();
+-            q.setPrescribedFunction(statesSpline.get(pathString));
+-            q.setDefaultIsPrescribed(true);
+-        }
+-    }
++    void operate(Model& model, const std::string&) const override;
+ };
+ 
+ } // namespace OpenSim
+diff --git a/OpenSim/Actuators/PolynomialPathFitter.cpp b/OpenSim/Actuators/PolynomialPathFitter.cpp
+index 3dd6b8c47..e65408f06 100644
+--- a/OpenSim/Actuators/PolynomialPathFitter.cpp
++++ b/OpenSim/Actuators/PolynomialPathFitter.cpp
+@@ -23,6 +23,7 @@
+ 
+ #include "PolynomialPathFitter.h"
+ 
++#include "OpenSim/Common/Logger.h"
+ #include <future>
+ #include <OpenSim/Actuators/ModelOperators.h>
+ 
+diff --git a/OpenSim/Actuators/Thelen2003Muscle.cpp b/OpenSim/Actuators/Thelen2003Muscle.cpp
+index eff537959..a0e6ac896 100644
+--- a/OpenSim/Actuators/Thelen2003Muscle.cpp
++++ b/OpenSim/Actuators/Thelen2003Muscle.cpp
+@@ -23,6 +23,7 @@
+ //=============================================================================
+ // INCLUDES
+ //=============================================================================
++#include "OpenSim/Common/Logger.h"
+ #include <fstream>
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include "Thelen2003Muscle.h"
+diff --git a/OpenSim/Actuators/ZerothOrderMuscleActivationDynamics.cpp b/OpenSim/Actuators/ZerothOrderMuscleActivationDynamics.cpp
+index 4bd791065..6d854a13c 100644
+--- a/OpenSim/Actuators/ZerothOrderMuscleActivationDynamics.cpp
++++ b/OpenSim/Actuators/ZerothOrderMuscleActivationDynamics.cpp
+@@ -22,6 +22,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "ZerothOrderMuscleActivationDynamics.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace std;
+ using namespace OpenSim;
+diff --git a/OpenSim/Analyses/Actuation.cpp b/OpenSim/Analyses/Actuation.cpp
+index 5a9fd6292..9e491a0ac 100644
+--- a/OpenSim/Analyses/Actuation.cpp
++++ b/OpenSim/Analyses/Actuation.cpp
+@@ -26,6 +26,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "Actuation.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include <OpenSim/Simulation/Model/Actuator.h>
+ 
+diff --git a/OpenSim/Analyses/BodyKinematics.cpp b/OpenSim/Analyses/BodyKinematics.cpp
+index 1d1ae72aa..67c7e9a4b 100644
+--- a/OpenSim/Analyses/BodyKinematics.cpp
++++ b/OpenSim/Analyses/BodyKinematics.cpp
+@@ -26,6 +26,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "BodyKinematics.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/Model.h>
+ 
+ using namespace OpenSim;
+diff --git a/OpenSim/Analyses/ForceReporter.cpp b/OpenSim/Analyses/ForceReporter.cpp
+index 6bede5b7e..114aed899 100644
+--- a/OpenSim/Analyses/ForceReporter.cpp
++++ b/OpenSim/Analyses/ForceReporter.cpp
+@@ -26,6 +26,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "ForceReporter.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/Model.h>
+ 
+ using namespace OpenSim;
+diff --git a/OpenSim/Analyses/InducedAccelerations.cpp b/OpenSim/Analyses/InducedAccelerations.cpp
+index f7f8f93cc..286d4e16b 100644
+--- a/OpenSim/Analyses/InducedAccelerations.cpp
++++ b/OpenSim/Analyses/InducedAccelerations.cpp
+@@ -28,6 +28,7 @@
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include <OpenSim/Simulation/Model/ExternalForce.h>
+ #include "InducedAccelerations.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace OpenSim;
+ using namespace std;
+diff --git a/OpenSim/Analyses/InducedAccelerationsSolver.cpp b/OpenSim/Analyses/InducedAccelerationsSolver.cpp
+index 5c6511030..d62e20ff4 100644
+--- a/OpenSim/Analyses/InducedAccelerationsSolver.cpp
++++ b/OpenSim/Analyses/InducedAccelerationsSolver.cpp
+@@ -27,6 +27,7 @@
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include <OpenSim/Simulation/Model/ExternalForce.h>
+ #include "InducedAccelerationsSolver.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace OpenSim;
+ using namespace std;
+diff --git a/OpenSim/Analyses/JointReaction.cpp b/OpenSim/Analyses/JointReaction.cpp
+index 13e4a43ab..c3ed07413 100644
+--- a/OpenSim/Analyses/JointReaction.cpp
++++ b/OpenSim/Analyses/JointReaction.cpp
+@@ -28,6 +28,7 @@
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include <OpenSim/Simulation/Model/Actuator.h>
+ #include "JointReaction.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace OpenSim;
+ using namespace std;
+diff --git a/OpenSim/Analyses/Kinematics.cpp b/OpenSim/Analyses/Kinematics.cpp
+index 65866a1e5..d8f6a146f 100644
+--- a/OpenSim/Analyses/Kinematics.cpp
++++ b/OpenSim/Analyses/Kinematics.cpp
+@@ -27,6 +27,7 @@
+ //=============================================================================
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include "Kinematics.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ 
+ using namespace OpenSim;
+diff --git a/OpenSim/Analyses/MuscleAnalysis.cpp b/OpenSim/Analyses/MuscleAnalysis.cpp
+index d298fd907..99068a5b3 100644
+--- a/OpenSim/Analyses/MuscleAnalysis.cpp
++++ b/OpenSim/Analyses/MuscleAnalysis.cpp
+@@ -29,6 +29,7 @@
+ #include <OpenSim/Common/IO.h>
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include "MuscleAnalysis.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace OpenSim;
+ using namespace std;
+diff --git a/OpenSim/Analyses/OutputReporter.cpp b/OpenSim/Analyses/OutputReporter.cpp
+index 772dcfc4d..847382788 100644
+--- a/OpenSim/Analyses/OutputReporter.cpp
++++ b/OpenSim/Analyses/OutputReporter.cpp
+@@ -26,6 +26,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "OutputReporter.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include <OpenSim/Common/IO.h>
+ 
+diff --git a/OpenSim/Analyses/PointKinematics.cpp b/OpenSim/Analyses/PointKinematics.cpp
+index a32d2d26c..dda5b7317 100644
+--- a/OpenSim/Analyses/PointKinematics.cpp
++++ b/OpenSim/Analyses/PointKinematics.cpp
+@@ -25,6 +25,7 @@
+ //=============================================================================
+ // INCLUDES
+ //=============================================================================
++#include "OpenSim/Common/Logger.h"
+ #include <string>
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include "PointKinematics.h"
+diff --git a/OpenSim/Analyses/ProbeReporter.cpp b/OpenSim/Analyses/ProbeReporter.cpp
+index 7c03fed43..59f22f830 100644
+--- a/OpenSim/Analyses/ProbeReporter.cpp
++++ b/OpenSim/Analyses/ProbeReporter.cpp
+@@ -26,6 +26,7 @@
+ // INCLUDES and STATICS
+ //=============================================================================
+ #include "ProbeReporter.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace OpenSim;
+ using namespace std;
+@@ -255,6 +256,21 @@ int ProbeReporter::record(const SimTK::State& s)
+ 
+     return 0;
+ }
++
++void ProbeReporter::disableIntegrationOnlyProbes() {
++    ProbeSet& probes = _model->updProbeSet();
++    int nP = probes.getSize();
++
++    for(int i=0 ; i<nP ; i++) {
++        Probe& nextProbe = (Probe&)probes[i];
++        if (nextProbe.getOperation()=="integrate" || nextProbe.getOperation()=="min" || nextProbe.getOperation()=="max"){
++            nextProbe.setEnabled(false);
++            log_warn("Disabling probe {} as invalid for non-integration "
++                     "context.",
++                    nextProbe.getName());
++        }
++    }
++}
+ //_____________________________________________________________________________
+ /**
+  * This method is called at the beginning of an analysis so that any
+diff --git a/OpenSim/Analyses/ProbeReporter.h b/OpenSim/Analyses/ProbeReporter.h
+index dd80bae99..b2c946160 100644
+--- a/OpenSim/Analyses/ProbeReporter.h
++++ b/OpenSim/Analyses/ProbeReporter.h
+@@ -150,20 +150,7 @@ protected:
+     virtual int
+         record(const SimTK::State& s );
+ public:
+-    void disableIntegrationOnlyProbes() {
+-        ProbeSet& probes = _model->updProbeSet();
+-        int nP = probes.getSize();
+-
+-        for(int i=0 ; i<nP ; i++) {
+-            Probe& nextProbe = (Probe&)probes[i];
+-            if (nextProbe.getOperation()=="integrate" || nextProbe.getOperation()=="min" || nextProbe.getOperation()=="max"){
+-                nextProbe.setEnabled(false);
+-                log_warn("Disabling probe {} as invalid for non-integration "
+-                         "context.",
+-                        nextProbe.getName());
+-            }
+-        }
+-    }
++    void disableIntegrationOnlyProbes();
+     //--------------------------------------------------------------------------
+     // IO
+     //--------------------------------------------------------------------------
+diff --git a/OpenSim/Analyses/RegisterTypes_osimAnalyses.cpp b/OpenSim/Analyses/RegisterTypes_osimAnalyses.cpp
+index 26aad1c8a..4e3fe02bd 100644
+--- a/OpenSim/Analyses/RegisterTypes_osimAnalyses.cpp
++++ b/OpenSim/Analyses/RegisterTypes_osimAnalyses.cpp
+@@ -23,6 +23,7 @@
+ 
+ 
+ #include <OpenSim/Common/Object.h>
++#include "OpenSim/Common/Logger.h"
+ #include "osimAnalyses.h"   // Add headers for new Analyses in osimAnalyses.h rather than here so they are available to the API.
+ #include <string>
+ #include <iostream>
+diff --git a/OpenSim/Analyses/StatesReporter.cpp b/OpenSim/Analyses/StatesReporter.cpp
+index 6bd90f50c..4764fa582 100644
+--- a/OpenSim/Analyses/StatesReporter.cpp
++++ b/OpenSim/Analyses/StatesReporter.cpp
+@@ -27,6 +27,7 @@
+ //=============================================================================
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include "StatesReporter.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace OpenSim;
+ using namespace std;
+diff --git a/OpenSim/Analyses/StaticOptimization.cpp b/OpenSim/Analyses/StaticOptimization.cpp
+index d619cf4b8..133d29080 100644
+--- a/OpenSim/Analyses/StaticOptimization.cpp
++++ b/OpenSim/Analyses/StaticOptimization.cpp
+@@ -26,6 +26,7 @@
+ //=============================================================================
+ #include "StaticOptimization.h"
+ 
++#include "OpenSim/Common/Logger.h"
+ #include "StaticOptimizationTarget.h"
+ 
+ #include <OpenSim/Actuators/CoordinateActuator.h>
+diff --git a/OpenSim/Analyses/StaticOptimizationTarget.cpp b/OpenSim/Analyses/StaticOptimizationTarget.cpp
+index e8bda2386..e2dba9550 100644
+--- a/OpenSim/Analyses/StaticOptimizationTarget.cpp
++++ b/OpenSim/Analyses/StaticOptimizationTarget.cpp
+@@ -29,6 +29,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "StaticOptimizationTarget.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Simulation/Model/Model.h>
+ 
+diff --git a/OpenSim/Common/Array.h b/OpenSim/Common/Array.h
+index 92d610e0a..541bbbec1 100644
+--- a/OpenSim/Common/Array.h
++++ b/OpenSim/Common/Array.h
+@@ -29,7 +29,6 @@
+ 
+ #include "Assertion.h"
+ #include "Exception.h"
+-#include "Logger.h"
+ #include "osimCommonDLL.h"
+ #include <algorithm>
+ #include <initializer_list>
+diff --git a/OpenSim/Common/ArrayPtrs.h b/OpenSim/Common/ArrayPtrs.h
+index fde453657..fd0e64ca1 100644
+--- a/OpenSim/Common/ArrayPtrs.h
++++ b/OpenSim/Common/ArrayPtrs.h
+@@ -31,8 +31,6 @@
+ #include "osimCommonDLL.h"
+ #include <iostream>
+ #include "Exception.h"
+-#include "Logger.h"
+-
+ 
+ //=============================================================================
+ //=============================================================================
+@@ -366,8 +364,6 @@ bool computeNewCapacity(int aMinCapacity,int &rNewCapacity)
+ 
+     // CHECK FOR ZERO INCREMENT
+     if(_capacityIncrement == 0) {
+-        log_warn("ArrayPtrs.computeNewCapacity: capacity is set not to "
+-                 "increase (i.e., _capacityIncrement==0).");
+         return(false);
+     }
+ 
+@@ -400,7 +396,6 @@ bool ensureCapacity(int aCapacity)
+     int i;
+     T **newArray = new T*[aCapacity];
+     if(newArray==NULL) {
+-        log_error("ArrayPtrs.ensureCapacity: failed to increase capacity.");
+         return(false);
+     }
+ 
+@@ -441,7 +436,6 @@ void trim()
+     // ALLOCATE NEW ARRAY
+     _array = new T*[newCapacity];
+     if(_array==NULL) {
+-        log_error("ArrayPtrs.trim: unable to allocate array.");
+         return;
+     }
+ 
+@@ -622,7 +616,6 @@ int getIndex(const std::string &aName,int aStartIndex=0) const
+ bool append(T *aObject)
+ {
+     if(aObject==NULL) {
+-        log_error("ArrayPtrs.append: NULL pointer.");
+         return(false);
+     }
+ 
+@@ -685,13 +678,11 @@ bool insert(int aIndex,T *aObject)
+ {
+     // NULL POINTER
+     if(aObject==NULL) {
+-        log_error("ArrayPtrs.insert: NULL pointer.");
+         return(false);
+     }
+ 
+     // NEGATIVE INDEX
+     if(aIndex<0) {
+-        log_error("ArrayPtrs.insert: aIndex was less than 0.");
+         return(false);
+     }
+ 
+diff --git a/OpenSim/Common/C3DFileAdapter.cpp b/OpenSim/Common/C3DFileAdapter.cpp
+index 470bab476..b4c0b8bbf 100644
+--- a/OpenSim/Common/C3DFileAdapter.cpp
++++ b/OpenSim/Common/C3DFileAdapter.cpp
+@@ -1,4 +1,5 @@
+ #include "C3DFileAdapter.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #ifdef WITH_EZC3D
+ #include "ezc3d/ezc3d_all.h"
+diff --git a/OpenSim/Common/CommonUtilities.cpp b/OpenSim/Common/CommonUtilities.cpp
+index 7235c258d..ed698bdd6 100644
+--- a/OpenSim/Common/CommonUtilities.cpp
++++ b/OpenSim/Common/CommonUtilities.cpp
+@@ -23,6 +23,7 @@
+ 
+ #include "CommonUtilities.h"
+ 
++#include "OpenSim/Common/Logger.h"
+ #include "PiecewiseLinearFunction.h"
+ #include "STOFileAdapter.h"
+ #include "TimeSeriesTable.h"
+diff --git a/OpenSim/Common/Component.cpp b/OpenSim/Common/Component.cpp
+index 578aee767..736c4b5c9 100644
+--- a/OpenSim/Common/Component.cpp
++++ b/OpenSim/Common/Component.cpp
+@@ -25,6 +25,7 @@
+ // INCLUDES
+ #include "Component.h"
+ #include "OpenSim/Common/IO.h"
++#include "OpenSim/Common/Logger.h"
+ #include "XMLDocument.h"
+ 
+ #include <regex>
+diff --git a/OpenSim/Common/Component.h b/OpenSim/Common/Component.h
+index 652848467..0e62756ce 100644
+--- a/OpenSim/Common/Component.h
++++ b/OpenSim/Common/Component.h
+@@ -45,7 +45,6 @@
+ // INCLUDES
+ #include "ComponentList.h"
+ #include "ComponentPath.h"
+-#include "Logger.h"
+ #include "OpenSim/Common/Array.h"
+ #include "OpenSim/Common/ComponentOutput.h"
+ #include "OpenSim/Common/ComponentSocket.h"
+@@ -2748,7 +2747,6 @@ public:
+         }
+ 
+         if (numSubcomponents == 0) {
+-            log_cout("Component '{}' has no subcomponents.", getName());
+             return;
+         }
+         maxlen += 6; //padding
+@@ -2759,25 +2757,6 @@ public:
+         if (colonPos != std::string::npos)
+             className = className.substr(colonPos+1,
+                                          className.length()-colonPos);
+-
+-        log_cout("Class name and absolute path name for descendants of '{}'"
+-                 "that are of type {}:\n", getName(), className);
+-
+-        log_cout("{:>{}}  {}", concreteClassName, maxlen,
+-                getAbsolutePathString());
+-
+-        // Step through compList again to print.
+-        for (const C& thisComp : compList) {
+-            const std::string thisClass = thisComp.getConcreteClassName();
+-            auto path = thisComp.getAbsolutePath();
+-            log_cout(fmt::format(
+-                    "{:>{}}  {}/{}",
+-                    fmt::format("[{}]", thisClass),
+-                    maxlen,
+-                    std::string((path.getNumPathLevels() - 1) * 4, ' '),
+-                    path.getComponentName()));
+-        }
+-        log_cout("");
+     }
+ 
+     /** Print outputs of this component and optionally, those of all
+@@ -3516,21 +3495,6 @@ public:
+                 break;
+             }
+ 
+-            // otherwise, we just have a type and name match
+-            // which we may need to support for compatibility with older models
+-            // where only names were used (not path or type)
+-            // TODO replace with an exception -aseth
+-            std::string compName = comp.getName();
+-            if (compName == subname) {
+-                foundCs.push_back(&comp);
+-                // TODO Revisit why the exact match isn't found when
+-                // when what appears to be the complete path.
+-                log_debug("{} Found '{}' as a match for: Component '{}' of "
+-                          "type {}, but it is not on the specified path.",
+-                          msg, compAbsPath.toString(),
+-                          comp.getConcreteClassName());
+-                //throw Exception(details, __FILE__, __LINE__);
+-            }
+         }
+ 
+         if (foundCs.size() == 1) {
+diff --git a/OpenSim/Common/GCVSpline.cpp b/OpenSim/Common/GCVSpline.cpp
+index 0fcf3bb12..501c6f0f3 100644
+--- a/OpenSim/Common/GCVSpline.cpp
++++ b/OpenSim/Common/GCVSpline.cpp
+@@ -30,6 +30,7 @@
+ // C++ INCLUDES
+ #include "GCVSpline.h"
+ #include "Constant.h"
++#include "OpenSim/Common/Logger.h"
+ #include "gcvspl.h"
+ #include "XYFunctionInterface.h"
+ 
+diff --git a/OpenSim/Common/GCVSplineSet.cpp b/OpenSim/Common/GCVSplineSet.cpp
+index 4eb678ddc..b4c6d9151 100644
+--- a/OpenSim/Common/GCVSplineSet.cpp
++++ b/OpenSim/Common/GCVSplineSet.cpp
+@@ -23,6 +23,7 @@
+ 
+ #include "GCVSplineSet.h"
+ #include "GCVSpline.h"
++#include "OpenSim/Common/Logger.h"
+ #include "Storage.h"
+ 
+ 
+diff --git a/OpenSim/Common/MarkerData.cpp b/OpenSim/Common/MarkerData.cpp
+index 79708dcb4..a11bc64e1 100644
+--- a/OpenSim/Common/MarkerData.cpp
++++ b/OpenSim/Common/MarkerData.cpp
+@@ -24,6 +24,7 @@
+ //=============================================================================
+ // INCLUDES
+ //=============================================================================
++#include "OpenSim/Common/Logger.h"
+ #include <iostream>
+ #include <fstream>
+ #include <math.h>
+diff --git a/OpenSim/Common/Object.h b/OpenSim/Common/Object.h
+index c6a9d648f..03715c533 100644
+--- a/OpenSim/Common/Object.h
++++ b/OpenSim/Common/Object.h
+@@ -1081,10 +1081,10 @@ void Object::checkPropertyValueIsInSet(
+     for (int i = 0; i < p.size(); ++i) {
+         const auto& value = p.getValue(i);
+         if (set.find(value) == set.end()) {
+-            std::string str = fmt::format("{}", fmt::join(set, ", "));
+-            OPENSIM_THROW_FRMOBJ(Exception,
+-                    "Property '{}' has invalid value {}; expected one of the "
+-                    "following: {}.", p.getName(), value, str);
++            std::ostringstream msg;
++            msg << "Property '" << p.getName() << "' has invalid value "
++                << value;
++            OPENSIM_THROW_FRMOBJ(Exception, msg.str());
+         }
+     }
+ }
+@@ -1104,11 +1104,10 @@ void Object::checkPropertyValueIsInRangeOrSet(const Property<T>& p,
+     for (int i = 0; i < p.size(); ++i) {
+         const auto& value = p.getValue(i);
+         if ((value < lower || value > upper) && set.find(value) == set.end()) {
+-            std::string str = fmt::format("{}", fmt::join(set, ", "));
+             OPENSIM_THROW_FRMOBJ(Exception,
+                     "Property '{}' has invalid value {}; expected value to be "
+-                    "in range [{}, {}], or one of the following: {}.",
+-                    p.getName(), value, lower, upper, str);
++                    "in range [{}, {}].",
++                    p.getName(), value, lower, upper);
+         }
+     }
+ }
+@@ -1405,16 +1404,11 @@ ObjectProperty<T>::readFromXMLElement
+         const Object* registeredObj = 
+             Object::getDefaultInstanceOfType(objTypeTag);
+ 
+-        if (!registeredObj) {
+-            log_error("Encountered unrecognized Object typename {} while reading property {}. There is no registered Object of this type. Ignoring.", objTypeTag, this->getName());
++        // Check that the object type found is derived from T.
++        if (!registeredObj || !dynamic_cast<const T*>(registeredObj)) {
+             continue;
+         }
+ 
+-        // Check that the object type found is derived from T.
+-        if (!dynamic_cast<const T*>(registeredObj)) {
+-            log_error("Object type {} wrong for {} property {}. Ignoring.", objTypeTag, objectClassName, this->getName());
+-            continue;                        
+-        }
+         ++objectsFound;
+ 
+         if (objectsFound > this->getMaxListSize())
+@@ -1429,21 +1423,6 @@ ObjectProperty<T>::readFromXMLElement
+         OPENSIM_ASSERT(objectT); // should have worked by construction
+         adoptAndAppendValueVirtual(objectT); // don't copy
+     }
+-
+-    if (objectsFound < this->getMinListSize()) {
+-        log_error("Got {} object values for Property {} but the minimum is {}. Continuing anyway.",
+-            objectsFound ,
+-            this->getName() ,
+-            this->getMinListSize()
+-        );
+-    }
+-    if (objectsFound > this->getMaxListSize()) {
+-        log_error("Got {} object values for Property {} but the maximum is {}. Ignoring the rest.",
+-            objectsFound,
+-            this->getName(),
+-            this->getMaxListSize()
+-        );
+-    }
+ }
+ 
+ // Each object value serializes itself into a subelement of the given
+diff --git a/OpenSim/Common/OptimizationTarget.cpp b/OpenSim/Common/OptimizationTarget.cpp
+index 47f444796..815a77722 100644
+--- a/OpenSim/Common/OptimizationTarget.cpp
++++ b/OpenSim/Common/OptimizationTarget.cpp
+@@ -29,6 +29,7 @@
+ //=============================================================================
+ // INCLUDES
+ //=============================================================================
++#include "OpenSim/Common/Logger.h"
+ #include <stdio.h>
+ #include "OptimizationTarget.h"
+ 
+diff --git a/OpenSim/Common/PiecewiseConstantFunction.cpp b/OpenSim/Common/PiecewiseConstantFunction.cpp
+index 89609f9e0..7d4ed3b0d 100644
+--- a/OpenSim/Common/PiecewiseConstantFunction.cpp
++++ b/OpenSim/Common/PiecewiseConstantFunction.cpp
+@@ -26,6 +26,7 @@
+ #include "PiecewiseConstantFunction.h"
+ #include "Constant.h"
+ #include "FunctionAdapter.h"
++#include "OpenSim/Common/Logger.h"
+ #include "SimmMacros.h"
+ #include "XYFunctionInterface.h"
+ 
+diff --git a/OpenSim/Common/Property.h b/OpenSim/Common/Property.h
+index f14cbe4e8..4bdea4b6c 100644
+--- a/OpenSim/Common/Property.h
++++ b/OpenSim/Common/Property.h
+@@ -27,7 +27,6 @@
+ #include "AbstractProperty.h"
+ #include "Assertion.h"
+ #include "Exception.h"
+-#include "Logger.h"
+ 
+ #include "SimTKcommon/SmallMatrix.h"
+ #include "SimTKcommon/internal/BigMatrix.h"
+@@ -909,33 +908,11 @@ public:
+         SimTK::Array_<T, int> valuesBackup = values;
+         bool shouldRollback = false;
+ 
+-        if (!readSimplePropertyFromStream(valstream)) {
+-            log_warn("Failed to read '{}': property '{}' with input '{}': the data has been ignored",
+-                SimTK::NiceTypeName<T>::name(),
+-                this->getName(),
+-                valstream.str().substr(0, 50)  // limit displayed length
+-            );
+-            shouldRollback = true;
+-        }
+-        if (values.size() < this->getMinListSize()) {
+-            log_warn("Failed to read '{}': property '{}' with input '{}': does not contain enough values (minimum: {}, got: {}): the data (all fields) have been ignored",
+-                SimTK::NiceTypeName<T>::name(),
+-                this->getName(),
+-                valstream.str().substr(0,50),  // limit displayed length
+-                this->getMinListSize(),
+-                values.size()
+-            );
++        if (!readSimplePropertyFromStream(valstream) || values.size() < this->getMinListSize()) {
++
+             shouldRollback = true;
+         }
+         if (values.size() > this->getMaxListSize()) {
+-            log_warn("Truncated '{}': property '{}' with input '{}': contains too many values (maximum: {}, got: {}): the data has been truncated",
+-                SimTK::NiceTypeName<T>::name(),
+-                this->getName(),
+-                valstream.str().substr(0,50),  // limit displayed length
+-                this->getMaxListSize(),
+-                values.size()
+-            );
+-
+             values.resize(this->getMaxListSize());  // truncate
+         }
+ 
+diff --git a/OpenSim/Common/Reporter.h b/OpenSim/Common/Reporter.h
+index 9a73be1f8..24eabb6fa 100644
+--- a/OpenSim/Common/Reporter.h
++++ b/OpenSim/Common/Reporter.h
+@@ -25,6 +25,7 @@
+ // INCLUDE
+ #include <OpenSim/Common/Component.h>
+ #include <OpenSim/Common/TimeSeriesTable.h>
++#include <iostream>
+ 
+ namespace OpenSim {
+ 
+@@ -236,12 +237,6 @@ protected:
+         }
+         if (!labels.empty()) {
+             const_cast<Self*>(this)->_outputTable.setColumnLabels(labels);
+-        } else {
+-            std::cout << "Warning: No outputs were connected to '"
+-                      << this->getName() << "' of type "
+-                      << getConcreteClassName() << ". You can connect outputs "
+-                      "by calling addToReport()." << std::endl;
+-
+         }
+     }
+ 
+@@ -287,53 +282,69 @@ private:
+ 
+         // Periodically display column headers.
+         if (_printCount % 40 == 0) {
+-            log_cout("[{}]", this->getName());
++            std::cout << "[" << this->getName() << "]" << std::endl;
+ 
+             // Split labels over multiple lines.
+             // Round up to the nearest multiple of _width to determine the
+             // number of header rows.
+             const int numHeaderRows = (lengthOfLongestLabel -1) / _width + 1;
+-
+-            // Display labels in chunks of size _width.
+-            for (int row = 0; row < numHeaderRows; ++row)
+-            {
+-                std::string msg;
+-
+-                // Time column.
+-                if (row == numHeaderRows-1)
+-                    msg += fmt::format("{:>{}}| ", "time", _width);
+-                else
+-                    msg += fmt::format("{:>{}}| ", "", _width);
+-
+-                // Data columns.
+-                for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
+-                    const auto& outName = input.getLabel(idx);
+-                    const std::string lbl =
+-                        std::string(numHeaderRows*_width - outName.size(), ' ')
+-                        + outName;
+-                    msg += fmt::format("{}| ", lbl.substr(_width*row, _width));
+-                }
+-                log_cout(msg);
++            
++        // Display labels in chunks of size _width.
++        for (int row = 0; row < numHeaderRows; ++row)
++        {
++            std::ostringstream oss;
++
++            // Time column.
++            if (row == numHeaderRows - 1)
++                oss << std::setw(_width) << std::right << "time" << "| ";
++            else
++                oss << std::setw(_width) << std::right << "" << "| ";
++
++            // Data columns.
++            for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
++                const auto& outName = input.getLabel(idx);
++
++                // Create padded label string.
++                const std::string lbl =
++                    std::string(numHeaderRows * _width - outName.size(), ' ') + outName;
++
++                // Extract the slice for the current row.
++                const std::string chunk = lbl.substr(_width * row, _width);
++
++                oss << chunk << "| ";
+             }
+ 
++            std::cout << oss.str() << std::endl;
++        }
++
+             // Horizontal rule.
+             std::string msg;
+             for (auto idx = 0u; idx <= input.getNumConnectees(); ++idx)
+                 msg += std::string(_width, '-') + "| ";
+-            log_cout(msg);
++            std::cout << msg << std::endl;
+         }
+ 
+-        // TODO set width based on number of significant digits.
+-        std::string msg;
+-        msg += fmt::format("{:>{}}| ", state.getTime(), _width);
++        std::ostringstream oss;
++
++        // Print time, right-justified in a column of width _width
++        oss << std::setw(_width) << std::right << state.getTime() << "| ";
++
+         for (const auto& chan : input.getChannels()) {
+             const auto& value = chan->getValue(state);
+-            const auto& nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
+-            // Print `value` right-justified in a column with width `_width`,
+-            // using `nSigFigs`: {:>{_width}.{nSigFigs}g}
+-            msg += fmt::format("{:>{}.{}g}| ", value, _width, nSigFigs);
++            const auto nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
++
++            // Configure the stream for significant digits formatting
++            std::ostringstream valStream;
++            valStream << std::setw(_width)
++                    << std::right
++                    << std::setprecision(nSigFigs)
++                    << std::defaultfloat 
++                    << value;
++
++            oss << valStream.str() << "| ";
+         }
+-        log_cout(msg);
++
++        std::cout << oss.str() << std::endl;
+ 
+         const_cast<ConsoleReporter_<T>*>(this)->_printCount++;
+     }
+diff --git a/OpenSim/Common/Signal.cpp b/OpenSim/Common/Signal.cpp
+index 72b505878..211a464e3 100644
+--- a/OpenSim/Common/Signal.cpp
++++ b/OpenSim/Common/Signal.cpp
+@@ -27,6 +27,7 @@
+ 
+ 
+ // INCLUDES
++#include "OpenSim/Common/Logger.h"
+ #include <math.h>
+ #include "Signal.h"
+ #include "Array.h"
+diff --git a/OpenSim/Common/SimmSpline.cpp b/OpenSim/Common/SimmSpline.cpp
+index 1e9660164..aab8ee398 100644
+--- a/OpenSim/Common/SimmSpline.cpp
++++ b/OpenSim/Common/SimmSpline.cpp
+@@ -25,6 +25,7 @@
+ // C++ INCLUDES
+ #include "SimmSpline.h"
+ #include "Constant.h"
++#include "OpenSim/Common/Logger.h"
+ #include "SimmMacros.h"
+ #include "XYFunctionInterface.h"
+ #include "FunctionAdapter.h"
+diff --git a/OpenSim/Common/StateVector.cpp b/OpenSim/Common/StateVector.cpp
+index e62ec5a3d..c1497e98d 100644
+--- a/OpenSim/Common/StateVector.cpp
++++ b/OpenSim/Common/StateVector.cpp
+@@ -28,6 +28,7 @@
+ 
+ // INCLUDES
+ #include "IO.h"
++#include "OpenSim/Common/Logger.h"
+ #include "StateVector.h"
+ 
+ using namespace OpenSim;
+diff --git a/OpenSim/Common/TableUtilities.cpp b/OpenSim/Common/TableUtilities.cpp
+index 2a80f762b..580def2c2 100644
+--- a/OpenSim/Common/TableUtilities.cpp
++++ b/OpenSim/Common/TableUtilities.cpp
+@@ -26,6 +26,7 @@
+ #include "CommonUtilities.h"
+ #include "FunctionSet.h"
+ #include "GCVSplineSet.h"
++#include "OpenSim/Common/Logger.h"
+ #include "PiecewiseLinearFunction.h"
+ #include "Signal.h"
+ #include "Storage.h"
+diff --git a/OpenSim/Common/TimeSeriesTable.h b/OpenSim/Common/TimeSeriesTable.h
+index 5434f7d54..ad5d1827d 100644
+--- a/OpenSim/Common/TimeSeriesTable.h
++++ b/OpenSim/Common/TimeSeriesTable.h
+@@ -30,7 +30,6 @@ provide an in-memory container for data access and manipulation.              */
+ 
+ #include "OpenSim/Common/DataTable.h"
+ #include <SimTKsimbody.h>
+-#include "Logger.h"
+ 
+ namespace OpenSim {
+ 
+@@ -468,9 +467,6 @@ public:
+         last_index = this->getRowIndexBeforeTime(newFinalTime);
+         // do the actual trimming based on index instead of time.
+         trimToIndices(start_index, last_index);
+-        // If resulting table is empty, throw
+-        if (this->getNumRows()==0)
+-            log_warn("Trimming resulted in an empty table.");
+     }
+     /**
+      * trim TimeSeriesTable, keeping rows at newStartTime to the end.
+diff --git a/OpenSim/Common/VectorFunctionUncoupledNxN.h b/OpenSim/Common/VectorFunctionUncoupledNxN.h
+index 100522675..7f8da6b94 100644
+--- a/OpenSim/Common/VectorFunctionUncoupledNxN.h
++++ b/OpenSim/Common/VectorFunctionUncoupledNxN.h
+@@ -97,17 +97,10 @@ public:
+     // EVALUATE
+     //--------------------------------------------------------------------------
+     virtual void evaluate( const SimTK::State& s, const double *aX, double *rF) {
+-        log_error("VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( "
+-                  "const SimTK::State&, const double*, double*)");
+     }
+     virtual void evaluate( const SimTK::State& s, const Array<double> &aX, Array<double> &rF){
+-        log_error("VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( "
+-                  "const SimTK::State&, const Array<double>, Array<double>)");
+     }
+     virtual void evaluate( const SimTK::State& s, const Array<double> &aX, Array<double> &rF, const Array<int> &aDerivWRT){
+-        log_error("VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( "
+-                     "const SimTK::State&, const Array<double>&a, "
+-                     "Array<double>&, const Array<int>&)");
+     }
+ 
+ //=============================================================================
+diff --git a/OpenSim/Common/XMLDocument.cpp b/OpenSim/Common/XMLDocument.cpp
+index efe2d7bf3..e792cd0e4 100644
+--- a/OpenSim/Common/XMLDocument.cpp
++++ b/OpenSim/Common/XMLDocument.cpp
+@@ -32,6 +32,7 @@
+ #include "Assertion.h"
+ #include "XMLDocument.h"
+ #include "Object.h"
++#include "OpenSim/Common/Logger.h"
+ #include <functional>
+ 
+ 
+diff --git a/OpenSim/Common/osimCommon.h b/OpenSim/Common/osimCommon.h
+index 19adf1e7b..fe5421469 100644
+--- a/OpenSim/Common/osimCommon.h
++++ b/OpenSim/Common/osimCommon.h
+@@ -37,7 +37,6 @@
+ #include "LatinHypercubeDesign.h"
+ #include "LinearFunction.h"
+ #include "LoadOpenSimLibrary.h"
+-#include "Logger.h"
+ #include "ModelDisplayHints.h"
+ #include "MultiplierFunction.h"
+ #include "MultivariatePolynomialFunction.h"
+diff --git a/OpenSim/Moco/MocoCasADiSolver/MocoCasADiSolver.cpp b/OpenSim/Moco/MocoCasADiSolver/MocoCasADiSolver.cpp
+index 04d0a4cd5..0e00df957 100644
+--- a/OpenSim/Moco/MocoCasADiSolver/MocoCasADiSolver.cpp
++++ b/OpenSim/Moco/MocoCasADiSolver/MocoCasADiSolver.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoCasADiSolver.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Common/Assertion.h>
+ #include <OpenSim/Moco/MocoUtilities.h>
+diff --git a/OpenSim/Moco/MocoConstraintInfo.cpp b/OpenSim/Moco/MocoConstraintInfo.cpp
+index a304a7f6c..5dadaa367 100644
+--- a/OpenSim/Moco/MocoConstraintInfo.cpp
++++ b/OpenSim/Moco/MocoConstraintInfo.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoConstraintInfo.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace OpenSim;
+ 
+diff --git a/OpenSim/Moco/MocoControlBoundConstraint.cpp b/OpenSim/Moco/MocoControlBoundConstraint.cpp
+index c2086a57b..83bfcb5c6 100644
+--- a/OpenSim/Moco/MocoControlBoundConstraint.cpp
++++ b/OpenSim/Moco/MocoControlBoundConstraint.cpp
+@@ -20,6 +20,7 @@
+ 
+ #include "MocoProblemInfo.h"
+ #include "Components/ControlDistributor.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Common/GCVSpline.h>
+ #include <OpenSim/Simulation/SimulationUtilities.h>
+diff --git a/OpenSim/Moco/MocoDirectCollocationSolver.cpp b/OpenSim/Moco/MocoDirectCollocationSolver.cpp
+index 5388f9124..73718df2f 100644
+--- a/OpenSim/Moco/MocoDirectCollocationSolver.cpp
++++ b/OpenSim/Moco/MocoDirectCollocationSolver.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoDirectCollocationSolver.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace OpenSim;
+ 
+diff --git a/OpenSim/Moco/MocoGoal/MocoAccelerationTrackingGoal.cpp b/OpenSim/Moco/MocoGoal/MocoAccelerationTrackingGoal.cpp
+index 0756adba3..313cd92ee 100644
+--- a/OpenSim/Moco/MocoGoal/MocoAccelerationTrackingGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoAccelerationTrackingGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoAccelerationTrackingGoal.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Moco/MocoUtilities.h>
+ 
+diff --git a/OpenSim/Moco/MocoGoal/MocoAngularVelocityTrackingGoal.cpp b/OpenSim/Moco/MocoGoal/MocoAngularVelocityTrackingGoal.cpp
+index 2fe8728b0..2f85463db 100644
+--- a/OpenSim/Moco/MocoGoal/MocoAngularVelocityTrackingGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoAngularVelocityTrackingGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoAngularVelocityTrackingGoal.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Moco/MocoUtilities.h>
+ 
+diff --git a/OpenSim/Moco/MocoGoal/MocoContactImpulseTrackingGoal.cpp b/OpenSim/Moco/MocoGoal/MocoContactImpulseTrackingGoal.cpp
+index 805e5df4e..58791167c 100644
+--- a/OpenSim/Moco/MocoGoal/MocoContactImpulseTrackingGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoContactImpulseTrackingGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoContactImpulseTrackingGoal.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
+ 
+ using namespace OpenSim;
+diff --git a/OpenSim/Moco/MocoGoal/MocoContactTrackingGoal.cpp b/OpenSim/Moco/MocoGoal/MocoContactTrackingGoal.cpp
+index 8022b7043..74d34bce9 100644
+--- a/OpenSim/Moco/MocoGoal/MocoContactTrackingGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoContactTrackingGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoContactTrackingGoal.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
+ 
+ using namespace OpenSim;
+diff --git a/OpenSim/Moco/MocoGoal/MocoControlGoal.cpp b/OpenSim/Moco/MocoGoal/MocoControlGoal.cpp
+index 334ef0422..aef294199 100644
+--- a/OpenSim/Moco/MocoGoal/MocoControlGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoControlGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoControlGoal.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Moco/Components/ActuatorInputController.h>
+ #include <OpenSim/Moco/Components/ControlDistributor.h>
+diff --git a/OpenSim/Moco/MocoGoal/MocoControlTrackingGoal.cpp b/OpenSim/Moco/MocoGoal/MocoControlTrackingGoal.cpp
+index 56a4098ae..0da230359 100644
+--- a/OpenSim/Moco/MocoGoal/MocoControlTrackingGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoControlTrackingGoal.cpp
+@@ -18,6 +18,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoControlTrackingGoal.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Moco/MocoUtilities.h>
+ #include <OpenSim/Moco/Components/ActuatorInputController.h>
+diff --git a/OpenSim/Moco/MocoGoal/MocoExpressionBasedParameterGoal.cpp b/OpenSim/Moco/MocoGoal/MocoExpressionBasedParameterGoal.cpp
+index 0e316ecf3..cf536387f 100644
+--- a/OpenSim/Moco/MocoGoal/MocoExpressionBasedParameterGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoExpressionBasedParameterGoal.cpp
+@@ -18,6 +18,7 @@
+ 
+ #include "MocoExpressionBasedParameterGoal.h"
+ 
++#include "OpenSim/Common/Logger.h"
+ #include <lepton/Exception.h>
+ #include <lepton/ParsedExpression.h>
+ #include <lepton/Parser.h>
+diff --git a/OpenSim/Moco/MocoGoal/MocoGeneralizedForceTrackingGoal.cpp b/OpenSim/Moco/MocoGoal/MocoGeneralizedForceTrackingGoal.cpp
+index b96932c8e..de8ec19a0 100644
+--- a/OpenSim/Moco/MocoGoal/MocoGeneralizedForceTrackingGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoGeneralizedForceTrackingGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoGeneralizedForceTrackingGoal.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
+ 
+ using namespace OpenSim;
+diff --git a/OpenSim/Moco/MocoGoal/MocoGoal.cpp b/OpenSim/Moco/MocoGoal/MocoGoal.cpp
+index 98003bc3b..166464cf2 100644
+--- a/OpenSim/Moco/MocoGoal/MocoGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoGoal.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Moco/Components/ControlDistributor.h>
+ 
+diff --git a/OpenSim/Moco/MocoGoal/MocoGoal.h b/OpenSim/Moco/MocoGoal/MocoGoal.h
+index ef12e75e9..c2b244de3 100644
+--- a/OpenSim/Moco/MocoGoal/MocoGoal.h
++++ b/OpenSim/Moco/MocoGoal/MocoGoal.h
+@@ -517,10 +517,9 @@ private:
+     void checkMode(const std::string& mode) const {
+         OPENSIM_THROW_IF_FRMOBJ(mode != "cost" && mode != "endpoint_constraint",
+                 Exception,
+-                fmt::format(
+                         "Expected mode to be 'cost' or 'endpoint_constraint' "
+                         "but got {}.",
+-                        mode));
++                        mode);
+     }
+ 
+     mutable SimTK::ReferencePtr<const Model> m_model;
+diff --git a/OpenSim/Moco/MocoGoal/MocoJointReactionGoal.cpp b/OpenSim/Moco/MocoGoal/MocoJointReactionGoal.cpp
+index 35ecc9e4c..049452b86 100644
+--- a/OpenSim/Moco/MocoGoal/MocoJointReactionGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoJointReactionGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoJointReactionGoal.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Moco/MocoUtilities.h>
+ 
+diff --git a/OpenSim/Moco/MocoGoal/MocoMarkerFinalGoal.cpp b/OpenSim/Moco/MocoGoal/MocoMarkerFinalGoal.cpp
+index cacf03eb9..833157a93 100644
+--- a/OpenSim/Moco/MocoGoal/MocoMarkerFinalGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoMarkerFinalGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoMarkerFinalGoal.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Simulation/Model/Model.h>
+ 
+diff --git a/OpenSim/Moco/MocoGoal/MocoMarkerTrackingGoal.cpp b/OpenSim/Moco/MocoGoal/MocoMarkerTrackingGoal.cpp
+index 0164d7cdc..5c11ef081 100644
+--- a/OpenSim/Moco/MocoGoal/MocoMarkerTrackingGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoMarkerTrackingGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoMarkerTrackingGoal.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Common/TableUtilities.h>
+ #include <OpenSim/Moco/MocoUtilities.h>
+diff --git a/OpenSim/Moco/MocoGoal/MocoOrientationTrackingGoal.cpp b/OpenSim/Moco/MocoGoal/MocoOrientationTrackingGoal.cpp
+index 9fc2cb4c2..27714c4a9 100644
+--- a/OpenSim/Moco/MocoGoal/MocoOrientationTrackingGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoOrientationTrackingGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoOrientationTrackingGoal.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Moco/MocoUtilities.h>
+ 
+diff --git a/OpenSim/Moco/MocoGoal/MocoOutputGoal.cpp b/OpenSim/Moco/MocoGoal/MocoOutputGoal.cpp
+index 87eb56e81..d7b3b8c77 100644
+--- a/OpenSim/Moco/MocoGoal/MocoOutputGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoOutputGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoOutputGoal.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace OpenSim;
+ 
+diff --git a/OpenSim/Moco/MocoGoal/MocoPeriodicityGoal.cpp b/OpenSim/Moco/MocoGoal/MocoPeriodicityGoal.cpp
+index 3cdc4fd89..32a156965 100644
+--- a/OpenSim/Moco/MocoGoal/MocoPeriodicityGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoPeriodicityGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoPeriodicityGoal.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Simulation/SimulationUtilities.h>
+ #include <OpenSim/Moco/Components/ActuatorInputController.h>
+diff --git a/OpenSim/Moco/MocoGoal/MocoStateTrackingGoal.cpp b/OpenSim/Moco/MocoGoal/MocoStateTrackingGoal.cpp
+index ff2f62863..babffb30b 100644
+--- a/OpenSim/Moco/MocoGoal/MocoStateTrackingGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoStateTrackingGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoStateTrackingGoal.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Moco/MocoUtilities.h>
+ 
+diff --git a/OpenSim/Moco/MocoGoal/MocoStepLengthAsymmetryGoal.cpp b/OpenSim/Moco/MocoGoal/MocoStepLengthAsymmetryGoal.cpp
+index 6d04b6d5d..a97ec022d 100644
+--- a/OpenSim/Moco/MocoGoal/MocoStepLengthAsymmetryGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoStepLengthAsymmetryGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoStepLengthAsymmetryGoal.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
+ 
+ using namespace OpenSim;
+diff --git a/OpenSim/Moco/MocoGoal/MocoStepTimeAsymmetryGoal.cpp b/OpenSim/Moco/MocoGoal/MocoStepTimeAsymmetryGoal.cpp
+index 16737f46c..f432beddf 100644
+--- a/OpenSim/Moco/MocoGoal/MocoStepTimeAsymmetryGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoStepTimeAsymmetryGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoStepTimeAsymmetryGoal.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
+ 
+ using namespace OpenSim;
+diff --git a/OpenSim/Moco/MocoGoal/MocoSumSquaredStateGoal.cpp b/OpenSim/Moco/MocoGoal/MocoSumSquaredStateGoal.cpp
+index ab0983065..fd334b4f9 100644
+--- a/OpenSim/Moco/MocoGoal/MocoSumSquaredStateGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoSumSquaredStateGoal.cpp
+@@ -16,6 +16,7 @@
+  * limitations under the License.                                             *
+  * -------------------------------------------------------------------------- */
+ #include "MocoSumSquaredStateGoal.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include <OpenSim/Simulation/SimulationUtilities.h>
+diff --git a/OpenSim/Moco/MocoGoal/MocoTranslationTrackingGoal.cpp b/OpenSim/Moco/MocoGoal/MocoTranslationTrackingGoal.cpp
+index 6e0efc906..11a379624 100644
+--- a/OpenSim/Moco/MocoGoal/MocoTranslationTrackingGoal.cpp
++++ b/OpenSim/Moco/MocoGoal/MocoTranslationTrackingGoal.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoTranslationTrackingGoal.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Moco/MocoUtilities.h>
+ 
+diff --git a/OpenSim/Moco/MocoOutputBoundConstraint.cpp b/OpenSim/Moco/MocoOutputBoundConstraint.cpp
+index 7e3bbe81b..3c71d54a0 100644
+--- a/OpenSim/Moco/MocoOutputBoundConstraint.cpp
++++ b/OpenSim/Moco/MocoOutputBoundConstraint.cpp
+@@ -18,6 +18,7 @@
+ 
+ #include "MocoOutputBoundConstraint.h"
+ #include "MocoProblemInfo.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Common/GCVSpline.h>
+ #include <OpenSim/Simulation/SimulationUtilities.h>
+ 
+diff --git a/OpenSim/Moco/MocoOutputConstraint.cpp b/OpenSim/Moco/MocoOutputConstraint.cpp
+index 6a299b3a1..221dd0863 100644
+--- a/OpenSim/Moco/MocoOutputConstraint.cpp
++++ b/OpenSim/Moco/MocoOutputConstraint.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoOutputConstraint.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace OpenSim;
+ 
+diff --git a/OpenSim/Moco/MocoParameter.cpp b/OpenSim/Moco/MocoParameter.cpp
+index 4a1c4c9a7..cf672d550 100644
+--- a/OpenSim/Moco/MocoParameter.cpp
++++ b/OpenSim/Moco/MocoParameter.cpp
+@@ -18,6 +18,7 @@
+ 
+ #include "MocoParameter.h"
+ #include "MocoUtilities.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/Model.h>
+ 
+ using namespace OpenSim;
+diff --git a/OpenSim/Moco/MocoProblem.cpp b/OpenSim/Moco/MocoProblem.cpp
+index a2d5c9df9..5a0f6348f 100644
+--- a/OpenSim/Moco/MocoProblem.cpp
++++ b/OpenSim/Moco/MocoProblem.cpp
+@@ -17,6 +17,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "MocoProblem.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <simbody/internal/Constraint.h>
+ 
+diff --git a/OpenSim/Moco/MocoProblemRep.cpp b/OpenSim/Moco/MocoProblemRep.cpp
+index 6ec795d3e..b7042bb70 100644
+--- a/OpenSim/Moco/MocoProblemRep.cpp
++++ b/OpenSim/Moco/MocoProblemRep.cpp
+@@ -24,6 +24,7 @@
+ #include "MocoProblemInfo.h"
+ #include "MocoScaleFactor.h"
+ #include "OpenSim/Common/Exception.h"
++#include "OpenSim/Common/Logger.h"
+ #include "OpenSim/Moco/Components/ControlDistributor.h"
+ #include <regex>
+ #include <unordered_set>
+diff --git a/OpenSim/Moco/MocoStateBoundConstraint.cpp b/OpenSim/Moco/MocoStateBoundConstraint.cpp
+index 18f9f500f..34dd1e639 100644
+--- a/OpenSim/Moco/MocoStateBoundConstraint.cpp
++++ b/OpenSim/Moco/MocoStateBoundConstraint.cpp
+@@ -19,6 +19,7 @@
+ #include "MocoStateBoundConstraint.h"
+ 
+ #include "MocoProblemInfo.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Common/GCVSpline.h>
+ #include <OpenSim/Simulation/SimulationUtilities.h>
+diff --git a/OpenSim/Moco/MocoStudy.cpp b/OpenSim/Moco/MocoStudy.cpp
+index 4761b70f2..14a7b57c3 100644
+--- a/OpenSim/Moco/MocoStudy.cpp
++++ b/OpenSim/Moco/MocoStudy.cpp
+@@ -20,6 +20,7 @@
+ #include "MocoCasADiSolver/MocoCasADiSolver.h"
+ #include "MocoProblem.h"
+ #include "MocoUtilities.h"
++#include "OpenSim/Common/Logger.h"
+ #include <regex>
+ 
+ #include <OpenSim/Common/IO.h>
+diff --git a/OpenSim/Moco/MocoTrajectory.cpp b/OpenSim/Moco/MocoTrajectory.cpp
+index d2f4e3ae7..d71847536 100644
+--- a/OpenSim/Moco/MocoTrajectory.cpp
++++ b/OpenSim/Moco/MocoTrajectory.cpp
+@@ -19,6 +19,7 @@
+ 
+ #include "MocoProblem.h"
+ #include "MocoUtilities.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Common/Assertion.h>
+ #include <OpenSim/Common/STOFileAdapter.h>
+diff --git a/OpenSim/Moco/MocoUtilities.cpp b/OpenSim/Moco/MocoUtilities.cpp
+index 399da6dc8..edb14a52a 100644
+--- a/OpenSim/Moco/MocoUtilities.cpp
++++ b/OpenSim/Moco/MocoUtilities.cpp
+@@ -21,6 +21,7 @@
+ #include "MocoProblem.h"
+ #include "MocoTrajectory.h"
+ #include "OpenSim/Common/ComponentPath.h"
++#include "OpenSim/Common/Logger.h"
+ #include "OpenSim/Common/SignalGenerator.h"
+ #include "OpenSim/Simulation/Control/InputController.h"
+ #include "OpenSim/Simulation/InverseDynamicsSolver.h"
+diff --git a/OpenSim/Moco/MocoUtilities.h b/OpenSim/Moco/MocoUtilities.h
+index 6c967a810..2142b272f 100644
+--- a/OpenSim/Moco/MocoUtilities.h
++++ b/OpenSim/Moco/MocoUtilities.h
+@@ -26,7 +26,6 @@
+ 
+ #include <OpenSim/Common/CommonUtilities.h>
+ #include <OpenSim/Common/GCVSplineSet.h>
+-#include <OpenSim/Common/Logger.h>
+ #include <OpenSim/Common/Reporter.h>
+ #include <OpenSim/Common/CommonUtilities.h>
+ #include <OpenSim/Simulation/Model/Model.h>
+diff --git a/OpenSim/Moco/MocoVariableInfo.cpp b/OpenSim/Moco/MocoVariableInfo.cpp
+index 25db7604e..922aa21a5 100644
+--- a/OpenSim/Moco/MocoVariableInfo.cpp
++++ b/OpenSim/Moco/MocoVariableInfo.cpp
+@@ -18,6 +18,7 @@
+ 
+ #include "MocoVariableInfo.h"
+ #include "MocoUtilities.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace OpenSim;
+ 
+diff --git a/OpenSim/Simulation/AssemblySolver.cpp b/OpenSim/Simulation/AssemblySolver.cpp
+index d44d70d34..d82c4a9d2 100644
+--- a/OpenSim/Simulation/AssemblySolver.cpp
++++ b/OpenSim/Simulation/AssemblySolver.cpp
+@@ -22,6 +22,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "AssemblySolver.h"
++#include "OpenSim/Common/Logger.h"
+ #include "OpenSim/Simulation/Model/Model.h"
+ #include <OpenSim/Common/Constant.h>
+ #include "simbody/internal/AssemblyCondition_QValue.h"
+diff --git a/OpenSim/Simulation/Control/ControlLinear.cpp b/OpenSim/Simulation/Control/ControlLinear.cpp
+index 66821a4cf..43f081b78 100644
+--- a/OpenSim/Simulation/Control/ControlLinear.cpp
++++ b/OpenSim/Simulation/Control/ControlLinear.cpp
+@@ -27,6 +27,7 @@
+ #include <OpenSim/Common/Signal.h>
+ #include <OpenSim/Common/PropertySet.h>
+ #include "ControlLinear.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace OpenSim;
+ using namespace std;
+diff --git a/OpenSim/Simulation/Control/ControlSet.cpp b/OpenSim/Simulation/Control/ControlSet.cpp
+index 0666ee746..b7c298c01 100644
+--- a/OpenSim/Simulation/Control/ControlSet.cpp
++++ b/OpenSim/Simulation/Control/ControlSet.cpp
+@@ -31,6 +31,7 @@
+ //=============================================================================
+ #include "ControlSet.h"
+ #include "ControlLinear.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Common/Storage.h>
+ #include <OpenSim/Common/XMLDocument.h>
+ 
+diff --git a/OpenSim/Simulation/Control/ControlSetController.cpp b/OpenSim/Simulation/Control/ControlSetController.cpp
+index ee67fc5af..1f597ce65 100644
+--- a/OpenSim/Simulation/Control/ControlSetController.cpp
++++ b/OpenSim/Simulation/Control/ControlSetController.cpp
+@@ -33,6 +33,7 @@
+ #include "ControlLinear.h"
+ #include "ControlSet.h"
+ #include "Controller.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Common/Storage.h>
+ #include <OpenSim/Simulation/Model/Actuator.h>
+diff --git a/OpenSim/Simulation/Control/InputController.cpp b/OpenSim/Simulation/Control/InputController.cpp
+index 9c03d1509..246dc68d3 100644
+--- a/OpenSim/Simulation/Control/InputController.cpp
++++ b/OpenSim/Simulation/Control/InputController.cpp
+@@ -22,6 +22,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "InputController.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace OpenSim;
+ 
+diff --git a/OpenSim/Simulation/InverseKinematicsSolver.cpp b/OpenSim/Simulation/InverseKinematicsSolver.cpp
+index bb6e8080b..580fd4386 100644
+--- a/OpenSim/Simulation/InverseKinematicsSolver.cpp
++++ b/OpenSim/Simulation/InverseKinematicsSolver.cpp
+@@ -25,6 +25,7 @@
+ #include "Model/Model.h"
+ #include "Model/MarkerSet.h"
+ 
++#include "OpenSim/Common/Logger.h"
+ #include "simbody/internal/AssemblyCondition_Markers.h"
+ #include "simbody/internal/AssemblyCondition_OrientationSensors.h"
+ 
+diff --git a/OpenSim/Simulation/Manager/Manager.cpp b/OpenSim/Simulation/Manager/Manager.cpp
+index 5b11bea36..72a9a24cc 100644
+--- a/OpenSim/Simulation/Manager/Manager.cpp
++++ b/OpenSim/Simulation/Manager/Manager.cpp
+@@ -27,6 +27,7 @@
+  */
+ 
+ #include "Manager.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Common/Assertion.h>
+ #include <OpenSim/Common/Array.h>
+diff --git a/OpenSim/Simulation/Model/AbstractTool.cpp b/OpenSim/Simulation/Model/AbstractTool.cpp
+index ecece519d..1a51a1aa4 100644
+--- a/OpenSim/Simulation/Model/AbstractTool.cpp
++++ b/OpenSim/Simulation/Model/AbstractTool.cpp
+@@ -30,6 +30,7 @@
+ 
+ #include "ForceSet.h"
+ #include "Model.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+ #include <OpenSim/Simulation/Control/ControlSetController.h>
+ using namespace OpenSim;
+diff --git a/OpenSim/Simulation/Model/ActuatorForceProbe.cpp b/OpenSim/Simulation/Model/ActuatorForceProbe.cpp
+index 42ade61d6..90d0bc499 100644
+--- a/OpenSim/Simulation/Model/ActuatorForceProbe.cpp
++++ b/OpenSim/Simulation/Model/ActuatorForceProbe.cpp
+@@ -27,6 +27,7 @@
+ //=============================================================================
+ #include "ActuatorForceProbe.h"
+ #include "Model.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Common/IO.h>
+ 
+ using namespace std;
+diff --git a/OpenSim/Simulation/Model/ActuatorPowerProbe.cpp b/OpenSim/Simulation/Model/ActuatorPowerProbe.cpp
+index 4bf77d16c..20af84282 100644
+--- a/OpenSim/Simulation/Model/ActuatorPowerProbe.cpp
++++ b/OpenSim/Simulation/Model/ActuatorPowerProbe.cpp
+@@ -26,6 +26,7 @@
+ //=============================================================================
+ #include "ActuatorPowerProbe.h"
+ #include "Model.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Common/IO.h>
+ 
+ using namespace std;
+diff --git a/OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.cpp b/OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.cpp
+index e285a0806..dd7c6d214 100644
+--- a/OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.cpp
++++ b/OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.cpp
+@@ -27,6 +27,7 @@
+ // INCLUDES and STATICS
+ //=============================================================================
+ #include "Bhargava2004MuscleMetabolicsProbe.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/Model.h>
+ //#define DEBUG_METABOLICS
+ 
+diff --git a/OpenSim/Simulation/Model/ControllerSet.cpp b/OpenSim/Simulation/Model/ControllerSet.cpp
+index 204a522d8..cbcb690c5 100644
+--- a/OpenSim/Simulation/Model/ControllerSet.cpp
++++ b/OpenSim/Simulation/Model/ControllerSet.cpp
+@@ -25,6 +25,7 @@
+ //=============================================================================
+ // INCLUDES
+ //=============================================================================
++#include "OpenSim/Common/Logger.h"
+ #include <iostream>
+ #include "ControllerSet.h"
+ #include "Model.h"
+diff --git a/OpenSim/Simulation/Model/ExternalForce.cpp b/OpenSim/Simulation/Model/ExternalForce.cpp
+index eb6608ca7..bdc369d07 100644
+--- a/OpenSim/Simulation/Model/ExternalForce.cpp
++++ b/OpenSim/Simulation/Model/ExternalForce.cpp
+@@ -34,6 +34,7 @@
+ #include <OpenSim/Common/GCVSpline.h>
+ 
+ #include "ExternalForce.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ //==============================================================================
+ // USING
+diff --git a/OpenSim/Simulation/Model/ExternalLoads.cpp b/OpenSim/Simulation/Model/ExternalLoads.cpp
+index 2b1d8e325..c0e0874c8 100644
+--- a/OpenSim/Simulation/Model/ExternalLoads.cpp
++++ b/OpenSim/Simulation/Model/ExternalLoads.cpp
+@@ -28,6 +28,7 @@
+ #include "ExternalLoads.h"
+ #include "Model.h"
+ #include "BodySet.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/PrescribedForce.h>
+ #include <OpenSim/Common/IO.h>
+ 
+diff --git a/OpenSim/Simulation/Model/Geometry.cpp b/OpenSim/Simulation/Model/Geometry.cpp
+index 33d67055a..aba118f71 100644
+--- a/OpenSim/Simulation/Model/Geometry.cpp
++++ b/OpenSim/Simulation/Model/Geometry.cpp
+@@ -29,6 +29,7 @@
+ #include "Frame.h"
+ #include "Model.h"
+ 
++#include "OpenSim/Common/Logger.h"
+ #include <filesystem>
+ #include <fstream>
+ #include <memory>
+diff --git a/OpenSim/Simulation/Model/Ground.cpp b/OpenSim/Simulation/Model/Ground.cpp
+index 1475ca266..a14042286 100644
+--- a/OpenSim/Simulation/Model/Ground.cpp
++++ b/OpenSim/Simulation/Model/Ground.cpp
+@@ -25,6 +25,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "Ground.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ //=============================================================================
+ // STATICS
+diff --git a/OpenSim/Simulation/Model/JointInternalPowerProbe.cpp b/OpenSim/Simulation/Model/JointInternalPowerProbe.cpp
+index 32d74e6a7..1e44dc28c 100644
+--- a/OpenSim/Simulation/Model/JointInternalPowerProbe.cpp
++++ b/OpenSim/Simulation/Model/JointInternalPowerProbe.cpp
+@@ -26,6 +26,7 @@
+ //=============================================================================
+ #include "JointInternalPowerProbe.h"
+ #include "Model.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Common/IO.h>
+ 
+ using namespace std;
+diff --git a/OpenSim/Simulation/Model/ModelComponentSet.h b/OpenSim/Simulation/Model/ModelComponentSet.h
+index 96922680a..ec27b0ebe 100644
+--- a/OpenSim/Simulation/Model/ModelComponentSet.h
++++ b/OpenSim/Simulation/Model/ModelComponentSet.h
+@@ -73,10 +73,6 @@ public:
+         if (name != IO::Lowercase(getConcreteClassName())) {
+             std::string msg = getConcreteClassName() + " '" + name + "' ";
+             this->setName(IO::Lowercase(getConcreteClassName()));
+-
+-            msg += "was renamed and is being reset to '" + name
+-                + "'.";
+-            log_info(msg);
+         }
+     }
+ 
+diff --git a/OpenSim/Simulation/Model/MovingPathPoint.cpp b/OpenSim/Simulation/Model/MovingPathPoint.cpp
+index 969c703b0..51395eecf 100644
+--- a/OpenSim/Simulation/Model/MovingPathPoint.cpp
++++ b/OpenSim/Simulation/Model/MovingPathPoint.cpp
+@@ -25,6 +25,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "MovingPathPoint.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Common/Function.h>
+ #include <OpenSim/Common/Constant.h>
+ #include <OpenSim/Common/MultiplierFunction.h>
+diff --git a/OpenSim/Simulation/Model/Muscle.cpp b/OpenSim/Simulation/Model/Muscle.cpp
+index 3fb1d5170..630a9dc7a 100644
+--- a/OpenSim/Simulation/Model/Muscle.cpp
++++ b/OpenSim/Simulation/Model/Muscle.cpp
+@@ -28,6 +28,7 @@
+ 
+ 
+ #include "Model.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Common/XMLDocument.h>
+ 
+ //=============================================================================
+diff --git a/OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.cpp b/OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.cpp
+index f3f6050a1..ac8535fb8 100644
+--- a/OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.cpp
++++ b/OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.cpp
+@@ -25,6 +25,7 @@
+ //=============================================================================
+ #include "MuscleActiveFiberPowerProbe.h"
+ #include "Model.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace std;
+ using namespace OpenSim;
+diff --git a/OpenSim/Simulation/Model/Probe.cpp b/OpenSim/Simulation/Model/Probe.cpp
+index 3dac76fae..578658c6d 100644
+--- a/OpenSim/Simulation/Model/Probe.cpp
++++ b/OpenSim/Simulation/Model/Probe.cpp
+@@ -22,6 +22,7 @@
+  * -------------------------------------------------------------------------- */
+ 
+ #include "Probe.h"
++#include "OpenSim/Common/Logger.h"
+ #include "OpenSim/Common/XMLDocument.h"
+ 
+ using namespace std;
+diff --git a/OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.cpp b/OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.cpp
+index 23650ebd3..837e2b507 100644
+--- a/OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.cpp
++++ b/OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.cpp
+@@ -27,6 +27,7 @@
+ // INCLUDES and STATICS
+ //=============================================================================
+ #include "Umberger2010MuscleMetabolicsProbe.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include <OpenSim/Simulation/Model/Muscle.h>
+ //#define DEBUG_METABOLICS
+diff --git a/OpenSim/Simulation/OpenSense/IMUPlacer.cpp b/OpenSim/Simulation/OpenSense/IMUPlacer.cpp
+index 613a5a117..d5e7a1203 100644
+--- a/OpenSim/Simulation/OpenSense/IMUPlacer.cpp
++++ b/OpenSim/Simulation/OpenSense/IMUPlacer.cpp
+@@ -27,6 +27,7 @@
+ #include "IMUPlacer.h"
+ 
+ #include "OpenSenseUtilities.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Simulation/InverseKinematicsSolver.h>
+ #include <OpenSim/Simulation/MarkersReference.h>
+diff --git a/OpenSim/Simulation/OpenSense/OpenSenseUtilities.cpp b/OpenSim/Simulation/OpenSense/OpenSenseUtilities.cpp
+index c66817b4d..1539d86ee 100644
+--- a/OpenSim/Simulation/OpenSense/OpenSenseUtilities.cpp
++++ b/OpenSim/Simulation/OpenSense/OpenSenseUtilities.cpp
+@@ -26,6 +26,7 @@
+ #include <OpenSim/Simulation/InverseKinematicsSolver.h>
+ #include "OpenSenseUtilities.h"
+ #include "IMUPlacer.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace OpenSim;
+ using namespace std;
+diff --git a/OpenSim/Simulation/SimbodyEngine/Body.cpp b/OpenSim/Simulation/SimbodyEngine/Body.cpp
+index 71dc8cd05..b8b4e7be4 100644
+--- a/OpenSim/Simulation/SimbodyEngine/Body.cpp
++++ b/OpenSim/Simulation/SimbodyEngine/Body.cpp
+@@ -26,6 +26,7 @@
+ //=============================================================================
+ #include "Body.h"
+ #include <OpenSim/Common/ScaleSet.h>
++#include "OpenSim/Common/Logger.h"
+ #include "simbody/internal/MobilizedBody.h"
+ 
+ //=============================================================================
+diff --git a/OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.cpp b/OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.cpp
+index c14d800a1..91b79b2aa 100644
+--- a/OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.cpp
++++ b/OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.cpp
+@@ -26,6 +26,7 @@
+ //==============================================================================
+ #include "ConstantCurvatureJoint.h"
+ 
++#include "OpenSim/Common/Logger.h"
+ #include "simbody/internal/MobilizedBody_Custom.h"
+ 
+ #include <SimTKcommon/Scalar.h>
+diff --git a/OpenSim/Simulation/SimbodyEngine/Coordinate.cpp b/OpenSim/Simulation/SimbodyEngine/Coordinate.cpp
+index 7f563ac4c..1c150e0dc 100644
+--- a/OpenSim/Simulation/SimbodyEngine/Coordinate.cpp
++++ b/OpenSim/Simulation/SimbodyEngine/Coordinate.cpp
+@@ -29,6 +29,7 @@
+ #include <OpenSim/Common/Assertion.h>
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
++#include "OpenSim/Common/Logger.h"
+ #include "simbody/internal/Constraint.h"
+ 
+ //=============================================================================
+diff --git a/OpenSim/Simulation/SimbodyEngine/CustomJoint.cpp b/OpenSim/Simulation/SimbodyEngine/CustomJoint.cpp
+index 0978f70b2..1723a2a73 100644
+--- a/OpenSim/Simulation/SimbodyEngine/CustomJoint.cpp
++++ b/OpenSim/Simulation/SimbodyEngine/CustomJoint.cpp
+@@ -25,6 +25,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "CustomJoint.h"
++#include "OpenSim/Common/Logger.h"
+ #include "SpatialTransform.h"
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include <OpenSim/Common/Assertion.h>
+diff --git a/OpenSim/Simulation/SimbodyEngine/SimbodyEngine.cpp b/OpenSim/Simulation/SimbodyEngine/SimbodyEngine.cpp
+index b79b3b30f..d936c2a81 100644
+--- a/OpenSim/Simulation/SimbodyEngine/SimbodyEngine.cpp
++++ b/OpenSim/Simulation/SimbodyEngine/SimbodyEngine.cpp
+@@ -36,6 +36,7 @@
+ 
+ #include "SimbodyEngine.h"
+ #include "Coordinate.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ //=============================================================================
+ // STATICS
+diff --git a/OpenSim/Simulation/SimulationUtilities.cpp b/OpenSim/Simulation/SimulationUtilities.cpp
+index 6b0adda00..8f7f0e5b5 100644
+--- a/OpenSim/Simulation/SimulationUtilities.cpp
++++ b/OpenSim/Simulation/SimulationUtilities.cpp
+@@ -25,6 +25,7 @@
+ 
+ #include "Manager/Manager.h"
+ #include "Model/Model.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <simbody/internal/Visualizer_InputListener.h>
+ 
+diff --git a/OpenSim/Simulation/SimulationUtilities.h b/OpenSim/Simulation/SimulationUtilities.h
+index 359d34f05..79cc3d1c7 100644
+--- a/OpenSim/Simulation/SimulationUtilities.h
++++ b/OpenSim/Simulation/SimulationUtilities.h
+@@ -286,12 +286,7 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
+                         thisOutputPath, std::regex(outputPathArg))) {
+                     // Make sure the output type agrees with the template.
+                     if (dynamic_cast<const Output<T>*>(&output)) {
+-                        log_debug("Adding output {} of type {}.",
+-                                output.getPathName(), output.getTypeName());
+                         reporter->addToReport(output);
+-                    } else {
+-                        log_warn("Ignoring output {} of type {}.",
+-                                output.getPathName(), output.getTypeName());
+                     }
+                 }
+             }
+diff --git a/OpenSim/Simulation/Test/testProbes.cpp b/OpenSim/Simulation/Test/testProbes.cpp
+index f8d944126..db2afbe3b 100644
+--- a/OpenSim/Simulation/Test/testProbes.cpp
++++ b/OpenSim/Simulation/Test/testProbes.cpp
+@@ -28,6 +28,7 @@
+ //     Add more test cases to address specific problems with probes
+ //
+ //============================================================================
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Common/osimCommon.h>
+ #include <OpenSim/Common/IO.h>
+ #include <OpenSim/Simulation/osimSimulation.h>
+diff --git a/OpenSim/Simulation/Test/testReportersWithModel.cpp b/OpenSim/Simulation/Test/testReportersWithModel.cpp
+index 58d778188..76020b6d5 100644
+--- a/OpenSim/Simulation/Test/testReportersWithModel.cpp
++++ b/OpenSim/Simulation/Test/testReportersWithModel.cpp
+@@ -22,8 +22,6 @@
+  * limitations under the License.                                             *
+  * -------------------------------------------------------------------------- */
+ 
+-#include <OpenSim/Common/LogSink.h>
+-#include <OpenSim/Common/Logger.h>
+ #include <OpenSim/Common/Reporter.h>
+ #include <OpenSim/Simulation/Manager/Manager.h>
+ #include <OpenSim/Simulation/Model/Model.h>
+@@ -57,15 +55,17 @@ void testConsoleReporterLabels() {
+     state.setTime(0.0);
+     manager.initialize(state);
+ 
+-    // Create a sink to obtain the ConsoleReporter output.
+-    auto sink = std::make_shared<StringLogSink>();
+-    Logger::addSink(sink);
++    // Redirect std::cout to obtain the ConsoleReporter output.
++    std::streambuf* oldCoutBuf = std::cout.rdbuf();
++    std::ostringstream oss;
++    std::cout.rdbuf(oss.rdbuf());
++
+     manager.integrate(1.0);
+ 
+     // Restore original destination for cout and display ConsoleReporter output.
+-    Logger::removeSink(sink);
+-    const std::string output = sink->getString();
+-    cout << output << endl;
++    std::cout.rdbuf(oldCoutBuf);
++    const std::string output = oss.str();
++    std::cout << output << std::endl;
+ 
+     // Check column headings reported by ConsoleReporter, which should be
+     // "time", then "value", then "height". The amount of whitespace appearing
+diff --git a/OpenSim/Simulation/VisualizerUtilities.cpp b/OpenSim/Simulation/VisualizerUtilities.cpp
+index 49b13ee73..ca6612ea8 100644
+--- a/OpenSim/Simulation/VisualizerUtilities.cpp
++++ b/OpenSim/Simulation/VisualizerUtilities.cpp
+@@ -25,6 +25,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "VisualizerUtilities.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Common/CommonUtilities.h>
+ #include <OpenSim/Common/TableSource.h>
+diff --git a/OpenSim/Tests/CustomActuatorExample/testCustomActuatorExample.cpp b/OpenSim/Tests/CustomActuatorExample/testCustomActuatorExample.cpp
+index c1261608c..98d858ed4 100644
+--- a/OpenSim/Tests/CustomActuatorExample/testCustomActuatorExample.cpp
++++ b/OpenSim/Tests/CustomActuatorExample/testCustomActuatorExample.cpp
+@@ -26,6 +26,7 @@
+ //==============================================================================
+ //==============================================================================
+ 
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/OpenSim.h>
+ #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+ 
+diff --git a/OpenSim/Tools/AnalyzeTool.cpp b/OpenSim/Tools/AnalyzeTool.cpp
+index 26ad85301..6148c08d3 100644
+--- a/OpenSim/Tools/AnalyzeTool.cpp
++++ b/OpenSim/Tools/AnalyzeTool.cpp
+@@ -21,6 +21,7 @@
+  * -------------------------------------------------------------------------- */
+ #include <OpenSim/Common/XMLDocument.h>
+ #include "AnalyzeTool.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Common/IO.h>
+ #include <OpenSim/Common/GCVSplineSet.h>
+ 
+diff --git a/OpenSim/Tools/CMC.cpp b/OpenSim/Tools/CMC.cpp
+index cd2c21fd0..bc0eedc93 100644
+--- a/OpenSim/Tools/CMC.cpp
++++ b/OpenSim/Tools/CMC.cpp
+@@ -30,6 +30,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "CMC.h"
++#include "OpenSim/Common/Logger.h"
+ #include "VectorFunctionForActuators.h"
+ #include <OpenSim/Common/RootSolver.h>
+ #include <OpenSim/Simulation/Control/ControlConstant.h>
+diff --git a/OpenSim/Tools/CMCTool.cpp b/OpenSim/Tools/CMCTool.cpp
+index 0537c6569..ce26af1e8 100644
+--- a/OpenSim/Tools/CMCTool.cpp
++++ b/OpenSim/Tools/CMCTool.cpp
+@@ -25,6 +25,7 @@
+ #include "CMC_TaskSet.h"
+ #include "ActuatorForceTarget.h"
+ #include "ActuatorForceTargetFast.h"
++#include "OpenSim/Common/Logger.h"
+ #include "VectorFunctionForActuators.h"
+ #include <OpenSim/Common/Assertion.h>
+ #include <OpenSim/Common/IO.h>
+diff --git a/OpenSim/Tools/CMC_Task.cpp b/OpenSim/Tools/CMC_Task.cpp
+index 82f875a62..f6a90adb0 100644
+--- a/OpenSim/Tools/CMC_Task.cpp
++++ b/OpenSim/Tools/CMC_Task.cpp
+@@ -29,6 +29,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "CMC_Task.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Common/Function.h>
+ 
+ using namespace std;
+diff --git a/OpenSim/Tools/CorrectionController.cpp b/OpenSim/Tools/CorrectionController.cpp
+index 854aee09b..7e15232f4 100644
+--- a/OpenSim/Tools/CorrectionController.cpp
++++ b/OpenSim/Tools/CorrectionController.cpp
+@@ -28,6 +28,7 @@
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include <OpenSim/Actuators/CoordinateActuator.h>
+ #include "CorrectionController.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace std;
+ using namespace OpenSim;
+diff --git a/OpenSim/Tools/DynamicsTool.cpp b/OpenSim/Tools/DynamicsTool.cpp
+index f19cdf6d6..199020ded 100644
+--- a/OpenSim/Tools/DynamicsTool.cpp
++++ b/OpenSim/Tools/DynamicsTool.cpp
+@@ -25,6 +25,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "DynamicsTool.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include <OpenSim/Common/IO.h>
+ #include <OpenSim/Common/Storage.h>
+diff --git a/OpenSim/Tools/ForwardTool.cpp b/OpenSim/Tools/ForwardTool.cpp
+index 7b32612f9..9fdaf90b3 100644
+--- a/OpenSim/Tools/ForwardTool.cpp
++++ b/OpenSim/Tools/ForwardTool.cpp
+@@ -31,6 +31,7 @@
+ #include <OpenSim/Simulation/Manager/Manager.h>
+ #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+ #include "CorrectionController.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ using namespace std;
+ using namespace OpenSim;
+diff --git a/OpenSim/Tools/GenericModelMaker.cpp b/OpenSim/Tools/GenericModelMaker.cpp
+index ca178c46a..c37b31b01 100644
+--- a/OpenSim/Tools/GenericModelMaker.cpp
++++ b/OpenSim/Tools/GenericModelMaker.cpp
+@@ -25,6 +25,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "GenericModelMaker.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/Model.h>
+ 
+ //=============================================================================
+diff --git a/OpenSim/Tools/IMUInverseKinematicsTool.cpp b/OpenSim/Tools/IMUInverseKinematicsTool.cpp
+index 5b05c3b83..678c38c84 100644
+--- a/OpenSim/Tools/IMUInverseKinematicsTool.cpp
++++ b/OpenSim/Tools/IMUInverseKinematicsTool.cpp
+@@ -1,5 +1,6 @@
+ 
+ #include "IMUInverseKinematicsTool.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
+ #include <OpenSim/Common/IO.h>
+ #include <OpenSim/Common/TimeSeriesTable.h>
+diff --git a/OpenSim/Tools/InverseDynamicsTool.cpp b/OpenSim/Tools/InverseDynamicsTool.cpp
+index a2fbe5c38..f722420ea 100644
+--- a/OpenSim/Tools/InverseDynamicsTool.cpp
++++ b/OpenSim/Tools/InverseDynamicsTool.cpp
+@@ -25,6 +25,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "InverseDynamicsTool.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Common/Constant.h>
+ #include <OpenSim/Common/FunctionSet.h>
+diff --git a/OpenSim/Tools/InverseKinematicsTool.cpp b/OpenSim/Tools/InverseKinematicsTool.cpp
+index dc53ce668..239198a8e 100644
+--- a/OpenSim/Tools/InverseKinematicsTool.cpp
++++ b/OpenSim/Tools/InverseKinematicsTool.cpp
+@@ -28,6 +28,7 @@
+ #include "IKCoordinateTask.h"
+ #include "IKMarkerTask.h"
+ #include "IKTaskSet.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ #include <OpenSim/Analyses/Kinematics.h>
+ #include <OpenSim/Common/Constant.h>
+diff --git a/OpenSim/Tools/MarkerPlacer.cpp b/OpenSim/Tools/MarkerPlacer.cpp
+index fa2e1071e..eb894ced8 100644
+--- a/OpenSim/Tools/MarkerPlacer.cpp
++++ b/OpenSim/Tools/MarkerPlacer.cpp
+@@ -36,6 +36,7 @@
+ #include <OpenSim/Simulation/CoordinateReference.h>
+ #include "IKCoordinateTask.h"
+ #include "IKTaskSet.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Analyses/StatesReporter.h>
+ #include <OpenSim/Common/IO.h>
+ //=============================================================================
+diff --git a/OpenSim/Tools/ModelScaler.cpp b/OpenSim/Tools/ModelScaler.cpp
+index 35a8bb087..cd8168e05 100644
+--- a/OpenSim/Tools/ModelScaler.cpp
++++ b/OpenSim/Tools/ModelScaler.cpp
+@@ -25,6 +25,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include "ModelScaler.h"
++#include "OpenSim/Common/Logger.h"
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include <OpenSim/Common/MarkerData.h>
+ #include <OpenSim/Common/IO.h>
+diff --git a/OpenSim/Tools/RRATool.cpp b/OpenSim/Tools/RRATool.cpp
+index c1f955cef..dab8f6837 100644
+--- a/OpenSim/Tools/RRATool.cpp
++++ b/OpenSim/Tools/RRATool.cpp
+@@ -26,6 +26,7 @@
+ #include "ActuatorForceTarget.h"
+ #include "ActuatorForceTargetFast.h"
+ #include "AnalyzeTool.h"
++#include "OpenSim/Common/Logger.h"
+ #include "VectorFunctionForActuators.h"
+ #include <OpenSim/Common/Assertion.h>
+ #include <OpenSim/Common/IO.h>
+diff --git a/OpenSim/Tools/RegisterTypes_osimTools.cpp b/OpenSim/Tools/RegisterTypes_osimTools.cpp
+index 21d033d48..e77fe5c6a 100644
+--- a/OpenSim/Tools/RegisterTypes_osimTools.cpp
++++ b/OpenSim/Tools/RegisterTypes_osimTools.cpp
+@@ -25,6 +25,7 @@
+ #include <OpenSim/Common/Object.h>
+ #include "RegisterTypes_osimTools.h"
+ 
++#include "OpenSim/Common/Logger.h"
+ #include "ScaleTool.h"
+ //#include "IKTool.h"
+ //#include "FIKSTool.h"
+diff --git a/OpenSim/Tools/ScaleTool.cpp b/OpenSim/Tools/ScaleTool.cpp
+index 9f1d99a2a..339d2f49a 100644
+--- a/OpenSim/Tools/ScaleTool.cpp
++++ b/OpenSim/Tools/ScaleTool.cpp
+@@ -28,6 +28,7 @@
+ #include <OpenSim/Common/IO.h>
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include "GenericModelMaker.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ //=============================================================================
+ // STATICS
+diff --git a/OpenSim/Tools/VectorFunctionForActuators.cpp b/OpenSim/Tools/VectorFunctionForActuators.cpp
+index 9d3409cc8..868d2cffb 100644
+--- a/OpenSim/Tools/VectorFunctionForActuators.cpp
++++ b/OpenSim/Tools/VectorFunctionForActuators.cpp
+@@ -29,6 +29,7 @@
+ #include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
+ #include <OpenSim/Simulation/Model/Model.h>
+ #include "CMC.h"
++#include "OpenSim/Common/Logger.h"
+ 
+ 
+ using namespace OpenSim;
+diff --git a/OpenSim/Tools/VectorFunctionForActuators.h b/OpenSim/Tools/VectorFunctionForActuators.h
+index 77ba96b1a..bc99682c5 100644
+--- a/OpenSim/Tools/VectorFunctionForActuators.h
++++ b/OpenSim/Tools/VectorFunctionForActuators.h
+@@ -121,20 +121,13 @@ public:
+     //--------------------------------------------------------------------------
+ 
+     void calcValue( const double *aX, double *rF, int aSize) override {
+-        log_warn("Unimplemented evaluate method."); 
+-//      exit(0);
+     }
+     void calcValue( const Array<double> &aX, Array<double> &rF) override {
+-        log_warn("Unimplemented evaluate method."); 
+-//      exit(0);
+     }
+     virtual void calcValue( const Array<double> &aX, Array<double> &rF, const Array<int> &aDerivWRT) {
+-        log_warn("Unimplemented evaluate method."); 
+-//      exit(0);
+     }
+     void calcDerivative(const Array<double> &aX,Array<double> &rY,
+         const Array<int> &aDerivWRT) override {
+-        log_warn("Unimplemented calcDerivative method."); 
+     }
+ 
+     void evaluate(const SimTK::State& s, const double *aX, double *rF) override;
