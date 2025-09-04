@@ -170,13 +170,10 @@ void Marker::generateDecorations(bool fixed, const ModelDisplayHints& hints, con
     // @TODO default color, size, shape should be obtained from hints
     const Vec3 color = hints.get_marker_color();
     const OpenSim::PhysicalFrame& frame = getParentFrame();
-    //const Frame& bf = frame.findBaseFrame();
-    //SimTK::Transform bTrans = frame.findTransformInBaseFrame();
-    //const Vec3& p_BM = bTrans*get_location();
     appendToThis.push_back(
         SimTK::DecorativeSphere(.01).setBodyId(frame.getMobilizedBodyIndex())
         .setColor(color).setOpacity(1.0)
-        .setTransform(get_location())
+        .setTransform(frame.findTransformInBaseFrame() * get_location())
         .setScaleFactors(Vec3(1)));
     
 }
