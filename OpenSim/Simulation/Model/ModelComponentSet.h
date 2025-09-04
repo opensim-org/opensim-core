@@ -73,10 +73,6 @@ public:
         if (name != IO::Lowercase(getConcreteClassName())) {
             std::string msg = getConcreteClassName() + " '" + name + "' ";
             this->setName(IO::Lowercase(getConcreteClassName()));
-
-            msg += "was renamed and is being reset to '" + name
-                + "'.";
-            log_info(msg);
         }
     }
 

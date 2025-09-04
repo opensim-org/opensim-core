@@ -18,6 +18,7 @@
 
 #include "MocoParameter.h"
 #include "MocoUtilities.h"
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;

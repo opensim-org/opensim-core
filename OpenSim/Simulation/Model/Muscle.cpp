@@ -28,6 +28,7 @@
 
 
 #include "Model.h"
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Common/XMLDocument.h>
 
 //=============================================================================

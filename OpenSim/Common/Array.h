@@ -29,7 +29,6 @@
 
 #include "Assertion.h"
 #include "Exception.h"
-#include "Logger.h"
 #include "osimCommonDLL.h"
 #include <algorithm>
 #include <initializer_list>

@@ -31,6 +31,7 @@
 //=============================================================================
 #include "ControlSet.h"
 #include "ControlLinear.h"
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/XMLDocument.h>
 

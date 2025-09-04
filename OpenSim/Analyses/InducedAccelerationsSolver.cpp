@@ -27,6 +27,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ExternalForce.h>
 #include "InducedAccelerationsSolver.h"
+#include "OpenSim/Common/Logger.h"
 
 using namespace OpenSim;
 using namespace std;

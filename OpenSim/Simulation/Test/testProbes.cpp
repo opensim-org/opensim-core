@@ -28,6 +28,7 @@
 //     Add more test cases to address specific problems with probes
 //
 //============================================================================
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/osimSimulation.h>

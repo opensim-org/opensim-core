@@ -25,6 +25,7 @@
 
 #include "Manager/Manager.h"
 #include "Model/Model.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <simbody/internal/Visualizer_InputListener.h>
 

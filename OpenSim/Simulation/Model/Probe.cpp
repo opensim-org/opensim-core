@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "Probe.h"
+#include "OpenSim/Common/Logger.h"
 #include "OpenSim/Common/XMLDocument.h"
 
 using namespace std;

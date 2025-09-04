@@ -26,6 +26,7 @@
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include "OpenSenseUtilities.h"
 #include "IMUPlacer.h"
+#include "OpenSim/Common/Logger.h"
 
 using namespace OpenSim;
 using namespace std;

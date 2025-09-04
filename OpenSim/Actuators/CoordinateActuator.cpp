@@ -23,6 +23,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "CoordinateActuator.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/Model.h>

@@ -20,6 +20,7 @@
 
 #include "MocoProblemInfo.h"
 #include "Components/ControlDistributor.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>

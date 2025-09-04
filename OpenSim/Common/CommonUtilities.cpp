@@ -23,6 +23,7 @@
 
 #include "CommonUtilities.h"
 
+#include "OpenSim/Common/Logger.h"
 #include "PiecewiseLinearFunction.h"
 #include "STOFileAdapter.h"
 #include "TimeSeriesTable.h"

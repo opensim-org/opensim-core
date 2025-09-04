@@ -29,6 +29,7 @@
 * -------------------------------------------------------------------------- */
 
 // INCLUDES
+#include "OpenSim/Common/Logger.h"
 #include <cctype>
 #include <string>
 #include <OpenSim/version.h>

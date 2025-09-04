@@ -34,6 +34,7 @@
 #include <OpenSim/Common/GCVSpline.h>
 
 #include "ExternalForce.h"
+#include "OpenSim/Common/Logger.h"
 
 //==============================================================================
 // USING

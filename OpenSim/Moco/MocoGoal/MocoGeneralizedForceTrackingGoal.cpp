@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoGeneralizedForceTrackingGoal.h"
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 
 using namespace OpenSim;

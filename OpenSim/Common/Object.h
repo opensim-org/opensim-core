@@ -1081,10 +1081,10 @@ void Object::checkPropertyValueIsInSet(
     for (int i = 0; i < p.size(); ++i) {
         const auto& value = p.getValue(i);
         if (set.find(value) == set.end()) {
-            std::string str = fmt::format("{}", fmt::join(set, ", "));
-            OPENSIM_THROW_FRMOBJ(Exception,
-                    "Property '{}' has invalid value {}; expected one of the "
-                    "following: {}.", p.getName(), value, str);
+            std::ostringstream msg;
+            msg << "Property '" << p.getName() << "' has invalid value "
+                << value;
+            OPENSIM_THROW_FRMOBJ(Exception, msg.str());
         }
     }
 }
@@ -1104,11 +1104,10 @@ void Object::checkPropertyValueIsInRangeOrSet(const Property<T>& p,
     for (int i = 0; i < p.size(); ++i) {
         const auto& value = p.getValue(i);
         if ((value < lower || value > upper) && set.find(value) == set.end()) {
-            std::string str = fmt::format("{}", fmt::join(set, ", "));
             OPENSIM_THROW_FRMOBJ(Exception,
                     "Property '{}' has invalid value {}; expected value to be "
-                    "in range [{}, {}], or one of the following: {}.",
-                    p.getName(), value, lower, upper, str);
+                    "in range [{}, {}].",
+                    p.getName(), value, lower, upper);
         }
     }
 }
@@ -1405,16 +1404,11 @@ ObjectProperty<T>::readFromXMLElement
         const Object* registeredObj = 
             Object::getDefaultInstanceOfType(objTypeTag);
 
-        if (!registeredObj) {
-            log_error("Encountered unrecognized Object typename {} while reading property {}. There is no registered Object of this type. Ignoring.", objTypeTag, this->getName());
+        // Check that the object type found is derived from T.
+        if (!registeredObj || !dynamic_cast<const T*>(registeredObj)) {
             continue;
         }
 
-        // Check that the object type found is derived from T.
-        if (!dynamic_cast<const T*>(registeredObj)) {
-            log_error("Object type {} wrong for {} property {}. Ignoring.", objTypeTag, objectClassName, this->getName());
-            continue;                        
-        }
         ++objectsFound;
 
         if (objectsFound > this->getMaxListSize())
@@ -1428,21 +1422,6 @@ ObjectProperty<T>::readFromXMLElement
         T* objectT = dynamic_cast<T*>(object);
         OPENSIM_ASSERT(objectT); // should have worked by construction
         adoptAndAppendValueVirtual(objectT); // don't copy
-    }
-
-    if (objectsFound < this->getMinListSize()) {
-        log_error("Got {} object values for Property {} but the minimum is {}. Continuing anyway.",
-            objectsFound ,
-            this->getName() ,
-            this->getMinListSize()
-        );
-    }
-    if (objectsFound > this->getMaxListSize()) {
-        log_error("Got {} object values for Property {} but the maximum is {}. Ignoring the rest.",
-            objectsFound,
-            this->getName(),
-            this->getMaxListSize()
-        );
     }
 }
 

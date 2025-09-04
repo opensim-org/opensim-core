@@ -1,5 +1,6 @@
 
 #include "IMUInverseKinematicsTool.h"
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/TimeSeriesTable.h>

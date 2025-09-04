@@ -26,6 +26,7 @@
 #include "CommonUtilities.h"
 #include "FunctionSet.h"
 #include "GCVSplineSet.h"
+#include "OpenSim/Common/Logger.h"
 #include "PiecewiseLinearFunction.h"
 #include "Signal.h"
 #include "Storage.h"

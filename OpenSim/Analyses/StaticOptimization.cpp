@@ -26,6 +26,7 @@
 //=============================================================================
 #include "StaticOptimization.h"
 
+#include "OpenSim/Common/Logger.h"
 #include "StaticOptimizationTarget.h"
 
 #include <OpenSim/Actuators/CoordinateActuator.h>

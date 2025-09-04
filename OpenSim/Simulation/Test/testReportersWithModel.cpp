@@ -22,8 +22,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Common/LogSink.h>
-#include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -57,15 +55,17 @@ void testConsoleReporterLabels() {
     state.setTime(0.0);
     manager.initialize(state);
 
-    // Create a sink to obtain the ConsoleReporter output.
-    auto sink = std::make_shared<StringLogSink>();
-    Logger::addSink(sink);
+    // Redirect std::cout to obtain the ConsoleReporter output.
+    std::streambuf* oldCoutBuf = std::cout.rdbuf();
+    std::ostringstream oss;
+    std::cout.rdbuf(oss.rdbuf());
+
     manager.integrate(1.0);
 
     // Restore original destination for cout and display ConsoleReporter output.
-    Logger::removeSink(sink);
-    const std::string output = sink->getString();
-    cout << output << endl;
+    std::cout.rdbuf(oldCoutBuf);
+    const std::string output = oss.str();
+    std::cout << output << std::endl;
 
     // Check column headings reported by ConsoleReporter, which should be
     // "time", then "value", then "height". The amount of whitespace appearing

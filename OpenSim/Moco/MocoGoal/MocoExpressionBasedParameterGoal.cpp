@@ -18,6 +18,7 @@
 
 #include "MocoExpressionBasedParameterGoal.h"
 
+#include "OpenSim/Common/Logger.h"
 #include <lepton/Exception.h>
 #include <lepton/ParsedExpression.h>
 #include <lepton/Parser.h>

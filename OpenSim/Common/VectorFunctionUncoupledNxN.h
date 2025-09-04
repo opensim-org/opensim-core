@@ -97,17 +97,10 @@ public:
     // EVALUATE
     //--------------------------------------------------------------------------
     virtual void evaluate( const SimTK::State& s, const double *aX, double *rF) {
-        log_error("VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( "
-                  "const SimTK::State&, const double*, double*)");
     }
     virtual void evaluate( const SimTK::State& s, const Array<double> &aX, Array<double> &rF){
-        log_error("VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( "
-                  "const SimTK::State&, const Array<double>, Array<double>)");
     }
     virtual void evaluate( const SimTK::State& s, const Array<double> &aX, Array<double> &rF, const Array<int> &aDerivWRT){
-        log_error("VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( "
-                     "const SimTK::State&, const Array<double>&a, "
-                     "Array<double>&, const Array<int>&)");
     }
 
 //=============================================================================

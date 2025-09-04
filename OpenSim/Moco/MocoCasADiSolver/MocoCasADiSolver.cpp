@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoCasADiSolver.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Moco/MocoUtilities.h>

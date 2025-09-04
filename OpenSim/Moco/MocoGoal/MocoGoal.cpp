@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoGoal.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Moco/Components/ControlDistributor.h>
 

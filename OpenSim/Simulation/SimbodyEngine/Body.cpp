@@ -26,6 +26,7 @@
 //=============================================================================
 #include "Body.h"
 #include <OpenSim/Common/ScaleSet.h>
+#include "OpenSim/Common/Logger.h"
 #include "simbody/internal/MobilizedBody.h"
 
 //=============================================================================

@@ -21,6 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "OpenSim/Common/Logger.h"
 #include "opensim-cmd_info.h"
 #include "opensim-cmd_print-xml.h"
 #include "opensim-cmd_run-tool.h"

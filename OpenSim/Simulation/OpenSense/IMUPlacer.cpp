@@ -27,6 +27,7 @@
 #include "IMUPlacer.h"
 
 #include "OpenSenseUtilities.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Simulation/MarkersReference.h>

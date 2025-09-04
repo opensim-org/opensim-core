@@ -25,6 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "MovingPathPoint.h"
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/MultiplierFunction.h>

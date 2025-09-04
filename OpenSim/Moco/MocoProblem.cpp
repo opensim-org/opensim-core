@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoProblem.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <simbody/internal/Constraint.h>
 

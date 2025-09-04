@@ -25,6 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "CustomJoint.h"
+#include "OpenSim/Common/Logger.h"
 #include "SpatialTransform.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/Assertion.h>

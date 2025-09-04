@@ -26,6 +26,7 @@
 #include "PiecewiseConstantFunction.h"
 #include "Constant.h"
 #include "FunctionAdapter.h"
+#include "OpenSim/Common/Logger.h"
 #include "SimmMacros.h"
 #include "XYFunctionInterface.h"
 

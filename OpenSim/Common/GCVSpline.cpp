@@ -30,6 +30,7 @@
 // C++ INCLUDES
 #include "GCVSpline.h"
 #include "Constant.h"
+#include "OpenSim/Common/Logger.h"
 #include "gcvspl.h"
 #include "XYFunctionInterface.h"
 

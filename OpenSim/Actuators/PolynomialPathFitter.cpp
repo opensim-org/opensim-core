@@ -23,6 +23,7 @@
 
 #include "PolynomialPathFitter.h"
 
+#include "OpenSim/Common/Logger.h"
 #include <future>
 #include <OpenSim/Actuators/ModelOperators.h>
 

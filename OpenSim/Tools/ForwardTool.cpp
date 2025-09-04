@@ -31,6 +31,7 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include "CorrectionController.h"
+#include "OpenSim/Common/Logger.h"
 
 using namespace std;
 using namespace OpenSim;

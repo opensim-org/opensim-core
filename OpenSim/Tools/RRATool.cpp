@@ -26,6 +26,7 @@
 #include "ActuatorForceTarget.h"
 #include "ActuatorForceTargetFast.h"
 #include "AnalyzeTool.h"
+#include "OpenSim/Common/Logger.h"
 #include "VectorFunctionForActuators.h"
 #include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/IO.h>

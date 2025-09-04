@@ -37,7 +37,6 @@
 #include "LatinHypercubeDesign.h"
 #include "LinearFunction.h"
 #include "LoadOpenSimLibrary.h"
-#include "Logger.h"
 #include "ModelDisplayHints.h"
 #include "MultiplierFunction.h"
 #include "MultivariatePolynomialFunction.h"

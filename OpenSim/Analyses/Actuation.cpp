@@ -26,6 +26,7 @@
 // INCLUDES
 //=============================================================================
 #include "Actuation.h"
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 

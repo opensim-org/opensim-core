@@ -20,6 +20,7 @@
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoProblem.h"
 #include "MocoUtilities.h"
+#include "OpenSim/Common/Logger.h"
 #include <regex>
 
 #include <OpenSim/Common/IO.h>

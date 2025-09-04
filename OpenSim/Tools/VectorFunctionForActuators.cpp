@@ -29,6 +29,7 @@
 #include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include "CMC.h"
+#include "OpenSim/Common/Logger.h"
 
 
 using namespace OpenSim;

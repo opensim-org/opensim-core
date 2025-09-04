@@ -23,6 +23,7 @@
 
 #include "GCVSplineSet.h"
 #include "GCVSpline.h"
+#include "OpenSim/Common/Logger.h"
 #include "Storage.h"
 
 

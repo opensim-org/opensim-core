@@ -25,6 +25,7 @@
 // INCLUDES
 #include "Component.h"
 #include "OpenSim/Common/IO.h"
+#include "OpenSim/Common/Logger.h"
 #include "XMLDocument.h"
 
 #include <regex>

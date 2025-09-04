@@ -32,6 +32,7 @@
 #include "Assertion.h"
 #include "XMLDocument.h"
 #include "Object.h"
+#include "OpenSim/Common/Logger.h"
 #include <functional>
 
 

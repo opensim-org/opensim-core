@@ -21,6 +21,7 @@
 #include "MocoProblem.h"
 #include "MocoTrajectory.h"
 #include "OpenSim/Common/ComponentPath.h"
+#include "OpenSim/Common/Logger.h"
 #include "OpenSim/Common/SignalGenerator.h"
 #include "OpenSim/Simulation/Control/InputController.h"
 #include "OpenSim/Simulation/InverseDynamicsSolver.h"

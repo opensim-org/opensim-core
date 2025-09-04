@@ -26,6 +26,7 @@
 //==============================================================================
 //==============================================================================
 
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 

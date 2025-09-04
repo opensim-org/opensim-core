@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoConstraintInfo.h"
+#include "OpenSim/Common/Logger.h"
 
 using namespace OpenSim;
 

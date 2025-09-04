@@ -19,6 +19,7 @@
 #include "MocoStateBoundConstraint.h"
 
 #include "MocoProblemInfo.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>

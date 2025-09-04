@@ -27,6 +27,7 @@
 
 
 // INCLUDES
+#include "OpenSim/Common/Logger.h"
 #include <math.h>
 #include "Signal.h"
 #include "Array.h"

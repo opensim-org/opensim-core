@@ -28,6 +28,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include "CorrectionController.h"
+#include "OpenSim/Common/Logger.h"
 
 using namespace std;
 using namespace OpenSim;

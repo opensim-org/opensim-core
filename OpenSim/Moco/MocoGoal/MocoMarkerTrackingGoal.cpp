@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoMarkerTrackingGoal.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Moco/MocoUtilities.h>

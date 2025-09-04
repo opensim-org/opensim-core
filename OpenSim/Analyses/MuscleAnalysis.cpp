@@ -29,6 +29,7 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include "MuscleAnalysis.h"
+#include "OpenSim/Common/Logger.h"
 
 using namespace OpenSim;
 using namespace std;

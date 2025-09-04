@@ -28,6 +28,7 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include "GenericModelMaker.h"
+#include "OpenSim/Common/Logger.h"
 
 //=============================================================================
 // STATICS

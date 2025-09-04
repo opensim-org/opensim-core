@@ -33,6 +33,7 @@
 #include "ControlLinear.h"
 #include "ControlSet.h"
 #include "Controller.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Actuator.h>

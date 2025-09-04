@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoControlGoal.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Moco/Components/ActuatorInputController.h>
 #include <OpenSim/Moco/Components/ControlDistributor.h>

@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "AssemblySolver.h"
+#include "OpenSim/Common/Logger.h"
 #include "OpenSim/Simulation/Model/Model.h"
 #include <OpenSim/Common/Constant.h>
 #include "simbody/internal/AssemblyCondition_QValue.h"

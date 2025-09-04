@@ -28,6 +28,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include "JointReaction.h"
+#include "OpenSim/Common/Logger.h"
 
 using namespace OpenSim;
 using namespace std;

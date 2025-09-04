@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoOutputGoal.h"
+#include "OpenSim/Common/Logger.h"
 
 using namespace OpenSim;
 

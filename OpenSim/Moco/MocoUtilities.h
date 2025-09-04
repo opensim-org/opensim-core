@@ -26,7 +26,6 @@
 
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>

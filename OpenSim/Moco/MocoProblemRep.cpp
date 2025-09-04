@@ -24,6 +24,7 @@
 #include "MocoProblemInfo.h"
 #include "MocoScaleFactor.h"
 #include "OpenSim/Common/Exception.h"
+#include "OpenSim/Common/Logger.h"
 #include "OpenSim/Moco/Components/ControlDistributor.h"
 #include <regex>
 #include <unordered_set>

@@ -28,6 +28,7 @@
 
 // INCLUDES
 #include "IO.h"
+#include "OpenSim/Common/Logger.h"
 #include "StateVector.h"
 
 using namespace OpenSim;

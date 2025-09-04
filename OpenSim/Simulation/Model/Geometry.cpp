@@ -29,6 +29,7 @@
 #include "Frame.h"
 #include "Model.h"
 
+#include "OpenSim/Common/Logger.h"
 #include <filesystem>
 #include <fstream>
 #include <memory>

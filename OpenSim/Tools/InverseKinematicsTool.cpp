@@ -28,6 +28,7 @@
 #include "IKCoordinateTask.h"
 #include "IKMarkerTask.h"
 #include "IKTaskSet.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Common/Constant.h>

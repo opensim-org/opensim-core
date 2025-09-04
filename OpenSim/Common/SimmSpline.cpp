@@ -25,6 +25,7 @@
 // C++ INCLUDES
 #include "SimmSpline.h"
 #include "Constant.h"
+#include "OpenSim/Common/Logger.h"
 #include "SimmMacros.h"
 #include "XYFunctionInterface.h"
 #include "FunctionAdapter.h"

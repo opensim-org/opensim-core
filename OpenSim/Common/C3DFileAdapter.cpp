@@ -1,4 +1,5 @@
 #include "C3DFileAdapter.h"
+#include "OpenSim/Common/Logger.h"
 
 #ifdef WITH_EZC3D
 #include "ezc3d/ezc3d_all.h"

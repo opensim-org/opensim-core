@@ -27,6 +27,7 @@
  */
 
 #include "Manager.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/Array.h>

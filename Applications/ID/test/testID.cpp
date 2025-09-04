@@ -21,6 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 // INCLUDE
+#include "OpenSim/Common/Logger.h"
 #include <string>
 #include <iostream>
 #include <OpenSim/version.h>

@@ -26,6 +26,7 @@
 // INCLUDES and STATICS
 //=============================================================================
 #include "ProbeReporter.h"
+#include "OpenSim/Common/Logger.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -254,6 +255,21 @@ int ProbeReporter::record(const SimTK::State& s)
     _probeStore.append(nextRow);
 
     return 0;
+}
+
+void ProbeReporter::disableIntegrationOnlyProbes() {
+    ProbeSet& probes = _model->updProbeSet();
+    int nP = probes.getSize();
+
+    for(int i=0 ; i<nP ; i++) {
+        Probe& nextProbe = (Probe&)probes[i];
+        if (nextProbe.getOperation()=="integrate" || nextProbe.getOperation()=="min" || nextProbe.getOperation()=="max"){
+            nextProbe.setEnabled(false);
+            log_warn("Disabling probe {} as invalid for non-integration "
+                     "context.",
+                    nextProbe.getName());
+        }
+    }
 }
 //_____________________________________________________________________________
 /**

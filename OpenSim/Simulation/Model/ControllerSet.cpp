@@ -25,6 +25,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include "OpenSim/Common/Logger.h"
 #include <iostream>
 #include "ControllerSet.h"
 #include "Model.h"

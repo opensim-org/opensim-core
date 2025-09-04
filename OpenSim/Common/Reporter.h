@@ -25,6 +25,7 @@
 // INCLUDE
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <iostream>
 
 namespace OpenSim {
 
@@ -236,12 +237,6 @@ protected:
         }
         if (!labels.empty()) {
             const_cast<Self*>(this)->_outputTable.setColumnLabels(labels);
-        } else {
-            std::cout << "Warning: No outputs were connected to '"
-                      << this->getName() << "' of type "
-                      << getConcreteClassName() << ". You can connect outputs "
-                      "by calling addToReport()." << std::endl;
-
         }
     }
 
@@ -287,53 +282,69 @@ private:
 
         // Periodically display column headers.
         if (_printCount % 40 == 0) {
-            log_cout("[{}]", this->getName());
+            std::cout << "[" << this->getName() << "]" << std::endl;
 
             // Split labels over multiple lines.
             // Round up to the nearest multiple of _width to determine the
             // number of header rows.
             const int numHeaderRows = (lengthOfLongestLabel -1) / _width + 1;
+            
+        // Display labels in chunks of size _width.
+        for (int row = 0; row < numHeaderRows; ++row)
+        {
+            std::ostringstream oss;
 
-            // Display labels in chunks of size _width.
-            for (int row = 0; row < numHeaderRows; ++row)
-            {
-                std::string msg;
+            // Time column.
+            if (row == numHeaderRows - 1)
+                oss << std::setw(_width) << std::right << "time" << "| ";
+            else
+                oss << std::setw(_width) << std::right << "" << "| ";
 
-                // Time column.
-                if (row == numHeaderRows-1)
-                    msg += fmt::format("{:>{}}| ", "time", _width);
-                else
-                    msg += fmt::format("{:>{}}| ", "", _width);
+            // Data columns.
+            for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
+                const auto& outName = input.getLabel(idx);
 
-                // Data columns.
-                for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
-                    const auto& outName = input.getLabel(idx);
-                    const std::string lbl =
-                        std::string(numHeaderRows*_width - outName.size(), ' ')
-                        + outName;
-                    msg += fmt::format("{}| ", lbl.substr(_width*row, _width));
-                }
-                log_cout(msg);
+                // Create padded label string.
+                const std::string lbl =
+                    std::string(numHeaderRows * _width - outName.size(), ' ') + outName;
+
+                // Extract the slice for the current row.
+                const std::string chunk = lbl.substr(_width * row, _width);
+
+                oss << chunk << "| ";
             }
+
+            std::cout << oss.str() << std::endl;
+        }
 
             // Horizontal rule.
             std::string msg;
             for (auto idx = 0u; idx <= input.getNumConnectees(); ++idx)
                 msg += std::string(_width, '-') + "| ";
-            log_cout(msg);
+            std::cout << msg << std::endl;
         }
 
-        // TODO set width based on number of significant digits.
-        std::string msg;
-        msg += fmt::format("{:>{}}| ", state.getTime(), _width);
+        std::ostringstream oss;
+
+        // Print time, right-justified in a column of width _width
+        oss << std::setw(_width) << std::right << state.getTime() << "| ";
+
         for (const auto& chan : input.getChannels()) {
             const auto& value = chan->getValue(state);
-            const auto& nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
-            // Print `value` right-justified in a column with width `_width`,
-            // using `nSigFigs`: {:>{_width}.{nSigFigs}g}
-            msg += fmt::format("{:>{}.{}g}| ", value, _width, nSigFigs);
+            const auto nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
+
+            // Configure the stream for significant digits formatting
+            std::ostringstream valStream;
+            valStream << std::setw(_width)
+                    << std::right
+                    << std::setprecision(nSigFigs)
+                    << std::defaultfloat 
+                    << value;
+
+            oss << valStream.str() << "| ";
         }
-        log_cout(msg);
+
+        std::cout << oss.str() << std::endl;
 
         const_cast<ConsoleReporter_<T>*>(this)->_printCount++;
     }

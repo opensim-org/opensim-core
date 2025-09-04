@@ -25,6 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "VisualizerUtilities.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/TableSource.h>

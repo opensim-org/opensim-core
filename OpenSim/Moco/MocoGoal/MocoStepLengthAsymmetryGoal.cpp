@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoStepLengthAsymmetryGoal.h"
+#include "OpenSim/Common/Logger.h"
 #include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
 
 using namespace OpenSim;

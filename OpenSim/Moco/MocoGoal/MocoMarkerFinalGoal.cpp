@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoMarkerFinalGoal.h"
+#include "OpenSim/Common/Logger.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
 

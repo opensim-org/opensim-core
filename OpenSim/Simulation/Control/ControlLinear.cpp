@@ -27,6 +27,7 @@
 #include <OpenSim/Common/Signal.h>
 #include <OpenSim/Common/PropertySet.h>
 #include "ControlLinear.h"
+#include "OpenSim/Common/Logger.h"
 
 using namespace OpenSim;
 using namespace std;
