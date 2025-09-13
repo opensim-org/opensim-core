@@ -23,7 +23,7 @@
 
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Common/Constant.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Actuators/PointActuator.h>
 #include <random>
 #include <cstdio>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -776,10 +776,13 @@ void testExport() {
 
 int main() {
     SimTK_START_TEST("testStatesTrajectory");
-        // actuators library is not loaded automatically (unless using clang).
-        #if !defined(__clang__)
-            LoadOpenSimLibrary("osimActuators");
-        #endif
+
+    // The following model(s) contains Actuators that are registered when the
+    // osimActuators library is loaded. But unless we call at least one
+    // function defined in the osimActuators library, some linkers will omit
+    // its dependency from the executable and it will not be loaded at
+    // startup.
+    { PointActuator t; }
 
         // Make sure the states Storage file doesn't already exist; we'll
         // generate it later and we don't want to use a stale one by accident.
