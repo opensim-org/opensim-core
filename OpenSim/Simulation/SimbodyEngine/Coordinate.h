@@ -222,7 +222,7 @@ public:
 
     /** @name Advanced Access to underlying Simbody system resources */
     /**@{**/
-    int getMobilizerQIndex() const { return _mobilizerQIndex; };
+    SimTK::MobilizerQIndex getMobilizerQIndex() const { return _mobilizerQIndex; };
     SimTK::MobilizedBodyIndex getBodyIndex() const { return _bodyIndex; };
     /**@}**/
 

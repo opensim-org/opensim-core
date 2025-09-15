@@ -596,10 +596,10 @@ void TwoFrameLinker<C, F>::addInPhysicalForcesFromInternal(
     private:
         void implConsumeBodySpatialVec(
             const SimTK::State& state,
-            const PhysicalFrame& body,
+            SimTK::MobilizedBodyIndex mobodIndex,
             const SimTK::SpatialVec& spatialVec) final
         {
-            (*_physicalForces)[body.getMobilizedBodyIndex()] += spatialVec;
+            (*_physicalForces)[mobodIndex] += spatialVec;
         }
 
         SimTK::Vector_<SimTK::SpatialVec>* _physicalForces;

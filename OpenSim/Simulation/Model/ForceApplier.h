@@ -43,6 +43,7 @@ namespace OpenSim
  * - Converts any point forces into body forces
  * - Applies body forces to a `SimTK::Vector_<SimTK::SpatialVec>`
  * - Applies generalized (mobility) forces to a `SimTK::Vector`
+ * - Applies a vector of body forces to the system's `SimTK::Vector_<SimTK::SpatialVec>`
  *
  * The `ForceApplier` is primarily used as an internal class for adapting
  * the `OpenSim::ForceConsumer`'s API contract ("undefined virtual
@@ -73,9 +74,9 @@ public:
 
 private:
 
-    void implConsumeGeneralizedForce(const SimTK::State&, const Coordinate&, double) final;
-    void implConsumeBodySpatialVec(const SimTK::State&, const PhysicalFrame&, const SimTK::SpatialVec&) final;
-    void implConsumePointForce(const SimTK::State&, const PhysicalFrame&, const SimTK::Vec3&, const SimTK::Vec3&) final;
+    void implConsumeGeneralizedForce(const SimTK::State&, SimTK::MobilizedBodyIndex, SimTK::MobilizerUIndex, double) final;
+    void implConsumeBodySpatialVec(const SimTK::State&, SimTK::MobilizedBodyIndex, const SimTK::SpatialVec&) final;
+    void implConsumePointForce(const SimTK::State&, SimTK::MobilizedBodyIndex, const SimTK::Vec3&, const SimTK::Vec3&) final;
 
     const SimTK::SimbodyMatterSubsystem* _matter;
     SimTK::Vector_<SimTK::SpatialVec>* _bodyForces;
