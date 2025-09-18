@@ -197,6 +197,7 @@ public:
         const Component& component,
         const std::string& msg);
 
+#ifndef SWIG
     /** Use this when you want to throw an Exception (with OPENSIM_THROW or
     OPENSIM_THROW_IF) and also provide a message that is formatted
     using fmt::format() syntax. */
@@ -217,6 +218,7 @@ public:
             Args&&... args)
             : Exception{file, line, func, obj,
                       fmt::format(fmt, std::forward<Args>(args)...)} {}
+#endif
 
     virtual ~Exception() throw() {}
 
