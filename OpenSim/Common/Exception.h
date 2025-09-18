@@ -201,12 +201,10 @@ public:
     OPENSIM_THROW_IF) and also provide a message that is formatted
     using fmt::format() syntax. */
     template <typename... Args>
-    Exception(const std::string& file,
-              size_t line,
-              const std::string& func,
-              spdlog::string_view_t fmt,
-              const Args&... args)
-            : Exception{file, line, func, fmt::format(fmt, args...)} {}
+    Exception(const std::string& file, size_t line, const std::string& func,
+            spdlog::format_string_t<Args...> fmt, Args&&... args)
+            : Exception{file, line, func,
+                      fmt::format(fmt, std::forward<Args>(args)...)} {}
 
     /** The message created by this constructor will contain the class name and
     instance name of the provided Object, and also accepts a message formatted
@@ -214,13 +212,11 @@ public:
     Use OPENSIM_THROW_FRMOBJ and OPENSIM_THROW_IF_FRMOBJ macros at throw sites.
     */
     template <typename... Args>
-    Exception(const std::string& file,
-              size_t line,
-              const std::string& func,
-              const Object& obj,
-              spdlog::string_view_t fmt,
-              const Args&... args)
-            : Exception{file, line, func, obj, fmt::format(fmt, args...)} {}
+    Exception(const std::string& file, size_t line, const std::string& func,
+            const Object& obj, spdlog::format_string_t<Args...> fmt,
+            Args&&... args)
+            : Exception{file, line, func, obj,
+                      fmt::format(fmt, std::forward<Args>(args)...)} {}
 
     virtual ~Exception() throw() {}
 
@@ -323,7 +319,10 @@ public:
 
 class ComponentNotFound : public Exception {
 public:
-    using Exception::Exception;
+    ComponentNotFound(
+            const std::string& file, size_t line, const std::string& func)
+            : Exception(file, line, func) {}
+
     ComponentNotFound(const std::string& file,
         size_t line,
         const std::string& func,
