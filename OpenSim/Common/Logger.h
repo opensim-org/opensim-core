@@ -22,6 +22,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+
 #include "osimCommonDLL.h"              // for OSIMCOMMON_API
 #include <memory>                       // for shared_ptr
 #include <spdlog/common.h>              // for string_view_t
@@ -31,16 +32,28 @@
 #include <string>                       // for basic_string, string
 
 #ifndef SWIG
+#include "Array.h"
+#include "OpenSim/Moco/MocoBounds.h"
 #include <SimTKcommon/SmallMatrix.h>             // for Vec3
 #include <SimTKcommon/internal/BigMatrix.h>      // for Vector
 #include <SimTKcommon/internal/MassProperties.h> // for Inertia
 #include <SimTKcommon/internal/Rotation.h>       // for Rotation
 
+// fmt library serializers for OpenSim Array objects
+template <>
+struct fmt::formatter<OpenSim::Array<double>> : ostream_formatter {};
 // fmt library serializers for custom SimTK objects
 template <> struct fmt::formatter<SimTK::Vec3> : ostream_formatter {};
 template <> struct fmt::formatter<SimTK::Vector> : ostream_formatter {};
 template <> struct fmt::formatter<SimTK::Rotation> : ostream_formatter {};
 template <> struct fmt::formatter<SimTK::Inertia> : ostream_formatter {};
+
+// fmt library serializers for custom Moco objects
+template <> struct fmt::formatter<OpenSim::MocoBounds> : ostream_formatter {};
+template <>
+struct fmt::formatter<OpenSim::MocoInitialBounds> : ostream_formatter {};
+template <>
+struct fmt::formatter<OpenSim::MocoFinalBounds> : ostream_formatter {};
 #endif
 
 namespace OpenSim {

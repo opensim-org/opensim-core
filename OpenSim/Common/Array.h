@@ -34,7 +34,6 @@
 #include <initializer_list>
 #include <iostream>
 #include <iterator>
-#include <spdlog/fmt/bundled/ostream.h>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -598,11 +597,5 @@ private:
 };
 
 }; //namespace
-
-#ifndef SWIG
-// fmt library serializers for OpenSim Array objects
-template <>
-struct fmt::formatter<OpenSim::Array<double>> : ostream_formatter {};
-#endif
 
 #endif // OPENSIM_ARRAY_H_

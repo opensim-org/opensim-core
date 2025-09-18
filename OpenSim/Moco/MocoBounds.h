@@ -134,13 +134,4 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalBounds, MocoBounds);
 
 } // namespace OpenSim
 
-#ifndef SWIG
-// fmt library serializers for custom Moco objects
-template <> struct fmt::formatter<OpenSim::MocoBounds> : ostream_formatter {};
-template <>
-struct fmt::formatter<OpenSim::MocoInitialBounds> : ostream_formatter {};
-template <>
-struct fmt::formatter<OpenSim::MocoFinalBounds> : ostream_formatter {};
-#endif
-
 #endif // OPENSIM_MOCOBOUNDS_H
