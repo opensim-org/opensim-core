@@ -22,7 +22,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 #include "osimCommonDLL.h"              // for OSIMCOMMON_API
 #include <memory>                       // for shared_ptr
 #include <spdlog/common.h>              // for string_view_t
@@ -32,12 +31,13 @@
 #include <string>                       // for basic_string, string
 
 #ifndef SWIG
-#include "Array.h"
-#include "OpenSim/Moco/MocoBounds.h"
-#include <SimTKcommon/SmallMatrix.h>             // for Vec3
-#include <SimTKcommon/internal/BigMatrix.h>      // for Vector
-#include <SimTKcommon/internal/MassProperties.h> // for Inertia
-#include <SimTKcommon/internal/Rotation.h>       // for Rotation
+#    include "Array.h"
+#    include "OpenSim/Moco/MocoBounds.h"
+
+#    include <SimTKcommon/SmallMatrix.h>             // for Vec3
+#    include <SimTKcommon/internal/BigMatrix.h>      // for Vector
+#    include <SimTKcommon/internal/MassProperties.h> // for Inertia
+#    include <SimTKcommon/internal/Rotation.h>       // for Rotation
 
 // fmt library serializers for OpenSim Array objects
 template <>
@@ -136,47 +136,46 @@ public:
     /// @{
 
     template <typename... Args>
-    static void critical(spdlog::string_view_t fmt, const Args&... args) {
+    static void critical(spdlog::format_string_t<Args...> fmt, Args&&... args) {
         if (shouldLog(Level::Critical)) {
-            getDefaultLogger().critical(fmt, args...);
+            getDefaultLogger().critical(fmt, std::forward<Args>(args)...);
         }
     }
 
     template <typename... Args>
-    static void error(spdlog::string_view_t fmt, const Args&... args) {
+    static void error(spdlog::format_string_t<Args...> fmt, Args&&... args) {
         if (shouldLog(Level::Error)) {
-            getDefaultLogger().error(fmt, args...);
+            getDefaultLogger().error(fmt, std::forward<Args>(args)...);
         }
     }
 
     template <typename... Args>
-    static void warn(spdlog::string_view_t fmt, const Args&... args) {
+    static void warn(spdlog::format_string_t<Args...> fmt, Args&&... args) {
         if (shouldLog(Level::Warn)) {
-            getDefaultLogger().warn(fmt, args...);
+            getDefaultLogger().warn(fmt, std::forward<Args>(args)...);
         }
     }
 
     template <typename... Args>
-    static void info(spdlog::string_view_t fmt, const Args&... args) {
+    static void info(spdlog::format_string_t<Args...> fmt, Args&&... args) {
         if (shouldLog(Level::Info)) {
-            getDefaultLogger().info(fmt, args...);
+            getDefaultLogger().info(fmt, std::forward<Args>(args)...);
         }
     }
 
     template <typename... Args>
-    static void debug(spdlog::string_view_t fmt, const Args&... args) {
+    static void debug(spdlog::format_string_t<Args...> fmt, Args&&... args) {
         if (shouldLog(Level::Debug)) {
-            getDefaultLogger().debug(fmt, args...);
+            getDefaultLogger().debug(fmt, std::forward<Args>(args)...);
         }
     }
 
     template <typename... Args>
-    static void trace(spdlog::string_view_t fmt, const Args&... args) {
+    static void trace(spdlog::format_string_t<Args...> fmt, Args&&... args) {
         if (shouldLog(Level::Trace)) {
-            getDefaultLogger().trace(fmt, args...);
+            getDefaultLogger().trace(fmt, std::forward<Args>(args)...);
         }
     }
-
     /// Use this function to log messages that would normally be sent to
     /// std::cout. These messages always appear, and are also logged to the
     /// filesink (addFileSink()) and any sinks added via addSink().
@@ -185,9 +184,11 @@ public:
     /// Besides such use cases, this function should be used sparingly to
     /// give users control over what gets logged.
     template <typename... Args>
-    static void cout(spdlog::string_view_t fmt, const Args&... args) {
-        getCoutLogger().log(getCoutLogger().level(), fmt, args...);
+    static void cout(spdlog::format_string_t<Args...> fmt, Args&&... args) {
+        getCoutLogger().log(
+                getCoutLogger().level(), fmt, std::forward<Args>(args)...);
     }
+
 
     /// @}
 
@@ -215,6 +216,7 @@ public:
     /// @note This function is not thread-safe. Do not invoke this function
     /// concurrently, or concurrently with addLogFile() or addSink().
     static void removeSink(const std::shared_ptr<LogSink> sink);
+
 private:
     static spdlog::logger& getCoutLogger();
     static spdlog::logger& getDefaultLogger();
@@ -225,45 +227,45 @@ private:
 
 /// @related Logger
 template <typename... Args>
-void log_critical(spdlog::string_view_t fmt, const Args&... args) {
-    Logger::critical(fmt, args...);
+void log_critical(spdlog::format_string_t<Args...> fmt, Args&&... args) {
+    Logger::critical(fmt, std::forward<Args>(args)...);
 }
 
 /// @related Logger
 template <typename... Args>
-void log_error(spdlog::string_view_t fmt, const Args&... args) {
-    Logger::error(fmt, args...);
+void log_error(spdlog::format_string_t<Args...> fmt, Args&&... args) {
+    Logger::error(fmt, std::forward<Args>(args)...);
 }
 
 /// @related Logger
 template <typename... Args>
-void log_warn(spdlog::string_view_t fmt, const Args&... args) {
-    Logger::warn(fmt, args...);
+void log_warn(spdlog::format_string_t<Args...> fmt, Args&&... args) {
+    Logger::warn(fmt, std::forward<Args>(args)...);
 }
 
 /// @related Logger
 template <typename... Args>
-void log_info(spdlog::string_view_t fmt, const Args&... args) {
-    Logger::info(fmt, args...);
+void log_info(spdlog::format_string_t<Args...> fmt, Args&&... args) {
+    Logger::info(fmt, std::forward<Args>(args)...);
 }
 
 /// @related Logger
 template <typename... Args>
-void log_debug(spdlog::string_view_t fmt, const Args&... args) {
-    Logger::debug(fmt, args...);
+void log_debug(spdlog::format_string_t<Args...> fmt, Args&&... args) {
+    Logger::debug(fmt, std::forward<Args>(args)...);
 }
 
 /// @related Logger
 template <typename... Args>
-void log_trace(spdlog::string_view_t fmt, const Args&... args) {
-    Logger::trace(fmt, args...);
+void log_trace(spdlog::format_string_t<Args...> fmt, Args&&... args) {
+    Logger::trace(fmt, std::forward<Args>(args)...);
 }
 
 /// @copydoc Logger::cout()
 /// @related Logger
 template <typename... Args>
-void log_cout(spdlog::string_view_t fmt, const Args&... args) {
-    Logger::cout(fmt, args...);
+void log_cout(spdlog::format_string_t<Args...> fmt, Args&&... args) {
+    Logger::cout(fmt, std::forward<Args>(args)...);
 }
 
 /// @}
