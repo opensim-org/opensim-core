@@ -123,7 +123,7 @@ public:
     /// @name Commands to log messages
     /// Use these functions instead of using spdlog directly.
     /// @{
-
+#ifndef SWIG
     template <typename... Args>
     static void critical(spdlog::format_string_t<Args...> fmt, Args&&... args) {
         if (shouldLog(Level::Critical)) {
@@ -178,7 +178,7 @@ public:
         getCoutLogger().log(
                 getCoutLogger().level(), fmt, std::forward<Args>(args)...);
     }
-
+#endif
     /// @}
 
     /// Log messages to a file at the level getLevel().
@@ -212,7 +212,7 @@ private:
 
 /// @name Logging functions
 /// @{
-
+#ifndef SWIG
 /// @related Logger
 template <typename... Args>
 void log_critical(spdlog::format_string_t<Args...> fmt, Args&&... args) {
@@ -286,8 +286,7 @@ inline void log_trace(std::string_view msg) {
 
 /// @related Logger
 inline void log_cout(std::string_view msg) { OpenSim::Logger::cout("{}", msg); }
-
-/// @}
+#endif
 
 } // namespace OpenSim
 
