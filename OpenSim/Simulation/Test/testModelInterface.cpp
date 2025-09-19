@@ -25,7 +25,7 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Actuators/PointActuator.h>
 
 #include <memory>
 
@@ -37,7 +37,12 @@ void testModelTopologyErrors();
 void testDoesNotSegfaultWithUnusualConnections();
 
 int main() {
-    LoadOpenSimLibrary("osimActuators");
+    // The following model(s) contains Actuators that are registered when the
+    // osimActuators library is loaded. But unless we call at least one
+    // function defined in the osimActuators library, some linkers will omit
+    // its dependency from the executable and it will not be loaded at
+    // startup.
+    { PointActuator t; }
 
     SimTK_START_TEST("testModelInterface");
         SimTK_SUBTEST(testModelFinalizePropertiesAndConnections);
