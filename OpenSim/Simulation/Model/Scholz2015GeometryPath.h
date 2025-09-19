@@ -71,10 +71,10 @@ public:
 //=============================================================================
 // METHODS
 //=============================================================================
-    // CONSTRUCTION
+    // CONSTRUCTOR(S)
     Scholz2015GeometryPathObstacle();
 
-    // ACCESSORS
+    // ACCESSOR(S)
     /**
      * Get the ContactGeometry associated with this obstacle.
      */
@@ -122,10 +122,10 @@ public:
 //=============================================================================
 // METHODS
 //=============================================================================
-    // CONSTRUCTION
+    // CONSTRUCTOR(S)
     Scholz2015GeometryPathSegment();
 
-    // ACCESSORS
+    // ACCESSOR(S)
     /**
      * Get the number of `Scholz2015GeometryPathObstacle`s in the path segment.
      */
@@ -150,7 +150,7 @@ public:
  * \section Scholz2015GeometryPath
  * A concrete class representing a path object that begins at an origin point
  * fixed to a body, wraps over geometric obstacles and passes through
- * frictionless via points fixed to other bodies, and terminates at an insertion
+ * frictionless via points fixed to bodies, and terminates at an insertion
  * point.
  *
  * The path consists of straight line segments and curved line segments: a
@@ -244,9 +244,9 @@ public:
  * \endcode
  *
  * The contact hint is a `SimTK::Vec3` defining a point on the surface in local
- * surface frame coordinates. The point will be used as a starting point when
- * computing the initial cable path. As such, it does not have to lie on the
- * contact geometry's surface, nor does it have to belong to a valid cable path.
+ * surface frame coordinates. The point will be used to provide an initial guess
+ * when solving for the path. As such, it does not have to lie on the contact
+ * geometry's surface, nor does it have to belong to a valid cable path.
  *
  * ## Adding Via Points
  *
@@ -628,12 +628,12 @@ private:
     // MEMBER VARIABLES
     mutable SimTK::ResetOnCopy<SimTK::CableSpanIndex> _index;
 
-    using ObstacleIndexMap = std::unordered_map<int,
-            SimTK::ReferencePtr<const PhysicalFrame>>;
-    mutable SimTK::ResetOnCopy<ObstacleIndexMap> _obstacleIndexMap;
-    using ViaPointIndexMap = std::unordered_map<int,
-            SimTK::ReferencePtr<const PhysicalFrame>>;
-    mutable SimTK::ResetOnCopy<ViaPointIndexMap> _viaPointIndexMap;
+    using ObstacleIndexes = std::vector<std::tuple<
+            SimTK::CableSpanObstacleIndex, int, int>>;
+    mutable SimTK::ResetOnCopy<ObstacleIndexes> _obstacleIndexes;
+    using ViaPointIndexes = std::vector<std::pair<
+            SimTK::CableSpanViaPointIndex, int>>;
+    mutable SimTK::ResetOnCopy<ViaPointIndexes> _viaPointIndexes;
 
     SimTK::ResetOnCopy<std::unique_ptr<MomentArmSolver> > _maSolver;
     SimTK::CableSpanAlgorithm _algorithm;

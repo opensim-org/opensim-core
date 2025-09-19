@@ -33,7 +33,7 @@ using namespace OpenSim;
 //=============================================================================
 // SCHOLZ 2015 GEOMETRY PATH OBSTACLE
 //=============================================================================
-Scholz2015GeometryPathObstacle::Scholz2015GeometryPathObstacle() : Component() {
+Scholz2015GeometryPathObstacle::Scholz2015GeometryPathObstacle() {
     constructProperty_contact_hint(SimTK::Vec3(SimTK::NaN));
 }
 
@@ -45,7 +45,7 @@ Scholz2015GeometryPathObstacle::getContactGeometry() const {
 //=============================================================================
 // SCHOLZ 2015 GEOMETRY PATH SEGMENT
 //=============================================================================
-Scholz2015GeometryPathSegment::Scholz2015GeometryPathSegment() : Component() {
+Scholz2015GeometryPathSegment::Scholz2015GeometryPathSegment() {
     constructProperty_obstacles();
 }
 
@@ -294,22 +294,25 @@ void Scholz2015GeometryPath::produceForces(const SimTK::State& state,
     }
 
     // Forces applied to each obstacle body.
-    for (const auto& [index, frame] : _obstacleIndexMap) {
-        SimTK::CableSpanObstacleIndex ix(index);
+    for (const auto& [ix, segIx, obsIx] : _obstacleIndexes) {
         if (!cable.isInContactWithObstacle(state, ix)) {
             continue;
         }
 
         cable.calcCurveSegmentUnitForce(state, ix, unitBodyForce);
-        forceConsumer.consumeBodySpatialVec(state, frame.getRef(),
+        const auto& segment = get_segments(segIx);
+        const auto& obstacle = segment.get_obstacles(obsIx);
+        const auto& frame = obstacle.getContactGeometry().getFrame();
+        forceConsumer.consumeBodySpatialVec(state, frame,
                 tension * unitBodyForce);
     }
 
     // Forces applied to each via point.
-    for (const auto& [index, frame] : _viaPointIndexMap) {
-        SimTK::CableSpanViaPointIndex ix(index);
+    for (const auto& [ix, segIx] : _viaPointIndexes) {
         cable.calcViaPointUnitForce(state, ix, unitBodyForce);
-        forceConsumer.consumeBodySpatialVec(state, frame.getRef(),
+        const auto& segment = get_segments(segIx);
+        const auto& frame = segment.getInsertion().getParentFrame();
+        forceConsumer.consumeBodySpatialVec(state, frame,
                 tension * unitBodyForce);
     }
 
@@ -345,12 +348,15 @@ void Scholz2015GeometryPath::extendFinalizeFromProperties() {
             "but it is %d.",
             getName().c_str(), get_solver_max_iterations());
 
-    checkPropertyValueIsInSet(getProperty_algorithm(),
-            {"Scholz2015", "MinimumLength"});
     if (get_algorithm() == "Scholz2015") {
         _algorithm = SimTK::CableSpanAlgorithm::Scholz2015;
     } else if (get_algorithm() == "MinimumLength") {
         _algorithm = SimTK::CableSpanAlgorithm::MinimumLength;
+    } else {
+        OPENSIM_THROW_FRMOBJ(Exception,
+            fmt::format("Property 'algorithm' has invalid value {}; expected "
+                        "one of the following: MinimumLength, Scholz2015",
+                        get_algorithm()));
     }
 }
 
@@ -377,7 +383,7 @@ void Scholz2015GeometryPath::extendAddToSystem(
                 obstacle.getContactGeometry().getTransform(),
                 obstacle.getContactGeometry().getSimTKContactGeometryPtr(),
                 obstacle.get_contact_hint());
-            _obstacleIndexMap[ix] = &obstacle.getContactGeometry().getFrame();
+            _obstacleIndexes.emplace_back(std::make_tuple(ix, iseg, iobs));
         }
 
         // Add the via point if this is not the last segment.
@@ -385,7 +391,7 @@ void Scholz2015GeometryPath::extendAddToSystem(
             SimTK::CableSpanViaPointIndex ix = cable.addViaPoint(
                 segment.getInsertion().getParentFrame().getMobilizedBodyIndex(),
                 segment.getInsertion().get_location());
-            _viaPointIndexMap[ix] = &segment.getInsertion().getParentFrame();
+            _viaPointIndexes.emplace_back(std::make_pair(ix, iseg));
         }
     }
 

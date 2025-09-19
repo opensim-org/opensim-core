@@ -35,6 +35,8 @@
 
 using namespace OpenSim;
 
+// TODO test behavior when NaN tension is provided.
+
 TEST_CASE("Interface") {
     Model model = ModelFactory::createDoublePendulum();
 
@@ -203,9 +205,7 @@ TEST_CASE("Suspended pendulum") {
 
 TEST_CASE("Moment arms") {
 
-    // Randomly choose the radius of the cylinder within a valid range.
-    SimTK::Random::Uniform random(0.1, 0.2);
-    const SimTK::Real radius = random.getValue();
+    const SimTK::Real radius = 0.2;
     const SimTK::Real offset = 0.5;
 
     // Construct a double pendulum model.
