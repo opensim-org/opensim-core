@@ -23,8 +23,9 @@ if(BUILD_API_EXAMPLES)
     add_subdirectory(DataTable)
     add_subdirectory(DataAdapter)
     add_subdirectory(Moco)
+    add_subdirectory(Wrapping)
 
-elseif()
+else()
 
     add_subdirectory(ControllerExample)
     add_subdirectory(ExampleLuxoMuscle)
@@ -39,7 +40,7 @@ endif()
 
 # We do not install the BuildDynamicWalker example, because it is assigned to
 # students as homework. The solution to the BuildDynamicWalker example is in
-# OpenSim/Examples/BuildDynamicWalker, and is tested in 
+# OpenSim/Examples/BuildDynamicWalker, and is tested in
 # OpenSim/Tests/BuildDynamicWalker.
 
 install(DIRECTORY Plugins DESTINATION "${OPENSIM_INSTALL_CPPEXDIR}")

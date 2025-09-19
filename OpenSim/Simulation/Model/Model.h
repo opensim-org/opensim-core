@@ -537,6 +537,15 @@ public:
     {
         return getGravityForce().getBodyForces(state);
     }
+
+    /** Get read-only access to the internal Simbody CableSubsystem
+    allocated by this %Model. **/
+    const SimTK::CableSubsystem& getCableSubsystem() const
+    {   return *_cableSubsystem; }
+    /** (Advanced) Get writable access to the internal Simbody
+    CableSubsystem allocated by this %Model. **/
+    SimTK::CableSubsystem& updCableSubsystem()
+    {   return *_cableSubsystem; }
     /**@}**/
 
     /**@name  Realize the Simbody System and State to Computational Stage
@@ -1291,6 +1300,8 @@ private:
         _forceSubsystem;
     SimTK::ResetOnCopy<std::unique_ptr<SimTK::GeneralContactSubsystem>>
         _contactSubsystem;
+    SimTK::ResetOnCopy<std::unique_ptr<SimTK::CableSubsystem>>
+        _cableSubsystem;
 
     // We place this after the subsystems so that during copy construction and
     // copy assignment, the subsystem handles are copied first. If the system

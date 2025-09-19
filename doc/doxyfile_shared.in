@@ -966,9 +966,12 @@ EXCLUDE_SYMBOLS        =
 EXAMPLE_PATH           = "@PROJECT_SOURCE_DIR@/OpenSim/Tests/README/testREADME.cpp" \
                          "@PROJECT_SOURCE_DIR@/Bindings/Java/Matlab/examples/Moco" \
                          "@PROJECT_SOURCE_DIR@/Bindings/Java/Matlab/examples/PolynomialPathFitter" \
+                         "@PROJECT_SOURCE_DIR@/Bindings/Java/Matlab/examples/Wrapping" \
                          "@PROJECT_SOURCE_DIR@/Bindings/Python/examples/Moco" \
                          "@PROJECT_SOURCE_DIR@/Bindings/Python/examples/PolynomialPathFitter" \
-                         "@PROJECT_SOURCE_DIR@/OpenSim/Examples/Moco"
+                         "@PROJECT_SOURCE_DIR@/Bindings/Python/examples/Wrapping" \
+                         "@PROJECT_SOURCE_DIR@/OpenSim/Examples/Moco" \
+                         "@PROJECT_SOURCE_DIR@/OpenSim/Examples/Wrapping"
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and

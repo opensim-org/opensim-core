@@ -172,6 +172,7 @@ private:
     void setNull();
     void constructProperties();
 
+    friend class Scholz2015GeometryPath;
 };
 
 /**
