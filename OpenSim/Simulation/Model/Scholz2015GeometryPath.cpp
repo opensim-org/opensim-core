@@ -46,6 +46,7 @@ Scholz2015GeometryPathObstacle::getContactGeometry() const {
 // SCHOLZ 2015 GEOMETRY PATH SEGMENT
 //=============================================================================
 Scholz2015GeometryPathSegment::Scholz2015GeometryPathSegment() {
+    constructProperty_termination(Station());
     constructProperty_obstacles();
 }
 
@@ -53,12 +54,8 @@ int Scholz2015GeometryPathSegment::getNumObstacles() const {
     return getProperty_obstacles().size();
 }
 
-const Station& Scholz2015GeometryPathSegment::getOrigin() const {
-    return getSocket<Station>("origin").getConnectee();
-}
-
-const Station& Scholz2015GeometryPathSegment::getInsertion() const {
-    return getSocket<Station>("insertion").getConnectee();
+const Station& Scholz2015GeometryPathSegment::getTermination() const {
+    return get_termination();
 }
 
 //=============================================================================
@@ -66,75 +63,78 @@ const Station& Scholz2015GeometryPathSegment::getInsertion() const {
 //=============================================================================
 Scholz2015GeometryPath::Scholz2015GeometryPath() : AbstractGeometryPath() {
     constructProperties();
-    append_segments(Scholz2015GeometryPathSegment());
-    upd_segments(0).setName("path_segment_0");
-}
-
-Scholz2015GeometryPath::Scholz2015GeometryPath(
-        const PhysicalFrame& originFrame,
-        const SimTK::Vec3& originLocation,
-        const PhysicalFrame& insertionFrame,
-        const SimTK::Vec3& insertionLocation) : Scholz2015GeometryPath() {
-    setOrigin(originFrame, originLocation);
-    setInsertion(insertionFrame, insertionLocation);
 }
 
 //=============================================================================
 // PATH CONFIGURATION
 //=============================================================================
-void Scholz2015GeometryPath::setOrigin(const PhysicalFrame& frame,
+void Scholz2015GeometryPath::addPathPoint(const PhysicalFrame& frame,
         const SimTK::Vec3& location) {
-    // Create the origin station.
-    set_origin(Station());
-    Station& origin = upd_origin();
-    origin.setName("origin");
-    origin.set_location(location);
-    origin.setParentFrame(frame);
+
+    // If the origin is not yet connected, set the origin station and create the
+    // first path segment. Otherwise, set the insertion station of the last
+    // segment, creating a new segment if needed.
+    if (!pathHasOrigin()) {
+        set_origin(Station());
+        Station& origin = upd_origin();
+        origin.setName("origin");
+        origin.set_location(location);
+        origin.setParentFrame(frame);
+
+        append_segments(Scholz2015GeometryPathSegment());
+        upd_segments(0).setName("path_segment_0");
+    } else {
+        addPathSegmentIfNeeded();
+        auto& segment = updLastPathSegment();
+        Station& termination = segment.upd_termination();
+        termination.setName("termination");
+        termination.set_location(location);
+        termination.setParentFrame(frame);
+    }
 
     // Call finalizeFromProperties() to ensure that the station is recognized
     // as a subcomponent.
     finalizeFromProperties();
-
-    // Connect the station to the origin of the first path segment.
-    auto& segment = upd_segments(0);
-    segment.connectSocket_origin(upd_origin());
 }
 
 const Station& Scholz2015GeometryPath::getOrigin() const {
     return get_origin();
 }
 
-void Scholz2015GeometryPath::setInsertion(const PhysicalFrame& frame,
-        const SimTK::Vec3& location) {
-    // Create the insertion station.
-    set_insertion(Station());
-    Station& insertion = upd_insertion();
-    insertion.setName("insertion");
-    insertion.set_location(location);
-    insertion.setParentFrame(frame);
-
-    // Call finalizeFromProperties() to ensure that the station is recognized
-    // as a subcomponent.
-    finalizeFromProperties();
-
-    // Connect the station to the insertion of the last path segment.
-    auto& segment = upd_segments(getProperty_segments().size() - 1);
-    segment.connectSocket_insertion(upd_insertion());
-}
-
 const Station& Scholz2015GeometryPath::getInsertion() const {
-    return get_insertion();
+    OPENSIM_THROW_IF_FRMOBJ(getProperty_segments().empty(), Exception,
+            "Expected at least two path points before retrieving the insertion "
+            "point, but the path only has {} path point(s).",
+            getNumPathPoints());
+
+    return getLastPathSegment().getTermination();
 }
 
 void Scholz2015GeometryPath::addObstacle(const ContactGeometry& contactGeometry,
         const SimTK::Vec3& contactHint) {
-    // Add the obstacle to the last path segment.
-    auto& segment = upd_segments(getProperty_segments().size() - 1);
+    OPENSIM_THROW_IF_FRMOBJ(getProperty_segments().empty(), Exception,
+            "Expected at least one path point before adding an obstacle, but "
+            "no path points were found. Use addPathPoint() to add a path point "
+            "to the path.");
+
+    // Add the obstacle to the last segment, creating a new segment if needed.
+    addPathSegmentIfNeeded();
+    auto& segment = updLastPathSegment();
     segment.append_obstacles(Scholz2015GeometryPathObstacle());
     auto& ob = segment.upd_obstacles(segment.getNumObstacles() - 1);
     ob.setName("path_obstacle_" + std::to_string(segment.getNumObstacles() - 1));
     ob.connectSocket_contact_geometry(contactGeometry);
     ob.set_contact_hint(contactHint);
+}
+
+int Scholz2015GeometryPath::getNumPathPoints() const {
+    if (getProperty_segments().empty()) {
+        return 0;
+    }
+
+    int numPathPoints = getProperty_segments().size();
+    numPathPoints += pathIsClosed() ? 1 : 0;
+    return numPathPoints;
 }
 
 int Scholz2015GeometryPath::getNumObstacles() const {
@@ -143,37 +143,6 @@ int Scholz2015GeometryPath::getNumObstacles() const {
         numObstacles += get_segments(i).getNumObstacles();
     }
     return numObstacles;
-}
-
-void Scholz2015GeometryPath::addViaPoint(const PhysicalFrame& frame,
-        const SimTK::Vec3& location) {
-
-    // Create the via point station.
-    int vix = append_via_points(Station());
-    Station& viaPoint = upd_via_points(vix);
-    viaPoint.setName(fmt::format("via_point_{}", vix));
-    viaPoint.set_location(location);
-    viaPoint.setParentFrame(frame);
-
-    // Call finalizeFromProperties() to ensure that the station is recognized
-    // as a subcomponent.
-    finalizeFromProperties();
-
-    // Update the insertion of the last path segment.
-    auto& currSegment = upd_segments(getProperty_segments().size() - 1);
-    currSegment.connectSocket_insertion(upd_via_points(vix));
-
-    // Create a new path segment.
-    append_segments(Scholz2015GeometryPathSegment());
-    auto& nextSegment = upd_segments(getProperty_segments().size() - 1);
-    nextSegment.setName(fmt::format("path_segment_{}",
-            getProperty_segments().size() - 1));
-    nextSegment.connectSocket_origin(upd_via_points(vix));
-    nextSegment.connectSocket_insertion(getInsertion());
-}
-
-int Scholz2015GeometryPath::getNumViaPoints() const {
-    return getProperty_via_points().size();
 }
 
 //=============================================================================
@@ -221,36 +190,36 @@ int Scholz2015GeometryPath::getNumSolverIterations(
     return getCableSpan().getNumSolverIterations(state);
 }
 
-//=============================================================================
-// CURVE SEGMENT COMPUTATIONS
-//=============================================================================
-bool Scholz2015GeometryPath::isInContactWithObstacle(
-        const SimTK::State& state, SimTK::CableSpanObstacleIndex ix) const {
-    return getCableSpan().isInContactWithObstacle(state, ix);
-}
+// //=============================================================================
+// // CURVE SEGMENT COMPUTATIONS
+// //=============================================================================
+// bool Scholz2015GeometryPath::isInContactWithObstacle(
+//         const SimTK::State& state, SimTK::CableSpanObstacleIndex ix) const {
+//     return getCableSpan().isInContactWithObstacle(state, ix);
+// }
 
-SimTK::Transform Scholz2015GeometryPath::calcCurveSegmentInitialFrenetFrame(
-        const SimTK::State& state, SimTK::CableSpanObstacleIndex ix) const {
-    return getCableSpan().calcCurveSegmentInitialFrenetFrame(state, ix);
-}
+// SimTK::Transform Scholz2015GeometryPath::calcCurveSegmentInitialFrenetFrame(
+//         const SimTK::State& state, SimTK::CableSpanObstacleIndex ix) const {
+//     return getCableSpan().calcCurveSegmentInitialFrenetFrame(state, ix);
+// }
 
-SimTK::Transform Scholz2015GeometryPath::calcCurveSegmentFinalFrenetFrame(
-        const SimTK::State& state, SimTK::CableSpanObstacleIndex ix) const {
-    return getCableSpan().calcCurveSegmentFinalFrenetFrame(state, ix);
-}
+// SimTK::Transform Scholz2015GeometryPath::calcCurveSegmentFinalFrenetFrame(
+//         const SimTK::State& state, SimTK::CableSpanObstacleIndex ix) const {
+//     return getCableSpan().calcCurveSegmentFinalFrenetFrame(state, ix);
+// }
 
-SimTK::Real Scholz2015GeometryPath::calcCurveSegmentArcLength(
-        const SimTK::State& state, SimTK::CableSpanObstacleIndex ix) const {
-    return getCableSpan().calcCurveSegmentArcLength(state, ix);
-}
+// SimTK::Real Scholz2015GeometryPath::calcCurveSegmentArcLength(
+//         const SimTK::State& state, SimTK::CableSpanObstacleIndex ix) const {
+//     return getCableSpan().calcCurveSegmentArcLength(state, ix);
+// }
 
-//=============================================================================
-// VIA POINT COMPUTATIONS
-//=============================================================================
-SimTK::Vec3 Scholz2015GeometryPath::calcViaPointLocation(
-        const SimTK::State& state, SimTK::CableSpanViaPointIndex ix) const {
-    return getCableSpan().calcViaPointLocation(state, ix);
-}
+// //=============================================================================
+// // VIA POINT COMPUTATIONS
+// //=============================================================================
+// SimTK::Vec3 Scholz2015GeometryPath::calcViaPointLocation(
+//         const SimTK::State& state, SimTK::CableSpanViaPointIndex ix) const {
+//     return getCableSpan().calcViaPointLocation(state, ix);
+// }
 
 //=============================================================================
 // ABSTRACT PATH INTERFACE
@@ -311,7 +280,7 @@ void Scholz2015GeometryPath::produceForces(const SimTK::State& state,
     for (const auto& [ix, segIx] : _viaPointIndexes) {
         cable.calcViaPointUnitForce(state, ix, unitBodyForce);
         const auto& segment = get_segments(segIx);
-        const auto& frame = segment.getInsertion().getParentFrame();
+        const auto& frame = segment.getTermination().getParentFrame();
         forceConsumer.consumeBodySpatialVec(state, frame,
                 tension * unitBodyForce);
     }
@@ -360,6 +329,20 @@ void Scholz2015GeometryPath::extendFinalizeFromProperties() {
     }
 }
 
+void Scholz2015GeometryPath::extendConnectToModel(Model& model) {
+    Super::extendConnectToModel(model);
+
+    OPENSIM_THROW_IF_FRMOBJ(getNumPathPoints() < 2, Exception,
+            "Expected at least two path points before finalizing the path, but "
+            "{} path point(s) were found. Use addPathPoint() to add a path "
+            "point to the path.", getNumPathPoints());
+    OPENSIM_THROW_IF_FRMOBJ(!pathIsClosed(),
+            Exception, "Expected the final element of the path to be a path "
+            "point, but it is an obstacle. Use addPathPoint() to add a path "
+            "point to the path after the last obstacle.");
+    OPENSIM_ASSERT_ALWAYS(getProperty_segments().size() > 0);
+}
+
 void Scholz2015GeometryPath::extendAddToSystem(
         SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
@@ -389,8 +372,8 @@ void Scholz2015GeometryPath::extendAddToSystem(
         // Add the via point if this is not the last segment.
         if (iseg < getProperty_segments().size() - 1) {
             SimTK::CableSpanViaPointIndex ix = cable.addViaPoint(
-                segment.getInsertion().getParentFrame().getMobilizedBodyIndex(),
-                segment.getInsertion().get_location());
+                segment.getTermination().getParentFrame().getMobilizedBodyIndex(),
+                segment.getTermination().get_location());
             _viaPointIndexes.emplace_back(std::make_pair(ix, iseg));
         }
     }
@@ -420,13 +403,49 @@ void Scholz2015GeometryPath::generateDecorations(bool fixed,
 //=============================================================================
 void Scholz2015GeometryPath::constructProperties() {
     constructProperty_origin(Station());
-    constructProperty_insertion(Station());
-    constructProperty_via_points();
     constructProperty_segments();
     constructProperty_algorithm("Scholz2015");
     constructProperty_solver_max_iterations(50);
     constructProperty_curve_segment_accuracy(1e-9);
     constructProperty_smoothness_tolerance(0.1 / 180. * SimTK::Pi);
+}
+
+bool Scholz2015GeometryPath::isStationFrameConnected(
+        const Station& station) const {
+    return station.getSocket<PhysicalFrame>("parent_frame").isConnected();
+}
+
+bool Scholz2015GeometryPath::pathHasOrigin() const {
+    return isStationFrameConnected(getOrigin());
+}
+
+bool Scholz2015GeometryPath::pathIsClosed() const {
+    return isStationFrameConnected(getLastPathSegment().getTermination());
+}
+
+const Scholz2015GeometryPathSegment&
+Scholz2015GeometryPath::getLastPathSegment() const {
+    OPENSIM_THROW_IF_FRMOBJ(getProperty_segments().empty(), Exception,
+            "Expected at least one path segment, but none were found.");
+    return get_segments(getProperty_segments().size() - 1);
+}
+
+Scholz2015GeometryPathSegment&
+Scholz2015GeometryPath::updLastPathSegment() {
+    OPENSIM_THROW_IF_FRMOBJ(getProperty_segments().empty(), Exception,
+            "Expected at least one path segment, but none were found.");
+    return upd_segments(getProperty_segments().size() - 1);
+}
+
+void Scholz2015GeometryPath::addPathSegmentIfNeeded() {
+    // Only add a new segment if the last segment already has a termination
+    // station connected.
+    if (pathIsClosed()) {
+        append_segments(Scholz2015GeometryPathSegment());
+        auto& segment = upd_segments(getProperty_segments().size() - 1);
+        segment.setName(fmt::format("path_segment_{}",
+                getProperty_segments().size() - 1));
+    }
 }
 
 const SimTK::CableSpan& Scholz2015GeometryPath::getCableSpan() const {

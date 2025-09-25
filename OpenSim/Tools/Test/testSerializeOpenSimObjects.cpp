@@ -154,10 +154,6 @@ int main()
                 muscle->set_FiberForceLengthCurve(FiberForceLengthCurve());
                 muscle->set_min_control(0.01);
                 randClone = muscle;
-             } else if (auto* path = dynamic_cast<Scholz2015GeometryPath*>(clone)) {
-                randomize(path);
-                path->set_algorithm("Scholz2015");
-                randClone = path;
             } else if (dynamic_cast<DeGrooteFregly2016Muscle*>(clone)) {
                 // TODO: we can't randomize DeGrooteFregly2016Muscle, since
                 // changing the the optimal_force property inherited by

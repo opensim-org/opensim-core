@@ -85,19 +85,17 @@ public:
  * \section Scholz2015GeometryPathSegment
  * A class representing a segment in a `Scholz2015GeometryPath`.
  *
- * A path segment consists of two `Socket`s connected to `Station`s that
- * define the origin and insertion of the segment. These `Station`s should
- * typically be owned by the `Scholz2015GeometryPath` that this path segment
- * belongs to. Path segments also store a list of
- * `Scholz2015GeometryPathObstacle`s via the `obstacles` property. The order of
- * the obstacles in the list is important, as it defines the order in which
- * the path wraps over the obstacles.
+ * A path segment consists of an ordered list of wrapping obstacles and a
+ * `Station` defining the termination point of the segment. Path segments store
+ * the list of `Scholz2015GeometryPathObstacle`s via the `obstacles` property.
+ * The order of the obstacles in the list is important, as it defines the order
+ * in which the path wraps over the obstacles.
  *
  * Users should not create instances of this class directly, nor should they
  * need to explicitly add and manage path segments within a
  * `Scholz2015GeometryPath`. Instead, path segments are automatically created
- * upon the construction of a `Scholz2015GeometryPath` and when via points are
- * added.
+ * as needed when path points and obstacles are added to a
+ * `Scholz2015GeometryPath`
  *
  * @see Scholz2015GeometryPathObstacle
  * @see Scholz2015GeometryPath
@@ -108,10 +106,8 @@ public:
 //=============================================================================
 // SOCKETS
 //=============================================================================
-    OpenSim_DECLARE_SOCKET(origin, Station,
-            "The origin station of the path segment.");
-    OpenSim_DECLARE_SOCKET(insertion, Station,
-            "The insertion station of the path segment.");
+    OpenSim_DECLARE_PROPERTY(termination, Station,
+            "The termination station of the path segment.");
 
 //=============================================================================
 // PROPERTIES
@@ -132,14 +128,9 @@ public:
     int getNumObstacles() const;
 
     /**
-     * Get the origin `Station` of the path segment.
+     * Get the termination `Station` of the path segment.
      */
-    const Station& getOrigin() const;
-
-    /**
-     * Get the insertion `Station` of the path segment.
-     */
-    const Station& getInsertion() const;
+    const Station& getTermination() const;
 };
 
 //=============================================================================
@@ -148,20 +139,18 @@ public:
 
 /**
  * \section Scholz2015GeometryPath
- * A concrete class representing a path object that begins at an origin point
- * fixed to a body, wraps over geometric obstacles and passes through
- * frictionless via points fixed to bodies, and terminates at an insertion
- * point.
+ * A concrete class representing a geometric path object defined by a list of
+ * path points and wrapping obstacles.
  *
  * The path consists of straight line segments and curved line segments: a
- * curved segment over each obstacle, and straight segments connecting them to
- * each other and to via points and the end points. Each curved segment is
- * computed as a geodesic to give (in some sense) a shortest path over the
- * surface. During a simulation the cable can slide freely over the obstacle
- * surfaces. It can lose contact with a surface and miss that obstacle in a
- * straight line. Similarly the cable can touchdown on the obstacle if the
- * surface obstructs the straight line segment again. The cable will always
- * slide freely through any via points present in the path.
+ * curved segment over each obstacle, and straight segments connecting path
+ * points to obstacles. If no obstacle lies between two path points, the points
+ * will be connected by a straight line segment. The path is computed as a
+ * geodesic to provide a shortest path over the surface. During a simulation,
+ * the cable can slide freely over the obstacle surfaces. It can lose contact
+ * with a surface and miss that obstacle in a straight line. Similarly the cable
+ * can touchdown on the obstacle if the surface obstructs the straight line
+ * segment again.
  *
  * The path is computed as an optimization problem using the previous optimal
  * path as the warm start. This is done by computing natural geodesic
@@ -181,14 +170,15 @@ public:
  *
  * ## Constructing a Scholz2015GeometryPath
  *
- * The simplest path consists of a single line segment from an origin to an
+ * The simplest valid path consists of two path points: an origin and an
  * insertion point:
  *
  * \code{.cpp}
  * Model model = ModelFactory::createDoublePendulum();
- * Scholz2015GeometryPath* path = new Scholz2015GeometryPath(
- *           model.getGround(), SimTK::Vec3(0.25, 0, 0),
- *           model.getComponent<Body>("/bodyset/b1"), SimTK::Vec3(-0.5, 0.1, 0));
+ * Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
+ * path.addPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
+ * path.addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+ *         SimTK::Vec3(-0.5, 0.1, 0.));
  * model.addComponent(path);
  * \endcode
  *
@@ -200,25 +190,25 @@ public:
  * \code{.cpp}
  * auto* spring = new PathSpring();
  * spring->setName("path_spring");
- * spring->setRestingLength(0.5);
- * spring->setDissipation(0.5);
- * spring->setStiffness(25.0);
+ * spring->setRestingLength(0.25);
+ * spring->setDissipation(0.75);
+ * spring->setStiffness(10.0);
  * spring->set_path(Scholz2015GeometryPath());
  * model.addComponent(spring);
  *
  * auto& path = spring->updPath<Scholz2015GeometryPath>();
  * path.setName("path");
- * path.setOrigin(model.getGround(), SimTK::Vec3(0.05, 0.05, 0));
- * path.setInsertion(model.getComponent<Body>("/bodyset/b1"),
- *                   SimTK::Vec3(-0.25, 0.1, 0));
+ * path.addPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0));
+ * path.addPathPoint(model.getComponent<Body>("/bodyset/b1"),
+ *         SimTK::Vec3(-0.25, 0.1, 0));
  * \endcode
  *
- * The origin and insertion points are stored using `Station` properties.
- * Therefore, we update these properties *after* the `Scholz2015GeometryPath`
- * has been added to the `PathSpring`, so that the `Socket` connections in each
- * `Station` remain valid. If we called `set_path()` after each `Station`
- * property was set, the `Socket` connections would be broken when
- * the `Scholz2015GeometryPath` is copied into the `PathSpring`.
+ * @note The path points are stored using `Station` properties. Therefore, we
+ * add path points *after* the `Scholz2015GeometryPath` has been added to the
+ * `PathSpring`, so that the connections for each `Station`'s parent frame
+ * `Socket` remain valid. If we instead called `set_path()` after each `Station`
+ * property was set, the `Socket` connections would be broken when the
+ * `Scholz2015GeometryPath` is copied into the `PathSpring`.
  *
  * ## Adding Wrap Obstacles
  *
@@ -226,7 +216,7 @@ public:
  * a wrapping geometry, the `PhysicalFrame` that the geometry is attached to,
  * and the location and orientation of the geometry in that frame. The following
  * concrete implementations of `ContactGeometry` are recommended for use with
- * Scholz2015GeometryPath:
+ * `Scholz2015GeometryPath`:
  * - `ContactSphere`
  * - `ContactCylinder`
  * - `ContactEllipsoid`
@@ -236,67 +226,64 @@ public:
  * along with a "contact hint" that is used to initialize the wrapping solver:
  *
  * \code{.cpp}
- * auto* obstacle = new ContactCylinder(0.1,
- *         SimTK::Vec3(-0.5, 0.1, 0), SimTK::Vec3(0),
+ * auto* obstacle = new ContactCylinder(0.15,
+ *         SimTK::Vec3(-0.2, 0.2, 0), SimTK::Vec3(0),
  *         model.getComponent<Body>("/bodyset/b0"));
  * model.addComponent(obstacle);
- * path.addObstacle(*obstacle, SimTK::Vec3(0., 0.1, 0.));
+ * path.addObstacle(*obstacle, SimTK::Vec3(0., 0.15, 0.));
  * \endcode
  *
  * The contact hint is a `SimTK::Vec3` defining a point on the surface in local
  * surface frame coordinates. The point will be used to provide an initial guess
  * when solving for the path. As such, it does not have to lie on the contact
- * geometry's surface, nor does it have to belong to a valid cable path.
+ * geometry's surface, nor does it have to belong to a valid cable path. For
+ * obstacles with symmetry, the choice of the contact hint will determine which
+ * side of the obstacle the path will wrap around.
  *
- * ## Adding Via Points
- *
- * Via points are `Station`s owned by `Scholz2015GeometryPath` that the path
- * will freely slide through. Use the `addViaPoint()` method to provide both the
- * `PhysicalFrame` and body-fixed location of a new via point in the path:
+ * A `Scholz2015GeometryPath` must begin and end with a path point. Since we
+ * added an obstacle, we must add an additional path point to "close" the path:
  *
  * \code{.cpp}
- * path.addViaPoint(model.getComponent<Body>("/bodyset/b1"),
- *         SimTK::Vec3(-0.75, 0.1, 0.));
+ * path.addPathPoint(model.getComponent<Body>("/bodyset/b1"),
+ *         SimTK::Vec3(-0.5, 0.1, 0.));
  * \endcode
- *
- * The full set of via points is stored in the `via_points` list property.
- *
- * When via points are present, the path is internally divided into
- * multiple path segments. The origin and insertion of each segment are defined
- * by `Socket`s which are connected to either the `origin` or `insertion`
- * properties of `Scholz2015GeometryPath`, or to the `Station` of a via point.
- * Path segments are automatically created and managed internally using
- * `Scholz2015GeometryPathSegment`, which also provides the means for
- * serializing and deserializing `Scholz2015GeometryPath` objects while
- * preserving the correct order of wrapping obstacles and via points. Users need
- * not create or manage `Scholz2015GeometryPathSegment` objects directly.
  *
  * ## Path Ordering
  *
- * The order in which obstacles and via points are added to the path is
- * important. For example, a `Scholz2015GeometryPath` could be constructed with
- * two wrapping obstacles separated by a via point, as follows:
+ * The order in which obstacles and path points are added to the path is
+ * important. For example, consider the path we constructed above:
  *
  * \code{.cpp}
- * path.addObstacle(*ellipsoid, SimTK::Vec3(0.1, 0., 0.));
- * path.addViaPoint(model.getComponent<Body>("/bodyset/body"), SimTK::Vec3(0));
- * path.addObstacle(*sphere, SimTK::Vec3(0., 0.5, 0.));
+ * path.addPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
+ * path.addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+ *         SimTK::Vec3(-0.5, 0.1, 0.));
+ * path.addObstacle(*obstacle, SimTK::Vec3(0., 0.15, 0.));
+ * path.addPathPoint(model.getComponent<Body>("/bodyset/b1"),
+ *         SimTK::Vec3(-0.5, 0.1, 0.));
  * \endcode
  *
- * By changing the order of the `addObstacle()` and `addViaPoint()` calls, we
- * could define a different path where the two wrap obstacles exist in the same
- * path segment:
+ * Using the order of calls above, we have explicitly defined a cylinder
+ * obstacle to apply to the path segment between the second and third path
+ * points.
+ *
+ * By changing the order of the `addObstacle()` and `addPathPoint()` calls, we
+ * could define a different path where a cylinder obstacle is applied to the
+ * path segment between the first and second path points:
  *
  * \code{.cpp}
- * path.addObstacle(*ellipsoid, SimTK::Vec3(0.1, 0., 0.));
- * path.addObstacle(*sphere, SimTK::Vec3(0., 0.5, 0.));
- * path.addViaPoint(model.getComponent<Body>("/bodyset/body"), SimTK::Vec3(0));
+ * path.addPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
+ * path.addObstacle(*obstacle, SimTK::Vec3(0., 0.15, 0.));
+ * path.addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+ *         SimTK::Vec3(-0.5, 0.1, 0.));
+ * path.addPathPoint(model.getComponent<Body>("/bodyset/b1"),
+ *         SimTK::Vec3(-0.5, 0.1, 0.));
  * \endcode
  *
- * Both paths will have two internal path segments since one via point was
- * added in each. However, in the first path, each segment will have one wrap
- * obstacle, while in the second path, the first segment will have two wrap
- * obstacles and the second segment will have no wrap obstacles.
+ * The location of the cylinder obstacle in this new path would likely need to
+ * be updated to a new location that is consistent with the segment between the
+ * first and second path points to produce the desired wrapping behavior. Note
+ * also that both of the path examples above are valid, since each begins and
+ * ends with a path point.
  *
  * @see Scholz2015GeometryPathSegment
  * @see Scholz2015GeometryPathObstacle
@@ -310,10 +297,6 @@ public:
 //=============================================================================
     OpenSim_DECLARE_PROPERTY(origin, Station,
         "The origin station of the path.");
-    OpenSim_DECLARE_PROPERTY(insertion, Station,
-        "The insertion station of the path.");
-    OpenSim_DECLARE_LIST_PROPERTY(via_points, Station,
-        "The list of via points that the path passes through.");
     OpenSim_DECLARE_LIST_PROPERTY(segments, Scholz2015GeometryPathSegment,
         "The list of path segments.");
     OpenSim_DECLARE_PROPERTY(algorithm, std::string,
@@ -336,46 +319,24 @@ public:
     /** Default constructor. */
     Scholz2015GeometryPath();
 
-    /**
-     * Construct a Scholz2015GeometryPath with the specified origin and
-     * insertion.
-     *
-     * @param originFrame       the origin's PhysicalFrame.
-     * @param originLocation    the origin location of in `originFrame`.
-     * @param insertionFrame    the insertion's PhysicalFrame.
-     * @param insertionLocation the insertion location in `insertionFrame`.
-     */
-    Scholz2015GeometryPath(
-            const PhysicalFrame& originFrame,
-            const SimTK::Vec3& originLocation,
-            const PhysicalFrame& insertionFrame,
-            const SimTK::Vec3& insertionLocation);
-
     //** @name Path configuration */
     // @{
     /**
-     * %Set the origin `Station` of the path.
-     *
-     * @param frame        the PhysicalFrame that the origin is attached to.
-     * @param location     the location of the origin in `frame`.
+     * Add a path point to the path.
      */
-    void setOrigin(const PhysicalFrame& frame, const SimTK::Vec3& location);
+    void addPathPoint(const PhysicalFrame& frame, const SimTK::Vec3& location);
 
     /**
-     * Get the origin `Station` of the path.
+     * Get the origin `Station` of the path (i.e., the first path point).
+     *
+     * @pre At least one path point has been added to the path.
      */
     const Station& getOrigin() const;
 
     /**
-     * %Set the insertion `Station` of the path.
+     * Get the insertion `Station` of the path (i.e., the last path point).
      *
-     * @param frame        the PhysicalFrame that the insertion is attached to.
-     * @param location     the location of the insertion in `frame`.
-     */
-    void setInsertion(const PhysicalFrame& frame, const SimTK::Vec3& location);
-
-    /**
-     * Get the insertion `Station` of the path.
+     * @pre At least two path points have been added to the path.
      */
     const Station& getInsertion() const;
 
@@ -402,26 +363,15 @@ public:
             const SimTK::Vec3& contactHint);
 
     /**
+     * Get the number of path points in the path.
+     */
+    int getNumPathPoints() const;
+
+    /**
      * Get the number of obstacles in the path.
      */
     int getNumObstacles() const;
 
-    /**
-     * Add a via point to the path.
-     *
-     * The via point is added as a `Station` that is connected to the last path
-     * segment's insertion. The via point is automatically connected to the
-     * list of via points in the path.
-     *
-     * @param frame        the PhysicalFrame that the via point is attached to.
-     * @param location     the location of the via point in `frame`.
-     */
-    void addViaPoint(const PhysicalFrame& frame, const SimTK::Vec3& location);
-
-    /**
-     * Get the number of via points in the path.
-     */
-    int getNumViaPoints() const;
     // @}
 
     //** @name Solver configuration */
@@ -510,93 +460,6 @@ public:
 
     // @}
 
-    /** @name Curve segment computations */
-    // @{
-
-    /**
-     * Returns true when the cable is in contact with the obstacle.
-     *
-     * State must be realized to Stage::Position.
-     *
-     * @param state State of the system.
-     * @param ix The index of the obstacle in the path.
-     */
-    bool isInContactWithObstacle(const SimTK::State& state,
-            SimTK::CableSpanObstacleIndex ix) const;
-
-    /**
-     * Compute the Frenet frame associated with the obstacle's curve segment at
-     * the initial contact point on that obstacle.
-     *
-     * If the path is not in contact with the obstacle's surface the frame will
-     * contain invalid data (NaNs). The Frenet frame is measured relative to
-     * ground, with the tangent along the X axis, the surface normal along the Y
-     * axis and the binormal along the Z axis.
-     *
-     * State must be realized to Stage::Position.
-     *
-     * @param state State of the system.
-     * @param ix The index of the obstacle in the path.
-     * @return The Frenet frame at the obstacle's initial contact point.
-     */
-    SimTK::Transform calcCurveSegmentInitialFrenetFrame(
-        const SimTK::State& state,
-        SimTK::CableSpanObstacleIndex ix) const;
-
-    /**
-     * Compute the Frenet frame associated with the obstacle's curve segment at
-     * the final contact point on that obstacle.
-     *
-     * If the path is not in contact with the obstacle's surface the frame will
-     * contain invalid data (NaNs). The Frenet frame is measured relative to
-     * ground, with the tangent along the X axis, the surface normal along the Y
-     * axis and the binormal along the Z axis.
-     *
-     * State must be realized to Stage::Position.
-     *
-     * @param state State of the system.
-     * @param ix The index of the obstacle in the path.
-     * @return The Frenet frame at the obstacle's final contact point.
-     */
-    SimTK::Transform calcCurveSegmentFinalFrenetFrame(
-        const SimTK::State& state,
-        SimTK::CableSpanObstacleIndex ix) const;
-
-    /**
-     * Get the arc length of the obstacle's curve segment.
-     *
-     * Returns NaN if the obstacle is not in contact with the path.
-     *
-     * State must be realized to Stage::Position.
-     *
-     * @param state State of the system.
-     * @param ix The index of the obstacle in the path.
-     * @return The arc length.
-     */
-    SimTK::Real calcCurveSegmentArcLength(
-        const SimTK::State& state,
-        SimTK::CableSpanObstacleIndex ix) const;
-
-    // @}
-
-    /** @name Via point computations */
-    // @{
-
-    /**
-     * Compute the location of a via point in the ground frame.
-     *
-     * State must be realized to Stage::Position.
-     *
-     * @param state State of the system.
-     * @param ix The index of the via point in the path.
-     * @return The location of the via point in the ground frame.
-     */
-    SimTK::Vec3 calcViaPointLocation(
-        const SimTK::State& state,
-        SimTK::CableSpanViaPointIndex ix) const;
-
-    // @}
-
     //** @name `AbstractGeometryPath` interface */
     // @{
     double getLength(const SimTK::State& s) const override;
@@ -615,15 +478,40 @@ public:
 private:
     // MODEL COMPONENT INTERFACE
     void extendFinalizeFromProperties() override;
+    void extendConnectToModel(Model& model) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void generateDecorations(bool fixed, const ModelDisplayHints& hints,
             const SimTK::State& s,
             SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override;
 
     // CONVENIENCE METHODS
+    void constructProperties();
+
+    // Convenience accessors to the last segment in the path.
+    const Scholz2015GeometryPathSegment& getLastPathSegment() const;
+    Scholz2015GeometryPathSegment& updLastPathSegment();
+
+    // Convenience methods to check if the 'physical_frame' Socket of a Station
+    // is connected to a PhysicalFrame in the model.
+    bool isStationFrameConnected(const Station& station) const;
+
+    // Check if the path has an origin, i.e., if the 'physical_frame' Socket of
+    // the origin Station is connected to a PhysicalFrame in the model.
+    bool pathHasOrigin() const;
+
+    // Check if the path is "closed", i.e., if the last segment has a
+    // termination path point defined.
+    bool pathIsClosed() const;
+
+    // Call this to add a new path segment to the path before adding path points
+    // or obstacles to a path. A new segment will be added only if the last
+    // segment has been "closed", i.e., the last segment has a termination path
+    // point defined.
+    void addPathSegmentIfNeeded();
+
+    // Internal mutable access to the underlying SimTK::CableSpan.
     const SimTK::CableSpan& getCableSpan() const;
     SimTK::CableSpan& updCableSpan();
-    void constructProperties();
 
     // MEMBER VARIABLES
     mutable SimTK::ResetOnCopy<SimTK::CableSpanIndex> _index;

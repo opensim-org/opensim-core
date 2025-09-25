@@ -24,8 +24,8 @@
 # This example demonstrates the basic elements of creating a geometry-based
 # path using the Scholz2015GeometryPath class. The path is used to define the
 # length and speed of a PathSpring, which applies forces to the bodies of a
-# double pendulum model. The path wraps around a cylindrical obstacle and
-# contains a via point.
+# double pendulum model. The path contains three path points and wraps around
+# a cylindrical obstacle.
 
 import opensim as osim
 
@@ -35,33 +35,50 @@ model.setUseVisualizer(True)
 # Create a PathSpring with a Scholz2015GeometryPath.
 spring = osim.PathSpring()
 spring.setName('path_spring')
-spring.setRestingLength(0.5)
-spring.setDissipation(0.5)
-spring.setStiffness(25.0)
+spring.setRestingLength(0.25)
+spring.setDissipation(0.75)
+spring.setStiffness(10.0)
 spring.set_path(osim.Scholz2015GeometryPath())
 model.addComponent(spring)
 
-# Configure the Scholz2015GeometryPath.
+# Configure the Scholz2015GeometryPath. We will update the path after
+# adding it to the PathSpring, so that the Socket connections in each
+# Station (i.e., path point) remain valid.
 path = osim.Scholz2015GeometryPath.safeDownCast(spring.updPath())
 path.setName('path')
 
-# The origin and insertion points are stored using the 'origin' and
-# 'insertion' properties of Scholz2015GeometryPath, which are of type
-# Station. We must update these properties after the Scholz2015GeometryPath
-# has been added to the PathSpring, so that the Socket connections in each
-# Station remain valid.
-path.setOrigin(model.getGround(), osim.Vec3(0.05, 0.05, 0.))
-path.setInsertion(model.getBodySet().get('b1'), osim.Vec3(-0.25, 0.1, 0.))
+# Add a path point connected to ground. Since this is the first path point,
+# it defines the origin of the path.
+path.addPathPoint(model.getGround(), osim.Vec3(0.05, 0.05, 0.))
 
-# Add a ContactCylinder wrapping obstacle to the path.
-obstacle = osim.ContactCylinder(0.1,
-    osim.Vec3(-0.5, 0.1, 0.), osim.Vec3(0),
+# Add a second path point, creating a straight line segment between the
+# ground and body "b0".
+path.addPathPoint(model.getBodySet().get('b0'), osim.Vec3(-0.5, 0.1, 0.))
+
+# Create a ContactCylinder to use as a wrapping obstacle to the path. The
+# cylinder has radius 0.15 m and is attached to body "b0".
+obstacle = osim.ContactCylinder(0.15,
+    osim.Vec3(-0.2, 0.2, 0.), osim.Vec3(0),
     model.getBodySet().get('b0'))
 model.addComponent(obstacle)
-path.addObstacle(obstacle, osim.Vec3(0., 0.1, 0.))
 
-# Add a via point to the path.
-path.addViaPoint(model.getBodySet().get('b1'), osim.Vec3(-0.75, 0.1, 0.))
+# Before we add the obstacle to the path, we must provide a "contact hint"
+# to initialize the wrapping solver. The contact hint is a point on the
+# surface of the obstacle, expressed in the obstacle's frame. The point
+# does not have to lie on the contact geometry's surface, nor does it have
+# to belong to a valid cable path. The choice of the contact hint will
+# determine which side of the cylinder the path wraps around.
+contact_hint = osim.Vec3(0., 0.15, 0.)
+path.addObstacle(obstacle, contact_hint)
+
+# At least one path point must follow an obstacle (or list of obstacles)
+# in a Scholz2015GeometryPath. Since this is the last path point we are
+# adding, it defines the insertion of the path.
+path.addPathPoint(model.getBodySet().get('b1'), osim.Vec3(-0.5, 0.1, 0.))
+
+# Use the "minimum length" algorithm, which solves for a path that
+# minimizes the total length of the path.
+path.setAlgorithm('MinimumLength')
 
 # Initialize the system.
 state = model.initSystem()

@@ -35,23 +35,35 @@
 
 using namespace OpenSim;
 
-// TODO test behavior when NaN tension is provided.
-
 TEST_CASE("Interface") {
     Model model = ModelFactory::createDoublePendulum();
 
     Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
     path->setName("path");
-    path->setOrigin(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
-    path->setInsertion(model.getComponent<Body>("/bodyset/b1"),
-            SimTK::Vec3(-0.25, 0.1, 0.));
     model.addComponent(path);
 
-    SECTION("No obstacles or via points") {
-        CHECK(path->getNumViaPoints() == 0);
-        CHECK(path->getNumObstacles() == 0);
-        CHECK(path->getProperty_segments().size() == 1);
+    SECTION("No path points") {
+        // Adding a component calls finalizeFromProperties() internally.
+        CHECK_THROWS_WITH(model.initSystem(),
+            Catch::Matchers::ContainsSubstring(
+                "Expected at least two path points before finalizing the path, "
+                "but 0 path point(s) were found."));
     }
+
+    // Add the first path point. This defines the origin of the path.
+    path->addPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
+
+    SECTION("Only one path point") {
+        CHECK_THROWS_WITH(model.initSystem(),
+            Catch::Matchers::ContainsSubstring(
+                "Expected at least two path points before finalizing the path, "
+                "but 1 path point(s) were found."));
+    }
+
+    // Add a second path point, creating a straight line segment between the
+    // first and second path points.
+    path->addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+            SimTK::Vec3(-0.75, 0.1, 0.));
 
     // Add a ContactCylinder wrapping obstacle to the path.
     auto* obstacle = new ContactCylinder(0.1,
@@ -60,28 +72,25 @@ TEST_CASE("Interface") {
     model.addComponent(obstacle);
     path->addObstacle(*obstacle, SimTK::Vec3(0., 0.1, 0.));
 
-    SECTION("One obstacle, no via points") {
-        CHECK(path->getNumViaPoints() == 0);
-        CHECK(path->getNumObstacles() == 1);
-        CHECK(path->getProperty_segments().size() == 1);
-    }
-
-    // Add a via point to the path.
-    path->addViaPoint(model.getComponent<Body>("/bodyset/b1"),
-            SimTK::Vec3(-0.75, 0.1, 0.));
-
-    SECTION("One obstacle, one via point") {
-        CHECK(path->getNumViaPoints() == 1);
-        CHECK(path->getNumObstacles() == 1);
-        CHECK(path->getProperty_segments().size() == 2);
-    }
-
-    SECTION("Invalid algorithm") {
-        path->setAlgorithm("invalid");
+    SECTION("Path not closed") {
         CHECK_THROWS_WITH(model.initSystem(),
             Catch::Matchers::ContainsSubstring(
-                    "Property 'algorithm' has invalid value invalid; expected "
-                    "one of the following: MinimumLength, Scholz2015"));
+               "Expected the final element of the path to be a path "
+                "point, but it is an obstacle."));
+    }
+
+    // Add additional path points.
+    path->addPathPoint(model.getComponent<Body>("/bodyset/b1"),
+            SimTK::Vec3(-0.25, 0.1, 0.));
+
+    SECTION("Valid path") {
+        CHECK_NOTHROW(model.initSystem());
+    }
+
+    SECTION("Path configuration") {
+        CHECK(path->getNumPathPoints() == 3);
+        CHECK(path->getNumObstacles() == 1);
+        CHECK(path->getProperty_segments().size() == 2);
     }
 
     SECTION("Invalid curve segment accuracy") {
@@ -138,9 +147,7 @@ TEST_CASE("Suspended pendulum") {
 
     // Set the path's origin and insertion.
     Scholz2015GeometryPath& path = actu->updPath<Scholz2015GeometryPath>();
-    path.setOrigin(model.getGround(), SimTK::Vec3(-0.1, 0, 0));
-    path.setInsertion(model.getComponent<Body>("/bodyset/b0"),
-            SimTK::Vec3(-0.5, 0.1, 0));
+    path.addPathPoint(model.getGround(), SimTK::Vec3(-0.1, 0, 0));
 
     // Check that pendulum is at rest with the expected length.
     const double expectedLength = 0.81268778;
@@ -173,6 +180,8 @@ TEST_CASE("Suspended pendulum") {
             SimTK::Vec3(0.25, 0, 0), SimTK::Vec3(0), model.getGround());
         model.addComponent(obstacle);
         path.addObstacle(*obstacle, SimTK::Vec3(0.0, 0.1, 0.0));
+        path.addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+            SimTK::Vec3(-0.5, 0.1, 0));
         simulateHangingPendulum(model);
     }
 
@@ -181,6 +190,8 @@ TEST_CASE("Suspended pendulum") {
             SimTK::Vec3(0.25, 0, 0), SimTK::Vec3(0), model.getGround());
         model.addComponent(obstacle);
         path.addObstacle(*obstacle, SimTK::Vec3(0.0, 0.1, 0.0));
+        path.addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+            SimTK::Vec3(-0.5, 0.1, 0));
         simulateHangingPendulum(model);
     }
 
@@ -189,6 +200,8 @@ TEST_CASE("Suspended pendulum") {
             SimTK::Vec3(0.25, 0, 0), model.getGround());
         model.addComponent(obstacle);
         path.addObstacle(*obstacle, SimTK::Vec3(0.0, 0.1, 0.0));
+        path.addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+            SimTK::Vec3(-0.5, 0.1, 0));
         simulateHangingPendulum(model);
     }
 
@@ -199,6 +212,8 @@ TEST_CASE("Suspended pendulum") {
             model.getGround());
         model.addComponent(obstacle);
         path.addObstacle(*obstacle, SimTK::Vec3(0.0, -0.3, 0.0));
+        path.addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+            SimTK::Vec3(-0.5, 0.1, 0));
         simulateHangingPendulum(model);
     }
 }
@@ -214,11 +229,8 @@ TEST_CASE("Moment arms") {
     // Configure the Scholz2015GeometryPath.
     Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
     path->setName("path");
-    path->setOrigin(model.getComponent<Body>("/bodyset/b0"),
+    path->addPathPoint(model.getComponent<Body>("/bodyset/b0"),
             SimTK::Vec3(-offset, 0., 0.));
-    path->setInsertion(model.getComponent<Body>("/bodyset/b1"),
-            SimTK::Vec3(-offset, 0., 0.));
-
     // Add a ContactCylinder along the axis definiing the PinJoint between
     // body 'b0' and body 'b1'.
     auto* obstacle = new ContactCylinder(radius,
@@ -226,6 +238,8 @@ TEST_CASE("Moment arms") {
         model.getComponent<Body>("/bodyset/b0"));
     model.addComponent(obstacle);
     path->addObstacle(*obstacle, SimTK::Vec3(0., radius, 0.));
+    path->addPathPoint(model.getComponent<Body>("/bodyset/b1"),
+            SimTK::Vec3(-offset, 0., 0.));
 
     // Add the path to the model.
     model.addComponent(path);
@@ -329,8 +343,7 @@ TEST_CASE("Simple path") {
 
     // Configure the path.
     Scholz2015GeometryPath& path = actu->updPath<Scholz2015GeometryPath>();
-    path.setOrigin(*originBody, SimTK::Vec3(0.));
-    path.setInsertion(*insertionBody, SimTK::Vec3(0.));
+    path.addPathPoint(*originBody, SimTK::Vec3(0.));
     path.setCurveSegmentAccuracy(1e-12);
     path.setSmoothnessTolerance(1e-7);
 
@@ -364,13 +377,16 @@ TEST_CASE("Simple path") {
     model.addComponent(cylinder);
     path.addObstacle(*cylinder, SimTK::Vec3(0., -1., 0.));
 
+    // Add the insertion path point.
+    path.addPathPoint(*insertionBody, SimTK::Vec3(0.));
+
     // Initialize the system and state.
     SimTK::State state = model.initSystem();
     model.realizePosition(state);
 
     SECTION("Configuration and smoothness") {
         CHECK(path.getNumObstacles() == 4);
-        CHECK(path.getNumViaPoints() == 0);
+        CHECK(path.getNumPathPoints() == 2);
         CHECK(path.getSmoothness(state) <= path.getSmoothnessTolerance());
     }
 
@@ -378,24 +394,6 @@ TEST_CASE("Simple path") {
         // Note that the length deviates because the path is solved up to angle
         // tolerance, not length tolerance.
         const SimTK::Real lengthTolerance = 1e-5;
-
-        auto assertCurveSegmentLength =
-            [&](SimTK::CableSpanObstacleIndex obsIx, SimTK::Real obsRadius)
-        {
-            REQUIRE(path.isInContactWithObstacle(state, obsIx));
-
-            const SimTK::Real angle = 0.5 * SimTK::Pi;
-            const SimTK::Real expectedLength = angle * obsRadius;
-            const SimTK::Real gotLength =
-                    path.calcCurveSegmentArcLength(state, obsIx);
-
-            CHECK_THAT(gotLength, Catch::Matchers::WithinRel(
-                    expectedLength, lengthTolerance));
-        };
-        assertCurveSegmentLength(SimTK::CableSpanObstacleIndex(0), 1.);
-        assertCurveSegmentLength(SimTK::CableSpanObstacleIndex(1), 1.);
-        assertCurveSegmentLength(SimTK::CableSpanObstacleIndex(2), 1.5);
-        assertCurveSegmentLength(SimTK::CableSpanObstacleIndex(3), 2.);
 
         // Sum all straight line segment lengths + curve line segment lengths.
         const SimTK::Real sumStraightLineSegmentLengths =
@@ -407,97 +405,6 @@ TEST_CASE("Simple path") {
         const SimTK::Real gotTotalPathLength = path.getLength(state);
         CHECK_THAT(gotTotalPathLength, Catch::Matchers::WithinRel(
                 expectedTotalPathLength, lengthTolerance));
-    }
-
-    SECTION("Curve segment initial and final (Frenet) frames") {
-        const SimTK::Real frenetFrameTolerance = 1e-6;
-        auto assertCurveSegmentFrenetFrames = [&](
-                SimTK::CableSpanObstacleIndex obsIx,
-                const SimTK::Transform& expected_X_GP,
-                const SimTK::Transform& expected_X_GQ)
-        {
-            const SimTK::Transform& got_X_GP =
-                path.calcCurveSegmentInitialFrenetFrame(state, obsIx);
-            const SimTK::Transform& got_X_GQ =
-                path.calcCurveSegmentFinalFrenetFrame(state, obsIx);
-
-            CHECK_THAT((expected_X_GP.p() - got_X_GP.p()).norm(),
-                Catch::Matchers::WithinAbs(0., frenetFrameTolerance));
-            CHECK_THAT(
-                (expected_X_GP.R().asMat33() - got_X_GP.R().asMat33()).norm(),
-                Catch::Matchers::WithinAbs(0., frenetFrameTolerance));
-            CHECK_THAT(
-                (expected_X_GQ.p() - got_X_GQ.p()).norm(),
-                Catch::Matchers::WithinAbs(0., frenetFrameTolerance));
-            CHECK_THAT(
-                (expected_X_GQ.R().asMat33() - got_X_GQ.R().asMat33()).norm(),
-                Catch::Matchers::WithinAbs(0., frenetFrameTolerance));
-        };
-
-        assertCurveSegmentFrenetFrames(
-            SimTK::CableSpanObstacleIndex(0),
-            SimTK::Transform(
-                SimTK::Rotation().setRotationFromTwoAxes(
-                    SimTK::UnitVec3(SimTK::Vec3(0., 1., 0.)),
-                    SimTK::XAxis,
-                    SimTK::UnitVec3(SimTK::Vec3(-1., 0., 0.)),
-                    SimTK::YAxis),
-                SimTK::Vec3(0., 1., 0.)),
-            SimTK::Transform(
-                SimTK::Rotation().setRotationFromTwoAxes(
-                    SimTK::UnitVec3(SimTK::Vec3(1., 0., 0.)),
-                    SimTK::XAxis,
-                    SimTK::UnitVec3(SimTK::Vec3(0., 1., 0.)),
-                    SimTK::YAxis),
-                SimTK::Vec3(1., 2., 0.)));
-        assertCurveSegmentFrenetFrames(
-            SimTK::CableSpanObstacleIndex(1),
-            SimTK::Transform(
-                SimTK::Rotation().setRotationFromTwoAxes(
-                    SimTK::UnitVec3(SimTK::Vec3(1., 0., 0.)),
-                    SimTK::XAxis,
-                    SimTK::UnitVec3(SimTK::Vec3(0., 1., 0.)),
-                    SimTK::YAxis),
-                SimTK::Vec3(4.5, 2., 0.)),
-            SimTK::Transform(
-                SimTK::Rotation().setRotationFromTwoAxes(
-                    SimTK::UnitVec3(SimTK::Vec3(0., -1., 0.)),
-                    SimTK::XAxis,
-                    SimTK::UnitVec3(SimTK::Vec3(1., 0., 0.)),
-                    SimTK::YAxis),
-                SimTK::Vec3(5.5, 1., 0.)));
-        assertCurveSegmentFrenetFrames(
-            SimTK::CableSpanObstacleIndex(2),
-            SimTK::Transform(
-                SimTK::Rotation().setRotationFromTwoAxes(
-                    SimTK::UnitVec3(SimTK::Vec3(0., -1., 0.)),
-                    SimTK::XAxis,
-                    SimTK::UnitVec3(SimTK::Vec3(1., 0., 0.)),
-                    SimTK::YAxis),
-                SimTK::Vec3(5.5, -2., 0.)),
-            SimTK::Transform(
-                SimTK::Rotation().setRotationFromTwoAxes(
-                    SimTK::UnitVec3(SimTK::Vec3(-1., 0., 0.)),
-                    SimTK::XAxis,
-                    SimTK::UnitVec3(SimTK::Vec3(0., -1., 0.)),
-                    SimTK::YAxis),
-                SimTK::Vec3(4., -3.5, 0.)));
-        assertCurveSegmentFrenetFrames(
-            SimTK::CableSpanObstacleIndex(3),
-            SimTK::Transform(
-                SimTK::Rotation().setRotationFromTwoAxes(
-                    SimTK::UnitVec3(SimTK::Vec3(-1., 0., 0.)),
-                    SimTK::XAxis,
-                    SimTK::UnitVec3(SimTK::Vec3(0., -1., 0.)),
-                    SimTK::YAxis),
-                SimTK::Vec3(-2., -3.5, 0.)),
-            SimTK::Transform(
-                SimTK::Rotation().setRotationFromTwoAxes(
-                    SimTK::UnitVec3(SimTK::Vec3(0., 1., 0.)),
-                    SimTK::XAxis,
-                    SimTK::UnitVec3(SimTK::Vec3(-1., 0., 0.)),
-                    SimTK::YAxis),
-                SimTK::Vec3(-4., -1.5, 0.)));
     }
 
     SECTION("Body forces exerted by the path") {
@@ -589,11 +496,11 @@ TEST_CASE("Via points") {
 
     // Configure the path.
     Scholz2015GeometryPath& path = actu->updPath<Scholz2015GeometryPath>();
-    path.setOrigin(*originBody, SimTK::Vec3(0.));
-    path.setInsertion(*insertionBody, SimTK::Vec3(0.));
-    path.addViaPoint(*viaPoint1Body, SimTK::Vec3(0.));
-    path.addViaPoint(*viaPoint2Body, SimTK::Vec3(0.));
-    path.addViaPoint(*viaPoint3Body, SimTK::Vec3(0.));
+    path.addPathPoint(*originBody, SimTK::Vec3(0.));
+    path.addPathPoint(*viaPoint1Body, SimTK::Vec3(0.));
+    path.addPathPoint(*viaPoint2Body, SimTK::Vec3(0.));
+    path.addPathPoint(*viaPoint3Body, SimTK::Vec3(0.));
+    path.addPathPoint(*insertionBody, SimTK::Vec3(0.));
 
     // Initialize the system and state.
     SimTK::State state = model.initSystem();
@@ -601,7 +508,7 @@ TEST_CASE("Via points") {
 
     SECTION("Configuration and smoothness") {
         CHECK(path.getNumObstacles() == 0);
-        CHECK(path.getNumViaPoints() == 3);
+        CHECK(path.getNumPathPoints() == 5);
         // With no obstacles, the smoothness should always be zero.
         CHECK(path.getSmoothness(state) == 0.);
     }
@@ -684,21 +591,20 @@ TEST_CASE("Path with all surfaces and a via point") {
         *viaPointBody, SimTK::Vec3(0), SimTK::Vec3(0));
     model.addComponent(viaPointJoint);
 
-    // Termination body and joint.
-    auto* terminationBody = new Body("termination_body", 1.0, SimTK::Vec3(0),
+    // Insertion body and joint.
+    auto* insertionBody = new Body("insertion_body", 1.0, SimTK::Vec3(0),
         SimTK::Inertia(1.0));
-    model.addComponent(terminationBody);
-    auto* terminationJoint = new FreeJoint("termination_joint",
+    model.addComponent(insertionBody);
+    auto* insertionJoint = new FreeJoint("insertion_joint",
         model.getGround(), SimTK::Vec3(20., 1.0, -1.), SimTK::Vec3(0),
-        *terminationBody, SimTK::Vec3(0), SimTK::Vec3(0));
-    model.addComponent(terminationJoint);
+        *insertionBody, SimTK::Vec3(0), SimTK::Vec3(0));
+    model.addComponent(insertionJoint);
 
     // Create the path object.
     Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
-    path->setOrigin(*originBody, SimTK::Vec3(0.));
-    path->setInsertion(*terminationBody, SimTK::Vec3(0.));
     path->setCurveSegmentAccuracy(1e-9);
     path->setSmoothnessTolerance(1e-4);
+    path->addPathPoint(*originBody, SimTK::Vec3(0.));
 
     // Add the first torus obstacle.
     auto* torus1 = new ContactTorus(1., 0.2,
@@ -716,7 +622,7 @@ TEST_CASE("Path with all surfaces and a via point") {
     path->addObstacle(*ellipsoid, SimTK::Vec3(0., 0., 1.1));
 
     // Add the via point.
-    path->addViaPoint(*viaPointBody, SimTK::Vec3(0.));
+    path->addPathPoint(*viaPointBody, SimTK::Vec3(0.));
 
     // Add the sphere obstacle.
     auto* sphere = new ContactSphere(1.,
@@ -740,6 +646,9 @@ TEST_CASE("Path with all surfaces and a via point") {
     torus2->setName("torus2");
     model.addComponent(torus2);
     path->addObstacle(*torus2, SimTK::Vec3(0.1, 0.2, 0.));
+
+    // Add the insertion path point.
+    path->addPathPoint(*insertionBody, SimTK::Vec3(0.));
 
     // Add the path to the model.
     model.addComponent(path);
@@ -787,8 +696,8 @@ TEST_CASE("Path with all surfaces and a via point") {
                 SimTK::Vec3(0., 0.5 * cos(angle), 0.),
                 SimTK::Vec3(0., 0.5 * -sin(angle), 0.));
 
-        // Move the cable termination.
-        setJointKinematics(*terminationJoint,
+        // Move the cable insertion.
+        setJointKinematics(*insertionJoint,
                 SimTK::Vec3(0.1 * sin(angle),
                             4. * sin(angle * 0.7),
                             10. * sin(angle * 1.3)),
@@ -815,7 +724,7 @@ TEST_CASE("Path with all surfaces and a via point") {
         // Total path length should be longer than direct distance between the
         // path endpoints.
         const SimTK::Real distanceBetweenEndPoints =
-            (terminationBody->getPositionInGround(state) -
+            (insertionBody->getPositionInGround(state) -
              originBody->getPositionInGround(state))
                 .norm();
         CHECK(cableLength > distanceBetweenEndPoints);
@@ -869,13 +778,11 @@ TEST_CASE("Touchdown and liftoff") {
         // Create the path object.
         Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
         path->setName(fmt::format("{}_path", name));
-        path->setOrigin(*originBody, SimTK::Vec3(0.));
-        path->setInsertion(*terminationBody, SimTK::Vec3(0.));
         path->setCurveSegmentAccuracy(1e-12);
         path->setSmoothnessTolerance(1e-6);
-
-        // Add the obstacle.
+        path->addPathPoint(*originBody, SimTK::Vec3(0.));
         path->addObstacle(obstacle, SimTK::Vec3(SimTK::NaN));
+        path->addPathPoint(*terminationBody, SimTK::Vec3(0.));
 
         // Add the path to the model.
         model.addComponent(path);
@@ -969,15 +876,16 @@ TEST_CASE("Robust initial path") {
 
     // Create the path object.
     Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
-    path->setOrigin(model.getGround(), SimTK::Vec3(-0.1, 0., 0.));
-    path->setInsertion(model.getGround(), SimTK::Vec3(0.1, 0., 0.));
     path->setCurveSegmentAccuracy(1e-12);
     path->setSmoothnessTolerance(1e-8);
     path->setSolverMaxIterations(100);
-
     // Set the algorithm to 'MinimumLength'. This test will fail if set to the
     // default algorithm, 'Scholz2015'.
     path->setAlgorithm("MinimumLength");
+
+    // Add the origin path point.
+    path->addPathPoint(model.getGround(), SimTK::Vec3(-0.1, 0., 0.));
+
 
     // Add a torus obstacle
     auto* torus = new ContactTorus(2., 0.5,
@@ -986,6 +894,9 @@ TEST_CASE("Robust initial path") {
     torus->setName("torus");
     model.addComponent(torus);
     path->addObstacle(*torus, SimTK::Vec3(0.0, -0.1, 0.));
+
+    // Add the insertion path point.
+    path->addPathPoint(model.getGround(), SimTK::Vec3(0.1, 0., 0.));
 
     // Add the path to the model.
     model.addComponent(path);
@@ -1002,4 +913,57 @@ TEST_CASE("Robust initial path") {
     // Test the cable length.
     CHECK_THAT(path->getLength(state),
         Catch::Matchers::WithinRel(5.6513, 1e-3));
+}
+
+TEST_CASE("Path tension") {
+    Model model = ModelFactory::createDoublePendulum();
+
+    Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
+    path->setName("path");
+    model.addComponent(path);
+    path->addPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
+    path->addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+            SimTK::Vec3(-0.75, 0.1, 0.));
+
+    SimTK::State state = model.initSystem();
+    model.realizePosition(state);
+
+    SimTK::Vector_<SimTK::SpatialVec> bodyForces(3, SimTK::SpatialVec(0));
+    SimTK::Vector mobilityForces(3, 0.0);
+
+    SECTION("Unit tension") {
+        const SimTK::Real tension = 1.0;
+        path->addInEquivalentForces(state, tension, bodyForces, mobilityForces);
+        CHECK(bodyForces[0].norm() > 0.0);
+        CHECK(bodyForces[1].norm() > 0.0);
+        CHECK(bodyForces[2].norm() == 0.0);
+        CHECK(mobilityForces.norm() == 0.0);
+    }
+
+    SECTION("Zero tension") {
+        const SimTK::Real tension = 0.0;
+        path->addInEquivalentForces(state, tension, bodyForces, mobilityForces);
+        for (int i = 0; i < bodyForces.size(); ++i) {
+            CHECK(bodyForces[i].norm() == 0.0);
+        }
+        CHECK(mobilityForces.norm() == 0.0);
+    }
+
+    SECTION("Negative tension") {
+        const SimTK::Real tension = -1.0;
+        path->addInEquivalentForces(state, tension, bodyForces, mobilityForces);
+        for (int i = 0; i < bodyForces.size(); ++i) {
+            CHECK(bodyForces[i].norm() == 0.0);
+        }
+        CHECK(mobilityForces.norm() == 0.0);
+    }
+
+    SECTION("NaN tension") {
+        const SimTK::Real tension = SimTK::NaN;
+        path->addInEquivalentForces(state, tension, bodyForces, mobilityForces);
+        CHECK(SimTK::isNaN(bodyForces[0].norm()));
+        CHECK(SimTK::isNaN(bodyForces[1].norm()));
+        CHECK(!SimTK::isNaN(bodyForces[2].norm()));
+        CHECK(mobilityForces.norm() == 0.0);
+    }
 }
