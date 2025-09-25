@@ -154,7 +154,7 @@ int main()
                 muscle->set_FiberForceLengthCurve(FiberForceLengthCurve());
                 muscle->set_min_control(0.01);
                 randClone = muscle;
-             } else if (auto* path = dynamic_cast<Scholz2015GeometryPath*>(clone)) {
+            } else if (auto* path = dynamic_cast<Scholz2015GeometryPath*>(clone)) {
                 randomize(path);
                 path->set_algorithm("Scholz2015");
                 randClone = path;
