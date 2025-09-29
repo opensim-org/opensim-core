@@ -75,8 +75,8 @@ TEST_CASE("Interface") {
     SECTION("Path not closed") {
         CHECK_THROWS_WITH(model.initSystem(),
             Catch::Matchers::ContainsSubstring(
-               "Expected the final element of the path to be a path "
-                "point, but it is an obstacle."));
+               "Expected the last element of the path to be a path "
+               "point, but it is an obstacle."));
     }
 
     // Add additional path points.
@@ -90,7 +90,7 @@ TEST_CASE("Interface") {
     SECTION("Path configuration") {
         CHECK(path->getNumPathPoints() == 3);
         CHECK(path->getNumObstacles() == 1);
-        CHECK(path->getProperty_segments().size() == 2);
+        CHECK(path->getNumPathElements() == 4);
     }
 
     SECTION("Invalid curve segment accuracy") {

@@ -34,6 +34,58 @@
 namespace OpenSim {
 
 /**
+ * \section Scholz2015GeometryPathPoint
+ * An abstract class representing an element in a `Scholz2015GeometryPath`.
+ *
+ * Concrete implementations of this class should represent geometric elements
+ * in a path (e.g., path points and obstacles). Path elements of a
+ * `Scholz2015GeometryPath` are stored as an ordered list in the `path_elements`
+ * property.
+ *
+ * @see Scholz2015GeometryPathPoint
+ * @see Scholz2015GeometryPathObstacle
+ * @see Scholz2015GeometryPath
+ */
+class OSIMSIMULATION_API Scholz2015GeometryPathElement : public Component {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Scholz2015GeometryPathElement, Component);
+};
+
+/**
+ * \section Scholz2015GeometryPathPoint
+ * A class representing a point in a `Scholz2015GeometryPath`.
+ *
+ * A path point is represented by a `Station`, which defines a point on a
+ * `PhysicalFrame` in the model. Users should not create instances of this class
+ * directly. Instead, use the `addPathPoint()` method of
+ * `Scholz2015GeometryPath` to add path points.
+ *
+ * @see Scholz2015GeometryPath
+ */
+class OSIMSIMULATION_API Scholz2015GeometryPathPoint :
+        public Scholz2015GeometryPathElement {
+OpenSim_DECLARE_CONCRETE_OBJECT(Scholz2015GeometryPathPoint,
+        Scholz2015GeometryPathElement);
+public:
+//=============================================================================
+// SOCKETS
+//=============================================================================
+    OpenSim_DECLARE_PROPERTY(station, Station,
+            "The Station representing this path point.");
+
+//=============================================================================
+// METHODS
+//=============================================================================
+    // CONSTRUCTOR(S)
+    Scholz2015GeometryPathPoint();
+
+    // ACCESSOR(S)
+    /**
+     * Get the `Station` representing this path point.
+     */
+    const Station& getStation() const;
+};
+
+/**
  * \section Scholz2015GeometryPathObstacle
  * A class representing an obstacle in a `Scholz2015GeometryPath`.
  *
@@ -50,11 +102,12 @@ namespace OpenSim {
  * Users should not create instances of this class directly. Instead, use the
  * `addObstacle()` method of `Scholz2015GeometryPath` to add obstacles.
  *
- * @see Scholz2015GeometryPathSegment
  * @see Scholz2015GeometryPath
  */
-class OSIMSIMULATION_API Scholz2015GeometryPathObstacle : public Component {
-OpenSim_DECLARE_CONCRETE_OBJECT(Scholz2015GeometryPathObstacle, Component);
+class OSIMSIMULATION_API Scholz2015GeometryPathObstacle :
+        public Scholz2015GeometryPathElement {
+OpenSim_DECLARE_CONCRETE_OBJECT(Scholz2015GeometryPathObstacle,
+        Scholz2015GeometryPathElement);
 public:
 //=============================================================================
 // SOCKETS
@@ -79,58 +132,11 @@ public:
      * Get the ContactGeometry associated with this obstacle.
      */
     const ContactGeometry& getContactGeometry() const;
-};
-
-/**
- * \section Scholz2015GeometryPathSegment
- * A class representing a segment in a `Scholz2015GeometryPath`.
- *
- * A path segment consists of an ordered list of wrapping obstacles and a
- * `Station` defining the termination point of the segment. Path segments store
- * the list of `Scholz2015GeometryPathObstacle`s via the `obstacles` property.
- * The order of the obstacles in the list is important, as it defines the order
- * in which the path wraps over the obstacles.
- *
- * Users should not create instances of this class directly, nor should they
- * need to explicitly add and manage path segments within a
- * `Scholz2015GeometryPath`. Instead, path segments are automatically created
- * as needed when path points and obstacles are added to a
- * `Scholz2015GeometryPath`
- *
- * @see Scholz2015GeometryPathObstacle
- * @see Scholz2015GeometryPath
- */
-class OSIMSIMULATION_API Scholz2015GeometryPathSegment : public Component {
-OpenSim_DECLARE_CONCRETE_OBJECT(Scholz2015GeometryPathSegment, Component);
-public:
-//=============================================================================
-// SOCKETS
-//=============================================================================
-    OpenSim_DECLARE_PROPERTY(termination, Station,
-            "The termination station of the path segment.");
-
-//=============================================================================
-// PROPERTIES
-//=============================================================================
-    OpenSim_DECLARE_LIST_PROPERTY(obstacles, Scholz2015GeometryPathObstacle,
-            "The list of obstacles that the path segment may intersect.");
-
-//=============================================================================
-// METHODS
-//=============================================================================
-    // CONSTRUCTOR(S)
-    Scholz2015GeometryPathSegment();
-
-    // ACCESSOR(S)
-    /**
-     * Get the number of `Scholz2015GeometryPathObstacle`s in the path segment.
-     */
-    int getNumObstacles() const;
 
     /**
-     * Get the termination `Station` of the path segment.
+     * Get the contact hint for the obstacle.
      */
-    const Station& getTermination() const;
+    const SimTK::Vec3& getContactHint() const;
 };
 
 //=============================================================================
@@ -263,12 +269,12 @@ public:
  * \endcode
  *
  * Using the order of calls above, we have explicitly defined a cylinder
- * obstacle to apply to the path segment between the second and third path
- * points.
+ * obstacle to apply only to the portion of the path between the second and
+ * third path points.
  *
  * By changing the order of the `addObstacle()` and `addPathPoint()` calls, we
  * could define a different path where a cylinder obstacle is applied to the
- * path segment between the first and second path points:
+ * portion of the path between the first and second path points:
  *
  * \code{.cpp}
  * path.addPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
@@ -280,12 +286,12 @@ public:
  * \endcode
  *
  * The location of the cylinder obstacle in this new path would likely need to
- * be updated to a new location that is consistent with the segment between the
- * first and second path points to produce the desired wrapping behavior. Note
- * also that both of the path examples above are valid, since each begins and
- * ends with a path point.
+ * be updated to a new location that is consistent with the portion of the path
+ * between the first and second path points to produce the desired wrapping
+ * behavior. Note also that both of the path examples above are valid, since
+ * each begins and ends with a path point.
  *
- * @see Scholz2015GeometryPathSegment
+ * @see Scholz2015GeometryPathPoint
  * @see Scholz2015GeometryPathObstacle
  */
 class OSIMSIMULATION_API Scholz2015GeometryPath : public AbstractGeometryPath {
@@ -295,10 +301,8 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_PROPERTY(origin, Station,
-        "The origin station of the path.");
-    OpenSim_DECLARE_LIST_PROPERTY(segments, Scholz2015GeometryPathSegment,
-        "The list of path segments.");
+    OpenSim_DECLARE_LIST_PROPERTY(path_elements, Scholz2015GeometryPathElement,
+        "The list of elements (path points or obstacles) defining the path.");
     OpenSim_DECLARE_PROPERTY(algorithm, std::string,
         "The algorithm used to compute the path. Options: 'Scholz2015' "
         "(default) or 'MinimumLength'.");
@@ -371,6 +375,12 @@ public:
      * Get the number of obstacles in the path.
      */
     int getNumObstacles() const;
+
+    /**
+     * Get the total number of path elements (path points and obstacles) in the
+     * path.
+     */
+    int getNumPathElements() const;
 
     // @}
 
@@ -487,27 +497,41 @@ private:
     // CONVENIENCE METHODS
     void constructProperties();
 
-    // Convenience accessors to the last segment in the path.
-    const Scholz2015GeometryPathSegment& getLastPathSegment() const;
-    Scholz2015GeometryPathSegment& updLastPathSegment();
+    // Get a non-modifiable reference to a path element based on the element
+    // index and type. Use this if you certain of the element type; otherwise,
+    // use tryGetElement().
+    template <typename ElementType>
+    const ElementType& getElement(int index) const {
+        OPENSIM_ASSERT_ALWAYS(index >= 0 && index < getNumPathElements());
+        return dynamic_cast<const ElementType&>(get_path_elements(index));
+    }
 
-    // Convenience methods to check if the 'physical_frame' Socket of a Station
-    // is connected to a PhysicalFrame in the model.
-    bool isStationFrameConnected(const Station& station) const;
+    // Get a modifiable reference to a path element based on the element index
+    // and type. Use this if you certain of the element type; otherwise, use
+    // tryUpdElement().
+    template <typename ElementType>
+    ElementType& updElement(int index) {
+        OPENSIM_ASSERT_ALWAYS(index >= 0 && index < getNumPathElements());
+        return dynamic_cast<ElementType&>(upd_path_elements(index));
+    }
 
-    // Check if the path has an origin, i.e., if the 'physical_frame' Socket of
-    // the origin Station is connected to a PhysicalFrame in the model.
-    bool pathHasOrigin() const;
+    // Attempt to get a non-modifiable pointer to a path element based on the
+    // element index and type. Returns nullptr if the element is not of the
+    // requested type.
+    template <typename ElementType>
+    const ElementType* tryGetElement(int index) const {
+        OPENSIM_ASSERT_ALWAYS(index >= 0 && index < getNumPathElements());
+        return dynamic_cast<const ElementType*>(&get_path_elements(index));
+    }
 
-    // Check if the path is "closed", i.e., if the last segment has a
-    // termination path point defined.
-    bool pathIsClosed() const;
-
-    // Call this to add a new path segment to the path before adding path points
-    // or obstacles to a path. A new segment will be added only if the last
-    // segment has been "closed", i.e., the last segment has a termination path
-    // point defined.
-    void addPathSegmentIfNeeded();
+    // Attempt to get a modifiable pointer to a path element based on the
+    // element index and type. Returns nullptr if the element is not of the
+    // requested type.
+    template <typename ElementType>
+    ElementType* tryUpdElement(int index) {
+        OPENSIM_ASSERT_ALWAYS(index >= 0 && index < getNumPathElements());
+        return dynamic_cast<ElementType*>(&upd_path_elements(index));
+    }
 
     // Internal mutable access to the underlying SimTK::CableSpan.
     const SimTK::CableSpan& getCableSpan() const;
@@ -515,9 +539,8 @@ private:
 
     // MEMBER VARIABLES
     mutable SimTK::ResetOnCopy<SimTK::CableSpanIndex> _index;
-
     using ObstacleIndexes = std::vector<std::tuple<
-            SimTK::CableSpanObstacleIndex, int, int>>;
+            SimTK::CableSpanObstacleIndex, int>>;
     mutable SimTK::ResetOnCopy<ObstacleIndexes> _obstacleIndexes;
     using ViaPointIndexes = std::vector<std::pair<
             SimTK::CableSpanViaPointIndex, int>>;
