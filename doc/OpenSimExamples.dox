@@ -1,0 +1,17 @@
+namespace OpenSim {
+/**
+
+@example exampleScholz2015GeometryPath.m
+This example demonstrates the basic elements of creating a geometry-based
+path using the Scholz2015GeometryPath class.
+
+@example exampleScholz2015GeometryPath.py
+This example demonstrates the basic elements of creating a geometry-based
+path using the Scholz2015GeometryPath class.
+
+@example exampleScholz2015GeometryPath.cpp
+This example demonstrates the basic elements of creating a geometry-based
+path using the Scholz2015GeometryPath class.
+
+*/
+} // namespace OpenSim
