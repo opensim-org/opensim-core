@@ -78,10 +78,6 @@ path.addObstacle(obstacle, contact_hint);
 % adding, it defines the insertion of the path.
 path.addPathPoint(model.getBodySet().get('b1'), Vec3(-0.5, 0.1, 0.));
 
-% Use the "minimum length" algorithm, which solves for a path that
-% minimizes the total length of the path.
-path.setAlgorithm("MinimumLength");
-
 % Initialize the system.
 state = model.initSystem();
 model.updVisualizer().updSimbodyVisualizer().setBackgroundTypeByInt(2);

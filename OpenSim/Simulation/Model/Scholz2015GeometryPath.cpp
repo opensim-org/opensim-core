@@ -144,50 +144,6 @@ int Scholz2015GeometryPath::getNumPathElements() const {
 }
 
 //=============================================================================
-// SOLVER CONFIGURATION
-//=============================================================================
-void Scholz2015GeometryPath::setAlgorithm(std::string algorithm) {
-    set_algorithm(std::move(algorithm));
-}
-
-const std::string& Scholz2015GeometryPath::getAlgorithm() const {
-    return get_algorithm();
-}
-
-void Scholz2015GeometryPath::setCurveSegmentAccuracy(double accuracy) {
-    set_curve_segment_accuracy(accuracy);
-}
-
-double Scholz2015GeometryPath::getCurveSegmentAccuracy() const {
-    return get_curve_segment_accuracy();
-}
-
-void Scholz2015GeometryPath::setSmoothnessTolerance(double tolerance) {
-    set_smoothness_tolerance(tolerance);
-}
-
-double Scholz2015GeometryPath::getSmoothnessTolerance() const {
-    return get_smoothness_tolerance();
-}
-
-double Scholz2015GeometryPath::getSmoothness(const SimTK::State& state) const {
-    return getCableSpan().getSmoothness(state);
-}
-
-void Scholz2015GeometryPath::setSolverMaxIterations(int maxIterations) {
-    set_solver_max_iterations(maxIterations);
-}
-
-int Scholz2015GeometryPath::getSolverMaxIterations() const {
-    return get_solver_max_iterations();
-}
-
-int Scholz2015GeometryPath::getNumSolverIterations(
-        const SimTK::State& state) const {
-    return getCableSpan().getNumSolverIterations(state);
-}
-
-//=============================================================================
 // ABSTRACT PATH INTERFACE
 //=============================================================================
 double Scholz2015GeometryPath::getLength(const SimTK::State& s) const {
@@ -263,39 +219,6 @@ void Scholz2015GeometryPath::produceForces(const SimTK::State& state,
 //=============================================================================
 // MODEL COMPONENT INTERFACE
 //=============================================================================
-void Scholz2015GeometryPath::extendFinalizeFromProperties() {
-    Super::extendFinalizeFromProperties();
-
-    SimTK_ERRCHK2_ALWAYS(get_curve_segment_accuracy() > 0,
-            "Scholz2015GeometryPath::extendFinalizeFromProperties",
-            "%s: curve_segment_accuracy must be greater than zero, "
-            "but it is %g.",
-            getName().c_str(), get_curve_segment_accuracy());
-
-    SimTK_ERRCHK2_ALWAYS(get_smoothness_tolerance() > 0,
-            "Scholz2015GeometryPath::extendFinalizeFromProperties",
-            "%s: smoothness_tolerance must be greater than zero, "
-            "but it is %g.",
-            getName().c_str(), get_smoothness_tolerance());
-
-    SimTK_ERRCHK2_ALWAYS(get_solver_max_iterations() > 0,
-            "Scholz2015GeometryPath::extendFinalizeFromProperties",
-            "%s: solver_max_iterations must be greater than zero, "
-            "but it is %d.",
-            getName().c_str(), get_solver_max_iterations());
-
-    if (get_algorithm() == "Scholz2015") {
-        _algorithm = SimTK::CableSpanAlgorithm::Scholz2015;
-    } else if (get_algorithm() == "MinimumLength") {
-        _algorithm = SimTK::CableSpanAlgorithm::MinimumLength;
-    } else {
-        OPENSIM_THROW_FRMOBJ(Exception,
-            fmt::format("Property 'algorithm' has invalid value {}; expected "
-                        "one of the following: MinimumLength, Scholz2015",
-                        get_algorithm()));
-    }
-}
-
 void Scholz2015GeometryPath::extendConnectToModel(Model& model) {
     Super::extendConnectToModel(model);
 
@@ -346,10 +269,10 @@ void Scholz2015GeometryPath::extendAddToSystem(
         }
     }
 
-    cable.setSmoothnessTolerance(getSmoothnessTolerance());
-    cable.setCurveSegmentAccuracy(getCurveSegmentAccuracy());
-    cable.setSolverMaxIterations(getSolverMaxIterations());
-    cable.setAlgorithm(_algorithm);
+    cable.setSmoothnessTolerance(1e-5);
+    cable.setCurveSegmentAccuracy(1e-10);
+    cable.setSolverMaxIterations(50);
+    cable.setAlgorithm(SimTK::CableSpanAlgorithm::Scholz2015);
     _index = cable.getIndex();
 }
 
@@ -372,9 +295,6 @@ void Scholz2015GeometryPath::generateDecorations(bool fixed,
 void Scholz2015GeometryPath::constructProperties() {
     constructProperty_path_elements();
     constructProperty_algorithm("Scholz2015");
-    constructProperty_solver_max_iterations(50);
-    constructProperty_curve_segment_accuracy(1e-9);
-    constructProperty_smoothness_tolerance(0.1 / 180. * SimTK::Pi);
 }
 
 const SimTK::CableSpan& Scholz2015GeometryPath::getCableSpan() const {

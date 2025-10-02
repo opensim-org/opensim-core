@@ -306,15 +306,6 @@ public:
     OpenSim_DECLARE_PROPERTY(algorithm, std::string,
         "The algorithm used to compute the path. Options: 'Scholz2015' "
         "(default) or 'MinimumLength'.");
-    OpenSim_DECLARE_PROPERTY(curve_segment_accuracy, double,
-        "Set the accuracy used by the numerical integrator when computing a "
-        "geodesic over an obstacle (default: 1e-9).");
-    OpenSim_DECLARE_PROPERTY(smoothness_tolerance, double,
-        "The smoothness tolerance used to compute the optimal path "
-        "(default: 0.1 degrees).");
-    OpenSim_DECLARE_PROPERTY(solver_max_iterations, int,
-        "The maximum number of solver iterations for finding the optimal path "
-        "(default: 50).");
 
 //=============================================================================
 // METHODS
@@ -347,14 +338,10 @@ public:
     /**
      * Add an obstacle to the path.
      *
-     * The provided `ContactGeometry` is used internally to provide an
-     * equivalent `SimTK::ContactGeometry` which is used by the underlying
-     * `SimTK::CableSpan` to define a wrapping surface. The contact hint is a
-     * `SimTK::Vec3` defining a point on the surface, in the surface coordinates,
-     * which `SimTK::CableSpan` uses to shoot a zero-length geodesic to
-     * initialize the wrapping solver. The contact hint need not lie on the
-     * surface, nor does it need to belong to a valid (i.e., converged) wrapping
-     * path.
+     * The contact hint is a `SimTK::Vec3` defining a point on the surface, in
+     * the surface coordinates, used to initialize the wrapping solver. The
+     * contact hint need not lie on the surface, nor does it need to belong to a
+     * valid wrapping path.
      *
      * @param contactGeometry  the ContactGeometry representing the obstacle.
      * @param contactHint      the point on the contact geometry surface, in
@@ -384,92 +371,6 @@ public:
 
     // @}
 
-    //** @name Solver configuration */
-    // @{
-
-    /**
-     * %Set the algorithm used to optimize the path.
-     *
-     * The choice of algorithm changes the cost function and the computed
-     * descending direction for reaching the optimal path.
-     * The algorithm can be set to either "Scholz2015" (default) or
-     * "MinimumLength". The "Scholz2015" algorithm uses the original algorithm
-     * published in Scholz et al. (2015) which drives the error between straight
-     * line path segments and curved path segments over obstacles to zero.
-     * The "MinimumLength" algorithm finds an optimal path by minimizing the
-     * total path length directly while also enforcing the path error
-     * constraints.
-     *
-     * See `SimTK::CableSpan::CableSpanAlgorithm` for more details.
-     */
-    void setAlgorithm(std::string algorithm);
-
-    /**
-     * Get the algorithm used to optimize the path.
-     */
-    const std::string& getAlgorithm() const;
-
-    /**
-     * %Set the accuracy used by the numerical integrator when computing a
-     * geodesic over an obstacle.
-     */
-    void setCurveSegmentAccuracy(double accuracy);
-
-    /**
-     * Get the accuracy used by the numerical integrator when computing a
-     * geodesic over an obstacle.
-     */
-    double getCurveSegmentAccuracy() const;
-
-    /**
-     * %Set the smoothness tolerance used to compute the optimal path.
-     *
-     * The (non) smoothness is defined as the angular discontinuity at the points
-     * where straight- and curved-line segments meet, measured in radians. When
-     * computing the optimal path this smoothness is optimized, and the solver
-     * stops when reaching given tolerance.
-     */
-    void setSmoothnessTolerance(double tolerance);
-
-    /**
-     * Get the smoothness tolerance used to compute the optimal path.
-     */
-    double getSmoothnessTolerance() const;
-
-    /** Get the smoothness of the current cable's path.
-     *
-     * If via points are present in the cable, the maximum smoothness error
-     * across all cable segments is returned.
-     *
-     * State must be realized to Stage::Position.
-     *
-     * @see CableSpan::getSmoothnessTolerance.
-     */
-    double getSmoothness(const SimTK::State& state) const;
-
-    /**
-     * Get the maximum number of solver iterations for finding the optimal path.
-     */
-    int getSolverMaxIterations() const;
-
-    /**
-     * Set the maximum number of solver iterations for finding the optimal path.
-     */
-    void setSolverMaxIterations(int maxIterations);
-
-    /**
-     * Get the number of solver iterations used to compute the current cable's
-     * path.
-     *
-     * If via points are present in the cable, the sum of the iterations used to
-     * compute the path for each cable segment is returned.
-     *
-     * State must be realized to Stage::Position.
-     */
-    int getNumSolverIterations(const SimTK::State& state) const;
-
-    // @}
-
     //** @name `AbstractGeometryPath` interface */
     // @{
     double getLength(const SimTK::State& s) const override;
@@ -487,7 +388,6 @@ public:
 
 private:
     // MODEL COMPONENT INTERFACE
-    void extendFinalizeFromProperties() override;
     void extendConnectToModel(Model& model) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void generateDecorations(bool fixed, const ModelDisplayHints& hints,
@@ -547,7 +447,6 @@ private:
     mutable SimTK::ResetOnCopy<ViaPointIndexes> _viaPointIndexes;
 
     SimTK::ResetOnCopy<std::unique_ptr<MomentArmSolver> > _maSolver;
-    SimTK::CableSpanAlgorithm _algorithm;
 };
 
 

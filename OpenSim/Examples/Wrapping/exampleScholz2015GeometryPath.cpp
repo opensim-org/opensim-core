@@ -82,10 +82,6 @@ int main() {
     path.addPathPoint(model.getComponent<Body>("/bodyset/b1"),
             SimTK::Vec3(-0.5, 0.1, 0.));
 
-    // Use the "minimum length" algorithm, which solves for a path that
-    // minimizes the total length of the path.
-    path.setAlgorithm("MinimumLength");
-
     // Initialize the system.
     SimTK::State state = model.initSystem();
     model.updVisualizer().updSimbodyVisualizer().setBackgroundType(

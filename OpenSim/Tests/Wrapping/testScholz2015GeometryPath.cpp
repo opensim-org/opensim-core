@@ -31,6 +31,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 
+#include <OpenSim/Simulation/VisualizerUtilities.h>
+
 #include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
@@ -91,30 +93,6 @@ TEST_CASE("Interface") {
         CHECK(path->getNumPathPoints() == 3);
         CHECK(path->getNumObstacles() == 1);
         CHECK(path->getNumPathElements() == 4);
-    }
-
-    SECTION("Invalid curve segment accuracy") {
-        path->setCurveSegmentAccuracy(-1.0);
-        CHECK_THROWS_WITH(model.initSystem(),
-            Catch::Matchers::ContainsSubstring(
-                    "Scholz2015GeometryPath::extendFinalizeFromProperties: "
-                    "path: curve_segment_accuracy must be greater than zero"));
-    }
-
-    SECTION("Invalid smoothness tolerance") {
-        path->setSmoothnessTolerance(-1.0);
-        CHECK_THROWS_WITH(model.initSystem(),
-            Catch::Matchers::ContainsSubstring(
-                    "Scholz2015GeometryPath::extendFinalizeFromProperties: "
-                    "path: smoothness_tolerance must be greater than zero"));
-    }
-
-    SECTION("Invalid solver max iterations") {
-        path->setSolverMaxIterations(-1);
-        CHECK_THROWS_WITH(model.initSystem(),
-            Catch::Matchers::ContainsSubstring(
-                    "Scholz2015GeometryPath::extendFinalizeFromProperties: "
-                    "path: solver_max_iterations must be greater than zero"));
     }
 
     SECTION("Serialization and deserialization") {
@@ -344,8 +322,6 @@ TEST_CASE("Simple path") {
     // Configure the path.
     Scholz2015GeometryPath& path = actu->updPath<Scholz2015GeometryPath>();
     path.addPathPoint(*originBody, SimTK::Vec3(0.));
-    path.setCurveSegmentAccuracy(1e-12);
-    path.setSmoothnessTolerance(1e-7);
 
     // Add the first torus obstacle.
     auto* torus1 = new ContactTorus(10., 1.,
@@ -387,7 +363,6 @@ TEST_CASE("Simple path") {
     SECTION("Configuration and smoothness") {
         CHECK(path.getNumObstacles() == 4);
         CHECK(path.getNumPathPoints() == 2);
-        CHECK(path.getSmoothness(state) <= path.getSmoothnessTolerance());
     }
 
     SECTION("Path length") {
@@ -509,8 +484,6 @@ TEST_CASE("Via points") {
     SECTION("Configuration and smoothness") {
         CHECK(path.getNumObstacles() == 0);
         CHECK(path.getNumPathPoints() == 5);
-        // With no obstacles, the smoothness should always be zero.
-        CHECK(path.getSmoothness(state) == 0.);
     }
 
     SECTION("Path length") {
@@ -602,8 +575,6 @@ TEST_CASE("Path with all surfaces and a via point") {
 
     // Create the path object.
     Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
-    path->setCurveSegmentAccuracy(1e-9);
-    path->setSmoothnessTolerance(1e-4);
     path->addPathPoint(*originBody, SimTK::Vec3(0.));
 
     // Add the first torus obstacle.
@@ -729,9 +700,6 @@ TEST_CASE("Path with all surfaces and a via point") {
                 .norm();
         CHECK(cableLength > distanceBetweenEndPoints);
 
-        // Make sure that we actually solved the path up to tolerance.
-        CHECK(path->getSmoothness(state) <= path->getSmoothnessTolerance());
-
         prevCableLength = cableLength;
     }
 }
@@ -778,8 +746,6 @@ TEST_CASE("Touchdown and liftoff") {
         // Create the path object.
         Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
         path->setName(fmt::format("{}_path", name));
-        path->setCurveSegmentAccuracy(1e-12);
-        path->setSmoothnessTolerance(1e-6);
         path->addPathPoint(*originBody, SimTK::Vec3(0.));
         path->addObstacle(obstacle, SimTK::Vec3(SimTK::NaN));
         path->addPathPoint(*terminationBody, SimTK::Vec3(0.));
@@ -863,56 +829,6 @@ TEST_CASE("Touchdown and liftoff") {
             CHECK(gotContactStatus == expectedContactStatus);
         }
     }
-}
-
-
-// In this test the optimal path is far from the initial path. This tests the
-// robustness of the algorithm to the initial conditions.
-//
-// This test is based on "testRobustInitialPath" in Simbody's TestCableSpan.cpp.
-TEST_CASE("Robust initial path") {
-    // Create an empty model.
-    Model model;
-
-    // Create the path object.
-    Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
-    path->setCurveSegmentAccuracy(1e-12);
-    path->setSmoothnessTolerance(1e-8);
-    path->setSolverMaxIterations(100);
-    // Set the algorithm to 'MinimumLength'. This test will fail if set to the
-    // default algorithm, 'Scholz2015'.
-    path->setAlgorithm("MinimumLength");
-
-    // Add the origin path point.
-    path->addPathPoint(model.getGround(), SimTK::Vec3(-0.1, 0., 0.));
-
-
-    // Add a torus obstacle
-    auto* torus = new ContactTorus(2., 0.5,
-        SimTK::Vec3(0., 4., 0.), SimTK::Vec3(0., 0.5*SimTK::Pi, 0.),
-        model.getGround());
-    torus->setName("torus");
-    model.addComponent(torus);
-    path->addObstacle(*torus, SimTK::Vec3(0.0, -0.1, 0.));
-
-    // Add the insertion path point.
-    path->addPathPoint(model.getGround(), SimTK::Vec3(0.1, 0., 0.));
-
-    // Add the path to the model.
-    model.addComponent(path);
-
-    // Initialize the system and state.
-    SimTK::State state = model.initSystem();
-
-    // Realize to the position stage.
-    model.realizePosition(state);
-
-    // Test that the solution was found.
-    CHECK(path->getSmoothness(state) < path->getSmoothnessTolerance());
-
-    // Test the cable length.
-    CHECK_THAT(path->getLength(state),
-        Catch::Matchers::WithinRel(5.6513, 1e-3));
 }
 
 TEST_CASE("Path tension") {
