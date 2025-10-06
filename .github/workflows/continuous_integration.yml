@@ -143,7 +143,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-        
+
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
       run: python3 -m pip install numpy==1.25
@@ -311,7 +311,7 @@ jobs:
             -f "body=${NEW_COMMENT_BODY}"
 
   mac_x86_64:
-    runs-on: macos-13
+    runs-on: macos-15-intel
     name: Mac x86_64
 
     outputs:
@@ -319,7 +319,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Install Python packages
       uses: actions/setup-python@v4
       with:
@@ -437,7 +437,7 @@ jobs:
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
   mac_arm64:
-    runs-on: macos-14
+    runs-on: macos-15
     name: Mac Arm64
 
     outputs:
@@ -445,7 +445,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Install Python packages
       uses: actions/setup-python@v4
       with:
@@ -563,7 +563,7 @@ jobs:
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
   mac_arm64_perf:
-    runs-on: macos-14
+    runs-on: macos-15
     name: Mac Arm64 [main]
 
     if: ${{ contains(github.event.pull_request.title, '[perf-mac]') || contains(github.event.pull_request.body, '[perf-mac]') }}
@@ -571,13 +571,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        ref: ${{ github.event.pull_request.base.ref }} 
+        ref: ${{ github.event.pull_request.base.ref }}
 
     - name: Install Python packages
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-        
+
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
       run: |
@@ -889,23 +889,23 @@ jobs:
 
     env:
       GH_TOKEN: ${{ github.token }}
-  
+
     if: ${{ contains(github.event.pull_request.title, '[build-gui]') || contains(github.event.pull_request.body, '[build-gui]') }}
-  
+
     steps:
     - name: Dispatch opensim-gui workflow and get the run ID
       uses: codex-/return-dispatch@v1
       id: return_dispatch
       with:
         token: ${{ secrets.ACTION_SECRET }}
-        ref: refs/heads/main 
+        ref: refs/heads/main
         repo: opensim-gui
         owner: opensim-org
         workflow: build-on-core-pr.yml
 
     - name: Use the output run ID
       run: echo ${{steps.return_dispatch.outputs.run_id}}
-    
+
     - name: Await opensim-gui workflow
       uses: Codex-/await-remote-run@v1.11.0
       with:
@@ -914,7 +914,7 @@ jobs:
         owner: opensim-org
         run_id: ${{ steps.return_dispatch.outputs.run_id }}
         run_timeout_seconds: 10000
-        
+
   style:
     name: Style
 
