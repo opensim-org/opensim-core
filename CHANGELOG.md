@@ -27,6 +27,7 @@ v4.6
 - Added new concrete implementations of `ContactGeometry`: `ContactCylinder`, `ContactEllipsoid`, and `ContactTorus`. (#4115)
 - Removed the following deprecated methods from `ContactGeometry`: `getLocation()`, `setLocation()`, `getOrientation()`, `setOrientation()`, `getBody()`, and `setBody()`. (#4115)
 - Fixed `OpenSim::Marker::generateDecorations` to account for markers that are attached to bodies via other frames (#4144).
+- Added the scripting-friendly accessors `SpatialTransform::setTransformAxis()` and `CustomJoint::setSpatialTransform()`. (#4168)
 
 
 v4.5.2
