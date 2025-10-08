@@ -49,11 +49,11 @@ path.setName('path')
 
 # Add a path point connected to ground. Since this is the first path point,
 # it defines the origin of the path.
-path.addPathPoint(model.getGround(), osim.Vec3(0.05, 0.05, 0.))
+path.appendPathPoint(model.getGround(), osim.Vec3(0.05, 0.05, 0.))
 
-# Add a second path point, creating a straight line segment between the
+# Append a second path point, creating a straight line segment between the
 # ground and body "b0".
-path.addPathPoint(model.getBodySet().get('b0'), osim.Vec3(-0.5, 0.1, 0.))
+path.appendPathPoint(model.getBodySet().get('b0'), osim.Vec3(-0.5, 0.1, 0.))
 
 # Create a ContactCylinder to use as a wrapping obstacle to the path. The
 # cylinder has radius 0.15 m and is attached to body "b0".
@@ -69,12 +69,12 @@ model.addComponent(obstacle)
 # to belong to a valid cable path. The choice of the contact hint will
 # determine which side of the cylinder the path wraps around.
 contact_hint = osim.Vec3(0., 0.15, 0.)
-path.addObstacle(obstacle, contact_hint)
+path.appendObstacle(obstacle, contact_hint)
 
 # At least one path point must follow an obstacle (or list of obstacles)
 # in a Scholz2015GeometryPath. Since this is the last path point we are
 # adding, it defines the insertion of the path.
-path.addPathPoint(model.getBodySet().get('b1'), osim.Vec3(-0.5, 0.1, 0.))
+path.appendPathPoint(model.getBodySet().get('b1'), osim.Vec3(-0.5, 0.1, 0.))
 
 # Initialize the system.
 state = model.initSystem()

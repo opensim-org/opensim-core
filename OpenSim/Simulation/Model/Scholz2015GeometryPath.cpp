@@ -34,11 +34,11 @@ using namespace OpenSim;
 // SCHOLZ 2015 GEOMETRY PATH POINT
 //=============================================================================
 Scholz2015GeometryPathPoint::Scholz2015GeometryPathPoint() {
-    constructProperty_station(Station());
+    constructProperty_PathPoint(PathPoint());
 }
 
-const Station& Scholz2015GeometryPathPoint::getStation() const {
-    return get_station();
+const PathPoint& Scholz2015GeometryPathPoint::getPathPoint() const {
+    return get_PathPoint();
 }
 
 //=============================================================================
@@ -67,7 +67,7 @@ Scholz2015GeometryPath::Scholz2015GeometryPath() : AbstractGeometryPath() {
 //=============================================================================
 // PATH CONFIGURATION
 //=============================================================================
-void Scholz2015GeometryPath::addPathPoint(const PhysicalFrame& frame,
+void Scholz2015GeometryPath::appendPathPoint(const PhysicalFrame& frame,
         const SimTK::Vec3& location) {
 
     // Construct a new path point.
@@ -76,36 +76,68 @@ void Scholz2015GeometryPath::addPathPoint(const PhysicalFrame& frame,
             getProperty_path_elements().size() - 1);
     point.setName("path_point_" + std::to_string(getNumPathPoints() - 1));
 
-    // Set the path point's Station.
-    Station& station = point.upd_station();
-    station.set_location(location);
-    station.setParentFrame(frame);
+    // Set the path point's PathPoint.
+    PathPoint& pathPoint = point.upd_PathPoint();
+    pathPoint.set_location(location);
+    pathPoint.setParentFrame(frame);
 
-    // Call finalizeFromProperties() to ensure that the station is recognized
+    // Call finalizeFromProperties() to ensure that the path point is recognized
     // as a subcomponent.
     finalizeFromProperties();
 }
 
-const Station& Scholz2015GeometryPath::getOrigin() const {
+const PathPoint& Scholz2015GeometryPath::getOrigin() const {
+    OPENSIM_THROW_IF_FRMOBJ(getNumPathPoints() == 0, Exception,
+            "Tried retrieving the origin point, but the path contains no path "
+            "points.");
+
     const auto* point = tryGetElement<Scholz2015GeometryPathPoint>(0);
     OPENSIM_THROW_IF_FRMOBJ(point == nullptr, Exception,
             "Tried retrieving the origin point, but the first element in the "
             "path is not a path point.");
 
-    return point->getStation();
+    return point->getPathPoint();
 }
 
-const Station& Scholz2015GeometryPath::getInsertion() const {
+const PathPoint& Scholz2015GeometryPath::getInsertion() const {
+    OPENSIM_THROW_IF_FRMOBJ(getNumPathPoints() < 2, Exception,
+            "Tried retrieving the insertion point, but the path contains less "
+            "than two path points.");
+
     const auto* point = tryGetElement<Scholz2015GeometryPathPoint>(
             getProperty_path_elements().size() - 1);
     OPENSIM_THROW_IF_FRMOBJ(point == nullptr, Exception,
             "Tried retrieving the insertion point, but the last element in the "
             "path is not a path point.");
 
-    return point->getStation();
+    return point->getPathPoint();
 }
 
-void Scholz2015GeometryPath::addObstacle(const ContactGeometry& contactGeometry,
+const PathPoint& Scholz2015GeometryPath::getPathPoint(
+        int pathPointIndex) const {
+    OPENSIM_THROW_IF_FRMOBJ(
+            pathPointIndex < 0 || pathPointIndex >= getNumPathPoints(),
+            Exception,
+            "Index {} is out of range. There are {} path points in the path.",
+            pathPointIndex, getNumPathPoints());
+
+    int count = 0;
+    for (int i = 0; i < getNumPathElements(); ++i) {
+        if (const auto* point = tryGetElement<Scholz2015GeometryPathPoint>(i)) {
+            if (count == pathPointIndex) {
+                return point->getPathPoint();
+            }
+            ++count;
+        }
+    }
+
+    // We should never reach this point.
+    OPENSIM_THROW_FRMOBJ(Exception,
+            "Path point index {} could not be found.", pathPointIndex);
+}
+
+void Scholz2015GeometryPath::appendObstacle(
+        const ContactGeometry& contactGeometry,
         const SimTK::Vec3& contactHint) {
 
     // Construct a new obstacle.
@@ -117,6 +149,18 @@ void Scholz2015GeometryPath::addObstacle(const ContactGeometry& contactGeometry,
     // Set the obstacle's ContactGeometry and contact hint.
     obstacle.connectSocket_contact_geometry(contactGeometry);
     obstacle.set_contact_hint(contactHint);
+}
+
+const ContactGeometry& Scholz2015GeometryPath::getContactGeometry(
+        int obstacleIndex) const {
+    const Scholz2015GeometryPathObstacle* obstacle = getObstacle(obstacleIndex);
+    return obstacle->getContactGeometry();
+}
+
+const SimTK::Vec3& Scholz2015GeometryPath::getContactHint(
+        int obstacleIndex) const {
+    const Scholz2015GeometryPathObstacle* obstacle = getObstacle(obstacleIndex);
+    return obstacle->getContactHint();
 }
 
 int Scholz2015GeometryPath::getNumPathPoints() const {
@@ -174,8 +218,8 @@ void Scholz2015GeometryPath::produceForces(const SimTK::State& state,
     }
 
     const SimTK::CableSpan& cable = getCableSpan();
-    const Station& origin = getOrigin();
-    const Station& insertion = getInsertion();
+    const PathPoint& origin = getOrigin();
+    const PathPoint& insertion = getInsertion();
     SimTK::SpatialVec unitBodyForce;
 
     // Force applied at path origin point.
@@ -203,7 +247,7 @@ void Scholz2015GeometryPath::produceForces(const SimTK::State& state,
     for (const auto& [ix, eltIx] : _viaPointIndexes) {
         cable.calcViaPointUnitForce(state, ix, unitBodyForce);
         const auto& point = getElement<Scholz2015GeometryPathPoint>(eltIx);
-        const auto& frame = point.getStation().getParentFrame();
+        const auto& frame = point.getPathPoint().getParentFrame();
         forceConsumer.consumeBodySpatialVec(state, frame,
                 tension * unitBodyForce);
     }
@@ -241,8 +285,8 @@ void Scholz2015GeometryPath::extendAddToSystem(
         SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
 
-    const Station& origin = getOrigin();
-    const Station& insertion = getInsertion();
+    const PathPoint& origin = getOrigin();
+    const PathPoint& insertion = getInsertion();
     SimTK::CableSubsystem& cables = system.updCableSubsystem();
     SimTK::CableSpan cable(cables,
         origin.getParentFrame().getMobilizedBodyIndex(),
@@ -254,8 +298,8 @@ void Scholz2015GeometryPath::extendAddToSystem(
         if (const auto* point =
                     tryGetElement<Scholz2015GeometryPathPoint>(ielt)) {
             SimTK::CableSpanViaPointIndex ix = cable.addViaPoint(
-                point->getStation().getParentFrame().getMobilizedBodyIndex(),
-                point->getStation().get_location());
+                point->getPathPoint().getParentFrame().getMobilizedBodyIndex(),
+                point->getPathPoint().get_location());
             _viaPointIndexes.emplace_back(std::make_pair(ix, ielt));
         } else if (const auto* obstacle =
                     tryGetElement<Scholz2015GeometryPathObstacle>(ielt)) {
@@ -294,7 +338,29 @@ void Scholz2015GeometryPath::generateDecorations(bool fixed,
 //=============================================================================
 void Scholz2015GeometryPath::constructProperties() {
     constructProperty_path_elements();
-    constructProperty_algorithm("Scholz2015");
+}
+
+const Scholz2015GeometryPathObstacle* Scholz2015GeometryPath::getObstacle(
+        int obstacleIndex) const {
+    OPENSIM_THROW_IF_FRMOBJ(
+            obstacleIndex < 0 || obstacleIndex >= getNumObstacles(), Exception,
+            "Index {} is out of range. There are {} obstacles in the path.",
+            obstacleIndex, getNumObstacles());
+
+    int count = 0;
+    for (int i = 0; i < getNumPathElements(); ++i) {
+        if (const auto* obstacle =
+                tryGetElement<Scholz2015GeometryPathObstacle>(i)) {
+            if (count == obstacleIndex) {
+                return obstacle;
+            }
+            ++count;
+        }
+    }
+
+    // We should never reach this point.
+    OPENSIM_THROW_FRMOBJ(Exception,
+            "Obstacle index {} could not be found.", obstacleIndex);
 }
 
 const SimTK::CableSpan& Scholz2015GeometryPath::getCableSpan() const {

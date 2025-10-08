@@ -53,7 +53,7 @@ TEST_CASE("Interface") {
     }
 
     // Add the first path point. This defines the origin of the path.
-    path->addPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
+    path->appendPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
 
     SECTION("Only one path point") {
         CHECK_THROWS_WITH(model.initSystem(),
@@ -62,17 +62,17 @@ TEST_CASE("Interface") {
                 "but 1 path point(s) were found."));
     }
 
-    // Add a second path point, creating a straight line segment between the
+    // Append a second path point, creating a straight line segment between the
     // first and second path points.
-    path->addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+    path->appendPathPoint(model.getComponent<Body>("/bodyset/b0"),
             SimTK::Vec3(-0.75, 0.1, 0.));
 
-    // Add a ContactCylinder wrapping obstacle to the path.
+    // Append a ContactCylinder wrapping obstacle to the path.
     auto* obstacle = new ContactCylinder(0.1,
         SimTK::Vec3(-0.5, 0.1, 0.), SimTK::Vec3(0),
         model.getComponent<Body>("/bodyset/b0"));
     model.addComponent(obstacle);
-    path->addObstacle(*obstacle, SimTK::Vec3(0., 0.1, 0.));
+    path->appendObstacle(*obstacle, SimTK::Vec3(0., 0.1, 0.));
 
     SECTION("Path not closed") {
         CHECK_THROWS_WITH(model.initSystem(),
@@ -82,7 +82,7 @@ TEST_CASE("Interface") {
     }
 
     // Add additional path points.
-    path->addPathPoint(model.getComponent<Body>("/bodyset/b1"),
+    path->appendPathPoint(model.getComponent<Body>("/bodyset/b1"),
             SimTK::Vec3(-0.25, 0.1, 0.));
 
     SECTION("Valid path") {
@@ -93,6 +93,26 @@ TEST_CASE("Interface") {
         CHECK(path->getNumPathPoints() == 3);
         CHECK(path->getNumObstacles() == 1);
         CHECK(path->getNumPathElements() == 4);
+    }
+
+    SECTION("Accessing path points") {
+        CHECK_NOTHROW(path->getPathPoint(0));
+        CHECK_NOTHROW(path->getPathPoint(1));
+        CHECK_NOTHROW(path->getPathPoint(2));
+        CHECK_THROWS_WITH(path->getPathPoint(3),
+            Catch::Matchers::ContainsSubstring(
+                "Index 3 is out of range."));
+    }
+
+    SECTION("Accessing obstacles") {
+        CHECK_NOTHROW(path->getContactGeometry(0));
+        CHECK_THROWS_WITH(path->getContactGeometry(1),
+            Catch::Matchers::ContainsSubstring(
+                "Index 1 is out of range."));
+        CHECK_NOTHROW(path->getContactHint(0));
+        CHECK_THROWS_WITH(path->getContactHint(1),
+            Catch::Matchers::ContainsSubstring(
+                "Index 1 is out of range."));
     }
 
     SECTION("Serialization and deserialization") {
@@ -125,7 +145,7 @@ TEST_CASE("Suspended pendulum") {
 
     // Set the path's origin and insertion.
     Scholz2015GeometryPath& path = actu->updPath<Scholz2015GeometryPath>();
-    path.addPathPoint(model.getGround(), SimTK::Vec3(-0.1, 0, 0));
+    path.appendPathPoint(model.getGround(), SimTK::Vec3(-0.1, 0, 0));
 
     // Check that pendulum is at rest with the expected length.
     const double expectedLength = 0.81268778;
@@ -157,8 +177,8 @@ TEST_CASE("Suspended pendulum") {
         auto* obstacle = new ContactCylinder(0.1,
             SimTK::Vec3(0.25, 0, 0), SimTK::Vec3(0), model.getGround());
         model.addComponent(obstacle);
-        path.addObstacle(*obstacle, SimTK::Vec3(0.0, 0.1, 0.0));
-        path.addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+        path.appendObstacle(*obstacle, SimTK::Vec3(0.0, 0.1, 0.0));
+        path.appendPathPoint(model.getComponent<Body>("/bodyset/b0"),
             SimTK::Vec3(-0.5, 0.1, 0));
         simulateHangingPendulum(model);
     }
@@ -167,8 +187,8 @@ TEST_CASE("Suspended pendulum") {
         auto* obstacle = new ContactEllipsoid(SimTK::Vec3(0.1, 0.1, 0.3),
             SimTK::Vec3(0.25, 0, 0), SimTK::Vec3(0), model.getGround());
         model.addComponent(obstacle);
-        path.addObstacle(*obstacle, SimTK::Vec3(0.0, 0.1, 0.0));
-        path.addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+        path.appendObstacle(*obstacle, SimTK::Vec3(0.0, 0.1, 0.0));
+        path.appendPathPoint(model.getComponent<Body>("/bodyset/b0"),
             SimTK::Vec3(-0.5, 0.1, 0));
         simulateHangingPendulum(model);
     }
@@ -177,8 +197,8 @@ TEST_CASE("Suspended pendulum") {
         auto* obstacle = new ContactSphere(0.1,
             SimTK::Vec3(0.25, 0, 0), model.getGround());
         model.addComponent(obstacle);
-        path.addObstacle(*obstacle, SimTK::Vec3(0.0, 0.1, 0.0));
-        path.addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+        path.appendObstacle(*obstacle, SimTK::Vec3(0.0, 0.1, 0.0));
+        path.appendPathPoint(model.getComponent<Body>("/bodyset/b0"),
             SimTK::Vec3(-0.5, 0.1, 0));
         simulateHangingPendulum(model);
     }
@@ -189,8 +209,8 @@ TEST_CASE("Suspended pendulum") {
             SimTK::Vec3(0, 0.5*SimTK::Pi, 0),
             model.getGround());
         model.addComponent(obstacle);
-        path.addObstacle(*obstacle, SimTK::Vec3(0.0, -0.3, 0.0));
-        path.addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+        path.appendObstacle(*obstacle, SimTK::Vec3(0.0, -0.3, 0.0));
+        path.appendPathPoint(model.getComponent<Body>("/bodyset/b0"),
             SimTK::Vec3(-0.5, 0.1, 0));
         simulateHangingPendulum(model);
     }
@@ -207,7 +227,7 @@ TEST_CASE("Moment arms") {
     // Configure the Scholz2015GeometryPath.
     Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
     path->setName("path");
-    path->addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+    path->appendPathPoint(model.getComponent<Body>("/bodyset/b0"),
             SimTK::Vec3(-offset, 0., 0.));
     // Add a ContactCylinder along the axis definiing the PinJoint between
     // body 'b0' and body 'b1'.
@@ -215,8 +235,8 @@ TEST_CASE("Moment arms") {
         SimTK::Vec3(0., 0., 0.), SimTK::Vec3(0),
         model.getComponent<Body>("/bodyset/b0"));
     model.addComponent(obstacle);
-    path->addObstacle(*obstacle, SimTK::Vec3(0., radius, 0.));
-    path->addPathPoint(model.getComponent<Body>("/bodyset/b1"),
+    path->appendObstacle(*obstacle, SimTK::Vec3(0., radius, 0.));
+    path->appendPathPoint(model.getComponent<Body>("/bodyset/b1"),
             SimTK::Vec3(-offset, 0., 0.));
 
     // Add the path to the model.
@@ -321,7 +341,7 @@ TEST_CASE("Simple path") {
 
     // Configure the path.
     Scholz2015GeometryPath& path = actu->updPath<Scholz2015GeometryPath>();
-    path.addPathPoint(*originBody, SimTK::Vec3(0.));
+    path.appendPathPoint(*originBody, SimTK::Vec3(0.));
 
     // Add the first torus obstacle.
     auto* torus1 = new ContactTorus(10., 1.,
@@ -329,14 +349,14 @@ TEST_CASE("Simple path") {
         *torusBody);
     torus1->setName("torus1");
     model.addComponent(torus1);
-    path.addObstacle(*torus1, SimTK::Vec3(0., -9., 0.));
+    path.appendObstacle(*torus1, SimTK::Vec3(0., -9., 0.));
 
     // Add the ellipsoid obstacle.
     auto* ellipsoid = new ContactEllipsoid(SimTK::Vec3(1., 1., 6.),
         SimTK::Vec3(0.5, 1., 0.), SimTK::Vec3(0), *ellipsoidBody);
     ellipsoid->setName("ellipsoid");
     model.addComponent(ellipsoid);
-    path.addObstacle(*ellipsoid, SimTK::Vec3(1., 1., 0.5));
+    path.appendObstacle(*ellipsoid, SimTK::Vec3(1., 1., 0.5));
 
     // Add the second torus obstacle.
     auto* torus2 = new ContactTorus(10., 1.5,
@@ -344,17 +364,17 @@ TEST_CASE("Simple path") {
         model.getGround());
     torus2->setName("torus2");
     model.addComponent(torus2);
-    path.addObstacle(*torus2, SimTK::Vec3(0., 1., 0.));
+    path.appendObstacle(*torus2, SimTK::Vec3(0., 1., 0.));
 
     // Add the cylinder obstacle.
     auto* cylinder = new ContactCylinder(2.,
         SimTK::Vec3(-2., -1.5, 0.), SimTK::Vec3(0), model.getGround());
     cylinder->setName("cylinder");
     model.addComponent(cylinder);
-    path.addObstacle(*cylinder, SimTK::Vec3(0., -1., 0.));
+    path.appendObstacle(*cylinder, SimTK::Vec3(0., -1., 0.));
 
     // Add the insertion path point.
-    path.addPathPoint(*insertionBody, SimTK::Vec3(0.));
+    path.appendPathPoint(*insertionBody, SimTK::Vec3(0.));
 
     // Initialize the system and state.
     SimTK::State state = model.initSystem();
@@ -471,11 +491,11 @@ TEST_CASE("Via points") {
 
     // Configure the path.
     Scholz2015GeometryPath& path = actu->updPath<Scholz2015GeometryPath>();
-    path.addPathPoint(*originBody, SimTK::Vec3(0.));
-    path.addPathPoint(*viaPoint1Body, SimTK::Vec3(0.));
-    path.addPathPoint(*viaPoint2Body, SimTK::Vec3(0.));
-    path.addPathPoint(*viaPoint3Body, SimTK::Vec3(0.));
-    path.addPathPoint(*insertionBody, SimTK::Vec3(0.));
+    path.appendPathPoint(*originBody, SimTK::Vec3(0.));
+    path.appendPathPoint(*viaPoint1Body, SimTK::Vec3(0.));
+    path.appendPathPoint(*viaPoint2Body, SimTK::Vec3(0.));
+    path.appendPathPoint(*viaPoint3Body, SimTK::Vec3(0.));
+    path.appendPathPoint(*insertionBody, SimTK::Vec3(0.));
 
     // Initialize the system and state.
     SimTK::State state = model.initSystem();
@@ -575,7 +595,7 @@ TEST_CASE("Path with all surfaces and a via point") {
 
     // Create the path object.
     Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
-    path->addPathPoint(*originBody, SimTK::Vec3(0.));
+    path->appendPathPoint(*originBody, SimTK::Vec3(0.));
 
     // Add the first torus obstacle.
     auto* torus1 = new ContactTorus(1., 0.2,
@@ -583,24 +603,24 @@ TEST_CASE("Path with all surfaces and a via point") {
         model.getGround());
     torus1->setName("torus1");
     model.addComponent(torus1);
-    path->addObstacle(*torus1, SimTK::Vec3(0.1, 0.2, 0.));
+    path->appendObstacle(*torus1, SimTK::Vec3(0.1, 0.2, 0.));
 
     // Add the ellipsoid obstacle.
     auto* ellipsoid = new ContactEllipsoid(SimTK::Vec3(1.5, 2.6, 1.),
         SimTK::Vec3(-2., 0., 0.), SimTK::Vec3(0), model.getGround());
     ellipsoid->setName("ellipsoid");
     model.addComponent(ellipsoid);
-    path->addObstacle(*ellipsoid, SimTK::Vec3(0., 0., 1.1));
+    path->appendObstacle(*ellipsoid, SimTK::Vec3(0., 0., 1.1));
 
     // Add the via point.
-    path->addPathPoint(*viaPointBody, SimTK::Vec3(0.));
+    path->appendPathPoint(*viaPointBody, SimTK::Vec3(0.));
 
     // Add the sphere obstacle.
     auto* sphere = new ContactSphere(1.,
         SimTK::Vec3(2., 0., 0.), model.getGround());
     sphere->setName("sphere");
     model.addComponent(sphere);
-    path->addObstacle(*sphere, SimTK::Vec3(0.1, 1.1, 0.));
+    path->appendObstacle(*sphere, SimTK::Vec3(0.1, 1.1, 0.));
 
     // Add the cylinder obstacle.
     auto* cylinder = new ContactCylinder(1.,
@@ -608,7 +628,7 @@ TEST_CASE("Path with all surfaces and a via point") {
         model.getGround());
     cylinder->setName("cylinder");
     model.addComponent(cylinder);
-    path->addObstacle(*cylinder, SimTK::Vec3(0., -1., 0.));
+    path->appendObstacle(*cylinder, SimTK::Vec3(0., -1., 0.));
 
     // Add the second torus obstacle.
     auto* torus2 = new ContactTorus(1., 0.2,
@@ -616,10 +636,10 @@ TEST_CASE("Path with all surfaces and a via point") {
         model.getGround());
     torus2->setName("torus2");
     model.addComponent(torus2);
-    path->addObstacle(*torus2, SimTK::Vec3(0.1, 0.2, 0.));
+    path->appendObstacle(*torus2, SimTK::Vec3(0.1, 0.2, 0.));
 
     // Add the insertion path point.
-    path->addPathPoint(*insertionBody, SimTK::Vec3(0.));
+    path->appendPathPoint(*insertionBody, SimTK::Vec3(0.));
 
     // Add the path to the model.
     model.addComponent(path);
@@ -746,9 +766,9 @@ TEST_CASE("Touchdown and liftoff") {
         // Create the path object.
         Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
         path->setName(fmt::format("{}_path", name));
-        path->addPathPoint(*originBody, SimTK::Vec3(0.));
-        path->addObstacle(obstacle, SimTK::Vec3(SimTK::NaN));
-        path->addPathPoint(*terminationBody, SimTK::Vec3(0.));
+        path->appendPathPoint(*originBody, SimTK::Vec3(0.));
+        path->appendObstacle(obstacle, SimTK::Vec3(SimTK::NaN));
+        path->appendPathPoint(*terminationBody, SimTK::Vec3(0.));
 
         // Add the path to the model.
         model.addComponent(path);
@@ -837,8 +857,8 @@ TEST_CASE("Path tension") {
     Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
     path->setName("path");
     model.addComponent(path);
-    path->addPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
-    path->addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+    path->appendPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
+    path->appendPathPoint(model.getComponent<Body>("/bodyset/b0"),
             SimTK::Vec3(-0.75, 0.1, 0.));
 
     SimTK::State state = model.initSystem();
