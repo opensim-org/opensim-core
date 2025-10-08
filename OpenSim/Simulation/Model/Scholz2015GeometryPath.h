@@ -26,8 +26,8 @@
 
 #include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
 
-#include <OpenSim/Simulation/Model/Station.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
+#include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/MomentArmSolver.h>
 
 #include <simbody/internal/CableSpan.h>
@@ -54,10 +54,10 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Scholz2015GeometryPathElement, Component);
  * \section Scholz2015GeometryPathPoint
  * A class representing a point in a `Scholz2015GeometryPath`.
  *
- * A path point is represented by a `Station`, which defines a point on a
+ * This class stores a `PathPoint`, which defines a fixed point on a
  * `PhysicalFrame` in the model. Users should not create instances of this class
- * directly. Instead, use the `addPathPoint()` method of
- * `Scholz2015GeometryPath` to add path points.
+ * directly. Instead, use the `appendPathPoint()` method of
+ * `Scholz2015GeometryPath` to append path points.
  *
  * @see Scholz2015GeometryPath
  */
@@ -69,8 +69,8 @@ public:
 //=============================================================================
 // SOCKETS
 //=============================================================================
-    OpenSim_DECLARE_PROPERTY(station, Station,
-            "The Station representing this path point.");
+    OpenSim_DECLARE_UNNAMED_PROPERTY(PathPoint,
+            "A point fixed to a PhysicalFrame that the path must pass through.");
 
 //=============================================================================
 // METHODS
@@ -80,9 +80,9 @@ public:
 
     // ACCESSOR(S)
     /**
-     * Get the `Station` representing this path point.
+     * Get the underlying `PathPoint`.
      */
-    const Station& getStation() const;
+    const PathPoint& getPathPoint() const;
 };
 
 /**
@@ -100,7 +100,7 @@ public:
  * valid (i.e., converged) wrapping path.
  *
  * Users should not create instances of this class directly. Instead, use the
- * `addObstacle()` method of `Scholz2015GeometryPath` to add obstacles.
+ * `appendObstacle()` method of `Scholz2015GeometryPath` to append obstacles.
  *
  * @see Scholz2015GeometryPath
  */
@@ -182,8 +182,8 @@ public:
  * \code{.cpp}
  * Model model = ModelFactory::createDoublePendulum();
  * Scholz2015GeometryPath* path = new Scholz2015GeometryPath();
- * path.addPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
- * path.addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+ * path.appendPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
+ * path.appendPathPoint(model.getComponent<Body>("/bodyset/b0"),
  *         SimTK::Vec3(-0.5, 0.1, 0.));
  * model.addComponent(path);
  * \endcode
@@ -204,19 +204,18 @@ public:
  *
  * auto& path = spring->updPath<Scholz2015GeometryPath>();
  * path.setName("path");
- * path.addPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0));
- * path.addPathPoint(model.getComponent<Body>("/bodyset/b1"),
+ * path.appendPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0));
+ * path.appendPathPoint(model.getComponent<Body>("/bodyset/b1"),
  *         SimTK::Vec3(-0.25, 0.1, 0));
  * \endcode
  *
- * @note The path points are stored using `Station` properties. Therefore, we
- * add path points *after* the `Scholz2015GeometryPath` has been added to the
- * `PathSpring`, so that the connections for each `Station`'s parent frame
- * `Socket` remain valid. If we instead called `set_path()` after each `Station`
- * property was set, the `Socket` connections would be broken when the
- * `Scholz2015GeometryPath` is copied into the `PathSpring`.
+ * @note We append path points *after* the `Scholz2015GeometryPath` has been
+ * added to the `PathSpring`, so that the connections for each `PathPoint`'s
+ * parent frame `Socket` remain valid. If we instead called `set_path()` after
+ * each `PathPoint` was appended, the `Socket` connections would be broken when
+ * the `Scholz2015GeometryPath` is copied into the `PathSpring`.
  *
- * ## Adding Wrap Obstacles
+ * ## Appending Wrap Obstacles
  *
  * Wrap obstacles are defined by `ContactGeometry` objects which encapsulate
  * a wrapping geometry, the `PhysicalFrame` that the geometry is attached to,
@@ -228,15 +227,16 @@ public:
  * - `ContactEllipsoid`
  * - `ContactTorus`
  *
- * Use `addObstacle()` to add a `ContactGeometry` wrapping obstacle to path,
- * along with a "contact hint" that is used to initialize the wrapping solver:
+ * Use `appendObstacle()` to append a `ContactGeometry` wrapping obstacle to
+ * path, along with a "contact hint" that is used to initialize the wrapping
+ * solver:
  *
  * \code{.cpp}
  * auto* obstacle = new ContactCylinder(0.15,
  *         SimTK::Vec3(-0.2, 0.2, 0), SimTK::Vec3(0),
  *         model.getComponent<Body>("/bodyset/b0"));
  * model.addComponent(obstacle);
- * path.addObstacle(*obstacle, SimTK::Vec3(0., 0.15, 0.));
+ * path.appendObstacle(*obstacle, SimTK::Vec3(0., 0.15, 0.));
  * \endcode
  *
  * The contact hint is a `SimTK::Vec3` defining a point on the surface in local
@@ -247,24 +247,25 @@ public:
  * side of the obstacle the path will wrap around.
  *
  * A `Scholz2015GeometryPath` must begin and end with a path point. Since we
- * added an obstacle, we must add an additional path point to "close" the path:
+ * appended an obstacle, we must append an additional path point to "close" the
+ * path:
  *
  * \code{.cpp}
- * path.addPathPoint(model.getComponent<Body>("/bodyset/b1"),
+ * path.appendPathPoint(model.getComponent<Body>("/bodyset/b1"),
  *         SimTK::Vec3(-0.5, 0.1, 0.));
  * \endcode
  *
  * ## Path Ordering
  *
- * The order in which obstacles and path points are added to the path is
+ * The order in which obstacles and path points are appended to the path is
  * important. For example, consider the path we constructed above:
  *
  * \code{.cpp}
- * path.addPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
- * path.addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+ * path.appendPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
+ * path.appendPathPoint(model.getComponent<Body>("/bodyset/b0"),
  *         SimTK::Vec3(-0.5, 0.1, 0.));
- * path.addObstacle(*obstacle, SimTK::Vec3(0., 0.15, 0.));
- * path.addPathPoint(model.getComponent<Body>("/bodyset/b1"),
+ * path.appendObstacle(*obstacle, SimTK::Vec3(0., 0.15, 0.));
+ * path.appendPathPoint(model.getComponent<Body>("/bodyset/b1"),
  *         SimTK::Vec3(-0.5, 0.1, 0.));
  * \endcode
  *
@@ -272,16 +273,16 @@ public:
  * obstacle to apply only to the portion of the path between the second and
  * third path points.
  *
- * By changing the order of the `addObstacle()` and `addPathPoint()` calls, we
- * could define a different path where a cylinder obstacle is applied to the
- * portion of the path between the first and second path points:
+ * By changing the order of the `appendObstacle()` and `appendPathPoint()`
+ * calls, we could define a different path where a cylinder obstacle is applied
+ * to the portion of the path between the first and second path points:
  *
  * \code{.cpp}
- * path.addPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
- * path.addObstacle(*obstacle, SimTK::Vec3(0., 0.15, 0.));
- * path.addPathPoint(model.getComponent<Body>("/bodyset/b0"),
+ * path.appendPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
+ * path.appendObstacle(*obstacle, SimTK::Vec3(0., 0.15, 0.));
+ * path.appendPathPoint(model.getComponent<Body>("/bodyset/b0"),
  *         SimTK::Vec3(-0.5, 0.1, 0.));
- * path.addPathPoint(model.getComponent<Body>("/bodyset/b1"),
+ * path.appendPathPoint(model.getComponent<Body>("/bodyset/b1"),
  *         SimTK::Vec3(-0.5, 0.1, 0.));
  * \endcode
  *
@@ -299,15 +300,6 @@ OpenSim_DECLARE_CONCRETE_OBJECT(Scholz2015GeometryPath, AbstractGeometryPath);
 
 public:
 //=============================================================================
-// PROPERTIES
-//=============================================================================
-    OpenSim_DECLARE_LIST_PROPERTY(path_elements, Scholz2015GeometryPathElement,
-        "The list of elements (path points or obstacles) defining the path.");
-    OpenSim_DECLARE_PROPERTY(algorithm, std::string,
-        "The algorithm used to compute the path. Options: 'Scholz2015' "
-        "(default) or 'MinimumLength'.");
-
-//=============================================================================
 // METHODS
 //=============================================================================
 
@@ -317,23 +309,33 @@ public:
     //** @name Path configuration */
     // @{
     /**
-     * Add a path point to the path.
+     * Append a path point to the path.
      */
-    void addPathPoint(const PhysicalFrame& frame, const SimTK::Vec3& location);
+    void appendPathPoint(const PhysicalFrame& frame,
+            const SimTK::Vec3& location);
 
     /**
-     * Get the origin `Station` of the path (i.e., the first path point).
-     *
-     * @pre At least one path point has been added to the path.
+     * Get the origin `PathPoint` of the path (i.e., the first path point).
      */
-    const Station& getOrigin() const;
+    const PathPoint& getOrigin() const;
 
     /**
-     * Get the insertion `Station` of the path (i.e., the last path point).
-     *
-     * @pre At least two path points have been added to the path.
+     * Get the insertion `PathPoint` of the path (i.e., the last path point).
      */
-    const Station& getInsertion() const;
+    const PathPoint& getInsertion() const;
+
+    /**
+     * Get the `PathPoint` at the specified index.
+     *
+     * The argument `pathPointIndex` is the index to the list of path points in
+     * the path, not all path elements (e.g., obstacles). For example, if the
+     * path consists of two path points and one obstacle, the valid indices are
+     * 0 and 1.
+     *
+     * @note Avoid repeated calls to this method in performance-critical
+     * code, as it may involve searching through the path elements.
+     */
+    const PathPoint& getPathPoint(int pathPointIndex) const;
 
     /**
      * Add an obstacle to the path.
@@ -350,8 +352,36 @@ public:
      *
      * @see Scholz2015GeometryPathObstacle
      */
-    void addObstacle(const ContactGeometry& contactGeometry,
+    void appendObstacle(const ContactGeometry& contactGeometry,
             const SimTK::Vec3& contactHint);
+
+    /**
+     * Get the `ContactGeometry` associated with the obstacle at the specified
+     * index.
+     *
+     * The argument `obstacleIndex` is the index to the list of obstacles in
+     * the path, not all path elements (e.g., path points). For example, if the
+     * path consists of two path points and one obstacle, the only valid index
+     * is 0.
+     *
+     * @note Avoid repeated calls to this method in performance-critical
+     * code, as it may involve searching through the path elements.
+     */
+    const ContactGeometry& getContactGeometry(int obstacleIndex) const;
+
+    /**
+     * Get the contact hint associated with the obstacle at the specified
+     * index.
+     *
+     * The argument `obstacleIndex` is the index to the list of obstacles in
+     * the path, not all path elements (e.g., path points). For example, if the
+     * path consists of two path points and one obstacle, the only valid index
+     * is 0.
+     *
+     * @note Avoid repeated calls to this method in performance-critical
+     * code, as it may involve searching through the path elements.
+     */
+    const SimTK::Vec3& getContactHint(int obstacleIndex) const;
 
     /**
      * Get the number of path points in the path.
@@ -387,6 +417,10 @@ public:
     // @}
 
 private:
+    // PROPERTIES
+    OpenSim_DECLARE_LIST_PROPERTY(path_elements, Scholz2015GeometryPathElement,
+        "The list of elements (path points or obstacles) defining the path.");
+
     // MODEL COMPONENT INTERFACE
     void extendConnectToModel(Model& model) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
@@ -396,6 +430,13 @@ private:
 
     // CONVENIENCE METHODS
     void constructProperties();
+
+    // Get the obstacle at the specified index.
+    // The argument `obstacleIndex` is the index to the list of obstacles in
+    // the path, not all path elements (e.g., path points). For example, if the
+    // path consists of two path points and one obstacle, the only valid index
+    // is 0.
+    const Scholz2015GeometryPathObstacle* getObstacle(int obstacleIndex) const;
 
     // Get a non-modifiable reference to a path element based on the element
     // index and type. Use this if you certain of the element type; otherwise,
