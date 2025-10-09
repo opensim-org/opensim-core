@@ -684,11 +684,13 @@ void Model::createMultibodySystem()
     _matter.reset();
     _forceSubsystem.reset();
     _contactSubsystem.reset();
+    _cableSubsystem.reset();
     // create system
     _system.reset(new SimTK::MultibodySystem);
     _matter.reset(new SimTK::SimbodyMatterSubsystem(*_system));
     _forceSubsystem.reset(new SimTK::GeneralForceSubsystem(*_system));
     _contactSubsystem.reset(new SimTK::GeneralContactSubsystem(*_system));
+    _cableSubsystem.reset(new SimTK::CableSubsystem(*_system));
 
     // create gravity force, a direction is needed even if magnitude=0 for
     // PotentialEnergy purposes.

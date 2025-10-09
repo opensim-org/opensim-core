@@ -49,8 +49,7 @@ ContactGeometry::ContactGeometry(const SimTK::Vec3& location,
     set_orientation(orientation);
 }
 
-void ContactGeometry::setNull()
-{
+void ContactGeometry::setNull() {
     setAuthors("Peter Eastman");
 }
 
@@ -155,7 +154,7 @@ void ContactGeometry::generateDecorationsImpl(
 // OBJECT INTERFACE
 //=============================================================================
 void ContactGeometry::updateFromXMLNode(SimTK::Xml::Element& node,
-                                        int versionNumber) {
+        int versionNumber) {
     if (versionNumber < XMLDocument::getLatestVersion()) {
         if (versionNumber < 30505) {
             SimTK::Xml::element_iterator bodyElement =

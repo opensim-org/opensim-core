@@ -25,7 +25,7 @@
 
 #include <OpenSim/Common/ModelDisplayHints.h>
 
-namespace OpenSim {
+using namespace OpenSim;
 
 ContactHalfSpace::ContactHalfSpace() :
     ContactGeometry()
@@ -40,7 +40,7 @@ ContactHalfSpace::ContactHalfSpace(const SimTK::Vec3& location,
     setNull();
 }
 
-ContactHalfSpace::ContactHalfSpace(const SimTK::Vec3& location, 
+ContactHalfSpace::ContactHalfSpace(const SimTK::Vec3& location,
     const SimTK::Vec3& orientation, const PhysicalFrame& frame,
     const std::string& name) :
         ContactHalfSpace(location, orientation, frame)
@@ -59,7 +59,7 @@ SimTK::ContactGeometry ContactHalfSpace::createSimTKContactGeometryImpl() const
     return SimTK::ContactGeometry::HalfSpace();
 }
 
-void ContactHalfSpace::generateDecorationsImpl(bool fixed, 
+void ContactHalfSpace::generateDecorationsImpl(bool fixed,
     const ModelDisplayHints& hints,
     const SimTK::State& s,
     SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
@@ -87,13 +87,10 @@ void ContactHalfSpace::generateDecorationsImpl(bool fixed,
                     // decorative geometry is within the contact geomtry, we
                     // must offset by half the thickness of the brick.
                     .setTransform(X_BP * SimTK::Transform(SimTK::Vec3(
-                                                 brickHalfThickness, 0, 0)))
+                                                brickHalfThickness, 0, 0)))
                     .setScale(1)
                     .setRepresentation(get_Appearance().get_representation())
                     .setBodyId(getFrame().getMobilizedBodyIndex())
                     .setColor(get_Appearance().get_color())
                     .setOpacity(get_Appearance().get_opacity()));
 }
-
-
-} // end of namespace OpenSim
