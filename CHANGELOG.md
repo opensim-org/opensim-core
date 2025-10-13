@@ -32,6 +32,7 @@ v4.6
 Scholz et al. (2015). This class encapsulates `SimTK::CableSpan`, the Simbody implementation of the core wrapping algorithm, and provides support for using this method to define the
 geometry for path-based OpenSim components (e.g., `Muscle`, `PathSpring`, etc.). This class can be used as a replacement for `GeometryPath`, providing improved computational
 performance and stability in wrapping solutions.
+- Implemented `generateDecorations()` for `Station` to allow visualization in the Simbody visualizer. (#4169)
 
 
 v4.5.2
