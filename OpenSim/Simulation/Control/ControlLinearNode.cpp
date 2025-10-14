@@ -141,10 +141,11 @@ operator=(const ControlLinearNode &aNode)
  * @return True if the times are equal, false otherwise.
  */
 bool ControlLinearNode::
-operator==(const ControlLinearNode &aNode) const
+operator==(const Object &aNode) const
 {
-    if((_t) > aNode._t) return(false);
-    if((_t) < aNode._t) return(false);
+    const ControlLinearNode& node = static_cast<const ControlLinearNode&>(aNode);
+    if((_t) > node._t) return(false);
+    if((_t) < node._t) return(false);
     return(true);
 }
 
@@ -159,9 +160,10 @@ operator==(const ControlLinearNode &aNode) const
  * @return True if the time of this node is less than the time of aNode.
  */
 bool ControlLinearNode::
-operator<(const ControlLinearNode &aNode) const
+operator<(const Object &aNode) const
 {
-    if(_t<aNode._t) return(true);
+    const ControlLinearNode& node = static_cast<const ControlLinearNode&>(aNode);
+    if(node._t) return(true);
     else return(false);
 }
 
