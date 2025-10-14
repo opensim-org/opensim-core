@@ -143,7 +143,7 @@ operator=(const ControlLinearNode &aNode)
 bool ControlLinearNode::
 operator==(const Object &aNode) const
 {
-    const ControlLinearNode& node = static_cast<const ControlLinearNode&>(aNode);
+    const auto& node = dynamic_cast<const ControlLinearNode&>(aNode);
     if((_t) > node._t) return(false);
     if((_t) < node._t) return(false);
     return(true);
@@ -162,7 +162,7 @@ operator==(const Object &aNode) const
 bool ControlLinearNode::
 operator<(const Object &aNode) const
 {
-    const ControlLinearNode& node = static_cast<const ControlLinearNode&>(aNode);
+    const auto& node = dynamic_cast<const ControlLinearNode&>(aNode);
     if(node._t) return(true);
     else return(false);
 }
