@@ -35,6 +35,7 @@
 %template(SetFrames) OpenSim::Set<OpenSim::Frame, OpenSim::ModelComponent>;
 %template(ModelComponentSetFrames)
 OpenSim::ModelComponentSet<OpenSim::Frame>;
+%include <OpenSim/Simulation/Model/StationDefinedFrame.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/Body.h>
 %template(SetBodies) OpenSim::Set<OpenSim::Body, OpenSim::ModelComponent>;

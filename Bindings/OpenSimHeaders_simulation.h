@@ -17,6 +17,7 @@
 #include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/OffsetFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/Model/StationDefinedFrame.h>
 
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/ForceProducer.h>
