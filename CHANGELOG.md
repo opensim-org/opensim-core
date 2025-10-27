@@ -33,6 +33,7 @@ Scholz et al. (2015). This class encapsulates `SimTK::CableSpan`, the Simbody im
 geometry for path-based OpenSim components (e.g., `Muscle`, `PathSpring`, etc.). This class can be used as a replacement for `GeometryPath`, providing improved computational
 performance and stability in wrapping solutions.
 - Implemented `generateDecorations()` for `Station` to allow visualization in the Simbody visualizer. (#4169)
+- Added `Component::removeComponent` and `Component::extractComponent` methods, which enable removing subcomponents that were previously added via `Component::addComponent` or the `<components>` XML element (#4174).
 
 
 v4.5.2
