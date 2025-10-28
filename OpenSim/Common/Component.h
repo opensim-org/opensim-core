@@ -672,6 +672,7 @@ public:
     * @param subcomponent is the Component to be added. */
     void addComponent(Component* subcomponent);
 
+#ifndef SWIG
     /**
      * Returns `subcomponent` if `subcomponent` was successfully extracted from
      * this `Component`.
@@ -694,6 +695,7 @@ public:
         std::unique_ptr<Component> typeErased = extractComponent(static_cast<Component*>(subcomponent));
         return std::unique_ptr<T>{static_cast<T*>(typeErased.release())};
     }
+#endif
 
     /**
      * Returns `true` if `subcomponent`, which should be a direct subcomponent
