@@ -88,7 +88,7 @@ namespace
     public:
         OpenSim_DECLARE_PROPERTY(object_property, BlankComponent, "an object property");
 
-	ComponentWithObjectProperty() { constructProperty_object_property(BlankComponent{}); }
+        ComponentWithObjectProperty() { constructProperty_object_property(BlankComponent{}); }
     };
 }
 
