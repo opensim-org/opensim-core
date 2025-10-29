@@ -1154,6 +1154,7 @@ public:
         _forceSubsystem.reset();
         _gravityForce.reset();
         _matter.reset();
+        _cableSubsystem.reset();
     }
 
     /** Override of the default implementation to account for versioning. */

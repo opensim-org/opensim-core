@@ -798,11 +798,13 @@ void Model::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    // wipe-out the existing System
+    // wipe-out the existing System: make sure to wipe subsystems first
     _matter.reset();
     _forceSubsystem.reset();
     _contactSubsystem.reset();
-    _system.reset();
+    _cableSubsystem.reset();
+
+    _system.reset();  // after wiping all subsystems
 
     if(getForceSet().getSize()>0)
     {
