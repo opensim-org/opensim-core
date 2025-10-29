@@ -91,6 +91,11 @@ SimTK::ContactGeometry ContactGeometry::createSimTKContactGeometry() const
     return createSimTKContactGeometryImpl();
 }
 
+void ContactGeometry::resetSimTKContactGeometryPtr() const
+{
+    _simTKContactGeometry.reset();
+}
+
 std::shared_ptr<const SimTK::ContactGeometry>
 ContactGeometry::getSimTKContactGeometryPtr() const
 {
@@ -266,6 +271,7 @@ double ContactSphere::getRadius() const
 
 void ContactSphere::setRadius(double radius)
 {
+    resetSimTKContactGeometryPtr();
     set_radius(radius);
 }
 
@@ -305,6 +311,7 @@ double ContactCylinder::getRadius() const
 
 void ContactCylinder::setRadius(double radius)
 {
+    resetSimTKContactGeometryPtr();
     set_radius(radius);
 }
 
@@ -345,6 +352,7 @@ const SimTK::Vec3& ContactEllipsoid::getRadii() const
 
 void ContactEllipsoid::setRadii(const SimTK::Vec3& radii)
 {
+    resetSimTKContactGeometryPtr();
     set_radii(radii);
 }
 
@@ -388,6 +396,7 @@ double ContactTorus::getTorusRadius() const
 
 void ContactTorus::setTorusRadius(double radius)
 {
+    resetSimTKContactGeometryPtr();
     set_torus_radius(radius);
 }
 
@@ -398,6 +407,7 @@ double ContactTorus::getTubeRadius() const
 
 void ContactTorus::setTubeRadius(double radius)
 {
+    resetSimTKContactGeometryPtr();
     set_tube_radius(radius);
 }
 

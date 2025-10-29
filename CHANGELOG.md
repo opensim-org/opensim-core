@@ -33,6 +33,7 @@ Scholz et al. (2015). This class encapsulates `SimTK::CableSpan`, the Simbody im
 geometry for path-based OpenSim components (e.g., `Muscle`, `PathSpring`, etc.). This class can be used as a replacement for `GeometryPath`, providing improved computational
 performance and stability in wrapping solutions.
 - Implemented `generateDecorations()` for `Station` to allow visualization in the Simbody visualizer. (#4169)
+- The properties of `ContactGeometry`'s concrete implementations (e.g., `ContactSphere`) have been made private. Therefore, users no longer have access auto-generated property methods (e.g., `set_radius()`) and should update properties via the public accessors (e.g., `ContactSphere::setRadius()`). (#4180)
 
 
 v4.5.2

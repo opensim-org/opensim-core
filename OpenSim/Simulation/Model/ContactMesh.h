@@ -40,14 +40,6 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ContactMesh, ContactGeometry);
 
 public:
 //=============================================================================
-// PROPERTIES 
-//=============================================================================
-
-    OpenSim_DECLARE_PROPERTY(filename, std::string,
-            "Path to mesh geometry file (supports .obj, .stl, .vtp). "
-            "Mesh should be closed and water-tight.");
-
-//=============================================================================
 // METHODS
 //=============================================================================
     // CONSTRUCTION
@@ -96,6 +88,11 @@ public:
     void setFilename(const std::string& filename);
 
 private:
+    // PROPERTIES
+    OpenSim_DECLARE_PROPERTY(filename, std::string,
+            "Path to mesh geometry file (supports .obj, .stl, .vtp). "
+            "Mesh should be closed and water-tight.");
+
     // INITIALIZATION
     void setNull();
     void constructProperties();
