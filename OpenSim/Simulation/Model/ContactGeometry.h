@@ -178,13 +178,13 @@ private:
 class OSIMSIMULATION_API ContactSphere : public ContactGeometry {
 OpenSim_DECLARE_CONCRETE_OBJECT(ContactSphere, ContactGeometry);
 
-public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_PROPERTY(radius, double,
             "The radius of the sphere (default: 0).");
 
+public:
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -257,13 +257,13 @@ private:
 class OSIMSIMULATION_API ContactCylinder : public ContactGeometry {
 OpenSim_DECLARE_CONCRETE_OBJECT(ContactCylinder, ContactGeometry);
 
-public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_PROPERTY(radius, double,
             "The radius of the cylinder (default: 0).");
 
+public:
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -332,13 +332,13 @@ private:
 class OSIMSIMULATION_API ContactEllipsoid : public ContactGeometry {
 OpenSim_DECLARE_CONCRETE_OBJECT(ContactEllipsoid, ContactGeometry);
 
-public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_PROPERTY(radii, SimTK::Vec3,
             "The radii of the ellipsoid (default: [0, 0, 0]).");
 
+public:
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -415,7 +415,6 @@ private:
 class OSIMSIMULATION_API ContactTorus : public ContactGeometry {
 OpenSim_DECLARE_CONCRETE_OBJECT(ContactTorus, ContactGeometry);
 
-public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
@@ -426,6 +425,7 @@ public:
             "The radius of the torus cross-section: perpendicular distance "
             "from the circular centerline to the surface (default: 0).");
 
+public:
 //=============================================================================
 // METHODS
 //=============================================================================
