@@ -159,24 +159,10 @@ protected:
     void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
         override;
 
-    // Reset the cached SimTK::ContactGeometry pointer. Derived classes should
-    // invoke this method when the properties of the ContactGeometry are changed.
-    // This will invalidate the cached SimTK::ContactGeometry pointer so that it
-    // is recreated the next time `getSimTKContactGeometryPtr()` is called.
-    void resetSimTKContactGeometryPtr() const;
-
 private:
-    mutable std::shared_ptr<const SimTK::ContactGeometry> _simTKContactGeometry;
-
-    // Get a shared pointer to a SimTK::ContactGeometry based on this object.
-    std::shared_ptr<const SimTK::ContactGeometry>
-    getSimTKContactGeometryPtr() const;
-
     // INITIALIZATION
     void setNull();
     void constructProperties();
-
-    friend class Scholz2015GeometryPath;
 };
 
 /**
@@ -193,6 +179,12 @@ class OSIMSIMULATION_API ContactSphere : public ContactGeometry {
 OpenSim_DECLARE_CONCRETE_OBJECT(ContactSphere, ContactGeometry);
 
 public:
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    OpenSim_DECLARE_PROPERTY(radius, double,
+            "The radius of the sphere (default: 0).");
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -243,10 +235,6 @@ public:
     // @}
 
 private:
-    // PROPERTIES
-    OpenSim_DECLARE_PROPERTY(radius, double,
-            "Radius of the sphere (default: 0).");
-
     // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
 };
@@ -270,6 +258,12 @@ class OSIMSIMULATION_API ContactCylinder : public ContactGeometry {
 OpenSim_DECLARE_CONCRETE_OBJECT(ContactCylinder, ContactGeometry);
 
 public:
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    OpenSim_DECLARE_PROPERTY(radius, double,
+            "The radius of the cylinder (default: 0).");
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -323,10 +317,6 @@ public:
     // @}
 
 private:
-    // PROPERTIES
-    OpenSim_DECLARE_PROPERTY(radius, double,
-            "Radius of the cylinder (default: 0).");
-
     // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
 };
@@ -343,6 +333,12 @@ class OSIMSIMULATION_API ContactEllipsoid : public ContactGeometry {
 OpenSim_DECLARE_CONCRETE_OBJECT(ContactEllipsoid, ContactGeometry);
 
 public:
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    OpenSim_DECLARE_PROPERTY(radii, SimTK::Vec3,
+            "The radii of the ellipsoid (default: [0, 0, 0]).");
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -396,10 +392,6 @@ public:
     // @}
 
 private:
-    // PROPERTIES
-    OpenSim_DECLARE_PROPERTY(radii, SimTK::Vec3,
-            "Radii of the ellipsoid (default: [0, 0, 0]).");
-
     // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
 };
@@ -424,6 +416,16 @@ class OSIMSIMULATION_API ContactTorus : public ContactGeometry {
 OpenSim_DECLARE_CONCRETE_OBJECT(ContactTorus, ContactGeometry);
 
 public:
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    OpenSim_DECLARE_PROPERTY(torus_radius, double,
+            "The radius of the circular centerline of the torus, measure from "
+            "the origin (default: 0).");
+    OpenSim_DECLARE_PROPERTY(tube_radius, double,
+            "The radius of the torus cross-section: perpendicular distance "
+            "from the circular centerline to the surface (default: 0).");
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -490,14 +492,6 @@ public:
     // @}
 
 private:
-    // PROPERTIES
-    OpenSim_DECLARE_PROPERTY(torus_radius, double,
-            "The radius of the circular centerline of the torus, measure from "
-            "the origin (default: 0).");
-    OpenSim_DECLARE_PROPERTY(tube_radius, double,
-            "The radius of the torus cross-section: perpendicular distance "
-            "from the circular centerline to the surface (default: 0).");
-
     // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
 };

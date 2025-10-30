@@ -36,8 +36,8 @@ namespace OpenSim {
  * inside the geometry. Its location and orientation properties can be used to 
  * move and rotate it to represent other half spaces.
  *
- * A `SimTK::ContactGeometry::TriangleMesh` is constructed when either
- * `createSimTKContactGeometry()` or `getSimTKContactGeometryPtr()` is called.
+ * A `SimTK::ContactGeometry::TriangleMesh` is constructed when
+ * `createSimTKContactGeometry()` is called.
  *
  * @author Peter Eastman
  */

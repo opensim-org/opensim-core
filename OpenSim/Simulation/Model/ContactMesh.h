@@ -30,8 +30,8 @@ namespace OpenSim {
  * \section ContactMesh
  * This class represents a polygonal mesh for use in contact modeling.
  *
- * A `SimTK::ContactGeometry::TriangleMesh` is constructed when either
- * `createSimTKContactGeometry()` or `getSimTKContactGeometryPtr()` is called.
+ * A `SimTK::ContactGeometry::TriangleMesh` is constructed when
+ * `createSimTKContactGeometry()` is called.
  *
  * @author Peter Eastman
  */
@@ -39,6 +39,13 @@ class OSIMSIMULATION_API ContactMesh : public ContactGeometry {
 OpenSim_DECLARE_CONCRETE_OBJECT(ContactMesh, ContactGeometry);
 
 public:
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    OpenSim_DECLARE_PROPERTY(filename, std::string,
+            "Path to a mesh geometry file (supports .obj, .stl, .vtp). "
+            "The mesh should be closed and water-tight.");
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -88,11 +95,6 @@ public:
     void setFilename(const std::string& filename);
 
 private:
-    // PROPERTIES
-    OpenSim_DECLARE_PROPERTY(filename, std::string,
-            "Path to mesh geometry file (supports .obj, .stl, .vtp). "
-            "Mesh should be closed and water-tight.");
-
     // INITIALIZATION
     void setNull();
     void constructProperties();

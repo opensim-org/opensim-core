@@ -91,7 +91,6 @@ const std::string& ContactMesh::getFilename() const
 
 void ContactMesh::setFilename(const std::string& filename)
 {
-    resetSimTKContactGeometryPtr();
     set_filename(filename);
     _geometry.reset();
     _decorativeGeometry.reset();
