@@ -928,6 +928,7 @@ TEST_CASE("Changing contact geometry properties") {
     auto* obstacle = new ContactCylinder(0.1,
         SimTK::Vec3(-0.5, 0.1, 0.), SimTK::Vec3(0),
         model.getComponent<Body>("/bodyset/b0"));
+    obstacle->setName("cylinder");
     model.addComponent(obstacle);
     path1->appendObstacle(*obstacle, SimTK::Vec3(0., 0.1, 0.));
     path2->appendObstacle(*obstacle, SimTK::Vec3(0., 0.1, 0.));
@@ -947,10 +948,11 @@ TEST_CASE("Changing contact geometry properties") {
     CHECK(length1 == length2);
 
     // Change the obstacle radius.
-    obstacle->setRadius(0.2);
+    model.updComponent<ContactCylinder>("/cylinder").setRadius(0.2);
 
-    // We need to reinitialize the system *and* update the state in order for
-    // the radius change to take effect.
+    // We need to reinitialize the system *and* create a new state in order for
+    // the radius change to take effect. This ensures that we do not access
+    // cached path length values from the previous state.
     state = model.initSystem();
 
     // Calculate the new path lengths.
