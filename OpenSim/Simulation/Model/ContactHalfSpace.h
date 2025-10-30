@@ -30,10 +30,10 @@ namespace OpenSim {
 /**
  * \section ContactHalfSpace
  * A class that represents a half space (that is, everything to one side of an
- * infinite plane) for use in contact modeling.  
+ * infinite plane) for use in contact modeling.
  *
  * In its local coordinate system, all points for which x>0 are considered to be
- * inside the geometry. Its location and orientation properties can be used to 
+ * inside the geometry. Its location and orientation properties can be used to
  * move and rotate it to represent other half spaces.
  *
  * A `SimTK::ContactGeometry::TriangleMesh` is constructed when
@@ -94,8 +94,8 @@ private:
     // INITIALIZATION
     void setNull();
 
-}; 
+};
 
 } // namespace OpenSim
 
-#endif // OPENSIM_CONTACT_HALF_SPACE_H_ 
+#endif // OPENSIM_CONTACT_HALF_SPACE_H_

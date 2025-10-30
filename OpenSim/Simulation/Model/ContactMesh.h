@@ -1,5 +1,5 @@
 #ifndef OPENSIM_CONTACT_MESH_H_
-#define OPENSIM_CONTACT_MESH_H_ 
+#define OPENSIM_CONTACT_MESH_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  ContactMesh.h                           *
  * -------------------------------------------------------------------------- *
@@ -65,7 +65,7 @@ public:
      *                     it is attached to
      * @param frame        the PhysicalFrame this mesh is attached to
      */
-    ContactMesh(const std::string& filename, const SimTK::Vec3& location, 
+    ContactMesh(const std::string& filename, const SimTK::Vec3& location,
             const SimTK::Vec3& orientation, const PhysicalFrame& frame);
 
     /**
@@ -79,8 +79,8 @@ public:
      * @param frame        the PhysicalFrame this mesh is attached to
      * @param name         the name of this object
      */
-    ContactMesh(const std::string& filename, const SimTK::Vec3& location, 
-            const SimTK::Vec3& orientation, const PhysicalFrame& frame, 
+    ContactMesh(const std::string& filename, const SimTK::Vec3& location,
+            const SimTK::Vec3& orientation, const PhysicalFrame& frame,
             const std::string& name);
 
     // ACCESSORS
@@ -91,7 +91,7 @@ public:
 
     /**
      * %Set the name of the file to load the mesh from.
-     */ 
+     */
     void setFilename(const std::string& filename);
 
 private:
@@ -116,8 +116,8 @@ private:
     mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::DecorativeMesh>>
         _decorativeGeometry;
 
-}; 
+};
 
 } // namespace OpenSim
 
-#endif // OPENSIM_CONTACT_MESH_H_ 
+#endif // OPENSIM_CONTACT_MESH_H_
