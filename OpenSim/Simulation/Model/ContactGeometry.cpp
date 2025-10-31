@@ -92,55 +92,6 @@ SimTK::ContactGeometry ContactGeometry::createSimTKContactGeometry() const
 }
 
 //=============================================================================
-// VISUALIZATION
-//=============================================================================
-void ContactGeometry::generateDecorations(
-        bool fixed,
-        const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {
-    Super::generateDecorations(fixed, hints, s, geometry);
-    generateDecorationsImpl(fixed, hints, s, geometry);
-}
-
-void ContactGeometry::generateDecorationsImpl(
-        bool fixed,
-        const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {
-    // There is no fixed geometry to generate here.
-    if (fixed) { return; }
-
-    // Model-wide hints indicate that contact geometry shouldn't be shown.
-    if (!hints.get_show_contact_geometry()) { return; }
-
-    // The decoration has been toggled off by its `Appearance` block.
-    if (!get_Appearance().get_visible())  { return; }
-
-    // Create a SimTK::DecorativeGeometry object for this ContactGeometry.
-    SimTK::DecorativeGeometry decoration =
-        createSimTKContactGeometry().createDecorativeGeometry();
-
-    // B: base Frame (Body or Ground)
-    // F: PhysicalFrame that this ContactGeometry is connected to
-    // P: the frame defined (relative to F) by the location and orientation
-    //    properties defined in ContactGeometry.
-    // D: the frame defined (relative to P) by the decoration's location and
-    //    orientation properties defined by the SimTK::DecorativeGeometry object.
-    const auto& X_BF = getFrame().findTransformInBaseFrame();
-    const auto& X_FP = getTransform();
-    const auto& X_PD = decoration.getTransform();
-    const auto X_BD = X_BF.compose(X_FP).compose(X_PD);
-    geometry.push_back(decoration
-            .setScale(1)
-            .setTransform(X_BD)
-            .setRepresentation(get_Appearance().get_representation())
-            .setBodyId(getFrame().getMobilizedBodyIndex())
-            .setColor(get_Appearance().get_color())
-            .setOpacity(get_Appearance().get_opacity()));
-}
-
-//=============================================================================
 // OBJECT INTERFACE
 //=============================================================================
 void ContactGeometry::updateFromXMLNode(SimTK::Xml::Element& node,
@@ -264,6 +215,43 @@ SimTK::ContactGeometry ContactSphere::createSimTKContactGeometryImpl() const
     return SimTK::ContactGeometry::Sphere(get_radius());
 }
 
+void ContactSphere::generateDecorations(
+        bool fixed,
+        const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {
+
+    // There is no fixed geometry to generate here.
+    if (fixed) { return; }
+
+    // Model-wide hints indicate that contact geometry shouldn't be shown.
+    if (!hints.get_show_contact_geometry()) { return; }
+
+    // The decoration has been toggled off by its `Appearance` block.
+    if (!get_Appearance().get_visible())  { return; }
+
+    // Create a SimTK::DecorativeSphere object for this ContactSphere.
+    SimTK::DecorativeSphere decoration(get_radius());
+
+    // B: base Frame (Body or Ground)
+    // F: PhysicalFrame that this ContactGeometry is connected to
+    // P: the frame defined (relative to F) by the location and orientation
+    //    properties defined in ContactGeometry.
+    // D: the frame defined (relative to P) by the decoration's location and
+    //    orientation properties defined by the SimTK::DecorativeGeometry object.
+    const auto& X_BF = getFrame().findTransformInBaseFrame();
+    const auto& X_FP = getTransform();
+    const auto& X_PD = decoration.getTransform();
+    const auto X_BD = X_BF.compose(X_FP).compose(X_PD);
+    geometry.push_back(decoration
+            .setScale(1)
+            .setTransform(X_BD)
+            .setRepresentation(get_Appearance().get_representation())
+            .setBodyId(getFrame().getMobilizedBodyIndex())
+            .setColor(get_Appearance().get_color())
+            .setOpacity(get_Appearance().get_opacity()));
+}
+
 //=============================================================================
 // CONTACT CYLINDER
 //=============================================================================
@@ -301,6 +289,46 @@ void ContactCylinder::setRadius(double radius)
 SimTK::ContactGeometry ContactCylinder::createSimTKContactGeometryImpl() const
 {
     return SimTK::ContactGeometry::Cylinder(get_radius());
+}
+
+void ContactCylinder::generateDecorations(
+        bool fixed,
+        const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {
+
+    // There is no fixed geometry to generate here.
+    if (fixed) { return; }
+
+    // Model-wide hints indicate that contact geometry shouldn't be shown.
+    if (!hints.get_show_contact_geometry()) { return; }
+
+    // The decoration has been toggled off by its `Appearance` block.
+    if (!get_Appearance().get_visible())  { return; }
+
+    // Create a SimTK::DecorativeCylinder object for this ContactCylinder.
+    SimTK::DecorativeCylinder decoration(get_radius(), get_radius()*2);
+    // SimTK::DecorativeCylinder's axis is defined as the y-axis,
+    // whereas SimTK::ContactGeometry::Cylinder axis is defined as the z-axis.
+    decoration.setTransform(SimTK::Rotation(SimTK::Pi/2, SimTK::XAxis));
+
+    // B: base Frame (Body or Ground)
+    // F: PhysicalFrame that this ContactGeometry is connected to
+    // P: the frame defined (relative to F) by the location and orientation
+    //    properties defined in ContactGeometry.
+    // D: the frame defined (relative to P) by the decoration's location and
+    //    orientation properties defined by the SimTK::DecorativeGeometry object.
+    const auto& X_BF = getFrame().findTransformInBaseFrame();
+    const auto& X_FP = getTransform();
+    const auto& X_PD = decoration.getTransform();
+    const auto X_BD = X_BF.compose(X_FP).compose(X_PD);
+    geometry.push_back(decoration
+            .setScale(1)
+            .setTransform(X_BD)
+            .setRepresentation(get_Appearance().get_representation())
+            .setBodyId(getFrame().getMobilizedBodyIndex())
+            .setColor(get_Appearance().get_color())
+            .setOpacity(get_Appearance().get_opacity()));
 }
 
 //=============================================================================
@@ -342,6 +370,43 @@ SimTK::ContactGeometry ContactEllipsoid::createSimTKContactGeometryImpl() const
 {
     return SimTK::ContactGeometry::Ellipsoid(get_radii());
 }
+
+void ContactEllipsoid::generateDecorations(
+        bool fixed,
+        const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {
+
+    // There is no fixed geometry to generate here.
+    if (fixed) { return; }
+
+    // Model-wide hints indicate that contact geometry shouldn't be shown.
+    if (!hints.get_show_contact_geometry()) { return; }
+
+    // The decoration has been toggled off by its `Appearance` block.
+    if (!get_Appearance().get_visible())  { return; }
+
+    // Create a SimTK::DecorativeEllipsoid object for this ContactEllipsoid.
+    SimTK::DecorativeEllipsoid decoration(get_radii());
+
+    // B: base Frame (Body or Ground)
+    // F: PhysicalFrame that this ContactGeometry is connected to
+    // P: the frame defined (relative to F) by the location and orientation
+    //    properties defined in ContactGeometry.
+    // D: the frame defined (relative to P) by the decoration's location and
+    //    orientation properties defined by the SimTK::DecorativeGeometry object.
+    const auto& X_BF = getFrame().findTransformInBaseFrame();
+    const auto& X_FP = getTransform();
+    const auto& X_PD = decoration.getTransform();
+    const auto X_BD = X_BF.compose(X_FP).compose(X_PD);
+    geometry.push_back(decoration
+            .setScale(1)
+            .setTransform(X_BD)
+            .setRepresentation(get_Appearance().get_representation())
+            .setBodyId(getFrame().getMobilizedBodyIndex())
+            .setColor(get_Appearance().get_color())
+            .setOpacity(get_Appearance().get_opacity()));
+    }
 
 //=============================================================================
 // CONTACT TORUS
@@ -394,4 +459,42 @@ void ContactTorus::setTubeRadius(double radius)
 SimTK::ContactGeometry ContactTorus::createSimTKContactGeometryImpl() const
 {
     return SimTK::ContactGeometry::Torus(get_torus_radius(), get_tube_radius());
+}
+
+void ContactTorus::generateDecorations(
+        bool fixed,
+        const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {
+
+    // There is no fixed geometry to generate here.
+    if (fixed) { return; }
+
+    // Model-wide hints indicate that contact geometry shouldn't be shown.
+    if (!hints.get_show_contact_geometry()) { return; }
+
+    // The decoration has been toggled off by its `Appearance` block.
+    if (!get_Appearance().get_visible())  { return; }
+
+    // Create a SimTK::DecorativeTorus object for this ContactTorus.
+    SimTK::DecorativeGeometry decoration =
+            createSimTKContactGeometry().createDecorativeGeometry();
+
+    // B: base Frame (Body or Ground)
+    // F: PhysicalFrame that this ContactGeometry is connected to
+    // P: the frame defined (relative to F) by the location and orientation
+    //    properties defined in ContactGeometry.
+    // D: the frame defined (relative to P) by the decoration's location and
+    //    orientation properties defined by the SimTK::DecorativeGeometry object.
+    const auto& X_BF = getFrame().findTransformInBaseFrame();
+    const auto& X_FP = getTransform();
+    const auto& X_PD = decoration.getTransform();
+    const auto X_BD = X_BF.compose(X_FP).compose(X_PD);
+    geometry.push_back(decoration
+            .setScale(1)
+            .setTransform(X_BD)
+            .setRepresentation(get_Appearance().get_representation())
+            .setBodyId(getFrame().getMobilizedBodyIndex())
+            .setColor(get_Appearance().get_color())
+            .setOpacity(get_Appearance().get_opacity()));
 }

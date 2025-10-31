@@ -59,7 +59,7 @@ SimTK::ContactGeometry ContactHalfSpace::createSimTKContactGeometryImpl() const
     return SimTK::ContactGeometry::HalfSpace();
 }
 
-void ContactHalfSpace::generateDecorationsImpl(bool fixed,
+void ContactHalfSpace::generateDecorations(bool fixed,
     const ModelDisplayHints& hints,
     const SimTK::State& s,
     SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const

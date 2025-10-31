@@ -134,7 +134,7 @@ SimTK::ContactGeometry ContactMesh::createSimTKContactGeometryImpl() const
 //=============================================================================
 // VISUALIZATION
 //=============================================================================
-void ContactMesh::generateDecorationsImpl(
+void ContactMesh::generateDecorations(
     bool fixed,
     const ModelDisplayHints& hints,
     const SimTK::State& s,
