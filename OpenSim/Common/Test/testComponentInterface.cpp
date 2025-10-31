@@ -78,6 +78,18 @@ namespace
             constructProperty_func();
         }
     };
+
+    class BlankComponent final : public OpenSim::Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(BlankComponent, OpenSim::Component);
+    };
+
+    class ComponentWithObjectProperty final : public OpenSim::Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ComponentWithObjectProperty, OpenSim::Component);
+    public:
+        OpenSim_DECLARE_PROPERTY(object_property, BlankComponent, "an object property");
+
+        ComponentWithObjectProperty() { constructProperty_object_property(BlankComponent{}); }
+    };
 }
 
 using namespace OpenSim;
@@ -3411,6 +3423,51 @@ TEST_CASE("Component Interface: Incorrectly Reading an Optional Object Property 
     } catch (const std::exception&) {
         // ... but should throw an exception
     }
+}
+
+TEST_CASE("Component Interface: removeComponent returns `true` if it removes a component added via addComponent")
+{
+    BlankComponent c;
+    BlankComponent* child = new BlankComponent{};
+    c.addComponent(child);
+    CHECK(c.removeComponent(child));
+}
+
+TEST_CASE("Component Interface: removeComponent returns `false` if given a `Component` that wasn't added via addComponent")
+{
+    BlankComponent c;
+    auto unrelated = std::make_unique<BlankComponent>();
+    CHECK(!c.removeComponent(unrelated.get()));
+}
+
+TEST_CASE("Component Interface: removeComponent returns `false` if caller tries to remove a direct object property")
+{
+    ComponentWithObjectProperty c;
+    Component* property = &c.upd_object_property();
+    CHECK(!c.removeComponent(property));
+}
+
+TEST_CASE("Component Interface: extractComponent returns the component added via addComponent")
+{
+    BlankComponent c;
+    BlankComponent* child = new BlankComponent{};
+    c.addComponent(child);
+    auto extracted = c.extractComponent(child);
+    CHECK(extracted.get() == child);
+}
+
+TEST_CASE("Component Interface: extractComponent returns nullptr if given a `Component` that wasn't added via addComponent")
+{
+    BlankComponent c;
+    auto unrelated = std::make_unique<BlankComponent>();
+    CHECK(c.extractComponent(unrelated.get()) == nullptr);
+}
+
+TEST_CASE("Component Interface: extractComponent returns `nullptr` if caller tries to remove a direct object property")
+{
+    ComponentWithObjectProperty c;
+    Component* property = &c.upd_object_property();
+    CHECK(c.extractComponent(property).get() == nullptr);
 }
 
 const bool g_TestFixtureTypesAreRegistered = []()
