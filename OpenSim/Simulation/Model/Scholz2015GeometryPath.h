@@ -292,6 +292,28 @@ public:
  * behavior. Note also that both of the path examples above are valid, since
  * each begins and ends with a path point.
  *
+ * ## Changing Obstacle Properties
+ *
+ * The properties of a `ContactGeometry` obstacle can be changed after it has
+ * been appended to the path. However, if `ContactGeometry` properties are
+ * changed, you must both rebuild the system *and* generate a new `SimTK::State`
+ * in order for the change to take effect. For example, the following code shows
+ * how to change the radius of a `ContactCylinder` obstacle and compute the new
+ * path length:
+ *
+ * \code{.cpp}
+ * model.updComponent<ContactCylinder>("/cylinder").setRadius(0.2);
+ * SimTK::State state = model.initSystem();
+ * model.realizePosition(state);
+ * SimTK::Real length = path.getLength(state);
+ * \endcode
+ *
+ * @note A new `SimTK::State` must be generated because changing
+ * `ContactGeometry` properties will not invalidate the `SimTK::State` cache.
+ * Reusing a previous `SimTK::State` with `path.getLength(state)` will return
+ * the cached (and likely incorrect) path length value computed prior to the
+ * property change.
+ *
  * @see Scholz2015GeometryPathPoint
  * @see Scholz2015GeometryPathObstacle
  */

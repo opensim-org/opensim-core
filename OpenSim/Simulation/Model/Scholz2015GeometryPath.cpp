@@ -309,7 +309,8 @@ void Scholz2015GeometryPath::extendAddToSystem(
                 obstacle->getContactGeometry().getFrame()
                                               .getMobilizedBodyIndex(),
                 obstacle->getContactGeometry().getTransform(),
-                obstacle->getContactGeometry().getSimTKContactGeometryPtr(),
+                std::make_shared<SimTK::ContactGeometry>(
+                    obstacle->getContactGeometry().createSimTKContactGeometry()),
                 obstacle->getContactHint());
             _obstacleIndexes.emplace_back(std::make_tuple(ix, ielt));
         }

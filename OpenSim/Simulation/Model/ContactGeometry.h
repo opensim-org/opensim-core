@@ -160,19 +160,9 @@ protected:
         override;
 
 private:
-    mutable std::shared_ptr<const SimTK::ContactGeometry> _simTKContactGeometry;
-
-    /**
-     * Get a shared pointer to a SimTK::ContactGeometry based on this object.
-     */
-    std::shared_ptr<const SimTK::ContactGeometry>
-    getSimTKContactGeometryPtr() const;
-
     // INITIALIZATION
     void setNull();
     void constructProperties();
-
-    friend class Scholz2015GeometryPath;
 };
 
 /**
@@ -192,7 +182,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ContactSphere, ContactGeometry);
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_PROPERTY(radius, double,
-            "Radius of the sphere (default: 0).");
+            "The radius of the sphere (default: 0).");
 
 public:
 //=============================================================================
@@ -271,7 +261,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ContactCylinder, ContactGeometry);
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_PROPERTY(radius, double,
-            "Radius of the cylinder (default: 0).");
+            "The radius of the cylinder (default: 0).");
 
 public:
 //=============================================================================
@@ -346,7 +336,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ContactEllipsoid, ContactGeometry);
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_PROPERTY(radii, SimTK::Vec3,
-            "Radii of the ellipsoid (default: [0, 0, 0]).");
+            "The radii of the ellipsoid (default: [0, 0, 0]).");
 
 public:
 //=============================================================================

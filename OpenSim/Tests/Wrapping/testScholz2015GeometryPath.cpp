@@ -903,3 +903,64 @@ TEST_CASE("Path tension") {
         CHECK(mobilityForces.norm() == 0.0);
     }
 }
+
+TEST_CASE("Changing contact geometry properties") {
+
+    // Create a double pendulum model with two paths that wrap around the same
+    // obstacle.
+    Model model = ModelFactory::createDoublePendulum();
+    Scholz2015GeometryPath* path1 = new Scholz2015GeometryPath();
+    Scholz2015GeometryPath* path2 = new Scholz2015GeometryPath();
+    path1->setName("path1");
+    path2->setName("path2");
+    model.addComponent(path1);
+    model.addComponent(path2);
+
+    // First path points.
+    path1->appendPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
+    path2->appendPathPoint(model.getGround(), SimTK::Vec3(0.05, 0.05, 0.));
+    path1->appendPathPoint(model.getComponent<Body>("/bodyset/b0"),
+            SimTK::Vec3(-0.75, 0.1, 0.));
+    path2->appendPathPoint(model.getComponent<Body>("/bodyset/b0"),
+            SimTK::Vec3(-0.75, 0.1, 0.));
+
+    // Obstacle.
+    auto* obstacle = new ContactCylinder(0.1,
+        SimTK::Vec3(-0.5, 0.1, 0.), SimTK::Vec3(0),
+        model.getComponent<Body>("/bodyset/b0"));
+    obstacle->setName("cylinder");
+    model.addComponent(obstacle);
+    path1->appendObstacle(*obstacle, SimTK::Vec3(0., 0.1, 0.));
+    path2->appendObstacle(*obstacle, SimTK::Vec3(0., 0.1, 0.));
+
+    // Final path point.
+    path1->appendPathPoint(model.getComponent<Body>("/bodyset/b1"),
+            SimTK::Vec3(-0.25, 0.1, 0.));
+    path2->appendPathPoint(model.getComponent<Body>("/bodyset/b1"),
+            SimTK::Vec3(-0.25, 0.1, 0.));
+
+    // Compute the path lengths.
+    SimTK::State state = model.initSystem();
+    model.realizePosition(state);
+    SimTK::Real length1 = path1->getLength(state);
+    SimTK::Real length2 = path2->getLength(state);
+    // Sanity check.
+    CHECK(length1 == length2);
+
+    // Change the obstacle radius.
+    model.updComponent<ContactCylinder>("/cylinder").setRadius(0.2);
+
+    // We need to reinitialize the system *and* create a new state in order for
+    // the radius change to take effect. This ensures that we do not access
+    // cached path length values from the previous state.
+    state = model.initSystem();
+
+    // Calculate the new path lengths.
+    model.realizePosition(state);
+    SimTK::Real newLength1 = path1->getLength(state);
+    SimTK::Real newLength2 = path2->getLength(state);
+
+    // Check that the path lengths are longer than the original lengths.
+    CHECK(newLength1 > length1);
+    CHECK(newLength2 > length2);
+}

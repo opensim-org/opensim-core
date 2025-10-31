@@ -22,14 +22,14 @@
  * -------------------------------------------------------------------------- */
 
  #include "ContactMesh.h"
- 
+
  #include <fstream>
  #include <OpenSim/Common/IO.h>
  #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 
-ContactMesh::ContactMesh() 
+ContactMesh::ContactMesh()
 {
     setNull();
     constructProperties();
@@ -47,7 +47,7 @@ ContactMesh::ContactMesh(const std::string& filename,
     if (filename != ""){
         std::ifstream file;
         file.open(filename.c_str());
-        OPENSIM_THROW_IF_FRMOBJ(file.fail(), Exception, 
+        OPENSIM_THROW_IF_FRMOBJ(file.fail(), Exception,
             "Error loading mesh file '{}': The file should exist in same "
             "folder with model. Model loading is aborted.");
 
@@ -96,7 +96,7 @@ void ContactMesh::setFilename(const std::string& filename)
     _decorativeGeometry.reset();
 }
 
-SimTK::ContactGeometry::TriangleMesh* 
+SimTK::ContactGeometry::TriangleMesh*
 ContactMesh::loadMesh(const std::string& filename) const
 {
     SimTK::PolygonalMesh mesh;
@@ -135,9 +135,9 @@ SimTK::ContactGeometry ContactMesh::createSimTKContactGeometryImpl() const
 // VISUALIZATION
 //=============================================================================
 void ContactMesh::generateDecorationsImpl(
-    bool fixed, 
+    bool fixed,
     const ModelDisplayHints& hints,
-    const SimTK::State& s, 
+    const SimTK::State& s,
     SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
 {
     // There is no fixed geometry to generate here.

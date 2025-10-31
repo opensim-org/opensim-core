@@ -91,16 +91,6 @@ SimTK::ContactGeometry ContactGeometry::createSimTKContactGeometry() const
     return createSimTKContactGeometryImpl();
 }
 
-std::shared_ptr<const SimTK::ContactGeometry>
-ContactGeometry::getSimTKContactGeometryPtr() const
-{
-    if (!_simTKContactGeometry) {
-        _simTKContactGeometry = std::make_shared<SimTK::ContactGeometry>(
-            createSimTKContactGeometry());
-    }
-    return _simTKContactGeometry;
-}
-
 //=============================================================================
 // VISUALIZATION
 //=============================================================================
@@ -129,7 +119,7 @@ void ContactGeometry::generateDecorationsImpl(
 
     // Create a SimTK::DecorativeGeometry object for this ContactGeometry.
     SimTK::DecorativeGeometry decoration =
-        getSimTKContactGeometryPtr()->createDecorativeGeometry();
+        createSimTKContactGeometry().createDecorativeGeometry();
 
     // B: base Frame (Body or Ground)
     // F: PhysicalFrame that this ContactGeometry is connected to
