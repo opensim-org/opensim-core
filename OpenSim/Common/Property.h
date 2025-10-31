@@ -522,6 +522,7 @@ public:
     /** Remove specific entry of the list at index **/
     void removeValueAtIndex(int index) { extractValueAtIndex(index); }
 
+#ifndef SWIG
     /** Extract a specific entry of the list at index **/
     std::unique_ptr<T> extractValueAtIndex(int index)
     {
@@ -533,6 +534,8 @@ public:
         }
         return extractValueAtIndexVirtual(index);
     }
+#endif
+
     /** Search the value list for an element that has the given \a value and
     return its index if found, otherwise -1. This requires only that the 
     template type T supports operator==(). This is a linear search so will 
@@ -1022,6 +1025,8 @@ private:
     {   values.push_back(*valuep); // make a copy
         delete valuep; // throw out the old one
         return values.size()-1; }
+
+#ifndef SWIG
     std::unique_ptr<T> extractValueAtIndexVirtual(int index) override final
     {
         T* p = &values.at(index);
@@ -1029,6 +1034,8 @@ private:
         values.erase(p);
         return extracted;
     }
+#endif
+
     // This is the default implementation; specialization is required if
     // the Simbody default behavior is different than OpenSim's; e.g. for
     // Transform serialization.
@@ -1206,6 +1213,7 @@ public:
         return -1;
     }
 
+#ifndef SWIG
     // Extract (remove and return) a value at a specific index
     std::unique_ptr<T> extractValueAtIndexVirtual(int index) override
     {
@@ -1214,6 +1222,7 @@ public:
         objects.erase(p);
         return extracted;
     }
+#endif
 private:
     // Base class checks the index.
     const T& getValueVirtual(int index) const override final 
