@@ -84,11 +84,15 @@ public:
                      const PhysicalFrame& frame,
                      const std::string& name);
 
-private:
-    // CONTACT GEOMETRY INTERFACE
-    void generateDecorationsImpl(bool fixed, const ModelDisplayHints& hints,
+    /** @name Visualization */
+    // @{
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
         const SimTK::State& s,
         SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
+    // @}
+
+private:
+    // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
 
     // INITIALIZATION

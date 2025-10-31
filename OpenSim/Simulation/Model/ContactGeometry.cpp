@@ -92,18 +92,6 @@ SimTK::ContactGeometry ContactGeometry::createSimTKContactGeometry() const
 }
 
 //=============================================================================
-// VISUALIZATION
-//=============================================================================
-void ContactGeometry::generateDecorations(
-        bool fixed,
-        const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {
-    Super::generateDecorations(fixed, hints, s, geometry);
-    generateDecorationsImpl(fixed, hints, s, geometry);
-}
-
-//=============================================================================
 // OBJECT INTERFACE
 //=============================================================================
 void ContactGeometry::updateFromXMLNode(SimTK::Xml::Element& node,
@@ -227,7 +215,7 @@ SimTK::ContactGeometry ContactSphere::createSimTKContactGeometryImpl() const
     return SimTK::ContactGeometry::Sphere(get_radius());
 }
 
-void ContactSphere::generateDecorationsImpl(
+void ContactSphere::generateDecorations(
         bool fixed,
         const ModelDisplayHints& hints,
         const SimTK::State& s,
@@ -303,7 +291,7 @@ SimTK::ContactGeometry ContactCylinder::createSimTKContactGeometryImpl() const
     return SimTK::ContactGeometry::Cylinder(get_radius());
 }
 
-void ContactCylinder::generateDecorationsImpl(
+void ContactCylinder::generateDecorations(
         bool fixed,
         const ModelDisplayHints& hints,
         const SimTK::State& s,
@@ -383,7 +371,7 @@ SimTK::ContactGeometry ContactEllipsoid::createSimTKContactGeometryImpl() const
     return SimTK::ContactGeometry::Ellipsoid(get_radii());
 }
 
-void ContactEllipsoid::generateDecorationsImpl(
+void ContactEllipsoid::generateDecorations(
         bool fixed,
         const ModelDisplayHints& hints,
         const SimTK::State& s,
@@ -473,7 +461,7 @@ SimTK::ContactGeometry ContactTorus::createSimTKContactGeometryImpl() const
     return SimTK::ContactGeometry::Torus(get_torus_radius(), get_tube_radius());
 }
 
-void ContactTorus::generateDecorationsImpl(
+void ContactTorus::generateDecorations(
         bool fixed,
         const ModelDisplayHints& hints,
         const SimTK::State& s,

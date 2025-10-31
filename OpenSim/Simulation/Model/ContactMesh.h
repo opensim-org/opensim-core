@@ -94,6 +94,13 @@ public:
      */
     void setFilename(const std::string& filename);
 
+    /** @name Visualization */
+    // @{
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
+    // @}
+
 private:
     // INITIALIZATION
     void setNull();
@@ -101,9 +108,6 @@ private:
     void extendFinalizeFromProperties() override;
 
     // CONTACT GEOMETRY INTERFACE
-    void generateDecorationsImpl(bool fixed, const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
 
     // LOAD MESH

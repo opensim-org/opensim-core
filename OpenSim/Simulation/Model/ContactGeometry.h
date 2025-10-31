@@ -135,25 +135,11 @@ public:
     SimTK::ContactGeometry createSimTKContactGeometry() const;
     // @}
 
-    /** @name Visualization */
-    // @{
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
-    // @}
-
 protected:
     // CONTACT GEOMETRY INTERFACE
     // Concrete implementations of ContactGeometry must implement this method to
     // provide an equivalent SimTK::ContactGeometry object.
     virtual SimTK::ContactGeometry createSimTKContactGeometryImpl() const = 0;
-
-    // Concrete implementations of ContactGeometry must override this method to
-    // implement `generateDecorations()`.
-    virtual void generateDecorationsImpl(
-            bool fixed, const ModelDisplayHints& hints,
-            const SimTK::State& state,
-            SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const = 0;
 
     // OBJECT INTERFACE
     void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
@@ -234,12 +220,16 @@ public:
     void setRadius(double radius);
     // @}
 
+    /** @name Visualization */
+    // @{
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
+    // @}
+
 private:
     // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
-    void generateDecorationsImpl(bool fixed, const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 };
 
 /**
@@ -319,12 +309,16 @@ public:
     void setRadius(double radius);
     // @}
 
+    /** @name Visualization */
+    // @{
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
+    // @}
+
 private:
     // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
-    void generateDecorationsImpl(bool fixed, const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 };
 
 /**
@@ -397,12 +391,16 @@ public:
     void setRadii(const SimTK::Vec3& radii);
     // @}
 
+    /** @name Visualization */
+    // @{
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
+    // @}
+
 private:
     // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
-    void generateDecorationsImpl(bool fixed, const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 };
 
 /**
@@ -500,12 +498,16 @@ public:
     void setTubeRadius(double radius);
     // @}
 
+    /** @name Visualization */
+    // @{
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
+    // @}
+
 private:
     // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
-    void generateDecorationsImpl(bool fixed, const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 };
 
 } // namespace OpenSim
