@@ -148,12 +148,12 @@ protected:
     // provide an equivalent SimTK::ContactGeometry object.
     virtual SimTK::ContactGeometry createSimTKContactGeometryImpl() const = 0;
 
-    // Concrete implementations of ContactGeometry may override this method to
-    // customize `generateDecorations()`.
+    // Concrete implementations of ContactGeometry must override this method to
+    // implement `generateDecorations()`.
     virtual void generateDecorationsImpl(
             bool fixed, const ModelDisplayHints& hints,
             const SimTK::State& state,
-            SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const;
+            SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const = 0;
 
     // OBJECT INTERFACE
     void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
@@ -237,6 +237,9 @@ public:
 private:
     // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
+    void generateDecorationsImpl(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 };
 
 /**
@@ -319,6 +322,9 @@ public:
 private:
     // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
+    void generateDecorationsImpl(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 };
 
 /**
@@ -394,6 +400,9 @@ public:
 private:
     // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
+    void generateDecorationsImpl(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 };
 
 /**
@@ -494,6 +503,9 @@ public:
 private:
     // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
+    void generateDecorationsImpl(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
 };
 
 } // namespace OpenSim
