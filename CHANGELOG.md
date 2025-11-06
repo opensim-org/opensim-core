@@ -35,6 +35,8 @@ performance and stability in wrapping solutions.
 - Implemented `generateDecorations()` for `Station` to allow visualization in the Simbody visualizer. (#4169)
 - Added `Component::removeComponent` and `Component::extractComponent` methods, which enable removing subcomponents that were previously added via `Component::addComponent` or the `<components>` XML element (#4174).
 - Updated required language level to C++20. (#3929)
+- Breaking: removed the `operator==` and `operator<` overloads in `ControlLinearNode` and replaced usages with the equivalent utility functions `isEqual()` and `isLessThan()`. (#4095)
+
 
 v4.5.2
 ======
