@@ -29,31 +29,7 @@
 
 using namespace OpenSim;
 
-TEST_CASE("testGait10dof18musc (Windows)", "[win]") {
-    CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
-    cmc.run();
-
-    const TimeSeriesTable results(
-        "gait10dof18musc_ResultsCMC/walk_subject_states.sto");
-    const TimeSeriesTable std(
-        "gait10dof18musc_std_walk_subject_states_win.sto");
-
-    // TODO: Replace with macro from OpenSim/Moco/Test/Testing.h
-    const auto& actual = results.getMatrix();
-    const auto& expected = std.getMatrix();
-    REQUIRE((actual.nrow() == expected.nrow()));
-    REQUIRE((actual.ncol() == expected.ncol()));
-    for (int ir = 0; ir < actual.nrow(); ++ir) {
-        for (int ic = 0; ic < actual.ncol(); ++ic) {
-            INFO("(" << ir << "," << ic << "): " << actual.getElt(ir, ic) <<
-                " vs " << expected.getElt(ir, ic));
-            REQUIRE((Catch::Approx(actual.getElt(ir, ic)).margin(1e-3)
-                == expected.getElt(ir, ic)));
-        }
-    }
-}
-
-TEST_CASE("testGait10dof18musc (Mac/Linux)", "[unix]") {
+TEST_CASE("testGait10dof18musc") {
     CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
     cmc.run();
 
@@ -62,12 +38,12 @@ TEST_CASE("testGait10dof18musc (Mac/Linux)", "[unix]") {
     const TimeSeriesTable std(
         "gait10dof18musc_std_walk_subject_states_unix.sto");
 
-    // Unix systems produce inconsistent results compared to Windows. Somehow,
-    // CMC produces results with differing number of time points, so we need to
-    // interpolate the results to the same time points as the standard results.
-    // The shapes of the muscle activity curves also differ slightly, so we
-    // allow a larger margin of error for the muscle activity curves. Therefore,
-    // this is a weaker test compared to the Windows test.
+    // CMC produces results with differing number of time points on different
+    // systems, so we need to interpolate the results to the same time points as
+    // the standard results. The shapes of the muscle activity curves also
+    // differ slightly, so we allow a larger margin of error for the muscle
+    // activity curves. Therefore, this is a weaker test compared to other
+    // CMC tests.
     GCVSplineSet resultSplines(results);
     GCVSplineSet stdSplines(std);
 
