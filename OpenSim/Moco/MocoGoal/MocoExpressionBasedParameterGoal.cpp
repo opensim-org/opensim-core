@@ -102,8 +102,8 @@ double MocoExpressionBasedParameterGoal::getPropertyValue(int i) const {
         return static_cast<const Property<SimTK::Vec6>*>(propRef.get())
                                                      ->getValue()[elt];
     }
-    OPENSIM_THROW_FRMOBJ(Exception, fmt::format("Property at index {} is not of"
-                                                " a recognized type."));
+    OPENSIM_THROW_FRMOBJ(Exception, fmt::format(fmt::runtime(
+            "Property at index {} is not of a recognized type."), i));
 }
 
 void MocoExpressionBasedParameterGoal::calcGoalImpl(

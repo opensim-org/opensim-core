@@ -331,7 +331,8 @@ private:
             const auto& nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
             // Print `value` right-justified in a column with width `_width`,
             // using `nSigFigs`: {:>{_width}.{nSigFigs}g}
-            msg += fmt::format("{:>{}.{}g}| ", value, _width, nSigFigs);
+            msg += fmt::format(fmt::runtime("{:>{}.{}g}| "), value, _width,
+                    nSigFigs);
         }
         log_cout(msg);
 

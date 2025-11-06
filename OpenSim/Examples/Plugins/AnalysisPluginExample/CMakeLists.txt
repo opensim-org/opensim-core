@@ -7,8 +7,8 @@ file(GLOB INCLUDE_FILES *.h)
 
 set(PLUGIN_NAME "osimPlugin" CACHE STRING "Name of shared library to create")
 
-# OpenSim uses C++17 language features.
-set(CMAKE_CXX_STANDARD 17)
+# OpenSim uses C++20 language features.
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(OpenSim REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
