@@ -213,9 +213,9 @@ void simulateMuscle(
     TimeSeriesTable_<SimTK::SpatialVec> tableSV("testOutputReporter_OutputsSpatialVec.sto");
 
     double val_t0 = tableD.getIndependentColumn()[0];
-    const SimTK::Real& val_ke0 = tableD.getRowAtIndex(0)[0];
-    const Vec3& val_omega0 = tableV3.getRowAtIndex(0)[1];
-    const SimTK::SpatialVec& val_jrf0 = tableSV.getRowAtIndex(0)[1];
+    const SimTK::Real val_ke0 = tableD.getRowAtIndex(0)[0];
+    const Vec3 val_omega0 = tableV3.getRowAtIndex(0)[1];
+    const SimTK::SpatialVec val_jrf0 = tableSV.getRowAtIndex(0)[1];
 
     CHECK_THAT(t0, Catch::Matchers::WithinAbs(val_t0, SimTK::Eps));
     CHECK_THAT(ke0, Catch::Matchers::WithinAbs(val_ke0, SimTK::Eps));
@@ -229,9 +229,9 @@ void simulateMuscle(
     }
 
     double val_tf = tableD.getIndependentColumn()[tableD.getNumRows() - 1];
-    const SimTK::Real& val_ke = tableD.getRowAtIndex(tableD.getNumRows() - 1)[0];
-    const Vec3& val_omega = tableV3.getRowAtIndex(tableV3.getNumRows() - 1)[1];
-    const SimTK::SpatialVec& val_jrf = 
+    const SimTK::Real val_ke = tableD.getRowAtIndex(tableD.getNumRows() - 1)[0];
+    const Vec3 val_omega = tableV3.getRowAtIndex(tableV3.getNumRows() - 1)[1];
+    const SimTK::SpatialVec val_jrf = 
         tableSV.getRowAtIndex(tableSV.getNumRows() - 1)[1];
 
     model.realizeReport(state);
