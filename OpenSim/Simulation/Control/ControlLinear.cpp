@@ -297,7 +297,7 @@ getParameterList(double aT,Array<int> &rList)
         rList.append(size-1);
 
     // EQUAL & LINEAR INTERPOLATION
-    } else if((!_useSteps) && (_searchNode == (*_xNodes.get(i)) )) {
+    } else if((!_useSteps) && (_searchNode.isEqual((*_xNodes.get(i))))) {
         rList.append(i);
 
     // BETWEEN & LINEAR INTERPOLATION
@@ -332,7 +332,7 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList)
         iL += 1;
     } else if(iL==(size-1)) {
         return(0);
-    } else if( (*_xNodes.get(iL)) == _searchNode ) {
+    } else if( (*_xNodes.get(iL)).isEqual(_searchNode) ) {
         iL += 1;
     } else {
         iL += 2;
@@ -343,7 +343,7 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList)
     int iU = _xNodes.searchBinary(_searchNode);
     if(iU==-1) {
         return(0);
-    } else if( (*_xNodes.get(iU)) < _searchNode) {
+    } else if( (*_xNodes.get(iU)).isLessThan(_searchNode) ) {
         iU += 1;
     }
 
@@ -392,7 +392,7 @@ setControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT,double aValue)
         int upper = lower + 1;
 
         // EQUAL TO LOWER NODE
-        if( (*aNodes[lower]) == node) {
+        if( (*aNodes[lower]).isEqual(node) ) {
             aNodes[lower]->setTime(aT);
             aNodes[lower]->setValue(aValue);
 
@@ -400,7 +400,7 @@ setControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT,double aValue)
         } else if(upper<aNodes.getSize()) {
 
             // EQUAL TO UPPER NODE
-            if( (*aNodes[upper]) == node) {
+            if( (*aNodes[upper]).isEqual(node) ) {
                 aNodes[upper]->setTime(aT);
                 aNodes[upper]->setValue(aValue);
 
@@ -767,7 +767,7 @@ filter(double aT)
         return;
     }
     // True iff _xNodes[i] occurs at aT
-    bool nodeOccursAtGivenTime = (_searchNode == (*_xNodes.get(i)));
+    bool nodeOccursAtGivenTime = (_searchNode.isEqual((*_xNodes.get(i))));
     // This if statement represents the case where the second
     // node occurs at aT.
     if ((i == 1) && nodeOccursAtGivenTime) {
@@ -778,7 +778,7 @@ filter(double aT)
     // HANDLE ALL OTHER CASES
     double dt, dtPrev, xPrev, xPrevPrev;
     // If the time of the node at index i is equal to aT (where
-    // "equal" is determined by the operator== function of the
+    // "equal" is determined by the isEqual function of the
     // ControlLinearNode class):
     // (i <= 1 cases were handled above)
     if (nodeOccursAtGivenTime) {
