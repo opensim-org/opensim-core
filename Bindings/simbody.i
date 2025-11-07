@@ -10,34 +10,34 @@
 
 // Vec3
 namespace SimTK {
-%template(Vec2) Vec<2>;
-%template(Vec3) Vec<3>;
-%template(Vec4) Vec<4>;
-%template(Vec6) Vec<6>;
+// %template(Vec2) Vec<2, Real, 1>;
+// %template(Vec3) Vec<3, Real, 1>;
+// %template(Vec4) Vec<4, Real, 1>;
+// %template(Vec6) Vec<6, Real, 1>;
 }
-%define ADD_VEC_OPERATOR_METHODS(VEC_TYPE)
-%extend VEC_TYPE {
-	%template(scalarEq) scalarEq<double>;
-	%template(scalarPlusEq) scalarPlusEq<double>;
-	%template(scalarMinusEq) scalarMinusEq<double>;
-	%template(scalarTimesEq) scalarTimesEq<double>;
-	%template(scalarDivideEq) scalarDivideEq<double>;
-}
-%enddef
+// %define ADD_VEC_OPERATOR_METHODS(VEC_TYPE)
+// %extend VEC_TYPE {
+// 	%template(scalarEq) scalarEq<double>;
+// 	%template(scalarPlusEq) scalarPlusEq<double>;
+// 	%template(scalarMinusEq) scalarMinusEq<double>;
+// 	%template(scalarTimesEq) scalarTimesEq<double>;
+// 	%template(scalarDivideEq) scalarDivideEq<double>;
+// }
+// %enddef
 
-ADD_VEC_OPERATOR_METHODS(SimTK::Vec<2>)
+// ADD_VEC_OPERATOR_METHODS(SimTK::Vec<2>)
 
-ADD_VEC_OPERATOR_METHODS(SimTK::Vec<3>)
+// ADD_VEC_OPERATOR_METHODS(SimTK::Vec<3>)
 
-ADD_VEC_OPERATOR_METHODS(SimTK::Vec<4>)
+// ADD_VEC_OPERATOR_METHODS(SimTK::Vec<4>)
 
-ADD_VEC_OPERATOR_METHODS(SimTK::Vec<6>)
+// ADD_VEC_OPERATOR_METHODS(SimTK::Vec<6>)
 
 // Mat33
 %include <SWIGSimTK/Mat.h>
 %include <SimTKcommon/SmallMatrix.h> // for typedefs like Mat33.
 namespace SimTK {
-%template(Mat33) Mat<3, 3>;
+// %template(Mat33) Mat<3, 3, Real, 3, 1>;
 }
 %include <SWIGSimTK/CoordinateAxis.h>
 %include <SWIGSimTK/UnitVec.h>
@@ -218,9 +218,9 @@ INSTANTIATE_MATRIXTYPES(Vec6)
 
 %include <SWIGSimTK/SpatialAlgebra.h>
 namespace SimTK {
-%template(SpatialVec) Vec<2,   Vec3>;
-%template(VectorOfSpatialVec) Vector_<SpatialVec>;
-%template(MatrixOfSpatialVec) Matrix_<SpatialVec>;
+// %template(SpatialVec) Vec<2,   Vec3, 1>;
+// %template(VectorOfSpatialVec) Vector_<SpatialVec>;
+// %template(MatrixOfSpatialVec) Matrix_<SpatialVec>;
 }
 
 %include <SWIGSimTK/Rotation.h>
@@ -228,7 +228,7 @@ namespace SimTK {
 %template(Rotation) SimTK::Rotation_<double>;
 %template(InverseRotation) SimTK::InverseRotation_<double>;
 
-INSTANTIATE_MATRIXTYPES(Mat33)
+// INSTANTIATE_MATRIXTYPES(Mat33)
 %template(MatrixBaseRotation)    SimTK::MatrixBase<SimTK::Rotation_<double>>;
 //%template(MatrixViewRotation)    SimTK::MatrixView_<SimTK::Rotation_<double>>;
 %template(MatrixRotation)        SimTK::Matrix_<SimTK::Rotation_<double>>;
