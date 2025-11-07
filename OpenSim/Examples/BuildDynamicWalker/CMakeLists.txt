@@ -3,8 +3,8 @@
 cmake_minimum_required(VERSION 3.2)
 project(BuildDynamicWalker)
 
-# OpenSim requires a compiler that supports C++17.
-set(CMAKE_CXX_STANDARD 17)
+# OpenSim requires a compiler that supports C++20.
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find the OpenSim libraries and header files.

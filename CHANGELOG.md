@@ -34,7 +34,7 @@ geometry for path-based OpenSim components (e.g., `Muscle`, `PathSpring`, etc.).
 performance and stability in wrapping solutions.
 - Implemented `generateDecorations()` for `Station` to allow visualization in the Simbody visualizer. (#4169)
 - Added `Component::removeComponent` and `Component::extractComponent` methods, which enable removing subcomponents that were previously added via `Component::addComponent` or the `<components>` XML element (#4174).
-
+- Updated required language level to C++20. (#3929)
 
 v4.5.2
 ======
