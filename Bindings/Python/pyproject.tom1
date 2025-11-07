@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opensim"
+version = "0.1.0"  # You may want to dynamically inject this from version.py
+description = "OpenSim Simulation Framework"
+authors = [{ name = "OpenSim Team", email = "ahabib@stanford.edu" }]
+license = { text = "Apache 2.0" }
+dynamic = ["version"]
+readme = "README.md"
+urls = { homepage = "http://opensim.stanford.edu/" }
+classifiers = [
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Physics"
+]
+dependencies = [ "numpy>=2.0" ]
+
+[project.scripts]
+opensim-moco-generate-report = "opensim.report:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["opensim"]
+
+[tool.setuptools.package-data]
+opensim = ["_*.*", "*.dylib", "*.dll", "*.so*"]

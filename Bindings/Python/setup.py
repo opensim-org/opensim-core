@@ -51,8 +51,12 @@ setup(name='opensim',
       classifiers=[
           'Intended Audience :: Science/Research',
           'Operating System :: OS Independent',
-          'Programming Language :: Python :: 2.7',
           'Programming Language :: Python :: 3',
           'Topic :: Scientific/Engineering :: Physics',
           ],
+          install_requires=[
+              "numpy>=2.0,<2.3"
+          ]
       )
+
+#python setup.py bdist_wheel --python-tag cp310

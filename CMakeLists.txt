@@ -500,6 +500,12 @@ set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're bu
 
 set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping; requires that you have SWIG and Python installed on your machine.)")
 
+set(BUILD_PYPI OFF CACHE BOOL "Build Python wrapping into a pypi package wheel")
+
+if(BUILD_PYPI)
+  set(OPENSIM_PYTHON_STANDALONE ON CACHE BOOL "Enable Standalone python packaging" FORCE)
+endif()
+
 set(OPENSIM_PYTHON_VERSION 3)
 
 if(${BUILD_JAVA_WRAPPING})
