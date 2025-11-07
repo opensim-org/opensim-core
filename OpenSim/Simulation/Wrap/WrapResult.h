@@ -69,7 +69,12 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    WrapResult() : r1(0.0), r2(0.0), c1(0.0), sv(0.0) {}
+    WrapResult()
+        : r1(SimTK::Vec3(0.0)),
+          r2(SimTK::Vec3(0.0)),
+          c1(SimTK::Vec3(0.0)),
+          sv(SimTK::Vec3(0.0))
+    {}
     virtual ~WrapResult() = default;
     WrapResult(const WrapResult& other);
     WrapResult& operator=(const WrapResult& aWrapResult);
