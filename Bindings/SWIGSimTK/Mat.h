@@ -9,7 +9,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org/home/simbody.  *
  *                                                                            *
- * Portions copyright (c) 2005-12 Stanford University and the Authors.        *
+ * Portions Copyright (c) 2005-2017 Stanford University and the Authors.      *
  * Authors: Michael Sherman                                                   *
  * Contributors:                                                              *
  *                                                                            *
@@ -30,21 +30,14 @@
 
 #include "SimTKcommon/internal/common.h"
 
-#include <tuple>
-#include <type_traits>
-
 namespace SimTK {
 
-/** @brief This class represents a small matrix whose size is known at compile 
-time, containing elements of any Composite Numerical Type (CNT) and engineered 
-to have no runtime overhead whatsoever. 
-
-@ingroup MatVecUtilities
-
-Memory layout defaults to packed, column-ordered storage but can be specified to
-have any regular row and column spacing. A %Mat object is itself a Composite 
-Numerical Type and can thus be the element type for other matrix and vector 
-types. Some common use cases are provided below.
+/** This class represents a small matrix whose size is known at compile time, 
+containing elements of any Composite Numerical Type (CNT) and engineered to
+have no runtime overhead whatsoever. Memory layout defaults to packed,
+column ordered storage but can be specified to have any regular row and 
+column spacing. A Mat object is itself a Composite Numerical Type and can thus
+be the element type for other matrix and vector types.
 
 @tparam M   The number of rows in this matrix (no default).
 @tparam N   The number of columns in this matrix (no default).
@@ -52,54 +45,16 @@ types. Some common use cases are provided below.
 @tparam CS  Column spacing in memory as a multiple of element size (default M).
 @tparam RS  %Row spacing in memory as a multiple of element size (default 1).
 
-<b>Construction</b>
-
-A 3x3 identity matrix can be constructed in the following ways:
-\code
-Mat<3,3,Real>(1,0,0, 0,1,0, 0,0,1);          //row-major
-Mat33(1,0,0,0,1,0,0,0,1);
-Mat33(Vec3(1,0,0),Vec3(0,1,0),Vec3(0,0,1));  //column-by-column
-Mat33(1);
-\endcode
-Note that the default element type is Real, and that Mat33 is a typedef for
-%Mat<3,3>; analogous typedefs exist for matrices of up to 9x9 elements.
-
-<b>Manipulation</b>
-
-Standard arithmetic operators can be used, as well as methods like %trace() and
-%transpose(). Here are some usage examples, each of which prints a 2x2 identity
-matrix:
-\code
-Mat23 myMat(2,1,0, 3,0,1);
-std::cout << myMat.getSubMat<2,2>(0,1) << std::endl;
-std::cout << myMat.dropCol(0) << std::endl;
-std::cout << Mat12(1,0).appendRow(~Vec2(0,1)) << std::endl;
-std::cout << Mat21(0,1).insertCol(0,Vec2(1,0)) << std::endl;
-\endcode
-
-<b>Conversion</b>
-
-It may be necessary to convert between a %Mat and a Matrix (to interface with
-%FactorQTZ, for instance). In the example below, we print a Mat33 created from
-a 3x3 Matrix:
-\code
-Matrix myMatrix(3,3);
-for (int i=0; i<9; ++i) myMatrix[i/3][i%3] = i+1;
-Mat33 myMat33 = Mat33(&myMatrix[0][0]).transpose();
-std::cout << myMat33 << std::endl;
-\endcode
-Converting from a Mat33 to a Matrix is straightforward:
-\code
-Mat33 myMat33(1,2,3, 4,5,6, 7,8,9);
-std::cout << Matrix(myMat33) << std::endl;
-\endcode
-
-@see Matrix_ for handling of large or variable-sized matrices.
+@see Matrix_ for handling of large or variable-size matrices.
 @see SymMat, Vec, Row
 **/
+#ifdef SWIG
+template <int M, int N, class ELT=double, int CS=M, int RS=1> class Mat {
+#else
 template <int M, int N, class ELT, int CS, int RS> class Mat {
-public:
+#endif
     typedef ELT                                 E;
+#ifndef SWIG
     typedef typename CNT<E>::TNeg               ENeg;
     typedef typename CNT<E>::TWithoutNegator    EWithoutNegator;
     typedef typename CNT<E>::TReal              EReal;
@@ -122,9 +77,10 @@ public:
     typedef typename CNT<E>::StdNumber          EStdNumber;
     typedef typename CNT<E>::Precision          EPrecision;
     typedef typename CNT<E>::ScalarNormSq       EScalarNormSq;
-
+#endif
+public:
+#ifndef SWIG
     /** Every Composite Numerical Type (CNT) must define these values. **/
-    #ifndef SWIG
     enum {
         NRows               = M,
         NCols               = N,
@@ -148,7 +104,6 @@ public:
         IsPrecision         = 0,
         SignInterpretation  = CNT<E>::SignInterpretation
     };
-    #endif
 
     typedef Mat<M,N,E,CS,RS>                T;
     typedef Mat<M,N,ENeg,CS,RS>             TNeg;
@@ -195,16 +150,16 @@ public:
     typedef EScalarNormSq                   ScalarNormSq;
 
     typedef THerm                           TransposeType; // TODO
-
+#endif
     /** Return the total number of elements M*N contained in this Mat. **/
     static int size() { return M*N; }
     /** Return the number of rows in this Mat, echoing the value supplied
-    for the template parameter \a M. **/
+    for the template paramter \a M. **/
     static int nrow() { return M; }
     /** Return the number of columns in this Mat, echoing the value supplied
-    for the template parameter \a N. **/
+    for the template paramter \a N. **/
     static int ncol() { return N; }
-
+#ifndef SWIG
     /** Scalar norm square is the sum of squares of all the scalars that 
     comprise the value of this Mat. For Mat objects with composite element
     types, this is defined recursively as the sum of the scalar norm squares 
@@ -284,7 +239,7 @@ public:
     template <class P> struct Substitute {
         typedef Mat<M,N,P> Type;
     };
-
+#endif
     /** Default construction initializes to NaN when debugging but is left 
     uninitialized otherwise to ensure that there is no overhead. **/
     Mat(){ 
@@ -303,6 +258,7 @@ public:
         for (int j=0; j<N; ++j)
             (*this)(j) = src(j);
     }
+#ifndef SWIG
     /** Copy assignment copies only the elements that are present and does
     not touch any unused memory space between them if they are not packed. 
     Works correctly even if source and destination are the same object. **/
@@ -356,20 +312,21 @@ public:
     template <class EE, int CSS, int RSS> 
     explicit Mat(const Mat<M,N,EE,CSS,RSS>& mm)
       { for (int j=0;j<N;++j) (*this)(j) = mm(j);}
-
+#endif
     /** Explicit construction from a single element \a e of this Mat's element
     type E sets all the main diagonal elements to \a e but sets the rest of 
     the elements to zero. **/
-    explicit Mat(const E& e)
-      { for (int j=0;j<N;++j) (*this)(j) = E(0); diag()=e; }
+    explicit Mat(const ELT& e)
+      { for (int j=0;j<N;++j) (*this)(j) = ELT(0); diag()=e; }
 
+#ifndef SWIG
     /** Explicit construction from a single element \a e whose type is
     negator<E> (abbreviated ENeg here) where E is this Mat's element
     type sets all the main diagonal elements to \a e but sets the rest of 
     the elements to zero. **/
     explicit Mat(const ENeg& e)
       { for (int j=0;j<N;++j) (*this)(j) = E(0); diag()=e; }
-
+#endif
     /** Explicit construction from an int value means we convert the int into
     an object of this Mat's element type E, and then apply the single-element
     constructor above which sets the Mat to zero except for its main diagonal
@@ -377,28 +334,75 @@ public:
     an element, we first turn it into the appropriate-precision floating point 
     number, and then call E's constructor that takes a single scalar. **/
     explicit Mat(int i) 
-      { new (this) Mat(E(Precision(i))); }
+      { new (this) Mat(ELT(Precision(i))); }
 
-    #ifndef SWIG
+    // A bevy of constructors from individual exact-match elements IN ROW ORDER.
+    Mat(const ELT& e0,const ELT& e1)
+      {assert(M*N==2);d[rIx(0)]=e0;d[rIx(1)]=e1;}
+    Mat(const ELT& e0,const ELT& e1,const ELT& e2)
+      {assert(M*N==3);d[rIx(0)]=e0;d[rIx(1)]=e1;d[rIx(2)]=e2;}
+    Mat(const ELT& e0,const ELT& e1,const ELT& e2,const ELT& e3)
+      {assert(M*N==4);d[rIx(0)]=e0;d[rIx(1)]=e1;d[rIx(2)]=e2;d[rIx(3)]=e3;}
+    Mat(const ELT& e0,const ELT& e1,const ELT& e2,const ELT& e3,const ELT& e4)
+      {assert(M*N==5);d[rIx(0)]=e0;d[rIx(1)]=e1;d[rIx(2)]=e2;d[rIx(3)]=e3;d[rIx(4)]=e4;}
+    Mat(const ELT& e0,const ELT& e1,const ELT& e2,const ELT& e3,const ELT& e4,
+        const ELT& e5)
+      {assert(M*N==6);d[rIx(0)]=e0;d[rIx(1)]=e1;d[rIx(2)]=e2;d[rIx(3)]=e3;d[rIx(4)]=e4;
+       d[rIx(5)]=e5;}
+    Mat(const ELT& e0,const ELT& e1,const ELT& e2,const ELT& e3,const ELT& e4,
+        const ELT& e5,const ELT& e6)
+      {assert(M*N==7);d[rIx(0)]=e0;d[rIx(1)]=e1;d[rIx(2)]=e2;d[rIx(3)]=e3;d[rIx(4)]=e4;
+       d[rIx(5)]=e5;d[rIx(6)]=e6;}
+    Mat(const ELT& e0,const ELT& e1,const ELT& e2,const ELT& e3,const ELT& e4,
+        const ELT& e5,const ELT& e6,const ELT& e7)
+      {assert(M*N==8);d[rIx(0)]=e0;d[rIx(1)]=e1;d[rIx(2)]=e2;d[rIx(3)]=e3;d[rIx(4)]=e4;
+       d[rIx(5)]=e5;d[rIx(6)]=e6;d[rIx(7)]=e7;}
+    Mat(const ELT& e0,const ELT& e1,const ELT& e2,const ELT& e3,const ELT& e4,
+        const ELT& e5,const ELT& e6,const ELT& e7,const ELT& e8)
+      {assert(M*N==9);d[rIx(0)]=e0;d[rIx(1)]=e1;d[rIx(2)]=e2;d[rIx(3)]=e3;d[rIx(4)]=e4;
+       d[rIx(5)]=e5;d[rIx(6)]=e6;d[rIx(7)]=e7;d[rIx(8)]=e8;}
+    Mat(const ELT& e0,const ELT& e1,const ELT& e2,const ELT& e3,const ELT& e4,
+        const ELT& e5,const ELT& e6,const ELT& e7,const ELT& e8,const ELT& e9)
+      {assert(M*N==10);d[rIx(0)]=e0;d[rIx(1)]=e1;d[rIx(2)]=e2;d[rIx(3)]=e3;d[rIx(4)]=e4;
+       d[rIx(5)]=e5;d[rIx(6)]=e6;d[rIx(7)]=e7;d[rIx(8)]=e8;d[rIx(9)]=e9;}
+    Mat(const ELT& e0,const ELT& e1,const ELT& e2,const ELT& e3,const ELT& e4,
+        const ELT& e5,const ELT& e6,const ELT& e7,const ELT& e8,const ELT& e9,
+        const ELT& e10)
+      {assert(M*N==11);d[rIx(0)]=e0;d[rIx(1)]=e1;d[rIx(2)]=e2;d[rIx(3)]=e3;d[rIx(4)]=e4;
+       d[rIx(5)]=e5;d[rIx(6)]=e6;d[rIx(7)]=e7;d[rIx(8)]=e8;d[rIx(9)]=e9;d[rIx(10)]=e10;}
+    Mat(const ELT& e0,const ELT& e1,const ELT& e2,const ELT& e3,const ELT& e4,
+        const ELT& e5,const ELT& e6,const ELT& e7,const ELT& e8,const ELT& e9,
+        const ELT& e10, const ELT& e11)
+      {assert(M*N==12);d[rIx(0)]=e0;d[rIx(1)]=e1;d[rIx(2)]=e2;d[rIx(3)]=e3;d[rIx(4)]=e4;
+       d[rIx(5)]=e5;d[rIx(6)]=e6;d[rIx(7)]=e7;d[rIx(8)]=e8;d[rIx(9)]=e9;d[rIx(10)]=e10;
+       d[rIx(11)]=e11;}
+    Mat(const ELT& e0,const ELT& e1,const ELT& e2,const ELT& e3,const ELT& e4,
+        const ELT& e5,const ELT& e6,const ELT& e7,const ELT& e8,const ELT& e9,
+        const ELT& e10, const ELT& e11, const ELT& e12)
+      {assert(M*N==13);d[rIx(0)]=e0;d[rIx(1)]=e1;d[rIx(2)]=e2;d[rIx(3)]=e3;d[rIx(4)]=e4;
+       d[rIx(5)]=e5;d[rIx(6)]=e6;d[rIx(7)]=e7;d[rIx(8)]=e8;d[rIx(9)]=e9;d[rIx(10)]=e10;
+       d[rIx(11)]=e11;d[rIx(12)]=e12;}
+    Mat(const ELT& e0,const ELT& e1,const ELT& e2,const ELT& e3,const ELT& e4,
+        const ELT& e5,const ELT& e6,const ELT& e7,const ELT& e8,const ELT& e9,
+        const ELT& e10, const ELT& e11, const ELT& e12, const ELT& e13)
+      {assert(M*N==14);d[rIx(0)]=e0;d[rIx(1)]=e1;d[rIx(2)]=e2;d[rIx(3)]=e3;d[rIx(4)]=e4;
+       d[rIx(5)]=e5;d[rIx(6)]=e6;d[rIx(7)]=e7;d[rIx(8)]=e8;d[rIx(9)]=e9;d[rIx(10)]=e10;
+       d[rIx(11)]=e11;d[rIx(12)]=e12;d[rIx(13)]=e13;}
+    Mat(const ELT& e0,const ELT& e1,const ELT& e2,const ELT& e3,const ELT& e4,
+        const ELT& e5,const ELT& e6,const ELT& e7,const ELT& e8,const ELT& e9,
+        const ELT& e10, const ELT& e11, const ELT& e12, const ELT& e13, const ELT& e14)
+      {assert(M*N==15);d[rIx(0)]=e0;d[rIx(1)]=e1;d[rIx(2)]=e2;d[rIx(3)]=e3;d[rIx(4)]=e4;
+       d[rIx(5)]=e5;d[rIx(6)]=e6;d[rIx(7)]=e7;d[rIx(8)]=e8;d[rIx(9)]=e9;d[rIx(10)]=e10;
+       d[rIx(11)]=e11;d[rIx(12)]=e12;d[rIx(13)]=e13;d[rIx(14)]=e14;}
+    Mat(const ELT& e0,const ELT& e1,const ELT& e2,const ELT& e3,const ELT& e4,
+        const ELT& e5,const ELT& e6,const ELT& e7,const ELT& e8,const ELT& e9,
+        const ELT& e10, const ELT& e11, const ELT& e12, const ELT& e13, const ELT& e14, 
+        const ELT& e15)
+      {assert(M*N==16);d[rIx(0)]=e0;d[rIx(1)]=e1;d[rIx(2)]=e2;d[rIx(3)]=e3;d[rIx(4)]=e4;
+       d[rIx(5)]=e5;d[rIx(6)]=e6;d[rIx(7)]=e7;d[rIx(8)]=e8;d[rIx(9)]=e9;d[rIx(10)]=e10;
+       d[rIx(11)]=e11;d[rIx(12)]=e12;d[rIx(13)]=e13;d[rIx(14)]=e14;d[rIx(15)]=e15;}
 
-    // Constructs a `Mat` from individual exact-match elements IN ROW ORDER.
-    template<
-        typename... Elements,
-        typename = std::enable_if_t<
-            (M*N==sizeof...(Elements)) &&
-            (std::is_convertible_v<Elements&&, const E&> && ...)
-        >
-    >
-    Mat(Elements&&... elementsRowByRow)
-    {
-        assignDataRowByRow(
-            std::forward_as_tuple(elementsRowByRow...),
-            std::make_integer_sequence<int, sizeof...(Elements)>{}
-        );
-    }
-
-    #endif
-
+#ifndef SWIG
     // Construction from 1-6 *exact match* Rows
     explicit Mat(const TRow& r0)
       { assert(M==1); (*this)[0]=r0; }
@@ -639,7 +643,7 @@ public:
     TRow&       operator[](int i)       { return row(i); }    
     const TCol& operator()(int j) const { return col(j); }
     TCol&       operator()(int j)       { return col(j); }
-    
+  
     const E& operator()(int i,int j) const { return elt(i,j); }
     E&       operator()(int i,int j)       { return elt(i,j); }
 
@@ -663,7 +667,7 @@ public:
     // conjugates if there are any.
     TNormalize normalize() const {
         if (CNT<E>::IsScalar) {
-            return castAwayNegatorIfAny() / (int(SignInterpretation)*norm());
+            return castAwayNegatorIfAny() / (SignInterpretation*norm());
         } else {
             TNormalize elementwiseNormalized;
             // punt to the column Vec to deal with the elements
@@ -857,7 +861,7 @@ public:
       { for(int j=0; j<N; ++j) (*this)(j).scalarDivideEq(ee); return *this; }
     template <class EE> Mat& scalarDivideEqFromLeft(const EE& ee)
       { for(int j=0; j<N; ++j) (*this)(j).scalarDivideEqFromLeft(ee); return *this; } 
-
+#endif
     void setToNaN() {
         for (int j=0; j<N; ++j)
             (*this)(j).setToNaN();
@@ -867,7 +871,7 @@ public:
         for (int j=0; j<N; ++j)
             (*this)(j).setToZero();
     }
-
+#ifndef SWIG
     // Extract a sub-Mat with size known at compile time. These have to be
     // called with explicit template arguments, e.g. getSubMat<3,4>(i,j).
 
@@ -1044,7 +1048,7 @@ public:
         m.setToNaN();
         return m;
     }
-
+#endif
     /// Return true if any element of this Mat contains a NaN anywhere.
     bool isNaN() const {
         for (int j=0; j<N; ++j)
@@ -1075,10 +1079,10 @@ public:
         return true;
     }
 
-    /// For approximate comparisons, the default tolerance to use for a matrix is
+    /// For approximate comparisions, the default tolerance to use for a matrix is
     /// its shortest dimension times its elements' default tolerance.
-    static double getDefaultTolerance() {return int(MinDim)*CNT<ELT>::getDefaultTolerance();}
-
+    static double getDefaultTolerance() {return MinDim*CNT<ELT>::getDefaultTolerance();}
+#ifndef SWIG
     /// %Test whether this matrix is numerically equal to some other matrix with
     /// the same shape, using a specified tolerance.
     template <class E2, int CS2, int RS2>
@@ -1097,7 +1101,7 @@ public:
         const double tol = std::max(getDefaultTolerance(),m.getDefaultTolerance());
         return isNumericallyEqual(m, tol);
     }
-
+#endif
     /// %Test whether this is numerically a "scalar" matrix, meaning that it is 
     /// a diagonal matrix in which each diagonal element is numerically equal to 
     /// the same scalar, using either a specified tolerance or the matrix's 
@@ -1151,7 +1155,7 @@ public:
                     return false;
         return true;
     }
-    
+#ifndef SWIG    
     /// Returns a row vector (Row) containing the column sums of this matrix.
     TRow colSum() const {
         TRow temp;
@@ -1170,9 +1174,9 @@ public:
             temp[i] = row(i).sum();
         return temp;
     }
-
+#endif
     // Functions to be used for Scripting in MATLAB and languages that do not support operator overloading
-    /** toString() returns a string representation of the Mat. Please refer to operator<< for details. **/
+    // toString() returns a string representation of the Mat. Please refer to operator<< for details.
     std::string toString() const {
         std::stringstream stream;
         stream <<  (*this) ;
@@ -1195,22 +1199,13 @@ private:
         const int col = k % N; // that's modulus, not cross product!
         return row*RS + col*CS;
     }
-
-    #ifndef SWIG
-
-    template<typename ElementsRowByRowTuple, int... Idx>
-    void assignDataRowByRow(ElementsRowByRowTuple&& els, std::integer_sequence<int, Idx...>)
-    {
-        ((d[rIx(Idx)] = std::get<Idx>(els)) , ...);
-    }
-
-    #endif
 };
 
 //////////////////////////////////////////////
 // Global operators involving two matrices. //
 //   m+m, m-m, m*m, m==m, m!=m              //
 //////////////////////////////////////////////
+#ifndef SWIG
 
 template <int M, int N, class EL, int CSL, int RSL, class ER, int CSR, int RSR> inline 
 typename Mat<M,N,EL,CSL,RSL>::template Result<Mat<M,N,ER,CSR,RSR> >::Add
@@ -1278,6 +1273,14 @@ template <int M, int N, class E, int CS, int RS> inline
 typename Mat<M,N,E,CS,RS>::template Result<double>::Mul
 operator*(const double& l, const Mat<M,N,E,CS,RS>& r) {return r*l;}
 
+template <int M, int N, class E, int CS, int RS> inline
+typename Mat<M,N,E,CS,RS>::template Result<long double>::Mul
+operator*(const Mat<M,N,E,CS,RS>& l, const long double& r)
+  { return Mat<M,N,E,CS,RS>::template Result<long double>::MulOp::perform(l,r); }
+template <int M, int N, class E, int CS, int RS> inline
+typename Mat<M,N,E,CS,RS>::template Result<long double>::Mul
+operator*(const long double& l, const Mat<M,N,E,CS,RS>& r) {return r*l;}
+
 // m = m*int, int*m -- just convert int to m's precision float
 template <int M, int N, class E, int CS, int RS> inline
 typename Mat<M,N,E,CS,RS>::template Result<typename CNT<E>::Precision>::Mul
@@ -1339,6 +1342,16 @@ operator/(const Mat<M,N,E,CS,RS>& l, const double& r)
 template <int M, int N, class E, int CS, int RS> inline
 typename CNT<double>::template Result<Mat<M,N,E,CS,RS> >::Dvd
 operator/(const double& l, const Mat<M,N,E,CS,RS>& r)
+{   return l * r.invert(); }
+
+template <int M, int N, class E, int CS, int RS> inline
+typename Mat<M,N,E,CS,RS>::template Result<long double>::Dvd
+operator/(const Mat<M,N,E,CS,RS>& l, const long double& r)
+{   return Mat<M,N,E,CS,RS>::template Result<long double>::DvdOp::perform(l,r); }
+
+template <int M, int N, class E, int CS, int RS> inline
+typename CNT<long double>::template Result<Mat<M,N,E,CS,RS> >::Dvd
+operator/(const long double& l, const Mat<M,N,E,CS,RS>& r)
 {   return l * r.invert(); }
 
 // m = m/int, int/m -- just convert int to m's precision float
@@ -1405,6 +1418,14 @@ template <int M, int N, class E, int CS, int RS> inline
 typename Mat<M,N,E,CS,RS>::template Result<double>::Add
 operator+(const double& l, const Mat<M,N,E,CS,RS>& r) {return r+l;}
 
+template <int M, int N, class E, int CS, int RS> inline
+typename Mat<M,N,E,CS,RS>::template Result<long double>::Add
+operator+(const Mat<M,N,E,CS,RS>& l, const long double& r)
+  { return Mat<M,N,E,CS,RS>::template Result<long double>::AddOp::perform(l,r); }
+template <int M, int N, class E, int CS, int RS> inline
+typename Mat<M,N,E,CS,RS>::template Result<long double>::Add
+operator+(const long double& l, const Mat<M,N,E,CS,RS>& r) {return r+l;}
+
 // m = m+int, int+m -- just convert int to m's precision float
 template <int M, int N, class E, int CS, int RS> inline
 typename Mat<M,N,E,CS,RS>::template Result<typename CNT<E>::Precision>::Add
@@ -1460,6 +1481,15 @@ template <int M, int N, class E, int CS, int RS> inline
 typename CNT<double>::template Result<Mat<M,N,E,CS,RS> >::Sub
 operator-(const double& l, const Mat<M,N,E,CS,RS>& r)
   { return CNT<double>::template Result<Mat<M,N,E,CS,RS> >::SubOp::perform(l,r); }
+
+template <int M, int N, class E, int CS, int RS> inline
+typename Mat<M,N,E,CS,RS>::template Result<long double>::Sub
+operator-(const Mat<M,N,E,CS,RS>& l, const long double& r)
+  { return Mat<M,N,E,CS,RS>::template Result<long double>::SubOp::perform(l,r); }
+template <int M, int N, class E, int CS, int RS> inline
+typename CNT<long double>::template Result<Mat<M,N,E,CS,RS> >::Sub
+operator-(const long double& l, const Mat<M,N,E,CS,RS>& r)
+  { return CNT<long double>::template Result<Mat<M,N,E,CS,RS> >::SubOp::perform(l,r); }
 
 // m = m-int, int-m // just convert int to m's precision float
 template <int M, int N, class E, int CS, int RS> inline
@@ -1520,7 +1550,7 @@ operator>>(std::basic_istream<CHAR,TRAITS>& is, Mat<M,N,E,CS,RS>& m) {
     assert(false);
     return is;
 }
-
+#endif
 } //namespace SimTK
 
 
