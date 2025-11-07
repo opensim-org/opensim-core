@@ -39,7 +39,7 @@ jobs:
 
     - name: Install numpy
       # Need numpy to use SWIG numpy typemaps.
-      run: python3 -m pip install numpy==1.25
+      run: python3 -m pip install numpy==2.0
 
     - name: Install SWIG
       run: |
@@ -60,7 +60,7 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
-      if: steps.cache-dependencies.outputs.cache-hit != 'true'
+    #   if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         echo $env:GITHUB_WORKSPACE\\build_deps
         mkdir $env:GITHUB_WORKSPACE\\build_deps
@@ -142,7 +142,7 @@ jobs:
 
     - name: Install numpy
       # Need numpy to use SWIG numpy typemaps.
-      run: python3 -m pip install numpy==1.25
+      run: python3 -m pip install numpy==2.0
 
     - name: Install SWIG
       run: |
@@ -163,7 +163,7 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
-      if: steps.cache-dependencies.outputs.cache-hit != 'true'
+    #   if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         echo $env:GITHUB_WORKSPACE\\build_deps
         mkdir $env:GITHUB_WORKSPACE\\build_deps
@@ -241,7 +241,7 @@ jobs:
       run: |
         brew install pkgconfig autoconf libtool automake wget pcre doxygen llvm
         brew reinstall gcc
-        pip3 install numpy==1.25
+        pip3 install numpy==2.0
         gfortran -v
         mkdir gfortran_version
         gfortran -v &> gfortran_version/gfortran_version.txt
@@ -367,7 +367,7 @@ jobs:
       run: |
         brew install pkgconfig autoconf libtool automake wget pcre doxygen llvm
         brew reinstall gcc
-        pip3 install numpy==1.25
+        pip3 install numpy==2.0
         gfortran -v
         mkdir gfortran_version
         gfortran -v &> gfortran_version/gfortran_version.txt
@@ -488,7 +488,7 @@ jobs:
     - name: Install Numpy
       run: |
         pip install pip --upgrade
-        pip install numpy==1.25
+        pip install numpy==2.0
 
     - name: Install packages
       run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen patchelf
@@ -607,7 +607,7 @@ jobs:
     - name: Install Numpy
       run: |
         pip install pip --upgrade
-        pip install numpy==1.25
+        pip install numpy==2.0
 
     - name: Install packages
       run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen patchelf
@@ -708,8 +708,8 @@ jobs:
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
-        name: opensim-core-${{ steps.configure.outputs.version }}-ubuntu22-linux
-        path: opensim-core-${{ steps.configure.outputs.version }}-ubuntu22.zip
+        name: opensim-core-${{ steps.configure.outputs.version }}-ubuntu24-linux
+        path: opensim-core-${{ steps.configure.outputs.version }}-ubuntu24.zip
 
   build_gui:
     name: Build GUI
