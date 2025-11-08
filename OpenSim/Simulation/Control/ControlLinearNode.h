@@ -92,8 +92,8 @@ private:
 public:
 #ifndef SWIG
     ControlLinearNode& operator=(const ControlLinearNode &aControl);
-    bool operator==(const ControlLinearNode &aControl) const;
-    bool operator<(const ControlLinearNode &aControl) const;
+    bool operator==(const Object &aControl) const override;
+    bool operator<(const Object &aControl) const override;
 
     friend std::ostream& operator<<(std::ostream &aOut,
         const ControlLinearNode &aControlLinearNode);
