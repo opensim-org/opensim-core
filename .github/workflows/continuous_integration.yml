@@ -39,7 +39,9 @@ jobs:
 
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
-      run: python3 -m pip install numpy==1.25
+      run: |
+        python3 -m pip install numpy>=2.0
+      
 
     - name: Install SWIG
       run: |
@@ -68,7 +70,7 @@ jobs:
         # /W0 disables warnings.
         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
         # TODO: CMake provides /W3, which overrides our /W0
-        cmake -E env CXXFLAGS="/W0 /MD" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_CASADI=ON
+        cmake -E env CXXFLAGS="/W0 /MD" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_CASADI=ON -DOPENSIM_PYTHON_STANDALONE=ON
         cmake --build . --config Release -- /maxcpucount:4
 
     - name: Configure opensim-core
@@ -107,11 +109,12 @@ jobs:
         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.configure.outputs.version }}" -Recurse
         7z a "opensim-core-${{ steps.configure.outputs.version }}.zip" "opensim-core-${{ steps.configure.outputs.version }}"
 
-    # - name: Test Python bindings
-    #   run: |
+    - name: Build wheel
+      run: |
     #     echo "PYTHONPATH= $env:USERPROFILE/opensim-core-install/bin">> $GITHUB_ENV
     #     # Move to the installed location of the python package.
-    #     cd ~/opensim-core-install/sdk/python
+          cd ~/opensim-core-install/sdk/python
+          python setup.py bdist_wheel
     #     # Run python tests.
     #     python -m unittest discover --start-directory opensim/tests --verbose
 
