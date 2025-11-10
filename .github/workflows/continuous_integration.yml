@@ -41,6 +41,7 @@ jobs:
       #Need numpy to use SWIG numpy typemaps.
       run: |
         python3 -m pip install numpy>=2.0
+        python3 -m pip install wheel
       
 
     - name: Install SWIG
