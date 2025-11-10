@@ -111,10 +111,8 @@ jobs:
 
     - name: Build wheel
       run: |
-    #     echo "PYTHONPATH= $env:USERPROFILE/opensim-core-install/bin">> $GITHUB_ENV
-    #     # Move to the installed location of the python package.
-          cd ~/opensim-core-install/sdk/python
-          python setup.py bdist_wheel
+        cd ~/opensim-core-install/sdk/python
+        python setup.py bdist_wheel --plat-name win64
     #     # Run python tests.
     #     python -m unittest discover --start-directory opensim/tests --verbose
 
