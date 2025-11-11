@@ -49,6 +49,12 @@ void WrapResult::copyData(const WrapResult& aWrapResult) {
     startPoint = aWrapResult.startPoint;
     endPoint = aWrapResult.endPoint;
 
+    // Avoid uninitialized warnings on GCC 12+
+    r1 = SimTK::Vec3(0.0);
+    r2 = SimTK::Vec3(0.0);
+    c1 = SimTK::Vec3(0.0);
+    sv = SimTK::Vec3(0.0);
+
     int i;
     for (i = 0; i < 3; i++) {
         r1[i] = aWrapResult.r1[i];
