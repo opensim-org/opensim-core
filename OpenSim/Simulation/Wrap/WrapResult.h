@@ -70,10 +70,10 @@ public:
     //--------------------------------------------------------------------------
 public:
     WrapResult()
-        : r1(SimTK::Vec3(0.0)),
-          r2(SimTK::Vec3(0.0)),
-          c1(SimTK::Vec3(0.0)),
-          sv(SimTK::Vec3(0.0))
+        : r1(SimTK::Vec3(0.0, 0.0, 0.0)),
+          r2(SimTK::Vec3(0.0, 0.0, 0.0)),
+          c1(SimTK::Vec3(0.0, 0.0, 0.0)),
+          sv(SimTK::Vec3(0.0, 0.0, 0.0))
     {}
     virtual ~WrapResult() = default;
     WrapResult(const WrapResult& other);
