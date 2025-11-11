@@ -39,11 +39,15 @@ jobs:
 
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
-      run: python3 -m pip install numpy==1.25
+      run: |
+        python3 -m pip install numpy>=2.0
+        python3 -m pip install wheel
+        python3 -m pip install build
+      
 
     - name: Install SWIG
       run: |
-        choco install swig --version 4.1.1 --yes --limit-output --allow-downgrade
+        choco install swig --version 4.2.0 --yes --limit-output --allow-downgrade
         swig -swiglib
 
     - name: Cache dependencies
@@ -68,7 +72,7 @@ jobs:
         # /W0 disables warnings.
         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
         # TODO: CMake provides /W3, which overrides our /W0
-        cmake -E env CXXFLAGS="/W0 /MD" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_CASADI=ON
+        cmake -E env CXXFLAGS="/W0 /MD" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_CASADI=ON -DOPENSIM_PYTHON_STANDALONE=ON
         cmake --build . --config Release -- /maxcpucount:4
 
     - name: Configure opensim-core
@@ -107,11 +111,18 @@ jobs:
         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.configure.outputs.version }}" -Recurse
         7z a "opensim-core-${{ steps.configure.outputs.version }}.zip" "opensim-core-${{ steps.configure.outputs.version }}"
 
-    # - name: Test Python bindings
-    #   run: |
-    #     echo "PYTHONPATH= $env:USERPROFILE/opensim-core-install/bin">> $GITHUB_ENV
-    #     # Move to the installed location of the python package.
-    #     cd ~/opensim-core-install/sdk/python
+    - name: Build wheel
+      run: |
+        cd ~/opensim-core-install/sdk/python
+        python -m build --wheel 
+
+    - name: Upload windows wheel
+      uses: actions/upload-artifact@v4
+      with:
+        name: opensim-4.5.2-py3-none-win64.whl
+        path: ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-py3-none-any.whl
+    
+        
     #     # Run python tests.
     #     python -m unittest discover --start-directory opensim/tests --verbose
 
@@ -786,7 +797,9 @@ jobs:
     - name: Install Numpy
       run: |
         pip install pip --upgrade
-        pip install numpy==1.25
+        pip install numpy==2.0
+        pip install build
+        pip install wheel
 
     - name: Install packages
       run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen patchelf
@@ -836,6 +849,8 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=~/swig/bin/swig)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_COPY_DEPENDENCIES=ON)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_PYTHON_STANDALONE=ON)
         # TODO: Update to simbody.github.io/latest
         OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
         OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
