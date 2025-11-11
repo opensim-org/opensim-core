@@ -49,19 +49,10 @@ void WrapResult::copyData(const WrapResult& aWrapResult) {
     startPoint = aWrapResult.startPoint;
     endPoint = aWrapResult.endPoint;
 
-    // Avoid uninitialized warnings on GCC 12+
-    r1 = SimTK::Vec3(0.0);
-    r2 = SimTK::Vec3(0.0);
-    c1 = SimTK::Vec3(0.0);
-    sv = SimTK::Vec3(0.0);
-
-    int i;
-    for (i = 0; i < 3; i++) {
-        r1[i] = aWrapResult.r1[i];
-        r2[i] = aWrapResult.r2[i];
-        c1[i] = aWrapResult.c1[i];
-        sv[i] = aWrapResult.sv[i];
-    }
+    r1 = aWrapResult.r1;
+    r2 = aWrapResult.r2;
+    c1 = aWrapResult.c1;
+    sv = aWrapResult.sv;
 
     singleWrap = aWrapResult.singleWrap;
     // TODO: Should factor be omitted from the copy?
