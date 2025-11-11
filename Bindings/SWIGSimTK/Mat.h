@@ -339,6 +339,7 @@ public:
     explicit Mat(int i) 
       { new (this) Mat(ELT(Precision(i))); }
 
+#ifndef SWIG
     // Constructs a `Mat` from individual exact-match elements IN ROW ORDER.
     template<
         typename... Elements,
@@ -354,6 +355,20 @@ public:
             std::make_integer_sequence<int, sizeof...(Elements)>{}
         );
     }
+#else
+    template <int MM = M, int NN = N,
+              typename std::enable_if<(MM==3 && NN==3), int>::type = 0>
+    Mat(const E& e00, const E& e01, const E& e02,
+        const E& e10, const E& e11, const E& e12,
+        const E& e20, const E& e21, const E& e22)
+    {
+        const E elems[9] = {e00, e01, e02,
+                            e10, e11, e12,
+                            e20, e21, e22};
+        for (int idx = 0; idx < 9; ++idx)
+            d[rIx(idx)] = elems[idx];
+    }
+#endif
 
 #ifndef SWIG
     // Construction from 1-6 *exact match* Rows
@@ -1153,11 +1168,13 @@ private:
         return row*RS + col*CS;
     }
 
+#ifndef SWIG
     template<typename ElementsRowByRowTuple, int... Idx>
     void assignDataRowByRow(ElementsRowByRowTuple&& els, std::integer_sequence<int, Idx...>)
     {
         ((d[rIx(Idx)] = std::get<Idx>(els)) , ...);
     }
+#endif
 };
 
 //////////////////////////////////////////////
