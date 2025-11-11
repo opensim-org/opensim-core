@@ -35,6 +35,7 @@ performance and stability in wrapping solutions.
 - Implemented `generateDecorations()` for `Station` to allow visualization in the Simbody visualizer. (#4169)
 - Added `Component::removeComponent` and `Component::extractComponent` methods, which enable removing subcomponents that were previously added via `Component::addComponent` or the `<components>` XML element (#4174).
 - Updated required language level to C++20. (#3929)
+- Python API accepts Path objects instead of only strings
 
 v4.5.2
 ======
