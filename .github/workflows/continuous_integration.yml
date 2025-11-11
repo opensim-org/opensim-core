@@ -113,7 +113,7 @@ jobs:
     - name: Build wheel
       run: |
         cd ~/opensim-core-install/sdk/python
-        python setup.py bdist_wheel --plat-name win64
+        python -m build --wheel 
     #     # Run python tests.
     #     python -m unittest discover --start-directory opensim/tests --verbose
 
