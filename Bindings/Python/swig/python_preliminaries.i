@@ -51,7 +51,7 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 
 // Support for pathlib.Path objects
 // ================================
-%typemap(in) std::string const & (std::string temp) {
+%typemap(in) std::string const & (std::string temp, int res = SWIG_OLDOBJ) {
     if (PyUnicode_Check($input)) {
         temp = std::string(PyUnicode_AsUTF8($input));
         $1 = &temp;
