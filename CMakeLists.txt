@@ -569,31 +569,6 @@ if(${BUILD_PYTHON_WRAPPING})
     # This must be done before adding the OpenSim libraries, since
     # OPENSIM_INSTALL_PYTHONDIR is used in OpenSimAddLibrary (in
     # OpenSimMacros.cmake).
-
-    if(APPLE AND ${OPENSIM_PYTHON_VERSION} STREQUAL "2")
-        # If you have Homebrew's Python2, then by default, PythonInterp finds
-        # Apple's Python, but PythonLibs finds Homebrew's Python, causing
-        # runtime crashes. This also occurs if one has Anaconda Python.
-        # So we use the python-config executable to get the
-        # correct library and include directory.
-        # https://github.com/Homebrew/legacy-homebrew/issues/25118
-        execute_process(COMMAND "${Python3_EXECUTABLE}-config" --prefix
-                    OUTPUT_VARIABLE python_prefix
-                    OUTPUT_STRIP_TRAILING_WHITESPACE)
-        string(CONCAT pyinc_desc
-            "Location of Python header files, to compile bindings. "
-            "Must be consistent with PYTHON_EXECUTABLE.")
-        set(PYTHON_INCLUDE_DIR
-            "${python_prefix}/include/python${python_version_majmin}/"
-            CACHE PATH "${pyinc_desc}")
-
-        string(CONCAT pylib_desc
-            "Location of Python library, to compile bindings. "
-            "Must be consistent with PYTHON_EXECUTABLE.")
-        set(PYTHON_LIBRARY
-            "${python_prefix}/lib/libpython${python_version_majmin}.dylib"
-            CACHE FILEPATH "${pylib_desc}")
-    endif()
     
     # Most users need to copy dependencies if wrapping is on. Warn user
     # if it isn't on.
@@ -836,7 +811,6 @@ endif()
 if (OPENSIM_WITH_CASADI)
     if(UNIX)
         pkg_check_modules(IPOPT REQUIRED ipopt IMPORTED_TARGET)
-
         if(OPENSIM_COPY_DEPENDENCIES AND APPLE)
             # Extract actual name of the library libgfortran, gcc, quadmath to install along on OSX.
             # These show only as dependencies of libipopt, and libgcc is in same folder as libgfortran.
@@ -853,7 +827,6 @@ if (OPENSIM_WITH_CASADI)
                 "otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libquadmath' | awk '{print $1}'"
                 OUTPUT_VARIABLE libquadmath_name
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
-            
             install(FILES
                 ${IPOPT_LIBDIR}/libipopt.3.dylib
                 ${IPOPT_LIBDIR}/libipopt.dylib
