@@ -141,7 +141,7 @@ operator=(const ControlLinearNode &aNode)
  * @return True if the times are equal, false otherwise.
  */
 bool ControlLinearNode::
-operator==(const ControlLinearNode &aNode) const
+isEqual(const ControlLinearNode &aNode) const
 {
     if((_t) > aNode._t) return(false);
     if((_t) < aNode._t) return(false);
@@ -159,7 +159,7 @@ operator==(const ControlLinearNode &aNode) const
  * @return True if the time of this node is less than the time of aNode.
  */
 bool ControlLinearNode::
-operator<(const ControlLinearNode &aNode) const
+isLessThan(const ControlLinearNode &aNode) const
 {
     if(_t<aNode._t) return(true);
     else return(false);
