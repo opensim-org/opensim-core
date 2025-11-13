@@ -797,9 +797,7 @@ jobs:
     - name: Install Numpy
       run: |
         pip install pip --upgrade
-        pip install numpy==2.0
-        pip install build
-        pip install wheel
+        pip install numpy
 
     - name: Install packages
       run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen patchelf
@@ -849,8 +847,6 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=~/swig/bin/swig)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_COPY_DEPENDENCIES=ON)
-        OSIM_CMAKE_ARGS+=(-DOPENSIM_PYTHON_STANDALONE=ON)
         # TODO: Update to simbody.github.io/latest
         OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
         OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
