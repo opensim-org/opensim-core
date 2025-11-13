@@ -572,7 +572,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: opensim-4.5.2-py3-none-osx_arm64.whl
-        path: $GITHUB_WORKSPACE/../opensim-core-install/sdk/python/dist/opensim-4.5.2-py3-none-any.whl
+        path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-py3-none-any.whl
 
     - name: Test Python bindings
       run: |
