@@ -432,7 +432,12 @@ jobs:
         mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure.outputs.version }}
         zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}.zip opensim-core-${{ steps.configure.outputs.version }}
         mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
-
+        
+    - name: Build wheel
+      run: |
+        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        python3 -m build --wheel
+        
     - name: Test Python bindings
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
@@ -468,6 +473,8 @@ jobs:
         brew install pkgconfig autoconf libtool automake wget pcre doxygen llvm
         brew reinstall gcc
         pip3 install numpy==1.25
+        pip3 install wheel
+        pip3 install build
         gfortran -v
         mkdir gfortran_version
         gfortran -v &> gfortran_version/gfortran_version.txt
