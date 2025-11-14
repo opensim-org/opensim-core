@@ -87,9 +87,11 @@ jobs:
         echo "version=$version" >> $env:GITHUB_OUTPUT
 
     - name: Build opensim-core
+    # Install now to avoid building bindings twice (TODO: still an issue with Visual Studio 2022).
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
         cmake --build . --config Release --target doxygen -- /maxcpucount:4
+        cmake --build . --config Release --target install -- /maxcpucount:4
 
     - name: Test opensim-core
       run: |
@@ -97,9 +99,9 @@ jobs:
         ctest --parallel 4 --output-on-failure --build-config Release -E Java_*
 
     - name: Install opensim-core
+    # TODO: This is where we wish to do the installing, but it's done above for now.
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
-        cmake --build . --config Release --target install -- /maxcpucount:4
         chdir $env:GITHUB_WORKSPACE
         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.configure.outputs.version }}" -Recurse
         7z a "opensim-core-${{ steps.configure.outputs.version }}.zip" "opensim-core-${{ steps.configure.outputs.version }}"
@@ -190,9 +192,11 @@ jobs:
         echo "version=$version" >> $env:GITHUB_OUTPUT
 
     - name: Build opensim-core
+    # Install now to avoid building bindings twice (TODO: still an issue with Visual Studio 2022).
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
         cmake --build . --config Release --target doxygen -- /maxcpucount:4
+        cmake --build . --config Release --target install -- /maxcpucount:4
 
     - name: Test opensim-core
       run: |
@@ -200,9 +204,9 @@ jobs:
         ctest --parallel 4 --output-on-failure --build-config Release -E Java_*
 
     - name: Install opensim-core
+    # TODO: This is where we wish to do the installing, but it's done above for now.
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
-        cmake --build . --config Release --target install -- /maxcpucount:4
         chdir $env:GITHUB_WORKSPACE
         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.configure.outputs.version }}" -Recurse
         7z a "opensim-core-${{ steps.configure.outputs.version }}.zip" "opensim-core-${{ steps.configure.outputs.version }}"
