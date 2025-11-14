@@ -42,44 +42,30 @@ WrapResult::WrapResult()
       c1{SimTK::Vec3(0.0)},
       sv{SimTK::Vec3(0.0)} {}
 
-WrapResult::WrapResult(const WrapResult& other) {
-    copyData(other);
-}
+WrapResult::WrapResult(const WrapResult& other)
+    : startPoint{other.startPoint},
+      endPoint{other.endPoint},
+      wrap_pts{other.wrap_pts},
+      wrap_path_length{other.wrap_path_length},
+      r1{other.r1},
+      r2{other.r2},
+      c1{other.c1},
+      sv{other.sv},
+      factor{SimTK::NaN},
+      singleWrap{other.singleWrap} {}
 
-//_____________________________________________________________________________
-/**
- * Copy data members from one WrapResult to another.
- *
- * @param aWrapResult WrapResult to be copied.
- */
-void WrapResult::copyData(const WrapResult& aWrapResult) {
-    wrap_pts = aWrapResult.wrap_pts;
-    wrap_path_length = aWrapResult.wrap_path_length;
-
-    startPoint = aWrapResult.startPoint;
-    endPoint = aWrapResult.endPoint;
-
-    r1 = aWrapResult.r1;
-    r2 = aWrapResult.r2;
-    c1 = aWrapResult.c1;
-    sv = aWrapResult.sv;
-
-    singleWrap = aWrapResult.singleWrap;
-    // TODO: Should factor be omitted from the copy?
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-WrapResult& WrapResult::operator=(const WrapResult& aWrapResult) {
-    if (this != &aWrapResult) {
-        copyData(aWrapResult);
+WrapResult& WrapResult::operator=(const WrapResult& other) {
+    if (this != &other) {
+        startPoint = other.startPoint;
+        endPoint = other.endPoint;
+        wrap_pts = other.wrap_pts;
+        wrap_path_length = other.wrap_path_length;
+        r1 = other.r1;
+        r2 = other.r2;
+        c1 = other.c1;
+        sv = other.sv;
+        factor = SimTK::NaN;
+        singleWrap = other.singleWrap;
     }
 
     return *this;

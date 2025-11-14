@@ -74,9 +74,6 @@ public:
     WrapResult(const WrapResult& other);
     WrapResult& operator=(const WrapResult& aWrapResult);
 
-private:
-    void copyData(const WrapResult& aWrapResult);
-
 //=============================================================================
 };  // END of class WrapResult
 //=============================================================================
