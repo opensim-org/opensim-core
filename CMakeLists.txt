@@ -13,6 +13,7 @@ project(OpenSim)
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
     cmake_policy(SET CMP0005 NEW)
+    cmake_policy(SET CMP0177 NEW) 
 endif(COMMAND cmake_policy)
 
 message(STATUS "NOTICE: Make sure all OpenSim dependencies are built with the \
@@ -795,6 +796,11 @@ if(OPENSIM_WITH_CASADI)
         install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
             DESTINATION "${CMAKE_INSTALL_PREFIX}/${OPENSIM_INSTALL_CASADIDIR}"
                 USE_SOURCE_PERMISSIONS)
+        if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+            file(GLOB CASADI_LIBS "${CASADI_CMAKE_DIR}/../../../lib/*.*")
+            install(FILES ${CASADI_LIBS}
+                    DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+        endif()
     endif()
 endif()
 
@@ -837,7 +843,19 @@ if (OPENSIM_WITH_CASADI)
                 ${libquadmath_name}
                 ${libgcc_name}
                 DESTINATION ${CMAKE_INSTALL_LIBDIR})
-                
+
+            if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+                install(FILES
+                   ${IPOPT_LIBDIR}/libipopt.3.dylib
+                    ${IPOPT_LIBDIR}/libipopt.dylib
+                    ${IPOPT_LIBDIR}/libcoinmumps.3.dylib
+                    ${IPOPT_LIBDIR}/libcoinmumps.dylib
+                    ${IPOPT_LIBDIR}/libmetis.dylib
+                    ${libgfortran_name}
+                    ${libquadmath_name}
+                    ${libgcc_name}
+                    DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+            endif()
         elseif(OPENSIM_COPY_DEPENDENCIES)
             get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
 
