@@ -908,7 +908,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: opensim-4.5.2-py3-none-linux_arm64.whl
-        path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-py3-none-any.whl
+        path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim-4.5.2-py3-none-any.whl
 
     - name: Test Python bindings
       run: |
