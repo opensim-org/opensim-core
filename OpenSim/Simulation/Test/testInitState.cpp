@@ -24,7 +24,7 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Control/ControlSetController.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Actuators/PointActuator.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <catch2/catch_all.hpp>
 
@@ -41,7 +41,14 @@ using namespace std;
 TEST_CASE("testStates")
 {
     using namespace SimTK;
-    LoadOpenSimLibrary("osimActuators");
+
+    // The following model(s) contains Actuators that are registered when the
+    // osimActuators library is loaded. But unless we call at least one
+    // function defined in the osimActuators library, some linkers will omit
+    // its dependency from the executable and it will not be loaded at
+    // startup.
+    { PointActuator t; }
+
     //==========================================================================
     // Setup OpenSim model
     std::string modelFile = "arm26.osim";
