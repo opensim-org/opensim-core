@@ -32,6 +32,16 @@
 using namespace std;
 using namespace OpenSim;
 
+WrapResult::WrapResult()
+    : startPoint{-1},
+      endPoint{-1},
+      wrap_pts{SimTK::Vec3(0.0), 0, 1},
+      wrap_path_length{0.0},
+      r1{SimTK::Vec3(0.0)},
+      r2{SimTK::Vec3(0.0)},
+      c1{SimTK::Vec3(0.0)},
+      sv{SimTK::Vec3(0.0)} {}
+
 WrapResult::WrapResult(const WrapResult& other) {
     copyData(other);
 }

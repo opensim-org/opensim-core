@@ -69,7 +69,7 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    WrapResult() = default;
+    WrapResult();
     virtual ~WrapResult() = default;
     WrapResult(const WrapResult& other);
     WrapResult& operator=(const WrapResult& aWrapResult);
