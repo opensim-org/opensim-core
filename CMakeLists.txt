@@ -13,6 +13,7 @@ project(OpenSim)
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
     cmake_policy(SET CMP0005 NEW)
+    cmake_policy(SET CMP0177 NEW) 
 endif(COMMAND cmake_policy)
 
 message(STATUS "NOTICE: Make sure all OpenSim dependencies are built with the \
@@ -500,6 +501,12 @@ set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're bu
 
 set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping; requires that you have SWIG and Python installed on your machine.)")
 
+set(BUILD_PYPI OFF CACHE BOOL "Build Python wrapping into a pypi package wheel")
+
+if(BUILD_PYPI)
+  set(OPENSIM_PYTHON_STANDALONE ON CACHE BOOL "Enable Standalone python packaging" FORCE)
+endif()
+
 set(OPENSIM_PYTHON_VERSION 3)
 
 if(${BUILD_JAVA_WRAPPING})
@@ -563,31 +570,6 @@ if(${BUILD_PYTHON_WRAPPING})
     # This must be done before adding the OpenSim libraries, since
     # OPENSIM_INSTALL_PYTHONDIR is used in OpenSimAddLibrary (in
     # OpenSimMacros.cmake).
-
-    if(APPLE AND ${OPENSIM_PYTHON_VERSION} STREQUAL "2")
-        # If you have Homebrew's Python2, then by default, PythonInterp finds
-        # Apple's Python, but PythonLibs finds Homebrew's Python, causing
-        # runtime crashes. This also occurs if one has Anaconda Python.
-        # So we use the python-config executable to get the
-        # correct library and include directory.
-        # https://github.com/Homebrew/legacy-homebrew/issues/25118
-        execute_process(COMMAND "${Python3_EXECUTABLE}-config" --prefix
-                    OUTPUT_VARIABLE python_prefix
-                    OUTPUT_STRIP_TRAILING_WHITESPACE)
-        string(CONCAT pyinc_desc
-            "Location of Python header files, to compile bindings. "
-            "Must be consistent with PYTHON_EXECUTABLE.")
-        set(PYTHON_INCLUDE_DIR
-            "${python_prefix}/include/python${python_version_majmin}/"
-            CACHE PATH "${pyinc_desc}")
-
-        string(CONCAT pylib_desc
-            "Location of Python library, to compile bindings. "
-            "Must be consistent with PYTHON_EXECUTABLE.")
-        set(PYTHON_LIBRARY
-            "${python_prefix}/lib/libpython${python_version_majmin}.dylib"
-            CACHE FILEPATH "${pylib_desc}")
-    endif()
     
     # Most users need to copy dependencies if wrapping is on. Warn user
     # if it isn't on.
@@ -814,6 +796,11 @@ if(OPENSIM_WITH_CASADI)
         install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
             DESTINATION "${CMAKE_INSTALL_PREFIX}/${OPENSIM_INSTALL_CASADIDIR}"
                 USE_SOURCE_PERMISSIONS)
+        if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+            file(GLOB CASADI_LIBS "${CASADI_CMAKE_DIR}/../../../lib/*.*")
+            install(FILES ${CASADI_LIBS}
+                    DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+        endif()
     endif()
 endif()
 
@@ -830,7 +817,6 @@ endif()
 if (OPENSIM_WITH_CASADI)
     if(UNIX)
         pkg_check_modules(IPOPT REQUIRED ipopt IMPORTED_TARGET)
-
         if(OPENSIM_COPY_DEPENDENCIES AND APPLE)
             # Extract actual name of the library libgfortran, gcc, quadmath to install along on OSX.
             # These show only as dependencies of libipopt, and libgcc is in same folder as libgfortran.
@@ -847,7 +833,6 @@ if (OPENSIM_WITH_CASADI)
                 "otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libquadmath' | awk '{print $1}'"
                 OUTPUT_VARIABLE libquadmath_name
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
-            
             install(FILES
                 ${IPOPT_LIBDIR}/libipopt.3.dylib
                 ${IPOPT_LIBDIR}/libipopt.dylib
@@ -858,7 +843,19 @@ if (OPENSIM_WITH_CASADI)
                 ${libquadmath_name}
                 ${libgcc_name}
                 DESTINATION ${CMAKE_INSTALL_LIBDIR})
-                
+
+            if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+                install(FILES
+                   ${IPOPT_LIBDIR}/libipopt.3.dylib
+                    ${IPOPT_LIBDIR}/libipopt.dylib
+                    ${IPOPT_LIBDIR}/libcoinmumps.3.dylib
+                    ${IPOPT_LIBDIR}/libcoinmumps.dylib
+                    ${IPOPT_LIBDIR}/libmetis.dylib
+                    ${libgfortran_name}
+                    ${libquadmath_name}
+                    ${libgcc_name}
+                    DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+            endif()
         elseif(OPENSIM_COPY_DEPENDENCIES)
             get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
 
