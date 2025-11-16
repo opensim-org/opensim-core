@@ -603,14 +603,6 @@ function(OpenSimInstallDependencyLibraries PREFIX DEP_LIBS_DIR_WIN
             "${DEP_INSTALL_DIR}.")
     endif()
     install(FILES ${LIBS} DESTINATION "${OSIM_DESTINATION}")
-    if (UNIX)
-        #Add origin to rpath
-        foreach(lib ${LIBS})
-            message(STATUS "processing ${lib}")
-            execute_process(COMMAND bash "-c" "patchelf --force-rpath --set-rpath '$ORIGIN' '${lib}'"
-                OUTPUT_VARIABLE res)
-        endforeach()
-    endif()
 endfunction()
 
 

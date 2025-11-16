@@ -1053,3 +1053,8 @@ add_subdirectory(doc)
 # Print a list of the dependencies that were found, and the features the user
 # chose.
 feature_summary(WHAT ALL)
+
+if (BUILD_PYPI AND UNIX)
+install(CODE "set(OPENSIM_INSTALL_PYTHONDIR \"${OPENSIM_INSTALL_PYTHONDIR}\")")
+install (SCRIPT "${CMAKE_SOURCE_DIR}/buildWheel.cmake")
+endif()
