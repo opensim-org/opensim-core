@@ -843,19 +843,6 @@ if (OPENSIM_WITH_CASADI)
                 ${libquadmath_name}
                 ${libgcc_name}
                 DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-            if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
-                install(FILES
-                   ${IPOPT_LIBDIR}/libipopt.3.dylib
-                    ${IPOPT_LIBDIR}/libipopt.dylib
-                    ${IPOPT_LIBDIR}/libcoinmumps.3.dylib
-                    ${IPOPT_LIBDIR}/libcoinmumps.dylib
-                    ${IPOPT_LIBDIR}/libmetis.dylib
-                    ${libgfortran_name}
-                    ${libquadmath_name}
-                    ${libgcc_name}
-                    DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
-            endif()
         elseif(OPENSIM_COPY_DEPENDENCIES)
             get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
 
@@ -873,6 +860,14 @@ if (OPENSIM_WITH_CASADI)
                 ${gfortran}
                 ${quadmath}
                 DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        endif()
+        if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+            OpenSimInstallDependencyLibraries(ipopt "${IPOPT_LIBDIR}"
+                "${IPOPT_LIBDIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+            OpenSimInstallDependencyLibraries(coin "${IPOPT_LIBDIR}"
+                "${IPOPT_LIBDIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+            OpenSimInstallDependencyLibraries(metis "${IPOPT_LIBDIR}"
+                "${IPOPT_LIBDIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
         endif()
     else()
         set(Ipopt_ROOT_DIR ${OPENSIM_DEPENDENCIES_DIR}/ipopt)

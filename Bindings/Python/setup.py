@@ -55,7 +55,7 @@ setup(name='opensim',
           'Topic :: Scientific/Engineering :: Physics',
           ],
           install_requires=[
-              "numpy>=2.0,<2.3"
+              "numpy>=2.1,<=2.3"
           ]
       )
 

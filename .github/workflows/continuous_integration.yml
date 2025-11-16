@@ -157,7 +157,7 @@ jobs:
 
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
-      run: python3 -m pip install numpy==2.2
+      run: python3 -m pip install numpy>=2.1
 
     - name: Install SWIG
       run: |
@@ -341,7 +341,7 @@ jobs:
       run: |
         brew install pkgconfig autoconf libtool automake wget pcre doxygen llvm
         brew reinstall gcc
-        pip3 install numpy==2.2
+        pip3 install numpy>=2.1
         gfortran -v
         mkdir gfortran_version
         gfortran -v &> gfortran_version/gfortran_version.txt
@@ -467,7 +467,7 @@ jobs:
       run: |
         brew install pkgconfig autoconf libtool automake wget pcre doxygen llvm
         brew reinstall gcc
-        pip3 install numpy==2.2
+        pip3 install numpy>=2.1
         pip3 install wheel
         pip3 install build
         gfortran -v
@@ -610,7 +610,7 @@ jobs:
       run: |
         brew install pkgconfig autoconf libtool automake wget pcre doxygen llvm
         brew reinstall gcc
-        pip3 install numpy==2.2
+        pip3 install numpy>=2.1
         gfortran -v
         mkdir gfortran_version
         gfortran -v &> gfortran_version/gfortran_version.txt
