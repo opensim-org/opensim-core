@@ -796,11 +796,6 @@ if(OPENSIM_WITH_CASADI)
         install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
             DESTINATION "${CMAKE_INSTALL_PREFIX}/${OPENSIM_INSTALL_CASADIDIR}"
                 USE_SOURCE_PERMISSIONS)
-        if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
-            file(GLOB CASADI_LIBS "${CASADI_CMAKE_DIR}/../../../lib/*.*")
-            install(FILES ${CASADI_LIBS}
-                    DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
-        endif()
     endif()
 endif()
 
