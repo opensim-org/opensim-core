@@ -92,8 +92,6 @@ private:
 public:
 #ifndef SWIG
     ControlLinearNode& operator=(const ControlLinearNode &aControl);
-    bool operator==(const ControlLinearNode &aControl) const;
-    bool operator<(const ControlLinearNode &aControl) const;
 
     friend std::ostream& operator<<(std::ostream &aOut,
         const ControlLinearNode &aControlLinearNode);
@@ -111,6 +109,8 @@ public:
     //--------------------------------------------------------------------------
     // UTILITY
     //--------------------------------------------------------------------------
+    bool isEqual(const ControlLinearNode &aControl) const;
+    bool isLessThan(const ControlLinearNode &aControl) const;
     char* toString();
 
 //=============================================================================
