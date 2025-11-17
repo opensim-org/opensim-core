@@ -127,7 +127,7 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
 
     // Configure the device to wrap over the patella (if one exists; there is no
     // patella in the testbed).
-    const std::string patellaPath("thigh/patellaFrame/patella");
+    const std::string patellaPath("/bodyset/thigh/patellaFrame/wrapobjectset/patella");
     if (model.hasComponent<WrapCylinder>(patellaPath)) {
         auto& cable = model.updComponent<PathActuator>("device/cableAtoB");
         auto& wrapObject = model.updComponent<WrapCylinder>(patellaPath);
