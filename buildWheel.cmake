@@ -1,6 +1,9 @@
 if (APPLE)
     message(STATUS "Copy *.dylib, *.a files from ${CMAKE_INSTALL_PREFIX}/lib to ${CMAKE_INSTALL_PREFIX}/${OPENSIM_INSTALL_PYTHONDIR}/opensim")
-    file(GLOB OPENSIM_ALL_LIBS "${CMAKE_INSTALL_PREFIX}/lib/*.dylib" "${CMAKE_INSTALL_PREFIX}/lib/*.a")
+    file(GLOB OPENSIM_ALL_LIBS "${CMAKE_INSTALL_PREFIX}/lib/*.dylib" 
+                                "${CMAKE_INSTALL_PREFIX}/lib/*.a"
+                                "${CMAKE_INSTALL_PREFIX}/sdk/lib/*.dylib" 
+                                "${CMAKE_INSTALL_PREFIX}/sdk/lib/*.a")
     set(DESTINATION_DIR ${CMAKE_INSTALL_PREFIX}/${OPENSIM_INSTALL_PYTHONDIR}/opensim)
     foreach(FILE ${OPENSIM_ALL_LIBS})
         file(COPY ${FILE} DESTINATION ${DESTINATION_DIR})
