@@ -119,7 +119,7 @@ jobs:
     - name: Upload windows wheel
       uses: actions/upload-artifact@v4
       with:
-        name: opensim-4.5.2-py3-none-win64.whl
+        name: opensim-4.5.2-py310-win64.whl
         path: ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-py3-none-any.whl
     
         
@@ -572,7 +572,7 @@ jobs:
     - name: Upload osx wheel
       uses: actions/upload-artifact@v4
       with:
-        name: opensim-4.5.2-py3-none-osx_arm64.whl
+        name: opensim-4.5.2-py310-osx_arm64.whl
         path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-py3-none-any.whl
 
     - name: Test Python bindings
@@ -907,15 +907,14 @@ jobs:
     - name: Upload linux wheel
       uses: actions/upload-artifact@v4
       with:
-        name: opensim-4.5.2-py3-none-linux.whl
+        name: opensim-4.5.2-py310-linux.whl
         path: /home/runner/work/opensim-core/opensim-core-install/lib/python3.10/site-packages/dist/opensim-4.5.2-py3-none-any.whl
 
     - name: Test Python bindings
       run: |
         pip install /home/runner/work/opensim-core/opensim-core-install/lib/python3.10/site-packages/dist/opensim-4.5.2-py3-none-any.whl
-        cd /home/runner/work/opensim-core/opensim-core-install/sdk/Python
         # Run the python tests, verbosely.
-        python3 -m unittest discover --start-directory opensim/tests --verbose
+        python3 -m unittest discover --start-directory /home/runner/work/opensim-core/opensim-core-install/lib/python3.10/site-packages/opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
