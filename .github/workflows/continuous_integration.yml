@@ -901,14 +901,14 @@ jobs:
         
     - name: Build wheel
       run: |
-        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        cd $GITHUB_WORKSPACE/../opensim-core-install/lib/python3.10/site-packages
         python3 -m build --wheel
         
     - name: Upload linux wheel
       uses: actions/upload-artifact@v4
       with:
         name: opensim-4.5.2-py3-none-linux.whl
-        path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim-4.5.2-py3-none-any.whl
+        path: /home/runner/work/opensim-core/opensim-core-install/lib/python3.10/site-packages/dist/opensim-4.5.2-py3-none-any.whl
 
     - name: Test Python bindings
       run: |
