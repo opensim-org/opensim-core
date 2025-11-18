@@ -912,8 +912,8 @@ jobs:
 
     - name: Test Python bindings
       run: |
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/opensim_dependencies_install/simbody/lib
-        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        pip install /home/runner/work/opensim-core/opensim-core-install/lib/python3.10/site-packages/dist/opensim-4.5.2-py3-none-any.whl
+        cd /home/runner/work/opensim-core/opensim-core-install/sdk/Python
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
