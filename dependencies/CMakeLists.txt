@@ -233,7 +233,7 @@ if (WIN32)
             "${CMAKE_BINARY_DIR}/ipopt-prefix/src/ipopt"
             "${CMAKE_INSTALL_PREFIX}/ipopt")
         ExternalProject_Add(ipopt
-            URL https://github.com/coin-or/Ipopt/releases/download/releases%2F3.14.16/Ipopt-3.14.16-win64-msvs2019-md.zip
+            URL https://github.com/coin-or/Ipopt/releases/download/releases%2F3.14.19/Ipopt-3.14.19-win64-msvs2022-md.zip
             CONFIGURE_COMMAND ""
             BUILD_COMMAND ""
             INSTALL_COMMAND ${IPOPT_INSTALL_CMD})
@@ -257,7 +257,9 @@ else()
 
         ExternalProject_Add(metis
             # URL    http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
-            URL    https://sourceforge.net/projects/myosin/files/metis-5.1.0.tar.gz/download
+            # URL    https://sourceforge.net/projects/myosin/files/metis-5.1.0.tar.gz/download
+            GIT_REPOSITORY    https://github.com/KarypisLab/METIS.git
+            GIT_TAG           v5.2.1
             CONFIGURE_COMMAND cd <SOURCE_DIR> && ${CMAKE_MAKE_PROGRAM} CMAKE_POLICY_VERSION_MINIMUM=4.0 shared=1 config "prefix=${CMAKE_INSTALL_PREFIX}/ipopt" BUILDDIR=bdir
             BUILD_COMMAND cd <SOURCE_DIR>/bdir && ${CMAKE_MAKE_PROGRAM}
             INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/ipopt"
@@ -267,7 +269,7 @@ else()
         # -fallow-argument-mismatch.
         ExternalProject_Add(mumps
             GIT_REPOSITORY    https://github.com/coin-or-tools/ThirdParty-Mumps.git
-            GIT_TAG           releases/3.0.5
+            GIT_TAG           releases/3.0.11
             PATCH_COMMAND cd <SOURCE_DIR> && ./get.Mumps
             CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch ADD_CFLAGS=-Wno-error=implicit-function-declaration
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
@@ -276,7 +278,7 @@ else()
 
         ExternalProject_Add(ipopt
             DEPENDS           mumps metis
-            URL https://github.com/coin-or/Ipopt/archive/refs/tags/releases/3.14.16.zip
+            URL https://github.com/coin-or/Ipopt/archive/refs/tags/releases/3.14.19.zip
             INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
             # Suppress warnings treated as errors in Clang/LLVM with -Wno-error=implicit-function-declaration
             CONFIGURE_COMMAND <SOURCE_DIR>/configure --with-mumps --prefix=<INSTALL_DIR> --with-mumps-cflags="-I${CMAKE_INSTALL_PREFIX}/ipopt/include/coin-or/mumps" --with-mumps-lflags="-L${CMAKE_INSTALL_PREFIX}/ipopt/lib -lcoinmumps"
