@@ -27,9 +27,11 @@ void OpenSim::PathWrapPoint::extendAddToSystem(SimTK::MultibodySystem& system) c
 {
     Super::extendAddToSystem(system);
 
-    _wrapPath = addCacheVariable("wrap_path", Array<SimTK::Vec3>{}, SimTK::Stage::Position);
+    _wrapPath = addCacheVariable("wrap_path",
+            Array<SimTK::Vec3>(SimTK::Vec3(SimTK::NaN), 0, 1),
+            SimTK::Stage::Position);
     _wrapPathLength = addCacheVariable("wrap_path_length", 0.0, SimTK::Stage::Position);
-    _location = addCacheVariable("wrap_location", SimTK::Vec3{}, SimTK::Stage::Position);
+    _location = addCacheVariable("wrap_location", SimTK::Vec3(SimTK::NaN), SimTK::Stage::Position);
 }
 
 const OpenSim::WrapObject* OpenSim::PathWrapPoint::getWrapObject() const

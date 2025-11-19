@@ -32,47 +32,40 @@
 using namespace std;
 using namespace OpenSim;
 
-WrapResult::WrapResult(const WrapResult& other) {
-    copyData(other);
-}
+WrapResult::WrapResult()
+    : startPoint{-1},
+      endPoint{-1},
+      wrap_pts{SimTK::Vec3(SimTK::NaN), 0, 1},
+      wrap_path_length{SimTK::NaN},
+      r1{SimTK::Vec3(SimTK::NaN)},
+      r2{SimTK::Vec3(SimTK::NaN)},
+      c1{SimTK::Vec3(SimTK::NaN)},
+      sv{SimTK::Vec3(SimTK::NaN)} {}
 
-//_____________________________________________________________________________
-/**
- * Copy data members from one WrapResult to another.
- *
- * @param aWrapResult WrapResult to be copied.
- */
-void WrapResult::copyData(const WrapResult& aWrapResult) {
-    wrap_pts = aWrapResult.wrap_pts;
-    wrap_path_length = aWrapResult.wrap_path_length;
+WrapResult::WrapResult(const WrapResult& other)
+    : startPoint{other.startPoint},
+      endPoint{other.endPoint},
+      wrap_pts{other.wrap_pts},
+      wrap_path_length{other.wrap_path_length},
+      r1{other.r1},
+      r2{other.r2},
+      c1{other.c1},
+      sv{other.sv},
+      factor{SimTK::NaN},
+      singleWrap{other.singleWrap} {}
 
-    startPoint = aWrapResult.startPoint;
-    endPoint = aWrapResult.endPoint;
-
-    int i;
-    for (i = 0; i < 3; i++) {
-        r1[i] = aWrapResult.r1[i];
-        r2[i] = aWrapResult.r2[i];
-        c1[i] = aWrapResult.c1[i];
-        sv[i] = aWrapResult.sv[i];
-    }
-
-    singleWrap = aWrapResult.singleWrap;
-    // TODO: Should factor be omitted from the copy?
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-WrapResult& WrapResult::operator=(const WrapResult& aWrapResult) {
-    if (this != &aWrapResult) {
-        copyData(aWrapResult);
+WrapResult& WrapResult::operator=(const WrapResult& other) {
+    if (this != &other) {
+        startPoint = other.startPoint;
+        endPoint = other.endPoint;
+        wrap_pts = other.wrap_pts;
+        wrap_path_length = other.wrap_path_length;
+        r1 = other.r1;
+        r2 = other.r2;
+        c1 = other.c1;
+        sv = other.sv;
+        factor = SimTK::NaN;
+        singleWrap = other.singleWrap;
     }
 
     return *this;
