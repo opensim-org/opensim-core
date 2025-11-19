@@ -60,7 +60,7 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
-    #   if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         echo $env:GITHUB_WORKSPACE\\build_deps
         mkdir $env:GITHUB_WORKSPACE\\build_deps
@@ -153,7 +153,7 @@ jobs:
         key: ${{ runner.os }}-swig
 
     - name: Install SWIG
-    #   if: steps.cache-swig.outputs.cache-hit != 'true'
+      if: steps.cache-swig.outputs.cache-hit != 'true'
       run: |
         mkdir ~/swig-source && cd ~/swig-source
         wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
@@ -400,7 +400,7 @@ jobs:
         key: ${{ runner.os }}-swig
 
     - name: Install SWIG
-      # if: steps.cache-swig.outputs.cache-hit != 'true'
+      if: steps.cache-swig.outputs.cache-hit != 'true'
       run: |
         mkdir ~/swig-source && cd ~/swig-source
         wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
@@ -416,7 +416,7 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
-      # if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         mkdir $GITHUB_WORKSPACE/../build_deps
         cd $GITHUB_WORKSPACE/../build_deps
@@ -425,6 +425,7 @@ jobs:
         DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
         DEP_CMAKE_ARGS+=(-DSUPERBUILD_ezc3d=ON)
         DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
+        DEP_CMAKE_ARGS+=(-DOPENSIM_DISABLE_LOG_FILE=ON)
         printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
         cmake "${DEP_CMAKE_ARGS[@]}"
         make --jobs 4
@@ -544,6 +545,7 @@ jobs:
         DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
         DEP_CMAKE_ARGS+=(-DSUPERBUILD_ezc3d=ON)
         DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
+        DEP_CMAKE_ARGS+=(-DOPENSIM_DISABLE_LOG_FILE=ON)
         printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
         cmake "${DEP_CMAKE_ARGS[@]}"
         make --jobs 4
