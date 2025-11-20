@@ -37,7 +37,6 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 #include "SimulationComponentsForTesting.h"
 
@@ -59,7 +58,6 @@ void testMomentArmsAcrossCompoundJoint();
 int main()
 {
     clock_t startTime = clock();
-    LoadOpenSimLibrary("osimActuators");
     Object::registerType(CompoundJoint());
 
     try {

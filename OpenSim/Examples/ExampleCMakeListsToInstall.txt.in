@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.2)
 project(OpenSim_@_example_name@)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 find_package(OpenSim REQUIRED HINTS
     "${CMAKE_SOURCE_DIR}/@_opensim_install_hint@")
