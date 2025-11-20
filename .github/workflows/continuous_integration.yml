@@ -119,8 +119,8 @@ jobs:
     - name: Upload windows wheel
       uses: actions/upload-artifact@v4
       with:
-        name: opensim-4.5.2-py310-win64.whl
-        path: ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-py3-none-any.whl
+        name: opensim-4.5.2-cp310-cp310-win_amd64.whl
+        path: ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp310-cp310-win_amd64.whl
     
         
     #     # Run python tests.
@@ -572,8 +572,8 @@ jobs:
     - name: Upload osx wheel
       uses: actions/upload-artifact@v4
       with:
-        name: opensim-4.5.2-py310-osx_arm64.whl
-        path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-py3-none-any.whl
+        name: opensim-4.5.2-cp310-cp310-macosx_15_0_universal2.whl
+        path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp310-cp310-macosx_15_0_universal2.whl
 
     - name: Test Python bindings
       run: |
@@ -907,8 +907,8 @@ jobs:
     - name: Upload linux wheel
       uses: actions/upload-artifact@v4
       with:
-        name: opensim-4.5.2-py310-linux.whl
-        path: /home/runner/work/opensim-core/opensim-core-install/lib/python3.10/site-packages/dist/opensim-4.5.2-py3-none-any.whl
+        name: opensim-4.5.2-cp310-cp310-linux_x86_64.whl
+        path: /home/runner/work/opensim-core/opensim-core-install/lib/python3.10/site-packages/dist/opensim-4.5.2-cp310-cp310-linux_x86_64.whl
 
     - name: Test Python bindings
       run: |
