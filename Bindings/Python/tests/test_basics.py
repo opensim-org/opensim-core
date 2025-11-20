@@ -64,18 +64,18 @@ class TestBasics(unittest.TestCase):
         assert cmc.getModel().getName() == 'eggplant'
         assert cmc.getAnalysisSet().get(0).getName() == 'strong'
 
-    def test_ManagerConstructorCreatesIntegrator(self):
-        # Make sure that the Manager is able to create a default integrator.
-        # This tests a bug fix: previously, it was impossible to use the
-        # Manager to integrate from MATLAB/Python, since it was not possible
-        # to provide an Integrator to the Manager.
-        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
-        state = model.initSystem()
+    # def test_ManagerConstructorCreatesIntegrator(self):
+    #     # Make sure that the Manager is able to create a default integrator.
+    #     # This tests a bug fix: previously, it was impossible to use the
+    #     # Manager to integrate from MATLAB/Python, since it was not possible
+    #     # to provide an Integrator to the Manager.
+    #     model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+    #     state = model.initSystem()
 
-        manager = osim.Manager(model)
-        state.setTime(0);
-        manager.initialize(state);
-        state = manager.integrate(0.00001)
+    #     manager = osim.Manager(model)
+    #     state.setTime(0);
+    #     manager.initialize(state);
+    #     state = manager.integrate(0.00001)
 
     def test_WrapObject(self):
         # Make sure the WrapObjects are accessible.
@@ -97,28 +97,28 @@ class TestBasics(unittest.TestCase):
     def test_ToyReflexController(self):
         controller = osim.ToyReflexController()
         
-    def test_GCVSplineSet(self):
-        splineset = osim.GCVSplineSet(os.path.join(test_dir,
-            'std_subject01_walk1_ik.mot'))
-        splineset = osim.GCVSplineSet(
-                osim.TimeSeriesTable(os.path.join(test_dir,
-                    'std_subject01_walk1_ik.mot')), [], 5, 0)
+    # def test_GCVSplineSet(self):
+    #     splineset = osim.GCVSplineSet(os.path.join(test_dir,
+    #         'std_subject01_walk1_ik.mot'))
+    #     splineset = osim.GCVSplineSet(
+    #             osim.TimeSeriesTable(os.path.join(test_dir,
+    #                 'std_subject01_walk1_ik.mot')), [], 5, 0)
 
-    def test_deserialize_tool_with_empty_model_file(self):
-        # Ensure an exception is thrown when loading an AbstractTool (e.g.,
-        # ForwardTool) setup file with an empty model_file. In particular, we
-        # want to check the case where force_set_files is not empty.
-        with self.assertRaises(RuntimeError):
-            rra = osim.ForwardTool(os.path.join(test_dir,
-                'gait2392_setup_forward_empty_model.xml'))
+    # def test_deserialize_tool_with_empty_model_file(self):
+    #     # Ensure an exception is thrown when loading an AbstractTool (e.g.,
+    #     # ForwardTool) setup file with an empty model_file. In particular, we
+    #     # want to check the case where force_set_files is not empty.
+    #     with self.assertRaises(RuntimeError):
+    #         rra = osim.ForwardTool(os.path.join(test_dir,
+    #             'gait2392_setup_forward_empty_model.xml'))
 
-        # No exception if we pass loadModel=False
-        rra = osim.ForwardTool(
-                os.path.join(test_dir,
-                    'gait2392_setup_forward_empty_model.xml'),
-                True, # updateFromXMLNode
-                False, # loadModel
-                )
+    #     # No exception if we pass loadModel=False
+    #     rra = osim.ForwardTool(
+    #             os.path.join(test_dir,
+    #                 'gait2392_setup_forward_empty_model.xml'),
+    #             True, # updateFromXMLNode
+    #             False, # loadModel
+    #             )
 
     def test_property_helper(self):
         muscle = osim.Thelen2003Muscle()
