@@ -912,9 +912,9 @@ jobs:
 
     - name: Test Python bindings
       run: |
-        pip install /home/runner/work/opensim-core/opensim-core-install/lib/python3.10/site-packages/dist/opensim-4.5.2-py3-none-any.whl
+        pip install /home/runner/work/opensim-core/opensim-core-install/lib/python3.10/site-packages/dist/opensim-4.5.2-cp310-cp310-linux_x86_64.whl
         # Run the python tests, verbosely, running from packaging folder fails due to permissions.
-        # python3 -m unittest discover --start-directory $GITHUB_WORKSPACE/Bindings/Python/tests --verbose
+        # python3 -m unittest discover --start-directory /home/runner/work/opensim-core/opensim-core-install/lib/python3.10/site-packages/opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
