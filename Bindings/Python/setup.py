@@ -3,6 +3,7 @@
 import os
 import sys
 from setuptools import setup
+from setuptools.dist import Distribution
 
 # This provides a list of relative paths to all the dependencies in the bin folder.
 # Only when installed locally via "python -m pip install ." in Windows
@@ -24,6 +25,10 @@ if sys.version_info[0] < 3:
     execfile('opensim/version.py')
 else:
     exec(compile(open('opensim/version.py').read(), 'opensim/version.py', 'exec'))
+class BinaryDistribution(Distribution):
+    """Distribution which always forces a binary package with platform name"""
+    def has_ext_modules(foo):
+        return True
 
 setup(name='opensim',
       version=__version__,
@@ -56,7 +61,8 @@ setup(name='opensim',
           ],
           install_requires=[
               "numpy>=2.0"
-          ]
+          ],
+          distclass=BinaryDistribution
       )
 
 #python setup.py bdist_wheel --python-tag cp310
