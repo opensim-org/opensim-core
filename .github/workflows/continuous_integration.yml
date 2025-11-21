@@ -72,7 +72,7 @@ jobs:
         # /W0 disables warnings.
         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
         # TODO: CMake provides /W3, which overrides our /W0
-        cmake -E env CXXFLAGS="/W0 /MD" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_=ON -DOPENSIM_PYTHON_STANDALONE=ON
+        cmake -E env CXXFLAGS="/W0 /MD" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_CASADI=ON -DOPENSIM_PYTHON_STANDALONE=ON
         cmake --build . --config Release -- /maxcpucount:4
 
     - name: Configure opensim-core
