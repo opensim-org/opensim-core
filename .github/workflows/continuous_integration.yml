@@ -123,7 +123,7 @@ jobs:
 
     - name: Test Python bindings
       run: |
-        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        cd ~/opensim-core-install/sdk/python
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
@@ -445,7 +445,7 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
-      #if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         mkdir $GITHUB_WORKSPACE/../build_deps
         cd $GITHUB_WORKSPACE/../build_deps
