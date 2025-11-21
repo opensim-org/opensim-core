@@ -120,8 +120,12 @@ jobs:
       with:
         name: opensim-4.5.2-cp311-cp311-win_amd64.whl
         path: ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-win_amd64.whl
-    #   Run python tests.
-        python -m unittest discover --start-directory opensim/tests --verbose
+
+    - name: Test Python bindings
+      run: |
+        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        # Run the python tests, verbosely.
+        python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
