@@ -47,7 +47,7 @@ jobs:
 
     - name: Install SWIG
       run: |
-        choco install swig --version 4.2.0 --yes --limit-output --allow-downgrade
+        choco install swig --version 4.1.1 --yes --limit-output --allow-downgrade
         swig -swiglib
 
     - name: Cache dependencies
@@ -118,12 +118,10 @@ jobs:
     - name: Upload windows wheel
       uses: actions/upload-artifact@v4
       with:
-        name: opensim-4.5.2-cp310-cp310-win_amd64.whl
-        path: ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp310-cp310-win_amd64.whl
-    
-        
-    #     # Run python tests.
-    #     python -m unittest discover --start-directory opensim/tests --verbose
+        name: opensim-4.5.2-cp311-cp311-win_amd64.whl
+        path: ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-win_amd64.whl
+    #   Run python tests.
+        python -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
@@ -382,8 +380,8 @@ jobs:
     - name: Upload osx wheel
       uses: actions/upload-artifact@v4
       with:
-        name: opensim-4.5.2-cp310-cp310-macosx_15_0_universal2.whl
-        path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp310-cp310-macosx_15_0_universal2.whl
+        name: opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
+        path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
 
     - name: Test Python bindings
       run: |
@@ -630,20 +628,20 @@ jobs:
         
     - name: Build wheel
       run: |
-        cd $GITHUB_WORKSPACE/../opensim-core-install/lib/python3.10/site-packages
+        cd $GITHUB_WORKSPACE/../opensim-core-install/lib/python3.11/site-packages
         python3 -m build --wheel
         
     - name: Upload linux wheel
       uses: actions/upload-artifact@v4
       with:
-        name: opensim-4.5.2-cp310-cp310-linux_x86_64.whl
-        path: /home/runner/work/opensim-core/opensim-core-install/lib/python3.10/site-packages/dist/opensim-4.5.2-cp310-cp310-linux_x86_64.whl
+        name: opensim-4.5.2-cp311-cp311-linux_x86_64.whl
+        path: /home/runner/work/opensim-core/opensim-core-install/lib/python3.11/site-packages/dist/opensim-4.5.2-cp311-cp311-linux_x86_64.whl
 
     - name: Test Python bindings
       run: |
-        pip install /home/runner/work/opensim-core/opensim-core-install/lib/python3.10/site-packages/dist/opensim-4.5.2-cp310-cp310-linux_x86_64.whl
+        pip install /home/runner/work/opensim-core/opensim-core-install/lib/python3.11/site-packages/dist/opensim-4.5.2-cp311-cp311-linux_x86_64.whl
         # Run the python tests, verbosely
-        python3 -m unittest discover --start-directory /home/runner/work/opensim-core/opensim-core-install/lib/python3.10/site-packages/opensim/tests --verbose
+        python3 -m unittest discover --start-directory /home/runner/work/opensim-core/opensim-core-install/lib/python3.11/site-packages/opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
