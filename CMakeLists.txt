@@ -1049,7 +1049,7 @@ add_subdirectory(doc)
 # chose.
 feature_summary(WHAT ALL)
 
-if (BUILD_PYPI AND UNIX)
+if (BUILD_PYPI)
 install(CODE "set(OPENSIM_INSTALL_PYTHONDIR \"${OPENSIM_INSTALL_PYTHONDIR}\")")
 install (SCRIPT "${CMAKE_SOURCE_DIR}/buildWheel.cmake")
 endif()
