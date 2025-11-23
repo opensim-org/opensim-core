@@ -82,7 +82,7 @@ jobs:
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
         # Set the CXXFLAGS environment variable to turn warnings into errors.
         # Skip timing test section included by default.
-        cmake -E env CXXFLAGS="/WX /MD -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DOPENSIM_WITH_CASADI=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DPython3_ROOT_DIR=C:\hostedtoolcache\windows\Python\3.11.9\x64
+        cmake -E env CXXFLAGS="/WX /MD -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DOPENSIM_WITH_CASADI=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WHEELS -DPython3_ROOT_DIR=C:\hostedtoolcache\windows\Python\3.11.9\x64
         $env:match = cmake -L . | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
         $version = $env:match.split('=')[1]
         echo $version
@@ -340,7 +340,7 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=11)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
         OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on)
-        OSIM_CMAKE_ARGS+=(-BUILD_WHEELS=on)
+        OSIM_CMAKE_ARGS+=(-BUILD_PYTHON_WHEELS=on)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
         OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
@@ -591,7 +591,7 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
         OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on)
-        OSIM_CMAKE_ARGS+=(-BUILD_WHEELS=on)
+        OSIM_CMAKE_ARGS+=(-BUILD_PYTHON_WHEELS=on)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
         OSIM_CMAKE_ARGS+=(-DSWIG_DIR=~/swig/share/swig)
         OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=~/swig/bin/swig)
