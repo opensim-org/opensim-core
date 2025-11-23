@@ -63,5 +63,5 @@ setup(name='opensim',
           ],
           distclass=BinaryDistribution
       )
-
-#python setup.py bdist_wheel --python-tag cp310
+# To build the wheel, run the following command:
+#python setup.py bdist_wheel

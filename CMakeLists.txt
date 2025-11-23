@@ -12,8 +12,7 @@ project(OpenSim)
 
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
-    cmake_policy(SET CMP0005 NEW)
-#    cmake_policy(SET CMP0177 NEW) 
+    cmake_policy(SET CMP0005 NEW) 
 endif(COMMAND cmake_policy)
 
 message(STATUS "NOTICE: Make sure all OpenSim dependencies are built with the \
@@ -501,9 +500,9 @@ set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're bu
 
 set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping; requires that you have SWIG and Python installed on your machine.)")
 
-set(BUILD_PYPI OFF CACHE BOOL "Build Python wrapping into a pypi package wheel")
+set(BUILD_WHEELS OFF CACHE BOOL "Build Python wrapping into a pypi package wheel")
 
-if(BUILD_PYPI)
+if(BUILD_WHEELS)
   set(OPENSIM_PYTHON_STANDALONE ON CACHE BOOL "Enable Standalone python packaging" FORCE)
 endif()
 
@@ -570,7 +569,7 @@ if(${BUILD_PYTHON_WRAPPING})
     # This must be done before adding the OpenSim libraries, since
     # OPENSIM_INSTALL_PYTHONDIR is used in OpenSimAddLibrary (in
     # OpenSimMacros.cmake).
-    
+
     # Most users need to copy dependencies if wrapping is on. Warn user
     # if it isn't on.
     if (NOT OPENSIM_COPY_DEPENDENCIES)
@@ -1049,7 +1048,7 @@ add_subdirectory(doc)
 # chose.
 feature_summary(WHAT ALL)
 
-if (BUILD_PYPI)
+if (BUILD_WHEELS)
 install(CODE "set(OPENSIM_INSTALL_PYTHONDIR \"${OPENSIM_INSTALL_PYTHONDIR}\")")
 install (SCRIPT "${CMAKE_SOURCE_DIR}/buildWheel.cmake")
 endif()

@@ -136,8 +136,7 @@ if(OPENSIM_WITH_CASADI)
             MocoCasADiSolver/MocoCasOCProblem.cpp
             )
 endif()
-#switch to AddLibrary so that osimMoco is treated the same in installation 
-# especially with standalone python
+
 OpenSimAddLibrary(
     KIT Moco
     AUTHORS "Chris_Dembia-Nick_Bianco"
