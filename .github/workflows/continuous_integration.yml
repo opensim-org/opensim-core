@@ -43,6 +43,7 @@ jobs:
         python3 -m pip install numpy==2.0
         python3 -m pip install wheel
         python3 -m pip install build
+        python3 -m pip install cibuildwheel
 
     - name: Install SWIG
       run: |
@@ -112,7 +113,7 @@ jobs:
     - name: Build wheel
       run: |
         cd ~/opensim-core-install/sdk/python
-        python -m build --wheel 
+        cibuildwheel --platform windows 
 
     - name: Upload windows wheel
       uses: actions/upload-artifact@v4
