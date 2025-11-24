@@ -634,21 +634,21 @@ jobs:
 
     - name: Build wheel
       run: |
-        cd $GITHUB_WORKSPACE/../opensim-core-install/lib/python3.11/site-packages
+        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         python3 -m build --wheel
 
     - name: Upload linux wheel
       uses: actions/upload-artifact@v4
       with:
         name: opensim-4.5.2-cp311-cp311-linux_x86_64.whl
-        path: /home/runner/work/opensim-core/opensim-core-install/lib/python3.11/site-packages/dist/opensim-4.5.2-cp311-cp311-linux_x86_64.whl
+        path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim-4.5.2-cp311-cp311-linux_x86_64.whl
 
     - name: Test Python bindings
       run: |
         export LD_LIBRARY_PATH=""
-        pip install /home/runner/work/opensim-core/opensim-core-install/lib/python3.11/site-packages/dist/opensim-4.5.2-cp311-cp311-linux_x86_64.whl
+        pip install /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim-4.5.2-cp311-cp311-linux_x86_64.whl
         # Run the python tests, verbosely
-        python3 -m unittest discover --start-directory /home/runner/work/opensim-core/opensim-core-install/lib/python3.11/site-packages/opensim/tests --verbose
+        python3 -m unittest discover --start-directory /home/runner/work/opensim-core/opensim-core-install/sdk/Python/opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
