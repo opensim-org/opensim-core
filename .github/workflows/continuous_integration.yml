@@ -43,6 +43,7 @@ jobs:
         python3 -m pip install numpy==2.0
         python3 -m pip install wheel
         python3 -m pip install build
+        pip install --upgrade pip setuptools wheel
 
     - name: Install SWIG
       run: |
