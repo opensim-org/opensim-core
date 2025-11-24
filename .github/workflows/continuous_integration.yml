@@ -43,7 +43,6 @@ jobs:
         python3 -m pip install numpy==2.0
         python3 -m pip install wheel
         python3 -m pip install build
-        python3 -m pip install cibuildwheel
 
     - name: Install SWIG
       run: |
@@ -113,20 +112,20 @@ jobs:
     - name: Build wheel
       run: |
         cd ~/opensim-core-install/sdk/python
-        cibuildwheel --platform windows 
+        python3 setup.py bdist_wheel
 
     - name: Upload windows wheel
       uses: actions/upload-artifact@v4
       with:
         name: opensim-4.5.2-cp311-cp311-win_amd64.whl
-        path: ~/opensim-core-install/sdk/Python/wheelhouse/opensim-4.5.2-cp311-cp311-win_amd64.whl
+        path: ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-win_amd64.whl
 
     - name: Test Python bindings
       run: |
         cd ~/opensim-core-install/sdk/python
-        pip install ~/opensim-core-install/sdk/Python/wheelhouse/opensim-4.5.2-cp311-cp311-win_amd64.whl
+        pip install ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-win_amd64.whl
         # Run the python tests, verbosely.
-        python3 -m unittest discover --start-directory ~/opensim-core-install/sdk/python --verbose
+        python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
@@ -391,6 +390,7 @@ jobs:
     - name: Test Python bindings
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        pip3 install /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
@@ -644,6 +644,7 @@ jobs:
 
     - name: Test Python bindings
       run: |
+        export LD_LIBRARY_PATH=""
         pip install /home/runner/work/opensim-core/opensim-core-install/lib/python3.11/site-packages/dist/opensim-4.5.2-cp311-cp311-linux_x86_64.whl
         # Run the python tests, verbosely
         python3 -m unittest discover --start-directory /home/runner/work/opensim-core/opensim-core-install/lib/python3.11/site-packages/opensim/tests --verbose
