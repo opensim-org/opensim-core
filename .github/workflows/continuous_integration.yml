@@ -44,6 +44,7 @@ jobs:
         python3 -m pip install wheel
         python3 -m pip install build
         pip install --upgrade pip setuptools wheel
+        pip install delvewheel
 
     - name: Install SWIG
       run: |
@@ -114,6 +115,7 @@ jobs:
       run: |
         cd ~/opensim-core-install/sdk/python
         python3 setup.py bdist_wheel
+        python3 delvewheel show ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-win_amd64.whl
 
     - name: Upload windows wheel
       uses: actions/upload-artifact@v4
