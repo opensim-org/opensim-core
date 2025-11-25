@@ -124,7 +124,7 @@ jobs:
     - name: Test Python bindings
       run: |
         cd ~/opensim-core-install/sdk/python
-        pip install ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-win_amd64.whl
+        pip install dist/opensim-4.5.2-cp311-cp311-win_amd64.whl
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
