@@ -1,8 +1,6 @@
 if (WIN32)
     file(GLOB OPENSIM_ALL_LIBS "${CMAKE_INSTALL_PREFIX}/bin/*.dll")
     set(DESTINATION_DIR ${CMAKE_INSTALL_PREFIX}/sdk/Python/opensim)
-    message(STATUS "Copy *.dll files from ${CMAKE_INSTALL_PREFIX}/bin to ${CMAKE_INSTALL_PREFIX}/sdk/Python/opensim")
-    message(STATUS "liblist =${OPENSIM_ALL_LIBS}")
     foreach(FILE ${OPENSIM_ALL_LIBS})
         file(COPY ${FILE} DESTINATION ${DESTINATION_DIR})
     endforeach()
