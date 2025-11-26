@@ -33,74 +33,74 @@ class TestSwigAddtlInterface(unittest.TestCase):
         assert a.this
         assert not a.thisown
     
-#     def test_markAdopted2(self):
-#         a = osim.Model()
-#         ground = a.getGround()
+    def test_markAdopted2(self):
+        a = osim.Model()
+        ground = a.getGround()
     
-#         # We just need the following not to cause a segfault.
+        # We just need the following not to cause a segfault.
     
-#         # Model add*
-#         pa = osim.PathActuator()
-#         pa.setName('pa')
-#         pa.addNewPathPoint("pa-point1", ground, osim.Vec3(0.0,0.0,0.0))
-#         pa.addNewPathPoint("pa-point2", ground, osim.Vec3(1.0,0.0,0.0))
-#         a.addForce(pa)
+        # Model add*
+        pa = osim.PathActuator()
+        pa.setName('pa')
+        pa.addNewPathPoint("pa-point1", ground, osim.Vec3(0.0,0.0,0.0))
+        pa.addNewPathPoint("pa-point2", ground, osim.Vec3(1.0,0.0,0.0))
+        a.addForce(pa)
 
-#         probe = osim.Umberger2010MuscleMetabolicsProbe()
-#         probe.setName('probe')
-#         a.addProbe(probe)
+        probe = osim.Umberger2010MuscleMetabolicsProbe()
+        probe.setName('probe')
+        a.addProbe(probe)
 
-#         ma = osim.MuscleAnalysis()
-#         ma.setName('ma')
-#         a.addAnalysis(ma)
+        ma = osim.MuscleAnalysis()
+        ma.setName('ma')
+        a.addAnalysis(ma)
 
-#         pc = osim.PrescribedController()
-#         pc.setName('pc')
-#         a.addController(pc)
+        pc = osim.PrescribedController()
+        pc.setName('pc')
+        a.addController(pc)
         
-#         body = osim.Body('body1',
-#                 1.0,
-#                 osim.Vec3(0, 0, 0),
-#                 osim.Inertia(0, 0, 0)
-#                 )
+        body = osim.Body('body1',
+                1.0,
+                osim.Vec3(0, 0, 0),
+                osim.Inertia(0, 0, 0)
+                )
     
-#         loc_in_parent = osim.Vec3(0, 0, 0)
-#         orient_in_parent = osim.Vec3(0, 0, 0)
-#         loc_in_body = osim.Vec3(0, 0, 0)
-#         orient_in_body = osim.Vec3(0, 0, 0)
-#         print("creating Weld Joint..")
-#         joint = osim.WeldJoint("weld_joint",
-#                 a.getGround(),
-#                 loc_in_parent, orient_in_parent,
-#                 body,
-#                 loc_in_body, orient_in_parent)
-#         print("adding a body ..")
-#         a.addBody(body)
-#         print("adding a joint ..")
-#         a.addJoint(joint)
-#         print("Creating a ConstantDistanceConstraint..")
-#         constr = osim.ConstantDistanceConstraint()
-#         constr.setBody1ByName("ground")
-#         constr.setBody1PointLocation(osim.Vec3(0, 0, 0))
-#         constr.setBody2ByName("body")
-#         constr.setBody2PointLocation(osim.Vec3(1, 0, 0))
-#         constr.setConstantDistance(1)
-#         a.addConstraint(constr)
+        loc_in_parent = osim.Vec3(0, 0, 0)
+        orient_in_parent = osim.Vec3(0, 0, 0)
+        loc_in_body = osim.Vec3(0, 0, 0)
+        orient_in_body = osim.Vec3(0, 0, 0)
+        print("creating Weld Joint..")
+        joint = osim.WeldJoint("weld_joint",
+                a.getGround(),
+                loc_in_parent, orient_in_parent,
+                body,
+                loc_in_body, orient_in_parent)
+        print("adding a body ..")
+        a.addBody(body)
+        print("adding a joint ..")
+        a.addJoint(joint)
+        print("Creating a ConstantDistanceConstraint..")
+        constr = osim.ConstantDistanceConstraint()
+        constr.setBody1ByName("ground")
+        constr.setBody1PointLocation(osim.Vec3(0, 0, 0))
+        constr.setBody2ByName("body")
+        constr.setBody2PointLocation(osim.Vec3(1, 0, 0))
+        constr.setConstantDistance(1)
+        a.addConstraint(constr)
     
-#         f = osim.BushingForce("bushing", "ground", "body",
-#                 osim.Vec3(2, 2, 2), osim.Vec3(1, 1, 1),
-#                 osim.Vec3(0, 0, 0), osim.Vec3(0, 0, 0))
-#         a.addForce(f)
+        f = osim.BushingForce("bushing", "ground", "body",
+                osim.Vec3(2, 2, 2), osim.Vec3(1, 1, 1),
+                osim.Vec3(0, 0, 0), osim.Vec3(0, 0, 0))
+        a.addForce(f)
     
-#         f2 = osim.BushingForce()
-#         a.addForce(f2)
+        f2 = osim.BushingForce()
+        a.addForce(f2)
     
-#         f3 = osim.SpringGeneralizedForce()
-#         a.addForce(f3)
+        f3 = osim.SpringGeneralizedForce()
+        a.addForce(f3)
     
-#         model = osim.Model(os.path.join(test_dir, "arm26.osim"))
-#         g = osim.CoordinateActuator('r_shoulder_elev')
-#         model.addForce(g)
+        model = osim.Model(os.path.join(test_dir, "arm26.osim"))
+        g = osim.CoordinateActuator('r_shoulder_elev')
+        model.addForce(g)
     
     def test_Joint(self):
         a = osim.Model()
