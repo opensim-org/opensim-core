@@ -521,7 +521,9 @@ stod(const std::string& __str, std::size_t* __idx)
 int IO::
 makeDir(const string &aDirName)
 {
-    return std::filesystem::create_directory(aDirName) ? 0 : 1;
+    std::error_code error;
+    std::filesystem::create_directory(aDirName, error);
+    return error.value();
 }
 //_____________________________________________________________________________
 /**
