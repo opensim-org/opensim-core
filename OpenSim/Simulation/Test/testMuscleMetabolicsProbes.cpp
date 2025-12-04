@@ -56,12 +56,16 @@
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <catch2/catch_all.hpp>
+
 // The zeroth-order muscle activation dynamics model can be used only once the
 // API supports subcomponents that have states.
 //#define USE_ACTIVATION_DYNAMICS_MODEL
 #ifdef  USE_ACTIVATION_DYNAMICS_MODEL
 #include <OpenSim/Actuators/ZerothOrderMuscleActivationDynamics.h>
 #endif
+
+namespace {
 
 const bool DISPLAY_PROBE_OUTPUTS      = false;
 const bool DISPLAY_ERROR_CALCULATIONS = false;
@@ -449,8 +453,50 @@ void generateUmbergerMuscleData(const std::string& muscleName,
     }
 }
 
-void compareUmbergerProbeToPublishedResults()
+//==============================================================================
+//      TEST UMBERGER AND BHARGAVA PROBES USING MILLARD EQUILIBRIUM MUSCLE
+//==============================================================================
+// Builds an OpenSim model consisting of two Millard2012Equilibrium muscles,
+// attaches several Umberger2010 and Bhargava2004 muscle metabolics probes, and
+// confirms that the probes are functioning properly:
+//   - probes and muscles can be added and removed
+//   - muscle mass parameter is correctly handled
+//   - probe components are correctly reported individually and combined
+//   - mechanical work rate is calculated correctly
+//   - total energy at final time equals integral of total rate
+//   - multiple muscles are correctly handled
+//   - less energy is liberated with lower activation
+Storage simulateModel(Model& model, double t0, double t1)
 {
+    // Initialize model and state.
+    cout << "- initializing" << endl;
+    SimTK::State& state = model.initSystem();
+
+    for (int i=0; i<model.getMuscles().getSize(); ++i)
+        model.getMuscles().get(i).setIgnoreActivationDynamics(state, true);
+    model.getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
+    model.equilibrateMuscles(state);
+
+    // Prepare manager.
+    const double integrationAccuracy = 1.0e-8;
+    Manager manager(model);
+    manager.setIntegratorAccuracy(integrationAccuracy);
+    state.setTime(t0);
+    manager.initialize(state);
+
+    // Simulate.
+    const clock_t tStart = clock();
+    cout << "- integrating from " << t0 << " to " << t1 << "s" << endl;
+    manager.integrate(t1);
+    cout << "- simulation complete (" << (double)(clock()-tStart)/CLOCKS_PER_SEC
+         << " seconds elapsed)" << endl;
+
+    return manager.getStateStorage();
+}
+
+}
+
+TEST_CASE("compareUmbergerProbeToPublishedResults") {
     //--------------------------------------------------------------------------
     // Generate data for soleus muscle.
     //--------------------------------------------------------------------------
@@ -605,50 +651,7 @@ void compareUmbergerProbeToPublishedResults()
     }
 }
 
-
-//==============================================================================
-//      TEST UMBERGER AND BHARGAVA PROBES USING MILLARD EQUILIBRIUM MUSCLE
-//==============================================================================
-// Builds an OpenSim model consisting of two Millard2012Equilibrium muscles,
-// attaches several Umberger2010 and Bhargava2004 muscle metabolics probes, and
-// confirms that the probes are functioning properly:
-//   - probes and muscles can be added and removed
-//   - muscle mass parameter is correctly handled
-//   - probe components are correctly reported individually and combined
-//   - mechanical work rate is calculated correctly
-//   - total energy at final time equals integral of total rate
-//   - multiple muscles are correctly handled
-//   - less energy is liberated with lower activation
-Storage simulateModel(Model& model, double t0, double t1)
-{
-    // Initialize model and state.
-    cout << "- initializing" << endl;
-    SimTK::State& state = model.initSystem();
-
-    for (int i=0; i<model.getMuscles().getSize(); ++i)
-        model.getMuscles().get(i).setIgnoreActivationDynamics(state, true);
-    model.getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
-    model.equilibrateMuscles(state);
-
-    // Prepare manager.
-    const double integrationAccuracy = 1.0e-8;
-    Manager manager(model);
-    manager.setIntegratorAccuracy(integrationAccuracy);
-    state.setTime(t0);
-    manager.initialize(state);
-
-    // Simulate.
-    const clock_t tStart = clock();
-    cout << "- integrating from " << t0 << " to " << t1 << "s" << endl;
-    manager.integrate(t1);
-    cout << "- simulation complete (" << (double)(clock()-tStart)/CLOCKS_PER_SEC
-         << " seconds elapsed)" << endl;
-
-    return manager.getStateStorage();
-}
-
-void testProbesUsingMillardMuscleSimulation()
-{
+TEST_CASE("testProbesUsingMillardMuscleSimulation") {
     //--------------------------------------------------------------------------
     // Build an OpenSim model consisting of two Millard2012Equilibrium muscles.
     //--------------------------------------------------------------------------
@@ -1367,43 +1370,4 @@ void testProbesUsingMillardMuscleSimulation()
     ASSERT(probeData_t1[probeCol["bhaTotal_m2"]] >
            probeData2_t1[probeCol2["bhaTotal_m2"]], __FILE__, __LINE__,
            "Bhargava2004: total energy must decrease with lower activation.");
-}
-
-
-//==============================================================================
-//                                     MAIN
-//==============================================================================
-void horizontalRule() { for(int i=0;i<80;++i) cout<<"*"; cout<<endl; }
-int main()
-{
-    SimTK::Array_<std::string> failures;
-
-    printf("\n"); horizontalRule();
-    cout << "Comparing Umberger2010 probe output to published results" << endl;
-    horizontalRule();
-    try { compareUmbergerProbeToPublishedResults();
-        cout << "\ncompareUmbergerProbeToPublishedResults test passed\n" << endl;
-    } catch (const OpenSim::Exception& e) {
-        e.print(cerr);
-        failures.push_back("compareUmbergerProbeToPublishedResults");
-    }
-
-    printf("\n"); horizontalRule();
-    cout << "Testing Umberger2010 and Bhargava2004 probes in simulation" << endl;
-    horizontalRule();
-    try { testProbesUsingMillardMuscleSimulation();
-        cout << "\ntestProbesUsingMillardMuscleSimulation test passed\n" << endl;
-    } catch (const OpenSim::Exception& e) {
-        e.print(cerr);
-        failures.push_back("testProbesUsingMillardMuscleSimulation");
-    }
-
-    printf("\n"); horizontalRule(); horizontalRule();
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "testMuscleMetabolicsProbes passed\n" << endl;
-    return 0;
 }
