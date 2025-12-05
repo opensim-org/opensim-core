@@ -29,11 +29,13 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
 
-void testConsoleReporterLabels() {
+TEST_CASE("testConsoleReporterLabels") {
     // Create a model consisting of a falling ball.
     Model model;
     model.setName("world");
@@ -82,7 +84,7 @@ void testConsoleReporterLabels() {
     SimTK_TEST(idxHeading2 < idxHeading3);
 }
 
-void testTableReporterLabels() {
+TEST_CASE("testTableReporterLabels") {
     // Create a model consisting of a falling ball.
     Model model;
     model.setName("world");
@@ -115,10 +117,3 @@ void testTableReporterLabels() {
     SimTK_TEST(headings[0] == "/jointset/slider/sliderCoord|value");
     SimTK_TEST(headings[1] == "height");
 }
-
-int main() {
-    SimTK_START_TEST("testReporters");
-        SimTK_SUBTEST(testConsoleReporterLabels);
-        SimTK_SUBTEST(testTableReporterLabels);
-    SimTK_END_TEST();
-};
