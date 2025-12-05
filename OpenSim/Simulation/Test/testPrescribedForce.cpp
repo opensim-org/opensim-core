@@ -21,9 +21,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//==========================================================================================================
-//  testPrescribedForce tests the application of function specified forces applied to a body
-//  as a force and torque on the body, with the point force application also a function
+//==============================================================================
+//  testPrescribedForce tests the application of function specified forces
+//  applied to a body as a force and torque on the body, with the point force
+//  application also a function
 //  Tests Include:
 //      1. No force
 //      2. Force on the body
@@ -32,7 +33,7 @@
 //      4. Forces from a file.
 //     Add tests here
 //
-//==========================================================================================================
+//==============================================================================
 #include <iostream>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Exception.h>
@@ -54,69 +55,29 @@
 #include "SimTKsimbody.h"
 #include "SimTKmath.h"
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
-//==========================================================================================================
+namespace {
+
 // Common Parameters for the simulations are just global.
 const static double integ_accuracy = 1.0e-6;
 const static double duration = 1.0;
 const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 
-SimTK::MassProperties ballMass = SimTK::MassProperties(8.806, SimTK::Vec3(0), SimTK::Inertia(SimTK::Vec3(0.1268, 0.0332, 0.1337)));
-//==========================================================================================================
-static int counter=0;
+SimTK::MassProperties ballMass = SimTK::MassProperties(8.806, SimTK::Vec3(0),
+        SimTK::Inertia(SimTK::Vec3(0.1268, 0.0332, 0.1337)));
 
-void testNoForce();
-void testForceAtOrigin();
-void testForceAtPoint();
-void testTorque();
+void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY,
+        OpenSim::Function* forceZ, OpenSim::Function* pointX,
+        OpenSim::Function* pointY, OpenSim::Function* pointZ,
+        OpenSim::Function* torqueX, OpenSim::Function* torqueY,
+        OpenSim::Function* torqueZ, vector<SimTK::Real>& times,
+        vector<SimTK::Vec3>& accelerations,
+        vector<SimTK::Vec3>& angularAccelerations) {
 
-int main()
-{
-    SimTK::Array_<std::string> failures;
-
-    try { testNoForce(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testNoForce");
-    }
-    try { testForceAtOrigin(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testForceAtOrigin");
-    }
-    try { testForceAtPoint(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testForceAtPoint");
-    }
-    try { testTorque(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testTorque");
-    }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "testPrescribedForce Done" << endl;
-    return 0;
-}
-
-//==========================================================================================================
-// Test Cases
-//==========================================================================================================
-void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, OpenSim::Function* forceZ,
-                 OpenSim::Function* pointX, OpenSim::Function* pointY, OpenSim::Function* pointZ,
-                 OpenSim::Function* torqueX, OpenSim::Function* torqueY, OpenSim::Function* torqueZ,
-                 vector<SimTK::Real>& times, vector<SimTK::Vec3>& accelerations, vector<SimTK::Vec3>& angularAccelerations)
-{
-    using namespace SimTK;
-
-    //==========================================================================================================
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
@@ -125,7 +86,9 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     ball.setName("ball");
     ball.setMass(0);
     // Add joints
-    FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0));
+    FreeJoint free("free",
+        ground, SimTK::Vec3(0), SimTK::Vec3(0),
+        ball, SimTK::Vec3(0), SimTK::Vec3(0));
 
     // Rename coordinates for a free joint
     for(int i=0; i<free.numCoordinates(); i++){
@@ -146,10 +109,10 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     if (torqueX != NULL)
         force.setTorqueFunctions(torqueX, torqueY, torqueZ);
 
-    counter++;
     osimModel->updForceSet().append(&force);
 
-    // BAD: have to set memoryOwner to false or program will crash when this test is complete.
+    // BAD: have to set memoryOwner to false or program will crash when this
+    // test is complete.
     osimModel->disownAllComponents();
 
     //Set mass
@@ -165,26 +128,29 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     // Check that serialization/deserialization is working correctly as well
     osimModel = new Model("TestPrescribedForceModel.osim");
     SimTK::State& osim_state = osimModel->initSystem();
-    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
+    osimModel->getMultibodySystem().realize(osim_state, SimTK::Stage::Position);
 
-    //==========================================================================================================
     // Compute the force and torque at the specified times.
 
     const OpenSim::Body& body = osimModel->getBodySet().get("ball");
     for (unsigned int i = 0; i < times.size(); ++i)
     {
         osim_state.updTime() = times[i];
-        osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 accel = body.findStationAccelerationInGround(osim_state, Vec3(0));
-        Vec3 angularAccel = body.getAccelerationInGround(osim_state)[0];
+        osimModel->getMultibodySystem().realize(osim_state,
+            SimTK::Stage::Acceleration);
+        SimTK::Vec3 accel = body.findStationAccelerationInGround(osim_state,
+            SimTK::Vec3(0));
+        SimTK::Vec3 angularAccel = body.getAccelerationInGround(osim_state)[0];
 
         ASSERT_EQUAL(accelerations[i], accel, integ_accuracy);
         ASSERT_EQUAL(angularAccelerations[i], angularAccel, integ_accuracy);
     }
 }
 
-void testNoForce()
-{
+}
+
+TEST_CASE("testNoForce") {
+
     using namespace SimTK;
 
     vector<Real> times;
@@ -202,8 +168,8 @@ void testNoForce()
     testPrescribedForce(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, times, accel, angularAccel);
 }
 
-void testForceAtOrigin()
-{
+TEST_CASE("testForceAtOrigin") {
+
     using namespace SimTK;
 
     vector<Real> times;
@@ -227,8 +193,8 @@ void testForceAtOrigin()
     testPrescribedForce(forceX, forceY, forceZ, NULL, NULL, NULL, NULL, NULL, NULL, times, accel, angularAccel);
 }
 
-void testForceAtPoint()
-{
+TEST_CASE("testForceAtPoint") {
+
     using namespace SimTK;
 
     Mat33 invInertia = ballMass.getInertia().toMat33().invert();
@@ -249,8 +215,8 @@ void testForceAtPoint()
     testPrescribedForce(forceX, forceY, forceZ, pointX, pointY, pointZ, NULL, NULL, NULL, times, accel, angularAccel);
 }
 
-void testTorque()
-{
+TEST_CASE("testTorque") {
+
     using namespace SimTK;
 
     Mat33 invInertia = ballMass.getInertia().toMat33().invert();
