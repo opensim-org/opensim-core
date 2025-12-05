@@ -3,6 +3,7 @@
 import os
 import sys
 from setuptools import setup
+from setuptools.dist import Distribution
 
 # This provides a list of relative paths to all the dependencies in the bin folder.
 # Only when installed locally via "python -m pip install ." in Windows
@@ -24,6 +25,10 @@ if sys.version_info[0] < 3:
     execfile('opensim/version.py')
 else:
     exec(compile(open('opensim/version.py').read(), 'opensim/version.py', 'exec'))
+class BinaryDistribution(Distribution):
+    """Distribution which always forces a binary package with platform name"""
+    def has_ext_modules(foo):
+        return True
 
 setup(name='opensim',
       version=__version__,
@@ -35,8 +40,7 @@ setup(name='opensim',
       packages=['opensim'],
       # Copy the bin_files and geometry_files into the opensim package directory
       data_files=[
-            ('Lib/site-packages/opensim', bin_files), 
-            ('Lib/site-packages/opensim/Geometry', geometry_files)
+            ('opensim', bin_files)
       ],
       # The last 3 entries are for if OPENSIM_PYTHON_STANDALONE is ON.
       # The asterisk after the extension is to handle version numbers on Linux.
@@ -51,8 +55,13 @@ setup(name='opensim',
       classifiers=[
           'Intended Audience :: Science/Research',
           'Operating System :: OS Independent',
-          'Programming Language :: Python :: 2.7',
           'Programming Language :: Python :: 3',
           'Topic :: Scientific/Engineering :: Physics',
           ],
+          install_requires=[
+              "numpy>=2.0"
+          ],
+          distclass=BinaryDistribution
       )
+# To build the wheel, run the following command:
+#python setup.py bdist_wheel
