@@ -44,10 +44,13 @@
 
 #include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
-//==============================================================================
+namespace {
+
 static const double IntegrationAccuracy         = 1e-8;
 static const double SimulationTestTolerance     = 1e-6;
 static const double InitializationTestTolerance = 1e-8;
@@ -73,7 +76,11 @@ ShutteDelpActivation2 = 2.5;
 This function completes a controlled activation, controlled stretch simulation
 of a muscle. After the simulation has completed, the results can be
 tested in a number of different ways to ensure that the muscle model is
-functioning
+functioning.
+
+This main test driver can be used on any muscle model (derived from Muscle) so
+new cases should be easy to add. Currently, the test only verifies that the work
+done by the muscle corresponds to the change in system energy.
 
 @param aMuscle  a path actuator
 @param startX   the starting position of the muscle anchor. I have no idea
@@ -87,81 +94,9 @@ why this value is included.
 2: Correctness test: ensure that d/dt(KE+PE-W) = 0
 @param testTolerance    the desired tolerance associated with the test
 @param printResults print the osim model associated with this test.
-*/
-void simulateMuscle(const Muscle &aMuscle,
-    double startX,
-    double act0,
-    const Function *motion,
-    const Function *control,
-                    double integrationAccuracy,
-                    int testType,
-                    double testTolerance,
-                    bool printResults);
 
-
-int main()
-{
-    SimTK::Array_<std::string> failures;
-
-    try {
-    Millard2012EquilibriumMuscle muscle("muscle",
-                    MaxIsometricForce0,
-                    OptimalFiberLength0,
-                    TendonSlackLength0,
-                    PennationAngle0);
-
-    muscle.setActivationTimeConstant(Activation0);
-    muscle.setDeactivationTimeConstant(Deactivation0);
-
-    double x0 = 0;
-    double act0 = 0.2;
-
-    Constant control(0.5);
-
-    Sine motion(0.1, SimTK::Pi, 0);
-
-        simulateMuscle(muscle,
-            x0,
-            act0,
-            &motion,
-            &control,
-        IntegrationAccuracy,
-        CorrectnessTest,
-        CorrectnessTestTolerance,
-        true);
-
-
-        cout << "Probes test passed" << endl;
-    }
-
-    catch (const Exception& e) {
-        e.print(cerr);
-        failures.push_back("testProbes");
-    }
-
-
-    printf("\n\n");
-    cout << "************************************************************" << endl;
-    cout << "************************************************************" << endl;
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-
-    cout << "testProbes Done" << endl;
-    return 0;
-}
-
-/*==============================================================================
-Main test driver to be used on any muscle model (derived from Muscle) so new
-cases should be easy to add currently, the test only verifies that the work
-done by the muscle corresponds to the change in system energy.
-
-TODO: Test will fail with prescribed motion until the work done by this
+@note Test will fail with prescribed motion until the work done by this
 constraint is accounted for.
-================================================================================
 */
 void simulateMuscle(
     const Muscle &aMuscModel,
@@ -615,6 +550,34 @@ void simulateMuscle(
         //if (testRealInitConditions(i) != initCondVec(i))
         //    cout << "WARNING: Initial condition[" << i << "] for vector integration is not being correctly applied.\nThis is actually an error, but I have made it into a warning for now so that the test passes..." << endl;
     }
+}
 
+}
 
+TEST_CASE("testProbes") {
+
+    Millard2012EquilibriumMuscle muscle("muscle",
+                    MaxIsometricForce0,
+                    OptimalFiberLength0,
+                    TendonSlackLength0,
+                    PennationAngle0);
+    muscle.setActivationTimeConstant(Activation0);
+    muscle.setDeactivationTimeConstant(Deactivation0);
+
+    double x0 = 0;
+    double act0 = 0.2;
+
+    Constant control(0.5);
+
+    Sine motion(0.1, SimTK::Pi, 0);
+
+    simulateMuscle(muscle,
+        x0,
+        act0,
+        &motion,
+        &control,
+        IntegrationAccuracy,
+        CorrectnessTest,
+        CorrectnessTestTolerance,
+        true);
 }
