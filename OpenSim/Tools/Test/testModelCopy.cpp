@@ -23,78 +23,19 @@
 
 #include <stdint.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Actuators/PointActuator.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace std;
 
+namespace {
+
 // Test copying, serializing and deserializing models and verify 
 // that the number of bodies (nbods) and the number of attached geometry
 // (ngeom) on a given PhysicalFrame (by name) are preserved.
-void testCopyModel( const string& fileName, const int nbod, 
-                    const string& physicalFrameName, const int ngeom);
-
-int main()
-{
-    LoadOpenSimLibrary("osimActuators");
-    try {
-
-        // Test copying a simple property.
-        {
-            std::cout << "Test copying a simple property." << std::endl;
-            Property<double>* a =
-                Property<double>::TypeHelper::create("a", true);
-            a->setValue(0.123456789);
-            Property<double>* b =
-                Property<double>::TypeHelper::create("b", true);
-            b->setValue(10.0);
-
-            b->assign(*a);
-
-            cout << "b = " << b->toString() << endl;
-            ASSERT(*a == *b);
-        }
-
-        // Test copying a an Object property.
-        {
-            std::cout << "Test copying a object property." << std::endl;
-            Body A("A", 0.12345, SimTK::Vec3(0.1, 0.2, 0.3),
-                SimTK::Inertia(0.33, 0.22, 0.11));
-            Body B;
-
-            Property<Body>* a = Property<Body>::TypeHelper::create("a", true);
-            a->setValue(A);
-            Property<Body>* b = Property<Body>::TypeHelper::create("b", true);
-            b->setValue(B);
-
-            b->assign(*a);
-
-            cout << "b = " << b->toString() << endl;
-            ASSERT(*a == *b);
-
-            B = A;
-            ASSERT(B == A);
-        }
-
-        Model arm("arm26.osim");
-        Model armAssigned;
-
-        armAssigned = arm;
-        ASSERT(armAssigned == arm);
-
-        LoadOpenSimLibrary("osimActuators");
-        testCopyModel("arm26.osim", 2, "ground", 6);
-        testCopyModel("Neck3dof_point_constraint.osim", 25, "bodyset/spine", 1);
-    }
-    catch (const Exception& e) {
-        cout << e.what() << endl;
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
-}
-
 void testCopyModel(const string& fileName, const int nbod, 
     const string& physicalFrameName, const int ngeom)
 {
@@ -176,4 +117,58 @@ void testCopyModel(const string& fileName, const int nbod,
 
     cout << "Memory increase AFTER copy and init and delete:  " 
          << double(memory_increase)/mem1*100 << "%." << endl;
+}
+
+}
+
+TEST_CASE("Copy a simple property") {
+    Property<double>* a =
+        Property<double>::TypeHelper::create("a", true);
+    a->setValue(0.123456789);
+    Property<double>* b =
+        Property<double>::TypeHelper::create("b", true);
+    b->setValue(10.0);
+    b->assign(*a);
+
+    ASSERT(*a == *b);
+}
+
+TEST_CASE("Copy an object property") {
+    Body A("A", 0.12345, SimTK::Vec3(0.1, 0.2, 0.3),
+            SimTK::Inertia(0.33, 0.22, 0.11));
+    Body B;
+
+    Property<Body>* a = Property<Body>::TypeHelper::create("a", true);
+    a->setValue(A);
+    Property<Body>* b = Property<Body>::TypeHelper::create("b", true);
+    b->setValue(B);
+    b->assign(*a);
+
+    ASSERT(*a == *b);
+
+    B = A;
+    ASSERT(B == A);
+}
+
+TEST_CASE("Copy a model") {
+
+    // The following model(s) contains Actuators that are registered when the
+    // osimActuators library is loaded. But unless we call at least one
+    // function defined in the osimActuators library, some linkers will omit
+    // its dependency from the executable and it will not be loaded at
+    // startup.
+    { PointActuator t; }
+
+    SECTION("arm26") {
+        Model arm("arm26.osim");
+        Model armAssigned;
+        armAssigned = arm;
+        ASSERT(armAssigned == arm);
+
+        testCopyModel("arm26.osim", 2, "ground", 6);
+    }
+
+    SECTION("3 DOF neck w/ point constraint") {
+        testCopyModel("Neck3dof_point_constraint.osim", 25, "bodyset/spine", 1);
+    }
 }
