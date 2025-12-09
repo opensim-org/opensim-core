@@ -26,20 +26,16 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Actuators/PointActuator.h>
+
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace std;
 using namespace SimTK;
 
-void testVisModel(Model& model, const std::string filename_for_standard);
-Model createModel4AppearanceTest();
-void populate_doublePendulumPrimitives(SimTK::Array_<DecorativeGeometry>&); 
-void populate_composedTransformPrimitives(SimTK::Array_<DecorativeGeometry>&);
-void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>&);
-void populate_wrapModelPrimitives(SimTK::Array_<DecorativeGeometry>&, bool includeFrames=true);
-bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeometry>& stdPrimitives);
+namespace {
 
 // Implementation of DecorativeGeometryImplementation that prints the representation to 
 // a StringStream for comparison
@@ -114,55 +110,6 @@ private:
     }
 
 };
-
-int main()
-{
-    try {
-        LoadOpenSimLibrary("osimActuators");
-        
-        Model testModel("BuiltinGeometry.osim");
-        testVisModel(testModel, "vis_BuiltinGeometry.txt");
-        std::cout << "BuiltinGeometry Passed" << std::endl;
-        Model testModel2 = createModel4AppearanceTest();
-        testVisModel(testModel2, "vis_AppearanceTest.txt");
-        std::cout << "Appearance test Passed" << std::endl;
-        // Load Model in 3.3 format that had transforms attached to Geometry
-        Model testModel3("double_pendulum33.osim");
-        
-        SimTK::Array_<DecorativeGeometry> standard;
-        testModel3.updDisplayHints().set_show_frames(true);
-        populate_doublePendulumPrimitives(standard);
-        testVisModelAgainstStandard(testModel3, standard);
-        std::cout << "double_pendulum33 test Passed" << std::endl;
-
-        // Now a model from 3.3 where both GeometrySet and individual DisplayGeometry 
-        // have a non-trivial transform.
-        Model composedTransformsModel("doubletransform33.osim");
-        composedTransformsModel.updDisplayHints().set_show_frames(true);
-        populate_composedTransformPrimitives(standard);
-        testVisModelAgainstStandard(composedTransformsModel, standard);
-
-        // Model with contacts
-        Model modelWithContacts("visualize_contacts.osim");
-        modelWithContacts.updDisplayHints().set_show_frames(true);
-        populate_contactModelPrimitives(standard);
-        testVisModelAgainstStandard(modelWithContacts, standard);
-        
-        // Model with WrapObjects
-        Model modelWithWrap("test_wrapAllVis.osim");
-        modelWithWrap.updDisplayHints().set_show_frames(true);
-        populate_wrapModelPrimitives(standard);
-        modelWithWrap.updDisplayHints().set_show_frames(false);
-        populate_wrapModelPrimitives(standard, false);
-        testVisModelAgainstStandard(modelWithWrap, standard);
-    }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
-}
 
 void testVisModel(Model& model, const std::string standard_filename)
 {
@@ -526,6 +473,66 @@ void populate_wrapModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimitiv
         .setIndexOnBody(-1).setScale(1).setOpacity(0.5)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(Vec3({ -.02, -.6, .01 })));
+}
 
+}
 
+TEST_CASE("testVisualization") {
+
+    // The following model(s) contains Actuators that are registered when the
+    // osimActuators library is loaded. But unless we call at least one
+    // function defined in the osimActuators library, some linkers will omit
+    // its dependency from the executable and it will not be loaded at
+    // startup.
+    { PointActuator t; }
+
+    SECTION("Built-in Geometry") {
+        Model testModel("BuiltinGeometry.osim");
+        testVisModel(testModel, "vis_BuiltinGeometry.txt");
+    }
+
+    SECTION("Appearance") {
+        Model testModel2 = createModel4AppearanceTest();
+        testVisModel(testModel2, "vis_AppearanceTest.txt");
+    }
+
+    SECTION("Double pendulum") {
+        // Load Model in 3.3 format that had transforms attached to Geometry
+        Model testModel3("double_pendulum33.osim");
+
+        SimTK::Array_<DecorativeGeometry> standard;
+        testModel3.updDisplayHints().set_show_frames(true);
+        populate_doublePendulumPrimitives(standard);
+        testVisModelAgainstStandard(testModel3, standard);
+    }
+
+    SECTION("Composed transform") {
+        // Now a model from 3.3 where both GeometrySet and individual
+        // DisplayGeometry have a non-trivial transform.
+        SimTK::Array_<DecorativeGeometry> standard;
+        Model composedTransformsModel("doubletransform33.osim");
+        composedTransformsModel.updDisplayHints().set_show_frames(true);
+        populate_composedTransformPrimitives(standard);
+        testVisModelAgainstStandard(composedTransformsModel, standard);
+    }
+
+    SECTION("Contact model") {
+        // Model with contacts
+        SimTK::Array_<DecorativeGeometry> standard;
+        Model modelWithContacts("visualize_contacts.osim");
+        modelWithContacts.updDisplayHints().set_show_frames(true);
+        populate_contactModelPrimitives(standard);
+        testVisModelAgainstStandard(modelWithContacts, standard);
+    }
+
+    SECTION("Model with wrapping") {
+        // Model with WrapObjects
+        SimTK::Array_<DecorativeGeometry> standard;
+        Model modelWithWrap("test_wrapAllVis.osim");
+        modelWithWrap.updDisplayHints().set_show_frames(true);
+        populate_wrapModelPrimitives(standard, true);
+        modelWithWrap.updDisplayHints().set_show_frames(false);
+        populate_wrapModelPrimitives(standard, false);
+        testVisModelAgainstStandard(modelWithWrap, standard);
+    }
 }
