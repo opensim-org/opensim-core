@@ -55,6 +55,7 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <OpenSim/Simulation/SimbodyEngine/CantileverFreeBeamJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
@@ -1751,6 +1752,112 @@ TEST_CASE("testPlanarJoint") {
     }
 
 } // end testPlanarJoint
+
+// Compare behavior of a double pendulum with a cantilever-free beam mobilizer
+// for the "hip" and a pin mobilizer for the "knee".
+TEST_CASE("testCantileverFreeBeamJoint") {
+
+    // Define the Simbody system.
+    // --------------------------
+    SimTK::MultibodySystem system;
+    SimTK::SimbodyMatterSubsystem matter(system);
+    SimTK::GeneralForceSubsystem forces(system);
+    SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
+
+    // Thigh connected by hip with a cantilever-free beam mobilizer.
+    SimTK::Real beamLength = 1.23;
+    SimTK::MobilizedBody::CantileverFreeBeam thigh(matter.Ground(),
+            SimTK::Transform(hipInPelvis), SimTK::Body::Rigid(femurMass),
+            SimTK::Transform(hipInFemur));
+    thigh.setDefaultLength(beamLength);
+
+    // Shank connected by knee with a pin mobilizer.
+    SimTK::MobilizedBody::Pin shank(thigh, SimTK::Transform(kneeInFemur),
+            SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia));
+
+    // Initialize the Simbody system.
+    system.realizeTopology();
+    SimTK::State state = system.getDefaultState();
+    system.realizeModel(state);
+
+    // Define the OpenSim model.
+    // -------------------------
+    Model model;
+    model.setGravity(gravity_vec);
+
+    // Create the thigh body.
+    OpenSim::Body* osim_thigh = new OpenSim::Body("thigh", femurMass.getMass(),
+            femurMass.getMassCenter(), femurMass.getInertia());
+
+    // Create the hip joint as a cantilever-free beam joint.
+    CantileverFreeBeamJoint* hip = new CantileverFreeBeamJoint("hip",
+            model.updGround(), hipInPelvis, SimTK::Vec3(0),
+            *osim_thigh, hipInFemur, SimTK::Vec3(0),
+            beamLength);
+
+    // Rename the hip coordinates for the cantilever-free beam joint.
+    for (int i = 0; i < hip->numCoordinates(); i++) {
+        hip->upd_coordinates(i).setName(fmt::format("hip_q{}", i));
+    }
+
+    // Add the thigh body, which now also contains the hip joint, to the model.
+    model.addBody(osim_thigh);
+    model.addJoint(hip);
+
+    // Create the shank body.
+    OpenSim::Body* osim_shank = new OpenSim::Body("shank", tibiaMass.getMass(),
+            tibiaMass.getMassCenter(), tibiaMass.getInertia());
+
+    // Create the knee joint as a pin joint.
+    PinJoint* knee = new PinJoint("knee",
+            *osim_thigh, kneeInFemur, SimTK::Vec3(0),
+            *osim_shank, kneeInTibia, SimTK::Vec3(0));
+
+    // Add the shank body, which now also contains the knee joint, to the model.
+    model.addBody(osim_shank);
+    model.addJoint(knee);
+
+    // Test cases.
+    // -----------
+    SECTION("Equivalent body forces for generalized forces") {
+        testEquivalentBodyForceForGenForces(model);
+    }
+
+    SECTION("Serialization and deserialization") {
+        // Write model to file
+        model.print("testCantileverFreeBeamJoint.osim");
+
+        // Load model from file
+        Model model_copy("testCantileverFreeBeamJoint.osim");
+        ASSERT(model == model_copy);
+    }
+
+    SECTION("Compare Simbody system and OpenSim model simulations") {
+        SimTK::State osim_state = model.initSystem();
+        compareSimulations(system, state, &model, osim_state,
+            "testCantileverFreeBeamJoint FAILED\n");
+    }
+
+    SECTION("Accessors") {
+        CantileverFreeBeamJoint myBeamJoint;
+
+        CHECK(myBeamJoint.get_coordinates(0) == myBeamJoint.getCoordinate(
+            CantileverFreeBeamJoint::Coord::Rotation1X));
+        CHECK(myBeamJoint.get_coordinates(1) == myBeamJoint.getCoordinate(
+            CantileverFreeBeamJoint::Coord::Rotation2Y));
+        CHECK(myBeamJoint.get_coordinates(2) == myBeamJoint.getCoordinate(
+            CantileverFreeBeamJoint::Coord::Rotation3Z));
+        CHECK_THROWS(myBeamJoint.getCoordinate());
+
+        CHECK(myBeamJoint.upd_coordinates(0) == myBeamJoint.updCoordinate(
+            CantileverFreeBeamJoint::Coord::Rotation1X));
+        CHECK(myBeamJoint.upd_coordinates(1) == myBeamJoint.updCoordinate(
+            CantileverFreeBeamJoint::Coord::Rotation2Y));
+        CHECK(myBeamJoint.upd_coordinates(2) == myBeamJoint.updCoordinate(
+            CantileverFreeBeamJoint::Coord::Rotation3Z));
+        CHECK_THROWS(myBeamJoint.updCoordinate());
+    }
+}
 
 /// Compare behavior of a Free hip and pin knee
 TEST_CASE("testCustomWithMultidimFunction") {
