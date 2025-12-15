@@ -97,6 +97,7 @@ OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.h>
+%include <OpenSim/Simulation/SimbodyEngine/CantileverFreeBeamJoint.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 %include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
