@@ -34,11 +34,13 @@
 #include "OpenSim/Common/STOFileAdapter.h"
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
-#include <ctime>    // for clock()
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
+
+namespace {
 
 /////////////////////////////////////////////////
 // DEFINE THE SIMULATION START AND FINAL TIMES //
@@ -324,83 +326,63 @@ void compareResultsToStandard() {
     }
 }
 
+}
 
-//______________________________________________________________________________
-/**
- * Run a simulation of block sliding with contact on by two muscles sliding with contact 
- */
-int main()
-{
-    clock_t startTime = clock();
+// Run a simulation of block sliding with contact on by two muscles sliding with
+// contact.
+TEST_CASE("testAddComponents") {
+    // Create an OpenSim model and set its name
+    Model osimModel;
+    osimModel.setName("testAddComponents_model");
+    addComponentsToModel(osimModel);
 
-    try {
-        // Create an OpenSim model and set its name
-        Model osimModel;
-        osimModel.setName("testAddComponents_model");
-        addComponentsToModel(osimModel);
+    osimModel.printSubcomponentInfo();
+    osimModel.finalizeConnections(); // Needed so sockets have correct absolute path on print
 
-        osimModel.printSubcomponentInfo();
-        osimModel.finalizeConnections(); // Needed so sockets have correct absolute path on print
+    // Save the model to a file
+    osimModel.print(osimModel.getName()+".osim");
 
-        // Save the model to a file
-        osimModel.print(osimModel.getName()+".osim");
+    // Create the force reporter for obtaining the forces applied to the model
+    // during a forward simulation
+    ForceReporter* reporter = new ForceReporter(&osimModel);
+    osimModel.addAnalysis(reporter);
 
-        // Create the force reporter for obtaining the forces applied to the model
-        // during a forward simulation
-        ForceReporter* reporter = new ForceReporter(&osimModel);
-        osimModel.addAnalysis(reporter);
+    //////////////////////////
+    // PERFORM A SIMULATION //
+    //////////////////////////
+    // set use visualizer to true to visualize the simulation live
+    osimModel.setUseVisualizer(false);
 
-        //////////////////////////
-        // PERFORM A SIMULATION //
-        //////////////////////////
-        // set use visualizer to true to visualize the simulation live
-        osimModel.setUseVisualizer(false);
+    // Initialize the system and get the default state
+    SimTK::State& si = osimModel.initSystem();
 
-        // Initialize the system and get the default state
-        SimTK::State& si = osimModel.initSystem();
+    osimModel.getMultibodySystem().realize(si, Stage::Velocity);
 
-        osimModel.getMultibodySystem().realize(si, Stage::Velocity);
+    // Compute initial conditions for muscles
+    osimModel.equilibrateMuscles(si);
 
-        // Compute initial conditions for muscles
-        osimModel.equilibrateMuscles(si);
+    // Create the manager managing the forward integration and its outputs
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1.0e-6);
 
-        // Create the manager managing the forward integration and its outputs
-        Manager manager(osimModel);
-        manager.setIntegratorAccuracy(1.0e-6);
+    // Print out details of the model
+    osimModel.printDetailedInfo(si, cout);
 
-        // Print out details of the model
-        osimModel.printDetailedInfo(si, cout);
+    // Integrate from initial time to final time
+    si.setTime(initialTime);
+    manager.initialize(si);
+    cout<<"\nIntegrating from "<<initialTime<<" to "<<finalTime<<endl;
+    manager.integrate(finalTime);
 
-        // Integrate from initial time to final time
-        si.setTime(initialTime);
-        manager.initialize(si);
-        cout<<"\nIntegrating from "<<initialTime<<" to "<<finalTime<<endl;
-        manager.integrate(finalTime);
+    //////////////////////////////
+    // SAVE THE RESULTS TO FILE //
+    //////////////////////////////
+    // Save the model states from forward integration
+    auto statesTable = manager.getStatesTable();
+    STOFileAdapter_<double>::write(statesTable, "tugOfWar_states.sto");
 
-        //////////////////////////////
-        // SAVE THE RESULTS TO FILE //
-        //////////////////////////////
-        // Save the model states from forward integration
-        auto statesTable = manager.getStatesTable();
-        STOFileAdapter_<double>::write(statesTable, "tugOfWar_states.sto");
+    auto forcesTable = reporter->getForcesTable();
+    STOFileAdapter_<double>::write(forcesTable, "tugOfWar_forces.sto");
 
-        auto forcesTable = reporter->getForcesTable();
-        STOFileAdapter_<double>::write(forcesTable, "tugOfWar_forces.sto");
-
-        compareResultsToStandard();
-    }
-    catch (const std::exception& ex) {
-        cerr << ex.what() << endl;
-        return 1;
-    }
-    catch (...) {
-        cerr << "UNRECOGNIZED EXCEPTION" << endl;
-        return 1;
-    }
-
-    cout << "main() routine time = " << 1.e3*(clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
-
-    cout << "OpenSim testAddComponents completed successfully." << endl;
-
-    return 0;
+    compareResultsToStandard();
 }
