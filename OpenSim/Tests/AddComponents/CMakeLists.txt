@@ -1,3 +1,6 @@
+find_package(Catch2 REQUIRED
+        HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
+
 # Define test target and current test dir
 set(TEST_TARGET testAddComponents)
 set(TEST_DIR ${CMAKE_CURRENT_BINARY_DIR})
@@ -37,5 +40,5 @@ endforeach(dataFile)
 #
 OpenSimAddTests(
     TESTPROGRAMS ${TEST_TARGET}.cpp
-    LINKLIBS osimTools osimSimulation osimActuators
+    LINKLIBS osimTools osimSimulation osimActuators Catch2::Catch2WithMain
     )
