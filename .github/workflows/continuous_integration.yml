@@ -38,8 +38,13 @@ jobs:
         python-version: '3.11'
 
     - name: Install numpy
-      # Need numpy to use SWIG numpy typemaps.
-      run: python3 -m pip install numpy==2.0
+      #Need numpy to use SWIG numpy typemaps.
+      run: |
+        python3 -m pip install numpy==2.0
+        python3 -m pip install wheel
+        python3 -m pip install build
+        pip install --upgrade pip setuptools wheel
+        pip install delvewheel
 
     - name: Install SWIG
       run: |
@@ -68,7 +73,7 @@ jobs:
         # /W0 disables warnings.
         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
         # TODO: CMake provides /W3, which overrides our /W0
-        cmake -E env CXXFLAGS="/W0 /MD" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_CASADI=ON
+        cmake -E env CXXFLAGS="/W0 /MD" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_CASADI=ON -DOPENSIM_PYTHON_STANDALONE=ON
         cmake --build . --config Release -- /maxcpucount:4
 
     - name: Configure opensim-core
@@ -79,7 +84,7 @@ jobs:
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
         # Set the CXXFLAGS environment variable to turn warnings into errors.
         # Skip timing test section included by default.
-        cmake -E env CXXFLAGS="/WX /MD -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DOPENSIM_WITH_CASADI=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DPython3_ROOT_DIR=C:\hostedtoolcache\windows\Python\3.11.9\x64
+        cmake -E env CXXFLAGS="/WX /MD -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DOPENSIM_WITH_CASADI=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WHEELS=on -DPython3_ROOT_DIR=C:\hostedtoolcache\windows\Python\3.11.9\x64
         $env:match = cmake -L . | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
         $version = $env:match.split('=')[1]
         echo $version
@@ -106,13 +111,22 @@ jobs:
         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.configure.outputs.version }}" -Recurse
         7z a "opensim-core-${{ steps.configure.outputs.version }}.zip" "opensim-core-${{ steps.configure.outputs.version }}"
 
-    # - name: Test Python bindings
-    #   run: |
-    #     echo "PYTHONPATH= $env:USERPROFILE/opensim-core-install/bin">> $GITHUB_ENV
-    #     # Move to the installed location of the python package.
-    #     cd ~/opensim-core-install/sdk/python
-    #     # Run python tests.
-    #     python -m unittest discover --start-directory opensim/tests --verbose
+#    - name: Build wheel
+#      run: |
+#        cd ~/opensim-core-install/sdk/python
+#        python3 setup.py bdist_wheel
+#    - name: Upload windows wheel
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: opensim-4.5.2-cp311-cp311-win_amd64.whl
+#        path: ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-win_amd64.whl
+#
+#    - name: Test Python bindings
+#      run: |
+#        cd ~/opensim-core-install/sdk/python
+#        pip install dist/opensim-4.5.2-cp311-cp311-win_amd64.whl
+#        # Run the python tests, verbosely.
+#        python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
@@ -267,6 +281,8 @@ jobs:
         brew install pkgconfig autoconf libtool automake wget pcre doxygen llvm
         brew reinstall gcc
         pip3 install numpy==2.0
+        pip3 install wheel
+        pip3 install build
         gfortran -v
         mkdir gfortran_version
         gfortran -v &> gfortran_version/gfortran_version.txt
@@ -309,6 +325,7 @@ jobs:
         DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
         DEP_CMAKE_ARGS+=(-DOPENSIM_DISABLE_LOG_FILE=ON)
         DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=11)
+
         printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
         cmake "${DEP_CMAKE_ARGS[@]}"
         make --jobs 4
@@ -325,6 +342,8 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=11)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
         OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on)
+        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=on)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
         OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
@@ -358,9 +377,21 @@ jobs:
         zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}.zip opensim-core-${{ steps.configure.outputs.version }}
         mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
 
+    - name: Build wheel
+      run: |
+        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        python3 -m build --wheel
+
+    - name: Upload osx wheel
+      uses: actions/upload-artifact@v4
+      with:
+        name: opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
+        path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
+
     - name: Test Python bindings
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        pip3 install /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
@@ -508,6 +539,8 @@ jobs:
       run: |
         pip install pip --upgrade
         pip install numpy==2.0
+        pip install build
+        pip install wheel
 
     - name: Install packages
       run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen patchelf
@@ -561,6 +594,8 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
         OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on)
+        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=on)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
         OSIM_CMAKE_ARGS+=(-DSWIG_DIR=~/swig/share/swig)
         OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=~/swig/bin/swig)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
@@ -597,11 +632,23 @@ jobs:
         zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}-ubuntu22.zip opensim-core-${{ steps.configure.outputs.version }}
         mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
 
+    - name: Build wheel
+      run: |
+        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        python3 -m build --wheel
+
+    - name: Upload linux wheel
+      uses: actions/upload-artifact@v4
+      with:
+        name: opensim-4.5.2-cp311-cp311-linux_x86_64.whl
+        path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim-4.5.2-cp311-cp311-linux_x86_64.whl
+
     - name: Test Python bindings
       run: |
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/opensim_dependencies_install/simbody/lib
+        export LD_LIBRARY_PATH=""
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        # Run the python tests, verbosely.
+        pip install /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim-4.5.2-cp311-cp311-linux_x86_64.whl
+        # Run the python tests, verbosely
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core

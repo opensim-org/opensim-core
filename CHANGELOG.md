@@ -37,6 +37,7 @@ performance and stability in wrapping solutions.
 - Updated required language level to C++20. (#3929)
 - Breaking: removed the `operator==` and `operator<` overloads in `ControlLinearNode` and replaced usages with the equivalent utility functions `isEqual()` and `isLessThan()`. (#4095)
 - Made various changes to support builds on Ubuntu 24.04 with GCC 13. (#4186)
+- Support building PYPI distribution python wheels on all platforms, upgrade builds to python 3.11 and numpy 2.0. (#4189)
 
 
 v4.5.2

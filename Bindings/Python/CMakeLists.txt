@@ -251,7 +251,6 @@ OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_BINARY_DIR}/version.py" opensim)
 
 # Copy setup.py for each build configuration.
 OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/setup.py" ".")
-
 # __init__.py.
 OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" opensim)
 
