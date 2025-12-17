@@ -21,7 +21,7 @@
 #include "MocoConstraint.h"
 #include "osimMocoDLL.h"
 
-/** This path contraint allows you to bound any number of state variables
+/** This path constraint allows you to bound any number of state variables
 between two time-based functions. It is possible to constrain the state variable
 to match the value from a provided function; see the equality_with_lower
 property.
