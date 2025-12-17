@@ -84,7 +84,7 @@ periodicGoal->addStatePair({"/jointset/hip_l/hip_flexion_l/speed",
 periodicGoal->addStatePair({"/jointset/hip_r/hip_flexion_r/speed",
         "/jointset/hip_l/hip_flexion_l/speed"});
 @endcode
-Periodic contraints for the hamstrings controls:
+Periodic constraints for the hamstrings controls:
 @code
 MocoPeriodicityGoalPair pair_hamstrings1;
 pair_hamstrings1.set_initial_variable("/hamstrings_r");
