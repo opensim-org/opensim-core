@@ -1,4 +1,4 @@
-﻿/* -------------------------------------------------------------------------- *
+/* -------------------------------------------------------------------------- *
  *                   OpenSim:  ExponentialContactForce.cpp                    *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
@@ -34,102 +34,6 @@ using SimTK::State;
 
 
 //=============================================================================
-// ExponentialContactForce::Parameters
-//=============================================================================
-ExponentialContactForce::Parameters::
-Parameters() {
-    setNull();
-    constructProperties();
-}
-
-ExponentialContactForce::Parameters::
-Parameters(const SimTK::ExponentialSpringParameters& params) {
-    setNull();
-    _stkparams = params;
-    constructProperties();
-}
-
-void ExponentialContactForce::Parameters::setNull() {
-    setAuthors("F. C. Anderson");
-}
-
-void
-ExponentialContactForce::Parameters::
-constructProperties() {
-    SimTK::Vec3 shape;
-    _stkparams.getShapeParameters(shape[0], shape[1], shape[2]);
-    constructProperty_exponential_shape_parameters(shape);
-    constructProperty_normal_viscosity(_stkparams.getNormalViscosity());
-    constructProperty_max_normal_force(_stkparams.getMaxNormalForce());
-    constructProperty_friction_elasticity(_stkparams.getFrictionElasticity());
-    constructProperty_friction_viscosity(_stkparams.getFrictionViscosity());
-    constructProperty_settle_velocity(_stkparams.getSettleVelocity());
-    constructProperty_initial_mu_static(_stkparams.getInitialMuStatic());
-    constructProperty_initial_mu_kinetic(_stkparams.getInitialMuKinetic());
-}
-
-void
-ExponentialContactForce::Parameters::
-updateProperties() {
-    SimTK::Vec3 shape;
-    _stkparams.getShapeParameters(shape[0], shape[1], shape[2]);
-    set_exponential_shape_parameters(shape);
-    set_normal_viscosity(_stkparams.getNormalViscosity());
-    set_max_normal_force(_stkparams.getMaxNormalForce());
-    set_friction_elasticity(_stkparams.getFrictionElasticity());
-    set_friction_viscosity(_stkparams.getFrictionViscosity());
-    set_settle_velocity(_stkparams.getSettleVelocity());
-    set_initial_mu_static(_stkparams.getInitialMuStatic());
-    set_initial_mu_kinetic(_stkparams.getInitialMuKinetic());
-}
-
-void
-ExponentialContactForce::Parameters::
-updateParameters() {
-    const SimTK::Vec3 shape = get_exponential_shape_parameters();
-    _stkparams.setShapeParameters(shape[0], shape[1], shape[2]);
-    _stkparams.setNormalViscosity(get_normal_viscosity());
-    _stkparams.setMaxNormalForce(get_max_normal_force());
-    _stkparams.setFrictionElasticity(get_friction_elasticity());
-    _stkparams.setFrictionViscosity(get_friction_viscosity());
-    _stkparams.setSettleVelocity(get_settle_velocity());
-    _stkparams.setInitialMuStatic(get_initial_mu_static());
-    _stkparams.setInitialMuKinetic(get_initial_mu_kinetic());
-}
-
-// This method is needed to ensure that the SimTK::ExponentialSpringParameters
-// member variable (_stkparam) is kept consistent with the properties.
-// It is necessary to have the _stkparams member variable because there needs
-// to be a place to store non-default parameters when the underlying
-// SimTK::ExponentialSpringForce hasn't yet been instantiated.
-// Having to do a little extra bookkeeping (i.e., storing properties values
-// twice [once in the Properties and once in _stkparams]) is justified
-// by not having to rewrite a whole bunch of additional accessor methods.
-// All parameter sets/gets go through the SimTK::ExponentialSpringParameters
-// interface (i.e., through _stkparams).
-void
-ExponentialContactForce::Parameters::
-updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber) {
-    Super::updateFromXMLNode(node, versionNumber);
-    updateParameters(); // catching any invalid property values in the process
-    updateProperties(); // pushes valid parameters back to the properties.
-}
-
-void
-ExponentialContactForce::Parameters::
-setSimTKParameters(const SimTK::ExponentialSpringParameters& params) {
-    _stkparams = params;
-    updateProperties();
-}
-
-const SimTK::ExponentialSpringParameters&
-ExponentialContactForce::Parameters::
-getSimTKParameters() const {
-    return _stkparams;
-}
-
-
-//=============================================================================
 // ExponentialContactForce
 //=============================================================================
 // Default
@@ -142,8 +46,7 @@ ExponentialContactForce() {
 // Full Argument
 ExponentialContactForce::
 ExponentialContactForce(const SimTK::Transform& contactPlaneXform,
-    const PhysicalFrame& frame, const SimTK::Vec3& location,
-    SimTK::ExponentialSpringParameters params)
+    const PhysicalFrame& frame, const SimTK::Vec3& location)
 {
     setNull();
     constructProperties();
@@ -153,8 +56,6 @@ ExponentialContactForce(const SimTK::Transform& contactPlaneXform,
     set_station(Station());
     upd_station().setParentFrame(frame);
     upd_station().set_location(location);
-
-    setParameters(params);
 }
 
 void
@@ -185,14 +86,35 @@ void
 ExponentialContactForce::
 constructProperties() {
     constructProperty_contact_plane_transform(SimTK::Transform());
-    constructProperty_contact_parameters(Parameters());
+
+    // Initialize properties with default values from
+    // SimTK::ExponentialSpringParameters
+    SimTK::ExponentialSpringParameters defaultParams;
+    SimTK::Vec3 shape;
+    defaultParams.getShapeParameters(shape[0], shape[1], shape[2]);
+    constructProperty_exponential_shape_parameters(shape);
+    constructProperty_normal_viscosity(defaultParams.getNormalViscosity());
+    constructProperty_max_normal_force(defaultParams.getMaxNormalForce());
+    constructProperty_friction_elasticity(
+            defaultParams.getFrictionElasticity());
+    constructProperty_friction_viscosity(defaultParams.getFrictionViscosity());
+    constructProperty_settle_velocity(defaultParams.getSettleVelocity());
+    constructProperty_initial_mu_static(defaultParams.getInitialMuStatic());
+    constructProperty_initial_mu_kinetic(defaultParams.getInitialMuKinetic());
+
     constructProperty_station(Station());
+
+    // Initialize _stkparams with default values
+    _stkparams = defaultParams;
 }
 
 void
 ExponentialContactForce::
 updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber) {
     Super::updateFromXMLNode(node, versionNumber);
+    // Sync properties with _stkparams after loading from XML
+    updateParameters(); // catching any invalid property values in the process
+    updateProperties(); // pushes valid parameters back to the properties.
 }
 
 void
@@ -221,8 +143,11 @@ extendAddToSystem(SimTK::MultibodySystem& system) const {
     const SimTK::Transform& XContactPlane = get_contact_plane_transform();
     const PhysicalFrame& frame = get_station().getParentFrame();
     const Vec3& location = get_station().get_location();
+    // Ensure _stkparams is up to date with properties before constructing the
+    // force
+    const_cast<ExponentialContactForce*>(this)->updateParameters();
     SimTK::ExponentialSpringForce spr(forces, XContactPlane,
-            frame.getMobilizedBody(), location, getParameters());
+            frame.getMobilizedBody(), location, _stkparams);
 
     // Get the subsystem index so we can access the SimTK::Force later.
     ExponentialContactForce* mutableThis =
@@ -320,26 +245,146 @@ resetAnchorPoints(OpenSim::Model& model, SimTK::State& state) {
 //-----------------------------------------------------------------------------
 // ACCESSORS for properties
 //-----------------------------------------------------------------------------
-void
-ExponentialContactForce::
-setParameters(const SimTK::ExponentialSpringParameters& params) {
-    ExponentialContactForce::Parameters& p = upd_contact_parameters();
-    p.setSimTKParameters(params);
-    // Push the new parameters to the SimTK::ExponentialSpringForce instance.
-    // The following call will invalidate the System at Stage::Topology.
-    if (_index.isValid()) updExponentialSpringForce().setParameters(params);
-}
-
-const SimTK::ExponentialSpringParameters&
-ExponentialContactForce::
-getParameters() const {
-    return get_contact_parameters().getSimTKParameters();
-}
-
 const Station&
 ExponentialContactForce::
 getStation() const {
     return get_station();
+}
+
+//-----------------------------------------------------------------------------
+// ACCESSORS for contact parameters
+//-----------------------------------------------------------------------------
+SimTK::Vec3
+ExponentialContactForce::
+getExponentialShapeParameters() const {
+    SimTK::Vec3 shape;
+    _stkparams.getShapeParameters(shape[0], shape[1], shape[2]);
+    return shape;
+}
+
+void
+ExponentialContactForce::
+setExponentialShapeParameters(const SimTK::Vec3& shapeParams) {
+    set_exponential_shape_parameters(shapeParams);
+    _stkparams.setShapeParameters(
+            shapeParams[0], shapeParams[1], shapeParams[2]);
+    // Sync properties back in case constraints were applied
+    updateProperties();
+    // Push the new parameters to the SimTK::ExponentialSpringForce instance.
+    // The following call will invalidate the System at Stage::Topology.
+    if (_index.isValid()) updExponentialSpringForce().setParameters(_stkparams);
+}
+
+double
+ExponentialContactForce::
+getNormalViscosity() const {
+    return _stkparams.getNormalViscosity();
+}
+
+void
+ExponentialContactForce::
+setNormalViscosity(double viscosity) {
+    set_normal_viscosity(viscosity);
+    _stkparams.setNormalViscosity(viscosity);
+    // Sync properties back in case constraints were applied
+    updateProperties();
+    if (_index.isValid()) updExponentialSpringForce().setParameters(_stkparams);
+}
+
+double
+ExponentialContactForce::
+getMaxNormalForce() const {
+    return _stkparams.getMaxNormalForce();
+}
+
+void
+ExponentialContactForce::
+setMaxNormalForce(double maxForce) {
+    set_max_normal_force(maxForce);
+    _stkparams.setMaxNormalForce(maxForce);
+    // Sync properties back in case constraints were applied
+    updateProperties();
+    if (_index.isValid()) updExponentialSpringForce().setParameters(_stkparams);
+}
+
+double
+ExponentialContactForce::
+getFrictionElasticity() const {
+    return _stkparams.getFrictionElasticity();
+}
+
+void
+ExponentialContactForce::
+setFrictionElasticity(double elasticity) {
+    set_friction_elasticity(elasticity);
+    _stkparams.setFrictionElasticity(elasticity);
+    // Sync properties back in case constraints were applied
+    updateProperties();
+    if (_index.isValid()) updExponentialSpringForce().setParameters(_stkparams);
+}
+
+double
+ExponentialContactForce::
+getFrictionViscosity() const {
+    return _stkparams.getFrictionViscosity();
+}
+
+void
+ExponentialContactForce::
+setFrictionViscosity(double viscosity) {
+    set_friction_viscosity(viscosity);
+    _stkparams.setFrictionViscosity(viscosity);
+    // Sync properties back in case constraints were applied
+    updateProperties();
+    if (_index.isValid()) updExponentialSpringForce().setParameters(_stkparams);
+}
+
+double
+ExponentialContactForce::
+getSettleVelocity() const {
+    return _stkparams.getSettleVelocity();
+}
+
+void
+ExponentialContactForce::
+setSettleVelocity(double velocity) {
+    set_settle_velocity(velocity);
+    _stkparams.setSettleVelocity(velocity);
+    // Sync properties back in case constraints were applied
+    updateProperties();
+    if (_index.isValid()) updExponentialSpringForce().setParameters(_stkparams);
+}
+
+double
+ExponentialContactForce::
+getInitialMuStatic() const {
+    return _stkparams.getInitialMuStatic();
+}
+
+void
+ExponentialContactForce::
+setInitialMuStatic(double muStatic) {
+    set_initial_mu_static(muStatic);
+    _stkparams.setInitialMuStatic(muStatic);
+    // Sync properties back in case constraints were applied
+    updateProperties();
+    if (_index.isValid()) updExponentialSpringForce().setParameters(_stkparams);
+}
+
+double
+ExponentialContactForce::
+getInitialMuKinetic() const {
+    return _stkparams.getInitialMuKinetic();
+}
+
+void
+ExponentialContactForce::
+setInitialMuKinetic(double muKinetic) {
+    set_initial_mu_kinetic(muKinetic);
+    _stkparams.setInitialMuKinetic(muKinetic);
+    // Sync properties back in case constraints were applied
+    updateProperties();
+    if (_index.isValid()) updExponentialSpringForce().setParameters(_stkparams);
 }
 
 //-----------------------------------------------------------------------------
@@ -381,15 +426,15 @@ getSliding(const SimTK::State& state) const {
 Vec3
 ExponentialContactForce::
 getNormalForceElasticPart(const State& state, bool inGround) const {
-    return
-        getExponentialSpringForce().getNormalForceElasticPart(state, inGround);
+    return getExponentialSpringForce().
+                getNormalForceElasticPart(state, inGround);
 }
 
 Vec3
 ExponentialContactForce::
 getNormalForceDampingPart(const State& state, bool inGround) const {
-    return
-        getExponentialSpringForce().getNormalForceDampingPart(state, inGround);
+    return getExponentialSpringForce().
+                getNormalForceDampingPart(state, inGround);
 }
 
 Vec3
@@ -526,43 +571,72 @@ getRecordValues(const SimTK::State& state) const  {
 }
 
 //-----------------------------------------------------------------------------
+// Helper methods to sync properties with SimTK parameters
+//-----------------------------------------------------------------------------
+void
+ExponentialContactForce::
+updateParameters() {
+    const SimTK::Vec3 shape = get_exponential_shape_parameters();
+    _stkparams.setShapeParameters(shape[0], shape[1], shape[2]);
+    _stkparams.setNormalViscosity(get_normal_viscosity());
+    _stkparams.setMaxNormalForce(get_max_normal_force());
+    _stkparams.setFrictionElasticity(get_friction_elasticity());
+    _stkparams.setFrictionViscosity(get_friction_viscosity());
+    _stkparams.setSettleVelocity(get_settle_velocity());
+    _stkparams.setInitialMuStatic(get_initial_mu_static());
+    _stkparams.setInitialMuKinetic(get_initial_mu_kinetic());
+}
+
+void
+ExponentialContactForce::
+updateProperties() {
+    SimTK::Vec3 shape;
+    _stkparams.getShapeParameters(shape[0], shape[1], shape[2]);
+    set_exponential_shape_parameters(shape);
+    set_normal_viscosity(_stkparams.getNormalViscosity());
+    set_max_normal_force(_stkparams.getMaxNormalForce());
+    set_friction_elasticity(_stkparams.getFrictionElasticity());
+    set_friction_viscosity(_stkparams.getFrictionViscosity());
+    set_settle_velocity(_stkparams.getSettleVelocity());
+    set_initial_mu_static(_stkparams.getInitialMuStatic());
+    set_initial_mu_kinetic(_stkparams.getInitialMuKinetic());
+}
+
+//-----------------------------------------------------------------------------
 // Internal Testing
 //-----------------------------------------------------------------------------
 void
 ExponentialContactForce::
 assertPropertiesAndParametersEqual() const {
-    const ExponentialContactForce::Parameters& a = get_contact_parameters();
-    const SimTK::ExponentialSpringParameters& b = getParameters();
-
-    const SimTK::Vec3& vecA = a.get_exponential_shape_parameters();
+    const SimTK::Vec3& vecA = get_exponential_shape_parameters();
     SimTK::Vec3 vecB;
-    b.getShapeParameters(vecB[0], vecB[1], vecB[2]);
+    _stkparams.getShapeParameters(vecB[0], vecB[1], vecB[2]);
     SimTK_TEST_EQ(vecA[0], vecB[0]);
     SimTK_TEST_EQ(vecA[1], vecB[1]);
     SimTK_TEST_EQ(vecA[2], vecB[2]);
 
     double valA, valB;
-    valA = a.get_normal_viscosity();
-    valB = b.getNormalViscosity();
+    valA = get_normal_viscosity();
+    valB = _stkparams.getNormalViscosity();
     SimTK_TEST_EQ(valA, valB);
 
-    valA = a.get_friction_elasticity();
-    valB = b.getFrictionElasticity();
+    valA = get_friction_elasticity();
+    valB = _stkparams.getFrictionElasticity();
     SimTK_TEST_EQ(valA, valB);
 
-    valA = a.get_friction_viscosity();
-    valB = b.getFrictionViscosity();
+    valA = get_friction_viscosity();
+    valB = _stkparams.getFrictionViscosity();
     SimTK_TEST_EQ(valA, valB);
 
-    valA = a.get_settle_velocity();
-    valB = b.getSettleVelocity();
+    valA = get_settle_velocity();
+    valB = _stkparams.getSettleVelocity();
     SimTK_TEST_EQ(valA, valB);
 
-    valA = a.get_initial_mu_static();
-    valB = b.getInitialMuStatic();
+    valA = get_initial_mu_static();
+    valB = _stkparams.getInitialMuStatic();
     SimTK_TEST_EQ(valA, valB);
 
-    valA = a.get_initial_mu_kinetic();
-    valB = b.getInitialMuKinetic();
+    valA = get_initial_mu_kinetic();
+    valB = _stkparams.getInitialMuKinetic();
     SimTK_TEST_EQ(valA, valB);
 }
