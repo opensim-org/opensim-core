@@ -100,7 +100,7 @@ the contact plane or that pertains to calculation of the friction force.
 
 The terms 'contact plane', 'friction plane', and 'tangent plane' are synonymous
 with one another. They all refer to the plane defined by the x-axis and y-axis
-of the contact plane frame. Throughout the documentation, the term 
+of the contact plane frame. Throughout the documentation, the term
 'contact plane' is preferentially used.
 
 ### Normal Force (positive z-axis)
@@ -266,18 +266,6 @@ ecf->setName("myExponentialContactForce");
 model.addForce(ecf);
 \endcode
 
-The default contact parameters can be modified via a fourth, optional argument
-to the constructor. See "Customizable Parameters" below for details on how
-to customize the parameters of an ExponentialContactForce.
-
-\code{.cpp}
-SimTK::ExponentialSpringParameters myParams;
-myParams.setNormalViscosity(0.25);
-auto* ecf = new ExponentialContactForce(transform, frame, location, myParams);
-ecf->setName("myExponentialContactForce");
-model.addForce(ecf);
-\endcode
-
 ### Copy Constructor, Move Constructor, and the Copy Assignment Operator
 
 The copy constructor, move constructor, and copy assignment operator are all
@@ -293,51 +281,61 @@ object.
 ### Customizable Parameters
 
 Customizable Topology-stage parameters specifying the characteristics of the
-exponential spring are managed using SimTK::ExponentialSpringParameters.
-To customize any of the Topology-stage parameters on an ExponentialContactForce
-instance, you should
+exponential spring can be set using individual accessor methods. Each parameter
+has a getter and setter method. Setting any parameter will invalidate the
+model at Stage::Topology, requiring the model to be re-realized to Stage::Model
+before simulation or analysis can proceed. The parameters are stored internally
+in a SimTK::ExponentialSpringParameters object. This object will enforce certain
+constraints on the parameters (e.g., μₖ ≤ μₛ), and therefore internal parameter
+values may differ from the original property values.
 
-1) Create an ExponentialSpringParameters object. This object will come with
-parameters that are suitable for simulating contact in typical situations
-(e.g., foot contact during gait).
+The available parameters  are:
+
+- **Exponential Shape Parameters** (d0, d1, d2): Shape parameters for the
+  exponential that models the normal force.
+- **Normal Viscosity**: Viscosity in the normal direction.
+- **Max Normal Force**: Maximum allowed normal force.
+- **Friction Elasticity**: Elasticity of the friction spring.
+- **Friction Viscosity**: Viscosity of the friction spring.
+- **Settle Velocity**: Velocity below which static friction conditions are
+  triggered.
+- **Initial Mu Static**: Initial value of the static coefficient of friction.
+- **Initial Mu Kinetic**: Initial value of the kinetic coefficient of friction.
+
+#### Example: Setting Individual Parameters
 
 \code{.cpp}
-SimTK::ExponentialSpringParameters myParams;
+// Create an ExponentialContactForce instance
+auto* ecf = new ExponentialContactForce(transform, frame, location);
+ecf->setName("myExponentialContactForce");
+
+// Set individual parameters
+ecf->setNormalViscosity(0.25);           // Change normal viscosity
+ecf->setFrictionElasticity(25000.0);     // Increase friction elasticity
+ecf->setSettleVelocity(0.005);           // Lower settle velocity
+ecf->setInitialMuStatic(0.8);            // Set static friction coefficient
+ecf->setInitialMuKinetic(0.6);           // Set kinetic friction coefficient
+
+// Set exponential shape parameters
+SimTK::Vec3 shapeParams(0.005, 0.6, 1200.0);
+ecf->setExponentialShapeParameters(shapeParams);
+
+// Add to model and initialize system
+model.addForce(ecf);
+model.initSystem();
 \endcode
 
-2) Use any of the available 'set' methods in ExponentialSpringParamters to
-change the parameters of that object. For example,
+#### Example: Reading Parameter Values
 
 \code{.cpp}
-myParams.setNormalViscosity(0.25);
+// Get current parameter values
+double normalVisc = ecf->getNormalViscosity();
+double frictionElas = ecf->getFrictionElasticity();
+const SimTK::Vec3& shape = ecf->getExponentialShapeParameters();
+double d0 = shape[0];  // First shape parameter
+double d1 = shape[1];  // Second shape parameter
+double d2 = shape[2];  // Third shape parameter
 \endcode
-
-3) Use ExponentialContactForce::setParameters() to alter the parameters of one
-(or many) ExponentialContactForce instances. For example,
-
-\code{.cpp}
-SimTK::ExponentialContactForce spr1, spr2;
-spr1.setParameters(myParams);
-spr2.setParameters(myParams);
-\endcode
-
-4) Realize the system to Stage::Topology. When a new set of parameters is
-set on an ExponentialContactForce instance, as above in step 3, the System
-will be invalidated at Stage::Topology. The System must therefore be realized
-at Stage::Topology (and hence at Stage::Model) before a simulation can proceed.
-
-        system.realizeTopology();
-
-Note that each ExponentialContactForce instance owns its own private
-ExponentialSpringParameters object. The myParams object is just used to set
-the desired parameter values of the privately owned parameters object. It is
-fine for objects like myParams to go out of scope or for myParams objects
-allocated from the heap to be deleted.
-
-Therefore, also note that the parameter values possessed by an
-ExponentialContactForce instance do not necessarily correspond to the values
-held by a local instance of ExponentialSpringParameters until a call to
-ExponentialContactForce::setParameters() is made.
 
 The default values of the parameters are expressed in units of Newtons,
 meters, seconds, and kilograms; however, you may use an alternate set of
@@ -353,8 +351,6 @@ class OSIMSIMULATION_API ExponentialContactForce : public Force {
     OpenSim_DECLARE_CONCRETE_OBJECT(ExponentialContactForce, Force);
 
 public:
-    class Parameters;
-
     //-------------------------------------------------------------------------
     // Construction
     //-------------------------------------------------------------------------
@@ -374,14 +370,10 @@ public:
     space but measured from the Ground origin (G₀) and expressed in G
     (i.e., point_G = X_GP * point_P).
     @param frame The frame in which the station is located.
-    @param location The location of the station in the frame.
-    @param params Optional parameters object used to customize the
-    topology-stage characteristics of the contact model. */
+    @param location The location of the station in the frame. */
     explicit ExponentialContactForce(const SimTK::Transform& X_GP,
         const PhysicalFrame& frame,
-        const SimTK::Vec3& location,
-        SimTK::ExponentialSpringParameters params =
-        SimTK::ExponentialSpringParameters());
+        const SimTK::Vec3& location);
 
     //-------------------------------------------------------------------------
     // Utility
@@ -413,20 +405,101 @@ public:
         return get_contact_plane_transform();
     }
 
-    /** Set the customizable Topology-stage spring parameters.
-    Calling this method will invalidate the SimTK::System at
-    Stage::Toplogy and, thus, require the SimTK::System to be re-realized
-    to Stage::Model before simulation or analysis can be resumed. */
-    void setParameters(const SimTK::ExponentialSpringParameters& params);
-    /** Get the customizable topology-stage spring parameters. Use the copy
-    constructor or the assignment operator on the returned reference to create
-    a parameters object that can be modified. */
-    const SimTK::ExponentialSpringParameters& getParameters() const;
-
     /** Get the Station that is connected to the body frame and at which the
     contact force is applied. The Station is a subcomponent of this
     ExponentialContactForce instance. */
     const Station& getStation() const;
+
+    //-------------------------------------------------------------------------
+    // Accessors for contact parameters
+    //-------------------------------------------------------------------------
+    /** Get the exponential shape parameters (d0, d1, d2) for the normal force
+    from the internal SimTK::ExponentialSpringParameters object.
+    Default: d0 = 0.0065905 m, d1 = 0.5336 N, d2 = 1150.0/m. */
+    SimTK::Vec3 getExponentialShapeParameters() const;
+
+    /** Set the exponential shape parameters (d0, d1, d2) for the normal force.
+    Calling this method will invalidate the model at Stage::Topology and, thus,
+    require the model to be re-realized to Stage::Model before simulation or
+    analysis can be resumed. */
+    void setExponentialShapeParameters(const SimTK::Vec3& shapeParams);
+
+    /** Get the viscosity in the normal direction. Returns the value from
+    the internal SimTK::ExponentialSpringParameters object. Default: 0.5 s/m. */
+    double getNormalViscosity() const;
+
+    /** Set the viscosity in the normal direction.
+    Calling this method will invalidate the model at Stage::Topology and, thus,
+    require the model to be re-realized to Stage::Model before simulation or
+    analysis can be resumed. */
+    void setNormalViscosity(double viscosity);
+
+    /** Get the maximum allowed normal force. Returns the value from
+    the internal SimTK::ExponentialSpringParameters object.
+    Default: 100,000.0 N. */
+    double getMaxNormalForce() const;
+
+    /** Set the maximum allowed normal force.
+    Calling this method will invalidate the model at Stage::Topology and, thus,
+    and, thus, require the SimTK::System to be re-realized to Stage::Model
+    before simulation or analysis can be resumed. */
+    void setMaxNormalForce(double maxForce);
+
+    /** Get the elasticity of the friction spring. Returns the value from
+    the internal SimTK::ExponentialSpringParameters object. if constraints have
+    been applied. Default: 20,000.0 N/m. */
+    double getFrictionElasticity() const;
+
+    /** Set the elasticity of the friction spring.
+    Calling this method will invalidate the model at Stage::Topology and, thus,
+    and, thus, require the model to be re-realized to Stage::Model before
+    simulation or analysis can be resumed. */
+    void setFrictionElasticity(double elasticity);
+
+    /** Get the viscosity of the friction spring. Returns the value from
+    the internal SimTK::ExponentialSpringParameters object. if constraints have
+    been applied. Default: 282.8427 N*s/m. */
+    double getFrictionViscosity() const;
+
+    /** Set the viscosity of the friction spring.
+    Calling this method will invalidate the model at Stage::Topology and, thus,
+    require the model to be re-realized to Stage::Model before simulation or
+    analysis can be resumed. */
+    void setFrictionViscosity(double viscosity);
+
+    /** Get the settle velocity (velocity below which static friction conditions
+    are triggered). Returns the value from the internal
+    SimTK::ExponentialSpringParameters object. Default: 0.01 m/s. */
+    double getSettleVelocity() const;
+
+    /** Set the settle velocity (velocity below which static friction conditions
+    are triggered).
+    Calling this method will invalidate the model at Stage::Topology and, thus,
+    require the model to be re-realized to Stage::Model before simulation or
+    analysis can be resumed. */
+    void setSettleVelocity(double velocity);
+
+    /** Get the initial value of the static coefficient of friction. Returns the
+    value from SimTK::ExponentialSpringParameters, which may differ from the
+    property value after the constraint that μₖ ≤ μₛ is enforced. */
+    double getInitialMuStatic() const;
+
+    /** Set the initial value of the static coefficient of friction.
+    Calling this method will invalidate the model at Stage::Topology and, thus,
+    require the model to be re-realized to Stage::Model before simulation or
+    analysis can be resumed. */
+    void setInitialMuStatic(double muStatic);
+
+    /** Get the initial value of the kinetic coefficient of friction. Returns
+    the value from SimTK::ExponentialSpringParameters, which may differ from the
+    property value after the constraint that μₖ ≤ μₛ is enforced. */
+    double getInitialMuKinetic() const;
+
+    /** Set the initial value of the kinetic coefficient of friction.
+    Calling this method will invalidate the model at Stage::Topology and, thus,
+    require the model to be re-realized to Stage::Model before simulation or
+    analysis can be resumed. */
+    void setInitialMuKinetic(double muKinetic);
 
     //-------------------------------------------------------------------------
     // Accessors for Discrete States
@@ -489,8 +562,8 @@ public:
     /** Get the Sliding state of this exponential contact instance after it
     has been updated to be consistent with the System State. The Sliding state
     lies between 0.0 and 1.0, where 0.0 indicates that p₀ (the elastic anchor)
-    point is "static" or fixed in place, and 1.0 indicates that p₀ is "kinetic" 
-    or sliding. The System must be realized to Stage::Dynamics to access this 
+    point is "static" or fixed in place, and 1.0 indicates that p₀ is "kinetic"
+    or sliding. The System must be realized to Stage::Dynamics to access this
     data.
     @param state State object on which to base the calculations. */
     SimTK::Real getSliding(const SimTK::State& state) const;
@@ -614,7 +687,7 @@ public:
     method differs from getStation() in terms of the frame in which the
     station is expressed. getStationPosition() expresses the point either in the
     Ground frame or in the frame of the contact plane. getStation() expresses
-    the point in the frame of the MobilizedBody.  The system must be realized to 
+    the point in the frame of the MobilizedBody.  The system must be realized to
     Stage::Position to access this data.
     @param state State object on which to base the calculations.
     @param inGround Flag for choosing the frame in which the returned quantity
@@ -651,6 +724,19 @@ public:
     /** Assess consistency between Properties and internal parameters. */
     void assertPropertiesAndParametersEqual() const;
 
+    /** Check if the properties of this ExponentialContactForce instance are
+    equal to those of another instance. This compares all contact parameters,
+    the contact plane transform, and the station location and parent frame.
+    @param other The ExponentialContactForce instance to compare against.
+    @return true if all properties are equal, false otherwise. */
+    bool isPropertiesEqual(const ExponentialContactForce& other) const;
+
+    /** Check if the parameters of this ExponentialContactForce instance are
+    equal to those of another instance.
+    @param other The ExponentialContactForce instance to compare against.
+    @return true if all parameters are equal, false otherwise. */
+    bool isParametersEqual(const ExponentialContactForce& other) const;
+
 protected:
     /** Connect to the OpenSim Model. */
     void extendConnectToModel(Model& model) override;
@@ -671,68 +757,11 @@ private:
     // PROPERTIES
     //-------------------------------------------------------------------------
     OpenSim_DECLARE_PROPERTY(contact_plane_transform, SimTK::Transform,
-        "Orientation and location of the contact plane wrt Ground. The positive z-axis of the contact plane defines the normal.");
-    OpenSim_DECLARE_PROPERTY(contact_parameters,
-        ExponentialContactForce::Parameters,
-        "Customizable topology-stage parameters.");
-    OpenSim_DECLARE_PROPERTY(station, Station,
-        "The station at which the contact force is applied.");
-
-    void setNull();
-    void constructProperties();
-    const SimTK::ExponentialSpringForce& getExponentialSpringForce() const;
-    SimTK::ExponentialSpringForce& updExponentialSpringForce();
-
-}; // END of class ExponentialContactForce
-
-
-//=============================================================================
-// ExponentialContactForce::Parameters
-//=============================================================================
-/** This subclass helps manage the topology-stage parameters of the underlying
-SimTK::ExponentialSpringForce instance. These parameters (e.g., elasticity,
-viscosity, etc.) determine the force-producing characteristics of the
-exponential spring force.
-
-This class does 3 things:
-
-- Implements an OpenSim Property for each of the customizable contact
-parameters, enabling those parameters to be serialized and de-serialized to
-and from an OpenSim Model file.
-
-- Provides a member variable (_stkparams) for storing user-set parameters
-prior to the existance of the underlying SimTK::ExponentialSpringForce object.
-During model initialization, when the SimTK::ExponetialSpringForce object is
-constructed, the user-set properties/parameters are then pushed to that object.
-
-- Ensures that the values held by the OpenSim properties are kept consistent
-with the values held by a SimTK::ExponentialSpringParameters object.
-Depending on the circumstance, parameters are updated to match properties, or
-properties are updated to match parameters.
-
-To change the values of individual parameters programmatically:
-```
-    // Get a modifiable copy of the underlying parameter object
-    // (`exp_contact` is an instance of ExponentialContactForce)
-    SimTK::ExponentialSpringParameters p = exp_contact.getParameters();
-
-    // Make the desired changes to the copy using the appropropriate setters
-    p.setFrictionElasticity(kpNew);
-    p.setFrictionViscosity(kvNew);
-    ...
-
-    // Call ExponentialContactForce::setParameters() to push the new
-    // parameters to the underlying SimTK::ExponentialSpringForce object.
-    exp_contact.setParameters(p);
-```
-
-@author F. C. Anderson **/
-class ExponentialContactForce::Parameters : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ExponentialContactForce::Parameters, Object);
-
-public:
+        "Orientation and location of the contact plane wrt Ground. The "
+        "positive z-axis of the contact plane defines the normal.");
     OpenSim_DECLARE_PROPERTY(exponential_shape_parameters, SimTK::Vec3,
-        "Shape parameters for the exponential that models the normal force: d0 (0.0065905 m), d1 (0.5336 N), d2 (1150.0/m).");
+        "Shape parameters for the exponential that models the normal force: "
+        "d0 (0.0065905 m), d1 (0.5336 N), d2 (1150.0/m).");
     OpenSim_DECLARE_PROPERTY(normal_viscosity, double,
         "Viscosity in the normal direction (0.5 s/m).");
     OpenSim_DECLARE_PROPERTY(max_normal_force, double,
@@ -741,45 +770,30 @@ public:
         "Elasticity of the friction spring (20,000.0 N/m).");
     OpenSim_DECLARE_PROPERTY(friction_viscosity, double,
         "Viscosity of the friction spring (282.8427 N*s/m).");
-     OpenSim_DECLARE_PROPERTY(settle_velocity, double,
-        "Velocity below which static friction conditions are triggered (0.01 m/s) .");
+    OpenSim_DECLARE_PROPERTY(settle_velocity, double,
+        "Velocity below which static friction conditions are triggered "
+        "(0.01 m/s).");
     OpenSim_DECLARE_PROPERTY(initial_mu_static, double,
         "Initial value of the static coefficient of friction.");
     OpenSim_DECLARE_PROPERTY(initial_mu_kinetic, double,
         "Initial value of the kinetic coefficient of friction.");
+    OpenSim_DECLARE_PROPERTY(station, Station,
+        "The station at which the contact force is applied.");
 
-public:
-    /** Default constructor. */
-    Parameters();
-
-    /** Construct an instance based on a SimTK::ExponentialSpringParameters
-    object. */
-    Parameters(const SimTK::ExponentialSpringParameters& params);
-
-    /** Set the underlying SimTK parameters. This method is used to maintain
-    consistency between OpenSim Properties and the underlying parameters.
-    The typical user of OpenSim::ExponentialContactForce will not have reason
-    to call this method. For setting contact parameters, the typical user
-    should call OpenSim::ExponentialContactForce::setParameters(). */
-    void setSimTKParameters(const SimTK::ExponentialSpringParameters& params);
-
-    /** Get a read-only reference to the underlying SimTK parameters. This
-    method is used to maintain consistency between OpenSim Properties and the
-    underlying parameters. The typical user of OpenSim::ExponentialContactForce
-    will not have reason to call this method. For getting contact parameters,
-    the typical user should call
-    OpenSim::ExponentialContactForce::getParameters() */
-    const SimTK::ExponentialSpringParameters& getSimTKParameters() const;
-
-private:
     void setNull();
     void constructProperties();
+    const SimTK::ExponentialSpringForce& getExponentialSpringForce() const;
+    SimTK::ExponentialSpringForce& updExponentialSpringForce();
+
+    // Helper methods to sync properties with SimTK parameters
     void updateParameters();
     void updateProperties();
-    void updateFromXMLNode(SimTK::Xml::Element& node,
-        int versionNumber) override;
-    SimTK::ExponentialSpringParameters _stkparams;
-};
+
+    // Member variable to store SimTK parameters before the underlying
+    // SimTK::ExponentialSpringForce object is constructed
+    mutable SimTK::ExponentialSpringParameters _stkparams;
+
+}; // END of class ExponentialContactForce
 
 } // end of namespace OpenSim
 
