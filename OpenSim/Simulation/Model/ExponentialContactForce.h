@@ -32,6 +32,7 @@ namespace OpenSim {
 //=============================================================================
 // ExponentialContactForce
 //=============================================================================
+#ifdef SWIG
 /** Class ExponentialContactForce uses an "exponential spring" as a means
 of modeling contact of a specified point on a Body with a contact
 plane that is fixed to Ground. This specified point is referred to in this
@@ -347,6 +348,7 @@ interactions. For the full descriptions of the contact parameters see the
 Simbody API documentation for SimTK::ExponentialSpringParameters.
 
 @author F. C. Anderson **/
+#endif
 class OSIMSIMULATION_API ExponentialContactForce : public Force {
     OpenSim_DECLARE_CONCRETE_OBJECT(ExponentialContactForce, Force);
 
