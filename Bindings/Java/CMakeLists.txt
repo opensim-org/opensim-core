@@ -107,10 +107,11 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_SOURCE_DIR}/JavaLogSink.java
             ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
-    COMMAND ${JAVA_COMPILE}
-            org/opensim/modeling/*.java 
+    COMMAND ${Java_JAVAC_EXECUTABLE}
+            -encoding UTF-8
             -source 1.8 -target 1.8
-    COMMAND ${JAVA_ARCHIVE} -cvf ${SWIG_JAVA_JAR_NAME}
+            org/opensim/modeling/*.java
+    COMMAND ${Java_JAR_EXECUTABLE} -cvf ${SWIG_JAVA_JAR_NAME}
             org/opensim/modeling/*.class
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
     COMMENT "Compiling Java sources and creating jar archive.")
