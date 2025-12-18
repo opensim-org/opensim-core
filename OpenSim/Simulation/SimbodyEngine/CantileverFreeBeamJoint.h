@@ -37,12 +37,12 @@ class Model;
  *
  * This joint has only three mobilities (all rotational), but the parent frame
  * translates relative to the child frames as a specified function of rotational
- * generalized coordinates q₀, q₁, q₂. The specified function is based on the
+ * generalized coordinates q0, q1, q2. The specified function is based on the
  * deflection shape of a cantilever-free beam, whose free end is subjected to a
  * transverse point load. Although this shape is inspired by a cantilever-free
  * beam, this joint does not actually model a beam, in that there is no elastic
- * restoring forces/torques when q₀ or q₁ or q₂ ≠ 0. In the undeformed state
- * (when q₀ = q₁ = q₂ = 0), the position from the child frame's origin to the
+ * restoring forces/torques when q0 or q1 or q2 ≠ 0. In the undeformed state
+ * (when q0 = q1 = q2 = 0), the position from the child frame's origin to the
  * parent frame's origin is the length of the beam in the Z direction.
  *
  * The generalized coordinates q are the same as for a Gimbal joint, that is,
@@ -50,20 +50,20 @@ class Model;
  * this mobilizer are also the same as for a Gimbal joint: the time derivatives
  * of the generalized coordinates, that is, u = qdot.
  *
- * The first two rotations, q₀ and q₁, induce translations according to the beam
+ * The first two rotations, q0 and q1, induce translations according to the beam
  * deflection formula for a cantilever beam under a transverse point load
  * applied at the end of the beam. The change in the beam's endpoint position in
  * the Fz direction is governed by apparent shortening of a beam due to bending.
  * The components of the position vector from child frame's origin to the parent
- * frame's origin, p₀, p₁, and p₂, are given by:
+ * frame's origin, p0, p1, and p2, are given by:
  *
- * p₀ = 2⁄3 q₁ L
+ * p0 = 2⁄3 q1 L
  *
- * p₁ = −2⁄3 q₀ L
+ * p1 = −2⁄3 q0 L
  *
- * p₂ = L − 4⁄15 (q₀² + q₁²) L
+ * p2 = L − 4⁄15 (q0² + q1²) L
  *
- * The third rotation, q₂, induces a rotation about the parent frame's Z axis,
+ * The third rotation, q2, induces a rotation about the parent frame's Z axis,
  * which is always tangent to the beam at the beam's endpoint.
  *
  * Note that while the endpoint shortens in the Fz direction, the total length
@@ -78,7 +78,7 @@ class Model;
  * modeling adjustments.
  *
  * While this mobilizer provides arbitrary orientation, the Euler angle
- * derivatives are singular when q₁ (the middle rotation) is near ±π/2 radians.
+ * derivatives are singular when q1 (the middle rotation) is near ±π/2 radians.
  * That means you should not attempt to do any dynamics in that configuration.
  */
 class OSIMSIMULATION_API CantileverFreeBeamJoint : public Joint {
