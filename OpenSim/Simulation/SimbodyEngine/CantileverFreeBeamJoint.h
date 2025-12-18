@@ -57,11 +57,11 @@ class Model;
  * The components of the position vector from child frame's origin to the parent
  * frame's origin, p0, p1, and p2, are given by:
  *
- * p0 = 2⁄3 q1 L
+ * p0 = 2/3 q1 L
  *
- * p1 = −2⁄3 q0 L
+ * p1 = -2/3 q0 L
  *
- * p2 = L − 4⁄15 (q0² + q1²) L
+ * p2 = L − 4/15 (q0² + q1²) L
  *
  * The third rotation, q2, induces a rotation about the parent frame's Z axis,
  * which is always tangent to the beam at the beam's endpoint.
