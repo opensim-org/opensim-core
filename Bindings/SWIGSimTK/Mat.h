@@ -35,6 +35,12 @@
 
 namespace SimTK {
 
+#ifdef SWIG
+// Forward declaration to help SWIG understand Mat always requires template
+// arguments
+template <int M, int N, class ELT=double, int CS=M, int RS=1> class Mat;
+#endif
+
 /** This class represents a small matrix whose size is known at compile time, 
 containing elements of any Composite Numerical Type (CNT) and engineered to
 have no runtime overhead whatsoever. Memory layout defaults to packed,
@@ -257,10 +263,17 @@ public:
 
     /** Copy constructor copies only the elements that are present and does
     not touch any unused memory space between them if they are not packed. **/
+#ifdef SWIG
+    Mat(const Mat<M,N,ELT,CS,RS>& src) {
+        for (int j=0; j<N; ++j)
+            (*this)(j) = src(j);
+    }
+#else
     Mat(const Mat& src) {
         for (int j=0; j<N; ++j)
             (*this)(j) = src(j);
     }
+#endif
 #ifndef SWIG
     /** Copy assignment copies only the elements that are present and does
     not touch any unused memory space between them if they are not packed. 

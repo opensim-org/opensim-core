@@ -118,6 +118,7 @@
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
 #include "SimbodyEngine/ConstantCurvatureJoint.h"
+#include "SimbodyEngine/CantileverFreeBeamJoint.h"
 
 #include "AssemblySolver.h"
 #include "CoordinateReference.h"
