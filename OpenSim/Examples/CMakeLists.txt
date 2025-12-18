@@ -7,6 +7,7 @@ if(BUILD_API_EXAMPLES)
   install(DIRECTORY ExampleMain
         ExampleHopperDevice
         ExampleLuxoMuscle
+        ExampleSimpleElbow
         ControllerExample
         MuscleExample
         CustomActuatorExample
@@ -19,6 +20,7 @@ if(BUILD_API_EXAMPLES)
         DESTINATION "${OPENSIM_INSTALL_CPPEXDIR}")
 
     add_subdirectory(ExampleHopperDevice)
+    add_subdirectory(ExampleSimpleElbow)
     add_subdirectory(SymbolicExpressionReporter)
     add_subdirectory(DataTable)
     add_subdirectory(DataAdapter)
