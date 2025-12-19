@@ -74,8 +74,8 @@ double ExponentialCoordinateLimitForce::calcForce(const SimTK::State& s) const {
     const double& q_lower = get_lower_limit();
     const double& q_upper = get_upper_limit();
 
-    return s_lower[0]*std::exp(s_lower[1]*(q_lower - q)) +
-          -s_upper[0]*std::exp(-s_upper[1]*(q_upper + q));
+    return s_lower[0]*std::exp(-s_lower[1]*(q - q_lower)) +
+          -s_upper[0]*std::exp(s_upper[1]*(q - q_upper));
 }
 
 double ExponentialCoordinateLimitForce::computePotentialEnergy(
@@ -87,8 +87,8 @@ double ExponentialCoordinateLimitForce::computePotentialEnergy(
     const double& q_lower = get_lower_limit();
     const double& q_upper = get_upper_limit();
 
-    return -s_lower[0]*s_lower[1]*std::exp(s_lower[1]*(q_lower - q)) +
-           -s_upper[0]*s_upper[1]*std::exp(-s_upper[1]*(q_upper + q));
+    return -s_lower[0]*s_lower[1]*std::exp(-s_lower[1]*(q - q_lower)) +
+           -s_upper[0]*s_upper[1]*std::exp(s_upper[1]*(q - q_upper));
 }
 
 //=============================================================================

@@ -28,10 +28,25 @@
 namespace OpenSim {
 
 /**
- * A class for modeling a coordinate limit force using exponential spring
- * functions.
+ * A class for modeling coordinate limit forces using exponential spring
+ * functions. This class is based on the exponential functions used to model the
+ * contributions from ligaments described in the following publication:
  *
- * \image html coordinate_limit_force.png
+ *     Anderson F.C. and Pandy M.G. (1999). A dynamics optimization
+ *     solution for vertical jumping in three dimensions. Computer Methods
+ *     in Biomechanics and Biomedical Engineering 2(3):201-231.
+ *
+ * The limit force in this class is defined by the equation
+ *
+ * f = αₗ exp(−βₗ(q − qₗ)) − αᵤ exp(βᵤ(q − qᵤ))
+ *
+ * For example, if the lower shape parameters are αₗ = 50, βₗ = 75, the upper
+ * shape parameters are αᵤ = 20, βᵤ = 25, and the lower and upper coordinate
+ * limits are qₗ = -0.2 and qᵤ = 0.3, then the limit force curve will take the
+ * following shape:
+ *
+ * \image html exponential_coordinate_limit_force.png width=100%
+ *
  */
 class OSIMSIMULATION_API ExponentialCoordinateLimitForce : public ForceProducer {
 OpenSim_DECLARE_CONCRETE_OBJECT(ExponentialCoordinateLimitForce, ForceProducer);
