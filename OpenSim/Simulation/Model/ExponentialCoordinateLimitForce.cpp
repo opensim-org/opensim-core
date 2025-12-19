@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                   OpenSim:  ExponentialCoordinateForce.cpp                 *
+ *                  OpenSim:  ExponentialCoordinateLimitForce.cpp             *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "ExponentialCoordinateForce.h"
+#include "ExponentialCoordinateLimitForce.h"
 
 #include <OpenSim/Simulation/Model/ForceConsumer.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -32,11 +32,11 @@ using namespace OpenSim;
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
-ExponentialCoordinateForce::ExponentialCoordinateForce() {
+ExponentialCoordinateLimitForce::ExponentialCoordinateLimitForce() {
     constructProperties();
 }
 
-void ExponentialCoordinateForce::constructProperties() {
+void ExponentialCoordinateLimitForce::constructProperties() {
     constructProperty_coordinate("");
     constructProperty_lower_limit(0.0);
     constructProperty_upper_limit(0.0);
@@ -47,7 +47,7 @@ void ExponentialCoordinateForce::constructProperties() {
 //=============================================================================
 // METHODS
 //=============================================================================
-void ExponentialCoordinateForce::extendConnectToModel(Model& aModel) {
+void ExponentialCoordinateLimitForce::extendConnectToModel(Model& aModel) {
     Super::extendConnectToModel(aModel);
 
     const auto& coordinateNameOrPath = get_coordinate();
@@ -66,35 +66,35 @@ void ExponentialCoordinateForce::extendConnectToModel(Model& aModel) {
 //=============================================================================
 // COMPUTATIONS
 //=============================================================================
-double ExponentialCoordinateForce::calcForce(const SimTK::State& s) const {
+double ExponentialCoordinateLimitForce::calcForce(const SimTK::State& s) const {
     double q = _coord->getValue(s);
 
     const SimTK::Vec2& s_lower = get_lower_shape_parameters();
     const SimTK::Vec2& s_upper = get_upper_shape_parameters();
     const double& q_lower = get_lower_limit();
-    const double q_upper = get_upper_limit();
+    const double& q_upper = get_upper_limit();
 
     return s_lower[0]*std::exp(s_lower[1]*(q_lower - q)) +
-          -s_upper[0]*std::exp(s_upper[1]*(q - q_upper));
+          -s_upper[0]*std::exp(-s_upper[1]*(q_upper + q));
 }
 
-double ExponentialCoordinateForce::computePotentialEnergy(
+double ExponentialCoordinateLimitForce::computePotentialEnergy(
         const SimTK::State& s) const {
     double q = _coord->getValue(s);
 
     const SimTK::Vec2& s_lower = get_lower_shape_parameters();
     const SimTK::Vec2& s_upper = get_upper_shape_parameters();
     const double& q_lower = get_lower_limit();
-    const double q_upper = get_upper_limit();
+    const double& q_upper = get_upper_limit();
 
     return -s_lower[0]*s_lower[1]*std::exp(s_lower[1]*(q_lower - q)) +
-          -s_upper[0]*s_upper[1]*std::exp(s_upper[1]*(q - q_upper));
+           -s_upper[0]*s_upper[1]*std::exp(-s_upper[1]*(q_upper + q));
 }
 
 //=============================================================================
 // FORCE PRODUCER INTERFACE
 //=============================================================================
-void ExponentialCoordinateForce::implProduceForces(const SimTK::State& s,
+void ExponentialCoordinateLimitForce::implProduceForces(const SimTK::State& s,
     ForceConsumer& forceConsumer) const
 {
     forceConsumer.consumeGeneralizedForce(s, *_coord, calcForce(s));
@@ -103,14 +103,14 @@ void ExponentialCoordinateForce::implProduceForces(const SimTK::State& s,
 //=============================================================================
 // REPORTING
 //=============================================================================
-Array<std::string> ExponentialCoordinateForce::getRecordLabels() const {
+Array<std::string> ExponentialCoordinateLimitForce::getRecordLabels() const {
     OpenSim::Array<std::string> labels("");
     labels.append(getName());
     labels.append("PotentialEnergy");
     return labels;
 }
 
-Array<double> ExponentialCoordinateForce::getRecordValues(
+Array<double> ExponentialCoordinateLimitForce::getRecordValues(
         const SimTK::State& state) const {
     OpenSim::Array<double> values(0.0, 0, 2);
     values.append(calcForce(state));

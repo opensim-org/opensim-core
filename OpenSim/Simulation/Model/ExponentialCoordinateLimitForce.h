@@ -1,7 +1,7 @@
-#ifndef OPENSIM_EXPONENTIAL_COORDINATE_FORCE_H_
-#define OPENSIM_EXPONENTIAL_COORDINATE_FORCE_H_
+#ifndef OPENSIM_EXPONENTIAL_COORDINATE_LIMIT_FORCE_H_
+#define OPENSIM_EXPONENTIAL_COORDINATE_LIMIT_FORCE_H_
 /* -------------------------------------------------------------------------- *
- *                   OpenSim:  ExponentialCoordinateForce.h                   *
+ *                  OpenSim:  ExponentialCoordinateLimitForce.h               *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -30,9 +30,11 @@ namespace OpenSim {
 /**
  * A class for modeling a coordinate limit force using exponential spring
  * functions.
+ *
+ * \image html coordinate_limit_force.png
  */
-class OSIMSIMULATION_API ExponentialCoordinateForce : public ForceProducer {
-OpenSim_DECLARE_CONCRETE_OBJECT(ExponentialCoordinateForce, ForceProducer);
+class OSIMSIMULATION_API ExponentialCoordinateLimitForce : public ForceProducer {
+OpenSim_DECLARE_CONCRETE_OBJECT(ExponentialCoordinateLimitForce, ForceProducer);
 public:
 //==============================================================================
 // PROPERTIES
@@ -55,7 +57,7 @@ public:
 // METHODS
 //=============================================================================
     /** Default constructor */
-    ExponentialCoordinateForce();
+    ExponentialCoordinateLimitForce();
 
     // COMPUTATIONS
     double calcForce(const SimTK::State& s) const;
@@ -78,7 +80,7 @@ private:
 
     SimTK::ReferencePtr<const Coordinate> _coord;
 
-};  // class ExponentialCoordinateForce
+};  // class ExponentialCoordinateLimitForce
 
 } // namespace OpenSim
 
