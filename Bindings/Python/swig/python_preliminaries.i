@@ -48,3 +48,22 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 %}
 };
 %enddef
+
+// Support for pathlib.Path objects
+// ================================
+%typemap(in) std::string const & (std::string temp, int res = SWIG_OLDOBJ) {
+    if (PyUnicode_Check($input)) {
+        temp = std::string(PyUnicode_AsUTF8($input));
+        $1 = &temp;
+    } else {
+        PyObject* fspath = PyOS_FSPath($input);
+        if (fspath != NULL) {
+            temp = std::string(PyUnicode_AsUTF8(fspath));
+            Py_DECREF(fspath);
+            $1 = &temp;
+        } else {
+            PyErr_Clear();
+            %argument_fail(SWIG_TypeError, "std::string const &", $symname, $argnum);
+        }
+    }
+}
