@@ -38,6 +38,7 @@
 //     12. ExpressionBasedBushingForce
 //     13. ExpressionBasedPathForce
 //     14. Blankevoort1991Ligament
+//     15. ExponentialCoordinateLimitForce
 //
 //     Add tests here as Forces are added to OpenSim
 //
@@ -2403,4 +2404,142 @@ TEST_CASE("testBlankevoort1991Ligament") {
         "Expected the strain in the Blankevoort1991Ligament at the input "
         "reference state be equal to the strain value input "
         "to setSlackLengthFromReferenceStrain().");
+}
+
+TEST_CASE("testExponentialCoordinateLimitForce") {
+
+    // Create the model.
+    Model model;
+    model.setName("ExponentialCoordinateLimitForceTest");
+    model.setGravity(gravity_vec);
+
+    // Add a ball body.
+    double mass = 1.0;
+    Body* ball = new Body("ball", mass, Vec3(0),
+        mass * SimTK::Inertia::sphere(0.25));
+    ball->attachGeometry(new Sphere(0.25));
+    model.addBody(ball);
+
+    // Add a slider joint.
+    const Ground& ground = model.getGround();
+    SliderJoint* slider = new SliderJoint("slider",
+            ground, Vec3(0), Vec3(0, 0, SimTK::Pi / 2),
+            *ball, Vec3(0), Vec3(0, 0, SimTK::Pi / 2));
+    auto& sliderCoord = slider->updCoordinate();
+    sliderCoord.setName("height");
+    sliderCoord.setRangeMin(0.1);
+    sliderCoord.setRangeMax(2.0);
+    model.addJoint(slider);
+
+    // Add a ExponentialCoordinateLimitForce with symmetrical properties to the
+    // model..
+    SimTK::Vec2 shape(50.0, 75.0);
+    double lowerLimit = 0.1;
+    double upperLimit = 2.0;
+    auto* limitForce = new ExponentialCoordinateLimitForce("height", lowerLimit,
+        upperLimit, shape, shape);
+    limitForce->setName("height_limit_force");
+    model.addForce(limitForce);
+
+    // Finalize the model.
+    model.finalizeConnections();
+    model.print("ExponentialCoordinateLimitForceTest.osim");
+
+    // Test cases.
+    // -----------
+    SECTION("Serialization and deserialization") {
+        Model loadedModel("ExponentialCoordinateLimitForceTest.osim");
+        CHECK(loadedModel == model);
+    }
+
+    SECTION("Copying") {
+        auto copiedModel = std::unique_ptr<Model>{model.clone()};
+        CHECK(*copiedModel == model);
+    }
+
+    SECTION("Within range") {
+        const Coordinate& height = model.getCoordinateSet()[0];
+        SimTK::State state = model.initSystem();
+        height.setValue(state, 1.0);
+        model.realizeAcceleration(state);
+        const auto& eclf = model.getComponent<ExponentialCoordinateLimitForce>(
+                "/forceset/height_limit_force");
+
+        REQUIRE_THAT(eclf.calcForce(state),
+            Catch::Matchers::WithinAbs(0.0, 1e-6));
+        REQUIRE_THAT(eclf.computePotentialEnergy(state),
+            Catch::Matchers::WithinAbs(0.0, 1e-6));
+    }
+
+    SECTION("At lower limit") {
+        const Coordinate& height = model.getCoordinateSet()[0];
+        SimTK::State state = model.initSystem();
+        height.setValue(state, 0.1);
+        model.realizeAcceleration(state);
+        const auto& eclf = model.getComponent<ExponentialCoordinateLimitForce>(
+                "/forceset/height_limit_force");
+
+        REQUIRE_THAT(eclf.calcForce(state),
+            Catch::Matchers::WithinAbs(shape[0], 1e-6));
+        REQUIRE_THAT(eclf.computePotentialEnergy(state),
+            Catch::Matchers::WithinAbs(-shape[0]*shape[1], 1e-6));
+    }
+
+    SECTION("At upper limit") {
+        const Coordinate& height = model.getCoordinateSet()[0];
+        SimTK::State state = model.initSystem();
+        height.setValue(state, 2.0);
+        model.realizeAcceleration(state);
+        const auto& eclf = model.getComponent<ExponentialCoordinateLimitForce>(
+                "/forceset/height_limit_force");
+
+        REQUIRE_THAT(eclf.calcForce(state),
+            Catch::Matchers::WithinAbs(-shape[0], 1e-6));
+        REQUIRE_THAT(eclf.computePotentialEnergy(state),
+            Catch::Matchers::WithinAbs(-shape[0]*shape[1], 1e-6));
+    }
+
+    auto forceFunction = [shape, lowerLimit, upperLimit](double height){
+        return shape[0]*std::exp(-shape[1]*(height - lowerLimit)) +
+               -shape[0]*std::exp(shape[1]*(height - upperLimit));
+    };
+
+    auto energyFunction = [shape, lowerLimit, upperLimit](double height) {
+        return -shape[0]*shape[1]*std::exp(-shape[1]*(height - lowerLimit)) +
+               -shape[0]*shape[1]*std::exp(shape[1]*(height - upperLimit));
+    };
+
+    SECTION("Exceeding lower limit") {
+        const Coordinate& height = model.getCoordinateSet()[0];
+        SimTK::State state = model.initSystem();
+        height.setValue(state, 0.0);
+        model.realizeAcceleration(state);
+        const auto& eclf = model.getComponent<ExponentialCoordinateLimitForce>(
+                "/forceset/height_limit_force");
+
+        double force = forceFunction(0.0);
+        REQUIRE_THAT(eclf.calcForce(state),
+            Catch::Matchers::WithinAbs(force, 1e-6));
+
+        double PE = energyFunction(0.0);
+        REQUIRE_THAT(eclf.computePotentialEnergy(state),
+            Catch::Matchers::WithinAbs(PE, 1e-6));
+    }
+
+    SECTION("Exceeding upper limit") {
+        const Coordinate& height = model.getCoordinateSet()[0];
+        SimTK::State state = model.initSystem();
+        height.setValue(state, 3.0);
+        model.realizeAcceleration(state);
+        const auto& eclf = model.getComponent<ExponentialCoordinateLimitForce>(
+                "/forceset/height_limit_force");
+
+        double force = forceFunction(3.0);
+        REQUIRE_THAT(eclf.calcForce(state),
+            Catch::Matchers::WithinAbs(force, 1e-6));
+
+        double PE = energyFunction(3.0);
+        REQUIRE_THAT(eclf.computePotentialEnergy(state),
+            Catch::Matchers::WithinAbs(PE, 1e-6));
+    }
 }
