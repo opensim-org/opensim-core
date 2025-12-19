@@ -44,6 +44,16 @@ using namespace SimTK;
     }
 }
 
+// Directors
+// =========
+%feature("director") OpenSim::Analysis;
+// TODO quick way to allow printing to XML.
+%feature("nodirector") OpenSim::Analysis::updateXMLNode;
+%feature("director") OpenSim::ModelComponent;
+%feature("nodirector") OpenSim::ModelComponent::updateXMLNode;
+// This is a `final` method, and SWIG doesn't know to avoid them for directors.
+%feature("nodirector") OpenSim::ModelComponent::extendConnect;
+
 // Rename
 // ======
 
