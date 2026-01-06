@@ -38,6 +38,7 @@ performance and stability in wrapping solutions.
 - Breaking: removed the `operator==` and `operator<` overloads in `ControlLinearNode` and replaced usages with the equivalent utility functions `isEqual()` and `isLessThan()`. (#4095)
 - Made various changes to support builds on Ubuntu 24.04 with GCC 13. (#4186)
 - Support building PYPI distribution python wheels on all platforms, upgrade builds to python 3.11 and numpy 2.0. (#4189)
+- Added `ExponentialCoordinateLimitForce`, a force element for enforcing coordinate limits using exponential spring functions. (#4231)
 
 
 v4.5.2

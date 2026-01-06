@@ -108,7 +108,7 @@ add_custom_command(
             ${CMAKE_CURRENT_SOURCE_DIR}/JavaLogSink.java
             ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
     COMMAND ${JAVA_COMPILE}
-            org/opensim/modeling/*.java 
+            org/opensim/modeling/*.java
             -source 1.8 -target 1.8
     COMMAND ${JAVA_ARCHIVE} -cvf ${SWIG_JAVA_JAR_NAME}
             org/opensim/modeling/*.class
