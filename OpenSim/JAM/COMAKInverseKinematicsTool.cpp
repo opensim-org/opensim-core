@@ -192,13 +192,6 @@ bool COMAKInverseKinematicsTool::initialize()
         _model = Model(get_model_file());
     }
 
-    // check marker file exists
-    if (!SimTK::Pathname::fileExists(get_marker_file())) {
-        OPENSIM_THROW(Exception,"COMAKInverseKinematicsTool: marker_file "
-            "does not exist! " + get_marker_file())
-    }
-    
-
     std::string function_file = get_secondary_constraint_function_file();
 
     if (get_secondary_constraint_function_file() == "") {
@@ -407,7 +400,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
     timestepper.initialize(state);
     
     StatesTrajectory settle_states;
-
+    settle_states.append(state);
     double dt = 0.01;
  
 
@@ -546,6 +539,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
     sweep_timestepper.initialize(state);
     
     StatesTrajectory sweep_states;
+    sweep_states.append(state);
 
     for (int i = 0; i <= nSteps; ++i) {
 
@@ -667,6 +661,12 @@ void COMAKInverseKinematicsTool::performIK()
     Model model = _model;
     model.setUseVisualizer(false);
     model.initSystem();
+
+    // check marker file exists
+    if (!SimTK::Pathname::fileExists(get_marker_file())) {
+        OPENSIM_THROW(Exception, "COMAKInverseKinematicsTool: marker_file "
+            "does not exist! " + get_marker_file())
+    }
 
     // Check that IK tasks exist as markers
 
