@@ -174,8 +174,7 @@ void Smith2018ContactMesh::extendFinalizeFromProperties() {
         if (get_mesh_file() != _cached_mesh_file) {
             initializeMesh();
         }
-        //_decorative_mesh.reset(
-          //  new SimTK::DecorativeMeshFile(_full_mesh_file_path.c_str()));
+        
         _decorative_mesh.reset(
             new SimTK::DecorativeMesh(getPolygonalMesh()));
         //_decorative_mesh->setScaleFactors(get_scale_factors());
