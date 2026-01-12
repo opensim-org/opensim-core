@@ -386,6 +386,8 @@ private:
     double getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT);
     double extrapolateBefore(const ArrayPtrs<ControlLinearNode> &aNodes,double aT) const;
     double extrapolateAfter(ArrayPtrs<ControlLinearNode> &aNodes,double aT) const;
+    int searchBinary(const ArrayPtrs<ControlLinearNode>& nodes,
+            const ControlLinearNode& value) const;
 
 //=============================================================================
 };  // END of class ControlLinear

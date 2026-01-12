@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2025 Stanford University and the Authors                *
  * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -22,9 +22,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "ContactHalfSpace.h"
-#include "Model.h"
 
-namespace OpenSim {
+#include <OpenSim/Common/ModelDisplayHints.h>
+
+using namespace OpenSim;
 
 ContactHalfSpace::ContactHalfSpace() :
     ContactGeometry()
@@ -39,7 +40,7 @@ ContactHalfSpace::ContactHalfSpace(const SimTK::Vec3& location,
     setNull();
 }
 
-ContactHalfSpace::ContactHalfSpace(const SimTK::Vec3& location, 
+ContactHalfSpace::ContactHalfSpace(const SimTK::Vec3& location,
     const SimTK::Vec3& orientation, const PhysicalFrame& frame,
     const std::string& name) :
         ContactHalfSpace(location, orientation, frame)
@@ -53,17 +54,16 @@ void ContactHalfSpace::setNull()
 }
 
 
-SimTK::ContactGeometry ContactHalfSpace::createSimTKContactGeometry() const
+SimTK::ContactGeometry ContactHalfSpace::createSimTKContactGeometryImpl() const
 {
     return SimTK::ContactGeometry::HalfSpace();
 }
 
-void ContactHalfSpace::generateDecorations(bool fixed, const ModelDisplayHints& hints,
+void ContactHalfSpace::generateDecorations(bool fixed,
+    const ModelDisplayHints& hints,
     const SimTK::State& s,
     SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
 {
-    Super::generateDecorations(fixed, hints, s, geometry);
-
     // There is no fixed geometry to generate here.
     if (fixed) { return; }
 
@@ -87,13 +87,10 @@ void ContactHalfSpace::generateDecorations(bool fixed, const ModelDisplayHints& 
                     // decorative geometry is within the contact geomtry, we
                     // must offset by half the thickness of the brick.
                     .setTransform(X_BP * SimTK::Transform(SimTK::Vec3(
-                                                 brickHalfThickness, 0, 0)))
+                                                brickHalfThickness, 0, 0)))
                     .setScale(1)
                     .setRepresentation(get_Appearance().get_representation())
                     .setBodyId(getFrame().getMobilizedBodyIndex())
                     .setColor(get_Appearance().get_color())
                     .setOpacity(get_Appearance().get_opacity()));
 }
-
-
-} // end of namespace OpenSim

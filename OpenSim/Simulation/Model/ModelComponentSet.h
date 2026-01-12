@@ -24,10 +24,11 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDES
-#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include "ModelComponent.h"
+
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Set.h>
-#include "ModelComponent.h"
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 
 #ifdef SWIG
     #ifdef OSIMSIMULATION_API
@@ -50,12 +51,12 @@ class Model;
  * @tparam  T   This must be a concrete class derived from ModelComponent.
  */
 
-template<typename T>
-using SetTModelComponent = Set<T, ModelComponent>;
+template <typename T> using SetTModelComponent = Set<T, ModelComponent>;
 
-template <class T=ModelComponent>
+template <class T = ModelComponent>
 class ModelComponentSet : public Set<T, ModelComponent> {
-    OpenSim_DECLARE_CONCRETE_OBJECT_T(ModelComponentSet, T, SetTModelComponent<T>);
+    OpenSim_DECLARE_CONCRETE_OBJECT_T(
+            ModelComponentSet, T, SetTModelComponent<T>);
 
 //============================================================================
 // METHODS
@@ -71,12 +72,10 @@ public:
         // the class name, which is also the default for the unnamed property.
         const std::string& name = this->getName();
         if (name != IO::Lowercase(getConcreteClassName())) {
-            std::string msg = getConcreteClassName() + " '" + name + "' ";
-            this->setName(IO::Lowercase(getConcreteClassName()));
-
-            msg += "was renamed and is being reset to '" + name
-                + "'.";
-            log_info(msg);
+            const std::string new_name = IO::Lowercase(getConcreteClassName());
+            this->setName(new_name);
+            log_info("'{}' was renamed and is being set to '{}'.",
+                    getConcreteClassName(), new_name);
         }
     }
 
@@ -88,4 +87,3 @@ public:
 } // end of namespace OpenSim
 
 #endif // OPENSIM_MODEL_COMPONENT_SET_H
-

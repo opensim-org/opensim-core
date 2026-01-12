@@ -159,6 +159,33 @@ void Component::addComponent(Component* subcomponent)
     extendAddComponent(subcomponent);
 }
 
+std::unique_ptr<Component> Component::extractComponent(Component* subcomponent)
+{
+    auto& componentsProp = updProperty_components();
+
+    // Try to find `subcomponent` in the `components` property.
+    int idx = -1;
+    for (int i = 0; i < componentsProp.size(); ++i) {
+        if (&componentsProp[i] == subcomponent) {
+            idx = i;
+            break;
+        }
+    }
+    if (idx == -1) {
+        return nullptr;  // Not found.
+    }
+
+    // Perform removal
+    std::unique_ptr<Component> rv = componentsProp.extractValueAtIndex(idx);
+    finalizeFromProperties();
+    return rv;
+}
+
+bool Component::removeComponent(Component* subcomponent)
+{
+    return extractComponent(subcomponent) != nullptr;  // `std::unique_ptr<Component>` handles destruction
+}
+
 void Component::prependComponentPathToConnecteePath(
         Component& subcomponent) {
     const std::string compPath = subcomponent.getAbsolutePathString();

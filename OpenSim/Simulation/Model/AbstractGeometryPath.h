@@ -127,8 +127,8 @@ public:
             ForceConsumer& forceConsumer) const = 0;
 
     /**
-     *  Add in the equivalent body and generalized forces to be applied to the
-     *  multibody system resulting from a tension along the AbstractGeometryPath.
+     * Add in the equivalent body and generalized forces to be applied to the
+     * multibody system resulting from a tension along the AbstractGeometryPath.
      *
      * Note: this internally uses `produceForces`
      *

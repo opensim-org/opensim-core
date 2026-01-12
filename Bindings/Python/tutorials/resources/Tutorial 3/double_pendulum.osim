@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="30501">
+	<Model name="double_pendulum">
+		<!--Acceleration due to gravity, expressed in ground.-->
+		<gravity>0 -9.80665 0</gravity>
+		<!--Credits (e.g., model author names) associated with the model.-->
+		<credits>Ajay Seth</credits>
+		<!--Publications and references associated with the model.-->
+		<publications>For testing</publications>
+		<!--Units for all lengths.-->
+		<length_units>meters</length_units>
+		<!--Units for all forces.-->
+		<force_units>N</force_units>
+		<!--List of bodies that make up this model.-->
+		<BodySet>
+			<objects>
+				<Body name="rod1">
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0.2 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0 0 0 0 0 0</inertia>
+					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.-->
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+					<!--For visualization in the Simbody visualizer or OpenSim GUI.-->
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>cylinder.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> 0 0 0 0 0.25 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 0.02 0.5 0.02</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>sphere.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> 0 0 0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 0.1 0.1 0.1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 1 1 1</scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+						<transform> 0 0 0 0 0 0</transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>true</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
+					</VisibleObject>
+				</Body>
+				<Body name="rod2">
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0 0 0 0 0 0</inertia>
+					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.-->
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+					<!--For visualization in the Simbody visualizer or OpenSim GUI.-->
+					<VisibleObject>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+						<GeometrySet>
+							<objects>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>cylinder.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> 0 0 0 0 0.25 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 0.02 0.5 0.02</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+								<DisplayGeometry>
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file>sphere.vtp</geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color> 1 1 1</color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file />
+									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+									<transform> 0 0 0 0 0 0</transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors> 0.1 0.1 0.1</scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference>4</display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>1</opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups />
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors> 1 1 1</scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+						<transform> 0 0 0 0 0 0</transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes>true</show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+						<display_preference>4</display_preference>
+					</VisibleObject>
+				</Body>
+			</objects>
+			<groups />
+		</BodySet>
+		<!--List of Frames that various objects can be anchored to or expressed in, Body frames are builtin and not included in this list.-->
+		<FrameSet>
+			<objects>
+			</objects>
+			<groups />
+		</FrameSet>
+		<!--List of joints that connect the bodies.-->
+		<JointSet>
+			<objects>
+				<PinJoint name="pin1">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+						<Connector_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>../ground</connectee_name>
+						</Connector_PhysicalFrame_>
+                        <Connector_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>../rod1</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+					<location_in_parent>0 0 0</location_in_parent>
+					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
+					<orientation_in_parent>0 0 0</orientation_in_parent>
+					<!--Location of the joint in the child body specified in the child reference frame. Default is (0,0,0).-->
+					<location_in_child>0 0.5 0</location_in_child>
+					<!--Orientation of the joint in the child body specified in the child body reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0)-->
+					<orientation_in_child>0 0 0</orientation_in_child>
+					<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+					<CoordinateSet>
+						<objects>
+							<Coordinate name="q1">
+								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+								<motion_type>rotational</motion_type>
+								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+								<default_value>-0.78539816</default_value>
+								<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+								<default_speed_value>0</default_speed_value>
+								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+								<range>-1.57079633 1.57079633</range>
+								<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+								<clamped>false</clamped>
+								<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+								<locked>false</locked>
+								<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+								<prescribed_function />
+								<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+								<prescribed>false</prescribed>
+							</Coordinate>
+						</objects>
+						<groups />
+					</CoordinateSet>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse == false) or child->parent (reverse == true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+				</PinJoint>
+				<PinJoint name="pin2">
+					<!--List of connectors (structural dependencies) that this component has.-->
+					<connectors>
+                        <Connector_PhysicalFrame_ name="parent_body">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>rod1</connectee_name>
+						</Connector_PhysicalFrame_>
+                        <Connector_PhysicalFrame_ name="child_body">
+							<!--Name of the component this Connector should be connected to.-->
+							<connectee_name>rod2</connectee_name>
+						</Connector_PhysicalFrame_>
+					</connectors>
+					<!--Location of the joint in the parent body specified in the parent reference frame. Default is (0,0,0).-->
+					<location_in_parent>0 0 0</location_in_parent>
+					<!--Orientation of the joint in the parent body specified in the parent reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0).-->
+					<orientation_in_parent>0 0 0</orientation_in_parent>
+					<!--Location of the joint in the child body specified in the child reference frame. Default is (0,0,0).-->
+					<location_in_child>0 0.5 0</location_in_child>
+					<!--Orientation of the joint in the child body specified in the child body reference frame. Euler XYZ body-fixed rotation angles (in radians) are used to express the orientation. Default is (0,0,0)-->
+					<orientation_in_child>0 0 0</orientation_in_child>
+					<!--Set holding the generalized coordinates (q's) that parmeterize this joint.-->
+					<CoordinateSet>
+						<objects>
+							<Coordinate name="q2">
+								<!--Coordinate can describe rotational, translational, or coupled motion. Defaults to rotational.-->
+								<motion_type>rotational</motion_type>
+								<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
+								<default_value>-1.04719755</default_value>
+								<!--The speed value of this coordinate before any value has been set. Rotational coordinate value is in rad/s and Translational in m/s.-->
+								<default_speed_value>0</default_speed_value>
+								<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
+								<range>-1.57079633 1.57079633</range>
+								<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
+								<clamped>false</clamped>
+								<!--Flag indicating whether or not the values of the coordinates should be constrained to the current (e.g. default) value, above.-->
+								<locked>false</locked>
+								<!--If specified, the coordinate can be prescribed by a function of time. It can be any OpenSim Function with valid second order derivatives.-->
+								<prescribed_function />
+								<!--Flag indicating whether or not the values of the coordinates should be prescribed according to the function above. It is ignored if the no prescribed function is specified.-->
+								<prescribed>false</prescribed>
+							</Coordinate>
+						</objects>
+						<groups />
+					</CoordinateSet>
+					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse == false) or child->parent (reverse == true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
+					<reverse>false</reverse>
+				</PinJoint>
+			</objects>
+		</JointSet>
+		<!--Controllers that provide the control inputs for Actuators.-->
+		<ControllerSet>
+			<objects />
+			<groups />
+		</ControllerSet>
+		<!--Constraints in the model.-->
+		<ConstraintSet>
+			<objects />
+			<groups />
+		</ConstraintSet>
+		<!--Forces in the model (includes Actuators).-->
+		<ForceSet>
+			<objects />
+			<groups />
+		</ForceSet>
+		<!--Markers in the model.-->
+		<MarkerSet>
+			<objects />
+			<groups />
+		</MarkerSet>
+		<!--Geometry to be used in contact forces.-->
+		<ContactGeometrySet>
+			<objects />
+			<groups />
+		</ContactGeometrySet>
+	</Model>
+</OpenSimDocument>

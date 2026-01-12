@@ -434,13 +434,13 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             if(!ifstream(_dataFileName.c_str(), ios_base::in).good()) {
             string msg =
                     "Object: Could not open file " + _dataFileName+ "IO. It may not exist or you don't have permission to read it.";
-                log_error(msg);
-                // Try switching to directory of setup file before aborting
-                if(getDocument()) {
-                    savedCwd = IO::getCwd();
-                    IO::chDir(IO::getParentDirectory(getDocument()->getFileName()));
-                    changeWorkingDir=true;
-                }
+            log_error(msg);
+            // Try switching to directory of setup file before aborting
+            if (getDocument()) {
+                savedCwd = IO::getCwd();
+                IO::chDir(IO::getParentDirectory(getDocument()->getFileName()));
+                changeWorkingDir = true;
+            }
                 if(!ifstream(_dataFileName.c_str(), ios_base::in).good()) {
                     if(changeWorkingDir) IO::chDir(savedCwd);
             throw Exception(msg,__FILE__,__LINE__);

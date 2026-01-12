@@ -21,15 +21,15 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*   
- * Author: Jack Middleton 
+/*
+ * Author: Jack Middleton
  */
-
 
 //=============================================================================
 // INCLUDES
 //=============================================================================
 #include "ControlSetController.h"
+
 #include "ControlLinear.h"
 #include "ControlSet.h"
 #include "Controller.h"
@@ -54,18 +54,14 @@ using namespace OpenSim;
 /**
  * Destructor.
  */
-ControlSetController::~ControlSetController()
-{
-    delete _controlSet;
-}
+ControlSetController::~ControlSetController() { delete _controlSet; }
 //_____________________________________________________________________________
 /**
  * Default constructor
  */
 
-ControlSetController::ControlSetController() :
-    Controller(),
-    _controlsFileName(_controlsFileNameProp.getValueStr() ) {
+ControlSetController::ControlSetController()
+        : Controller(), _controlsFileName(_controlsFileNameProp.getValueStr()) {
     setNull();
 }
 
@@ -73,59 +69,50 @@ ControlSetController::ControlSetController() :
 /**
  * Copy constructor.
  */
-ControlSetController::ControlSetController(const ControlSetController &aController) :
-    Controller(aController),
-   _controlsFileName(_controlsFileNameProp.getValueStr())
-{
+ControlSetController::ControlSetController(
+        const ControlSetController& aController)
+        : Controller(aController),
+          _controlsFileName(_controlsFileNameProp.getValueStr()) {
     setNull();
     copyData(aController);
 }
-
 
 //_____________________________________________________________________________
 /**
  * Set NULL values for all member variables.
  */
-void ControlSetController::setNull()
-{
+void ControlSetController::setNull() {
     setupProperties();
 
     _model = NULL;
     _controlSet = NULL;
-
-
 }
 //_____________________________________________________________________________
 /**
- * Set name of ControlSet file 
+ * Set name of ControlSet file
  */
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void ControlSetController::
-setControlSetFileName( const std::string&  controlSetFileName )
-{
-   _controlsFileName = controlSetFileName;
+void ControlSetController::setControlSetFileName(
+        const std::string& controlSetFileName) {
+    _controlsFileName = controlSetFileName;
 }
-void ControlSetController::
-setupProperties()
-{
-    std::string comment = "A Storage (.sto) or an XML control nodes file containing the controls for this controlSet.";
+void ControlSetController::setupProperties() {
+    std::string comment = "A Storage (.sto) or an XML control nodes file "
+                          "containing the controls for this controlSet.";
     _controlsFileNameProp.setComment(comment);
     _controlsFileNameProp.setName("controls_file");
-    _propertySet.append( &_controlsFileNameProp );
-
+    _propertySet.append(&_controlsFileNameProp);
 }
 //_____________________________________________________________________________
 /**
  * Copy the member variables of the specified controller.
  */
-void ControlSetController::copyData(const ControlSetController &aController)
-{   
+void ControlSetController::copyData(const ControlSetController& aController) {
     _controlsFileName = aController._controlsFileName;
 }
-
 
 //=============================================================================
 // OPERATORS
@@ -137,18 +124,16 @@ void ControlSetController::copyData(const ControlSetController &aController)
 /**
  * Assignment operator.
  */
-ControlSetController& ControlSetController::
-operator=(const ControlSetController &aController)
-{
+ControlSetController& ControlSetController::operator=(
+        const ControlSetController& aController) {
     // BASE CLASS
     Object::operator=(aController);
 
     // DATA
     copyData(aController);
 
-    return(*this);
+    return (*this);
 }
-
 
 //=============================================================================
 // GET AND SET
@@ -158,27 +143,30 @@ operator=(const ControlSetController &aController)
 // CONTROL
 //=============================================================================
 
-// compute the control value for all actuators this Controller is responsible for
-void ControlSetController::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
-{
-    SimTK_ASSERT( _controlSet , "ControlSetController::computeControls controlSet is NULL");
+// compute the control value for all actuators this Controller is responsible
+// for
+void ControlSetController::computeControls(
+        const SimTK::State& s, SimTK::Vector& controls) const {
+    SimTK_ASSERT(_controlSet,
+            "ControlSetController::computeControls controlSet is NULL");
 
     std::string actName;
     int index = -1;
 
     const auto& socket = getSocket<Actuator>("actuators");
     const int na = static_cast<int>(socket.getNumConnectees());
-    for(int i = 0; i < na; ++i){
+    for (int i = 0; i < na; ++i) {
         const auto& actu = socket.getConnectee(i);
         actName = actu.getName();
         index = _controlSet->getIndex(actName);
-        if(index < 0){
+        if (index < 0) {
             actName = actName + ".excitation";
             index = _controlSet->getIndex(actName);
         }
 
-        if(index >= 0){
-            SimTK::Vector actControls(1, _controlSet->get(index).getControlValue(s.getTime()));
+        if (index >= 0) {
+            SimTK::Vector actControls(
+                    1, _controlSet->get(index).getControlValue(s.getTime()));
             actu.addInControls(actControls, controls);
         }
     }
@@ -186,36 +174,38 @@ void ControlSetController::computeControls(const SimTK::State& s, SimTK::Vector&
 
 double ControlSetController::getFirstTime() const {
     Array<int> controlList;
-   SimTK_ASSERT( _controlSet , "ControlSetController::getFirstTime controlSet is NULL");
+    SimTK_ASSERT(_controlSet,
+            "ControlSetController::getFirstTime controlSet is NULL");
 
-    _controlSet->getControlList( "ControlLinear" , controlList );
-    
-    if( controlList.getSize() < 1 ) {
-       return( -SimTK::Infinity );
+    _controlSet->getControlList("ControlLinear", controlList);
+
+    if (controlList.getSize() < 1) {
+        return (-SimTK::Infinity);
     } else {
-       ControlLinear& control = (ControlLinear&)_controlSet->get(controlList[0]);
-       return( control.getFirstTime() );
+        ControlLinear& control =
+                (ControlLinear&)_controlSet->get(controlList[0]);
+        return (control.getFirstTime());
     }
 }
 
 double ControlSetController::getLastTime() const {
     Array<int> controlList;
-    _controlSet->getControlList( "ControlLinear" , controlList );
-    
-    if(controlList.getSize() < 1 ) {
-       return( SimTK::Infinity );
+    _controlSet->getControlList("ControlLinear", controlList);
+
+    if (controlList.getSize() < 1) {
+        return (SimTK::Infinity);
     } else {
-       ControlLinear& control = (ControlLinear&)_controlSet->get(controlList[0]);
-       return( control.getLastTime() );
+        ControlLinear& control =
+                (ControlLinear&)_controlSet->get(controlList[0]);
+        return (control.getLastTime());
     }
 }
 
-void ControlSetController::extendFinalizeFromProperties()
-{
+void ControlSetController::extendFinalizeFromProperties() {
     Super::extendFinalizeFromProperties();
 
     bool hasFile = !_controlsFileName.empty() &&
-                    _controlsFileName.compare("Unassigned");
+                   _controlsFileName.compare("Unassigned");
 
     // The result of default constructing and adding  this to a model
     if (_controlSet == nullptr &&  !hasFile) {
@@ -239,14 +229,14 @@ void ControlSetController::extendFinalizeFromProperties()
         // Should only catch an "UnaccessibleFileException" since we would want
         // to know if the file was corrupt or in the wrong format
         catch (const Exception& e) {
-            std::string msg = "ControlSetController::extendFinalizeFromProperties ";
-            msg += "Unable to load control set file '" + _controlsFileName + "'.";
-            msg += "\nDetails: " + std::string(e.getMessage());
-            //throw Exception(msg);
-            //TODO: Should throw a specific "UnaccessibleControlFileException"
-            //testSerializeOpenSimObjects should not expect to just add garbage filled
-            //objects (components) to a model and expect to serialize- must be changed!
-            log_error(msg);
+            // throw Exception(msg);
+            // TODO: Should throw a specific "UnaccessibleControlFileException"
+            // testSerializeOpenSimObjects should not expect to just add garbage
+            // filled objects (components) to a model and expect to serialize-
+            // must be changed!
+            log_error("ControlSetController::extendFinalizeFromProperties: "
+                      "Unable to load control set file '{}'.\nDetails: {}",
+                    _controlsFileName, e.getMessage());
         }
     }
 
@@ -282,7 +272,7 @@ void ControlSetController::extendConnectToModel(Model& model) {
                 log_cout("ControlSetController::extendConnectToModel "
                          "Actuator '{}' already connected to "
                          "ControlSetController '{}'.",
-                         actName, getName());
+                        actName, getName());
                 isConnected = true;
                 break;
             }
@@ -294,7 +284,8 @@ void ControlSetController::extendConnectToModel(Model& model) {
                 if (actu.getName() == actName) {
                     log_cout("ControlSetController::extendConnectToModel "
                              "Connecting ControlSetController '{}' to Actuator "
-                             "'{}'.", getName(), actu.getName());
+                             "'{}'.",
+                            getName(), actu.getName());
                     addActuator(actu);
                     isConnected = true;
                     break;
@@ -309,4 +300,3 @@ void ControlSetController::extendConnectToModel(Model& model) {
             actName, _controlSet->getName());
     }
 }
-

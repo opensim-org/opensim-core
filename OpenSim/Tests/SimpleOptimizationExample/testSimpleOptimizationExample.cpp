@@ -21,17 +21,16 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// Author: Ayman Habib   
-
-//==============================================================================
-//==============================================================================
 #include <OpenSim/OpenSim.h>
-#include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
+
+namespace {
 
 // step count for troubleshooting
 int stepCount = 0;
@@ -42,11 +41,11 @@ class ExampleOptimizationSystem : public OptimizerSystem {
    public:
 
        /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
-       ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
-             OptimizerSystem(numParameters), 
+       ExampleOptimizationSystem(int numParameters, State& s, Model& aModel):
+             OptimizerSystem(numParameters),
              si(s),
              osimModel(aModel){}
-                
+
     int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const override {
 
         // make a copy of out initial states
@@ -71,91 +70,77 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         f = -bicShort.computeMomentArm(s, elbowFlexCoord);
 
         stepCount++;
-        
+
         if( f < bestSoFar){
             bestSoFar = f;
             cout << "\nobjective evaluation #: " << stepCount << " elbow flexion angle = " << newControls[0]*SimTK_RADIAN_TO_DEGREE <<  " BICshort moment arm  = " << -f << std::endl;
-        }           
+        }
 
       return(0);
 
-   }    
+   }
 
 private:
     State& si;
     Model& osimModel;
  };
 
-//______________________________________________________________________________
+}
+
 /**
- * Define an optimization problem that finds a set of muscle controls to maximize 
- * the forward velocity of the forearm/hand segment mass center. 
+ * Define an optimization problem that finds a set of muscle controls to maximize
+ * the forward velocity of the forearm/hand segment mass center.
  */
-int main()
-{
-    try {
-        std::clock_t startTime = std::clock();  
-    
-        // Create a new OpenSim model
-        // Similar to arm26 model but without wrapping surfaces for better performance
-        Model osimModel("Arm26_Optimize.osim");
-        
-        // Initialize the system and get the state representing the state system
-        State& si = osimModel.initSystem();
+TEST_CASE("testSimpleOptimizationExample") {
 
-        // initialize the starting shoulder angle
-        const CoordinateSet& coords = osimModel.getCoordinateSet();
-        coords.get("r_shoulder_elev").setValue(si, 0.0);
+    // Create a new OpenSim model
+    // Similar to arm26 model but without wrapping surfaces for better performance
+    Model osimModel("Arm26_Optimize.osim");
 
-        // Set the initial muscle activations 
-        const Set<Muscle> &muscleSet = osimModel.getMuscles();
-        for(int i=0; i< muscleSet.getSize(); i++ ){
-            muscleSet[i].setActivation(si, 1.0);
-            const ActivationFiberLengthMuscle* afl = ActivationFiberLengthMuscle::safeDownCast(&muscleSet[i]);
-            afl->setFiberLength(si, .1);
-        }
-        OpenSim::Coordinate& elbowFlexCoord = osimModel.updCoordinateSet().get("r_elbow_flex");
-        elbowFlexCoord.setValue(si, 1.0);
-        //osimModel.getMultibodySystem().realize(si, Stage::Velocity);
-        // Make sure the muscles states are in equilibrium
-        osimModel.equilibrateMuscles(si);
-        
-        // Initialize the optimizer system we've defined.
-        ExampleOptimizationSystem sys(1, si, osimModel);
-        Real f = NaN;
-        
-        /* Define initial values and bounds for the controls to optimize */
+    // Initialize the system and get the state representing the state system
+    State& si = osimModel.initSystem();
 
-        Vector controls(1, 1.0); // 1 radian for default value
-        Vector lower_bounds(1, elbowFlexCoord.getRangeMin());
-        Vector upper_bounds(1, elbowFlexCoord.getRangeMax());
+    // initialize the starting shoulder angle
+    const CoordinateSet& coords = osimModel.getCoordinateSet();
+    coords.get("r_shoulder_elev").setValue(si, 0.0);
 
-        sys.setParameterLimits( lower_bounds, upper_bounds );
-        
-        // Create an optimizer. Pass in our OptimizerSystem
-        // and the name of the optimization algorithm.
-        Optimizer opt(sys, SimTK::LBFGSB);
-
-        // Specify settings for the optimizer
-        opt.setConvergenceTolerance(0.000001);
-        opt.useNumericalGradient(true);
-        opt.setMaxIterations(1000);
-        opt.setLimitedMemoryHistory(500);
-            
-        // Optimize it!
-        f = opt.optimize(controls);
-            
-        cout << "Elapsed time = " << (std::clock()-startTime)/CLOCKS_PER_SEC << "s" << endl;
-        
-        ASSERT_EQUAL(f, -0.049390, 1e-5);
-        cout << "OpenSim example completed successfully.\n";
+    // Set the initial muscle activations
+    const Set<Muscle> &muscleSet = osimModel.getMuscles();
+    for(int i=0; i< muscleSet.getSize(); i++ ){
+        muscleSet[i].setActivation(si, 1.0);
+        const ActivationFiberLengthMuscle* afl = ActivationFiberLengthMuscle::safeDownCast(&muscleSet[i]);
+        afl->setFiberLength(si, .1);
     }
-    catch (const std::exception& ex)
-    {
-        std::cout << ex.what() << std::endl;
-        return 1;
-    }
-    
-    // End of main() routine.
-    return 0;
+    OpenSim::Coordinate& elbowFlexCoord = osimModel.updCoordinateSet().get("r_elbow_flex");
+    elbowFlexCoord.setValue(si, 1.0);
+    //osimModel.getMultibodySystem().realize(si, Stage::Velocity);
+    // Make sure the muscles states are in equilibrium
+    osimModel.equilibrateMuscles(si);
+
+    // Initialize the optimizer system we've defined.
+    ExampleOptimizationSystem sys(1, si, osimModel);
+    Real f = NaN;
+
+    /* Define initial values and bounds for the controls to optimize */
+
+    Vector controls(1, 1.0); // 1 radian for default value
+    Vector lower_bounds(1, elbowFlexCoord.getRangeMin());
+    Vector upper_bounds(1, elbowFlexCoord.getRangeMax());
+
+    sys.setParameterLimits( lower_bounds, upper_bounds );
+
+    // Create an optimizer. Pass in our OptimizerSystem
+    // and the name of the optimization algorithm.
+    Optimizer opt(sys, SimTK::LBFGSB);
+
+    // Specify settings for the optimizer
+    opt.setConvergenceTolerance(0.000001);
+    opt.useNumericalGradient(true);
+    opt.setMaxIterations(1000);
+    opt.setLimitedMemoryHistory(500);
+
+    // Optimize it!
+    f = opt.optimize(controls);
+
+    ASSERT_EQUAL(f, -0.049390, 1e-5);
 }

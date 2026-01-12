@@ -36,11 +36,11 @@ namespace OpenSim {
  * TwoFrameLinker is a utility class to extend a Component such that it connects
  * two Frames. For example, a WeldConstraint and BushingForces operate between
  * two frames to restrict their motion. A TwoFrameLinker<Force, PhysicalFrame>,
- * for example, is a Force that operates between two PhyscialFrames and it is 
+ * for example, is a Force that operates between two PhyscialFrames and it is
  * the base class for BushingForces.
  * (A class whose super class is a template parameter is called a mixin class.)
  *
- * @code 
+ * @code
  *    class BushingForce : public TwoFrameLinker<Force, PhysicalFrame>
  * @endcode
  *
@@ -114,7 +114,7 @@ public:
         const F& frame2, const SimTK::Transform& offsetOnFrame2);
 
     /** Convenience Constructor
-    Construct a TwoFrameLinker where the two frames are specified by name 
+    Construct a TwoFrameLinker where the two frames are specified by name
     and offset transforms on the respective frames.
 
     @param[in] name             the name of this TwoFrameLinker component
@@ -152,7 +152,7 @@ public:
                    const SimTK::Vec3& orientationInFrame2);
 
     /** Backwards compatible Convenience Constructor
-    TwoFrameLinker with offsets specified in terms of the location and 
+    TwoFrameLinker with offsets specified in terms of the location and
     orientation in respective PhysicalFrames.
 
     @param[in] name             the name of this TwoFrameLinker component
@@ -184,7 +184,7 @@ public:
         the offset frame. */
     const F& getFrame2() const;
 
-    /** Compute the relative offset Transform between the two frames linked by 
+    /** Compute the relative offset Transform between the two frames linked by
         this TwoFrameLinker component at a given State, expressed in frame1. */
     SimTK::Transform computeRelativeOffset(const SimTK::State& s) const;
 
@@ -193,19 +193,19 @@ public:
     SimTK::SpatialVec computeRelativeVelocity(const SimTK::State& s) const;
 
     /** Compute the deflection (spatial separation) of the two frames connected
-        by the TwoFrameLinker. Angular deflections expressed as XYZ body-fixed 
+        by the TwoFrameLinker. Angular deflections expressed as XYZ body-fixed
         Euler angles of frame2 w.r.t frame1.
         NOTE: When using deflections to compute spatial forces, these forces
-            may not be valid for large deflections, because Euler angles are 
+            may not be valid for large deflections, because Euler angles are
             unable to uniquely distinguish an X rotation angle of +/-180 degs,
             and subsequent rotations that are +/-90 degs. It is mainly useful
-            for calculating errors for constraints and forces for computing 
+            for calculating errors for constraints and forces for computing
             restoration forces.
      @return dq     Vec6 of (3) angular and (3) translational deflections. */
     SimTK::Vec6 computeDeflection(const SimTK::State& s) const;
     /** Compute the deflection rate (dqdot) of the two frames connected by
         this TwoFrameLinker component. Angular velocity is expressed as Euler
-        (XYZ body-fixed) angle derivatives. Note that the derivatives 
+        (XYZ body-fixed) angle derivatives. Note that the derivatives
         become singular as the second Euler angle approaches 90 degs.
     @return dqdot  Vec6 of (3) angular and (3) translational deflection rates. */
     SimTK::Vec6 computeDeflectionRate(const SimTK::State& s) const;
@@ -214,10 +214,10 @@ protected:
     /** @name Component Interface
         These methods adhere to the Component Interface**/
     /**@{**/
-    void extendConnectToModel(Model& model) override; 
+    void extendConnectToModel(Model& model) override;
     // update previous model formats for all components linking two frames
     // in one place - here.
-    void 
+    void
     updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
     /**@}**/
 
@@ -241,20 +241,20 @@ protected:
         const SimTK::State& state,
         SimTK::Vec6 f, SimTK::SpatialVec& F1_G, SimTK::SpatialVec& F2_G) const;
 
-    /** Helper method to add in the equivalent system spatial forces given 
+    /** Helper method to add in the equivalent system spatial forces given
         internal forces. Internal forces are expressed in the mobility basis as
         parameterized by the deflection between frame1 and frame2, dq, and its
         time derivative, dqdot.
         The intended usage is within a Force::computeForce() which is tasked with
         populating vectors of generalized forces and/or (mobilized body) spatial
-        forces. This method will populate (add in) the spatialForces given the 
+        forces. This method will populate (add in) the spatialForces given the
         internal force.
     @param state                const State of current system configuration
-    @param[in] f                Vec6 of forces in the basis of the deflection 
-    @param[in,out] spatialForces   Vector of SpatialVec's (torque, force) on 
+    @param[in] f                Vec6 of forces in the basis of the deflection
+    @param[in,out] spatialForces   Vector of SpatialVec's (torque, force) on
                                    each PhysicalFrame's base frame in the System.
                                    This is equivalent to each MobilizedBody.
-    @see convertInternalForceToForcesOnFrames() 
+    @see convertInternalForceToForcesOnFrames()
     @see PhysicalFrame::findBaseFrame() */
     void addInPhysicalForcesFromInternal(const SimTK::State& state,
         SimTK::Vec6 f, SimTK::Vector_<SimTK::SpatialVec>& spatialForces) const;
@@ -437,9 +437,9 @@ const F& TwoFrameLinker<C, F>::getFrame2() const
 }
 
 template<class C, class F>
-void TwoFrameLinker<C, F>::extendConnectToModel(Model& model) 
+void TwoFrameLinker<C, F>::extendConnectToModel(Model& model)
 {
-    Super::extendConnectToModel(model); //connect to frames 
+    Super::extendConnectToModel(model); //connect to frames
     // now keep a reference to the frames
     _frame1 = &(this->template getSocket<F>("frame1").getConnectee());
     _frame2 = &(this->template getSocket<F>("frame2").getConnectee());
@@ -524,9 +524,9 @@ SimTK::Vec6 TwoFrameLinker<C, F>::computeDeflectionRate(const SimTK::State& s) c
 
     // Need angular velocity in M frame for conversion to qdot.
     const SimTK::Vec3  w_FM_M = ~(X_FM.R()) * V_FM[0];
-    const SimTK::Mat33 N_FM = 
+    const SimTK::Mat33 N_FM =
         SimTK::Rotation::calcNForBodyXYZInBodyFrame(dq.getSubVec<3>(0));
-    
+
     dqdot.updSubVec<3>(0) = N_FM * w_FM_M;
     dqdot.updSubVec<3>(3) = V_FM[1];
 
@@ -566,7 +566,7 @@ void TwoFrameLinker<C, F>::convertInternalForceToForcesOnFrames(
     const SimTK::Vec3  mB2_M = ~N_FM * fB2_q; // moment acting on body 2, exp. in M
     const SimTK::Vec3  mB2_G = X_GM.R() * mB2_M; // moment on body 2, now exp. in G
 
-    // Transform force from F frame to ground. This is the force to 
+    // Transform force from F frame to ground. This is the force to
     // apply to body 2 at point OM; -f goes on body 1 at the same
     // spatial location. Here we actually apply it at OF so we have to
     // account for the moment produced by the shift from OM.
@@ -579,7 +579,7 @@ void TwoFrameLinker<C, F>::convertInternalForceToForcesOnFrames(
     F1_G = SimTK::SpatialVec(-(mB2_G + p_FM_G % fM_G), -fM_G);
 }
 
-// The method only makes sense for applying forces to PhysicalFrames so explicitly 
+// The method only makes sense for applying forces to PhysicalFrames so explicitly
 // specialize for PhysicalFrame.
 template <class C, class F>
 void TwoFrameLinker<C, F>::addInPhysicalForcesFromInternal(
@@ -605,7 +605,8 @@ void TwoFrameLinker<C, F>::addInPhysicalForcesFromInternal(
         SimTK::Vector_<SimTK::SpatialVec>* _physicalForces;
     };
 
-    producePhysicalForcesFromInternal(s, f, Adaptor{physicalForces});
+    Adaptor adaptor{physicalForces};
+    producePhysicalForcesFromInternal(s, f, adaptor);
 }
 
 template<class C, class F>
@@ -640,7 +641,7 @@ void TwoFrameLinker<C, F>::producePhysicalForcesFromInternal(
 
 
 template <class C, class F>
-void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode, 
+void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
                                             int versionNumber)
 {
     using SimTK::Vec3;
@@ -709,7 +710,7 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
             // Prior to 4.0, all bodies lived in the Model's BodySet and
             // Constraints and Forces (current TwoFrameLinker) were always
             // in the ConstraintSet and ForceSet, which means we need to go
-            // two levels up (../../)  and into the bodyset to find the 
+            // two levels up (../../)  and into the bodyset to find the
             // Bodies (frames) being linked.
             else {
                 frame1_connectee_name =

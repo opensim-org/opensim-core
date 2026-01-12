@@ -13,6 +13,31 @@ v4.6
 - Remove `using namespace SimTK;` from core OpenSim files to prevent namespace conflicts and operator overshadowing (#4066)
 - Use catch2 `INFO` logging macros in tests instead of OpenSim `log_info` (#4066)
 - Updated the dependency `spdlog` to `v1.15.3`. (#4067)
+- Fixed bug in `C3DFileAdapter` where there was an error when reading C3D files with more than 255 markers. It now excludes non-marker points (POINT:ANGLES, POINT:POWERS, POINT:FORCES, POINT:MOMENTS, and POINT:SCALARS). (#3606)
+- Updated `ezc3d` version to `1.5.19`. (#3606)
+- Removed `WrapCylinderObst`, `WrapDoubleCylinderObst`, and `WrapSphereObst`. (#4120)
+- Added `ExponentialContactForce`, a class that models forces between a point and a contact plane using exponential springs. Improved computational performance over the Hunt-Crossley contact model is achieved in non-slip conditions through the use of an elastic frictional force component which reduces system stiffness (enabling larger integration step sizes) and eliminates drift velocity. (#4117)
+- The `Manager` class has been overhauled to add new useful features and improve documentation while largely preserving original behavior (#4110). A few key changes include:
+    - `Manager` now supports `SimTK::CPodesIntegrator`, an implicit integration scheme, which can be set via the enum `Manager::IntegratorMethod::CPodes` when calling `setIntegratorMethod`.
+    - `Manager` can now be reinitialized given a new `SimTK::State` without needing to construct a new `Manager` object.
+    - Added an option to record a full `StatesTrajectory` (via `Manager::setRecordStatesTrajectory`).
+    - Support for user-specified time step sequences (e.g., `setUseSpecifiedDT`, `useContactDT`, etc.) has been removed.
+    - Convenience methods for a few advanced `SimTK::Integrator` settings have been added (e.g., `Manager::setIntegratorFinalTime`).
+- Added a suite of Jupyter notebooks containing OpenSim API Python tutorials. (#4124)
+- Added new concrete implementations of `ContactGeometry`: `ContactCylinder`, `ContactEllipsoid`, and `ContactTorus`. (#4115)
+- Removed the following deprecated methods from `ContactGeometry`: `getLocation()`, `setLocation()`, `getOrientation()`, `setOrientation()`, `getBody()`, and `setBody()`. (#4115)
+- Fixed `OpenSim::Marker::generateDecorations` to account for markers that are attached to bodies via other frames (#4144).
+- Added the scripting-friendly accessors `SpatialTransform::setTransformAxis()` and `CustomJoint::setSpatialTransform()`. (#4168)
+- Added `Scholz2015GeometryPath`, a geometry-based path wrapping algorithm based on the publication "A fast multi-obstacle muscle wrapping method using natural geodesic variations" by
+Scholz et al. (2015). This class encapsulates `SimTK::CableSpan`, the Simbody implementation of the core wrapping algorithm, and provides support for using this method to define the
+geometry for path-based OpenSim components (e.g., `Muscle`, `PathSpring`, etc.). This class can be used as a replacement for `GeometryPath`, providing improved computational
+performance and stability in wrapping solutions.
+- Implemented `generateDecorations()` for `Station` to allow visualization in the Simbody visualizer. (#4169)
+- Added `Component::removeComponent` and `Component::extractComponent` methods, which enable removing subcomponents that were previously added via `Component::addComponent` or the `<components>` XML element (#4174).
+- Updated required language level to C++20. (#3929)
+- Breaking: removed the `operator==` and `operator<` overloads in `ControlLinearNode` and replaced usages with the equivalent utility functions `isEqual()` and `isLessThan()`. (#4095)
+- Made various changes to support builds on Ubuntu 24.04 with GCC 13. (#4186)
+- Support building PYPI distribution python wheels on all platforms, upgrade builds to python 3.11 and numpy 2.0. (#4189)
 
 
 v4.5.2
@@ -54,14 +79,14 @@ v4.5.2
 - Improved the performance of `ComponentPath` traversal (e.g. as used by `Component::getComponent`, `Component::getStateVariableValue`)
 - Added Python and Java (Matlab) scripting support for `TimeSeriesTable_<SimTK::Rotation>`. (#3940)
 - Added the templatized `MocoStudy::analyze<T>()` and equivalent scripting counterparts: `analyzeVec3`, `analyzeSpatialVec`, `analyzeRotation`. (#3940)
-- Added `ConstantCurvatureJoint` to the SWIG bindings; it is now available in Matlab and Python (#3957). 
+- Added `ConstantCurvatureJoint` to the SWIG bindings; it is now available in Matlab and Python (#3957).
 - Added methods and `Output`s for calculating the angular momentum of a `Body`. (#3962)
-- Updated `TabOpLowPassFilter` so that by default the processed table is trimmed to the original time range after padding and filtering. 
+- Updated `TabOpLowPassFilter` so that by default the processed table is trimmed to the original time range after padding and filtering.
   The original behavior (no trimming) can be enabled via the new property `trim_to_original_time_range`. (#3969)
-- Make `InverseKinematicsSolver` methods to query for specific marker or orientation-sensor errors more robust to invalid names or names not 
-  in the intersection of names in the model and names in the provided referece/data. Remove methods that are index based from public interface.(#3951) 
-- Replace usages of `OpenSim::make_unique` with `std::make_unique` and remove wrapper function now that C++14 is used in OpenSim (#3979). 
-- Add utility method `createVectorLinspaceInterval` for the `std::vector` type and add unit tests. Utilize the new utility method to fix a bug (#3976) 
+- Make `InverseKinematicsSolver` methods to query for specific marker or orientation-sensor errors more robust to invalid names or names not
+  in the intersection of names in the model and names in the provided referece/data. Remove methods that are index based from public interface.(#3951)
+- Replace usages of `OpenSim::make_unique` with `std::make_unique` and remove wrapper function now that C++14 is used in OpenSim (#3979).
+- Add utility method `createVectorLinspaceInterval` for the `std::vector` type and add unit tests. Utilize the new utility method to fix a bug (#3976)
   in creating the uniformly sampled time interval from the experimental data sampling frequency in `APDMDataReader` and `XsensDataReader` (#3977).
 - Fix Point Kinematics Reporter variable and initialization error and add unit tests (#3966)
 - `OpenSim::ContactHalfSpace`, `OpenSim::ContactMesh`, and `OpenSim::ContactSphere` now check their associated `Appearance`'s `is_visible` flag when deciding whether to emit their associated decorations (#3993).
@@ -77,30 +102,30 @@ v4.5.2
     if one is detected (previously: it would emit decorations with `NaN`ed transforms).
 - `PolynomialPathFitter` now allows fitting paths that depend on more than 6 coordinates, matching recent changes to `MultivariatePolynomialFunction` (#4001).
 - If an `Object` cannot be found when loading a list property from XML, a warning will now be emitted to the log (previously: it was emitted to `std::cerr`, #4009).
-- Added the property `activation_dynamics_smoothing` to `DeGrooteFregly2016Muscle`. This property uses the model's original value of 0.1 as a 
-  default, but users may consider increasing this value (e.g., 10.0) so that the activation and deactivation speeds of the model better match the 
+- Added the property `activation_dynamics_smoothing` to `DeGrooteFregly2016Muscle`. This property uses the model's original value of 0.1 as a
+  default, but users may consider increasing this value (e.g., 10.0) so that the activation and deactivation speeds of the model better match the
   activation and deactivation time constants.
 - Remove unused, legacy `<defaults>` blocks in `.osim` and `.xml` files (#3986).
 - Added `example3DWalking`, which demonstrates how to create a tracking simulation with foot-ground contact in Moco. (#4008)
-- Added `ModelFactory::createResidualActuators` and `ModOpAddResiduals` to make it easy to add a set of residual actuators to a model. 
-  The default behavior of `ModOpAddReserves` remains the same, but a new constructor has been added to enable skipping coordinates associated 
+- Added `ModelFactory::createResidualActuators` and `ModOpAddResiduals` to make it easy to add a set of residual actuators to a model.
+  The default behavior of `ModOpAddReserves` remains the same, but a new constructor has been added to enable skipping coordinates associated
   with residual forces so that they can be set separately with `ModOpAddResiduals`. (#4008)
 - Added convenience methods to `MocoTrack` to allow setting marker weights from a `Set<MarkerWeight>` or `IKTaskSet`. (#4008)
-- Remove the `tropter` libraries, the Tropter solver in Moco, and all references to it from build system. As a result, the following 
+- Remove the `tropter` libraries, the Tropter solver in Moco, and all references to it from build system. As a result, the following
   Tropter-related dependencies have been removed: `adolc`, `colpack`, and `eigen`. (#3988)
 - `OpenSim::Mesh` now retains a reference-counted copy of the mesh data when it's copied, which should make
   copying + re-finalizing `OpenSim::Model`s faster (#4010).
-- Updated `TableUtilities::filterLowpass` to apply padding after resampling, so that the 
+- Updated `TableUtilities::filterLowpass` to apply padding after resampling, so that the
   initial time point of an input table is preserved. (#4020)
 - Support using swig version 4.2 to generate Java & Python bindings. (#4028)
-- Added `ExpressionBasedPathForce`, which can be used to create non-linear path springs or 
+- Added `ExpressionBasedPathForce`, which can be used to create non-linear path springs or
   other path-based force elements dependent on a user-provided expression. (#4035)
 - Fixed a bug where `DeGrooteFregly2016Muscle::getBoundsNormalizedFiberLength()` was returning
   tendon force bounds rather than fiber length bounds. (#4040)
 - Fixed bugs in `PolynomialPathFitter` when too few coordinate samples were provided. (#4039)
 - In `StaticOptimization`, state derivatives are now pre-calculated at the time points of the original data, rather than calculated during optimization from splines. This change reduces computational time by as much as 25%. (#4037)
-- Exposed the "dissipated energy" state variable allocated by the `SimTK::Force::LinearBushing` that is internal to `BushingForce`. 
-  This change fixed a bug in Moco where adding a `BushingForce` led to a segfault due to a mismatch between the size of the 
+- Exposed the "dissipated energy" state variable allocated by the `SimTK::Force::LinearBushing` that is internal to `BushingForce`.
+  This change fixed a bug in Moco where adding a `BushingForce` led to a segfault due to a mismatch between the size of the
   auxiliary state vector reserved by Moco and `SimTK::State::getZ()`. (#4054)
 
 

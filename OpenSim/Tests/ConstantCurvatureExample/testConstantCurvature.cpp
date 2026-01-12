@@ -29,12 +29,17 @@
 
 #include "OpenSim/Actuators/SpringGeneralizedForce.h"
 #include "OpenSim/Auxiliary/auxiliaryTestFunctions.h"
-#include "OpenSim/Simulation/Model/CoordinateLimitForce.h"
+#include "OpenSim/Common/Reporter.h"
+#include "OpenSim/Simulation/Model/Model.h"
 #include "OpenSim/Simulation/Model/Geometry.h"
+#include "OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.h"
+#include "OpenSim/Simulation/SimulationUtilities.h"
 #include <string>
 // #define VISUALIZE
 
-#include "OpenSim/OpenSim.h"
+#include <catch2/catch_all.hpp>
+
+namespace {
 
 using namespace SimTK;
 using namespace OpenSim;
@@ -220,7 +225,9 @@ void testJacobians3() {
     (void)J; // keep compiler from complaining
 }
 
-int main() {
+}
+
+TEST_CASE("testConstantCurvature") {
     testJacobians1();
     testJacobians2();
     testJacobians3();
@@ -353,6 +360,4 @@ int main() {
 
     // Simulate.
     simulate(model, state, 20.0);
-
-    return 0;
-};
+}

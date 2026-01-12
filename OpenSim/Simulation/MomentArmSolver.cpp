@@ -58,7 +58,7 @@ Refer to Moment-arm Theory document by Michael Sherman for details.
 
 **********************************************************************************/
 double MomentArmSolver::solve(const SimTK::State& state,
-        const Coordinate& aCoord, const GeometryPath& path) const {
+        const Coordinate& aCoord, const AbstractGeometryPath& path) const {
     //Local modifiable copy of the state
     SimTK::State& s_ma = _stateCopy;
     s_ma.updQ() = state.getQ();

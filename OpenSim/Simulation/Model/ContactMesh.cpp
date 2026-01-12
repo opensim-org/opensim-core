@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2025 Stanford University and the Authors                *
  * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,14 +21,15 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <fstream>
-#include <OpenSim/Common/IO.h>
-#include "ContactMesh.h"
-#include "Model.h"
+ #include "ContactMesh.h"
 
-namespace OpenSim {
+ #include <fstream>
+ #include <OpenSim/Common/IO.h>
+ #include <OpenSim/Simulation/Model/Model.h>
 
-ContactMesh::ContactMesh() 
+using namespace OpenSim;
+
+ContactMesh::ContactMesh()
 {
     setNull();
     constructProperties();
@@ -46,8 +47,10 @@ ContactMesh::ContactMesh(const std::string& filename,
     if (filename != ""){
         std::ifstream file;
         file.open(filename.c_str());
-        if (file.fail())
-            throw Exception("Error loading mesh file: "+filename+". The file should exist in same folder with model.\n Model loading is aborted.");
+        OPENSIM_THROW_IF_FRMOBJ(file.fail(), Exception,
+            "Error loading mesh file '{}': The file should exist in same "
+            "folder with model. Model loading is aborted.");
+
         file.close();
         SimTK::PolygonalMesh mesh;
         mesh.loadFile(filename);
@@ -93,8 +96,8 @@ void ContactMesh::setFilename(const std::string& filename)
     _decorativeGeometry.reset();
 }
 
-SimTK::ContactGeometry::TriangleMesh* ContactMesh::
-    loadMesh(const std::string& filename) const
+SimTK::ContactGeometry::TriangleMesh*
+ContactMesh::loadMesh(const std::string& filename) const
 {
     SimTK::PolygonalMesh mesh;
     std::ifstream file;
@@ -118,7 +121,10 @@ SimTK::ContactGeometry::TriangleMesh* ContactMesh::
     return new SimTK::ContactGeometry::TriangleMesh(mesh);
 }
 
-SimTK::ContactGeometry ContactMesh::createSimTKContactGeometry() const
+//=============================================================================
+// CONTACT GEOMETRY INTERFACE
+//=============================================================================
+SimTK::ContactGeometry ContactMesh::createSimTKContactGeometryImpl() const
 {
     if (!_geometry)
         _geometry.reset(loadMesh(get_filename()));
@@ -126,13 +132,14 @@ SimTK::ContactGeometry ContactMesh::createSimTKContactGeometry() const
 }
 
 //=============================================================================
-// VISUALIZER GEOMETRY
+// VISUALIZATION
 //=============================================================================
-void ContactMesh::generateDecorations(bool fixed, const ModelDisplayHints& hints,
-    const SimTK::State& s, SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
+void ContactMesh::generateDecorations(
+    bool fixed,
+    const ModelDisplayHints& hints,
+    const SimTK::State& s,
+    SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
 {
-    Super::generateDecorations(fixed, hints, s, geometry);
-
     // There is no fixed geometry to generate here.
     if (fixed) { return; }
 
@@ -160,7 +167,4 @@ void ContactMesh::generateDecorations(bool fixed, const ModelDisplayHints& hints
         .setColor(get_Appearance().get_color())
         .setScale(1)
         .setOpacity(get_Appearance().get_opacity()));
-    
 }
-
-} // end of namespace OpenSim

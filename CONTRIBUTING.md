@@ -13,7 +13,7 @@ Contents:
 - [Making a Pull Request](#making-a-pull-request-pr)
 - [Writing tests](#writing-tests)
 - [Running Moco tests](#running-moco-tests)
-- [Checking for Memory Leaks through GitHub](#checking-for-memory-leaks-through-github)
+- [Checking for Memory Leaks with LibASAN](#checking-for-memory-leaks-with-libasan)
 - [Coding Standards](#coding-standards)
 - [List of Contributors](#list-of-contributors)
 - [Contributor License Agreement](#contributor-license-agreement)
@@ -171,11 +171,6 @@ cmake --build ../osim-build/
 
 # (then run/test something: the runtime should now perform memory checks)
 ```
-
-
-Checking for Memory Leaks through GitHub
-----------------------------------------
-If you want to check memory leaks, you can have Travis-CI run valgrind on the test cases. Just put `[ci valgrind]` in your commit message.
 
 
 Coding Standards

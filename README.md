@@ -34,7 +34,7 @@ OpenSim is software that lets users develop models of musculoskeletal structures
 
 <!-- OpenSim Simulation -->
 <p align="center">
-    <img src="doc/images/opensim_running.gif" alt=Simulation of human running by Sam Hamner (doi:10.1016/j.jbiomech.2010.06.025)�>
+    <img src="doc/images/opensim_running.gif" alt=Simulation of human running by Sam Hamner (doi:10.1016/j.jbiomech.2010.06.025)>
 </p>
 
 More information can be found at our websites:
@@ -48,7 +48,7 @@ This repository contains:
  - OpenSim's C++ examples.
  - OpenSim's command-line applications (inverse kinematics, computed muscle control, etc.).
  - OpenSim's Java and Python bindings.
- 
+
 This repository does *not* include source code for the OpenSim GUI. The source code for the Opensim GUI can be found [here](https://github.com/opensim-org/opensim-gui).
 
 ## Download and Setup
@@ -74,12 +74,12 @@ Depending on your needs, there are different ways of downloading and setting up 
 
 ## Documentation
 
-OpenSim's documentation can be found in our [Documentation](https://simtk-confluence.stanford.edu/display/OpenSim/Documentation) website. 
+OpenSim's documentation can be found in our [Documentation](https://simtk-confluence.stanford.edu/display/OpenSim/Documentation) website.
 OpenSim's C++ API reference can be found [here](https://simtk.org/api_docs/opensim/api_docs/).
 
 A simple example of an elbow simulation in C++, Python and Matlab can be found in the [OpenSim API Example](https://github.com/opensim-org/opensim-core/wiki/OpenSim-API-Example) page of this repository's wiki.
 
-Examples and Tutorials for OpenSim can be found in the [Examples and tutorials](https://simtk-confluence.stanford.edu/display/OpenSim/Examples+and+Tutorials) website. These tutorials move from introductory to more advanced, so you can learn OpenSim in a progressive way. Additional OpenSim-based tutorials, homework problems, and project ideas are available on the [Biomechanics of Movement classroom site](https://simtk-confluence-homeworks.stanford.edu/pages/viewpage.action?pageId=5537857). 
+Examples and Tutorials for OpenSim can be found in the [Examples and tutorials](https://simtk-confluence.stanford.edu/display/OpenSim/Examples+and+Tutorials) website. These tutorials move from introductory to more advanced, so you can learn OpenSim in a progressive way. Additional OpenSim-based tutorials, homework problems, and project ideas are available on the [Biomechanics of Movement classroom site](https://simtk-confluence-homeworks.stanford.edu/pages/viewpage.action?pageId=5537857).
 
 ## Releases [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/opensim-org/opensim-core?include_prereleases)](https://github.com/opensim-org/opensim-core/releases)
 
@@ -99,11 +99,11 @@ There are many ways in which you can participate in this project. For example:
  - Review the [Documentation](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Documentation) and the [Wiki](https://github.com/opensim-org/opensim-core/wiki) by reporting typos, confusing explanations and adding/suggesting new content.
  - Fix bugs and contribute to OpenSim's source code by creating a [Pull Requests](https://github.com/opensim-org/opensim-core/pulls).
 
-Please, read our [Developer's guide](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Developer%27s+Guide), [Developer's Guidelines](https://github.com/opensim-org/opensim-core/blob/master/DEVELOPING.md) and our [Code of Conduct](https://github.com/opensim-org/opensim-core/blob/master/CODE_OF_CONDUCT.md) before making a pull request. 
+Please, read our [Developer's guide](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Developer%27s+Guide), [Developer's Guidelines](https://github.com/opensim-org/opensim-core/blob/master/DEVELOPING.md) and our [Code of Conduct](https://github.com/opensim-org/opensim-core/blob/master/CODE_OF_CONDUCT.md) before making a pull request.
 
 ## License [![License](https://img.shields.io/hexpm/l/apa)](https://github.com/opensim-org/opensim-core/blob/master/LICENSE.txt)
 
-Licensed under the Apache License, Version 2.0.  See the full text of the [Apache License, Version 2.0](https://github.com/opensim-org/opensim-core/blob/master/LICENSE.txt) for more information. This license makes OpenSim suitable for commercial, government, academic, and personal use. 
+Licensed under the Apache License, Version 2.0.  See the full text of the [Apache License, Version 2.0](https://github.com/opensim-org/opensim-core/blob/master/LICENSE.txt) for more information. This license makes OpenSim suitable for commercial, government, academic, and personal use.
 
 Third-party components have their own licenses. see our [Notice](https://github.com/opensim-org/opensim-core/blob/master/NOTICE), and [Acknowledgements](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Acknowledgements) webpages for more information.
 

@@ -21,7 +21,7 @@
 
 #include "Force.h"
 #include "ContactHalfSpace.h"
-#include "ContactSphere.h"
+#include "ContactGeometry.h"
 #include <OpenSim/Common/Set.h>
 
 namespace OpenSim {

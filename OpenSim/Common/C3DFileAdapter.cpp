@@ -106,20 +106,55 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     if(numMarkers != 0) {
 
         int marker_nrow = numFrames;
-        int marker_ncol = numMarkers;
 
         std::vector<double> marker_times(marker_nrow);
-        SimTK::Matrix_<SimTK::Vec3> marker_matrix(marker_nrow, marker_ncol);
 
-        std::vector<std::string> marker_labels{};
-        for (auto label : c3d.parameters().group("POINT")
-                .parameter("LABELS").valuesAsString()) {
-            marker_labels.push_back(SimTK::Value<std::string>(label));
+        // This returns the name of all points including non markers
+        std::vector<std::string> all_points(c3d.pointNames());
+        std::vector<std::string> non_marker_points;
+        // ANGLES
+        if (c3d.parameters().group("POINT").isParameter("ANGLES")) {
+            auto labels = c3d.parameters().group("POINT").parameter("ANGLES").valuesAsString();
+            non_marker_points.insert(non_marker_points.end(), labels.begin(), labels.end());
         }
+        // FORCES
+        if (c3d.parameters().group("POINT").isParameter("FORCES")) {
+            auto labels = c3d.parameters().group("POINT").parameter("FORCES").valuesAsString();
+            non_marker_points.insert(non_marker_points.end(), labels.begin(), labels.end());
+        }
+        // MOMENTS
+        if (c3d.parameters().group("POINT").isParameter("MOMENTS")) {
+            auto labels = c3d.parameters().group("POINT").parameter("MOMENTS").valuesAsString();
+            non_marker_points.insert(non_marker_points.end(), labels.begin(), labels.end());
+        }
+        // POWERS
+        if (c3d.parameters().group("POINT").isParameter("POWERS")) {
+            auto labels = c3d.parameters().group("POINT").parameter("POWERS").valuesAsString();
+            non_marker_points.insert(non_marker_points.end(), labels.begin(), labels.end());
+        }
+        // SCALARS
+        if (c3d.parameters().group("POINT").isParameter("SCALARS")) {
+            auto labels = c3d.parameters().group("POINT").parameter("SCALARS").valuesAsString();
+            non_marker_points.insert(non_marker_points.end(), labels.begin(), labels.end());
+        }
+        // Store the indices and names of markers only
+        std::vector<size_t> marker_indices;
+        std::vector<std::string> marker_labels;
+        for (size_t i = 0; i < all_points.size(); ++i) {
+            auto it = std::find(non_marker_points.begin(), non_marker_points.end(), all_points[i]);
+            if (it == non_marker_points.end()) {
+                marker_indices.push_back(i);
+                marker_labels.push_back(all_points[i]);
+            }
+        }
+
+        int marker_ncol = marker_labels.size();
+
+        SimTK::Matrix_<SimTK::Vec3> marker_matrix(marker_nrow, marker_ncol);
 
         double time_step{1.0 / pointFrequency};
         for(int f = 0; f < marker_nrow; ++f) {
-            SimTK::RowVector_<SimTK::Vec3> row{ numMarkers,
+            SimTK::RowVector_<SimTK::Vec3> row{ marker_ncol,
                                                 SimTK::Vec3(SimTK::NaN) };
             int m{0};
             // C3D standard is to read empty values as zero, but sets a
@@ -127,7 +162,8 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             // values as blank, instead of 0,  when exporting to .trc
             // See: C3D documention 3D Point Residuals
             // Read in value if it is not zero or residual is not -1
-            for(auto pt : c3d.data().frame(f).points().points()) {
+            for (size_t idx : marker_indices) {
+                ezc3d::DataNS::Points3dNS::Point pt = c3d.data().frame(f).points().point(idx);
                 if (!pt.isEmpty() ) {//residual is not -1
                     row[m] = SimTK::Vec3{ static_cast<double>(pt.x()),
                                           static_cast<double>(pt.y()),

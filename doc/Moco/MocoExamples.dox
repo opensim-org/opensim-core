@@ -235,7 +235,7 @@ name | model/motion | description | interfaces
 MocoTrack | lower-limb | Using the MocoTrack tool for walking with marker tracking and state tracking; generating a PDF report | [MATLAB](@ref exampleMocoTrack.m), [Python](@ref exampleMocoTrack.py), [C++](@ref exampleMocoTrack.cpp)
 MocoInverse | lower-limb | Using the MocoInverse tool for walking; MocoControlTrackingGoal; generating a PDF report | [MATLAB](@ref exampleMocoInverse.m), [Python](@ref exampleMocoInverse.py), [C++](@ref exampleMocoInverse.cpp)
 2DWalking | walking | MocoTrack, MocoStudy prediction, MocoControlGoal, MocoAverageSpeedGoal, MocoPeriodicityGoal, MocoContactTrackingGoal, createPeriodicSolution | [MATLAB](@ref example2DWalking.m), [Python](@ref example2DWalking.py), [C++](@ref example2DWalking.cpp)
-2DWalkingMetabolics | walking | MocoTrack, MocoControlGoal, MocoPeriodicityGoal, Bhargava2004SmoothedMuscleMetabolics | [MATLAB](@ref example2DWalkingMetabolics.m), [Python](@ref example2DWalkingMetabolics.cpp), [C++](@ref example2DWalkingMetabolics.cpp)
+2DWalkingMetabolics | walking | MocoTrack, MocoControlGoal, MocoPeriodicityGoal, Bhargava2004SmoothedMuscleMetabolics | [MATLAB](@ref example2DWalkingMetabolics.m), [Python](@ref example2DWalkingMetabolics.py), [C++](@ref example2DWalkingMetabolics.cpp)
 MarkerTracking10DOF | walking | MocoControlGoal, MocoMarkerTrackingGoal | [MATLAB](@ref exampleMarkerTracking10DOF.m)
 SquatToStand | torque-driven single leg | MocoStudy motion prediction, MocoInverse | [MATLAB](@ref exampleSquatToStand_answers.m) [Python](@ref exampleSquatToStand_answers.py)
 IMUTracking | torque-driven single leg | MocoStudy motion prediction, MocoAccelerationTrackingGoal | [MATLAB](@ref exampleIMUTracking_answers.m) [Python](@ref exampleIMUTracking_answers.py)

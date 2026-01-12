@@ -41,14 +41,17 @@ Tests Include:
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#include <catch2/catch_all.hpp>
+
 using namespace OpenSim;
 using namespace std;
+
+namespace {
 
 // Create Device as Concrete Container Component (like Model) of Components
 class Device : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(Device, ModelComponent);
 };
-
 
 //==============================================================================
 // Test Case Driver
@@ -103,27 +106,12 @@ void testPendulumModelWithNestedJoints()
     State& s = pendulum->initSystem();
 }
 
-int main()
-{
-    SimTK::Array_<std::string> failures;
+}
 
-    try { testPendulumModelWithNestedJoints<Device>(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testPendulumModelWithNestedJoints<Device>");
-    }
-    try { testPendulumModelWithNestedJoints<Model>(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testPendulumModelWithNestedJoints<Model>");
-    }
+TEST_CASE("testPendulumModelWithNestedJoints<Device>") {
+    testPendulumModelWithNestedJoints<Device>();
+}
 
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done. All cases passed." << endl;
-
-    return 0;
+TEST_CASE("testPendulumModelWithNestedJoints<Model>") {
+    testPendulumModelWithNestedJoints<Model>();
 }

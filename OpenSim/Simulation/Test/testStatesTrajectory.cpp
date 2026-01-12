@@ -23,10 +23,12 @@
 
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Common/Constant.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Actuators/PointActuator.h>
 #include <random>
 #include <cstdio>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <catch2/catch_all.hpp>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -41,6 +43,8 @@ using namespace SimTK;
 // TODO test modeling options (locked coordinates, etc.)
 // TODO store a model within a StatesTrajectory.
 
+namespace {
+
 const std::string statesStoFname = "testStatesTrajectory_readStorage_states.sto";
 const std::string pre40StoFname = "std_subject01_walk1_states.sto";
 
@@ -51,6 +55,119 @@ Real getStorageEntry(const Storage& sto,
     const int columnIndex = sto.getStateIndex(columnName);
     sto.getData(timeIndex, columnIndex, value);
     return value;
+}
+
+// Create states storage file to for states storage tests.
+void createStateStorageFile() {
+
+    Model model("gait2354_simbody.osim");
+
+    // To assist with creating interesting (non-zero) coordinate values:
+    model.updCoordinateSet().get("pelvis_ty").setDefaultLocked(true);
+
+    // Randomly assign muscle excitations to create interesting activation
+    // histories.
+    auto* controller = new PrescribedController();
+    // For consistent results, use same seed each time.
+    std::default_random_engine generator(0);
+    // Uniform distribution between 0.1 and 0.9.
+    std::uniform_real_distribution<double> distribution(0.1, 0.8);
+
+    for (int im = 0; im < model.getMuscles().getSize(); ++im) {
+        controller->addActuator(model.getMuscles()[im]);
+        controller->prescribeControlForActuator(
+            model.getMuscles()[im].getName(),
+            Constant(distribution(generator))
+            );
+    }
+
+    model.addController(controller);
+
+    auto& initState = model.initSystem();
+    Manager manager(model);
+    initState.setTime(0.0);
+    manager.initialize(initState);
+    manager.integrate(0.15);
+    manager.getStateStorage().print(statesStoFname);
+}
+
+Storage newStorageWithRemovedRows(const Storage& origSto,
+        const std::set<int>& rowsToRemove) {
+    Storage sto(1000);
+    auto labels = origSto.getColumnLabels();
+    auto numOrigColumns = origSto.getColumnLabels().getSize() - 1;
+
+    // Remove in reverse order so it's easier to keep track of indices.
+     for (auto it = rowsToRemove.rbegin(); it != rowsToRemove.rend(); ++it) {
+         labels.remove(*it);
+     }
+    sto.setColumnLabels(labels);
+
+    double time;
+    for (int itime = 0; itime < origSto.getSize(); ++itime) {
+        SimTK::Vector rowData(numOrigColumns);
+        origSto.getData(itime, numOrigColumns, rowData);
+
+        SimTK::Vector newRowData(numOrigColumns - (int)rowsToRemove.size());
+        int iNew = 0;
+        for (int iOrig = 0; iOrig < numOrigColumns; ++iOrig) {
+            if (rowsToRemove.count(iOrig) == 0) {
+                newRowData[iNew] = rowData[iOrig];
+                ++iNew;
+            }
+        }
+
+        origSto.getTime(itime, time);
+        sto.append(time, newRowData);
+    }
+    return sto;
+}
+
+void tableAndTrajectoryMatch(const Model& model,
+                             const TimeSeriesTable& table,
+                             const StatesTrajectory& states,
+                             std::vector<std::string> columns = {}) {
+
+    const auto stateNames = model.getStateVariableNames();
+
+    size_t numColumns{};
+    if (columns.empty()) {
+        numColumns = stateNames.getSize();
+    } else {
+        numColumns = columns.size();
+    }
+    SimTK_TEST(table.getNumColumns() == numColumns);
+    SimTK_TEST(table.getNumRows() == states.getSize());
+
+    const auto& colNames = table.getColumnLabels();
+
+    std::vector<int> stateValueIndices(colNames.size());
+    for (size_t icol = 0; icol < colNames.size(); ++icol) {
+        stateValueIndices[icol] = stateNames.findIndex(colNames[icol]);
+    }
+
+    SimTK::Vector stateValues; // working memory
+
+    // Test that the data table has exactly the same numbers.
+    for (size_t itime = 0; itime < states.getSize(); ++itime) {
+        // Test time.
+        SimTK_TEST(table.getIndependentColumn()[itime] ==
+                   states[itime].getTime());
+
+        stateValues = model.getStateVariableValues(states[itime]);
+
+        // Test state values.
+        for (size_t icol = 0; icol < table.getNumColumns(); ++icol) {
+            const auto& valueInStates = stateValues[stateValueIndices[icol]];
+
+            const auto& column = table.getDependentColumnAtIndex(icol);
+            const auto& valueInTable = column[static_cast<int>(itime)];
+
+            SimTK_TEST(valueInStates == valueInTable);
+        }
+    }
+}
+
 }
 
 void testPopulateTrajectoryAndStatesTrajectoryReporter() {
@@ -135,40 +252,6 @@ void testFrontBack() {
 
     SimTK_TEST(&states.front() == &states[0]);
     SimTK_TEST(&states.back() == &states[2]);
-}
-
-// Create states storage file to for states storage tests.
-void createStateStorageFile() {
-
-    Model model("gait2354_simbody.osim");
-
-    // To assist with creating interesting (non-zero) coordinate values:
-    model.updCoordinateSet().get("pelvis_ty").setDefaultLocked(true);
-
-    // Randomly assign muscle excitations to create interesting activation
-    // histories.
-    auto* controller = new PrescribedController();
-    // For consistent results, use same seed each time.
-    std::default_random_engine generator(0);
-    // Uniform distribution between 0.1 and 0.9.
-    std::uniform_real_distribution<double> distribution(0.1, 0.8);
-
-    for (int im = 0; im < model.getMuscles().getSize(); ++im) {
-        controller->addActuator(model.getMuscles()[im]);
-        controller->prescribeControlForActuator(
-            model.getMuscles()[im].getName(),
-            Constant(distribution(generator))
-            );
-    }
-
-    model.addController(controller);
-
-    auto& initState = model.initSystem();
-    Manager manager(model);
-    initState.setTime(0.0);
-    manager.initialize(initState);
-    manager.integrate(0.15);
-    manager.getStateStorage().print(statesStoFname);
 }
 
 void testFromStatesStorageGivesCorrectStates() {
@@ -266,38 +349,6 @@ void testFromStatesStorageGivesCorrectStates() {
 
         itime++;
     }
-}
-
-Storage newStorageWithRemovedRows(const Storage& origSto,
-        const std::set<int>& rowsToRemove) {
-    Storage sto(1000);
-    auto labels = origSto.getColumnLabels();
-    auto numOrigColumns = origSto.getColumnLabels().getSize() - 1;
-
-    // Remove in reverse order so it's easier to keep track of indices.
-     for (auto it = rowsToRemove.rbegin(); it != rowsToRemove.rend(); ++it) {
-         labels.remove(*it);
-     }
-    sto.setColumnLabels(labels);
-
-    double time;
-    for (int itime = 0; itime < origSto.getSize(); ++itime) {
-        SimTK::Vector rowData(numOrigColumns);
-        origSto.getData(itime, numOrigColumns, rowData);
-
-        SimTK::Vector newRowData(numOrigColumns - (int)rowsToRemove.size());
-        int iNew = 0;
-        for (int iOrig = 0; iOrig < numOrigColumns; ++iOrig) {
-            if (rowsToRemove.count(iOrig) == 0) {
-                newRowData[iNew] = rowData[iOrig];
-                ++iNew;
-            }
-        }
-
-        origSto.getTime(itime, time);
-        sto.append(time, newRowData);
-    }
-    return sto;
 }
 
 void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
@@ -511,7 +562,6 @@ void testFromStatesStoragePre40CorrectStates() {
     }
 }
 
-
 void testCopying() {
     Model model("gait2354_simbody.osim");
     auto& state = model.initSystem();
@@ -683,51 +733,6 @@ void testIntegrityChecks() {
     // and Z's both pass the check.
 }
 
-void tableAndTrajectoryMatch(const Model& model,
-                             const TimeSeriesTable& table,
-                             const StatesTrajectory& states,
-                             std::vector<std::string> columns = {}) {
-
-    const auto stateNames = model.getStateVariableNames();
-
-    size_t numColumns{};
-    if (columns.empty()) {
-        numColumns = stateNames.getSize();
-    } else {
-        numColumns = columns.size();
-    }
-    SimTK_TEST(table.getNumColumns() == numColumns);
-    SimTK_TEST(table.getNumRows() == states.getSize());
-
-    const auto& colNames = table.getColumnLabels();
-
-    std::vector<int> stateValueIndices(colNames.size());
-    for (size_t icol = 0; icol < colNames.size(); ++icol) {
-        stateValueIndices[icol] = stateNames.findIndex(colNames[icol]);
-    }
-
-    SimTK::Vector stateValues; // working memory
-
-    // Test that the data table has exactly the same numbers.
-    for (size_t itime = 0; itime < states.getSize(); ++itime) {
-        // Test time.
-        SimTK_TEST(table.getIndependentColumn()[itime] ==
-                   states[itime].getTime());
-
-        stateValues = model.getStateVariableValues(states[itime]);
-
-        // Test state values.
-        for (size_t icol = 0; icol < table.getNumColumns(); ++icol) {
-            const auto& valueInStates = stateValues[stateValueIndices[icol]];
-
-            const auto& column = table.getDependentColumnAtIndex(icol);
-            const auto& valueInTable = column[static_cast<int>(itime)];
-
-            SimTK_TEST(valueInStates == valueInTable);
-        }
-    }
-}
-
 void testExport() {
     Model gait("gait2354_simbody.osim");
     gait.initSystem();
@@ -774,38 +779,42 @@ void testExport() {
             OpenSim::Exception);
 }
 
-int main() {
-    SimTK_START_TEST("testStatesTrajectory");
-        // actuators library is not loaded automatically (unless using clang).
-        #if !defined(__clang__)
-            LoadOpenSimLibrary("osimActuators");
-        #endif
+TEST_CASE("testStatesTrajectory") {
 
-        // Make sure the states Storage file doesn't already exist; we'll
-        // generate it later and we don't want to use a stale one by accident.
-        remove(statesStoFname.c_str());
+    // The following model(s) contains Actuators that are registered when the
+    // osimActuators library is loaded. But unless we call at least one
+    // function defined in the osimActuators library, some linkers will omit
+    // its dependency from the executable and it will not be loaded at
+    // startup.
+    { PointActuator t; }
 
-        SimTK_SUBTEST(testPopulateTrajectoryAndStatesTrajectoryReporter);
-        SimTK_SUBTEST(testFrontBack);
-        SimTK_SUBTEST(testBoundsCheck);
-        SimTK_SUBTEST(testIntegrityChecks);
-        SimTK_SUBTEST(testAppendTimesAreNonDecreasing);
-        SimTK_SUBTEST(testCopying);
+    // Make sure the states Storage file doesn't already exist; we'll
+    // generate it later and we don't want to use a stale one by accident.
+    remove(statesStoFname.c_str());
 
-        // Test creation of trajectory from a states storage.
-        // -------------------------------------------------
+    SECTION("StatesTrajectory basics") {
+        testPopulateTrajectoryAndStatesTrajectoryReporter();
+        testFrontBack();
+        testBoundsCheck();
+        testIntegrityChecks();
+        testAppendTimesAreNonDecreasing();
+        testCopying();
+    }
+
+    SECTION("Creating a StatesTrajectory from Storage, pre-4.0") {
         // Using a pre-4.0 states storage file with old column names.
-        SimTK_SUBTEST(testFromStatesStoragePre40CorrectStates);
-        SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, pre40StoFname);
+        testFromStatesStoragePre40CorrectStates();
+        testFromStatesStorageInconsistentModel(pre40StoFname);
+    }
 
-        // v4.0 states storage
-        createStateStorageFile();
-        SimTK_SUBTEST(testFromStatesStorageGivesCorrectStates);
-        SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, statesStoFname);
-        SimTK_SUBTEST(testFromStatesStorageUniqueColumnLabels);
+    createStateStorageFile();
+    SECTION("Creating a StatesTrajectory from Storage, v4.0") {
+        testFromStatesStorageGivesCorrectStates();
+        testFromStatesStorageInconsistentModel(statesStoFname);
+        testFromStatesStorageUniqueColumnLabels();
+    }
 
-        // Export to data table.
-        SimTK_SUBTEST(testExport);
-
-    SimTK_END_TEST();
+    SECTION("Exporting to a table") {
+        testExport();
+    }
 }

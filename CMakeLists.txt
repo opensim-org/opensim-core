@@ -500,6 +500,12 @@ set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're bu
 
 set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping; requires that you have SWIG and Python installed on your machine.)")
 
+set(BUILD_PYTHON_WHEELS OFF CACHE BOOL "Build Python wrapping into a pypi package wheel")
+
+if(BUILD_PYTHON_WHEELS)
+  set(OPENSIM_PYTHON_STANDALONE ON CACHE BOOL "Enable Standalone python packaging" FORCE)
+endif()
+
 set(OPENSIM_PYTHON_VERSION 3)
 
 if(${BUILD_JAVA_WRAPPING})
@@ -564,31 +570,6 @@ if(${BUILD_PYTHON_WRAPPING})
     # OPENSIM_INSTALL_PYTHONDIR is used in OpenSimAddLibrary (in
     # OpenSimMacros.cmake).
 
-    if(APPLE AND ${OPENSIM_PYTHON_VERSION} STREQUAL "2")
-        # If you have Homebrew's Python2, then by default, PythonInterp finds
-        # Apple's Python, but PythonLibs finds Homebrew's Python, causing
-        # runtime crashes. This also occurs if one has Anaconda Python.
-        # So we use the python-config executable to get the
-        # correct library and include directory.
-        # https://github.com/Homebrew/legacy-homebrew/issues/25118
-        execute_process(COMMAND "${Python3_EXECUTABLE}-config" --prefix
-                    OUTPUT_VARIABLE python_prefix
-                    OUTPUT_STRIP_TRAILING_WHITESPACE)
-        string(CONCAT pyinc_desc
-            "Location of Python header files, to compile bindings. "
-            "Must be consistent with PYTHON_EXECUTABLE.")
-        set(PYTHON_INCLUDE_DIR
-            "${python_prefix}/include/python${python_version_majmin}/"
-            CACHE PATH "${pyinc_desc}")
-
-        string(CONCAT pylib_desc
-            "Location of Python library, to compile bindings. "
-            "Must be consistent with PYTHON_EXECUTABLE.")
-        set(PYTHON_LIBRARY
-            "${python_prefix}/lib/libpython${python_version_majmin}.dylib"
-            CACHE FILEPATH "${pylib_desc}")
-    endif()
-    
     # Most users need to copy dependencies if wrapping is on. Warn user
     # if it isn't on.
     if (NOT OPENSIM_COPY_DEPENDENCIES)
@@ -608,10 +589,10 @@ if (NOT OPENSIM_PYTHON_CONDA)
     include(InstallRequiredSystemLibraries)
 endif()
 
-# C++17
+# C++20
 # -----
-set(CMAKE_CXX_STANDARD 17)
-# Using C++17 is not optional.
+set(CMAKE_CXX_STANDARD 20)
+# Using C++20 is not optional.
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
@@ -850,7 +831,6 @@ endif()
 if (OPENSIM_WITH_CASADI)
     if(UNIX)
         pkg_check_modules(IPOPT REQUIRED ipopt IMPORTED_TARGET)
-
         if(OPENSIM_COPY_DEPENDENCIES AND APPLE)
             # Extract actual name of the library libgfortran, gcc, quadmath to install along on OSX.
             # These show only as dependencies of libipopt, and libgcc is in same folder as libgfortran.
@@ -867,7 +847,6 @@ if (OPENSIM_WITH_CASADI)
                 "otool -L ${IPOPT_LIBDIR}/libipopt.dylib  | grep 'libquadmath' | awk '{print $1}'"
                 OUTPUT_VARIABLE libquadmath_name
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
-            
             install(FILES
                 ${IPOPT_LIBDIR}/libipopt.3.dylib
                 ${IPOPT_LIBDIR}/libipopt.dylib
@@ -878,8 +857,7 @@ if (OPENSIM_WITH_CASADI)
                 ${libquadmath_name}
                 ${libgcc_name}
                 DESTINATION ${CMAKE_INSTALL_LIBDIR})
-                
-        elseif(OPENSIM_COPY_DEPENDENCIES AND LINUX)
+        elseif(OPENSIM_COPY_DEPENDENCIES)
             get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
 
             file(GLOB gfortran "${gcc_libdir}/../../../x86_64-linux-gnu/libgfortran*.so*")
@@ -896,6 +874,14 @@ if (OPENSIM_WITH_CASADI)
                 ${gfortran}
                 ${quadmath}
                 DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        endif()
+        if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+            OpenSimInstallDependencyLibraries(ipopt "${IPOPT_LIBDIR}"
+                "${IPOPT_LIBDIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+            OpenSimInstallDependencyLibraries(coin "${IPOPT_LIBDIR}"
+                "${IPOPT_LIBDIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+            OpenSimInstallDependencyLibraries(metis "${IPOPT_LIBDIR}"
+                "${IPOPT_LIBDIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
         endif()
     else()
         set(Ipopt_ROOT_DIR ${OPENSIM_DEPENDENCIES_DIR}/ipopt)
@@ -1090,3 +1076,8 @@ add_subdirectory(doc)
 # Print a list of the dependencies that were found, and the features the user
 # chose.
 feature_summary(WHAT ALL)
+
+if (BUILD_PYTHON_WHEELS)
+install(CODE "set(OPENSIM_INSTALL_PYTHONDIR \"${OPENSIM_INSTALL_PYTHONDIR}\")")
+install (SCRIPT "${CMAKE_SOURCE_DIR}/buildWheel.cmake")
+endif()

@@ -35,6 +35,7 @@
 %template(SetFrames) OpenSim::Set<OpenSim::Frame, OpenSim::ModelComponent>;
 %template(ModelComponentSetFrames)
 OpenSim::ModelComponentSet<OpenSim::Frame>;
+%include <OpenSim/Simulation/Model/StationDefinedFrame.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/Body.h>
 %template(SetBodies) OpenSim::Set<OpenSim::Body, OpenSim::ModelComponent>;
@@ -122,7 +123,6 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 %include <OpenSim/Simulation/Model/ContactHalfSpace.h>
 %include <OpenSim/Simulation/Model/ContactMesh.h>
-%include <OpenSim/Simulation/Model/ContactSphere.h>
 %include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 %include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 %include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
@@ -170,9 +170,6 @@ namespace OpenSim {
 %include <OpenSim/Simulation/Wrap/PathWrap.h>
 %template(SetPathWrap) OpenSim::Set<OpenSim::PathWrap, OpenSim::Object>;
 %include <OpenSim/Simulation/Wrap/PathWrapSet.h>
-%include <OpenSim/Simulation/Wrap/WrapCylinderObst.h>
-%include <OpenSim/Simulation/Wrap/WrapSphereObst.h>
-%include <OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.h>
 
 %include <OpenSim/Simulation/Model/Probe.h>
 %template(SetProbes) OpenSim::Set<OpenSim::Probe, OpenSim::ModelComponent>;
@@ -205,6 +202,7 @@ namespace OpenSim {
 %include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
 %include <OpenSim/Simulation/Model/GeometryPath.h>
 %include <OpenSim/Simulation/Model/FunctionBasedPath.h>
+%include <OpenSim/Simulation/Model/Scholz2015GeometryPath.h>
 %include <OpenSim/Simulation/Model/Ligament.h>
 %include <OpenSim/Simulation/Model/Blankevoort1991Ligament.h>
 %include <OpenSim/Simulation/Model/PathActuator.h>

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2025 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Ajay Seth                                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,18 +21,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//=============================================================================
-// INCLUDES
-//=============================================================================
 #include "Station.h"
-#include <OpenSim/Common/ScaleSet.h>
 
-//=============================================================================
-// STATICS
-//=============================================================================
-using namespace std;
+#include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Common/ModelDisplayHints.h>
+
 using namespace OpenSim;
-using SimTK::Vec3;
 
 // here for perf reasons: many functions take a const reference to a
 // std::string. Using a C string literal results in millions of temporary
@@ -43,101 +37,101 @@ static const std::string parentFrameKey{"parent_frame"};
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-Station::Station() : Point()
-{
+Station::Station() : Point() {
     setNull();
     constructProperties();
 }
 
-Station::Station(const PhysicalFrame& frame, const SimTK::Vec3& location)
-    : Point()
-{
+Station::Station(const PhysicalFrame& frame, const SimTK::Vec3& location) :
+        Point() {
     setNull();
     constructProperties();
     setParentFrame(frame);
     set_location(location);
 }
 
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-Station::~Station()
-{
+Station::~Station() {}
+
+void Station::setNull() {
+    setAuthors("Ayman Habib, Ajay Seth");
 }
 
-//_____________________________________________________________________________
-/**
-* Set the data members of this Station to their null values.
-*/
-void Station::setNull()
-{
-    setAuthors("Ayman Habib");
+void Station::constructProperties() {
+    constructProperty_location(SimTK::Vec3(0.0));
 }
 
-//_____________________________________________________________________________
-/**
-* Connect properties to local pointers.
-*/
-void Station::constructProperties()
-{
-    //Default location
-    SimTK::Vec3 origin(0.0, 0.0, 0.0);
-    // Location in Body 
-    constructProperty_location(origin);
-}
-
-
-/*
- * Return the parent frame with respect to which this station is defined
-*/
-const PhysicalFrame& Station::getParentFrame() const
-{
+//=============================================================================
+// ACCESSORS
+//=============================================================================
+const PhysicalFrame& Station::getParentFrame() const {
     return getSocket<PhysicalFrame>(parentFrameKey).getConnectee();
 }
 
-/*
- * setParentFrame sets the "parent_frame" connection
- */
-void Station::setParentFrame(const OpenSim::PhysicalFrame& aFrame)
-{
+void Station::setParentFrame(const OpenSim::PhysicalFrame& aFrame) {
     connectSocket_parent_frame(aFrame);
 }
 
 SimTK::Vec3 Station::findLocationInFrame(const SimTK::State& s,
-        const OpenSim::Frame& aFrame) const
-{
-    // transform location from the station's frame to the other frame
-    return getParentFrame().findStationLocationInAnotherFrame(s, 
-                                                get_location(), aFrame);
+        const OpenSim::Frame& aFrame) const {
+    return getParentFrame().findStationLocationInAnotherFrame(s, get_location(),
+            aFrame);
 }
 
-void Station::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
-{
+//=============================================================================
+// MODEL COMPONENT INTERFACE
+//=============================================================================
+void Station::extendScale(const SimTK::State& s, const ScaleSet& scaleSet) {
     Super::extendScale(s, scaleSet);
 
     // Get scale factors (if an entry for the parent Frame's base Body exists).
-    const Vec3& scaleFactors = getScaleFactors(scaleSet, getParentFrame());
-    if (scaleFactors == ModelComponent::InvalidScaleFactors)
+    const SimTK::Vec3& scaleFactors =
+            getScaleFactors(scaleSet, getParentFrame());
+    if (scaleFactors == ModelComponent::InvalidScaleFactors) {
         return;
+    }
 
     upd_location() = get_location().elementwiseMultiply(scaleFactors);
 }
 
-SimTK::Vec3 Station::calcLocationInGround(const SimTK::State& s) const
-{
+//=============================================================================
+// COMPONENT INTERFACE
+//=============================================================================
+void Station::generateDecorations(bool fixed,
+        const ModelDisplayHints& hints, const SimTK::State& state,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {
+    Super::generateDecorations(fixed, hints, state, geometry);
+    generateDecorationsImpl(fixed, hints, state, geometry);
+}
+
+//=============================================================================
+// STATION INTERFACE
+//=============================================================================
+void Station::generateDecorationsImpl(bool fixed,
+        const ModelDisplayHints& hints, const SimTK::State& state,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {
+    if (!fixed) { return; }
+    if (!hints.get_show_stations()) { return; }
+
+    const OpenSim::PhysicalFrame& frame = getParentFrame();
+    geometry.push_back(
+        SimTK::DecorativeSphere(.005).setBodyId(frame.getMobilizedBodyIndex())
+        .setColor(SimTK::Vec3(0., 1.0, 0.)).setOpacity(1.0)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawWireframe)
+        .setTransform(frame.findTransformInBaseFrame() * get_location())
+        .setScaleFactors(SimTK::Vec3(1.0)));
+}
+
+//=============================================================================
+// POINT INTERFACE
+//=============================================================================
+SimTK::Vec3 Station::calcLocationInGround(const SimTK::State& s) const {
     return getParentFrame().getTransformInGround(s)*get_location();
 }
 
-SimTK::Vec3 Station::calcVelocityInGround(const SimTK::State& s) const
-{
-    // compute the local position vector of the station in its reference frame
-    // expressed in ground
-    Vec3 r = getParentFrame().getTransformInGround(s).R()*get_location();
+SimTK::Vec3 Station::calcVelocityInGround(const SimTK::State& s) const {
+    // Compute the local position vector of the Station in its reference frame,
+    // expressed in ground.
+    SimTK::Vec3 r = getParentFrame().getTransformInGround(s).R()*get_location();
     const SimTK::SpatialVec& V_GF = getParentFrame().getVelocityInGround(s);
 
     // The velocity of the station in ground is a function of its frame's
@@ -146,15 +140,14 @@ SimTK::Vec3 Station::calcVelocityInGround(const SimTK::State& s) const
     return V_GF[1] + V_GF[0] % r;
 }
 
-SimTK::Vec3 Station::calcAccelerationInGround(const SimTK::State& s) const
-{
+SimTK::Vec3 Station::calcAccelerationInGround(const SimTK::State& s) const {
     // The spatial velocity of the reference frame expressed in ground
     const SimTK::SpatialVec& V_GF = getParentFrame().getVelocityInGround(s);
     // The spatial acceleration of the reference frame expressed in ground
     const SimTK::SpatialVec& A_GF = getParentFrame().getAccelerationInGround(s);
-    // compute the local position vector of the point in its reference frame
+    // Compute the local position vector of the point in its reference frame
     // expressed in ground
-    Vec3 r = getParentFrame().getTransformInGround(s).R()*get_location();
+    SimTK::Vec3 r = getParentFrame().getTransformInGround(s).R()*get_location();
 
     // The acceleration of the station in ground is a function of its frame's
     // linear (aF = A_GF[1]) and angular (alpha = A_GF[0]) accelerations and

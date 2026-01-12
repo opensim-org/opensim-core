@@ -17,6 +17,7 @@
 #include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/OffsetFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/Model/StationDefinedFrame.h>
 
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/ForceProducer.h>
@@ -76,9 +77,6 @@
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include <OpenSim/Simulation/Wrap/PathWrapSet.h>
-#include <OpenSim/Simulation/Wrap/WrapCylinderObst.h>
-#include <OpenSim/Simulation/Wrap/WrapSphereObst.h>
-#include <OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.h>
 
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
@@ -117,6 +115,7 @@
 #include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/FunctionBasedPath.h>
+#include <OpenSim/Simulation/Model/Scholz2015GeometryPath.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
 #include <OpenSim/Simulation/Model/Blankevoort1991Ligament.h>
 

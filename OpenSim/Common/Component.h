@@ -55,6 +55,8 @@
 #include <OpenSim/Common/osimCommonDLL.h>
 
 #include <functional>
+#include <memory>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 
@@ -669,6 +671,41 @@ public:
     * @throws ComponentAlreadyPartOfOwnershipTree
     * @param subcomponent is the Component to be added. */
     void addComponent(Component* subcomponent);
+
+#ifndef SWIG
+    /**
+     * Returns `subcomponent` if `subcomponent` was successfully extracted from
+     * this `Component`.
+     *
+     * Specifically, this tries to extract a direct sub-`Component` that was
+     * previously added via `addComponent`, or existed in the `<components>` list
+     * XML of this `Component`.
+     */
+    std::unique_ptr<Component> extractComponent(Component* subcomponent);
+
+    template<
+        typename T,
+        std::enable_if_t<std::is_base_of_v<Component, T>, bool> = true
+    >
+    std::unique_ptr<T> extractComponent(T* subcomponent)
+    {
+        // If the type of `subcomponent` is known at compile-time then it is also
+        // known that the return value will be `subcomponent`, which will have the
+        // same type.
+        std::unique_ptr<Component> typeErased = extractComponent(static_cast<Component*>(subcomponent));
+        return std::unique_ptr<T>{static_cast<T*>(typeErased.release())};
+    }
+#endif
+
+    /**
+     * Returns `true` if `subcomponent`, which should be a direct subcomponent
+     * of this component, was successfully removed from this component.
+     *
+     * Specifically, this tries to remove a direct component that was
+     * previously added via `addComponent`, or existed in the `<components>`
+     * list XML for this component.
+     */
+    bool removeComponent(Component* subcomponent);
 
     /**
      * Get an iterator through the underlying subcomponents that this component is
@@ -3525,10 +3562,10 @@ public:
                 foundCs.push_back(&comp);
                 // TODO Revisit why the exact match isn't found when
                 // when what appears to be the complete path.
-                log_debug("{} Found '{}' as a match for: Component '{}' of "
-                          "type {}, but it is not on the specified path.",
-                          msg, compAbsPath.toString(),
-                          comp.getConcreteClassName());
+                log_debug("{} Found '{}' as a match for: Component '{}', "
+                          "but it is not on the specified path.",
+                        msg, compAbsPath.toString(),
+                        comp.getConcreteClassName());
                 //throw Exception(details, __FILE__, __LINE__);
             }
         }

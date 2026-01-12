@@ -61,6 +61,7 @@
 #include "Model/MovingPathPoint.h"
 #include "Model/GeometryPath.h"
 #include "Model/FunctionBasedPath.h"
+#include "Model/Scholz2015GeometryPath.h"
 #include "Model/PrescribedForce.h"
 #include "Model/PointToPointSpring.h"
 #include "Model/ExpressionBasedPointToPointForce.h"
@@ -97,9 +98,6 @@
 #include "Wrap/WrapSphere.h"
 #include "Wrap/WrapTorus.h"
 #include "Wrap/WrapObjectSet.h"
-#include "Wrap/WrapCylinderObst.h"
-#include "Wrap/WrapSphereObst.h"
-#include "Wrap/WrapDoubleCylinderObst.h"
 
 #include "SimbodyEngine/SimbodyEngine.h"
 #include "SimbodyEngine/Body.h"

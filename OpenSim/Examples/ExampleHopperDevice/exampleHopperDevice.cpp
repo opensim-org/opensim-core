@@ -44,7 +44,7 @@ static const double REPORTING_INTERVAL{ 0.2 };
 static const double FINAL_TIME{ 5.0 };
 
 static const std::string testbedAttachment1{"ground"};
-static const std::string testbedAttachment2{"load"};
+static const std::string testbedAttachment2{"bodyset/load"};
 
 //TODO: Provide the name of the coordinate corresponding to the hopper's height.
 //      Hint: the hopper's pelvis is attached to ground with a vertical slider
@@ -95,7 +95,7 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
 
     // Configure the device to wrap over the patella (if one exists; there is no
     // patella in the testbed).
-    const std::string patellaPath("thigh/patellaFrame/patella");
+    const std::string patellaPath("/bodyset/thigh/patellaFrame/wrapobjectset/patella");
     if (model.hasComponent<WrapCylinder>(patellaPath)) {
         auto& cable = model.updComponent<PathActuator>("device/cableAtoB");
         auto& wrapObject = model.updComponent<WrapCylinder>(patellaPath);

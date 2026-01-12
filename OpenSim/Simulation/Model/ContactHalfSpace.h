@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2025 Stanford University and the Authors                *
  * Author(s): Peter Eastman                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -22,17 +22,22 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-// INCLUDE
+
 #include "ContactGeometry.h"
 
 namespace OpenSim {
 
 /**
- * This class represents a half space (that is, everything to one side of an
- * infinite plane) for use in contact modeling.  In its local coordinate
- * system, all points for which x>0 are considered to be inside the geometry.
- * Its location and orientation properties can be used to move and rotate it to
- * represent other half spaces.
+ * \section ContactHalfSpace
+ * A class that represents a half space (that is, everything to one side of an
+ * infinite plane) for use in contact modeling.
+ *
+ * In its local coordinate system, all points for which x>0 are considered to be
+ * inside the geometry. Its location and orientation properties can be used to
+ * move and rotate it to represent other half spaces.
+ *
+ * A `SimTK::ContactGeometry::TriangleMesh` is constructed when
+ * `createSimTKContactGeometry()` is called.
  *
  * @author Peter Eastman
  */
@@ -48,6 +53,7 @@ public:
      * Construct an empty, uninitialized ContactHalfSpace.
      */
     ContactHalfSpace();
+
     /**
      * Construct a ContactHalfSpace.  All points in its local coordinate system
      * for which x>0 are considered to be inside the geometry.
@@ -61,6 +67,7 @@ public:
     ContactHalfSpace(const SimTK::Vec3& location,
                      const SimTK::Vec3& orientation,
                      const PhysicalFrame& frame);
+
     /**
      * Construct a ContactHalfSpace.  All points in its local coordinate system
      * for which x>0 are considered to be inside the geometry.
@@ -77,21 +84,22 @@ public:
                      const PhysicalFrame& frame,
                      const std::string& name);
 
-    SimTK::ContactGeometry createSimTKContactGeometry() const override;
-
-    // VISUALIZATION
+    /** @name Visualization */
+    // @{
     void generateDecorations(bool fixed, const ModelDisplayHints& hints,
         const SimTK::State& s,
         SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
+    // @}
+
 private:
+    // CONTACT GEOMETRY INTERFACE
+    SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
+
     // INITIALIZATION
     void setNull();
 
-//=============================================================================
-};  // END of class ContactHalfSpace
-//=============================================================================
-//=============================================================================
+};
 
-} // end of namespace OpenSim
+} // namespace OpenSim
 
-#endif // OPENSIM_CONTACT_HALF_SPACE_H_ 
+#endif // OPENSIM_CONTACT_HALF_SPACE_H_

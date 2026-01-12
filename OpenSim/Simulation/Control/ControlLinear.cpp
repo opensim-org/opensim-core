@@ -286,7 +286,7 @@ getParameterList(double aT,Array<int> &rList)
 
     // FIND THE NODE
     _searchNode.setTime(aT);
-    int i = _xNodes.searchBinary(_searchNode);
+    int i = searchBinary(_xNodes, _searchNode);
 
     // LESS THAN TIME OF FIRST NODE
     if(i<0) {
@@ -297,7 +297,7 @@ getParameterList(double aT,Array<int> &rList)
         rList.append(size-1);
 
     // EQUAL & LINEAR INTERPOLATION
-    } else if((!_useSteps) && (_searchNode == (*_xNodes.get(i)) )) {
+    } else if((!_useSteps) && (_searchNode.isEqual((*_xNodes.get(i))))) {
         rList.append(i);
 
     // BETWEEN & LINEAR INTERPOLATION
@@ -327,12 +327,12 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 
     // LOWER NODE
     _searchNode.setTime(aTLower);
-    int iL = _xNodes.searchBinary(_searchNode);
+    int iL = searchBinary(_xNodes, _searchNode);
     if(iL==-1) {
         iL += 1;
     } else if(iL==(size-1)) {
         return(0);
-    } else if( (*_xNodes.get(iL)) == _searchNode ) {
+    } else if( (*_xNodes.get(iL)).isEqual(_searchNode) ) {
         iL += 1;
     } else {
         iL += 2;
@@ -340,10 +340,10 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList)
 
     // UPPER NODE
     _searchNode.setTime(aTUpper);
-    int iU = _xNodes.searchBinary(_searchNode);
+    int iU = searchBinary(_xNodes, _searchNode);
     if(iU==-1) {
         return(0);
-    } else if( (*_xNodes.get(iU)) < _searchNode) {
+    } else if( (*_xNodes.get(iU)).isLessThan(_searchNode) ) {
         iU += 1;
     }
 
@@ -380,7 +380,7 @@ void ControlLinear::
 setControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT,double aValue)
 {
     ControlLinearNode node(aT,aValue);
-    int lower = aNodes.searchBinary(node);
+    int lower = searchBinary(aNodes, node);
 
     // NO NODE
     if(lower<0) {
@@ -392,7 +392,7 @@ setControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT,double aValue)
         int upper = lower + 1;
 
         // EQUAL TO LOWER NODE
-        if( (*aNodes[lower]) == node) {
+        if( (*aNodes[lower]).isEqual(node) ) {
             aNodes[lower]->setTime(aT);
             aNodes[lower]->setValue(aValue);
 
@@ -400,7 +400,7 @@ setControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT,double aValue)
         } else if(upper<aNodes.getSize()) {
 
             // EQUAL TO UPPER NODE
-            if( (*aNodes[upper]) == node) {
+            if( (*aNodes[upper]).isEqual(node) ) {
                 aNodes[upper]->setTime(aT);
                 aNodes[upper]->setValue(aValue);
 
@@ -426,7 +426,7 @@ getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT)
 
     // GET NODE
     _searchNode.setTime(aT);
-    int i = aNodes.searchBinary(_searchNode);
+    int i = searchBinary(aNodes, _searchNode);
 
     // BEFORE FIRST
     double value;
@@ -510,6 +510,47 @@ extrapolateAfter(ArrayPtrs<ControlLinearNode> &aNodes,double aT) const
     double value = Interpolate(t1,v1,t2,v2,aT);
 
     return(value);
+}
+
+int ControlLinear::
+searchBinary(const ArrayPtrs<ControlLinearNode>& nodes,
+        const ControlLinearNode& value) const
+{
+    const int size = nodes.getSize();
+    if(size <= 0) {
+        return -1;
+    }
+
+    int lo = 0;
+    int hi = size - 1;
+    int mid = -1;
+
+    while(lo <= hi) {
+        mid = (lo + hi) / 2;
+        const ControlLinearNode& candidate = *nodes[mid];
+
+        if(value.isLessThan(candidate)) {
+            hi = mid - 1;
+        } else if(candidate.isLessThan(value)) {
+            lo = mid + 1;
+        } else {
+            break;
+        }
+    }
+
+    if(mid < 0) {
+        return -1;
+    }
+
+    if(value.isLessThan(*nodes[mid])) {
+        mid--;
+    }
+
+    if(mid < 0) {
+        return -1;
+    }
+
+    return mid;
 }
 
 //-----------------------------------------------------------------------------
@@ -743,7 +784,7 @@ filter(double aT)
     // FIND CONTROL NODE
     // Find the control node at time aT
     _searchNode.setTime(aT);
-    int i = _xNodes.searchBinary(_searchNode);
+    int i = searchBinary(_xNodes, _searchNode);
     // The following property is true after binary search:
     // _xNodes[i].getValue() <= getControlValue(aT)
     // i.e. the node whose index (i) was returned is the node
@@ -767,7 +808,7 @@ filter(double aT)
         return;
     }
     // True iff _xNodes[i] occurs at aT
-    bool nodeOccursAtGivenTime = (_searchNode == (*_xNodes.get(i)));
+    bool nodeOccursAtGivenTime = (_searchNode.isEqual((*_xNodes.get(i))));
     // This if statement represents the case where the second
     // node occurs at aT.
     if ((i == 1) && nodeOccursAtGivenTime) {
@@ -778,7 +819,7 @@ filter(double aT)
     // HANDLE ALL OTHER CASES
     double dt, dtPrev, xPrev, xPrevPrev;
     // If the time of the node at index i is equal to aT (where
-    // "equal" is determined by the operator== function of the
+    // "equal" is determined by the isEqual function of the
     // ControlLinearNode class):
     // (i <= 1 cases were handled above)
     if (nodeOccursAtGivenTime) {

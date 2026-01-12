@@ -49,6 +49,7 @@ your component produces. The currently-supported flags are:
   - show muscle paths (should apply to other path objects too)
   - show path points
   - show markers
+  - show stations
   - show forces
   - show frames
   - show labels
@@ -87,6 +88,10 @@ public:
 
     OpenSim_DECLARE_PROPERTY(show_markers, bool,
         "Flag to indicate whether or not to show markers, default to true.");
+
+    OpenSim_DECLARE_PROPERTY(show_stations, bool,
+        "Flag to indicate whether or not to show stations, default to false.");
+
     OpenSim_DECLARE_PROPERTY(marker_color, SimTK::Vec3,
         "Color is RGB, each components is in the range [0, 1], default to pink.");
 
@@ -119,6 +124,7 @@ private:
         constructProperty_show_path_geometry(true);
         constructProperty_show_path_points(true);
         constructProperty_show_markers(true);
+        constructProperty_show_stations(false);
         constructProperty_marker_color(SimTK::Vec3(1, .6, .8));
         constructProperty_show_frames(false);
         constructProperty_show_labels(false);

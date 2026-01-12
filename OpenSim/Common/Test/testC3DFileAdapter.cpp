@@ -33,6 +33,10 @@
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/Stopwatch.h>
 
+#include <catch2/catch_all.hpp>
+
+namespace {
+
 template<typename ETY = SimTK::Real>
 void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
             const OpenSim::TimeSeriesTable_<ETY>& table2,
@@ -220,9 +224,13 @@ void test(const std::string filename) {
 
 }
 
-int main() {
-    SimTK_START_TEST("testC3DFileAdapter");
-        SimTK_SUBTEST1(test, "walking2.c3d");
-        SimTK_SUBTEST1(test, "walking5.c3d");
-    SimTK_END_TEST();
+}
+
+TEST_CASE("testC3DFileAdapter") {
+    SECTION("walking2.c3d") {
+        test("walking2.c3d");
+    }
+    SECTION("walking5.c3d") {
+        test("walking5.c3d");
+    }
 }

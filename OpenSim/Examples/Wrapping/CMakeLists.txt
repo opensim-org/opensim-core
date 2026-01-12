@@ -1,0 +1,1 @@
+OpenSimAddExampleCXX(NAME exampleScholz2015GeometryPath SUBDIR Wrapping)

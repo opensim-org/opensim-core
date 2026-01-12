@@ -145,7 +145,7 @@ public:
         The provided value will be clamped to the coordinate's range if
         the coordinate is clamped and enforceConstraints is true.
         */
-    void setValue(SimTK::State& s, double aValue, bool enforceContraints=true) const;
+    void setValue(SimTK::State& s, double aValue, bool enforceConstraints=true) const;
 
     /** get the speed value of the Coordinate from the state */
     double getSpeedValue(const SimTK::State& s) const;

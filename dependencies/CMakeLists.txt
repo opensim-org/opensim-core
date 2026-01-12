@@ -24,14 +24,14 @@ function(SetDefaultCMakeInstallPrefix)
     get_filename_component(BASE_DIR ${BASE_DIR} DIRECTORY)
     # Default install prefix for OpenSim dependencies. If user changes
     # CMAKE_INSTALL_PREFIX, this directory will be removed.
-    set(DEFAULT_CMAKE_INSTALL_PREFIX 
+    set(DEFAULT_CMAKE_INSTALL_PREFIX
         ${BASE_DIR}/opensim_dependencies_install
         CACHE
         INTERNAL
         "Default CMAKE_INSTALL_PREFIX for OpenSim dependencies.")
 
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-        set(CMAKE_INSTALL_PREFIX 
+        set(CMAKE_INSTALL_PREFIX
             ${DEFAULT_CMAKE_INSTALL_PREFIX}
             CACHE
             PATH
@@ -179,13 +179,13 @@ SetDefaultCMakeBuildType()
 AddDependency(NAME       ezc3d
               DEFAULT    OFF
               GIT_URL    https://github.com/pyomeca/ezc3d.git
-              GIT_TAG    Release_1.5.8
+              GIT_TAG    Release_1.5.19
               CMAKE_ARGS -DBUILD_EXAMPLE:BOOL=OFF)
 
 AddDependency(NAME       simbody
               DEFAULT    ON
               GIT_URL    https://github.com/simbody/simbody.git
-              GIT_TAG    f260ff30381826728da721226151e733715d0df9
+              GIT_TAG    f9ab12cbad9d0da106473259d34c50577f934f49
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
                          ${SIMBODY_EXTRA_CMAKE_ARGS})
@@ -268,7 +268,7 @@ else()
         ExternalProject_Add(metis
             # URL    http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
             URL    https://sourceforge.net/projects/myosin/files/metis-5.1.0.tar.gz/download
-            CONFIGURE_COMMAND cd <SOURCE_DIR> && ${CMAKE_MAKE_PROGRAM} shared=1 config "prefix=${CMAKE_INSTALL_PREFIX}/ipopt" BUILDDIR=bdir
+            CONFIGURE_COMMAND cd <SOURCE_DIR> && ${CMAKE_MAKE_PROGRAM} CMAKE_POLICY_VERSION_MINIMUM=4.0 shared=1 config "prefix=${CMAKE_INSTALL_PREFIX}/ipopt" BUILDDIR=bdir
             BUILD_COMMAND cd <SOURCE_DIR>/bdir && ${CMAKE_MAKE_PROGRAM}
             INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/ipopt"
             INSTALL_COMMAND cd <SOURCE_DIR>/bdir && ${CMAKE_MAKE_PROGRAM} install)

@@ -69,13 +69,10 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    WrapResult() = default;
+    WrapResult();
     virtual ~WrapResult() = default;
     WrapResult(const WrapResult& other);
     WrapResult& operator=(const WrapResult& aWrapResult);
-
-private:
-    void copyData(const WrapResult& aWrapResult);
 
 //=============================================================================
 };  // END of class WrapResult

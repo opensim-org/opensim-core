@@ -6,8 +6,8 @@ cmake_minimum_required(VERSION 3.2)
 # ---------
 set(TARGET checkEnvironment CACHE STRING "Name of example to build")
 
-# OpenSim uses c++17 language features.
-set(CMAKE_CXX_STANDARD 17)
+# OpenSim uses c++20 language features.
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find and hook up to OpenSim.

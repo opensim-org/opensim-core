@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20302">
+	<InverseDynamicsTool name="subject01_walk1">
+		<!--Directory used for writing results.-->
+		<results_directory> ResultsInverseDynamics </results_directory>
+		<!--Directory for input files-->
+		<input_directory>  </input_directory>
+		<!--Name of the .osim file used to construct a model.-->
+		<model_file> subject01_simbody.osim </model_file>
+		<!--Time range over which the inverse dynamics problem is solved.-->
+		<time_range>       0.40000000       1.60000000 </time_range>
+		<!--List of forces by individual or grouping name (e.g. All, actuators,
+		    muscles, ...) to be excluded when computing model dynamics.-->
+		<forces_to_exclude> Muscles </forces_to_exclude>
+		<!--XML file (.xml) containing the external loads applied to the model as
+		    a set of ExternalForce(s).-->
+		<external_loads_file> subject01_walk1_grf.xml </external_loads_file>
+		<!--The name of the file containing coordinate data. Can be a motion
+		    (.mot) or a states (.sto) file.-->
+		<coordinates_file> subject01_walk1_ik.mot </coordinates_file>
+		<!--Low-pass cut-off frequency for filtering the coordinates_file data
+		    (currently does not apply to states_file or speeds_file). A negative
+		    value results in no filtering. The default value is -1.0, so no
+		    filtering.-->
+		<lowpass_cutoff_frequency_for_coordinates>       6.00000000 </lowpass_cutoff_frequency_for_coordinates>
+		<!--Name of the storage file (.sto) to which the results should be
+		    written.-->
+		<output_gen_force_file> inverse_dynamics.sto </output_gen_force_file>
+	</InverseDynamicsTool>
+</OpenSimDocument>
+

@@ -1,6 +1,5 @@
 
 
-# TODO: Use OpenSimAddLibrary() macro.
 set(MOCO_SOURCES
         osimMoco.h
         osimMocoDLL.h
@@ -138,8 +137,13 @@ if(OPENSIM_WITH_CASADI)
             )
 endif()
 
-add_library(osimMoco SHARED ${MOCO_SOURCES})
-target_link_libraries(osimMoco PUBLIC osimTools)
+OpenSimAddLibrary(
+    KIT Moco
+    AUTHORS "Chris_Dembia-Nick_Bianco"
+    LINKLIBS PUBLIC osimTools
+    SOURCES ${MOCO_SOURCES}
+    )
+
 if (OPENSIM_WITH_CASADI)
     target_link_libraries(osimMoco PRIVATE casadi)
 endif()
@@ -148,11 +152,6 @@ target_include_directories(osimMoco INTERFACE
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-set_target_properties(osimMoco PROPERTIES
-        DEFINE_SYMBOL OSIMMOCO_EXPORTS
-        PROJECT_LABEL "osimMoco"
-        FOLDER "Libraries"
-        )
 if (OPENSIM_WITH_CASADI)
     target_compile_definitions(osimMoco PUBLIC OPENSIM_WITH_CASADI)
 endif ()
@@ -166,7 +165,7 @@ target_compile_definitions(osimMoco PRIVATE
 OpenSimAddInstallRPATHSelf(TARGET osimMoco LOADER)
 OpenSimAddInstallRPATHSimbody(TARGET osimMoco LOADER
         FROM "${CMAKE_INSTALL_LIBDIR}")
-install(TARGETS osimMoco EXPORT OpenSimTargets
+install(TARGETS EXPORT OpenSimTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

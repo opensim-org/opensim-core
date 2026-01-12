@@ -160,23 +160,18 @@ void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
     Super::updateFromXMLNode(aNode, versionNumber);
 }
 
-void Marker::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
-    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
-{
-    Super::generateDecorations(fixed, hints, state, appendToThis);
+void Marker::generateDecorationsImpl(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& state,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {
     if (!fixed) return;
     if (!hints.get_show_markers()) return;
-    
+
     // @TODO default color, size, shape should be obtained from hints
     const Vec3 color = hints.get_marker_color();
     const OpenSim::PhysicalFrame& frame = getParentFrame();
-    //const Frame& bf = frame.findBaseFrame();
-    //SimTK::Transform bTrans = frame.findTransformInBaseFrame();
-    //const Vec3& p_BM = bTrans*get_location();
-    appendToThis.push_back(
+    geometry.push_back(
         SimTK::DecorativeSphere(.01).setBodyId(frame.getMobilizedBodyIndex())
-        .setColor(color).setOpacity(1.0)
-        .setTransform(get_location())
-        .setScaleFactors(Vec3(1)));
-    
+            .setColor(color).setOpacity(1.0)
+            .setTransform(frame.findTransformInBaseFrame() * get_location())
+            .setScaleFactors(Vec3(1)));
 }

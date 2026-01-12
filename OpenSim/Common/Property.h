@@ -35,6 +35,7 @@
 #include "SimTKcommon/internal/Array.h"
 #include "SimTKcommon/internal/ClonePtr.h"
 
+#include <memory>
 #include <iomanip>
 #include <set>
 
@@ -519,15 +520,22 @@ public:
         return adoptAndAppendValueVirtual(value);
     }
     /** Remove specific entry of the list at index **/
-    void removeValueAtIndex(int index) {
-        if (index > getNumValues() || index < 0)
-            throw OpenSim::Exception("Property<T>::removeValueAtIndex(): Property " + getName()
-                + "invalid index, out of range, ignored.");
-        if (getNumValues() - 1 < this->getMinListSize() || getNumValues() - 1 > this->getMaxListSize())
-            throw OpenSim::Exception("Property<T>::removeValueAtIndex(): Property " + getName()
-                + "resulting list has improper size, ignored.");
-        removeValueAtIndexVirtual(index);
+    void removeValueAtIndex(int index) { extractValueAtIndex(index); }
+
+#ifndef SWIG
+    /** Extract a specific entry of the list at index **/
+    std::unique_ptr<T> extractValueAtIndex(int index)
+    {
+        if (index > getNumValues() || index < 0) {
+            throw OpenSim::Exception("Property<T>::extractValueAtIndex(): Property " + getName() + "invalid index, out of range, ignored.");
+        }
+        if (getNumValues() - 1 < this->getMinListSize() || getNumValues() - 1 > this->getMaxListSize()) {
+            throw OpenSim::Exception("Property<T>::extractValueAtIndex(): Property " + getName() + "resulting list has improper size, ignored.");
+        }
+        return extractValueAtIndexVirtual(index);
     }
+#endif
+
     /** Search the value list for an element that has the given \a value and
     return its index if found, otherwise -1. This requires only that the 
     template type T supports operator==(). This is a linear search so will 
@@ -600,7 +608,7 @@ protected:
     virtual void setValueVirtual(int index, const T& value) = 0;
     virtual int appendValueVirtual(const T& value) = 0;
     virtual int adoptAndAppendValueVirtual(T* value) = 0;
-    virtual void removeValueAtIndexVirtual(int index) = 0;
+    virtual std::unique_ptr<T> extractValueAtIndexVirtual(int index) = 0;
     /** @endcond **/
 #endif
 };
@@ -1017,8 +1025,17 @@ private:
     {   values.push_back(*valuep); // make a copy
         delete valuep; // throw out the old one
         return values.size()-1; }
-    void removeValueAtIndexVirtual(int index) override final
-    {   values.erase(&values[index]);  }
+
+#ifndef SWIG
+    std::unique_ptr<T> extractValueAtIndexVirtual(int index) override final
+    {
+        T* p = &values.at(index);
+        auto extracted = std::make_unique<T>(*p);
+        values.erase(p);
+        return extracted;
+    }
+#endif
+
     // This is the default implementation; specialization is required if
     // the Simbody default behavior is different than OpenSim's; e.g. for
     // Transform serialization.
@@ -1195,10 +1212,17 @@ public:
                 return i;
         return -1;
     }
-    // Remove value at specific index
-    void removeValueAtIndexVirtual(int index) override {
-        objects.erase(&objects.at(index));
+
+#ifndef SWIG
+    // Extract (remove and return) a value at a specific index
+    std::unique_ptr<T> extractValueAtIndexVirtual(int index) override
+    {
+        SimTK::ClonePtr<T>* p = &objects.at(index);
+        std::unique_ptr<T> extracted{p->release()};
+        objects.erase(p);
+        return extracted;
     }
+#endif
 private:
     // Base class checks the index.
     const T& getValueVirtual(int index) const override final 

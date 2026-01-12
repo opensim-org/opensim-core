@@ -5,6 +5,7 @@ set(TEST_PROGS
         testWrapObject.cpp
         testWrapCylinder.cpp
         testGeometryPathWrapping.cpp
+        testScholz2015GeometryPath.cpp
 )
 file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 

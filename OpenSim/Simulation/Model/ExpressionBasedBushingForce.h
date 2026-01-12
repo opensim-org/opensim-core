@@ -42,7 +42,7 @@ namespace OpenSim {
  * delta_z). These user defined expressions can capture nonlinearities and 
  * coupling common in biologic structures.  
  *
- * A bushing force is the resistive force due to defection between two frames. 
+ * A bushing force is the resistive force due to deflection between two frames. 
  * One can think of the Bushing as being composed of 3 translational and 3 
  * torsional spring-dampers, which act along or about the bushing frame axes. 
  * Orientations are measured as x-y-z body-fixed Euler rotations.
