@@ -31,32 +31,79 @@
 
 using namespace OpenSim;
 
-const std::string MeyerFregly2016Muscle::STATE_ACTIVATION_NAME("activation");
+//=============================================================================
+// CONSTANTS
+//=============================================================================
 
-// We must define these variables in some compilation unit (pre-C++17).
-// https://stackoverflow.com/questions/40690260/undefined-reference-error-for-static-constexpr-member?noredirect=1&lq=1
-constexpr double MeyerFregly2016Muscle::b11;
-constexpr double MeyerFregly2016Muscle::b21;
-constexpr double MeyerFregly2016Muscle::b31;
-constexpr double MeyerFregly2016Muscle::b41;
-constexpr double MeyerFregly2016Muscle::b12;
-constexpr double MeyerFregly2016Muscle::b22;
-constexpr double MeyerFregly2016Muscle::b32;
-constexpr double MeyerFregly2016Muscle::b42;
-constexpr double MeyerFregly2016Muscle::b13;
-constexpr double MeyerFregly2016Muscle::b23;
-constexpr double MeyerFregly2016Muscle::b33;
-constexpr double MeyerFregly2016Muscle::b43;
-constexpr double MeyerFregly2016Muscle::m_minNormFiberLength;
-constexpr double MeyerFregly2016Muscle::m_maxNormFiberLength;
-constexpr int MeyerFregly2016Muscle::m_mdi_passiveFiberElasticForce;
-constexpr int MeyerFregly2016Muscle::m_mdi_passiveFiberDampingForce;
-constexpr int
-        MeyerFregly2016Muscle::m_mdi_partialPennationAnglePartialFiberLength;
-constexpr int MeyerFregly2016Muscle::
-        m_mdi_partialFiberForceAlongTendonPartialFiberLength;
-constexpr int
-        MeyerFregly2016Muscle::m_mdi_partialTendonForcePartialFiberLength;
+// Notation for the following curve parameters comes from the supplemental
+// material of the De Groote et al., 2016 paper, which the MeyerFregly2016Muscle
+// implementation is based on:
+//
+// De Groote, F., Kinney, A. L., Rao, A. V., & Fregly, B. J. (2016). Evaluation
+// of Direct Collocation Optimal Control Problem Formulations for Solving the
+// Muscle Redundancy Problem. Annals of Biomedical Engineering, 44(10), 1–15.
+// http://doi.org/10.1007/s10439-016-1591-9
+
+// Parameters for the active fiber force-length curve.
+constexpr static double b11 = 0.8174335195120225;
+constexpr static double b21 = 1.054348561163096;
+constexpr static double b31 = 0.16194288662761705;
+constexpr static double b41 = 0.06381565266097716;
+constexpr static double b12 = 0.43130780147182907;
+constexpr static double b22 = 0.7163004817144202;
+constexpr static double b32 = -0.029060905806803296;
+constexpr static double b42 = 0.19835014521987723;
+constexpr static double b13 = 0.1;
+constexpr static double b23 = 1.0;
+constexpr static double b33 = 0.353553390593274; // 0.5 * sqrt(0.5)
+constexpr static double b43 = 0.0;
+
+// Parameters for the passive fiber force-length curve.
+constexpr static double e1 = 0.232000797810576;
+constexpr static double e2 = 12.438535493526128;
+constexpr static double e3 = 1.329470475731338;
+
+// Exponential shape factor.
+constexpr static double kPE = 4.0;
+
+// Parameters for the tendon force curve.
+constexpr static double c1 = 0.200;
+// Horizontal asymptote as x -> -inf is -c3.
+// Normalized force at 0 strain is c1 * exp(-c2) - c3.
+// This parameter is 0.995 in De Groote et al., which causes the y-value at
+// 0 strain to be negative. We use 1.0 so that the y-value at 0 strain is 0
+// (since c2 == c3).
+constexpr static double c2 = 1.0;
+// This parameter is 0.250 in De Groote et al., which causes
+// lim(x->-inf) = -0.25 instead of -0.20.
+constexpr static double c3 = 0.200;
+
+// Parameters for the force-velocity curve.
+constexpr static double d1 = -32.51401019139919;
+constexpr static double d2 = 22.160392466960214;
+constexpr static double d3 = 18.7932134796918;
+constexpr static double d4 = 6.320952269683997;
+constexpr static double d5 = -0.27671677680513945;
+constexpr static double d6 = 8.053304562566995;
+
+constexpr static double m_minNormFiberLength = 0.2;
+constexpr static double m_maxNormFiberLength = 1.8;
+
+// Indices for MuscleDynamicsInfo::userDefinedDynamicsExtras.
+constexpr static int m_mdi_passiveFiberElasticForce = 0;
+constexpr static int m_mdi_passiveFiberDampingForce = 1;
+constexpr static int m_mdi_partialPennationAnglePartialFiberLength = 2;
+constexpr static int m_mdi_partialFiberForceAlongTendonPartialFiberLength = 3;
+constexpr static int m_mdi_partialTendonForcePartialFiberLength = 4;
+
+static const std::string STATE_ACTIVATION_NAME = "activation";
+
+//=============================================================================
+// CONSTRUCTION
+//=============================================================================
+MeyerFregly2016Muscle::MeyerFregly2016Muscle() {
+    constructProperties();
+}
 
 void MeyerFregly2016Muscle::constructProperties() {
     constructProperty_activation_time_constant(0.015);
@@ -68,6 +115,9 @@ void MeyerFregly2016Muscle::constructProperties() {
     constructProperty_activation_dynamics_smoothing(0.1);
 }
 
+//=============================================================================
+// COMPONENT INTERFACE
+//=============================================================================
 void MeyerFregly2016Muscle::extendFinalizeFromProperties() {
     Super::extendFinalizeFromProperties();
     if (!get_ignore_tendon_compliance()) {
@@ -194,14 +244,215 @@ void MeyerFregly2016Muscle::computeStateVariableDerivatives(
     }
 }
 
+//=============================================================================
+// MODEL COMPONENT INTERFACE
+//=============================================================================
+void MeyerFregly2016Muscle::extendPostScale(
+        const SimTK::State& s, const ScaleSet& scaleSet) {
+    Super::extendPostScale(s, scaleSet);
+
+    AbstractGeometryPath& path = updPath();
+    if (path.getPreScaleLength(s) > 0.0) {
+        double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
+        upd_optimal_fiber_length() *= scaleFactor;
+        upd_tendon_slack_length() *= scaleFactor;
+
+        // Clear the pre-scale length that was stored in the path.
+        path.setPreScaleLength(s, 0.0);
+    }
+}
+
+//=============================================================================
+// ACTUATOR INTERFACE
+//=============================================================================
 double MeyerFregly2016Muscle::computeActuation(const SimTK::State& s) const {
     const auto& mdi = getMuscleDynamicsInfo(s);
     setActuation(s, mdi.tendonForce);
     return mdi.tendonForce;
 }
 
+//=============================================================================
+// MUSCLE INTERFACE
+//=============================================================================
+ double MeyerFregly2016Muscle::getActivation(const SimTK::State& s) const {
+    // We override the Muscle's implementation because Muscle requires
+    // realizing to Dynamics to access activation from MuscleDynamicsInfo,
+    // which is unnecessary if the activation is a state.
+    if (get_ignore_activation_dynamics()) {
+        return getControl(s);
+    } else {
+        return getStateVariableValue(s, STATE_ACTIVATION_NAME);
+    }
+}
+
+void MeyerFregly2016Muscle::setActivation(SimTK::State& s,
+        double activation) const {
+    if (get_ignore_activation_dynamics()) {
+        SimTK::Vector& controls(getModel().updControls(s));
+        setControls(SimTK::Vector(1, activation), controls);
+        getModel().setControls(s, controls);
+    } else {
+        setStateVariableValue(s, STATE_ACTIVATION_NAME, activation);
+    }
+    markCacheVariableInvalid(s, "velInfo");
+    markCacheVariableInvalid(s, "dynamicsInfo");
+}
+
+double MeyerFregly2016Muscle::calcInextensibleTendonActiveFiberForce(
+        SimTK::State& s, double activation) const {
+    MuscleLengthInfo mli;
+    FiberVelocityInfo fvi;
+    MuscleDynamicsInfo mdi;
+    const double muscleTendonLength = getLength(s);
+    const double muscleTendonVelocity = getLengtheningSpeed(s);
+    calcMuscleLengthInfoHelper(muscleTendonLength, mli);
+    calcFiberVelocityInfoHelper(
+            muscleTendonVelocity, activation, mli, fvi);
+    calcMuscleDynamicsInfoHelper(activation, mli, fvi, mdi);
+
+    return mdi.activeFiberForce;
+}
+
+void MeyerFregly2016Muscle::calcMuscleLengthInfo(
+        const SimTK::State& s, MuscleLengthInfo& mli) const {
+
+    const auto& muscleTendonLength = getLength(s);
+    calcMuscleLengthInfoHelper(muscleTendonLength, mli);
+
+    if (mli.tendonLength < get_tendon_slack_length()) {
+        log_info("MeyerFregly2016Muscle '{}' is buckling (length < "
+                 "tendon_slack_length) at time {} s.",
+                getName(), s.getTime());
+    }
+}
+
+void MeyerFregly2016Muscle::calcFiberVelocityInfo(
+        const SimTK::State& s, FiberVelocityInfo& fvi) const {
+
+    const auto& mli = getMuscleLengthInfo(s);
+    const auto& muscleTendonVelocity = getLengtheningSpeed(s);
+    const auto& activation = getActivation(s);
+
+    calcFiberVelocityInfoHelper(muscleTendonVelocity, activation, mli, fvi);
+
+    if (fvi.normFiberVelocity < -1.0) {
+        log_info("MeyerFregly2016Muscle '{}' is exceeding maximum "
+                 "contraction velocity at time {} s.",
+                getName(), s.getTime());
+    }
+}
+
+void MeyerFregly2016Muscle::calcMuscleDynamicsInfo(
+        const SimTK::State& s, MuscleDynamicsInfo& mdi) const {
+    const auto& activation = getActivation(s);
+    const auto& mli = getMuscleLengthInfo(s);
+    const auto& fvi = getFiberVelocityInfo(s);
+
+    calcMuscleDynamicsInfoHelper(activation, mli, fvi, mdi);
+}
+
+void MeyerFregly2016Muscle::calcMusclePotentialEnergyInfo(
+        const SimTK::State& s, MusclePotentialEnergyInfo& mpei) const {
+    const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
+    calcMusclePotentialEnergyInfoHelper(mli, mpei);
+}
+
+void MeyerFregly2016Muscle::computeInitialFiberEquilibrium(SimTK::State&) const {
+    // This is a rigid tendon model, so no computation is needed here.
+    return;
+}
+
+//=============================================================================
+// ACCESSORS
+//=============================================================================
+
+double MeyerFregly2016Muscle::getPassiveFiberElasticForce(
+        const SimTK::State& s) const {
+    return getMuscleDynamicsInfo(s)
+            .userDefinedDynamicsExtras[m_mdi_passiveFiberElasticForce];
+}
+double MeyerFregly2016Muscle::getPassiveFiberElasticForceAlongTendon(
+        const SimTK::State& s) const {
+    return getMuscleDynamicsInfo(s)
+               .userDefinedDynamicsExtras[m_mdi_passiveFiberElasticForce] *
+           getMuscleLengthInfo(s).cosPennationAngle;
+}
+double MeyerFregly2016Muscle::getPassiveFiberDampingForce(
+        const SimTK::State& s) const {
+    return getMuscleDynamicsInfo(s)
+               .userDefinedDynamicsExtras[m_mdi_passiveFiberDampingForce];
+}
+double MeyerFregly2016Muscle::getPassiveFiberDampingForceAlongTendon(
+        const SimTK::State& s) const {
+    return getMuscleDynamicsInfo(s)
+               .userDefinedDynamicsExtras[m_mdi_passiveFiberDampingForce] *
+           getMuscleLengthInfo(s).cosPennationAngle;
+}
+
+SimTK::Vec2 MeyerFregly2016Muscle::getBoundsNormalizedFiberLength() const {
+    return {m_minNormFiberLength, m_maxNormFiberLength};
+}
+
+//=============================================================================
+// CALCULATION METHODS
+//=============================================================================
+SimTK::Real MeyerFregly2016Muscle::calcActiveForceLengthMultiplier(
+        SimTK::Real normFiberLength) const {
+    const double& scale = get_active_force_width_scale();
+    // Shift the curve so its peak is at the origin, scale it
+    // horizontally, then shift it back so its peak is still at x = 1.0.
+    const double x = (normFiberLength - 1.0) / scale + 1.0;
+    return calcGaussianLikeCurve(x, b11, b21, b31, b41) +
+           calcGaussianLikeCurve(x, b12, b22, b32, b42) +
+           calcGaussianLikeCurve(x, b13, b23, b33, b43);
+}
+
+SimTK::Real MeyerFregly2016Muscle::calcActiveForceLengthMultiplierDerivative(
+        SimTK::Real normFiberLength) const {
+    const double& scale = get_active_force_width_scale();
+    // Shift the curve so its peak is at the origin, scale it
+    // horizontally, then shift it back so its peak is still at x = 1.0.
+    const double x = (normFiberLength - 1.0) / scale + 1.0;
+    return (1.0 / scale) *
+           (calcGaussianLikeCurveDerivative(x, b11, b21, b31, b41) +
+            calcGaussianLikeCurveDerivative(x, b12, b22, b32, b42) +
+            calcGaussianLikeCurveDerivative(x, b13, b23, b33, b43));
+}
+
+SimTK::Real MeyerFregly2016Muscle::calcForceVelocityMultiplier(
+        SimTK::Real normFiberVelocity) {
+    return d1 + d2 * atan(d3 + d4 * atan(d5 + d6 * normFiberVelocity));
+}
+
+SimTK::Real MeyerFregly2016Muscle::calcForceVelocityInverseCurve(
+        SimTK::Real forceVelocityMult) {
+    // The version of this equation in the supplementary materials of De
+    // Groote et al., 2016 has an error (it's missing a "-d3" before
+    // dividing by "d2").
+
+    return (tan((tan((forceVelocityMult - d1) / d2) - d3) / d4) - d5) / d6;
+}
+
+SimTK::Real MeyerFregly2016Muscle::calcPassiveForceMultiplier(
+        SimTK::Real normFiberLength) const {
+    if (get_ignore_passive_fiber_force()) return 0;
+
+    return e1 * log(exp(e2 * (normFiberLength - e3)) + 1);
+}
+
+SimTK::Real MeyerFregly2016Muscle::calcPassiveForceMultiplierDerivative(
+        SimTK::Real normFiberLength) const {
+    if (get_ignore_passive_fiber_force()) return 0;
+
+    return e1 / (exp(e2 * (normFiberLength - e3)) + 1) *
+            exp(e2 * (normFiberLength - e3)) * e2;
+}
+
+//=============================================================================
+// HELPER FUNCTIONS
+//=============================================================================
 void MeyerFregly2016Muscle::calcMuscleLengthInfoHelper(
-        const SimTK::Real& muscleTendonLength, MuscleLengthInfo& mli) const {
+        SimTK::Real muscleTendonLength, MuscleLengthInfo& mli) const {
 
     // Tendon.
     // -------
@@ -235,7 +486,7 @@ void MeyerFregly2016Muscle::calcMuscleLengthInfoHelper(
 }
 
 void MeyerFregly2016Muscle::calcFiberVelocityInfoHelper(
-        const SimTK::Real& muscleTendonVelocity, const SimTK::Real& activation,
+        SimTK::Real muscleTendonVelocity, SimTK::Real activation,
         const MuscleLengthInfo& mli, FiberVelocityInfo& fvi) const {
 
     fvi.normTendonVelocity = 0.0;
@@ -258,7 +509,7 @@ void MeyerFregly2016Muscle::calcFiberVelocityInfoHelper(
 }
 
 void MeyerFregly2016Muscle::calcMuscleDynamicsInfoHelper(
-        const SimTK::Real& activation, const MuscleLengthInfo& mli,
+        SimTK::Real activation, const MuscleLengthInfo& mli,
         const FiberVelocityInfo& fvi, MuscleDynamicsInfo& mdi) const {
 
     mdi.activation = activation;
@@ -351,8 +602,6 @@ void MeyerFregly2016Muscle::calcMuscleDynamicsInfoHelper(
 void MeyerFregly2016Muscle::calcMusclePotentialEnergyInfoHelper(
         const MuscleLengthInfo& mli, MusclePotentialEnergyInfo& mpei) const {
 
-    // Based on Millard2012EquilibriumMuscle::calcMusclePotentialEnergyInfo().
-
     // Fiber potential energy.
     // -----------------------
     mpei.fiberPotentialEnergy =
@@ -367,248 +616,4 @@ void MeyerFregly2016Muscle::calcMusclePotentialEnergyInfoHelper(
     // -----------------------
     mpei.musclePotentialEnergy =
             mpei.fiberPotentialEnergy + mpei.tendonPotentialEnergy;
-}
-
-void MeyerFregly2016Muscle::calcMuscleLengthInfo(
-        const SimTK::State& s, MuscleLengthInfo& mli) const {
-
-    const auto& muscleTendonLength = getLength(s);
-    calcMuscleLengthInfoHelper(muscleTendonLength, mli);
-
-    if (mli.tendonLength < get_tendon_slack_length()) {
-        // TODO the Millard model sets fiber velocity to zero when the
-        //       tendon is buckling, but this may create a discontinuity.
-        log_info("MeyerFregly2016Muscle '{}' is buckling (length < "
-                 "tendon_slack_length) at time {} s.",
-                getName(), s.getTime());
-    }
-}
-
-void MeyerFregly2016Muscle::calcFiberVelocityInfo(
-        const SimTK::State& s, FiberVelocityInfo& fvi) const {
-
-    const auto& mli = getMuscleLengthInfo(s);
-    const auto& muscleTendonVelocity = getLengtheningSpeed(s);
-    const auto& activation = getActivation(s);
-
-    calcFiberVelocityInfoHelper(muscleTendonVelocity, activation, mli, fvi);
-
-    if (fvi.normFiberVelocity < -1.0) {
-        log_info("MeyerFregly2016Muscle '{}' is exceeding maximum "
-                 "contraction velocity at time {} s.",
-                getName(), s.getTime());
-    }
-}
-
-void MeyerFregly2016Muscle::calcMuscleDynamicsInfo(
-        const SimTK::State& s, MuscleDynamicsInfo& mdi) const {
-    const auto& activation = getActivation(s);
-    const auto& mli = getMuscleLengthInfo(s);
-    const auto& fvi = getFiberVelocityInfo(s);
-
-    calcMuscleDynamicsInfoHelper(activation, mli, fvi, mdi);
-}
-
-void MeyerFregly2016Muscle::calcMusclePotentialEnergyInfo(
-        const SimTK::State& s, MusclePotentialEnergyInfo& mpei) const {
-    const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
-    calcMusclePotentialEnergyInfoHelper(mli, mpei);
-}
-
-double
-OpenSim::MeyerFregly2016Muscle::calcInextensibleTendonActiveFiberForce(
-        SimTK::State& s, double activation) const {
-    MuscleLengthInfo mli;
-    FiberVelocityInfo fvi;
-    MuscleDynamicsInfo mdi;
-    const double muscleTendonLength = getLength(s);
-    const double muscleTendonVelocity = getLengtheningSpeed(s);
-    calcMuscleLengthInfoHelper(muscleTendonLength, mli);
-    calcFiberVelocityInfoHelper(
-            muscleTendonVelocity, activation, mli, fvi);
-    calcMuscleDynamicsInfoHelper(activation, mli, fvi, mdi);
-
-    return mdi.activeFiberForce;
-}
-
-double MeyerFregly2016Muscle::getPassiveFiberElasticForce(
-        const SimTK::State& s) const {
-    return getMuscleDynamicsInfo(s)
-            .userDefinedDynamicsExtras[m_mdi_passiveFiberElasticForce];
-}
-double MeyerFregly2016Muscle::getPassiveFiberElasticForceAlongTendon(
-        const SimTK::State& s) const {
-    return getMuscleDynamicsInfo(s)
-                   .userDefinedDynamicsExtras[m_mdi_passiveFiberElasticForce] *
-           getMuscleLengthInfo(s).cosPennationAngle;
-}
-double MeyerFregly2016Muscle::getPassiveFiberDampingForce(
-        const SimTK::State& s) const {
-    return getMuscleDynamicsInfo(s)
-            .userDefinedDynamicsExtras[m_mdi_passiveFiberDampingForce];
-}
-double MeyerFregly2016Muscle::getPassiveFiberDampingForceAlongTendon(
-        const SimTK::State& s) const {
-    return getMuscleDynamicsInfo(s)
-                   .userDefinedDynamicsExtras[m_mdi_passiveFiberDampingForce] *
-           getMuscleLengthInfo(s).cosPennationAngle;
-}
-
-DataTable MeyerFregly2016Muscle::exportFiberLengthCurvesToTable(
-        const SimTK::Vector& normFiberLengths) const {
-    SimTK::Vector def;
-    const SimTK::Vector* x = nullptr;
-    if (normFiberLengths.nrow()) {
-        x = &normFiberLengths;
-    } else {
-        def = createVectorLinspace(
-                200, m_minNormFiberLength, m_maxNormFiberLength);
-        x = &def;
-    }
-
-    DataTable table;
-    table.setColumnLabels(
-            {"active_force_length_multiplier", "passive_force_multiplier"});
-    SimTK::RowVector row(2);
-    for (int irow = 0; irow < x->nrow(); ++irow) {
-        const auto& normFiberLength = x->get(irow);
-        row[0] = calcActiveForceLengthMultiplier(normFiberLength);
-        row[1] = calcPassiveForceMultiplier(normFiberLength);
-        table.appendRow(normFiberLength, row);
-    }
-    return table;
-}
-
-DataTable MeyerFregly2016Muscle::exportFiberVelocityMultiplierToTable(
-        const SimTK::Vector& normFiberVelocities) const {
-    SimTK::Vector def;
-    const SimTK::Vector* x = nullptr;
-    if (normFiberVelocities.nrow()) {
-        x = &normFiberVelocities;
-    } else {
-        def = createVectorLinspace(200, -1.1, 1.1);
-        x = &def;
-    }
-
-    DataTable table;
-    table.setColumnLabels({"force_velocity_multiplier"});
-    SimTK::RowVector row(1);
-    for (int irow = 0; irow < x->nrow(); ++irow) {
-        const auto& normFiberVelocity = x->get(irow);
-        row[0] = calcForceVelocityMultiplier(normFiberVelocity);
-        table.appendRow(normFiberVelocity, row);
-    }
-    return table;
-}
-
-void MeyerFregly2016Muscle::printCurvesToSTOFiles(
-        const std::string& directory) const {
-    const std::string prefix =
-            directory + SimTK::Pathname::getPathSeparator() + getName();
-    STOFileAdapter::write(exportFiberLengthCurvesToTable(),
-            prefix + "_fiber_length_curves.sto");
-    STOFileAdapter::write(exportFiberVelocityMultiplierToTable(),
-            prefix + "_fiber_velocity_multiplier.sto");
-}
-
-void MeyerFregly2016Muscle::replaceMuscles(
-        Model& model, bool allowUnsupportedMuscles) {
-
-    model.finalizeConnections();
-
-    // Create path actuators from muscle properties and add to the model. Save
-    // a list of pointers of the muscles to delete.
-    std::vector<Muscle*> musclesToDelete;
-    auto& muscleSet = model.updMuscles();
-    for (int im = 0; im < muscleSet.getSize(); ++im) {
-        auto& muscBase = muscleSet.get(im);
-
-        // Pre-emptively create a default MeyerFregly2016Muscle
-        // (TODO: not ideal to do this).
-        auto actu = std::make_unique<MeyerFregly2016Muscle>();
-
-        // Perform muscle-model-specific mappings or throw exception if the
-        // muscle is not supported.
-        if (auto musc = dynamic_cast<Millard2012EquilibriumMuscle*>(
-                    &muscBase)) {
-
-            actu->set_default_activation(musc->get_default_activation());
-            actu->set_activation_time_constant(
-                    musc->get_activation_time_constant());
-            actu->set_deactivation_time_constant(
-                    musc->get_deactivation_time_constant());
-            actu->set_fiber_damping(musc->get_fiber_damping());
-
-        } else if (auto musc = dynamic_cast<Thelen2003Muscle*>(&muscBase)) {
-
-            actu->set_default_activation(musc->getDefaultActivation());
-            actu->set_activation_time_constant(
-                    musc->get_activation_time_constant());
-            actu->set_deactivation_time_constant(
-                    musc->get_deactivation_time_constant());
-            // Fiber damping needs to be hardcoded at zero since it is not a
-            // property of the Thelen2003 muscle.
-            actu->set_fiber_damping(0);
-
-        } else {
-            OPENSIM_THROW_IF(!allowUnsupportedMuscles, Exception,
-                    "Muscle '{}' of type {} is unsupported and "
-                    "allowUnsupportedMuscles=false.",
-                    muscBase.getName(), muscBase.getConcreteClassName());
-            continue;
-        }
-
-        // Perform all the common mappings at base class level (OpenSim::Muscle)
-        actu->setName(muscBase.getName());
-        muscBase.setName(muscBase.getName() + "_delete");
-        actu->set_appliesForce(muscBase.get_appliesForce());
-        actu->setMinControl(muscBase.getMinControl());
-        actu->setMaxControl(muscBase.getMaxControl());
-
-        actu->setMaxIsometricForce(muscBase.getMaxIsometricForce());
-        actu->setOptimalFiberLength(muscBase.getOptimalFiberLength());
-        actu->setTendonSlackLength(muscBase.getTendonSlackLength());
-        actu->setPennationAngleAtOptimalFiberLength(
-                muscBase.getPennationAngleAtOptimalFiberLength());
-        actu->setMaxContractionVelocity(muscBase.getMaxContractionVelocity());
-        actu->set_ignore_tendon_compliance(
-                muscBase.get_ignore_tendon_compliance());
-        actu->set_ignore_activation_dynamics(
-                muscBase.get_ignore_activation_dynamics());
-        actu->updProperty_path().assign(muscBase.getProperty_path());
-        model.addForce(actu.release());
-
-        musclesToDelete.push_back(&muscBase);
-    }
-
-    // Delete the muscles.
-    for (const auto* musc : musclesToDelete) {
-        int index = model.getForceSet().getIndex(musc, 0);
-        OPENSIM_THROW_IF(index == -1, Exception,
-                "Muscle with name {} not found in ForceSet.", musc->getName());
-        bool success = model.updForceSet().remove(index);
-        OPENSIM_THROW_IF(!success, Exception,
-                "Attempt to remove muscle with "
-                "name {} was unsuccessful.",
-                musc->getName());
-    }
-
-    model.finalizeFromProperties();
-    model.finalizeConnections();
-}
-
-void MeyerFregly2016Muscle::extendPostScale(
-        const SimTK::State& s, const ScaleSet& scaleSet) {
-    Super::extendPostScale(s, scaleSet);
-
-    AbstractGeometryPath& path = updPath();
-    if (path.getPreScaleLength(s) > 0.0)
-    {
-        double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
-        upd_optimal_fiber_length() *= scaleFactor;
-        upd_tendon_slack_length() *= scaleFactor;
-
-        // Clear the pre-scale length that was stored in the path.
-        path.setPreScaleLength(s, 0.0);
-    }
 }
