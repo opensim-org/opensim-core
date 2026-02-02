@@ -1200,8 +1200,6 @@ TEST_CASE("MeyerFregly2016Muscle basics") {
         }
     }
 
-    SECTION("printCurvesToSTOFiles") { muscle.printCurvesToSTOFiles(); }
-
     SECTION("Curve values") {
         CHECK(muscle.calcPassiveForceMultiplier(1) ==
                 Approx(0.00382044).epsilon(1e-4));
