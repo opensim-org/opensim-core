@@ -336,13 +336,13 @@ private:
     /// of the exponent.
     /// The supplement for De Groote et al., 2016 has a typo:
     /// the denominator should be squared.
-    static SimTK::Real calcGaussianLikeCurve(SimTK::Real x, double b1,
-            double b2, double b3, double b4);
+    static SimTK::Real calcGaussianLikeCurve(SimTK::Real x,
+            const SimTK::Vec4& b);
 
     /// The derivative of the curve defined in calcGaussianLikeCurve() with
     /// respect to 'x' (usually normalized fiber length).
-    static SimTK::Real calcGaussianLikeCurveDerivative(SimTK::Real x, double b1,
-            double b2, double b3, double b4);
+    static SimTK::Real calcGaussianLikeCurveDerivative(SimTK::Real x,
+            const SimTK::Vec4& b);
 };
 
 } // namespace OpenSim

@@ -22,11 +22,11 @@
  * -------------------------------------------------------------------------- */
 
 #include "MeyerFregly2016Muscle.h"
-
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
+
 #include <array>
 
 using namespace OpenSim;
@@ -46,15 +46,17 @@ using namespace OpenSim;
 
 // Parameters for the active fiber force-length curve.
 // Each row contains parameters for one Gaussian-like curve.
-constexpr static std::array<std::array<double, 4>, 3> b = {{
+static const std::array<SimTK::Vec4, 3> b = {{
     {0.8174335195120225,
      1.054348561163096,
      0.16194288662761705,
      0.06381565266097716},
+
     {0.43130780147182907,
      0.7163004817144202,
      -0.029060905806803296,
      0.19835014521987723},
+
     {0.1,
      1.0,
      0.353553390593274, // (0.5 * sqrt(0.5))
@@ -62,14 +64,14 @@ constexpr static std::array<std::array<double, 4>, 3> b = {{
 }};
 
 // Parameters for the passive fiber force-length curve.
-constexpr static std::array<double, 3> e = {
+static constexpr std::array<double, 3> e = {
     0.232000797810576,
     12.438535493526128,
     1.329470475731338
 };
 
 // Exponential shape factor.
-constexpr static double kPE = 4.0;
+static constexpr double kPE = 4.0;
 
 // Parameters for the tendon force curve.
 // Horizontal asymptote as x -> -inf is -c[2].
@@ -79,32 +81,32 @@ constexpr static double kPE = 4.0;
 // (since c[1] == c[2]).
 // c[2] is 0.250 in De Groote et al., which causes
 // lim(x->-inf) = -0.25 instead of -0.20.
-constexpr static std::array<double, 3> c = {
+static constexpr std::array<double, 3> c = {
     0.200,
     1.0,
     0.200
 };
 
 // Parameters for the force-velocity curve.
-constexpr static std::array<double, 6> d = {
+static constexpr std::array<double, 6> d = {
     -32.51401019139919,
-    22.160392466960214,
-    18.7932134796918,
-    6.320952269683997,
+     22.160392466960214,
+     18.7932134796918,
+     6.320952269683997,
     -0.27671677680513945,
-    8.053304562566995
+     8.053304562566995
 };
 
 // Fiber length bounds.
-constexpr static double minNormFiberLength = 0.2;
-constexpr static double maxNormFiberLength = 1.8;
+static constexpr double minNormFiberLength = 0.2;
+static constexpr double maxNormFiberLength = 1.8;
 
 // Indices for MuscleDynamicsInfo::userDefinedDynamicsExtras.
-constexpr static int mdi_passiveFiberElasticForce = 0;
-constexpr static int mdi_passiveFiberDampingForce = 1;
-constexpr static int mdi_partialPennationAnglePartialFiberLength = 2;
-constexpr static int mdi_partialFiberForceAlongTendonPartialFiberLength = 3;
-constexpr static int mdi_partialTendonForcePartialFiberLength = 4;
+static constexpr int mdi_passiveFiberElasticForce = 0;
+static constexpr int mdi_passiveFiberDampingForce = 1;
+static constexpr int mdi_partialPennationAnglePartialFiberLength = 2;
+static constexpr int mdi_partialFiberForceAlongTendonPartialFiberLength = 3;
+static constexpr int mdi_partialTendonForcePartialFiberLength = 4;
 
 static const std::string STATE_ACTIVATION_NAME = "activation";
 
@@ -236,9 +238,9 @@ void MeyerFregly2016Muscle::computeStateVariableDerivatives(
     if (!get_ignore_activation_dynamics()) {
         const auto& activation = getActivation(s);
         const auto& excitation = getControl(s);
-        const double& actTimeConst = get_activation_time_constant();
-        const double& deactTimeConst = get_deactivation_time_constant();
-        const double& tanhSteepness = get_activation_dynamics_smoothing();
+        const double actTimeConst = get_activation_time_constant();
+        const double deactTimeConst = get_deactivation_time_constant();
+        const double tanhSteepness = get_activation_dynamics_smoothing();
         //     f = 0.5 tanh(b(e - a))
         //     z = 0.5 + 1.5a
         // da/dt = [(f + 0.5)/(tau_a * z) + (-f + 0.5)*z/tau_d] * (e - a)
@@ -263,7 +265,8 @@ void MeyerFregly2016Muscle::extendPostScale(
 
     AbstractGeometryPath& path = updPath();
     if (path.getPreScaleLength(s) > 0.0) {
-        double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
+        const double scaleFactor = path.getLength(s) /
+                                   path.getPreScaleLength(s);
         upd_optimal_fiber_length() *= scaleFactor;
         upd_tendon_slack_length() *= scaleFactor;
 
@@ -298,7 +301,7 @@ double MeyerFregly2016Muscle::computeActuation(const SimTK::State& s) const {
 void MeyerFregly2016Muscle::setActivation(SimTK::State& s,
         double activation) const {
     if (get_ignore_activation_dynamics()) {
-        SimTK::Vector& controls(getModel().updControls(s));
+        SimTK::Vector& controls = getModel().updControls(s);
         setControls(SimTK::Vector(1, activation), controls);
         getModel().setControls(s, controls);
     } else {
@@ -408,25 +411,23 @@ SimTK::Vec2 MeyerFregly2016Muscle::getBoundsNormalizedFiberLength() const {
 //=============================================================================
 SimTK::Real MeyerFregly2016Muscle::calcActiveForceLengthMultiplier(
         SimTK::Real normFiberLength) const {
-    const double& scale = get_active_force_width_scale();
+    const double scale = get_active_force_width_scale();
     // Shift the curve so its peak is at the origin, scale it
     // horizontally, then shift it back so its peak is still at x = 1.0.
     const double x = (normFiberLength - 1.0) / scale + 1.0;
-    return calcGaussianLikeCurve(x, b[0][0], b[0][1], b[0][2], b[0][3]) +
-           calcGaussianLikeCurve(x, b[1][0], b[1][1], b[1][2], b[1][3]) +
-           calcGaussianLikeCurve(x, b[2][0], b[2][1], b[2][2], b[2][3]);
+    return calcGaussianLikeCurve(x, b[0]) + calcGaussianLikeCurve(x, b[1]) +
+           calcGaussianLikeCurve(x, b[2]);
 }
 
 SimTK::Real MeyerFregly2016Muscle::calcActiveForceLengthMultiplierDerivative(
         SimTK::Real normFiberLength) const {
-    const double& scale = get_active_force_width_scale();
+    const double scale = get_active_force_width_scale();
     // Shift the curve so its peak is at the origin, scale it
     // horizontally, then shift it back so its peak is still at x = 1.0.
     const double x = (normFiberLength - 1.0) / scale + 1.0;
-    return (1.0 / scale) *
-        (calcGaussianLikeCurveDerivative(x, b[0][0], b[0][1], b[0][2], b[0][3]) +
-         calcGaussianLikeCurveDerivative(x, b[1][0], b[1][1], b[1][2], b[1][3]) +
-         calcGaussianLikeCurveDerivative(x, b[2][0], b[2][1], b[2][2], b[2][3]));
+    return (1.0 / scale) * (calcGaussianLikeCurveDerivative(x, b[0]) +
+                            calcGaussianLikeCurveDerivative(x, b[1]) +
+                            calcGaussianLikeCurveDerivative(x, b[2]));
 }
 
 SimTK::Real MeyerFregly2016Muscle::calcForceVelocityMultiplier(
@@ -758,16 +759,15 @@ void MeyerFregly2016Muscle::calcMusclePotentialEnergyInfoHelper(
 }
 
 SimTK::Real MeyerFregly2016Muscle::calcGaussianLikeCurve(SimTK::Real x,
-        double b1, double b2, double b3, double b4) {
+        const SimTK::Vec4& b) {
     using SimTK::square;
-    return b1 * exp(-0.5 * square(x - b2) / square(b3 + b4 * x));
+    return b[0] * exp(-0.5 * square(x - b[1]) / square(b[2] + b[3] * x));
 }
 
 SimTK::Real MeyerFregly2016Muscle::calcGaussianLikeCurveDerivative(
-        SimTK::Real x, double b1, double b2, double b3, double b4) {
+        SimTK::Real x, const SimTK::Vec4& b) {
     using SimTK::cube;
     using SimTK::square;
-    return (b1 * exp(-square(b2 - x) / (2 * square(b3 + b4 * x))) *
-                (b2 - x) * (b3 + b2 * b4)) /
-        cube(b3 + b4 * x);
+    return (b[0] * exp(-square(b[1] - x) / (2 * square(b[2] + b[3] * x))) *
+           (b[1] - x) * (b[2] + b[1] * b[3])) / cube(b[2] + b[3] * x);
 }
