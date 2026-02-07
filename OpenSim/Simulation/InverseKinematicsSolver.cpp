@@ -545,26 +545,16 @@
          auto bufferedMarkersRef = std::dynamic_pointer_cast<BufferedMarkersReference>(_markersReference);
          if (bufferedMarkersRef && bufferedMarkersRef->hasNext()) {
              // Use streaming approach for buffered markers
-             std::cout << "[DEBUG] IK Solver: Using streaming approach with BufferedMarkersReference" << std::endl;
              SimTK::Array_<SimTK::Vec3> markerValues;
              nextTime = bufferedMarkersRef->getNextValuesAndTime(markerValues);
              s.setTime(nextTime);
              _markerAssemblyCondition->moveAllObservations(markerValues);
          } else {
              // Fall back to regular marker reference behavior
-             std::cout << "[DEBUG] IK Solver: Using regular approach (bufferedMarkersRef=" << (bufferedMarkersRef ? "valid" : "null") << ", hasNext=" << (bufferedMarkersRef ? (bufferedMarkersRef->hasNext() ? "true" : "false") : "N/A") << ")" << std::endl;
-             std::cout << "[DEBUG] IK Solver: Getting marker values for time " << nextTime << std::endl;
-             std::cout << "[DEBUG] IK Solver: Number of marker refs: " << _markersReference->getNumRefs() << std::endl;
              SimTK::Array_<SimTK::Vec3> markerValues;
              _markersReference->getValuesAtTime(nextTime, markerValues);
-             std::cout << "[DEBUG] IK Solver: Got " << markerValues.size() << " marker values" << std::endl;
-             if (markerValues.size() > 0) {
-                 std::cout << "[DEBUG] IK Solver: First marker value: " << markerValues[0] << std::endl;
-             }
              _markerAssemblyCondition->moveAllObservations(markerValues);
          }
-    } else {
-         std::cout << "[DEBUG] IK Solver: No markers reference or no refs" << std::endl;
     }
 
     // specify the orientation observations to be matched

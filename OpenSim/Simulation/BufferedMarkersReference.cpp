@@ -107,10 +107,8 @@ void BufferedMarkersReference::putValues(
     if (!_markerBuffer.hasColumnLabels()) {
         // Try to get from base table first
         const auto& baseLabels = getMarkerTable().getColumnLabels();
-        std::cout << "[DEBUG] BufferedMarkersReference::putValues: baseLabels.size() = " << baseLabels.size() << std::endl;
         if (baseLabels.size() > 0) {
             _markerBuffer.setColumnLabels(baseLabels);
-            std::cout << "[DEBUG] BufferedMarkersReference::putValues: Set column labels from base table" << std::endl;
         } else {
             // Fallback: create generic labels based on dataRow size
             std::vector<std::string> labels;
@@ -118,7 +116,6 @@ void BufferedMarkersReference::putValues(
                 labels.push_back("marker" + std::to_string(i));
             }
             _markerBuffer.setColumnLabels(labels);
-            std::cout << "[DEBUG] BufferedMarkersReference::putValues: Set generic column labels, size = " << labels.size() << std::endl;
         }
     }
     
