@@ -108,7 +108,7 @@ public:
     void pop_front(double& time, SimTK::RowVector_<T>& data) { 
         std::unique_lock<std::mutex> mlock(m_mutex);
         while (m_data_queue.empty()) { m_cond.wait(mlock); }
-        DataQueueEntry_<SimTK::Rotation> frontEntry = m_data_queue.front();
+        DataQueueEntry_<T> frontEntry = m_data_queue.front();
         m_data_queue.pop();
         mlock.unlock(); 
         time = frontEntry.getTimeStamp();
