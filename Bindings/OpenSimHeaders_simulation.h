@@ -17,7 +17,6 @@
 #include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/OffsetFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Simulation/Model/StationDefinedFrame.h>
 
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/ForceProducer.h>
@@ -27,6 +26,7 @@
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>
 #include <OpenSim/Simulation/Model/ContactMesh.h>
+#include <OpenSim/Simulation/Model/ContactSphere.h>
 
 #include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
@@ -74,6 +74,9 @@
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include <OpenSim/Simulation/Wrap/PathWrapSet.h>
+#include <OpenSim/Simulation/Wrap/WrapCylinderObst.h>
+#include <OpenSim/Simulation/Wrap/WrapSphereObst.h>
+#include <OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.h>
 
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
@@ -112,7 +115,6 @@
 #include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/FunctionBasedPath.h>
-#include <OpenSim/Simulation/Model/Scholz2015GeometryPath.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
 #include <OpenSim/Simulation/Model/Blankevoort1991Ligament.h>
 
@@ -136,12 +138,12 @@
 #include <OpenSim/Simulation/Model/BushingForce.h>
 #include <OpenSim/Simulation/Model/FunctionBasedBushingForce.h>
 #include <OpenSim/Simulation/Model/ExpressionBasedBushingForce.h>
-#include <OpenSim/Simulation/Model/MeyerFregly2016Force.h>
 
 #include <OpenSim/Simulation/Solver.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
 #include <OpenSim/Simulation/Reference.h>
 #include <OpenSim/Simulation/MarkersReference.h>
+#include <OpenSim/Simulation/BufferedMarkersReference.h>
 #include <OpenSim/Simulation/CoordinateReference.h>
 #include <OpenSim/Simulation/OrientationsReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
