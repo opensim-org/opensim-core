@@ -177,6 +177,15 @@ public:
     void setDefaultWeight(double weight);
     size_t getNumFrames() const;
 
+protected:
+    void setMarkerNamesProtected(const std::vector<std::string>& names) {
+        _markerNames.clear();
+        for (const auto& n : names) _markerNames.push_back(n);
+    }
+    void setMarkerTableColumnLabelsProtected(const std::vector<std::string>& names) {
+        _markerTable.setColumnLabels(names);
+    }
+
 private:
     void constructProperties();
     void
