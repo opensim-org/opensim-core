@@ -356,18 +356,10 @@ public:
         );
     }
 #else
-    template <int MM = M, int NN = N,
-              typename std::enable_if<(MM==3 && NN==3), int>::type = 0>
-    Mat(const E& e00, const E& e01, const E& e02,
-        const E& e10, const E& e11, const E& e12,
-        const E& e20, const E& e21, const E& e22)
-    {
-        const E elems[9] = {e00, e01, e02,
-                            e10, e11, e12,
-                            e20, e21, e22};
-        for (int idx = 0; idx < 9; ++idx)
-            d[rIx(idx)] = elems[idx];
-    }
+    Mat(const ELT& e0,const ELT& e1,const ELT& e2,const ELT& e3,const ELT& e4,
+        const ELT& e5,const ELT& e6,const ELT& e7,const ELT& e8)
+      {assert(M*N==9);d[rIx(0)]=e0;d[rIx(1)]=e1;d[rIx(2)]=e2;d[rIx(3)]=e3;d[rIx(4)]=e4;
+       d[rIx(5)]=e5;d[rIx(6)]=e6;d[rIx(7)]=e7;d[rIx(8)]=e8;}
 #endif
 
 #ifndef SWIG

@@ -252,4 +252,16 @@ class TestSimbody(unittest.TestCase):
         for i in range(residual.size()):
             assert abs(residual[i]) < 1e-10
 
-    
+    def test_Mat33(self):
+        mat33 = osim.Mat33(1, 2, 3, 4, 5, 6, 7, 8, 9)
+        assert mat33.nrow() == 3
+        assert mat33.ncol() == 3
+        assert mat33.get(0, 0) == 1
+        assert mat33.get(0, 1) == 2
+        assert mat33.get(0, 2) == 3
+        assert mat33.get(1, 0) == 4
+        assert mat33.get(1, 1) == 5
+        assert mat33.get(1, 2) == 6
+        assert mat33.get(2, 0) == 7
+        assert mat33.get(2, 1) == 8
+        assert mat33.get(2, 2) == 9

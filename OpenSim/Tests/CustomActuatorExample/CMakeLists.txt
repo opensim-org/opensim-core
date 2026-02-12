@@ -1,3 +1,5 @@
+find_package(Catch2 REQUIRED
+        HINTS "${OPENSIM_DEPENDENCIES_DIR}/catch2")
 
 # Variable definitions
 set(EXAMPLE_TARGET exampleCustomActuator)
@@ -10,7 +12,7 @@ add_executable(${EXAMPLE_TARGET} ${SOURCE_FILES})
 add_executable(${TEST_TARGET} ${TEST_TARGET}.cpp)
 
 target_link_libraries(${EXAMPLE_TARGET} osimTools)
-target_link_libraries(${TEST_TARGET} osimTools)
+target_link_libraries(${TEST_TARGET} osimTools Catch2::Catch2WithMain)
 
 file(GLOB TEST_FILES 
     ${EXAMPLE_DIR}/*.obj 
