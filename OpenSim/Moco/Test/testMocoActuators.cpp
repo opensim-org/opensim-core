@@ -20,12 +20,12 @@
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Tools/CMCTool.h>
 #include "OpenSim/Tools/CMC_TaskSet.h"
 #include "OpenSim/Tools/CMC_Joint.h"
 
 #include <catch2/catch_all.hpp>
+#include "Testing.h"
 
 using namespace OpenSim;
 namespace {

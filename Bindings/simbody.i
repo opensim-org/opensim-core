@@ -37,7 +37,7 @@ ADD_VEC_OPERATOR_METHODS(SimTK::Vec<6>)
 %include <SWIGSimTK/Mat.h>
 %include <SimTKcommon/SmallMatrix.h> // for typedefs like Mat33.
 namespace SimTK {
-%template(Mat33) Mat<3, 3, double>;
+%template(Mat33) Mat<3, 3>;
 }
 %include <SWIGSimTK/CoordinateAxis.h>
 %include <SWIGSimTK/UnitVec.h>

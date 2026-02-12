@@ -26,11 +26,8 @@
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Analyses/ProbeReporter.h>
 #include <OpenSim/Common/STOFileAdapter.h>
-#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-#include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
-#include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
 
 using namespace OpenSim;

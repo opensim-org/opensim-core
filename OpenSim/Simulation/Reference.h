@@ -42,7 +42,7 @@ namespace OpenSim {
  * be achieved/tracked via optimization and/or tracking controller. Combines
  * weightings that identifies the relative importance of achieving one
  * Reference value relative to the others. The specific value type is defined
- * by the concrete References. For example, a MarkerReference is of type Vec3,
+ * by the concrete References. For example, a MarkerRefrence is of type Vec3,
  * for the 3D location coordinates of a marker. Correspondence with model
  * values are established via the Reference names.
  *

@@ -21,6 +21,7 @@
 #include "About.h"
 #include "Components/ControlDistributor.h"
 #include "Components/DiscreteForces.h"
+#include "Components/StationPlaneContactForce.h"
 #include "MocoBounds.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoConstraint.h"

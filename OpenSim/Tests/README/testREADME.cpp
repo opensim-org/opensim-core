@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                    OpenSim:  exampleSimpleElbow.cpp                        *
+ *                    OpenSim:  testREADME.cpp                                *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -22,9 +22,27 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// This introductory example demonstrates the basic elements of creating,
-// simulating, and visualizing a simple musculoskeletal model in OpenSim.
+/* Whenever you change this test:
+ * 1. Copy the new code over to the README.md, making sure to omit the
+ * preprocessor lines (#ifdef VISUALIZE; #endif).
+ *
+ * If your changes would cause the gif to change substantially, make a new gif:
+ * 1. Uncomment the `VISUALIZE` definition.
+ * 2. Recompile and execute this code (testREADME in your build directory).
+ * 3. When the visualizer pops up, click View -> Save Movie.
+ * 4. cd into testREADME_1 and run the following commands (on Linux):
+ *      $ convert 'Frame*.png[400x470+200+100]' \( +clone -set delay 100 \)
+ *          +swap +delete opensim_double_pendulum_muscle_1.gif
+ *      $ gifsicle --crop-transparency --optimize=O3 --colors=32 --delay 5 <
+ *          opensim_double_pendulum_muscle_1.gif >
+ *          opensim_double_pendulum_muscle.gif
+ * 5. Copy your gif over to OpenSim/doc/images, and commit it to the
+ *    repository.
+ */
 
+// #define VISUALIZE
+
+/// [README]
 #include <OpenSim/OpenSim.h>
 using namespace SimTK;
 using namespace OpenSim;
@@ -32,7 +50,9 @@ using namespace OpenSim;
 int main() {
     Model model;
     model.setName("bicep_curl");
+#ifdef VISUALIZE
     model.setUseVisualizer(true);
+#endif
 
     // Create two links, each with a mass of 1 kg, center of mass at the body's
     // origin, and moments and products of inertia corresponding to an
@@ -102,13 +122,16 @@ int main() {
     model.equilibrateMuscles(state);
 
     // Configure the visualizer.
+#ifdef VISUALIZE
     model.updMatterSubsystem().setShowDefaultGeometry(true);
     Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
     viz.setBackgroundType(viz.SolidColor);
     viz.setBackgroundColor(White);
+#endif
 
     // Simulate.
     simulate(model, state, 5.0);
 
     return 0;
 };
+/// [README]

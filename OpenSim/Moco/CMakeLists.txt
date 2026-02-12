@@ -83,6 +83,8 @@ set(MOCO_SOURCES
         MocoFrameDistanceConstraint.cpp
         MocoOutputConstraint.h
         MocoOutputConstraint.cpp
+        Components/StationPlaneContactForce.h
+        Components/StationPlaneContactForce.cpp
         Components/DiscreteForces.h
         Components/DiscreteForces.cpp
         Components/AccelerationMotion.h

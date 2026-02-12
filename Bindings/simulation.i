@@ -126,11 +126,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 %include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 %include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
-<<<<<<< exp_contact_force_bindings
 %include <OpenSim/Simulation/Model/ExponentialContactForce.h>
-=======
-%include <OpenSim/Simulation/Model/MeyerFregly2016Force.h>
->>>>>>> main
 
 %include <OpenSim/Simulation/Model/Actuator.h>
 %template(SetActuators) OpenSim::Set<OpenSim::Actuator, OpenSim::Object>;

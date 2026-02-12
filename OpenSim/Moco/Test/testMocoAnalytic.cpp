@@ -19,8 +19,6 @@
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
 #include <OpenSim/Moco/osimMoco.h>
-#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
 #include <catch2/catch_all.hpp>
 #include "Testing.h"

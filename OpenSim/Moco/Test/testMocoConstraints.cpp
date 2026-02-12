@@ -2074,7 +2074,7 @@ public:
         "The body participating in this constraint.");
 
 private:
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+    void extendAddToSystem(SimTK::MultibodySystem& system) const {
         Super::extendAddToSystem(system);
         const PhysicalFrame& f = getConnectee<PhysicalFrame>("body");
         SimTK::MobilizedBody b = f.getMobilizedBody();
@@ -2093,7 +2093,7 @@ public:
         "The body participating in this constraint.");
 
 private:
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+    void extendAddToSystem(SimTK::MultibodySystem& system) const {
         Super::extendAddToSystem(system);
         const PhysicalFrame& f = getConnectee<PhysicalFrame>("body");
         SimTK::MobilizedBody b = f.getMobilizedBody();

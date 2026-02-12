@@ -287,12 +287,6 @@ void Scholz2015GeometryPath::extendAddToSystem(
         SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
 
-    // First, we need to clear the via point and obstacle indexes so that
-    // repeated calls to addToSystem() do not add the same via points and
-    // obstacles to the list of indexes multiple times.
-    _viaPointIndexes.clear();
-    _obstacleIndexes.clear();
-
     const PathPoint& origin = getOrigin();
     const PathPoint& insertion = getInsertion();
     SimTK::CableSubsystem& cables = system.updCableSubsystem();

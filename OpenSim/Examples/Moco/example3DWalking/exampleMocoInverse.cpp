@@ -27,7 +27,6 @@
 
 #include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Common/Adapters.h>
-#include <OpenSim/Simulation/Control/SynergyController.h>
 #include <OpenSim/Moco/osimMoco.h>
 
 using namespace OpenSim;

@@ -17,10 +17,9 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Moco/osimMoco.h>
-#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-#include <OpenSim/Simulation/Model/Bhargava2004SmoothedMuscleMetabolics.h>
 
 #include <catch2/catch_all.hpp>
+#include "Testing.h"
 
 using Catch::Approx;
 

@@ -41,7 +41,6 @@
 
 #include <OpenSim/Moco/MocoGoal/MocoOutputGoal.h>
 #include <OpenSim/Moco/osimMoco.h>
-#include <OpenSim/Simulation/Model/Bhargava2004SmoothedMuscleMetabolics.h>
 
 using namespace OpenSim;
 

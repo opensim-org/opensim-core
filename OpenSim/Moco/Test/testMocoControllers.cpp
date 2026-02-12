@@ -19,9 +19,7 @@
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
-#include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Simulation/Control/SynergyController.h>
-#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 
 #include <catch2/catch_all.hpp>
 #include "Testing.h"

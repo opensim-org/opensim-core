@@ -34,7 +34,6 @@
 //      3. Millard2012EquilibriumMuscle
 //      4. Millard2012AccelerationMuscle
 //      5. DeGrooteFregly2016Muscle
-//      6. MeyerFregly2016Muscle
 //      
 //     Add more test cases to address specific problems with muscle models
 //
@@ -975,33 +974,6 @@ TEST_CASE("testDeGrooteFregly2016Muscle") {
     muscle.set_tendon_slack_length(TendonSlackLength0);
     muscle.set_pennation_angle_at_optimal(PennationAngle0);
     muscle.set_tendon_compliance_dynamics_mode("explicit");
-    muscle.set_activation_time_constant(Activation0);
-    muscle.set_deactivation_time_constant(Deactivation0);
-
-    double x0 = 0;
-    double act0 = 0.2;
-
-    Constant control(0.5);
-
-    Sine motion(OptimalFiberLength0, SimTK::Pi, 0);
-
-    simulateMuscle(muscle, 
-        x0, 
-        act0, 
-        &motion,  
-        &control, 
-        false);
-}
-
-TEST_CASE("testMeyerFregly2016Muscle") {
-
-    MeyerFregly2016Muscle muscle;
-    muscle.setName("muscle");
-    muscle.set_ignore_tendon_compliance(true);
-    muscle.set_max_isometric_force(MaxIsometricForce0);
-    muscle.set_optimal_fiber_length(OptimalFiberLength0);
-    muscle.set_tendon_slack_length(TendonSlackLength0);
-    muscle.set_pennation_angle_at_optimal(PennationAngle0);
     muscle.set_activation_time_constant(Activation0);
     muscle.set_deactivation_time_constant(Deactivation0);
 

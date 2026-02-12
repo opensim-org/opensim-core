@@ -17,7 +17,6 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Moco/osimMoco.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
 
 using namespace OpenSim;
 

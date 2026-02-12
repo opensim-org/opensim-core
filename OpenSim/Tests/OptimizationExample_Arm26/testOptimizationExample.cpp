@@ -21,16 +21,17 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+// Author: Cassidy Kelly
+
+//==============================================================================
+//==============================================================================
+
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <istream>
 
-#include <catch2/catch_all.hpp>
-
 using namespace OpenSim;
 using namespace std;
-
-namespace {
 
 #define ARM26_DESIGN_SPACE_DIM 6
 #define REF_MAX_VEL 4.8
@@ -49,43 +50,51 @@ namespace {
 const static double refControls[ARM26_DESIGN_SPACE_DIM]
     = { 0.0231781, 0.0195227, 0.0224382, 0.987157, 0.835002, 0.608971 };
 
-}
 
-TEST_CASE("testOptimizationExample") {
-    // Load optimization results
-    ifstream resFile;
-    resFile.open("Arm26_optimization_result");
-    ASSERT(resFile.is_open(), __FILE__, __LINE__,
-            "Can't open optimization result file" );
+int main()
+{
+    try {
+        // Load optimization results
+        ifstream resFile;
+        resFile.open("Arm26_optimization_result");
+        ASSERT(resFile.is_open(), __FILE__, __LINE__,
+               "Can't open optimization result file" );
 
-    SimTK::Array_<double> resVec;
-    for ( ; ; ) {
-        double tmp;
-        resFile >> tmp;
-        if (!resFile.good())
-            break;
-        resVec.push_back(tmp);
+        SimTK::Array_<double> resVec;
+        for ( ; ; ) {
+            double tmp;
+            resFile >> tmp;
+            if (!resFile.good())
+                break;
+            resVec.push_back(tmp);
+        }
+
+        ASSERT(resVec.size() == ARM26_DESIGN_SPACE_DIM+1, __FILE__, __LINE__,
+               "Optimization result size mismatch" );
+
+        // Ensure the optimization result achieved a velocity of at least
+        // REF_MAX_VEL
+        ASSERT(resVec[ARM26_DESIGN_SPACE_DIM] > REF_MAX_VEL, __FILE__, __LINE__,
+            "Optimized velocity smaller than reference");
+
+        
+        // Ensure the optimizer found controls within 10% of "optimal" controls
+        // Or that the absolute difference in controls with optimal < 0.01
+        for (int i = 0; i < ARM26_DESIGN_SPACE_DIM; ++i) {
+            double relErr = fabs(resVec[i] - refControls[i]) / refControls[i];
+            double absErr = fabs(resVec[i] - refControls[i]);
+            cout << i << ": relErr = " << relErr << " | absErr = " << absErr <<endl;
+            ASSERT( (relErr < 0.1) || (absErr < 0.01), __FILE__, __LINE__,
+                   "Control value does not match reference" );
+        }
+
+
+        cout << "Arm26 optimization results passed\n";
     }
-
-    ASSERT(resVec.size() == ARM26_DESIGN_SPACE_DIM+1, __FILE__, __LINE__,
-            "Optimization result size mismatch" );
-
-    // Ensure the optimization result achieved a velocity of at least
-    // REF_MAX_VEL
-    ASSERT(resVec[ARM26_DESIGN_SPACE_DIM] > REF_MAX_VEL, __FILE__, __LINE__,
-        "Optimized velocity smaller than reference");
-
-
-    // Ensure the optimizer found controls within 10% of "optimal" controls
-    // Or that the absolute difference in controls with optimal < 0.01
-    for (int i = 0; i < ARM26_DESIGN_SPACE_DIM; ++i) {
-        double relErr = fabs(resVec[i] - refControls[i]) / refControls[i];
-        double absErr = fabs(resVec[i] - refControls[i]);
-        cout << i << ": relErr = " << relErr << " | absErr = " << absErr <<endl;
-        ASSERT( (relErr < 0.1) || (absErr < 0.01), __FILE__, __LINE__,
-                "Control value does not match reference" );
+    catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
     }
-
-
-    cout << "Arm26 optimization results passed\n";
+    cout << "Done" << endl;
+    return 0;
 }
