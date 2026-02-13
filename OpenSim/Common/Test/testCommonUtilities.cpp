@@ -307,3 +307,72 @@ TEST_CASE("detectDelimiter") {
         REQUIRE(delim == "");
     }    
 }
+
+TEST_CASE("rotateMarkerTable tests") {
+    SECTION("No rotation produces the same value") {
+        const std::vector<double> time = {1.0, 2.0, 3.0};
+        const std::vector<std::string> labels = {"marker1"};
+
+        SimTK::Matrix_<SimTK::Vec3> markerData(3, 1); // 3 rows, 1 column
+
+        markerData(0, 0) = SimTK::Vec3(2, 3, 4);
+        markerData(1, 0) = SimTK::Vec3(4, 5, 6);
+        markerData(2, 0) = SimTK::Vec3(7, 8, 9);
+
+        OpenSim::TimeSeriesTableVec3 table(time, markerData, labels);
+
+        const SimTK::Vec3 marker_rotations(0, 0, 0);
+        const SimTK::Rotation R =
+                SimTK::Rotation(SimTK::BodyOrSpaceType::SpaceRotationSequence,
+                        marker_rotations[0], SimTK::XAxis, marker_rotations[1],
+                        SimTK::YAxis, marker_rotations[2], SimTK::ZAxis);
+        
+        OpenSim::rotateMarkerTable(table, R);
+
+        SimTK::Matrix_<SimTK::Vec3> resultData(3, 1); // 3 rows, 1 column
+
+        resultData(0, 0) = SimTK::Vec3(2, 3, 4);
+        resultData(1, 0) = SimTK::Vec3(4, 5, 6);
+        resultData(2, 0) = SimTK::Vec3(7, 8, 9);
+        const auto A = table.getMatrix();
+        const auto B = resultData.getAsMatrixView();
+
+        REQUIRE(A.nrow() == B.nrow());
+        REQUIRE(A.ncol() == B.ncol());
+        for (int i = 0; i < A.nrow(); ++i)
+            for (int j = 0; j < A.ncol(); ++j) REQUIRE(A(i, j).isNumericallyEqual(B(i,j)));
+    }
+    SECTION("Valid rotation rotates the markers correctly") {
+        const std::vector<double> time = {1.0, 2.0, 3.0};
+        const std::vector<std::string> labels = {"marker1"};
+
+        SimTK::Matrix_<SimTK::Vec3> markerData(3, 1); // 3 rows, 1 column
+
+        markerData(0, 0) = SimTK::Vec3(2, 3, 4);
+        markerData(1, 0) = SimTK::Vec3(-4, 5, -6);
+        markerData(2, 0) = SimTK::Vec3(7, 8, 9);
+
+        OpenSim::TimeSeriesTableVec3 table(time, markerData, labels);
+
+        const SimTK::Vec3 marker_rotations(-SimTK::Pi / 2, SimTK::Pi / 2, 0);
+        const SimTK::Rotation R =
+                SimTK::Rotation(SimTK::BodyOrSpaceType::SpaceRotationSequence,
+                        marker_rotations[0], SimTK::XAxis, marker_rotations[1],
+                        SimTK::YAxis, marker_rotations[2], SimTK::ZAxis);
+
+        OpenSim::rotateMarkerTable(table, R);
+        
+        SimTK::Matrix_<SimTK::Vec3> resultData(3, 1); // 3 rows, 1 column
+
+        resultData(0, 0) = SimTK::Vec3(-3, 4, -2);
+        resultData(1, 0) = SimTK::Vec3(-5, -6, 4);
+        resultData(2, 0) = SimTK::Vec3(-8, 9, -7);
+        const auto A = table.getMatrix();
+        const auto B = resultData.getAsMatrixView();
+
+        REQUIRE(A.nrow() == B.nrow());
+        REQUIRE(A.ncol() == B.ncol());
+        for (int i = 0; i < A.nrow(); ++i)
+            for (int j = 0; j < A.ncol(); ++j) REQUIRE(A(i, j).isNumericallyEqual(B(i,j)));
+    }
+}
