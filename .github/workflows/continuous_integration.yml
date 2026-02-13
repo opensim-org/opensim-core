@@ -691,6 +691,9 @@ jobs:
         run_id: ${{ steps.return_dispatch.outputs.run_id }}
         run_timeout_seconds: 10000
 
+  call_build_wheels:
+    uses: ./.github/workflows/build_all_wheels.yml
+
   style:
     name: Style
 
