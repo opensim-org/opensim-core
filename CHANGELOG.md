@@ -42,6 +42,7 @@ performance and stability in wrapping solutions.
 - The experimental classes `AckermannVanDenBogert2010Force` and `EspositoMiller2018Force` have been removed. (#4234)
 - Fixed an issue prevent element-by-element construction of `Mat33` objects in Matlab and Python. (#4241)
 - Added class `MeyerFregly2016Muscle` to support NMSM Pipeline-equivalent muscle models in Moco. (#4233)
+- Added `rotateMarkerTable` utility method. (#4146)
 
 
 v4.5.2
