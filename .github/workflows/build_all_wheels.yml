@@ -1,7 +1,7 @@
 name: Build python wheels
 
 on:
-  workflow_dispatch:
+  workflow_call:
 
 jobs:
   build_windows_wheels:
