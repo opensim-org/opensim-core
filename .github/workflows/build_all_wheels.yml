@@ -1,8 +1,6 @@
-name: build_wheels
+name: Build python wheels
 
-# syntax https://help.github.com/en/articles/workflow-syntax-for-github-actions
 on:
-  # Run on demand.
   workflow_dispatch:
 
 jobs:
