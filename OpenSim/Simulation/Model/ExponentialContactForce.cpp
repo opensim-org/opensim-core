@@ -1,4 +1,4 @@
-﻿/* -------------------------------------------------------------------------- *
+/* -------------------------------------------------------------------------- *
  *                   OpenSim:  ExponentialContactForce.cpp                    *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
@@ -639,60 +639,4 @@ assertPropertiesAndParametersEqual() const {
     valA = get_initial_mu_kinetic();
     valB = _stkparams.getInitialMuKinetic();
     SimTK_TEST_EQ(valA, valB);
-}
-
-bool
-ExponentialContactForce::
-isPropertiesEqual(const ExponentialContactForce& other) const {
-    // Compare contact plane transform
-    if (get_contact_plane_transform() != other.get_contact_plane_transform()) {
-        return false;
-    }
-
-    // Compare exponential shape parameters
-    if (get_exponential_shape_parameters() !=
-            other.get_exponential_shape_parameters()) {
-        return false;
-    }
-
-    // Compare all scalar parameters
-    if (get_normal_viscosity() != other.get_normal_viscosity() ||
-        get_max_normal_force() != other.get_max_normal_force() ||
-        get_friction_elasticity() != other.get_friction_elasticity() ||
-        get_friction_viscosity() != other.get_friction_viscosity() ||
-        get_settle_velocity() != other.get_settle_velocity() ||
-        get_initial_mu_static() != other.get_initial_mu_static() ||
-        get_initial_mu_kinetic() != other.get_initial_mu_kinetic()) {
-        return false;
-    }
-
-    // Compare station location and parent frame
-    const Station& thisStation = get_station();
-    const Station& otherStation = other.get_station();
-    if (thisStation.get_location() != otherStation.get_location() ||
-        thisStation.getParentFrame().getAbsolutePathString() !=
-        otherStation.getParentFrame().getAbsolutePathString()) {
-        return false;
-    }
-
-    return true;
-}
-
-bool
-ExponentialContactForce::
-isParametersEqual(const ExponentialContactForce& other) const {
-    // Compare all parameters (using getters to get true values)
-    if (getExponentialShapeParameters() !=
-            other.getExponentialShapeParameters() ||
-        getNormalViscosity() != other.getNormalViscosity() ||
-        getMaxNormalForce() != other.getMaxNormalForce() ||
-        getFrictionElasticity() != other.getFrictionElasticity() ||
-        getFrictionViscosity() != other.getFrictionViscosity() ||
-        getSettleVelocity() != other.getSettleVelocity() ||
-        getInitialMuStatic() != other.getInitialMuStatic() ||
-        getInitialMuKinetic() != other.getInitialMuKinetic()) {
-        return false;
-    }
-
-    return true;
 }

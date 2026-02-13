@@ -1,4 +1,4 @@
-﻿#ifndef OPENSIM_EXPONENTIAL_CONTACT_FORCE_H_
+#ifndef OPENSIM_EXPONENTIAL_CONTACT_FORCE_H_
 #define OPENSIM_EXPONENTIAL_CONTACT_FORCE_H_
 /* -------------------------------------------------------------------------- *
  *                  OpenSim:  ExponentialContactForce.h                       *
@@ -292,15 +292,22 @@ values may differ from the original property values.
 The available parameters  are:
 
 - **Exponential Shape Parameters** (d0, d1, d2): Shape parameters for the
-  exponential that models the normal force.
-- **Normal Viscosity**: Viscosity in the normal direction.
-- **Max Normal Force**: Maximum allowed normal force.
-- **Friction Elasticity**: Elasticity of the friction spring.
-- **Friction Viscosity**: Viscosity of the friction spring.
+  exponential that models the normal force (default: d0 = 0.0065905 m,
+  d1 = 0.5336 N, d2 = 1150.0/m).
+- **Normal Viscosity**: Viscosity in the normal direction
+  (default: cz = 0.5 N*s/m).
+- **Max Normal Force**: Maximum allowed normal force
+  (default: maxFz = 100,000.0 N).
+- **Friction Elasticity**: Elasticity of the friction spring
+  (default: kxy = 20,000.0 N/m).
+- **Friction Viscosity**: Viscosity of the friction spring
+  (default: cxy = 2.0*sqrt(kxy*mass) = 2.0*sqrt(20000*1) ~= 282.8427 N*s/m).
 - **Settle Velocity**: Velocity below which static friction conditions are
-  triggered.
-- **Initial Mu Static**: Initial value of the static coefficient of friction.
-- **Initial Mu Kinetic**: Initial value of the kinetic coefficient of friction.
+  triggered (default: vSettle = 0.01 m/s).
+- **Initial Mu Static**: Initial value of the static coefficient of friction
+  (default: μₛ = 0.5).
+- **Initial Mu Kinetic**: Initial value of the kinetic coefficient of friction
+  (default: μₖ = 0.2).
 
 #### Example: Setting Individual Parameters
 
@@ -723,19 +730,6 @@ public:
     //-------------------------------------------------------------------------
     /** Assess consistency between Properties and internal parameters. */
     void assertPropertiesAndParametersEqual() const;
-
-    /** Check if the properties of this ExponentialContactForce instance are
-    equal to those of another instance. This compares all contact parameters,
-    the contact plane transform, and the station location and parent frame.
-    @param other The ExponentialContactForce instance to compare against.
-    @return true if all properties are equal, false otherwise. */
-    bool isPropertiesEqual(const ExponentialContactForce& other) const;
-
-    /** Check if the parameters of this ExponentialContactForce instance are
-    equal to those of another instance.
-    @param other The ExponentialContactForce instance to compare against.
-    @return true if all parameters are equal, false otherwise. */
-    bool isParametersEqual(const ExponentialContactForce& other) const;
 
 protected:
     /** Connect to the OpenSim Model. */

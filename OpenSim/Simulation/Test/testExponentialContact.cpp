@@ -115,6 +115,8 @@ public:
         const SimTK::MobilizedBody& body, double dz);
     void printDiscreteVariableAbstractValue(const string& pathName,
         const AbstractValue& value) const;
+    bool isParametersEqual(const ExponentialContactForce& ec0,
+        const ExponentialContactForce& ec1);
 
     //-------------------------------------------------------------------------
     // Member variables
@@ -314,6 +316,27 @@ printDiscreteVariableAbstractValue(const string& pathName,
     }
 }
 
+bool
+ExponentialContactTester::
+isParametersEqual(const ExponentialContactForce& ec0,
+    const ExponentialContactForce& ec1)
+{
+    // Compare all parameters (using getters to get true values)
+    if (ec0.getExponentialShapeParameters() !=
+            ec1.getExponentialShapeParameters() ||
+        ec0.getNormalViscosity() != ec1.getNormalViscosity() ||
+        ec0.getMaxNormalForce() != ec1.getMaxNormalForce() ||
+        ec0.getFrictionElasticity() != ec1.getFrictionElasticity() ||
+        ec0.getFrictionViscosity() != ec1.getFrictionViscosity() ||
+        ec0.getSettleVelocity() != ec1.getSettleVelocity() ||
+        ec0.getInitialMuStatic() != ec1.getInitialMuStatic() ||
+        ec0.getInitialMuKinetic() != ec1.getInitialMuKinetic()) {
+        return false;
+    }
+
+    return true;
+}
+
 
 //=============================================================================
 // Test Cases
@@ -416,8 +439,16 @@ TEST_CASE("Model Serialization")
             ExponentialContactForce& ec1 =
                 dynamic_cast<ExponentialContactForce&>(fSet1.get(i));
 
-            CHECK(ec1.isPropertiesEqual(ec0));
-            CHECK(ec1.isParametersEqual(ec0));
+            CHECK(ec1.getContactPlaneTransform() ==
+            ec0.getContactPlaneTransform());
+
+        const Station& s0 = ec0.getStation();
+        const Station& s1 = ec1.getStation();
+        CHECK(s0.getParentFrame().getAbsolutePathString() ==
+              s1.getParentFrame().getAbsolutePathString());
+        CHECK(s0.get_location() == s1.get_location());
+        CHECK(tester.isParametersEqual(ec0, ec1));
+
         } catch (const std::bad_cast&) {
             // Nothing should happen here. Execution is just skipping any
             // OpenSim::Force that is not an ExponentialContactForce.
@@ -468,8 +499,13 @@ TEST_CASE("Model Serialization")
             ExponentialContactForce& ec2 =
                 dynamic_cast<ExponentialContactForce&>(fSet2.get(i));
 
-            CHECK(ec2.isPropertiesEqual(ec0));
-            CHECK(ec2.isParametersEqual(ec0));
+            const Station& s0 = ec0.getStation();
+            const Station& s2 = ec2.getStation();
+            CHECK(s0.getParentFrame().getAbsolutePathString() ==
+                  s2.getParentFrame().getAbsolutePathString());
+            CHECK(s0.get_location() == s2.get_location());
+            CHECK(tester.isParametersEqual(ec0, ec2));
+
         } catch (const std::bad_cast&) {
             // Nothing should happen here. Execution is just skipping any
             // OpenSim::Force that is not an ExponentialContactForce.
@@ -605,9 +641,8 @@ TEST_CASE("Spring Parameters")
 
     // Exponential Shape
     double delta = 0.1;
-    Vec3 shape;
+    Vec3 shape = initialShape;
     // d[0]
-    shape = initialShape;
     shape[0] += delta;
     spr.setExponentialShapeParameters(shape);
     CHECK(spr.getExponentialShapeParameters()[0] == initialShape[0] + delta);
