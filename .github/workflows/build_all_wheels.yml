@@ -6,14 +6,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_wheels:
+  build_windows_wheels:
 
     runs-on: windows-2025
-    name: Windows
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9, 3.10, 3.11, 3.12]
+        python-version: [3.10, 3.11]
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
@@ -112,15 +111,17 @@ jobs:
         cd ~/opensim-core-install/sdk/python
         python3 setup.py bdist_wheel
 
-    - name: Upload windows wheel
-      uses: actions/upload-artifact@v4
-      with:
-        name: opensim-4.5.2-cp311-cp311-win_amd64.whl
-        path: ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-win_amd64.whl
+    # - name: Upload windows wheel
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: opensim-4.5.2-cp311-cp311-win_amd64.whl
+    #     path: ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-win_amd64.whl
 
-  mac_arm64:
+  build_osx_wheels:
     runs-on: macos-15
-    name: Mac Arm64
+    strategy:
+      matrix:
+        python-version: [3.10, 3.11]
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
@@ -131,7 +132,7 @@ jobs:
     - name: Install Python packages
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '${{ matrix.python-version }}'
 
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
@@ -240,11 +241,11 @@ jobs:
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         python3 -m build --wheel
 
-    - name: Upload osx wheel
-      uses: actions/upload-artifact@v4
-      with:
-        name: opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
-        path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
+    # - name: Upload osx wheel
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
+    #     path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
 
     - name: Test Python bindings
       run: |
@@ -253,9 +254,11 @@ jobs:
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
-  ubuntu22:
-    name: Ubuntu 22.04
+  build_linux_wheels:
     runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        python-version: [3.10, 3.11]
 
     steps:
     - uses: actions/checkout@v4
@@ -263,7 +266,7 @@ jobs:
     - name: Install Python packages
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '${{ matrix.python-version }}'
 
     - name: Install Numpy
       run: |
