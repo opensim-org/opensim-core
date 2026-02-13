@@ -1,4 +1,4 @@
-name: continuous-integration
+name: build_wheels
 
 # syntax https://help.github.com/en/articles/workflow-syntax-for-github-actions
 on:
