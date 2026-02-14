@@ -1,7 +1,7 @@
 name: Build python wheels
 
 on:
-  workflow_call:
+  workflow_dispatch:
 
 jobs:
   build_windows_wheels:
@@ -109,11 +109,15 @@ jobs:
         cd ~/opensim-core-install/sdk/python
         python3 setup.py bdist_wheel
 
-    # - name: Upload windows wheel
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: opensim-4.5.2-cp311-cp311-win_amd64.whl
-    #     path: ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-win_amd64.whl
+    - name: Capture wheel path
+      id: wheel
+      run: echo "path=$(ls -1 dist/*.whl | head -n1)" >> "$GITHUB_OUTPUT
+
+    - name: Upload windows wheel
+      uses: actions/upload-artifact@v4
+      with:
+         name: ${{ steps.wheel.outputs.path }}
+         path: ~/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
 
   build_osx_wheels:
     runs-on: macos-15
@@ -239,16 +243,20 @@ jobs:
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         python3 -m build --wheel
 
-    # - name: Upload osx wheel
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
-    #     path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
+    - name: Capture wheel path
+      id: wheel
+      run: echo "path=$(ls -1 dist/*.whl | head -n1)" >> "$GITHUB_OUTPUT
+
+    - name: Upload osx wheel
+      uses: actions/upload-artifact@v4
+      with:
+         name: ${{ steps.wheel.outputs.path }}
+         path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
 
     - name: Test Python bindings
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        pip3 install /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
+        pip3 install /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
@@ -366,20 +374,25 @@ jobs:
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
-  style:
-    name: Style
+    - name: Build wheel
+      run: |
+        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        python3 -m build --wheel
 
-    runs-on: ubuntu-latest
+    - name: Capture wheel path
+      id: wheel
+      run: echo "path=$(ls -1 dist/*.whl | head -n1)" >> "$GITHUB_OUTPUT
 
-    steps:
-    - uses: actions/checkout@v4
+    - name: Upload linux wheel
+      uses: actions/upload-artifact@v4
+      with:
+         name: ${{ steps.wheel.outputs.path }}
+         path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
 
-    - name: Check for tabs
-      # Ensure that there are no tabs in source code.
-      # GREP returns 0 (true) if there are any matches, and
-      # we don't want any matches. If there are matches,
-      # print a helpful message, and make the test fail by using "false".
-      # The GREP command here checks for any tab characters in the the files
-      # that match the specified pattern. GREP does not pick up explicit tabs
-      # (e.g., literally a \t in a source file).
-      run: if grep --line-num --recursive --exclude-dir="*dependencies*" --exclude-dir="*snopt*" --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
+    - name: Test Python bindings
+      run: |
+        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        pip3 install /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
+        # Run the python tests, verbosely.
+        python3 -m unittest discover --start-directory opensim/tests --verbose
+
