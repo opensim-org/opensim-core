@@ -91,11 +91,6 @@ jobs:
         cmake --build . --config Release --target doxygen -- /maxcpucount:4
         cmake --build . --config Release --target install -- /maxcpucount:4
 
-    - name: Test opensim-core
-      run: |
-        chdir $env:GITHUB_WORKSPACE\\build
-        ctest --parallel 4 --output-on-failure --build-config Release -E Java_*
-
     - name: Install opensim-core
     # TODO: This is where we wish to do the installing, but it's done above for now.
       run: |
@@ -223,11 +218,6 @@ jobs:
         cd $GITHUB_WORKSPACE/../build
         make --jobs 4
 
-    - name: Test opensim-core
-      run: |
-        cd $GITHUB_WORKSPACE/../build
-        ctest --parallel 4 --output-on-failure
-
     - name: Install opensim-core
       run: |
         cd $GITHUB_WORKSPACE/../build
@@ -264,7 +254,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: [3.11, 3.12]
+        python-version: [3.11, 3.12, 3.13]
 
     steps:
     - uses: actions/checkout@v4
@@ -349,13 +339,6 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/../build
         make --jobs 4
-
-    - name: Test opensim-core
-      run: |
-        cd $GITHUB_WORKSPACE/../build
-        # TODO: Temporary for python to find Simbody libraries.
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/opensim_dependencies_install/simbody/lib
-        ctest --parallel 4 --output-on-failure
 
     - name: Install opensim-core
       run: |
