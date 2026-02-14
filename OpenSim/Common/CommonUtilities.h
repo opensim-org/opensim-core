@@ -23,8 +23,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimCommonDLL.h"
 #include "Assertion.h"
+#include "TimeSeriesTable.h"
+#include "osimCommonDLL.h"
 #include <algorithm>
 #include <cmath>
 #include <condition_variable>
@@ -264,6 +265,20 @@ OSIMCOMMON_API
 SimTK::Real solveBisection(std::function<double(const double&)> calcResidual,
         double left, double right, const double& tolerance = 1e-6,
         int maxIterations = 1000);
+
+/**
+ * @brief Rotates all marker in a table by the rotation matrix R
+ *
+ *
+ * @param table of marker positions that will be modified in place.
+ * @param R rotation matrix for desired rotation
+ *
+ * @return: None
+ */
+/// @ingroup commonutil
+OSIMCOMMON_API
+void rotateMarkerTable(
+        OpenSim::TimeSeriesTableVec3& table, const SimTK::Rotation& R);
 
 /// This class lets you store objects of a single type for reuse by multiple
 /// threads, ensuring threadsafe access to each of those objects.
