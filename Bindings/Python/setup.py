@@ -59,7 +59,7 @@ setup(name='opensim',
           'Topic :: Scientific/Engineering :: Physics',
           ],
           install_requires=[
-              "numpy>=2.0"
+              "numpy==2.0.0"
           ],
           distclass=BinaryDistribution
       )
