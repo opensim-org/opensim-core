@@ -36,6 +36,7 @@ jobs:
       run: |
           ROOT=$(python -c "import sys; print(sys.prefix)")
           echo "root=$ROOT" >> "$GITHUB_OUTPUT"
+      shell: bash
 
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
@@ -113,7 +114,7 @@ jobs:
 
     - name: Capture wheel path
       id: wheel
-      run: echo "path=$(ls -1 dist/*.whl | head -n1)" >> "$GITHUB_OUTPUT
+      run: echo "path=$(ls -1 dist/*.whl | head -n1)" >> $GITHUB_OUTPUT
 
     - name: Upload windows wheel
       uses: actions/upload-artifact@v4
@@ -242,7 +243,7 @@ jobs:
 
     - name: Capture wheel path
       id: wheel
-      run: echo "path=$(ls -1 dist/*.whl | head -n1)" >> "$GITHUB_OUTPUT
+      run: echo "path=$(ls -1 dist/*.whl | head -n1)" >> $GITHUB_OUTPUT
 
     - name: Upload osx wheel
       uses: actions/upload-artifact@v4
@@ -371,7 +372,7 @@ jobs:
 
     - name: Capture wheel path
       id: wheel
-      run: echo "path=$(ls -1 dist/*.whl | head -n1)" >> "$GITHUB_OUTPUT
+      run: echo "path=$(ls -1 dist/*.whl | head -n1)" >> $GITHUB_OUTPUT
 
     - name: Upload linux wheel
       uses: actions/upload-artifact@v4
