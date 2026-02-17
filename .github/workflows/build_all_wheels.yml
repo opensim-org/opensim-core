@@ -244,17 +244,17 @@ jobs:
     - name: Build wheel
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        python3 -m build --wheel
+        pip3 wheel . --wheel-dir dist
 
-    - name: Capture wheel path
+    - name: Capture wheel pathpython3 -m build --wheel
       id: wheel
-      run: echo "path=$(ls -1 build/*.whl | head -n1)" >> $GITHUB_OUTPUT
+      run: echo "path=$(ls -1 dist/*.whl | head -n1)" >> $GITHUB_OUTPUT
 
     - name: Upload osx wheel
       uses: actions/upload-artifact@v4
       with:
          name: ${{ steps.wheel.outputs.path }}
-         path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/${{ steps.wheel.outputs.path }}
+         path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
 
     - name: Test Python bindings
       run: |
@@ -374,7 +374,7 @@ jobs:
     - name: Build wheel
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        python3 -m build --wheel
+        pip wheel . --wheel-dir dist
 
     - name: Capture wheel path
       id: wheel
