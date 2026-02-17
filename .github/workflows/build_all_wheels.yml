@@ -111,6 +111,8 @@ jobs:
       run: |
         cd ~/opensim-core-install/sdk/python
         pip wheel . --wheel-dir dist
+        echo "Dist contents after build:"
+          if (Test-Path dist) { Get-ChildItem dist } else { echo "dist folder not found" }
 
     - name: Capture wheel path
       id: wheel
@@ -135,7 +137,7 @@ jobs:
     runs-on: macos-15
     strategy:
       matrix:
-        python-version: ['3.11', '3.12', '3.13']
+        python-version: ['3.12']
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
