@@ -36,6 +36,8 @@ classdef osimC3D < matlab.mixin.SetGet
         markers
         forces
         ForceLocation
+        noMarkers
+        noForces
     end
     methods
         function self = osimC3D(path2c3d, ForceLocation)
@@ -80,6 +82,16 @@ classdef osimC3D < matlab.mixin.SetGet
                     location = 'PointOfWrenchApplication';
             end
             self.ForceLocation = location;
+            
+            % Set flags if marker or force data tables are empty
+            if self.markers.getNumColumns() == 0
+                self.noMarkers = 1; disp('Marker table is empty');
+            else; self.noMarkers = 0;
+            end
+            if self.forces.getNumColumns() == 0
+                self.noForces = 1; disp('Force table is empty');
+            else; self.noForces = 0;
+            end
         end
         function p = getPath(self)
             p = self.path();
@@ -93,11 +105,15 @@ classdef osimC3D < matlab.mixin.SetGet
         end
         function rate = getRate_marker(self)
             % Get the capture rate used for the Marker Data
-            rate = str2double(self.markers.getTableMetaDataAsString('DataRate'));
+            if self.noMarkers; disp('No Markers exist'); return; else
+                rate = str2double(self.markers.getTableMetaDataAsString('DataRate'));
+            end
         end
         function rate = getRate_force(self)
             % Get the capture rate used for the Force Data
-            rate = str2double(self.forces.getTableMetaDataAsString('DataRate'));
+            if self.noForces; disp('No Forces exist'); return; else
+                rate = str2double(self.forces.getTableMetaDataAsString('DataRate'));
+            end
         end
         function n = getNumTrajectories(self)
             % Get the number of markers in the c3d file
@@ -130,7 +146,8 @@ classdef osimC3D < matlab.mixin.SetGet
             table = self.forces().clone();
         end
         function [markerStruct, forcesStruct] = getAsStructs(self)
-            % Convert the OpenSim tables into Matlab Structures
+            % Convert the OpenSim tables into Matlab Structures.
+            % If tables are empty, empty Structs are returned. 
             markerStruct = osimTableToStruct(self.markers);
             forcesStruct = osimTableToStruct(self.forces);
             disp('Maker and force data returned as Matlab Structs')
@@ -146,17 +163,35 @@ classdef osimC3D < matlab.mixin.SetGet
             if ~isnumeric(value)
                 error('value must be numeric (90, -90, 270, ...')
             end
-            % rotate the tables
-            self.rotateTable(self.markers, axis, value);
-            self.rotateTable(self.forces, axis, value);
-            disp('Marker and Force tables have been rotated')
+            
+            % Rotate the Marker table
+            if self.noMarkers
+                disp('No Markers exist');                
+            else
+                self.rotateTable(self.markers, axis, value);
+                disp('Marker table rotated');
+            end
+            
+            % Rotate the Force table
+            if self.noForces
+                disp('No Forces exist');
+            else
+                self.rotateTable(self.forces, axis, value);
+                disp('Forces table rotated');
+            end
         end
         function convertMillimeters2Meters(self)
             % Function to convert  point data (mm) to m and Torque data
             % (Nmm) to Nm.
 
+            % Check if a force table is non-empty
+            if self.noForces
+             disp('No Force table found, no conversion performed');
+             return
+            end
+            
             import org.opensim.modeling.*
-
+            
             nRows  = self.forces.getNumRows();
             labels = self.forces.getColumnLabels();
 
@@ -189,10 +224,14 @@ classdef osimC3D < matlab.mixin.SetGet
             % osimC3d.writeTRC()                       Write to dir of input c3d.
             % osimC3d.writeTRC('Walking.trc')          Write to dir of input c3d with defined file name.
             % osimC3d.writeTRC('C:/data/Walking.trc')  Write to defined path input path.
-
+            
+            % Check if a Marker table is non-empty
+            if self.noMarkers
+                disp('No Marker table found, file not written');
+                return
+            end
             % Compute an output path to use for writing to file
             outputPath = generateOutputPath(self,varargin,'.trc');
-
 
             import org.opensim.modeling.*
             % Write to file
@@ -200,26 +239,32 @@ classdef osimC3D < matlab.mixin.SetGet
             disp(['Marker file written to ' outputPath]);
         end
         function writeMOT(self,varargin)
-        % Write force data to mot file.
-        % osimC3d.writeMOT()                       Write to dir of input c3d.
-        % osimC3d.writeMOT('Walking.mot')          Write to dir of input c3d with defined file name.
-        % osimC3d.writeMOT('C:/data/Walking.mot')  Write to defined path input path.
+            % Write force data to mot file.
+            % osimC3d.writeMOT()                       Write to dir of input c3d.
+            % osimC3d.writeMOT('Walking.mot')          Write to dir of input c3d with defined file name.
+            % osimC3d.writeMOT('C:/data/Walking.mot')  Write to defined path input path.
 
-         % Compute an output path to use for writing to file
-         outputPath = generateOutputPath(self,varargin,'.mot');
+            % Compute an output path to use for writing to file
+            outputPath = generateOutputPath(self,varargin,'.mot');
 
-         import org.opensim.modeling.*
-         % Get the forces table
-         forces = self.getTable_forces();
-         % Get the column labels
-         labels = forces.getColumnLabels();
-         % Make a copy
-         updlabels = labels;
+            % Check if a force table is non-empty
+            if self.noForces
+             disp('No Force table found, file not written');
+             return
+            end
 
-         % Labels from C3DFileAdapter are f1, p1, m1, f2,...
-         % We edit them to be consistent with requirements of viewing
-         % forces in the GUI (ground_force_vx, ground_force_px,...)
-         for i = 0 : labels.size() - 1
+            import org.opensim.modeling.*
+            % Get the forces table
+            forces = self.getTable_forces();
+            % Get the column labels
+            labels = forces.getColumnLabels();
+            % Make a copy
+            updlabels = labels;
+
+            % Labels from C3DFileAdapter are f1, p1, m1, f2,...
+            % We edit them to be consistent with requirements of viewing
+            % forces in the GUI (ground_force_vx, ground_force_px,...)
+            for i = 0 : labels.size() - 1
             % Get the label as a string
             label = char(labels.get(i));
             % Transform the label depending on force, point, or moment
@@ -234,38 +279,38 @@ classdef osimC3D < matlab.mixin.SetGet
                 label = [label '_m'];
             end
             % update the label name
-            updlabels.set(i,label);
-         end
+                updlabels.set(i,label);
+            end
 
-         % set the column labels
-         forces.setColumnLabels(updlabels)
+            % set the column labels
+            forces.setColumnLabels(updlabels)
 
-         % Flatten the Vec3 force table
-         postfix = StdVectorString();
-         postfix.add('x');postfix.add('y');postfix.add('z');
-         forces_flat = forces.flatten(postfix);
+            % Flatten the Vec3 force table
+            postfix = StdVectorString();
+            postfix.add('x');postfix.add('y');postfix.add('z');
+            forces_flat = forces.flatten(postfix);
 
-         % Change the header in the file to meet Storage conditions
-          if forces_flat.getTableMetaDataKeys().size() > 0
-              for i = 0 : forces_flat.getTableMetaDataKeys().size() - 1
+            % Change the header in the file to meet Storage conditions
+            if forces_flat.getTableMetaDataKeys().size() > 0
+                for i = 0 : forces_flat.getTableMetaDataKeys().size() - 1
                   % Get the metakey string at index zero. Since the array gets smaller on
                   % each loop, we just need to keep taking the first one in the array.
                   metakey = char(forces_flat.getTableMetaDataKeys().get(0));
                   % Remove the key from the meta data
                   forces_flat.removeTableMetaDataKey(metakey)
-              end
-          end
-          % Add the column and row data to the meta key
-          forces_flat.addTableMetaDataString('nColumns',num2str(forces_flat.getNumColumns()+1))
-          forces_flat.addTableMetaDataString('nRows',num2str(forces_flat.getNumRows()));
+                end
+            end
+            % Add the column and row data to the meta key
+            forces_flat.addTableMetaDataString('nColumns',num2str(forces_flat.getNumColumns()+1))
+            forces_flat.addTableMetaDataString('nRows',num2str(forces_flat.getNumRows()));
 
-          % Write to file
-          STOFileAdapter().write(forces_flat, outputPath)
-          disp(['Forces file written to ' outputPath]);
-      end
-   end
+            % Write to file
+            STOFileAdapter().write(forces_flat, outputPath)
+            disp(['Forces file written to ' outputPath]);
+        end
+    end
 
-   methods (Access = private, Hidden = true)
+    methods (Access = private, Hidden = true)
         function setMarkers(self, a)
             % Private Method for setting the internal Marker table
             self.markers = a;
