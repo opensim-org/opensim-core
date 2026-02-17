@@ -109,7 +109,7 @@ jobs:
 
     - name: Build wheel
       run: |
-        cd ~/opensim-core-install/sdk/python
+        cd ~/opensim-core-install/sdk/Python
         pip wheel . --wheel-dir dist
         echo "Dist contents after build:"
           if (Test-Path dist) { Get-ChildItem dist } else { echo "dist folder not found" }
@@ -118,20 +118,24 @@ jobs:
       id: wheel
       shell: pwsh
       run: |
-         cd ~/opensim-core-install/sdk/python/dist
+         cd ~/opensim-core-install/sdk/Python/dist
          $file = Get-ChildItem opensim*.whl | Select-Object -First 1
          echo "path=$($file.Name)" >> $GITHUB_OUTPUT
+         echo "==========="
+         
     - name: debug path
       run: |
+        echo "********************************"
         echo ${{steps.wheel.outputs.path}}
-        ls -al ~/opensim-core-install/sdk/python/dist
+        echo "********************************"
+        ls -al ~/opensim-core-install/sdk/Python/dist
       shell: bash
 
     - name: Upload windows wheel
       uses: actions/upload-artifact@v4
       with:
-         name: ${{ steps.wheel.outputs.path }}
-         path: ~/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
+         name: ${{steps.wheel.outputs.path}}
+         path: ~/opensim-core-install/sdk/Python/dist/${{steps.wheel.outputs.path}}
 
   build_osx_wheels:
     runs-on: macos-15
