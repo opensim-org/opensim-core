@@ -243,18 +243,18 @@ jobs:
 
     - name: Capture wheel path
       id: wheel
-      run: echo "path=$(ls -1 dist/*.whl | head -n1)" >> $GITHUB_OUTPUT
+      run: echo "path=$(ls -1 build/*.whl | head -n1)" >> $GITHUB_OUTPUT
 
     - name: Upload osx wheel
       uses: actions/upload-artifact@v4
       with:
          name: ${{ steps.wheel.outputs.path }}
-         path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
+         path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/${{ steps.wheel.outputs.path }}
 
     - name: Test Python bindings
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        pip3 install /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
+        pip3 install /Users/runner/work/opensim-core/opensim-core-install/sdk/python/${{ steps.wheel.outputs.path }}
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
@@ -276,6 +276,7 @@ jobs:
       run: |
         pip install pip --upgrade
         pip install numpy==2.0
+        pip install build
 
     - name: Install packages
       run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen patchelf
