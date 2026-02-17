@@ -118,8 +118,8 @@ jobs:
       id: wheel
       shell: pwsh
       run: |
-         cd ~/opensim-core-install/sdk/python
-         $file = Get-ChildItem dist/opensim*.whl | Select-Object -First 1
+         cd ~/opensim-core-install/sdk/python/dist
+         $file = Get-ChildItem opensim*.whl | Select-Object -First 1
          echo "path=$($file.Name)" >> $GITHUB_OUTPUT
     - name: debug path
       run: |
