@@ -110,16 +110,15 @@ jobs:
     - name: Build wheel
       run: |
         cd ~/opensim-core-install/sdk/python
-        python3 setup.py bdist_wheel
+        pip wheel . --wheel-dir dist
 
     - name: Capture wheel path
       id: wheel
       shell: pwsh
       run: |
          cd ~/opensim-core-install/sdk/python
-         echo "path=$(Get-ChildItem "dist/*.whl" | Select-Object -First 1)" >> $GITHUB_OUTPUT
-         echo $path
-         
+         $file = Get-ChildItem dist/*.whl | Select-Object -First 1
+         echo "path=$($file.Name)" >> $GITHUB_OUTPUT         
 
     - name: Upload windows wheel
       uses: actions/upload-artifact@v4
