@@ -68,7 +68,30 @@ public:
 
     OpenSim_DECLARE_PROPERTY(accuracy, double,
             "The accuracy of the solution in absolute terms, i.e. the number of "
-            "significant digits to which the solution can be trusted. Default 1e-5.");
+            "significant digits to which the solution can be trusted. Default "
+            "1e-5.");
+
+    OpenSim_DECLARE_PROPERTY(adaptiveAccuracy, bool,
+            "If true, whenever a timepoint cannot be resolved with the desired "
+            "threshold, a lower accuracy will be used for that point instead "
+            "of throwing exception. Default false.");
+
+    OpenSim_DECLARE_PROPERTY(adaptiveAccuracyStep, double,
+            "A parameter of adaptive accuracy behavior. Increase the threshold "
+            "by this value every time the IK solver fails to reach the desired "
+            "accuracy threshold and throws an exception. For the next step, "
+            "accuracy threshold is reset to this->get_accuracy(). Has to be > 1."
+            "Default 10.");
+
+    OpenSim_DECLARE_PROPERTY(adaptiveAccuracyThreshold, double,
+            "A parameter of adaptive accuracy behavior. The program will stop "
+            "raising the threshold when the threshold will be greater than "
+            "this value and throw the error. Default: 1e-3.");
+
+    OpenSim_DECLARE_PROPERTY(ignoreConvergenceErrors, bool,
+            "Make the inverse kinematics proceed to the next frame instead of "
+            "breaking whenever the optimizer cannot converge on a frame. "
+            "Default false.");
 
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(
             time_range, double, 2, "The time range for the study.");
@@ -115,6 +138,10 @@ private:
         constructProperty_model_file("");
         constructProperty_constraint_weight(SimTK::Infinity);
         constructProperty_accuracy(1e-5);
+        constructProperty_adaptiveAccuracy(false);
+        constructProperty_adaptiveAccuracyStep(10);
+        constructProperty_adaptiveAccuracyThreshold(1e-3);
+        constructProperty_ignoreConvergenceErrors(false);
         Array<double> range{SimTK::Infinity, 2};
         // Make range -Infinity to Infinity unless limited by data
         range[0] = -SimTK::Infinity; 

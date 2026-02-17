@@ -167,7 +167,10 @@ bool InverseKinematicsTool::run()
         // create the solver given the input data
         InverseKinematicsSolver ikSolver(*_model, make_shared<MarkersReference>(markersReference),
             coordinateReferences, get_constraint_weight());
-        ikSolver.setAccuracy(get_accuracy());
+        double default_accuracy = get_accuracy();
+        double currentAccuracy = default_accuracy;
+        bool runAssemble = false;
+        ikSolver.setAccuracy(default_accuracy);
         s.updTime() = times[start_ix];
         ikSolver.assemble(s);
         kinematicsReporter->begin(s);
@@ -190,7 +193,91 @@ bool InverseKinematicsTool::run()
 
         for (int i = start_ix; i <= final_ix; ++i) {
             s.updTime() = times[i];
-            ikSolver.track(s);
+
+            // if running with adaptive accurcay and the accuracy was changed on
+            // the previous step, change it back. Do not reassemble here,
+            // because it can also throw optimizer error
+            if (get_adaptiveAccuracy() && currentAccuracy != default_accuracy) {
+                if (get_report_errors())
+                    log_info("Adaptive accuracy. Resetting accuracy to {}.",
+                            default_accuracy);
+
+                currentAccuracy = default_accuracy;
+                set_accuracy(currentAccuracy);
+                ikSolver.setAccuracy(currentAccuracy);
+
+                runAssemble = true;
+            }
+
+            // If adaptiveAccuracy is on, try to run track with decreasing
+            // accuracy until it is able to converge
+            bool ongoingAdaptingAccuracy = true;
+            while (ongoingAdaptingAccuracy) {
+                try {
+                    // if the accuracy was changed, reassemble
+                    if (runAssemble) {
+                        if (get_report_errors())
+                            log_info("Adaptive accuracy. Starting assemble at "
+                                     "time {}",
+                                    times[i]);
+                        ikSolver.assemble(s);
+                        runAssemble = false;
+                    }
+                    ikSolver.track(s);
+                    // this will become false only if track does not throw an
+                    // exception
+                    ongoingAdaptingAccuracy = false;
+                } catch (const Exception& ex) {
+                    // process exceptions that were thrown because IpOpt failed
+                    if (get_adaptiveAccuracy() &&
+                            std::string(ex.what()).find(
+                                    "Ipopt: Maximum iterations exceeded") !=
+                                    std::string::npos) {
+                        // lower accuracy
+                        currentAccuracy *= get_adaptiveAccuracyStep();
+                        if (currentAccuracy <=
+                                get_adaptiveAccuracyThreshold()) {
+                            if (get_report_errors()) {
+                                log_info("Adaptive accuracy caught exception: "
+                                         "{}",
+                                        ex.what());
+                                log_info("Updating accuracy to {}.",
+                                        currentAccuracy);
+                            }
+                            set_accuracy(currentAccuracy);
+                            ikSolver.setAccuracy(currentAccuracy);
+
+                            runAssemble = true;
+                            continue;
+                        } else {
+                            // if it cannot be solved with desired accuracy,
+                            // restore default accuracy and rethrow
+                            if (get_report_errors())
+                                log_info("Adaptive accuracy failed to "
+                                         "converge, rethrowing the error.");
+                            // to work together with ignoring convergence errors
+                            runAssemble = true;
+                        }
+                    }
+                    // if AA was used, reset the accuracy
+                    if (get_adaptiveAccuracy()) {
+                        currentAccuracy = default_accuracy;
+                        set_accuracy(currentAccuracy);
+                        ikSolver.setAccuracy(currentAccuracy);
+                    }
+                    // default behavior or AA failed
+                    if (get_ignoreConvergenceErrors() &&
+                            std::string(ex.what()).find(
+                                    "Ipopt: Maximum iterations exceeded") !=
+                                    std::string::npos) {
+                        if (get_report_errors())
+                            log_info("Ignoring convergence error.");
+                        ongoingAdaptingAccuracy = false;
+                    } else
+                        throw;
+                }
+            };
+
             // show progress line every 1000 frames so users see progress
             if (std::remainder(i - start_ix, 1000) == 0 && i != start_ix)
                 log_info("Solved {} frame(s)...", i - start_ix);
