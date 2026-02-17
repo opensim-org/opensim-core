@@ -117,7 +117,7 @@ jobs:
       shell: pwsh
       run: |
          cd ~/opensim-core-install/sdk/python
-         $file = Get-ChildItem dist/*.whl | Select-Object -First 1
+         $file = Get-ChildItem dist/opensim*.whl | Select-Object -First 1
          echo "path=$($file.Name)" >> $GITHUB_OUTPUT         
 
     - name: Upload windows wheel
@@ -249,8 +249,8 @@ jobs:
     - name: Capture wheel pathpython3 -m build --wheel
       id: wheel
       run: |
-         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-         echo "path=$(ls -1 dist/*.whl | head -n1)" >> $GITHUB_OUTPUT
+         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
+         echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
     - name: Upload osx wheel
       uses: actions/upload-artifact@v4
@@ -261,7 +261,7 @@ jobs:
     - name: Test Python bindings
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        pip3 install /Users/runner/work/opensim-core/opensim-core-install/sdk/python/${{ steps.wheel.outputs.path }}
+        pip3 install /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
@@ -381,9 +381,9 @@ jobs:
     - name: Capture wheel path
       id: wheel
       run: |
-         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
          ls -al
-         echo "path=$(ls -1 dist/*.whl | head -n1)" >> $GITHUB_OUTPUT
+         echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
     - name: Upload linux wheel
       uses: actions/upload-artifact@v4
