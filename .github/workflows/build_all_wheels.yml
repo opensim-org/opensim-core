@@ -10,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.12]
+        python-version: ['3.11', '3.12', '3.13']
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
@@ -121,14 +121,6 @@ jobs:
          cd ~/opensim-core-install/sdk/Python/dist
          $file = Get-ChildItem opensim*.whl | Select-Object -First 1
          echo "path=$($file.Name)" >> $env:GITHUB_OUTPUT
-         
-    - name: debug path
-      run: |
-        echo "********************************"
-        echo ${{steps.wheel.outputs.path}}
-        echo "********************************"
-        ls -al ~/opensim-core-install/sdk/Python/dist
-      shell: bash
 
     - name: Upload windows wheel
       uses: actions/upload-artifact@v4
@@ -140,7 +132,7 @@ jobs:
     runs-on: macos-15
     strategy:
       matrix:
-        python-version: ['3.12']
+        python-version: ['3.11', '3.12', '3.13']
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
