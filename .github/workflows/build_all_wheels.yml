@@ -131,7 +131,7 @@ jobs:
     - name: Test Python bindings
       run: |
         cd ~/opensim-core-install/sdk/Python
-        pip install ~/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
+        pip install dist/${{ steps.wheel.outputs.path }}
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
