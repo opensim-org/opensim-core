@@ -127,6 +127,13 @@ jobs:
       with:
          name: ${{steps.wheel.outputs.path}}
          path: ~/opensim-core-install/sdk/Python/dist/${{steps.wheel.outputs.path}}
+         
+    - name: Test Python bindings
+      run: |
+        cd ~/opensim-core-install/sdk/Python
+        pip install ~/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
+        # Run the python tests, verbosely.
+        python3 -m unittest discover --start-directory opensim/tests --verbose
 
   build_osx_wheels:
     runs-on: macos-15
@@ -248,7 +255,7 @@ jobs:
         pip3 wheel . --wheel-dir dist
         ls -al
 
-    - name: Capture wheel pathpython3 -m build --wheel
+    - name: Capture wheel path
       id: wheel
       run: |
          cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
