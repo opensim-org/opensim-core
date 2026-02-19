@@ -589,7 +589,8 @@ endfunction()
 function(OpenSimInstallDependencyLibraries PREFIX DEP_LIBS_DIR_WIN
         DEP_LIBS_DIR_UNIX OSIM_DESTINATION)
     if(WIN32)
-        file(GLOB_RECURSE LIBS "${DEP_LIBS_DIR_WIN}/${PREFIX}*.dll")
+        file(GLOB_RECURSE LIBS "${DEP_LIBS_DIR_WIN}/${PREFIX}*.dll"
+                               "${DEP_LIBS_DIR_WIN}/*.exe")
     else()
         if(APPLE)
             set(lib_ext "dylib")
