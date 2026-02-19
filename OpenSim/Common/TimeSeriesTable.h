@@ -571,7 +571,7 @@ template <> inline void TimeSeriesTableVec3::rotate(const SimTK::Rotation& R) {
     std::iota(row_indicies.begin(), row_indicies.end(), 0);
     std::for_each(
             row_indicies.begin(), row_indicies.end(), [&table, &R](size_t i) {
-                auto row = table.updRow(i);
+                auto row = table.updRow(static_cast<int>(i));
                 std::transform(row.begin(), row.end(), row.begin(),
                         [&R](const SimTK::Vec<3>& v) { return R * v; });
             });
