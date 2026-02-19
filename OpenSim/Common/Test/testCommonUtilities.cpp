@@ -381,4 +381,20 @@ TEST_CASE("rotateMarkerTable tests") {
             }
         }
     }
+    SECTION("Rotate throws for unsupported table type") {
+        const std::vector<double> time = {1.0, 2.0, 3.0};
+        const std::vector<std::string> labels = {"col1"};
+
+        SimTK::Matrix_<double> data(3, 1);
+        data(0, 0) = 1.0;
+        data(1, 0) = 2.0;
+        data(2, 0) = 3.0;
+
+        TimeSeriesTable table(time, data, labels); // TimeSeriesTable_<double>
+
+        const SimTK::Rotation R(SimTK::BodyOrSpaceType::SpaceRotationSequence,
+                0.1, SimTK::XAxis, 0.2, SimTK::YAxis, 0.3, SimTK::ZAxis);
+
+        REQUIRE_THROWS_AS(table.rotate(R), OpenSim::Exception);
+    }
 }

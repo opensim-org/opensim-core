@@ -510,7 +510,12 @@ public:
                 this->getIndependentColumn().begin() + last_index + 1);
         this->_indData = newIndependentVector;
     }
-    void rotate(const SimTK::Rotation& R);
+    void rotate(const SimTK::Rotation& R) {
+        OPENSIM_THROW(Exception,
+                "TimeSeriesTable_<{}>::rotate() is not implemented for this "
+                "value type.",
+                std::string(typeid(ETY).name()));
+    };
 
 protected:
     /** Validate the given row. 
