@@ -166,20 +166,6 @@ std::string OpenSim::convertRelativeFilePathToAbsoluteFromXMLDocument(
             directory, filePathRelativeToDocument);
 }
 
-void OpenSim::rotateMarkerTable(
-        OpenSim::TimeSeriesTableVec3& table, const SimTK::Rotation& R) {
-    size_t nt = table.getNumRows();
-    // Rotate table
-    std::vector<size_t> row_indicies(nt);
-    std::iota(row_indicies.begin(), row_indicies.end(), 0);
-    std::for_each(
-            row_indicies.begin(), row_indicies.end(), [&table, &R](size_t i) {
-                auto row = table.updRowAtIndex(i);
-                std::transform(row.begin(), row.end(), row.begin(),
-                        [&R](const SimTK::Vec<3>& v) { return R * v; });
-            });
-}
-
 SimTK::Real OpenSim::solveBisection(
         std::function<SimTK::Real(const SimTK::Real&)> calcResidual,
         SimTK::Real left, SimTK::Real right, const SimTK::Real& tolerance,

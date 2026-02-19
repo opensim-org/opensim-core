@@ -510,6 +510,8 @@ public:
                 this->getIndependentColumn().begin() + last_index + 1);
         this->_indData = newIndependentVector;
     }
+    void rotate(const SimTK::Rotation& R);
+
 protected:
     /** Validate the given row. 
 
@@ -552,6 +554,29 @@ typedef TimeSeriesTable_<SimTK::Quaternion> TimeSeriesTableQuaternion;
 /** See TimeSeriesTable_ for details on the interface.                        */
 typedef TimeSeriesTable_<SimTK::Rotation> TimeSeriesTableRotation;
 
+// Specialization that is only applicable to the Vec3 class
+template <> inline void TimeSeriesTableVec3::rotate(const SimTK::Rotation& R) {
+
+    /**
+     * Rotate all elements of a TimeSeriesTableVec3 (e.g., marker positions) by
+     * a specified SimTK::Rotation. The table of Vec3 elements will be modified
+     * in place.
+     *
+     *
+     * @param rotation the SimTK::Rotation representing the desired rotation.
+     */
+    size_t nt = this->getNumRows();
+    auto& table = this->_depData;
+    // Rotate table
+    std::vector<size_t> row_indicies(nt);
+    std::iota(row_indicies.begin(), row_indicies.end(), 0);
+    std::for_each(
+            row_indicies.begin(), row_indicies.end(), [&table, &R](size_t i) {
+                auto row = table.updRow(i);
+                std::transform(row.begin(), row.end(), row.begin(),
+                        [&R](const SimTK::Vec<3>& v) { return R * v; });
+            });
+}
 } // namespace OpenSim
 
 #endif // OPENSIM_TIME_SERIES_DATA_TABLE_H_
