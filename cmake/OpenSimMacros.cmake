@@ -597,7 +597,13 @@ function(OpenSimInstallDependencyLibraries PREFIX DEP_LIBS_DIR_WIN
         else()
             set(lib_ext "so*") # Trailing * for version #s.
         endif()
-        file(GLOB_RECURSE LIBS "${DEP_LIBS_DIR_UNIX}/lib${PREFIX}*.${lib_ext}")
+        set(simbody_visualizer "")
+        if (${PREFIX} STREQUAL "SimTK")
+            if (APPLE)
+                set(simbody_visualizer "${DEP_LIBS_DIR_UNIX}/../libexec/simbody/simbody-visualizer.app/Contents/MacOS/simbody-visualizer")
+            endif()
+        endif()
+        file(GLOB_RECURSE LIBS "${DEP_LIBS_DIR_UNIX}/lib${PREFIX}*.${lib_ext}" "${simbody_visualizer}")
     endif()
     if(NOT LIBS)
         message(FATAL_ERROR "Zero shared libraries found in directory "

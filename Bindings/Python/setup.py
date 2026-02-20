@@ -44,7 +44,7 @@ setup(name='opensim',
       ],
       # The last 3 entries are for if OPENSIM_PYTHON_STANDALONE is ON.
       # The asterisk after the extension is to handle version numbers on Linux.
-      package_data={'opensim': ['_*.*', '*.dylib', '*.dll', '*.so*']},
+      package_data={'opensim': ['_*.*', '*.dylib', '*.dll', '*.so*', 'simbody-*']},
       # Create a command-line tool for generating a report.
       entry_points={
           'console_scripts': [
