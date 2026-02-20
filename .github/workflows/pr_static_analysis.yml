@@ -1,0 +1,18 @@
+name: static-analysis
+
+on:
+  pull_request:
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0   # Fetch full history for branches
+    
+    - name: Fetch the main branch
+      run: git fetch origin main:refs/remotes/origin/main
+    
+    - name: Check code formatting with clang-format against main
+      run: scripts/tools/check-format.sh --branch remotes/origin/main
