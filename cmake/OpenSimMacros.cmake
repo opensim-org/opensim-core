@@ -601,6 +601,8 @@ function(OpenSimInstallDependencyLibraries PREFIX DEP_LIBS_DIR_WIN
         if (${PREFIX} STREQUAL "SimTK")
             if (APPLE)
                 set(simbody_visualizer "${DEP_LIBS_DIR_UNIX}/../libexec/simbody/simbody-visualizer.app/Contents/MacOS/simbody-visualizer")
+            else()
+                 set(simbody_visualizer "${DEP_LIBS_DIR_UNIX}/../libexec/simbody/simbody-visualizer")
             endif()
         endif()
         file(GLOB_RECURSE LIBS "${DEP_LIBS_DIR_UNIX}/lib${PREFIX}*.${lib_ext}" "${simbody_visualizer}")
