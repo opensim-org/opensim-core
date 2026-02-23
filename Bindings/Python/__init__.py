@@ -19,6 +19,9 @@ if (sys.platform.startswith('win')):
     if (os.path.exists(os.path.join(curFolder, "simbody-visualizer.exe"))):
         print("Found simbody-visualizer, setting SIMBODY_VISUALIZER_BINARY env var")
         os.environ["SIMBODY_VISUALIZER_BINARY"]= curFolder + os.pathsep+"simbody-visualizer.exe"
+# Non windows platforms have no .exe extension but visualizer should endup in the same folder
+if (os.path.exists(os.path.join(curFolder, "simbody-visualizer"))):
+    os.environ["SIMBODY_VISUALIZER_BINARY"]= curFolder + os.pathsep+"simbody-visualizer"
 
 curFolder = os.path.dirname(os.path.realpath(__file__))
 os.environ['PATH'] = curFolder + os.pathsep + os.environ['PATH']
