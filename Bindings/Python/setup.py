@@ -38,10 +38,6 @@ setup(name='opensim',
       url='http://opensim.stanford.edu/',
       license='Apache 2.0',
       packages=['opensim'],
-      # Copy the bin_files and geometry_files into the opensim package directory
-      data_files=[
-            ('/Lib/site-packages/opensim', bin_files)
-      ],
       # The last 3 entries are for if OPENSIM_PYTHON_STANDALONE is ON.
       # The asterisk after the extension is to handle version numbers on Linux.
       package_data={'opensim': ['_*.*', '*.dylib', '*.dll', '*.so*', 'simbody-*']},
