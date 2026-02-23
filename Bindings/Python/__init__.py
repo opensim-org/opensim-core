@@ -17,7 +17,11 @@ if (sys.platform.startswith('win')):
         os.add_dll_directory(dev_path)
     # if available tell simbody how to locate the visualizer in layout of python dist
     if (os.path.exists(os.path.join(curFolder, "simbody-visualizer.exe"))):
+        print("Found simbody-visualizer, setting SIMBODY_VISUALIZER_BINARY env var")
         os.environ["SIMBODY_VISUALIZER_BINARY"]= curFolder + os.pathsep+"simbody-visualizer.exe"
+
+curFolder = os.path.dirname(os.path.realpath(__file__))
+os.environ['PATH'] = curFolder + os.pathsep + os.environ['PATH']
 
 from .simbody import *
 from .common import *
