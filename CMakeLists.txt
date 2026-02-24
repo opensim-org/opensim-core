@@ -962,6 +962,8 @@ endif()
 if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
     OpenSimInstallDependencyLibraries(SimTK "${Simbody_BIN_DIR}"
         "${Simbody_LIB_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+    OpenSimInstallVisualizer("${Simbody_BIN_DIR}"
+        "${Simbody_LIB_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
 endif()
 
 

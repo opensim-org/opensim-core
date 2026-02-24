@@ -589,23 +589,14 @@ endfunction()
 function(OpenSimInstallDependencyLibraries PREFIX DEP_LIBS_DIR_WIN
         DEP_LIBS_DIR_UNIX OSIM_DESTINATION)
     if(WIN32)
-        file(GLOB_RECURSE LIBS "${DEP_LIBS_DIR_WIN}/${PREFIX}*.dll"
-                               "${DEP_LIBS_DIR_WIN}/*.exe")
+        file(GLOB_RECURSE LIBS "${DEP_LIBS_DIR_WIN}/${PREFIX}*.dll")
     else()
         if(APPLE)
             set(lib_ext "dylib")
         else()
             set(lib_ext "so*") # Trailing * for version #s.
         endif()
-        set(simbody_visualizer "")
-        if (${PREFIX} STREQUAL "SimTK")
-            if (APPLE)
-                set(simbody_visualizer "${DEP_LIBS_DIR_UNIX}/../libexec/simbody/simbody-visualizer.app/Contents/MacOS/simbody-visualizer")
-            else()
-                 set(simbody_visualizer "${DEP_LIBS_DIR_UNIX}/../libexec/simbody/simbody-visualizer")
-            endif()
-        endif()
-        file(GLOB_RECURSE LIBS "${DEP_LIBS_DIR_UNIX}/lib${PREFIX}*.${lib_ext}" "${simbody_visualizer}")
+        file(GLOB_RECURSE LIBS "${DEP_LIBS_DIR_UNIX}/lib${PREFIX}*.${lib_ext}")
     endif()
     if(NOT LIBS)
         message(FATAL_ERROR "Zero shared libraries found in directory "
@@ -614,6 +605,21 @@ function(OpenSimInstallDependencyLibraries PREFIX DEP_LIBS_DIR_WIN
     install(FILES ${LIBS} DESTINATION "${OSIM_DESTINATION}")
 endfunction()
 
+# Function to install visualizer under bin folder in target platform
+# Primarily used to install simbody-visualizer but could be generalized if needed for more
+function(OpenSimInstallVisualizer DEP_LIBS_DIR_WIN
+        DEP_LIBS_DIR_UNIX OSIM_DESTINATION)
+    if(WIN32)
+        set(simbody_visualizer "${DEP_LIBS_DIR_WIN}/simbody-visualizer.exe")
+    else()
+        if (APPLE)
+            set(simbody_visualizer "${DEP_LIBS_DIR_UNIX}/../libexec/simbody/simbody-visualizer.app")
+        else()
+                set(simbody_visualizer "${DEP_LIBS_DIR_UNIX}/../libexec/simbody/simbody-visualizer")
+        endif()
+    endif()
+    install(FILES ${simbody_visualizer} DESTINATION "${OSIM_DESTINATION}/bin")
+endfunction()
 
 # Copy DLL files from a dependency's installation into the
 # build and install directories. This is a Windows-specific function enabled
