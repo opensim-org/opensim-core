@@ -43,6 +43,8 @@ performance and stability in wrapping solutions.
 - Fixed an issue prevent element-by-element construction of `Mat33` objects in Matlab and Python. (#4241)
 - Added class `MeyerFregly2016Muscle` to support NMSM Pipeline-equivalent muscle models in Moco. (#4233)
 - Breaking: replaced `MocoJointReactionGoal::setWeight()`/`setWeightSet()` with `setReactionWeight()`/`setReactionWeightSet()` to avoid conflict with `MocoGoal::setWeight()`. (#4256)
+- Added `ScopeExit`, which is a lightweight C++-only class for calling a function/lambda when it destructs (similar to `std::experimental::scope_exit`).
+- Fixed a leak in `Model::extendConnectToModel` that can occur when an exception is thrown midway through model graph creation.
 
 
 v4.5.2
