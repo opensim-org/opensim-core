@@ -45,6 +45,7 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Common/ScopeExit.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
@@ -898,13 +899,16 @@ void Model::createMultibodyTree()
     }
 }
 
-void Model::extendConnectToModel(Model &model)
+void Model::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
 
-    if (&model != this){
-        log_info("Model:: {} is being connected to model {}.", getName(),
-                model.getName());
+    if (&model != this) {
+        log_info("Model:: {} is being connected to model {}.",
+            getName(),
+            model.getName()
+        );
+
         // if part of another Model, that Model is in charge
         // of creating a valid Multibody tree that includes
         // Components of this Model.
@@ -925,82 +929,89 @@ void Model::extendConnectToModel(Model &model)
     Ground& ground = updGround();
     setNextSubcomponentInSystem(ground);
 
-    // The JointSet of the Model is only being manipulated for consistency with
-    // Tool expectations. TODO fix Tools and remove
-    JointSet& joints = upd_JointSet();
+    {
+        // The JointSet of the Model is only being manipulated for consistency with
+        // Tool expectations. TODO fix Tools and remove
+        JointSet& joints = upd_JointSet();
 
-    bool isMemoryOwner = joints.getMemoryOwner();
-    //Temporarily set owner ship to false so we
-    //can swap to rearrange order of the joints
-    joints.setMemoryOwner(false);
+        const bool isMemoryOwner = joints.getMemoryOwner();
 
-    // Run through all the mobilizers in the multibody tree, adding
-    // a joint in the correct sequence. Also add massless bodies,
-    // loop closure constraints, etc... to form the valid tree.
-    for (int m = 0; m < _multibodyTree.getNumMobilizers(); ++m) {
-        // Get a mobilizer from the tree, then extract its corresponding
-        // joint and bodies. Note that these should have equivalents in OpenSim.
-        const SimTK::MultibodyGraphMaker::Mobilizer& mob =
-                _multibodyTree.getMobilizer(m);
+        // Temporarily set ownership to false so we
+        // can swap to rearrange order of the joints
+        joints.setMemoryOwner(false);
 
-        if (mob.isSlaveMobilizer()){
-            // add the slave body and joint
-            Body* outbMaster = MultibodyGraphMakerPtrCast<Body>(mob.getOutboardMasterBodyRef());
-            Joint* useJoint = MultibodyGraphMakerPtrCast<Joint>(mob.getJointRef());
-            Body* outb = MultibodyGraphMakerPtrCast<Body>(mob.getOutboardBodyRef());
+        // Ensure memory ownership is reset to its original
+        // state, even when an exception is thrown, so that
+        // joint memory is correctly cleaned up.
+        const ScopeExit resetter{[isMemoryOwner, &joints]() {
+            joints.setMemoryOwner(isMemoryOwner);
+        }};
 
-            // the joint must be added to the system next
-            setNextSubcomponentInSystem(*useJoint);
+        // Run through all the mobilizers in the multibody tree, adding
+        // a joint in the correct sequence. Also add massless bodies,
+        // loop closure constraints, etc... to form the valid tree.
+        for (int m = 0; m < _multibodyTree.getNumMobilizers(); ++m) {
+            // Get a mobilizer from the tree, then extract its corresponding
+            // joint and bodies. Note that these should have equivalents in OpenSim.
+            const SimTK::MultibodyGraphMaker::Mobilizer& mob =
+                    _multibodyTree.getMobilizer(m);
 
-            if (!outb) {
-                outb = outbMaster->addSlave();
-                useJoint->setSlaveBodyForChild(*outb);
-                SimTK::Transform o(SimTK::Vec3(0));
-                //Now add the constraints that weld the slave to the master at the
-                // body origin
-                std::string pathName = outb->getAbsolutePathString();
-                WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
-                                                          *outbMaster, o, *outb, o);
+            if (mob.isSlaveMobilizer()){
+                // add the slave body and joint
+                Body* outbMaster = MultibodyGraphMakerPtrCast<Body>(mob.getOutboardMasterBodyRef());
+                Joint* useJoint = MultibodyGraphMakerPtrCast<Joint>(mob.getJointRef());
+                Body* outb = MultibodyGraphMakerPtrCast<Body>(mob.getOutboardBodyRef());
 
-                // include within adopted list of owned components
-                adoptSubcomponent(weld);
-                setNextSubcomponentInSystem(*weld);
+                // the joint must be added to the system next
+                setNextSubcomponentInSystem(*useJoint);
+
+                if (!outb) {
+                    outb = outbMaster->addSlave();
+                    useJoint->setSlaveBodyForChild(*outb);
+                    SimTK::Transform o(SimTK::Vec3(0));
+                    //Now add the constraints that weld the slave to the master at the
+                    // body origin
+                    std::string pathName = outb->getAbsolutePathString();
+                    WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
+                                                              *outbMaster, o, *outb, o);
+
+                    // include within adopted list of owned components
+                    adoptSubcomponent(weld);
+                    setNextSubcomponentInSystem(*weld);
+                }
+            }
+
+            if (mob.isAddedBaseMobilizer()){
+                // create and add the base joint to enable these dofs
+                Body* child = MultibodyGraphMakerPtrCast<Body>(mob.getOutboardBodyRef());
+                log_warn("Body '{}' not connected by a Joint."
+                    "A FreeJoint will be added to connect it to ground.",
+                    child->getName());
+                Ground* ground = MultibodyGraphMakerPtrCast<Ground>(mob.getInboardBodyRef());
+
+                std::string jname = "free_" + child->getName();
+                SimTK::Vec3 zeroVec(0.0);
+                Joint* free = new FreeJoint(jname, *ground, *child);
+                free->isReversed = mob.isReversedFromJoint();
+                // TODO: Joints are currently required to be in the JointSet
+                // When the reordering of Joints is eliminated (see following else block)
+                // this limitation can be removed and the free joint adopted as in
+                // internal subcomponent (similar to the weld constraint above)
+                addJoint(free);
+                setNextSubcomponentInSystem(*free);
+            }
+            else {
+                // Update the directionality of the joint according to tree's
+                // preferential direction
+                MultibodyGraphMakerPtrCast<Joint>(mob.getJointRef())->isReversed =
+                    mob.isReversedFromJoint();
+
+                // order the joint components in the order of the multibody tree
+                Joint* joint = MultibodyGraphMakerPtrCast<Joint>(mob.getJointRef());
+                setNextSubcomponentInSystem(*joint);
             }
         }
-
-        if (mob.isAddedBaseMobilizer()){
-            // create and add the base joint to enable these dofs
-            Body* child = MultibodyGraphMakerPtrCast<Body>(mob.getOutboardBodyRef());
-            log_warn("Body '{}' not connected by a Joint."
-                "A FreeJoint will be added to connect it to ground.",
-                child->getName());
-            Ground* ground = MultibodyGraphMakerPtrCast<Ground>(mob.getInboardBodyRef());
-
-            std::string jname = "free_" + child->getName();
-            SimTK::Vec3 zeroVec(0.0);
-            Joint* free = new FreeJoint(jname, *ground, *child);
-            free->isReversed = mob.isReversedFromJoint();
-            // TODO: Joints are currently required to be in the JointSet
-            // When the reordering of Joints is eliminated (see following else block)
-            // this limitation can be removed and the free joint adopted as in
-            // internal subcomponent (similar to the weld constraint above)
-            addJoint(free);
-            setNextSubcomponentInSystem(*free);
-        }
-        else{
-            // Update the directionality of the joint according to tree's
-            // preferential direction
-            MultibodyGraphMakerPtrCast<Joint>(mob.getJointRef())->isReversed =
-                mob.isReversedFromJoint();
-
-            // order the joint components in the order of the multibody tree
-            Joint* joint = MultibodyGraphMakerPtrCast<Joint>(mob.getJointRef());
-            setNextSubcomponentInSystem(*joint);
-
-
-        }
     }
-    joints.setMemoryOwner(isMemoryOwner);
 
     // Add the loop joints if any.
     for (int lcx = 0; lcx < _multibodyTree.getNumLoopConstraints(); ++lcx) {
