@@ -51,7 +51,7 @@ namespace OpenSim
         ScopeExit(ScopeExit&&) noexcept = delete;
         ScopeExit& operator=(const ScopeExit&) = delete;
         ScopeExit& operator=(ScopeExit&&) noexcept = delete;
-        ~ScopeExit() noexcept(noexcept(exit_function_()))
+        ~ScopeExit() noexcept
         {
             if (is_active_) {
                 exit_function_();
