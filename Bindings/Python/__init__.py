@@ -21,8 +21,13 @@ if (sys.platform.startswith('win')):
         print("Found simbody-visualizer, setting SIMBODY_HOME env var to ", curFolder)
         os.environ["SIMBODY_HOME"]= curFolder 
 # Non windows platforms have no .exe extension but visualizer should endup in the same folder
-if (os.path.exists(os.path.join(curFolder, "bin", "simbody-visualizer"))):
+if (sys.platform.startswith('darwin')):
     os.environ["SIMBODY_HOME"]= curFolder
+    os.environ["DYLD_LIBRARY_PATH"]= curFolder + os.pathsep + os.environ['DYLD_LIBRARY_PATH']
+
+if (sys.platform.startswith('linux')):
+    os.environ["SIMBODY_HOME"]= curFolder
+    os.environ["LD_LIBRARY_PATH"]= curFolder + os.pathsep + os.environ['LD_LIBRARY_PATH']
 
 #curFolder = os.path.dirname(os.path.realpath(__file__))
 #os.environ['PATH'] = curFolder + os.pathsep + os.environ['PATH']
