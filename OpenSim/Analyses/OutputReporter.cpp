@@ -32,6 +32,13 @@
 using namespace OpenSim;
 using namespace std;
 
+
+OutputReporter::OutputReporter(const OutputReporter&) = default;
+OutputReporter::OutputReporter(OutputReporter&&) noexcept = default;
+OutputReporter::~OutputReporter() noexcept = default;
+OutputReporter& OutputReporter::operator=(const OutputReporter&) = default;
+OutputReporter& OutputReporter::operator=(OutputReporter&&) noexcept = default;
+
 //=============================================================================
 // ANALYSIS
 //=============================================================================

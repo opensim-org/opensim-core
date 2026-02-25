@@ -43,6 +43,7 @@ performance and stability in wrapping solutions.
 - Fixed an issue prevent element-by-element construction of `Mat33` objects in Matlab and Python. (#4241)
 - Added class `MeyerFregly2016Muscle` to support NMSM Pipeline-equivalent muscle models in Moco. (#4233)
 - Breaking: replaced `MocoJointReactionGoal::setWeight()`/`setWeightSet()` with `setReactionWeight()`/`setReactionWeightSet()` to avoid conflict with `MocoGoal::setWeight()`. (#4256)
+- Fixed a compile-time issue where `OutputReporter` was using the `Model` API without having access to its definition.
 
 
 v4.5.2
