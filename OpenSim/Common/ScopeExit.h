@@ -44,6 +44,7 @@ namespace OpenSim
          */
         template<typename Fn>
         requires (std::is_nothrow_constructible_v<EF, Fn>)
+        requires(std::is_nothrow_invocable_v<EF>)
         explicit ScopeExit(Fn&& fn) : exit_function_{std::forward<Fn>(fn)} {}
 
         ScopeExit(const ScopeExit&) = delete;
