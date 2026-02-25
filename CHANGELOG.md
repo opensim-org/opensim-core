@@ -44,6 +44,7 @@ performance and stability in wrapping solutions.
 - Added class `MeyerFregly2016Muscle` to support NMSM Pipeline-equivalent muscle models in Moco. (#4233)
 - Breaking: replaced `MocoJointReactionGoal::setWeight()`/`setWeightSet()` with `setReactionWeight()`/`setReactionWeightSet()` to avoid conflict with `MocoGoal::setWeight()`. (#4256)
 - Fixed a double-free issue that libASAN detects when loading/simulating models containing Thelen2003Muscle
+- Fixed a compile-time issue where `OutputReporter` was using the `Model` API without having access to its definition.
 
 
 v4.5.2
