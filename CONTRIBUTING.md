@@ -11,7 +11,7 @@ Contents:
 
 - [Ways to Contribute](#ways-to-contribute)
 - [Making a Pull Request](#making-a-pull-request-pr)
-- [Writing tests](#writing-tests)
+- [Writing tests with Catch2](#writing-tests-with-catch2)
 - [Running Moco tests](#running-moco-tests)
 - [Checking for Memory Leaks with LibASAN](#checking-for-memory-leaks-with-libasan)
 - [Coding Standards](#coding-standards)
@@ -68,9 +68,63 @@ A few additional practices will help streamline the code review process. Please 
 
 It is important that reviewers also review the effect that your PR has on the doxygen documentation. To facilitate this, we automatically upload the doxygen documentation for each PR to [myosin.sourceforge.net](http://myosin.sourceforge.net); you can view the documentation for a specific PR at `myosin.sourceforge.net/<issue-number>`.
 
+Writing tests with Catch2
+-------------------------
+Tests should be written using the [Catch2 testing framework](https://github.com/catchorg/Catch2).
+Creating a Catch2 test requires including the headers necessary for your test (e.g.,
+<catch2/catch_test_macros.hpp> for the basic test macros). If you're not sure what to
+include, use <catch2/catch_all.hpp> to include all Catch2 headers. Define individual test
+cases using the `TEST_CASE` macro, for example:
 
-Writing tests
--------------
+```cpp
+#include <OpenSim/Simulation/Model/Model.h>
+#include <catch2/catch_all.hpp>
+
+using namespace OpenSim;
+
+TEST_CASE("Test models are equivalent") {
+    Model model1("model1.osim");
+    Model model2("model2.osim");
+    CHECK(model1 == model2);
+}
+```
+
+The `SECTION` macro can be used if you want to define multiple tests that share
+the setup and teardown code between test code. The following example is trivial,
+but demonstrates how you can avoid repeating expensive operations across related
+tests:
+
+```cpp
+#include <OpenSim/Actuators/ModelFactory.h>
+#include <catch2/catch_all.hpp>
+
+using namespace OpenSim;
+
+TEST_CASE("Test ModelFactory::createDoublePendulum()") {
+    Model model = ModelFactory::createDoublePendulum();
+    model.initSystem();
+
+    SECTION("Number of joints") {
+        CHECK(model.getNumJoints() == 2);
+    }
+    SECTION("Number of actuators") {
+        CHECK(model.getActuators().getSize() == 2);
+    }
+}
+```
+
+Catch2 recommends using [`matchers`](https://github.com/catchorg/Catch2/blob/devel/docs/matchers.md)
+to comparing strings (e.g. `Catch::Matchers::ContainsSubstring`), floating point numbers (e.g.,
+`Catch::Matchers::WithinAbs` and `Catch::Matchers::WithinRel`), and other complex types. Please use
+matchers in conjuction with `CHECK_THAT` or `REQUIRE_THAT` to write assertions wherever possible.
+
+For more information about creating tests, consult the Catch2
+[tutorials](https://github.com/catchorg/Catch2/blob/devel/docs/tutorial.md#top) and
+[documentation](https://github.com/catchorg/Catch2/blob/devel/docs/Readme.md#top).
+
+Test resources
+--------------
+
 There are directories of tests scattered throughout the repository. Each
 directory contains most of the files (e.g., .osim model files) necessary to run
 the tests. When building, these files are copied over into the build tree. Some
@@ -81,7 +135,6 @@ go into the `OpenSim/Tests/shared` directory. You can then use the
 copy the necessary shared files to the proper build directory. *DO NOT CHANGE* files
 that are already in `OpenSim/Tests/shared`; you could inadvertently weaken tests
 that rely on some obscure aspect of the files.
-
 
 Platform-specific tests
 -----------------------
@@ -122,13 +175,6 @@ can be used to specify platform-specific tests.
 | Windows and Linux | `"[win/linux]"`, `"[linux/win]"`             |
 | All platforms     | (no tag)                                     |
 
-Building GUI
--------------
-In case you suspect your changes to the opensim-core is breaking API (can break client
-code including the OpenSim application/GUI) you can include the tag [build-gui] in the
-commit message and a separate build of the GUI (from the opensim-gui repository) will be
-triggered.
-
 Running Moco tests
 ------------------
 In general, Moco's tests depend on the CasADi library, whose use is determined 
@@ -139,6 +185,13 @@ which excludes Catch2 templatized tests using MocoCasADiSolver and other tests t
 are tagged as relying on CasADi. If the test executables are run without CTest (e.g., 
 debugging a project in Visual Studio), the tests will fail if `OPENSIM_WITH_CASADI` is 
 false; for the tests to pass, provide the argument `"~*MocoCasADiSolver*" "~[casadi]"`.
+
+Building GUI
+-------------
+In case you suspect your changes to the opensim-core is breaking API (can break client
+code including the OpenSim application/GUI) you can include the tag [build-gui] in the
+commit message and a separate build of the GUI (from the opensim-gui repository) will be
+triggered.
 
 Checking for Memory Leaks with LibASAN
 --------------------------------------
