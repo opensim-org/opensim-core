@@ -45,6 +45,8 @@ performance and stability in wrapping solutions.
 - Breaking: replaced `MocoJointReactionGoal::setWeight()`/`setWeightSet()` with `setReactionWeight()`/`setReactionWeightSet()` to avoid conflict with `MocoGoal::setWeight()`. (#4256)
 - Fixed a double-free issue that libASAN detects when loading/simulating models containing Thelen2003Muscle
 - Fixed a compile-time issue where `OutputReporter` was using the `Model` API without having access to its definition.
+- Added `ScopeExit`, which is a lightweight C++-only class for calling a function/lambda when it destructs (similar to `std::experimental::scope_exit`).
+- Fixed a leak in `Model::extendConnectToModel` that can occur when an exception is thrown midway through model graph creation.
 
 
 v4.5.2
