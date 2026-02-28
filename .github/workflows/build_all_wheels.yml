@@ -10,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.11, 3.12]
+        python-version: ['3.11', '3.12', '3.13']
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
@@ -41,7 +41,7 @@ jobs:
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
       run: |
-        python3 -m pip install numpy==2.0
+        python3 -m pip install numpy==2.4.2
         python3 -m pip install wheel
         python3 -m pip install build
         pip install --upgrade pip setuptools wheel
@@ -109,24 +109,37 @@ jobs:
 
     - name: Build wheel
       run: |
-        cd ~/opensim-core-install/sdk/python
-        python3 setup.py bdist_wheel
+        cd ~/opensim-core-install/sdk/Python
+        pip wheel . --wheel-dir dist
+        echo "Dist contents after build:"
+          if (Test-Path dist) { Get-ChildItem dist } else { echo "dist folder not found" }
 
     - name: Capture wheel path
       id: wheel
-      run: echo "path=$(ls -1 dist/*.whl | head -n1)" >> $GITHUB_OUTPUT
+      shell: pwsh
+      run: |
+         cd ~/opensim-core-install/sdk/Python/dist
+         $file = Get-ChildItem opensim*.whl | Select-Object -First 1
+         echo "path=$($file.Name)" >> $env:GITHUB_OUTPUT
 
     - name: Upload windows wheel
       uses: actions/upload-artifact@v4
       with:
-         name: ${{ steps.wheel.outputs.path }}
-         path: ~/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
+         name: ${{steps.wheel.outputs.path}}
+         path: ~/opensim-core-install/sdk/Python/dist/${{steps.wheel.outputs.path}}
+         
+    - name: Test Python bindings
+      run: |
+        cd ~/opensim-core-install/sdk/Python
+        pip install dist/${{ steps.wheel.outputs.path }}
+        # Run the python tests, verbosely.
+        # python3 -m unittest discover --start-directory opensim/tests --verbose
 
   build_osx_wheels:
     runs-on: macos-15
     strategy:
       matrix:
-        python-version: [3.11, 3.12]
+        python-version: ['3.11', '3.12', '3.13']
 
     outputs:
       version: ${{ steps.configure.outputs.version }}
@@ -144,7 +157,7 @@ jobs:
       run: |
         brew install pkgconfig autoconf libtool automake wget pcre doxygen llvm
         brew reinstall gcc
-        pip3 install numpy==2.0
+        pip3 install numpy==2.4.2
         pip3 install wheel
         pip3 install build
         gfortran -v
@@ -178,7 +191,7 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}-${{ hashFiles('gfortran_version/*') }}
 
     - name: Build dependencies
-      if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      # if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         mkdir $GITHUB_WORKSPACE/../build_deps
         cd $GITHUB_WORKSPACE/../build_deps
@@ -239,11 +252,14 @@ jobs:
     - name: Build wheel
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        python3 -m build --wheel
+        pip3 wheel . --wheel-dir dist
+        ls -al
 
     - name: Capture wheel path
       id: wheel
-      run: echo "path=$(ls -1 dist/*.whl | head -n1)" >> $GITHUB_OUTPUT
+      run: |
+         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
+         echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
     - name: Upload osx wheel
       uses: actions/upload-artifact@v4
@@ -259,10 +275,10 @@ jobs:
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
   build_linux_wheels:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
-        python-version: [3.11, 3.12, 3.13]
+        python-version: ['3.11', '3.12', '3.13']
 
     steps:
     - uses: actions/checkout@v4
@@ -275,7 +291,9 @@ jobs:
     - name: Install Numpy
       run: |
         pip install pip --upgrade
-        pip install numpy==2.0
+        pip install numpy==2.4.2
+        pip install build
+        pip install wheel
 
     - name: Install packages
       run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen patchelf
@@ -329,6 +347,8 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
         OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=off)
+        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=on)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
         OSIM_CMAKE_ARGS+=(-DSWIG_DIR=~/swig/share/swig)
         OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=~/swig/bin/swig)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
@@ -368,11 +388,14 @@ jobs:
     - name: Build wheel
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        python3 -m build --wheel
+        pip wheel . --wheel-dir dist
 
     - name: Capture wheel path
       id: wheel
-      run: echo "path=$(ls -1 dist/*.whl | head -n1)" >> $GITHUB_OUTPUT
+      run: |
+         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
+         ls -al
+         echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
     - name: Upload linux wheel
       uses: actions/upload-artifact@v4
