@@ -35,6 +35,7 @@ performance and stability in wrapping solutions.
 - Implemented `generateDecorations()` for `Station` to allow visualization in the Simbody visualizer. (#4169)
 - Added `Component::removeComponent` and `Component::extractComponent` methods, which enable removing subcomponents that were previously added via `Component::addComponent` or the `<components>` XML element (#4174).
 - Updated required language level to C++20. (#3929)
+- Python API accepts Path objects instead of only strings
 - Breaking: removed the `operator==` and `operator<` overloads in `ControlLinearNode` and replaced usages with the equivalent utility functions `isEqual()` and `isLessThan()`. (#4095)
 - Made various changes to support builds on Ubuntu 24.04 with GCC 13. (#4186)
 - Support building PYPI distribution python wheels on all platforms, upgrade builds to python 3.11 and numpy 2.0. (#4189)
@@ -47,7 +48,6 @@ performance and stability in wrapping solutions.
 - Fixed a compile-time issue where `OutputReporter` was using the `Model` API without having access to its definition.
 - Added `ScopeExit`, which is a lightweight C++-only class for calling a function/lambda when it destructs (similar to `std::experimental::scope_exit`).
 - Fixed a leak in `Model::extendConnectToModel` that can occur when an exception is thrown midway through model graph creation.
-
 
 v4.5.2
 ======
