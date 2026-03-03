@@ -1,6 +1,7 @@
 import sys
 import os
 
+print("at top of init.py")
 curFolder = os.path.dirname(os.path.realpath(__file__))
 if (sys.platform.startswith('win')):
     os.add_dll_directory(curFolder)
@@ -24,6 +25,8 @@ if (sys.platform.startswith('win')):
 if (sys.platform.startswith('darwin')):
     os.environ['SIMBODY_HOME']= curFolder
     os.environ['PATH']= curFolder+ os.pathsep + os.environ['PATH']
+    os.environ['DYLD_LIBRARY_PATH']= os.environ['PATH']
+    
 
 if (sys.platform.startswith('linux')):
     os.environ["SIMBODY_HOME"]= curFolder
