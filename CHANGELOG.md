@@ -49,6 +49,8 @@ performance and stability in wrapping solutions.
 - Fixed a leak in `Model::extendConnectToModel` that can occur when an exception is thrown midway through model graph creation.
 - Fixed an issue where `StdVectorDouble::get()` would return `java.lang.Double` in Matlab
 - Fixed an issue in the Java bindings where setting the `Manager::IntegratorMethod` via `setIntegratorMethod()` with an integer argument did not work. (#4277)
+- Fixed an issue where `StdVectorDouble::get()` would return `java.lang.Double` in Matlab instead of `double`. (#4275)
+- Added `ExponentialCoordinateLimitForce`, a force element for enforcing coordinate limits using exponential spring functions. (#4231)
 
 
 v4.5.2
