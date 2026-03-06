@@ -120,14 +120,14 @@ struct SDocUtil {
 //_____________________________________________________________________________
 StatesDocument::StatesDocument(const Model& model,
         const SimTK::Array_<SimTK::State>& trajectory,
-        const SimTK::String& note, int p) {
+        const std::string& note, int p) {
     this->note = note;
     this->precision = clamp(1, p, SimTK::LosslessNumDigitsReal);
     formDoc(model, trajectory);
 }
 //_____________________________________________________________________________
 StatesDocument::StatesDocument(const Model& model,
-        const vector<SimTK::State>& trajectory, const SimTK::String& note,
+        const vector<SimTK::State>& trajectory, const std::string& note,
         int p) {
     this->note = note;
     this->precision = clamp(1, p, SimTK::LosslessNumDigitsReal);
@@ -158,7 +158,7 @@ StatesDocument::StatesDocument(const Model& model,
 //_____________________________________________________________________________
 void
 StatesDocument::
-serialize(const SimTK::String& filename) {
+serialize(const std::string& filename) {
     doc.writeToFile(filename);
 }
 //_____________________________________________________________________________
@@ -574,7 +574,7 @@ void StatesDocument::initializeContinuousVariables(
     for (int i = 0; i < n; ++i) {
         // type
         Attribute typeAttr = varElts[i].getOptionalAttribute("type");
-        const SimTK::String &type = typeAttr.getValue();
+        const SimTK::String& type = typeAttr.getValue();
 
         // path
         Attribute pathAttr = varElts[i].getOptionalAttribute("path");
@@ -708,7 +708,7 @@ void StatesDocument::initializeModelingOptions(
     for (int i = 0; i < n; ++i) {
         // type
         Attribute typeAttr = varElts[i].getOptionalAttribute("type");
-        const SimTK::String &type = typeAttr.getValue();
+        const SimTK::String& type = typeAttr.getValue();
 
         // path
         Attribute pathAttr = varElts[i].getOptionalAttribute("path");

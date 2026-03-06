@@ -127,3 +127,12 @@ class TestBasics(unittest.TestCase):
         property = muscle.getPropertyByName('max_isometric_force')
         osim.PropertyHelper.setValueDouble(200, property);
         assert muscle.get_max_isometric_force()==200
+
+    def test_StatesTrajectory_and_StatesDocument(self):
+        model = osim.ModelFactory.createDoublePendulum()
+        state = model.initSystem()
+        stateTraj = osim.StatesTrajectory()
+        stateTraj.append(state)
+        assert stateTraj.getSize() == 1
+        doc = stateTraj.exportToStatesDocument(model)
+        doc.serialize('test.ostates')
