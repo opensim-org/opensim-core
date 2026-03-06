@@ -45,9 +45,6 @@ class Model;
 // users are likely to be interested in a more general State container that
 // doesn't assume the states are sequential in time.
 
-// TODO See the bottom of this file for a class description to use once the
-// OSTATES file format is implemented.
-//
 /**
  * \section StatesTrajectory
  * This class holds a sequence of SimTK::State%s. You can obtain a
@@ -299,7 +296,7 @@ public:
     * Once the states have been serialized, they can be deserialized by
     * constructing a new StatesDocument by calling
     * ```
-    *   StatesDocument(const SimTK::String& filename)
+    *   StatesDocument(const std::string& filename)
     * ```
     * and then calling:
     * ```
@@ -329,7 +326,7 @@ public:
     */
     OpenSim::StatesDocument
     exportToStatesDocument(const OpenSim::Model& model,
-        const SimTK::String& note = "",
+        const std::string& note = "",
         int precision = SimTK::LosslessNumDigitsReal) const
     {
         return OpenSim::StatesDocument(model, m_states, note, precision);
@@ -531,61 +528,5 @@ public:
 };
 
 } // namespace
-
-// TODO The following class description should be revisited when support for
-// OSTATES files is completed.
-/* This class holds a sequence of SimTK::State%s that can be saved to a
- * plain-text OSTATES file.  The trajectory can also be populated from such a
- * file. You may obtain a StatesTrajectory from a simulation, or other
- * numerical methods whose task is to produce a trajectory of states. Users can
- * modify the trajectory by appending states to it, but users cannot modify the
- * individual states that are already in the trajectory.
- *
- * This class was introduced in OpenSim version 4.0, and enables scripting
- * (Python/MATLAB) and C++ users to postprocess their results with greater ease
- * and more versatility than with an Analysis.
- *
- * @note This class is a work in progress. The ability to read and write a
- * StatesTrajectory to an OSTATES is not available yet, even though the
- * documentation is written as if this ability exists.
- *
- * ### Guarantees
- * This class is designed to ensure the following:
- * - The states are ordered nondecreasing in time (adjacent states *can* have
- *   the same time).
- * - All states in the trajectory are consistent with each other (see
- *   isConsistent()).
- *
- * @note These guarantees apply when using this class through C++, Java,
- * or the %OpenSim GUI, but **not** through Python or MATLAB. This is because
- * Python and MATLAB do not enforce constness and thus allow modifying the
- * trajectory.
- *
- * ### File format
- * StatesTrajectory files use the file extension `.ostates`, with the XML
- * format. Therefore, you could theoretically edit a StatesTrajectory file in
- * a typical text editing program, or in Python/MATLAB using XML libraries
- * (such a process is is likely to be painful; consider using the
- * createFromStatesStorage() utility instead).
- *
- * A SimTK::State object contains many different types of data, but only some
- * are saved into the OSTATES file:
- *
- * type of data                 | saved in OSTATES?
- * ---------------------------- | -----------------
- * (continuous) state variables | yes
- * discrete state variables     | yes
- * modeling options             | yes
- * cache variables              | no
- *
- * The cache variables (e.g., total system mass, control signals) are not saved
- * to the OSTATES file because they can be computed from the state variables
- * and are not necessary for describing the state of the system (see
- * Component::addStateVariable).
- *
- * %OpenSim Object%s (Model OSIM files, Tool setup files) also use an
- * XML format, but that format is *completely unrelated* to the XML format used
- * for OSTATES files.
- */
 
 #endif // OPENSIM_STATES_TRAJECTORY_H_

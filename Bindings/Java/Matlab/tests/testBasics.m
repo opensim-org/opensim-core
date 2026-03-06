@@ -34,3 +34,15 @@ for i = 0:vec.size() - 1
     assert(value == i);
     assert(string(class(value)) == 'double');
 end
+
+% Test StatesTrajectory and StatesDocument.
+% -----------------------------------------
+model = ModelFactory.createDoublePendulum();
+state = model.initSystem();
+
+stateTraj = StatesTrajectory();
+stateTraj.append(state);
+assert(stateTraj.getSize() == 1);
+
+doc = stateTraj.exportToStatesDocument(model);
+doc.serialize('test.ostates');
