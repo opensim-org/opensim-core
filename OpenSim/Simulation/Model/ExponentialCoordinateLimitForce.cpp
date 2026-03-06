@@ -39,11 +39,11 @@ ExponentialCoordinateLimitForce::ExponentialCoordinateLimitForce() {
 }
 
 ExponentialCoordinateLimitForce::ExponentialCoordinateLimitForce(
-    const std::string& coordinateNameOrPath, double lowerLimit,
-    double upperLimit, const SimTK::Vec2& lowerShapeParameters,
-    const SimTK::Vec2& upperShapeParameters) {
+        const Coordinate& coordinate, double lowerLimit, double upperLimit,
+        const SimTK::Vec2& lowerShapeParameters,
+        const SimTK::Vec2& upperShapeParameters) {
     constructProperties();
-    set_coordinate(coordinateNameOrPath);
+    connectSocket_coordinate(coordinate);
     set_lower_limit(lowerLimit);
     set_upper_limit(upperLimit);
     set_lower_shape_parameters(lowerShapeParameters);
@@ -51,7 +51,6 @@ ExponentialCoordinateLimitForce::ExponentialCoordinateLimitForce(
 }
 
 void ExponentialCoordinateLimitForce::constructProperties() {
-    constructProperty_coordinate("");
     constructProperty_lower_limit(0.0);
     constructProperty_upper_limit(0.0);
     constructProperty_lower_shape_parameters(SimTK::Vec2(0.0, 0.0));
@@ -72,25 +71,14 @@ void ExponentialCoordinateLimitForce::extendConnectToModel(Model& aModel) {
     OPENSIM_THROW_IF_FRMOBJ(s_upper[0] <= 0 || s_upper[1] <= 0,
         Exception, "Expected both upper shape parameters to be positive "
         "values, but received ({}, {}).", s_upper[0], s_upper[1]);
-
-    const auto& coordinateNameOrPath = get_coordinate();
-    if (_model->getCoordinateSet().contains(coordinateNameOrPath)) {
-        _coord = &_model->getCoordinateSet().get(coordinateNameOrPath);
-    } else if (_model->hasComponent<Coordinate>(coordinateNameOrPath)) {
-        _coord = &_model->getComponent<Coordinate>(coordinateNameOrPath);
-    } else {
-        OPENSIM_THROW_FRMOBJ(Exception,
-            "Received '{}' from property 'coordinate', but no coordinate "
-            "with this name or path was found in the model.",
-            coordinateNameOrPath);
-    }
 }
 
 //=============================================================================
 // COMPUTATIONS
 //=============================================================================
 double ExponentialCoordinateLimitForce::calcForce(const SimTK::State& s) const {
-    double q = _coord->getValue(s);
+    const Coordinate& coord = getConnectee<Coordinate>("coordinate");
+    double q = coord.getValue(s);
 
     const SimTK::Vec2& s_lower = get_lower_shape_parameters();
     const SimTK::Vec2& s_upper = get_upper_shape_parameters();
@@ -103,7 +91,8 @@ double ExponentialCoordinateLimitForce::calcForce(const SimTK::State& s) const {
 
 double ExponentialCoordinateLimitForce::computePotentialEnergy(
         const SimTK::State& s) const {
-    double q = _coord->getValue(s);
+    const Coordinate& coord = getConnectee<Coordinate>("coordinate");
+    double q = coord.getValue(s);
 
     const SimTK::Vec2& s_lower = get_lower_shape_parameters();
     const SimTK::Vec2& s_upper = get_upper_shape_parameters();
@@ -120,7 +109,9 @@ double ExponentialCoordinateLimitForce::computePotentialEnergy(
 //=============================================================================
 void ExponentialCoordinateLimitForce::implProduceForces(const SimTK::State& s,
         ForceConsumer& forceConsumer) const {
-    forceConsumer.consumeGeneralizedForce(s, *_coord, calcForce(s));
+    const Coordinate& coord = getConnectee<Coordinate>("coordinate");
+    double q = coord.getValue(s);
+    forceConsumer.consumeGeneralizedForce(s, coord, calcForce(s));
 }
 
 //=============================================================================

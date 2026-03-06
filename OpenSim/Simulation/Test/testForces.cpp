@@ -39,6 +39,7 @@
 //     13. ExpressionBasedPathForce
 //     14. Blankevoort1991Ligament
 //     15. ExponentialCoordinateLimitForce
+//     16. CoordinateLinearStopForce
 //
 //     Add tests here as Forces are added to OpenSim
 //
@@ -2436,8 +2437,8 @@ TEST_CASE("testExponentialCoordinateLimitForce") {
     SimTK::Vec2 shape(50.0, 75.0);
     double lowerLimit = 0.1;
     double upperLimit = 2.0;
-    auto* limitForce = new ExponentialCoordinateLimitForce("height", lowerLimit,
-        upperLimit, shape, shape);
+    auto* limitForce = new ExponentialCoordinateLimitForce(sliderCoord,
+        lowerLimit, upperLimit, shape, shape);
     limitForce->setName("height_limit_force");
     model.addForce(limitForce);
 
@@ -2550,5 +2551,194 @@ TEST_CASE("testExponentialCoordinateLimitForce") {
         double PE = energyFunction(3.0);
         REQUIRE_THAT(eclf.computePotentialEnergy(state),
             Catch::Matchers::WithinAbs(PE, 1e-6));
+    }
+}
+
+TEST_CASE("testCoordinateLinearStopForce") {
+
+    // Create the model.
+    Model model;
+    model.setName("CoordinateLinearStopForceTest");
+    model.setGravity(gravity_vec);
+
+    // Add a ball body.
+    double mass = 1.0;
+    Body* ball = new Body("ball", mass, Vec3(0),
+        mass * SimTK::Inertia::sphere(0.25));
+    ball->attachGeometry(new Sphere(0.25));
+    model.addBody(ball);
+
+    // Add a slider joint.
+    const Ground& ground = model.getGround();
+    SliderJoint* slider = new SliderJoint("slider",
+            ground, Vec3(0), Vec3(0, 0, SimTK::Pi / 2),
+            *ball, Vec3(0), Vec3(0, 0, SimTK::Pi / 2));
+    auto& sliderCoord = slider->updCoordinate();
+    sliderCoord.setName("height");
+    model.addJoint(slider);
+
+    // Add a CoordinateLinearStopForce to the model.
+    double stiffness = 1000.0;
+    double damping = 10.0;
+    double lowerLimit = 0.1;
+    double upperLimit = 2.0;
+    auto* stopForce = new CoordinateLinearStopForce(sliderCoord,
+        stiffness, damping, lowerLimit, upperLimit);
+    stopForce->setName("height_stop_force");
+    model.addForce(stopForce);
+
+    // Finalize the model.
+    model.finalizeConnections();
+    model.print("CoordinateLinearStopForceTest.osim");
+
+    auto forceFunction = [stiffness, lowerLimit, upperLimit](double q) {
+        if (q < lowerLimit) {
+            return -stiffness * (q - lowerLimit);  // positive
+        } else if (q > upperLimit) {
+            return -stiffness * (q - upperLimit);  // negative
+        }
+        return 0.0;
+    };
+
+    auto energyFunction = [stiffness, lowerLimit, upperLimit](double q) {
+        if (q < lowerLimit) {
+            double x = q - lowerLimit;
+            return 0.5 * stiffness * x * x;
+        } else if (q > upperLimit) {
+            double x = q - upperLimit;
+            return 0.5 * stiffness * x * x;
+        }
+        return 0.0;
+    };
+
+    // Test cases.
+    // -----------
+    SECTION("Serialization and deserialization") {
+        Model loadedModel("CoordinateLinearStopForceTest.osim");
+        CHECK(loadedModel == model);
+    }
+
+    SECTION("Copying") {
+        auto copiedModel = std::unique_ptr<Model>{model.clone()};
+        CHECK(*copiedModel == model);
+    }
+
+    SECTION("Within range") {
+        const Coordinate& height = model.getCoordinateSet()[0];
+        SimTK::State state = model.initSystem();
+        height.setValue(state, 1.0);
+        model.realizeAcceleration(state);
+        const auto& clsf = model.getComponent<CoordinateLinearStopForce>(
+                "/forceset/height_stop_force");
+
+        auto values = clsf.getRecordValues(state);
+        REQUIRE_THAT(values[0],
+            Catch::Matchers::WithinAbs(0.0, 1e-6));
+        REQUIRE_THAT(clsf.computePotentialEnergy(state),
+            Catch::Matchers::WithinAbs(0.0, 1e-6));
+    }
+
+    SECTION("At lower limit") {
+        const Coordinate& height = model.getCoordinateSet()[0];
+        SimTK::State state = model.initSystem();
+        height.setValue(state, lowerLimit);
+        model.realizeAcceleration(state);
+        const auto& clsf = model.getComponent<CoordinateLinearStopForce>(
+                "/forceset/height_stop_force");
+
+        auto values = clsf.getRecordValues(state);
+        REQUIRE_THAT(values[0],
+            Catch::Matchers::WithinAbs(0.0, 1e-6));
+        REQUIRE_THAT(clsf.computePotentialEnergy(state),
+            Catch::Matchers::WithinAbs(0.0, 1e-6));
+    }
+
+    SECTION("At upper limit") {
+        const Coordinate& height = model.getCoordinateSet()[0];
+        SimTK::State state = model.initSystem();
+        height.setValue(state, upperLimit);
+        model.realizeAcceleration(state);
+        const auto& clsf = model.getComponent<CoordinateLinearStopForce>(
+                "/forceset/height_stop_force");
+
+        auto values = clsf.getRecordValues(state);
+        REQUIRE_THAT(values[0],
+            Catch::Matchers::WithinAbs(0.0, 1e-6));
+        REQUIRE_THAT(clsf.computePotentialEnergy(state),
+            Catch::Matchers::WithinAbs(0.0, 1e-6));
+    }
+
+    SECTION("Exceeding lower limit") {
+        const Coordinate& height = model.getCoordinateSet()[0];
+        SimTK::State state = model.initSystem();
+        height.setValue(state, 0.0);
+        model.realizeAcceleration(state);
+        const auto& clsf = model.getComponent<CoordinateLinearStopForce>(
+                "/forceset/height_stop_force");
+
+        auto values = clsf.getRecordValues(state);
+        REQUIRE_THAT(values[0],
+            Catch::Matchers::WithinAbs(forceFunction(0.0), 1e-6));
+        REQUIRE_THAT(clsf.computePotentialEnergy(state),
+            Catch::Matchers::WithinAbs(energyFunction(0.0), 1e-6));
+    }
+
+    SECTION("Exceeding upper limit") {
+        const Coordinate& height = model.getCoordinateSet()[0];
+        SimTK::State state = model.initSystem();
+        height.setValue(state, 3.0);
+        model.realizeAcceleration(state);
+        const auto& clsf = model.getComponent<CoordinateLinearStopForce>(
+                "/forceset/height_stop_force");
+
+        auto values = clsf.getRecordValues(state);
+        REQUIRE_THAT(values[0],
+            Catch::Matchers::WithinAbs(forceFunction(3.0), 1e-6));
+        REQUIRE_THAT(clsf.computePotentialEnergy(state),
+            Catch::Matchers::WithinAbs(energyFunction(3.0), 1e-6));
+    }
+
+    SECTION("Damping when exceeding lower limit") {
+        // Moving further below the lower limit (qdot < 0) amplifies the force.
+        const Coordinate& height = model.getCoordinateSet()[0];
+        SimTK::State state = model.initSystem();
+        double q = 0.0;
+        double qdot = -0.5;
+        height.setValue(state, q);
+        height.setSpeedValue(state, qdot);
+        model.realizeAcceleration(state);
+        const auto& clsf = model.getComponent<CoordinateLinearStopForce>(
+                "/forceset/height_stop_force");
+
+        // f = max(0, -k*x*(1 - d*qdot)), x = q - q_low < 0
+        double x = q - lowerLimit;
+        double expectedF = -stiffness * x * (1.0 - damping * qdot);
+        auto values = clsf.getRecordValues(state);
+        REQUIRE_THAT(values[0],
+            Catch::Matchers::WithinAbs(expectedF, 1e-6));
+        REQUIRE_THAT(clsf.computePotentialEnergy(state),
+            Catch::Matchers::WithinAbs(energyFunction(q), 1e-6));
+    }
+
+    SECTION("Damping when exceeding upper limit") {
+        // Moving further above the upper limit (qdot > 0) amplifies the force.
+        const Coordinate& height = model.getCoordinateSet()[0];
+        SimTK::State state = model.initSystem();
+        double q = 3.0;
+        double qdot = 0.5;
+        height.setValue(state, q);
+        height.setSpeedValue(state, qdot);
+        model.realizeAcceleration(state);
+        const auto& clsf = model.getComponent<CoordinateLinearStopForce>(
+                "/forceset/height_stop_force");
+
+        // f = min(0, -k*x*(1 + d*qdot)), x = q - q_up > 0
+        double x = q - upperLimit;
+        double expectedF = -stiffness * x * (1.0 + damping * qdot);
+        auto values = clsf.getRecordValues(state);
+        REQUIRE_THAT(values[0],
+            Catch::Matchers::WithinAbs(expectedF, 1e-6));
+        REQUIRE_THAT(clsf.computePotentialEnergy(state),
+            Catch::Matchers::WithinAbs(energyFunction(q), 1e-6));
     }
 }

@@ -45,6 +45,7 @@
 #include "Model/ContactHalfSpace.h"
 #include "Model/ContactMesh.h"
 #include "Model/CoordinateLimitForce.h"
+#include "Model/CoordinateLinearStopForce.h"
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
 #include "Model/ExponentialContactForce.h"
@@ -258,6 +259,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ContactEllipsoid() );
     Object::registerType( ContactTorus() );
     Object::registerType( CoordinateLimitForce() );
+    Object::registerType( CoordinateLinearStopForce() );
     Object::registerType( SmoothSphereHalfSpaceForce() );
     Object::registerType( ExponentialContactForce() );
     Object::registerType( MeyerFregly2016Force() );
