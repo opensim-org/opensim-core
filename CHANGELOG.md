@@ -47,7 +47,8 @@ performance and stability in wrapping solutions.
 - Fixed a compile-time issue where `OutputReporter` was using the `Model` API without having access to its definition.
 - Added `ScopeExit`, which is a lightweight C++-only class for calling a function/lambda when it destructs (similar to `std::experimental::scope_exit`).
 - Fixed a leak in `Model::extendConnectToModel` that can occur when an exception is thrown midway through model graph creation.
-- Fixed an issue where `StdVectorDouble::get()` would return `java.lang.Double` in Matlab instead of `double`. (#4275)
+- Fixed an issue where `StdVectorDouble::get()` would return `java.lang.Double` in Matlab
+- Fixed an issue in the Java bindings where setting the `Manager::IntegratorMethod` via `setIntegratorMethod()` with an integer argument did not work. (#4277)
 
 
 v4.5.2
