@@ -38,13 +38,9 @@ setup(name='opensim',
       url='http://opensim.stanford.edu/',
       license='Apache 2.0',
       packages=['opensim'],
-      # Copy the bin_files and geometry_files into the opensim package directory
-      data_files=[
-            ('opensim', bin_files)
-      ],
       # The last 3 entries are for if OPENSIM_PYTHON_STANDALONE is ON.
       # The asterisk after the extension is to handle version numbers on Linux.
-      package_data={'opensim': ['_*.*', '*.dylib', '*.dll', '*.so*']},
+      package_data={'opensim': ['_*.*', '*.dylib', '*.dll', '*.so*', 'bin/*', 'bin/*.*/*/*/*', 'Geometry/*.*']},
       # Create a command-line tool for generating a report.
       entry_points={
           'console_scripts': [
@@ -59,7 +55,7 @@ setup(name='opensim',
           'Topic :: Scientific/Engineering :: Physics',
           ],
           install_requires=[
-              "numpy>=2.0"
+              "numpy>=2.1"
           ],
           distclass=BinaryDistribution
       )
