@@ -474,8 +474,15 @@ protected:
     }
 
     /// Calculate the displacement of the system's center of mass over the
-    /// phase.
+    // phase.
     double calcSystemDisplacement(const GoalInput& input) const;
+    // Calculate the displacement of the system's center of mass over the
+    // phase for a specific axis/direction.
+    // The axis_component argument selects which component of the displacement
+    // vector to return: 0=X, 1=Y, 2=Z, or -1 (default) for the full 3D
+    // Euclidean norm.
+    double calcSystemDisplacement(const GoalInput& input,
+            int axisComponent) const;
     /// Calculate the duration of the phase.
     double calcDuration(const GoalInput& input) const;
     /// Calculate the mass of the system.
@@ -579,6 +586,9 @@ class MocoAverageSpeedGoal : public MocoGoal {
 public:
     OpenSim_DECLARE_PROPERTY(desired_average_speed, double,
             "The desired average speed of the system (m/s). Default: 0.");
+    OpenSim_DECLARE_PROPERTY(axis_component, int,
+            "The component of the displacement vector to use: 0=X, 1=Y, 2=Z, "
+            "or -1 (default) for the full 3D Euclidean norm.");
     MocoAverageSpeedGoal() { constructProperties(); }
     MocoAverageSpeedGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
@@ -592,17 +602,31 @@ protected:
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& values) const override {
         // Calculate average gait speed.
-        const double displacement = calcSystemDisplacement(input);
+        const double displacement =
+                calcSystemDisplacement(
+                    input, get_axis_component());
         const double duration = calcDuration(input);
         values[0] = get_desired_average_speed() - (displacement / duration);
         if (getModeIsCost()) { values[0] = SimTK::square(values[0]); }
     }
     void initializeOnModelImpl(const Model&) const override {
         setRequirements(0, 1);
+
+        // Validate axis_component value at initialization time.
+        const int axisComponent = get_axis_component();
+        OPENSIM_THROW_IF_FRMOBJ(axisComponent != -1 && axisComponent != 0 &&
+                                        axisComponent != 1 &&
+                                        axisComponent != 2,
+                Exception,
+                "axis_component must be -1 (norm), 0 (X), 1 (Y), or 2 (Z), "
+                "but got {}.",
+                axisComponent);
     }
 
 private:
-    void constructProperties() { constructProperty_desired_average_speed(0); }
+    void constructProperties() { constructProperty_desired_average_speed(0);
+                                 constructProperty_axis_component(-1);
+    }
 };
 
 } // namespace OpenSim

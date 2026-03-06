@@ -50,12 +50,19 @@ void MocoGoal::printDescription() const {
 }
 
 double MocoGoal::calcSystemDisplacement(const GoalInput& input) const {
+    // Default behaviour: full 3D Euclidean norm of CoM displacement.
+    return calcSystemDisplacement(input, -1);
+}
+
+double MocoGoal::calcSystemDisplacement(const GoalInput& input,
+        int axisComponent) const {
     const SimTK::Vec3 comInitial =
             getModel().calcMassCenterPosition(input.initial_state);
     const SimTK::Vec3 comFinal =
             getModel().calcMassCenterPosition(input.final_state);
-    // TODO: Use distance squared for convexity.
-    return (comFinal - comInitial).norm();
+    const SimTK::Vec3 delta = comFinal - comInitial;
+    if (axisComponent == -1) { return delta.norm(); }
+    return delta[axisComponent];
 }
 
 double MocoGoal::calcDuration(const GoalInput& input) const {
