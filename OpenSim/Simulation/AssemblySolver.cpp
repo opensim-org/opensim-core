@@ -102,7 +102,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
         const Coordinate& coord = modelCoordSet[i];
         if(coord.getClamped(s)){
             _assembler->restrictQ(coord.getBodyIndex(),
-                    SimTK::MobilizerQIndex(coord.getMobilizerQIndex()),
+                    coord.getMobilizerQIndex(),
                     coord.getRangeMin(), coord.getRangeMax());
         }
     }
@@ -116,7 +116,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
             CoordinateReference *coordRef = p;
             const Coordinate &coord = modelCoordSet.get(coordRef->getName());
             if(coord.getLocked(s)){
-                _assembler->lockQ(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilizerQIndex()));
+                _assembler->lockQ(coord.getBodyIndex(), coord.getMobilizerQIndex());
                 //No longer need the lock on
                 coord.setLocked(s, false);
                 
@@ -126,7 +126,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
             }
             else if(!(coord.get_is_free_to_satisfy_constraints())) {
                 // Make this reference and its current value a goal of the Assembler
-                SimTK::QValue *coordGoal = new SimTK::QValue(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilizerQIndex()),
+                SimTK::QValue *coordGoal = new SimTK::QValue(coord.getBodyIndex(), coord.getMobilizerQIndex(),
                                                          coordRef->getValue(s) );
                 // keep a handle to the goal so we can update
                 _coordinateAssemblyConditions.push_back(coordGoal);
