@@ -40,9 +40,35 @@ end
 model = ModelFactory.createDoublePendulum();
 state = model.initSystem();
 
-stateTraj = StatesTrajectory();
-stateTraj.append(state);
-assert(stateTraj.getSize() == 1);
+% Run a forward simulation and retreive the StatesTrajectory.
+manager = Manager(model);
+manager.setRecordStatesTrajectory(true);
+manager.initialize(state);
+manager.integrate(5.0);
+statesTraj = manager.getStatesTrajectory();
 
-doc = stateTraj.exportToStatesDocument(model);
-doc.serialize('test.ostates');
+% Check initial time.
+initialState = statesTraj.get(0);
+assert(initialState.getTime() == 0);
+assert(initialState.getQ().size() == 2);
+assert(initialState.getU().size() == 2);
+
+% Check final time.
+finalState = statesTraj.get(statesTraj.getSize()-1);
+assert(finalState.getTime() == 5.0);
+assert(finalState.getQ().size() == 2);
+assert(finalState.getU().size() == 2);
+
+% Create a StatesDocument to serialize the trajectory.
+doc = statesTraj.exportToStatesDocument(model);
+doc.serialize('pendulum.ostates');
+
+% Deserialize and check equality.
+statesTrajDeserialized = ...
+    StatesTrajectory.createFromStatesDocument(model, 'pendulum.ostates');
+assert(statesTraj.getSize() == statesTrajDeserialized.getSize());
+for i = 0:statesTraj.getSize()-1
+    state = statesTraj.get(i);
+    stateDeserialized = statesTrajDeserialized.get(i);
+    assert(state.getTime() == stateDeserialized.getTime());
+end

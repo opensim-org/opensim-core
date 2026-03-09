@@ -188,7 +188,6 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
     SimTK::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
 %include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
-%include <std_unique_ptr.i>
 %include <OpenSim/Simulation/Manager/Manager.h>
 %include <OpenSim/Simulation/Model/AbstractTool.h>
 

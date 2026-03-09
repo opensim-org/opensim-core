@@ -324,18 +324,12 @@ public:
     * complete StatesTrajectory, a StatesDocument is the preferred means as
     * it will include continuous, discrete, and modeling states.
     */
-    OpenSim::StatesDocument
-    exportToStatesDocument(const OpenSim::Model& model,
-        const std::string& note = "",
-        int precision = SimTK::LosslessNumDigitsReal) const
-    {
-        return OpenSim::StatesDocument(model, m_states, note, precision);
-    }
+    StatesDocument exportToStatesDocument(const OpenSim::Model& model,
+            const std::string& note = "",
+            int precision = SimTK::LosslessNumDigitsReal) const;
 
     /** Get a read-only reference to the underlying state array. */
-    const std::vector<SimTK::State>& getStateArray() const {
-        return m_states;
-    }
+    const std::vector<SimTK::State>& getStateArray() const;
 
 private:
 
@@ -431,23 +425,23 @@ public:
     /**
      * This function is identical to createFromStatesTable() except that this
      * function accepts a Storage instead of a TimeSeriesTable.
-     */
-    // TODO When OSTATES support is complete, add the following blurb to
-    // the doxygen block above.
-    /* #### History
+     *
+     * #### History
      * Before OpenSim 4.0, the only way to save states to a file was as
      * a Storage file, typically called a states storage file and named
      * `*_states.sto`. You can use this function to create a StatesTrajectory
      * from such a Storage file. OpenSim 4.0 introduced the ability to save and
      * read a complete StatesTrajectory to/from an OSTATES file, and so this
-     * function should only be used when you are stuck with pre-4.0 files. */
+     * function should only be used when you are stuck with pre-4.0 files.
+     */
     static StatesTrajectory createFromStatesStorage(const Model& model,
             const Storage& sto,
             bool allowMissingColumns = false,
             bool allowExtraColumns = false,
             bool assemble = false);
 
-    /** Create a partial trajectory of States from a states table.
+    /**
+     * Create a partial trajectory of States from a states table.
      * The resulting StatesTrajectory will restore continuous state
      * variable values, but not discrete state variable values, modeling
      * option values, etc. Also, keep in mind that states files usually
@@ -520,11 +514,22 @@ public:
             bool allowExtraColumns = false,
             bool assemble = false);
 
-    /** Convenience form of createFromStatesStorage() that takes the path to a
+    /**
+     * Convenience form of createFromStatesStorage() that takes the path to a
      * Storage file instead of a Storage object. This convenience form uses the
-     * default values for `allowMissingColumns` and `allowExtraColumns`. */
+     * default values for `allowMissingColumns` and `allowExtraColumns`.
+     */
     static StatesTrajectory createFromStatesStorage(const Model& model,
             const std::string& filepath);
+
+    /**
+     * Create a StatesTrajectory from a StatesDocument.
+     *
+     * @param model The Model to which the states belong.
+     * @param filename The path to the StatesDocument (e.g., .ostates) file.
+     */
+    static StatesTrajectory createFromStatesDocument(const Model& model,
+            const std::string& filename);
 };
 
 } // namespace
