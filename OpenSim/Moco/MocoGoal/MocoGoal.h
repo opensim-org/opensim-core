@@ -473,10 +473,11 @@ protected:
         return m_model.getRef();
     }
 
+    /// Calculate the norm displacement of the system's center of mass
+    /// over the phase.
+    double calcSystemDisplacement(const GoalInput& input) const;
     /// Calculate the displacement of the system's center of mass over the
     /// phase.
-    double calcSystemDisplacement(const GoalInput& input) const;
-    // Calculate the displacement of the system's center of mass...
     SimTK::Vec3 calcSystemDisplacementVector(const GoalInput& input) const;
     /// Calculate the duration of the phase.
     double calcDuration(const GoalInput& input) const;
