@@ -51,18 +51,16 @@ void MocoGoal::printDescription() const {
 
 double MocoGoal::calcSystemDisplacement(const GoalInput& input) const {
     // Default behaviour: full 3D Euclidean norm of CoM displacement.
-    return calcSystemDisplacement(input, -1);
+    return calcSystemDisplacementVector(input).norm();
 }
 
-double MocoGoal::calcSystemDisplacement(const GoalInput& input,
-        int axisComponent) const {
+SimTK::Vec3 MocoGoal::calcSystemDisplacementVector(
+    const GoalInput& input) const {
     const SimTK::Vec3 comInitial =
             getModel().calcMassCenterPosition(input.initial_state);
     const SimTK::Vec3 comFinal =
             getModel().calcMassCenterPosition(input.final_state);
-    const SimTK::Vec3 delta = comFinal - comInitial;
-    if (axisComponent == -1) { return delta.norm(); }
-    return delta[axisComponent];
+    return comFinal - comInitial;
 }
 
 double MocoGoal::calcDuration(const GoalInput& input) const {
