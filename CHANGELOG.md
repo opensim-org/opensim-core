@@ -49,6 +49,9 @@ performance and stability in wrapping solutions.
 - Fixed a leak in `Model::extendConnectToModel` that can occur when an exception is thrown midway through model graph creation.
 - Fixed an issue where `StdVectorDouble::get()` would return `java.lang.Double` in Matlab
 - Fixed an issue in the Java bindings where setting the `Manager::IntegratorMethod` via `setIntegratorMethod()` with an integer argument did not work. (#4277)
+- Fixed an issue in `PolynomialPathFitter` where the process would segfault if too few coordinate samples were used. (#4280)
+- Fixed an issue in `PolynomialPathFitter` where the process assign threads to model forces without a wrapping path. (#4280)
+- `PolynomialPathFitter` now gracefully handles model configurations that lead to invalid path computations due to random sampling. (#4280)
 
 
 v4.5.2

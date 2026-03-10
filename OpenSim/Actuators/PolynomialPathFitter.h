@@ -264,7 +264,8 @@ public:
 
     // SETTINGS
     /**
-     * The directory to which the path fitting results are written.
+     * The directory relative to the working directory to which the path fitting
+     * results are written.
      *
      * If the path fitting is successful, the fitted paths are written as a
      * `Set` of `FunctionBasedPath` objects (with path length functions defined
@@ -574,6 +575,23 @@ private:
 
     void constructProperties();
 
+    // HELPER FUNCTIONS
+    /**
+     * Generate all possible combinations of `k` elements from a set of `n`
+     * total elements.
+     */
+     static int choose(int n, int k) {
+        if (k == 0) { return 1; }
+        return (n * choose(n - 1, k - 1)) / k;
+    }
+
+    /**
+     * Get the (canonicalized) absolute directory containing the file from
+     * which this tool was loaded. If the `FunctionBasedPathFitter` was not
+     * loaded from a file, this returns an empty string.
+     */
+    std::string getDocumentDirectory() const;
+
     // PATH FITTING PIPELINE
     /**
      * Type alias for the moment arm map. The keys are the paths in the model
@@ -613,7 +631,8 @@ private:
      * to parallelize the computations.
      */
     static void computePathLengthsAndMomentArms(const Model& model,
-            const TimeSeriesTable& coordinateValues, int numThreads,
+            const TimeSeriesTable& coordinateValues,
+            const std::vector<std::string>& pathBasedForcePaths, int numThreads,
             TimeSeriesTable& pathLengths, TimeSeriesTable& momentArms);
 
     /**
@@ -641,26 +660,10 @@ private:
      */
     Set<FunctionBasedPath> fitPolynomialCoefficients(const Model& model,
             const TimeSeriesTable& coordinateValues,
+            const std::vector<std::string>& forcePaths,
             const TimeSeriesTable& pathLengths,
             const TimeSeriesTable& momentArms,
             const MomentArmMap& momentArmMap);
-
-    // HELPER FUNCTIONS
-    /**
-     * Generate all possible combinations of `k` elements from a set of `n`
-     * total elements.
-     */
-    static int choose(int n, int k) {
-        if (k == 0) { return 1; }
-        return (n * choose(n - 1, k - 1)) / k;
-    }
-
-    /**
-     * Get the (canonicalized) absolute directory containing the file from
-     * which this tool was loaded. If the `FunctionBasedPathFitter` was not
-     * loaded from a file, this returns an empty string.
-     */
-    std::string getDocumentDirectory() const;
 
     /**
      * Remove columns from the `momentArms` table that do not correspond to
@@ -695,8 +698,8 @@ private:
      * current path.
      */
     void fitCoefficientsStepwiseRegression(
-        const SimTK::Matrix& coordinates, const SimTK::Vector& b, int order,
-        SimTK::Vector& coefficients) const;
+            const SimTK::Matrix& coordinates, const SimTK::Vector& b, int order,
+            SimTK::Vector& coefficients) const;
 
     /**
      * Get the RMS errors between two sets of path lengths and moment arms
