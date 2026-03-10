@@ -29,8 +29,10 @@ if (sys.platform.startswith('darwin')):
     
 
 if (sys.platform.startswith('linux')):
+    # print("Linux platform detected, setting SIMBODY_HOME env var to ", curFolder)
     os.environ["SIMBODY_HOME"]= curFolder
-    os.environ["PATH"]= curFolder
+    os.environ["PATH"]= curFolder+ os.pathsep + os.environ['PATH']
+    os.environ['LD_LIBRARY_PATH']= os.environ['PATH']
 
 #curFolder = os.path.dirname(os.path.realpath(__file__))
 #os.environ['PATH'] = curFolder + os.pathsep + os.environ['PATH']

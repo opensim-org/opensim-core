@@ -618,7 +618,7 @@ function(OpenSimInstallVisualizer DEP_LIBS_DIR_WIN
             install(DIRECTORY ${simbody_visualizer} DESTINATION "${OSIM_DESTINATION}/bin")
         else()
             set(simbody_visualizer "${DEP_LIBS_DIR_UNIX}/../libexec/simbody/simbody-visualizer")
-            install(FILES ${simbody_visualizer} DESTINATION "${OSIM_DESTINATION}/bin")
+            install(FILES ${simbody_visualizer} DESTINATION "${OSIM_DESTINATION}" PERMISSIONS WORLD_EXECUTE)
         endif()
     endif()
 endfunction()
