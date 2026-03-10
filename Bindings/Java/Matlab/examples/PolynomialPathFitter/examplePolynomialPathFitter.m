@@ -73,7 +73,7 @@ sine = Sine(amplitude, angular_frequency, phase);
 mtp_values = Vector(values.getNumRows(), 0.0);
 time = Vector(1, 0.0);
 for i = 0:values.getNumRows()-1
-    time.set(0, times.get(i));
+    time.set(0, double(times.get(i)));
     mtp_values.set(i, sine.calcValue(time));
 end
 
