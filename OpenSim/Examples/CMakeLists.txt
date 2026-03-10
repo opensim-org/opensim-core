@@ -26,6 +26,7 @@ if(BUILD_API_EXAMPLES)
     add_subdirectory(DataAdapter)
     add_subdirectory(Moco)
     add_subdirectory(Wrapping)
+    add_subdirectory(PolynomialPathFitter)
 
 else()
 
