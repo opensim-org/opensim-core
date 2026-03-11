@@ -147,9 +147,6 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Control/InputController.h>
 %include <OpenSim/Simulation/Control/SynergyController.h>
 
-%include <OpenSim/Simulation/Manager/Manager.h>
-%include <OpenSim/Simulation/Model/AbstractTool.h>
-
 %include <OpenSim/Simulation/Model/Point.h>
 %include <OpenSim/Simulation/Model/Station.h>
 %include <OpenSim/Simulation/Model/Point.h>
@@ -183,6 +180,16 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
 %copyctor OpenSim::Model;
 %include <OpenSim/Simulation/Model/Model.h>
+
+%include <OpenSim/Simulation/StatesDocument.h>
+%include <OpenSim/Simulation/StatesTrajectory.h>
+// This enables iterating using the getBetween() method.
+%template(IteratorRangeStatesTrajectoryIterator)
+    SimTK::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
+%include <OpenSim/Simulation/StatesTrajectoryReporter.h>
+
+%include <OpenSim/Simulation/Manager/Manager.h>
+%include <OpenSim/Simulation/Model/AbstractTool.h>
 
 %include <OpenSim/Simulation/Model/AbstractPathPoint.h>
 %include <OpenSim/Simulation/Model/PathPoint.h>
@@ -255,12 +262,6 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 
 %template(StdVectorIMUs) std::vector< OpenSim::IMU* >;
 
-%include <OpenSim/Simulation/StatesDocument.h>
-%include <OpenSim/Simulation/StatesTrajectory.h>
-// This enables iterating using the getBetween() method.
-%template(IteratorRangeStatesTrajectoryIterator)
-    SimTK::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
-%include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 %include <OpenSim/Simulation/PositionMotion.h>
 %include <OpenSim/Simulation/SimulationUtilities.h>
 %template(analyze) OpenSim::analyze<double>;

@@ -25,6 +25,7 @@
 // This introductory example demonstrates the basic elements of creating,
 // simulating, and visualizing a simple musculoskeletal model in OpenSim.
 
+/// [SimpleElbow]
 #include <OpenSim/OpenSim.h>
 using namespace SimTK;
 using namespace OpenSim;
@@ -112,3 +113,4 @@ int main() {
 
     return 0;
 };
+/// [SimpleElbow]

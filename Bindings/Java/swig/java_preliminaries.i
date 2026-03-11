@@ -71,3 +71,9 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
               }
 	  }
 }
+
+%typemap(javacode) StdVectorDouble %{
+    public double get(int i) {
+        return (*$self).get(i).doubleValue();
+    }
+%}
