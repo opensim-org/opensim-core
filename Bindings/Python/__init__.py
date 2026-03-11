@@ -26,6 +26,9 @@ if (sys.platform.startswith('darwin')):
     os.environ['SIMBODY_HOME']= curFolder
     os.environ['PATH']= curFolder+ os.pathsep + os.environ['PATH']
     os.environ['DYLD_LIBRARY_PATH']= os.environ['PATH']
+    visualizer_filepath = curFolder+"/simbody-visualizer.app/Contents/MacOS/simbody-visualizer"
+    if not os.access(visualizer_filepath, os.X_OK):
+        os.chmod(visualizer_filepath, 0o777)
     
 
 if (sys.platform.startswith('linux')):
@@ -33,6 +36,9 @@ if (sys.platform.startswith('linux')):
     os.environ["SIMBODY_HOME"]= curFolder
     os.environ["PATH"]= curFolder+ os.pathsep + os.environ['PATH']
     os.environ['LD_LIBRARY_PATH']= os.environ['PATH']
+    visualizer_filepath = curFolder+"/simbody-visualizer"
+    if not os.access(visualizer_filepath, os.X_OK):
+        os.chmod(visualizer_filepath, 0o777)
 
 #curFolder = os.path.dirname(os.path.realpath(__file__))
 #os.environ['PATH'] = curFolder + os.pathsep + os.environ['PATH']
