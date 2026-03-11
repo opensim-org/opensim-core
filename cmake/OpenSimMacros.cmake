@@ -615,7 +615,7 @@ function(OpenSimInstallVisualizer DEP_LIBS_DIR_WIN
     else()
         if (APPLE)
             set(simbody_visualizer "${DEP_LIBS_DIR_UNIX}/../libexec/simbody/simbody-visualizer.app")
-            install(DIRECTORY ${simbody_visualizer} DESTINATION "${OSIM_DESTINATION}/bin")
+            install(DIRECTORY ${simbody_visualizer} DESTINATION "${OSIM_DESTINATION}")
         else()
             set(simbody_visualizer "${DEP_LIBS_DIR_UNIX}/../libexec/simbody/simbody-visualizer")
             install(FILES ${simbody_visualizer} DESTINATION "${OSIM_DESTINATION}")
