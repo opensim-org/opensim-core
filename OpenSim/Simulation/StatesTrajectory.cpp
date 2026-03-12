@@ -161,6 +161,15 @@ TimeSeriesTable StatesTrajectory::exportToTable(const Model& model,
     return table;
 }
 
+StatesDocument StatesTrajectory::exportToStatesDocument(const Model& model,
+        const std::string& note, int precision) const {
+    return StatesDocument(model, m_states, note, precision);
+}
+
+const std::vector<SimTK::State>& StatesTrajectory::getStateArray() const {
+    return m_states;
+}
+
 StatesTrajectory StatesTrajectory::createFromStatesStorage(
         const Model& model,
         const Storage& sto,
@@ -285,6 +294,14 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
         const Model& model,
         const std::string& filepath) {
     return createFromStatesTable(model, TimeSeriesTable(filepath));
+}
+
+StatesTrajectory StatesTrajectory::createFromStatesDocument(
+        const Model& model, const std::string& filename) {
+    StatesDocument doc(filename);
+    StatesTrajectory states;
+    doc.deserialize(model, states.m_states);
+    return states;
 }
 
 StatesTrajectory::IncompatibleModel::IncompatibleModel(

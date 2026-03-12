@@ -221,6 +221,12 @@ using namespace SimTK;
   }
 %}
 
+%extend OpenSim::Manager {
+    void setIntegratorMethod(int method) {
+        self->setIntegratorMethod(static_cast<Manager::IntegratorMethod>(method));
+    };
+};
+
 %import "java_common.i"
 %unique_ptr(OpenSim::PositionMotion);
 %include <Bindings/simulation.i>
