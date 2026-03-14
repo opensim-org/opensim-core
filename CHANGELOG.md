@@ -51,6 +51,8 @@ performance and stability in wrapping solutions.
 - Fixed an issue where the final time used for `example2DWalking` and `example2DWalkingMetabolics` was inconsistent with the filtered coordinate reference data. (#4273)
 - Fixed an issue where `StdVectorDouble::get()` would return `java.lang.Double` in Matlab
 - Fixed an issue in the Java bindings where setting the `Manager::IntegratorMethod` via `setIntegratorMethod()` with an integer argument did not work. (#4277)
+- Fixed an issue where `StdVectorDouble::get()` would return `java.lang.Double` in Matlab instead of `double`. (#4275)
+- Added `CantileverFreeBeamJoint`, a joint type providing a lightweight way for modeling flexible structures (e.g., the bending of the spinal column in a human or animal skeleton). (#4227)
 
 
 v4.5.2
