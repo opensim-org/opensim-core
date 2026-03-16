@@ -49,7 +49,6 @@ performance and stability in wrapping solutions.
 - Fixed a leak in `Model::extendConnectToModel` that can occur when an exception is thrown midway through model graph creation.
 - Updated `osimMocoTrajectoryReport.m` to directly generate a PDF report, rather than converting from a PostScript file. (#4274)
 - Fixed an issue where the final time used for `example2DWalking` and `example2DWalkingMetabolics` was inconsistent with the filtered coordinate reference data. (#4273)
-- Fixed an issue where `StdVectorDouble::get()` would return `java.lang.Double` in Matlab
 - Fixed an issue in the Java bindings where setting the `Manager::IntegratorMethod` via `setIntegratorMethod()` with an integer argument did not work. (#4277)
 - Fixed simbody-visualizer not found in PATH on windows when launching program lives on different drive. (simbody#765)
 - Fixed an issue in `PolynomialPathFitter` where the process would segfault if too few coordinate samples were used. (#4280)
