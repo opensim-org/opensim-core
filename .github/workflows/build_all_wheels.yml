@@ -1,4 +1,4 @@
-name: Build python wheels
+name: Build Python wheels
 
 on:
   workflow_dispatch:
@@ -52,21 +52,7 @@ jobs:
         choco install swig --version 4.1.1 --yes --limit-output --allow-downgrade
         swig -swiglib
 
-    - name: Cache dependencies
-      id: cache-dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/opensim_dependencies_install
-        # Every time a cache is created, it's stored with this key.
-        # In subsequent runs, if the key matches the key of an existing cache,
-        # then the cache is used. We chose for this key to depend on the
-        # operating system and a hash of the hashes of all files in the
-        # dependencies directory (non-recursive).
-        # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
-        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
-
     - name: Build dependencies
-      if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         echo $env:GITHUB_WORKSPACE\\build_deps
         mkdir $env:GITHUB_WORKSPACE\\build_deps
@@ -111,8 +97,6 @@ jobs:
       run: |
         cd ~/opensim-core-install/sdk/Python
         pip wheel . --wheel-dir dist
-        echo "Dist contents after build:"
-          if (Test-Path dist) { Get-ChildItem dist } else { echo "dist folder not found" }
 
     - name: Capture wheel path
       id: wheel
@@ -127,7 +111,7 @@ jobs:
       with:
          name: ${{steps.wheel.outputs.path}}
          path: ~/opensim-core-install/sdk/Python/dist/${{steps.wheel.outputs.path}}
-         
+
     - name: Test Python bindings
       run: |
         cd ~/opensim-core-install/sdk/Python
@@ -153,26 +137,14 @@ jobs:
         python-version: '${{ matrix.python-version }}'
 
     - name: Install Homebrew packages
-      # Save the gfortran version to a file so we can use it in the cache key.
       run: |
         brew install pkgconfig autoconf libtool automake wget pcre doxygen llvm
         brew reinstall gcc
         pip3 install numpy==2.4.2
         pip3 install wheel
         pip3 install build
-        gfortran -v
-        mkdir gfortran_version
-        gfortran -v &> gfortran_version/gfortran_version.txt
-
-    - name: Cache SWIG
-      id: cache-swig
-      uses: actions/cache@v3
-      with:
-        path: ~/swig
-        key: ${{ runner.os }}-swig
 
     - name: Install SWIG
-      # if: steps.cache-swig.outputs.cache-hit != 'true'
       run: |
         mkdir ~/swig-source && cd ~/swig-source
         wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
@@ -180,18 +152,7 @@ jobs:
         sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
 
-    - name: Cache dependencies
-      id: cache-dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/opensim_dependencies_install
-        # If Homebrew updates the gcc package, then our cache of IPOPT is invalid.
-        # Specifically, the pkgcfg_lib_IPOPT_gfortran CMake variable becomes
-        # undefined.
-        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}-${{ hashFiles('gfortran_version/*') }}
-
     - name: Build dependencies
-      # if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         mkdir $GITHUB_WORKSPACE/../build_deps
         cd $GITHUB_WORKSPACE/../build_deps
@@ -298,15 +259,7 @@ jobs:
     - name: Install packages
       run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen patchelf
 
-    - name: Cache SWIG
-      id: cache-swig
-      uses: actions/cache@v3
-      with:
-        path: ~/swig
-        key: ${{ runner.os }}-swig
-
     - name: Install SWIG
-      # if: steps.cache-swig.outputs.cache-hit != 'true'
       run: |
         mkdir ~/swig-source && cd ~/swig-source
         wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
@@ -314,15 +267,7 @@ jobs:
         sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
 
-    - name: Cache dependencies
-      id: cache-dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/opensim_dependencies_install
-        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
-
     - name: Build dependencies
-      if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         mkdir $GITHUB_WORKSPACE/../build_deps
         cd $GITHUB_WORKSPACE/../build_deps
