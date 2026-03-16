@@ -51,9 +51,9 @@ static const int ToggleFrames = 5;
 static const int ToggleDefaultGeometry = 6;
 
 #ifdef _WIN32
-    static const char PathSeparator = ';'; // Windows
+static const char PathSeparator = ';'; // Windows
 #else
-    static const char PathSeparator = ':'; // Unix
+static const char PathSeparator = ':'; // Unix
 #endif
 
 /* This class gets first crack at user input coming in through the Visualizer
