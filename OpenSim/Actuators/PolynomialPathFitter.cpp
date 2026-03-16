@@ -23,11 +23,12 @@
 
 #include "PolynomialPathFitter.h"
 
+#include <OpenSim/Actuators/ModelOperators.h>
+
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/LatinHypercubeDesign.h>
 #include <OpenSim/Common/MultivariatePolynomialFunction.h>
-#include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
@@ -277,20 +278,16 @@ void PolynomialPathFitter::run() {
              "coordinate data...");
     TimeSeriesTable pathLengths;
     TimeSeriesTable momentArms;
-    int numTimePoints = static_cast<int>(values.getNumRows());
-    int numThreads = std::min(numTimePoints, get_num_parallel_threads());
     computePathLengthsAndMomentArms(model, values, forcePaths,
-            numThreads, pathLengths, momentArms);
+            get_num_parallel_threads(), pathLengths, momentArms);
 
     log_info("");
     log_info("Computing path lengths and moment arms for the sampled "
              "coordinate data...");
     TimeSeriesTable pathLengthsSampled;
     TimeSeriesTable momentArmsSampled;
-    numTimePoints = static_cast<int>(valuesSampled.getNumRows());
-    numThreads = std::min(numTimePoints, get_num_parallel_threads());
     computePathLengthsAndMomentArms(model, valuesSampled, forcePaths,
-            numThreads, pathLengthsSampled, momentArmsSampled);
+            get_num_parallel_threads(), pathLengthsSampled, momentArmsSampled);
 
     // Filter sampled data.
     // --------------------
@@ -367,17 +364,13 @@ void PolynomialPathFitter::run() {
     // Recompute the path lengths and moment arms.
     TimeSeriesTable pathLengthsFitted;
     TimeSeriesTable momentArmsFitted;
-    numTimePoints = static_cast<int>(values.getNumRows());
-    numThreads = std::min(numTimePoints, get_num_parallel_threads());
     computePathLengthsAndMomentArms(modelFitted, values, forcePaths,
-            numThreads, pathLengthsFitted, momentArmsFitted);
+            get_num_parallel_threads(), pathLengthsFitted, momentArmsFitted);
 
     TimeSeriesTable pathLengthsSampledFitted;
     TimeSeriesTable momentArmsSampledFitted;
-    numTimePoints = static_cast<int>(valuesSampled.getNumRows());
-    numThreads = std::min(numTimePoints, get_num_parallel_threads());
     computePathLengthsAndMomentArms(modelFitted, valuesSampled, forcePaths,
-            numThreads, pathLengthsSampledFitted,
+            get_num_parallel_threads(), pathLengthsSampledFitted,
             momentArmsSampledFitted);
 
     // Remove moment arm columns that are not in the map.
@@ -526,7 +519,8 @@ TimeSeriesTable PolynomialPathFitter::loadCoordinateValuesAndValidateModel(
     log_info("Coordinate values table: {} columns, {} time points",
             values.getNumColumns(), values.getNumRows());
 
-    // Remove any rows in the coordinate values table that contain NaN values.
+    // Remove any rows in the coordinate values table provided by the user that
+    // contain NaN values.
     const auto& times = values.getIndependentColumn();
     for (int i = 0; i < static_cast<int>(times.size()); ++i) {
         if (SimTK::isNaN(values.getRowAtIndex(i).sum())) {
@@ -729,8 +723,13 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
 
 void PolynomialPathFitter::computePathLengthsAndMomentArms(
         const Model& model, const TimeSeriesTable& coordinateValues,
-        const std::vector<std::string>& forcePaths, int numThreads,
+        const std::vector<std::string>& forcePaths, int numAvailableThreads,
         TimeSeriesTable& pathLengths, TimeSeriesTable& momentArms) {
+
+    // Determine the number of threads to use for the path length and moment
+    // arm computations.
+    int numTimePoints = static_cast<int>(coordinateValues.getNumRows());
+    int numThreads = std::min(numTimePoints, numAvailableThreads);
 
     // Create a StatesTrajectory from the coordinate values.
     auto statesTrajectory = StatesTrajectory::createFromStatesTable(
@@ -1293,17 +1292,12 @@ void PolynomialPathFitter::evaluateFunctionBasedPaths(Model model,
     TimeSeriesTable coordinateValues = loadCoordinateValuesAndValidateModel(
             currentDirectory, std::move(trajectory), model);
 
-    // Determine the number of threads to use for the path length and moment
-    // arm computations.
-    int numThreads = std::min(
-        static_cast<int>(std::thread::hardware_concurrency()),
-        static_cast<int>(coordinateValues.getNumRows()));
-
     // Compute path lengths and moment arms for the original and fitted models.
     log_info("");
     log_info("Computing path lengths and moment arms for the original model..");
     TimeSeriesTable pathLengths;
     TimeSeriesTable momentArms;
+    int numThreads = static_cast<int>(std::thread::hardware_concurrency());
     computePathLengthsAndMomentArms(model, coordinateValues, forcePaths,
             numThreads, pathLengths, momentArms);
 

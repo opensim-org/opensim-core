@@ -114,8 +114,8 @@ fitter.appendCoordinateSamplingBounds(...
 fitter.appendCoordinateSamplingBounds(...
     '/jointset/hip_l/hip_flexion_l', Vec2(-15, 15));
 
-% Set the global coordinate sampling bounds. This will be used for any
-% coordinates that do not have custom bounds set. We'll use reasonably
+% Set the global coordinate sampling bounds, in degrees. This will be used
+% for any coordinates that do not have custom bounds set. We use reasonably
 % large bounds here to sample a wide range of the model's coordinate space
 % around the reference trajectory.
 fitter.setGlobalCoordinateSamplingBounds(Vec2(-30, 30));
