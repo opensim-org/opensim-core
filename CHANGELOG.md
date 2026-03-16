@@ -51,6 +51,7 @@ performance and stability in wrapping solutions.
 - Fixed an issue where the final time used for `example2DWalking` and `example2DWalkingMetabolics` was inconsistent with the filtered coordinate reference data. (#4273)
 - Fixed an issue where `StdVectorDouble::get()` would return `java.lang.Double` in Matlab
 - Fixed an issue in the Java bindings where setting the `Manager::IntegratorMethod` via `setIntegratorMethod()` with an integer argument did not work. (#4277)
+- Fixed simbody-visualizer not found in PATH on windows when launching program lives on different drive. (simbody#765)
 
 
 v4.5.2
