@@ -1,14 +1,15 @@
 import sys
 import os
 
-print("at top of init.py")
 curFolder = os.path.dirname(os.path.realpath(__file__))
 if (sys.platform.startswith('win')):
     os.add_dll_directory(curFolder)
+
     # When installed locally via "python -m pip install ." in Windows
     if os.path.isfile(os.path.join(curFolder, 'opensim-cmd.exe')):
         # This only sets the PATH for the Python environment (not permanent)
         os.environ['PATH'] = curFolder + os.pathsep + os.environ['PATH']
+
     # For local testing
     install_path = os.path.join(curFolder, "../../../bin")
     if (os.path.exists(install_path)):
@@ -16,35 +17,36 @@ if (sys.platform.startswith('win')):
     dev_path = os.path.join(curFolder, "../../../../Release")
     if (os.path.exists(dev_path)):
         os.add_dll_directory(dev_path)
-    # if available tell simbody how to locate the visualizer in layout of python dist
+
+    # If available, tell Simbody how to locate the visualizer in the layout of the
+    # Python distribution.
     visualizerPath = os.path.join(curFolder, "bin", "simbody-visualizer.exe")
     if (os.path.exists(visualizerPath)):
         print("Found simbody-visualizer, setting SIMBODY_HOME env var to ", curFolder)
-        os.environ["SIMBODY_HOME"]= curFolder 
-# Non windows platforms have no .exe extension but visualizer should endup in the same folder
+        os.environ["SIMBODY_HOME"]= curFolder
+
+# Non windows platforms do not have an executable (.exe) extension, but the visualizer
+# should end up in the same folder.
 if (sys.platform.startswith('darwin')):
-    os.environ['SIMBODY_HOME']= curFolder
-    os.environ['PATH']= curFolder+ os.pathsep + os.environ['PATH']
-    os.environ['DYLD_LIBRARY_PATH']= os.environ['PATH']
-    visualizer_filepath = curFolder+"/simbody-visualizer.app/Contents/MacOS/simbody-visualizer"
+    os.environ['SIMBODY_HOME'] = curFolder
+    os.environ['PATH'] = curFolder + os.pathsep + os.environ['PATH']
+    os.environ['DYLD_LIBRARY_PATH'] = os.environ['PATH']
+    visualizer_filepath = os.path.join(curFolder,
+            "simbody-visualizer.app/Contents/MacOS/simbody-visualizer")
     if (os.path.exists(visualizer_filepath)):
         if not os.access(visualizer_filepath, os.X_OK):
             os.chmod(visualizer_filepath, 0o777)
-    
 
 if (sys.platform.startswith('linux')):
-    # print("Linux platform detected, setting SIMBODY_HOME env var to ", curFolder)
     os.environ["SIMBODY_HOME"]= curFolder
-    os.environ["PATH"]= curFolder+ os.pathsep + os.environ['PATH']
-    os.environ['LD_LIBRARY_PATH']= os.environ['PATH']
-    visualizer_filepath = curFolder+"/simbody-visualizer"
+    os.environ["PATH"] = curFolder + os.pathsep + os.environ['PATH']
+    os.environ['LD_LIBRARY_PATH'] = os.environ['PATH']
+    visualizer_filepath = os.path.join(curFolder, "simbody-visualizer")
     if (os.path.exists(visualizer_filepath)):
         if not os.access(visualizer_filepath, os.X_OK):
             os.chmod(visualizer_filepath, 0o777)
 
-#curFolder = os.path.dirname(os.path.realpath(__file__))
-#os.environ['PATH'] = curFolder + os.pathsep + os.environ['PATH']
-
+# Import the python modules.
 from .simbody import *
 from .common import *
 from .simulation import *
@@ -57,6 +59,7 @@ from . import report
 
 from .version import __version__
 
+# If the Geometry folder exists, add it to the search paths for the visualizer.
 geometry_path = os.path.join(curFolder, 'Geometry')
 if os.path.exists(geometry_path):
     ModelVisualizer.addDirToGeometrySearchPaths(geometry_path)

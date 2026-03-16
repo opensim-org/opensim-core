@@ -605,8 +605,7 @@ function(OpenSimInstallDependencyLibraries PREFIX DEP_LIBS_DIR_WIN
     install(FILES ${LIBS} DESTINATION "${OSIM_DESTINATION}")
 endfunction()
 
-# Function to install visualizer under bin folder in target platform
-# Primarily used to install simbody-visualizer but could be generalized if needed for more
+# Function to install the Simbody visualizer under the "bin" folder on the target platform.
 function(OpenSimInstallVisualizer DEP_LIBS_DIR_WIN
         DEP_LIBS_DIR_UNIX OSIM_DESTINATION)
     if(WIN32)

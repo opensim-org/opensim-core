@@ -111,8 +111,6 @@ jobs:
       run: |
         cd ~/opensim-core-install/sdk/Python
         pip wheel . --wheel-dir dist
-        echo "Dist contents after build:"
-          if (Test-Path dist) { Get-ChildItem dist } else { echo "dist folder not found" }
 
     - name: Capture wheel path
       id: wheel
@@ -127,13 +125,13 @@ jobs:
       with:
          name: ${{steps.wheel.outputs.path}}
          path: ~/opensim-core-install/sdk/Python/dist/${{steps.wheel.outputs.path}}
-         
+
     - name: Test Python bindings
       run: |
         cd ~/opensim-core-install/sdk/Python
         pip install dist/${{ steps.wheel.outputs.path }}
         # Run the python tests, verbosely.
-        # python3 -m unittest discover --start-directory opensim/tests --verbose
+        python3 -m unittest discover --start-directory opensim/tests --verbose
 
   build_osx_wheels:
     runs-on: macos-15
@@ -191,7 +189,7 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}-${{ hashFiles('gfortran_version/*') }}
 
     - name: Build dependencies
-      # if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         mkdir $GITHUB_WORKSPACE/../build_deps
         cd $GITHUB_WORKSPACE/../build_deps
