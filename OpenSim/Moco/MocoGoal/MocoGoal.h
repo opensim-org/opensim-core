@@ -473,11 +473,13 @@ protected:
         return m_model.getRef();
     }
 
-    /// Calculate the norm displacement of the system's center of mass
-    /// over the phase.
+    /// Calculate the displacement of the system's center of mass
+    /// (i.e., the norm of the difference between the initial and
+    /// final center of mass position) over the phase.
     double calcSystemDisplacement(const GoalInput& input) const;
-    /// Calculate the displacement of the system's center of mass over the
-    /// phase.
+    /// Calculate the displacement vector of the system's center of mass
+    /// (i.e., the difference between the initial and final center of
+    /// mass position) over the phase.
     SimTK::Vec3 calcSystemDisplacementVector(const GoalInput& input) const;
     /// Calculate the duration of the phase.
     double calcDuration(const GoalInput& input) const;
@@ -582,13 +584,9 @@ class MocoAverageSpeedGoal : public MocoGoal {
 public:
     OpenSim_DECLARE_PROPERTY(desired_average_speed, double,
             "The desired average speed of the system (m/s). Default: 0.");
-    OpenSim_DECLARE_PROPERTY(displacement_direction, std::string,
-            "The direction of motion used to compute average speed. Accepted "
-            "values are 'positive-x', 'positive-y', 'positive-z', "
-            "'negative-x','negative-y', 'negative-z', or 'norm' (default) "
-            "for the full 3D Euclidean norm of the CoM displacement. Note "
-            "that 'desired_average_speed' should always be positive; the "
-            "sign of the direction is embedded in this property.");
+    OpenSim_DECLARE_PROPERTY(displacement_axis, int,
+            "Specify an axis to compute the average desired speed. "
+            "Accepted values are 0, 1, 2 or -1 (norm - default).");
     MocoAverageSpeedGoal() { constructProperties(); }
     MocoAverageSpeedGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
@@ -603,13 +601,13 @@ protected:
             const GoalInput& input, SimTK::Vector& values) const override {
         // Calculate average gait speed.
         double displacement;
-        if (get_displacement_direction() == "norm") {
+        if (get_displacement_axis() == -1) {
             displacement = calcSystemDisplacement(input);
         } else {
             SimTK::Vec3 displacementVector =
                     calcSystemDisplacementVector(input);
             displacement =
-                    m_direction_sign * displacementVector[m_direction_index];
+                    displacementVector[get_displacement_axis()];
         }
         const double duration = calcDuration(input);
         values[0] = get_desired_average_speed() - (displacement / duration);
@@ -618,49 +616,15 @@ protected:
     void initializeOnModelImpl(const Model&) const override {
         setRequirements(0, 1);
 
-        // Validate displacement_direction property.
-        std::set<std::string> directions{"positive-x", "positive-y",
-                "positive-z", "negative-x", "negative-y", "negative-z",
-                "norm"};
-        checkPropertyValueIsInSet(
-                getProperty_displacement_direction(), directions);
-
-        // Pre-compute index and sign for use in calcGoalImpl.
-        auto setIndexAndSign = [](const std::string& dir, int& index,
-                                       int& sign) {
-            if (dir == "positive-x") {
-                index = 0;
-                sign = 1;
-            } else if (dir == "positive-y") {
-                index = 1;
-                sign = 1;
-            } else if (dir == "positive-z") {
-                index = 2;
-                sign = 1;
-            } else if (dir == "negative-x") {
-                index = 0;
-                sign = -1;
-            } else if (dir == "negative-y") {
-                index = 1;
-                sign = -1;
-            } else if (dir == "negative-z") {
-                index = 2;
-                sign = -1;
-            }
-        };
-        if (get_displacement_direction() != "norm") {
-            setIndexAndSign(get_displacement_direction(), m_direction_index,
-                    m_direction_sign);
-        }
+        checkPropertyValueIsInSet(getProperty_displacement_axis(),
+            {-1, 0, 1, 2});
     }
 
 private:
     void constructProperties() { 
         constructProperty_desired_average_speed(0);
-        constructProperty_displacement_direction("norm");
+        constructProperty_displacement_axis(-1);
     }
-    mutable int m_direction_index{0};
-    mutable int m_direction_sign{1};
 };
 
 } // namespace OpenSim

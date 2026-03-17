@@ -50,7 +50,7 @@ void MocoGoal::printDescription() const {
 }
 
 double MocoGoal::calcSystemDisplacement(const GoalInput& input) const {
-    // Default behaviour: full 3D Euclidean norm of CoM displacement.
+    // TODO: instead use squared norm for convexity.
     return calcSystemDisplacementVector(input).norm();
 }
 
