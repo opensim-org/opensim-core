@@ -786,7 +786,7 @@ void PolynomialPathFitter::computePathLengthsAndMomentArms(
                 }
             } catch (const std::exception& e) {
                 log_warn("Skipping sample at time {:1.2f} s due to error in "
-                         "path computation: ", state.getTime(), e.what());
+                         "path computation: {}", state.getTime(), e.what());
                 // Inject a NaN value in the row associated with this sample
                 // so that it is filtered out later on before fitting the
                 // polynomial coefficients.
