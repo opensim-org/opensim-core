@@ -148,6 +148,10 @@ public:
  * A concrete class representing a geometric path object defined by a list of
  * path points and wrapping obstacles.
  *
+ * @note `Scholz2015GeometryPath` is an experimental class. The default settings
+ *       and algorithms in the underlying wrapping engine (`SimTK::CableSpan`)
+ *       may change in future releases to address robustness issues.
+ *
  * The path consists of straight line segments and curved line segments: a
  * curved segment over each obstacle, and straight segments connecting path
  * points to obstacles. If no obstacle lies between two path points, the points
