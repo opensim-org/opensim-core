@@ -665,6 +665,7 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
 
     // Divide the sampling across multiple threads.
     std::vector<int> timeIndexes(values.getNumRows());
+    std::iota(timeIndexes.begin(), timeIndexes.end(), 0);
     std::vector<std::future<SimTK::Matrix>> futures;
     for (int thread = 0; thread < numThreads; ++thread) {
         auto begin_iter = timeIndexes.begin() + offset;

@@ -222,6 +222,25 @@ TEST_CASE("Verify fitted path: double pendulum with wrap cylinder") {
         fitter.setCoordinateValues(states);
         fitter.run();
 
+        // Expected number of samples.
+        TimeSeriesTable coordinateValues(
+                fmt::format("{}_coordinate_values.sto", model.getName()));
+        TimeSeriesTable coordinateValuesSampled(
+                fmt::format("{}_coordinate_values_sampled.sto",
+                            model.getName()));
+
+        // Expected number of samples.
+        CHECK(coordinateValues.getNumRows() == states.getNumRows());
+
+        // The total possible number of samples is actually rows * (samples + 1),
+        // but the fitter filters out samples that are too far from the nominal
+        // trajectory. In this case, the fitter filters out around 1% of samples.
+        // We'll use a factor of two to account for roundoff errors on different
+        // machines that may produce a slightly different number of samples.
+        size_t maxNumSamples = states.getNumRows() *
+                              (fitter.getNumSamplesPerFrame() + 1);
+        CHECK(coordinateValuesSampled.getNumRows() > 0.98*maxNumSamples);
+
         // Path length error.
         TimeSeriesTable pathLengths(
                 fmt::format("{}_path_lengths.sto", model.getName()));
