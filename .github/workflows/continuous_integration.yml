@@ -111,23 +111,6 @@ jobs:
         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.configure.outputs.version }}" -Recurse
         7z a "opensim-core-${{ steps.configure.outputs.version }}.zip" "opensim-core-${{ steps.configure.outputs.version }}"
 
-#    - name: Build wheel
-#      run: |
-#        cd ~/opensim-core-install/sdk/python
-#        python3 setup.py bdist_wheel
-#    - name: Upload windows wheel
-#      uses: actions/upload-artifact@v4
-#      with:
-#        name: opensim-4.5.2-cp311-cp311-win_amd64.whl
-#        path: ~/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-win_amd64.whl
-#
-#    - name: Test Python bindings
-#      run: |
-#        cd ~/opensim-core-install/sdk/python
-#        pip install dist/opensim-4.5.2-cp311-cp311-win_amd64.whl
-#        # Run the python tests, verbosely.
-#        python3 -m unittest discover --start-directory opensim/tests --verbose
-
     - name: Upload opensim-core
       uses: actions/upload-artifact@v4
       with:
@@ -382,16 +365,22 @@ jobs:
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         python3 -m build --wheel
 
-    - name: Upload osx wheel
+    - name: Capture wheel path
+      id: wheel
+      run: |
+         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
+         echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
+
+    - name: Upload macOS wheel
       uses: actions/upload-artifact@v4
       with:
-        name: opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
-        path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
+        name: ${{ steps.wheel.outputs.path }}
+        path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
 
     - name: Test Python bindings
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        pip3 install /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.5.2-cp311-cp311-macosx_15_0_universal2.whl
+        pip3 install /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
@@ -637,18 +626,24 @@ jobs:
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         python3 -m build --wheel
 
-    - name: Upload linux wheel
+    - name: Capture wheel path
+      id: wheel
+      run: |
+         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
+         ls -al
+         echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
+
+    - name: Upload Linux wheel
       uses: actions/upload-artifact@v4
       with:
-        name: opensim-4.5.2-cp311-cp311-linux_x86_64.whl
-        path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim-4.5.2-cp311-cp311-linux_x86_64.whl
+        name: ${{ steps.wheel.outputs.path }}
+        path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
 
     - name: Test Python bindings
       run: |
-        export LD_LIBRARY_PATH=""
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        pip install /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim-4.5.2-cp311-cp311-linux_x86_64.whl
-        # Run the python tests, verbosely
+        pip3 install /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
+        # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
@@ -663,9 +658,6 @@ jobs:
     name: Build GUI
     runs-on: ubuntu-latest
 
-    env:
-      GH_TOKEN: ${{ github.token }}
-
     if: ${{ contains(github.event.pull_request.title, '[build-gui]') || contains(github.event.pull_request.body, '[build-gui]') }}
 
     steps:
@@ -673,19 +665,25 @@ jobs:
       uses: codex-/return-dispatch@v1
       id: return_dispatch
       with:
-        token: ${{ secrets.ACTION_SECRET }}
-        ref: refs/heads/main
+        token: ${{ secrets.OPENSIM_GUI_PAT }}
+        ref: main
         repo: opensim-gui
         owner: opensim-org
         workflow: build-on-core-pr.yml
+        workflow_inputs: |
+            {
+              "distinct_id": "${{ github.run_id }}"
+            }
+
 
     - name: Use the output run ID
-      run: echo ${{steps.return_dispatch.outputs.run_id}}
+      run: |
+          echo "Run ID:  ${{ steps.return_dispatch.outputs.run_id }}"
 
     - name: Await opensim-gui workflow
       uses: Codex-/await-remote-run@v1.11.0
       with:
-        token: ${{ secrets.ACTION_SECRET }}
+        token: ${{ secrets.OPENSIM_GUI_PAT }}
         repo: opensim-gui
         owner: opensim-org
         run_id: ${{ steps.return_dispatch.outputs.run_id }}
