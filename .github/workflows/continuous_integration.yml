@@ -662,10 +662,7 @@ jobs:
   build_gui:
     name: Build GUI
     runs-on: ubuntu-latest
-
-    env:
-      GH_TOKEN: ${{ github.token }}
-
+    
     if: ${{ contains(github.event.pull_request.title, '[build-gui]') || contains(github.event.pull_request.body, '[build-gui]') }}
 
     steps:
