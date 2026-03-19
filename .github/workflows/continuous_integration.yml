@@ -673,7 +673,7 @@ jobs:
       uses: codex-/return-dispatch@v1
       id: return_dispatch
       with:
-        token: ${{ secrets.ACTION_SECRET }}
+        token: ${{ secrets.OPENSIM_GUI_PAT }}
         ref: refs/heads/main
         repo: opensim-gui
         owner: opensim-org
@@ -685,7 +685,7 @@ jobs:
     - name: Await opensim-gui workflow
       uses: Codex-/await-remote-run@v1.11.0
       with:
-        token: ${{ secrets.ACTION_SECRET }}
+        token: ${{ secrets.OPENSIM_GUI_PAT }}
         repo: opensim-gui
         owner: opensim-org
         run_id: ${{ steps.return_dispatch.outputs.run_id }}
