@@ -27,6 +27,9 @@
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
 
+#include <functional>
+#include <vector>
+
 #ifdef SWIG
     #ifdef OSIMSIMULATION_API
         #undef OSIMSIMULATION_API
@@ -229,8 +232,86 @@ public:
      */
     double getPreScaleLength(const SimTK::State& s) const;
     void setPreScaleLength(const SimTK::State& s, double preScaleLength);
-    
+
+    /**
+     * Represents a decorative (i.e. visualization-only) point of an
+     * `AbstractGeometryPath`. Can be used by UI implementations to
+     * display the path.
+     */
+    class DecorativePathPoint final {
+    public:
+        explicit DecorativePathPoint(
+            const SimTK::Vec3& locationInGround,
+            const Component* associatedComponent = nullptr) :
+            m_locationInGround{locationInGround},
+            m_maybeAssociatedComponent{associatedComponent}
+        {}
+
+        SimTK::Vec3 getLocationInGround() const { return m_locationInGround; }
+        void setLocationInGround(const SimTK::Vec3& p) {
+            m_locationInGround = p;
+        }
+        const Component* getAssociatedComponent() const {
+            return m_maybeAssociatedComponent;
+        }
+    private:
+        SimTK::Vec3 m_locationInGround;
+        const Component* m_maybeAssociatedComponent;
+    };
+
+    /**
+     * Calls `callback` with each point of a decorative representation of the
+     * path, if such a representation is available.
+     *
+     * @param s        Current simulation state, used to read the state of this
+     *                 path.
+     * @param callback A callback that should be called with each point of the
+     *                 decorative path.
+     */
+    void forEachDecorativePathPoint(const SimTK::State& state,
+        const std::function<void(const DecorativePathPoint&)>& callback) const;
+
+    /**
+     * Get a vector of decorative path points.
+     *
+     * @param s   Current simulation state, used to read the state of this path.
+     */
+    std::vector<DecorativePathPoint> getDecorativePathPoints(
+        const SimTK::State& s) const;
+
+protected:
+    /**
+     * Generates default decorations for this `AbstractGeometryPath`, based on
+     * the decorative points emitted by `implForEachDecorativePathPoint`.
+     *
+     * Derived classes may override this to provide different display behavior
+     * for the path.
+     */
+    void generateDecorations(bool fixed, const ModelDisplayHints&,
+        const SimTK::State&,
+        SimTK::Array_<SimTK::DecorativeGeometry>&) const override;
+
 private:
+    /**
+     * Implementors should call `callback` with each point of a decorative
+     * representation of the path.
+     *
+     * The decorative representation does not necessarily need to be the same
+     * as the computational representation: it only needs to be a "suitable"
+     * visual representation of the path (if any).
+     *
+     * @param s        Current simulation state, used to read the state of this
+     *                 path.
+     * @param callback A callback that should be called with each point of the
+     *                 decorative path.
+     */
+    virtual void implForEachDecorativePathPoint(const SimTK::State& s,
+        const std::function<void(const DecorativePathPoint&)>& callback) const
+    {
+        // No-op: implementations are also permitted to provide no decorative
+        // point representation at all.
+    }
+
     // Used by `(get|set)PreLengthScale`. Used during `extend(Pre|Post)Scale` by
     // downstream users of AbstractGeometryPath to cache the length of the path
     // before scaling.
