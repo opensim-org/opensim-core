@@ -371,11 +371,11 @@ jobs:
          cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
          echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
-    - name: Upload osx wheel
+    - name: Upload macOS wheel
       uses: actions/upload-artifact@v4
       with:
-         name: ${{ steps.wheel.outputs.path }}
-         path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
+        name: ${{ steps.wheel.outputs.path }}
+        path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
 
     - name: Test Python bindings
       run: |
@@ -633,11 +633,11 @@ jobs:
          ls -al
          echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
-    - name: Upload linux wheel
+    - name: Upload Linux wheel
       uses: actions/upload-artifact@v4
       with:
-         name: ${{ steps.wheel.outputs.path }}
-         path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
+        name: ${{ steps.wheel.outputs.path }}
+        path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
 
     - name: Test Python bindings
       run: |
