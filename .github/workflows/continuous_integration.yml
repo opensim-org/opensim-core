@@ -382,16 +382,22 @@ jobs:
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         python3 -m build --wheel
 
+    - name: Capture wheel path
+      id: wheel
+      run: |
+         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
+         echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
+
     - name: Upload osx wheel
       uses: actions/upload-artifact@v4
       with:
-        name: opensim-4.6-cp311-cp311-macosx_15_0_universal2.whl
-        path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.6-cp311-cp311-macosx_15_0_universal2.whl
+         name: ${{ steps.wheel.outputs.path }}
+         path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
 
     - name: Test Python bindings
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        pip3 install /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim-4.6-cp311-cp311-macosx_15_0_universal2.whl
+        pip3 install /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
@@ -637,18 +643,24 @@ jobs:
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         python3 -m build --wheel
 
+    - name: Capture wheel path
+      id: wheel
+      run: |
+         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
+         ls -al
+         echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
+
     - name: Upload linux wheel
       uses: actions/upload-artifact@v4
       with:
-        name: opensim-4.6-cp311-cp311-linux_x86_64.whl
-        path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim-4.6-cp311-cp311-linux_x86_64.whl
+         name: ${{ steps.wheel.outputs.path }}
+         path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
 
     - name: Test Python bindings
       run: |
-        export LD_LIBRARY_PATH=""
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        pip install /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim-4.6-cp311-cp311-linux_x86_64.whl
-        # Run the python tests, verbosely
+        pip3 install /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
+        # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
