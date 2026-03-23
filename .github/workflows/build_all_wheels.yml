@@ -123,12 +123,11 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
           repository-url: https://test.pypi.org/legacy/
-          username: __token__
+          user: __token__
+          packages-dir: ~/opensim-core-install/sdk/Python/dist
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          skip-existing: true
+          skip-existing: false
           verbose: true
-          check-build-only: true
-          check-upload-only: true
 
     - name: Test Python bindings
       run: |
@@ -246,6 +245,16 @@ jobs:
          cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
          echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
+    - name: Publish to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+        user: __token__
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        packages-dir: $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
+        skip-existing: false
+        verbose: true
+   
     - name: Upload osx wheel
       uses: actions/upload-artifact@v4
       with:
@@ -371,6 +380,16 @@ jobs:
          cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
          ls -al
          echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
+
+    - name: Publish to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+        user: __token__
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        packages-dir: $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
+        skip-existing: false
+        verbose: true
 
     - name: Upload linux wheel
       uses: actions/upload-artifact@v4
