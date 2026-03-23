@@ -367,7 +367,7 @@ jobs:
         repository-url: https://test.pypi.org/legacy/
         user: __token__
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        packages-dir: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist
+        packages-dir: $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
         skip-existing: false
         verbose: true
 
