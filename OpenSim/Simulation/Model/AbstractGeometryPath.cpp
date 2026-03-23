@@ -130,32 +130,25 @@ void AbstractGeometryPath::generateDecorations(bool fixed,
 
     int index = 0;
     std::optional<DecorativePathPoint> previous;
-    forEachDecorativePathPoint(s, [&](const DecorativePathPoint& dpp)
-    {
+    forEachDecorativePathPoint(s, [&](const DecorativePathPoint& dpp) {
+        ++index;
+        if (showPathPoints) {
+            geoms.push_back(SimTK::DecorativeSphere(0.005)
+                    .setTransform(dpp.getLocationInGround())
+                    .setColor(color)
+                    .setOpacity(0.8)
+                    .setBodyId(0));
+        }
+
         if (previous) {
-            // Emit line between points
+            // Emit line between points.
             const SimTK::Vec3& p1 = previous->getLocationInGround();
             const SimTK::Vec3& p2 = dpp.getLocationInGround();
             geoms.push_back(SimTK::DecorativeLine(p1, p2)
-                .setLineThickness(4)
-                .setScaleFactors(SimTK::Vec3{1.0})
-                .setColor(color)
-                .setOpacity(opacity)
-                .setRepresentation(representation)
-                .setBodyId(0)
-                .setIndexOnBody(index++)
-            );
-        }
-        if (showPathPoints) {
-            geoms.push_back(SimTK::DecorativeSphere(0.005)
-                .setTransform(dpp.getLocationInGround())
-                .setScaleFactors(SimTK::Vec3{1.0})
-                .setColor(color)
-                .setOpacity(opacity)
-                .setRepresentation(representation)
-                .setBodyId(0)
-                .setIndexOnBody(index++)
-            );
+                    .setLineThickness(4)
+                    .setColor(color)
+                    .setBodyId(0)
+                    .setIndexOnBody(index-1));
         }
 
         previous = dpp;
