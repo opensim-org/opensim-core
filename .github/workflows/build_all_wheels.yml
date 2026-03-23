@@ -98,6 +98,13 @@ jobs:
         cd ~/opensim-core-install/sdk/Python
         pip wheel . --wheel-dir dist
 
+        
+    - name: Twine check
+      run: |
+        cd ~/opensim-core-install/sdk/Python
+        python -m pip install --upgrade twine
+        python -m twine check dist/*
+
     - name: Capture wheel path
       id: wheel
       shell: pwsh
@@ -215,6 +222,12 @@ jobs:
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         pip3 wheel . --wheel-dir dist
         ls -al
+
+    - name: Twine check
+      run: |
+          cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+          python -m pip install --upgrade twine
+          python -m twine check dist/*
 
     - name: Capture wheel path
       id: wheel
@@ -334,6 +347,12 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         pip wheel . --wheel-dir dist
+
+    - name: Twine check
+      run: |
+        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        python -m pip install --upgrade twine
+        python -m twine check dist/*
 
     - name: Capture wheel path
       id: wheel
