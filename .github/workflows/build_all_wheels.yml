@@ -119,6 +119,17 @@ jobs:
          name: ${{steps.wheel.outputs.path}}
          path: ~/opensim-core-install/sdk/Python/dist/${{steps.wheel.outputs.path}}
 
+    - name: Publish to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+          repository-url: https://test.pypi.org/legacy/
+          username: __token__
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          skip-existing: true
+          verbose: true
+          check-build-only: true
+          check-upload-only: true
+
     - name: Test Python bindings
       run: |
         cd ~/opensim-core-install/sdk/Python
