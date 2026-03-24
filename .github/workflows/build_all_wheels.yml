@@ -116,7 +116,7 @@ jobs:
     - name: Upload windows wheel
       uses: actions/upload-artifact@v4
       with:
-         name: ${{steps.wheel.outputs.path}}
+         name: wheels
          path: ~/opensim-core-install/sdk/Python/dist/${{steps.wheel.outputs.path}}
 
     - name: Test Python bindings
@@ -238,7 +238,7 @@ jobs:
     - name: Upload osx wheel
       uses: actions/upload-artifact@v4
       with:
-         name: ${{ steps.wheel.outputs.path }}
+         name: wheels
          path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
 
     - name: Test Python bindings
@@ -364,7 +364,7 @@ jobs:
     - name: Upload linux wheel
       uses: actions/upload-artifact@v4
       with:
-         name: ${{ steps.wheel.outputs.path }}
+         name: wheels
          path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
 
     - name: Test Python bindings
@@ -375,21 +375,26 @@ jobs:
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
   publish_to_testpypi:
-      needs: [build_linux_wheels]
+      needs: 
+        - build_linux_wheels
+        - build_windows_wheels
+        - build_osx_wheels
+
       runs-on: ubuntu-24.04
 
       steps:
-      - name: Download dist artifacts
+      - name: Download all wheels
         uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: wheels
           path: dist/
+          merge-multiple: true
 
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
-          user: __token__
+          username: __token__
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           packages-dir: dist
           skip-existing: false
