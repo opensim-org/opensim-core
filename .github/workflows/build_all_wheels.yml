@@ -118,6 +118,7 @@ jobs:
       with:
          name: wheels
          path: ~/opensim-core-install/sdk/Python/dist/${{steps.wheel.outputs.path}}
+         overwrite: true
 
     - name: Test Python bindings
       run: |
@@ -240,6 +241,7 @@ jobs:
       with:
          name: wheels
          path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
+         overwrite: true
 
     - name: Test Python bindings
       run: |
@@ -366,6 +368,7 @@ jobs:
       with:
          name: wheels
          path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
+         overwrite: true
 
     - name: Test Python bindings
       run: |
