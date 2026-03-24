@@ -117,7 +117,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
          name: wheels
-         path: ~/opensim-core-install/sdk/Python/dist/*.whl
+         path: ~/opensim-core-install/sdk/Python/dist/opensim*.whl
          overwrite: true
 
     - name: Test Python bindings
@@ -240,7 +240,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
          name: wheels
-         path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/*.whl
+         path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim*.whl
          overwrite: true
 
     - name: Test Python bindings
@@ -367,7 +367,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
          name: wheels
-         path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/*.whl
+         path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim*.whl
          overwrite: true
 
     - name: Test Python bindings
