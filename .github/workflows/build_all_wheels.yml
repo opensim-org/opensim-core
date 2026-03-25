@@ -116,7 +116,7 @@ jobs:
     - name: Upload windows wheel
       uses: actions/upload-artifact@v4
       with:
-         name: wheels
+         name: wheels-${{ matrix.python-version }}-windows
          path: ~/opensim-core-install/sdk/Python/dist/opensim*.whl
          overwrite: true
 
@@ -239,7 +239,7 @@ jobs:
     - name: Upload osx wheel
       uses: actions/upload-artifact@v4
       with:
-         name: wheels
+         name: wheels-${{ matrix.python-version }}-osx
          path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim*.whl
          overwrite: true
 
@@ -366,7 +366,7 @@ jobs:
     - name: Upload linux wheel
       uses: actions/upload-artifact@v4
       with:
-         name: wheels
+         name: wheels-${{ matrix.python-version }}-linux
          path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim*.whl
          overwrite: true
 
@@ -389,7 +389,7 @@ jobs:
       - name: Download all wheels
         uses: actions/download-artifact@v4
         with:
-          name: wheels
+          pattern: wheels-*
           path: dist/
           merge-multiple: true
 
