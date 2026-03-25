@@ -363,12 +363,12 @@ jobs:
          ls -al
          echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
 
-    - name: Upload linux wheel
-      uses: actions/upload-artifact@v4
-      with:
-         name: wheels-${{ matrix.python-version }}-linux
-         path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim*.whl
-         overwrite: true
+    # - name: Upload linux wheel
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #      name: wheels-${{ matrix.python-version }}-linux
+    #      path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim*.whl
+    #      overwrite: true
 
     - name: Test Python bindings
       run: |
@@ -379,9 +379,8 @@ jobs:
 
   publish_to_testpypi:
       needs: 
-        - build_linux_wheels
-        - build_windows_wheels
-        - build_osx_wheels
+         - build_windows_wheels
+         - build_osx_wheels
 
       runs-on: ubuntu-24.04
 
