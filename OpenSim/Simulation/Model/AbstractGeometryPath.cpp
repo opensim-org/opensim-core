@@ -26,6 +26,8 @@
 #include <OpenSim/Simulation/Model/ForceApplier.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
+#include <optional>
+
 using namespace OpenSim;
 
 //=============================================================================
@@ -90,4 +92,65 @@ void AbstractGeometryPath::setPreScaleLength(const SimTK::State&,
         double preScaleLength)
 {
     _preScaleLength = preScaleLength;
+}
+
+void AbstractGeometryPath::forEachDecorativePathPoint(
+    const SimTK::State& state,
+    const std::function<void(const DecorativePathPoint&)>& callback) const
+{
+    implForEachDecorativePathPoint(state, callback);
+}
+
+std::vector<AbstractGeometryPath::DecorativePathPoint>
+AbstractGeometryPath::getDecorativePathPoints(const SimTK::State& state) const
+{
+    std::vector<AbstractGeometryPath::DecorativePathPoint> rv;
+    forEachDecorativePathPoint(state,
+            [&rv](const DecorativePathPoint& dp) { rv.push_back(dp); });
+    return rv;
+}
+
+void AbstractGeometryPath::generateDecorations(bool fixed,
+    const ModelDisplayHints& hints, const SimTK::State& s,
+    SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const
+{
+    if (fixed) {
+        return;
+    }
+    if (not get_Appearance().get_visible()) {
+        // Don't render a path that's hidden
+        // (ComputationalBiomechanicsLab/opensim-creator#1166)
+        return;
+    }
+
+    const bool showPathPoints = hints.get_show_path_points();
+    const SimTK::Vec3 color = getColor(s);
+    const double opacity = get_Appearance().get_opacity();
+    const auto representation = get_Appearance().get_representation();
+
+    int index = 0;
+    std::optional<DecorativePathPoint> previous;
+    forEachDecorativePathPoint(s, [&](const DecorativePathPoint& dpp) {
+        ++index;
+        if (showPathPoints) {
+            geoms.push_back(SimTK::DecorativeSphere(0.005)
+                    .setTransform(dpp.getLocationInGround())
+                    .setColor(color)
+                    .setOpacity(0.8)
+                    .setBodyId(0));
+        }
+
+        if (previous) {
+            // Emit line between points.
+            const SimTK::Vec3& p1 = previous->getLocationInGround();
+            const SimTK::Vec3& p2 = dpp.getLocationInGround();
+            geoms.push_back(SimTK::DecorativeLine(p1, p2)
+                    .setLineThickness(4)
+                    .setColor(color)
+                    .setBodyId(0)
+                    .setIndexOnBody(index-1));
+        }
+
+        previous = dpp;
+    });
 }
