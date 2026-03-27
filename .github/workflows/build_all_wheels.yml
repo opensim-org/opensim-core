@@ -399,5 +399,5 @@ jobs:
           username: __token__
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           packages-dir: dist
-          skip-existing: false
+          skip-existing: true
           verbose: true
