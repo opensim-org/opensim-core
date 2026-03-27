@@ -349,7 +349,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
         CIBW_MANYLINUX_X86_64_IMAGE=manylinux_2_28
-        CIBW_BUILD="cp3*-manylinux_x86_64"
+        CIBW_BUILD="cp311-* cp312-* cp313-*"
         cibuildwheel --output-dir dist
 
     - name: Twine check
