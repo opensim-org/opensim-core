@@ -98,6 +98,13 @@ jobs:
         cd ~/opensim-core-install/sdk/Python
         pip wheel . --wheel-dir dist
 
+        
+    - name: Twine check
+      run: |
+        cd ~/opensim-core-install/sdk/Python
+        python -m pip install --upgrade twine
+        python -m twine check dist/*
+
     - name: Capture wheel path
       id: wheel
       shell: pwsh
@@ -109,8 +116,9 @@ jobs:
     - name: Upload windows wheel
       uses: actions/upload-artifact@v4
       with:
-         name: ${{steps.wheel.outputs.path}}
-         path: ~/opensim-core-install/sdk/Python/dist/${{steps.wheel.outputs.path}}
+         name: wheels-${{ matrix.python-version }}-windows
+         path: ~/opensim-core-install/sdk/Python/dist/opensim*.whl
+         overwrite: true
 
     - name: Test Python bindings
       run: |
@@ -216,17 +224,24 @@ jobs:
         pip3 wheel . --wheel-dir dist
         ls -al
 
+    - name: Twine check
+      run: |
+          cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+          python -m pip install --upgrade twine
+          python -m twine check dist/*
+
     - name: Capture wheel path
       id: wheel
       run: |
          cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python/dist
          echo "path=$(ls -1 opensim*.whl | head -n1)" >> $GITHUB_OUTPUT
-
+   
     - name: Upload osx wheel
       uses: actions/upload-artifact@v4
       with:
-         name: ${{ steps.wheel.outputs.path }}
-         path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/${{ steps.wheel.outputs.path }}
+         name: wheels-${{ matrix.python-version }}-osx
+         path: /Users/runner/work/opensim-core/opensim-core-install/sdk/python/dist/opensim*.whl
+         overwrite: true
 
     - name: Test Python bindings
       run: |
@@ -254,7 +269,7 @@ jobs:
         pip install pip --upgrade
         pip install numpy==2.4.2
         pip install build
-        pip install wheel
+        pip install cibuildwheel
 
     - name: Install packages
       run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen patchelf
@@ -333,7 +348,15 @@ jobs:
     - name: Build wheel
       run: |
         cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        pip wheel . --wheel-dir dist
+        CIBW_MANYLINUX_X86_64_IMAGE=manylinux_2_28
+        CIBW_BUILD="cp311-* cp312-* cp313-*"
+        cibuildwheel --output-dir dist
+
+    - name: Twine check
+      run: |
+        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        python -m pip install --upgrade twine
+        python -m twine check dist/*
 
     - name: Capture wheel path
       id: wheel
@@ -345,8 +368,9 @@ jobs:
     - name: Upload linux wheel
       uses: actions/upload-artifact@v4
       with:
-         name: ${{ steps.wheel.outputs.path }}
-         path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/${{ steps.wheel.outputs.path }}
+         name: wheels-${{ matrix.python-version }}-linux
+         path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim*.whl
+         overwrite: true
 
     - name: Test Python bindings
       run: |
@@ -355,3 +379,27 @@ jobs:
         # Run the python tests, verbosely.
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
+  publish_to_testpypi:
+      needs: 
+         - build_windows_wheels
+         - build_osx_wheels
+
+      runs-on: ubuntu-24.04
+
+      steps:
+      - name: Download all wheels
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: dist/
+          merge-multiple: true
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          username: __token__
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          packages-dir: dist
+          skip-existing: true
+          verbose: true
