@@ -236,7 +236,7 @@ jobs:
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
   build_linux_wheels:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         python-version: ['3.11', '3.12', '3.13']
