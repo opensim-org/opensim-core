@@ -325,6 +325,8 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DPython3_EXECUTABLE=$PY)
         OSIM_CMAKE_ARGS+=(-DPython3_ROOT_DIR=$(dirname $(dirname $PY)))
         OSIM_CMAKE_ARGS+=(-DPython3_NumPy_INCLUDE_DIRS=$($PY -c "import numpy; print(numpy.get_include())"))
+        OSIM_CMAKE_ARGS+=(-DPython3_INCLUDE_DIR=$($PY -c "import sysconfig; print(sysconfig.get_path('include'))"))
+        OSIM_CMAKE_ARGS+=(-DPython3_LIBRARY=$($PY -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR') + '/libpython' + sysconfig.get_config_var('LDVERSION') + '.so')"))
         OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=on)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
         OSIM_CMAKE_ARGS+=(-DSWIG_DIR=~/swig/share/swig)
