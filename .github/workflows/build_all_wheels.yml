@@ -254,24 +254,23 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: quay.io/pypa/manylinux_2_28_x86_64
+
     strategy:
       matrix:
-        python-version: ['3.11', '3.12', '3.13']
+        python: ["cp311", "cp312", "cp313"]
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install Python packages
-      uses: actions/setup-python@v4
-      with:
-        python-version: '${{ matrix.python-version }}'
+    - name: Set Python
+      run: echo "PY=/opt/python/${{ matrix.python }}-${{ matrix.python }}/bin/python" >> $GITHUB_ENV
 
     - name: Install Numpy
       run: |
-        pip install pip --upgrade
-        pip install numpy==2.4.2
-        pip install build
-        pip install cibuildwheel
+        $PY -m pip install numpy==2.4.2
+        $PY -m pip install build
+        $PY -m pip install cibuildwheel
+        $PY -m pip install auditwheel
 
     - name: Install packages
       run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen patchelf
@@ -370,7 +369,7 @@ jobs:
     - name: Upload linux wheel
       uses: actions/upload-artifact@v4
       with:
-         name: wheels-${{ matrix.python-version }}-linux
+         name: wheels-${{ matrix.python }}-linux
          path: /home/runner/work/opensim-core/opensim-core-install/sdk/Python/dist/opensim*.whl
          overwrite: true
 
