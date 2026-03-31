@@ -280,6 +280,7 @@ jobs:
         libtool autoconf automake pkgconfig \
         pcre2-devel \
         gcc-gfortran \
+        python3-devel \
         openblas-devel lapack-devel \
         freeglut-devel libXi-devel libXmu-devel \
         doxygen wget tar gzip patchelf
