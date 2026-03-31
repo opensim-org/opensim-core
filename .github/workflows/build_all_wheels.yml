@@ -278,6 +278,7 @@ jobs:
         yum -y install \
         gcc gcc-c++ make \
         libtool autoconf automake pkgconfig \
+        pcre2-devel \
         gcc-gfortran \
         openblas-devel lapack-devel \
         freeglut-devel libXi-devel libXmu-devel \
