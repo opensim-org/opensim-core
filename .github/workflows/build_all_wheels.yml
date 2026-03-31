@@ -280,10 +280,11 @@ jobs:
         libtool autoconf automake pkgconfig \
         pcre2-devel \
         gcc-gfortran \
-        python3-devel \
         openblas-devel lapack-devel \
         freeglut-devel libXi-devel libXmu-devel \
         doxygen wget tar gzip patchelf
+        PYVER=$($PY -c "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}')")
+        yum -y install "python${PYVER}-devel" || yum -y install python3-devel
 
     - name: Install SWIG
       run: |
