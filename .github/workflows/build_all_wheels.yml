@@ -273,7 +273,15 @@ jobs:
         $PY -m pip install auditwheel
 
     - name: Install packages
-      run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen patchelf
+      run: |
+        yum -y update
+        yum -y install \
+        gcc gcc-c++ make \
+        libtool autoconf automake pkgconfig \
+        gcc-gfortran \
+        openblas-devel lapack-devel \
+        freeglut-devel libXi-devel libXmu-devel \
+        doxygen wget tar gzip patchelf
 
     - name: Install SWIG
       run: |
