@@ -292,6 +292,11 @@ jobs:
         sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
 
+    - name: Mark workspace as safe for git (manylinux container)
+      run: |
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        git config --global --add safe.directory /__w/opensim-core/opensim-core
+
     - name: Build dependencies
       run: |
         mkdir $GITHUB_WORKSPACE/../build_deps
@@ -317,6 +322,9 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
         OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=off)
+        OSIM_CMAKE_ARGS+=(-DPython3_EXECUTABLE=$PY)
+        OSIM_CMAKE_ARGS+=(-DPython3_ROOT_DIR=$(dirname $(dirname $PY)))
+        OSIM_CMAKE_ARGS+=(-DPython3_NumPy_INCLUDE_DIRS=$($PY -c "import numpy; print(numpy.get_include())"))
         OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WHEELS=on)
         OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
         OSIM_CMAKE_ARGS+=(-DSWIG_DIR=~/swig/share/swig)
